@@ -7,4 +7,8 @@ public interface MediaFactory {
 	
 	// Construye y devuelve una fuente de medios a partir de una uri de reproducción (file, rtp, rtsp, rtmp, hls, etc.)
 	public MediaSrc getSrc (String uri);
+	
+	public Stream getStream();
+	
+	public Mixer getMixer();
 }
