@@ -15,38 +15,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.kurento.kmf.media;
-
-import java.util.Collection;
+package com.kurento.kms.media;
 
 import com.kurento.mediaspec.MediaType;
 
 
 /**
- * MediaSrc sends media to one of more MediaSink if linked
+ * A MediaSink receives media from a connected MediaSrc (if any)
  * 
  */
-public interface MediaSrc extends MediaResource{
+public interface MediaSink {
 
 	/**
-	 * Creates a link between this object and the given sink
+	 * Returns the Joined MediaSrc or null if not joined
 	 * 
-	 * @param sink
-	 *            The MediaSink that will accept this object media
-	 * @throws MediaException
+	 * @return The joined MediaSrc or null if not joined
 	 */
-	public void connect(MediaSink sink) throws MediaException;
-
-	/**
-	 * Unlinks this element and sink
-	 * 
-	 * @param sink
-	 *            The MediaSink that will stop receiving media from this object
-	 * @throws MediaException
-	 */
-	public void disconnect(MediaSink sink) throws MediaException;
+	public MediaSrc getConnectedSrc();
 	
-	public Collection<MediaSink> getConnectedSink();
-	public Collection<MediaSink> getConnectedSink(MediaType mediaType);
-	
+	public MediaType getMediaType();
 }

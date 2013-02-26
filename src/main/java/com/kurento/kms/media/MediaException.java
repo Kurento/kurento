@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.kurento.kmf.media;
+package com.kurento.kms.media;
 
 /**
  * General purpose exception.

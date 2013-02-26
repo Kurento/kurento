@@ -1,13 +1,15 @@
-package com.kurento.kmf.media;
+package com.kurento.kms.media;
 
 import java.util.Collection;
 
 import com.kurento.mediaspec.MediaType;
 
-public interface Joinable {
+public interface Joinable  {
 	
-	void join();
-		
+	void join(Joinable peer);
+	
+	void unjoin (Joinable peer);
+			
 	Collection<MediaSrc> getMediaSrcs();
 
 	Collection<MediaSink> getMediaSinks();

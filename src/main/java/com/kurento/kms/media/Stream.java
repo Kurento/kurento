@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.kurento.kmf.media;
+package com.kurento.kms.media;
 
 import java.security.Policy.Parameters;
 import com.kurento.mediaspec.SessionSpec;
@@ -137,7 +137,7 @@ import com.kurento.mediaspec.SessionSpec;
  * </p>
  * </ul>
  */
-public interface Stream extends MediaResource, Joinable {
+public interface Stream extends Joinable, MediaResource {
 
 	/**
 	 * Request a SessionSpec offer.
@@ -168,7 +168,7 @@ public interface Stream extends MediaResource, Joinable {
 	 *            Continuation object to notify when operation completes and to
 	 *            provide the answer SessionSpec.
 	 */
-	void processOffer(SessionSpec offer, Continuation cont);
+	void processOffer(String offer, Continuation cont);
 
 	/**
 	 * Request the NetworkConnection to process the given SessionSpec answer
@@ -182,7 +182,7 @@ public interface Stream extends MediaResource, Joinable {
 	 *            Continuation object to notify when operation completes,
 	 *            returned SessionSpec is the local SessionSpec.
 	 */
-	void processAnswer(SessionSpec answer, Continuation cont);
+	void processAnswer(String answer, Continuation cont);
 
 	/**
 	 * This method gives access to the SessionSpec offered by this
@@ -197,7 +197,7 @@ public interface Stream extends MediaResource, Joinable {
 	 * 
 	 * @return The last agreed SessionSpec
 	 */
-	SessionSpec getSessionDescriptor();
+	String getSessionDescriptor();
 
 	/**
 	 * This method gives access to the remote session description.
@@ -210,7 +210,7 @@ public interface Stream extends MediaResource, Joinable {
 	 * 
 	 * @return The last agreed User Agent session description
 	 */
-	SessionSpec getRemoteSessionDescriptor();
+	String getRemoteSessionDescriptor();
 
 	/**
 	 * Used as a callback for some asynchronous NetworkConnection actions
