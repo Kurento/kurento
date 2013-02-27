@@ -21,8 +21,6 @@ import java.util.Collection;
 
 import com.kurento.mediaspec.MediaType;
 
-
-
 /**
  * MediaSrc sends media to one of more MediaSink if linked
  * 
@@ -46,9 +44,9 @@ public interface MediaSrc {
 	 * @throws MediaException
 	 */
 	public void disconnect(MediaSink sink) throws MediaException;
-	
+
 	public Collection<MediaSink> getConnectedSinks();
-	
+
 	public MediaType getMediaType();
-	
+
 }
