@@ -18,10 +18,16 @@
 
 		<!-- Dependencies version -->
 		<servlet-api.version>2.5</servlet-api.version>
-
+		<kms-interface.version>2.0.0-SNAPSHOT</kms-interface.version>
 	</properties>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.kurento.kms</groupId>
+			<artifactId>kms-interface</artifactId>
+			<version>${kms-interface.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
