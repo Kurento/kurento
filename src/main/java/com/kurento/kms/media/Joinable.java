@@ -2,8 +2,6 @@ package com.kurento.kms.media;
 
 import java.util.Collection;
 
-import com.kurento.mediaspec.MediaType;
-
 public interface Joinable {
 
 	void join(Joinable peer);

@@ -17,7 +17,6 @@
 
 package com.kurento.kms.media;
 
-import com.kurento.mediaspec.MediaType;
 
 /**
  * A MediaSink receives media from a connected MediaSrc (if any)

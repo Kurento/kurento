@@ -18,7 +18,6 @@
 package com.kurento.kms.media;
 
 import java.security.Policy.Parameters;
-import com.kurento.mediaspec.SessionSpec;
 
 /**
  * A NetworkConnection is a {@link Joinable} that drives network media ports.<br>
@@ -224,7 +223,7 @@ public interface Stream extends Joinable, MediaResource {
 		 * @param spec
 		 *            The generated session spec
 		 */
-		public void onSucess(SessionSpec spec);
+		public void onSucess(String spec);
 
 		/**
 		 * This method gets called when the operation fails

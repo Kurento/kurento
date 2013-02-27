@@ -19,8 +19,6 @@ package com.kurento.kms.media;
 
 import java.util.Collection;
 
-import com.kurento.mediaspec.MediaType;
-
 /**
  * MediaSrc sends media to one of more MediaSink if linked
  * 
