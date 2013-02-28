@@ -9,21 +9,21 @@ import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public class Mixer extends MediaObject {
+public abstract class MediaObject {
 
-	public Mixer(com.kurento.kms.api.MediaObject mixer) {
-		super(mixer);
+	protected com.kurento.kms.api.MediaObject mediaObject;
+
+	public MediaObject(com.kurento.kms.api.MediaObject mediaObject) {
+		this.mediaObject = mediaObject;
 	}
 
-	MixerPort getPort() throws IOException {
+	public void release() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject mixerPort = service
-					.getMixerPort(mediaObject);
+			service.release(mediaObject);
 			manager.releaseMediaServerService(service);
-			return new MixerPort(mixerPort);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {

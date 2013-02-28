@@ -17,19 +17,64 @@
 
 package com.kurento.kms.media;
 
+import java.io.IOException;
+
+import org.apache.thrift.TException;
+
+import com.kurento.kms.api.MediaObjectNotFoundException;
+import com.kurento.kms.api.MediaServerException;
+import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaType;
+import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 /**
  * A MediaSink receives media from a connected MediaSrc (if any)
  * 
  */
-public interface MediaSink {
+public class MediaSink extends MediaObject {
+
+	public MediaSink(com.kurento.kms.api.MediaObject mediaSink) {
+		super(mediaSink);
+	}
 
 	/**
 	 * Returns the Joined MediaSrc or null if not joined
 	 * 
 	 * @return The joined MediaSrc or null if not joined
+	 * @throws IOException
 	 */
-	public MediaSrc getConnectedSrc();
+	public MediaSrc getConnectedSrc() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject connectedSrc = service
+					.getConnectedSrc(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new MediaSrc(connectedSrc);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 
-	public MediaType getMediaType();
+	public MediaType getMediaType() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			MediaType mediaType = service.getMediaType(mediaObject);
+			manager.releaseMediaServerService(service);
+			return mediaType;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 }

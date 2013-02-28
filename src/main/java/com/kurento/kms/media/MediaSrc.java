@@ -17,13 +17,28 @@
 
 package com.kurento.kms.media;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+
+import org.apache.thrift.TException;
+
+import com.kurento.kms.api.MediaObjectNotFoundException;
+import com.kurento.kms.api.MediaServerException;
+import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaType;
+import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 /**
  * MediaSrc sends media to one of more MediaSink if linked
  * 
  */
-public interface MediaSrc {
+public class MediaSrc extends MediaObject {
+
+	public MediaSrc(com.kurento.kms.api.MediaObject mediaSrc) {
+		super(mediaSrc);
+	}
 
 	/**
 	 * Creates a link between this object and the given sink
@@ -31,8 +46,23 @@ public interface MediaSrc {
 	 * @param sink
 	 *            The MediaSink that will accept this object media
 	 * @throws MediaException
+	 * @throws IOException
 	 */
-	public void connect(MediaSink sink) throws MediaException;
+	public void connect(MediaSink sink) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			service.connect(mediaObject, sink.mediaObject);
+			manager.releaseMediaServerService(service);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 
 	/**
 	 * Unlinks this element and sink
@@ -41,10 +71,59 @@ public interface MediaSrc {
 	 *            The MediaSink that will stop receiving media from this object
 	 * @throws MediaException
 	 */
-	public void disconnect(MediaSink sink) throws MediaException;
+	public void disconnect(MediaSink sink) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			service.disconnect(mediaObject, sink.mediaObject);
+			manager.releaseMediaServerService(service);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 
-	public Collection<MediaSink> getConnectedSinks();
+	public Collection<MediaSink> getConnectedSinks() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			List<com.kurento.kms.api.MediaObject> tMediaSinks = service
+					.getConnectedSinks(mediaObject);
+			List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
+			for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+				mediaSinks.add(new MediaSink(tms));
+			}
+			manager.releaseMediaServerService(service);
+			return mediaSinks;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 
-	public MediaType getMediaType();
+	public MediaType getMediaType() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			MediaType mediaType = service.getMediaType(mediaObject);
+			manager.releaseMediaServerService(service);
+			return mediaType;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
 
 }
