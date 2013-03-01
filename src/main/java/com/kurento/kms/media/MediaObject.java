@@ -1,6 +1,7 @@
 package com.kurento.kms.media;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import org.apache.thrift.TException;
 
@@ -9,11 +10,13 @@ import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public abstract class MediaObject {
+public abstract class MediaObject implements Serializable {
 
-	protected com.kurento.kms.api.MediaObject mediaObject;
+	private static final long serialVersionUID = 1L;
 
-	public MediaObject(com.kurento.kms.api.MediaObject mediaObject) {
+	final com.kurento.kms.api.MediaObject mediaObject;
+
+	MediaObject(com.kurento.kms.api.MediaObject mediaObject) {
 		this.mediaObject = mediaObject;
 	}
 

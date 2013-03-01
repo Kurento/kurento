@@ -1,7 +1,6 @@
 package com.kurento.kms.media;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
@@ -12,16 +11,18 @@ import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.media.internal.KmsConstants;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public class MediaFactory implements Serializable {
+public class MediaFactory extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	private String mediaServerAddress;
-	private int mediaServerPort;
+	private static String mediaServerAddress;
+	private static int mediaServerPort;
 
-	private com.kurento.kms.api.MediaObject mediaFactory;
+	private MediaFactory(com.kurento.kms.api.MediaObject mediaFactory) {
+		super(mediaFactory);
+	}
 
-	public MediaFactory(Properties properties) throws MediaException {
+	public static void init(Properties properties) throws MediaException {
 		processProperties(properties);
 
 		try {
@@ -30,15 +31,17 @@ public class MediaFactory implements Serializable {
 		} catch (TException e) {
 			throw new MediaException(e.getMessage(), e);
 		}
+	}
 
+	public static MediaFactory getMediaFactory() throws MediaException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject stream = service
+			com.kurento.kms.api.MediaObject mediaFactory = service
 					.createMediaFactory();
-			mediaFactory = service.createMediaFactory();
 			manager.releaseMediaServerService(service);
+			return new MediaFactory(mediaFactory);
 		} catch (MediaServerException e) {
 			throw new MediaException(e.getMessage(), e);
 		} catch (TException e) {
@@ -52,7 +55,7 @@ public class MediaFactory implements Serializable {
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
 			com.kurento.kms.api.MediaObject player = service
-					.createMediaPlayer(mediaFactory);
+					.createMediaPlayer(mediaObject);
 			manager.releaseMediaServerService(service);
 			return new MediaPlayer(player);
 		} catch (MediaObjectNotFoundException e) {
@@ -70,7 +73,7 @@ public class MediaFactory implements Serializable {
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
 			com.kurento.kms.api.MediaObject recorder = service
-					.createMediaRecorder(mediaFactory);
+					.createMediaRecorder(mediaObject);
 			manager.releaseMediaServerService(service);
 			return new MediaRecorder(recorder);
 		} catch (MediaObjectNotFoundException e) {
@@ -88,7 +91,7 @@ public class MediaFactory implements Serializable {
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
 			com.kurento.kms.api.MediaObject stream = service
-					.createStream(mediaFactory);
+					.createStream(mediaObject);
 			manager.releaseMediaServerService(service);
 			return new Stream(stream);
 		} catch (MediaObjectNotFoundException e) {
@@ -104,7 +107,7 @@ public class MediaFactory implements Serializable {
 		return null;
 	}
 
-	private void processProperties(Properties properties) {
+	private static void processProperties(Properties properties) {
 		if (properties.getProperty(KmsConstants.SERVER_ADDRESS) == null) {
 			mediaServerAddress = KmsConstants.DEFAULT_SERVER_ADDRESS;
 		} else {
