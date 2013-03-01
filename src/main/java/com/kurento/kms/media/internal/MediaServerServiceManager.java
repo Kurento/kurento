@@ -9,6 +9,7 @@ import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
 import org.apache.thrift.transport.TSocket;
@@ -97,7 +98,7 @@ public class MediaServerServiceManager {
 
 	private MediaServerService.Client createMediaServerService()
 			throws TTransportException {
-		TTransport transport = new TSocket(address, port);
+		TTransport transport = new TFramedTransport(new TSocket(address, port));
 		// TODO: Make protocol configurable
 		TProtocol prot = new TBinaryProtocol(transport);
 		transport.open();

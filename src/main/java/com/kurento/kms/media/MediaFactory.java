@@ -25,7 +25,7 @@ public class MediaFactory implements Serializable {
 		processProperties(properties);
 
 		try {
-			// Try to initialize ServicesManager
+			// TODO: Make this clusterizable to can use some media servers.
 			MediaServerServiceManager.init(mediaServerAddress, mediaServerPort);
 		} catch (TException e) {
 			throw new MediaException(e.getMessage(), e);
