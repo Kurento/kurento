@@ -33,6 +33,8 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
  */
 public class MediaSink extends MediaObject {
 
+	private static final long serialVersionUID = 1L;
+
 	public MediaSink(com.kurento.kms.api.MediaObject mediaSink) {
 		super(mediaSink);
 	}

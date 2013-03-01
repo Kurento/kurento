@@ -151,6 +151,8 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
  */
 public class Stream extends Joinable {
 
+	private static final long serialVersionUID = 1L;
+
 	public Stream(com.kurento.kms.api.MediaObject stream) {
 		super(stream);
 	}

@@ -11,6 +11,8 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 public class MediaRecorder extends Joinable {
 
+	private static final long serialVersionUID = 1L;
+
 	public MediaRecorder(com.kurento.kms.api.MediaObject mediaRecorder) {
 		super(mediaRecorder);
 	}

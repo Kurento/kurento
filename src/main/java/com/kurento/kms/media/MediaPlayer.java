@@ -11,6 +11,8 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 public class MediaPlayer extends Joinable {
 
+	private static final long serialVersionUID = 1L;
+
 	public MediaPlayer(com.kurento.kms.api.MediaObject mediaPlayer) {
 		super(mediaPlayer);
 	}

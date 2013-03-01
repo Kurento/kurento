@@ -16,6 +16,8 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 public abstract class Joinable extends MediaObject {
 
+	private static final long serialVersionUID = 1L;
+
 	public Joinable(com.kurento.kms.api.MediaObject joinable) {
 		super(joinable);
 	}
