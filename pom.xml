@@ -19,6 +19,8 @@
 		<!-- Dependencies version -->
 		<servlet-api.version>2.5</servlet-api.version>
 		<kms-interface.version>2.0.0-SNAPSHOT</kms-interface.version>
+		<junit.version>4.10</junit.version>
+		<slf4j.version>1.6.4</slf4j.version>
 	</properties>
 
 	<dependencies>
@@ -33,6 +35,24 @@
 			<artifactId>servlet-api</artifactId>
 			<version>${servlet-api.version}</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
