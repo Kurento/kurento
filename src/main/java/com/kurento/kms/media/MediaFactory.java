@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
 
-import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaFactory_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaPlayer_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaRecorder_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createStream_call;
 import com.kurento.kms.media.internal.KmsConstants;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
@@ -33,71 +37,137 @@ public class MediaFactory extends MediaObject {
 		}
 	}
 
-	public static MediaFactory getMediaFactory() throws MediaException {
+	public static void getMediaFactory(final Continuation<MediaFactory> cont)
+			throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject mediaFactory = service
-					.createMediaFactory();
-			manager.releaseMediaServerService(service);
-			return new MediaFactory(mediaFactory);
-		} catch (MediaServerException e) {
-			throw new MediaException(e.getMessage(), e);
-		} catch (TException e) {
-			throw new MediaException(e.getMessage(), e);
-		}
-	}
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.createMediaFactory(new AsyncMethodCallback<MediaServerService.AsyncClient.createMediaFactory_call>() {
+				@Override
+				public void onComplete(createMediaFactory_call response) {
+					try {
+						com.kurento.kms.api.MediaObject mediaFactory = response
+								.getResult();
+						cont.onSuccess(new MediaFactory(mediaFactory));
+					} catch (MediaServerException e) {
+						cont.onError(new RuntimeException(e.getMessage(), e));
+					} catch (TException e) {
+						cont.onError(new IOException(e.getMessage(), e));
+					}
+				}
 
-	public MediaPlayer getMediaPlayer(String uri) throws IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject player = service
-					.createMediaPlayer(mediaObject);
-			manager.releaseMediaServerService(service);
-			return new MediaPlayer(player);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
+				@Override
+				public void onError(Exception exception) {
+					cont.onError(exception);
+				}
+			});
+			manager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 
-	public MediaRecorder getMediaRecorder(String uri) throws IOException {
+	public void getMediaPlayer(String uri, final Continuation<MediaPlayer> cont)
+			throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject recorder = service
-					.createMediaRecorder(mediaObject);
-			manager.releaseMediaServerService(service);
-			return new MediaRecorder(recorder);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.createMediaPlayer(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createMediaPlayer_call>() {
+						@Override
+						public void onComplete(createMediaPlayer_call response) {
+							try {
+								com.kurento.kms.api.MediaObject mediaPlayer = response
+										.getResult();
+								cont.onSuccess(new MediaPlayer(mediaPlayer));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 
-	public Stream getStream() throws MediaException, IOException {
+	public void getMediaRecorder(String uri,
+			final Continuation<MediaRecorder> cont) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject stream = service
-					.createStream(mediaObject);
-			manager.releaseMediaServerService(service);
-			return new Stream(stream);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.createMediaRecorder(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createMediaRecorder_call>() {
+						@Override
+						public void onComplete(createMediaRecorder_call response) {
+							try {
+								com.kurento.kms.api.MediaObject mediaRecorder = response
+										.getResult();
+								cont.onSuccess(new MediaRecorder(mediaRecorder));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public void getStream(final Continuation<Stream> cont) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.createStream(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createStream_call>() {
+						@Override
+						public void onComplete(createStream_call response) {
+							try {
+								com.kurento.kms.api.MediaObject stream = response
+										.getResult();
+								cont.onSuccess(new Stream(stream));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
