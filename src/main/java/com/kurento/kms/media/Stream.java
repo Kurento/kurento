@@ -187,8 +187,14 @@ public class Stream extends Joinable {
 							try {
 								String sessionDescriptor = response.getResult();
 								cont.onSucess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
 							} catch (TException e) {
-								cont.onError(e);
+								cont.onError(new IOException(e.getMessage(), e));
 							}
 						}
 
@@ -198,12 +204,6 @@ public class Stream extends Joinable {
 						}
 					});
 			manager.releaseMediaServerServiceAsync(service);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (NegotiationException e) {
-			throw new MediaException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
@@ -238,8 +238,17 @@ public class Stream extends Joinable {
 							try {
 								String sessionDescriptor = response.getResult();
 								cont.onSucess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (NegotiationException e) {
+								cont.onError(new MediaException(e.getMessage(),
+										e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
 							} catch (TException e) {
-								cont.onError(e);
+								cont.onError(new IOException(e.getMessage(), e));
 							}
 						}
 
@@ -249,12 +258,6 @@ public class Stream extends Joinable {
 						}
 					});
 			manager.releaseMediaServerServiceAsync(service);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (NegotiationException e) {
-			throw new MediaException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
@@ -288,8 +291,17 @@ public class Stream extends Joinable {
 							try {
 								String sessionDescriptor = response.getResult();
 								cont.onSucess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (NegotiationException e) {
+								cont.onError(new MediaException(e.getMessage(),
+										e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
 							} catch (TException e) {
-								cont.onError(e);
+								cont.onError(new IOException(e.getMessage(), e));
 							}
 						}
 
@@ -298,13 +310,6 @@ public class Stream extends Joinable {
 							cont.onError(exception);
 						}
 					});
-			manager.releaseMediaServerServiceAsync(service);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (NegotiationException e) {
-			throw new MediaException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
