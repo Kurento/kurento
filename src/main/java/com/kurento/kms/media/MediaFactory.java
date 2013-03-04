@@ -173,8 +173,8 @@ public class MediaFactory extends MediaObject {
 		}
 	}
 
-	public <T extends Mixer> T getMixer(Class<T> clazz) {
-		return null;
+	public <T extends Mixer> void getMixer(Class<T> clazz,
+			final Continuation<T> cont) {
 	}
 
 	private static void processProperties(Properties properties) {
