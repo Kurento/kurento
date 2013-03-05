@@ -155,7 +155,7 @@ public class Stream extends Joinable {
 
 	private static final long serialVersionUID = 1L;
 
-	public Stream(com.kurento.kms.api.MediaObject stream) {
+	Stream(com.kurento.kms.api.MediaObject stream) {
 		super(stream);
 	}
 

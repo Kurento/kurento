@@ -15,7 +15,7 @@ public class MixerPort extends Joinable {
 
 	private static final long serialVersionUID = 1L;
 
-	public MixerPort(com.kurento.kms.api.MediaObject mixerPort) {
+	MixerPort(com.kurento.kms.api.MediaObject mixerPort) {
 		super(mixerPort);
 	}
 
