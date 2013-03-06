@@ -2,19 +2,15 @@ package com.kurento.kms.media;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.kurento.kms.api.MediaType;
-import com.kurento.kms.media.Stream.Continuation;
 import com.kurento.kms.media.internal.KmsConstants;
 
-public class MediaServerTest {
+public class SyncMediaServerTest {
 
 	private static MediaFactory mediaFactory;
 
@@ -35,24 +31,15 @@ public class MediaServerTest {
 	}
 
 	@Test
-	public void testStream() throws MediaException, IOException,
+	public void testStreamSync() throws MediaException, IOException,
 			InterruptedException {
 		Stream stream = mediaFactory.getStream();
-		final Semaphore sem = new Semaphore(0);
-		stream.generateOffer(new Continuation() {
-			@Override
-			public void onSucess(String spec) {
-				System.out.println("onSucess. spec: " + spec);
-				sem.release();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				System.out.println("onError");
-			}
-		});
-
-		Assert.assertTrue(sem.tryAcquire(10, TimeUnit.SECONDS));
+		System.out.println("generateOffer sessionDecriptor: "
+				+ stream.generateOffer());
+		System.out.println("processOffer sessionDecriptor: "
+				+ stream.processOffer("processOffer test"));
+		System.out.println("processAnswer sessionDecriptor: "
+				+ stream.processAnswer("processAnswer test"));
 		stream.release();
 	}
 
@@ -97,6 +84,13 @@ public class MediaServerTest {
 
 		streamA.release();
 		streamB.release();
+	}
+
+	@Test
+	public void testMixer() throws MediaException, IOException,
+			InterruptedException {
+		DummyMixer mixer = mediaFactory.getMixer(DummyMixer.class);
+		mixer.release();
 	}
 
 }

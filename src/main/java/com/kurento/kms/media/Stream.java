@@ -27,6 +27,8 @@ import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.generateOffer_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getLocalDescriptor_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getRemoteDescriptor_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.processAnswer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.processOffer_call;
 import com.kurento.kms.api.NegotiationException;
@@ -153,163 +155,59 @@ public class Stream extends Joinable {
 
 	private static final long serialVersionUID = 1L;
 
-	public Stream(com.kurento.kms.api.MediaObject stream) {
+	Stream(com.kurento.kms.api.MediaObject stream) {
 		super(stream);
 	}
 
-	/**
-	 * Request a SessionSpec offer.
-	 * 
-	 * <p>
-	 * The resulting offer is available with {@link Stream#getSessionSpec()}
-	 * </p>
-	 * 
-	 * <p>
-	 * This can be used to initiate a connection.
-	 * </p>
-	 * 
-	 * @param cont
-	 *            Continuation object to notify when operation completes
-	 * @throws MediaException
-	 */
-	public void generateOffer(final Continuation cont) throws MediaException,
-			IOException {
+	/* SYNC */
+
+	public String generateOffer() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
-			service.generateOffer(
-					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.generateOffer_call>() {
-						@Override
-						public void onComplete(generateOffer_call response) {
-							try {
-								String sessionDescriptor = response.getResult();
-								cont.onSucess(sessionDescriptor);
-							} catch (MediaObjectNotFoundException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (MediaServerException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (TException e) {
-								cont.onError(new IOException(e.getMessage(), e));
-							}
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							cont.onError(exception);
-						}
-					});
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.generateOffer(mediaObject);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 
-	/**
-	 * Request the NetworkConnection to process the given SessionSpec offer
-	 * (from the remote User Agent).<br>
-	 * The resulting answer is available with {@link Stream#getSessionSpec()}
-	 * and the remote offer will be returned by
-	 * {@link Stream#getRemoteSessionSpec()}
-	 * 
-	 * @param offer
-	 *            SessionSpec offer from the remote User Agent
-	 * @param cont
-	 *            Continuation object to notify when operation completes and to
-	 *            provide the answer SessionSpec.
-	 */
-	public void processOffer(String offer, final Continuation cont)
-			throws MediaException, IOException {
+	public String processOffer(String offer) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
-			service.processOffer(
-					mediaObject,
-					offer,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.processOffer_call>() {
-						@Override
-						public void onComplete(processOffer_call response) {
-							try {
-								String sessionDescriptor = response.getResult();
-								cont.onSucess(sessionDescriptor);
-							} catch (MediaObjectNotFoundException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (NegotiationException e) {
-								cont.onError(new MediaException(e.getMessage(),
-										e));
-							} catch (MediaServerException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (TException e) {
-								cont.onError(new IOException(e.getMessage(), e));
-							}
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							cont.onError(exception);
-						}
-					});
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.processOffer(mediaObject, offer);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 
-	/**
-	 * Request the NetworkConnection to process the given SessionSpec answer
-	 * (from the remote User Agent).<br>
-	 * The answer become available on method
-	 * {@link Stream#getRemoteSessionSpec()}
-	 * 
-	 * @param answer
-	 *            SessionSpec answer from the remote User Agent
-	 * @param cont
-	 *            Continuation object to notify when operation completes,
-	 *            returned SessionSpec is the local SessionSpec.
-	 */
-	public void processAnswer(String answer, final Continuation cont)
-			throws MediaException, IOException {
+	public String processAnswer(String answer) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
-			service.processAnswer(
-					mediaObject,
-					answer,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.processAnswer_call>() {
-						@Override
-						public void onComplete(processAnswer_call response) {
-							try {
-								String sessionDescriptor = response.getResult();
-								cont.onSucess(sessionDescriptor);
-							} catch (MediaObjectNotFoundException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (NegotiationException e) {
-								cont.onError(new MediaException(e.getMessage(),
-										e));
-							} catch (MediaServerException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (TException e) {
-								cont.onError(new IOException(e.getMessage(), e));
-							}
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							cont.onError(exception);
-						}
-					});
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.processAnswer(mediaObject,
+					answer);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
@@ -374,26 +272,263 @@ public class Stream extends Joinable {
 		}
 	}
 
+	/* ASYNC */
+
 	/**
-	 * Used as a callback for some asynchronous NetworkConnection actions
+	 * Request a SessionSpec offer.
 	 * 
+	 * <p>
+	 * The resulting offer is available with {@link Stream#getSessionSpec()}
+	 * </p>
+	 * 
+	 * <p>
+	 * This can be used to initiate a connection.
+	 * </p>
+	 * 
+	 * @param cont
+	 *            Continuation object to notify when operation completes
+	 * @throws MediaException
 	 */
-	public interface Continuation {
+	public void generateOffer(final Continuation<String> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.generateOffer(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.generateOffer_call>() {
+						@Override
+						public void onComplete(generateOffer_call response) {
+							try {
+								String sessionDescriptor = response.getResult();
+								cont.onSuccess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
 
-		/**
-		 * This method is called when the operation success
-		 * 
-		 * @param spec
-		 *            The generated session spec
-		 */
-		public void onSucess(String spec);
-
-		/**
-		 * This method gets called when the operation fails
-		 * 
-		 * @param cause
-		 *            The cause of the failure
-		 */
-		public void onError(Throwable cause);
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
 	}
+
+	/**
+	 * Request the NetworkConnection to process the given SessionSpec offer
+	 * (from the remote User Agent).<br>
+	 * The resulting answer is available with {@link Stream#getSessionSpec()}
+	 * and the remote offer will be returned by
+	 * {@link Stream#getRemoteSessionSpec()}
+	 * 
+	 * @param offer
+	 *            SessionSpec offer from the remote User Agent
+	 * @param cont
+	 *            Continuation object to notify when operation completes and to
+	 *            provide the answer SessionSpec.
+	 */
+	public void processOffer(String offer, final Continuation<String> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.processOffer(
+					mediaObject,
+					offer,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.processOffer_call>() {
+						@Override
+						public void onComplete(processOffer_call response) {
+							try {
+								String sessionDescriptor = response.getResult();
+								cont.onSuccess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (NegotiationException e) {
+								cont.onError(new MediaException(e.getMessage(),
+										e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Request the NetworkConnection to process the given SessionSpec answer
+	 * (from the remote User Agent).<br>
+	 * The answer become available on method
+	 * {@link Stream#getRemoteSessionSpec()}
+	 * 
+	 * @param answer
+	 *            SessionSpec answer from the remote User Agent
+	 * @param cont
+	 *            Continuation object to notify when operation completes,
+	 *            returned SessionSpec is the local SessionSpec.
+	 */
+	public void processAnswer(String answer, final Continuation<String> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.processAnswer(
+					mediaObject,
+					answer,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.processAnswer_call>() {
+						@Override
+						public void onComplete(processAnswer_call response) {
+							try {
+								String sessionDescriptor = response.getResult();
+								cont.onSuccess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (NegotiationException e) {
+								cont.onError(new MediaException(e.getMessage(),
+										e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * This method gives access to the SessionSpec offered by this
+	 * NetworkConnection
+	 * 
+	 * <p>
+	 * <b>Note:</b> This method returns the local MediaSpec, negotiated or not.
+	 * If no offer has been generated yet, it returns null. It an offer has been
+	 * generated it returns the offer and if an asnwer has been processed it
+	 * returns the negotiated local SessionSpec.
+	 * </p>
+	 * 
+	 * @return The last agreed SessionSpec
+	 * @throws IOException
+	 */
+	public void getLocalSessionDescriptor(final Continuation<String> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.getLocalDescriptor(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getLocalDescriptor_call>() {
+						@Override
+						public void onComplete(getLocalDescriptor_call response) {
+							try {
+								String sessionDescriptor = response.getResult();
+								cont.onSuccess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * This method gives access to the remote session description.
+	 * 
+	 * <p>
+	 * <b>Note:</b> This method returns the media previously agreed after a
+	 * complete offer-answer exchange. If no media has been agreed yet, it
+	 * returns null.
+	 * </p>
+	 * 
+	 * @return The last agreed User Agent session description
+	 */
+	public void getRemoteSessionDescriptor(final Continuation<String> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.getRemoteDescriptor(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getRemoteDescriptor_call>() {
+						@Override
+						public void onComplete(getRemoteDescriptor_call response) {
+							try {
+								String sessionDescriptor = response.getResult();
+								cont.onSuccess(sessionDescriptor);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
 }

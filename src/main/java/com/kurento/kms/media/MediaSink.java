@@ -20,10 +20,13 @@ package com.kurento.kms.media;
 import java.io.IOException;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getConnectedSrc_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaType_call;
 import com.kurento.kms.api.MediaType;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
@@ -35,9 +38,11 @@ public class MediaSink extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	public MediaSink(com.kurento.kms.api.MediaObject mediaSink) {
+	MediaSink(com.kurento.kms.api.MediaObject mediaSink) {
 		super(mediaSink);
 	}
+
+	/* SYNC */
 
 	/**
 	 * Returns the Joined MediaSrc or null if not joined
@@ -75,6 +80,89 @@ public class MediaSink extends MediaObject {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
+
+	/**
+	 * Returns the Joined MediaSrc or null if not joined
+	 * 
+	 * @return The joined MediaSrc or null if not joined
+	 * @throws IOException
+	 */
+	public void getConnectedSrc(final Continuation<MediaSrc> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.getConnectedSrc(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getConnectedSrc_call>() {
+						@Override
+						public void onComplete(getConnectedSrc_call response) {
+							try {
+								com.kurento.kms.api.MediaObject connectedSrc = response
+										.getResult();
+								cont.onSuccess(new MediaSrc(connectedSrc));
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public void getMediaType(final Continuation<MediaType> cont)
+			throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			service.getMediaType(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaType_call>() {
+						@Override
+						public void onComplete(getMediaType_call response) {
+							try {
+								MediaType mediaType = response.getResult();
+								cont.onSuccess(mediaType);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}

@@ -48,14 +48,9 @@ public class MediaServerServiceManager {
 			manager = new MediaServerServiceManager(address, port);
 
 			synchronized (MediaServerServiceManager.class) {
-				if (singleton == null) {
+				if (singleton == null)
 					singleton = manager;
-				} else {
-					throw new TException("Already initalized");
-				}
 			}
-		} else {
-			throw new TException("Already initalized");
 		}
 	}
 
