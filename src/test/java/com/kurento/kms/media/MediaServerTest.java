@@ -472,6 +472,27 @@ public class MediaServerTest {
 		// + streamA.getMediaSinks(MediaType.VIDEO));
 	}
 
+	@Test
+	public void testMixer() throws MediaException, IOException,
+			InterruptedException {
+		final Semaphore sem = new Semaphore(0);
+
+		mediaFactory.getMixer(DummyMixer.class, new Continuation<DummyMixer>() {
+			@Override
+			public void onSuccess(DummyMixer result) {
+				System.out.println("getMixer onSuccess");
+				sem.release();
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				System.out.println("getMixer onError: " + cause.getMessage());
+			}
+		});
+
+		Assert.assertTrue(sem.tryAcquire(500, TimeUnit.MILLISECONDS));
+	}
+
 	private static void releaseMediaObject(final MediaObject mo)
 			throws IOException, InterruptedException {
 		final Semaphore sem = new Semaphore(0);

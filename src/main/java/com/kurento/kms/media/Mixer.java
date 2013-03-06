@@ -15,6 +15,9 @@ public class Mixer extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
+	static final String MIXER_ID_FIELD_NAME = "mixerId";
+	static final int mixerId = 0;
+
 	Mixer(com.kurento.kms.api.MediaObject mixer) {
 		super(mixer);
 	}

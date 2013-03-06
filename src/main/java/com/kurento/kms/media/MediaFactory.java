@@ -1,6 +1,9 @@
 package com.kurento.kms.media;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Properties;
 
 import org.apache.thrift.TException;
@@ -11,6 +14,7 @@ import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaFactory_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaPlayer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaRecorder_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMixer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createStream_call;
 import com.kurento.kms.media.internal.KmsConstants;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
@@ -173,8 +177,64 @@ public class MediaFactory extends MediaObject {
 		}
 	}
 
-	public <T extends Mixer> void getMixer(Class<T> clazz,
-			final Continuation<T> cont) {
+	public <T extends Mixer> void getMixer(final Class<T> clazz,
+			final Continuation<T> cont) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.AsyncClient service = manager
+					.getMediaServerServiceAsync();
+			Field field = clazz.getDeclaredField(Mixer.MIXER_ID_FIELD_NAME);
+			service.createMixer(mediaObject,
+					field.getInt(clazz),
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixer_call>() {
+						@Override
+						public void onComplete(createMixer_call response) {
+							try {
+								com.kurento.kms.api.MediaObject mixer = response
+										.getResult();
+								Constructor<T> constructor = clazz
+										.getDeclaredConstructor(com.kurento.kms.api.MediaObject.class);
+								cont.onSuccess(constructor.newInstance(mixer));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							} catch (NoSuchMethodException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (SecurityException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (IllegalAccessException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (IllegalArgumentException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (InvocationTargetException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (InstantiationException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+			manager.releaseMediaServerServiceAsync(service);
+		} catch (NoSuchFieldException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
 	}
 
 	private static void processProperties(Properties properties) {
