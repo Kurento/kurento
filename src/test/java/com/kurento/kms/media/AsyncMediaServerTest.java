@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import com.kurento.kms.media.internal.KmsConstants;
 
-public class MediaServerTest {
+public class AsyncMediaServerTest {
 
 	private static MediaFactory mediaFactory;
 
@@ -458,18 +458,6 @@ public class MediaServerTest {
 		});
 
 		Assert.assertTrue(sem.tryAcquire(500, TimeUnit.MILLISECONDS));
-
-		// System.out.println("MediaSinks: " + streamA.getMediaSinks());
-		//
-		// System.out.println("MediaSrcs audio: "
-		// + streamA.getMediaSrcs(MediaType.AUDIO));
-		// System.out.println("MediaSrcs video: "
-		// + streamA.getMediaSrcs(MediaType.VIDEO));
-		//
-		// System.out.println("MediaSinks audio: "
-		// + streamA.getMediaSinks(MediaType.AUDIO));
-		// System.out.println("MediaSinks video: "
-		// + streamA.getMediaSinks(MediaType.VIDEO));
 	}
 
 	@Test
@@ -481,6 +469,15 @@ public class MediaServerTest {
 			@Override
 			public void onSuccess(DummyMixer result) {
 				System.out.println("getMixer onSuccess");
+				try {
+					releaseMediaObject(result);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					Assert.fail(e.getMessage());
+				} catch (IOException e) {
+					e.printStackTrace();
+					Assert.fail(e.getMessage());
+				}
 				sem.release();
 			}
 

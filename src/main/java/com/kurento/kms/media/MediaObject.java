@@ -22,6 +22,26 @@ public abstract class MediaObject implements Serializable {
 		this.mediaObject = mediaObject;
 	}
 
+	/* SYNC */
+
+	public void release() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			service.release(mediaObject);
+			manager.releaseMediaServerService(service);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
+
 	public void release(final Continuation<Void> cont) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager

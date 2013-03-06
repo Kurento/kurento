@@ -22,6 +22,28 @@ public class Mixer extends MediaObject {
 		super(mixer);
 	}
 
+	/* SYNC */
+
+	MixerPort getPort() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject mixerPort = service
+					.getMixerPort(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new MixerPort(mixerPort);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
+
 	public void getPort(final Continuation<MixerPort> cont) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager

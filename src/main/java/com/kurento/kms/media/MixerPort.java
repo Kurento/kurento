@@ -19,6 +19,28 @@ public class MixerPort extends Joinable {
 		super(mixerPort);
 	}
 
+	/* SYNC */
+
+	Mixer getMixer() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject mixer = service
+					.getMixer(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new Mixer(mixer);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
+
 	public void getMixer(final Continuation<Mixer> cont) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager

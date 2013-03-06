@@ -159,6 +159,121 @@ public class Stream extends Joinable {
 		super(stream);
 	}
 
+	/* SYNC */
+
+	public String generateOffer() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.generateOffer(mediaObject);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public String processOffer(String offer) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.processOffer(mediaObject, offer);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public String processAnswer(String answer) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.processAnswer(mediaObject,
+					answer);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * This method gives access to the SessionSpec offered by this
+	 * NetworkConnection
+	 * 
+	 * <p>
+	 * <b>Note:</b> This method returns the local MediaSpec, negotiated or not.
+	 * If no offer has been generated yet, it returns null. It an offer has been
+	 * generated it returns the offer and if an asnwer has been processed it
+	 * returns the negotiated local SessionSpec.
+	 * </p>
+	 * 
+	 * @return The last agreed SessionSpec
+	 * @throws IOException
+	 */
+	public String getLocalSessionDescriptor() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.getLocalDescriptor(mediaObject);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * This method gives access to the remote session description.
+	 * 
+	 * <p>
+	 * <b>Note:</b> This method returns the media previously agreed after a
+	 * complete offer-answer exchange. If no media has been agreed yet, it
+	 * returns null.
+	 * </p>
+	 * 
+	 * @return The last agreed User Agent session description
+	 */
+	public String getRemoteSessionDescriptor() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			String sessionDescriptor = service.getRemoteDescriptor(mediaObject);
+			manager.releaseMediaServerService(service);
+			return sessionDescriptor;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
+
 	/**
 	 * Request a SessionSpec offer.
 	 * 

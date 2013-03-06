@@ -42,6 +42,51 @@ public class MediaSink extends MediaObject {
 		super(mediaSink);
 	}
 
+	/* SYNC */
+
+	/**
+	 * Returns the Joined MediaSrc or null if not joined
+	 * 
+	 * @return The joined MediaSrc or null if not joined
+	 * @throws IOException
+	 */
+	public MediaSrc getConnectedSrc() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject connectedSrc = service
+					.getConnectedSrc(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new MediaSrc(connectedSrc);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public MediaType getMediaType() throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			MediaType mediaType = service.getMediaType(mediaObject);
+			manager.releaseMediaServerService(service);
+			return mediaType;
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
+
 	/**
 	 * Returns the Joined MediaSrc or null if not joined
 	 * 

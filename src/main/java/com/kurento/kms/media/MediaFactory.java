@@ -9,6 +9,7 @@ import java.util.Properties;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaFactory_call;
@@ -29,6 +30,117 @@ public class MediaFactory extends MediaObject {
 	private MediaFactory(com.kurento.kms.api.MediaObject mediaFactory) {
 		super(mediaFactory);
 	}
+
+	/* SYNC */
+
+	public static MediaFactory getMediaFactory() throws MediaException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject mediaFactory = service
+					.createMediaFactory();
+			manager.releaseMediaServerService(service);
+			return new MediaFactory(mediaFactory);
+		} catch (MediaServerException e) {
+			throw new MediaException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new MediaException(e.getMessage(), e);
+		}
+	}
+
+	public MediaPlayer getMediaPlayer(String uri) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject player = service
+					.createMediaPlayer(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new MediaPlayer(player);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public MediaRecorder getMediaRecorder(String uri) throws IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject recorder = service
+					.createMediaRecorder(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new MediaRecorder(recorder);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public Stream getStream() throws MediaException, IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+			com.kurento.kms.api.MediaObject stream = service
+					.createStream(mediaObject);
+			manager.releaseMediaServerService(service);
+			return new Stream(stream);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	public <T extends Mixer> T getMixer(Class<T> clazz) throws MediaException,
+			IOException {
+		try {
+			MediaServerServiceManager manager = MediaServerServiceManager
+					.getInstance();
+			MediaServerService.Client service = manager.getMediaServerService();
+
+			Field field = clazz.getDeclaredField(Mixer.MIXER_ID_FIELD_NAME);
+			com.kurento.kms.api.MediaObject mixer = service.createMixer(
+					mediaObject, field.getInt(clazz));
+			manager.releaseMediaServerService(service);
+			Constructor<T> constructor = clazz
+					.getDeclaredConstructor(com.kurento.kms.api.MediaObject.class);
+			return constructor.newInstance(mixer);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} catch (NoSuchFieldException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (SecurityException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (InstantiationException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
+
+	/* ASYNC */
 
 	public static void init(Properties properties) throws MediaException {
 		processProperties(properties);
@@ -185,7 +297,8 @@ public class MediaFactory extends MediaObject {
 			MediaServerService.AsyncClient service = manager
 					.getMediaServerServiceAsync();
 			Field field = clazz.getDeclaredField(Mixer.MIXER_ID_FIELD_NAME);
-			service.createMixer(mediaObject,
+			service.createMixer(
+					mediaObject,
 					field.getInt(clazz),
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixer_call>() {
 						@Override
