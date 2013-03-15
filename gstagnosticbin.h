@@ -23,7 +23,8 @@ struct _GstAgnosticBin
 {
   GstBin parent;
 
-  GstPad *sinkpad, *srcpad;
+  GstPad *sinkpad;
+  GstCaps *sink_caps;
 };
 
 struct _GstAgnosticBinClass
