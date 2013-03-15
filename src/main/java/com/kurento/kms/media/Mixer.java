@@ -24,7 +24,7 @@ public class Mixer extends MediaObject {
 
 	/* SYNC */
 
-	MixerPort getPort() throws IOException {
+	public MixerPort getPort() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
