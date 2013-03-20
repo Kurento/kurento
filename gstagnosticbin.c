@@ -161,7 +161,7 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
     case GST_EVENT_CAPS:
     {
       gst_event_parse_caps (event, &caps);
-      connect_previous_srcpads (GST_AGNOSTICBIN (parent), caps);
+      connect_previous_srcpads (GST_AGNOSTIC_BIN (parent), caps);
       ret = gst_pad_event_default (pad, parent, event);
       break;
     }
@@ -175,7 +175,7 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
 static GstPadLinkReturn
 gst_agnostic_bin_link_src (GstPad * pad, GstObject * parent, GstPad * peer)
 {
-  connect_srcpad (GST_AGNOSTICBIN (parent), pad);
+  connect_srcpad (GST_AGNOSTIC_BIN (parent), pad);
   return GST_PAD_LINK_OK;
 }
 
@@ -274,5 +274,5 @@ gboolean
 gst_agnostic_bin_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      GST_TYPE_AGNOSTICBIN);
+      GST_TYPE_AGNOSTIC_BIN);
 }
