@@ -209,16 +209,10 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
   gboolean ret;
   GstCaps *caps;
 
-  GST_INFO ("gst_agnostic_bin_sink_event, pad: %P, event: %P", pad, event);
-
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_CAPS:
-    {
       gst_event_parse_caps (event, &caps);
       connect_previous_srcpads (GST_AGNOSTIC_BIN (parent), caps);
-      ret = gst_pad_event_default (pad, parent, event);
-      break;
-    }
     default:
       ret = gst_pad_event_default (pad, parent, event);
       break;
