@@ -110,47 +110,7 @@ connect_previous_srcpads (GstAgnosticBin * agnosticbin,
   gst_iterator_free (it);
 }
 
-/* chain function
- * this function does the actual processing
- */
-//TODO: this function is temporal. Remove it when needed
-static GstFlowReturn
-gst_agnostic_bin_chain (GstPad * pad, GstObject * parent, GstBuffer * buf)
-{
-  GstPad *srcpad;
-  GValue item = { 0, };
-  GstIterator *it;
-  gboolean done;
-  GstFlowReturn ret = GST_FLOW_CUSTOM_SUCCESS;
-
-  it = gst_element_iterate_src_pads (GST_ELEMENT (parent));
-  done = FALSE;
-  while (!done) {
-    switch (gst_iterator_next (it, &item)) {
-      case GST_ITERATOR_OK:
-        srcpad = g_value_get_object (&item);
-        ret = gst_pad_push (srcpad, buf);
-        g_value_reset (&item);
-        done = TRUE;
-        break;
-      case GST_ITERATOR_RESYNC:
-        gst_iterator_resync (it);
-        break;
-      case GST_ITERATOR_ERROR:
-        done = TRUE;
-        break;
-      case GST_ITERATOR_DONE:
-        done = TRUE;
-        break;
-    }
-  }
-  g_value_unset (&item);
-  gst_iterator_free (it);
-  return ret;
-}
-
 /* GstElement vmethod implementations */
-
 static gboolean
 gst_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
 {
@@ -279,13 +239,28 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
 static void
 gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
 {
+  GstPad *target_sink;
+  GstElement *tee, *queue, *fakesink;
+
+  tee = gst_element_factory_make ("tee", NULL);
+  queue = gst_element_factory_make ("queue", NULL);
+  fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  gst_bin_add_many (GST_BIN (agnosticbin), tee, queue, fakesink, NULL);
+  gst_element_link_many (tee, queue, fakesink, NULL);
+
+  g_object_set (G_OBJECT (queue), "leaky", 2, "max-size-time",
+      GST_MSECOND * 100, NULL);
+
+  target_sink = gst_element_get_static_pad (tee, "sink");
+
   agnosticbin->sink_caps = NULL;
-  agnosticbin->sinkpad =
-      gst_pad_new_from_static_template (&sink_factory, "sink");
+  agnosticbin->sinkpad = gst_ghost_pad_new ("sink", target_sink);
+
+  g_object_unref (target_sink);
+
   gst_pad_set_event_function (agnosticbin->sinkpad,
       GST_DEBUG_FUNCPTR (gst_agnostic_bin_sink_event));
-  gst_pad_set_chain_function (agnosticbin->sinkpad,
-      GST_DEBUG_FUNCPTR (gst_agnostic_bin_chain));
   GST_PAD_SET_PROXY_CAPS (agnosticbin->sinkpad);
   gst_element_add_pad (GST_ELEMENT (agnosticbin), agnosticbin->sinkpad);
 }
