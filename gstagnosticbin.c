@@ -41,6 +41,15 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     );
 
 static void
+gst_agnostic_bin_dispose_sink_caps (GstAgnosticBin * agnosticbin)
+{
+  if (agnosticbin->sink_caps != NULL) {
+    gst_caps_unref (agnosticbin->sink_caps);
+    agnosticbin->sink_caps = NULL;
+  }
+}
+
+static void
 connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad)
 {
   GstCaps *caps;
@@ -72,7 +81,8 @@ connect_previous_srcpads (GstAgnosticBin * agnosticbin,
   GstPad *srcpad;
 
   GST_PAD_STREAM_LOCK (agnosticbin->sinkpad);
-  agnosticbin->sink_caps = gst_caps_copy (sinkpad_caps);        //TODO: unref agnosticbin->sink_caps when needed
+  gst_agnostic_bin_dispose_sink_caps (agnosticbin);
+  agnosticbin->sink_caps = gst_caps_copy (sinkpad_caps);
   GST_PAD_STREAM_UNLOCK (agnosticbin->sinkpad);
   GST_DEBUG ("sinkpad_caps: %P", sinkpad_caps);
 
@@ -226,7 +236,14 @@ gst_agnostic_bin_get_property (GObject * object, guint prop_id,
   }
 }
 
- //TODO: override dipose and finalize
+static void
+gst_agnostic_bin_dispose (GObject * object)
+{
+  GstAgnosticBin *agnostic = GST_AGNOSTIC_BIN (object);
+
+  gst_agnostic_bin_dispose_sink_caps (agnostic);
+  G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->dispose (object);
+}
 
 static void
 gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
@@ -239,6 +256,7 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
 
   gobject_class->set_property = gst_agnostic_bin_set_property;
   gobject_class->get_property = gst_agnostic_bin_get_property;
+  gobject_class->dispose = gst_agnostic_bin_dispose;
 
   gst_element_class_set_details_simple (gstelement_class,
       "Agnostic connector",
@@ -259,15 +277,17 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
 }
 
 static void
-gst_agnostic_bin_init (GstAgnosticBin * filter)
+gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
 {
-  filter->sinkpad = gst_pad_new_from_static_template (&sink_factory, "sink");
-  gst_pad_set_event_function (filter->sinkpad,
+  agnosticbin->sink_caps = NULL;
+  agnosticbin->sinkpad =
+      gst_pad_new_from_static_template (&sink_factory, "sink");
+  gst_pad_set_event_function (agnosticbin->sinkpad,
       GST_DEBUG_FUNCPTR (gst_agnostic_bin_sink_event));
-  gst_pad_set_chain_function (filter->sinkpad,
+  gst_pad_set_chain_function (agnosticbin->sinkpad,
       GST_DEBUG_FUNCPTR (gst_agnostic_bin_chain));
-  GST_PAD_SET_PROXY_CAPS (filter->sinkpad);
-  gst_element_add_pad (GST_ELEMENT (filter), filter->sinkpad);
+  GST_PAD_SET_PROXY_CAPS (agnosticbin->sinkpad);
+  gst_element_add_pad (GST_ELEMENT (agnosticbin), agnosticbin->sinkpad);
 }
 
 gboolean
