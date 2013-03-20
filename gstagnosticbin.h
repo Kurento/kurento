@@ -25,6 +25,8 @@ struct _GstAgnosticBin
 
   GstPad *sinkpad;
   GstCaps *sink_caps;
+
+  guint pad_count;
 };
 
 struct _GstAgnosticBinClass
