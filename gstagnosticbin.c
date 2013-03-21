@@ -127,15 +127,16 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     );
 
 static void
-disconnect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad)
+gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
+    GstPad * srcpad)
 {
   GST_DEBUG ("Pad %P unlinked, disconnecting", srcpad);
   // TODO: Implement this
 }
 
 static void
-connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad, GstPad * peer,
-    const GstCaps * current_caps)
+gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
+    GstPad * peer, const GstCaps * current_caps)
 {
   GstCaps *allowed_caps;
   GstPad *target;
@@ -184,7 +185,7 @@ connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad, GstPad * peer,
 }
 
 static void
-connect_previous_srcpads (GstAgnosticBin * agnosticbin,
+gst_agnostic_bin_connect_previous_srcpads (GstAgnosticBin * agnosticbin,
     const GstCaps * current_caps)
 {
   GValue item = { 0, };
@@ -205,7 +206,8 @@ connect_previous_srcpads (GstAgnosticBin * agnosticbin,
         peer = gst_pad_get_peer (srcpad);
 
         if (peer != NULL) {
-          connect_srcpad (agnosticbin, srcpad, peer, current_caps);
+          gst_agnostic_bin_connect_srcpad (agnosticbin, srcpad, peer,
+              current_caps);
           g_object_unref (peer);
         }
 
@@ -241,7 +243,8 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       old_caps = gst_pad_get_current_caps (pad);
       ret = gst_pad_event_default (pad, parent, event);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
-        connect_previous_srcpads (GST_AGNOSTIC_BIN (parent), caps);
+        gst_agnostic_bin_connect_previous_srcpads (GST_AGNOSTIC_BIN (parent),
+            caps);
       if (old_caps != NULL)
         gst_caps_unref (old_caps);
       break;
@@ -259,7 +262,7 @@ gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
   GstCaps *current_caps;
 
   current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-  connect_srcpad (agnosticbin, pad, peer, current_caps);
+  gst_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
 
   if (peer->linkfunc != NULL)
     peer->linkfunc (peer, GST_OBJECT_PARENT (peer), pad);
@@ -271,7 +274,7 @@ gst_agnostic_bin_src_unlinked (GstPad * pad, GstObject * parent)
 {
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
 
-  disconnect_srcpad (agnosticbin, pad);
+  gst_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
 }
 
 static GstPad *
