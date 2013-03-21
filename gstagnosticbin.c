@@ -1,4 +1,3 @@
-
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -130,8 +129,37 @@ static void
 gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
     GstPad * srcpad)
 {
-  GST_DEBUG ("Pad %P unlinked, disconnecting", srcpad);
-  // TODO: Implement this
+  GstPad *target, *queue_sink, *tee_src;
+  GstElement *queue, *tee;
+
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (srcpad));
+  GST_DEBUG ("Disconnecting %P, target is %P", srcpad, target);
+  if (target == NULL)
+    return;
+
+  queue = gst_pad_get_parent_element (target);
+  if (queue == NULL)
+    goto end;
+
+  queue_sink = gst_element_get_static_pad (queue, "sink");
+  tee_src = gst_pad_get_peer (queue_sink);
+
+  if (tee_src != NULL) {
+    tee = gst_pad_get_parent_element (tee_src);
+
+    if (tee != NULL) {
+      gst_element_release_request_pad (tee, tee_src);
+    }
+    g_object_unref (tee_src);
+  }
+
+  gst_bin_remove (GST_BIN (agnosticbin), queue);
+  gst_element_set_state (queue, GST_STATE_NULL);
+
+  g_object_unref (queue);
+
+end:
+  g_object_unref (target);
 }
 
 static void
@@ -141,7 +169,7 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
   GstCaps *allowed_caps;
   GstPad *target;
 
-  GST_DEBUG ("Pad %P linked, connecting", srcpad);
+  GST_DEBUG ("Connecting %P", srcpad);
   if (!GST_IS_GHOST_PAD (srcpad)) {
     GST_DEBUG ("%P is no gp", srcpad);
     return;
@@ -149,17 +177,22 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
 
   target = gst_ghost_pad_get_target (GST_GHOST_PAD (srcpad));
   if (target != NULL) {
-    GST_DEBUG ("Target already set for %P", srcpad);
+    GST_DEBUG ("Target already set for %P, removing", srcpad);
+    gst_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     g_object_unref (target);
-    return;
   }
 
   allowed_caps = gst_pad_get_allowed_caps (srcpad);
-  if (allowed_caps == NULL)
+  if (allowed_caps == NULL) {
+    GST_DEBUG ("Allowed caps for %P are NULL. "
+        "The pad is not linked, disconnecting", srcpad);
+    gst_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
+  }
 
   if (current_caps == NULL) {
-    GST_DEBUG ("No current caps");
+    GST_DEBUG ("No current caps, disconnecting %P", srcpad);
+    gst_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
 
@@ -242,6 +275,7 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       gst_event_parse_caps (event, &caps);
       old_caps = gst_pad_get_current_caps (pad);
       ret = gst_pad_event_default (pad, parent, event);
+      GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
         gst_agnostic_bin_connect_previous_srcpads (GST_AGNOSTIC_BIN (parent),
             caps);
@@ -261,6 +295,7 @@ gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
   GstCaps *current_caps;
 
+  GST_DEBUG ("%P linked", pad);
   current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
   gst_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
 
@@ -270,10 +305,10 @@ gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
 }
 
 static void
-gst_agnostic_bin_src_unlinked (GstPad * pad, GstObject * parent)
+gst_agnostic_bin_src_unlinked (GstPad * pad, GstPad * peer,
+    GstAgnosticBin * agnosticbin)
 {
-  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
-
+  GST_DEBUG ("%P unlinked", pad);
   gst_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
 }
 
@@ -292,7 +327,8 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   pad = gst_ghost_pad_new_no_target_from_template (pad_name, templ);
   g_free (pad_name);
   gst_pad_set_link_function (pad, gst_agnostic_bin_src_linked);
-  gst_pad_set_unlink_function (pad, gst_agnostic_bin_src_unlinked);
+  g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
+      element);
 
   if (GST_STATE (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, TRUE);
