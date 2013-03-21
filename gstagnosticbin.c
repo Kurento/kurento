@@ -9,6 +9,8 @@
 
 #define PLUGIN_NAME "agnosticbin"
 
+#define INPUT_TEE "input_tee"
+
 #define AUDIO_CAPS "audio/x-raw;"\
   "audio/x-sbc;" \
   "audio/x-mulaw;" \
@@ -125,76 +127,85 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     );
 
 static void
-gst_agnostic_bin_dispose_sink_caps (GstAgnosticBin * agnosticbin)
-{
-  if (agnosticbin->sink_caps != NULL) {
-    gst_caps_unref (agnosticbin->sink_caps);
-    agnosticbin->sink_caps = NULL;
-  }
-}
-
-static void
 disconnect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad)
 {
-  GST_PAD_STREAM_LOCK (agnosticbin->sinkpad);
   GST_DEBUG ("Pad %P unlinked, disconnecting", srcpad);
   // TODO: Implement this
-  GST_PAD_STREAM_UNLOCK (agnosticbin->sinkpad);
 }
 
 static void
-connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad, GstPad * peer)
+connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad, GstPad * peer,
+    const GstCaps * current_caps)
 {
-  GstCaps *caps;
+  GstCaps *allowed_caps;
+  GstPad *target;
 
-  GST_PAD_STREAM_LOCK (agnosticbin->sinkpad);
   GST_DEBUG ("Pad %P linked, connecting", srcpad);
-
-  caps = gst_pad_get_allowed_caps (srcpad);
-  if (caps == NULL)
-    goto end;
-
-  GST_DEBUG ("allowed caps pad: %P", caps);
-  gst_caps_unref (caps);
-
-  if (!agnosticbin->sink_caps) {
-    GST_DEBUG ("agnosticbin->sink_caps not assigned yet.");
-    goto end;
+  if (!GST_IS_GHOST_PAD (srcpad)) {
+    GST_DEBUG ("%P is no gp", srcpad);
+    return;
   }
 
-  GST_DEBUG ("agnosticbin->sink_caps already assigned.");
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (srcpad));
+  if (target != NULL) {
+    GST_DEBUG ("Target already set for %P", srcpad);
+    g_object_unref (target);
+    return;
+  }
 
-end:
-  GST_PAD_STREAM_UNLOCK (agnosticbin->sinkpad);
+  allowed_caps = gst_pad_get_allowed_caps (srcpad);
+  if (allowed_caps == NULL)
+    return;
+
+  if (current_caps == NULL) {
+    GST_DEBUG ("No current caps");
+    return;
+  }
+
+  if (gst_caps_can_intersect (current_caps, allowed_caps)) {
+    GstElement *tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
+    GstElement *queue = gst_element_factory_make ("queue", NULL);
+    GstPad *target = gst_element_get_static_pad (queue, "src");
+
+    gst_bin_add (GST_BIN (agnosticbin), queue);
+    gst_element_sync_state_with_parent (queue);
+
+    gst_ghost_pad_set_target (GST_GHOST_PAD (srcpad), target);
+
+    g_object_unref (target);
+
+    gst_element_link (tee, queue);
+    g_object_unref (tee);
+  }
+  // TODO: Check if a decodebin is needed
+  // TODO: Check if reencoding is needed
+
+  gst_caps_unref (allowed_caps);
 }
 
 static void
 connect_previous_srcpads (GstAgnosticBin * agnosticbin,
-    const GstCaps * sinkpad_caps)
+    const GstCaps * current_caps)
 {
   GValue item = { 0, };
   GstIterator *it;
   gboolean done;
   GstPad *srcpad;
 
-  GST_PAD_STREAM_LOCK (agnosticbin->sinkpad);
-  gst_agnostic_bin_dispose_sink_caps (agnosticbin);
-  agnosticbin->sink_caps = gst_caps_copy (sinkpad_caps);
-  GST_PAD_STREAM_UNLOCK (agnosticbin->sinkpad);
-  GST_DEBUG ("sinkpad_caps: %P", sinkpad_caps);
-
   it = gst_element_iterate_src_pads (GST_ELEMENT (agnosticbin));
   done = FALSE;
+
   while (!done) {
     switch (gst_iterator_next (it, &item)) {
-      case GST_ITERATOR_OK:{
+      case GST_ITERATOR_OK:
+      {
         GstPad *peer;
 
         srcpad = g_value_get_object (&item);
         peer = gst_pad_get_peer (srcpad);
 
         if (peer != NULL) {
-          connect_srcpad (agnosticbin, srcpad, peer);
+          connect_srcpad (agnosticbin, srcpad, peer, current_caps);
           g_object_unref (peer);
         }
 
@@ -212,6 +223,7 @@ connect_previous_srcpads (GstAgnosticBin * agnosticbin,
         break;
     }
   }
+
   g_value_unset (&item);
   gst_iterator_free (it);
 }
@@ -221,12 +233,18 @@ static gboolean
 gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
 {
   gboolean ret;
-  GstCaps *caps;
+  GstCaps *caps, *old_caps;
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_CAPS:
       gst_event_parse_caps (event, &caps);
-      connect_previous_srcpads (GST_AGNOSTIC_BIN (parent), caps);
+      old_caps = gst_pad_get_current_caps (pad);
+      ret = gst_pad_event_default (pad, parent, event);
+      if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
+        connect_previous_srcpads (GST_AGNOSTIC_BIN (parent), caps);
+      if (old_caps != NULL)
+        gst_caps_unref (old_caps);
+      break;
     default:
       ret = gst_pad_event_default (pad, parent, event);
       break;
@@ -238,8 +256,10 @@ static GstPadLinkReturn
 gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
 {
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
+  GstCaps *current_caps;
 
-  connect_srcpad (agnosticbin, pad, peer);
+  current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
+  connect_srcpad (agnosticbin, pad, peer, current_caps);
 
   if (peer->linkfunc != NULL)
     peer->linkfunc (peer, GST_OBJECT_PARENT (peer), pad);
@@ -266,7 +286,7 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   pad_name = g_strdup_printf ("src_%d", agnosticbin->pad_count++);
   GST_OBJECT_UNLOCK (element);
 
-  pad = gst_pad_new_from_template (templ, pad_name);
+  pad = gst_ghost_pad_new_no_target_from_template (pad_name, templ);
   g_free (pad_name);
   gst_pad_set_link_function (pad, gst_agnostic_bin_src_linked);
   gst_pad_set_unlink_function (pad, gst_agnostic_bin_src_unlinked);
@@ -316,9 +336,6 @@ gst_agnostic_bin_get_property (GObject * object, guint prop_id,
 static void
 gst_agnostic_bin_dispose (GObject * object)
 {
-  GstAgnosticBin *agnostic = GST_AGNOSTIC_BIN (object);
-
-  gst_agnostic_bin_dispose_sink_caps (agnostic);
   G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->dispose (object);
 }
 
@@ -362,21 +379,19 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   GstElement *tee, *queue, *fakesink;
   GstPadTemplate *templ;
 
-  tee = gst_element_factory_make ("tee", NULL);
+  tee = gst_element_factory_make ("tee", INPUT_TEE);
   queue = gst_element_factory_make ("queue", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
 
   gst_bin_add_many (GST_BIN (agnosticbin), tee, queue, fakesink, NULL);
   gst_element_link_many (tee, queue, fakesink, NULL);
 
-  g_object_set (G_OBJECT (queue), "leaky", 2, "max-size-time",
-      GST_MSECOND * 100, NULL);
+  g_object_set (queue, "leaky", 2, "max-size-time", GST_MSECOND, NULL);
 
   target_sink = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
 
   agnosticbin->pad_count = 0;
-  agnosticbin->sink_caps = NULL;
   agnosticbin->sinkpad =
       gst_ghost_pad_new_from_template ("sink", target_sink, templ);
 

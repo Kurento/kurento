@@ -24,7 +24,6 @@ struct _GstAgnosticBin
   GstBin parent;
 
   GstPad *sinkpad;
-  GstCaps *sink_caps;
 
   guint pad_count;
 };
