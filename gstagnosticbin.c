@@ -275,11 +275,12 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
       GstEvent *event = gst_event_new_reconfigure ();
 
       gst_pad_send_event (tee_src, event);
+      gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
     }
 
     g_object_unref (tee_src);
   }
-  gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
+
   GST_PAD_STREAM_UNLOCK (tee_sink);
   g_object_unref (tee_sink);
 }
