@@ -9,7 +9,11 @@
 #define PLUGIN_NAME "agnosticbin"
 
 #define INPUT_TEE "input_tee"
-#define VALVE "valve"
+
+#define OLD_EVENT_FUNC_DATA "old_event_func"
+
+#define START_STOP_EVENT_NAME "event/start-stop"
+#define START "start"
 
 #define AUDIO_CAPS "audio/x-raw;"\
   "audio/x-sbc;" \
@@ -126,6 +130,76 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_STATIC_CAPS (AGNOSTIC_CAPS)
     );
 
+static gboolean
+gst_agnostic_bin_valve_event_handler (GstPad * pad, GstObject * parent,
+    GstEvent * event)
+{
+  gboolean ret = TRUE;
+  GstPadEventFunction old_func =
+      g_object_get_data (G_OBJECT (pad), OLD_EVENT_FUNC_DATA);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_UPSTREAM) {
+    const GstStructure *st = gst_event_get_structure (event);
+
+    if (st != NULL
+        && g_strcmp0 (gst_structure_get_name (st),
+            START_STOP_EVENT_NAME) == 0) {
+      gboolean start;
+
+      if (gst_structure_get_boolean (st, START, &start)) {
+        GST_INFO ("Received event: %P", event);
+        g_object_set (parent, "drop", !start, NULL);
+        gst_event_unref (event);
+        return TRUE;
+      }
+    }
+  }
+
+  if (old_func != NULL)
+    ret = old_func (pad, parent, event);
+  else
+    ret = gst_pad_event_default (pad, parent, event);
+
+  return ret;
+}
+
+static void
+gst_agnostic_bin_set_custom_event_handler (GstAgnosticBin * agnosticbin,
+    GstElement * element, const char *pad_name, GstPadEventFunction callback)
+{
+  GstPad *pad = gst_element_get_static_pad (element, pad_name);
+
+  if (pad == NULL)
+    return;
+
+  g_object_set_data (G_OBJECT (pad), OLD_EVENT_FUNC_DATA, pad->eventfunc);
+  gst_pad_set_event_function (pad, callback);
+  g_object_unref (pad);
+}
+
+static void
+gst_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
+{
+  GstStructure *data =
+      gst_structure_new (START_STOP_EVENT_NAME, START, G_TYPE_BOOLEAN, start,
+      NULL);
+  GstEvent *event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, data);
+
+  if (GST_PAD_DIRECTION (pad) == GST_PAD_SRC) {
+    gst_pad_send_event (pad, event);
+  } else {
+    GstPad *peer = gst_pad_get_peer (pad);
+
+    if (peer != NULL && GST_PAD_DIRECTION (peer) == GST_PAD_SRC)
+      gst_pad_send_event (peer, event);
+    else
+      gst_event_unref (event);
+
+    if (peer != NULL)
+      g_object_unref (peer);
+  }
+}
+
 static void
 gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
     GstPad * srcpad)
@@ -154,7 +228,6 @@ gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
 
     if (tee != NULL) {
       gint n_pads = 0;
-      GstElement *valve = g_object_get_data (G_OBJECT (tee), VALVE);
       GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
 
       GST_PAD_STREAM_LOCK (tee_sink);
@@ -162,8 +235,8 @@ gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
       gst_element_release_request_pad (tee, tee_src);
 
       g_object_get (tee, "num-src-pads", &n_pads, NULL);
-      if (valve != NULL && n_pads == 0)
-        g_object_set (valve, "drop", TRUE, NULL);
+      if (n_pads == 0)
+        gst_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
 
       GST_PAD_STREAM_UNLOCK (tee_sink);
       g_object_unref (tee_sink);
@@ -215,7 +288,6 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
     GstElement *tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
     GstElement *queue = gst_element_factory_make ("queue", NULL);
     GstPad *target = gst_element_get_static_pad (queue, "src");
-    GstElement *valve = g_object_get_data (G_OBJECT (tee), VALVE);
     GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
 
     gst_bin_add (GST_BIN (agnosticbin), queue);
@@ -227,7 +299,7 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
 
     GST_PAD_STREAM_LOCK (tee_sink);
     gst_element_link (tee, queue);
-    g_object_set (valve, "drop", FALSE, NULL);
+    gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
     GST_PAD_STREAM_UNLOCK (tee_sink);
     g_object_unref (tee_sink);
 
@@ -446,8 +518,9 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   gst_bin_add_many (GST_BIN (agnosticbin), valve, tee, NULL);
   gst_element_link (valve, tee);
 
-  g_object_set_data_full (G_OBJECT (tee), VALVE, g_object_ref (valve),
-      g_object_unref);
+  gst_agnostic_bin_set_custom_event_handler (agnosticbin, valve, "src",
+      gst_agnostic_bin_valve_event_handler);
+
   g_object_set (valve, "drop", TRUE, NULL);
 
   target_sink = gst_element_get_static_pad (valve, "sink");
