@@ -201,11 +201,61 @@ gst_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
 }
 
 static void
+gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element)
+{
+  GstPad *tee_src, *tee_sink = gst_element_get_static_pad (tee, "sink");
+
+  GST_PAD_STREAM_LOCK (tee_sink);
+  tee_src = gst_element_get_request_pad (tee, "src_%u");
+  if (tee_src != NULL) {
+    if (!gst_element_link_pads (tee, GST_OBJECT_NAME (tee_src), element, NULL)) {
+      gst_element_release_request_pad (tee, tee_src);
+    }
+    g_object_unref (tee_src);
+  }
+  gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
+  GST_PAD_STREAM_UNLOCK (tee_sink);
+  g_object_unref (tee_sink);
+}
+
+static void
+gst_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
+{
+  GstPad *sink = gst_element_get_static_pad (element, pad_name);
+  GstPad *tee_src = gst_pad_get_peer (sink);
+  GstElement *tee;
+
+  g_object_unref (sink);
+
+  if (tee_src != NULL) {
+    tee = gst_pad_get_parent_element (tee_src);
+
+    if (tee != NULL) {
+      gint n_pads = 0;
+      GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
+
+      GST_PAD_STREAM_LOCK (tee_sink);
+      gst_element_unlink (tee, element);
+      gst_element_release_request_pad (tee, tee_src);
+
+      g_object_get (tee, "num-src-pads", &n_pads, NULL);
+      if (n_pads == 0)
+        gst_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
+
+      GST_PAD_STREAM_UNLOCK (tee_sink);
+      g_object_unref (tee_sink);
+    }
+
+    g_object_unref (tee_src);
+  }
+}
+
+static void
 gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
     GstPad * srcpad)
 {
-  GstPad *target, *queue_sink, *tee_src;
-  GstElement *queue, *tee;
+  GstPad *target;
+  GstElement *queue;
 
   target = gst_ghost_pad_get_target (GST_GHOST_PAD (srcpad));
   GST_DEBUG ("Disconnecting %P, target is %P", srcpad, target);
@@ -220,32 +270,11 @@ gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
     return;
   }
 
-  queue_sink = gst_element_get_static_pad (queue, "sink");
-  tee_src = gst_pad_get_peer (queue_sink);
+  gst_agnostic_bin_unlink_from_tee (queue, "sink");
 
-  if (tee_src != NULL) {
-    tee = gst_pad_get_parent_element (tee_src);
-
-    if (tee != NULL) {
-      gint n_pads = 0;
-      GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
-
-      GST_PAD_STREAM_LOCK (tee_sink);
-      gst_element_unlink (tee, queue);
-      gst_element_release_request_pad (tee, tee_src);
-
-      g_object_get (tee, "num-src-pads", &n_pads, NULL);
-      if (n_pads == 0)
-        gst_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
-
-      GST_PAD_STREAM_UNLOCK (tee_sink);
-      g_object_unref (tee_sink);
-    }
-    g_object_unref (tee_src);
-  }
+  gst_ghost_pad_set_target (GST_GHOST_PAD (srcpad), NULL);
 
   gst_element_set_state (queue, GST_STATE_NULL);
-  gst_ghost_pad_set_target (GST_GHOST_PAD (srcpad), NULL);
   gst_bin_remove (GST_BIN (agnosticbin), queue);
   g_object_unref (queue);
 }
@@ -256,6 +285,7 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
 {
   GstCaps *allowed_caps;
   GstPad *target;
+  GstElement *tee = NULL;
 
   GST_DEBUG ("Connecting %P", srcpad);
   if (!GST_IS_GHOST_PAD (srcpad)) {
@@ -285,11 +315,14 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
   }
 
   if (gst_caps_can_intersect (current_caps, allowed_caps)) {
-    GstElement *tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
+    tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
+  }
+
+  if (tee != NULL) {
     GstElement *queue = gst_element_factory_make ("queue", NULL);
     GstPad *target = gst_element_get_static_pad (queue, "src");
-    GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
 
+    //TODO: Each pad shoud have its own queue, to avoid re-creating queues
     gst_bin_add (GST_BIN (agnosticbin), queue);
     gst_element_sync_state_with_parent (queue);
 
@@ -297,11 +330,7 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
 
     g_object_unref (target);
 
-    GST_PAD_STREAM_LOCK (tee_sink);
-    gst_element_link (tee, queue);
-    gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
-    GST_PAD_STREAM_UNLOCK (tee_sink);
-    g_object_unref (tee_sink);
+    gst_agnostic_bin_link_to_tee (tee, queue);
 
     g_object_unref (tee);
   }
