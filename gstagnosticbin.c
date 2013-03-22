@@ -15,7 +15,28 @@
 #define START_STOP_EVENT_NAME "event/start-stop"
 #define START "start"
 
-#define AUDIO_CAPS "audio/x-raw;"\
+#define RAW_VIDEO_CAPS "video/x-raw, "\
+  "format={ I420, YV12, YUY2, UYVY, AYUV, RGBx, BGRx, xRGB, xBGR, RGBA, BGRA, "\
+      "ARGB, ABGR, RGB, BGR, Y41B, Y42B, YVYU, Y444, v210, v216, NV12, NV21, "\
+      "GRAY8, GRAY16_BE, GRAY16_LE, v308, RGB16, BGR16, RGB15, BGR15, UYVP, "\
+      "A420, RGB8P, YUV9, YVU9, IYU1, ARGB64, AYUV64, r210, I420_10LE, "\
+      "I420_10BE, I422_10LE, I422_10BE }, "\
+  "width=[1, 2147483647], "\
+  "height=[1, 2147483647], "\
+  "framerate=[ 0/1, 2147483647/1];"
+
+#define RAW_AUDIO_CAPS "audio/x-raw, "\
+  "format={ S8, U8, S16LE, S16BE, U16LE, U16BE, S24_32LE, S24_32BE, U24_32LE, "\
+      "U24_32BE, S32LE, S32BE, U32LE, U32BE, S24LE, S24BE, U24LE, U24BE, "\
+      "S20LE, S20BE, U20LE, U20BE, S18LE, S18BE, U18LE, U18BE, F32LE, F32BE, "\
+      "F64LE, F64BE }, "\
+  "rate=[1, 2147483647], "\
+  "channels=[1, 2147483647], "\
+  "layout=interleaved;"
+
+#define RAW_CAPS RAW_AUDIO_CAPS RAW_VIDEO_CAPS
+
+#define AUDIO_CAPS RAW_AUDIO_CAPS \
   "audio/x-sbc;" \
   "audio/x-mulaw;" \
   "audio/x-flac;" \
@@ -46,7 +67,7 @@
   "audio/AMR,rate=[8000, 16000],channels=1;" \
   "audio/x-gsm;"
 
-#define VIDEO_CAPS "video/x-raw;" \
+#define VIDEO_CAPS RAW_VIDEO_CAPS \
   "video/x-dirac;" \
   "image/png;" \
   "image/jpeg;" \
