@@ -318,7 +318,6 @@ gst_agnostic_bin_connect_previous_srcpads (GstAgnosticBin * agnosticbin,
   GValue item = { 0, };
   GstIterator *it;
   gboolean done;
-  GstPad *srcpad;
 
   it = gst_element_iterate_src_pads (GST_ELEMENT (agnosticbin));
   done = FALSE;
@@ -327,7 +326,7 @@ gst_agnostic_bin_connect_previous_srcpads (GstAgnosticBin * agnosticbin,
     switch (gst_iterator_next (it, &item)) {
       case GST_ITERATOR_OK:
       {
-        GstPad *peer;
+        GstPad *srcpad, *peer;
 
         srcpad = g_value_get_object (&item);
         peer = gst_pad_get_peer (srcpad);
