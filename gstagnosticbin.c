@@ -9,8 +9,10 @@
 #define PLUGIN_NAME "agnosticbin"
 
 #define INPUT_TEE "input_tee"
+#define DECODED_TEE "decoded_tee"
 
 #define OLD_EVENT_FUNC_DATA "old_event_func"
+#define DECODEBIN_QUEUE_DATA "decodebin_queue"
 
 #define START_STOP_EVENT_NAME "event/start-stop"
 #define START "start"
@@ -35,6 +37,8 @@
   "layout=interleaved;"
 
 #define RAW_CAPS RAW_AUDIO_CAPS RAW_VIDEO_CAPS
+
+static GstStaticCaps static_raw_caps = GST_STATIC_CAPS (RAW_CAPS);
 
 #define AUDIO_CAPS RAW_AUDIO_CAPS \
   "audio/x-sbc;" \
@@ -304,7 +308,7 @@ static void
 gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
     GstPad * peer, const GstCaps * current_caps)
 {
-  GstCaps *allowed_caps;
+  GstCaps *allowed_caps, *raw_caps;
   GstPad *target;
   GstElement *tee = NULL;
 
@@ -335,9 +339,17 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
     return;
   }
 
+  raw_caps = gst_static_caps_get (&static_raw_caps);
   if (gst_caps_can_intersect (current_caps, allowed_caps)) {
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
+  } else if (gst_caps_can_intersect (raw_caps, allowed_caps)) {
+    GST_DEBUG ("Raw caps, looking for a decodebin");
+    GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+    tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
+    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   }
+  gst_caps_unref (raw_caps);
+  // TODO: Check if reencoding is needed
 
   if (tee != NULL) {
     GstElement *queue = gst_element_factory_make ("queue", NULL);
@@ -355,8 +367,6 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
 
     g_object_unref (tee);
   }
-  // TODO: Check if a decodebin is needed
-  // TODO: Check if reencoding is needed
 
   gst_caps_unref (allowed_caps);
 }
@@ -494,6 +504,39 @@ gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
+gst_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
+    GstAgnosticBin * agnosticbin)
+{
+  GstElement *tee;
+
+  GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+  tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
+  if (tee == NULL) {
+    GstElement *queue;
+
+    tee = gst_element_factory_make ("tee", DECODED_TEE);
+    gst_bin_add (GST_BIN (agnosticbin), tee);
+    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+
+    gst_element_sync_state_with_parent (tee);
+    gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), tee, "sink");
+    queue = g_object_get_data (G_OBJECT (decodebin), DECODEBIN_QUEUE_DATA);
+    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+
+    // TODO: connect a new callback for events
+    // TODO: Notify that there is a new connection point
+  } else {
+    GstElement *fakesink;
+
+    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+    fakesink = gst_element_factory_make ("fakesink", NULL);
+    gst_bin_add (GST_BIN (agnosticbin), fakesink);
+    gst_element_sync_state_with_parent (fakesink);
+    gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), fakesink, "sink");
+  }
+}
+
+static void
 gst_agnostic_bin_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -561,16 +604,24 @@ static void
 gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
 {
   GstPad *target_sink;
-  GstElement *valve, *tee;
+  GstElement *valve, *tee, *decodebin, *queue;
   GstPadTemplate *templ;
 
   g_rec_mutex_init (&agnosticbin->media_mutex);
 
   valve = gst_element_factory_make ("valve", NULL);
   tee = gst_element_factory_make ("tee", INPUT_TEE);
+  decodebin = gst_element_factory_make ("decodebin", NULL);
+  queue = gst_element_factory_make ("queue", NULL);
 
-  gst_bin_add_many (GST_BIN (agnosticbin), valve, tee, NULL);
+  g_signal_connect (decodebin, "pad-added",
+      G_CALLBACK (gst_agnostic_bin_decodebin_pad_added), agnosticbin);
+  g_object_set_data (G_OBJECT (decodebin), DECODEBIN_QUEUE_DATA, queue);
+
+  gst_bin_add_many (GST_BIN (agnosticbin), valve, tee, queue, decodebin, NULL);
   gst_element_link (valve, tee);
+  gst_element_link (queue, decodebin);
+  gst_agnostic_bin_link_to_tee (tee, queue);
 
   gst_agnostic_bin_set_custom_event_handler (agnosticbin, valve, "src",
       gst_agnostic_bin_valve_event_handler);
