@@ -12,6 +12,8 @@
 #define DECODED_TEE "decoded_tee"
 
 #define OLD_EVENT_FUNC_DATA "old_event_func"
+#define START_STOP_EVENT_FUNC_DATA "start_stop_event_func"
+#define AGNOSTIC_BIN_DATA "agnostic_bin"
 #define DECODEBIN_QUEUE_DATA "decodebin_queue"
 #define QUEUE_DATA "queue"
 
@@ -131,6 +133,9 @@ GST_DEBUG_CATEGORY_STATIC (gst_agnostic_bin_debug);
 #define gst_agnostic_bin_parent_class parent_class
 G_DEFINE_TYPE (GstAgnosticBin, gst_agnostic_bin, GST_TYPE_BIN);
 
+typedef void (*GstStartStopFunction) (GstAgnosticBin * agnosticbin,
+    GstElement * element, gboolean start);
+
 /* Filter signals and args */
 enum
 {
@@ -156,8 +161,15 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_STATIC_CAPS (AGNOSTIC_CAPS)
     );
 
+static void
+gst_agnostic_bin_valve_start_stop (GstAgnosticBin * agnosticbin,
+    GstElement * valve, gboolean start)
+{
+  g_object_set (valve, "drop", !start, NULL);
+}
+
 static gboolean
-gst_agnostic_bin_valve_event_handler (GstPad * pad, GstObject * parent,
+gst_agnostic_bin_start_stop_event_handler (GstPad * pad, GstObject * parent,
     GstEvent * event)
 {
   gboolean ret = TRUE;
@@ -173,8 +185,15 @@ gst_agnostic_bin_valve_event_handler (GstPad * pad, GstObject * parent,
       gboolean start;
 
       if (gst_structure_get_boolean (st, START, &start)) {
+        GstAgnosticBin *agnosticbin =
+            g_object_get_data (G_OBJECT (pad), AGNOSTIC_BIN_DATA);
+        GstStartStopFunction callback =
+            g_object_get_data (G_OBJECT (pad), START_STOP_EVENT_FUNC_DATA);
         GST_INFO ("Received event: %P", event);
-        g_object_set (parent, "drop", !start, NULL);
+
+        if (callback != NULL)
+          callback (agnosticbin, GST_ELEMENT (parent), start);
+
         gst_event_unref (event);
         return TRUE;
       }
@@ -190,8 +209,8 @@ gst_agnostic_bin_valve_event_handler (GstPad * pad, GstObject * parent,
 }
 
 static void
-gst_agnostic_bin_set_custom_event_handler (GstAgnosticBin * agnosticbin,
-    GstElement * element, const char *pad_name, GstPadEventFunction callback)
+gst_agnostic_bin_set_start_stop_event_handler (GstAgnosticBin * agnosticbin,
+    GstElement * element, const char *pad_name, GstStartStopFunction callback)
 {
   GstPad *pad = gst_element_get_static_pad (element, pad_name);
 
@@ -199,7 +218,9 @@ gst_agnostic_bin_set_custom_event_handler (GstAgnosticBin * agnosticbin,
     return;
 
   g_object_set_data (G_OBJECT (pad), OLD_EVENT_FUNC_DATA, pad->eventfunc);
-  gst_pad_set_event_function (pad, callback);
+  g_object_set_data (G_OBJECT (pad), START_STOP_EVENT_FUNC_DATA, callback);
+  g_object_set_data (G_OBJECT (pad), AGNOSTIC_BIN_DATA, agnosticbin);
+  gst_pad_set_event_function (pad, gst_agnostic_bin_start_stop_event_handler);
   g_object_unref (pad);
 }
 
@@ -613,8 +634,8 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   gst_element_link (queue, decodebin);
   gst_agnostic_bin_link_to_tee (tee, queue, "sink");
 
-  gst_agnostic_bin_set_custom_event_handler (agnosticbin, valve, "src",
-      gst_agnostic_bin_valve_event_handler);
+  gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, valve, "src",
+      gst_agnostic_bin_valve_start_stop);
 
   g_object_set (valve, "drop", TRUE, NULL);
 
