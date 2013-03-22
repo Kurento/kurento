@@ -518,6 +518,9 @@ gst_agnostic_bin_get_property (GObject * object, guint prop_id,
 static void
 gst_agnostic_bin_dispose (GObject * object)
 {
+  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (object);
+
+  g_rec_mutex_clear (&agnosticbin->media_mutex);
   G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->dispose (object);
 }
 
@@ -560,6 +563,8 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   GstPad *target_sink;
   GstElement *valve, *tee;
   GstPadTemplate *templ;
+
+  g_rec_mutex_init (&agnosticbin->media_mutex);
 
   valve = gst_element_factory_make ("valve", NULL);
   tee = gst_element_factory_make ("tee", INPUT_TEE);
