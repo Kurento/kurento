@@ -14,7 +14,7 @@
 #define OLD_EVENT_FUNC_DATA "old_event_func"
 #define START_STOP_EVENT_FUNC_DATA "start_stop_event_func"
 #define AGNOSTIC_BIN_DATA "agnostic_bin"
-#define DECODEBIN_QUEUE_DATA "decodebin_queue"
+#define DECODEBIN_VALVE_DATA "decodebin_valve"
 #define QUEUE_DATA "queue"
 
 #define START_STOP_EVENT_NAME "event/start-stop"
@@ -165,6 +165,16 @@ static void
 gst_agnostic_bin_valve_start_stop (GstAgnosticBin * agnosticbin,
     GstElement * valve, gboolean start)
 {
+  g_object_set (valve, "drop", !start, NULL);
+}
+
+static void
+gst_agnostic_bin_decodebin_start_stop (GstAgnosticBin * agnosticbin,
+    GstElement * decodebin, gboolean start)
+{
+  GstElement *valve =
+      g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
+
   g_object_set (valve, "drop", !start, NULL);
 }
 
@@ -446,6 +456,8 @@ gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
   GST_DEBUG ("%P linked", pad);
   current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
   gst_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
+  if (current_caps != NULL)
+    gst_caps_unref (current_caps);
 
   if (peer->linkfunc != NULL)
     peer->linkfunc (peer, GST_OBJECT_PARENT (peer), pad);
@@ -487,7 +499,9 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
       element);
 
-  if (GST_STATE (element) >= GST_STATE_PAUSED)
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, TRUE);
 
   if (gst_element_add_pad (element, pad))
@@ -503,7 +517,8 @@ gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
 {
   GstElement *queue;
 
-  if (GST_STATE (element) >= GST_STATE_PAUSED)
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, FALSE);
 
   queue = g_object_get_data (G_OBJECT (pad), QUEUE_DATA);
@@ -523,7 +538,8 @@ gst_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
   GST_AGNOSTIC_BIN_LOCK (agnosticbin);
   tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   if (tee == NULL) {
-    GstElement *queue;
+    GstElement *valve;
+    GstCaps *current_caps;
 
     tee = gst_element_factory_make ("tee", DECODED_TEE);
     gst_bin_add (GST_BIN (agnosticbin), tee);
@@ -531,11 +547,16 @@ gst_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
 
     gst_element_sync_state_with_parent (tee);
     gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), tee, "sink");
-    queue = g_object_get_data (G_OBJECT (decodebin), DECODEBIN_QUEUE_DATA);
-    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+    valve = g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
+    g_object_set (valve, "drop", TRUE, NULL);
 
-    // TODO: connect a new callback for events
-    // TODO: Notify that there is a new connection point
+    gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, decodebin,
+        GST_OBJECT_NAME (pad), gst_agnostic_bin_decodebin_start_stop);
+
+    current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
+    gst_agnostic_bin_connect_previous_srcpads (agnosticbin, current_caps);
+    if (current_caps != NULL)
+      gst_caps_unref (current_caps);
   } else {
     GstElement *fakesink;
 
@@ -615,7 +636,7 @@ static void
 gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
 {
   GstPad *target_sink;
-  GstElement *valve, *tee, *decodebin, *queue;
+  GstElement *valve, *tee, *decodebin, *queue, *deco_valve;
   GstPadTemplate *templ;
 
   g_rec_mutex_init (&agnosticbin->media_mutex);
@@ -624,20 +645,19 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   tee = gst_element_factory_make ("tee", INPUT_TEE);
   decodebin = gst_element_factory_make ("decodebin", NULL);
   queue = gst_element_factory_make ("queue", NULL);
+  deco_valve = gst_element_factory_make ("valve", NULL);
 
   g_signal_connect (decodebin, "pad-added",
       G_CALLBACK (gst_agnostic_bin_decodebin_pad_added), agnosticbin);
-  g_object_set_data (G_OBJECT (decodebin), DECODEBIN_QUEUE_DATA, queue);
+  g_object_set_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA, deco_valve);
 
-  gst_bin_add_many (GST_BIN (agnosticbin), valve, tee, queue, decodebin, NULL);
+  gst_bin_add_many (GST_BIN (agnosticbin), valve, tee, queue, deco_valve,
+      decodebin, NULL);
   gst_element_link (valve, tee);
-  gst_element_link (queue, decodebin);
-  gst_agnostic_bin_link_to_tee (tee, queue, "sink");
+  gst_element_link_many (queue, deco_valve, decodebin, NULL);
 
   gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, valve, "src",
       gst_agnostic_bin_valve_start_stop);
-
-  g_object_set (valve, "drop", TRUE, NULL);
 
   target_sink = gst_element_get_static_pad (valve, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
@@ -654,6 +674,8 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
       GST_DEBUG_FUNCPTR (gst_agnostic_bin_sink_event));
   GST_PAD_SET_PROXY_CAPS (agnosticbin->sinkpad);
   gst_element_add_pad (GST_ELEMENT (agnosticbin), agnosticbin->sinkpad);
+
+  gst_element_link (tee, queue);
 }
 
 gboolean
