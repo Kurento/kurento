@@ -17,6 +17,9 @@
 #define DECODEBIN_VALVE_DATA "decodebin_valve"
 #define QUEUE_DATA "queue"
 
+#define ENCODER_QUEUE_DATA "enc_queue"
+#define ENCODER_TEE_DATA "enc_tee"
+
 #define START_STOP_EVENT_NAME "event/start-stop"
 #define START "start"
 
@@ -331,6 +334,28 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
   g_object_unref (tee_sink);
 }
 
+static void
+gst_agnostic_bin_encoder_start_stop (GstAgnosticBin * agnosticbin,
+    GstElement * encoder, gboolean start)
+{
+  GstElement *queue, *tee;
+
+  if (start)
+    return;
+
+  queue = g_object_get_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA);
+  tee = g_object_get_data (G_OBJECT (encoder), ENCODER_TEE_DATA);
+
+  if (queue != NULL)
+    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+
+  gst_element_set_state (queue, GST_STATE_NULL);
+  gst_element_set_state (encoder, GST_STATE_NULL);
+  gst_element_set_state (tee, GST_STATE_NULL);
+
+  gst_bin_remove_many (GST_BIN (agnosticbin), queue, encoder, tee, NULL);
+}
+
 /* This functions is called with the GST_AGNOSTIC_BIN_LOCK held */
 static GstElement *
 gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
@@ -379,7 +404,12 @@ gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
       g_object_ref (tee));
   gst_element_link_many (queue, encoder, tee, NULL);
   gst_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
-  // TODO: Add start stop event manager
+
+  g_object_set_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA, queue);
+  g_object_set_data (G_OBJECT (encoder), ENCODER_TEE_DATA, tee);
+
+  gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, encoder,
+      "src", gst_agnostic_bin_encoder_start_stop);
 
 end:
   gst_plugin_feature_list_free (filtered_list);
