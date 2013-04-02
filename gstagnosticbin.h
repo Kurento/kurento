@@ -34,6 +34,8 @@ struct _GstAgnosticBin
   guint pad_count;
 
   GRecMutex media_mutex;
+
+  GHashTable *encoded_tees;
 };
 
 struct _GstAgnosticBinClass

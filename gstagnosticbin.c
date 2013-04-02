@@ -307,6 +307,7 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 
       gst_pad_send_event (tee_src, event);
       gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
+      // TODO: Send request key frame event
     }
 
     g_object_unref (tee_src);
@@ -314,6 +315,70 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 
   GST_PAD_STREAM_UNLOCK (tee_sink);
   g_object_unref (tee_sink);
+}
+
+/* This functions is called with the GST_AGNOSTIC_BIN_LOCK held */
+static GstElement *
+gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
+    GstCaps * allowed_caps)
+{
+  GstElement *queue, *encoder, *decoded_tee, *tee = NULL;
+  GList *encoder_list, *filtered_src_list, *filtered_list;
+  GstElementFactory *encoder_factory;
+  GstPad *decoded_tee_sink;
+  GstCaps *raw_caps;
+
+  decoded_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
+  if (decoded_tee == NULL)
+    return NULL;
+
+  decoded_tee_sink = gst_element_get_static_pad (decoded_tee, "sink");
+  raw_caps = gst_pad_get_current_caps (decoded_tee_sink);
+
+  if (raw_caps == NULL)
+    goto release_decoded_tee;
+
+  encoder_list =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_ENCODER,
+      GST_RANK_NONE);
+  filtered_src_list =
+      gst_element_factory_list_filter (encoder_list, allowed_caps, GST_PAD_SRC,
+      FALSE);
+  filtered_list =
+      gst_element_factory_list_filter (filtered_src_list, raw_caps,
+      GST_PAD_SINK, FALSE);
+
+  encoder_factory = GST_ELEMENT_FACTORY (filtered_list->data);
+  if (encoder_factory == NULL)
+    goto end;
+
+  encoder = gst_element_factory_create (encoder_factory, NULL);
+  queue = gst_element_factory_make ("queue", NULL);
+  tee = gst_element_factory_make ("tee", NULL);
+
+  gst_bin_add_many (GST_BIN (agnosticbin), queue, encoder, tee, NULL);
+  gst_element_sync_state_with_parent (queue);
+  gst_element_sync_state_with_parent (encoder);
+  gst_element_sync_state_with_parent (tee);
+
+  g_hash_table_insert (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee),
+      g_object_ref (tee));
+  gst_element_link_many (queue, encoder, tee, NULL);
+  gst_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
+  // TODO: Add start stop event manager
+
+end:
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (filtered_src_list);
+  gst_plugin_feature_list_free (encoder_list);
+
+  gst_caps_unref (raw_caps);
+
+release_decoded_tee:
+  g_object_unref (decoded_tee_sink);
+  g_object_unref (decoded_tee);
+
+  return tee;
 }
 
 static void
@@ -360,9 +425,43 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
     GST_AGNOSTIC_BIN_LOCK (agnosticbin);
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
     GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+  } else {
+    GstElement *raw_tee;
+
+    GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+    raw_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
+    if (raw_tee != NULL) {
+      GList *tees, *l;
+
+      tees = g_hash_table_get_values (agnosticbin->encoded_tees);
+      for (l = tees; l != NULL && tee == NULL; l = l->next) {
+        GstCaps *tee_caps;
+        GstPad *sink =
+            gst_element_get_static_pad (GST_ELEMENT (l->data), "sink");
+
+        if (sink == NULL)
+          continue;
+
+        tee_caps = gst_pad_get_current_caps (sink);
+
+        if (tee_caps != NULL) {
+          if (gst_caps_can_intersect (tee_caps, allowed_caps))
+            tee = g_object_ref (l->data);
+
+          gst_caps_unref (tee_caps);
+        }
+
+        g_object_unref (sink);
+      }
+
+      if (tee == NULL)
+        tee = gst_agnostic_bin_create_encoded_tee (agnosticbin, allowed_caps);
+
+      g_object_unref (raw_tee);
+    }
+    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   }
   gst_caps_unref (raw_caps);
-  // TODO: Check if reencoding is needed
 
   queue = g_object_get_data (G_OBJECT (srcpad), QUEUE_DATA);
   if (tee != NULL) {
@@ -596,6 +695,7 @@ gst_agnostic_bin_dispose (GObject * object)
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (object);
 
   g_rec_mutex_clear (&agnosticbin->media_mutex);
+  g_hash_table_unref (agnosticbin->encoded_tees);
   G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->dispose (object);
 }
 
@@ -640,6 +740,9 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   GstPadTemplate *templ;
 
   g_rec_mutex_init (&agnosticbin->media_mutex);
+
+  agnosticbin->encoded_tees =
+      g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
 
   valve = gst_element_factory_make ("valve", NULL);
   tee = gst_element_factory_make ("tee", INPUT_TEE);
