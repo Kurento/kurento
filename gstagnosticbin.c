@@ -258,6 +258,19 @@ gst_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
 }
 
 static void
+gst_agnostic_bin_send_force_key_unit_event (GstPad * pad)
+{
+  GstStructure *s;
+  GstEvent *force_key_unit_event;
+
+  GST_DEBUG ("Sending key ");
+  s = gst_structure_new ("GstForceKeyUnit",
+      "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
+  force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+  gst_pad_send_event (pad, force_key_unit_event);
+}
+
+static void
 gst_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 {
   GstPad *sink = gst_element_get_static_pad (element, pad_name);
@@ -307,7 +320,8 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 
       gst_pad_send_event (tee_src, event);
       gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
-      // TODO: Send request key frame event
+
+      gst_agnostic_bin_send_force_key_unit_event (tee_src);
     }
 
     g_object_unref (tee_src);
