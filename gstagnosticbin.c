@@ -666,8 +666,9 @@ gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
 
   queue = g_object_get_data (G_OBJECT (pad), QUEUE_DATA);
 
+  gst_agnostic_bin_unlink_from_tee (queue, "sink");
+  gst_element_set_state (queue, GST_STATE_NULL);
   gst_bin_remove (GST_BIN (element), queue);
-  gst_element_set_state (queue, GST_STATE_PLAYING);
 
   gst_element_remove_pad (element, pad);
 }
