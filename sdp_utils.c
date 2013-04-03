@@ -26,8 +26,23 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "sdp_utils"
 
+typedef enum Direction
+{
+  SENDONLY,
+  RECVONLY,
+  SENDRECV
+} Direction;
+
+#define SENDONLY_STR  "sendonly"
+#define RECVONLY_STR  "recvonly"
+#define SENDRECV_STR  "sendrecv"
+
+static gchar *directions[] = { SENDONLY_STR, RECVONLY_STR, SENDRECV_STR };
+
+#define RTPMAP "rtpmap"
+
 static GstSDPResult
-create_sdp_message_from_src (const GstSDPMessage * src, GstSDPMessage ** msg)
+sdp_message_create_from_src (const GstSDPMessage * src, GstSDPMessage ** msg)
 {
   GstSDPResult result;
   const GstSDPConnection *conn;
@@ -54,11 +69,171 @@ create_sdp_message_from_src (const GstSDPMessage * src, GstSDPMessage ** msg)
 }
 
 static GstSDPResult
+sdp_media_create_from_src (const GstSDPMedia * src, GstSDPMedia ** media)
+{
+  GstSDPResult result;
+
+  result = gst_sdp_media_new (media);
+  if (result != GST_SDP_OK) {
+    GST_ERROR ("Error creating sdp media");
+    return result;
+  }
+
+  gst_sdp_media_set_media (*media, gst_sdp_media_get_media (src));
+  gst_sdp_media_set_port_info (*media, gst_sdp_media_get_port (src), 1);
+  gst_sdp_media_set_proto (*media, gst_sdp_media_get_proto (src));
+
+  return GST_SDP_OK;
+}
+
+static Direction
+sdp_media_get_direction (const GstSDPMedia * media)
+{
+  guint i, attrs_len;
+  const GstSDPAttribute *attr;
+  glong length;
+
+  attrs_len = gst_sdp_media_attributes_len (media);
+
+  for (i = 0; i < attrs_len; i++) {
+    attr = gst_sdp_media_get_attribute (media, i);
+    length = g_utf8_strlen (attr->key, -1);
+
+    if (g_ascii_strncasecmp (attr->key, SENDONLY_STR, length) == 0)
+      return SENDONLY;
+    if (g_ascii_strncasecmp (attr->key, RECVONLY_STR, length) == 0)
+      return RECVONLY;
+    if (g_ascii_strncasecmp (attr->key, SENDRECV_STR, length) == 0)
+      return SENDRECV;
+  }
+
+  return SENDRECV;
+}
+
+/**
+ * Returns : a newly-allocated string or NULL if any.
+ * The returned string should be freed with g_free() when no longer needed.
+ */
+static gchar *
+sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
+{
+  guint i, attrs_len;
+  const GstSDPAttribute *attr;
+  gchar *rtpmap = NULL;
+  gchar **tokens = NULL;
+
+  attrs_len = gst_sdp_media_attributes_len (media);
+
+  for (i = 0; i < attrs_len; i++) {
+    attr = gst_sdp_media_get_attribute (media, i);
+    if (g_ascii_strncasecmp (RTPMAP, attr->key, g_utf8_strlen (RTPMAP,
+                -1)) == 0) {
+      if (g_ascii_strncasecmp (format, attr->value, g_utf8_strlen (format,
+                  -1)) == 0) {
+        tokens = g_strsplit (attr->value, " ", 2);
+        rtpmap = g_strdup (tokens[1]);
+        break;
+      }
+    }
+  }
+
+  g_strfreev (tokens);
+
+  return rtpmap;
+}
+
+static GstSDPResult
 intersect_sdp_medias (const GstSDPMedia * offer,
     const GstSDPMedia * answer, GstSDPMedia ** offer_result,
     GstSDPMedia ** answer_result)
 {
-  GST_DEBUG ("intersect_sdp_medias");
+  GstSDPResult result;
+  guint i, j;
+  guint offer_format_len, answer_format_len;
+  const gchar *offer_format, *answer_format;
+  const gchar *offer_media_type, *answer_media_type;
+  Direction offer_dir, answer_dir, offer_result_dir, answer_result_dir;
+  gchar *offer_rtpmap, *answer_rtpmap, *rtpmap_result;
+
+  offer_media_type = gst_sdp_media_get_media (offer);
+  answer_media_type = gst_sdp_media_get_media (answer);
+  if (g_ascii_strncasecmp (offer_media_type, answer_media_type,
+          g_utf8_strlen (answer_media_type, -1)) != 0) {
+    GST_DEBUG ("Media types no compatibles: %s, %s", offer_media_type,
+        answer_media_type);
+    return GST_SDP_EINVAL;
+  }
+
+  offer_dir = sdp_media_get_direction (offer);
+  answer_dir = sdp_media_get_direction (answer);
+
+  if ((offer_dir == SENDONLY && answer_dir == SENDONLY) ||
+      (offer_dir == RECVONLY && answer_dir == RECVONLY)) {
+    return GST_SDP_EINVAL;
+  } else if (offer_dir == SENDONLY || answer_dir == RECVONLY) {
+    offer_result_dir = SENDONLY;
+    answer_result_dir = RECVONLY;
+  } else if (offer_dir == RECVONLY || answer_dir == SENDONLY) {
+    offer_result_dir = RECVONLY;
+    answer_result_dir = SENDONLY;
+  } else {
+    offer_result_dir = SENDRECV;
+    answer_result_dir = SENDRECV;
+  }
+
+  result = sdp_media_create_from_src (offer, offer_result);
+  if (result != GST_SDP_OK) {
+    GST_ERROR ("Error creating sdp media");
+    return GST_SDP_EINVAL;
+  }
+
+  result = sdp_media_create_from_src (answer, answer_result);
+  if (result != GST_SDP_OK) {
+    GST_ERROR ("Error creating sdp media");
+    return GST_SDP_EINVAL;
+  }
+
+  offer_format_len = gst_sdp_media_formats_len (offer);
+  answer_format_len = gst_sdp_media_formats_len (answer);
+
+  for (i = 0; i < offer_format_len; i++) {
+    offer_format = gst_sdp_media_get_format (offer, i);
+    offer_rtpmap = sdp_media_get_rtpmap (offer, offer_format);
+
+    for (j = 0; j < answer_format_len; j++) {
+      answer_format = gst_sdp_media_get_format (answer, j);
+      answer_rtpmap = sdp_media_get_rtpmap (answer, answer_format);
+
+      if ((offer_rtpmap == NULL && answer_rtpmap == NULL)
+          && (g_ascii_strncasecmp (offer_format, answer_format,
+                  g_utf8_strlen (offer_format, -1)) == 0)) {
+        /* static payload */
+        gst_sdp_media_add_format (*offer_result, offer_format);
+        gst_sdp_media_add_attribute (*offer_result,
+            directions[offer_result_dir], "");
+        gst_sdp_media_add_format (*answer_result, offer_format);
+        gst_sdp_media_add_attribute (*answer_result,
+            directions[answer_result_dir], "");
+      } else if (offer_rtpmap == NULL || answer_rtpmap == NULL) {
+        continue;
+      } else if (g_ascii_strncasecmp (offer_rtpmap, answer_rtpmap,
+              g_utf8_strlen (offer_rtpmap, -1)) == 0) {
+        /* dinamyc payload */
+        rtpmap_result = g_strconcat (offer_format, " ", offer_rtpmap, NULL);
+        gst_sdp_media_add_format (*offer_result, offer_format);
+        gst_sdp_media_add_attribute (*offer_result, RTPMAP, rtpmap_result);
+        gst_sdp_media_add_attribute (*offer_result,
+            directions[offer_result_dir], "");
+        gst_sdp_media_add_format (*answer_result, offer_format);
+        gst_sdp_media_add_attribute (*answer_result, RTPMAP, rtpmap_result);
+        gst_sdp_media_add_attribute (*answer_result,
+            directions[answer_result_dir], "");
+      }
+      g_free (answer_rtpmap);
+    }
+    g_free (offer_rtpmap);
+  }
+
   return GST_SDP_OK;
 }
 
@@ -68,7 +243,7 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
     GstSDPMessage ** answer_result)
 {
   GstSDPResult result;
-  guint i, j, offer_len, answer_len;
+  guint i, j, offer_medias_len, answer_medias_len;
   GList *ans_used_media_list = NULL;
   const GstSDPMedia *offer_media, *answer_media;
   GstSDPMedia *offer_media_result, *answer_media_result;
@@ -76,23 +251,23 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
       GST_DEFAULT_NAME);
 
-  result = create_sdp_message_from_src (offer, offer_result);
+  result = sdp_message_create_from_src (offer, offer_result);
   if (result != GST_SDP_OK) {
     GST_ERROR ("Error creating sdp message");
     goto end;
   }
 
-  result = create_sdp_message_from_src (answer, answer_result);
+  result = sdp_message_create_from_src (answer, answer_result);
   if (result != GST_SDP_OK) {
     GST_ERROR ("Error creating sdp message");
     goto end;
   }
 
-  offer_len = gst_sdp_message_medias_len (offer);
-  answer_len = gst_sdp_message_medias_len (answer);
+  offer_medias_len = gst_sdp_message_medias_len (offer);
+  answer_medias_len = gst_sdp_message_medias_len (answer);
 
-  for (i = 0; i < offer_len; i++) {
-    for (j = 0; j < answer_len; j++) {
+  for (i = 0; i < offer_medias_len; i++) {
+    for (j = 0; j < answer_medias_len; j++) {
       if (g_list_find (ans_used_media_list, GUINT_TO_POINTER (j)) != NULL)
         continue;
 
@@ -102,15 +277,12 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
       result =
           intersect_sdp_medias (offer_media, answer_media, &offer_media_result,
           &answer_media_result);
-      if (result != GST_SDP_OK) {
-        GST_ERROR ("Error creating sdp message");
-        gst_sdp_message_free (*offer_result);
-        gst_sdp_message_free (*answer_result);
-        goto end;
+      if (result == GST_SDP_OK) {
+        ans_used_media_list =
+            g_list_append (ans_used_media_list, GUINT_TO_POINTER (j));
+        gst_sdp_message_add_media (*offer_result, offer_media_result);
+        gst_sdp_message_add_media (*answer_result, answer_media_result);
       }
-
-      ans_used_media_list =
-          g_list_append (ans_used_media_list, GUINT_TO_POINTER (j));
     }
   }
 
