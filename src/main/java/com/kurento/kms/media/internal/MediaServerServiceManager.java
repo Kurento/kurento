@@ -93,6 +93,7 @@ public class MediaServerServiceManager {
 
 	private MediaServerService.Client createMediaServerService()
 			throws TTransportException {
+		// FIXME: use pool to avoid no such sockets
 		TTransport transport = new TFramedTransport(new TSocket(address, port));
 		// TODO: Make protocol configurable
 		TProtocol prot = new TBinaryProtocol(transport);
