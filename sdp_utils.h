@@ -23,6 +23,15 @@
 
 #include <gst/sdp/gstsdpmessage.h>
 
+typedef enum GstSDPDirection
+{
+  SENDONLY,
+  RECVONLY,
+  SENDRECV
+} GstSDPDirection;
+
+const gchar *sdp_utils_get_direction_str (GstSDPDirection direction);
+
 GstSDPResult sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
     const GstSDPMessage * answer, GstSDPMessage ** offer_result,
     GstSDPMessage ** answer_result);

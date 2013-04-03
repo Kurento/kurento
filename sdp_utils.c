@@ -26,13 +26,6 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "sdp_utils"
 
-typedef enum Direction
-{
-  SENDONLY,
-  RECVONLY,
-  SENDRECV
-} Direction;
-
 #define SENDONLY_STR  "sendonly"
 #define RECVONLY_STR  "recvonly"
 #define SENDRECV_STR  "sendrecv"
@@ -40,6 +33,12 @@ typedef enum Direction
 static gchar *directions[] = { SENDONLY_STR, RECVONLY_STR, SENDRECV_STR };
 
 #define RTPMAP "rtpmap"
+
+const gchar *
+sdp_utils_get_direction_str (GstSDPDirection direction)
+{
+  return directions[direction];
+}
 
 static GstSDPResult
 sdp_message_create_from_src (const GstSDPMessage * src, GstSDPMessage ** msg)
@@ -86,7 +85,7 @@ sdp_media_create_from_src (const GstSDPMedia * src, GstSDPMedia ** media)
   return GST_SDP_OK;
 }
 
-static Direction
+static GstSDPDirection
 sdp_media_get_direction (const GstSDPMedia * media)
 {
   guint i, attrs_len;
@@ -152,7 +151,7 @@ intersect_sdp_medias (const GstSDPMedia * offer,
   guint offer_format_len, answer_format_len;
   const gchar *offer_format, *answer_format;
   const gchar *offer_media_type, *answer_media_type;
-  Direction offer_dir, answer_dir, offer_result_dir, answer_result_dir;
+  GstSDPDirection offer_dir, answer_dir, offer_result_dir, answer_result_dir;
   gchar *offer_rtpmap, *answer_rtpmap, *rtpmap_result;
 
   offer_media_type = gst_sdp_media_get_media (offer);
@@ -210,10 +209,10 @@ intersect_sdp_medias (const GstSDPMedia * offer,
         /* static payload */
         gst_sdp_media_add_format (*offer_result, offer_format);
         gst_sdp_media_add_attribute (*offer_result,
-            directions[offer_result_dir], "");
+            sdp_utils_get_direction_str (offer_result_dir), "");
         gst_sdp_media_add_format (*answer_result, offer_format);
         gst_sdp_media_add_attribute (*answer_result,
-            directions[answer_result_dir], "");
+            sdp_utils_get_direction_str (answer_result_dir), "");
       } else if (offer_rtpmap == NULL || answer_rtpmap == NULL) {
         continue;
       } else if (g_ascii_strncasecmp (offer_rtpmap, answer_rtpmap,
@@ -223,11 +222,11 @@ intersect_sdp_medias (const GstSDPMedia * offer,
         gst_sdp_media_add_format (*offer_result, offer_format);
         gst_sdp_media_add_attribute (*offer_result, RTPMAP, rtpmap_result);
         gst_sdp_media_add_attribute (*offer_result,
-            directions[offer_result_dir], "");
+            sdp_utils_get_direction_str (offer_result_dir), "");
         gst_sdp_media_add_format (*answer_result, offer_format);
         gst_sdp_media_add_attribute (*answer_result, RTPMAP, rtpmap_result);
         gst_sdp_media_add_attribute (*answer_result,
-            directions[answer_result_dir], "");
+            sdp_utils_get_direction_str (answer_result_dir), "");
       }
       g_free (answer_rtpmap);
     }
