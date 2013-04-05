@@ -150,32 +150,40 @@ sdp_media_set_direction (GstSDPMedia * media, GstSDPDirection direction)
  * Returns : a newly-allocated string or NULL if any.
  * The returned string should be freed with g_free() when no longer needed.
  */
-static gchar *
+static const gchar *
 sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
 {
   guint i, attrs_len;
-  const GstSDPAttribute *attr;
   gchar *rtpmap = NULL;
-  gchar **tokens = NULL;
 
   attrs_len = gst_sdp_media_attributes_len (media);
 
-  for (i = 0; i < attrs_len; i++) {
-    attr = gst_sdp_media_get_attribute (media, i);
-    if (g_ascii_strncasecmp (RTPMAP, attr->key, g_utf8_strlen (RTPMAP,
-                -1)) == 0) {
-      if (g_ascii_strncasecmp (format, attr->value, g_utf8_strlen (format,
-                  -1)) == 0) {
-        tokens = g_strsplit (attr->value, " ", 2);
-        rtpmap = g_strdup (tokens[1]);
-        break;
+  for (i = 0; i < attrs_len && rtpmap == NULL; i++) {
+    const GstSDPAttribute *attr = gst_sdp_media_get_attribute (media, i);
+
+    if (g_ascii_strcasecmp (RTPMAP, attr->key) == 0) {
+      if (g_str_has_prefix (attr->value, format)) {
+        rtpmap = g_strstr_len (attr->value, -1, " ");
+        if (rtpmap != NULL)
+          rtpmap = rtpmap + 1;
       }
     }
   }
 
-  g_strfreev (tokens);
-
   return rtpmap;
+}
+
+static void
+sdp_utils_sdp_media_add_format (GstSDPMedia * media, const gchar * format,
+    const gchar * rtpmap)
+{
+  gst_sdp_media_add_format (media, format);
+  if (rtpmap != NULL) {
+    gchar *rtpmap_att = g_strconcat (format, " ", rtpmap, NULL);
+
+    gst_sdp_media_add_attribute (media, RTPMAP, rtpmap_att);
+    g_free (rtpmap_att);
+  }
 }
 
 static GstSDPResult
@@ -184,12 +192,10 @@ intersect_sdp_medias (const GstSDPMedia * offer,
     GstSDPMedia ** answer_result)
 {
   GstSDPResult result;
-  guint i, j;
+  guint i;
   guint offer_format_len, answer_format_len;
-  const gchar *offer_format, *answer_format;
   const gchar *offer_media_type, *answer_media_type;
   GstSDPDirection offer_dir, answer_dir, offer_result_dir, answer_result_dir;
-  gchar *offer_rtpmap, *answer_rtpmap, *rtpmap_result;
 
   offer_media_type = gst_sdp_media_get_media (offer);
   answer_media_type = gst_sdp_media_get_media (answer);
@@ -233,41 +239,32 @@ intersect_sdp_medias (const GstSDPMedia * offer,
   answer_format_len = gst_sdp_media_formats_len (answer);
 
   for (i = 0; i < offer_format_len; i++) {
-    offer_format = gst_sdp_media_get_format (offer, i);
-    offer_rtpmap = sdp_media_get_rtpmap (offer, offer_format);
+    gint j;
+    const gchar *offer_format = gst_sdp_media_get_format (offer, i);
+    const gchar *offer_rtpmap = sdp_media_get_rtpmap (offer, offer_format);
 
     for (j = 0; j < answer_format_len; j++) {
-      answer_format = gst_sdp_media_get_format (answer, j);
-      answer_rtpmap = sdp_media_get_rtpmap (answer, answer_format);
+      const gchar *answer_format = gst_sdp_media_get_format (answer, j);
+      const gchar *answer_rtpmap = sdp_media_get_rtpmap (answer, answer_format);
 
+      // TODO: Do more test to check if this conditions are correct
       if ((offer_rtpmap == NULL && answer_rtpmap == NULL)
           && (g_ascii_strncasecmp (offer_format, answer_format,
                   g_utf8_strlen (offer_format, -1)) == 0)) {
         /* static payload */
-        gst_sdp_media_add_format (*offer_result, offer_format);
-        gst_sdp_media_add_attribute (*offer_result,
-            sdp_utils_get_direction_str (offer_result_dir), "");
-        gst_sdp_media_add_format (*answer_result, offer_format);
-        gst_sdp_media_add_attribute (*answer_result,
-            sdp_utils_get_direction_str (answer_result_dir), "");
-      } else if (offer_rtpmap == NULL || answer_rtpmap == NULL) {
+      } else if (offer_rtpmap == NULL || answer_rtpmap == NULL
+          || (g_ascii_strcasecmp (offer_rtpmap, answer_rtpmap) != 0)) {
         continue;
-      } else if (g_ascii_strncasecmp (offer_rtpmap, answer_rtpmap,
-              g_utf8_strlen (offer_rtpmap, -1)) == 0) {
-        /* dinamyc payload */
-        rtpmap_result = g_strconcat (offer_format, " ", offer_rtpmap, NULL);
-        gst_sdp_media_add_format (*offer_result, offer_format);
-        gst_sdp_media_add_attribute (*offer_result, RTPMAP, rtpmap_result);
-        gst_sdp_media_add_attribute (*offer_result,
-            sdp_utils_get_direction_str (offer_result_dir), "");
-        gst_sdp_media_add_format (*answer_result, offer_format);
-        gst_sdp_media_add_attribute (*answer_result, RTPMAP, rtpmap_result);
-        gst_sdp_media_add_attribute (*answer_result,
-            sdp_utils_get_direction_str (answer_result_dir), "");
       }
-      g_free (answer_rtpmap);
+      /* else, dinamyc payload */
+
+      sdp_utils_sdp_media_add_format (*offer_result, offer_format,
+          offer_rtpmap);
+      sdp_media_set_direction (*offer_result, offer_result_dir);
+      sdp_utils_sdp_media_add_format (*answer_result, offer_format,
+          offer_rtpmap);
+      sdp_media_set_direction (*answer_result, answer_result_dir);
     }
-    g_free (offer_rtpmap);
   }
 
   if (gst_sdp_media_formats_len (*answer_result) == 0
@@ -320,8 +317,8 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
       answer_media = gst_sdp_message_get_media (answer, j);
 
       result =
-          intersect_sdp_medias (offer_media, answer_media, &offer_media_result,
-          &answer_media_result);
+          intersect_sdp_medias (offer_media, answer_media,
+          &offer_media_result, &answer_media_result);
       if (result == GST_SDP_OK) {
         ans_used_media_list =
             g_list_append (ans_used_media_list, GUINT_TO_POINTER (j));
