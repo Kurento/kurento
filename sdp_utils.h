@@ -27,7 +27,8 @@ typedef enum GstSDPDirection
 {
   SENDONLY,
   RECVONLY,
-  SENDRECV
+  SENDRECV,
+  INACTIVE
 } GstSDPDirection;
 
 const gchar *sdp_utils_get_direction_str (GstSDPDirection direction);

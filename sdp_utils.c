@@ -29,8 +29,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define SENDONLY_STR  "sendonly"
 #define RECVONLY_STR  "recvonly"
 #define SENDRECV_STR  "sendrecv"
+#define INACTIVE_STR  "inactive"
 
-static gchar *directions[] = { SENDONLY_STR, RECVONLY_STR, SENDRECV_STR };
+static gchar *directions[] =
+    { SENDONLY_STR, RECVONLY_STR, SENDRECV_STR, INACTIVE_STR, NULL };
 
 #define RTPMAP "rtpmap"
 
@@ -102,25 +104,40 @@ sdp_media_create_from_src (const GstSDPMedia * src, GstSDPMedia ** media)
   return GST_SDP_OK;
 }
 
+static gboolean
+sdp_utils_attribute_is_direction (const GstSDPAttribute * attr,
+    GstSDPDirection * direction)
+{
+  gint i;
+
+  for (i = 0; directions[i] != NULL; i++) {
+    if (g_ascii_strcasecmp (attr->key, directions[i]) == 0) {
+      if (direction != NULL) {
+        *direction = i;
+      }
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 static GstSDPDirection
 sdp_media_get_direction (const GstSDPMedia * media)
 {
   guint i, attrs_len;
   const GstSDPAttribute *attr;
-  glong length;
 
   attrs_len = gst_sdp_media_attributes_len (media);
 
   for (i = 0; i < attrs_len; i++) {
-    attr = gst_sdp_media_get_attribute (media, i);
-    length = g_utf8_strlen (attr->key, -1);
+    GstSDPDirection direction;
 
-    if (g_ascii_strncasecmp (attr->key, SENDONLY_STR, length) == 0)
-      return SENDONLY;
-    if (g_ascii_strncasecmp (attr->key, RECVONLY_STR, length) == 0)
-      return RECVONLY;
-    if (g_ascii_strncasecmp (attr->key, SENDRECV_STR, length) == 0)
-      return SENDRECV;
+    attr = gst_sdp_media_get_attribute (media, i);
+
+    if (sdp_utils_attribute_is_direction (attr, &direction)) {
+      return direction;
+    }
   }
 
   return SENDRECV;
