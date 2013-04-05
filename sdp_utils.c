@@ -339,6 +339,17 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
         continue;
       }
 
+      if (offer_media->fmts->len > 0) {
+        const gchar *offer_format = gst_sdp_media_get_format (offer_media, 0);
+        const gchar *offer_rtpmap =
+            sdp_media_get_rtpmap (offer_media, offer_format);
+
+        sdp_utils_sdp_media_add_format (offer_media_result, offer_format,
+            offer_rtpmap);
+        sdp_utils_sdp_media_add_format (answer_media_result, offer_format,
+            offer_rtpmap);
+      }
+
       gst_sdp_media_set_port_info (offer_media_result, 0, 0);
       gst_sdp_media_set_port_info (answer_media_result, 0, 0);
 
