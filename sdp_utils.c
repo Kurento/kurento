@@ -21,6 +21,7 @@
 #include "sdp_utils.h"
 #include <gst/gst.h>
 #include <glib.h>
+#include <stdlib.h>
 
 #define GST_CAT_DEFAULT sdp_utils
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -35,6 +36,44 @@ static gchar *directions[] =
     { SENDONLY_STR, RECVONLY_STR, SENDRECV_STR, INACTIVE_STR, NULL };
 
 #define RTPMAP "rtpmap"
+
+static gchar *rtpmaps[] = {
+  "PCMU/8000/1",
+  NULL,
+  NULL,
+  "GSM/8000/1",
+  "G723/8000/1",
+  "DVI4/8000/1",
+  "DVI4/16000/1",
+  "LPC/8000/1",
+  "PCMA/8000/1",
+  "G722/8000/1",
+  "L16/44100/2",
+  "L16/44100/1",
+  "QCELP/8000/1",
+  "CN/8000/1",
+  "MPA/90000",
+  "G728/8000/1",
+  "DVI4/11025/1",
+  "DVI4/22050/1",
+  "G729/8000/1",
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  "CelB/90000",
+  "JPEG/90000",
+  NULL,
+  "nv/90000",
+  NULL,
+  NULL,
+  "H261/90000",
+  "MPV/90000",
+  "MP2T/90000",
+  "H263/90000",
+};
 
 const gchar *
 sdp_utils_get_direction_str (GstSDPDirection direction)
@@ -170,6 +209,21 @@ sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
     }
   }
 
+  if (rtpmap == NULL) {
+    gint pt;
+
+    for (i = 0; format[i] != '\0'; i++) {
+      if (!g_ascii_isdigit (format[i]))
+        return NULL;
+    }
+
+    pt = atoi (format);
+    if (pt > 34)
+      return NULL;
+
+    rtpmap = rtpmaps[pt];
+  }
+
   return rtpmap;
 }
 
@@ -247,16 +301,10 @@ intersect_sdp_medias (const GstSDPMedia * offer,
       const gchar *answer_format = gst_sdp_media_get_format (answer, j);
       const gchar *answer_rtpmap = sdp_media_get_rtpmap (answer, answer_format);
 
-      // TODO: Do more test to check if this conditions are correct
-      if ((offer_rtpmap == NULL && answer_rtpmap == NULL)
-          && (g_ascii_strncasecmp (offer_format, answer_format,
-                  g_utf8_strlen (offer_format, -1)) == 0)) {
-        /* static payload */
-      } else if (offer_rtpmap == NULL || answer_rtpmap == NULL
+      if (offer_rtpmap == NULL || answer_rtpmap == NULL
           || (g_ascii_strcasecmp (offer_rtpmap, answer_rtpmap) != 0)) {
         continue;
       }
-      /* else, dinamyc payload */
 
       sdp_utils_sdp_media_add_format (*offer_result, offer_format,
           offer_rtpmap);
