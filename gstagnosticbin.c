@@ -641,6 +641,7 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   gst_pad_set_link_function (pad, gst_agnostic_bin_src_linked);
   g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
       element);
+  // TODO: Add callback for query caps changes
 
   if (GST_STATE (element) >= GST_STATE_PAUSED
       || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
@@ -774,7 +775,7 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
   gstelement_class->release_pad =
       GST_DEBUG_FUNCPTR (gst_agnostic_bin_release_pad);
 
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, "agnosticbin", 0, "agnosticbin");
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 }
 
 static void
