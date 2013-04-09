@@ -31,8 +31,8 @@ struct _GstJoinable
   GstElement *audio_agnosticbin;
   GstElement *video_agnosticbin;
 
-  GstPad *audio_sink;
-  GstPad *audio_src;
+  GstElement *audio_valve;
+  GstElement *video_valve;
 };
 
 struct _GstJoinableClass

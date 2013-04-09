@@ -17,6 +17,11 @@ G_DEFINE_TYPE (GstJoinable, gst_joinable, GST_TYPE_BIN);
 
 #define AUDIO_AGNOSTICBIN "audio_agnosticbin"
 #define VIDEO_AGNOSTICBIN "video_agnosticbin"
+#define AUDIO_VALVE "audio_valve"
+#define VIDEO_VALVE "video_valve"
+
+#define AUDIO_SINK_PAD "audio_sink"
+#define VIDEO_SINK_PAD "video_sink"
 
 /* Signals and args */
 enum
@@ -31,14 +36,14 @@ enum
 
 /* the capabilities of the inputs and outputs. */
 static GstStaticPadTemplate audio_sink_factory =
-GST_STATIC_PAD_TEMPLATE ("audio_sink",
+GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD,
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS (AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate video_sink_factory =
-GST_STATIC_PAD_TEMPLATE ("video_sink",
+GST_STATIC_PAD_TEMPLATE (VIDEO_SINK_PAD,
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS (VIDEO_CAPS)
@@ -159,11 +164,35 @@ static void
 gst_joinable_init (GstJoinable * joinable)
 {
   GstElement *audio_agnosticbin, *video_agnosticbin;
+  GstPad *audio_valve_sink, *video_valve_sink;
+  GstPad *audio_sink, *video_sink;
 
   audio_agnosticbin =
       gst_element_factory_make ("agnosticbin", AUDIO_AGNOSTICBIN);
   video_agnosticbin =
       gst_element_factory_make ("agnosticbin", VIDEO_AGNOSTICBIN);
+
+  joinable->audio_valve = gst_element_factory_make ("valve", AUDIO_VALVE);
+  joinable->video_valve = gst_element_factory_make ("valve", VIDEO_VALVE);
+
+  g_object_set (joinable->audio_valve, "drop", TRUE, NULL);
+  g_object_set (joinable->video_valve, "drop", TRUE, NULL);
+
   gst_bin_add_many (GST_BIN (joinable), audio_agnosticbin,
-      video_agnosticbin, NULL);
+      video_agnosticbin, joinable->audio_valve, joinable->video_valve, NULL);
+
+  audio_valve_sink = gst_element_get_static_pad (joinable->audio_valve, "sink");
+  video_valve_sink = gst_element_get_static_pad (joinable->video_valve, "sink");
+
+  audio_sink =
+      gst_ghost_pad_new_from_template (AUDIO_SINK_PAD, audio_valve_sink,
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (joinable)), AUDIO_SINK_PAD));
+  video_sink =
+      gst_ghost_pad_new_from_template (VIDEO_SINK_PAD, video_valve_sink,
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (joinable)), VIDEO_SINK_PAD));
+
+  gst_element_add_pad (GST_ELEMENT (joinable), audio_sink);
+  gst_element_add_pad (GST_ELEMENT (joinable), video_sink);
 }
