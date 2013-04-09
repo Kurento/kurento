@@ -3,11 +3,15 @@
 #include <gst/gst.h>
 
 #include <gstagnosticbin.h>
+#include <gstudpstream.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
 {
   if (!gst_agnostic_bin_plugin_init (kurento))
+    return FALSE;
+
+  if (!gst_udp_stream_plugin_init (kurento))
     return FALSE;
 
   return TRUE;

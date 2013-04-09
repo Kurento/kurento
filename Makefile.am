@@ -7,7 +7,8 @@ libgstkurento_la_SOURCES = gstkurento.c \
 			gstagnosticbin.c gstagnosticbin.h \
 			gstjoinable.c gstjoinable.h \
 			gstbasestream.c gstbasestream.h \
-			gstbasertpstream.c gstbasertpstream.h
+			gstbasertpstream.c gstbasertpstream.h \
+			gstudpstream.c gstudpstream.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libgstkurento_la_CFLAGS = $(GST_CFLAGS) -Werror
