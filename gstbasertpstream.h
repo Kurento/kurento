@@ -28,6 +28,8 @@ typedef struct _GstBaseRtpStreamClass GstBaseRtpStreamClass;
 struct _GstBaseRtpStream
 {
   GstBaseStream parent;
+
+  GstElement *rtpbin;
 };
 
 struct _GstBaseRtpStreamClass

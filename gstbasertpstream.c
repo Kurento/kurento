@@ -14,6 +14,8 @@ GST_DEBUG_CATEGORY_STATIC (gst_base_rtp_stream_debug);
 #define gst_base_rtp_stream_parent_class parent_class
 G_DEFINE_TYPE (GstBaseRtpStream, gst_base_rtp_stream, GST_TYPE_BASE_STREAM);
 
+#define RTPBIN "rtpbin"
+
 /* Signals and args */
 enum
 {
@@ -43,4 +45,7 @@ gst_base_rtp_stream_class_init (GstBaseRtpStreamClass * klass)
 static void
 gst_base_rtp_stream_init (GstBaseRtpStream * base_rtp_stream)
 {
+  base_rtp_stream->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
+
+  gst_bin_add (GST_BIN (base_rtp_stream), base_rtp_stream->rtpbin);
 }
