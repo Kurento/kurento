@@ -1,6 +1,7 @@
 #ifndef __GST_UDP_STREAM_H__
 #define __GST_UDP_STREAM_H__
 
+#include <gio/gio.h>
 #include <gst/gst.h>
 #include <gstbasertpstream.h>
 
@@ -28,6 +29,12 @@ typedef struct _GstUdpStreamClass GstUdpStreamClass;
 struct _GstUdpStream
 {
   GstBaseRtpStream parent;
+
+  GSocket *audio_rtp_socket;
+  GSocket *audio_rtcp_socket;
+
+  GSocket *video_rtp_socket;
+  GSocket *video_rtcp_socket;
 };
 
 struct _GstUdpStreamClass
