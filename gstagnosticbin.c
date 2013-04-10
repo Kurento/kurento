@@ -15,7 +15,6 @@
 #define START_STOP_EVENT_FUNC_DATA "start_stop_event_func"
 #define AGNOSTIC_BIN_DATA "agnostic_bin"
 #define DECODEBIN_VALVE_DATA "decodebin_valve"
-#define QUEUE_DATA "queue"
 
 #define ENCODER_QUEUE_DATA "enc_queue"
 #define ENCODER_TEE_DATA "enc_tee"
@@ -320,13 +319,34 @@ release_decoded_tee:
   return tee;
 }
 
+static GstElement *
+gst_agnostic_bin_get_queue_for_pad (GstPad * pad)
+{
+  GstElement *queue;
+  GstPad *target;
+
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target == NULL)
+    return NULL;
+
+  queue = gst_pad_get_parent_element (target);
+  g_object_unref (target);
+
+  return queue;
+}
+
 static void
 gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
     GstPad * srcpad)
 {
-  GstElement *queue = g_object_get_data (G_OBJECT (srcpad), QUEUE_DATA);
+  GstElement *queue = gst_agnostic_bin_get_queue_for_pad (srcpad);
+
+  if (queue == NULL)
+    return;
 
   gst_agnostic_bin_unlink_from_tee (queue, "sink");
+  g_object_unref (queue);
 }
 
 static void
@@ -402,13 +422,17 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
   }
   gst_caps_unref (raw_caps);
 
-  queue = g_object_get_data (G_OBJECT (srcpad), QUEUE_DATA);
-  if (tee != NULL) {
-    gst_agnostic_bin_link_to_tee (tee, queue, "sink");
+  queue = gst_agnostic_bin_get_queue_for_pad (srcpad);
 
-    g_object_unref (tee);
-  } else {
-    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+  if (queue != NULL) {
+    if (tee != NULL) {
+      gst_agnostic_bin_link_to_tee (tee, queue, "sink");
+
+      g_object_unref (tee);
+    } else {
+      gst_agnostic_bin_unlink_from_tee (queue, "sink");
+    }
+    g_object_unref (queue);
   }
 
   gst_caps_unref (allowed_caps);
@@ -530,8 +554,6 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   pad = gst_ghost_pad_new_from_template (pad_name, target, templ);
   g_object_unref (target);
   g_free (pad_name);
-  g_object_set_data_full (G_OBJECT (pad), QUEUE_DATA, g_object_ref (queue),
-      g_object_unref);
 
   gst_pad_set_link_function (pad, gst_agnostic_bin_src_linked);
   g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
@@ -560,11 +582,15 @@ gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
       || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, FALSE);
 
-  queue = g_object_get_data (G_OBJECT (pad), QUEUE_DATA);
+  queue = gst_agnostic_bin_get_queue_for_pad (pad);
 
-  gst_agnostic_bin_unlink_from_tee (queue, "sink");
-  gst_element_set_state (queue, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (element), queue);
+  if (queue != NULL) {
+    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+    gst_element_set_state (queue, GST_STATE_NULL);
+    gst_bin_remove (GST_BIN (element), queue);
+
+    g_object_unref (queue);
+  }
 
   gst_element_remove_pad (element, pad);
 }
