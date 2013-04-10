@@ -163,13 +163,12 @@ gst_joinable_class_init (GstJoinableClass * klass)
 static void
 gst_joinable_init (GstJoinable * joinable)
 {
-  GstElement *audio_agnosticbin, *video_agnosticbin;
   GstPad *audio_valve_sink, *video_valve_sink;
   GstPad *audio_sink, *video_sink;
 
-  audio_agnosticbin =
+  joinable->audio_agnosticbin =
       gst_element_factory_make ("agnosticbin", AUDIO_AGNOSTICBIN);
-  video_agnosticbin =
+  joinable->video_agnosticbin =
       gst_element_factory_make ("agnosticbin", VIDEO_AGNOSTICBIN);
 
   joinable->audio_valve = gst_element_factory_make ("valve", AUDIO_VALVE);
@@ -178,8 +177,9 @@ gst_joinable_init (GstJoinable * joinable)
   g_object_set (joinable->audio_valve, "drop", TRUE, NULL);
   g_object_set (joinable->video_valve, "drop", TRUE, NULL);
 
-  gst_bin_add_many (GST_BIN (joinable), audio_agnosticbin,
-      video_agnosticbin, joinable->audio_valve, joinable->video_valve, NULL);
+  gst_bin_add_many (GST_BIN (joinable), joinable->audio_agnosticbin,
+      joinable->video_agnosticbin, joinable->audio_valve, joinable->video_valve,
+      NULL);
 
   audio_valve_sink = gst_element_get_static_pad (joinable->audio_valve, "sink");
   video_valve_sink = gst_element_get_static_pad (joinable->video_valve, "sink");
