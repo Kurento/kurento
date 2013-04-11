@@ -29,6 +29,14 @@ typedef struct _GstBaseStreamClass GstBaseStreamClass;
 struct _GstBaseStream
 {
   GstJoinable parent;
+
+  GstSDPMessage *pattern_sdp;
+
+  GstSDPMessage *local_offer_sdp;
+  GstSDPMessage *local_answer_sdp;
+
+  GstSDPMessage *remote_offer_sdp;
+  GstSDPMessage *remote_answer_sdp;
 };
 
 struct _GstBaseStreamClass
