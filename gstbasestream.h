@@ -2,6 +2,7 @@
 #define __GST_BASE_STREAM_H__
 
 #include <gst/gst.h>
+#include <gst/sdp/gstsdpmessage.h>
 #include <gstjoinable.h>
 
 G_BEGIN_DECLS
@@ -33,6 +34,12 @@ struct _GstBaseStream
 struct _GstBaseStreamClass
 {
   GstJoinableClass parent_class;
+
+  /* actions */
+  GstSDPMessage *(*generate_offer) (GstBaseStream * base_stream);
+  GstSDPMessage *(*generate_answer) (GstBaseStream * base_stream,
+      GstSDPMessage * offer);
+  void (*process_answer) (GstBaseStream * base_stream, GstSDPMessage * answer);
 };
 
 GType gst_base_stream_get_type (void);
