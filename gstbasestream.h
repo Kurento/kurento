@@ -30,6 +30,7 @@ struct _GstBaseStream
 {
   GstJoinable parent;
 
+  /* private */
   GstSDPMessage *pattern_sdp;
 
   GstSDPMessage *local_offer_sdp;
@@ -43,11 +44,16 @@ struct _GstBaseStreamClass
 {
   GstJoinableClass parent_class;
 
+  /* private */
   /* actions */
   GstSDPMessage *(*generate_offer) (GstBaseStream * base_stream);
   GstSDPMessage *(*generate_answer) (GstBaseStream * base_stream,
       GstSDPMessage * offer);
   void (*process_answer) (GstBaseStream * base_stream, GstSDPMessage * answer);
+  /* virtual methods */
+
+    gboolean (*set_transport_to_sdp) (GstBaseStream * base_stream,
+      GstSDPMessage * msg);
 };
 
 GType gst_base_stream_get_type (void);

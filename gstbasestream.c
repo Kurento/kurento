@@ -87,11 +87,44 @@ gst_base_stream_release_remote_answer_sdp (GstBaseStream * base_stream)
   base_stream->remote_answer_sdp = NULL;
 }
 
-GstSDPMessage *
+static gboolean
+gst_base_stream_set_transport_to_sdp (GstBaseStream * base_stream,
+    GstSDPMessage * msg)
+{
+  /* Defalut function, do nothing */
+  return TRUE;
+}
+
+static GstSDPMessage *
 gst_base_stream_generate_offer (GstBaseStream * base_stream)
 {
+  GstSDPMessage *offer = NULL;
+  GstBaseStreamClass *base_stream_class =
+      GST_BASE_STREAM_CLASS (G_OBJECT_GET_CLASS (base_stream));
+
   GST_DEBUG ("generate_offer");
-  return NULL;
+
+  GST_OBJECT_LOCK (base_stream);
+  if (base_stream->pattern_sdp != NULL) {
+    gst_sdp_message_copy (base_stream->pattern_sdp, &offer);
+  }
+  GST_OBJECT_UNLOCK (base_stream);
+
+  if (offer == NULL)
+    return NULL;
+
+  if (base_stream_class->set_transport_to_sdp ==
+      gst_base_stream_set_transport_to_sdp) {
+    g_warning ("%s does not reimplement \"set_transport_to_sdp\"",
+        G_OBJECT_CLASS_NAME (base_stream_class));
+  }
+
+  if (!base_stream_class->set_transport_to_sdp (base_stream, offer)) {
+    gst_sdp_message_free (offer);
+    return NULL;
+  }
+
+  return offer;
 }
 
 GstSDPMessage *
@@ -188,6 +221,8 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
       "Base/Bin/BaseStream",
       "Base class for streams",
       "José Antonio Santos Cadenas <santoscadenas@kurento.com>");
+
+  klass->set_transport_to_sdp = gst_base_stream_set_transport_to_sdp;
 
   klass->generate_offer = gst_base_stream_generate_offer;
   klass->generate_answer = gst_base_stream_generate_answer;
