@@ -2,8 +2,12 @@
 #  include <config.h>
 #endif
 
+#include <nice/interfaces.h>
+#include <gst/rtp/gstrtcpbuffer.h>
+
 #include "gstudpstream.h"
 #include "gstagnosticbin.h"
+#include "sdp_utils.h"
 
 #define PLUGIN_NAME "udpstream"
 
@@ -73,6 +77,7 @@ gst_udp_stream_get_socket_port (GSocket * socket)
     return 0;
 
   port = g_inet_socket_address_get_port (addr);
+  g_inet_socket_address_get_address (addr);
   g_object_unref (addr);
 
   return port;
@@ -117,6 +122,105 @@ gst_udp_stream_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
   return TRUE;
 }
 
+static guint64
+get_ntp_time ()
+{
+  return time (NULL) + 2208988800;
+}
+
+static void
+gst_udp_set_connection (GstSDPMessage * msg)
+{
+  GList *ips, *l;
+  GResolver *resolver;
+  gboolean done = FALSE;
+
+  ips = nice_interfaces_get_local_ips (FALSE);
+
+  resolver = g_resolver_get_default ();
+  for (l = ips; l != NULL && !done; l = l->next) {
+    GInetAddress *addr;
+    gboolean is_ipv6 = FALSE;
+
+    addr = g_inet_address_new_from_string (l->data);
+    switch (g_inet_address_get_family (addr)) {
+      case G_SOCKET_FAMILY_INVALID:
+      case G_SOCKET_FAMILY_UNIX:
+        /* Ignore this addresses */
+        break;
+      case G_SOCKET_FAMILY_IPV6:
+        is_ipv6 = TRUE;
+      case G_SOCKET_FAMILY_IPV4:
+      {
+        gchar *name;
+
+        name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
+        if (name != NULL) {
+          const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
+          gchar *ntp = g_strdup_printf ("%ld", get_ntp_time ());
+
+          // GET for public address?
+          gst_sdp_message_set_connection (msg, "IN", addr_type, l->data, 0, 0);
+          gst_sdp_message_set_origin (msg, "-", ntp, ntp, "IN",
+              addr_type, name);
+          g_free (ntp);
+          g_free (name);
+          done = TRUE;
+        }
+        break;
+      }
+    }
+
+    g_object_unref (addr);
+  }
+  g_object_unref (resolver);
+
+  g_list_free_full (ips, g_free);
+}
+
+static gboolean
+gst_udp_stream_set_transport_to_sdp (GstBaseStream * base_stream,
+    GstSDPMessage * msg)
+{
+  GstUdpStream *udpstream = GST_UDP_STREAM (base_stream);
+  gboolean ret;
+  guint len, i;
+
+  ret =
+      GST_BASE_STREAM_CLASS (gst_udp_stream_parent_class)->set_transport_to_sdp
+      (base_stream, msg);
+
+  if (!ret)
+    return FALSE;
+
+  gst_udp_set_connection (msg);
+
+  len = gst_sdp_message_medias_len (msg);
+
+  for (i = 0; i < len; i++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
+
+    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0) {
+      ((GstSDPMedia *) media)->port = 0;
+      continue;
+    }
+
+    if (gst_sdp_media_connections_len (media) != 0) {
+      // TODO: If a remove api is added to gstreamer, remove all c= lines
+      g_warning ("Pattern should not have connection lines");
+    }
+
+    if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0)
+      ((GstSDPMedia *) media)->port =
+          gst_udp_stream_get_socket_port (udpstream->audio_rtp_socket);
+    else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0)
+      ((GstSDPMedia *) media)->port =
+          gst_udp_stream_get_socket_port (udpstream->video_rtp_socket);
+  }
+
+  return TRUE;
+}
+
 static void
 gst_udp_stream_dispose (GObject * object)
 {
@@ -133,6 +237,7 @@ gst_udp_stream_dispose (GObject * object)
 static void
 gst_udp_stream_class_init (GstUdpStreamClass * klass)
 {
+  GstBaseStreamClass *gst_base_stream_class;
   GstElementClass *gstelement_class;
   GObjectClass *gobject_class;
 
@@ -146,6 +251,11 @@ gst_udp_stream_class_init (GstUdpStreamClass * klass)
 
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->dispose = gst_udp_stream_dispose;
+
+  gst_base_stream_class = GST_BASE_STREAM_CLASS (klass);
+
+  gst_base_stream_class->set_transport_to_sdp =
+      gst_udp_stream_set_transport_to_sdp;
 }
 
 static void

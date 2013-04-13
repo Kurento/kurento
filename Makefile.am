@@ -26,8 +26,8 @@ libgstkurento_la_SOURCES = gstkurento.c \
 			gstudpstream.c gstudpstream.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libgstkurento_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) -Werror
-libgstkurento_la_LIBADD = $(GST_LIBS) $(GIO_LIBS)
+libgstkurento_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) -Werror
+libgstkurento_la_LIBADD = $(GST_LIBS) $(GIO_LIBS) $(NICE_LIBS)
 libgstkurento_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libgstkurento_la_LIBTOOLFLAGS = --tag=disable-static
 
