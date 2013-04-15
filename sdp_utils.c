@@ -325,6 +325,20 @@ intersect_sdp_medias (const GstSDPMedia * offer,
   return GST_SDP_OK;
 }
 
+static void
+sdp_message_set_offer_session_id (const GstSDPMessage * offer,
+    const GstSDPMessage * answer, GstSDPMessage * answer_result)
+{
+  const GstSDPOrigin *offer_origin, *answer_origin;
+
+  offer_origin = gst_sdp_message_get_origin (offer);
+  answer_origin = gst_sdp_message_get_origin (answer);
+
+  gst_sdp_message_set_origin (answer_result, answer_origin->username,
+      offer_origin->sess_id, answer_origin->sess_version,
+      answer_origin->nettype, answer_origin->addrtype, answer_origin->addr);
+}
+
 GstSDPResult
 sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
     const GstSDPMessage * answer, GstSDPMessage ** offer_result,
@@ -350,6 +364,8 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
     GST_ERROR ("Error creating sdp message");
     goto end;
   }
+
+  sdp_message_set_offer_session_id (offer, answer, *answer_result);
 
   offer_medias_len = gst_sdp_message_medias_len (offer);
   answer_medias_len = gst_sdp_message_medias_len (answer);
