@@ -143,6 +143,13 @@ gst_base_stream_start_transport_send (GstBaseStream * base_stream,
 }
 
 static void
+gst_base_stream_connect_input_elements (GstBaseStream * base_stream,
+    const GstSDPMessage * answer)
+{
+  /* Defalut function, do nothing */
+}
+
+static void
 gst_base_stream_start_media (GstBaseStream * base_stream,
     const GstSDPMessage * answer)
 {
@@ -159,7 +166,14 @@ gst_base_stream_start_media (GstBaseStream * base_stream,
 
   base_stream_class->start_transport_send (base_stream, answer);
 
-  // TODO: Connect elements to input valves
+//   FIXME: Remove comment when implemented in child classes
+//   if (base_stream_class->connect_input_elements ==
+//       gst_base_stream_connect_input_elements) {
+//     g_warning ("%s does not reimplement \"connect_input_elements\"",
+//         G_OBJECT_CLASS_NAME (base_stream_class));
+//   }
+
+  base_stream_class->connect_input_elements (base_stream, answer);
 }
 
 static gboolean
@@ -351,6 +365,7 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
 
   klass->set_transport_to_sdp = gst_base_stream_set_transport_to_sdp;
   klass->start_transport_send = gst_base_stream_start_transport_send;
+  klass->connect_input_elements = gst_base_stream_connect_input_elements;
 
   klass->generate_offer = gst_base_stream_generate_offer;
   klass->process_offer = gst_base_stream_process_offer;

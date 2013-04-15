@@ -57,6 +57,8 @@ struct _GstBaseStreamClass
       GstSDPMessage * msg);
   void (*start_transport_send) (GstBaseStream * base_stream,
       const GstSDPMessage * answer);
+  void (*connect_input_elements) (GstBaseStream * base_stream,
+      const GstSDPMessage * answer);
 };
 
 GType gst_base_stream_get_type (void);
