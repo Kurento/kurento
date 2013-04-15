@@ -129,7 +129,7 @@ get_ntp_time ()
 }
 
 static void
-gst_udp_set_connection (GstSDPMessage * msg)
+gst_udp_set_connection (GstBaseStream * base_stream, GstSDPMessage * msg)
 {
   GList *ips, *l;
   GResolver *resolver;
@@ -154,6 +154,11 @@ gst_udp_set_connection (GstSDPMessage * msg)
       {
         gchar *name;
 
+        if (is_ipv6 != base_stream->use_ipv6) {
+          GST_DEBUG ("No valid address type: %d", is_ipv6);
+          break;
+        }
+
         name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
         if (name != NULL) {
           const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
@@ -170,7 +175,6 @@ gst_udp_set_connection (GstSDPMessage * msg)
         break;
       }
     }
-
     g_object_unref (addr);
   }
   g_object_unref (resolver);
@@ -193,7 +197,7 @@ gst_udp_stream_set_transport_to_sdp (GstBaseStream * base_stream,
   if (!ret)
     return FALSE;
 
-  gst_udp_set_connection (msg);
+  gst_udp_set_connection (base_stream, msg);
 
   len = gst_sdp_message_medias_len (msg);
 

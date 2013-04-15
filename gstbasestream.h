@@ -38,6 +38,8 @@ struct _GstBaseStream
 
   GstSDPMessage *remote_offer_sdp;
   GstSDPMessage *remote_answer_sdp;
+
+  gboolean use_ipv6;
 };
 
 struct _GstBaseStreamClass

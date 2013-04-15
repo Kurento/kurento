@@ -17,6 +17,8 @@ GST_DEBUG_CATEGORY_STATIC (gst_base_stream_debug);
 #define gst_base_stream_parent_class parent_class
 G_DEFINE_TYPE (GstBaseStream, gst_base_stream, GST_TYPE_JOINABLE);
 
+#define USE_IPV6_DEFAULT FALSE
+
 /* Signals and args */
 enum
 {
@@ -29,6 +31,7 @@ enum
 enum
 {
   PROP_0,
+  PROP_USE_IPV6,
   PROP_PATTERN_SDP,
   PROP_LOCAL_OFFER_SDP,
   PROP_LOCAL_ANSWER_SDP,
@@ -244,6 +247,11 @@ gst_base_stream_set_property (GObject * object, guint prop_id,
       base_stream->pattern_sdp = g_value_dup_boxed (value);
       GST_OBJECT_UNLOCK (base_stream);
       break;
+    case PROP_USE_IPV6:
+      GST_OBJECT_LOCK (base_stream);
+      base_stream->use_ipv6 = g_value_get_boolean (value);
+      GST_OBJECT_UNLOCK (base_stream);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -257,6 +265,9 @@ gst_base_stream_get_property (GObject * object, guint prop_id, GValue * value,
   GstBaseStream *base_stream = GST_BASE_STREAM (object);
 
   switch (prop_id) {
+    case PROP_USE_IPV6:
+      g_value_set_boolean (value, base_stream->use_ipv6);
+      break;
     case PROP_PATTERN_SDP:
       g_value_set_boxed (value, base_stream->pattern_sdp);
       break;
@@ -341,6 +352,11 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
       __gst_kurento_marshal_VOID__BOXED, G_TYPE_NONE, 1, GST_TYPE_SDP_MESSAGE);
 
   /* Properties initialization */
+  g_object_class_install_property (gobject_class, PROP_USE_IPV6,
+      g_param_spec_boolean ("use-ipv6", "Use ipv6 in SDPs",
+          "Use ipv6 addresses in generated sdp offers and answers",
+          USE_IPV6_DEFAULT, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   g_object_class_install_property (gobject_class, PROP_PATTERN_SDP,
       g_param_spec_boxed ("pattern-sdp", "Pattern to create local sdps",
           "Pattern to create \"local-offer-sdp\" and \"local-answer-sdp\"",
@@ -372,6 +388,7 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
 static void
 gst_base_stream_init (GstBaseStream * base_stream)
 {
+  base_stream->use_ipv6 = USE_IPV6_DEFAULT;
   base_stream->pattern_sdp = NULL;
   base_stream->local_offer_sdp = NULL;
   base_stream->local_answer_sdp = NULL;
