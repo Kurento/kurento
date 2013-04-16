@@ -326,6 +326,47 @@ gst_udp_stream_class_init (GstUdpStreamClass * klass)
       gst_udp_stream_start_transport_send;
 }
 
+static gboolean
+gst_udp_stream_connect_video_rtcp (GstUdpStream * udp_stream)
+{
+  GST_DEBUG ("connect_video_rtcp");
+  gst_element_link_pads (GST_BASE_RTP_STREAM (udp_stream)->rtpbin,
+      "send_rtcp_src_1", udp_stream->video_rtcp_udpsink, "sink");
+  return FALSE;
+}
+
+static gboolean
+gst_udp_stream_connect_audio_rtcp (GstUdpStream * udp_stream)
+{
+  GST_DEBUG ("connect_audio_rtcp");
+  gst_element_link_pads (GST_BASE_RTP_STREAM (udp_stream)->rtpbin,
+      "send_rtcp_src_0", udp_stream->audio_rtcp_udpsink, "sink");
+  return FALSE;
+}
+
+static void
+gst_udp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
+    GstUdpStream * udp_stream)
+{
+  if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_0") == 0) {
+    gst_element_link_pads (rtpbin,
+        "send_rtp_src_0", udp_stream->audio_rtp_udpsink, "sink");
+
+    g_idle_add_full (G_PRIORITY_DEFAULT,
+        (GSourceFunc) (gst_udp_stream_connect_audio_rtcp),
+        g_object_ref (udp_stream), g_object_unref);
+  } else if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_1") == 0) {
+    gst_element_link_pads (GST_BASE_RTP_STREAM (udp_stream)->rtpbin,
+        "send_rtp_src_1", udp_stream->video_rtp_udpsink, "sink");
+
+    g_idle_add_full (G_PRIORITY_DEFAULT,
+        (GSourceFunc) gst_udp_stream_connect_video_rtcp,
+        g_object_ref (udp_stream), g_object_unref);
+  } else {
+    GST_DEBUG ("Other pad added: %P", pad);
+  }
+}
+
 static void
 gst_udp_stream_init (GstUdpStream * udp_stream)
 {
@@ -414,7 +455,8 @@ gst_udp_stream_init (GstUdpStream * udp_stream)
   gst_element_link_pads (video_rtcp_src, "src", base_rtp_stream->rtpbin,
       "recv_rtcp_sink_%u");
 
-  // TODO: Connect udp sink using callbacks
+  g_signal_connect (base_rtp_stream->rtpbin, "pad-added",
+      G_CALLBACK (gst_udp_stream_rtpbin_pad_added), udp_stream);
 }
 
 gboolean
