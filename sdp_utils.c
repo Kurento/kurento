@@ -186,11 +186,11 @@ sdp_media_set_direction (GstSDPMedia * media, GstSDPDirection direction)
 }
 
 /**
- * Returns : a newly-allocated string or NULL if any.
+ * Returns : a string or NULL if any.
  * The returned string should be freed with g_free() when no longer needed.
  */
-static const gchar *
-sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
+const gchar *
+sdp_utils_sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
 {
   guint i, attrs_len;
   gchar *rtpmap = NULL;
@@ -295,11 +295,13 @@ intersect_sdp_medias (const GstSDPMedia * offer,
   for (i = 0; i < offer_format_len; i++) {
     gint j;
     const gchar *offer_format = gst_sdp_media_get_format (offer, i);
-    const gchar *offer_rtpmap = sdp_media_get_rtpmap (offer, offer_format);
+    const gchar *offer_rtpmap =
+        sdp_utils_sdp_media_get_rtpmap (offer, offer_format);
 
     for (j = 0; j < answer_format_len; j++) {
       const gchar *answer_format = gst_sdp_media_get_format (answer, j);
-      const gchar *answer_rtpmap = sdp_media_get_rtpmap (answer, answer_format);
+      const gchar *answer_rtpmap =
+          sdp_utils_sdp_media_get_rtpmap (answer, answer_format);
 
       if (offer_rtpmap == NULL || answer_rtpmap == NULL
           || (g_ascii_strcasecmp (offer_rtpmap, answer_rtpmap) != 0)) {
@@ -406,7 +408,7 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
       if (offer_media->fmts->len > 0) {
         const gchar *offer_format = gst_sdp_media_get_format (offer_media, 0);
         const gchar *offer_rtpmap =
-            sdp_media_get_rtpmap (offer_media, offer_format);
+            sdp_utils_sdp_media_get_rtpmap (offer_media, offer_format);
 
         sdp_utils_sdp_media_add_format (offer_media_result, offer_format,
             offer_rtpmap);

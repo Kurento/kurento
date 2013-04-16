@@ -37,4 +37,7 @@ GstSDPResult sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
     const GstSDPMessage * answer, GstSDPMessage ** offer_result,
     GstSDPMessage ** answer_result);
 
+const gchar *sdp_utils_sdp_media_get_rtpmap (const GstSDPMedia * media,
+    const gchar * format);
+
 #endif /* __SDP_H__ */
