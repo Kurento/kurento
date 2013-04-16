@@ -163,6 +163,108 @@ gst_base_rtp_stream_connect_input_elements (GstBaseStream * base_stream,
   }
 }
 
+static GstCaps *
+gst_base_rtp_stream_get_caps_for_pt (GstBaseRtpStream * base_rtp_stream,
+    guint pt)
+{
+  GstBaseStream *base_stream = GST_BASE_STREAM (base_rtp_stream);
+  GstSDPMessage *answer;
+  guint i, len;
+
+  answer = base_stream->local_answer_sdp;
+  if (answer == NULL)
+    answer = base_stream->remote_answer_sdp;
+
+  if (answer == NULL)
+    return NULL;
+
+  len = gst_sdp_message_medias_len (answer);
+
+  for (i = 0; i < len; i++) {
+    const gchar *rtpmap;
+    const GstSDPMedia *media = gst_sdp_message_get_media (answer, i);
+    guint j, f_len;
+
+    // TODO: Change constant RTP/AVP by a paremeter
+    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0)
+      continue;
+
+    f_len = gst_sdp_media_formats_len (media);
+
+    for (j = 0; j < f_len; j++) {
+      GstCaps *caps;
+      const gchar *payload = gst_sdp_media_get_format (media, j);
+
+      if (atoi (payload) != pt)
+        continue;
+
+      rtpmap = sdp_utils_sdp_media_get_rtpmap (media, payload);
+
+      caps =
+          gst_base_rtp_stream_get_caps_from_rtpmap (media->media, payload,
+          rtpmap);
+
+      if (caps != NULL) {
+        gst_caps_set_simple (caps, "rtcp-fb-x-gstreamer-fir-as-repair",
+            G_TYPE_BOOLEAN, TRUE, NULL);
+        return caps;
+      }
+    }
+  }
+
+  return NULL;
+}
+
+static GstCaps *
+gst_base_rtp_stream_request_pt_map (GstElement * rtpbin, guint session,
+    guint pt, GstBaseRtpStream * base_rtp_stream)
+{
+  GstCaps *caps;
+
+  GST_DEBUG ("Caps request for pt: %d", pt);
+
+  caps = gst_base_rtp_stream_get_caps_for_pt (base_rtp_stream, pt);
+
+  if (caps != NULL)
+    return caps;
+
+  return gst_caps_new_simple ("application/x-rtp", "payload", G_TYPE_INT, pt,
+      NULL);
+}
+
+static void
+gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
+    GstBaseRtpStream * rtp_stream)
+{
+  GstElement *agnostic;
+  GstCaps *caps;
+
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_")) {
+    agnostic = GST_JOINABLE (rtp_stream)->audio_agnosticbin;
+  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_")) {
+    agnostic = GST_JOINABLE (rtp_stream)->video_agnosticbin;
+  } else {
+    GST_DEBUG ("Other pad added: %P", pad);
+    return;
+  }
+
+  caps = gst_pad_get_pad_template_caps (pad);
+  GST_DEBUG ("New pad: %P for linking to %P with caps %P", pad, agnostic, caps);
+
+  if (caps != NULL)
+    gst_caps_unref (caps);
+
+  {
+    //TODO: Look for a depayloader to connect to joinable agnosticbin
+    // instead of connecting to a fakesink
+    GstElement *fake = gst_element_factory_make ("fakesink", NULL);
+
+    gst_bin_add (GST_BIN (rtp_stream), fake);
+    gst_element_sync_state_with_parent (fake);
+    gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), fake, "sink");
+  }
+}
+
 static void
 gst_base_rtp_stream_class_init (GstBaseRtpStreamClass * klass)
 {
@@ -188,6 +290,14 @@ static void
 gst_base_rtp_stream_init (GstBaseRtpStream * base_rtp_stream)
 {
   base_rtp_stream->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
+
+  g_signal_connect (base_rtp_stream->rtpbin, "request-pt-map",
+      G_CALLBACK (gst_base_rtp_stream_request_pt_map), base_rtp_stream);
+
+  g_signal_connect (base_rtp_stream->rtpbin, "pad-added",
+      G_CALLBACK (gst_base_rtp_stream_rtpbin_pad_added), base_rtp_stream);
+
+  g_object_set (base_rtp_stream->rtpbin, "do-lost", TRUE, NULL);
 
   gst_bin_add (GST_BIN (base_rtp_stream), base_rtp_stream->rtpbin);
 }
