@@ -534,6 +534,30 @@ gst_agnostic_bin_src_unlinked (GstPad * pad, GstPad * peer,
   gst_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
 }
 
+static gboolean
+gst_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
+{
+  if (event->type == GST_EVENT_RECONFIGURE) {
+    GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
+    GstPad *peer;
+    GstCaps *current_caps;
+
+    peer = gst_pad_get_peer (pad);
+
+    if (peer != NULL) {
+      current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
+      gst_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
+      if (current_caps != NULL)
+        gst_caps_unref (current_caps);
+      g_object_unref (peer);
+    }
+    gst_event_unref (event);
+    return TRUE;
+  } else {
+    return gst_pad_event_default (pad, parent, event);
+  }
+}
+
 static GstPad *
 gst_agnostic_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -558,6 +582,7 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   gst_pad_set_link_function (pad, gst_agnostic_bin_src_linked);
   g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
       element);
+  gst_pad_set_event_function (pad, gst_agnostic_bin_src_event);
   // TODO: Add callback for query caps changes
 
   if (GST_STATE (element) >= GST_STATE_PAUSED
