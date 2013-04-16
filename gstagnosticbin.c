@@ -281,6 +281,9 @@ gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
       gst_element_factory_list_filter (filtered_src_list, raw_caps,
       GST_PAD_SINK, FALSE);
 
+  if (filtered_list == NULL)
+    goto end;
+
   encoder_factory = GST_ELEMENT_FACTORY (filtered_list->data);
   if (encoder_factory == NULL)
     goto end;
