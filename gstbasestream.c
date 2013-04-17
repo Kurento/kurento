@@ -166,12 +166,11 @@ gst_base_stream_start_media (GstBaseStream * base_stream,
 
   base_stream_class->start_transport_send (base_stream, answer);
 
-//   FIXME: Remove comment when implemented in child classes
-//   if (base_stream_class->connect_input_elements ==
-//       gst_base_stream_connect_input_elements) {
-//     g_warning ("%s does not reimplement \"connect_input_elements\"",
-//         G_OBJECT_CLASS_NAME (base_stream_class));
-//   }
+  if (base_stream_class->connect_input_elements ==
+      gst_base_stream_connect_input_elements) {
+    g_warning ("%s does not reimplement \"connect_input_elements\"",
+        G_OBJECT_CLASS_NAME (base_stream_class));
+  }
 
   base_stream_class->connect_input_elements (base_stream, answer);
 }
