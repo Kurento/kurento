@@ -226,6 +226,68 @@ gst_udp_stream_set_transport_to_sdp (GstBaseStream * base_stream,
 }
 
 static void
+gst_udp_stream_start_transport_send (GstBaseStream * base_stream,
+    const GstSDPMessage * answer)
+{
+  GstUdpStream *udpstream = GST_UDP_STREAM (base_stream);
+  const GstSDPConnection *con;
+  guint len, i;
+
+  GST_BASE_STREAM_CLASS (gst_udp_stream_parent_class)->start_transport_send
+      (base_stream, answer);
+
+  GST_DEBUG ("Start transport send");
+
+  con = gst_sdp_message_get_connection (answer);
+
+  len = gst_sdp_message_medias_len (answer);
+
+  for (i = 0; i < len; i++) {
+    const GstSDPConnection *media_con;
+    const GstSDPMedia *media = gst_sdp_message_get_media (answer, i);
+
+    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0) {
+      ((GstSDPMedia *) media)->port = 0;
+      continue;
+    }
+
+    if (gst_sdp_media_connections_len (media) != 0)
+      media_con = gst_sdp_media_get_connection (media, 0);
+    else
+      media_con = con;
+
+    if (media_con == NULL || media_con->address == NULL
+        || media_con->address[0] == '\0') {
+      g_warning ("Missing connection information for %s",
+          gst_sdp_media_get_media (media));
+      continue;
+    }
+
+    if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
+      g_object_set (udpstream->audio_rtp_udpsink, "host", con->address, "port",
+          media->port, NULL);
+      g_object_set (udpstream->audio_rtcp_udpsink, "host", con->address, "port",
+          media->port + 1, NULL);
+
+      gst_element_sync_state_with_parent (udpstream->audio_rtp_udpsink);
+      gst_element_sync_state_with_parent (udpstream->audio_rtcp_udpsink);
+
+      GST_DEBUG ("Audio sent to: %s:%d", con->address, media->port);
+    } else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0) {
+      g_object_set (udpstream->video_rtp_udpsink, "host", con->address, "port",
+          gst_sdp_media_get_port (media), NULL);
+      g_object_set (udpstream->video_rtcp_udpsink, "host", con->address, "port",
+          gst_sdp_media_get_port (media) + 1, NULL);
+
+      gst_element_sync_state_with_parent (udpstream->video_rtp_udpsink);
+      gst_element_sync_state_with_parent (udpstream->video_rtcp_udpsink);
+
+      GST_DEBUG ("Video sent to: %s:%d", con->address, media->port);
+    }
+  }
+}
+
+static void
 gst_udp_stream_dispose (GObject * object)
 {
   GstUdpStream *udp_stream = GST_UDP_STREAM (object);
@@ -260,6 +322,8 @@ gst_udp_stream_class_init (GstUdpStreamClass * klass)
 
   gst_base_stream_class->set_transport_to_sdp =
       gst_udp_stream_set_transport_to_sdp;
+  gst_base_stream_class->start_transport_send =
+      gst_udp_stream_start_transport_send;
 }
 
 static void
@@ -317,6 +381,12 @@ gst_udp_stream_init (GstUdpStream * udp_stream)
 
   video_rtp_sink = gst_element_factory_make ("udpsink", "video_rtp_sink");
   video_rtcp_sink = gst_element_factory_make ("udpsink", "video_rtcp_sink");
+
+  udp_stream->audio_rtp_udpsink = audio_rtp_sink;
+  udp_stream->audio_rtcp_udpsink = audio_rtcp_sink;
+
+  udp_stream->video_rtp_udpsink = video_rtp_sink;
+  udp_stream->video_rtcp_udpsink = video_rtcp_sink;
 
   g_object_set (audio_rtp_src, "socket", udp_stream->audio_rtp_socket, NULL);
   g_object_set (audio_rtcp_src, "socket", udp_stream->audio_rtcp_socket, NULL);

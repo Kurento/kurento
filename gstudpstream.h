@@ -35,6 +35,12 @@ struct _GstUdpStream
 
   GSocket *video_rtp_socket;
   GSocket *video_rtcp_socket;
+
+  GstElement *audio_rtp_udpsink;
+  GstElement *audio_rtcp_udpsink;
+
+  GstElement *video_rtp_udpsink;
+  GstElement *video_rtcp_udpsink;
 };
 
 struct _GstUdpStreamClass

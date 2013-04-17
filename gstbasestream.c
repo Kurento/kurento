@@ -151,12 +151,11 @@ gst_base_stream_start_media (GstBaseStream * base_stream,
   GstBaseStreamClass *base_stream_class =
       GST_BASE_STREAM_CLASS (G_OBJECT_GET_CLASS (base_stream));
 
-// FIXME: Commented until a implementation in child classes is done
-//   if (base_stream_class->start_transport_send ==
-//       gst_base_stream_start_transport_send) {
-//     g_warning ("%s does not reimplement \"start_transport_send\"",
-//         G_OBJECT_CLASS_NAME (base_stream_class));
-//   }
+  if (base_stream_class->start_transport_send ==
+      gst_base_stream_start_transport_send) {
+    g_warning ("%s does not reimplement \"start_transport_send\"",
+        G_OBJECT_CLASS_NAME (base_stream_class));
+  }
 
   base_stream_class->start_transport_send (base_stream, answer);
 
