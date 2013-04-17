@@ -135,6 +135,34 @@ gst_base_stream_set_remote_answer_sdp (GstBaseStream * base_stream,
   g_object_notify (G_OBJECT (base_stream), "remote-answer-sdp");
 }
 
+static void
+gst_base_stream_start_transport_send (GstBaseStream * base_stream,
+    const GstSDPMessage * answer)
+{
+  /* Defalut function, do nothing */
+}
+
+static void
+gst_base_stream_start_media (GstBaseStream * base_stream,
+    const GstSDPMessage * answer)
+{
+  GST_DEBUG ("Start media");
+
+  GstBaseStreamClass *base_stream_class =
+      GST_BASE_STREAM_CLASS (G_OBJECT_GET_CLASS (base_stream));
+
+// FIXME: Commented until a implementation in child classes is done
+//   if (base_stream_class->start_transport_send ==
+//       gst_base_stream_start_transport_send) {
+//     g_warning ("%s does not reimplement \"start_transport_send\"",
+//         G_OBJECT_CLASS_NAME (base_stream_class));
+//   }
+
+  base_stream_class->start_transport_send (base_stream, answer);
+
+  // TODO: Connect elements to input valves
+}
+
 static gboolean
 gst_base_stream_set_transport_to_sdp (GstBaseStream * base_stream,
     GstSDPMessage * msg)
@@ -177,7 +205,7 @@ gst_base_stream_generate_offer (GstBaseStream * base_stream)
   return offer;
 }
 
-GstSDPMessage *
+static GstSDPMessage *
 gst_base_stream_process_offer (GstBaseStream * base_stream,
     GstSDPMessage * offer)
 {
@@ -218,12 +246,12 @@ gst_base_stream_process_offer (GstBaseStream * base_stream,
   gst_sdp_message_free (answer);
 
   gst_base_stream_set_local_answer_sdp (base_stream, intersect_answer);
-  // TODO: Start media transmission indicating remote address to child
+  gst_base_stream_start_media (base_stream, intersect_answer);
 
   return intersect_answer;
 }
 
-void
+static void
 gst_base_stream_process_answer (GstBaseStream * base_stream,
     GstSDPMessage * answer)
 {
@@ -231,7 +259,7 @@ gst_base_stream_process_answer (GstBaseStream * base_stream,
 
   gst_base_stream_set_remote_answer_sdp (base_stream, answer);
 
-  // TODO: Start media transmission indicating remote address to child
+  gst_base_stream_start_media (base_stream, answer);
 }
 
 static void
@@ -323,6 +351,7 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
       "José Antonio Santos Cadenas <santoscadenas@kurento.com>");
 
   klass->set_transport_to_sdp = gst_base_stream_set_transport_to_sdp;
+  klass->start_transport_send = gst_base_stream_start_transport_send;
 
   klass->generate_offer = gst_base_stream_generate_offer;
   klass->process_offer = gst_base_stream_process_offer;

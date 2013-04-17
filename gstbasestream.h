@@ -53,9 +53,10 @@ struct _GstBaseStreamClass
       GstSDPMessage * offer);
   void (*process_answer) (GstBaseStream * base_stream, GstSDPMessage * answer);
   /* virtual methods */
-
     gboolean (*set_transport_to_sdp) (GstBaseStream * base_stream,
       GstSDPMessage * msg);
+  void (*start_transport_send) (GstBaseStream * base_stream,
+      const GstSDPMessage * answer);
 };
 
 GType gst_base_stream_get_type (void);
