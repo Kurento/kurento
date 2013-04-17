@@ -47,7 +47,7 @@ struct _GstBaseStreamClass
   /* private */
   /* actions */
   GstSDPMessage *(*generate_offer) (GstBaseStream * base_stream);
-  GstSDPMessage *(*generate_answer) (GstBaseStream * base_stream,
+  GstSDPMessage *(*process_offer) (GstBaseStream * base_stream,
       GstSDPMessage * offer);
   void (*process_answer) (GstBaseStream * base_stream, GstSDPMessage * answer);
   /* virtual methods */

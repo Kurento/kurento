@@ -7,6 +7,7 @@
 #include "gstbasestream.h"
 #include "gstagnosticbin.h"
 #include "gstkurento-marshal.h"
+#include "sdp_utils.h"
 
 #define PLUGIN_NAME "base_stream"
 
@@ -20,7 +21,7 @@ G_DEFINE_TYPE (GstBaseStream, gst_base_stream, GST_TYPE_JOINABLE);
 enum
 {
   SIGNAL_GENERATE_OFFER,
-  SIGNAL_GENERATE_ANSWER,
+  SIGNAL_PROCESS_OFFER,
   SIGNAL_PROCESS_ANSWER,
   LAST_SIGNAL
 };
@@ -87,6 +88,50 @@ gst_base_stream_release_remote_answer_sdp (GstBaseStream * base_stream)
   base_stream->remote_answer_sdp = NULL;
 }
 
+static void
+gst_base_stream_set_local_offer_sdp (GstBaseStream * base_stream,
+    GstSDPMessage * offer)
+{
+  GST_OBJECT_LOCK (base_stream);
+  gst_base_stream_release_local_offer_sdp (base_stream);
+  gst_sdp_message_copy (offer, &base_stream->local_offer_sdp);
+  GST_OBJECT_UNLOCK (base_stream);
+  g_object_notify (G_OBJECT (base_stream), "local-offer-sdp");
+}
+
+static void
+gst_base_stream_set_remote_offer_sdp (GstBaseStream * base_stream,
+    GstSDPMessage * offer)
+{
+  GST_OBJECT_LOCK (base_stream);
+  gst_base_stream_release_remote_offer_sdp (base_stream);
+  gst_sdp_message_copy (offer, &base_stream->remote_offer_sdp);
+  GST_OBJECT_UNLOCK (base_stream);
+  g_object_notify (G_OBJECT (base_stream), "remote-offer-sdp");
+}
+
+static void
+gst_base_stream_set_local_answer_sdp (GstBaseStream * base_stream,
+    GstSDPMessage * offer)
+{
+  GST_OBJECT_LOCK (base_stream);
+  gst_base_stream_release_local_answer_sdp (base_stream);
+  gst_sdp_message_copy (offer, &base_stream->local_answer_sdp);
+  GST_OBJECT_UNLOCK (base_stream);
+  g_object_notify (G_OBJECT (base_stream), "local-answer-sdp");
+}
+
+static void
+gst_base_stream_set_remote_answer_sdp (GstBaseStream * base_stream,
+    GstSDPMessage * offer)
+{
+  GST_OBJECT_LOCK (base_stream);
+  gst_base_stream_release_remote_answer_sdp (base_stream);
+  gst_sdp_message_copy (offer, &base_stream->remote_answer_sdp);
+  GST_OBJECT_UNLOCK (base_stream);
+  g_object_notify (G_OBJECT (base_stream), "remote-answer-sdp");
+}
+
 static gboolean
 gst_base_stream_set_transport_to_sdp (GstBaseStream * base_stream,
     GstSDPMessage * msg)
@@ -124,15 +169,55 @@ gst_base_stream_generate_offer (GstBaseStream * base_stream)
     return NULL;
   }
 
+  gst_base_stream_set_local_offer_sdp (base_stream, offer);
+
   return offer;
 }
 
 GstSDPMessage *
-gst_base_stream_generate_answer (GstBaseStream * base_stream,
+gst_base_stream_process_offer (GstBaseStream * base_stream,
     GstSDPMessage * offer)
 {
-  GST_DEBUG ("generate_answer");
-  return NULL;
+  GstSDPMessage *answer = NULL, *intersec_offer, *intersect_answer;
+  GstBaseStreamClass *base_stream_class =
+      GST_BASE_STREAM_CLASS (G_OBJECT_GET_CLASS (base_stream));
+
+  gst_base_stream_set_remote_offer_sdp (base_stream, offer);
+  GST_DEBUG ("process_offer");
+
+  GST_OBJECT_LOCK (base_stream);
+  if (base_stream->pattern_sdp != NULL) {
+    gst_sdp_message_copy (base_stream->pattern_sdp, &answer);
+  }
+  GST_OBJECT_UNLOCK (base_stream);
+
+  if (answer == NULL)
+    return NULL;
+
+  if (base_stream_class->set_transport_to_sdp ==
+      gst_base_stream_set_transport_to_sdp) {
+    g_warning ("%s does not reimplement \"set_transport_to_sdp\"",
+        G_OBJECT_CLASS_NAME (base_stream_class));
+  }
+
+  if (!base_stream_class->set_transport_to_sdp (base_stream, answer)) {
+    gst_sdp_message_free (answer);
+    return NULL;
+  }
+
+  if (sdp_utils_intersect_sdp_messages (offer, answer, &intersec_offer,
+          &intersect_answer) != GST_SDP_OK) {
+    gst_sdp_message_free (answer);
+    return NULL;
+  }
+
+  gst_sdp_message_free (intersec_offer);
+  gst_sdp_message_free (answer);
+
+  gst_base_stream_set_local_answer_sdp (base_stream, intersect_answer);
+  // TODO: Start media transmission indicating remote address to child
+
+  return intersect_answer;
 }
 
 void
@@ -140,6 +225,10 @@ gst_base_stream_process_answer (GstBaseStream * base_stream,
     GstSDPMessage * answer)
 {
   GST_DEBUG ("process_answer");
+
+  gst_base_stream_set_remote_answer_sdp (base_stream, answer);
+
+  // TODO: Start media transmission indicating remote address to child
 }
 
 static void
@@ -225,7 +314,7 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
   klass->set_transport_to_sdp = gst_base_stream_set_transport_to_sdp;
 
   klass->generate_offer = gst_base_stream_generate_offer;
-  klass->generate_answer = gst_base_stream_generate_answer;
+  klass->process_offer = gst_base_stream_process_offer;
   klass->process_answer = gst_base_stream_process_answer;
 
   /* Signals initialization */
@@ -236,11 +325,11 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
           generate_offer), NULL, NULL,
       __gst_kurento_marshal_BOXED__VOID, GST_TYPE_SDP_MESSAGE, 0);
 
-  gst_base_stream_signals[SIGNAL_GENERATE_ANSWER] =
-      g_signal_new ("generate-answer",
+  gst_base_stream_signals[SIGNAL_PROCESS_OFFER] =
+      g_signal_new ("process-offer",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST, G_STRUCT_OFFSET (GstBaseStreamClass,
-          generate_answer), NULL, NULL,
+          process_offer), NULL, NULL,
       __gst_kurento_marshal_BOXED__BOXED, GST_TYPE_SDP_MESSAGE, 1,
       GST_TYPE_SDP_MESSAGE);
 
