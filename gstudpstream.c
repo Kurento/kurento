@@ -362,8 +362,6 @@ gst_udp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     g_idle_add_full (G_PRIORITY_DEFAULT,
         (GSourceFunc) gst_udp_stream_connect_video_rtcp,
         g_object_ref (udp_stream), g_object_unref);
-  } else {
-    GST_DEBUG ("Other pad added: %P", pad);
   }
 }
 

@@ -239,14 +239,12 @@ gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   GstElement *agnostic;
   GstCaps *caps;
 
-  if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_")) {
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_"))
     agnostic = GST_JOINABLE (rtp_stream)->audio_agnosticbin;
-  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_")) {
+  else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_"))
     agnostic = GST_JOINABLE (rtp_stream)->video_agnosticbin;
-  } else {
-    GST_DEBUG ("Other pad added: %P", pad);
+  else
     return;
-  }
 
   caps = gst_pad_get_pad_template_caps (pad);
   GST_DEBUG ("New pad: %P for linking to %P with caps %P", pad, agnostic, caps);
