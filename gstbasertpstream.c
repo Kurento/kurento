@@ -139,23 +139,28 @@ gst_base_rtp_stream_connect_input_elements (GstBaseStream * base_stream,
     if (payloader != NULL) {
       GstJoinable *joinable = GST_JOINABLE (base_stream);
       GstBaseRtpStream *rtp_stream = GST_BASE_RTP_STREAM (base_stream);
+      const gchar *rtpbin_pad_name;
+      GstElement *valve = NULL;
 
       GST_DEBUG ("Found depayloader %P", payloader);
       gst_bin_add (GST_BIN (base_stream), payloader);
       gst_element_sync_state_with_parent (payloader);
 
       if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
-        gst_element_link (joinable->audio_valve, payloader);
-        gst_element_link_pads (payloader, "src", rtp_stream->rtpbin,
-            "send_rtp_sink_0");
-        g_object_set (joinable->audio_valve, "drop", FALSE, NULL);
+        valve = joinable->audio_valve;
+        rtpbin_pad_name = "send_rtp_sink_0";
       } else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0) {
-        gst_element_link (joinable->video_valve, payloader);
-        gst_element_link_pads (payloader, "src", rtp_stream->rtpbin,
-            "send_rtp_sink_1");
-        g_object_set (joinable->video_valve, "drop", FALSE, NULL);
+        valve = joinable->video_valve;
+        rtpbin_pad_name = "send_rtp_sink_1";
       } else {
         gst_bin_remove (GST_BIN (base_stream), payloader);
+      }
+
+      if (valve != NULL) {
+        gst_element_link (valve, payloader);
+        gst_element_link_pads (payloader, "src", rtp_stream->rtpbin,
+            rtpbin_pad_name);
+        g_object_set (valve, "drop", FALSE, NULL);
       }
     }
 
