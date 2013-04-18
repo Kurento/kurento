@@ -18,9 +18,13 @@
 
 #define ENCODER_QUEUE_DATA "enc_queue"
 #define ENCODER_TEE_DATA "enc_tee"
+#define ENCODER_CONVERT_DATA "enc_convert"
 
 #define START_STOP_EVENT_NAME "event/start-stop"
 #define START "start"
+
+static GstStaticCaps static_raw_audio_caps = GST_STATIC_CAPS (RAW_AUDIO_CAPS);
+static GstStaticCaps static_raw_video_caps = GST_STATIC_CAPS (RAW_VIDEO_CAPS);
 
 static GstStaticCaps static_raw_caps = GST_STATIC_CAPS (RAW_CAPS);
 
@@ -232,22 +236,49 @@ static void
 gst_agnostic_bin_encoder_start_stop (GstAgnosticBin * agnosticbin,
     GstElement * encoder, gboolean start)
 {
-  GstElement *queue, *tee;
+  GstElement *queue, *tee, *convert;
 
   if (start)
     return;
 
+  convert = g_object_get_data (G_OBJECT (encoder), ENCODER_CONVERT_DATA);
   queue = g_object_get_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA);
   tee = g_object_get_data (G_OBJECT (encoder), ENCODER_TEE_DATA);
+
+  g_hash_table_remove (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee));
 
   if (queue != NULL)
     gst_agnostic_bin_unlink_from_tee (queue, "sink");
 
   gst_element_set_state (queue, GST_STATE_NULL);
+  gst_element_set_state (convert, GST_STATE_NULL);
   gst_element_set_state (encoder, GST_STATE_NULL);
   gst_element_set_state (tee, GST_STATE_NULL);
 
-  gst_bin_remove_many (GST_BIN (agnosticbin), queue, encoder, tee, NULL);
+  gst_bin_remove_many (GST_BIN (agnosticbin), queue, convert, encoder, tee,
+      NULL);
+}
+
+static GstElement *
+gst_agnostic_get_convert_element_for_raw_caps (GstCaps * raw_caps)
+{
+  GstElement *convert = NULL;
+  GstCaps *audio_caps = gst_static_caps_get (&static_raw_audio_caps);
+  GstCaps *video_caps = gst_static_caps_get (&static_raw_video_caps);
+
+  if (gst_caps_can_intersect (raw_caps, video_caps)) {
+    convert = gst_element_factory_make ("videoconvert", NULL);
+  } else if (gst_caps_can_intersect (raw_caps, audio_caps)) {
+    convert = gst_element_factory_make ("audioconvert", NULL);
+  }
+
+  if (convert == NULL)
+    convert = gst_element_factory_make ("identity", NULL);
+
+  gst_caps_unref (audio_caps);
+  gst_caps_unref (video_caps);
+
+  return convert;
 }
 
 /* This functions is called with the GST_AGNOSTIC_BIN_LOCK held */
@@ -255,9 +286,9 @@ static GstElement *
 gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
     GstCaps * allowed_caps)
 {
-  GstElement *queue, *encoder, *decoded_tee, *tee = NULL;
-  GList *encoder_list, *filtered_src_list, *filtered_list;
-  GstElementFactory *encoder_factory;
+  GstElement *queue, *encoder, *decoded_tee, *tee = NULL, *convert;
+  GList *encoder_list, *filtered_list, *l;
+  GstElementFactory *encoder_factory = NULL;
   GstPad *decoded_tee_sink;
   GstCaps *raw_caps;
 
@@ -274,43 +305,45 @@ gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
   encoder_list =
       gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_ENCODER,
       GST_RANK_NONE);
-  filtered_src_list =
+  filtered_list =
       gst_element_factory_list_filter (encoder_list, allowed_caps, GST_PAD_SRC,
       FALSE);
-  filtered_list =
-      gst_element_factory_list_filter (filtered_src_list, raw_caps,
-      GST_PAD_SINK, FALSE);
 
-  if (filtered_list == NULL)
-    goto end;
+  for (l = filtered_list; l != NULL && encoder_factory == NULL; l = l->next) {
+    encoder_factory = GST_ELEMENT_FACTORY (l->data);
+    if (gst_element_factory_get_num_pad_templates (encoder_factory) != 2) {
+      encoder_factory = NULL;
+    }
+  }
 
-  encoder_factory = GST_ELEMENT_FACTORY (filtered_list->data);
   if (encoder_factory == NULL)
     goto end;
 
+  convert = gst_agnostic_get_convert_element_for_raw_caps (raw_caps);
   encoder = gst_element_factory_create (encoder_factory, NULL);
   queue = gst_element_factory_make ("queue", NULL);
   tee = gst_element_factory_make ("tee", NULL);
 
-  gst_bin_add_many (GST_BIN (agnosticbin), queue, encoder, tee, NULL);
+  gst_bin_add_many (GST_BIN (agnosticbin), queue, convert, encoder, tee, NULL);
   gst_element_sync_state_with_parent (queue);
+  gst_element_sync_state_with_parent (convert);
   gst_element_sync_state_with_parent (encoder);
   gst_element_sync_state_with_parent (tee);
 
   g_hash_table_insert (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee),
       g_object_ref (tee));
-  gst_element_link_many (queue, encoder, tee, NULL);
+  gst_element_link_many (queue, convert, encoder, tee, NULL);
   gst_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
 
   g_object_set_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA, queue);
   g_object_set_data (G_OBJECT (encoder), ENCODER_TEE_DATA, tee);
+  g_object_set_data (G_OBJECT (encoder), ENCODER_CONVERT_DATA, convert);
 
   gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, encoder,
       "src", gst_agnostic_bin_encoder_start_stop);
 
 end:
   gst_plugin_feature_list_free (filtered_list);
-  gst_plugin_feature_list_free (filtered_src_list);
   gst_plugin_feature_list_free (encoder_list);
 
   gst_caps_unref (raw_caps);
