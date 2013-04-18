@@ -596,11 +596,30 @@ gst_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   }
 }
 
+static GstFlowReturn
+gst_agnostic_bin_src_chain (GstPad * pad, GstObject * parent,
+    GstBuffer * buffer)
+{
+  GstPad *gp = GST_PAD (GST_OBJECT_PARENT (pad));
+  GstPad *peer;
+
+  peer = gst_pad_get_peer (gp);
+
+  if (peer == NULL) {
+    GST_WARNING ("Peer is null");
+    gst_buffer_unref (buffer);
+  } else {
+    gst_pad_chain (peer, buffer);
+    g_object_unref (peer);
+  }
+  return GST_FLOW_OK;
+}
+
 static GstPad *
 gst_agnostic_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
-  GstPad *pad, *target;
+  GstPad *pad, *target, *proxy_pad;
   gchar *pad_name;
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (element);
   GstElement *queue = gst_element_factory_make ("queue", NULL);
@@ -614,6 +633,14 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   target = gst_element_get_static_pad (queue, "src");
 
   pad = gst_ghost_pad_new_from_template (pad_name, target, templ);
+
+  proxy_pad = gst_pad_get_peer (target);
+
+  if (proxy_pad != NULL) {
+    gst_pad_set_chain_function (proxy_pad, gst_agnostic_bin_src_chain);
+    g_object_unref (proxy_pad);
+  }
+
   g_object_unref (target);
   g_free (pad_name);
 
@@ -621,7 +648,6 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
       element);
   gst_pad_set_event_function (pad, gst_agnostic_bin_src_event);
-  // TODO: Add callback for query caps changes
 
   if (GST_STATE (element) >= GST_STATE_PAUSED
       || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
