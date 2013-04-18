@@ -96,6 +96,36 @@ end:
   return payloader;
 }
 
+static GstElement *
+gst_base_rtp_get_depayloader_for_caps (GstCaps * caps)
+{
+  GstElementFactory *factory;
+  GstElement *depayloader = NULL;
+  GList *payloader_list, *filtered_list;
+
+  payloader_list =
+      gst_element_factory_list_get_elements
+      (GST_ELEMENT_FACTORY_TYPE_DEPAYLOADER, GST_RANK_NONE);
+  filtered_list =
+      gst_element_factory_list_filter (payloader_list, caps, GST_PAD_SINK,
+      FALSE);
+
+  if (filtered_list == NULL)
+    goto end;
+
+  factory = GST_ELEMENT_FACTORY (filtered_list->data);
+  if (factory == NULL)
+    goto end;
+
+  depayloader = gst_element_factory_create (factory, NULL);
+
+end:
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (payloader_list);
+
+  return depayloader;
+}
+
 static void
 gst_base_rtp_stream_connect_input_elements (GstBaseStream * base_stream,
     const GstSDPMessage * answer)
@@ -241,31 +271,42 @@ static void
 gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     GstBaseRtpStream * rtp_stream)
 {
-  GstElement *agnostic;
+  GstElement *agnostic, *depayloader;
   GstCaps *caps;
+
+  GST_PAD_STREAM_LOCK (pad);
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_"))
     agnostic = GST_JOINABLE (rtp_stream)->audio_agnosticbin;
   else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_"))
     agnostic = GST_JOINABLE (rtp_stream)->video_agnosticbin;
   else
-    return;
+    goto end;
 
-  caps = gst_pad_get_pad_template_caps (pad);
+  caps = gst_pad_query_caps (pad, NULL);
   GST_DEBUG ("New pad: %P for linking to %P with caps %P", pad, agnostic, caps);
+
+  depayloader = gst_base_rtp_get_depayloader_for_caps (caps);
 
   if (caps != NULL)
     gst_caps_unref (caps);
 
-  {
-    //TODO: Look for a depayloader to connect to joinable agnosticbin
-    // instead of connecting to a fakesink
+  if (depayloader != NULL) {
+    gst_bin_add (GST_BIN (rtp_stream), depayloader);
+    gst_element_sync_state_with_parent (depayloader);
+
+    gst_element_link_pads (depayloader, "src", agnostic, "sink");
+    gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), depayloader, "sink");
+  } else {
     GstElement *fake = gst_element_factory_make ("fakesink", NULL);
 
     gst_bin_add (GST_BIN (rtp_stream), fake);
     gst_element_sync_state_with_parent (fake);
     gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), fake, "sink");
   }
+
+end:
+  GST_PAD_STREAM_UNLOCK (pad);
 }
 
 static void
