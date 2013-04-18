@@ -530,11 +530,13 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
     case GST_EVENT_CAPS:
       gst_event_parse_caps (event, &caps);
       old_caps = gst_pad_get_current_caps (pad);
+      gst_event_ref (event);
       ret = gst_pad_event_default (pad, parent, event);
       GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
         gst_agnostic_bin_connect_previous_srcpads (GST_AGNOSTIC_BIN (parent),
             caps);
+      gst_event_unref (event);
       if (old_caps != NULL)
         gst_caps_unref (old_caps);
       break;
