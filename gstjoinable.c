@@ -195,4 +195,6 @@ gst_joinable_init (GstJoinable * joinable)
 
   gst_element_add_pad (GST_ELEMENT (joinable), audio_sink);
   gst_element_add_pad (GST_ELEMENT (joinable), video_sink);
+
+  g_object_set (G_OBJECT (joinable), "async-handling", TRUE, NULL);
 }

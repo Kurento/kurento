@@ -835,6 +835,8 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   gst_element_add_pad (GST_ELEMENT (agnosticbin), agnosticbin->sinkpad);
 
   gst_element_link (tee, queue);
+
+  g_object_set (G_OBJECT (agnosticbin), "async-handling", TRUE, NULL);
 }
 
 gboolean
