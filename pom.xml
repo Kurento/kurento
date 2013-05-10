@@ -84,6 +84,23 @@
 		</extensions>
 
 	</build>
+	<distributionManagement>
+		<site>
+			<id>maven-site</id>
+			<url>scp://repository.kurento.com/var/www/kurento/site/${project.name}/${project.version}
+                        </url>
+		</site>
+		<repository>
+			<id>releases</id>
+			<name>Kurento releases repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Kurento snapshots repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 	<repositories>
 		<repository>
 			<id>kurento-snapshots</id>
