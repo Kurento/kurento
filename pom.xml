@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>server-api</artifactId>
+	<artifactId>kmf-api</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
