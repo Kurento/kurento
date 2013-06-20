@@ -4,6 +4,7 @@
 
 #include <gstagnosticbin.h>
 #include <gstudpstream.h>
+#include <gstautomuxerbin.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -12,6 +13,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!gst_udp_stream_plugin_init (kurento))
+    return FALSE;
+
+  if (!gst_automuxer_bin_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
