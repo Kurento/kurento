@@ -27,11 +27,11 @@ public class MediaServerServiceManager {
 
 	private static final int WARN_SIZE = 3;
 
-	private String address;
-	private int port;
+	private final String address;
+	private final int port;
 
-	private Set<MediaServerService.Client> mediaServerServicesInUse = new CopyOnWriteArraySet<MediaServerService.Client>();
-	private Set<MediaServerService.AsyncClient> mediaServerServicesAsyncInUse = new CopyOnWriteArraySet<MediaServerService.AsyncClient>();
+	private final Set<MediaServerService.Client> mediaServerServicesInUse = new CopyOnWriteArraySet<MediaServerService.Client>();
+	private final Set<MediaServerService.AsyncClient> mediaServerServicesAsyncInUse = new CopyOnWriteArraySet<MediaServerService.AsyncClient>();
 
 	private static MediaServerServiceManager singleton = null;
 
