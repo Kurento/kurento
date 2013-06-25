@@ -11,17 +11,17 @@ import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.getMixer_call;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public class MixerPort extends Joinable {
+public class MixerEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	MixerPort(com.kurento.kms.api.MediaObject mixerPort) {
+	MixerEndPoint(com.kurento.kms.api.MediaObject mixerPort) {
 		super(mixerPort);
 	}
 
 	/* SYNC */
 
-	Mixer getMixer() throws IOException {
+	public Mixer getMixer() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();

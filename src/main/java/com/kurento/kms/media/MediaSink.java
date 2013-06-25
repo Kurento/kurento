@@ -19,6 +19,7 @@ package com.kurento.kms.media;
 
 import java.io.IOException;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -43,6 +44,16 @@ public class MediaSink extends MediaObject {
 	}
 
 	/* SYNC */
+
+	/**
+	 * Returns the stream this MediaSink belongs to
+	 * 
+	 * @return The parent MediaStream
+	 */
+	public MediaStream getStream() {
+		// TODO: Implement this method
+		throw new NotImplementedException();
+	}
 
 	/**
 	 * Returns the Joined MediaSrc or null if not joined
@@ -86,6 +97,18 @@ public class MediaSink extends MediaObject {
 	}
 
 	/* ASYNC */
+
+	/**
+	 * Returns the stream this MediaSink belongs to
+	 * 
+	 * @param cont
+	 *            The continuation to receive the result
+	 * @return The parent MediaSrc
+	 */
+	public void getStream(Continuation<MediaStream> cont) {
+		// TODO: Implement this method
+		throw new NotImplementedException();
+	}
 
 	/**
 	 * Returns the Joined MediaSrc or null if not joined

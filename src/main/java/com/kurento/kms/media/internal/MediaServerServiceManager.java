@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.apache.thrift.TException;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -19,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.media.MediaManagerListener;
 
 public class MediaServerServiceManager {
 
@@ -35,41 +35,46 @@ public class MediaServerServiceManager {
 
 	private static MediaServerServiceManager singleton = null;
 
-	public static synchronized void init(String address, int port)
-			throws TException {
+	public static synchronized void init(String address, int port,
+			MediaManagerListener listener) throws IllegalStateException,
+			IOException {
 		MediaServerServiceManager manager;
-		boolean create = false;
 
 		synchronized (MediaServerServiceManager.class) {
-			create = singleton == null;
-		}
+			if (singleton == null) {
+				try {
+					manager = new MediaServerServiceManager(address, port,
+							listener);
+				} catch (TTransportException e) {
+					throw new IOException(e);
+				}
 
-		if (create) {
-			manager = new MediaServerServiceManager(address, port);
-
-			synchronized (MediaServerServiceManager.class) {
 				if (singleton == null)
 					singleton = manager;
+			} else {
+				throw new IllegalStateException("Already initialized");
 			}
 		}
 	}
 
-	private MediaServerServiceManager(String address, int port)
-			throws TException {
+	private MediaServerServiceManager(String address, int port,
+			MediaManagerListener listener) throws TTransportException {
 		this.address = address;
 		this.port = port;
 
-		// TODO: is it necessary?
 		MediaServerService.Client server = getMediaServerService();
+		// TODO:
+		// server.sendClusterCodeForListener(clusterCode, listenerAddr,
+		// listenerPort);
 		releaseMediaServerService(server);
 	}
 
 	public static synchronized MediaServerServiceManager getInstance()
-			throws TException {
+			throws IllegalStateException {
 		if (singleton != null) {
 			return singleton;
 		} else {
-			throw new TException("Services manager was not initialized");
+			throw new IllegalStateException("Not initialized");
 		}
 	}
 

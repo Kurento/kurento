@@ -35,7 +35,7 @@ import com.kurento.kms.api.NegotiationException;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 /**
- * A NetworkConnection is a {@link Joinable} that drives network media ports.<br>
+ * A NetworkConnection is a {@link MediaStream} that drives network media ports.<br>
  * <p>
  * A NetworkConnection can be created with
  * {@link MediaSession#createNetworkConnection(Parameters)}<br>
@@ -151,12 +151,12 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
  * </p>
  * </ul>
  */
-public class Stream extends Joinable {
+public class SdpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	Stream(com.kurento.kms.api.MediaObject stream) {
-		super(stream);
+	SdpEndPoint(com.kurento.kms.api.MediaObject endpoint) {
+		super(endpoint);
 	}
 
 	/* SYNC */
@@ -278,7 +278,8 @@ public class Stream extends Joinable {
 	 * Request a SessionSpec offer.
 	 * 
 	 * <p>
-	 * The resulting offer is available with {@link Stream#getSessionSpec()}
+	 * The resulting offer is available with
+	 * {@link SdpEndPoint#getSessionSpec()}
 	 * </p>
 	 * 
 	 * <p>
@@ -329,9 +330,9 @@ public class Stream extends Joinable {
 	/**
 	 * Request the NetworkConnection to process the given SessionSpec offer
 	 * (from the remote User Agent).<br>
-	 * The resulting answer is available with {@link Stream#getSessionSpec()}
-	 * and the remote offer will be returned by
-	 * {@link Stream#getRemoteSessionSpec()}
+	 * The resulting answer is available with
+	 * {@link SdpEndPoint#getSessionSpec()} and the remote offer will be
+	 * returned by {@link SdpEndPoint#getRemoteSessionSpec()}
 	 * 
 	 * @param offer
 	 *            SessionSpec offer from the remote User Agent
@@ -384,7 +385,7 @@ public class Stream extends Joinable {
 	 * Request the NetworkConnection to process the given SessionSpec answer
 	 * (from the remote User Agent).<br>
 	 * The answer become available on method
-	 * {@link Stream#getRemoteSessionSpec()}
+	 * {@link SdpEndPoint#getRemoteSessionSpec()}
 	 * 
 	 * @param answer
 	 *            SessionSpec answer from the remote User Agent

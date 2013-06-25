@@ -1,39 +1,43 @@
 package com.kurento.kms.media;
 
 import java.io.IOException;
-import java.util.Properties;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kms.api.MediaType;
-import com.kurento.kms.media.internal.KmsConstants;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/kmf-api-test-context.xml")
 public class SyncMediaServerTest {
 
-	private static MediaFactory mediaFactory;
+	@Autowired
+	@Qualifier("mediaManagerFactory")
+	private MediaManagerFactory mediaManagerFactory;
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws MediaException {
-		Properties properties = new Properties();
-		properties.setProperty(KmsConstants.SERVER_ADDRESS, "localhost");
-		properties.setProperty(KmsConstants.SERVER_PORT, ""
-				+ KmsConstants.DEFAULT_SERVER_PORT);
+	private MediaManager mediaManager;
 
-		MediaFactory.init(properties);
-		mediaFactory = MediaFactory.getMediaFactory();
+	@Before
+	public void setUpBeforeClass() throws MediaException, IOException {
+		mediaManager = mediaManagerFactory.createMediaManager();
 	}
 
-	@AfterClass
-	public static void afterClass() throws IOException {
-		mediaFactory.release();
+	@After
+	public void afterClass() throws IOException {
+		mediaManager.release();
 	}
 
 	@Test
 	public void testStreamSync() throws MediaException, IOException,
 			InterruptedException {
-		Stream stream = mediaFactory.getStream();
+		RtpEndPoint stream = mediaManager.getSdpEndPoint(RtpEndPoint.class);
 		System.out.println("generateOffer sessionDecriptor: "
 				+ stream.generateOffer());
 		System.out.println("processOffer sessionDecriptor: "
@@ -43,18 +47,24 @@ public class SyncMediaServerTest {
 		stream.release();
 	}
 
+	// TODO: Enable this test when uri endpoint is implemented
+	@Ignore
 	@Test
 	public void testPlayer() throws MediaException, IOException {
-		MediaPlayer player = mediaFactory.getMediaPlayer("");
+		PlayerEndPoint player = mediaManager.getUriEndPoint(
+				PlayerEndPoint.class, "");
 		player.play();
 		player.pause();
 		player.stop();
 		player.release();
 	}
 
+	// TODO: Enable this test when uri endpoint is implemented
+	@Ignore
 	@Test
 	public void testRecorder() throws MediaException, IOException {
-		MediaRecorder recorder = mediaFactory.getMediaRecorder("");
+		RecorderEndPoint recorder = mediaManager.getUriEndPoint(
+				RecorderEndPoint.class, "");
 		recorder.record();
 		recorder.pause();
 		recorder.stop();
@@ -63,11 +73,8 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testJoinable() throws MediaException, IOException {
-		Stream streamA = mediaFactory.getStream();
-		Stream streamB = mediaFactory.getStream();
-
-		streamA.join(streamB);
-		streamA.unjoin(streamB);
+		RtpEndPoint streamA = mediaManager.getSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint streamB = mediaManager.getSdpEndPoint(RtpEndPoint.class);
 
 		System.out.println("MediaSrcs: " + streamA.getMediaSrcs());
 		System.out.println("MediaSinks: " + streamA.getMediaSinks());
@@ -89,7 +96,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testMixer() throws MediaException, IOException,
 			InterruptedException {
-		DummyMixer mixer = mediaFactory.getMixer(DummyMixer.class);
+		DummyMixer mixer = mediaManager.getMixer(DummyMixer.class);
 		mixer.release();
 	}
 

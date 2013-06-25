@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -48,6 +49,16 @@ public class MediaSrc extends MediaObject {
 	}
 
 	/* SYNC */
+
+	/**
+	 * Returns the stream this MediaSrc belongs to
+	 * 
+	 * @return The parent MediaStream
+	 */
+	public MediaStream getStream() {
+		// TODO: Implement this method
+		throw new NotImplementedException();
+	}
 
 	/**
 	 * Creates a link between this object and the given sink
@@ -136,6 +147,19 @@ public class MediaSrc extends MediaObject {
 	}
 
 	/* ASYNC */
+
+	/**
+	 * Returns the stream this MediaSrc belongs to
+	 * 
+	 * @param cont
+	 *            The continuation to receive the result
+	 * @return The parent MediaStream
+	 */
+	public void getStream(Continuation<MediaStream> cont) {
+		// TODO: Implement this method
+		throw new NotImplementedException();
+	}
+
 	/**
 	 * Creates a link between this object and the given sink
 	 * 

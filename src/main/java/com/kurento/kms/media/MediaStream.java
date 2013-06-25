@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import com.kurento.kms.api.JoinException;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -16,56 +15,18 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaSinksByMediaTy
 import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaSinks_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaSrcsByMediaType_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaSrcs_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.join_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.unjoin_call;
 import com.kurento.kms.api.MediaType;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public abstract class Joinable extends MediaObject {
+public abstract class MediaStream extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	Joinable(com.kurento.kms.api.MediaObject joinable) {
-		super(joinable);
+	MediaStream(com.kurento.kms.api.MediaObject mediaStream) {
+		super(mediaStream);
 	}
 
 	/* SYNC */
-
-	public void join(Joinable peer) throws MediaException, IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			service.join(mediaObject, peer.mediaObject);
-			manager.releaseMediaServerService(service);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (JoinException e) {
-			throw new MediaException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (TException e) {
-			throw new IOException(e.getMessage(), e);
-		}
-	}
-
-	public void unjoin(Joinable peer) throws MediaException, IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			service.unjoin(mediaObject, peer.mediaObject);
-			manager.releaseMediaServerService(service);
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (JoinException e) {
-			throw new MediaException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (TException e) {
-			throw new IOException(e.getMessage(), e);
-		}
-	}
 
 	public Collection<MediaSrc> getMediaSrcs() throws IOException {
 		try {
@@ -158,88 +119,6 @@ public abstract class Joinable extends MediaObject {
 	}
 
 	/* ASYNC */
-
-	public void join(Joinable peer, final Continuation<Void> cont)
-			throws IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
-			service.join(
-					mediaObject,
-					peer.mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.join_call>() {
-						@Override
-						public void onComplete(join_call response) {
-							try {
-								response.getResult();
-								cont.onSuccess(null);
-							} catch (MediaObjectNotFoundException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (JoinException e) {
-								cont.onError(new MediaException(e.getMessage(),
-										e));
-							} catch (MediaServerException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (TException e) {
-								cont.onError(new IOException(e.getMessage(), e));
-							}
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							cont.onError(exception);
-						}
-					});
-			manager.releaseMediaServerServiceAsync(service);
-		} catch (TException e) {
-			throw new IOException(e.getMessage(), e);
-		}
-	}
-
-	public void unjoin(Joinable peer, final Continuation<Void> cont)
-			throws IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
-			service.unjoin(
-					mediaObject,
-					peer.mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.unjoin_call>() {
-						@Override
-						public void onComplete(unjoin_call response) {
-							try {
-								response.getResult();
-								cont.onSuccess(null);
-							} catch (MediaObjectNotFoundException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (JoinException e) {
-								cont.onError(new MediaException(e.getMessage(),
-										e));
-							} catch (MediaServerException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (TException e) {
-								cont.onError(new IOException(e.getMessage(), e));
-							}
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							cont.onError(exception);
-						}
-					});
-			manager.releaseMediaServerServiceAsync(service);
-		} catch (TException e) {
-			throw new IOException(e.getMessage(), e);
-		}
-	}
 
 	public void getMediaSrcs(final Continuation<Collection<MediaSrc>> cont)
 			throws IOException {
