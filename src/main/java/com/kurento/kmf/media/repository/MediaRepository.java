@@ -23,10 +23,10 @@ public abstract class MediaRepository {
 	/**
 	 * 
 	 * @param mediaId
-	 * @return the path of the media resource with this id
+	 * @return the URI of the media resource with this id
 	 * @throws IOException
 	 *             if the media resource does not exist
 	 */
-	public abstract String getPath(String mediaId) throws IOException;
+	public abstract String getUri(String mediaId) throws IOException;
 
 }
