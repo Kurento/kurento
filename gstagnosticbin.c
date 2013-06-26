@@ -624,9 +624,9 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (element);
   GstElement *queue = gst_element_factory_make ("queue", NULL);
 
-  GST_OBJECT_LOCK (element);
+  GST_AGNOSTIC_BIN_LOCK (agnosticbin);
   pad_name = g_strdup_printf ("src_%d", agnosticbin->pad_count++);
-  GST_OBJECT_UNLOCK (element);
+  GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
   gst_bin_add (GST_BIN (agnosticbin), queue);
   gst_element_sync_state_with_parent (queue);

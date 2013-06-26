@@ -20,13 +20,15 @@ typedef struct _GstJoinable GstJoinable;
 typedef struct _GstJoinableClass GstJoinableClass;
 
 #define GST_JOINABLE_LOCK(elem) \
-  (g_rec_mutex_lock (&GST_JOINABLE_CAST ((elem))->media_mutex))
+  (g_rec_mutex_lock (&GST_JOINABLE_CAST ((elem))->mutex))
 #define GST_JOINABLE_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&GST_JOINABLE_CAST ((elem))->media_mutex))
+  (g_rec_mutex_unlock (&GST_JOINABLE_CAST ((elem))->mutex))
 
 struct _GstJoinable
 {
   GstBin parent;
+
+  GRecMutex mutex;
 
   GstElement *audio_agnosticbin;
   GstElement *video_agnosticbin;

@@ -95,10 +95,10 @@ static void
 gst_base_stream_set_local_offer_sdp (GstBaseStream * base_stream,
     GstSDPMessage * offer)
 {
-  GST_OBJECT_LOCK (base_stream);
+  GST_JOINABLE_LOCK (base_stream);
   gst_base_stream_release_local_offer_sdp (base_stream);
   gst_sdp_message_copy (offer, &base_stream->local_offer_sdp);
-  GST_OBJECT_UNLOCK (base_stream);
+  GST_JOINABLE_UNLOCK (base_stream);
   g_object_notify (G_OBJECT (base_stream), "local-offer-sdp");
 }
 
@@ -106,10 +106,10 @@ static void
 gst_base_stream_set_remote_offer_sdp (GstBaseStream * base_stream,
     GstSDPMessage * offer)
 {
-  GST_OBJECT_LOCK (base_stream);
+  GST_JOINABLE_LOCK (base_stream);
   gst_base_stream_release_remote_offer_sdp (base_stream);
   gst_sdp_message_copy (offer, &base_stream->remote_offer_sdp);
-  GST_OBJECT_UNLOCK (base_stream);
+  GST_JOINABLE_UNLOCK (base_stream);
   g_object_notify (G_OBJECT (base_stream), "remote-offer-sdp");
 }
 
@@ -117,10 +117,10 @@ static void
 gst_base_stream_set_local_answer_sdp (GstBaseStream * base_stream,
     GstSDPMessage * offer)
 {
-  GST_OBJECT_LOCK (base_stream);
+  GST_JOINABLE_LOCK (base_stream);
   gst_base_stream_release_local_answer_sdp (base_stream);
   gst_sdp_message_copy (offer, &base_stream->local_answer_sdp);
-  GST_OBJECT_UNLOCK (base_stream);
+  GST_JOINABLE_UNLOCK (base_stream);
   g_object_notify (G_OBJECT (base_stream), "local-answer-sdp");
 }
 
@@ -128,10 +128,10 @@ static void
 gst_base_stream_set_remote_answer_sdp (GstBaseStream * base_stream,
     GstSDPMessage * offer)
 {
-  GST_OBJECT_LOCK (base_stream);
+  GST_JOINABLE_LOCK (base_stream);
   gst_base_stream_release_remote_answer_sdp (base_stream);
   gst_sdp_message_copy (offer, &base_stream->remote_answer_sdp);
-  GST_OBJECT_UNLOCK (base_stream);
+  GST_JOINABLE_UNLOCK (base_stream);
   g_object_notify (G_OBJECT (base_stream), "remote-answer-sdp");
 }
 
@@ -192,11 +192,11 @@ gst_base_stream_generate_offer (GstBaseStream * base_stream)
 
   GST_DEBUG ("generate_offer");
 
-  GST_OBJECT_LOCK (base_stream);
+  GST_JOINABLE_LOCK (base_stream);
   if (base_stream->pattern_sdp != NULL) {
     gst_sdp_message_copy (base_stream->pattern_sdp, &offer);
   }
-  GST_OBJECT_UNLOCK (base_stream);
+  GST_JOINABLE_UNLOCK (base_stream);
 
   if (offer == NULL)
     return NULL;
@@ -228,11 +228,11 @@ gst_base_stream_process_offer (GstBaseStream * base_stream,
   gst_base_stream_set_remote_offer_sdp (base_stream, offer);
   GST_DEBUG ("process_offer");
 
-  GST_OBJECT_LOCK (base_stream);
+  GST_JOINABLE_LOCK (base_stream);
   if (base_stream->pattern_sdp != NULL) {
     gst_sdp_message_copy (base_stream->pattern_sdp, &answer);
   }
-  GST_OBJECT_UNLOCK (base_stream);
+  GST_JOINABLE_UNLOCK (base_stream);
 
   if (answer == NULL)
     return NULL;
@@ -282,15 +282,15 @@ gst_base_stream_set_property (GObject * object, guint prop_id,
 
   switch (prop_id) {
     case PROP_PATTERN_SDP:
-      GST_OBJECT_LOCK (base_stream);
+      GST_JOINABLE_LOCK (base_stream);
       gst_base_stream_release_pattern_sdp (base_stream);
       base_stream->pattern_sdp = g_value_dup_boxed (value);
-      GST_OBJECT_UNLOCK (base_stream);
+      GST_JOINABLE_UNLOCK (base_stream);
       break;
     case PROP_USE_IPV6:
-      GST_OBJECT_LOCK (base_stream);
+      GST_JOINABLE_LOCK (base_stream);
       base_stream->use_ipv6 = g_value_get_boolean (value);
-      GST_OBJECT_UNLOCK (base_stream);
+      GST_JOINABLE_UNLOCK (base_stream);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
