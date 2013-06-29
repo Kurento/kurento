@@ -34,7 +34,7 @@ public class UriEndPoint extends EndPoint {
 		throw new NotImplementedException();
 	}
 
-	void pause() throws IOException {
+	public void pause() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
@@ -50,7 +50,7 @@ public class UriEndPoint extends EndPoint {
 		}
 	}
 
-	void stop() throws IOException {
+	public void stop() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
