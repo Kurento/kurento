@@ -18,8 +18,8 @@ public class UriEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	UriEndPoint(MediaObject mediaStream) {
-		super(mediaStream);
+	UriEndPoint(MediaObject uriEndPoint) {
+		super(uriEndPoint);
 	}
 
 	/* SYNC */

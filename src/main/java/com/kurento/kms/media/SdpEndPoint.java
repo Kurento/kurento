@@ -35,7 +35,7 @@ import com.kurento.kms.api.NegotiationException;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 /**
- * A NetworkConnection is a {@link MediaStream} that drives network media ports.<br>
+ * A NetworkConnection is a {@link MediaElement} that drives network media ports.<br>
  * <p>
  * A NetworkConnection can be created with
  * {@link MediaSession#createNetworkConnection(Parameters)}<br>

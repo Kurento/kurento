@@ -18,12 +18,12 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaSrcs_call;
 import com.kurento.kms.api.MediaType;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public abstract class MediaStream extends MediaObject {
+public abstract class MediaElement extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaStream(com.kurento.kms.api.MediaObject mediaStream) {
-		super(mediaStream);
+	MediaElement(com.kurento.kms.api.MediaObject mediaElement) {
+		super(mediaElement);
 	}
 
 	/* SYNC */

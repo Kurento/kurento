@@ -53,9 +53,9 @@ public class MediaSrc extends MediaObject {
 	/**
 	 * Returns the stream this MediaSrc belongs to
 	 * 
-	 * @return The parent MediaStream
+	 * @return The parent MediaElement
 	 */
-	public MediaStream getStream() {
+	public MediaElement getMediaElement() {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}
@@ -153,9 +153,9 @@ public class MediaSrc extends MediaObject {
 	 * 
 	 * @param cont
 	 *            The continuation to receive the result
-	 * @return The parent MediaStream
+	 * @return The parent MediaElement
 	 */
-	public void getStream(Continuation<MediaStream> cont) {
+	public void getMediaElement(Continuation<MediaElement> cont) {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}

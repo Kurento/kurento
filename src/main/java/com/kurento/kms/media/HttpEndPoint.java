@@ -14,8 +14,8 @@ public class HttpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	HttpEndPoint(MediaObject mediaStream) {
-		super(mediaStream);
+	HttpEndPoint(MediaObject httpEndPoint) {
+		super(httpEndPoint);
 	}
 
 	/* SYNC */

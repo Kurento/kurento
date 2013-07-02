@@ -48,9 +48,9 @@ public class MediaSink extends MediaObject {
 	/**
 	 * Returns the stream this MediaSink belongs to
 	 * 
-	 * @return The parent MediaStream
+	 * @return The parent MediaElement
 	 */
-	public MediaStream getStream() {
+	public MediaElement getMediaElement() {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}
@@ -105,7 +105,7 @@ public class MediaSink extends MediaObject {
 	 *            The continuation to receive the result
 	 * @return The parent MediaSrc
 	 */
-	public void getStream(Continuation<MediaStream> cont) {
+	public void getStream(Continuation<MediaElement> cont) {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}
