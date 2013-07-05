@@ -37,9 +37,9 @@ GST_STATIC_PAD_TEMPLATE ("video_sink_%u",
     GST_STATIC_CAPS (VIDEO_CAPS)
     );
 
-static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src",
+static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_PAD_SRC,
-    GST_PAD_ALWAYS,
+    GST_PAD_SOMETIMES,
     GST_STATIC_CAPS ("ANY")
     );
 
@@ -55,11 +55,43 @@ static void
 gst_automuxer_bin_typefind_have_type (GstElement * typefind,
     guint prob, GstCaps * caps, GstAutoMuxerBin * automuxerbin)
 {
-  GstElement *funnel;
+  GList *muxer_list, *filtered_list, *l;
+  GstElementFactory *muxer_factory = NULL;
 
-  funnel = gst_bin_get_by_name (GST_BIN (automuxerbin), FUNNEL_NAME);
-  gst_element_link (typefind, funnel);
-  gst_object_unref (funnel);
+  muxer_list =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_MUXER,
+      GST_RANK_NONE);
+  filtered_list =
+      gst_element_factory_list_filter (muxer_list, caps, GST_PAD_SINK, FALSE);
+  for (l = filtered_list; l != NULL && muxer_factory == NULL; l = l->next) {
+    muxer_factory = GST_ELEMENT_FACTORY (l->data);
+  }
+
+  if (muxer_factory != NULL) {
+    GstPad *target, *srcpad;
+    GstPadTemplate *templ;
+    GstElement *muxer = gst_element_factory_create (muxer_factory, NULL);
+
+    gst_bin_add (GST_BIN (automuxerbin), muxer);
+    gst_element_sync_state_with_parent (muxer);
+    gst_element_link (typefind, muxer);
+
+    target = gst_element_get_static_pad (muxer, "src");
+    templ = gst_static_pad_template_get (&src_factory);
+    srcpad = gst_ghost_pad_new_from_template ("src", target, templ);
+
+    if (GST_STATE (typefind) >= GST_STATE_PAUSED
+        || GST_STATE_PENDING (typefind) >= GST_STATE_PAUSED
+        || GST_STATE_TARGET (typefind) >= GST_STATE_PAUSED)
+      gst_pad_set_active (srcpad, TRUE);
+
+    gst_element_add_pad (GST_ELEMENT (automuxerbin), srcpad);
+
+    g_object_unref (templ);
+    g_object_unref (target);
+  }
+  gst_plugin_feature_list_free (muxer_list);
+  gst_plugin_feature_list_free (filtered_list);
 
 }
 
@@ -178,34 +210,19 @@ gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
   gstelement_class->release_pad =
       GST_DEBUG_FUNCPTR (gst_automuxer_bin_release_pad);
 
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
+
 }
 
 static void
 gst_automuxer_bin_init (GstAutoMuxerBin * automuxerbin)
 {
 
-  GstPad *target_src;
-  GstElement *funnel;
-  GstPadTemplate *templ;
-
   g_rec_mutex_init (&automuxerbin->mutex);
 
-  funnel = gst_element_factory_make ("funnel", FUNNEL_NAME);
-
-  gst_bin_add (GST_BIN (automuxerbin), funnel);
-
-  target_src = gst_element_get_static_pad (funnel, "src");
-  templ = gst_static_pad_template_get (&src_factory);
-
   automuxerbin->pad_count = 0;
-  automuxerbin->srcpad =
-      gst_ghost_pad_new_from_template ("src", target_src, templ);
 
-  g_object_unref (templ);
-  g_object_unref (target_src);
-
-  gst_element_add_pad (GST_ELEMENT (automuxerbin), automuxerbin->srcpad);
-
+  g_object_set (G_OBJECT (automuxerbin), "async-handling", TRUE, NULL);
 }
 
 static void

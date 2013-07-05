@@ -28,8 +28,6 @@ struct _GstAutoMuxerBin
 {
   GstBin parent;
 
-  GstPad *srcpad;
-
   guint pad_count;
 
   GRecMutex mutex;
