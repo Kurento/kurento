@@ -750,9 +750,27 @@ gst_agnostic_bin_dispose (GObject * object)
 {
   GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (object);
 
-  g_rec_mutex_clear (&agnosticbin->media_mutex);
-  g_hash_table_unref (agnosticbin->encoded_tees);
+  /* unref referencies held by this element */
+
+  if (agnosticbin->encoded_tees) {
+    g_hash_table_unref (agnosticbin->encoded_tees);
+    agnosticbin->encoded_tees = NULL;
+  }
+
+  /* chain up */
   G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->dispose (object);
+}
+
+static void
+gst_agnostic_bin_finalize (GObject * object)
+{
+  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (object);
+
+  /* free resources allocated by this object */
+  g_rec_mutex_clear (&agnosticbin->media_mutex);
+
+  /* chain up */
+  G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->finalize (object);
 }
 
 static void
@@ -767,6 +785,7 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
   gobject_class->set_property = gst_agnostic_bin_set_property;
   gobject_class->get_property = gst_agnostic_bin_get_property;
   gobject_class->dispose = gst_agnostic_bin_dispose;
+  gobject_class->finalize = gst_agnostic_bin_finalize;
 
   gst_element_class_set_details_simple (gstelement_class,
       "Agnostic connector",
