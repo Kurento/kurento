@@ -330,7 +330,7 @@ gst_base_stream_get_property (GObject * object, guint prop_id, GValue * value,
 }
 
 static void
-gst_base_stream_dispose (GObject * object)
+gst_base_stream_finalize (GObject * object)
 {
   GstBaseStream *base_stream = GST_BASE_STREAM (object);
 
@@ -339,6 +339,9 @@ gst_base_stream_dispose (GObject * object)
   gst_base_stream_release_local_answer_sdp (base_stream);
   gst_base_stream_release_remote_offer_sdp (base_stream);
   gst_base_stream_release_remote_answer_sdp (base_stream);
+
+  /* chain up */
+  G_OBJECT_CLASS (gst_base_stream_parent_class)->finalize (object);
 }
 
 static void
@@ -353,7 +356,7 @@ gst_base_stream_class_init (GstBaseStreamClass * klass)
 
   gobject_class->get_property = gst_base_stream_get_property;
   gobject_class->set_property = gst_base_stream_set_property;
-  gobject_class->dispose = gst_base_stream_dispose;
+  gobject_class->finalize = gst_base_stream_finalize;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
