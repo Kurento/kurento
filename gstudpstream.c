@@ -31,7 +31,7 @@ enum
 };
 
 static void
-dispose_socket (GSocket ** socket)
+finalize_socket (GSocket ** socket)
 {
   if (socket == NULL || *socket == NULL)
     return;
@@ -107,7 +107,7 @@ gst_udp_stream_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
   s2 = gst_udp_stream_open_socket (port2);
 
   if (s2 == NULL) {
-    dispose_socket (&s1);
+    finalize_socket (&s1);
     return FALSE;
   }
 
@@ -292,10 +292,10 @@ gst_udp_stream_finalize (GObject * object)
 {
   GstUdpStream *udp_stream = GST_UDP_STREAM (object);
 
-  dispose_socket (&udp_stream->audio_rtp_socket);
-  dispose_socket (&udp_stream->audio_rtcp_socket);
-  dispose_socket (&udp_stream->video_rtp_socket);
-  dispose_socket (&udp_stream->video_rtcp_socket);
+  finalize_socket (&udp_stream->audio_rtp_socket);
+  finalize_socket (&udp_stream->audio_rtcp_socket);
+  finalize_socket (&udp_stream->video_rtp_socket);
+  finalize_socket (&udp_stream->video_rtcp_socket);
 
   G_OBJECT_CLASS (gst_udp_stream_parent_class)->finalize (object);
 }
@@ -394,8 +394,8 @@ gst_udp_stream_init (GstUdpStream * udp_stream)
   }
 
   if (udp_stream->video_rtp_socket == NULL) {
-    dispose_socket (&udp_stream->audio_rtp_socket);
-    dispose_socket (&udp_stream->audio_rtcp_socket);
+    finalize_socket (&udp_stream->audio_rtp_socket);
+    finalize_socket (&udp_stream->audio_rtcp_socket);
     return;
   }
 
