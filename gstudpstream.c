@@ -288,7 +288,7 @@ gst_udp_stream_start_transport_send (GstBaseStream * base_stream,
 }
 
 static void
-gst_udp_stream_dispose (GObject * object)
+gst_udp_stream_finalize (GObject * object)
 {
   GstUdpStream *udp_stream = GST_UDP_STREAM (object);
 
@@ -297,7 +297,7 @@ gst_udp_stream_dispose (GObject * object)
   dispose_socket (&udp_stream->video_rtp_socket);
   dispose_socket (&udp_stream->video_rtcp_socket);
 
-  G_OBJECT_CLASS (gst_udp_stream_parent_class)->dispose (object);
+  G_OBJECT_CLASS (gst_udp_stream_parent_class)->finalize (object);
 }
 
 static void
@@ -316,7 +316,7 @@ gst_udp_stream_class_init (GstUdpStreamClass * klass)
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
   gobject_class = G_OBJECT_CLASS (klass);
-  gobject_class->dispose = gst_udp_stream_dispose;
+  gobject_class->finalize = gst_udp_stream_finalize;
 
   gst_base_stream_class = GST_BASE_STREAM_CLASS (klass);
 
