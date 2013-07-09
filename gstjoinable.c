@@ -136,12 +136,15 @@ gst_joinable_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
-gst_joinable_dispose (GObject * object)
+gst_joinable_finalize (GObject * object)
 {
   GstJoinable *joinable = GST_JOINABLE (object);
 
+  /* free resources allocated by this object */
   g_rec_mutex_clear (&joinable->mutex);
-  G_OBJECT_CLASS (gst_joinable_parent_class)->dispose (object);
+
+  /* chain up */
+  G_OBJECT_CLASS (gst_joinable_parent_class)->finalize (object);
 }
 
 static void
@@ -151,7 +154,7 @@ gst_joinable_class_init (GstJoinableClass * klass)
   GObjectClass *gobject_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
-  gobject_class->dispose = gst_joinable_dispose;
+  gobject_class->finalize = gst_joinable_finalize;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
