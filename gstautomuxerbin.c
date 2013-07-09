@@ -171,12 +171,15 @@ gst_automuxer_bin_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
-gst_automuxer_bin_dispose (GObject * object)
+gst_automuxer_bin_finalize (GObject * object)
 {
   GstAutoMuxerBin *automuxerbin = GST_AUTOMUXER_BIN (object);
 
+  /* free resources allocated by this element */
   g_rec_mutex_clear (&automuxerbin->mutex);
-  G_OBJECT_CLASS (gst_automuxer_bin_parent_class)->dispose (object);
+
+  /* chain up */
+  G_OBJECT_CLASS (gst_automuxer_bin_parent_class)->finalize (object);
 }
 
 /* initialize the automuxerbin's class */
@@ -191,7 +194,7 @@ gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
 
   gobject_class->set_property = gst_automuxer_bin_set_property;
   gobject_class->get_property = gst_automuxer_bin_get_property;
-  gobject_class->dispose = gst_automuxer_bin_dispose;
+  gobject_class->finalize = gst_automuxer_bin_finalize;
 
   gst_element_class_set_details_simple (gstelement_class,
       "Automuxer",
