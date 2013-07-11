@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>kmf-media-repository-spi</artifactId>
+	<artifactId>kmf-repository-ref-spi</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
