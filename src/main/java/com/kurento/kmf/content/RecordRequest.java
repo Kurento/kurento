@@ -16,6 +16,6 @@ public abstract class RecordRequest {
 
 	public abstract void record(MediaElement element);
 
-	public abstract void reject();
+	public abstract void reject(int statusCode);
 
 }

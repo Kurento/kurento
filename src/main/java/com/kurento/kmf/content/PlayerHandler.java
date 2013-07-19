@@ -2,10 +2,10 @@ package com.kurento.kmf.content;
 
 public interface PlayerHandler {
 
-	void onPlayRequest(PlayRequest playRequest);
+	void onPlayRequest(PlayRequest playRequest) throws ContentException;
 
-	void onContentPlayed(String contentId);
+	void onContentPlayed(PlayRequest playRequest);
 
-	void onError(String contentId, ContentException exception);
+	void onContentError(PlayRequest playRequest, ContentException exception);
 
 }
