@@ -2,7 +2,6 @@ package com.kurento.kmf.content.servlet;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.ServletException;
@@ -14,10 +13,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.PlayerHandler;
+import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 @WebServlet(asyncSupported = true)
 public class PlayerHandlerServlet extends HttpServlet {
@@ -30,17 +30,45 @@ public class PlayerHandlerServlet extends HttpServlet {
 	@Autowired
 	private PlayerHandler playerHandler;
 
+	@Autowired
+	private HandlerServletAsyncExecutor executor;
+
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		try {
-			SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(
-					this, this.getServletContext());
-		} catch (IllegalStateException e) {
-			throw new ServletException(
-					"Application did not load the Spring ServletApplicationContext",
-					e);
+
+		// Recover application context associated to this servlet in this
+		// context
+		AnnotationConfigApplicationContext thisServletContext = KurentoApplicationContextUtils
+				.getKurentoServletApplicationContext(this.getClass(), this.getServletName(),
+						this.getServletContext());
+
+		// If there is not application context associated to this servlet,
+		// create one
+		if (thisServletContext == null) {
+			// Locate the handler class associated to this servlet
+			String handlerClass = this.getInitParameter(
+					ContentApiInitializer.PLAYER_HANDLER_CLASS_PARAM_NAME);
+			if (handlerClass == null || handlerClass.equals("")) {
+				String message = "Cannot find handler class associated to handler servlet with name "
+						+ this.getServletConfig().getServletName()
+						+ " and class " + this.getClass().getName();
+				log.error(message);
+				throw new ServletException(message);
+			}
+			// Create application context for this servlet containing the
+			// handler
+			thisServletContext = KurentoApplicationContextUtils
+					.createKurentoServletApplicationContext(this.getClass(), this.getServletName(),
+							this.getServletContext(), handlerClass);
 		}
+
+		// Make this servlet to receive beans to resolve the @Autowired present
+		// on it
+		KurentoApplicationContextUtils
+				.processInjectionBasedOnApplicationContext(this,
+						thisServletContext);
+
 	}
 
 	@Override
@@ -77,11 +105,8 @@ public class PlayerHandlerServlet extends HttpServlet {
 
 		PlayRequest playRequest = new PlayRequest(asyncCtx, contentId);
 
-		ThreadPoolExecutor executor = (ThreadPoolExecutor) req
-				.getServletContext().getAttribute(
-						ContentServletContextListener.EXECUTOR);
-		Future<?> future = executor.submit(new AsyncPlayerRequestProcessor(
-				playerHandler, playRequest));
+		Future<?> future = executor.getExecutor().submit(
+				new AsyncPlayerRequestProcessor(playerHandler, playRequest));
 
 		// Store future for using it in case of error
 		req.setAttribute(ContentAsyncListener.FUTURE_REQUEST_ATT_NAME, future);
