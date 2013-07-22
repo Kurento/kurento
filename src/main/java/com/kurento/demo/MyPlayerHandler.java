@@ -1,13 +1,12 @@
 package com.kurento.demo;
 
-import org.springframework.stereotype.Component;
-
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.PlayerHandler;
+import com.kurento.kmf.content.PlayerMapping;
 
-@Component
-public class PlayerHandlerImpl implements PlayerHandler {
+@PlayerMapping(name="MyPlayerHandler", path="/test")
+public class MyPlayerHandler implements PlayerHandler {
 
 	@Override
 	public void onPlayRequest(PlayRequest playRequest) throws ContentException {
