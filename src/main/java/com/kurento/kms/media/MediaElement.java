@@ -30,6 +30,18 @@ public abstract class MediaElement extends MediaObject {
 	/* SYNC */
 
 	/**
+	 * Send a command to an element
+	 * 
+	 * @param command
+	 *            Command in string format that the element should understand
+	 * @return The result of the command execution
+	 */
+	String sendCommand(String command) {
+		throw new NotImplementedException();
+		// TODO: Implement
+	}
+
+	/**
 	 * 
 	 * @return the MediaManager parent of this MediaElement
 	 */
@@ -129,6 +141,19 @@ public abstract class MediaElement extends MediaObject {
 	}
 
 	/* ASYNC */
+
+	/**
+	 * Send a command to an element
+	 * 
+	 * @param command
+	 *            Command in string format that the element should understand
+	 * @param cont
+	 *            A callback to receive the result of the execution
+	 */
+	void sendCommand(String command, final Continuation<String> cont) {
+		throw new NotImplementedException();
+		// TODO: Implement
+	}
 
 	/**
 	 * 
