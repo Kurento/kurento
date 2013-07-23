@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>kmf-api</artifactId>
+	<artifactId>kmf-media-api</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>kmf-api</name>
+	<name>kmf-media-api</name>
 	<url>http://www.kurento.com</url>
 
 	<properties>
@@ -17,7 +17,6 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies version -->
-		<servlet-api.version>2.5</servlet-api.version>
 		<kms-interface.version>2.0.0-SNAPSHOT</kms-interface.version>
 		<junit.version>4.10</junit.version>
 		<slf4j.version>1.6.4</slf4j.version>
@@ -29,13 +28,6 @@
 			<groupId>com.kurento.kms</groupId>
 			<artifactId>kms-interface</artifactId>
 			<version>${kms-interface.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>${servlet-api.version}</version>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
