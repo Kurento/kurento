@@ -1,4 +1,4 @@
-package com.kurento.kmf.content.servlet;
+package com.kurento.kmf.content.internal;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -17,6 +17,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.PlayerHandler;
+import com.kurento.kmf.content.PlayerService;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 @WebServlet(asyncSupported = true)
@@ -32,6 +33,8 @@ public class PlayerHandlerServlet extends HttpServlet {
 
 	@Autowired
 	private HandlerServletAsyncExecutor executor;
+	
+	private boolean useRedirectStrategy = true;
 
 	@Override
 	public void init() throws ServletException {
@@ -61,6 +64,15 @@ public class PlayerHandlerServlet extends HttpServlet {
 			thisServletContext = KurentoApplicationContextUtils
 					.createKurentoServletApplicationContext(this.getClass(), this.getServletName(),
 							this.getServletContext(), handlerClass);
+			
+			try {
+				PlayerService playerService = Class.forName(handlerClass).getAnnotation(PlayerService.class);
+				useRedirectStrategy = playerService.redirect();
+			} catch (ClassNotFoundException e) {
+				String message = "Cannot recover class " + handlerClass + " on classpath";
+				log.error(message);
+				throw new ServletException(message);
+			}
 		}
 
 		// Make this servlet to receive beans to resolve the @Autowired present

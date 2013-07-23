@@ -5,7 +5,7 @@ import javax.servlet.ServletException;
 
 import org.springframework.web.WebApplicationInitializer;
 
-import com.kurento.kmf.content.servlet.ContentApiInitializer;
+import com.kurento.kmf.content.internal.ContentApiInitializer;
 import com.kurento.kmf.spring.KurentoServletContextListener;
 
 public class KurentoWebApplicationInitializer implements
@@ -26,9 +26,9 @@ public class KurentoWebApplicationInitializer implements
 		// Initialize ContentApi locating handlers and creating their associated
 		// servlets
 		ContentApiInitializer contentApiInitializer = new ContentApiInitializer();
-		contentApiInitializer.initializePlayers(sc);
 		contentApiInitializer.initializeRecorders(sc);
+		contentApiInitializer.initializePlayers(sc);
 
-		// TODO initialize rest of managers
+		// TODO: initialize rest of managers
 	}
 }

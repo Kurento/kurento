@@ -43,8 +43,10 @@ public class KurentoApplicationContextUtils {
 		if (appContext == null) {
 			// Create application context
 			appContext = new AnnotationConfigApplicationContext();
-			appContext.scan("com.kurento.kmf.content"); // TODO add other
-														// packages
+			appContext.scan("com.kurento.kmf.spring", "com.kurento.kmf.content"); // TODO
+																					// add
+																					// other
+																					// packages
 
 			// Recover root WebApplicationContext context just in case
 			// application developer is using Spring

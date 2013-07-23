@@ -7,8 +7,10 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PlayerMapping {
+public @interface PlayerService {
 	String name();
 
 	String path();
+	
+	boolean redirect() default true;
 }

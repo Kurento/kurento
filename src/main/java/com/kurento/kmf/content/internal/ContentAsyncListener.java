@@ -1,4 +1,4 @@
-package com.kurento.kmf.content.servlet;
+package com.kurento.kmf.content.internal;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
