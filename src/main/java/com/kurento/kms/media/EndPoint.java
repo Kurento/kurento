@@ -1,0 +1,12 @@
+package com.kurento.kms.media;
+
+import com.kurento.kms.api.MediaObject;
+
+public class EndPoint extends MediaElement {
+
+	private static final long serialVersionUID = 1L;
+
+	EndPoint(MediaObject endPoint) {
+		super(endPoint);
+	}
+}
