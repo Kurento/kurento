@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -27,6 +28,15 @@ public abstract class MediaElement extends MediaObject {
 	}
 
 	/* SYNC */
+
+	/**
+	 * 
+	 * @return the MediaManager parent of this MediaElement
+	 */
+	public MediaManager getMediaManager() {
+		// TODO: implement
+		throw new NotImplementedException();
+	}
 
 	public Collection<MediaSrc> getMediaSrcs() throws IOException {
 		try {
@@ -119,6 +129,15 @@ public abstract class MediaElement extends MediaObject {
 	}
 
 	/* ASYNC */
+
+	/**
+	 * 
+	 * @return the MediaManager parent of this MediaElement
+	 */
+	public void getMediaManager(final Continuation<MediaManager> cont) {
+		// TODO: implement
+		throw new NotImplementedException();
+	}
 
 	public void getMediaSrcs(final Continuation<Collection<MediaSrc>> cont)
 			throws IOException {
