@@ -24,6 +24,7 @@ public class MediaManagerFactory {
 		try {
 			MediaServerService.Client service = serviceManager
 					.getMediaServerService();
+			// TODO: Register to receive callbacks
 			com.kurento.kms.api.MediaObject mediaManager = service
 					.createMediaFactory();
 			serviceManager.releaseMediaServerService(service);
