@@ -474,9 +474,9 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.getMixer(DummyMixer.class, new Continuation<DummyMixer>() {
+		mediaManager.getMixer(MainMixer.class, new Continuation<MainMixer>() {
 			@Override
-			public void onSuccess(DummyMixer result) {
+			public void onSuccess(MainMixer result) {
 				System.out.println("getMixer onSuccess");
 				try {
 					releaseMediaObject(result);

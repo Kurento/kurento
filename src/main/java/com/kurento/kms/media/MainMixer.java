@@ -2,13 +2,13 @@ package com.kurento.kms.media;
 
 import com.kurento.kms.api.MediaObject;
 
-public class DummyMixer extends Mixer {
+public class MainMixer extends Mixer {
 
 	private static final long serialVersionUID = 1L;
 
 	static final int mixerId = 1;
 
-	DummyMixer(MediaObject mixer) {
+	MainMixer(MediaObject mixer) {
 		super(mixer);
 	}
 

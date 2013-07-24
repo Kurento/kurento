@@ -96,7 +96,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testMixer() throws MediaException, IOException,
 			InterruptedException {
-		DummyMixer mixer = mediaManager.getMixer(DummyMixer.class);
+		MainMixer mixer = mediaManager.getMixer(MainMixer.class);
 		mixer.release();
 	}
 
