@@ -3,6 +3,7 @@ package com.kurento.kms.media;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -24,6 +25,10 @@ public abstract class MediaObject implements Serializable {
 
 	/* SYNC */
 
+	public com.kurento.kms.media.MediaObject getParent() throws IOException {
+		throw new NotImplementedException();
+	}
+
 	public void release() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
@@ -41,6 +46,12 @@ public abstract class MediaObject implements Serializable {
 	}
 
 	/* ASYNC */
+
+	public void getParent(
+			final Continuation<com.kurento.kms.media.MediaObject> cont)
+			throws IOException {
+		throw new NotImplementedException();
+	}
 
 	public void release(final Continuation<Void> cont) throws IOException {
 		try {

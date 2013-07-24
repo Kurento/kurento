@@ -46,7 +46,7 @@ public abstract class MediaElement extends MediaObject {
 	 * @return the MediaManager parent of this MediaElement
 	 */
 	public MediaManager getMediaManager() {
-		// TODO: implement
+		// TODO: implement using getParent method
 		throw new NotImplementedException();
 	}
 
@@ -152,7 +152,7 @@ public abstract class MediaElement extends MediaObject {
 	 */
 	void sendCommand(String command, final Continuation<String> cont) {
 		throw new NotImplementedException();
-		// TODO: Implement
+		// TODO: Implement using getParent method
 	}
 
 	/**
