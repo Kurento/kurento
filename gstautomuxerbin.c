@@ -8,36 +8,70 @@
 
 #define PLUGIN_NAME "automuxerbin"
 
-#define FUNNEL_NAME "funnel"
+#define AUDIO_PAD_NAME "audio_sink_"
+#define VIDEO_PAD_NAME "video_sink_"
+#define SOURCE_PAD_NAME "src_"
 
-/* Filter signals and args */
-enum
+GST_DEBUG_CATEGORY_STATIC (gst_automuxer_bin_debug);
+#define GST_CAT_DEFAULT gst_automuxer_bin_debug
+
+#define GST_AUTOMUXER_BIN_LOCK(elem) \
+  (g_rec_mutex_lock (&GST_AUTOMUXER_BIN_CAST ((elem))->priv->mutex))
+#define GST_AUTOMUXER_BIN_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&GST_AUTOMUXER_BIN_CAST ((elem))->priv->mutex))
+
+typedef struct _PadCount PadCount;
+struct _PadCount
 {
-  /* FILL ME */
-  LAST_SIGNAL
+  guint video;
+  guint audio;
+  guint source;
 };
 
-enum
+#define GST_AUTOMUXER_BIN_GET_PRIVATE(obj) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GST_TYPE_AUTOMUXER_BIN, GstAutoMuxerBinPrivate))
+struct _GstAutoMuxerBinPrivate
 {
-  PROP_0,
+  GRecMutex mutex;
+  GstPad *srcpad;
+  GstElement *muxer;
+  GSList *valves;
+  GList *muxers;
+  PadCount *pads;
 };
+
+typedef enum
+{
+  VALVE_CLOSE,
+  VALVE_OPEN
+} ValveState;
+
+typedef enum
+{
+  INVALID_PAD,
+  SOURCE_PAD,
+  /* sink pads */
+  AUDIO_PAD,
+  VIDEO_PAD
+} PadType;
 
 /* the capabilities of the inputs and outputs. */
 static GstStaticPadTemplate sink_factory_audio =
-GST_STATIC_PAD_TEMPLATE ("audio_sink_%u",
+GST_STATIC_PAD_TEMPLATE (AUDIO_PAD_NAME "%u",
     GST_PAD_SINK,
     GST_PAD_REQUEST,
     GST_STATIC_CAPS (AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate sink_factory_video =
-GST_STATIC_PAD_TEMPLATE ("video_sink_%u",
+GST_STATIC_PAD_TEMPLATE (VIDEO_PAD_NAME "%u",
     GST_PAD_SINK,
     GST_PAD_REQUEST,
     GST_STATIC_CAPS (VIDEO_CAPS)
     );
 
-static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
+static GstStaticPadTemplate src_factory =
+GST_STATIC_PAD_TEMPLATE (SOURCE_PAD_NAME "%u",
     GST_PAD_SRC,
     GST_PAD_SOMETIMES,
     GST_STATIC_CAPS ("ANY")
@@ -46,101 +80,364 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
 #define gst_automuxer_bin_parent_class parent_class
 G_DEFINE_TYPE (GstAutoMuxerBin, gst_automuxer_bin, GST_TYPE_BIN);
 
-static void gst_automuxer_bin_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec);
-static void gst_automuxer_bin_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec);
+static GstElementFactory *
+get_muxer_factory_with_sink_caps (GstAutoMuxerBin * automuxerbin,
+    const GstCaps * caps)
+{
+  GstElementFactory *mfactory = NULL;
+  GList *flist, *e;
+
+  if (!automuxerbin->priv->muxers
+      || g_list_length (automuxerbin->priv->muxers) <= 0)
+    return NULL;
+
+  flist =
+      gst_element_factory_list_filter (automuxerbin->priv->muxers, caps,
+      GST_PAD_SINK, TRUE);
+  if (!flist || g_list_length (flist) <= 0)
+    return NULL;
+
+  gst_plugin_feature_list_free (automuxerbin->priv->muxers);
+  automuxerbin->priv->muxers = flist;
+
+  e = g_list_first (automuxerbin->priv->muxers);
+  mfactory = GST_ELEMENT_FACTORY (e->data);
+  g_object_ref (G_OBJECT (mfactory));
+
+  return mfactory;
+}
+
+static GstElement *
+connect_to_valve (GstBin * bin, GstElement * element)
+{
+  GstElement *valve;
+
+  valve = gst_element_factory_make ("valve", NULL);
+  if (valve == NULL)
+    return NULL;
+
+  if (!gst_bin_add (bin, valve)) {
+    gst_object_unref (valve);
+    return NULL;
+  }
+
+  gst_element_sync_state_with_parent (valve);
+  gst_element_link (element, valve);
+  return valve;
+}
 
 static void
-gst_automuxer_bin_typefind_have_type (GstElement * typefind,
-    guint prob, GstCaps * caps, GstAutoMuxerBin * automuxerbin)
+set_valve (gpointer v, gpointer s)
 {
-  GList *muxer_list, *filtered_list, *l;
-  GstElementFactory *muxer_factory = NULL;
+  GstElement *valve = GST_ELEMENT (v);
+  ValveState *state = s;
 
-  muxer_list =
-      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_MUXER,
-      GST_RANK_NONE);
-  filtered_list =
-      gst_element_factory_list_filter (muxer_list, caps, GST_PAD_SINK, FALSE);
-  for (l = filtered_list; l != NULL && muxer_factory == NULL; l = l->next) {
-    muxer_factory = GST_ELEMENT_FACTORY (l->data);
+  if (*state == VALVE_CLOSE)
+    g_object_set (valve, "drop", TRUE, NULL);
+  else if (*state == VALVE_OPEN)
+    g_object_set (valve, "drop", FALSE, NULL);
+}
+
+static void
+unlink_muxer (gpointer v, gpointer m)
+{
+  GstElement *valve = GST_ELEMENT (v);
+  GstElement *muxer = GST_ELEMENT (m);
+  GstElement *capsfilter;
+  GstElement *automuxerbin;
+  GstPad *srcpad, *peer;
+
+  srcpad = gst_element_get_static_pad (valve, "src");
+  peer = gst_pad_get_peer (srcpad);
+
+  /* Capsfilter element is automatically added when filtered link is used. */
+  /* That element is inserted between the valve and the muxer, so we have */
+  /* get rid of it so as to be able to link the valve to other element */
+  /* whenever other muxer is selected */
+  capsfilter = gst_pad_get_parent_element (peer);
+  automuxerbin = GST_ELEMENT (GST_OBJECT_PARENT (capsfilter));
+
+  GST_DEBUG ("Unlinking: %s--X-->%s--X-->%s\n", GST_ELEMENT_NAME (valve),
+      GST_ELEMENT_NAME (capsfilter), GST_ELEMENT_NAME (muxer));
+
+  gst_element_unlink_many (valve, capsfilter, muxer, NULL);
+
+  gst_bin_remove (GST_BIN (automuxerbin), capsfilter);
+  gst_element_set_state (capsfilter, GST_STATE_NULL);
+  g_object_unref (G_OBJECT (capsfilter));
+
+  gst_object_unref (G_OBJECT (srcpad));
+  gst_object_unref (G_OBJECT (peer));
+}
+
+static void
+link_muxer (gpointer v, gpointer m)
+{
+  GstElement *valve = GST_ELEMENT (v);
+  GstElement *muxer = GST_ELEMENT (m);
+  GstPad *sinkpad, *peer;
+  GstCaps *caps;
+
+  GST_DEBUG ("Linking %s---->%s\n", GST_ELEMENT_NAME (valve),
+      GST_ELEMENT_NAME (muxer));
+
+  sinkpad = gst_element_get_static_pad (valve, "sink");
+  peer = gst_pad_get_peer (sinkpad);
+
+  caps = gst_pad_get_current_caps (peer);
+
+  /* Filtered caps are required here to connect the valve which has ANY caps */
+  /* to the muxer in order to get the proper pad with the required caps. */
+  gst_element_link_filtered (valve, muxer, caps);
+
+  g_object_unref (G_OBJECT (sinkpad));
+  g_object_unref (G_OBJECT (peer));
+  gst_caps_unref (caps);
+}
+
+static gchar *
+get_pad_name (GstAutoMuxerBin * self, PadType type)
+{
+  gchar *name = NULL;
+
+  switch (type) {
+    case AUDIO_PAD:
+      name = g_strdup_printf (AUDIO_PAD_NAME "%d", self->priv->pads->audio++);
+      break;
+    case VIDEO_PAD:
+      name = g_strdup_printf (VIDEO_PAD_NAME "%d", self->priv->pads->video++);
+      break;
+    case SOURCE_PAD:
+      name = g_strdup_printf (SOURCE_PAD_NAME "%d", self->priv->pads->source++);
+      break;
+    default:
+      GST_WARNING ("Unknown pad type %d", type);
   }
 
-  if (muxer_factory != NULL) {
-    GstPad *target, *srcpad;
-    GstPadTemplate *templ;
-    GstElement *muxer = gst_element_factory_create (muxer_factory, NULL);
+  return name;
+}
 
-    gst_bin_add (GST_BIN (automuxerbin), muxer);
-    gst_element_sync_state_with_parent (muxer);
-    gst_element_link (typefind, muxer);
+static PadType
+get_pad_type_from_template (GstElement * element, GstPadTemplate * templ)
+{
+  GstElementClass *klass = GST_ELEMENT_GET_CLASS (element);
 
-    target = gst_element_get_static_pad (muxer, "src");
-    templ = gst_static_pad_template_get (&src_factory);
-    srcpad = gst_ghost_pad_new_from_template ("src", target, templ);
-
-    if (GST_STATE (typefind) >= GST_STATE_PAUSED
-        || GST_STATE_PENDING (typefind) >= GST_STATE_PAUSED
-        || GST_STATE_TARGET (typefind) >= GST_STATE_PAUSED)
-      gst_pad_set_active (srcpad, TRUE);
-
-    gst_element_add_pad (GST_ELEMENT (automuxerbin), srcpad);
-
-    g_object_unref (templ);
-    g_object_unref (target);
+  if (templ == gst_element_class_get_pad_template (klass, AUDIO_PAD_NAME "%u"))
+    return AUDIO_PAD;
+  else if (templ == gst_element_class_get_pad_template (klass,
+          VIDEO_PAD_NAME "%u"))
+    return VIDEO_PAD;
+  else {
+    GST_ERROR ("Unable to manage template %s",
+        GST_PAD_TEMPLATE_NAME_TEMPLATE (templ));
+    return INVALID_PAD;
   }
-  gst_plugin_feature_list_free (muxer_list);
-  gst_plugin_feature_list_free (filtered_list);
+}
 
+static void
+add_ghost_pad (GstAutoMuxerBin * self, GstElement * muxer)
+{
+  GstPadTemplate *templ;
+  GstPad *src;
+  gchar *padname;
+
+  if (self->priv->srcpad == NULL)
+    goto add_pad;
+
+  if (GST_STATE (GST_ELEMENT (self)) >= GST_STATE_PAUSED)
+    gst_pad_set_active (self->priv->srcpad, FALSE);
+
+  gst_element_remove_pad (GST_ELEMENT (self), self->priv->srcpad);
+
+add_pad:
+  src = gst_element_get_static_pad (muxer, "src");
+  templ = gst_static_pad_template_get (&src_factory);
+
+  padname = get_pad_name (self, SOURCE_PAD);
+  self->priv->srcpad = gst_ghost_pad_new_from_template (padname, src, templ);
+  g_free (padname);
+
+  gst_object_unref (src);
+  g_object_unref (templ);
+
+  /* Set pad state before adding it */
+  if (GST_STATE (GST_ELEMENT (self)) >= GST_STATE_PAUSED)
+    gst_pad_set_active (self->priv->srcpad, TRUE);
+
+  gst_element_add_pad (GST_ELEMENT (self), self->priv->srcpad);
+}
+
+static gboolean
+initialize_pipeline (GstElement * typefind, GstCaps * caps,
+    GstAutoMuxerBin * self)
+{
+  GstElementFactory *mfactory = NULL;
+  GstElement *e;
+
+  /* No muxers are present in the pipeline */
+  mfactory = get_muxer_factory_with_sink_caps (self, caps);
+  if (mfactory == NULL) {
+    GST_ERROR ("No factories capable of managing these caps were found\n");
+    return FALSE;
+  }
+
+  GST_INFO ("Selected muxer %s\n", gst_element_factory_get_metadata (mfactory,
+          "long-name"));
+
+  /* Connect valve to the typefind */
+  e = connect_to_valve (GST_BIN (self), typefind);
+
+  /* Add the muxer to the pipeline */
+  self->priv->muxer = gst_element_factory_create (mfactory, NULL);
+  gst_bin_add (GST_BIN (self), self->priv->muxer);
+  gst_element_sync_state_with_parent (self->priv->muxer);
+  link_muxer (e, self->priv->muxer);
+
+  add_ghost_pad (self, self->priv->muxer);
+
+  self->priv->valves = g_slist_append (self->priv->valves, e);
+
+  g_object_unref (G_OBJECT (mfactory));
+
+  return TRUE;
+}
+
+static gboolean
+reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
+    GstAutoMuxerBin * self)
+{
+  GstElementFactory *mfactory = NULL;
+  ValveState state;
+  GstElement *e;
+
+  /* There is already a working muxer in the pipeline */
+  mfactory = get_muxer_factory_with_sink_caps (self, caps);
+
+  if (mfactory == NULL) {
+    GST_ERROR ("No factories capable of managing these caps were found\n");
+    return FALSE;
+  }
+
+  if (mfactory == gst_element_get_factory (self->priv->muxer)) {
+    GST_DEBUG ("Muxer %s supports new media stream",
+        GST_ELEMENT_NAME (self->priv->muxer));
+    e = connect_to_valve (GST_BIN (self), typefind);
+    link_muxer (e, self->priv->muxer);
+    self->priv->valves = g_slist_append (self->priv->valves, e);
+    return TRUE;
+  }
+
+  GST_INFO ("Selected muxer %s\n", gst_element_factory_get_metadata (mfactory,
+          "long-name"));
+
+  /* Close valves before replacing the muxer */
+  state = VALVE_CLOSE;
+  g_slist_foreach (self->priv->valves, set_valve, &state);
+
+  /* Set downstream elements to state NULL */
+  gst_element_set_state (self->priv->muxer, GST_STATE_NULL);
+
+  //TODO: Send EOS in each source pad
+
+  /* unlink elements from old muxer */
+  g_slist_foreach (self->priv->valves, unlink_muxer, self->priv->muxer);
+
+  /* Remove old muxer */
+  gst_bin_remove (GST_BIN (self), self->priv->muxer);
+
+  /* Add the new muxer to the pipeline */
+  self->priv->muxer = gst_element_factory_create (mfactory, NULL);
+  gst_bin_add (GST_BIN (self), self->priv->muxer);
+  gst_element_sync_state_with_parent (self->priv->muxer);
+
+  /* Connect valve to the typefind */
+  e = connect_to_valve (GST_BIN (self), typefind);
+  link_muxer (e, self->priv->muxer);
+
+  /* re-stablish internal connections */
+  g_slist_foreach (self->priv->valves, link_muxer, self->priv->muxer);
+
+  /* Add new ghost pad */
+  add_ghost_pad (self, self->priv->muxer);
+
+  /* Open previously closed valves */
+  state = VALVE_OPEN;
+  g_slist_foreach (self->priv->valves, set_valve, &state);
+
+  /* Add the new valve to the list */
+  self->priv->valves = g_slist_append (self->priv->valves, e);
+
+  g_object_unref (G_OBJECT (mfactory));
+
+  return TRUE;
+}
+
+static void
+found_type_cb (GstElement * typefind,
+    guint prob, GstCaps * caps, GstAutoMuxerBin * self)
+{
+  gboolean done;
+
+  GST_AUTOMUXER_BIN_LOCK (self);
+
+  if (self->priv->muxer == NULL)
+    done = initialize_pipeline (typefind, caps, self);
+  else
+    done = reconfigure_pipeline (typefind, caps, self);
+
+  GST_AUTOMUXER_BIN_UNLOCK (self);
+
+  if (!done) {
+    /* TODO: Add agnostic bin to the audio input and find a muxer which */
+    /* is able to handle the video */
+    GST_DEBUG ("TODO: Add agnostic bin");
+  }
 }
 
 static GstPad *
 gst_automuxer_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
-  GstElementClass *klass = GST_ELEMENT_GET_CLASS (element);
   GstPad *pad, *target;
-  gchar *pad_name = NULL;
   GstAutoMuxerBin *automuxerbin = GST_AUTOMUXER_BIN (element);
   GstElement *typefind;
+  gchar *padname;
+  PadType ptype;
 
-  GST_AUTOMUXER_BIN_LOCK (element);
-
-  if (templ == gst_element_class_get_pad_template (klass, "audio_sink_%u"))
-    pad_name = g_strdup_printf ("audio_sink_%d", automuxerbin->pad_count++);
-  else if (templ == gst_element_class_get_pad_template (klass, "video_sink_%u"))
-    pad_name = g_strdup_printf ("video_sink_%d", automuxerbin->pad_count++);
-  else {
-    GST_AUTOMUXER_BIN_LOCK (element);
+  ptype = get_pad_type_from_template (element, templ);
+  if (ptype == INVALID_PAD)
     return NULL;
-  }
-  GST_AUTOMUXER_BIN_LOCK (element);
 
   typefind = gst_element_factory_make ("typefind", NULL);
+
   gst_bin_add (GST_BIN (automuxerbin), typefind);
   gst_element_sync_state_with_parent (typefind);
+
   target = gst_element_get_static_pad (typefind, "sink");
 
-  pad = gst_ghost_pad_new_from_template (pad_name, target, templ);
+  GST_AUTOMUXER_BIN_LOCK (element);
 
+  padname = get_pad_name (automuxerbin, ptype);
+
+  GST_AUTOMUXER_BIN_UNLOCK (element);
+
+  pad = gst_ghost_pad_new_from_template (padname, target, templ);
+
+  g_free (padname);
   g_object_unref (target);
-  g_free (pad_name);
 
-  g_signal_connect (typefind, "have-type",
-      G_CALLBACK (gst_automuxer_bin_typefind_have_type), automuxerbin);
-
-  if (GST_STATE (element) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
-      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED)
+  if (GST_STATE (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, TRUE);
 
-  if (gst_element_add_pad (element, pad))
-    return pad;
+  if (!gst_element_add_pad (element, pad)) {
+    g_object_unref (pad);
+    return NULL;
+  }
 
-  g_object_unref (pad);
+  g_signal_connect (typefind, "have-type", G_CALLBACK (found_type_cb),
+      automuxerbin);
 
-  return NULL;
+  return pad;
 }
 
 static void
@@ -150,11 +447,10 @@ gst_automuxer_bin_release_pad (GstElement * element, GstPad * pad)
   GstElement *typefind;
   GstPad *target;
 
-  if (GST_STATE (element) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
-    gst_pad_set_active (pad, FALSE);
-
   target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (GST_STATE (element) >= GST_STATE_PAUSED)
+    gst_pad_set_active (pad, FALSE);
 
   if (target != NULL) {
     typefind = gst_pad_get_parent_element (target);
@@ -175,8 +471,23 @@ gst_automuxer_bin_finalize (GObject * object)
 {
   GstAutoMuxerBin *automuxerbin = GST_AUTOMUXER_BIN (object);
 
-  /* free resources allocated by this element */
-  g_rec_mutex_clear (&automuxerbin->mutex);
+  g_rec_mutex_clear (&automuxerbin->priv->mutex);
+
+  /* There is no need to release each valve here because they */
+  /* are already been released in parent's bin dispose function  */
+  /* which this object inherits from */
+
+  if (automuxerbin->priv->valves) {
+    g_slist_free (automuxerbin->priv->valves);
+    automuxerbin->priv->valves = NULL;
+  }
+
+  if (automuxerbin->priv->muxers) {
+    gst_plugin_feature_list_free (automuxerbin->priv->muxers);
+    automuxerbin->priv->muxers = NULL;
+  }
+
+  g_slice_free (PadCount, automuxerbin->priv->pads);
 
   /* chain up */
   G_OBJECT_CLASS (gst_automuxer_bin_parent_class)->finalize (object);
@@ -192,14 +503,14 @@ gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
   gobject_class = (GObjectClass *) klass;
   gstelement_class = (GstElementClass *) klass;
 
-  gobject_class->set_property = gst_automuxer_bin_set_property;
-  gobject_class->get_property = gst_automuxer_bin_get_property;
   gobject_class->finalize = gst_automuxer_bin_finalize;
 
   gst_element_class_set_details_simple (gstelement_class,
       "Automuxer",
       "Basic/Bin",
-      "Kurento plugin automuxer", "Joaquin Mengual <kini.mengual@gmail.com>");
+      "Kurento plugin automuxer",
+      "Joaquin Mengual <kini.mengual@gmail.com>, "
+      "Santiago Carot-Nemesio <sancane.kurento@gmail.com>");
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&src_factory));
@@ -213,41 +524,28 @@ gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
   gstelement_class->release_pad =
       GST_DEBUG_FUNCPTR (gst_automuxer_bin_release_pad);
 
+  /* Registers a private structure for the instantiatable type */
+  g_type_class_add_private (klass, sizeof (GstAutoMuxerBinPrivate));
+
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
-
 }
 
 static void
-gst_automuxer_bin_init (GstAutoMuxerBin * automuxerbin)
+gst_automuxer_bin_init (GstAutoMuxerBin * self)
 {
+  self->priv = GST_AUTOMUXER_BIN_GET_PRIVATE (self);
 
-  g_rec_mutex_init (&automuxerbin->mutex);
+  g_rec_mutex_init (&self->priv->mutex);
 
-  automuxerbin->pad_count = 0;
+  self->priv->pads = g_slice_new0 (PadCount);
+  self->priv->srcpad = NULL;
+  self->priv->valves = NULL;
+  self->priv->muxer = NULL;
+  self->priv->muxers =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_MUXER,
+      GST_RANK_NONE);
 
-  g_object_set (G_OBJECT (automuxerbin), "async-handling", TRUE, NULL);
-}
-
-static void
-gst_automuxer_bin_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec)
-{
-  switch (prop_id) {
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
-  }
-}
-
-static void
-gst_automuxer_bin_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec)
-{
-  switch (prop_id) {
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
-  }
+  g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
 }
 
 gboolean

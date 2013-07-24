@@ -18,20 +18,14 @@ G_BEGIN_DECLS
 #define GST_AUTOMUXER_BIN_CAST(obj) ((GstAutoMuxerBin*)(obj))
 typedef struct _GstAutoMuxerBin GstAutoMuxerBin;
 typedef struct _GstAutoMuxerBinClass GstAutoMuxerBinClass;
-
-#define GST_AUTOMUXER_BIN_LOCK(elem) \
-  (g_rec_mutex_lock (&GST_AUTOMUXER_BIN_CAST ((elem))->mutex))
-#define GST_AUTOMUXER_BIN_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&GST_AUTOMUXER_BIN_CAST ((elem))->mutex))
+typedef struct _GstAutoMuxerBinPrivate GstAutoMuxerBinPrivate;
 
 struct _GstAutoMuxerBin
 {
   GstBin parent;
 
-  guint pad_count;
-
-  GRecMutex mutex;
-
+  /*< private > */
+  GstAutoMuxerBinPrivate *priv;
 };
 
 struct _GstAutoMuxerBinClass
