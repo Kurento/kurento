@@ -21,6 +21,9 @@
 
 		<!-- Plugins Versions -->
 		<maven-war-plugin.version>2.3</maven-war-plugin.version>
+
+		<!-- Extensions Versions -->
+		<wagon-ssh.version>2.0</wagon-ssh.version>
 	</properties>
 
 	<dependencies>
@@ -43,6 +46,13 @@
 	</dependencies>
 
 	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>${wagon-ssh.version}</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
