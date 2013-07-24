@@ -11,7 +11,7 @@ import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.getMixerPort_call;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public class Mixer extends MediaObject {
+public abstract class Mixer extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 

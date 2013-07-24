@@ -151,7 +151,7 @@ import com.kurento.kms.media.internal.MediaServerServiceManager;
  * </p>
  * </ul>
  */
-public class SdpEndPoint extends EndPoint {
+public abstract class SdpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 

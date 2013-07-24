@@ -14,7 +14,7 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.pausePlayer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.stopPlayer_call;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
-public class UriEndPoint extends EndPoint {
+public abstract class UriEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
