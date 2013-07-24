@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -32,15 +31,13 @@ import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.connect_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.disconnect_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.getConnectedSinks_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.getMediaType_call;
-import com.kurento.kms.api.MediaType;
 import com.kurento.kms.media.internal.MediaServerServiceManager;
 
 /**
  * MediaSrc sends media to one of more MediaSink if linked
  * 
  */
-public class MediaSrc extends MediaObject {
+public class MediaSrc extends MediaPad {
 
 	private static final long serialVersionUID = 1L;
 
@@ -49,16 +46,6 @@ public class MediaSrc extends MediaObject {
 	}
 
 	/* SYNC */
-
-	/**
-	 * Returns the stream this MediaSrc belongs to
-	 * 
-	 * @return The parent MediaElement
-	 */
-	public MediaElement getMediaElement() {
-		// TODO: Implement this method
-		throw new NotImplementedException();
-	}
 
 	/**
 	 * Creates a link between this object and the given sink
@@ -129,36 +116,7 @@ public class MediaSrc extends MediaObject {
 		}
 	}
 
-	public MediaType getMediaType() throws IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			MediaType mediaType = service.getMediaType(mediaObject);
-			manager.releaseMediaServerService(service);
-			return mediaType;
-		} catch (MediaObjectNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (MediaServerException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		} catch (TException e) {
-			throw new IOException(e.getMessage(), e);
-		}
-	}
-
 	/* ASYNC */
-
-	/**
-	 * Returns the stream this MediaSrc belongs to
-	 * 
-	 * @param cont
-	 *            The continuation to receive the result
-	 * @return The parent MediaElement
-	 */
-	public void getMediaElement(Continuation<MediaElement> cont) {
-		// TODO: Implement this method
-		throw new NotImplementedException();
-	}
 
 	/**
 	 * Creates a link between this object and the given sink
@@ -292,42 +250,4 @@ public class MediaSrc extends MediaObject {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
-
-	public void getMediaType(final Continuation<MediaType> cont)
-			throws IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
-			service.getMediaType(
-					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaType_call>() {
-						@Override
-						public void onComplete(getMediaType_call response) {
-							try {
-								MediaType mediaType = response.getResult();
-								cont.onSuccess(mediaType);
-							} catch (MediaObjectNotFoundException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (MediaServerException e) {
-								cont.onError(new RuntimeException(e
-										.getMessage(), e));
-							} catch (TException e) {
-								cont.onError(new IOException(e.getMessage(), e));
-							}
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							cont.onError(exception);
-						}
-					});
-			manager.releaseMediaServerServiceAsync(service);
-		} catch (TException e) {
-			throw new IOException(e.getMessage(), e);
-		}
-	}
-
 }
