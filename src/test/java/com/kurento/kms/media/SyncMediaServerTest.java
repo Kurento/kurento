@@ -37,7 +37,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testStreamSync() throws MediaException, IOException,
 			InterruptedException {
-		RtpEndPoint stream = mediaManager.getSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint stream = mediaManager.createSdpEndPoint(RtpEndPoint.class);
 		System.out.println("generateOffer sessionDecriptor: "
 				+ stream.generateOffer());
 		System.out.println("processOffer sessionDecriptor: "
@@ -51,7 +51,7 @@ public class SyncMediaServerTest {
 	@Ignore
 	@Test
 	public void testPlayer() throws MediaException, IOException {
-		PlayerEndPoint player = mediaManager.getUriEndPoint(
+		PlayerEndPoint player = mediaManager.createUriEndPoint(
 				PlayerEndPoint.class, "");
 		player.play();
 		player.pause();
@@ -63,7 +63,7 @@ public class SyncMediaServerTest {
 	@Ignore
 	@Test
 	public void testRecorder() throws MediaException, IOException {
-		RecorderEndPoint recorder = mediaManager.getUriEndPoint(
+		RecorderEndPoint recorder = mediaManager.createUriEndPoint(
 				RecorderEndPoint.class, "");
 		recorder.record();
 		recorder.pause();
@@ -73,8 +73,8 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testJoinable() throws MediaException, IOException {
-		RtpEndPoint streamA = mediaManager.getSdpEndPoint(RtpEndPoint.class);
-		RtpEndPoint streamB = mediaManager.getSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint streamA = mediaManager.createSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint streamB = mediaManager.createSdpEndPoint(RtpEndPoint.class);
 
 		System.out.println("MediaSrcs: " + streamA.getMediaSrcs());
 		System.out.println("MediaSinks: " + streamA.getMediaSinks());
@@ -96,7 +96,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testMixer() throws MediaException, IOException,
 			InterruptedException {
-		MainMixer mixer = mediaManager.getMixer(MainMixer.class);
+		MainMixer mixer = mediaManager.createMixer(MainMixer.class);
 		mixer.release();
 	}
 

@@ -26,13 +26,13 @@ public class MediaManager extends MediaObject {
 
 	/* SYNC */
 
-	public <T extends SdpEndPoint> T getSdpEndPoint(Class<T> type, String sdp)
+	public <T extends SdpEndPoint> T createSdpEndPoint(Class<T> type, String sdp)
 			throws MediaException, IOException {
 		throw new NotImplementedException();
 		// TODO: Implement this method
 	}
 
-	public <T extends SdpEndPoint> T getSdpEndPoint(Class<T> type)
+	public <T extends SdpEndPoint> T createSdpEndPoint(Class<T> type)
 			throws MediaException, IOException {
 		try {
 			// TODO: Add parameter to ServiceCall
@@ -59,18 +59,18 @@ public class MediaManager extends MediaObject {
 		}
 	}
 
-	public <T extends UriEndPoint> T getUriEndPoint(Class<T> type, String uri)
+	public <T extends UriEndPoint> T createUriEndPoint(Class<T> type, String uri)
 			throws MediaException, IOException {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}
 
-	public HttpEndPoint getHttpEndPoint() throws MediaException, IOException {
+	public HttpEndPoint createHttpEndPoint() throws MediaException, IOException {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}
 
-	public <T extends Mixer> T getMixer(Class<T> type) throws MediaException,
+	public <T extends Mixer> T createMixer(Class<T> type) throws MediaException,
 			IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
@@ -110,7 +110,7 @@ public class MediaManager extends MediaObject {
 		}
 	}
 
-	public <T extends Filter> T getFilter(Class<T> type) throws MediaException,
+	public <T extends Filter> T createFilter(Class<T> type) throws MediaException,
 			IOException {
 		// TODO: Implement this method
 		throw new NotImplementedException();
@@ -118,13 +118,13 @@ public class MediaManager extends MediaObject {
 
 	/* ASYNC */
 
-	public <T extends SdpEndPoint> void getSdpEndPoint(final Class<T> type,
+	public <T extends SdpEndPoint> void createSdpEndPoint(final Class<T> type,
 			String sdp, final Continuation<T> cont) throws IOException {
 		// TODO: Implement this method
 		throw new NotImplementedException();
 	}
 
-	public <T extends SdpEndPoint> void getSdpEndPoint(final Class<T> type,
+	public <T extends SdpEndPoint> void createSdpEndPoint(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
@@ -175,25 +175,25 @@ public class MediaManager extends MediaObject {
 		}
 	}
 
-	public <T extends UriEndPoint> void getUriEndPoint(final Class<T> type,
+	public <T extends UriEndPoint> void createUriEndPoint(final Class<T> type,
 			String uri, final Continuation<T> cont) throws IOException {
 		// TODO: Implement this part
 		throw new NotImplementedException();
 	}
 
-	public void getHttpEndPoint(final Continuation<HttpEndPoint> cont)
+	public void createHttpEndPoint(final Continuation<HttpEndPoint> cont)
 			throws IOException {
 		// TODO: Implement this part
 		throw new NotImplementedException();
 	}
 
-	public <T extends Filter> void getFilter(final Class<T> type,
+	public <T extends Filter> void createFilter(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
 		// TODO: Implement this part
 		throw new NotImplementedException();
 	}
 
-	public <T extends Mixer> void getMixer(final Class<T> type,
+	public <T extends Mixer> void createMixer(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager

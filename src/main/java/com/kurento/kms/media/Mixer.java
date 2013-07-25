@@ -24,7 +24,7 @@ public abstract class Mixer extends MediaObject {
 
 	/* SYNC */
 
-	public MixerEndPoint getMixerEndPoint() throws IOException {
+	public MixerEndPoint createMixerEndPoint() throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
@@ -44,7 +44,7 @@ public abstract class Mixer extends MediaObject {
 
 	/* ASYNC */
 
-	public void getMixerEndPoint(final Continuation<MixerEndPoint> cont)
+	public void createMixerEndPoint(final Continuation<MixerEndPoint> cont)
 			throws IOException {
 		try {
 			MediaServerServiceManager manager = MediaServerServiceManager

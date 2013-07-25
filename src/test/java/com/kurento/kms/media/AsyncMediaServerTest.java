@@ -57,7 +57,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.getSdpEndPoint(RtpEndPoint.class,
+		mediaManager.createSdpEndPoint(RtpEndPoint.class,
 				new Continuation<RtpEndPoint>() {
 					@Override
 					public void onSuccess(RtpEndPoint result) {
@@ -223,7 +223,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.getUriEndPoint(PlayerEndPoint.class, "",
+		mediaManager.createUriEndPoint(PlayerEndPoint.class, "",
 				new Continuation<PlayerEndPoint>() {
 					@Override
 					public void onSuccess(PlayerEndPoint result) {
@@ -305,7 +305,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.getUriEndPoint(RecorderEndPoint.class, "",
+		mediaManager.createUriEndPoint(RecorderEndPoint.class, "",
 				new Continuation<RecorderEndPoint>() {
 					@Override
 					public void onSuccess(RecorderEndPoint result) {
@@ -387,7 +387,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.getSdpEndPoint(RtpEndPoint.class,
+		mediaManager.createSdpEndPoint(RtpEndPoint.class,
 				new Continuation<RtpEndPoint>() {
 					@Override
 					public void onSuccess(RtpEndPoint result) {
@@ -396,7 +396,7 @@ public class AsyncMediaServerTest {
 						final Semaphore semContA = new Semaphore(0);
 
 						try {
-							mediaManager.getSdpEndPoint(RtpEndPoint.class,
+							mediaManager.createSdpEndPoint(RtpEndPoint.class,
 									new Continuation<RtpEndPoint>() {
 										@Override
 										public void onSuccess(RtpEndPoint result) {
@@ -474,7 +474,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.getMixer(MainMixer.class, new Continuation<MainMixer>() {
+		mediaManager.createMixer(MainMixer.class, new Continuation<MainMixer>() {
 			@Override
 			public void onSuccess(MainMixer result) {
 				System.out.println("getMixer onSuccess");
