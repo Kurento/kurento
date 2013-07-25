@@ -6,8 +6,8 @@ public class WebRtcEndPoint extends SdpEndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	public WebRtcEndPoint(MediaObject object) {
-		super(object);
+	public WebRtcEndPoint(MediaObject webRtcEndPoint) {
+		super(webRtcEndPoint);
 	}
 
 }
