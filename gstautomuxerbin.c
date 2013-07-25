@@ -8,8 +8,8 @@
 
 #define PLUGIN_NAME "automuxerbin"
 
-#define AUDIO_PAD_NAME "audio_sink_"
-#define VIDEO_PAD_NAME "video_sink_"
+#define AUDIO_PAD_NAME "audio_"
+#define VIDEO_PAD_NAME "video_"
 #define SOURCE_PAD_NAME "src_"
 
 GST_DEBUG_CATEGORY_STATIC (gst_automuxer_bin_debug);
