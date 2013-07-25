@@ -23,7 +23,7 @@ libgstkurento_la_SOURCES = gstkurento.c \
 			kmselement.c kmselement.h \
 			kmsbasesdpendpoint.c kmsbasesdpendpoint.h \
 			kmsbasertpendpoint.c kmsbasertpendpoint.h \
-			gstudpstream.c gstudpstream.h \
+			kmsrtpendpoint.c kmsrtpendpoint.h \
 			gstautomuxerbin.c automuxerbin.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
