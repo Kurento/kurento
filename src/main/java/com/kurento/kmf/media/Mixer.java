@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -24,20 +25,25 @@ public abstract class Mixer extends MediaObject {
 	/* SYNC */
 
 	public MixerEndPoint createMixerEndPoint() throws IOException {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		MediaServerService.Client service;
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			com.kurento.kms.api.MediaObject mixerPort = service
-					.createMixerEndPoint(mediaObject);
-			manager.releaseMediaServerService(service);
-			return new MixerEndPoint(mixerPort);
+			service = manager.getMediaServerService();
+		} catch (TTransportException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+
+		try {
+			return new MixerEndPoint(service.createMixerEndPoint(mediaObject));
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			manager.releaseMediaServerService(service);
 		}
 	}
 
@@ -45,20 +51,24 @@ public abstract class Mixer extends MediaObject {
 
 	public void createMixerEndPoint(final Continuation<MixerEndPoint> cont)
 			throws IOException {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		MediaServerService.AsyncClient service;
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
+			service = manager.getMediaServerServiceAsync();
+		} catch (TTransportException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+
+		try {
 			service.createMixerEndPoint(
 					mediaObject,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixerEndPoint_call>() {
 						@Override
 						public void onComplete(createMixerEndPoint_call response) {
 							try {
-								com.kurento.kms.api.MediaObject mixerPort = response
-										.getResult();
-								cont.onSuccess(new MixerEndPoint(mixerPort));
+								cont.onSuccess(new MixerEndPoint(response
+										.getResult()));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -75,10 +85,10 @@ public abstract class Mixer extends MediaObject {
 							cont.onError(exception);
 						}
 					});
-			manager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			manager.releaseMediaServerServiceAsync(service);
 		}
 	}
-
 }
