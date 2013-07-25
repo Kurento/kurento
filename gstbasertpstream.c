@@ -167,7 +167,7 @@ gst_base_rtp_stream_connect_input_elements (GstBaseStream * base_stream,
 
     payloader = gst_base_rtp_get_payloader_for_caps (caps);
     if (payloader != NULL) {
-      GstJoinable *joinable = GST_JOINABLE (base_stream);
+      KmsElement *joinable = KMS_ELEMENT (base_stream);
       GstBaseRtpStream *rtp_stream = GST_BASE_RTP_STREAM (base_stream);
       const gchar *rtpbin_pad_name;
       GstElement *valve = NULL;
@@ -277,9 +277,9 @@ gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   GST_PAD_STREAM_LOCK (pad);
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_"))
-    agnostic = GST_JOINABLE (rtp_stream)->audio_agnosticbin;
+    agnostic = KMS_ELEMENT (rtp_stream)->audio_agnosticbin;
   else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_"))
-    agnostic = GST_JOINABLE (rtp_stream)->video_agnosticbin;
+    agnostic = KMS_ELEMENT (rtp_stream)->video_agnosticbin;
   else
     goto end;
 

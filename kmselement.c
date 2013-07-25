@@ -4,16 +4,16 @@
 
 #include <gst/gst.h>
 
-#include "gstjoinable.h"
+#include "kmselement.h"
 #include "gstagnosticbin.h"
 
-#define PLUGIN_NAME "joinable"
+#define PLUGIN_NAME "kmselement"
 
-GST_DEBUG_CATEGORY_STATIC (gst_joinable_debug);
-#define GST_CAT_DEFAULT gst_joinable_debug
+GST_DEBUG_CATEGORY_STATIC (kms_element_debug);
+#define GST_CAT_DEFAULT kms_element_debug
 
-#define gst_joinable_parent_class parent_class
-G_DEFINE_TYPE (GstJoinable, gst_joinable, GST_TYPE_BIN);
+#define kms_element_parent_class parent_class
+G_DEFINE_TYPE (KmsElement, kms_element, GST_TYPE_BIN);
 
 #define AUDIO_AGNOSTICBIN "audio_agnosticbin"
 #define VIDEO_AGNOSTICBIN "video_agnosticbin"
@@ -64,7 +64,7 @@ GST_STATIC_PAD_TEMPLATE ("video_src_%u",
     );
 
 static GstPad *
-gst_joinable_request_new_pad (GstElement * element,
+kms_element_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
   GstPad *ret_pad, *agnostic_pad;
@@ -74,12 +74,12 @@ gst_joinable_request_new_pad (GstElement * element,
   if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), "audio_src_%u")) {
-    agnosticbin = GST_JOINABLE (element)->audio_agnosticbin;
+    agnosticbin = KMS_ELEMENT (element)->audio_agnosticbin;
     pad_name_prefix = "audio_";
   } else if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), "video_src_%u")) {
-    agnosticbin = GST_JOINABLE (element)->video_agnosticbin;
+    agnosticbin = KMS_ELEMENT (element)->video_agnosticbin;
     pad_name_prefix = "video_";
   } else {
     return NULL;
@@ -110,15 +110,15 @@ gst_joinable_request_new_pad (GstElement * element,
 }
 
 static void
-gst_joinable_release_pad (GstElement * element, GstPad * pad)
+kms_element_release_pad (GstElement * element, GstPad * pad)
 {
   GstElement *agnosticbin;
   GstPad *target;
 
   if (g_str_has_prefix ("audio_src", GST_OBJECT_NAME (pad))) {
-    agnosticbin = GST_JOINABLE (element)->audio_agnosticbin;
+    agnosticbin = KMS_ELEMENT (element)->audio_agnosticbin;
   } else if (g_str_has_prefix ("audio_src", GST_OBJECT_NAME (pad))) {
-    agnosticbin = GST_JOINABLE (element)->audio_agnosticbin;
+    agnosticbin = KMS_ELEMENT (element)->audio_agnosticbin;
   } else {
     return;
   }
@@ -136,35 +136,35 @@ gst_joinable_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
-gst_joinable_finalize (GObject * object)
+kms_element_finalize (GObject * object)
 {
-  GstJoinable *joinable = GST_JOINABLE (object);
+  KmsElement *element = KMS_ELEMENT (object);
 
   /* free resources allocated by this object */
-  g_rec_mutex_clear (&joinable->mutex);
+  g_rec_mutex_clear (&element->mutex);
 
   /* chain up */
-  G_OBJECT_CLASS (gst_joinable_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_element_parent_class)->finalize (object);
 }
 
 static void
-gst_joinable_class_init (GstJoinableClass * klass)
+kms_element_class_init (KmsElementClass * klass)
 {
   GstElementClass *gstelement_class;
   GObjectClass *gobject_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
-  gobject_class->finalize = gst_joinable_finalize;
+  gobject_class->finalize = kms_element_finalize;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
-      "Joinable",
-      "Base/Bin/Joinable",
-      "Base class for joinables",
+      "KmsElement",
+      "Base/Bin/KmsElement",
+      "Base class for elements",
       "José Antonio Santos Cadenas <santoscadenas@kurento.com>");
   gstelement_class->request_new_pad =
-      GST_DEBUG_FUNCPTR (gst_joinable_request_new_pad);
-  gstelement_class->release_pad = GST_DEBUG_FUNCPTR (gst_joinable_release_pad);
+      GST_DEBUG_FUNCPTR (kms_element_request_new_pad);
+  gstelement_class->release_pad = GST_DEBUG_FUNCPTR (kms_element_release_pad);
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&audio_src_factory));
   gst_element_class_add_pad_template (gstelement_class,
@@ -177,42 +177,42 @@ gst_joinable_class_init (GstJoinableClass * klass)
 }
 
 static void
-gst_joinable_init (GstJoinable * joinable)
+kms_element_init (KmsElement * element)
 {
   GstPad *audio_valve_sink, *video_valve_sink;
   GstPad *audio_sink, *video_sink;
 
-  g_rec_mutex_init (&joinable->mutex);
+  g_rec_mutex_init (&element->mutex);
 
-  joinable->audio_agnosticbin =
+  element->audio_agnosticbin =
       gst_element_factory_make ("agnosticbin", AUDIO_AGNOSTICBIN);
-  joinable->video_agnosticbin =
+  element->video_agnosticbin =
       gst_element_factory_make ("agnosticbin", VIDEO_AGNOSTICBIN);
 
-  joinable->audio_valve = gst_element_factory_make ("valve", AUDIO_VALVE);
-  joinable->video_valve = gst_element_factory_make ("valve", VIDEO_VALVE);
+  element->audio_valve = gst_element_factory_make ("valve", AUDIO_VALVE);
+  element->video_valve = gst_element_factory_make ("valve", VIDEO_VALVE);
 
-  g_object_set (joinable->audio_valve, "drop", TRUE, NULL);
-  g_object_set (joinable->video_valve, "drop", TRUE, NULL);
+  g_object_set (element->audio_valve, "drop", TRUE, NULL);
+  g_object_set (element->video_valve, "drop", TRUE, NULL);
 
-  gst_bin_add_many (GST_BIN (joinable), joinable->audio_agnosticbin,
-      joinable->video_agnosticbin, joinable->audio_valve, joinable->video_valve,
+  gst_bin_add_many (GST_BIN (element), element->audio_agnosticbin,
+      element->video_agnosticbin, element->audio_valve, element->video_valve,
       NULL);
 
-  audio_valve_sink = gst_element_get_static_pad (joinable->audio_valve, "sink");
-  video_valve_sink = gst_element_get_static_pad (joinable->video_valve, "sink");
+  audio_valve_sink = gst_element_get_static_pad (element->audio_valve, "sink");
+  video_valve_sink = gst_element_get_static_pad (element->video_valve, "sink");
 
   audio_sink =
       gst_ghost_pad_new_from_template (AUDIO_SINK_PAD, audio_valve_sink,
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
-              (joinable)), AUDIO_SINK_PAD));
+              (element)), AUDIO_SINK_PAD));
   video_sink =
       gst_ghost_pad_new_from_template (VIDEO_SINK_PAD, video_valve_sink,
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
-              (joinable)), VIDEO_SINK_PAD));
+              (element)), VIDEO_SINK_PAD));
 
-  gst_element_add_pad (GST_ELEMENT (joinable), audio_sink);
-  gst_element_add_pad (GST_ELEMENT (joinable), video_sink);
+  gst_element_add_pad (GST_ELEMENT (element), audio_sink);
+  gst_element_add_pad (GST_ELEMENT (element), video_sink);
 
-  g_object_set (G_OBJECT (joinable), "async-handling", TRUE, NULL);
+  g_object_set (G_OBJECT (element), "async-handling", TRUE, NULL);
 }

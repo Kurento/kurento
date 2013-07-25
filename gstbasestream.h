@@ -3,7 +3,7 @@
 
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
-#include <gstjoinable.h>
+#include <kmselement.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -28,7 +28,7 @@ typedef struct _GstBaseStreamClass GstBaseStreamClass;
 
 struct _GstBaseStream
 {
-  GstJoinable parent;
+  KmsElement parent;
 
   /* private */
   GstSDPMessage *pattern_sdp;
@@ -44,7 +44,7 @@ struct _GstBaseStream
 
 struct _GstBaseStreamClass
 {
-  GstJoinableClass parent_class;
+  KmsElementClass parent_class;
 
   /* private */
   /* actions */

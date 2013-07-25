@@ -20,7 +20,7 @@ libgstkurento_la_SOURCES = gstkurento.c \
 			$(BUILT_SOURCES) \
 			sdp_utils.c sdp_utils.h \
 			gstagnosticbin.c gstagnosticbin.h \
-			gstjoinable.c gstjoinable.h \
+			kmselement.c kmselement.h \
 			gstbasestream.c gstbasestream.h \
 			gstbasertpstream.c gstbasertpstream.h \
 			gstudpstream.c gstudpstream.h \
