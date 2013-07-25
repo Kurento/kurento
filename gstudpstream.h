@@ -3,7 +3,7 @@
 
 #include <gio/gio.h>
 #include <gst/gst.h>
-#include <gstbasertpstream.h>
+#include <kmsbasertpendpoint.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -28,7 +28,7 @@ typedef struct _GstUdpStreamClass GstUdpStreamClass;
 
 struct _GstUdpStream
 {
-  GstBaseRtpStream parent;
+  KmsBaseRtpEndPoint parent;
 
   GSocket *audio_rtp_socket;
   GSocket *audio_rtcp_socket;
@@ -45,7 +45,7 @@ struct _GstUdpStream
 
 struct _GstUdpStreamClass
 {
-  GstBaseRtpStreamClass parent_class;
+  KmsBaseRtpEndPointClass parent_class;
 };
 
 GType gst_udp_stream_get_type (void);

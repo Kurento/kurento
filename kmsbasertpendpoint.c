@@ -5,16 +5,16 @@
 #include <stdlib.h>
 #include <gst/gst.h>
 
-#include "gstbasertpstream.h"
+#include "kmsbasertpendpoint.h"
 #include "sdp_utils.h"
 
-#define PLUGIN_NAME "base_rtp_stream"
+#define PLUGIN_NAME "base_rtp_endpoint"
 
-GST_DEBUG_CATEGORY_STATIC (gst_base_rtp_stream_debug);
-#define GST_CAT_DEFAULT gst_base_rtp_stream_debug
+GST_DEBUG_CATEGORY_STATIC (kms_base_rtp_end_point_debug);
+#define GST_CAT_DEFAULT kms_base_rtp_end_point_debug
 
-#define gst_base_rtp_stream_parent_class parent_class
-G_DEFINE_TYPE (GstBaseRtpStream, gst_base_rtp_stream,
+#define kms_base_rtp_end_point_parent_class parent_class
+G_DEFINE_TYPE (KmsBaseRtpEndPoint, kms_base_rtp_end_point,
     KMS_TYPE_BASE_SDP_END_POINT);
 
 #define RTPBIN "rtpbin"
@@ -44,8 +44,8 @@ get_caps_codec_name (const gchar * codec_name)
 }
 
 static GstCaps *
-gst_base_rtp_stream_get_caps_from_rtpmap (const gchar * media, const gchar * pt,
-    const gchar * rtpmap)
+kms_base_rtp_end_point_get_caps_from_rtpmap (const gchar * media,
+    const gchar * pt, const gchar * rtpmap)
 {
   GstCaps *caps = NULL;
   gchar **tokens;
@@ -128,14 +128,14 @@ end:
 }
 
 static void
-gst_base_rtp_stream_connect_input_elements (KmsBaseSdpEndPoint * base_stream,
-    const GstSDPMessage * answer)
+kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
+    base_end_point, const GstSDPMessage * answer)
 {
   guint i, len;
 
   KMS_BASE_SDP_END_POINT_CLASS
-      (gst_base_rtp_stream_parent_class)->connect_input_elements (base_stream,
-      answer);
+      (kms_base_rtp_end_point_parent_class)->connect_input_elements
+      (base_end_point, answer);
   GST_DEBUG ("connect_input_elements");
 
   len = gst_sdp_message_medias_len (answer);
@@ -158,7 +158,8 @@ gst_base_rtp_stream_connect_input_elements (KmsBaseSdpEndPoint * base_stream,
 
       rtpmap = sdp_utils_sdp_media_get_rtpmap (media, pt);
       caps =
-          gst_base_rtp_stream_get_caps_from_rtpmap (media->media, pt, rtpmap);
+          kms_base_rtp_end_point_get_caps_from_rtpmap (media->media, pt,
+          rtpmap);
     }
 
     if (caps == NULL)
@@ -168,13 +169,14 @@ gst_base_rtp_stream_connect_input_elements (KmsBaseSdpEndPoint * base_stream,
 
     payloader = gst_base_rtp_get_payloader_for_caps (caps);
     if (payloader != NULL) {
-      KmsElement *joinable = KMS_ELEMENT (base_stream);
-      GstBaseRtpStream *rtp_stream = GST_BASE_RTP_STREAM (base_stream);
+      KmsElement *joinable = KMS_ELEMENT (base_end_point);
+      KmsBaseRtpEndPoint *rtp_end_point =
+          KMS_BASE_RTP_END_POINT (base_end_point);
       const gchar *rtpbin_pad_name;
       GstElement *valve = NULL;
 
       GST_DEBUG ("Found depayloader %P", payloader);
-      gst_bin_add (GST_BIN (base_stream), payloader);
+      gst_bin_add (GST_BIN (base_end_point), payloader);
       gst_element_sync_state_with_parent (payloader);
 
       if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
@@ -184,12 +186,12 @@ gst_base_rtp_stream_connect_input_elements (KmsBaseSdpEndPoint * base_stream,
         valve = joinable->video_valve;
         rtpbin_pad_name = "send_rtp_sink_1";
       } else {
-        gst_bin_remove (GST_BIN (base_stream), payloader);
+        gst_bin_remove (GST_BIN (base_end_point), payloader);
       }
 
       if (valve != NULL) {
         gst_element_link (valve, payloader);
-        gst_element_link_pads (payloader, "src", rtp_stream->rtpbin,
+        gst_element_link_pads (payloader, "src", rtp_end_point->rtpbin,
             rtpbin_pad_name);
         g_object_set (valve, "drop", FALSE, NULL);
       }
@@ -200,16 +202,17 @@ gst_base_rtp_stream_connect_input_elements (KmsBaseSdpEndPoint * base_stream,
 }
 
 static GstCaps *
-gst_base_rtp_stream_get_caps_for_pt (GstBaseRtpStream * base_rtp_stream,
+kms_base_rtp_end_point_get_caps_for_pt (KmsBaseRtpEndPoint * base_rtp_end_point,
     guint pt)
 {
-  KmsBaseSdpEndPoint *base_stream = KMS_BASE_SDP_END_POINT (base_rtp_stream);
+  KmsBaseSdpEndPoint *base_end_point =
+      KMS_BASE_SDP_END_POINT (base_rtp_end_point);
   GstSDPMessage *answer;
   guint i, len;
 
-  answer = base_stream->local_answer_sdp;
+  answer = base_end_point->local_answer_sdp;
   if (answer == NULL)
-    answer = base_stream->remote_answer_sdp;
+    answer = base_end_point->remote_answer_sdp;
 
   if (answer == NULL)
     return NULL;
@@ -237,7 +240,7 @@ gst_base_rtp_stream_get_caps_for_pt (GstBaseRtpStream * base_rtp_stream,
       rtpmap = sdp_utils_sdp_media_get_rtpmap (media, payload);
 
       caps =
-          gst_base_rtp_stream_get_caps_from_rtpmap (media->media, payload,
+          kms_base_rtp_end_point_get_caps_from_rtpmap (media->media, payload,
           rtpmap);
 
       if (caps != NULL) {
@@ -252,14 +255,14 @@ gst_base_rtp_stream_get_caps_for_pt (GstBaseRtpStream * base_rtp_stream,
 }
 
 static GstCaps *
-gst_base_rtp_stream_request_pt_map (GstElement * rtpbin, guint session,
-    guint pt, GstBaseRtpStream * base_rtp_stream)
+kms_base_rtp_end_point_request_pt_map (GstElement * rtpbin, guint session,
+    guint pt, KmsBaseRtpEndPoint * base_rtp_end_point)
 {
   GstCaps *caps;
 
   GST_DEBUG ("Caps request for pt: %d", pt);
 
-  caps = gst_base_rtp_stream_get_caps_for_pt (base_rtp_stream, pt);
+  caps = kms_base_rtp_end_point_get_caps_for_pt (base_rtp_end_point, pt);
 
   if (caps != NULL)
     return caps;
@@ -269,8 +272,8 @@ gst_base_rtp_stream_request_pt_map (GstElement * rtpbin, guint session,
 }
 
 static void
-gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
-    GstBaseRtpStream * rtp_stream)
+kms_base_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
+    KmsBaseRtpEndPoint * rtp_end_point)
 {
   GstElement *agnostic, *depayloader;
   GstCaps *caps;
@@ -278,9 +281,9 @@ gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   GST_PAD_STREAM_LOCK (pad);
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_"))
-    agnostic = KMS_ELEMENT (rtp_stream)->audio_agnosticbin;
+    agnostic = KMS_ELEMENT (rtp_end_point)->audio_agnosticbin;
   else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_"))
-    agnostic = KMS_ELEMENT (rtp_stream)->video_agnosticbin;
+    agnostic = KMS_ELEMENT (rtp_end_point)->video_agnosticbin;
   else
     goto end;
 
@@ -293,7 +296,7 @@ gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     gst_caps_unref (caps);
 
   if (depayloader != NULL) {
-    gst_bin_add (GST_BIN (rtp_stream), depayloader);
+    gst_bin_add (GST_BIN (rtp_end_point), depayloader);
     gst_element_sync_state_with_parent (depayloader);
 
     gst_element_link_pads (depayloader, "src", agnostic, "sink");
@@ -301,7 +304,7 @@ gst_base_rtp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   } else {
     GstElement *fake = gst_element_factory_make ("fakesink", NULL);
 
-    gst_bin_add (GST_BIN (rtp_stream), fake);
+    gst_bin_add (GST_BIN (rtp_end_point), fake);
     gst_element_sync_state_with_parent (fake);
     gst_element_link_pads (rtpbin, GST_OBJECT_NAME (pad), fake, "sink");
   }
@@ -311,38 +314,38 @@ end:
 }
 
 static void
-gst_base_rtp_stream_class_init (GstBaseRtpStreamClass * klass)
+kms_base_rtp_end_point_class_init (KmsBaseRtpEndPointClass * klass)
 {
-  KmsBaseSdpEndPointClass *base_stream_class;
+  KmsBaseSdpEndPointClass *base_end_point_class;
   GstElementClass *gstelement_class;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
-      "BaseRtpStream",
-      "Base/Bin/BaseRtpStream",
-      "Base class for streams",
+      "BaseRtpEndPoint",
+      "Base/Bin/BaseRtpEndPoints",
+      "Base class for RtpEndPoints",
       "José Antonio Santos Cadenas <santoscadenas@kurento.com>");
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
-  base_stream_class = KMS_BASE_SDP_END_POINT_CLASS (klass);
+  base_end_point_class = KMS_BASE_SDP_END_POINT_CLASS (klass);
 
-  base_stream_class->connect_input_elements =
-      gst_base_rtp_stream_connect_input_elements;
+  base_end_point_class->connect_input_elements =
+      kms_base_rtp_end_point_connect_input_elements;
 }
 
 static void
-gst_base_rtp_stream_init (GstBaseRtpStream * base_rtp_stream)
+kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
 {
-  base_rtp_stream->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
+  base_rtp_end_point->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
 
-  g_signal_connect (base_rtp_stream->rtpbin, "request-pt-map",
-      G_CALLBACK (gst_base_rtp_stream_request_pt_map), base_rtp_stream);
+  g_signal_connect (base_rtp_end_point->rtpbin, "request-pt-map",
+      G_CALLBACK (kms_base_rtp_end_point_request_pt_map), base_rtp_end_point);
 
-  g_signal_connect (base_rtp_stream->rtpbin, "pad-added",
-      G_CALLBACK (gst_base_rtp_stream_rtpbin_pad_added), base_rtp_stream);
+  g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
+      G_CALLBACK (kms_base_rtp_end_point_rtpbin_pad_added), base_rtp_end_point);
 
-  g_object_set (base_rtp_stream->rtpbin, "do-lost", TRUE, NULL);
+  g_object_set (base_rtp_end_point->rtpbin, "do-lost", TRUE, NULL);
 
-  gst_bin_add (GST_BIN (base_rtp_stream), base_rtp_stream->rtpbin);
+  gst_bin_add (GST_BIN (base_rtp_end_point), base_rtp_end_point->rtpbin);
 }

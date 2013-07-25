@@ -15,7 +15,7 @@ GST_DEBUG_CATEGORY_STATIC (gst_udp_stream_debug);
 #define GST_CAT_DEFAULT gst_udp_stream_debug
 
 #define gst_udp_stream_parent_class parent_class
-G_DEFINE_TYPE (GstUdpStream, gst_udp_stream, GST_TYPE_BASE_RTP_STREAM);
+G_DEFINE_TYPE (GstUdpStream, gst_udp_stream, KMS_TYPE_BASE_RTP_END_POINT);
 
 #define MAX_RETRIES 4
 
@@ -330,7 +330,7 @@ static gboolean
 gst_udp_stream_connect_video_rtcp (GstUdpStream * udp_stream)
 {
   GST_DEBUG ("connect_video_rtcp");
-  gst_element_link_pads (GST_BASE_RTP_STREAM (udp_stream)->rtpbin,
+  gst_element_link_pads (KMS_BASE_RTP_END_POINT (udp_stream)->rtpbin,
       "send_rtcp_src_1", udp_stream->video_rtcp_udpsink, "sink");
   return FALSE;
 }
@@ -339,7 +339,7 @@ static gboolean
 gst_udp_stream_connect_audio_rtcp (GstUdpStream * udp_stream)
 {
   GST_DEBUG ("connect_audio_rtcp");
-  gst_element_link_pads (GST_BASE_RTP_STREAM (udp_stream)->rtpbin,
+  gst_element_link_pads (KMS_BASE_RTP_END_POINT (udp_stream)->rtpbin,
       "send_rtcp_src_0", udp_stream->audio_rtcp_udpsink, "sink");
   return FALSE;
 }
@@ -356,7 +356,7 @@ gst_udp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
         (GSourceFunc) (gst_udp_stream_connect_audio_rtcp),
         g_object_ref (udp_stream), g_object_unref);
   } else if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_1") == 0) {
-    gst_element_link_pads (GST_BASE_RTP_STREAM (udp_stream)->rtpbin,
+    gst_element_link_pads (KMS_BASE_RTP_END_POINT (udp_stream)->rtpbin,
         "send_rtp_src_1", udp_stream->video_rtp_udpsink, "sink");
 
     g_idle_add_full (G_PRIORITY_DEFAULT,
@@ -368,7 +368,7 @@ gst_udp_stream_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 static void
 gst_udp_stream_init (GstUdpStream * udp_stream)
 {
-  GstBaseRtpStream *base_rtp_stream = GST_BASE_RTP_STREAM (udp_stream);
+  KmsBaseRtpEndPoint *base_rtp_stream = KMS_BASE_RTP_END_POINT (udp_stream);
   GstElement *audio_rtp_src, *audio_rtcp_src, *audio_rtp_sink, *audio_rtcp_sink,
       *video_rtp_src, *video_rtcp_src, *video_rtp_sink, *video_rtcp_sink;
   gint retries = 0;
