@@ -1,7 +1,8 @@
 package com.kurento.kmf.content;
 
 import javax.servlet.http.HttpServletRequest;
-import com.kurento.kms.media.MediaElement;
+
+import com.kurento.kmf.media.MediaElement;
 
 public interface RecordRequest {
 

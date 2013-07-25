@@ -12,14 +12,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.PlayRequest;
+import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaManager;
+import com.kurento.kmf.media.MediaManagerFactory;
+import com.kurento.kmf.media.MediaSink;
+import com.kurento.kmf.media.MediaSrc;
+import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kms.api.MediaType;
-import com.kurento.kms.media.HttpEndPoint;
-import com.kurento.kms.media.MediaElement;
-import com.kurento.kms.media.MediaManager;
-import com.kurento.kms.media.MediaManagerFactory;
-import com.kurento.kms.media.MediaSink;
-import com.kurento.kms.media.MediaSrc;
-import com.kurento.kms.media.PlayerEndPoint;
 
 public class PlayRequestImpl implements PlayRequest {
 	private static final Logger log = LoggerFactory
