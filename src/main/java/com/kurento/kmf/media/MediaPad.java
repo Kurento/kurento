@@ -19,9 +19,9 @@ package com.kurento.kmf.media;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -49,25 +49,34 @@ public abstract class MediaPad extends MediaObject {
 	 * 
 	 * @return The parent MediaElement
 	 */
-	public MediaElement getMediaElement() {
-		// TODO: Implement this method using getParent method
-		throw new NotImplementedException();
+	public MediaElement getMediaElement() throws IOException {
+		MediaObject parent = getParent();
+		if (parent instanceof MediaElement) {
+			return (MediaElement) parent;
+		}
+		return null;
 	}
 
 	public MediaType getMediaType() throws IOException {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		MediaServerService.Client service;
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
-			MediaType mediaType = service.getMediaType(mediaObject);
-			manager.releaseMediaServerService(service);
-			return mediaType;
+			service = manager.getMediaServerService();
+		} catch (TTransportException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+
+		try {
+			return service.getMediaType(mediaObject);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			manager.releaseMediaServerService(service);
 		}
 	}
 
@@ -80,18 +89,37 @@ public abstract class MediaPad extends MediaObject {
 	 *            The continuation to receive the result
 	 * @return The parent MediaSrc
 	 */
-	public void getMediaElement(Continuation<MediaElement> cont) {
-		// TODO: Implement this method using getParent method
-		throw new NotImplementedException();
+	public void getMediaElement(final Continuation<MediaElement> cont)
+			throws IOException {
+		getParent(new Continuation<MediaObject>() {
+			@Override
+			public void onSuccess(MediaObject result) {
+				if (result instanceof MediaManager) {
+					cont.onSuccess((MediaElement) result);
+				} else {
+					cont.onSuccess(null);
+				}
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				cont.onError(cause);
+			}
+		});
 	}
 
 	public void getMediaType(final Continuation<MediaType> cont)
 			throws IOException {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		MediaServerService.AsyncClient service;
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
+			service = manager.getMediaServerServiceAsync();
+		} catch (TTransportException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+
+		try {
 			service.getMediaType(
 					mediaObject,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaType_call>() {
@@ -116,9 +144,10 @@ public abstract class MediaPad extends MediaObject {
 							cont.onError(exception);
 						}
 					});
-			manager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			manager.releaseMediaServerServiceAsync(service);
 		}
 	}
 }
