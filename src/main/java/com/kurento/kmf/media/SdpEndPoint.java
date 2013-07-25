@@ -28,14 +28,15 @@ import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.generateOffer_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.getLocalDescriptor_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.getRemoteDescriptor_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getLocalSessionDescription_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getRemoteSessionDescription_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.processAnswer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.processOffer_call;
 import com.kurento.kms.api.NegotiationException;
 
 /**
- * A NetworkConnection is a {@link MediaElement} that drives network media ports.<br>
+ * A NetworkConnection is a {@link MediaElement} that drives network media
+ * ports.<br>
  * <p>
  * A NetworkConnection can be created with
  * {@link MediaSession#createNetworkConnection(Parameters)}<br>
@@ -232,7 +233,8 @@ public abstract class SdpEndPoint extends EndPoint {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
-			String sessionDescriptor = service.getLocalDescriptor(mediaObject);
+			String sessionDescriptor = service
+					.getLocalSessionDescription(mediaObject);
 			manager.releaseMediaServerService(service);
 			return sessionDescriptor;
 		} catch (MediaObjectNotFoundException e) {
@@ -260,7 +262,8 @@ public abstract class SdpEndPoint extends EndPoint {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
-			String sessionDescriptor = service.getRemoteDescriptor(mediaObject);
+			String sessionDescriptor = service
+					.getRemoteSessionDescription(mediaObject);
 			manager.releaseMediaServerService(service);
 			return sessionDescriptor;
 		} catch (MediaObjectNotFoundException e) {
@@ -454,11 +457,12 @@ public abstract class SdpEndPoint extends EndPoint {
 					.getInstance();
 			MediaServerService.AsyncClient service = manager
 					.getMediaServerServiceAsync();
-			service.getLocalDescriptor(
+			service.getLocalSessionDescription(
 					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.getLocalDescriptor_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getLocalSessionDescription_call>() {
 						@Override
-						public void onComplete(getLocalDescriptor_call response) {
+						public void onComplete(
+								getLocalSessionDescription_call response) {
 							try {
 								String sessionDescriptor = response.getResult();
 								cont.onSuccess(sessionDescriptor);
@@ -502,11 +506,12 @@ public abstract class SdpEndPoint extends EndPoint {
 					.getInstance();
 			MediaServerService.AsyncClient service = manager
 					.getMediaServerServiceAsync();
-			service.getRemoteDescriptor(
+			service.getRemoteSessionDescription(
 					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.getRemoteDescriptor_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getRemoteSessionDescription_call>() {
 						@Override
-						public void onComplete(getRemoteDescriptor_call response) {
+						public void onComplete(
+								getRemoteSessionDescription_call response) {
 							try {
 								String sessionDescriptor = response.getResult();
 								cont.onSuccess(sessionDescriptor);

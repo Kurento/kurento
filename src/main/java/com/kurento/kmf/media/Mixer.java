@@ -9,14 +9,13 @@ import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
-import com.kurento.kms.api.MediaServerService.AsyncClient.getMixerPort_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMixerEndPoint_call;
 
 public abstract class Mixer extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	static final String MIXER_ID_FIELD_NAME = "mixerId";
-	static final int mixerId = 0;
+	static final String MIXER_TYPE_FIELD_NAME = "mixerType";
 
 	Mixer(com.kurento.kms.api.MediaObject mixer) {
 		super(mixer);
@@ -30,7 +29,7 @@ public abstract class Mixer extends MediaObject {
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
 			com.kurento.kms.api.MediaObject mixerPort = service
-					.getMixerPort(mediaObject);
+					.createMixerEndPoint(mediaObject);
 			manager.releaseMediaServerService(service);
 			return new MixerEndPoint(mixerPort);
 		} catch (MediaObjectNotFoundException e) {
@@ -51,11 +50,11 @@ public abstract class Mixer extends MediaObject {
 					.getInstance();
 			MediaServerService.AsyncClient service = manager
 					.getMediaServerServiceAsync();
-			service.getMixerPort(
+			service.createMixerEndPoint(
 					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.getMixerPort_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixerEndPoint_call>() {
 						@Override
-						public void onComplete(getMixerPort_call response) {
+						public void onComplete(createMixerEndPoint_call response) {
 							try {
 								com.kurento.kms.api.MediaObject mixerPort = response
 										.getResult();

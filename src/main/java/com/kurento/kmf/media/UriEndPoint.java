@@ -11,8 +11,8 @@ import com.kurento.kms.api.MediaObject;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
-import com.kurento.kms.api.MediaServerService.AsyncClient.pausePlayer_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.stopPlayer_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.pause_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.stop_call;
 
 public abstract class UriEndPoint extends EndPoint {
 
@@ -39,7 +39,7 @@ public abstract class UriEndPoint extends EndPoint {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
-			service.pausePlayer(mediaObject);
+			service.pause(mediaObject);
 			manager.releaseMediaServerService(service);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -55,7 +55,7 @@ public abstract class UriEndPoint extends EndPoint {
 			MediaServerServiceManager manager = MediaServerServiceManager
 					.getInstance();
 			MediaServerService.Client service = manager.getMediaServerService();
-			service.stopPlayer(mediaObject);
+			service.stop(mediaObject);
 			manager.releaseMediaServerService(service);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -84,11 +84,11 @@ public abstract class UriEndPoint extends EndPoint {
 					.getInstance();
 			MediaServerService.AsyncClient service = manager
 					.getMediaServerServiceAsync();
-			service.pausePlayer(
+			service.pause(
 					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.pausePlayer_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.pause_call>() {
 						@Override
-						public void onComplete(pausePlayer_call response) {
+						public void onComplete(pause_call response) {
 							try {
 								response.getResult();
 								cont.onSuccess(null);
@@ -120,11 +120,11 @@ public abstract class UriEndPoint extends EndPoint {
 					.getInstance();
 			MediaServerService.AsyncClient service = manager
 					.getMediaServerServiceAsync();
-			service.stopPlayer(
+			service.stop(
 					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.stopPlayer_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.stop_call>() {
 						@Override
-						public void onComplete(stopPlayer_call response) {
+						public void onComplete(stop_call response) {
 							try {
 								response.getResult();
 								cont.onSuccess(null);
