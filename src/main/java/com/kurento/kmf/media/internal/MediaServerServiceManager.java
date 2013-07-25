@@ -84,7 +84,7 @@ public class MediaServerServiceManager {
 		mediaServerServicesInUse.add(service);
 
 		if (mediaServerServicesInUse.size() > WARN_SIZE)
-			log.warn("Numer of serverService clients over warning size");
+			log.warn("Number of serverService clients over warning size");
 
 		return service;
 	}
@@ -112,7 +112,7 @@ public class MediaServerServiceManager {
 		mediaServerServicesAsyncInUse.add(service);
 
 		if (mediaServerServicesAsyncInUse.size() > WARN_SIZE)
-			log.warn("Numer of serverService clients over warning size");
+			log.warn("Number of serverService clients over warning size");
 
 		return service;
 	}
