@@ -265,8 +265,9 @@ public abstract class MediaElement extends MediaObject {
 			public void onSuccess(MediaObject result) {
 				if (result instanceof MediaManager) {
 					cont.onSuccess((MediaManager) result);
+				} else {
+					cont.onSuccess(null);
 				}
-				cont.onSuccess(null);
 			}
 
 			@Override
