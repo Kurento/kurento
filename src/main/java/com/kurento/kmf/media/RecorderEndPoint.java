@@ -6,8 +6,8 @@ public class RecorderEndPoint extends UriEndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	RecorderEndPoint(com.kurento.kms.api.MediaObject mediaRecorder) {
-		super(mediaRecorder);
+	RecorderEndPoint(com.kurento.kms.api.MediaObject recorderEndPoint) {
+		super(recorderEndPoint);
 	}
 
 	/* SYNC */
