@@ -9,8 +9,8 @@ public class MainMixer extends Mixer {
 
 	static final MixerType mixerType = MixerType.MAIN_MIXER;
 
-	MainMixer(MediaObject mixer) {
-		super(mixer);
+	MainMixer(MediaObject mainMixer) {
+		super(mainMixer);
 	}
 
 }
