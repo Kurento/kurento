@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kms.api.MediaServerService;
-import com.kurento.kms.media.MediaManagerListener;
+import com.kurento.kms.media.MediaManagerHandler;
 
 public class MediaServerServiceManager {
 
@@ -36,7 +36,7 @@ public class MediaServerServiceManager {
 	private static MediaServerServiceManager singleton = null;
 
 	public static synchronized void init(String address, int port,
-			MediaManagerListener listener) throws IllegalStateException,
+			MediaManagerHandler listener) throws IllegalStateException,
 			IOException {
 		MediaServerServiceManager manager;
 
@@ -58,7 +58,7 @@ public class MediaServerServiceManager {
 	}
 
 	private MediaServerServiceManager(String address, int port,
-			MediaManagerListener listener) throws TTransportException {
+			MediaManagerHandler listener) throws TTransportException {
 		this.address = address;
 		this.port = port;
 

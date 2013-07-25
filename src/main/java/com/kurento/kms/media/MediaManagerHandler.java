@@ -1,6 +1,6 @@
 package com.kurento.kms.media;
 
-public interface MediaManagerListener {
+public interface MediaManagerHandler {
 
 	void onError(KmsError error);
 

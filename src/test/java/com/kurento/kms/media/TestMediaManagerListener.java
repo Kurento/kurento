@@ -1,6 +1,6 @@
 package com.kurento.kms.media;
 
-public class TestMediaManagerListener implements MediaManagerListener {
+public class TestMediaManagerListener implements MediaManagerHandler {
 
 	@Override
 	public void onError(KmsError error) {
