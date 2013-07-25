@@ -6,8 +6,8 @@ public class PlayerEndPoint extends UriEndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	PlayerEndPoint(com.kurento.kms.api.MediaObject mediaPlayer) {
-		super(mediaPlayer);
+	PlayerEndPoint(com.kurento.kms.api.MediaObject playerEndPoint) {
+		super(playerEndPoint);
 	}
 
 	/* SYNC */
