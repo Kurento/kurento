@@ -1,4 +1,4 @@
-package com.kurento.kmf.content.internal;
+package com.kurento.kmf.content;
 
 public class ContentApiConfiguration {
 

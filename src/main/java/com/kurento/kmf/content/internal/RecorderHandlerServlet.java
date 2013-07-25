@@ -45,14 +45,14 @@ public class RecorderHandlerServlet extends HttpServlet {
 		// context
 		AnnotationConfigApplicationContext thisServletContext = KurentoApplicationContextUtils
 				.getKurentoServletApplicationContext(this.getClass(),
-						this.getServletName(), this.getServletContext());
+						this.getServletName());
 
 		// If there is not application context associated to this servlet,
 		// create one
 		if (thisServletContext == null) {
 			// Locate the handler class associated to this servlet
 			String handlerClass = this
-					.getInitParameter(ContentApiInitializer.RECORDER_HANDLER_CLASS_PARAM_NAME);
+					.getInitParameter(ContentApiWebApplicationInitializer.RECORDER_HANDLER_CLASS_PARAM_NAME);
 			if (handlerClass == null || handlerClass.equals("")) {
 				String message = "Cannot find handler class associated to handler servlet with name "
 						+ this.getServletConfig().getServletName()
@@ -119,7 +119,8 @@ public class RecorderHandlerServlet extends HttpServlet {
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
 
-		RecordRequest recordRequest = new RecordRequest(asyncCtx, contentId);
+		//RecordRequest recordRequest = new RecordRequest(asyncCtx, contentId);
+		RecordRequest recordRequest = (RecordRequest)KurentoApplicationContextUtils.getBean("recordRequest", asyncCtx, contentId);
 
 		Future<?> future = executor.getExecutor().submit(
 				new AsyncRecorderRequestProcessor(recorderHandler,

@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.kurento.kmf.content.ContentApiConfiguration;
+
 public class HandlerServletAsyncExecutor {
 
 	private ThreadPoolExecutor executor;

@@ -43,15 +43,14 @@ public class PlayerHandlerServlet extends HttpServlet {
 		// Recover application context associated to this servlet in this
 		// context
 		AnnotationConfigApplicationContext thisServletContext = KurentoApplicationContextUtils
-				.getKurentoServletApplicationContext(this.getClass(), this.getServletName(),
-						this.getServletContext());
+				.getKurentoServletApplicationContext(this.getClass(), this.getServletName());
 
 		// If there is not application context associated to this servlet,
 		// create one
 		if (thisServletContext == null) {
 			// Locate the handler class associated to this servlet
 			String handlerClass = this.getInitParameter(
-					ContentApiInitializer.PLAYER_HANDLER_CLASS_PARAM_NAME);
+					ContentApiWebApplicationInitializer.PLAYER_HANDLER_CLASS_PARAM_NAME);
 			if (handlerClass == null || handlerClass.equals("")) {
 				String message = "Cannot find handler class associated to handler servlet with name "
 						+ this.getServletConfig().getServletName()
@@ -115,7 +114,8 @@ public class PlayerHandlerServlet extends HttpServlet {
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
 
-		PlayRequest playRequest = new PlayRequest(asyncCtx, contentId);
+		//PlayRequest playRequest = new PlayRequest(asyncCtx, contentId);
+		PlayRequest playRequest = (PlayRequest)KurentoApplicationContextUtils.getBean("playRequest", asyncCtx, contentId);
 
 		Future<?> future = executor.getExecutor().submit(
 				new AsyncPlayerRequestProcessor(playerHandler, playRequest));

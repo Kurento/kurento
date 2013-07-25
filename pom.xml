@@ -15,11 +15,9 @@
 		<!-- Dependencies Versions -->
 		<kmf-api.version>1.0.0-SNAPSHOT</kmf-api.version>
 		<kmf-http-ep.version>0.0.1-SNAPSHOT</kmf-http-ep.version>
+		<kmf-spring.version>0.0.1-SNAPSHOT</kmf-spring.version>
 		<servlet-api.version>3.0.1</servlet-api.version>
-		<spring.version>3.1.4.RELEASE</spring.version>
 		<reflections.version>0.9.9-RC1</reflections.version>
-		<cglib.version>2.2.2</cglib.version>
-
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
@@ -51,6 +49,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-spring</artifactId>
+			<version>${kmf-spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-http-ep</artifactId>
 			<version>${kmf-http-ep.version}</version>
 		</dependency>
@@ -61,19 +64,9 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
 			<version>${reflections.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib</artifactId>
-			<version>${cglib.version}</version>
 		</dependency>
 	</dependencies>
 
