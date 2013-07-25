@@ -14,9 +14,9 @@ public class MediaManagerFactory {
 
 	private final MediaServerServiceManager serviceManager;
 
-	MediaManagerFactory(String address, int port, MediaManagerHandler listener)
+	MediaManagerFactory(String address, int port, MediaManagerHandler handler)
 			throws IOException {
-		MediaServerServiceManager.init(address, port, listener);
+		MediaServerServiceManager.init(address, port, handler);
 		serviceManager = MediaServerServiceManager.getInstance();
 	}
 

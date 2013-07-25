@@ -4,7 +4,7 @@ import com.kurento.kmf.media.KmsError;
 import com.kurento.kmf.media.KmsEvent;
 import com.kurento.kmf.media.MediaManagerHandler;
 
-public class TestMediaManagerListener implements MediaManagerHandler {
+public class TestMediaManagerHandler implements MediaManagerHandler {
 
 	@Override
 	public void onError(KmsError error) {

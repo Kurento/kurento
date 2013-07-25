@@ -36,7 +36,7 @@ public class MediaServerServiceManager {
 	private static MediaServerServiceManager singleton = null;
 
 	public static synchronized void init(String address, int port,
-			MediaManagerHandler listener) throws IllegalStateException,
+			MediaManagerHandler handler) throws IllegalStateException,
 			IOException {
 		MediaServerServiceManager manager;
 
@@ -44,7 +44,7 @@ public class MediaServerServiceManager {
 			if (singleton == null) {
 				try {
 					manager = new MediaServerServiceManager(address, port,
-							listener);
+							handler);
 				} catch (TTransportException e) {
 					throw new IOException(e);
 				}
@@ -58,14 +58,14 @@ public class MediaServerServiceManager {
 	}
 
 	private MediaServerServiceManager(String address, int port,
-			MediaManagerHandler listener) throws TTransportException {
+			MediaManagerHandler handler) throws TTransportException {
 		this.address = address;
 		this.port = port;
 
 		MediaServerService.Client server = getMediaServerService();
 		// TODO:
-		// server.sendClusterCodeForListener(clusterCode, listenerAddr,
-		// listenerPort);
+		// server.sendClusterCodeForHandler(clusterCode, handlerAddr,
+		// handlerPort);
 		releaseMediaServerService(server);
 	}
 

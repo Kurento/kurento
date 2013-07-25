@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
                     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-	<bean id="mediaManagerListener" class="com.kurento.kms.media.TestMediaManagerListener" />
+	<bean id="mediaManagerHandler" class="com.kurento.kms.media.TestMediaManagerHandler" />
 	<bean id="mediaManagerFactory" class="com.kurento.kms.media.MediaManagerFactory">
 		<constructor-arg value="localhost" />
 		<constructor-arg value="9090" />
-		<constructor-arg ref="mediaManagerListener" />
+		<constructor-arg ref="mediaManagerHandler" />
 	</bean>
 </beans>
