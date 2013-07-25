@@ -6,8 +6,8 @@ public class RtpEndPoint extends SdpEndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	public RtpEndPoint(MediaObject object) {
-		super(object);
+	public RtpEndPoint(MediaObject rtpEndPoint) {
+		super(rtpEndPoint);
 	}
 
 }
