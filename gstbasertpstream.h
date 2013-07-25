@@ -2,7 +2,7 @@
 #define __GST_BASE_RTP_STREAM_H__
 
 #include <gst/gst.h>
-#include <gstbasestream.h>
+#include <kmsbasesdpenpoint.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -27,14 +27,14 @@ typedef struct _GstBaseRtpStreamClass GstBaseRtpStreamClass;
 
 struct _GstBaseRtpStream
 {
-  GstBaseStream parent;
+  KmsBaseSdpEndPoint parent;
 
   GstElement *rtpbin;
 };
 
 struct _GstBaseRtpStreamClass
 {
-  GstBaseStreamClass parent_class;
+  KmsBaseSdpEndPointClass parent_class;
 };
 
 GType gst_base_rtp_stream_get_type (void);

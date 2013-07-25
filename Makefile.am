@@ -21,7 +21,7 @@ libgstkurento_la_SOURCES = gstkurento.c \
 			sdp_utils.c sdp_utils.h \
 			gstagnosticbin.c gstagnosticbin.h \
 			kmselement.c kmselement.h \
-			gstbasestream.c gstbasestream.h \
+			kmsbasesdpendpoint.c kmsbasesdpendpoint.h \
 			gstbasertpstream.c gstbasertpstream.h \
 			gstudpstream.c gstudpstream.h \
 			gstautomuxerbin.c automuxerbin.h

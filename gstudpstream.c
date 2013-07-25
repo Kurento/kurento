@@ -129,7 +129,7 @@ get_ntp_time ()
 }
 
 static void
-gst_udp_set_connection (GstBaseStream * base_stream, GstSDPMessage * msg)
+gst_udp_set_connection (KmsBaseSdpEndPoint * base_stream, GstSDPMessage * msg)
 {
   GList *ips, *l;
   GResolver *resolver;
@@ -183,7 +183,7 @@ gst_udp_set_connection (GstBaseStream * base_stream, GstSDPMessage * msg)
 }
 
 static gboolean
-gst_udp_stream_set_transport_to_sdp (GstBaseStream * base_stream,
+gst_udp_stream_set_transport_to_sdp (KmsBaseSdpEndPoint * base_stream,
     GstSDPMessage * msg)
 {
   GstUdpStream *udpstream = GST_UDP_STREAM (base_stream);
@@ -191,8 +191,8 @@ gst_udp_stream_set_transport_to_sdp (GstBaseStream * base_stream,
   guint len, i;
 
   ret =
-      GST_BASE_STREAM_CLASS (gst_udp_stream_parent_class)->set_transport_to_sdp
-      (base_stream, msg);
+      KMS_BASE_SDP_END_POINT_CLASS
+      (gst_udp_stream_parent_class)->set_transport_to_sdp (base_stream, msg);
 
   if (!ret)
     return FALSE;
@@ -226,15 +226,15 @@ gst_udp_stream_set_transport_to_sdp (GstBaseStream * base_stream,
 }
 
 static void
-gst_udp_stream_start_transport_send (GstBaseStream * base_stream,
+gst_udp_stream_start_transport_send (KmsBaseSdpEndPoint * base_stream,
     const GstSDPMessage * answer)
 {
   GstUdpStream *udpstream = GST_UDP_STREAM (base_stream);
   const GstSDPConnection *con;
   guint len, i;
 
-  GST_BASE_STREAM_CLASS (gst_udp_stream_parent_class)->start_transport_send
-      (base_stream, answer);
+  KMS_BASE_SDP_END_POINT_CLASS
+      (gst_udp_stream_parent_class)->start_transport_send (base_stream, answer);
 
   GST_DEBUG ("Start transport send");
 
@@ -303,7 +303,7 @@ gst_udp_stream_finalize (GObject * object)
 static void
 gst_udp_stream_class_init (GstUdpStreamClass * klass)
 {
-  GstBaseStreamClass *gst_base_stream_class;
+  KmsBaseSdpEndPointClass *gst_base_stream_class;
   GstElementClass *gstelement_class;
   GObjectClass *gobject_class;
 
@@ -318,7 +318,7 @@ gst_udp_stream_class_init (GstUdpStreamClass * klass)
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->finalize = gst_udp_stream_finalize;
 
-  gst_base_stream_class = GST_BASE_STREAM_CLASS (klass);
+  gst_base_stream_class = KMS_BASE_SDP_END_POINT_CLASS (klass);
 
   gst_base_stream_class->set_transport_to_sdp =
       gst_udp_stream_set_transport_to_sdp;

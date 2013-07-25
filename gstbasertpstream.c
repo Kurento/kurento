@@ -14,7 +14,8 @@ GST_DEBUG_CATEGORY_STATIC (gst_base_rtp_stream_debug);
 #define GST_CAT_DEFAULT gst_base_rtp_stream_debug
 
 #define gst_base_rtp_stream_parent_class parent_class
-G_DEFINE_TYPE (GstBaseRtpStream, gst_base_rtp_stream, GST_TYPE_BASE_STREAM);
+G_DEFINE_TYPE (GstBaseRtpStream, gst_base_rtp_stream,
+    KMS_TYPE_BASE_SDP_END_POINT);
 
 #define RTPBIN "rtpbin"
 
@@ -127,12 +128,12 @@ end:
 }
 
 static void
-gst_base_rtp_stream_connect_input_elements (GstBaseStream * base_stream,
+gst_base_rtp_stream_connect_input_elements (KmsBaseSdpEndPoint * base_stream,
     const GstSDPMessage * answer)
 {
   guint i, len;
 
-  GST_BASE_STREAM_CLASS
+  KMS_BASE_SDP_END_POINT_CLASS
       (gst_base_rtp_stream_parent_class)->connect_input_elements (base_stream,
       answer);
   GST_DEBUG ("connect_input_elements");
@@ -202,7 +203,7 @@ static GstCaps *
 gst_base_rtp_stream_get_caps_for_pt (GstBaseRtpStream * base_rtp_stream,
     guint pt)
 {
-  GstBaseStream *base_stream = GST_BASE_STREAM (base_rtp_stream);
+  KmsBaseSdpEndPoint *base_stream = KMS_BASE_SDP_END_POINT (base_rtp_stream);
   GstSDPMessage *answer;
   guint i, len;
 
@@ -312,7 +313,7 @@ end:
 static void
 gst_base_rtp_stream_class_init (GstBaseRtpStreamClass * klass)
 {
-  GstBaseStreamClass *base_stream_class;
+  KmsBaseSdpEndPointClass *base_stream_class;
   GstElementClass *gstelement_class;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
@@ -324,7 +325,7 @@ gst_base_rtp_stream_class_init (GstBaseRtpStreamClass * klass)
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
-  base_stream_class = GST_BASE_STREAM_CLASS (klass);
+  base_stream_class = KMS_BASE_SDP_END_POINT_CLASS (klass);
 
   base_stream_class->connect_input_elements =
       gst_base_rtp_stream_connect_input_elements;
