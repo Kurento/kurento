@@ -1,4 +1,5 @@
 /*
+ * TODO: update this header
  * Kurento Commons MSControl: Simplified Media Control API for the Java Platform based on jsr309
  * Copyright (C) 2011  Tikal Technologies
  *
@@ -34,6 +35,7 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.processAnswer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.processOffer_call;
 import com.kurento.kms.api.NegotiationException;
 
+// TODO: update doc
 /**
  * A NetworkConnection is a {@link MediaElement} that drives network media
  * ports.<br>
@@ -167,15 +169,15 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			String sessionDescriptor = service.generateOffer(mediaObject);
-			MediaServerServiceManager.releaseMediaServerService(service);
-			return sessionDescriptor;
+			return service.generateOffer(mediaObject);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -184,15 +186,15 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			String sessionDescriptor = service.processOffer(mediaObject, offer);
-			MediaServerServiceManager.releaseMediaServerService(service);
-			return sessionDescriptor;
+			return service.processOffer(mediaObject, offer);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -201,16 +203,15 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			String sessionDescriptor = service.processAnswer(mediaObject,
-					answer);
-			MediaServerServiceManager.releaseMediaServerService(service);
-			return sessionDescriptor;
+			return service.processAnswer(mediaObject, answer);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -233,16 +234,15 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			String sessionDescriptor = service
-					.getLocalSessionDescription(mediaObject);
-			MediaServerServiceManager.releaseMediaServerService(service);
-			return sessionDescriptor;
+			return service.getLocalSessionDescription(mediaObject);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -262,16 +262,15 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			String sessionDescriptor = service
-					.getRemoteSessionDescription(mediaObject);
-			MediaServerServiceManager.releaseMediaServerService(service);
-			return sessionDescriptor;
+			return service.getRemoteSessionDescription(mediaObject);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -323,9 +322,10 @@ public abstract class SdpEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -376,9 +376,10 @@ public abstract class SdpEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -430,6 +431,8 @@ public abstract class SdpEndPoint extends EndPoint {
 					});
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -478,9 +481,10 @@ public abstract class SdpEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -526,9 +530,10 @@ public abstract class SdpEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
