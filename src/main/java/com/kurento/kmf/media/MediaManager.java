@@ -17,8 +17,8 @@ public class MediaManager extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaManager(com.kurento.kms.api.MediaObject mediaFactory) {
-		super(mediaFactory);
+	MediaManager(com.kurento.kms.api.MediaObject mediaManager) {
+		super(mediaManager);
 	}
 
 	/* SYNC */
