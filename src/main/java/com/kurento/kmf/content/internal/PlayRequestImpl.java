@@ -28,12 +28,18 @@ public class PlayRequestImpl implements PlayRequest {
 	@Autowired
 	private MediaManagerFactory mediaManagerFactory;
 
+	@Autowired
+	private StreamingProxy proxy;
+
 	private AsyncContext asyncContext;
 	private String contentId;
+	private boolean redirect;
 
-	PlayRequestImpl(AsyncContext asyncContext, String contentId) {
+	PlayRequestImpl(AsyncContext asyncContext, String contentId,
+			boolean redirect) {
 		this.asyncContext = asyncContext;
 		this.contentId = contentId;
+		this.redirect = redirect;
 	}
 
 	@Override
@@ -74,8 +80,17 @@ public class PlayRequestImpl implements PlayRequest {
 
 			HttpServletResponse response = (HttpServletResponse) asyncContext
 					.getResponse();
-			response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-			response.setHeader("Location", httpEndPoint.getUrl());
+			HttpServletRequest request = (HttpServletRequest) asyncContext
+					.getRequest();
+
+			if (redirect) {
+				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+				response.setHeader("Location", httpEndPoint.getUrl());
+			} else {
+				proxy.tunnelTransaction(request, response,
+						httpEndPoint.getUrl());
+			}
+
 			// If this call is made asynchronous complete should be in the
 			// continuation
 			asyncContext.complete();

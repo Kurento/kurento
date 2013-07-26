@@ -26,20 +26,26 @@ public class ContentApplicationContextConfiguration {
 	private RootWebApplicationContextParentRecoverer parentRecoverer;
 
 	@Bean
+	StreamingProxy streamingProxy() {
+		return new StreamingProxy();
+	}
+
+	@Bean
 	HandlerServletAsyncExecutor handlerServletAsyncExecutor() {
 		return new HandlerServletAsyncExecutor();
 	}
 
 	@Bean
 	@Scope("prototype")
-	PlayRequest playRequest(AsyncContext ctx, String contentId) {
-		return new PlayRequestImpl(ctx, contentId);
+	PlayRequest playRequest(AsyncContext ctx, String contentId, boolean redirect) {
+		return new PlayRequestImpl(ctx, contentId, redirect);
 	}
 
 	@Bean
 	@Scope("prototype")
-	RecordRequest recordRequest(AsyncContext ctx, String contentId) {
-		return new RecordRequestImpl(ctx, contentId);
+	RecordRequest recordRequest(AsyncContext ctx, String contentId,
+			boolean redirect) {
+		return new RecordRequestImpl(ctx, contentId, redirect);
 	}
 
 	@Bean

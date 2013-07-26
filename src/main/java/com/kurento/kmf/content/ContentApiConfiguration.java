@@ -7,6 +7,10 @@ public class ContentApiConfiguration {
 	private long poolExecutionTimeout = 50000L;
 	private int poolMaxSize = 100;
 	private int poolMaxQueueSize = 100;
+	private int proxyConnectionTimeout = 10000;
+	private int proxySocketTimeout = 0;
+	private int proxyMaxConnections = 1000;
+	private int proxyMaxConnectionsPerRoute = 2;
 
 	/**
 	 * 
@@ -66,6 +70,38 @@ public class ContentApiConfiguration {
 
 	public int getPoolMaxSize() {
 		return poolMaxSize;
+	}
+
+	public int getProxyConnectionTimeout() {
+		return proxyConnectionTimeout;
+	}
+
+	public void setProxyConnectionTimeout(int proxyConnectionTimeout) {
+		this.proxyConnectionTimeout = proxyConnectionTimeout;
+	}
+
+	public int getProxySocketTimeout() {
+		return proxySocketTimeout;
+	}
+
+	public void setProxySocketTimeout(int proxySocketTimeout) {
+		this.proxySocketTimeout = proxySocketTimeout;
+	}
+
+	public int getProxyMaxConnections() {
+		return proxyMaxConnections;
+	}
+
+	public void setProxyMaxConnections(int proxyMaxConnections) {
+		this.proxyMaxConnections = proxyMaxConnections;
+	}
+
+	public int getProxyMaxConnectionsPerRoute() {
+		return proxyMaxConnectionsPerRoute;
+	}
+
+	public void setProxyMaxConnectionsPerRoute(int proxyMaxConnectionsPerRoute) {
+		this.proxyMaxConnectionsPerRoute = proxyMaxConnectionsPerRoute;
 	}
 
 }

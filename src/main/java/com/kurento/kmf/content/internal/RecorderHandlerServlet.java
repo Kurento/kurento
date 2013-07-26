@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import com.kurento.kmf.content.PlayerService;
 import com.kurento.kmf.content.RecordRequest;
 import com.kurento.kmf.content.RecorderHandler;
 import com.kurento.kmf.content.RecorderService;
@@ -119,8 +118,10 @@ public class RecorderHandlerServlet extends HttpServlet {
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
 
-		//RecordRequest recordRequest = new RecordRequest(asyncCtx, contentId);
-		RecordRequest recordRequest = (RecordRequest)KurentoApplicationContextUtils.getBean("recordRequest", asyncCtx, contentId);
+		// RecordRequest recordRequest = new RecordRequest(asyncCtx, contentId);
+		RecordRequest recordRequest = (RecordRequest) KurentoApplicationContextUtils
+				.getBean("recordRequest", asyncCtx, contentId,
+						useRedirectStrategy);
 
 		Future<?> future = executor.getExecutor().submit(
 				new AsyncRecorderRequestProcessor(recorderHandler,

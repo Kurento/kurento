@@ -33,7 +33,7 @@ public class PlayerHandlerServlet extends HttpServlet {
 
 	@Autowired
 	private HandlerServletAsyncExecutor executor;
-	
+
 	private boolean useRedirectStrategy = true;
 
 	@Override
@@ -43,14 +43,15 @@ public class PlayerHandlerServlet extends HttpServlet {
 		// Recover application context associated to this servlet in this
 		// context
 		AnnotationConfigApplicationContext thisServletContext = KurentoApplicationContextUtils
-				.getKurentoServletApplicationContext(this.getClass(), this.getServletName());
+				.getKurentoServletApplicationContext(this.getClass(),
+						this.getServletName());
 
 		// If there is not application context associated to this servlet,
 		// create one
 		if (thisServletContext == null) {
 			// Locate the handler class associated to this servlet
-			String handlerClass = this.getInitParameter(
-					ContentApiWebApplicationInitializer.PLAYER_HANDLER_CLASS_PARAM_NAME);
+			String handlerClass = this
+					.getInitParameter(ContentApiWebApplicationInitializer.PLAYER_HANDLER_CLASS_PARAM_NAME);
 			if (handlerClass == null || handlerClass.equals("")) {
 				String message = "Cannot find handler class associated to handler servlet with name "
 						+ this.getServletConfig().getServletName()
@@ -61,14 +62,17 @@ public class PlayerHandlerServlet extends HttpServlet {
 			// Create application context for this servlet containing the
 			// handler
 			thisServletContext = KurentoApplicationContextUtils
-					.createKurentoServletApplicationContext(this.getClass(), this.getServletName(),
-							this.getServletContext(), handlerClass);
-			
+					.createKurentoServletApplicationContext(this.getClass(),
+							this.getServletName(), this.getServletContext(),
+							handlerClass);
+
 			try {
-				PlayerService playerService = Class.forName(handlerClass).getAnnotation(PlayerService.class);
+				PlayerService playerService = Class.forName(handlerClass)
+						.getAnnotation(PlayerService.class);
 				useRedirectStrategy = playerService.redirect();
 			} catch (ClassNotFoundException e) {
-				String message = "Cannot recover class " + handlerClass + " on classpath";
+				String message = "Cannot recover class " + handlerClass
+						+ " on classpath";
 				log.error(message);
 				throw new ServletException(message);
 			}
@@ -114,8 +118,10 @@ public class PlayerHandlerServlet extends HttpServlet {
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
 
-		//PlayRequest playRequest = new PlayRequest(asyncCtx, contentId);
-		PlayRequest playRequest = (PlayRequest)KurentoApplicationContextUtils.getBean("playRequest", asyncCtx, contentId);
+		// PlayRequest playRequest = new PlayRequest(asyncCtx, contentId);
+		PlayRequest playRequest = (PlayRequest) KurentoApplicationContextUtils
+				.getBean("playRequest", asyncCtx, contentId,
+						useRedirectStrategy);
 
 		Future<?> future = executor.getExecutor().submit(
 				new AsyncPlayerRequestProcessor(playerHandler, playRequest));
