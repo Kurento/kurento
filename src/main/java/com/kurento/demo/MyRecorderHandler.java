@@ -5,7 +5,7 @@ import com.kurento.kmf.content.RecordRequest;
 import com.kurento.kmf.content.RecorderHandler;
 import com.kurento.kmf.content.RecorderService;
 
-@RecorderService(name = "MyRecorderHandler", path = "/upload")
+@RecorderService(name = "MyRecorderHandler", path = "/upload", redirect = false)
 public class MyRecorderHandler implements RecorderHandler {
 
 	@Override

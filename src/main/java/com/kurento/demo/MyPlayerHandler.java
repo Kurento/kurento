@@ -5,7 +5,7 @@ import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.PlayerHandler;
 import com.kurento.kmf.content.PlayerService;
 
-@PlayerService(name="MyPlayerHandler", path="/test")
+@PlayerService(name = "MyPlayerHandler", path = "/test", redirect = false)
 public class MyPlayerHandler implements PlayerHandler {
 
 	@Override
