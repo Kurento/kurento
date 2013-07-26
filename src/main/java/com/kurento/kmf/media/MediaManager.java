@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -15,6 +14,7 @@ import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createFilter_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createHttpEndpoint_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMixer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPoint_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createUriEndpoint_call;
@@ -370,8 +370,42 @@ public class MediaManager extends MediaObject {
 
 	public <T extends Mixer> void createMixer(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
-		throw new NotImplementedException();
-		// TODO: Implement this method
+		MixerType t = Mixer.getType(type);
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
+		try {
+			service.createMixer(
+					mediaObject,
+					t,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixer_call>() {
+						@Override
+						public void onComplete(createMixer_call response) {
+							try {
+								com.kurento.kms.api.MediaObject mixer = response
+										.getResult();
+								cont.onSuccess(createInstance(type, mixer));
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+		}
 	}
 
 }
