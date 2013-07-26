@@ -152,6 +152,8 @@ public final class KurentoApplicationContextUtils {
 
 	public static void processInjectionBasedOnApplicationContext(Object bean,
 			AnnotationConfigApplicationContext appContext) {
+		Assert.notNull(appContext, "Cannot process bean injection. Reason the specified ApplicationContext is null");
+		Assert.notNull(bean, "Cannot process bean injection into null bean reference");
 		AutowiredAnnotationBeanPostProcessor bpp = new AutowiredAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(appContext.getAutowireCapableBeanFactory());
 		bpp.processInjection(bean);
@@ -159,6 +161,8 @@ public final class KurentoApplicationContextUtils {
 
 	public static void processInjectionBasedOnKurentoApplicationContext(
 			Object bean) {
+		Assert.notNull(kurentoApplicationContextInternalReference, "Cannot process bean injection. Reason Kurento ApplicationContext has not been initialized");
+		Assert.notNull(bean, "Cannot process bean injection into null bean reference");
 		AutowiredAnnotationBeanPostProcessor bpp = new AutowiredAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(kurentoApplicationContextInternalReference
 				.getAutowireCapableBeanFactory());
