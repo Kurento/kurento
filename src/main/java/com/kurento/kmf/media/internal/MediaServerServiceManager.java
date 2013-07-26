@@ -78,6 +78,16 @@ public class MediaServerServiceManager {
 		}
 	}
 
+	private MediaServerService.Client createMediaServerService()
+			throws TTransportException {
+		// FIXME: use pool to avoid no such sockets
+		TTransport transport = new TFramedTransport(new TSocket(address, port));
+		// TODO: Make protocol configurable
+		TProtocol prot = new TBinaryProtocol(transport);
+		transport.open();
+		return new MediaServerService.Client(prot);
+	}
+
 	public MediaServerService.Client getMediaServerService()
 			throws TTransportException {
 		MediaServerService.Client service = createMediaServerService();
@@ -96,14 +106,13 @@ public class MediaServerServiceManager {
 		service.getOutputProtocol().getTransport().close();
 	}
 
-	private MediaServerService.Client createMediaServerService()
-			throws TTransportException {
-		// FIXME: use pool to avoid no such sockets
-		TTransport transport = new TFramedTransport(new TSocket(address, port));
-		// TODO: Make protocol configurable
-		TProtocol prot = new TBinaryProtocol(transport);
-		transport.open();
-		return new MediaServerService.Client(prot);
+	private MediaServerService.AsyncClient createMediaServerServiceAsync()
+			throws IOException {
+		TNonblockingTransport transport = new TNonblockingSocket(address, port);
+		TAsyncClientManager clientManager = new TAsyncClientManager();
+		TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
+		return new MediaServerService.AsyncClient(protocolFactory,
+				clientManager, transport);
 	}
 
 	public MediaServerService.AsyncClient getMediaServerServiceAsync()
@@ -120,15 +129,6 @@ public class MediaServerServiceManager {
 	public void releaseMediaServerServiceAsync(
 			MediaServerService.AsyncClient service) {
 		mediaServerServicesAsyncInUse.remove(service);
-	}
-
-	private MediaServerService.AsyncClient createMediaServerServiceAsync()
-			throws TTransportException, IOException {
-		TNonblockingTransport transport = new TNonblockingSocket(address, port);
-		TAsyncClientManager clientManager = new TAsyncClientManager();
-		TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
-		return new MediaServerService.AsyncClient(protocolFactory,
-				clientManager, transport);
 	}
 
 }
