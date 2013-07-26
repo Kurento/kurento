@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -25,14 +24,8 @@ public abstract class Mixer extends MediaObject {
 	/* SYNC */
 
 	public MixerEndPoint createMixerEndPoint() throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			return new MixerEndPoint(service.createMixerEndPoint(mediaObject));
@@ -43,7 +36,7 @@ public abstract class Mixer extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -51,14 +44,8 @@ public abstract class Mixer extends MediaObject {
 
 	public void createMixerEndPoint(final Continuation<MixerEndPoint> cont)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.createMixerEndPoint(
@@ -88,7 +75,7 @@ public abstract class Mixer extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 }

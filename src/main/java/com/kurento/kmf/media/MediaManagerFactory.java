@@ -12,35 +12,38 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaManager_cal
 
 public class MediaManagerFactory {
 
-	private final MediaServerServiceManager serviceManager;
-
 	MediaManagerFactory(String address, int port, MediaManagerHandler handler)
 			throws IOException {
 		MediaServerServiceManager.init(address, port, handler);
-		serviceManager = MediaServerServiceManager.getInstance();
 	}
+
+	/* SYNC */
 
 	public MediaManager createMediaManager() throws MediaException {
 		try {
-			MediaServerService.Client service = serviceManager
+			MediaServerService.Client service = MediaServerServiceManager
 					.getMediaServerService();
 			// TODO: Register to receive callbacks
 			// FIXME: use a correct handlerId
 			com.kurento.kms.api.MediaObject mediaManager = service
 					.createMediaManager(0);
-			serviceManager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 			return new MediaManager(mediaManager);
 		} catch (MediaServerException e) {
 			throw new MediaException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new MediaException(e.getMessage(), e);
+		} catch (IOException e) {
+			throw new MediaException(e.getMessage(), e);
 		}
 	}
+
+	/* ASYNC */
 
 	public void createMediaManager(final Continuation<MediaManager> cont)
 			throws IOException {
 		try {
-			MediaServerService.AsyncClient service = serviceManager
+			MediaServerService.AsyncClient service = MediaServerServiceManager
 					.getMediaServerServiceAsync();
 			// FIXME: use a correct handlerId
 			service.createMediaManager(
@@ -65,7 +68,7 @@ public class MediaManagerFactory {
 							cont.onError(exception);
 						}
 					});
-			serviceManager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}

@@ -42,13 +42,7 @@ public class MediaServerServiceManager {
 
 		synchronized (MediaServerServiceManager.class) {
 			if (singleton == null) {
-				try {
-					manager = new MediaServerServiceManager(address, port,
-							handler);
-				} catch (TTransportException e) {
-					throw new IOException(e);
-				}
-
+				manager = new MediaServerServiceManager(address, port, handler);
 				if (singleton == null)
 					singleton = manager;
 			} else {
@@ -58,7 +52,7 @@ public class MediaServerServiceManager {
 	}
 
 	private MediaServerServiceManager(String address, int port,
-			MediaManagerHandler handler) throws TTransportException {
+			MediaManagerHandler handler) throws IOException {
 		this.address = address;
 		this.port = port;
 
@@ -69,7 +63,7 @@ public class MediaServerServiceManager {
 		releaseMediaServerService(server);
 	}
 
-	public static synchronized MediaServerServiceManager getInstance()
+	private static synchronized MediaServerServiceManager getInstance()
 			throws IllegalStateException {
 		if (singleton != null) {
 			return singleton;
@@ -88,7 +82,7 @@ public class MediaServerServiceManager {
 		return new MediaServerService.Client(prot);
 	}
 
-	public MediaServerService.Client getMediaServerService()
+	private MediaServerService.Client getMediaServerServiceInternal()
 			throws TTransportException {
 		MediaServerService.Client service = createMediaServerService();
 		mediaServerServicesInUse.add(service);
@@ -99,11 +93,30 @@ public class MediaServerServiceManager {
 		return service;
 	}
 
-	public void releaseMediaServerService(MediaServerService.Client service) {
+	public static MediaServerService.Client getMediaServerService()
+			throws IOException {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		try {
+			return manager.getMediaServerServiceInternal();
+		} catch (TTransportException e) {
+			throw new IOException(e.getMessage(), e);
+		}
+	}
+
+	private void releaseMediaServerServiceInternal(
+			MediaServerService.Client service) {
 		mediaServerServicesInUse.remove(service);
 
 		service.getInputProtocol().getTransport().close();
 		service.getOutputProtocol().getTransport().close();
+	}
+
+	public static void releaseMediaServerService(
+			MediaServerService.Client service) {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		manager.releaseMediaServerServiceInternal(service);
 	}
 
 	private MediaServerService.AsyncClient createMediaServerServiceAsync()
@@ -115,8 +128,8 @@ public class MediaServerServiceManager {
 				clientManager, transport);
 	}
 
-	public MediaServerService.AsyncClient getMediaServerServiceAsync()
-			throws TTransportException, IOException {
+	private MediaServerService.AsyncClient getMediaServerServiceAsyncInternal()
+			throws IOException {
 		MediaServerService.AsyncClient service = createMediaServerServiceAsync();
 		mediaServerServicesAsyncInUse.add(service);
 
@@ -126,9 +139,23 @@ public class MediaServerServiceManager {
 		return service;
 	}
 
-	public void releaseMediaServerServiceAsync(
+	public static MediaServerService.AsyncClient getMediaServerServiceAsync()
+			throws IOException {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		return manager.getMediaServerServiceAsyncInternal();
+	}
+
+	private void releaseMediaServerServiceAsyncInternal(
 			MediaServerService.AsyncClient service) {
 		mediaServerServicesAsyncInUse.remove(service);
+	}
+
+	public static void releaseMediaServerServiceAsync(
+			MediaServerService.AsyncClient service) {
+		MediaServerServiceManager manager = MediaServerServiceManager
+				.getInstance();
+		manager.releaseMediaServerServiceAsyncInternal(service);
 	}
 
 }

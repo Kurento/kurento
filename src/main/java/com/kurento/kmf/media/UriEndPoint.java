@@ -35,12 +35,12 @@ public abstract class UriEndPoint extends EndPoint {
 	}
 
 	public void pause() throws IOException {
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
 			service.pause(mediaObject);
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -51,12 +51,12 @@ public abstract class UriEndPoint extends EndPoint {
 	}
 
 	public void stop() throws IOException {
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
 			service.stop(mediaObject);
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -79,11 +79,10 @@ public abstract class UriEndPoint extends EndPoint {
 	}
 
 	public void pause(final Continuation<Void> cont) throws IOException {
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
 			service.pause(
 					mediaObject,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.pause_call>() {
@@ -108,18 +107,17 @@ public abstract class UriEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 
 	public void stop(final Continuation<Void> cont) throws IOException {
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
 		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.AsyncClient service = manager
-					.getMediaServerServiceAsync();
 			service.stop(
 					mediaObject,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.stop_call>() {
@@ -144,7 +142,7 @@ public abstract class UriEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		}

@@ -48,11 +48,10 @@ public class MediaManager extends MediaObject {
 
 	public <T extends Mixer> T createMixer(Class<T> type)
 			throws MediaException, IOException {
-		try {
-			MediaServerServiceManager manager = MediaServerServiceManager
-					.getInstance();
-			MediaServerService.Client service = manager.getMediaServerService();
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
+		try {
 			Field field;
 			try {
 				field = type.getDeclaredField(Mixer.MIXER_TYPE_FIELD_NAME);
@@ -70,7 +69,7 @@ public class MediaManager extends MediaObject {
 			} catch (IllegalAccessException e1) {
 				throw new IllegalArgumentException();
 			}
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 			try {
 				Constructor<T> constructor = type.getDeclaredConstructor(mixer
 						.getClass());

@@ -5,7 +5,6 @@ import java.io.Serializable;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.EndPointType;
@@ -35,14 +34,8 @@ public abstract class MediaObject implements Serializable {
 	/* SYNC */
 
 	public MediaObject getParent() throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			return getParent(service.getParent(mediaObject));
@@ -55,19 +48,13 @@ public abstract class MediaObject implements Serializable {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
 	public void release() throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			service.release(mediaObject);
@@ -78,7 +65,7 @@ public abstract class MediaObject implements Serializable {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -86,14 +73,8 @@ public abstract class MediaObject implements Serializable {
 
 	public void getParent(final Continuation<MediaObject> cont)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.getParent(
@@ -126,19 +107,13 @@ public abstract class MediaObject implements Serializable {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public void release(final Continuation<Void> cont) throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.release(
@@ -168,7 +143,7 @@ public abstract class MediaObject implements Serializable {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 

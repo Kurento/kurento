@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.Command;
@@ -41,14 +40,8 @@ public abstract class MediaElement extends MediaObject {
 	 * @return The result of the command execution
 	 */
 	CommandResult sendCommand(Command command) throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			return service.sendCommand(mediaObject, command);
@@ -59,7 +52,7 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -77,14 +70,8 @@ public abstract class MediaElement extends MediaObject {
 	}
 
 	public Collection<MediaSrc> getMediaSrcs() throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			List<com.kurento.kms.api.MediaObject> tMediaSrcs = service
@@ -102,19 +89,13 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
 	public Collection<MediaSink> getMediaSinks() throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			List<com.kurento.kms.api.MediaObject> tMediaSinks = service
@@ -132,20 +113,14 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
 	public Collection<MediaSrc> getMediaSrcs(MediaType mediaType)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			List<com.kurento.kms.api.MediaObject> tMediaSrcs = service
@@ -163,20 +138,14 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
 	public Collection<MediaSink> getMediaSinks(MediaType mediaType)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.Client service;
-		try {
-			service = manager.getMediaServerService();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
 
 		try {
 			List<com.kurento.kms.api.MediaObject> tMediaSinks = service
@@ -194,7 +163,7 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerService(service);
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -209,14 +178,8 @@ public abstract class MediaElement extends MediaObject {
 	 */
 	void sendCommand(Command command, final Continuation<String> cont)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.sendCommand(
@@ -249,7 +212,7 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -279,14 +242,8 @@ public abstract class MediaElement extends MediaObject {
 
 	public void getMediaSrcs(final Continuation<Collection<MediaSrc>> cont)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.getMediaSrcs(
@@ -321,20 +278,14 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public void getMediaSinks(final Continuation<Collection<MediaSink>> cont)
 			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.getMediaSinks(
@@ -376,20 +327,14 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public void getMediaSrcs(MediaType mediaType,
 			final Continuation<Collection<MediaSrc>> cont) throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.getMediaSrcsByMediaType(
@@ -426,20 +371,14 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public void getMediaSinks(MediaType mediaType,
 			final Continuation<Collection<MediaSink>> cont) throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		MediaServerService.AsyncClient service;
-		try {
-			service = manager.getMediaServerServiceAsync();
-		} catch (TTransportException e) {
-			throw new IOException(e.getMessage(), e);
-		}
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
 
 		try {
 			service.getMediaSinksByMediaType(
@@ -483,7 +422,7 @@ public abstract class MediaElement extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			manager.releaseMediaServerServiceAsync(service);
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
