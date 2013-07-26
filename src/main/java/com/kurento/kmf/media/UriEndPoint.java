@@ -2,7 +2,6 @@ package com.kurento.kmf.media;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -11,7 +10,9 @@ import com.kurento.kms.api.MediaObject;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaServerService.AsyncClient.getUri_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.pause_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.start_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.stop_call;
 
 public abstract class UriEndPoint extends EndPoint {
@@ -24,14 +25,38 @@ public abstract class UriEndPoint extends EndPoint {
 
 	/* SYNC */
 
-	public String getUri() {
-		// TODO: Implement this method
-		throw new NotImplementedException();
+	public String getUri() throws IOException {
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
+		try {
+			return service.getUri(mediaObject);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
+		}
 	}
 
 	protected void start() throws IOException {
-		// TODO: Implement this method
-		throw new NotImplementedException();
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
+		try {
+			service.start(mediaObject);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
+		}
 	}
 
 	public void pause() throws IOException {
@@ -40,13 +65,14 @@ public abstract class UriEndPoint extends EndPoint {
 
 		try {
 			service.pause(mediaObject);
-			MediaServerServiceManager.releaseMediaServerService(service);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
@@ -56,26 +82,88 @@ public abstract class UriEndPoint extends EndPoint {
 
 		try {
 			service.stop(mediaObject);
-			MediaServerServiceManager.releaseMediaServerService(service);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 
 	/* ASYNC */
 
-	public void getUri(Continuation<String> cont) throws IOException {
-		throw new NotImplementedException();
-		// TODO: Implement this method
+	public void getUri(final Continuation<String> cont) throws IOException {
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
+		try {
+			service.getUri(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.getUri_call>() {
+						@Override
+						public void onComplete(getUri_call response) {
+							try {
+								cont.onSuccess(response.getResult());
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+		}
 	}
 
 	protected void start(final Continuation<Void> cont) throws IOException {
-		throw new NotImplementedException();
-		// TODO: Implement this method
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
+		try {
+			service.start(
+					mediaObject,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.start_call>() {
+						@Override
+						public void onComplete(start_call response) {
+							try {
+								response.getResult();
+								cont.onSuccess(null);
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+		}
 	}
 
 	public void pause(final Continuation<Void> cont) throws IOException {
@@ -107,9 +195,10 @@ public abstract class UriEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -142,9 +231,11 @@ public abstract class UriEndPoint extends EndPoint {
 							cont.onError(exception);
 						}
 					});
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
 		}
 	}
+
 }
