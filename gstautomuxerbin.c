@@ -234,16 +234,18 @@ get_pad_type_from_template (GstElement * element, GstPadTemplate * templ)
 }
 
 static void
-add_ghost_pad (GstAutoMuxerBin * self, GstElement * muxer)
+add_src_target_pad (GstElement * muxer)
 {
   GstPadTemplate *templ;
   GstPad *src, *ghostpad;
+  GstElement *self;
   gchar *padname;
 
   src = gst_element_get_static_pad (muxer, "src");
   templ = gst_static_pad_template_get (&src_factory);
 
-  padname = get_pad_name (self, SOURCE_PAD);
+  self = GST_ELEMENT (GST_OBJECT_PARENT (muxer));
+  padname = get_pad_name (GST_AUTOMUXER_BIN (self), SOURCE_PAD);
   ghostpad = gst_ghost_pad_new_from_template (padname, src, templ);
   g_free (padname);
 
@@ -251,14 +253,14 @@ add_ghost_pad (GstAutoMuxerBin * self, GstElement * muxer)
   g_object_unref (templ);
 
   /* Set pad state before adding it */
-  if (GST_STATE (GST_ELEMENT (self)) >= GST_STATE_PAUSED)
+  if (GST_STATE (self) >= GST_STATE_PAUSED)
     gst_pad_set_active (ghostpad, TRUE);
 
-  gst_element_add_pad (GST_ELEMENT (self), ghostpad);
+  gst_element_add_pad (self, ghostpad);
 }
 
 static void
-remove_ghost_pad (GstElement * muxer)
+remove_src_target_pad (GstElement * muxer)
 {
   GstPad *srcpad, *peerpad;
   GstProxyPad *ppad = NULL;
@@ -317,7 +319,7 @@ event_eos_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   /* Set downstream elements to state NULL */
   gst_element_set_state (muxer, GST_STATE_NULL);
 
-  remove_ghost_pad (muxer);
+  remove_src_target_pad (muxer);
 
   /* Remove old muxer */
   gst_bin_remove (GST_BIN (self), muxer);
@@ -396,7 +398,7 @@ initialize_pipeline (GstElement * typefind, GstCaps * caps,
   gst_element_sync_state_with_parent (self->priv->muxer);
   link_muxer (e, self->priv->muxer);
 
-  add_ghost_pad (self, self->priv->muxer);
+  add_src_target_pad (self->priv->muxer);
 
   self->priv->valves = g_slist_append (self->priv->valves, e);
 
@@ -455,7 +457,7 @@ reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
   g_slist_foreach (self->priv->valves, link_muxer, self->priv->muxer);
 
   /* Add new ghost pad */
-  add_ghost_pad (self, self->priv->muxer);
+  add_src_target_pad (self->priv->muxer);
 
   /* Open previously closed valves */
   state = VALVE_OPEN;
