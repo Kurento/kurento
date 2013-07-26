@@ -13,6 +13,7 @@ import com.kurento.kms.api.FilterType;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createFilter_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createHttpEndpoint_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPoint_call;
@@ -329,8 +330,42 @@ public class MediaManager extends MediaObject {
 
 	public <T extends Filter> void createFilter(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
-		// TODO: Implement this part
-		throw new NotImplementedException();
+		FilterType t = Filter.getType(type);
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
+		try {
+			service.createFilter(
+					mediaObject,
+					t,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createFilter_call>() {
+						@Override
+						public void onComplete(createFilter_call response) {
+							try {
+								com.kurento.kms.api.MediaObject filter = response
+										.getResult();
+								cont.onSuccess(createInstance(type, filter));
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+		}
 	}
 
 	public <T extends Mixer> void createMixer(final Class<T> type,
