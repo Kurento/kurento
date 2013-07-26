@@ -8,5 +8,8 @@
 		<constructor-arg value="localhost" />
 		<constructor-arg value="9090" />
 		<constructor-arg ref="mediaManagerHandler" />
+		<constructor-arg value="0" /> <!--TODO: use a correct handlerId -->
+		<constructor-arg value="localhost" />
+		<constructor-arg value="9191" />
 	</bean>
 </beans>

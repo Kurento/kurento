@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.apache.thrift.TException;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.MediaManagerHandler;
+import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 
 public class MediaServerServiceManager {
@@ -27,22 +29,25 @@ public class MediaServerServiceManager {
 
 	private static final int WARN_SIZE = 3;
 
-	private final String address;
-	private final int port;
+	private final String serverAddress;
+	private final int serverPort;
+	private final MediaHandlerServer mediaHandlerServer;
 
 	private final Set<MediaServerService.Client> mediaServerServicesInUse = new CopyOnWriteArraySet<MediaServerService.Client>();
 	private final Set<MediaServerService.AsyncClient> mediaServerServicesAsyncInUse = new CopyOnWriteArraySet<MediaServerService.AsyncClient>();
 
 	private static MediaServerServiceManager singleton = null;
 
-	public static synchronized void init(String address, int port,
-			MediaManagerHandler handler) throws IllegalStateException,
-			IOException {
+	public static synchronized void init(String serverAddress, int serverPort,
+			MediaManagerHandler handler, int handlerId, String handlerAddress,
+			int handlerPort) throws IllegalStateException, IOException {
 		MediaServerServiceManager manager;
 
 		synchronized (MediaServerServiceManager.class) {
 			if (singleton == null) {
-				manager = new MediaServerServiceManager(address, port, handler);
+				manager = new MediaServerServiceManager(serverAddress,
+						serverPort, handler, handlerId, handlerAddress,
+						handlerPort);
 				if (singleton == null)
 					singleton = manager;
 			} else {
@@ -51,16 +56,25 @@ public class MediaServerServiceManager {
 		}
 	}
 
-	private MediaServerServiceManager(String address, int port,
-			MediaManagerHandler handler) throws IOException {
-		this.address = address;
-		this.port = port;
+	private MediaServerServiceManager(String serverAddress, int serverPort,
+			MediaManagerHandler handler, int handlerId, String handlerAddress,
+			int handlerPort) throws IOException {
+		this.serverAddress = serverAddress;
+		this.serverPort = serverPort;
 
-		MediaServerService.Client server = getMediaServerService();
-		// TODO:
-		// server.sendClusterCodeForHandler(clusterCode, handlerAddr,
-		// handlerPort);
-		releaseMediaServerService(server);
+		mediaHandlerServer = new MediaHandlerServer(handlerPort, handler);
+		mediaHandlerServer.start();
+
+		MediaServerService.Client service = getMediaServerService();
+		try {
+			service.addHandlerAddress(handlerId, handlerAddress, handlerPort);
+		} catch (MediaServerException e) {
+			throw new IOException(e);
+		} catch (TException e) {
+			throw new IOException(e);
+		} finally {
+			releaseMediaServerService(service);
+		}
 	}
 
 	private static synchronized MediaServerServiceManager getInstance()
@@ -75,7 +89,8 @@ public class MediaServerServiceManager {
 	private MediaServerService.Client createMediaServerService()
 			throws TTransportException {
 		// FIXME: use pool to avoid no such sockets
-		TTransport transport = new TFramedTransport(new TSocket(address, port));
+		TTransport transport = new TFramedTransport(new TSocket(serverAddress,
+				serverPort));
 		// TODO: Make protocol configurable
 		TProtocol prot = new TBinaryProtocol(transport);
 		transport.open();
@@ -121,7 +136,8 @@ public class MediaServerServiceManager {
 
 	private MediaServerService.AsyncClient createMediaServerServiceAsync()
 			throws IOException {
-		TNonblockingTransport transport = new TNonblockingSocket(address, port);
+		TNonblockingTransport transport = new TNonblockingSocket(serverAddress,
+				serverPort);
 		TAsyncClientManager clientManager = new TAsyncClientManager();
 		TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
 		return new MediaServerService.AsyncClient(protocolFactory,
