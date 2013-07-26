@@ -33,7 +33,6 @@ struct _PadCount
 struct _GstAutoMuxerBinPrivate
 {
   GRecMutex mutex;
-  GstPad *srcpad;
   GstElement *muxer;
   GSList *valves;
   GList *muxers;
@@ -238,23 +237,14 @@ static void
 add_ghost_pad (GstAutoMuxerBin * self, GstElement * muxer)
 {
   GstPadTemplate *templ;
-  GstPad *src;
+  GstPad *src, *ghostpad;
   gchar *padname;
 
-  if (self->priv->srcpad == NULL)
-    goto add_pad;
-
-  if (GST_STATE (GST_ELEMENT (self)) >= GST_STATE_PAUSED)
-    gst_pad_set_active (self->priv->srcpad, FALSE);
-
-  gst_element_remove_pad (GST_ELEMENT (self), self->priv->srcpad);
-
-add_pad:
   src = gst_element_get_static_pad (muxer, "src");
   templ = gst_static_pad_template_get (&src_factory);
 
   padname = get_pad_name (self, SOURCE_PAD);
-  self->priv->srcpad = gst_ghost_pad_new_from_template (padname, src, templ);
+  ghostpad = gst_ghost_pad_new_from_template (padname, src, templ);
   g_free (padname);
 
   gst_object_unref (src);
@@ -262,9 +252,122 @@ add_pad:
 
   /* Set pad state before adding it */
   if (GST_STATE (GST_ELEMENT (self)) >= GST_STATE_PAUSED)
-    gst_pad_set_active (self->priv->srcpad, TRUE);
+    gst_pad_set_active (ghostpad, TRUE);
 
-  gst_element_add_pad (GST_ELEMENT (self), self->priv->srcpad);
+  gst_element_add_pad (GST_ELEMENT (self), ghostpad);
+}
+
+static void
+remove_ghost_pad (GstElement * muxer)
+{
+  GstPad *srcpad, *peerpad;
+  GstProxyPad *ppad = NULL;
+  GstElement *self;
+
+  srcpad = gst_element_get_static_pad (muxer, "src");
+  if (srcpad == NULL)
+    return;
+
+  peerpad = gst_pad_get_peer (srcpad);
+  if (peerpad == NULL)
+    goto end;
+
+  /* the peer's pad is a GstProxyPad element which is attached */
+  /* to the GhostPad we are looking for. Next function gets the */
+  /* ghostpad whose muxer's source pad is target of */
+  ppad = gst_proxy_pad_get_internal ((GstProxyPad *) peerpad);
+  if (ppad == NULL)
+    goto end;
+
+  self = GST_ELEMENT (GST_OBJECT_PARENT (muxer));
+  if (GST_STATE (self) >= GST_STATE_PAUSED)
+    gst_pad_set_active ((GstPad *) ppad, FALSE);
+
+  gst_element_remove_pad (GST_ELEMENT (self), (GstPad *) ppad);
+
+end:
+  if (srcpad != NULL)
+    gst_object_unref (G_OBJECT (srcpad));
+
+  if (peerpad != NULL)
+    gst_object_unref (G_OBJECT (peerpad));
+}
+
+static GstPadProbeReturn
+event_eos_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  GstElement *muxer;
+  GstElement *self;
+
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS) {
+    /* ignore this event */
+    return GST_PAD_PROBE_OK;
+  }
+
+  muxer = GST_ELEMENT (user_data);
+  self = GST_ELEMENT (GST_OBJECT_PARENT (muxer));
+
+  /* Prevent muxer from changing its state when its parent does */
+  if (!gst_element_set_locked_state (muxer, TRUE))
+    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (muxer));
+
+  GST_DEBUG ("Removing muxer %s from %s", GST_ELEMENT_NAME (muxer),
+      GST_ELEMENT_NAME (self));
+
+  /* Set downstream elements to state NULL */
+  gst_element_set_state (muxer, GST_STATE_NULL);
+
+  remove_ghost_pad (muxer);
+
+  /* Remove old muxer */
+  gst_bin_remove (GST_BIN (self), muxer);
+
+  /* remove probe */
+  return GST_PAD_PROBE_REMOVE;
+}
+
+static void
+remove_muxer (GstElement * muxer)
+{
+  GValue elem = G_VALUE_INIT;
+  gboolean done = FALSE;
+  GstPad *srcpad;
+  GstIterator *it;
+
+  /* install probe for EOS */
+  srcpad = gst_element_get_static_pad (muxer, "src");
+  gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      event_eos_probe_cb, g_object_ref (G_OBJECT (muxer)), g_object_unref);
+  gst_object_unref (srcpad);
+
+  /* push EOS in each sink pad that this muxer has, the probe will be fired */
+  /* when the EOS leaves the muxer and it has thus drained all of its data */
+  it = gst_element_iterate_sink_pads (muxer);
+  do {
+    switch (gst_iterator_next (it, &elem)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad;
+
+        sinkpad = g_value_get_object (&elem);
+        gst_pad_send_event (sinkpad, gst_event_new_eos ());
+        g_value_reset (&elem);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (muxer));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&elem);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
 }
 
 static gboolean
@@ -334,16 +437,10 @@ reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
   state = VALVE_CLOSE;
   g_slist_foreach (self->priv->valves, set_valve, &state);
 
-  /* Set downstream elements to state NULL */
-  gst_element_set_state (self->priv->muxer, GST_STATE_NULL);
-
-  //TODO: Send EOS in each source pad
-
   /* unlink elements from old muxer */
   g_slist_foreach (self->priv->valves, unlink_muxer, self->priv->muxer);
 
-  /* Remove old muxer */
-  gst_bin_remove (GST_BIN (self), self->priv->muxer);
+  remove_muxer (self->priv->muxer);
 
   /* Add the new muxer to the pipeline */
   self->priv->muxer = gst_element_factory_create (mfactory, NULL);
@@ -538,7 +635,6 @@ gst_automuxer_bin_init (GstAutoMuxerBin * self)
   g_rec_mutex_init (&self->priv->mutex);
 
   self->priv->pads = g_slice_new0 (PadCount);
-  self->priv->srcpad = NULL;
   self->priv->valves = NULL;
   self->priv->muxer = NULL;
   self->priv->muxers =
