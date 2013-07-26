@@ -19,6 +19,7 @@
 package com.kurento.kmf.media;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.security.Policy.Parameters;
 
 import org.apache.thrift.TException;
@@ -34,6 +35,7 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.getRemoteSessionDescri
 import com.kurento.kms.api.MediaServerService.AsyncClient.processAnswer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.processOffer_call;
 import com.kurento.kms.api.NegotiationException;
+import com.kurento.kms.api.SdpEndPointType;
 
 // TODO: update doc
 /**
@@ -158,10 +160,25 @@ public abstract class SdpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	static final String SDP_END_POINT_TYPE_FIELD_NAME = "sdpEndPointType";
+	private static final String SDP_END_POINT_TYPE_FIELD_NAME = "sdpEndPointType";
 
 	SdpEndPoint(com.kurento.kms.api.MediaObject sdpEndPoint) {
 		super(sdpEndPoint);
+	}
+
+	static <T extends SdpEndPoint> SdpEndPointType getType(Class<T> type) {
+		try {
+			Field field = type.getDeclaredField(SDP_END_POINT_TYPE_FIELD_NAME);
+			return (SdpEndPointType) field.get(type);
+		} catch (NoSuchFieldException e) {
+			throw new IllegalArgumentException(e);
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalAccessException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/* SYNC */

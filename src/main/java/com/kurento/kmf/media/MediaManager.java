@@ -3,6 +3,7 @@ package com.kurento.kmf.media;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
@@ -12,6 +13,7 @@ import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MixerType;
+import com.kurento.kms.api.SdpEndPointType;
 
 public class MediaManager extends MediaObject {
 
@@ -21,18 +23,58 @@ public class MediaManager extends MediaObject {
 		super(mediaManager);
 	}
 
-	/* SYNC */
-
-	public <T extends SdpEndPoint> T createSdpEndPoint(Class<T> type, String sdp)
-			throws MediaException, IOException {
-		throw new NotImplementedException();
-		// TODO: Implement this method
+	private static <T extends MediaObject> T createInstance(Class<T> type,
+			com.kurento.kms.api.MediaObject mediaObject) {
+		try {
+			Constructor<T> constructor = type
+					.getDeclaredConstructor(com.kurento.kms.api.MediaObject.class);
+			return constructor.newInstance(mediaObject);
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalArgumentException(e);
+		} catch (InstantiationException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalAccessException e) {
+			throw new IllegalArgumentException(e);
+		} catch (InvocationTargetException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
+	/* SYNC */
+
 	public <T extends SdpEndPoint> T createSdpEndPoint(Class<T> type)
-			throws MediaException, IOException {
-		throw new NotImplementedException();
-		// TODO: Implement this method
+			throws IOException {
+		return createSdpEndPoint(type, (String) null);
+	}
+
+	public <T extends SdpEndPoint> T createSdpEndPoint(Class<T> type, String sdp)
+			throws IOException {
+		SdpEndPointType t = SdpEndPoint.getType(type);
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
+		try {
+			com.kurento.kms.api.MediaObject sdpEndPoint;
+			if (sdp == null) {
+				sdpEndPoint = service.createSdpEndPoint(mediaObject, t);
+			} else {
+				sdpEndPoint = service.createSdpEndPointWithFixedSdp(
+						mediaObject, t, sdp);
+			}
+			return createInstance(type, sdpEndPoint);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
+		}
 	}
 
 	public <T extends UriEndPoint> T createUriEndPoint(Class<T> type, String uri)
