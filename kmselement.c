@@ -5,7 +5,7 @@
 #include <gst/gst.h>
 
 #include "kmselement.h"
-#include "gstagnosticbin.h"
+#include "kmsagnosticbin.h"
 
 #define PLUGIN_NAME "kmselement"
 

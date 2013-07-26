@@ -6,7 +6,6 @@
 #include <gst/rtp/gstrtcpbuffer.h>
 
 #include "kmsrtpendpoint.h"
-#include "gstagnosticbin.h"
 #include "sdp_utils.h"
 
 #define PLUGIN_NAME "rtpendpoint"

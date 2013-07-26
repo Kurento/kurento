@@ -2,14 +2,14 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include <gstagnosticbin.h>
+#include <kmsagnosticbin.h>
 #include <kmsrtpendpoint.h>
 #include <gstautomuxerbin.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
 {
-  if (!gst_agnostic_bin_plugin_init (kurento))
+  if (!kms_agnostic_bin_plugin_init (kurento))
     return FALSE;
 
   if (!kms_rtp_end_point_plugin_init (kurento))

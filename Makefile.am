@@ -19,7 +19,7 @@ EXTRA_DIST = gstkurento-marshal.list
 libgstkurento_la_SOURCES = gstkurento.c \
 			$(BUILT_SOURCES) \
 			sdp_utils.c sdp_utils.h \
-			gstagnosticbin.c gstagnosticbin.h \
+			kmsagnosticbin.c kmsagnosticbin.h \
 			kmselement.c kmselement.h \
 			kmsbasesdpendpoint.c kmsbasesdpendpoint.h \
 			kmsbasertpendpoint.c kmsbasertpendpoint.h \
@@ -33,4 +33,4 @@ libgstkurento_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libgstkurento_la_LIBTOOLFLAGS = --tag=disable-static
 
 # headers we need but don't want installed
-noinst_HEADERS = gstagnosticbin.h
+noinst_HEADERS = kmsagnosticbin.h

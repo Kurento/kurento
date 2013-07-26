@@ -1,6 +1,6 @@
 
-#ifndef __GST_AGNOSTIC_BIN_H__
-#define __GST_AGNOSTIC_BIN_H__
+#ifndef __KMS_AGNOSTIC_BIN_H__
+#define __KMS_AGNOSTIC_BIN_H__
 
 #include <gst/gst.h>
 
@@ -106,26 +106,26 @@ G_BEGIN_DECLS
 
 #define AGNOSTIC_CAPS AUDIO_CAPS VIDEO_CAPS
 /* #defines don't like whitespacey bits */
-#define GST_TYPE_AGNOSTIC_BIN \
-  (gst_agnostic_bin_get_type())
-#define GST_AGNOSTIC_BIN(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_AGNOSTIC_BIN,GstAgnosticBin))
-#define GST_AGNOSTIC_BIN_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_AGNOSTIC_BIN,GstAgnosticBinClass))
-#define GST_IS_AGNOSTIC_BIN(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_AGNOSTIC_BIN))
-#define GST_IS_AGNOSTIC_BIN_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_AGNOSTIC_BIN))
-#define GST_AGNOSTIC_BIN_CAST(obj) ((GstAgnosticBin*)(obj))
-typedef struct _GstAgnosticBin GstAgnosticBin;
-typedef struct _GstAgnosticBinClass GstAgnosticBinClass;
+#define KMS_TYPE_AGNOSTIC_BIN \
+  (kms_agnostic_bin_get_type())
+#define KMS_AGNOSTIC_BIN(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_AGNOSTIC_BIN,KmsAgnosticBin))
+#define KMS_AGNOSTIC_BIN_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_AGNOSTIC_BIN,KmsAgnosticBinClass))
+#define KMS_IS_AGNOSTIC_BIN(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_AGNOSTIC_BIN))
+#define KMS_IS_AGNOSTIC_BIN_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_AGNOSTIC_BIN))
+#define KMS_AGNOSTIC_BIN_CAST(obj) ((KmsAgnosticBin*)(obj))
+typedef struct _KmsAgnosticBin KmsAgnosticBin;
+typedef struct _KmsAgnosticBinClass KmsAgnosticBinClass;
 
-#define GST_AGNOSTIC_BIN_LOCK(elem) \
-  (g_rec_mutex_lock (&GST_AGNOSTIC_BIN_CAST ((elem))->media_mutex))
-#define GST_AGNOSTIC_BIN_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&GST_AGNOSTIC_BIN_CAST ((elem))->media_mutex))
+#define KMS_AGNOSTIC_BIN_LOCK(elem) \
+  (g_rec_mutex_lock (&KMS_AGNOSTIC_BIN_CAST ((elem))->media_mutex))
+#define KMS_AGNOSTIC_BIN_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&KMS_AGNOSTIC_BIN_CAST ((elem))->media_mutex))
 
-struct _GstAgnosticBin
+struct _KmsAgnosticBin
 {
   GstBin parent;
 
@@ -138,14 +138,14 @@ struct _GstAgnosticBin
   GHashTable *encoded_tees;
 };
 
-struct _GstAgnosticBinClass
+struct _KmsAgnosticBinClass
 {
   GstBinClass parent_class;
 };
 
-GType gst_agnostic_bin_get_type (void);
+GType kms_agnostic_bin_get_type (void);
 
-gboolean gst_agnostic_bin_plugin_init (GstPlugin * plugin);
+gboolean kms_agnostic_bin_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
-#endif /* __GST_AGNOSTIC_BIN_H__ */
+#endif /* __KMS_AGNOSTIC_BIN_H__ */

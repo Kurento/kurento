@@ -3,7 +3,7 @@
 #endif
 
 #include <gst/gst.h>
-#include "gstagnosticbin.h"
+#include "kmsagnosticbin.h"
 #include "gstautomuxerbin.h"
 
 #define PLUGIN_NAME "automuxerbin"

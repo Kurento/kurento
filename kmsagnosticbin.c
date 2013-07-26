@@ -4,7 +4,7 @@
 
 #include <gst/gst.h>
 
-#include "gstagnosticbin.h"
+#include "kmsagnosticbin.h"
 
 #define PLUGIN_NAME "agnosticbin"
 
@@ -28,13 +28,13 @@ static GstStaticCaps static_raw_video_caps = GST_STATIC_CAPS (RAW_VIDEO_CAPS);
 
 static GstStaticCaps static_raw_caps = GST_STATIC_CAPS (RAW_CAPS);
 
-GST_DEBUG_CATEGORY_STATIC (gst_agnostic_bin_debug);
-#define GST_CAT_DEFAULT gst_agnostic_bin_debug
+GST_DEBUG_CATEGORY_STATIC (kms_agnostic_bin_debug);
+#define GST_CAT_DEFAULT kms_agnostic_bin_debug
 
-#define gst_agnostic_bin_parent_class parent_class
-G_DEFINE_TYPE (GstAgnosticBin, gst_agnostic_bin, GST_TYPE_BIN);
+#define kms_agnostic_bin_parent_class parent_class
+G_DEFINE_TYPE (KmsAgnosticBin, kms_agnostic_bin, GST_TYPE_BIN);
 
-typedef void (*GstStartStopFunction) (GstAgnosticBin * agnosticbin,
+typedef void (*GstStartStopFunction) (KmsAgnosticBin * agnosticbin,
     GstElement * element, gboolean start);
 
 /* Filter signals and args */
@@ -63,14 +63,14 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     );
 
 static void
-gst_agnostic_bin_valve_start_stop (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_valve_start_stop (KmsAgnosticBin * agnosticbin,
     GstElement * valve, gboolean start)
 {
   g_object_set (valve, "drop", !start, NULL);
 }
 
 static void
-gst_agnostic_bin_decodebin_start_stop (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_decodebin_start_stop (KmsAgnosticBin * agnosticbin,
     GstElement * decodebin, gboolean start)
 {
   GstElement *valve =
@@ -80,7 +80,7 @@ gst_agnostic_bin_decodebin_start_stop (GstAgnosticBin * agnosticbin,
 }
 
 static gboolean
-gst_agnostic_bin_start_stop_event_handler (GstPad * pad, GstObject * parent,
+kms_agnostic_bin_start_stop_event_handler (GstPad * pad, GstObject * parent,
     GstEvent * event)
 {
   gboolean ret = TRUE;
@@ -96,7 +96,7 @@ gst_agnostic_bin_start_stop_event_handler (GstPad * pad, GstObject * parent,
       gboolean start;
 
       if (gst_structure_get_boolean (st, START, &start)) {
-        GstAgnosticBin *agnosticbin =
+        KmsAgnosticBin *agnosticbin =
             g_object_get_data (G_OBJECT (pad), AGNOSTIC_BIN_DATA);
         GstStartStopFunction callback =
             g_object_get_data (G_OBJECT (pad), START_STOP_EVENT_FUNC_DATA);
@@ -120,7 +120,7 @@ gst_agnostic_bin_start_stop_event_handler (GstPad * pad, GstObject * parent,
 }
 
 static void
-gst_agnostic_bin_set_start_stop_event_handler (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_set_start_stop_event_handler (KmsAgnosticBin * agnosticbin,
     GstElement * element, const char *pad_name, GstStartStopFunction callback)
 {
   GstPad *pad = gst_element_get_static_pad (element, pad_name);
@@ -131,12 +131,12 @@ gst_agnostic_bin_set_start_stop_event_handler (GstAgnosticBin * agnosticbin,
   g_object_set_data (G_OBJECT (pad), OLD_EVENT_FUNC_DATA, pad->eventfunc);
   g_object_set_data (G_OBJECT (pad), START_STOP_EVENT_FUNC_DATA, callback);
   g_object_set_data (G_OBJECT (pad), AGNOSTIC_BIN_DATA, agnosticbin);
-  gst_pad_set_event_function (pad, gst_agnostic_bin_start_stop_event_handler);
+  gst_pad_set_event_function (pad, kms_agnostic_bin_start_stop_event_handler);
   g_object_unref (pad);
 }
 
 static void
-gst_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
+kms_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
 {
   GstStructure *data =
       gst_structure_new (START_STOP_EVENT_NAME, START, G_TYPE_BOOLEAN, start,
@@ -159,7 +159,7 @@ gst_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
 }
 
 static void
-gst_agnostic_bin_send_force_key_unit_event (GstPad * pad)
+kms_agnostic_bin_send_force_key_unit_event (GstPad * pad)
 {
   GstStructure *s;
   GstEvent *force_key_unit_event;
@@ -172,7 +172,7 @@ gst_agnostic_bin_send_force_key_unit_event (GstPad * pad)
 }
 
 static void
-gst_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
+kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 {
   GstPad *sink = gst_element_get_static_pad (element, pad_name);
   GstPad *tee_src = gst_pad_get_peer (sink);
@@ -193,7 +193,7 @@ gst_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 
       g_object_get (tee, "num-src-pads", &n_pads, NULL);
       if (n_pads == 0)
-        gst_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
+        kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
 
       GST_PAD_STREAM_UNLOCK (tee_sink);
       g_object_unref (tee_sink);
@@ -204,12 +204,12 @@ gst_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 }
 
 static void
-gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
+kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
     const gchar * sink_name)
 {
   GstPad *tee_src, *tee_sink = gst_element_get_static_pad (tee, "sink");
 
-  gst_agnostic_bin_unlink_from_tee (element, sink_name);
+  kms_agnostic_bin_unlink_from_tee (element, sink_name);
   GST_PAD_STREAM_LOCK (tee_sink);
   tee_src = gst_element_get_request_pad (tee, "src_%u");
   if (tee_src != NULL) {
@@ -220,9 +220,9 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
       GstEvent *event = gst_event_new_reconfigure ();
 
       gst_pad_send_event (tee_src, event);
-      gst_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
+      kms_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
 
-      gst_agnostic_bin_send_force_key_unit_event (tee_src);
+      kms_agnostic_bin_send_force_key_unit_event (tee_src);
     }
 
     g_object_unref (tee_src);
@@ -233,7 +233,7 @@ gst_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 }
 
 static void
-gst_agnostic_bin_encoder_start_stop (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_encoder_start_stop (KmsAgnosticBin * agnosticbin,
     GstElement * encoder, gboolean start)
 {
   GstElement *queue, *tee, *convert;
@@ -248,7 +248,7 @@ gst_agnostic_bin_encoder_start_stop (GstAgnosticBin * agnosticbin,
   g_hash_table_remove (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee));
 
   if (queue != NULL)
-    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+    kms_agnostic_bin_unlink_from_tee (queue, "sink");
 
   gst_element_set_state (queue, GST_STATE_NULL);
   gst_element_set_state (convert, GST_STATE_NULL);
@@ -260,7 +260,7 @@ gst_agnostic_bin_encoder_start_stop (GstAgnosticBin * agnosticbin,
 }
 
 static GstElement *
-gst_agnostic_get_convert_element_for_raw_caps (GstCaps * raw_caps)
+kms_agnostic_get_convert_element_for_raw_caps (GstCaps * raw_caps)
 {
   GstElement *convert = NULL;
   GstCaps *audio_caps = gst_static_caps_get (&static_raw_audio_caps);
@@ -281,9 +281,9 @@ gst_agnostic_get_convert_element_for_raw_caps (GstCaps * raw_caps)
   return convert;
 }
 
-/* This functions is called with the GST_AGNOSTIC_BIN_LOCK held */
+/* This functions is called with the KMS_AGNOSTIC_BIN_LOCK held */
 static GstElement *
-gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
     GstCaps * allowed_caps)
 {
   GstElement *queue, *encoder, *decoded_tee, *tee = NULL, *convert;
@@ -319,7 +319,7 @@ gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
   if (encoder_factory == NULL)
     goto end;
 
-  convert = gst_agnostic_get_convert_element_for_raw_caps (raw_caps);
+  convert = kms_agnostic_get_convert_element_for_raw_caps (raw_caps);
   encoder = gst_element_factory_create (encoder_factory, NULL);
   queue = gst_element_factory_make ("queue", NULL);
   tee = gst_element_factory_make ("tee", NULL);
@@ -333,14 +333,14 @@ gst_agnostic_bin_create_encoded_tee (GstAgnosticBin * agnosticbin,
   g_hash_table_insert (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee),
       g_object_ref (tee));
   gst_element_link_many (queue, convert, encoder, tee, NULL);
-  gst_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
+  kms_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
 
   g_object_set_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA, queue);
   g_object_set_data (G_OBJECT (encoder), ENCODER_TEE_DATA, tee);
   g_object_set_data (G_OBJECT (encoder), ENCODER_CONVERT_DATA, convert);
 
-  gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, encoder,
-      "src", gst_agnostic_bin_encoder_start_stop);
+  kms_agnostic_bin_set_start_stop_event_handler (agnosticbin, encoder,
+      "src", kms_agnostic_bin_encoder_start_stop);
 
 end:
   gst_plugin_feature_list_free (filtered_list);
@@ -356,7 +356,7 @@ release_decoded_tee:
 }
 
 static GstElement *
-gst_agnostic_bin_get_queue_for_pad (GstPad * pad)
+kms_agnostic_bin_get_queue_for_pad (GstPad * pad)
 {
   GstElement *queue;
   GstPad *target;
@@ -373,20 +373,20 @@ gst_agnostic_bin_get_queue_for_pad (GstPad * pad)
 }
 
 static void
-gst_agnostic_bin_disconnect_srcpad (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_disconnect_srcpad (KmsAgnosticBin * agnosticbin,
     GstPad * srcpad)
 {
-  GstElement *queue = gst_agnostic_bin_get_queue_for_pad (srcpad);
+  GstElement *queue = kms_agnostic_bin_get_queue_for_pad (srcpad);
 
   if (queue == NULL)
     return;
 
-  gst_agnostic_bin_unlink_from_tee (queue, "sink");
+  kms_agnostic_bin_unlink_from_tee (queue, "sink");
   g_object_unref (queue);
 }
 
 static void
-gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
+kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     GstPad * peer, const GstCaps * current_caps)
 {
   GstCaps *allowed_caps, *raw_caps;
@@ -402,13 +402,13 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
   if (allowed_caps == NULL) {
     GST_DEBUG ("Allowed caps for %P are NULL. "
         "The pad is not linked, disconnecting", srcpad);
-    gst_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
+    kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
 
   if (current_caps == NULL) {
     GST_DEBUG ("No current caps, disconnecting %P", srcpad);
-    gst_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
+    kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
 
@@ -417,13 +417,13 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
   } else if (gst_caps_can_intersect (raw_caps, allowed_caps)) {
     GST_DEBUG ("Raw caps, looking for a decodebin");
-    GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+    KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
-    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   } else {
     GstElement *raw_tee;
 
-    GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+    KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     raw_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
     if (raw_tee != NULL) {
       GList *tees, *l;
@@ -450,23 +450,23 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
       }
 
       if (tee == NULL)
-        tee = gst_agnostic_bin_create_encoded_tee (agnosticbin, allowed_caps);
+        tee = kms_agnostic_bin_create_encoded_tee (agnosticbin, allowed_caps);
 
       g_object_unref (raw_tee);
     }
-    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   }
   gst_caps_unref (raw_caps);
 
-  queue = gst_agnostic_bin_get_queue_for_pad (srcpad);
+  queue = kms_agnostic_bin_get_queue_for_pad (srcpad);
 
   if (queue != NULL) {
     if (tee != NULL) {
-      gst_agnostic_bin_link_to_tee (tee, queue, "sink");
+      kms_agnostic_bin_link_to_tee (tee, queue, "sink");
 
       g_object_unref (tee);
     } else {
-      gst_agnostic_bin_unlink_from_tee (queue, "sink");
+      kms_agnostic_bin_unlink_from_tee (queue, "sink");
     }
     g_object_unref (queue);
   }
@@ -475,7 +475,7 @@ gst_agnostic_bin_connect_srcpad (GstAgnosticBin * agnosticbin, GstPad * srcpad,
 }
 
 static void
-gst_agnostic_bin_connect_previous_srcpads (GstAgnosticBin * agnosticbin,
+kms_agnostic_bin_connect_previous_srcpads (KmsAgnosticBin * agnosticbin,
     const GstCaps * current_caps)
 {
   GValue item = { 0, };
@@ -495,7 +495,7 @@ gst_agnostic_bin_connect_previous_srcpads (GstAgnosticBin * agnosticbin,
         peer = gst_pad_get_peer (srcpad);
 
         if (peer != NULL) {
-          gst_agnostic_bin_connect_srcpad (agnosticbin, srcpad, peer,
+          kms_agnostic_bin_connect_srcpad (agnosticbin, srcpad, peer,
               current_caps);
           g_object_unref (peer);
         }
@@ -521,7 +521,7 @@ gst_agnostic_bin_connect_previous_srcpads (GstAgnosticBin * agnosticbin,
 
 /* this function handles sink events */
 static gboolean
-gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
+kms_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
 {
   gboolean ret;
   GstCaps *caps, *old_caps;
@@ -534,7 +534,7 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       ret = gst_pad_event_default (pad, parent, event);
       GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
-        gst_agnostic_bin_connect_previous_srcpads (GST_AGNOSTIC_BIN (parent),
+        kms_agnostic_bin_connect_previous_srcpads (KMS_AGNOSTIC_BIN (parent),
             caps);
       gst_event_unref (event);
       if (old_caps != NULL)
@@ -548,14 +548,14 @@ gst_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
 }
 
 static GstPadLinkReturn
-gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
+kms_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
 {
-  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
+  KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
   GstCaps *current_caps;
 
   GST_DEBUG ("%P linked", pad);
   current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-  gst_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
+  kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
   if (current_caps != NULL)
     gst_caps_unref (current_caps);
 
@@ -565,18 +565,18 @@ gst_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
 }
 
 static void
-gst_agnostic_bin_src_unlinked (GstPad * pad, GstPad * peer,
-    GstAgnosticBin * agnosticbin)
+kms_agnostic_bin_src_unlinked (GstPad * pad, GstPad * peer,
+    KmsAgnosticBin * agnosticbin)
 {
   GST_DEBUG ("%P unlinked", pad);
-  gst_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
+  kms_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
 }
 
 static gboolean
-gst_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
+kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
 {
   if (event->type == GST_EVENT_RECONFIGURE) {
-    GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (parent);
+    KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
     GstPad *peer;
     GstCaps *current_caps;
 
@@ -584,7 +584,7 @@ gst_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
 
     if (peer != NULL) {
       current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-      gst_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
+      kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
       if (current_caps != NULL)
         gst_caps_unref (current_caps);
       g_object_unref (peer);
@@ -597,7 +597,7 @@ gst_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
 }
 
 static GstFlowReturn
-gst_agnostic_bin_src_chain (GstPad * pad, GstObject * parent,
+kms_agnostic_bin_src_chain (GstPad * pad, GstObject * parent,
     GstBuffer * buffer)
 {
   GstPad *gp = GST_PAD (GST_OBJECT_PARENT (pad));
@@ -616,17 +616,17 @@ gst_agnostic_bin_src_chain (GstPad * pad, GstObject * parent,
 }
 
 static GstPad *
-gst_agnostic_bin_request_new_pad (GstElement * element,
+kms_agnostic_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
   GstPad *pad, *target, *proxy_pad;
   gchar *pad_name;
-  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (element);
+  KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (element);
   GstElement *queue = gst_element_factory_make ("queue", NULL);
 
-  GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   pad_name = g_strdup_printf ("src_%d", agnosticbin->pad_count++);
-  GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
   gst_bin_add (GST_BIN (agnosticbin), queue);
   gst_element_sync_state_with_parent (queue);
@@ -637,17 +637,17 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
   proxy_pad = gst_pad_get_peer (target);
 
   if (proxy_pad != NULL) {
-    gst_pad_set_chain_function (proxy_pad, gst_agnostic_bin_src_chain);
+    gst_pad_set_chain_function (proxy_pad, kms_agnostic_bin_src_chain);
     g_object_unref (proxy_pad);
   }
 
   g_object_unref (target);
   g_free (pad_name);
 
-  gst_pad_set_link_function (pad, gst_agnostic_bin_src_linked);
-  g_signal_connect (pad, "unlinked", G_CALLBACK (gst_agnostic_bin_src_unlinked),
+  gst_pad_set_link_function (pad, kms_agnostic_bin_src_linked);
+  g_signal_connect (pad, "unlinked", G_CALLBACK (kms_agnostic_bin_src_unlinked),
       element);
-  gst_pad_set_event_function (pad, gst_agnostic_bin_src_event);
+  gst_pad_set_event_function (pad, kms_agnostic_bin_src_event);
 
   if (GST_STATE (element) >= GST_STATE_PAUSED
       || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
@@ -663,7 +663,7 @@ gst_agnostic_bin_request_new_pad (GstElement * element,
 }
 
 static void
-gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
+kms_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
 {
   GstElement *queue;
 
@@ -671,10 +671,10 @@ gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
       || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, FALSE);
 
-  queue = gst_agnostic_bin_get_queue_for_pad (pad);
+  queue = kms_agnostic_bin_get_queue_for_pad (pad);
 
   if (queue != NULL) {
-    gst_agnostic_bin_unlink_from_tee (queue, "sink");
+    kms_agnostic_bin_unlink_from_tee (queue, "sink");
     gst_element_set_state (queue, GST_STATE_NULL);
     gst_bin_remove (GST_BIN (element), queue);
 
@@ -685,12 +685,12 @@ gst_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
-gst_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
-    GstAgnosticBin * agnosticbin)
+kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
+    KmsAgnosticBin * agnosticbin)
 {
   GstElement *tee;
 
-  GST_AGNOSTIC_BIN_LOCK (agnosticbin);
+  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   if (tee == NULL) {
     GstElement *valve;
@@ -698,24 +698,24 @@ gst_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
 
     tee = gst_element_factory_make ("tee", DECODED_TEE);
     gst_bin_add (GST_BIN (agnosticbin), tee);
-    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
     gst_element_sync_state_with_parent (tee);
     gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), tee, "sink");
     valve = g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
     g_object_set (valve, "drop", TRUE, NULL);
 
-    gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, decodebin,
-        GST_OBJECT_NAME (pad), gst_agnostic_bin_decodebin_start_stop);
+    kms_agnostic_bin_set_start_stop_event_handler (agnosticbin, decodebin,
+        GST_OBJECT_NAME (pad), kms_agnostic_bin_decodebin_start_stop);
 
     current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-    gst_agnostic_bin_connect_previous_srcpads (agnosticbin, current_caps);
+    kms_agnostic_bin_connect_previous_srcpads (agnosticbin, current_caps);
     if (current_caps != NULL)
       gst_caps_unref (current_caps);
   } else {
     GstElement *fakesink;
 
-    GST_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
     fakesink = gst_element_factory_make ("fakesink", NULL);
     gst_bin_add (GST_BIN (agnosticbin), fakesink);
     gst_element_sync_state_with_parent (fakesink);
@@ -724,7 +724,7 @@ gst_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
 }
 
 static void
-gst_agnostic_bin_set_property (GObject * object, guint prop_id,
+kms_agnostic_bin_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
   switch (prop_id) {
@@ -735,7 +735,7 @@ gst_agnostic_bin_set_property (GObject * object, guint prop_id,
 }
 
 static void
-gst_agnostic_bin_get_property (GObject * object, guint prop_id,
+kms_agnostic_bin_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
   switch (prop_id) {
@@ -746,9 +746,9 @@ gst_agnostic_bin_get_property (GObject * object, guint prop_id,
 }
 
 static void
-gst_agnostic_bin_dispose (GObject * object)
+kms_agnostic_bin_dispose (GObject * object)
 {
-  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (object);
+  KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (object);
 
   /* unref referencies held by this element */
 
@@ -758,23 +758,23 @@ gst_agnostic_bin_dispose (GObject * object)
   }
 
   /* chain up */
-  G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_agnostic_bin_parent_class)->dispose (object);
 }
 
 static void
-gst_agnostic_bin_finalize (GObject * object)
+kms_agnostic_bin_finalize (GObject * object)
 {
-  GstAgnosticBin *agnosticbin = GST_AGNOSTIC_BIN (object);
+  KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (object);
 
   /* free resources allocated by this object */
   g_rec_mutex_clear (&agnosticbin->media_mutex);
 
   /* chain up */
-  G_OBJECT_CLASS (gst_agnostic_bin_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_agnostic_bin_parent_class)->finalize (object);
 }
 
 static void
-gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
+kms_agnostic_bin_class_init (KmsAgnosticBinClass * klass)
 {
   GObjectClass *gobject_class;
   GstElementClass *gstelement_class;
@@ -782,10 +782,10 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
   gobject_class = G_OBJECT_CLASS (klass);
   gstelement_class = GST_ELEMENT_CLASS (klass);
 
-  gobject_class->set_property = gst_agnostic_bin_set_property;
-  gobject_class->get_property = gst_agnostic_bin_get_property;
-  gobject_class->dispose = gst_agnostic_bin_dispose;
-  gobject_class->finalize = gst_agnostic_bin_finalize;
+  gobject_class->set_property = kms_agnostic_bin_set_property;
+  gobject_class->get_property = kms_agnostic_bin_get_property;
+  gobject_class->dispose = kms_agnostic_bin_dispose;
+  gobject_class->finalize = kms_agnostic_bin_finalize;
 
   gst_element_class_set_details_simple (gstelement_class,
       "Agnostic connector",
@@ -800,15 +800,15 @@ gst_agnostic_bin_class_init (GstAgnosticBinClass * klass)
       gst_static_pad_template_get (&sink_factory));
 
   gstelement_class->request_new_pad =
-      GST_DEBUG_FUNCPTR (gst_agnostic_bin_request_new_pad);
+      GST_DEBUG_FUNCPTR (kms_agnostic_bin_request_new_pad);
   gstelement_class->release_pad =
-      GST_DEBUG_FUNCPTR (gst_agnostic_bin_release_pad);
+      GST_DEBUG_FUNCPTR (kms_agnostic_bin_release_pad);
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 }
 
 static void
-gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
+kms_agnostic_bin_init (KmsAgnosticBin * agnosticbin)
 {
   GstPad *target_sink;
   GstElement *valve, *tee, *decodebin, *queue, *deco_valve;
@@ -826,7 +826,7 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   deco_valve = gst_element_factory_make ("valve", NULL);
 
   g_signal_connect (decodebin, "pad-added",
-      G_CALLBACK (gst_agnostic_bin_decodebin_pad_added), agnosticbin);
+      G_CALLBACK (kms_agnostic_bin_decodebin_pad_added), agnosticbin);
   g_object_set_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA, deco_valve);
 
   gst_bin_add_many (GST_BIN (agnosticbin), valve, tee, queue, deco_valve,
@@ -834,8 +834,8 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   gst_element_link (valve, tee);
   gst_element_link_many (queue, deco_valve, decodebin, NULL);
 
-  gst_agnostic_bin_set_start_stop_event_handler (agnosticbin, valve, "src",
-      gst_agnostic_bin_valve_start_stop);
+  kms_agnostic_bin_set_start_stop_event_handler (agnosticbin, valve, "src",
+      kms_agnostic_bin_valve_start_stop);
 
   target_sink = gst_element_get_static_pad (valve, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
@@ -849,7 +849,7 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
   g_object_unref (target_sink);
 
   gst_pad_set_event_function (agnosticbin->sinkpad,
-      GST_DEBUG_FUNCPTR (gst_agnostic_bin_sink_event));
+      GST_DEBUG_FUNCPTR (kms_agnostic_bin_sink_event));
   GST_PAD_SET_PROXY_CAPS (agnosticbin->sinkpad);
   gst_element_add_pad (GST_ELEMENT (agnosticbin), agnosticbin->sinkpad);
 
@@ -859,8 +859,8 @@ gst_agnostic_bin_init (GstAgnosticBin * agnosticbin)
 }
 
 gboolean
-gst_agnostic_bin_plugin_init (GstPlugin * plugin)
+kms_agnostic_bin_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      GST_TYPE_AGNOSTIC_BIN);
+      KMS_TYPE_AGNOSTIC_BIN);
 }

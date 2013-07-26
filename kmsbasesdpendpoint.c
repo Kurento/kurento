@@ -5,7 +5,7 @@
 #include <gst/gst.h>
 
 #include "kmsbasesdpenpoint.h"
-#include "gstagnosticbin.h"
+#include "kmsagnosticbin.h"
 #include "gstkurento-marshal.h"
 #include "sdp_utils.h"
 
