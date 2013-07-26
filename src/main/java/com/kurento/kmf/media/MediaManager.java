@@ -2,7 +2,6 @@ package com.kurento.kmf.media;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -120,41 +119,22 @@ public class MediaManager extends MediaObject {
 
 	public <T extends Mixer> T createMixer(Class<T> type)
 			throws MediaException, IOException {
+		MixerType t = Mixer.getType(type);
 		MediaServerService.Client service = MediaServerServiceManager
 				.getMediaServerService();
 
 		try {
-			Field field;
-			try {
-				field = type.getDeclaredField(Mixer.MIXER_TYPE_FIELD_NAME);
-			} catch (NoSuchFieldException e1) {
-				throw new IllegalArgumentException();
-			} catch (SecurityException e1) {
-				throw new IllegalArgumentException();
-			}
-			com.kurento.kms.api.MediaObject mixer;
-			try {
-				mixer = service.createMixer(mediaObject,
-						(MixerType) field.get(type));
-			} catch (IllegalArgumentException e1) {
-				throw new IllegalArgumentException();
-			} catch (IllegalAccessException e1) {
-				throw new IllegalArgumentException();
-			}
-			MediaServerServiceManager.releaseMediaServerService(service);
-			try {
-				Constructor<T> constructor = type.getDeclaredConstructor(mixer
-						.getClass());
-				return constructor.newInstance(mixer);
-			} catch (Exception e) {
-				throw new IllegalArgumentException();
-			}
+			com.kurento.kms.api.MediaObject mixer = service.createMixer(
+					mediaObject, t);
+			return createInstance(type, mixer);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
 		}
 	}
 

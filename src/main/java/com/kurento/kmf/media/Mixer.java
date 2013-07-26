@@ -1,6 +1,7 @@
 package com.kurento.kmf.media;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -10,15 +11,31 @@ import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMixerEndPoint_call;
+import com.kurento.kms.api.MixerType;
 
 public abstract class Mixer extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	static final String MIXER_TYPE_FIELD_NAME = "mixerType";
+	private static final String MIXER_TYPE_FIELD_NAME = "mixerType";
 
 	Mixer(com.kurento.kms.api.MediaObject mixer) {
 		super(mixer);
+	}
+
+	static <T extends Mixer> MixerType getType(Class<T> type) {
+		try {
+			Field field = type.getDeclaredField(MIXER_TYPE_FIELD_NAME);
+			return (MixerType) field.get(type);
+		} catch (NoSuchFieldException e) {
+			throw new IllegalArgumentException(e);
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalAccessException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/* SYNC */
