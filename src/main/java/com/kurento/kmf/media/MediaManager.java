@@ -15,6 +15,7 @@ import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPoint_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createUriEndpoint_call;
 import com.kurento.kms.api.MixerType;
 import com.kurento.kms.api.SdpEndPointType;
 import com.kurento.kms.api.UriEndPointType;
@@ -248,8 +249,43 @@ public class MediaManager extends MediaObject {
 
 	public <T extends UriEndPoint> void createUriEndPoint(final Class<T> type,
 			String uri, final Continuation<T> cont) throws IOException {
-		// TODO: Implement this part
-		throw new NotImplementedException();
+		UriEndPointType t = UriEndPoint.getType(type);
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
+		try {
+			service.createUriEndpoint(
+					mediaObject,
+					t,
+					uri,
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createUriEndpoint_call>() {
+						@Override
+						public void onComplete(createUriEndpoint_call response) {
+							try {
+								com.kurento.kms.api.MediaObject uriEndPoint = response
+										.getResult();
+								cont.onSuccess(createInstance(type, uriEndPoint));
+							} catch (MediaObjectNotFoundException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (MediaServerException e) {
+								cont.onError(new RuntimeException(e
+										.getMessage(), e));
+							} catch (TException e) {
+								cont.onError(new IOException(e.getMessage(), e));
+							}
+						}
+
+						@Override
+						public void onError(Exception exception) {
+							cont.onError(exception);
+						}
+					});
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+		}
 	}
 
 	public void createHttpEndPoint(final Continuation<HttpEndPoint> cont)
