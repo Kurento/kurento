@@ -8,6 +8,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
+import com.kurento.kms.api.FilterType;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -140,8 +141,23 @@ public class MediaManager extends MediaObject {
 
 	public <T extends Filter> T createFilter(Class<T> type)
 			throws MediaException, IOException {
-		// TODO: Implement this method
-		throw new NotImplementedException();
+		FilterType t = Filter.getType(type);
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
+		try {
+			com.kurento.kms.api.MediaObject filter = service.createFilter(
+					mediaObject, t);
+			return createInstance(type, filter);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
+		}
 	}
 
 	/* ASYNC */
