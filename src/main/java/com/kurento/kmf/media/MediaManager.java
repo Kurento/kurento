@@ -100,8 +100,22 @@ public class MediaManager extends MediaObject {
 	}
 
 	public HttpEndPoint createHttpEndPoint() throws MediaException, IOException {
-		// TODO: Implement this method
-		throw new NotImplementedException();
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
+		try {
+			com.kurento.kms.api.MediaObject httpEndPoint = service
+					.createHttpEndpoint(mediaObject);
+			return new HttpEndPoint(httpEndPoint);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
+		}
 	}
 
 	public <T extends Mixer> T createMixer(Class<T> type)
