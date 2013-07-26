@@ -6,12 +6,15 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.FilterType;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPoint_call;
 import com.kurento.kms.api.MixerType;
 import com.kurento.kms.api.SdpEndPointType;
 import com.kurento.kms.api.UriEndPointType;
@@ -163,15 +166,84 @@ public class MediaManager extends MediaObject {
 	/* ASYNC */
 
 	public <T extends SdpEndPoint> void createSdpEndPoint(final Class<T> type,
-			String sdp, final Continuation<T> cont) throws IOException {
-		// TODO: Implement this method
-		throw new NotImplementedException();
+			final Continuation<T> cont) throws IOException {
+		createSdpEndPoint(type, null, cont);
 	}
 
 	public <T extends SdpEndPoint> void createSdpEndPoint(final Class<T> type,
-			final Continuation<T> cont) throws IOException {
-		throw new NotImplementedException();
-		// TODO: Implement this method
+			String sdp, final Continuation<T> cont) throws IOException {
+		SdpEndPointType t = SdpEndPoint.getType(type);
+		MediaServerService.AsyncClient service = MediaServerServiceManager
+				.getMediaServerServiceAsync();
+
+		try {
+			if (sdp == null) {
+				service.createSdpEndPoint(
+						mediaObject,
+						t,
+						new AsyncMethodCallback<MediaServerService.AsyncClient.createSdpEndPoint_call>() {
+							@Override
+							public void onComplete(
+									createSdpEndPoint_call response) {
+								try {
+									com.kurento.kms.api.MediaObject sdpEndPoint = response
+											.getResult();
+									cont.onSuccess(createInstance(type,
+											sdpEndPoint));
+								} catch (MediaObjectNotFoundException e) {
+									cont.onError(new RuntimeException(e
+											.getMessage(), e));
+								} catch (MediaServerException e) {
+									cont.onError(new RuntimeException(e
+											.getMessage(), e));
+								} catch (TException e) {
+									cont.onError(new IOException(
+											e.getMessage(), e));
+								}
+							}
+
+							@Override
+							public void onError(Exception exception) {
+								cont.onError(exception);
+							}
+						});
+			} else {
+				service.createSdpEndPointWithFixedSdp(
+						mediaObject,
+						t,
+						sdp,
+						new AsyncMethodCallback<MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call>() {
+							@Override
+							public void onComplete(
+									createSdpEndPointWithFixedSdp_call response) {
+								try {
+									com.kurento.kms.api.MediaObject sdpEndPoint = response
+											.getResult();
+									cont.onSuccess(createInstance(type,
+											sdpEndPoint));
+								} catch (MediaObjectNotFoundException e) {
+									cont.onError(new RuntimeException(e
+											.getMessage(), e));
+								} catch (MediaServerException e) {
+									cont.onError(new RuntimeException(e
+											.getMessage(), e));
+								} catch (TException e) {
+									cont.onError(new IOException(
+											e.getMessage(), e));
+								}
+							}
+
+							@Override
+							public void onError(Exception exception) {
+								cont.onError(exception);
+							}
+						});
+			}
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+		}
 	}
 
 	public <T extends UriEndPoint> void createUriEndPoint(final Class<T> type,
