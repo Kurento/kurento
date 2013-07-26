@@ -158,6 +158,8 @@ public abstract class SdpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
+	static final String SDP_END_POINT_TYPE_FIELD_NAME = "sdpEndPointType";
+
 	SdpEndPoint(com.kurento.kms.api.MediaObject sdpEndPoint) {
 		super(sdpEndPoint);
 	}
