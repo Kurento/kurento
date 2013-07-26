@@ -1,0 +1,57 @@
+package com.kurento.kmf.media.internal;
+
+import java.io.IOException;
+
+import org.apache.thrift.TException;
+import org.apache.thrift.server.TNonblockingServer;
+import org.apache.thrift.server.TServer;
+import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TNonblockingServerTransport;
+import org.apache.thrift.transport.TTransportException;
+
+import com.kurento.kmf.media.MediaManagerHandler;
+import com.kurento.kms.api.MediaError;
+import com.kurento.kms.api.MediaEvent;
+import com.kurento.kms.api.MediaHandlerService;
+
+class MediaHandlerServer {
+
+	private final int port;
+	private final MediaManagerHandler handler;
+
+	public MediaHandlerServer(int port, MediaManagerHandler handler) {
+		this.port = port;
+		this.handler = handler;
+	}
+
+	public void start() throws IOException {
+		try {
+			TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(
+					port);
+			TServer server = new TNonblockingServer(
+					new TNonblockingServer.Args(serverTransport)
+							.processor(processor));
+			server.serve();
+			// TODO: when stop it?
+		} catch (TTransportException e) {
+			throw new IOException(e);
+		}
+	}
+
+	private final MediaHandlerService.Processor<MediaHandlerService.Iface> processor = new MediaHandlerService.Processor<MediaHandlerService.Iface>(
+			new MediaHandlerService.Iface() {
+
+				@Override
+				public void onEvent(MediaEvent arg0) throws TException {
+					// TODO: build a KMF MediaEvent from this KMS MediaEvent and
+					// call onEvent over the handler
+				}
+
+				@Override
+				public void onError(MediaError arg0) throws TException {
+					// TODO: build a KMF MediaError from this KMS MediaError and
+					// call onEvent over the handler
+				}
+			});
+
+}
