@@ -14,6 +14,7 @@ import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MixerType;
 import com.kurento.kms.api.SdpEndPointType;
+import com.kurento.kms.api.UriEndPointType;
 
 public class MediaManager extends MediaObject {
 
@@ -79,8 +80,23 @@ public class MediaManager extends MediaObject {
 
 	public <T extends UriEndPoint> T createUriEndPoint(Class<T> type, String uri)
 			throws MediaException, IOException {
-		// TODO: Implement this method
-		throw new NotImplementedException();
+		UriEndPointType t = UriEndPoint.getType(type);
+		MediaServerService.Client service = MediaServerServiceManager
+				.getMediaServerService();
+
+		try {
+			com.kurento.kms.api.MediaObject uriEndPoint = service
+					.createUriEndpoint(mediaObject, t, uri);
+			return createInstance(type, uriEndPoint);
+		} catch (MediaObjectNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (MediaServerException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		} catch (TException e) {
+			throw new IOException(e.getMessage(), e);
+		} finally {
+			MediaServerServiceManager.releaseMediaServerService(service);
+		}
 	}
 
 	public HttpEndPoint createHttpEndPoint() throws MediaException, IOException {

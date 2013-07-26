@@ -1,6 +1,7 @@
 package com.kurento.kmf.media;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -14,13 +15,31 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.getUri_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.pause_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.start_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.stop_call;
+import com.kurento.kms.api.UriEndPointType;
 
 public abstract class UriEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final String URI_END_POINT_TYPE_FIELD_NAME = "uriEndPointType";
+
 	UriEndPoint(MediaObject uriEndPoint) {
 		super(uriEndPoint);
+	}
+
+	static <T extends UriEndPoint> UriEndPointType getType(Class<T> type) {
+		try {
+			Field field = type.getDeclaredField(URI_END_POINT_TYPE_FIELD_NAME);
+			return (UriEndPointType) field.get(type);
+		} catch (NoSuchFieldException e) {
+			throw new IllegalArgumentException(e);
+		} catch (SecurityException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException(e);
+		} catch (IllegalAccessException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 
 	/* SYNC */
