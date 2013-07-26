@@ -158,8 +158,8 @@ public abstract class SdpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	SdpEndPoint(com.kurento.kms.api.MediaObject endpoint) {
-		super(endpoint);
+	SdpEndPoint(com.kurento.kms.api.MediaObject sdpEndPoint) {
+		super(sdpEndPoint);
 	}
 
 	/* SYNC */
