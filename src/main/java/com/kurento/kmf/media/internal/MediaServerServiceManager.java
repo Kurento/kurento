@@ -56,6 +56,16 @@ public class MediaServerServiceManager {
 		}
 	}
 
+	public static synchronized void destroy() throws IllegalStateException {
+		synchronized (MediaServerServiceManager.class) {
+			if (singleton != null) {
+				singleton.stopHandlerServer();
+			} else {
+				throw new IllegalStateException("Not initialized");
+			}
+		}
+	}
+
 	private MediaServerServiceManager(String serverAddress, int serverPort,
 			MediaManagerHandler handler, int handlerId, String handlerAddress,
 			int handlerPort) throws IOException {
@@ -75,6 +85,10 @@ public class MediaServerServiceManager {
 		} finally {
 			releaseMediaServerService(service);
 		}
+	}
+
+	private synchronized void stopHandlerServer() {
+		mediaHandlerServer.stop();
 	}
 
 	private static synchronized MediaServerServiceManager getInstance()

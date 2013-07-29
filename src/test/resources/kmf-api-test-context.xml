@@ -4,7 +4,8 @@
                     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<bean id="mediaManagerHandler" class="com.kurento.kms.media.TestMediaManagerHandler" />
-	<bean id="mediaManagerFactory" class="com.kurento.kms.media.MediaManagerFactory">
+	<bean id="mediaManagerFactory" class="com.kurento.kms.media.MediaManagerFactory"
+		destroy-method="destroy">
 		<constructor-arg value="localhost" />
 		<constructor-arg value="9090" />
 		<constructor-arg ref="mediaManagerHandler" />

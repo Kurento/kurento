@@ -22,6 +22,10 @@ public class MediaManagerFactory {
 				handlerId, handlerAddress, handlerPort);
 	}
 
+	public void destroy() {
+		MediaServerServiceManager.destroy();
+	}
+
 	/* SYNC */
 
 	public MediaManager createMediaManager() throws MediaException {

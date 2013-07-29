@@ -18,23 +18,29 @@ class MediaHandlerServer {
 
 	private final int port;
 	private final MediaManagerHandler handler;
+	private TServer server;
 
 	public MediaHandlerServer(int port, MediaManagerHandler handler) {
 		this.port = port;
 		this.handler = handler;
 	}
 
-	public void start() throws IOException {
+	public synchronized void start() throws IOException {
 		try {
 			TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(
 					port);
-			TServer server = new TNonblockingServer(
-					new TNonblockingServer.Args(serverTransport)
-							.processor(processor));
+			server = new TNonblockingServer(new TNonblockingServer.Args(
+					serverTransport).processor(processor));
 			server.serve();
-			// TODO: when stop it?
 		} catch (TTransportException e) {
 			throw new IOException(e);
+		}
+	}
+
+	public synchronized void stop() {
+		if (server != null) {
+			server.stop();
+			server = null;
 		}
 	}
 
