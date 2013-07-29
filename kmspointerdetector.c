@@ -26,8 +26,6 @@ static gboolean kms_pointer_detector_stop (GstBaseTransform * trans);
 static gboolean kms_pointer_detector_set_info (GstVideoFilter * filter,
     GstCaps * incaps, GstVideoInfo * in_info, GstCaps * outcaps,
     GstVideoInfo * out_info);
-static GstFlowReturn kms_pointer_detector_transform_frame (GstVideoFilter *
-    filter, GstVideoFrame * inframe, GstVideoFrame * outframe);
 static GstFlowReturn kms_pointer_detector_transform_frame_ip (GstVideoFilter *
     filter, GstVideoFrame * frame);
 
@@ -83,8 +81,6 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
   base_transform_class->stop = GST_DEBUG_FUNCPTR (kms_pointer_detector_stop);
   video_filter_class->set_info =
       GST_DEBUG_FUNCPTR (kms_pointer_detector_set_info);
-  video_filter_class->transform_frame =
-      GST_DEBUG_FUNCPTR (kms_pointer_detector_transform_frame);
   video_filter_class->transform_frame_ip =
       GST_DEBUG_FUNCPTR (kms_pointer_detector_transform_frame_ip);
 
@@ -181,17 +177,6 @@ kms_pointer_detector_set_info (GstVideoFilter * filter, GstCaps * incaps,
 }
 
 /* transform */
-static GstFlowReturn
-kms_pointer_detector_transform_frame (GstVideoFilter * filter,
-    GstVideoFrame * inframe, GstVideoFrame * outframe)
-{
-  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (filter);
-
-  GST_DEBUG_OBJECT (pointerdetector, "transform_frame");
-
-  return GST_FLOW_OK;
-}
-
 static GstFlowReturn
 kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
