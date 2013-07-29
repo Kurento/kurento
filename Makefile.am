@@ -1,3 +1,7 @@
+SUBDIRS =				\
+	filters
+
+
 plugin_LTLIBRARIES = libgstkurento.la
 
 glib_enum_define = KMS_PLUGINS
