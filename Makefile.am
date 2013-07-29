@@ -16,8 +16,8 @@ libkmsfilters_la_SOURCES = kmsfilters.c \
 			kmspointerdetector.c kmspointerdetector.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libkmsfilters_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) -Werror
-libkmsfilters_la_LIBADD = $(GST_LIBS) $(GIO_LIBS) $(NICE_LIBS)
+libkmsfilters_la_CFLAGS = $(GST_CFLAGS) -Werror
+libkmsfilters_la_LIBADD = $(GST_LIBS)
 libkmsfilters_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libkmsfilters_la_LIBTOOLFLAGS = --tag=disable-static
 
