@@ -12,7 +12,8 @@ CLEANFILES = $(BUILT_SOURCES)
 
 # sources used to compile this plug-in
 libkmsfilters_la_SOURCES = kmsfilters.c \
-			$(BUILT_SOURCES)
+			$(BUILT_SOURCES) \
+			kmspointerdetector.c kmspointerdetector.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libkmsfilters_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) -Werror

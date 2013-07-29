@@ -1,9 +1,14 @@
 #include <config.h>
 #include <gst/gst.h>
 
+#include "kmspointerdetector.h"
+
 static gboolean
 init (GstPlugin * plugin)
 {
+  if (!kms_pointer_detector_plugin_init (plugin))
+    return FALSE;
+
   return TRUE;
 }
 
