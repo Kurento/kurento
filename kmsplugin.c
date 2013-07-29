@@ -6,6 +6,7 @@
 #include <kmsrtpendpoint.h>
 #include <kmsautomuxerbin.h>
 #include <kmsrecorderendpoint.h>
+#include <kmsfilterelement.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -20,6 +21,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_recorder_end_point_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_filter_element_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
