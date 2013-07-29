@@ -18,7 +18,7 @@ struct _KmsRecorderEndPoint
 
 struct _KmsRecorderEndPointClass
 {
-  KmsElementClass parent_class;;
+  KmsElementClass parent_class;
 };
 
 GType kms_recorder_end_point_get_type (void);
