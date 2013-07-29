@@ -1,4 +1,3 @@
-
 #include <config.h>
 #include <gst/gst.h>
 
@@ -7,6 +6,7 @@
 #include <kmsautomuxerbin.h>
 #include <kmsrecorderendpoint.h>
 #include <kmsfilterelement.h>
+#include <kmsplayerendpoint.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -24,6 +24,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_filter_element_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_player_end_point_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
