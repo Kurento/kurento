@@ -4,7 +4,7 @@
 
 #include <kmsagnosticbin.h>
 #include <kmsrtpendpoint.h>
-#include <gstautomuxerbin.h>
+#include <kmsautomuxerbin.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -15,7 +15,7 @@ kurento_init (GstPlugin * kurento)
   if (!kms_rtp_end_point_plugin_init (kurento))
     return FALSE;
 
-  if (!gst_automuxer_bin_plugin_init (kurento))
+  if (!kms_automuxer_bin_plugin_init (kurento))
     return FALSE;
 
   return TRUE;

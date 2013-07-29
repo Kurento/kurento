@@ -4,7 +4,7 @@
 
 #include <gst/gst.h>
 #include "kmsagnosticbin.h"
-#include "gstautomuxerbin.h"
+#include "kmsautomuxerbin.h"
 
 #define PLUGIN_NAME "automuxerbin"
 
@@ -12,13 +12,13 @@
 #define VIDEO_PAD_NAME "video_"
 #define SOURCE_PAD_NAME "src_"
 
-GST_DEBUG_CATEGORY_STATIC (gst_automuxer_bin_debug);
-#define GST_CAT_DEFAULT gst_automuxer_bin_debug
+GST_DEBUG_CATEGORY_STATIC (kms_automuxer_bin_debug);
+#define GST_CAT_DEFAULT kms_automuxer_bin_debug
 
-#define GST_AUTOMUXER_BIN_LOCK(elem) \
-  (g_rec_mutex_lock (&GST_AUTOMUXER_BIN_CAST ((elem))->priv->mutex))
-#define GST_AUTOMUXER_BIN_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&GST_AUTOMUXER_BIN_CAST ((elem))->priv->mutex))
+#define KMS_AUTOMUXER_BIN_LOCK(elem) \
+  (g_rec_mutex_lock (&KMS_AUTOMUXER_BIN_CAST ((elem))->priv->mutex))
+#define KMS_AUTOMUXER_BIN_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&KMS_AUTOMUXER_BIN_CAST ((elem))->priv->mutex))
 
 typedef struct _PadCount PadCount;
 struct _PadCount
@@ -28,9 +28,9 @@ struct _PadCount
   guint source;
 };
 
-#define GST_AUTOMUXER_BIN_GET_PRIVATE(obj) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GST_TYPE_AUTOMUXER_BIN, GstAutoMuxerBinPrivate))
-struct _GstAutoMuxerBinPrivate
+#define KMS_AUTOMUXER_BIN_GET_PRIVATE(obj) \
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_AUTOMUXER_BIN, KmsAutoMuxerBinPrivate))
+struct _KmsAutoMuxerBinPrivate
 {
   GRecMutex mutex;
   GstElement *muxer;
@@ -76,11 +76,11 @@ GST_STATIC_PAD_TEMPLATE (SOURCE_PAD_NAME "%u",
     GST_STATIC_CAPS ("ANY")
     );
 
-#define gst_automuxer_bin_parent_class parent_class
-G_DEFINE_TYPE (GstAutoMuxerBin, gst_automuxer_bin, GST_TYPE_BIN);
+#define kms_automuxer_bin_parent_class parent_class
+G_DEFINE_TYPE (KmsAutoMuxerBin, kms_automuxer_bin, GST_TYPE_BIN);
 
 static GstElementFactory *
-get_muxer_factory_with_sink_caps (GstAutoMuxerBin * automuxerbin,
+get_muxer_factory_with_sink_caps (KmsAutoMuxerBin * automuxerbin,
     const GstCaps * caps)
 {
   GstElementFactory *mfactory = NULL;
@@ -195,7 +195,7 @@ link_muxer (gpointer v, gpointer m)
 }
 
 static gchar *
-get_pad_name (GstAutoMuxerBin * self, PadType type)
+get_pad_name (KmsAutoMuxerBin * self, PadType type)
 {
   gchar *name = NULL;
 
@@ -245,7 +245,7 @@ add_src_target_pad (GstElement * muxer)
   templ = gst_static_pad_template_get (&src_factory);
 
   self = GST_ELEMENT (GST_OBJECT_PARENT (muxer));
-  padname = get_pad_name (GST_AUTOMUXER_BIN (self), SOURCE_PAD);
+  padname = get_pad_name (KMS_AUTOMUXER_BIN (self), SOURCE_PAD);
   ghostpad = gst_ghost_pad_new_from_template (padname, src, templ);
   g_free (padname);
 
@@ -374,7 +374,7 @@ remove_muxer (GstElement * muxer)
 
 static gboolean
 initialize_pipeline (GstElement * typefind, GstCaps * caps,
-    GstAutoMuxerBin * self)
+    KmsAutoMuxerBin * self)
 {
   GstElementFactory *mfactory = NULL;
   GstElement *e;
@@ -409,7 +409,7 @@ initialize_pipeline (GstElement * typefind, GstCaps * caps,
 
 static gboolean
 reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
-    GstAutoMuxerBin * self)
+    KmsAutoMuxerBin * self)
 {
   GstElementFactory *mfactory = NULL;
   ValveState state;
@@ -473,18 +473,18 @@ reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
 
 static void
 found_type_cb (GstElement * typefind,
-    guint prob, GstCaps * caps, GstAutoMuxerBin * self)
+    guint prob, GstCaps * caps, KmsAutoMuxerBin * self)
 {
   gboolean done;
 
-  GST_AUTOMUXER_BIN_LOCK (self);
+  KMS_AUTOMUXER_BIN_LOCK (self);
 
   if (self->priv->muxer == NULL)
     done = initialize_pipeline (typefind, caps, self);
   else
     done = reconfigure_pipeline (typefind, caps, self);
 
-  GST_AUTOMUXER_BIN_UNLOCK (self);
+  KMS_AUTOMUXER_BIN_UNLOCK (self);
 
   if (!done) {
     /* TODO: Add agnostic bin to the audio input and find a muxer which */
@@ -494,11 +494,11 @@ found_type_cb (GstElement * typefind,
 }
 
 static GstPad *
-gst_automuxer_bin_request_new_pad (GstElement * element,
+kms_automuxer_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
   GstPad *pad, *target;
-  GstAutoMuxerBin *automuxerbin = GST_AUTOMUXER_BIN (element);
+  KmsAutoMuxerBin *automuxerbin = KMS_AUTOMUXER_BIN (element);
   GstElement *typefind;
   gchar *padname;
   PadType ptype;
@@ -514,11 +514,11 @@ gst_automuxer_bin_request_new_pad (GstElement * element,
 
   target = gst_element_get_static_pad (typefind, "sink");
 
-  GST_AUTOMUXER_BIN_LOCK (element);
+  KMS_AUTOMUXER_BIN_LOCK (element);
 
   padname = get_pad_name (automuxerbin, ptype);
 
-  GST_AUTOMUXER_BIN_UNLOCK (element);
+  KMS_AUTOMUXER_BIN_UNLOCK (element);
 
   pad = gst_ghost_pad_new_from_template (padname, target, templ);
 
@@ -540,7 +540,7 @@ gst_automuxer_bin_request_new_pad (GstElement * element,
 }
 
 static void
-gst_automuxer_bin_release_pad (GstElement * element, GstPad * pad)
+kms_automuxer_bin_release_pad (GstElement * element, GstPad * pad)
 {
 
   GstElement *typefind;
@@ -566,9 +566,9 @@ gst_automuxer_bin_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
-gst_automuxer_bin_finalize (GObject * object)
+kms_automuxer_bin_finalize (GObject * object)
 {
-  GstAutoMuxerBin *automuxerbin = GST_AUTOMUXER_BIN (object);
+  KmsAutoMuxerBin *automuxerbin = KMS_AUTOMUXER_BIN (object);
 
   g_rec_mutex_clear (&automuxerbin->priv->mutex);
 
@@ -589,12 +589,12 @@ gst_automuxer_bin_finalize (GObject * object)
   g_slice_free (PadCount, automuxerbin->priv->pads);
 
   /* chain up */
-  G_OBJECT_CLASS (gst_automuxer_bin_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_automuxer_bin_parent_class)->finalize (object);
 }
 
 /* initialize the automuxerbin's class */
 static void
-gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
+kms_automuxer_bin_class_init (KmsAutoMuxerBinClass * klass)
 {
   GObjectClass *gobject_class;
   GstElementClass *gstelement_class;
@@ -602,7 +602,7 @@ gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
   gobject_class = (GObjectClass *) klass;
   gstelement_class = (GstElementClass *) klass;
 
-  gobject_class->finalize = gst_automuxer_bin_finalize;
+  gobject_class->finalize = kms_automuxer_bin_finalize;
 
   gst_element_class_set_details_simple (gstelement_class,
       "Automuxer",
@@ -619,20 +619,20 @@ gst_automuxer_bin_class_init (GstAutoMuxerBinClass * klass)
       gst_static_pad_template_get (&sink_factory_video));
 
   gstelement_class->request_new_pad =
-      GST_DEBUG_FUNCPTR (gst_automuxer_bin_request_new_pad);
+      GST_DEBUG_FUNCPTR (kms_automuxer_bin_request_new_pad);
   gstelement_class->release_pad =
-      GST_DEBUG_FUNCPTR (gst_automuxer_bin_release_pad);
+      GST_DEBUG_FUNCPTR (kms_automuxer_bin_release_pad);
 
   /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (GstAutoMuxerBinPrivate));
+  g_type_class_add_private (klass, sizeof (KmsAutoMuxerBinPrivate));
 
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 }
 
 static void
-gst_automuxer_bin_init (GstAutoMuxerBin * self)
+kms_automuxer_bin_init (KmsAutoMuxerBin * self)
 {
-  self->priv = GST_AUTOMUXER_BIN_GET_PRIVATE (self);
+  self->priv = KMS_AUTOMUXER_BIN_GET_PRIVATE (self);
 
   g_rec_mutex_init (&self->priv->mutex);
 
@@ -647,8 +647,8 @@ gst_automuxer_bin_init (GstAutoMuxerBin * self)
 }
 
 gboolean
-gst_automuxer_bin_plugin_init (GstPlugin * plugin)
+kms_automuxer_bin_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      GST_TYPE_AUTOMUXER_BIN);
+      KMS_TYPE_AUTOMUXER_BIN);
 }
