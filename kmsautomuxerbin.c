@@ -471,11 +471,32 @@ reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
   return TRUE;
 }
 
+static gboolean
+has_valve (GstElement * typefind)
+{
+  GstPad *srcpad;
+  gboolean ret;
+
+  srcpad = gst_element_get_static_pad (typefind, "src");
+  if (srcpad == NULL)
+    return FALSE;
+
+  ret = gst_pad_is_linked (srcpad);
+  gst_object_unref (G_OBJECT (srcpad));
+  return ret;
+}
+
 static void
 found_type_cb (GstElement * typefind,
     guint prob, GstCaps * caps, KmsAutoMuxerBin * self)
 {
   gboolean done;
+
+  if (has_valve (typefind)) {
+    GST_ERROR ("Typefind %s detected a change in the media type",
+        GST_ELEMENT_NAME (typefind));
+    return;
+  }
 
   KMS_AUTOMUXER_BIN_LOCK (self);
 
