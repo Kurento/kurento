@@ -32,6 +32,9 @@ typedef struct _KmsUriEndPointClass KmsUriEndPointClass;
 struct _KmsUriEndPoint
 {
   KmsElement parent;
+
+  /*< protected > */
+  gchar *uri;
 };
 
 struct _KmsUriEndPointClass
