@@ -152,8 +152,11 @@ public final class KurentoApplicationContextUtils {
 
 	public static void processInjectionBasedOnApplicationContext(Object bean,
 			AnnotationConfigApplicationContext appContext) {
-		Assert.notNull(appContext, "Cannot process bean injection. Reason the specified ApplicationContext is null");
-		Assert.notNull(bean, "Cannot process bean injection into null bean reference");
+		Assert.notNull(
+				appContext,
+				"Cannot process bean injection. Reason the specified ApplicationContext is null");
+		Assert.notNull(bean,
+				"Cannot process bean injection into null bean reference");
 		AutowiredAnnotationBeanPostProcessor bpp = new AutowiredAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(appContext.getAutowireCapableBeanFactory());
 		bpp.processInjection(bean);
@@ -161,8 +164,11 @@ public final class KurentoApplicationContextUtils {
 
 	public static void processInjectionBasedOnKurentoApplicationContext(
 			Object bean) {
-		Assert.notNull(kurentoApplicationContextInternalReference, "Cannot process bean injection. Reason Kurento ApplicationContext has not been initialized");
-		Assert.notNull(bean, "Cannot process bean injection into null bean reference");
+		Assert.notNull(
+				kurentoApplicationContextInternalReference,
+				"Cannot process bean injection. Reason Kurento ApplicationContext has not been initialized");
+		Assert.notNull(bean,
+				"Cannot process bean injection into null bean reference");
 		AutowiredAnnotationBeanPostProcessor bpp = new AutowiredAnnotationBeanPostProcessor();
 		bpp.setBeanFactory(kurentoApplicationContextInternalReference
 				.getAutowireCapableBeanFactory());
@@ -189,6 +195,14 @@ public final class KurentoApplicationContextUtils {
 		return kurentoApplicationContextInternalReference.getBean(name, args);
 	}
 
+	public static Object getBean(String name) {
+		Assert.notNull(
+				kurentoApplicationContextInternalReference,
+				"Cannot get bean for the following reason: Kurento ApplicationContext has not been initlized.");
+		return kurentoApplicationContextInternalReference.getBean(name);
+
+	}
+
 	public static void registerKurentoServletContextListener(ServletContext ctx) {
 		// Add listener for closing Kurento ApplicationContexts on container
 		// shutdown
@@ -198,5 +212,18 @@ public final class KurentoApplicationContextUtils {
 		ctx.setAttribute(KURENTO_SERVLET_CONTEXT_LISTENER_ATTRIBUTE_NAME,
 				"initialized");
 		ctx.addListener(KurentoServletContextListener.class);
+	}
+
+	public static AnnotationConfigApplicationContext debugOnlyCreateKurentoApplicationContext() {
+		Assert.isNull(kurentoApplicationContextInternalReference,
+				"Pre-existing Kurento ApplicationContext found. Cannot create a new instance.");
+
+		kurentoApplicationContextInternalReference = new AnnotationConfigApplicationContext();
+
+		// Add or remove packages when required
+		kurentoApplicationContextInternalReference.scan("com.kurento.kmf");
+
+		kurentoApplicationContextInternalReference.refresh();
+		return kurentoApplicationContextInternalReference;
 	}
 }
