@@ -13,11 +13,11 @@ import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createFilter_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.createHttpEndpoint_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createHttpEndPoint_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMixer_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createSdpEndPoint_call;
-import com.kurento.kms.api.MediaServerService.AsyncClient.createUriEndpoint_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createUriEndPoint_call;
 import com.kurento.kms.api.MixerType;
 import com.kurento.kms.api.SdpEndPointType;
 import com.kurento.kms.api.UriEndPointType;
@@ -92,7 +92,7 @@ public class MediaManager extends MediaObject {
 
 		try {
 			com.kurento.kms.api.MediaObject uriEndPoint = service
-					.createUriEndpoint(mediaObject, t, uri);
+					.createUriEndPoint(mediaObject, t, uri);
 			return createInstance(type, uriEndPoint);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -111,7 +111,7 @@ public class MediaManager extends MediaObject {
 
 		try {
 			com.kurento.kms.api.MediaObject httpEndPoint = service
-					.createHttpEndpoint(mediaObject);
+					.createHttpEndPoint(mediaObject);
 			return new HttpEndPoint(httpEndPoint);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -256,13 +256,13 @@ public class MediaManager extends MediaObject {
 				.getMediaServerServiceAsync();
 
 		try {
-			service.createUriEndpoint(
+			service.createUriEndPoint(
 					mediaObject,
 					t,
 					uri,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.createUriEndpoint_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createUriEndPoint_call>() {
 						@Override
-						public void onComplete(createUriEndpoint_call response) {
+						public void onComplete(createUriEndPoint_call response) {
 							try {
 								com.kurento.kms.api.MediaObject uriEndPoint = response
 										.getResult();
@@ -296,11 +296,11 @@ public class MediaManager extends MediaObject {
 				.getMediaServerServiceAsync();
 
 		try {
-			service.createHttpEndpoint(
+			service.createHttpEndPoint(
 					mediaObject,
-					new AsyncMethodCallback<MediaServerService.AsyncClient.createHttpEndpoint_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createHttpEndPoint_call>() {
 						@Override
-						public void onComplete(createHttpEndpoint_call response) {
+						public void onComplete(createHttpEndPoint_call response) {
 							try {
 								com.kurento.kms.api.MediaObject httpEndPoint = response
 										.getResult();
