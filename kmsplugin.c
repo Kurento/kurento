@@ -4,6 +4,7 @@
 #include <kmsagnosticbin.h>
 #include <kmsrtpendpoint.h>
 #include <kmsautomuxerbin.h>
+#include <kmsuriendpoint.h>
 #include <kmsrecorderendpoint.h>
 #include <kmsfilterelement.h>
 #include <kmsplayerendpoint.h>
@@ -18,6 +19,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_automuxer_bin_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_uri_end_point_plugin_init (kurento))
     return FALSE;
 
   if (!kms_recorder_end_point_plugin_init (kurento))

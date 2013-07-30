@@ -31,7 +31,8 @@ libgstkurento_la_SOURCES = kmsplugin.c \
 			kmsautomuxerbin.c kmsautomuxerbin.h \
 			kmsrecorderendpoint.c kmsrecorderendpoint.h \
 			kmsfilterelement.c kmsfilterelement.h \
-			kmsplayerendpoint.c kmsplayerendpoint.h
+			kmsplayerendpoint.c kmsplayerendpoint.h \
+			kmsuriendpoint.c kmsuriendpoint.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libgstkurento_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) -Werror
