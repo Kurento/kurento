@@ -4,14 +4,19 @@ SUBDIRS =				\
 
 plugin_LTLIBRARIES = libgstkurento.la
 
-glib_enum_define = KMS_PLUGINS
+# variables used for enum generation
+glib_enum_headers = kmsuriendpointstate.h
+glib_enum_define = KMS
 glib_gen_prefix = __kms
 glib_gen_basename = kms
 
 include $(top_srcdir)/gst-glib-gen.mak
 
-built_sources = kms-marshal.c
-built_headers = kms-marshal.h
+built_sources = kms-marshal.c \
+                kms-enumtypes.c
+
+built_headers = kms-marshal.h \
+                kms-enumtypes.h
 
 BUILT_SOURCES = $(built_sources) $(built_headers)
 
