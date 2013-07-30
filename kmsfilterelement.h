@@ -31,11 +31,14 @@ G_BEGIN_DECLS
 )
 typedef struct _KmsFilterElement KmsFilterElement;
 typedef struct _KmsFilterElementClass KmsFilterElementClass;
+typedef struct _KmsFilterElementPrivate KmsFilterElementPrivate;
 
 struct _KmsFilterElement
 {
   KmsElement parent;
 
+  /*< private > */
+  KmsFilterElementPrivate *priv;
 };
 
 struct _KmsFilterElementClass

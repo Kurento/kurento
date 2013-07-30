@@ -11,6 +11,28 @@
 GST_DEBUG_CATEGORY_STATIC (kms_filter_element_debug_category);
 #define GST_CAT_DEFAULT kms_filter_element_debug_category
 
+#define KMS_FILTER_ELEMENT_GET_PRIVATE(obj) (   \
+  G_TYPE_INSTANCE_GET_PRIVATE (                 \
+    (obj),                                      \
+    KMS_TYPE_FILTER_ELEMENT,                    \
+    KmsFilterElementPrivate                     \
+  )                                             \
+)
+
+struct _KmsFilterElementPrivate
+{
+  gchar *filter_factory;
+  GstElement *filter;
+};
+
+/* properties */
+enum
+{
+  PROP_0,
+  PROP_FILTER_FACTORY,
+  PROP_FILTER
+};
+
 /* pad templates */
 
 /* class initialization */
@@ -19,6 +41,47 @@ G_DEFINE_TYPE_WITH_CODE (KmsFilterElement, kms_filter_element,
     KMS_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (kms_filter_element_debug_category, PLUGIN_NAME,
         0, "debug category for filterelement element"));
+static void
+kms_filter_element_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsFilterElement *self = KMS_FILTER_ELEMENT (object);
+
+  GST_DEBUG_OBJECT (self, "get_property");
+
+  switch (prop_id) {
+    case PROP_FILTER:
+      g_value_set_object (value, self->priv->filter);
+      break;
+    case PROP_FILTER_FACTORY:
+      g_value_set_string (value, self->priv->filter_factory);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+kms_filter_element_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsFilterElement *self = KMS_FILTER_ELEMENT (object);
+
+  GST_DEBUG_OBJECT (self, "set_property");
+
+  switch (prop_id) {
+    case PROP_FILTER_FACTORY:
+      // TODO: Add mutex to avoid possible race conditions
+      if (self->priv->filter_factory != NULL)
+        g_free (self->priv->filter_factory);
+      self->priv->filter_factory = g_value_dup_string (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
 
 void
 kms_filter_element_dispose (GObject * object)
@@ -28,6 +91,9 @@ kms_filter_element_dispose (GObject * object)
   GST_DEBUG_OBJECT (filter_element, "dispose");
 
   /* clean up as possible.  may be called multiple times */
+
+  /* No need to release as bin is owning the reference */
+  filter_element->priv->filter = NULL;
 
   G_OBJECT_CLASS (kms_filter_element_parent_class)->dispose (object);
 }
@@ -40,6 +106,10 @@ kms_filter_element_finalize (GObject * object)
   GST_DEBUG_OBJECT (filter_element, "finalize");
 
   /* clean up object here */
+  if (filter_element->priv->filter_factory != NULL) {
+    g_free (filter_element->priv->filter_factory);
+    filter_element->priv->filter_factory = NULL;
+  }
 
   G_OBJECT_CLASS (kms_filter_element_parent_class)->finalize (object);
 }
@@ -56,11 +126,29 @@ kms_filter_element_class_init (KmsFilterElementClass * klass)
   gobject_class->dispose = kms_filter_element_dispose;
   gobject_class->finalize = kms_filter_element_finalize;
 
+  gobject_class->set_property = kms_filter_element_set_property;
+  gobject_class->get_property = kms_filter_element_get_property;
+
+  /* define properties */
+  g_object_class_install_property (gobject_class, PROP_FILTER_FACTORY,
+      g_param_spec_string ("filter-factory", "filter-factory",
+          "Factory name of the filter", NULL,
+          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
+  g_object_class_install_property (gobject_class, PROP_FILTER,
+      g_param_spec_string ("filter", "filter", "Filter currently used", NULL,
+          G_PARAM_READABLE));
+
+  /* Registers a private structure for the instantiatable type */
+  g_type_class_add_private (klass, sizeof (KmsFilterElementPrivate));
 }
 
 static void
-kms_filter_element_init (KmsFilterElement * filter_element)
+kms_filter_element_init (KmsFilterElement * self)
 {
+  self->priv = KMS_FILTER_ELEMENT_GET_PRIVATE (self);
+
+  self->priv->filter = NULL;
+  self->priv->filter_factory = NULL;
 }
 
 gboolean
