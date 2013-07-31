@@ -19,8 +19,17 @@ GST_DEBUG_CATEGORY_STATIC (kms_filter_element_debug_category);
   )                                             \
 )
 
+#define KMS_FILTER_ELEMENT_LOCK(obj) (                          \
+  g_rec_mutex_lock(&KMS_FILTER_ELEMENT(obj)->priv->mutex)       \
+)
+
+#define KMS_FILTER_ELEMENT_UNLOCK(obj) (                        \
+  g_rec_mutex_unlock(&KMS_FILTER_ELEMENT(obj)->priv->mutex)     \
+)
+
 struct _KmsFilterElementPrivate
 {
+  GRecMutex mutex;
   gchar *filter_factory;
   GstElement *filter;
 };
@@ -49,6 +58,7 @@ kms_filter_element_get_property (GObject * object, guint prop_id,
 
   GST_DEBUG_OBJECT (self, "get_property");
 
+  KMS_FILTER_ELEMENT_LOCK (object);
   switch (prop_id) {
     case PROP_FILTER:
       g_value_set_object (value, self->priv->filter);
@@ -60,6 +70,7 @@ kms_filter_element_get_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+  KMS_FILTER_ELEMENT_UNLOCK (object);
 }
 
 static void
@@ -70,9 +81,9 @@ kms_filter_element_set_property (GObject * object, guint prop_id,
 
   GST_DEBUG_OBJECT (self, "set_property");
 
+  KMS_FILTER_ELEMENT_LOCK (object);
   switch (prop_id) {
     case PROP_FILTER_FACTORY:
-      // TODO: Add mutex to avoid possible race conditions
       if (self->priv->filter_factory != NULL)
         g_free (self->priv->filter_factory);
       self->priv->filter_factory = g_value_dup_string (value);
@@ -81,6 +92,7 @@ kms_filter_element_set_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+  KMS_FILTER_ELEMENT_UNLOCK (object);
 }
 
 void
@@ -110,6 +122,8 @@ kms_filter_element_finalize (GObject * object)
     g_free (filter_element->priv->filter_factory);
     filter_element->priv->filter_factory = NULL;
   }
+
+  g_rec_mutex_clear (&filter_element->priv->mutex);
 
   G_OBJECT_CLASS (kms_filter_element_parent_class)->finalize (object);
 }
@@ -146,6 +160,8 @@ static void
 kms_filter_element_init (KmsFilterElement * self)
 {
   self->priv = KMS_FILTER_ELEMENT_GET_PRIVATE (self);
+
+  g_rec_mutex_init (&self->priv->mutex);
 
   self->priv->filter = NULL;
   self->priv->filter_factory = NULL;
