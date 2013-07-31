@@ -20,14 +20,16 @@ G_BEGIN_DECLS
     KmsRecorderEndPointClass                   \
   )                                            \
 )
-#define KMS_IS_RECORDER_END_POINT(klass) (     \
+#define KMS_IS_RECORDER_END_POINT(obj) (       \
   G_TYPE_CHECK_INSTANCE_TYPE (                 \
     (obj),                                     \
     KMS_TYPE_RECORDER_END_POINT                \
   )                                            \
 )
-#define KMS_IS_RECORDER_END_POINT_CLASS(obj) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_RECORDER_END_POINT))
+#define KMS_IS_RECORDER_END_POINT_CLASS(klass) (        \
+  G_TYPE_CHECK_CLASS_TYPE((klass),                      \
+  KMS_TYPE_RECORDER_END_POINT)                          \
+)
 typedef struct _KmsRecorderEndPoint KmsRecorderEndPoint;
 typedef struct _KmsRecorderEndPointClass KmsRecorderEndPointClass;
 typedef struct _KmsRecorderEndPointPrivate KmsRecorderEndPointPrivate;
