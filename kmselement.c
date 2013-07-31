@@ -7,13 +7,15 @@
 #include "kmselement.h"
 #include "kmsagnosticbin.h"
 
-#define PLUGIN_NAME "kmselement"
+#define PLUGIN_NAME "element"
 
-GST_DEBUG_CATEGORY_STATIC (kms_element_debug);
-#define GST_CAT_DEFAULT kms_element_debug
+GST_DEBUG_CATEGORY_STATIC (kms_element_debug_category);
+#define GST_CAT_DEFAULT kms_element_debug_category
 
-#define kms_element_parent_class parent_class
-G_DEFINE_TYPE (KmsElement, kms_element, GST_TYPE_BIN);
+G_DEFINE_TYPE_WITH_CODE (KmsElement, kms_element,
+    GST_TYPE_BIN,
+    GST_DEBUG_CATEGORY_INIT (kms_element_debug_category, PLUGIN_NAME,
+        0, "debug category for element"));
 
 #define AUDIO_AGNOSTICBIN "audio_agnosticbin"
 #define VIDEO_AGNOSTICBIN "video_agnosticbin"
@@ -173,7 +175,6 @@ kms_element_class_init (KmsElementClass * klass)
       gst_static_pad_template_get (&audio_sink_factory));
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&video_sink_factory));
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 }
 
 static void
