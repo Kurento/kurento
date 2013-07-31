@@ -1,6 +1,8 @@
 #ifndef _KMS_RECORDER_END_POINT_H_
 #define _KMS_RECORDER_END_POINT_H_
 
+#include "kmsuriendpoint.h"
+
 G_BEGIN_DECLS
 #define KMS_TYPE_RECORDER_END_POINT \
   (kms_recorder_end_point_get_type())
@@ -32,7 +34,7 @@ typedef struct _KmsRecorderEndPointPrivate KmsRecorderEndPointPrivate;
 
 struct _KmsRecorderEndPoint
 {
-  KmsElement parent;
+  KmsUriEndPoint parent;
 
   /*< private > */
   KmsRecorderEndPointPrivate *priv;
@@ -40,7 +42,7 @@ struct _KmsRecorderEndPoint
 
 struct _KmsRecorderEndPointClass
 {
-  KmsElementClass parent_class;
+  KmsUriEndPointClass parent_class;
 };
 
 GType kms_recorder_end_point_get_type (void);
