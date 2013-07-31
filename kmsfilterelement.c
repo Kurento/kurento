@@ -149,8 +149,8 @@ kms_filter_element_class_init (KmsFilterElementClass * klass)
           "Factory name of the filter", NULL,
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
   g_object_class_install_property (gobject_class, PROP_FILTER,
-      g_param_spec_string ("filter", "filter", "Filter currently used", NULL,
-          G_PARAM_READABLE));
+      g_param_spec_object ("filter", "filter", "Filter currently used",
+          GST_TYPE_ELEMENT, G_PARAM_READABLE));
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsFilterElementPrivate));
