@@ -1,6 +1,7 @@
 package com.kurento.kmf.content.internal;
 
 import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,8 @@ import org.springframework.context.annotation.Scope;
 import com.kurento.kmf.content.ContentApiConfiguration;
 import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.RecordRequest;
+import com.kurento.kmf.content.WebRtcMediaHandler;
+import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonRequest;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
 
 @Configuration
@@ -36,6 +39,11 @@ public class ContentApplicationContextConfiguration {
 	}
 
 	@Bean
+	SecretGenerator secretGenerator() {
+		return new SecretGenerator();
+	}
+
+	@Bean
 	@Scope("prototype")
 	PlayRequest playRequest(AsyncContext ctx, String contentId, boolean redirect) {
 		return new PlayRequestImpl(ctx, contentId, redirect);
@@ -46,6 +54,35 @@ public class ContentApplicationContextConfiguration {
 	RecordRequest recordRequest(AsyncContext ctx, String contentId,
 			boolean redirect) {
 		return new RecordRequestImpl(ctx, contentId, redirect);
+	}
+
+	@Bean
+	WebRtcControlProtocolManager webRtcControlPrototolManager() {
+		return new WebRtcControlProtocolManager();
+	}
+
+	@Bean
+	@Scope("prototype")
+	WebRtcMediaRequestManager webRtcMediaRequestManager() {
+		return new WebRtcMediaRequestManager();
+	}
+
+	@Bean
+	@Scope("prototype")
+	WebRtcMediaRequestImpl webRtcMediaRequestImpl(WebRtcMediaHandler handler,
+			WebRtcMediaRequestManager manager, String contentId,
+			HttpServletRequest httpServletRequest) {
+		return new WebRtcMediaRequestImpl(handler, manager, contentId,
+				httpServletRequest);
+	}
+
+	@Bean
+	@Scope("prototype")
+	AsyncWebRtcMediaRequestProcessor asyncWebRtcMediaRequestProcessor(
+			WebRtcMediaRequestImpl mediaRequest, WebRtcJsonRequest message,
+			AsyncContext asyncCtx) {
+		return new AsyncWebRtcMediaRequestProcessor(mediaRequest, message,
+				asyncCtx);
 	}
 
 	@Bean

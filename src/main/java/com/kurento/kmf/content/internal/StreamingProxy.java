@@ -152,26 +152,12 @@ public class StreamingProxy {
 					if (len < 0) {
 						break;
 					}
-					try {
-						clientSideResponse.getOutputStream().write(block, 0,
-								len);
-						clientSideResponse.flushBuffer();
-					} catch (Exception ex1) {
-						// This error raises when client ends play abruptly
-						// (e.g.: closing the browser)
-						log.debug("Play endend by client " + ex1.getClass());
 
-						Future<?> future = (Future<?>) clientSideRequest
-								.getAttribute(ContentAsyncListener.FUTURE_REQUEST_ATT_NAME);
-						if (future != null) {
-							log.debug("Cancelling future");
-							future.cancel(true);
-						}
-
-						// TODO: This completion can raise a
-						// NullPointerException
-						clientSideRequest.getAsyncContext().complete();
-					}
+					clientSideResponse.getOutputStream().write(block, 0, len);
+					// TODO: browser stopping a video generates an exception
+					// here. Are we sure everything is cleanly closed on the
+					// management of the exception
+					clientSideResponse.flushBuffer();
 				}
 			}
 

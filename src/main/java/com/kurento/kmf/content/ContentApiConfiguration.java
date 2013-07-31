@@ -11,6 +11,7 @@ public class ContentApiConfiguration {
 	private int proxySocketTimeout = 0;
 	private int proxyMaxConnections = 1000;
 	private int proxyMaxConnectionsPerRoute = 20;
+	private long webRtcEventQueuePollTimeout = 15000L;
 
 	/**
 	 * 
@@ -102,6 +103,14 @@ public class ContentApiConfiguration {
 
 	public void setProxyMaxConnectionsPerRoute(int proxyMaxConnectionsPerRoute) {
 		this.proxyMaxConnectionsPerRoute = proxyMaxConnectionsPerRoute;
+	}
+
+	public long getWebRtcEventQueuePollTimeout() {
+		return webRtcEventQueuePollTimeout;
+	}
+
+	public void setWebRtcEventQueuePollTimeout(long webRtcEventQueuePollTimeout) {
+		this.webRtcEventQueuePollTimeout = webRtcEventQueuePollTimeout;
 	}
 
 }

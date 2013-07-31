@@ -12,12 +12,18 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonRequest;
+import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.*;
 public class ContentAsyncListener implements AsyncListener {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentAsyncListener.class);
 
 	static final String FUTURE_REQUEST_ATT_NAME = "kurento.future.request.att.name";
+
+	static final String WEBRTC_MEDIA_REQUEST_ATT_NAME = "kurento.webrtcmedia.request.att.name";
+
+	public static final String WEBRTC_JSON_REQUEST_ATT_NAME = "kurento.webrtcjsonrequest.request.att.name";
 
 	// Public constructor is required by servlet spec
 	public ContentAsyncListener() {
@@ -56,11 +62,19 @@ public class ContentAsyncListener implements AsyncListener {
 			future.cancel(true);
 		}
 
-		// Send answer to requesting client
-		((HttpServletResponse) asyncContext.getResponse()).sendError(status,
-				msg);
-		asyncContext.complete();
-
+		WebRtcMediaRequestImpl mediaRequest = (WebRtcMediaRequestImpl) asyncContext
+				.getRequest().getAttribute(WEBRTC_MEDIA_REQUEST_ATT_NAME);
+		WebRtcJsonRequest jsonRequest = (WebRtcJsonRequest)asyncContext
+				.getRequest().getAttribute(WEBRTC_JSON_REQUEST_ATT_NAME);
+		if (mediaRequest != null) {
+			// This listener belongs to a WebRtcMediaService
+			mediaRequest.terminate(asyncContext, ERROR_SERVER_ERROR , msg, jsonRequest.getId());
+		} else {
+			// This listener belongs to a player or recorder service
+			((HttpServletResponse) asyncContext.getResponse()).sendError(
+					status, msg);
+			asyncContext.complete();
+		}
 	}
 
 	@Override
