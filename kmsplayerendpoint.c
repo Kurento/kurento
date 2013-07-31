@@ -7,6 +7,9 @@
 #include "kmsplayerendpoint.h"
 
 #define PLUGIN_NAME "playerendpoint"
+#define AUDIO_APPSRC "audio_appsrc"
+#define VIDEO_APPSRC "video_appsrc"
+#define URIDECODEBIN "uridecodebin"
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_player_end_point_debug_category
@@ -19,8 +22,12 @@ GST_DEBUG_CATEGORY_STATIC (kms_player_end_point_debug_category);
   )                                             \
 )
 
-struct _KmsRecorderEndPointPrivate
+struct _KmsPlayerEndPointPrivate
 {
+  GstElement *pipeline;
+  GstElement *uridecodebin;
+  GstElement *appsrc_audio;
+  GstElement *appsrc_video;
 };
 
 /* pad templates */
@@ -57,9 +64,40 @@ kms_player_end_point_finalize (GObject * object)
 }
 
 static void
+pad_added (GstElement * element, GstPad * pad)
+{
+  GST_DEBUG ("Pad added");
+}
+
+static void
+pad_removed (GstElement * element, GstPad * pad, gpointer data)
+{
+  GST_DEBUG ("Pad removed");
+}
+
+static void
+kms_player_end_point_stopped (KmsUriEndPoint * self)
+{
+  GST_DEBUG ("TODO: Implement stopped");
+}
+
+static void
+kms_player_end_point_started (KmsUriEndPoint * self)
+{
+  GST_DEBUG ("TODO: Implement started");
+}
+
+static void
+kms_player_end_point_paused (KmsUriEndPoint * self)
+{
+  GST_DEBUG ("TODO: Implement paused");
+}
+
+static void
 kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  KmsUriEndPointClass *urienpoint_class = KMS_URI_END_POINT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "PlayerEndPoint", "Sink/Generic", "Kurento plugin player end point",
@@ -67,12 +105,35 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
 
   gobject_class->dispose = kms_player_end_point_dispose;
   gobject_class->finalize = kms_player_end_point_finalize;
+
+  urienpoint_class->stopped = kms_player_end_point_stopped;
+  urienpoint_class->started = kms_player_end_point_started;
+  urienpoint_class->paused = kms_player_end_point_paused;
+
+  /* Registers a private structure for the instantiatable type */
+  g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
 }
 
 static void
 kms_player_end_point_init (KmsPlayerEndPoint * self)
 {
   self->priv = KMS_PLAYER_END_POINT_GET_PRIVATE (self);
+
+  self->priv->pipeline = gst_pipeline_new ("pipeline");
+  self->priv->appsrc_audio = NULL;
+  self->priv->appsrc_video = NULL;
+  self->priv->uridecodebin =
+      gst_element_factory_make ("uridecodebin", URIDECODEBIN);
+
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
+  /* Connect to signals */
+  g_signal_connect (self->priv->uridecodebin, "pad-added",
+      G_CALLBACK (pad_added), NULL);
+  g_signal_connect (self->priv->uridecodebin, "pad-removed",
+      G_CALLBACK (pad_removed), NULL);
+  g_object_set (G_OBJECT (self->priv->uridecodebin), "uri",
+      KMS_URI_END_POINT (self)->uri, NULL);
+
 }
 
 gboolean
