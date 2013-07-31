@@ -1,6 +1,8 @@
 #ifndef _KMS_URI_END_POINT_H_
 #define _KMS_URI_END_POINT_H_
 
+#include "kmselement.h"
+
 G_BEGIN_DECLS
 #define KMS_TYPE_URI_END_POINT \
   (kms_uri_end_point_get_type())
