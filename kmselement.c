@@ -6,6 +6,7 @@
 
 #include "kmselement.h"
 #include "kmsagnosticbin.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "element"
 
@@ -41,28 +42,28 @@ static GstStaticPadTemplate audio_sink_factory =
 GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD,
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
-    GST_STATIC_CAPS (AUDIO_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate video_sink_factory =
 GST_STATIC_PAD_TEMPLATE (VIDEO_SINK_PAD,
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
-    GST_STATIC_CAPS (VIDEO_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
 static GstStaticPadTemplate audio_src_factory =
 GST_STATIC_PAD_TEMPLATE ("audio_src_%u",
     GST_PAD_SRC,
     GST_PAD_REQUEST,
-    GST_STATIC_CAPS (AUDIO_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate video_src_factory =
 GST_STATIC_PAD_TEMPLATE ("video_src_%u",
     GST_PAD_SRC,
     GST_PAD_REQUEST,
-    GST_STATIC_CAPS (VIDEO_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
 static GstPad *

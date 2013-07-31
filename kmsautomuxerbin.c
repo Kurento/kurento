@@ -5,6 +5,7 @@
 #include <gst/gst.h>
 #include "kmsagnosticbin.h"
 #include "kmsautomuxerbin.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "automuxerbin"
 
@@ -59,14 +60,14 @@ static GstStaticPadTemplate sink_factory_audio =
 GST_STATIC_PAD_TEMPLATE (AUDIO_PAD_NAME "%u",
     GST_PAD_SINK,
     GST_PAD_REQUEST,
-    GST_STATIC_CAPS (AUDIO_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate sink_factory_video =
 GST_STATIC_PAD_TEMPLATE (VIDEO_PAD_NAME "%u",
     GST_PAD_SINK,
     GST_PAD_REQUEST,
-    GST_STATIC_CAPS (VIDEO_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
 static GstStaticPadTemplate src_factory =

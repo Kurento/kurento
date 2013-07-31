@@ -5,6 +5,7 @@
 #include <gst/gst.h>
 
 #include "kmsagnosticbin.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "agnosticbin"
 
@@ -23,10 +24,12 @@
 #define START_STOP_EVENT_NAME "event/start-stop"
 #define START "start"
 
-static GstStaticCaps static_raw_audio_caps = GST_STATIC_CAPS (RAW_AUDIO_CAPS);
-static GstStaticCaps static_raw_video_caps = GST_STATIC_CAPS (RAW_VIDEO_CAPS);
+static GstStaticCaps static_raw_audio_caps =
+GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_AUDIO_CAPS);
+static GstStaticCaps static_raw_video_caps =
+GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_VIDEO_CAPS);
 
-static GstStaticCaps static_raw_caps = GST_STATIC_CAPS (RAW_CAPS);
+static GstStaticCaps static_raw_caps = GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_CAPS);
 
 GST_DEBUG_CATEGORY_STATIC (kms_agnostic_bin_debug);
 #define GST_CAT_DEFAULT kms_agnostic_bin_debug
@@ -53,13 +56,13 @@ enum
 static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink",
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
-    GST_STATIC_CAPS (AGNOSTIC_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
     );
 
 static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_PAD_SRC,
     GST_PAD_REQUEST,
-    GST_STATIC_CAPS (AGNOSTIC_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
     );
 
 static void
