@@ -4,6 +4,8 @@
 
 #include <gst/gst.h>
 #include "kmselement.h"
+#include "kmsuriendpointstate.h"
+#include "kms-enumtypes.h"
 #include "kmsuriendpoint.h"
 
 #define PLUGIN_NAME "uriendpoint"
@@ -11,12 +13,27 @@
 GST_DEBUG_CATEGORY_STATIC (kms_uri_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_uri_end_point_debug_category
 
+#define KMS_URI_END_POINT_GET_PRIVATE(obj) ( \
+  G_TYPE_INSTANCE_GET_PRIVATE (              \
+    (obj),                                   \
+    KMS_TYPE_URI_END_POINT,                  \
+    KmsUriEndPointPrivate                    \
+  )                                          \
+)
+struct _KmsUriEndPointPrivate
+{
+  KmsUriEndPointState state;
+};
+
 enum
 {
   PROP_0,
   PROP_URI,
+  PROP_STATE,
   N_PROPERTIES
 };
+
+#define DEFAULT_URI_END_POINT_STATE KMS_URI_END_POINT_STATE_STOP
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
@@ -42,6 +59,9 @@ kms_uri_end_point_set_property (GObject * object, guint property_id,
 
       self->uri = g_value_dup_string (value);
       break;
+    case PROP_STATE:
+      self->priv->state = g_value_get_enum (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -59,6 +79,9 @@ kms_uri_end_point_get_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_URI:
       g_value_set_string (value, self->uri);
+      break;
+    case PROP_STATE:
+      g_value_set_enum (value, self->priv->state);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -111,13 +134,23 @@ kms_uri_end_point_class_init (KmsUriEndPointClass * klass)
       "uri where the file is located", "Set uri", NULL /* default value */ ,
       G_PARAM_READWRITE);
 
+  obj_properties[PROP_STATE] = g_param_spec_enum ("state",
+      "Uri end point state",
+      "state of the uri end point element",
+      GST_TYPE_URI_END_POINT_STATE,
+      DEFAULT_URI_END_POINT_STATE, G_PARAM_READWRITE);
+
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
+
+  /* Registers a private structure for the instantiatable type */
+  g_type_class_add_private (klass, sizeof (KmsUriEndPointPrivate));
 }
 
 static void
 kms_uri_end_point_init (KmsUriEndPoint * self)
 {
+  self->priv = KMS_URI_END_POINT_GET_PRIVATE (self);
   self->uri = NULL;
 }
 

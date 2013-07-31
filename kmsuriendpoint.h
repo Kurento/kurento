@@ -28,10 +28,14 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_URI_END_POINT))
 typedef struct _KmsUriEndPoint KmsUriEndPoint;
 typedef struct _KmsUriEndPointClass KmsUriEndPointClass;
+typedef struct _KmsUriEndPointPrivate KmsUriEndPointPrivate;
 
 struct _KmsUriEndPoint
 {
   KmsElement parent;
+
+  /*< private > */
+  KmsUriEndPointPrivate *priv;
 
   /*< protected > */
   gchar *uri;
