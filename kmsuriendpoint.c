@@ -35,6 +35,13 @@ enum
 
 #define DEFAULT_URI_END_POINT_STATE KMS_URI_END_POINT_STATE_STOP
 
+#define CALL_IF_DEFINED(obj, method) do {     \
+  if ((method) != NULL)                       \
+    method(obj);                              \
+  else                                        \
+    GST_WARNING("Undefined method " #method); \
+} while (0)
+
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 /* class initialization */
@@ -43,6 +50,26 @@ G_DEFINE_TYPE_WITH_CODE (KmsUriEndPoint, kms_uri_end_point,
     KMS_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (kms_uri_end_point_debug_category, PLUGIN_NAME,
         0, "debug category for uriendpoint element"));
+
+static void
+kms_uri_end_point_change_state (KmsUriEndPoint * self, KmsUriEndPointState next)
+{
+  if (self->priv->state == next)
+    return;
+
+  self->priv->state = next;
+  switch (self->priv->state) {
+    case KMS_URI_END_POINT_STATE_STOP:
+      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->stopped);
+      break;
+    case KMS_URI_END_POINT_STATE_START:
+      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->started);
+      break;
+    case KMS_URI_END_POINT_STATE_PAUSE:
+      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->paused);
+      break;
+  }
+}
 
 static void
 kms_uri_end_point_set_property (GObject * object, guint property_id,
@@ -60,7 +87,7 @@ kms_uri_end_point_set_property (GObject * object, guint property_id,
       self->uri = g_value_dup_string (value);
       break;
     case PROP_STATE:
-      self->priv->state = g_value_get_enum (value);
+      kms_uri_end_point_change_state (self, g_value_get_enum (value));
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -129,6 +156,11 @@ kms_uri_end_point_class_init (KmsUriEndPointClass * klass)
   gobject_class->get_property = kms_uri_end_point_get_property;
   gobject_class->dispose = kms_uri_end_point_dispose;
   gobject_class->finalize = kms_uri_end_point_finalize;
+
+  /* pure virtual methods: mandates implementation in children. */
+  klass->paused = NULL;
+  klass->started = NULL;
+  klass->stopped = NULL;
 
   obj_properties[PROP_URI] = g_param_spec_string ("uri",
       "uri where the file is located", "Set uri", NULL /* default value */ ,
