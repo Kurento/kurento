@@ -50,6 +50,50 @@ G_DEFINE_TYPE_WITH_CODE (KmsFilterElement, kms_filter_element,
     KMS_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (kms_filter_element_debug_category, PLUGIN_NAME,
         0, "debug category for filterelement element"));
+
+static void
+kms_filter_element_set_filter (KmsFilterElement * self)
+{
+  GstElement *filter;
+  GstPad *sink = NULL, *src = NULL;
+
+  if (self->priv->filter != NULL) {
+    GST_WARNING_OBJECT (self, "Factory changes are not currently allowed");
+    return;
+  }
+
+  filter = gst_element_factory_make (self->priv->filter_factory, NULL);
+
+  if (filter == NULL) {
+    GST_ERROR_OBJECT (self, "Invalid factory \"%s\", element cannot be created",
+        self->priv->filter_factory);
+    return;
+  }
+
+  sink = gst_element_get_static_pad (filter, "sink");
+  src = gst_element_get_static_pad (filter, "src");
+
+  if (sink == NULL || src == NULL) {
+    GST_ERROR_OBJECT (self, "Invalid factory \"%s\", unexpected pad templates",
+        self->priv->filter_factory);
+    g_object_unref (filter);
+    goto end;
+  }
+
+  gst_bin_add (GST_BIN (self), filter);
+  gst_element_sync_state_with_parent (filter);
+
+  self->priv->filter = filter;
+  // TODO: Connect element to appropriate
+
+end:
+  if (sink != NULL)
+    g_object_unref (sink);
+
+  if (src != NULL)
+    g_object_unref (src);
+}
+
 static void
 kms_filter_element_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
@@ -84,9 +128,16 @@ kms_filter_element_set_property (GObject * object, guint prop_id,
   KMS_FILTER_ELEMENT_LOCK (object);
   switch (prop_id) {
     case PROP_FILTER_FACTORY:
-      if (self->priv->filter_factory != NULL)
-        g_free (self->priv->filter_factory);
-      self->priv->filter_factory = g_value_dup_string (value);
+      if (self->priv->filter_factory != NULL) {
+        GST_WARNING_OBJECT (object,
+            "Factory changes are not currently allowed");
+      } else {
+        self->priv->filter_factory = g_value_dup_string (value);
+        if (self->priv->filter_factory == NULL)
+          GST_WARNING_OBJECT (object, "Invalid factory name NULL");
+        else
+          kms_filter_element_set_filter (self);
+      }
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
