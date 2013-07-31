@@ -18,7 +18,7 @@ G_BEGIN_DECLS
     KmsRecorderEndPointClass                   \
   )                                            \
 )
-#define KMS_IS_RECORDER_END_POINT(obj) (       \
+#define KMS_IS_RECORDER_END_POINT(klass) (     \
   G_TYPE_CHECK_INSTANCE_TYPE (                 \
     (obj),                                     \
     KMS_TYPE_RECORDER_END_POINT                \

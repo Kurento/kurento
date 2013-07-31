@@ -23,7 +23,7 @@ G_BEGIN_DECLS
     KMS_TYPE_FILTER_ELEMENT                     \
     )                                           \
 )
-#define KMS_IS_FILTER_ELEMENT_CLASS(obj) (      \
+#define KMS_IS_FILTER_ELEMENT_CLASS(klass) (    \
   G_TYPE_CHECK_CLASS_TYPE (                     \
   (klass),                                      \
   KMS_TYPE_FILTER_ELEMENT                       \
