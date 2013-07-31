@@ -24,7 +24,7 @@ G_BEGIN_DECLS
     KMS_TYPE_URI_END_POINT                 \
   )                                        \
 )
-#define KMS_IS_URI_END_POINT_CLASS(obj) \
+#define KMS_IS_URI_END_POINT_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_URI_END_POINT))
 typedef struct _KmsUriEndPoint KmsUriEndPoint;
 typedef struct _KmsUriEndPointClass KmsUriEndPointClass;
