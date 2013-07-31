@@ -5,6 +5,7 @@
 #include <gst/gst.h>
 #include "kmselement.h"
 #include "kmsfilterelement.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "filterelement"
 
@@ -52,10 +53,25 @@ G_DEFINE_TYPE_WITH_CODE (KmsFilterElement, kms_filter_element,
         0, "debug category for filterelement element"));
 
 static void
+kms_filter_element_connect_filter (KmsFilterElement * self, GstElement * filter,
+    GstElement * valve, GstElement * agnosticbin)
+{
+  gst_bin_add (GST_BIN (self), filter);
+  gst_element_sync_state_with_parent (filter);
+
+  self->priv->filter = filter;
+
+  gst_element_link_many (valve, filter, agnosticbin, NULL);
+  g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+}
+
+static void
 kms_filter_element_set_filter (KmsFilterElement * self)
 {
   GstElement *filter;
   GstPad *sink = NULL, *src = NULL;
+  GstCaps *audio_caps = NULL, *video_caps = NULL;
+  GstCaps *sink_caps = NULL, *src_caps = NULL;
 
   if (self->priv->filter != NULL) {
     GST_WARNING_OBJECT (self, "Factory changes are not currently allowed");
@@ -80,13 +96,40 @@ kms_filter_element_set_filter (KmsFilterElement * self)
     goto end;
   }
 
-  gst_bin_add (GST_BIN (self), filter);
-  gst_element_sync_state_with_parent (filter);
+  audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
+  video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
 
-  self->priv->filter = filter;
-  // TODO: Connect element to appropriate
+  sink_caps = gst_pad_query_caps (sink, NULL);
+  src_caps = gst_pad_query_caps (src, NULL);
+
+  if (gst_caps_can_intersect (audio_caps, sink_caps) &&
+      gst_caps_can_intersect (audio_caps, src_caps)) {
+    GST_DEBUG_OBJECT (self, "Connecting filter to audio");
+    kms_filter_element_connect_filter (self, filter,
+        KMS_ELEMENT (self)->audio_valve, KMS_ELEMENT (self)->audio_agnosticbin);
+  } else if (gst_caps_can_intersect (video_caps, sink_caps)
+      && gst_caps_can_intersect (video_caps, src_caps)) {
+    GST_DEBUG_OBJECT (self, "Connecting filter to video");
+    kms_filter_element_connect_filter (self, filter,
+        KMS_ELEMENT (self)->video_valve, KMS_ELEMENT (self)->video_agnosticbin);
+  } else {
+    g_object_unref (filter);
+    GST_ERROR_OBJECT (self, "Filter element cannot be connected");
+  }
 
 end:
+  if (sink_caps != NULL)
+    gst_caps_unref (sink_caps);
+
+  if (src_caps != NULL)
+    gst_caps_unref (src_caps);
+
+  if (audio_caps != NULL)
+    gst_caps_unref (audio_caps);
+
+  if (video_caps != NULL)
+    gst_caps_unref (video_caps);
+
   if (sink != NULL)
     g_object_unref (sink);
 
