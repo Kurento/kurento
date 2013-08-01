@@ -36,13 +36,12 @@ enum
 
 /* pad templates */
 
-/* FIXME: add/remove formats you can handle */
 #define VIDEO_SRC_CAPS \
-    GST_VIDEO_CAPS_MAKE("{ I420, Y444, Y42B, UYVY, RGBA }")
+    GST_VIDEO_CAPS_MAKE("{ BGR }")
 
 /* FIXME: add/remove formats you can handle */
 #define VIDEO_SINK_CAPS \
-    GST_VIDEO_CAPS_MAKE("{ I420, Y444, Y42B, UYVY, RGBA }")
+    GST_VIDEO_CAPS_MAKE("{ BGR }")
 
 /* class initialization */
 
@@ -89,6 +88,7 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
 static void
 kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
 {
+  pointerdetector->cvImage = NULL;
 }
 
 void
@@ -142,6 +142,8 @@ kms_pointer_detector_finalize (GObject * object)
 
   /* clean up object here */
 
+  cvReleaseImageHeader (&pointerdetector->cvImage);
+
   G_OBJECT_CLASS (kms_pointer_detector_parent_class)->finalize (object);
 }
 
@@ -182,8 +184,27 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
 {
   KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (filter);
+  GstMapInfo info;
 
-  GST_DEBUG_OBJECT (pointerdetector, "transform_frame_ip");
+  if (pointerdetector->cvImage == NULL) {
+    pointerdetector->cvImage =
+        cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
+        IPL_DEPTH_8U, 3);
+  } else if ((pointerdetector->cvImage->width != frame->info.width)
+      || (pointerdetector->cvImage->height != frame->info.height)) {
+    cvReleaseImageHeader (&pointerdetector->cvImage);
+    pointerdetector->cvImage =
+        cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
+        IPL_DEPTH_8U, 3);
+  }
+
+  /* load Gstreamer buffer into IplImage */
+  gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
+  pointerdetector->cvImage->imageData = (char *) info.data;
+
+  // TODO: Process image here
+
+  gst_buffer_unmap (frame->buffer, &info);
 
   return GST_FLOW_OK;
 }
