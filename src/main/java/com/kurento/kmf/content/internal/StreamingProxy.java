@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -29,11 +30,16 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.content.ContentApiConfiguration;
 
 public class StreamingProxy {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(StreamingProxy.class);
 
 	@Autowired
 	private ContentApiConfiguration configuration;
@@ -146,8 +152,26 @@ public class StreamingProxy {
 					if (len < 0) {
 						break;
 					}
-					clientSideResponse.getOutputStream().write(block, 0, len);
-					clientSideResponse.flushBuffer();
+					try {
+						clientSideResponse.getOutputStream().write(block, 0,
+								len);
+						clientSideResponse.flushBuffer();
+					} catch (Exception ex1) {
+						// This error raises when client ends play abruptly
+						// (e.g.: closing the browser)
+						log.debug("Play endend by client " + ex1.getClass());
+
+						Future<?> future = (Future<?>) clientSideRequest
+								.getAttribute(ContentAsyncListener.FUTURE_REQUEST_ATT_NAME);
+						if (future != null) {
+							log.debug("Cancelling future");
+							future.cancel(true);
+						}
+
+						// TODO: This completion can raise a
+						// NullPointerException
+						clientSideRequest.getAsyncContext().complete();
+					}
 				}
 			}
 

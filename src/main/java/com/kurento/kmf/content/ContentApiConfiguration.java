@@ -10,7 +10,7 @@ public class ContentApiConfiguration {
 	private int proxyConnectionTimeout = 10000;
 	private int proxySocketTimeout = 0;
 	private int proxyMaxConnections = 1000;
-	private int proxyMaxConnectionsPerRoute = 2;
+	private int proxyMaxConnectionsPerRoute = 20;
 
 	/**
 	 * 
