@@ -3,6 +3,8 @@
 
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_POINTER_DETECTOR   (kms_pointer_detector_get_type())
@@ -17,6 +19,7 @@ struct _KmsPointerDetector
 {
   GstVideoFilter base_pointerdetector;
 
+  IplImage *cvImage;
 };
 
 struct _KmsPointerDetectorClass
