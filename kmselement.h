@@ -18,6 +18,7 @@ G_BEGIN_DECLS
 #define KMS_ELEMENT_CAST(obj) ((KmsElement*)(obj))
 typedef struct _KmsElement KmsElement;
 typedef struct _KmsElementClass KmsElementClass;
+typedef struct _KmsElementPrivate KmsElementPrivate;
 
 #define KMS_ELEMENT_LOCK(elem) \
   (g_rec_mutex_lock (&KMS_ELEMENT_CAST ((elem))->mutex))
@@ -30,11 +31,11 @@ struct _KmsElement
 
   GRecMutex mutex;
 
-  GstElement *audio_agnosticbin;
-  GstElement *video_agnosticbin;
-
   GstElement *audio_valve;
   GstElement *video_valve;
+
+  /*< private > */
+  KmsElementPrivate *priv;
 };
 
 struct _KmsElementClass
@@ -43,6 +44,10 @@ struct _KmsElementClass
 };
 
 GType kms_element_get_type (void);
+
+/* Private methods */
+GstElement * kms_element_get_audio_agnosticbin (KmsElement * self);
+GstElement * kms_element_get_video_agnosticbin (KmsElement * self);
 
 G_END_DECLS
 #endif /* __KMS_ELEMENT_H__ */

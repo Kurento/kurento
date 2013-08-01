@@ -106,12 +106,14 @@ kms_filter_element_set_filter (KmsFilterElement * self)
       gst_caps_can_intersect (audio_caps, src_caps)) {
     GST_DEBUG_OBJECT (self, "Connecting filter to audio");
     kms_filter_element_connect_filter (self, filter,
-        KMS_ELEMENT (self)->audio_valve, KMS_ELEMENT (self)->audio_agnosticbin);
+        KMS_ELEMENT (self)->audio_valve,
+        kms_element_get_audio_agnosticbin (KMS_ELEMENT (self)));
   } else if (gst_caps_can_intersect (video_caps, sink_caps)
       && gst_caps_can_intersect (video_caps, src_caps)) {
     GST_DEBUG_OBJECT (self, "Connecting filter to video");
     kms_filter_element_connect_filter (self, filter,
-        KMS_ELEMENT (self)->video_valve, KMS_ELEMENT (self)->video_agnosticbin);
+        KMS_ELEMENT (self)->video_valve,
+        kms_element_get_video_agnosticbin (KMS_ELEMENT (self)));
   } else {
     g_object_unref (filter);
     GST_ERROR_OBJECT (self, "Filter element cannot be connected");

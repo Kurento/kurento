@@ -281,9 +281,9 @@ kms_base_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   GST_PAD_STREAM_LOCK (pad);
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_"))
-    agnostic = KMS_ELEMENT (rtp_end_point)->audio_agnosticbin;
+    agnostic = kms_element_get_audio_agnosticbin (KMS_ELEMENT (rtp_end_point));
   else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_"))
-    agnostic = KMS_ELEMENT (rtp_end_point)->video_agnosticbin;
+    agnostic = kms_element_get_video_agnosticbin (KMS_ELEMENT (rtp_end_point));
   else
     goto end;
 
