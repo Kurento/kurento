@@ -22,6 +22,8 @@
 		<!-- Test Dependencies Versions -->
 		<junit.version>4.8.1</junit.version>
 		<arquillian.version>1.0.3.Final</arquillian.version>
+		<ApacheJMeter_core>2.9</ApacheJMeter_core>
+		<jmeter-maven-plugin>1.8.1</jmeter-maven-plugin>
 
 		<!-- JBoss -->
 		<jboss-as.version>7.1.1.Final</jboss-as.version>
@@ -36,6 +38,7 @@
 		<maven-war-plugin.version>2.3</maven-war-plugin.version>
 		<maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
 		<maven-failsafe-plugin.version>2.15</maven-failsafe-plugin.version>
+		<jmeter-maven-plugin.version>1.4.1</jmeter-maven-plugin.version>
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
@@ -90,6 +93,17 @@
 			<groupId>org.jboss.shrinkwrap</groupId>
 			<artifactId>shrinkwrap-impl-base</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.lazerycode.jmeter</groupId>
+			<artifactId>jmeter-maven-plugin</artifactId>
+			<version>${jmeter-maven-plugin}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jmeter</groupId>
+			<artifactId>ApacheJMeter_core</artifactId>
+			<version>${ApacheJMeter_core}</version>
 		</dependency>
 	</dependencies>
 
@@ -194,6 +208,9 @@
 					<plugin>
 						<artifactId>maven-failsafe-plugin</artifactId>
 						<version>${maven-failsafe-plugin.version}</version>
+						<configuration>
+							<argLine>-Xmx512m</argLine>
+						</configuration>
 						<executions>
 							<execution>
 								<goals>
