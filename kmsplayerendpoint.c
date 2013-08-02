@@ -144,6 +144,38 @@ static void
 pad_removed (GstElement * element, GstPad * pad, gpointer data)
 {
   GST_DEBUG ("Pad removed");
+
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+  GstElement *sink;
+  GstPad *peer;
+
+  if (GST_PAD_IS_SINK (pad))
+    return;
+
+  peer = gst_pad_get_peer (pad);
+  if (peer == NULL)
+    return;
+
+  sink = gst_pad_get_parent_element (peer);
+  if (sink == NULL) {
+    GST_ERROR ("No parent element for pad %s was found",
+        GST_ELEMENT_NAME (sink));
+    return;
+  }
+
+  gst_pad_unlink (pad, peer);
+
+  if (!gst_element_set_locked_state (sink, TRUE))
+    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (sink));
+
+  GST_DEBUG ("Removing sink %s from %s", GST_ELEMENT_NAME (sink),
+      GST_ELEMENT_NAME (self->priv->pipeline));
+
+  gst_element_set_state (sink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), sink);
+
+  gst_object_unref (peer);
+  g_object_unref (sink);
 }
 
 static void
