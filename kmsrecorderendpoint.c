@@ -112,11 +112,11 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
   GstElement *filesink = gst_element_factory_make ("filesink", NULL);
   gchar *filename;
 
-  /* TODO: lock mutex */
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   filename =
       g_strdup_printf ("%d_%s", self->priv->count++,
       KMS_URI_END_POINT (self)->uri);
-  /* TODO: unlock mutex */
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
   g_object_set (G_OBJECT (filesink), "location", filename, NULL);
   g_free (filename);

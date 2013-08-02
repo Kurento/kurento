@@ -79,6 +79,7 @@ kms_uri_end_point_set_property (GObject * object, guint property_id,
 
   GST_DEBUG_OBJECT (self, "set_property");
 
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_URI:
       if (self->uri != NULL)
@@ -93,6 +94,7 @@ kms_uri_end_point_set_property (GObject * object, guint property_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
 static void
