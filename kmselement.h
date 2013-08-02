@@ -16,6 +16,13 @@ G_BEGIN_DECLS
 #define KMS_IS_ELEMENT_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_ELEMENT))
 #define KMS_ELEMENT_CAST(obj) ((KmsElement*)(obj))
+#define KMS_ELEMENT_GET_CLASS(obj) (       \
+  G_TYPE_INSTANCE_GET_CLASS (              \
+    (obj),                                 \
+    KMS_TYPE_ELEMENT,                      \
+    KmsElementClass                        \
+  )                                        \
+)
 typedef struct _KmsElement KmsElement;
 typedef struct _KmsElementClass KmsElementClass;
 typedef struct _KmsElementPrivate KmsElementPrivate;
@@ -31,9 +38,6 @@ struct _KmsElement
 
   GRecMutex mutex;
 
-  GstElement *audio_valve;
-  GstElement *video_valve;
-
   /*< private > */
   KmsElementPrivate *priv;
 };
@@ -41,6 +45,14 @@ struct _KmsElement
 struct _KmsElementClass
 {
   GstBinClass parent_class;
+
+  /* private */
+  /* actions */
+  void (*audio_valve_added) (KmsElement *self, GstElement * valve);
+  void (*audio_valve_removed) (KmsElement *self, GstElement * valve);
+
+  void (*video_valve_added) (KmsElement *self, GstElement * valve);
+  void (*video_valve_removed) (KmsElement *self, GstElement * valve);
 };
 
 GType kms_element_get_type (void);
@@ -48,6 +60,9 @@ GType kms_element_get_type (void);
 /* Private methods */
 GstElement * kms_element_get_audio_agnosticbin (KmsElement * self);
 GstElement * kms_element_get_video_agnosticbin (KmsElement * self);
+
+GstElement * kms_element_get_audio_valve (KmsElement * self);
+GstElement * kms_element_get_video_valve (KmsElement * self);
 
 G_END_DECLS
 #endif /* __KMS_ELEMENT_H__ */

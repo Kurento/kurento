@@ -29,7 +29,10 @@ struct _KmsBaseRtpEndPoint
 {
   KmsBaseSdpEndPoint parent;
 
+  // TODO: Move this properties to private structure
   GstElement *rtpbin;
+  GstElement *audio_payloader;
+  GstElement *video_payloader;
 };
 
 struct _KmsBaseRtpEndPointClass

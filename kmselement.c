@@ -20,8 +20,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsElement, kms_element,
 
 #define AUDIO_AGNOSTICBIN "audio_agnosticbin"
 #define VIDEO_AGNOSTICBIN "video_agnosticbin"
-#define AUDIO_VALVE "audio_valve"
-#define VIDEO_VALVE "video_valve"
 
 #define AUDIO_SINK_PAD "audio_sink"
 #define VIDEO_SINK_PAD "video_sink"
@@ -33,6 +31,9 @@ struct _KmsElementPrivate
 {
   guint audio_pad_count;
   guint video_pad_count;
+
+  GstElement *audio_valve;
+  GstElement *video_valve;
 
   GstElement *audio_agnosticbin;
   GstElement *video_agnosticbin;
@@ -53,14 +54,14 @@ enum
 static GstStaticPadTemplate audio_sink_factory =
 GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD,
     GST_PAD_SINK,
-    GST_PAD_ALWAYS,
+    GST_PAD_REQUEST,
     GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate video_sink_factory =
 GST_STATIC_PAD_TEMPLATE (VIDEO_SINK_PAD,
     GST_PAD_SINK,
-    GST_PAD_ALWAYS,
+    GST_PAD_REQUEST,
     GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
@@ -161,41 +162,107 @@ end:
   return self->priv->video_agnosticbin;
 }
 
+GstElement *
+kms_element_get_audio_valve (KmsElement * self)
+{
+  return self->priv->audio_valve;
+}
+
+GstElement *
+kms_element_get_video_valve (KmsElement * self)
+{
+  return self->priv->video_valve;
+}
+
+static GstPad *
+kms_element_generate_sink_pad (KmsElement * element, const gchar * name,
+    GstElement ** target, GstPadTemplate * templ)
+{
+  GstElement *valve = *target;
+  GstPad *sink, *ret_pad;
+
+  if (valve != NULL)
+    return NULL;
+
+  valve = gst_element_factory_make ("valve", NULL);
+  *target = valve;
+  g_object_set (valve, "drop", TRUE, NULL);
+  gst_bin_add (GST_BIN (element), valve);
+  gst_element_sync_state_with_parent (valve);
+
+  if (target == &element->priv->audio_valve) {
+    KMS_ELEMENT_GET_CLASS (element)->audio_valve_added (element, valve);
+  } else {
+    KMS_ELEMENT_GET_CLASS (element)->video_valve_added (element, valve);
+  }
+
+  sink = gst_element_get_static_pad (valve, "sink");
+  ret_pad = gst_ghost_pad_new_from_template (name, sink, templ);
+  g_object_unref (sink);
+
+  return ret_pad;
+}
+
+static GstPad *
+kms_element_generate_src_pad (KmsElement * element, const gchar * name,
+    GstElement * agnosticbin, GstPadTemplate * templ)
+{
+  GstPad *agnostic_pad;
+  GstPad *ret_pad;
+
+  if (agnosticbin != NULL) {
+    agnostic_pad = gst_element_get_request_pad (agnosticbin, "src_%u");
+    ret_pad = gst_ghost_pad_new_from_template (name, agnostic_pad, templ);
+    g_object_unref (agnostic_pad);
+  } else {
+    ret_pad = gst_ghost_pad_new_no_target_from_template (name, templ);
+  }
+
+  return ret_pad;
+}
+
 static GstPad *
 kms_element_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
-  GstPad *ret_pad, *agnostic_pad = NULL;
-  GstElement *agnosticbin = NULL;
+  GstPad *ret_pad = NULL;
   gchar *pad_name;
   gboolean added;
 
+  KMS_ELEMENT_LOCK (element);
   if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), "audio_src_%u")) {
-    KMS_ELEMENT_LOCK (element);
-    agnosticbin = KMS_ELEMENT (element)->priv->audio_agnosticbin;
     pad_name = g_strdup_printf ("audio_src_%d",
         KMS_ELEMENT (element)->priv->audio_pad_count++);
+
+    ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
+        KMS_ELEMENT (element)->priv->audio_agnosticbin, templ);
+    g_free (pad_name);
+
   } else if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), "video_src_%u")) {
-    KMS_ELEMENT_LOCK (element);
-    agnosticbin = KMS_ELEMENT (element)->priv->video_agnosticbin;
     pad_name = g_strdup_printf ("video_src_%d",
         KMS_ELEMENT (element)->priv->video_pad_count++);
-  } else {
-    return NULL;
-  }
 
-  if (agnosticbin != NULL) {
-    agnostic_pad = gst_element_get_request_pad (agnosticbin, "src_%u");
-    ret_pad = gst_ghost_pad_new_from_template (pad_name, agnostic_pad, templ);
-  } else {
-    ret_pad = gst_ghost_pad_new_no_target_from_template (pad_name, templ);
-  }
+    ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
+        KMS_ELEMENT (element)->priv->audio_agnosticbin, templ);
+    g_free (pad_name);
 
-  g_free (pad_name);
+  } else if (templ ==
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (element)), AUDIO_SINK_PAD)) {
+    ret_pad =
+        kms_element_generate_sink_pad (KMS_ELEMENT (element), AUDIO_SINK_PAD,
+        &KMS_ELEMENT (element)->priv->audio_valve, templ);
+  } else if (templ ==
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (element)), VIDEO_SINK_PAD)) {
+    ret_pad =
+        kms_element_generate_sink_pad (KMS_ELEMENT (element), VIDEO_SINK_PAD,
+        &KMS_ELEMENT (element)->priv->video_valve, templ);
+  }
 
   if (ret_pad == NULL) {
     KMS_ELEMENT_UNLOCK (element);
@@ -213,10 +280,19 @@ kms_element_request_new_pad (GstElement * element,
   if (added)
     return ret_pad;
 
-  g_object_unref (ret_pad);
-  if (agnosticbin != NULL && agnostic_pad != NULL)
-    gst_element_release_request_pad (agnosticbin, agnostic_pad);
+  if (gst_pad_get_direction (ret_pad) == GST_PAD_SRC) {
+    GstPad *target = gst_ghost_pad_get_target (GST_GHOST_PAD (ret_pad));
 
+    if (target != NULL) {
+      GstElement *agnostic = gst_pad_get_parent_element (target);
+
+      gst_element_release_request_pad (agnostic, target);
+      g_object_unref (target);
+      g_object_unref (agnostic);
+    }
+  }
+
+  g_object_unref (ret_pad);
   return NULL;
 }
 
@@ -233,6 +309,8 @@ kms_element_release_pad (GstElement * element, GstPad * pad)
   } else {
     return;
   }
+
+  // TODO: Remove pad if is a sinkpad
 
   target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
 
@@ -256,6 +334,38 @@ kms_element_finalize (GObject * object)
 
   /* chain up */
   G_OBJECT_CLASS (kms_element_parent_class)->finalize (object);
+}
+
+static void
+kms_element_audio_valve_added_default (KmsElement * self, GstElement * valve)
+{
+  GST_WARNING
+      ("Element class %P does not implement method \"audio_valve_added\"",
+      self);
+}
+
+static void
+kms_element_video_valve_added_default (KmsElement * self, GstElement * valve)
+{
+  GST_WARNING
+      ("Element class %P does not implement method \"video_valve_added\"",
+      self);
+}
+
+static void
+kms_element_audio_valve_removed_default (KmsElement * self, GstElement * valve)
+{
+  GST_WARNING
+      ("Element class %P does not implement method \"audio_valve_removed\"",
+      self);
+}
+
+static void
+kms_element_video_valve_removed_default (KmsElement * self, GstElement * valve)
+{
+  GST_WARNING
+      ("Element class %P does not implement method \"video_valve_removed\"",
+      self);
 }
 
 static void
@@ -285,42 +395,24 @@ kms_element_class_init (KmsElementClass * klass)
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&video_sink_factory));
 
+  klass->audio_valve_added =
+      GST_DEBUG_FUNCPTR (kms_element_audio_valve_added_default);
+  klass->video_valve_added =
+      GST_DEBUG_FUNCPTR (kms_element_video_valve_added_default);
+  klass->audio_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_element_audio_valve_removed_default);
+  klass->video_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_element_video_valve_removed_default);
+
   g_type_class_add_private (klass, sizeof (KmsElementPrivate));
 }
 
 static void
 kms_element_init (KmsElement * element)
 {
-  GstPad *audio_valve_sink, *video_valve_sink;
-  GstPad *audio_sink, *video_sink;
-
   g_rec_mutex_init (&element->mutex);
 
   element->priv = KMS_ELEMENT_GET_PRIVATE (element);
-
-  element->audio_valve = gst_element_factory_make ("valve", AUDIO_VALVE);
-  element->video_valve = gst_element_factory_make ("valve", VIDEO_VALVE);
-
-  g_object_set (element->audio_valve, "drop", TRUE, NULL);
-  g_object_set (element->video_valve, "drop", TRUE, NULL);
-
-  gst_bin_add_many (GST_BIN (element), element->audio_valve,
-      element->video_valve, NULL);
-
-  audio_valve_sink = gst_element_get_static_pad (element->audio_valve, "sink");
-  video_valve_sink = gst_element_get_static_pad (element->video_valve, "sink");
-
-  audio_sink =
-      gst_ghost_pad_new_from_template (AUDIO_SINK_PAD, audio_valve_sink,
-      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
-              (element)), AUDIO_SINK_PAD));
-  video_sink =
-      gst_ghost_pad_new_from_template (VIDEO_SINK_PAD, video_valve_sink,
-      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
-              (element)), VIDEO_SINK_PAD));
-
-  gst_element_add_pad (GST_ELEMENT (element), audio_sink);
-  gst_element_add_pad (GST_ELEMENT (element), video_sink);
 
   g_object_set (G_OBJECT (element), "async-handling", TRUE, NULL);
 
@@ -328,4 +420,7 @@ kms_element_init (KmsElement * element)
   element->priv->video_pad_count = 0;
   element->priv->audio_agnosticbin = NULL;
   element->priv->video_agnosticbin = NULL;
+
+  element->priv->audio_valve = NULL;
+  element->priv->video_valve = NULL;
 }

@@ -191,15 +191,29 @@ pad_removed (GstElement * element, GstPad * pad, gpointer data)
 static void
 kms_recorder_end_point_open_valves (KmsRecorderEndPoint * self)
 {
-  g_object_set (KMS_ELEMENT (self)->audio_valve, "drop", FALSE, NULL);
-  g_object_set (KMS_ELEMENT (self)->video_valve, "drop", FALSE, NULL);
+  GstElement *valve;
+
+  valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
+  if (valve != NULL)
+    g_object_set (valve, "drop", FALSE, NULL);
+
+  valve = kms_element_get_video_valve (KMS_ELEMENT (self));
+  if (valve != NULL)
+    g_object_set (valve, "drop", FALSE, NULL);
 }
 
 static void
 kms_recorder_end_point_close_valves (KmsRecorderEndPoint * self)
 {
-  g_object_set (KMS_ELEMENT (self)->audio_valve, "drop", TRUE, NULL);
-  g_object_set (KMS_ELEMENT (self)->video_valve, "drop", TRUE, NULL);
+  GstElement *valve;
+
+  valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
+  if (valve != NULL)
+    g_object_set (valve, "drop", TRUE, NULL);
+
+  valve = kms_element_get_video_valve (KMS_ELEMENT (self));
+  if (valve != NULL)
+    g_object_set (valve, "drop", TRUE, NULL);
 }
 
 static void
@@ -239,9 +253,76 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 }
 
 static void
+kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
+{
+  GstCaps *audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
+  GstElement *audiosink, *audiosrc;
+
+  audiosink = gst_element_factory_make ("appsink", AUDIO_APPSINK);
+
+  g_object_set (audiosink, "emit-signals", TRUE, NULL);
+  g_object_set (audiosink, "caps", audio_caps, NULL);
+
+  gst_caps_unref (audio_caps);
+
+  gst_bin_add (GST_BIN (self), audiosink);
+  gst_element_sync_state_with_parent (audiosink);
+
+  gst_element_link (valve, audiosink);
+
+  audiosrc =
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
+          pipeline), AUDIO_APPSRC);
+  g_signal_connect (audiosink, "new-sample", G_CALLBACK (recv_sample),
+      audiosrc);
+  g_object_unref (audiosrc);
+}
+
+static void
+kms_recorder_end_point_audio_valve_removed (KmsElement * self,
+    GstElement * valve)
+{
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
+kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
+{
+  GstCaps *video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
+  GstElement *videosink, *videosrc;
+
+  videosink = gst_element_factory_make ("appsink", VIDEO_APPSINK);
+
+  g_object_set (videosink, "emit-signals", TRUE, NULL);
+  g_object_set (videosink, "caps", video_caps, NULL);
+
+  gst_caps_unref (video_caps);
+
+  gst_bin_add (GST_BIN (self), videosink);
+  gst_element_sync_state_with_parent (videosink);
+
+  gst_element_link (valve, videosink);
+
+  videosrc =
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
+          pipeline), VIDEO_APPSRC);
+  g_signal_connect (videosink, "new-sample", G_CALLBACK (recv_sample),
+      videosrc);
+  g_object_unref (videosrc);
+}
+
+static void
+kms_recorder_end_point_video_valve_removed (KmsElement * self,
+    GstElement * valve)
+{
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
 kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 {
   KmsUriEndPointClass *urienpoint_class = KMS_URI_END_POINT_CLASS (klass);
+  KmsElementClass *kms_element_class;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
@@ -255,6 +336,17 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
   urienpoint_class->started = kms_recorder_end_point_started;
   urienpoint_class->paused = kms_recorder_end_point_paused;
 
+  kms_element_class = KMS_ELEMENT_CLASS (klass);
+
+  kms_element_class->audio_valve_added =
+      GST_DEBUG_FUNCPTR (kms_recorder_end_point_audio_valve_added);
+  kms_element_class->video_valve_added =
+      GST_DEBUG_FUNCPTR (kms_recorder_end_point_video_valve_added);
+  kms_element_class->audio_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_recorder_end_point_audio_valve_removed);
+  kms_element_class->video_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_recorder_end_point_video_valve_removed);
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsRecorderEndPointPrivate));
 }
@@ -262,34 +354,17 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 static void
 kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 {
-  GstElement *audiosink, *audiosrc, *videosink, *videosrc, *automuxer;
-  GstCaps *audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
-  GstCaps *video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
+  GstElement *audiosrc, *videosrc, *automuxer;
 
   self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
-
-  audiosink = gst_element_factory_make ("appsink", AUDIO_APPSINK);
-  videosink = gst_element_factory_make ("appsink", VIDEO_APPSINK);
-
-  g_object_set (audiosink, "emit-signals", TRUE, NULL);
-  g_object_set (audiosink, "caps", audio_caps, NULL);
-  g_object_set (videosink, "emit-signals", TRUE, NULL);
-  g_object_set (videosink, "caps", video_caps, NULL);
-
-  gst_caps_unref (audio_caps);
-  gst_caps_unref (video_caps);
-
-  gst_bin_add_many (GST_BIN (self), audiosink, videosink, NULL);
-
-  /* Connect parent's valves to child's appsinks */
-  gst_element_link (KMS_ELEMENT (self)->audio_valve, audiosink);
-  gst_element_link (KMS_ELEMENT (self)->video_valve, videosink);
 
   /* Create internal pipeline */
   self->priv->pipeline = gst_pipeline_new ("automuxer-sink");
   audiosrc = gst_element_factory_make ("appsrc", AUDIO_APPSRC);
   videosrc = gst_element_factory_make ("appsrc", VIDEO_APPSRC);
   automuxer = gst_element_factory_make ("automuxerbin", AUTOMUXER);
+
+  // TODO: Create audiosrc and videosrc when they are needed
 
   /* setup appsrc */
   g_object_set (G_OBJECT (audiosrc), "is-live", TRUE, "do-timestamp", TRUE,
@@ -305,10 +380,6 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   gst_element_link_pads (videosrc, "src", automuxer, "video_%u");
 
   /* Connect to signals */
-  g_signal_connect (audiosink, "new-sample", G_CALLBACK (recv_sample),
-      audiosrc);
-  g_signal_connect (videosink, "new-sample", G_CALLBACK (recv_sample),
-      videosrc);
   g_signal_connect (automuxer, "pad-added", G_CALLBACK (pad_added), self);
   g_signal_connect (automuxer, "pad-removed", G_CALLBACK (pad_removed), self);
 }

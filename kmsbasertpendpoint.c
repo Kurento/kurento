@@ -19,6 +19,9 @@ G_DEFINE_TYPE (KmsBaseRtpEndPoint, kms_base_rtp_end_point,
 
 #define RTPBIN "rtpbin"
 
+#define AUDIO_RTPBIN_SEND_SINK "send_rtp_sink_0"
+#define VIDEO_RTPBIN_SEND_SINK "send_rtp_sink_1"
+
 /* Signals and args */
 enum
 {
@@ -128,6 +131,19 @@ end:
 }
 
 static void
+kms_base_rtp_end_point_connect_valve_to_payloader (KmsBaseRtpEndPoint * ep,
+    GstElement * valve, GstElement * payloader, const gchar * rtpbin_pad_name)
+{
+  g_object_ref (payloader);
+  gst_bin_add (GST_BIN (ep), payloader);
+  gst_element_sync_state_with_parent (payloader);
+
+  gst_element_link (valve, payloader);
+  gst_element_link_pads (payloader, "src", ep->rtpbin, rtpbin_pad_name);
+  g_object_set (valve, "drop", FALSE, NULL);
+}
+
+static void
 kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
     base_end_point, const GstSDPMessage * answer)
 {
@@ -169,31 +185,28 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
 
     payloader = gst_base_rtp_get_payloader_for_caps (caps);
     if (payloader != NULL) {
-      KmsElement *joinable = KMS_ELEMENT (base_end_point);
+      KmsElement *element = KMS_ELEMENT (base_end_point);
       KmsBaseRtpEndPoint *rtp_end_point =
           KMS_BASE_RTP_END_POINT (base_end_point);
       const gchar *rtpbin_pad_name;
       GstElement *valve = NULL;
 
       GST_DEBUG ("Found depayloader %P", payloader);
-      gst_bin_add (GST_BIN (base_end_point), payloader);
-      gst_element_sync_state_with_parent (payloader);
-
       if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
-        valve = joinable->audio_valve;
-        rtpbin_pad_name = "send_rtp_sink_0";
+        rtp_end_point->audio_payloader = payloader;
+        valve = kms_element_get_audio_valve (element);
+        rtpbin_pad_name = AUDIO_RTPBIN_SEND_SINK;
       } else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0) {
-        valve = joinable->video_valve;
-        rtpbin_pad_name = "send_rtp_sink_1";
+        rtp_end_point->video_payloader = payloader;
+        valve = kms_element_get_video_valve (element);
+        rtpbin_pad_name = VIDEO_RTPBIN_SEND_SINK;
       } else {
-        gst_bin_remove (GST_BIN (base_end_point), payloader);
+        g_object_unref (payloader);
       }
 
       if (valve != NULL) {
-        gst_element_link (valve, payloader);
-        gst_element_link_pads (payloader, "src", rtp_end_point->rtpbin,
-            rtpbin_pad_name);
-        g_object_set (valve, "drop", FALSE, NULL);
+        kms_base_rtp_end_point_connect_valve_to_payloader (rtp_end_point, valve,
+            payloader, rtpbin_pad_name);
       }
     }
 
@@ -314,9 +327,38 @@ end:
 }
 
 static void
+kms_base_rtp_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
+{
+  // TODO: Implement this calling to kms_base_rtp_end_point_connect_valve_to_payloader
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
+kms_base_rtp_end_point_audio_valve_removed (KmsElement * self,
+    GstElement * valve)
+{
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
+kms_base_rtp_end_point_video_valve_added (KmsElement * self, GstElement * valve)
+{
+  // TODO: Implement this calling to kms_base_rtp_end_point_connect_valve_to_payloader
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
+kms_base_rtp_end_point_video_valve_removed (KmsElement * self,
+    GstElement * valve)
+{
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
 kms_base_rtp_end_point_class_init (KmsBaseRtpEndPointClass * klass)
 {
   KmsBaseSdpEndPointClass *base_end_point_class;
+  KmsElementClass *kms_element_class;
   GstElementClass *gstelement_class;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
@@ -332,6 +374,17 @@ kms_base_rtp_end_point_class_init (KmsBaseRtpEndPointClass * klass)
 
   base_end_point_class->connect_input_elements =
       kms_base_rtp_end_point_connect_input_elements;
+
+  kms_element_class = KMS_ELEMENT_CLASS (klass);
+
+  kms_element_class->audio_valve_added =
+      GST_DEBUG_FUNCPTR (kms_base_rtp_end_point_audio_valve_added);
+  kms_element_class->video_valve_added =
+      GST_DEBUG_FUNCPTR (kms_base_rtp_end_point_video_valve_added);
+  kms_element_class->audio_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_base_rtp_end_point_audio_valve_removed);
+  kms_element_class->video_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_base_rtp_end_point_video_valve_removed);
 }
 
 static void

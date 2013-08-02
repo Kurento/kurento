@@ -28,11 +28,18 @@ GST_DEBUG_CATEGORY_STATIC (kms_filter_element_debug_category);
   g_rec_mutex_unlock(&KMS_FILTER_ELEMENT(obj)->priv->mutex)     \
 )
 
+typedef enum
+{
+  KMS_FILTER_TYPE_AUDIO,
+  KMS_FILTER_TYPE_VIDEO,
+} KmsFilterType;
+
 struct _KmsFilterElementPrivate
 {
   GRecMutex mutex;
   gchar *filter_factory;
   GstElement *filter;
+  KmsFilterType filter_type;
 };
 
 /* properties */
@@ -61,8 +68,12 @@ kms_filter_element_connect_filter (KmsFilterElement * self, GstElement * filter,
 
   self->priv->filter = filter;
 
-  gst_element_link_many (valve, filter, agnosticbin, NULL);
-  g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+  gst_element_link_many (filter, agnosticbin, NULL);
+
+  if (valve != NULL) {
+    if (gst_element_link (valve, filter))
+      g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+  }
 }
 
 static void
@@ -105,14 +116,16 @@ kms_filter_element_set_filter (KmsFilterElement * self)
   if (gst_caps_can_intersect (audio_caps, sink_caps) &&
       gst_caps_can_intersect (audio_caps, src_caps)) {
     GST_DEBUG_OBJECT (self, "Connecting filter to audio");
+    self->priv->filter_type = KMS_FILTER_TYPE_AUDIO;
     kms_filter_element_connect_filter (self, filter,
-        KMS_ELEMENT (self)->audio_valve,
+        kms_element_get_audio_valve (KMS_ELEMENT (self)),
         kms_element_get_audio_agnosticbin (KMS_ELEMENT (self)));
   } else if (gst_caps_can_intersect (video_caps, sink_caps)
       && gst_caps_can_intersect (video_caps, src_caps)) {
     GST_DEBUG_OBJECT (self, "Connecting filter to video");
+    self->priv->filter_type = KMS_FILTER_TYPE_VIDEO;
     kms_filter_element_connect_filter (self, filter,
-        KMS_ELEMENT (self)->video_valve,
+        kms_element_get_video_valve (KMS_ELEMENT (self)),
         kms_element_get_video_agnosticbin (KMS_ELEMENT (self)));
   } else {
     g_object_unref (filter);
@@ -137,6 +150,44 @@ end:
 
   if (src != NULL)
     g_object_unref (src);
+}
+
+static void
+kms_filter_element_audio_valve_added (KmsElement * element, GstElement * valve)
+{
+  KmsFilterElement *filter = KMS_FILTER_ELEMENT (element);
+
+  if (filter->priv->filter != NULL &&
+      filter->priv->filter_type == KMS_FILTER_TYPE_AUDIO) {
+    if (gst_element_link (valve, filter->priv->filter))
+      g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+  }
+}
+
+static void
+kms_filter_element_audio_valve_removed (KmsElement * element,
+    GstElement * valve)
+{
+  // Nothing to do
+}
+
+static void
+kms_filter_element_video_valve_added (KmsElement * element, GstElement * valve)
+{
+  KmsFilterElement *filter = KMS_FILTER_ELEMENT (element);
+
+  if (filter->priv->filter != NULL &&
+      filter->priv->filter_type == KMS_FILTER_TYPE_VIDEO) {
+    if (gst_element_link (valve, filter->priv->filter))
+      g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+  }
+}
+
+static void
+kms_filter_element_video_valve_removed (KmsElement * element,
+    GstElement * valve)
+{
+  // Nothing to do
 }
 
 static void
@@ -228,6 +279,7 @@ static void
 kms_filter_element_class_init (KmsFilterElementClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  KmsElementClass *kms_element_class;
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "FilterElement", "Generic/Filter", "Kurento filter_element",
@@ -238,6 +290,17 @@ kms_filter_element_class_init (KmsFilterElementClass * klass)
 
   gobject_class->set_property = kms_filter_element_set_property;
   gobject_class->get_property = kms_filter_element_get_property;
+
+  kms_element_class = KMS_ELEMENT_CLASS (klass);
+
+  kms_element_class->audio_valve_added =
+      GST_DEBUG_FUNCPTR (kms_filter_element_audio_valve_added);
+  kms_element_class->video_valve_added =
+      GST_DEBUG_FUNCPTR (kms_filter_element_video_valve_added);
+  kms_element_class->audio_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_filter_element_audio_valve_removed);
+  kms_element_class->video_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_filter_element_video_valve_removed);
 
   /* define properties */
   g_object_class_install_property (gobject_class, PROP_FILTER_FACTORY,
