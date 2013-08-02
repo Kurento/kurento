@@ -179,21 +179,33 @@ pad_removed (GstElement * element, GstPad * pad, gpointer data)
 }
 
 static void
-kms_player_end_point_stopped (KmsUriEndPoint * self)
+kms_player_end_point_stopped (KmsUriEndPoint * obj)
 {
-  GST_DEBUG ("TODO: Implement stopped");
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
+
+  /* Set internal pipeline to NULL */
+  gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+  GST_DEBUG_OBJECT (self, "---> STOPPED");
 }
 
 static void
-kms_player_end_point_started (KmsUriEndPoint * self)
+kms_player_end_point_started (KmsUriEndPoint * obj)
 {
-  GST_DEBUG ("TODO: Implement started");
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
+
+  /* Set internal pipeline to playing */
+  gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+  GST_DEBUG_OBJECT (self, "---> STARTED");
 }
 
 static void
-kms_player_end_point_paused (KmsUriEndPoint * self)
+kms_player_end_point_paused (KmsUriEndPoint * obj)
 {
-  GST_DEBUG ("TODO: Implement paused");
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
+
+  /* Set internal pipeline to paused */
+  gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+  GST_DEBUG_OBJECT (self, "---> PAUSED");
 }
 
 static void
