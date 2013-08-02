@@ -17,6 +17,8 @@
 #define VIDEO_APPSRC "video_appsrc"
 #define AUTOMUXER "automuxer"
 
+#define HTTP_PROTO "http"
+
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_end_point_debug_category
 
@@ -106,22 +108,102 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 }
 
 static GstElement *
+kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
+{
+  GstElement *sink = NULL;
+  gchar *prot;
+
+  prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
+
+  if (g_strcmp0 (prot, HTTP_PROTO) == 0) {
+    /* We use curlhttpsink */
+    sink = gst_element_factory_make ("curlhttpsink", NULL);
+  }
+  /* Add more if required */
+  return sink;
+}
+
+static GstElement *
 kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
 {
-  /* TODO: Get proper sink element based on the uri */
-  GstElement *filesink = gst_element_factory_make ("filesink", NULL);
-  gchar *filename;
+  GObjectClass *sink_class;
+  GstElement *sink = NULL;
+  GParamSpec *pspec;
+  GError *err = NULL;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
-  filename =
-      g_strdup_printf ("%d_%s", self->priv->count++,
-      KMS_URI_END_POINT (self)->uri);
+
+  if (KMS_URI_END_POINT (self)->uri == NULL)
+    goto no_uri;
+
+  if (!gst_uri_is_valid (KMS_URI_END_POINT (self)->uri))
+    goto invalid_uri;
+
+  sink =
+      gst_element_make_from_uri (GST_URI_SINK, KMS_URI_END_POINT (self)->uri,
+      NULL, &err);
+  if (sink == NULL) {
+    /* Some elements have no URI handling capabilities though they can */
+    /* handle them. We try to find such element before failing to attend */
+    /* this request */
+    sink = kms_recorder_end_point_get_sink_fallback (self);
+    if (sink == NULL)
+      goto no_sink;
+  }
+
+  /* Try to configure the sink element */
+  sink_class = G_OBJECT_GET_CLASS (sink);
+
+  pspec = g_object_class_find_property (sink_class, "location");
+  if (pspec != NULL && G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_STRING) {
+    gchar *uri =
+        g_strdup_printf (KMS_URI_END_POINT (self)->uri, self->priv->count++);
+    GST_DEBUG_OBJECT (sink, "configuring location=%s", uri);
+    g_object_set (sink, "location", uri, NULL);
+    g_free (uri);
+  }
+
+  goto end;
+
+no_uri:
+  {
+    /* we should use GST_ELEMENT_ERROR instead */
+    GST_ERROR_OBJECT (self, "No URI specified to record to.");
+    goto end;
+  }
+invalid_uri:
+  {
+    GST_ERROR_OBJECT (self, "Invalid URI \"%s\".",
+        KMS_URI_END_POINT (self)->uri);
+
+    g_clear_error (&err);
+    goto end;
+  }
+no_sink:
+  {
+    /* whoops, could not create the sink element, dig a little deeper to
+     * figure out what might be wrong. */
+    if (err != NULL && err->code == GST_URI_ERROR_UNSUPPORTED_PROTOCOL) {
+      gchar *prot;
+
+      prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
+      if (prot == NULL)
+        goto invalid_uri;
+
+      GST_ERROR_OBJECT (self, "No URI handler implemented for \"%s\".", prot);
+
+      g_free (prot);
+    } else {
+      GST_ERROR_OBJECT (self, "%s",
+          (err) ? err->message : "URI was not accepted by any element");
+    }
+
+    g_clear_error (&err);
+    goto end;
+  }
+end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
-  g_object_set (G_OBJECT (filesink), "location", filename, NULL);
-  g_free (filename);
-
-  return filesink;
+  return sink;
 }
 
 static void
