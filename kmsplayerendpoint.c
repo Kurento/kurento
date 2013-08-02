@@ -124,7 +124,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
     goto end;
   }
 
-  g_signal_connect (appsink, "emit-signals", G_CALLBACK (read_buffer), self);
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (read_buffer), self);
 
 end:
   if (sinkpad != NULL)
