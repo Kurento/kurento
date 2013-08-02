@@ -77,8 +77,6 @@ kms_uri_end_point_set_property (GObject * object, guint property_id,
 {
   KmsUriEndPoint *self = KMS_URI_END_POINT (object);
 
-  GST_DEBUG_OBJECT (self, "set_property");
-
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_URI:
@@ -102,8 +100,6 @@ kms_uri_end_point_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
   KmsUriEndPoint *self = KMS_URI_END_POINT (object);
-
-  GST_DEBUG_OBJECT (self, "get_property");
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
