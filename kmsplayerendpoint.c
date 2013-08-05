@@ -241,21 +241,14 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
+
   /* Connect to signals */
   g_signal_connect (self->priv->uridecodebin, "pad-added",
       G_CALLBACK (pad_added), NULL);
   g_signal_connect (self->priv->uridecodebin, "pad-removed",
       G_CALLBACK (pad_removed), NULL);
-
-  /* Connect to signals */
-  g_signal_connect (self->priv->uridecodebin, "pad-added",
-      G_CALLBACK (pad_added), self);
-  g_signal_connect (self->priv->uridecodebin, "pad-removed",
-      G_CALLBACK (pad_removed), self);
-
   g_object_set (G_OBJECT (self->priv->uridecodebin), "uri",
       KMS_URI_END_POINT (self)->uri, NULL);
-
 }
 
 gboolean
