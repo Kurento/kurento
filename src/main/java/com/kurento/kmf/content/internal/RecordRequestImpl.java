@@ -92,13 +92,14 @@ public class RecordRequestImpl implements RecordRequest {
 						httpEndPoint.getUrl());
 			}
 
-			// If this call is made asynchronous complete should be in the
-			// continuation
-			asyncContext.complete();
 		} catch (Throwable t) {
 			// TODO when final KMS version is ready, perhaps it will be
 			// necessary to release httpEndPoint and recorderEndPoint resources.
 			throw new ContentException(t.getMessage(), t);
+		} finally {
+			// If this call is made asynchronous complete should be in the
+			// continuation
+			asyncContext.complete();
 		}
 	}
 
@@ -128,16 +129,29 @@ public class RecordRequestImpl implements RecordRequest {
 
 			HttpServletResponse response = (HttpServletResponse) asyncContext
 					.getResponse();
+			HttpServletRequest request = (HttpServletRequest) asyncContext
+					.getRequest();
 			response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
 			response.setHeader("Location", httpEndPoint.getUrl());
-			// If this call is made asynchronous complete should be in the
-			// continuation
-			asyncContext.complete();
+
+			if (redirect) {
+				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+				response.setHeader("Location", httpEndPoint.getUrl());
+			} else {
+				proxy.tunnelTransaction(request, response,
+						httpEndPoint.getUrl());
+			}
+
 		} catch (Throwable t) {
 			// TODO: when final KMS version is ready, perhaps it will be
 			// necessary to release httpEndPoint resources.
 			throw new ContentException(t.getMessage(), t);
+		} finally {
+			// If this call is made asynchronous complete should be in the
+			// continuation
+			asyncContext.complete();
 		}
+
 	}
 
 	@Override
