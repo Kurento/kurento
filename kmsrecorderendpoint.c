@@ -140,18 +140,19 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
   GstElement *sink = NULL;
   GParamSpec *pspec;
   GError *err = NULL;
+  gchar *uri = NULL;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
   if (KMS_URI_END_POINT (self)->uri == NULL)
     goto no_uri;
 
-  if (!gst_uri_is_valid (KMS_URI_END_POINT (self)->uri))
+  uri = g_strdup_printf (KMS_URI_END_POINT (self)->uri, self->priv->count);
+
+  if (!gst_uri_is_valid (uri))
     goto invalid_uri;
 
-  sink =
-      gst_element_make_from_uri (GST_URI_SINK, KMS_URI_END_POINT (self)->uri,
-      NULL, &err);
+  sink = gst_element_make_from_uri (GST_URI_SINK, uri, NULL, &err);
   if (sink == NULL) {
     /* Some elements have no URI handling capabilities though they can */
     /* handle them. We try to find such element before failing to attend */
@@ -166,13 +167,20 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
 
   pspec = g_object_class_find_property (sink_class, "location");
   if (pspec != NULL && G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_STRING) {
-    gchar *uri =
-        g_strdup_printf (KMS_URI_END_POINT (self)->uri, self->priv->count++);
+    if (g_strcmp0 (GST_OBJECT_NAME (gst_element_get_factory (sink)),
+            "filesink") == 0) {
+      /* Work around for filesink elements */
+      gchar *location = gst_uri_get_location (uri);
+
+      g_free (uri);
+      uri = location;
+    }
     GST_DEBUG_OBJECT (sink, "configuring location=%s", uri);
     g_object_set (sink, "location", uri, NULL);
-    g_free (uri);
   }
 
+  /* Increment file counter */
+  self->priv->count++;
   goto end;
 
 no_uri:
@@ -213,6 +221,10 @@ no_sink:
   }
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  if (uri != NULL)
+    g_free (uri);
+
   return sink;
 }
 
@@ -363,8 +375,8 @@ kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
   gst_element_link (valve, audiosink);
 
   audiosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
-          priv->pipeline), AUDIO_APPSRC);
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
+          pipeline), AUDIO_APPSRC);
   g_signal_connect (audiosink, "new-sample", G_CALLBACK (recv_sample),
       audiosrc);
   g_object_unref (audiosrc);
@@ -396,8 +408,8 @@ kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
   gst_element_link (valve, videosink);
 
   videosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
-          priv->pipeline), VIDEO_APPSRC);
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
+          pipeline), VIDEO_APPSRC);
   g_signal_connect (videosink, "new-sample", G_CALLBACK (recv_sample),
       videosrc);
   g_object_unref (videosrc);
