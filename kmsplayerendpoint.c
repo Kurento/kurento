@@ -27,8 +27,6 @@ struct _KmsPlayerEndPointPrivate
 {
   GstElement *pipeline;
   GstElement *uridecodebin;
-  GstElement *appsrc_audio;
-  GstElement *appsrc_video;
 };
 
 /* pad templates */
@@ -65,9 +63,8 @@ kms_player_end_point_finalize (GObject * object)
 }
 
 void
-read_buffer (GstElement * object, gpointer user_data)
+read_buffer (GstElement * appsink, gpointer user_data)
 {
-
   GST_DEBUG ("TODO: Implement read_buffer");
 }
 
@@ -75,61 +72,54 @@ static void
 pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 {
   GST_DEBUG ("Pad added");
-  GstElement *appsink, *agnosticbin;
+  GstElement *appsrc, *agnosticbin, *appsink;
   GstPad *sinkpad;
   GstCaps *audio_caps, *video_caps;
   GstCaps *src_caps;
 
-  /* Create and link appsink */
-  appsink = gst_element_factory_make ("appsink", NULL);
-  g_object_set (appsink, "sync", TRUE, "enable-last-sample", FALSE,
-      "emit-signals", TRUE, NULL);
-
-  sinkpad = gst_element_get_static_pad (appsink, "sink");
-  gst_pad_link (pad, sinkpad);
-  GST_DEBUG_OBJECT (self, "Linked uridecodebin---appsink");
-  gst_object_unref (G_OBJECT (sinkpad));
-
   /* Create and link appsrc--agnosticbin with proper caps */
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
   video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
-  src_caps = gst_pad_get_current_caps (pad);
+  src_caps = gst_pad_query_caps (pad, NULL);
   GST_DEBUG ("caps are %" GST_PTR_FORMAT, src_caps);
 
   if (gst_caps_can_intersect (audio_caps, src_caps)) {
-    GST_DEBUG_OBJECT (self, "Creating audio appsrc");
-    self->priv->appsrc_audio =
-        gst_element_factory_make ("appsrc", AUDIO_APPSRC);
 
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
-    gst_bin_add (GST_BIN (self), self->priv->appsrc_audio);
-    gst_element_sync_state_with_parent (self->priv->appsrc_audio);
-
-    gst_element_link (self->priv->appsrc_audio, agnosticbin);
     GST_DEBUG_OBJECT (self, "Linked appsrc_audio--audio_agnosticbin");
 
   } else if (gst_caps_can_intersect (video_caps, src_caps)) {
-    GST_DEBUG_OBJECT (self, "Creating video appsrc");
-    self->priv->appsrc_video =
-        gst_element_factory_make ("appsrc", VIDEO_APPSRC);
-    agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
-    gst_bin_add (GST_BIN (self), self->priv->appsrc_video);
-    gst_element_sync_state_with_parent (self->priv->appsrc_video);
 
-    gst_element_link (self->priv->appsrc_video, agnosticbin);
+    agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
     GST_DEBUG_OBJECT (self, "Linked appsrc_video--video_agnosticbin");
 
   } else {
+
     GST_DEBUG_OBJECT (self, "NOT agnostic caps");
     goto end;
   }
 
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (read_buffer), self);
+  /* Create appsrc element and link to agnosticbin */
+  appsrc = gst_element_factory_make ("appsrc", NULL);
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      "min-latency", (gint64) 0, "format", GST_FORMAT_TIME, NULL);
+  gst_bin_add (GST_BIN (self), appsrc);
+  gst_element_sync_state_with_parent (appsrc);
+  gst_element_link (appsrc, agnosticbin);
+
+  /* Create appsink and link to pad */
+  appsink = gst_element_factory_make ("appsink", NULL);
+  g_object_set (appsink, "sync", TRUE, "enable-last-sample",
+      FALSE, "emit-signals", TRUE, NULL);
+  sinkpad = gst_element_get_static_pad (appsink, "sink");
+  gst_pad_link (pad, sinkpad);
+  GST_DEBUG_OBJECT (self, "Linked uridecodebin---appsink");
+  g_object_unref (sinkpad);
+
+  /* Connect new-sample signal to callback */
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (read_buffer), appsrc);
 
 end:
-  if (sinkpad != NULL)
-    g_object_unref (sinkpad);
-
   if (audio_caps != NULL)
     gst_caps_unref (audio_caps);
 
@@ -240,8 +230,6 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
   self->priv = KMS_PLAYER_END_POINT_GET_PRIVATE (self);
 
   self->priv->pipeline = gst_pipeline_new ("pipeline");
-  self->priv->appsrc_audio = NULL;
-  self->priv->appsrc_video = NULL;
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
@@ -249,9 +237,9 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
 
   /* Connect to signals */
   g_signal_connect (self->priv->uridecodebin, "pad-added",
-      G_CALLBACK (pad_added), NULL);
+      G_CALLBACK (pad_added), self);
   g_signal_connect (self->priv->uridecodebin, "pad-removed",
-      G_CALLBACK (pad_removed), NULL);
+      G_CALLBACK (pad_removed), self);
 }
 
 gboolean
