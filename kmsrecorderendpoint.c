@@ -84,7 +84,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   GstBuffer *buffer;
   GstCaps *caps;
 
-  g_object_get (G_OBJECT (appsink), "last-sample", &sample, NULL);
+  g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
     return;
 
