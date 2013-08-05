@@ -65,7 +65,41 @@ kms_player_end_point_finalize (GObject * object)
 void
 read_buffer (GstElement * appsink, gpointer user_data)
 {
-  GST_DEBUG ("TODO: Implement read_buffer");
+  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstFlowReturn ret;
+  GstSample *sample;
+  GstBuffer *buffer;
+  GstCaps *caps;
+
+  g_signal_emit_by_name (appsink, "pull-sample", &sample);
+
+  if (sample == NULL) {
+    GST_DEBUG_OBJECT (appsrc, "----------------->sample=NULL");
+    return;
+  }
+
+  g_object_get (G_OBJECT (appsrc), "caps", &caps, NULL);
+
+  if (caps == NULL) {
+    /* Appsrc has not yet caps defined */
+    caps = gst_sample_get_caps (sample);
+    if (caps != NULL)
+      g_object_set (appsrc, "caps", caps, NULL);
+    else
+      GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (appsrc));
+  }
+
+  buffer = gst_sample_get_buffer (sample);
+
+  if (buffer == NULL) {
+    return;
+  }
+  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
+
+  if (ret != GST_FLOW_OK) {
+    /* something wrong */
+    GST_ERROR ("Could not send buffer to appsrc. Ret code %d", ret);
+  }
 }
 
 static void
