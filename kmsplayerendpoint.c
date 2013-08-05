@@ -193,8 +193,13 @@ kms_player_end_point_started (KmsUriEndPoint * obj)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
 
+  /* Set uri property in uridecodebin */
+  g_object_set (G_OBJECT (self->priv->uridecodebin), "uri",
+      KMS_URI_END_POINT (self)->uri, NULL);
+
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+
   GST_DEBUG_OBJECT (self, "---> STARTED");
 }
 
@@ -247,8 +252,6 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
       G_CALLBACK (pad_added), NULL);
   g_signal_connect (self->priv->uridecodebin, "pad-removed",
       G_CALLBACK (pad_removed), NULL);
-  g_object_set (G_OBJECT (self->priv->uridecodebin), "uri",
-      KMS_URI_END_POINT (self)->uri, NULL);
 }
 
 gboolean
