@@ -355,11 +355,31 @@ kms_base_rtp_end_point_video_valve_removed (KmsElement * self,
 }
 
 static void
+kms_base_rtp_end_point_dispose (GObject * gobject)
+{
+  KmsBaseRtpEndPoint *self = KMS_BASE_RTP_END_POINT (gobject);
+
+  if (self->audio_payloader != NULL) {
+    g_object_unref (self->audio_payloader);
+    self->audio_payloader = NULL;
+  }
+
+  if (self->video_payloader != NULL) {
+    g_object_unref (self->video_payloader);
+    self->video_payloader = NULL;
+  }
+}
+
+static void
 kms_base_rtp_end_point_class_init (KmsBaseRtpEndPointClass * klass)
 {
   KmsBaseSdpEndPointClass *base_end_point_class;
   KmsElementClass *kms_element_class;
   GstElementClass *gstelement_class;
+  GObjectClass *object_class;
+
+  object_class = G_OBJECT_CLASS (klass);
+  object_class->dispose = kms_base_rtp_end_point_dispose;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
@@ -401,4 +421,7 @@ kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
   g_object_set (base_rtp_end_point->rtpbin, "do-lost", TRUE, NULL);
 
   gst_bin_add (GST_BIN (base_rtp_end_point), base_rtp_end_point->rtpbin);
+
+  base_rtp_end_point->audio_payloader = NULL;
+  base_rtp_end_point->video_payloader = NULL;
 }
