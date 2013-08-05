@@ -145,6 +145,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   appsink = gst_element_factory_make ("appsink", NULL);
   g_object_set (appsink, "sync", TRUE, "enable-last-sample",
       FALSE, "emit-signals", TRUE, NULL);
+  gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
+
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_link (pad, sinkpad);
   GST_DEBUG_OBJECT (self, "Linked uridecodebin---appsink");
