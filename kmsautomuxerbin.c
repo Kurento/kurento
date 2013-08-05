@@ -374,67 +374,19 @@ remove_muxer (GstElement * muxer)
 }
 
 static gboolean
-initialize_pipeline (GstElement * typefind, GstCaps * caps,
-    KmsAutoMuxerBin * self)
-{
-  GstElementFactory *mfactory = NULL;
-  GstElement *e;
-
-  /* No muxers are present in the pipeline */
-  mfactory = get_muxer_factory_with_sink_caps (self, caps);
-  if (mfactory == NULL) {
-    GST_ERROR ("No factories capable of managing these caps were found\n");
-    return FALSE;
-  }
-
-  GST_INFO ("Selected muxer %s\n", gst_element_factory_get_metadata (mfactory,
-          "long-name"));
-
-  /* Connect valve to the typefind */
-  e = connect_to_valve (GST_BIN (self), typefind);
-
-  /* Add the muxer to the pipeline */
-  self->priv->muxer = gst_element_factory_create (mfactory, NULL);
-  gst_bin_add (GST_BIN (self), self->priv->muxer);
-  gst_element_sync_state_with_parent (self->priv->muxer);
-  link_muxer (e, self->priv->muxer);
-
-  add_src_target_pad (self->priv->muxer);
-
-  self->priv->valves = g_slist_append (self->priv->valves, e);
-
-  g_object_unref (G_OBJECT (mfactory));
-
-  return TRUE;
-}
-
-static gboolean
 reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
     KmsAutoMuxerBin * self)
 {
-  GstElementFactory *mfactory = NULL;
+  GstElement *valve;
+  GstElementFactory *mfactory;
   ValveState state;
-  GstElement *e;
 
-  /* There is already a working muxer in the pipeline */
   mfactory = get_muxer_factory_with_sink_caps (self, caps);
 
   if (mfactory == NULL) {
     GST_ERROR ("No factories capable of managing these caps were found\n");
     return FALSE;
   }
-
-  if (mfactory == gst_element_get_factory (self->priv->muxer)) {
-    GST_DEBUG ("Muxer %s supports new media stream",
-        GST_ELEMENT_NAME (self->priv->muxer));
-    e = connect_to_valve (GST_BIN (self), typefind);
-    link_muxer (e, self->priv->muxer);
-    self->priv->valves = g_slist_append (self->priv->valves, e);
-    return TRUE;
-  }
-
-  GST_INFO ("Selected muxer %s\n", gst_element_factory_get_metadata (mfactory,
-          "long-name"));
 
   /* Close valves before replacing the muxer */
   state = VALVE_CLOSE;
@@ -443,31 +395,28 @@ reconfigure_pipeline (GstElement * typefind, GstCaps * caps,
   /* unlink elements from old muxer */
   g_slist_foreach (self->priv->valves, unlink_muxer, self->priv->muxer);
 
-  remove_muxer (self->priv->muxer);
+  if (self->priv->muxer != NULL)
+    remove_muxer (self->priv->muxer);
+
+  valve = connect_to_valve (GST_BIN (self), typefind);
 
   /* Add the new muxer to the pipeline */
   self->priv->muxer = gst_element_factory_create (mfactory, NULL);
   gst_bin_add (GST_BIN (self), self->priv->muxer);
   gst_element_sync_state_with_parent (self->priv->muxer);
 
-  /* Connect valve to the typefind */
-  e = connect_to_valve (GST_BIN (self), typefind);
-  link_muxer (e, self->priv->muxer);
+  add_src_target_pad (self->priv->muxer);
+
+  self->priv->valves = g_slist_append (self->priv->valves, valve);
+
+  g_object_unref (mfactory);
 
   /* re-stablish internal connections */
   g_slist_foreach (self->priv->valves, link_muxer, self->priv->muxer);
 
-  /* Add new ghost pad */
-  add_src_target_pad (self->priv->muxer);
-
   /* Open previously closed valves */
   state = VALVE_OPEN;
   g_slist_foreach (self->priv->valves, set_valve, &state);
-
-  /* Add the new valve to the list */
-  self->priv->valves = g_slist_append (self->priv->valves, e);
-
-  g_object_unref (G_OBJECT (mfactory));
 
   return TRUE;
 }
@@ -501,10 +450,7 @@ found_type_cb (GstElement * typefind,
 
   KMS_AUTOMUXER_BIN_LOCK (self);
 
-  if (self->priv->muxer == NULL)
-    done = initialize_pipeline (typefind, caps, self);
-  else
-    done = reconfigure_pipeline (typefind, caps, self);
+  done = reconfigure_pipeline (typefind, caps, self);
 
   KMS_AUTOMUXER_BIN_UNLOCK (self);
 
