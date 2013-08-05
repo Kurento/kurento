@@ -8,6 +8,7 @@
 
 #include "kmsagnosticcaps.h"
 #include "kmsrecorderendpoint.h"
+#include "kmsuriendpointstate.h"
 
 #define PLUGIN_NAME "recorderendpoint"
 
@@ -75,7 +76,9 @@ kms_recorder_end_point_finalize (GObject * object)
 static void
 recv_sample (GstAppSink * appsink, gpointer user_data)
 {
+  GstElement *self = GST_ELEMENT (GST_OBJECT_PARENT (appsink));
   GstElement *appsrc = GST_ELEMENT (user_data);
+  KmsUriEndPointState state;
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
@@ -99,11 +102,18 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
   if (buffer == NULL)
     return;
 
+  g_object_get (G_OBJECT (self), "state", &state, NULL);
+  if (state != KMS_URI_END_POINT_STATE_START) {
+    GST_DEBUG ("Dropping buffer %P", buffer);
+    return;
+  }
+
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
     /* something wrong */
-    GST_ERROR ("Could not send audio buffer to appsrc. Ret code %d", ret);
+    GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
+        GST_ELEMENT_NAME (appsrc));
   }
 }
 
@@ -353,8 +363,8 @@ kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
   gst_element_link (valve, audiosink);
 
   audiosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
-          pipeline), AUDIO_APPSRC);
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
+          priv->pipeline), AUDIO_APPSRC);
   g_signal_connect (audiosink, "new-sample", G_CALLBACK (recv_sample),
       audiosrc);
   g_object_unref (audiosrc);
@@ -386,8 +396,8 @@ kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
   gst_element_link (valve, videosink);
 
   videosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
-          pipeline), VIDEO_APPSRC);
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
+          priv->pipeline), VIDEO_APPSRC);
   g_signal_connect (videosink, "new-sample", G_CALLBACK (recv_sample),
       videosrc);
   g_object_unref (videosrc);
@@ -450,9 +460,11 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 
   /* setup appsrc */
   g_object_set (G_OBJECT (audiosrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", (gint64) 0, "format", GST_FORMAT_TIME, NULL);
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
   g_object_set (G_OBJECT (videosrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", (gint64) 0, "format", GST_FORMAT_TIME, NULL);
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
 
   gst_bin_add_many (GST_BIN (self->priv->pipeline), audiosrc, videosrc,
       automuxer, NULL);
