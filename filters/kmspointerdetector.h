@@ -5,6 +5,7 @@
 #include <gst/video/gstvideofilter.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <stdio.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_POINTER_DETECTOR   (kms_pointer_detector_get_type())
@@ -15,11 +16,30 @@ G_BEGIN_DECLS
 typedef struct _KmsPointerDetector KmsPointerDetector;
 typedef struct _KmsPointerDetectorClass KmsPointerDetectorClass;
 
+typedef enum
+{
+  START,
+  CAPTURING_REF_HIST,
+  CAPTURING_SECOND_HIST,
+  BOTH_HIST_SIMILAR
+} KmsPointerDetectorState;
+
 struct _KmsPointerDetector
 {
   GstVideoFilter base_pointerdetector;
-
-  IplImage *cvImage;
+  IplImage *cvImage, *cvImageAux1;
+  CvHistogram *histModel, *histCompare, *histSetUp1, *histSetUp2, *histSetUpRef;
+  CvPoint upCornerFinalRect, downCornerFinalRect, upCornerRect1,
+      downCornerRect1, upCornerRect2, downCornerRect2, trackingPoint,
+      trackingPoint1, trackingPoint2, trackingPoint1Aux, trackingPoint2Aux;
+  int iteration;
+  CvSize imageSize, trackinRectSize, frameSize;
+  int numOfRegions;
+  float windowScale, windowScaleRef;
+  int histRefCapturesCounter, secondHistCapturesCounter;
+  CvScalar colorRect1, colorRect2;
+  KmsPointerDetectorState state;
+  gboolean show_debug_info;
 };
 
 struct _KmsPointerDetectorClass
