@@ -44,6 +44,36 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndPoint, kms_recorder_end_point,
         0, "debug category for recorderendpoint element"));
 
 static void
+send_eos (GstElement * appsrc)
+{
+  GstFlowReturn ret;
+
+  GST_DEBUG ("Send EOS to %s", GST_ELEMENT_NAME (appsrc));
+
+  g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
+  if (ret != GST_FLOW_OK) {
+    /* something wrong */
+    GST_ERROR ("Could not send EOS to appsrc  %s. Ret code %d", ret,
+        GST_ELEMENT_NAME (appsrc));
+  }
+}
+
+static void
+kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
+{
+  GstElement *audiosrc =
+      gst_bin_get_by_name (GST_BIN (self->priv->pipeline), AUDIO_APPSRC);
+  GstElement *videosrc =
+      gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
+
+  if (audiosrc != NULL)
+    send_eos (audiosrc);
+
+  if (videosrc != NULL)
+    send_eos (videosrc);
+}
+
+static void
 kms_recorder_end_point_dispose (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
@@ -51,6 +81,7 @@ kms_recorder_end_point_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   if (self->priv->pipeline != NULL) {
+    kms_recorder_end_point_send_eos_to_appsrcs (self);
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (self->priv->pipeline));
     self->priv->pipeline = NULL;
@@ -115,6 +146,14 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
         GST_ELEMENT_NAME (appsrc));
   }
+}
+
+static void
+recv_eos (GstAppSink * appsink, gpointer user_data)
+{
+  GstElement *appsrc = GST_ELEMENT (user_data);
+
+  send_eos (appsrc);
 }
 
 static GstElement *
@@ -375,10 +414,11 @@ kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
   gst_element_link (valve, audiosink);
 
   audiosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
-          pipeline), AUDIO_APPSRC);
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
+          priv->pipeline), AUDIO_APPSRC);
   g_signal_connect (audiosink, "new-sample", G_CALLBACK (recv_sample),
       audiosrc);
+  g_signal_connect (audiosink, "eos", G_CALLBACK (recv_eos), audiosrc);
   g_object_unref (audiosrc);
 }
 
@@ -408,10 +448,11 @@ kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
   gst_element_link (valve, videosink);
 
   videosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->
-          pipeline), VIDEO_APPSRC);
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
+          priv->pipeline), VIDEO_APPSRC);
   g_signal_connect (videosink, "new-sample", G_CALLBACK (recv_sample),
       videosrc);
+  g_signal_connect (videosink, "eos", G_CALLBACK (recv_eos), videosrc);
   g_object_unref (videosrc);
 }
 
