@@ -332,17 +332,34 @@ pad_removed (GstElement * element, GstPad * pad, gpointer data)
 }
 
 static void
+kms_recorder_end_point_send_force_key_unit_event (GstElement * valve)
+{
+  GstStructure *s;
+  GstEvent *force_key_unit_event;
+
+  GST_DEBUG ("Sending key ");
+  s = gst_structure_new ("GstForceKeyUnit",
+      "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
+  force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+  gst_element_send_event (valve, force_key_unit_event);
+}
+
+static void
 kms_recorder_end_point_open_valves (KmsRecorderEndPoint * self)
 {
   GstElement *valve;
 
   valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
-  if (valve != NULL)
+  if (valve != NULL) {
+    kms_recorder_end_point_send_force_key_unit_event (valve);
     g_object_set (valve, "drop", FALSE, NULL);
+  }
 
   valve = kms_element_get_video_valve (KMS_ELEMENT (self));
-  if (valve != NULL)
+  if (valve != NULL) {
+    kms_recorder_end_point_send_force_key_unit_event (valve);
     g_object_set (valve, "drop", FALSE, NULL);
+  }
 }
 
 static void
