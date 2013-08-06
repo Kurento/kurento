@@ -16,6 +16,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector_debug_category);
 #define COMPARE_THRESH_HIST_REF ((double) 0.95)
 #define COMPARE_THRESH_SECOND_HIST ((double) 0.95)
 #define COMPARE_THRESH_2_RECT ((double) 0.82)
+
 /* prototypes */
 
 static void kms_pointer_detector_set_property (GObject * object,
@@ -35,7 +36,10 @@ static GstFlowReturn kms_pointer_detector_transform_frame_ip (GstVideoFilter *
 
 enum
 {
-  PROP_0
+  PROP_0,
+  PROP_NUM_REGIONS,
+  PROP_WINDOW_SCALE,
+  PROP_SHOW_DEBUG_INFO
 };
 
 /* pad templates */
@@ -85,6 +89,21 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
       GST_DEBUG_FUNCPTR (kms_pointer_detector_set_info);
   video_filter_class->transform_frame_ip =
       GST_DEBUG_FUNCPTR (kms_pointer_detector_transform_frame_ip);
+
+  /* Properties initialization */
+  g_object_class_install_property (gobject_class, PROP_NUM_REGIONS,
+      g_param_spec_int ("num-regions-eval", "num regions eval",
+          "Number of regions evaluated when searching for similar regions",
+          20, 400, 150, G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, PROP_WINDOW_SCALE,
+      g_param_spec_int ("scale-search-window", "scale search window",
+          "Fix the size of the searching window",
+          2, 100, 5, G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, PROP_SHOW_DEBUG_INFO,
+      g_param_spec_boolean ("show-debug-region", "show debug region",
+          "show evaluation regions over the image", FALSE, G_PARAM_READWRITE));
 
 }
 
@@ -146,8 +165,14 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
   GST_DEBUG_OBJECT (pointerdetector, "set_property");
 
   switch (property_id) {
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+    case PROP_NUM_REGIONS:
+      pointerdetector->numOfRegions = g_value_get_int (value);
+      break;
+    case PROP_WINDOW_SCALE:
+      pointerdetector->windowScaleRef = g_value_get_int (value);
+      break;
+    case PROP_SHOW_DEBUG_INFO:
+      pointerdetector->show_debug_info = g_value_get_boolean (value);
       break;
   }
 }
@@ -161,6 +186,15 @@ kms_pointer_detector_get_property (GObject * object, guint property_id,
   GST_DEBUG_OBJECT (pointerdetector, "get_property");
 
   switch (property_id) {
+    case PROP_NUM_REGIONS:
+      g_value_set_int (value, pointerdetector->numOfRegions);
+      break;
+    case PROP_WINDOW_SCALE:
+      g_value_set_int (value, pointerdetector->windowScaleRef);
+      break;
+    case PROP_SHOW_DEBUG_INFO:
+      g_value_set_boolean (value, pointerdetector->windowScaleRef);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
