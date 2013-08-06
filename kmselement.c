@@ -247,7 +247,7 @@ kms_element_request_new_pad (GstElement * element,
         KMS_ELEMENT (element)->priv->video_pad_count++);
 
     ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
-        KMS_ELEMENT (element)->priv->audio_agnosticbin, templ);
+        KMS_ELEMENT (element)->priv->video_agnosticbin, templ);
     g_free (pad_name);
 
   } else if (templ ==
