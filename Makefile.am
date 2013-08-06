@@ -12,9 +12,6 @@ CLEANFILES = $(BUILT_SOURCES)
 
 if HAVE_OPENCV
 OPENCV_FILTERS = kmspointerdetector.c kmspointerdetector.h
-else
-OPENCV_FILTERS =
-endif
 
 # sources used to compile this plug-in
 libkmsfilters_la_SOURCES = kmsfilters.c \
@@ -27,3 +24,4 @@ libkmsfilters_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS)
 libkmsfilters_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libkmsfilters_la_LIBTOOLFLAGS = --tag=disable-static
 
+endif
