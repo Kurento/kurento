@@ -29,8 +29,13 @@ struct _PadCount
   guint source;
 };
 
-#define KMS_AUTOMUXER_BIN_GET_PRIVATE(obj) \
-  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), KMS_TYPE_AUTOMUXER_BIN, KmsAutoMuxerBinPrivate))
+#define KMS_AUTOMUXER_BIN_GET_PRIVATE(obj) ( \
+  G_TYPE_INSTANCE_GET_PRIVATE (              \
+    (obj),                                   \
+    KMS_TYPE_AUTOMUXER_BIN,                  \
+    KmsAutoMuxerBinPrivate                   \
+  )                                          \
+)
 struct _KmsAutoMuxerBinPrivate
 {
   GRecMutex mutex;
