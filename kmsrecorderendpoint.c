@@ -396,30 +396,47 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 }
 
 static void
+kms_recorder_end_point_add_appsrc (KmsElement * self, GstElement * valve,
+    const gchar * agnostic_caps, const gchar * sinkname, const gchar * srcname,
+    const gchar * destpadname)
+{
+  GstCaps *caps = gst_caps_from_string (agnostic_caps);
+  GstElement *appsink, *appsrc;
+  GstElement *automuxer =
+      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
+          priv->pipeline), AUTOMUXER);
+
+  appsink = gst_element_factory_make ("appsink", sinkname);
+
+  g_object_set (appsink, "emit-signals", TRUE, NULL);
+  g_object_set (appsink, "caps", caps, NULL);
+
+  gst_caps_unref (caps);
+
+  gst_bin_add (GST_BIN (self), appsink);
+  gst_element_sync_state_with_parent (appsink);
+
+  gst_element_link (valve, appsink);
+
+  appsrc = gst_element_factory_make ("appsrc", srcname);
+
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+
+  gst_bin_add (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->pipeline), appsrc);
+  gst_element_sync_state_with_parent (appsrc);
+  gst_element_link_pads (appsrc, "src", automuxer, destpadname);
+
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
+}
+
+static void
 kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 {
-  GstCaps *audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
-  GstElement *audiosink, *audiosrc;
-
-  audiosink = gst_element_factory_make ("appsink", AUDIO_APPSINK);
-
-  g_object_set (audiosink, "emit-signals", TRUE, NULL);
-  g_object_set (audiosink, "caps", audio_caps, NULL);
-
-  gst_caps_unref (audio_caps);
-
-  gst_bin_add (GST_BIN (self), audiosink);
-  gst_element_sync_state_with_parent (audiosink);
-
-  gst_element_link (valve, audiosink);
-
-  audiosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
-          priv->pipeline), AUDIO_APPSRC);
-  g_signal_connect (audiosink, "new-sample", G_CALLBACK (recv_sample),
-      audiosrc);
-  g_signal_connect (audiosink, "eos", G_CALLBACK (recv_eos), audiosrc);
-  g_object_unref (audiosrc);
+  kms_recorder_end_point_add_appsrc (self, valve, KMS_AGNOSTIC_AUDIO_CAPS,
+      AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 }
 
 static void
@@ -432,28 +449,8 @@ kms_recorder_end_point_audio_valve_removed (KmsElement * self,
 static void
 kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 {
-  GstCaps *video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
-  GstElement *videosink, *videosrc;
-
-  videosink = gst_element_factory_make ("appsink", VIDEO_APPSINK);
-
-  g_object_set (videosink, "emit-signals", TRUE, NULL);
-  g_object_set (videosink, "caps", video_caps, NULL);
-
-  gst_caps_unref (video_caps);
-
-  gst_bin_add (GST_BIN (self), videosink);
-  gst_element_sync_state_with_parent (videosink);
-
-  gst_element_link (valve, videosink);
-
-  videosrc =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
-          priv->pipeline), VIDEO_APPSRC);
-  g_signal_connect (videosink, "new-sample", G_CALLBACK (recv_sample),
-      videosrc);
-  g_signal_connect (videosink, "eos", G_CALLBACK (recv_eos), videosrc);
-  g_object_unref (videosrc);
+  kms_recorder_end_point_add_appsrc (self, valve, KMS_AGNOSTIC_VIDEO_CAPS,
+      VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 }
 
 static void
@@ -499,32 +496,15 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 static void
 kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 {
-  GstElement *audiosrc, *videosrc, *automuxer;
+  GstElement *automuxer;
 
   self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
 
   /* Create internal pipeline */
   self->priv->pipeline = gst_pipeline_new ("automuxer-sink");
-  audiosrc = gst_element_factory_make ("appsrc", AUDIO_APPSRC);
-  videosrc = gst_element_factory_make ("appsrc", VIDEO_APPSRC);
   automuxer = gst_element_factory_make ("automuxerbin", AUTOMUXER);
 
-  // TODO: Create audiosrc and videosrc when they are needed
-
-  /* setup appsrc */
-  g_object_set (G_OBJECT (audiosrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
-  g_object_set (G_OBJECT (videosrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
-
-  gst_bin_add_many (GST_BIN (self->priv->pipeline), audiosrc, videosrc,
-      automuxer, NULL);
-
-  /* Connect internal elements */
-  gst_element_link_pads (audiosrc, "src", automuxer, "audio_%u");
-  gst_element_link_pads (videosrc, "src", automuxer, "video_%u");
+  gst_bin_add (GST_BIN (self->priv->pipeline), automuxer);
 
   /* Connect to signals */
   g_signal_connect (automuxer, "pad-added", G_CALLBACK (pad_added), self);
