@@ -80,7 +80,9 @@ kms_recorder_end_point_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   if (self->priv->pipeline != NULL) {
+    gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
     kms_recorder_end_point_send_eos_to_appsrcs (self);
+    // TODO: Destroy when EOS is finally received
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (self->priv->pipeline));
     self->priv->pipeline = NULL;
