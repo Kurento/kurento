@@ -141,6 +141,10 @@ recv_sample (GstElement * appsink, gpointer user_data)
   }
 
   buffer->pts = G_GUINT64_CONSTANT (0);
+  buffer->dts = G_GUINT64_CONSTANT (0);
+
+  buffer->offset = G_GUINT64_CONSTANT (0);
+  buffer->offset_end = G_GUINT64_CONSTANT (0);
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
@@ -400,9 +404,10 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
 
     gst_caps_unref (vc);
   }
-
+  // HACK: this is the maximum time that the server can recor, I don't know
+  // why but if synchronization is enabled, audio packets are droped
   g_object_set (G_OBJECT (self->priv->encodebin), "profile", cprof,
-      "audio-jitter-tolerance", 5 * GST_SECOND, NULL);
+      "audio-jitter-tolerance", G_GUINT64_CONSTANT (0x0fffffffffffffff), NULL);
 }
 
 static void
@@ -617,7 +622,6 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   self->priv->pipeline = gst_pipeline_new ("automuxer-sink");
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->encodebin = NULL;
-
 }
 
 gboolean
