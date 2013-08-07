@@ -3,8 +3,7 @@
 #endif
 
 #include <gst/gst.h>
-#include <gst/app/gstappsrc.h>
-#include <gst/app/gstappsink.h>
+#include <gst/pbutils/encoding-profile.h>
 
 #include "kmsagnosticcaps.h"
 #include "kmsrecorderendpoint.h"
@@ -16,7 +15,6 @@
 #define AUDIO_APPSRC "audio_appsrc"
 #define VIDEO_APPSINK "video_appsink"
 #define VIDEO_APPSRC "video_appsrc"
-#define AUTOMUXER "automuxer"
 
 #define HTTP_PROTO "http"
 
@@ -33,6 +31,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
 struct _KmsRecorderEndPointPrivate
 {
   GstElement *pipeline;
+  GstElement *encodebin;
   guint count;
 };
 
@@ -105,7 +104,7 @@ kms_recorder_end_point_finalize (GObject * object)
 }
 
 static void
-recv_sample (GstAppSink * appsink, gpointer user_data)
+recv_sample (GstElement * appsink, gpointer user_data)
 {
   GstElement *self = GST_ELEMENT (GST_OBJECT_PARENT (appsink));
   GstElement *appsrc = GST_ELEMENT (user_data);
@@ -139,6 +138,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
     return;
   }
 
+  buffer->pts = G_GUINT64_CONSTANT (0);
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
@@ -149,7 +149,7 @@ recv_sample (GstAppSink * appsink, gpointer user_data)
 }
 
 static void
-recv_eos (GstAppSink * appsink, gpointer user_data)
+recv_eos (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
 
@@ -268,67 +268,17 @@ end:
 }
 
 static void
-pad_added (GstElement * element, GstPad * pad, gpointer data)
+kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
   GstElement *sink;
-  GstPad *sinkpad;
-
-  GST_INFO ("Pad added");
-
-  if (GST_PAD_IS_SINK (pad))
-    return;
 
   sink = kms_recorder_end_point_get_sink (self);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), sink);
   gst_element_sync_state_with_parent (sink);
 
-  sinkpad = gst_element_get_static_pad (sink, "sink");
+  gst_element_link (self->priv->encodebin, sink);
 
-  if (gst_pad_link (pad, sinkpad) != GST_PAD_LINK_OK)
-    GST_ERROR ("Could not link %s with %s", GST_ELEMENT_NAME (element),
-        GST_ELEMENT_NAME (sink));
-
-  gst_object_unref (sinkpad);
-}
-
-static void
-pad_removed (GstElement * element, GstPad * pad, gpointer data)
-{
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
-  GstElement *sink;
-  GstPad *peer;
-
-  GST_INFO ("Pad removed");
-
-  if (GST_PAD_IS_SINK (pad))
-    return;
-
-  peer = gst_pad_get_peer (pad);
-  if (peer == NULL)
-    return;
-
-  sink = gst_pad_get_parent_element (peer);
-  if (sink == NULL) {
-    GST_ERROR ("No parent element for pad %s was faound",
-        GST_ELEMENT_NAME (sink));
-    return;
-  }
-
-  gst_pad_unlink (pad, peer);
-
-  if (!gst_element_set_locked_state (sink, TRUE))
-    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (sink));
-
-  GST_DEBUG ("Removing sink %s from %s", GST_ELEMENT_NAME (sink),
-      GST_ELEMENT_NAME (self->priv->pipeline));
-
-  gst_element_set_state (sink, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self->priv->pipeline), sink);
-
-  gst_object_unref (peer);
-  g_object_unref (sink);
 }
 
 static void
@@ -351,14 +301,14 @@ kms_recorder_end_point_open_valves (KmsRecorderEndPoint * self)
 
   valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
   if (valve != NULL) {
-    kms_recorder_end_point_send_force_key_unit_event (valve);
     g_object_set (valve, "drop", FALSE, NULL);
+    kms_recorder_end_point_send_force_key_unit_event (valve);
   }
 
   valve = kms_element_get_video_valve (KMS_ELEMENT (self));
   if (valve != NULL) {
-    kms_recorder_end_point_send_force_key_unit_event (valve);
     g_object_set (valve, "drop", FALSE, NULL);
+    kms_recorder_end_point_send_force_key_unit_event (valve);
   }
 }
 
@@ -413,15 +363,150 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 }
 
 static void
-kms_recorder_end_point_add_appsrc (KmsElement * self, GstElement * valve,
-    const gchar * agnostic_caps, const gchar * sinkname, const gchar * srcname,
-    const gchar * destpadname)
+kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
+{
+  gboolean has_audio, has_video;
+  GstCaps *pc;
+  GstEncodingContainerProfile *cprof;
+
+  has_video = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
+  has_audio = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
+
+  // TODO: Add a property to select the profile, by now webm is used
+  if (has_video)
+    pc = gst_caps_from_string ("video/webm");
+  else
+    pc = gst_caps_from_string ("audio/webm");
+
+  cprof = gst_encoding_container_profile_new ("Webm", NULL, pc, NULL);
+  gst_caps_unref (pc);
+
+  if (has_audio) {
+    GstCaps *ac = gst_caps_from_string ("audio/x-vorbis");
+
+    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+        gst_encoding_audio_profile_new (ac, NULL, NULL, 0));
+
+    gst_caps_unref (ac);
+  }
+
+  if (has_video) {
+    GstCaps *vc = gst_caps_from_string ("video/x-vp8");
+
+    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
+
+    gst_caps_unref (vc);
+  }
+
+  g_object_set (G_OBJECT (self->priv->encodebin), "profile", cprof,
+      "audio-jitter-tolerance", 5 * GST_SECOND, NULL);
+}
+
+static void
+kms_recorder_end_point_link_old_src_to_encodebin (KmsRecorderEndPoint * self,
+    GstElement * old_encodebin)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  if (old_encodebin == NULL)
+    return;
+
+  it = gst_element_iterate_sink_pads (old_encodebin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *peer;
+
+        sinkpad = g_value_get_object (&val);
+        peer = gst_pad_get_peer (sinkpad);
+
+        if (peer != NULL) {
+          GstElement *parent;
+
+          parent = gst_pad_get_parent_element (peer);
+          GST_PAD_STREAM_LOCK (peer);
+          gst_element_release_request_pad (old_encodebin, sinkpad);
+          gst_pad_unlink (peer, sinkpad);
+          gst_element_link_pads (parent, GST_OBJECT_NAME (peer),
+              self->priv->encodebin, GST_OBJECT_NAME (sinkpad));
+          GST_PAD_STREAM_UNLOCK (peer);
+
+          g_object_unref (parent);
+          g_object_unref (peer);
+        }
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (old_encodebin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
+remove_encodebin (GstElement * encodebin)
+{
+  GstElement *peer_element;
+  GstPad *src, *peer;
+  GstBin *pipe;
+
+  pipe = GST_BIN (gst_object_get_parent (GST_OBJECT (encodebin)));
+  src = gst_element_get_static_pad (encodebin, "src");
+  peer = gst_pad_get_peer (src);
+
+  if (peer == NULL)
+    goto end;
+
+  peer_element = gst_pad_get_parent_element (peer);
+
+  if (peer_element != NULL) {
+    gst_bin_remove (pipe, peer_element);
+    g_object_unref (peer_element);
+  }
+
+  g_object_unref (peer);
+
+end:
+
+  gst_bin_remove (pipe, encodebin);
+
+  g_object_unref (pipe);
+  g_object_unref (src);
+}
+
+static void
+kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
+    GstElement * valve, const gchar * agnostic_caps, const gchar * sinkname,
+    const gchar * srcname, const gchar * destpadname)
 {
   GstCaps *caps = gst_caps_from_string (agnostic_caps);
   GstElement *appsink, *appsrc;
-  GstElement *automuxer =
-      gst_bin_get_by_name (GST_BIN (KMS_RECORDER_END_POINT (self)->
-          priv->pipeline), AUTOMUXER);
+  GstElement *old_encodebin = NULL;
+
+  if (self->priv->encodebin != NULL)
+    old_encodebin = self->priv->encodebin;
+
+  self->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
+  kms_recorder_end_point_set_profile_to_encodebin (self);
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->encodebin);
+
+  kms_recorder_end_point_add_sink (self);
+  gst_element_sync_state_with_parent (self->priv->encodebin);
 
   appsink = gst_element_factory_make ("appsink", sinkname);
 
@@ -430,10 +515,17 @@ kms_recorder_end_point_add_appsrc (KmsElement * self, GstElement * valve,
 
   gst_caps_unref (caps);
 
-  gst_bin_add (GST_BIN (self), appsink);
-  gst_element_sync_state_with_parent (appsink);
+  kms_recorder_end_point_link_old_src_to_encodebin (self, old_encodebin);
 
-  gst_element_link (valve, appsink);
+  if (old_encodebin != NULL) {
+    if (GST_STATE (old_encodebin) <= GST_STATE_PAUSED) {
+      remove_encodebin (old_encodebin);
+    } else {
+      // TODO: Unlink encodebin and send EOS
+      // TODO: Wait for EOS message in bus to destroy encodebin and sink
+      gst_element_send_event (old_encodebin, gst_event_new_eos ());
+    }
+  }
 
   appsrc = gst_element_factory_make ("appsrc", srcname);
 
@@ -443,17 +535,21 @@ kms_recorder_end_point_add_appsrc (KmsElement * self, GstElement * valve,
 
   gst_bin_add (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->pipeline), appsrc);
   gst_element_sync_state_with_parent (appsrc);
-  gst_element_link_pads (appsrc, "src", automuxer, destpadname);
+  gst_element_link_pads (appsrc, "src", self->priv->encodebin, destpadname);
 
   g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
   g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
+
+  gst_bin_add (GST_BIN (self), appsink);
+  gst_element_sync_state_with_parent (appsink);
+  gst_element_link (valve, appsink);
 }
 
 static void
 kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 {
-  kms_recorder_end_point_add_appsrc (self, valve, KMS_AGNOSTIC_AUDIO_CAPS,
-      AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
+  kms_recorder_end_point_add_appsrc (KMS_RECORDER_END_POINT (self), valve,
+      KMS_AGNOSTIC_RAW_AUDIO_CAPS, AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 }
 
 static void
@@ -466,8 +562,8 @@ kms_recorder_end_point_audio_valve_removed (KmsElement * self,
 static void
 kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 {
-  kms_recorder_end_point_add_appsrc (self, valve, KMS_AGNOSTIC_VIDEO_CAPS,
-      VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
+  kms_recorder_end_point_add_appsrc (KMS_RECORDER_END_POINT (self), valve,
+      KMS_AGNOSTIC_RAW_VIDEO_CAPS, VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 }
 
 static void
@@ -513,19 +609,13 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 static void
 kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 {
-  GstElement *automuxer;
-
   self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
 
   /* Create internal pipeline */
   self->priv->pipeline = gst_pipeline_new ("automuxer-sink");
-  automuxer = gst_element_factory_make ("automuxerbin", AUTOMUXER);
+  g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
+  self->priv->encodebin = NULL;
 
-  gst_bin_add (GST_BIN (self->priv->pipeline), automuxer);
-
-  /* Connect to signals */
-  g_signal_connect (automuxer, "pad-added", G_CALLBACK (pad_added), self);
-  g_signal_connect (automuxer, "pad-removed", G_CALLBACK (pad_removed), self);
 }
 
 gboolean
