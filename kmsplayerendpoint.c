@@ -41,9 +41,15 @@ G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndPoint, kms_player_end_point,
 static void
 kms_player_end_point_dispose (GObject * object)
 {
-  KmsPlayerEndPoint *playerendpoint = KMS_PLAYER_END_POINT (object);
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
 
-  GST_DEBUG_OBJECT (playerendpoint, "dispose");
+  GST_DEBUG_OBJECT (self, "dispose");
+
+  if (self->priv->pipeline != NULL) {
+    gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+    gst_object_unref (GST_OBJECT (self->priv->pipeline));
+    self->priv->pipeline = NULL;
+  }
 
   /* clean up as possible.  may be called multiple times */
 
