@@ -1,9 +1,13 @@
 package com.kurento.kmf.content.internal;
 
+import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.ERROR_APPLICATION_TERMINATION;
+import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.METHOD_POLL;
+import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.METHOD_START;
+import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.METHOD_TERMINATE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -23,11 +27,9 @@ import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.WebRtcMediaHandler;
 import com.kurento.kmf.content.WebRtcMediaRequest;
 import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonEvent;
-import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonResponse;
 import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonRequest;
+import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonResponse;
 import com.kurento.kmf.media.MediaElement;
-
-import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.*;
 
 public class WebRtcMediaRequestImpl implements WebRtcMediaRequest {
 
@@ -64,6 +66,7 @@ public class WebRtcMediaRequestImpl implements WebRtcMediaRequest {
 		this.handler = handler;
 		this.manager = manager;
 		this.eventQueue = new LinkedBlockingQueue<WebRtcJsonEvent>();
+		this.httpServletRequest = httpServletRequest;
 	}
 
 	@PostConstruct
@@ -100,12 +103,17 @@ public class WebRtcMediaRequestImpl implements WebRtcMediaRequest {
 		// TODO blocking calls here should be interruptible
 		// TODO invalidate startingAsyncCtx and startingRequest
 
-		// TODO: just for doing something, we send a "dummy" response
+		log.debug("SDP received " + startingRequest.getSdp());
+
+		// This answer is temporary, for debugging purposes (returning the same
+		// SDP received)
+		String answer = startingRequest.getSdp();
+
 		try {
+			// Send SDP as answer to client
 			protocolManager.sendJsonAnswer(startingAsyncCtx, WebRtcJsonResponse
-					.newStartResponse(
-							"false SDP generated for debugging purposes",
-							sessionId, startingRequest.getId()));
+					.newStartResponse(answer, sessionId,
+							startingRequest.getId()));
 			state = STATE.ACTIVE;
 		} catch (IOException e) {
 			throw new ContentException(e);
@@ -146,10 +154,13 @@ public class WebRtcMediaRequestImpl implements WebRtcMediaRequest {
 				protocolManager.sendJsonAnswer(asyncCtx,
 						WebRtcJsonResponse.newAckResponse(message.getId()));
 				terminateSilently();
+				handler.onMediaTerminated(message.getSessionId());
 			}
 		} else {
-			throw new ContentException("Unrecognized message with method "
-					+ message.getMethod());
+			ContentException contentException = new ContentException(
+					"Unrecognized message with method " + message.getMethod());
+			handler.onMediaError(message.getSessionId(), contentException);
+			throw contentException;
 		}
 	}
 
