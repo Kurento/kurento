@@ -16,6 +16,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector_debug_category);
 #define COMPARE_THRESH_HIST_REF ((double) 0.95)
 #define COMPARE_THRESH_SECOND_HIST ((double) 0.95)
 #define COMPARE_THRESH_2_RECT ((double) 0.82)
+#define GREEN CV_RGB (0, 255, 0)
+#define WHITE CV_RGB (255, 255, 255)
 
 /* prototypes */
 
@@ -151,8 +153,8 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   pointerdetector->trackinRectSize.height =
       abs (pointerdetector->upCornerRect1.y -
       pointerdetector->downCornerRect1.y);
-  pointerdetector->colorRect1 = CV_RGB (255, 255, 255);
-  pointerdetector->colorRect2 = CV_RGB (255, 255, 255);
+  pointerdetector->colorRect1 = WHITE;
+  pointerdetector->colorRect2 = WHITE;
   pointerdetector->show_debug_info = FALSE;
 }
 
@@ -344,8 +346,8 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
     pointerdetector->histRefCapturesCounter = 0;
     pointerdetector->secondHistCapturesCounter = 0;
     pointerdetector->state = CAPTURING_REF_HIST;
-    pointerdetector->colorRect1 = CV_RGB (255, 255, 255);
-    pointerdetector->colorRect2 = CV_RGB (255, 255, 255);
+    pointerdetector->colorRect1 = WHITE;
+    pointerdetector->colorRect2 = WHITE;
     pointerdetector->iteration = 6;
   }
   if (pointerdetector->iteration == 5) {
