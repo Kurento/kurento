@@ -28,12 +28,29 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
     KmsRecorderEndPointPrivate                    \
   )                                               \
 )
+
+typedef enum
+{
+  RUNNING,
+  RELEASING,
+  RELEASED
+} PilelineReleaseStatus;
+
 struct _KmsRecorderEndPointPrivate
 {
+  PilelineReleaseStatus pipeline_released_status;
   GstElement *pipeline;
   GstElement *encodebin;
   guint count;
 };
+
+enum
+{
+  SIGNAL_STOPPED,
+  LAST_SIGNAL
+};
+
+static guint kms_recorder_end_point_signals[LAST_SIGNAL] = { 0 };
 
 /* class initialization */
 
@@ -72,6 +89,42 @@ kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
     send_eos (videosrc);
 }
 
+static gboolean
+set_to_null_state_on_EOS (GstBus * bus, GstMessage * message, gpointer data)
+{
+  KmsRecorderEndPoint *self = data;
+
+  if (GST_MESSAGE_TYPE (message) == GST_MESSAGE_EOS &&
+      GST_MESSAGE_SRC (message) == GST_OBJECT_CAST (self->priv->pipeline)) {
+    GST_DEBUG ("Received EOS in pipeline, setting NULL state");
+
+    gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+    g_signal_emit (G_OBJECT (self),
+        kms_recorder_end_point_signals[SIGNAL_STOPPED], 0);
+
+    if (self->priv->pipeline_released_status == RELEASING)
+      self->priv->pipeline_released_status = RELEASED;
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+static void
+kms_recorder_end_point_wait_for_pipeline_eos (KmsRecorderEndPoint * self)
+{
+  GstBus *bus;
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
+  gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, set_to_null_state_on_EOS,
+      g_object_ref (self), g_object_unref);
+  g_object_unref (bus);
+
+  gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+  // Wait for EOS event to set pipeline to NULL
+  kms_recorder_end_point_send_eos_to_appsrcs (self);
+}
+
 static void
 kms_recorder_end_point_dispose (GObject * object)
 {
@@ -79,12 +132,20 @@ kms_recorder_end_point_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
-  if (self->priv->pipeline != NULL) {
-    gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
-    kms_recorder_end_point_send_eos_to_appsrcs (self);
-    // TODO: Destroy when EOS is finally received
+  if (self->priv->pipeline_released_status != RELEASED) {
+    self->priv->pipeline_released_status = RELEASING;
+    if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {
+      kms_recorder_end_point_wait_for_pipeline_eos (self);
+      return;
+    } else {
+      self->priv->pipeline_released_status = RELEASED;
+      gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+      g_object_unref (self->priv->pipeline);
+      self->priv->pipeline = NULL;
+    }
+  } else if (self->priv->pipeline != NULL) {
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-    gst_object_unref (GST_OBJECT (self->priv->pipeline));
+    g_object_unref (self->priv->pipeline);
     self->priv->pipeline = NULL;
   }
 
@@ -340,8 +401,12 @@ kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
   /* Close valves */
   kms_recorder_end_point_close_valves (self);
 
-  /* Set internal pipeline to NULL */
-  gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+  if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
+    kms_recorder_end_point_wait_for_pipeline_eos (self);
+  } else {
+    // TODO Initialize sinks to a new url to avoid overwriting
+    gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+  }
 }
 
 static void
@@ -609,6 +674,13 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_recorder_end_point_video_valve_removed);
 
+  kms_recorder_end_point_signals[SIGNAL_STOPPED] =
+      g_signal_new ("stopped",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsRecorderEndPointClass, stopped_signal), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsRecorderEndPointPrivate));
 }
@@ -622,6 +694,7 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   self->priv->pipeline = gst_pipeline_new ("automuxer-sink");
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->encodebin = NULL;
+  self->priv->pipeline_released_status = RUNNING;
 }
 
 gboolean
