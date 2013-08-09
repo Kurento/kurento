@@ -150,6 +150,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   g_object_set (appsink, "sync", TRUE, "enable-last-sample",
       FALSE, "emit-signals", TRUE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
+  gst_element_sync_state_with_parent (appsink);
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_link (pad, sinkpad);
