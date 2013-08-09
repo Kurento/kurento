@@ -136,7 +136,6 @@ kms_element_get_audio_agnosticbin (KmsElement * self)
   gst_bin_add (GST_BIN (self), self->priv->audio_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->audio_agnosticbin);
   kms_element_set_target_pads (self, "audio", self->priv->audio_agnosticbin);
-  KMS_ELEMENT_UNLOCK (self);
 
 end:
   KMS_ELEMENT_UNLOCK (self);
