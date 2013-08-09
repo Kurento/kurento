@@ -376,7 +376,7 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
   GstEncodingContainerProfile *cprof;
 
   has_video = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
-  has_audio = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
+  has_audio = kms_element_get_audio_valve (KMS_ELEMENT (self)) != NULL;
 
   // TODO: Add a property to select the profile, by now webm is used
   if (has_video)
