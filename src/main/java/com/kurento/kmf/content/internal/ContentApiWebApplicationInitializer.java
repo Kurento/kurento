@@ -38,6 +38,8 @@ public class ContentApiWebApplicationInitializer implements
 	public static final String WEB_RTC_MEDIA_HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
 			.getName() + "webRtcMediaHandlerClassParamName";
 
+	private Reflections reflections;
+
 	@Override
 	public void onStartup(ServletContext sc) throws ServletException {
 
@@ -48,6 +50,8 @@ public class ContentApiWebApplicationInitializer implements
 
 		// Initialize ContentApi locating handlers and creating their associated
 		// servlets
+		reflections = new Reflections("", new TypeAnnotationsScanner());
+
 		initializeRecorders(sc);
 		initializePlayers(sc);
 		initializeWebRtcMediaServices(sc);
@@ -80,7 +84,8 @@ public class ContentApiWebApplicationInitializer implements
 	}
 
 	private void initializeRecorders(ServletContext sc) throws ServletException {
-		for (String rh : findServices(RecorderHandler.class, RecorderService.class)) {
+		for (String rh : findServices(RecorderHandler.class,
+				RecorderService.class)) {
 			try {
 				RecorderService recorderService = Class.forName(rh)
 						.getAnnotation(RecorderService.class);
@@ -103,7 +108,8 @@ public class ContentApiWebApplicationInitializer implements
 
 	private void initializeWebRtcMediaServices(ServletContext sc)
 			throws ServletException {
-		for (String wh : findServices(WebRtcMediaHandler.class, WebRtcMediaService.class)) {
+		for (String wh : findServices(WebRtcMediaHandler.class,
+				WebRtcMediaService.class)) {
 			try {
 				WebRtcMediaService mediaService = Class.forName(wh)
 						.getAnnotation(WebRtcMediaService.class);
@@ -128,10 +134,6 @@ public class ContentApiWebApplicationInitializer implements
 
 	private List<String> findServices(Class<?> handlerClass,
 			Class<? extends Annotation> serviceAnnotation) {
-		// TODO: perhaps exclude packages? -- add third parameter new
-		// FilterBuilder().execute("org.jboss")
-		Reflections reflections = new Reflections("",
-				new TypeAnnotationsScanner());
 		Set<Class<?>> annotatedList = reflections
 				.getTypesAnnotatedWith(serviceAnnotation);
 		List<String> handlerList = new ArrayList<String>();
