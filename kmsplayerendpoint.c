@@ -12,6 +12,9 @@
 #define VIDEO_APPSRC "video_appsrc"
 #define URIDECODEBIN "uridecodebin"
 
+#define APPSRC_DATA "appsrc_data"
+#define APPSINK_DATA "appsink_data"
+
 GST_DEBUG_CATEGORY_STATIC (kms_player_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_player_end_point_debug_category
 
@@ -124,17 +127,12 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   GST_DEBUG ("caps are %" GST_PTR_FORMAT, src_caps);
 
   if (gst_caps_can_intersect (audio_caps, src_caps)) {
-
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
     GST_DEBUG_OBJECT (self, "Linked appsrc_audio--audio_agnosticbin");
-
   } else if (gst_caps_can_intersect (video_caps, src_caps)) {
-
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
     GST_DEBUG_OBJECT (self, "Linked appsrc_video--video_agnosticbin");
-
   } else {
-
     GST_DEBUG_OBJECT (self, "NOT agnostic caps");
     goto end;
   }
@@ -160,6 +158,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 
   /* Connect new-sample signal to callback */
   g_signal_connect (appsink, "new-sample", G_CALLBACK (read_buffer), appsrc);
+  g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
+  g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
 
 end:
   if (audio_caps != NULL)
@@ -178,25 +178,28 @@ pad_removed (GstElement * element, GstPad * pad, gpointer data)
   GST_DEBUG ("Pad removed");
 
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
-  GstElement *sink;
-  GstPad *peer;
+  GstElement *sink, *appsrc;
 
   if (GST_PAD_IS_SINK (pad))
     return;
 
-  peer = gst_pad_get_peer (pad);
-  if (peer == NULL)
-    return;
+  sink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
+  appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
 
-  sink = gst_pad_get_parent_element (peer);
-  if (sink == NULL) {
-    GST_ERROR ("No parent element for pad %s was found",
-        GST_ELEMENT_NAME (sink));
-    return;
+  if (appsrc != NULL) {
+    GST_INFO ("Removing %P from its parent", appsrc);
+    if (GST_OBJECT_PARENT (appsrc) != NULL) {
+      g_object_ref (appsrc);
+      gst_bin_remove (GST_BIN (GST_OBJECT_PARENT (appsrc)), appsrc);
+      gst_element_set_state (appsrc, GST_STATE_NULL);
+      g_object_unref (appsrc);
+    }
   }
 
-  gst_pad_unlink (pad, peer);
-
+  if (sink == NULL) {
+    GST_ERROR ("No appsink was found associated with %P", pad);
+    return;
+  }
   if (!gst_element_set_locked_state (sink, TRUE))
     GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (sink));
 
@@ -205,9 +208,6 @@ pad_removed (GstElement * element, GstPad * pad, gpointer data)
 
   gst_element_set_state (sink, GST_STATE_NULL);
   gst_bin_remove (GST_BIN (self->priv->pipeline), sink);
-
-  gst_object_unref (peer);
-  g_object_unref (sink);
 }
 
 static void
