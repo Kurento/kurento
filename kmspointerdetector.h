@@ -36,7 +36,7 @@ struct _KmsPointerDetector {
   CvPoint finalPointerPosition, upCornerFinalRect, downCornerFinalRect, upCornerRect1,
       downCornerRect1, upCornerRect2, downCornerRect2, trackingPoint,
       trackingPoint1, trackingPoint2, trackingPoint1Aux, trackingPoint2Aux;
-      CvPoint upRightButtonCorner, downLeftButtonCorner;
+  CvPoint upRightButtonCorner, downLeftButtonCorner;
   int iteration;
   CvSize imageSize, trackinRectSize, frameSize;
   int numOfRegions;
@@ -47,6 +47,7 @@ struct _KmsPointerDetector {
   gboolean show_debug_info;
   GstStructure *buttonsLayout;
   GSList *buttonsLayoutList;
+  gchar *previousButtonClickedId;
 };
 
 struct _KmsPointerDetectorClass {

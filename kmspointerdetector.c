@@ -167,7 +167,8 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
       GST_DEBUG ("check: %d %d %d %d", structAux->cvButtonLayout.x,
           structAux->cvButtonLayout.y, structAux->cvButtonLayout.width,
           structAux->cvButtonLayout.height);
-      pointerdetector->buttonsLayoutList = g_slist_append (pointerdetector->buttonsLayoutList, structAux);      // ad elements to the list
+      pointerdetector->buttonsLayoutList =
+          g_slist_append (pointerdetector->buttonsLayoutList, structAux);
       gst_structure_free (button);
     }
   }
@@ -424,14 +425,18 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
 {
   ButtonStruct *structAux;
   GSList *l;
+  int buttonClickedCounter = 0;
+  gchar *actualButtonClickedId;
 
   for (l = pointerdetector->buttonsLayoutList; l != NULL; l = l->next) {
     structAux = l->data;
+
     if (kms_pointer_detector_check_pointer_into_button
         (&pointerdetector->finalPointerPosition, structAux)) {
       CvPoint upRightCorner;
       CvPoint downLeftCorner;
 
+      buttonClickedCounter++;
       upRightCorner.x = structAux->cvButtonLayout.x;
       upRightCorner.y = structAux->cvButtonLayout.y;
       downLeftCorner.x =
@@ -440,8 +445,22 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
           structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
       cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
           GREEN, 1, 8, 0);
-
+      actualButtonClickedId = structAux->id;
       GST_DEBUG ("TODO: send event to the bus");
+    }
+  }
+
+  if (buttonClickedCounter == 0) {
+    if (pointerdetector->previousButtonClickedId != NULL) {
+      GST_DEBUG ("exit window: %s", pointerdetector->previousButtonClickedId);
+      // TODO: raise message to the bus
+      pointerdetector->previousButtonClickedId = NULL;
+    }
+  } else {
+    if (pointerdetector->previousButtonClickedId != actualButtonClickedId) {
+      GST_DEBUG ("into window: %s", actualButtonClickedId);
+      // TODO: raise message to the bus
+      pointerdetector->previousButtonClickedId = actualButtonClickedId;
     }
   }
 
@@ -574,14 +593,29 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
   } else {
     pointerdetector->windowScale = pointerdetector->cvImage->width / 8;
   }
+  CvPoint finalPointerPositionAux;
+
+  finalPointerPositionAux.x = pointerdetector->upCornerFinalRect.x +
+      pointerdetector->trackinRectSize.width / 2;
+  finalPointerPositionAux.y = pointerdetector->upCornerFinalRect.y +
+      pointerdetector->trackinRectSize.height / 2;
+  if (abs (pointerdetector->finalPointerPosition.x -
+          finalPointerPositionAux.x) < 55 ||
+      abs (pointerdetector->finalPointerPosition.y -
+          finalPointerPositionAux.y) < 55) {
+    finalPointerPositionAux.x =
+        (finalPointerPositionAux.x +
+        pointerdetector->finalPointerPosition.x) / 2;
+    finalPointerPositionAux.y =
+        (finalPointerPositionAux.y +
+        pointerdetector->finalPointerPosition.y) / 2;
+  }
   pointerdetector->upCornerFinalRect = pointerdetector->trackingPoint1;
   pointerdetector->downCornerFinalRect = pointerdetector->trackingPoint2;
-  pointerdetector->finalPointerPosition.x =
-      pointerdetector->upCornerFinalRect.x +
-      pointerdetector->trackinRectSize.width / 2;
-  pointerdetector->finalPointerPosition.y =
-      pointerdetector->upCornerFinalRect.y +
-      pointerdetector->trackinRectSize.height / 2;
+
+  pointerdetector->finalPointerPosition.x = finalPointerPositionAux.x;
+  pointerdetector->finalPointerPosition.y = finalPointerPositionAux.y;
+
   cvCircle (pointerdetector->cvImage, pointerdetector->finalPointerPosition,
       10.0, WHITE, -1, 8, 0);
 
