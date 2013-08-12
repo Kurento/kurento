@@ -422,7 +422,6 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     GST_DEBUG ("Raw caps, looking for a decodebin");
     KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
-    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   } else {
     GstElement *raw_tee;
 
@@ -457,8 +456,8 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
 
       g_object_unref (raw_tee);
     }
-    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   }
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   gst_caps_unref (raw_caps);
 
   queue = kms_agnostic_bin_get_queue_for_pad (srcpad);
@@ -535,6 +534,7 @@ kms_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       old_caps = gst_pad_get_current_caps (pad);
       gst_event_ref (event);
       ret = gst_pad_event_default (pad, parent, event);
+      KMS_AGNOSTIC_BIN_LOCK (parent);
       GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
         kms_agnostic_bin_connect_previous_srcpads (KMS_AGNOSTIC_BIN (parent),
@@ -542,6 +542,7 @@ kms_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       gst_event_unref (event);
       if (old_caps != NULL)
         gst_caps_unref (old_caps);
+      KMS_AGNOSTIC_BIN_UNLOCK (parent);
       break;
     default:
       ret = gst_pad_event_default (pad, parent, event);
@@ -701,7 +702,6 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
 
     tee = gst_element_factory_make ("tee", DECODED_TEE);
     gst_bin_add (GST_BIN (agnosticbin), tee);
-    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
     gst_element_sync_state_with_parent (tee);
     gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), tee, "sink");
@@ -718,12 +718,12 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
   } else {
     GstElement *fakesink;
 
-    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
     fakesink = gst_element_factory_make ("fakesink", NULL);
     gst_bin_add (GST_BIN (agnosticbin), fakesink);
     gst_element_sync_state_with_parent (fakesink);
     gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), fakesink, "sink");
   }
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 }
 
 static void
