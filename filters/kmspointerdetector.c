@@ -12,7 +12,7 @@
 GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector_debug_category);
 #define GST_CAT_DEFAULT kms_pointer_detector_debug_category
 
-#define FRAMES_TO_RESET  ((int) 150)
+#define FRAMES_TO_RESET  ((int) 250)
 #define COMPARE_THRESH_HIST_REF ((double) 0.95)
 #define COMPARE_THRESH_SECOND_HIST ((double) 0.95)
 #define COMPARE_THRESH_2_RECT ((double) 0.82)
