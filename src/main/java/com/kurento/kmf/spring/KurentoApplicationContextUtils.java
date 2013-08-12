@@ -1,17 +1,26 @@
 package com.kurento.kmf.spring;
 
+import java.io.IOException;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public final class KurentoApplicationContextUtils {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(KurentoApplicationContextUtils.class);
 
 	private static final String KURENTO_SERVLET_CONTEXT_LISTENER_ATTRIBUTE_NAME = KurentoApplicationContextUtils.class
 			+ "AttributeName";
@@ -58,6 +67,26 @@ public final class KurentoApplicationContextUtils {
 				.getWebApplicationContext(ctx);
 		if (rootContext != null) {
 			kurentoApplicationContextInternalReference.setParent(rootContext);
+		}
+
+		// Custom properties
+		ServletContextResource servletContextResource = new ServletContextResource(
+				ctx, "/WEB-INF/kurento.properties");
+		if (servletContextResource.exists()) {
+			log.info("Found custom properties (/WEB-INF/kurento.properties)");
+			Properties properties = new Properties();
+			try {
+				properties.load(servletContextResource.getInputStream());
+			} catch (IOException e) {
+				log.error(
+						"Exception loading custom properties (/WEB-INF/kurento.properties)",
+						e);
+				throw new RuntimeException(e);
+			}
+			PropertyOverrideConfigurer propertyOverrideConfigurer = new PropertyOverrideConfigurer();
+			propertyOverrideConfigurer.setProperties(properties);
+			kurentoApplicationContextInternalReference
+					.addBeanFactoryPostProcessor(propertyOverrideConfigurer);
 		}
 
 		kurentoApplicationContextInternalReference.refresh();
