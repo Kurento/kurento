@@ -41,7 +41,8 @@ enum
   PROP_0,
   PROP_NUM_REGIONS,
   PROP_WINDOW_SCALE,
-  PROP_SHOW_DEBUG_INFO
+  PROP_SHOW_DEBUG_INFO,
+  PROP_BUTTONS_STRUCTURE
 };
 
 /* pad templates */
@@ -107,6 +108,69 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
       g_param_spec_boolean ("show-debug-region", "show debug region",
           "show evaluation regions over the image", FALSE, G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class, PROP_BUTTONS_STRUCTURE,
+      g_param_spec_boxed ("buttons-layout", "buttons layout",
+          "supply the positions and dimensions of buttons into the window",
+          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+}
+
+static void
+dispose_button_struct (gpointer data)
+{
+  ButtonStruct *aux = data;
+
+  if (aux->id != NULL)
+    g_free (aux->id);
+  g_free (aux);
+}
+
+static void
+kms_pointer_detector_dispose_buttons_layout_list (KmsPointerDetector *
+    pointerdetector)
+{
+  g_slist_free_full (pointerdetector->buttonsLayoutList, dispose_button_struct);
+}
+
+static void
+kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
+{
+  int aux, len;
+
+  if (pointerdetector->buttonsLayout != NULL) {
+    kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
+  }
+
+  len = gst_structure_n_fields (pointerdetector->buttonsLayout);
+  GST_DEBUG ("len: %d", len);
+
+  for (aux = 0; aux < len; aux++) {
+    const gchar *name =
+        gst_structure_nth_field_name (pointerdetector->buttonsLayout, aux);
+    GstStructure *button;
+    gboolean ret;
+
+    ret =
+        gst_structure_get (pointerdetector->buttonsLayout, name,
+        GST_TYPE_STRUCTURE, &button, NULL);
+    if (ret) {
+      ButtonStruct *structAux = g_malloc0 (sizeof (ButtonStruct));
+
+      gst_structure_get (button, "upRightCornerX", G_TYPE_INT,
+          &structAux->cvButtonLayout.x, NULL);
+      gst_structure_get (button, "upRightCornerY", G_TYPE_INT,
+          &structAux->cvButtonLayout.y, NULL);
+      gst_structure_get (button, "width", G_TYPE_INT,
+          &structAux->cvButtonLayout.width, NULL);
+      gst_structure_get (button, "height", G_TYPE_INT,
+          &structAux->cvButtonLayout.height, NULL);
+      gst_structure_get (button, "id", G_TYPE_STRING, &structAux->id, NULL);
+      GST_DEBUG ("check: %d %d %d %d", structAux->cvButtonLayout.x,
+          structAux->cvButtonLayout.y, structAux->cvButtonLayout.width,
+          structAux->cvButtonLayout.height);
+      pointerdetector->buttonsLayoutList = g_slist_append (pointerdetector->buttonsLayoutList, structAux);      // ad elements to the list
+      gst_structure_free (button);
+    }
+  }
 }
 
 static void
@@ -140,6 +204,10 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   pointerdetector->upCornerRect2.y = 10;
   pointerdetector->downCornerRect2.x = 70;
   pointerdetector->downCornerRect2.y = 30;
+  pointerdetector->upRightButtonCorner.x = 0;
+  pointerdetector->upRightButtonCorner.y = 0;
+  pointerdetector->downLeftButtonCorner.x = 0;
+  pointerdetector->downLeftButtonCorner.y = 0;
   pointerdetector->windowScaleRef = 5;
   pointerdetector->numOfRegions = 150;
   pointerdetector->windowScale = pointerdetector->windowScaleRef;
@@ -156,6 +224,8 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   pointerdetector->colorRect1 = WHITE;
   pointerdetector->colorRect2 = WHITE;
   pointerdetector->show_debug_info = FALSE;
+  pointerdetector->buttonsLayout = NULL;
+  pointerdetector->buttonsLayoutList = NULL;
 }
 
 void
@@ -176,6 +246,10 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
     case PROP_SHOW_DEBUG_INFO:
       pointerdetector->show_debug_info = g_value_get_boolean (value);
       break;
+    case PROP_BUTTONS_STRUCTURE:
+      pointerdetector->buttonsLayout = g_value_get_boxed (value);
+      kms_pointer_detector_load_buttonsLayout (pointerdetector);
+      break;
   }
 }
 
@@ -195,7 +269,10 @@ kms_pointer_detector_get_property (GObject * object, guint property_id,
       g_value_set_int (value, pointerdetector->windowScaleRef);
       break;
     case PROP_SHOW_DEBUG_INFO:
-      g_value_set_boolean (value, pointerdetector->windowScaleRef);
+      g_value_set_boolean (value, pointerdetector->show_debug_info);
+      break;
+    case PROP_BUTTONS_STRUCTURE:
+      g_value_set_boxed (value, pointerdetector->buttonsLayout);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -321,6 +398,53 @@ kms_pointer_detector_initialize_images (KmsPointerDetector * pointerdetector,
         cvCreateImage (cvSize (pointerdetector->trackinRectSize.width,
             pointerdetector->trackinRectSize.height), IPL_DEPTH_8U, 3);
   }
+}
+
+static gboolean
+kms_pointer_detector_check_pointer_into_button (CvPoint * pointer_position,
+    ButtonStruct * buttonStruct)
+{
+  int downLeftCornerX =
+      buttonStruct->cvButtonLayout.x + buttonStruct->cvButtonLayout.width;
+  int downLeftCornerY =
+      buttonStruct->cvButtonLayout.y + buttonStruct->cvButtonLayout.height;
+  if (((pointer_position->x - buttonStruct->cvButtonLayout.x) > 0)
+      && ((pointer_position->y - buttonStruct->cvButtonLayout.y) > 0)
+      && ((pointer_position->x - downLeftCornerX) < 0)
+      && ((pointer_position->y - downLeftCornerY) < 0)) {
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
+static void
+kms_pointer_detector_check_pointer_position (KmsPointerDetector *
+    pointerdetector)
+{
+  ButtonStruct *structAux;
+  GSList *l;
+
+  for (l = pointerdetector->buttonsLayoutList; l != NULL; l = l->next) {
+    structAux = l->data;
+    if (kms_pointer_detector_check_pointer_into_button
+        (&pointerdetector->finalPointerPosition, structAux)) {
+      CvPoint upRightCorner;
+      CvPoint downLeftCorner;
+
+      upRightCorner.x = structAux->cvButtonLayout.x;
+      upRightCorner.y = structAux->cvButtonLayout.y;
+      downLeftCorner.x =
+          structAux->cvButtonLayout.x + structAux->cvButtonLayout.width;
+      downLeftCorner.y =
+          structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
+      cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
+          GREEN, 1, 8, 0);
+
+      GST_DEBUG ("TODO: send event to the bus");
+    }
+  }
+
 }
 
 static GstFlowReturn
@@ -452,12 +576,16 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
   }
   pointerdetector->upCornerFinalRect = pointerdetector->trackingPoint1;
   pointerdetector->downCornerFinalRect = pointerdetector->trackingPoint2;
-  cvCircle (pointerdetector->cvImage,
-      cvPoint ((pointerdetector->upCornerFinalRect.x +
-              pointerdetector->trackinRectSize.width / 2),
-          (pointerdetector->upCornerFinalRect.y +
-              pointerdetector->trackinRectSize.height / 2)), 10.0,
-      cvScalar (255, 255, 255, 0), -1, 8, 0);
+  pointerdetector->finalPointerPosition.x =
+      pointerdetector->upCornerFinalRect.x +
+      pointerdetector->trackinRectSize.width / 2;
+  pointerdetector->finalPointerPosition.y =
+      pointerdetector->upCornerFinalRect.y +
+      pointerdetector->trackinRectSize.height / 2;
+  cvCircle (pointerdetector->cvImage, pointerdetector->finalPointerPosition,
+      10.0, WHITE, -1, 8, 0);
+
+  kms_pointer_detector_check_pointer_position (pointerdetector);
 
 end:
   pointerdetector->iteration++;

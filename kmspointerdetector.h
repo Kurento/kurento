@@ -24,14 +24,19 @@ typedef enum
   BOTH_HIST_SIMILAR
 } KmsPointerDetectorState;
 
-struct _KmsPointerDetector
-{
+typedef struct _ButtonStruct {
+    CvRect cvButtonLayout;
+    gchar *id;
+} ButtonStruct;
+
+struct _KmsPointerDetector {
   GstVideoFilter base_pointerdetector;
   IplImage *cvImage, *cvImageAux1;
   CvHistogram *histModel, *histCompare, *histSetUp1, *histSetUp2, *histSetUpRef;
-  CvPoint upCornerFinalRect, downCornerFinalRect, upCornerRect1,
+  CvPoint finalPointerPosition, upCornerFinalRect, downCornerFinalRect, upCornerRect1,
       downCornerRect1, upCornerRect2, downCornerRect2, trackingPoint,
       trackingPoint1, trackingPoint2, trackingPoint1Aux, trackingPoint2Aux;
+      CvPoint upRightButtonCorner, downLeftButtonCorner;
   int iteration;
   CvSize imageSize, trackinRectSize, frameSize;
   int numOfRegions;
@@ -40,10 +45,11 @@ struct _KmsPointerDetector
   CvScalar colorRect1, colorRect2;
   KmsPointerDetectorState state;
   gboolean show_debug_info;
+  GstStructure *buttonsLayout;
+  GSList *buttonsLayoutList;
 };
 
-struct _KmsPointerDetectorClass
-{
+struct _KmsPointerDetectorClass {
   GstVideoFilterClass base_pointerdetector_class;
 };
 
