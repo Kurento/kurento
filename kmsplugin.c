@@ -8,6 +8,7 @@
 #include <kmsrecorderendpoint.h>
 #include <kmsfilterelement.h>
 #include <kmsplayerendpoint.h>
+#include <kmshttpendpoint.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -31,6 +32,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_player_end_point_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_http_end_point_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
