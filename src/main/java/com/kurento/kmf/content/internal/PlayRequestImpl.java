@@ -21,7 +21,7 @@ import com.kurento.kmf.media.MediaSrc;
 import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kms.api.MediaType;
 
-public class PlayRequestImpl implements PlayRequest {
+public class PlayRequestImpl implements PlayRequest, StreamingProxyListener {
 	private static final Logger log = LoggerFactory
 			.getLogger(PlayRequestImpl.class);
 
@@ -88,7 +88,7 @@ public class PlayRequestImpl implements PlayRequest {
 				response.setHeader("Location", httpEndPoint.getUrl());
 			} else {
 				proxy.tunnelTransaction(request, response,
-						httpEndPoint.getUrl());
+						httpEndPoint.getUrl(), this);
 			}
 
 		} catch (Throwable t) {
@@ -98,7 +98,9 @@ public class PlayRequestImpl implements PlayRequest {
 		} finally {
 			// If this call is made asynchronous complete should be in the
 			// continuation
-			asyncContext.complete();
+			if (redirect) {
+				asyncContext.complete();
+			}
 		}
 	}
 
@@ -139,7 +141,7 @@ public class PlayRequestImpl implements PlayRequest {
 				response.setHeader("Location", httpEndPoint.getUrl());
 			} else {
 				proxy.tunnelTransaction(request, response,
-						httpEndPoint.getUrl());
+						httpEndPoint.getUrl(), this);
 			}
 
 		} catch (Throwable t) {
@@ -149,7 +151,9 @@ public class PlayRequestImpl implements PlayRequest {
 		} finally {
 			// If this call is made asynchronous complete should be in the
 			// continuation
-			asyncContext.complete();
+			if (redirect) {
+				asyncContext.complete();
+			}
 		}
 	}
 
@@ -167,5 +171,16 @@ public class PlayRequestImpl implements PlayRequest {
 		} finally {
 			asyncContext.complete();
 		}
+	}
+
+	@Override
+	public void onProxySuccess() {
+		asyncContext.complete();
+	}
+
+	@Override
+	public void onProxyError(String message) {
+		asyncContext.complete();
+		// TODO: Error handling
 	}
 }

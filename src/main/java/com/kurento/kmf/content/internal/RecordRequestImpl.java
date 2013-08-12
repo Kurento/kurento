@@ -21,7 +21,7 @@ import com.kurento.kmf.media.MediaSrc;
 import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kms.api.MediaType;
 
-public class RecordRequestImpl implements RecordRequest {
+public class RecordRequestImpl implements RecordRequest, StreamingProxyListener {
 	private static final Logger log = LoggerFactory
 			.getLogger(RecordRequestImpl.class);
 
@@ -89,7 +89,7 @@ public class RecordRequestImpl implements RecordRequest {
 				response.setHeader("Location", httpEndPoint.getUrl());
 			} else {
 				proxy.tunnelTransaction(request, response,
-						httpEndPoint.getUrl());
+						httpEndPoint.getUrl(), this);
 			}
 
 		} catch (Throwable t) {
@@ -99,7 +99,9 @@ public class RecordRequestImpl implements RecordRequest {
 		} finally {
 			// If this call is made asynchronous complete should be in the
 			// continuation
-			asyncContext.complete();
+			if (redirect) {
+				asyncContext.complete();
+			}
 		}
 	}
 
@@ -139,7 +141,7 @@ public class RecordRequestImpl implements RecordRequest {
 				response.setHeader("Location", httpEndPoint.getUrl());
 			} else {
 				proxy.tunnelTransaction(request, response,
-						httpEndPoint.getUrl());
+						httpEndPoint.getUrl(), this);
 			}
 
 		} catch (Throwable t) {
@@ -149,7 +151,9 @@ public class RecordRequestImpl implements RecordRequest {
 		} finally {
 			// If this call is made asynchronous complete should be in the
 			// continuation
-			asyncContext.complete();
+			if (redirect) {
+				asyncContext.complete();
+			}
 		}
 
 	}
@@ -168,5 +172,16 @@ public class RecordRequestImpl implements RecordRequest {
 		} finally {
 			asyncContext.complete();
 		}
+	}
+
+	@Override
+	public void onProxySuccess() {
+		asyncContext.complete();
+	}
+
+	@Override
+	public void onProxyError(String message) {
+		asyncContext.complete();
+		// TODO: Error handling
 	}
 }

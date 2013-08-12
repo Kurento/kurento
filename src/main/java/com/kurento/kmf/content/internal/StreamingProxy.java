@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +46,8 @@ public class StreamingProxy {
 	private ContentApiConfiguration configuration;
 
 	private HttpClient httpClient;
+
+	private ExecutorService executor;
 
 	private final static String[] ALLOWED_REQUEST_HEADERS = { "accept",
 			"accept-charset", "accept-encoding", "accept-language",
@@ -92,80 +96,115 @@ public class StreamingProxy {
 		cm.setDefaultMaxPerRoute(configuration.getProxyMaxConnectionsPerRoute());
 
 		httpClient = new DefaultHttpClient(cm, params);
+
+		executor = Executors.newFixedThreadPool(configuration
+				.getProxyMaxConnections());
 	}
 
 	public void tunnelTransaction(HttpServletRequest clientSideRequest,
-			HttpServletResponse clientSideResponse, String serverSideUrl)
-			throws IOException {
+			HttpServletResponse clientSideResponse, String serverSideUrl,
+			StreamingProxyListener streamingProxyListener) throws IOException {
 
-		Enumeration<String> clientSideHeaders = clientSideRequest
-				.getHeaderNames();
-		List<BasicHeader> tunneledHeaders = new ArrayList<BasicHeader>();
-		while (clientSideHeaders.hasMoreElements()) {
-			String headerName = clientSideHeaders.nextElement().toLowerCase();
-			if (contains(ALLOWED_REQUEST_HEADERS, headerName)) {
-				tunneledHeaders.add(new BasicHeader(headerName,
-						clientSideRequest.getHeader(headerName)));
-			}
+		ProxyThread proxyThread = new ProxyThread(clientSideRequest,
+				clientSideResponse, serverSideUrl, streamingProxyListener);
+		executor.execute(proxyThread);
+	}
+
+	class ProxyThread implements Runnable {
+		private HttpServletRequest clientSideRequest;
+		private HttpServletResponse clientSideResponse;
+		private String serverSideUrl;
+		private StreamingProxyListener streamingProxyListener;
+
+		public ProxyThread(HttpServletRequest clientSideRequest,
+				HttpServletResponse clientSideResponse, String serverSideUrl,
+				StreamingProxyListener streamingProxyListener) {
+			this.clientSideRequest = clientSideRequest;
+			this.clientSideResponse = clientSideResponse;
+			this.serverSideUrl = serverSideUrl;
+			this.streamingProxyListener = streamingProxyListener;
 		}
 
-		HttpRequestBase tunnelRequest = null;
-		HttpEntity tunnelResponseEntity = null;
-		try {
-			String method = clientSideRequest.getMethod();
-			if (method.equalsIgnoreCase("GET")) {
-				tunnelRequest = new HttpGet(serverSideUrl);
-			} else if (method.equalsIgnoreCase("POST")) {
-				tunnelRequest = new HttpPost(serverSideUrl);
-				InputStreamEntity postEntity = new InputStreamEntity(
-						clientSideRequest.getInputStream(),
-						clientSideRequest.getContentLength(),
-						ContentType.create(clientSideRequest.getContentType()));
-				((HttpPost) tunnelRequest).setEntity(postEntity);
-			} else {
-				throw new IOException("Method " + method
-						+ " not supported on internal tunneling proxy");
-			}
-
-			for (BasicHeader header : tunneledHeaders) {
-				tunnelRequest.addHeader(header);
-			}
-
-			HttpResponse tunnelResponse = httpClient.execute(tunnelRequest);
-
-			clientSideResponse.setStatus(tunnelResponse.getStatusLine()
-					.getStatusCode());
-
-			for (Header header : tunnelResponse.getAllHeaders()) {
-				if (contains(ALLOWED_RESPONSES_HEADERS, header.getName())) {
-					clientSideResponse.setHeader(header.getName(),
-							header.getValue());
+		public void run() {
+			Enumeration<String> clientSideHeaders = clientSideRequest
+					.getHeaderNames();
+			List<BasicHeader> tunneledHeaders = new ArrayList<BasicHeader>();
+			while (clientSideHeaders.hasMoreElements()) {
+				String headerName = clientSideHeaders.nextElement()
+						.toLowerCase();
+				if (contains(ALLOWED_REQUEST_HEADERS, headerName)) {
+					tunneledHeaders.add(new BasicHeader(headerName,
+							clientSideRequest.getHeader(headerName)));
 				}
 			}
 
-			tunnelResponseEntity = tunnelResponse.getEntity();
-			if (tunnelResponseEntity != null) {
-				byte[] block = new byte[BUFF];
-				while (true) {
-					int len = tunnelResponseEntity.getContent().read(block);
-					if (len < 0) {
-						break;
+			HttpRequestBase tunnelRequest = null;
+			HttpEntity tunnelResponseEntity = null;
+			try {
+				String method = clientSideRequest.getMethod();
+				if (method.equalsIgnoreCase("GET")) {
+					tunnelRequest = new HttpGet(serverSideUrl);
+				} else if (method.equalsIgnoreCase("POST")) {
+					tunnelRequest = new HttpPost(serverSideUrl);
+					InputStreamEntity postEntity = new InputStreamEntity(
+							clientSideRequest.getInputStream(),
+							clientSideRequest.getContentLength(),
+							ContentType.create(clientSideRequest
+									.getContentType()));
+					((HttpPost) tunnelRequest).setEntity(postEntity);
+				} else {
+					throw new IOException("Method " + method
+							+ " not supported on internal tunneling proxy");
+				}
+
+				for (BasicHeader header : tunneledHeaders) {
+					tunnelRequest.addHeader(header);
+				}
+
+				HttpResponse tunnelResponse = httpClient.execute(tunnelRequest);
+
+				clientSideResponse.setStatus(tunnelResponse.getStatusLine()
+						.getStatusCode());
+
+				for (Header header : tunnelResponse.getAllHeaders()) {
+					if (contains(ALLOWED_RESPONSES_HEADERS, header.getName())) {
+						clientSideResponse.setHeader(header.getName(),
+								header.getValue());
 					}
-
-					clientSideResponse.getOutputStream().write(block, 0, len);
-					// TODO: browser stopping a video generates an exception
-					// here. Are we sure everything is cleanly closed on the
-					// management of the exception
-					clientSideResponse.flushBuffer();
 				}
-			}
 
-		} finally {
-			if (tunnelResponseEntity != null) {
-				EntityUtils.consume(tunnelResponseEntity);
-			}
-			if (tunnelRequest != null) {
-				tunnelRequest.releaseConnection();
+				tunnelResponseEntity = tunnelResponse.getEntity();
+				if (tunnelResponseEntity != null) {
+					byte[] block = new byte[BUFF];
+					while (true) {
+						int len = tunnelResponseEntity.getContent().read(block);
+						if (len < 0) {
+							break;
+						}
+
+						clientSideResponse.getOutputStream().write(block, 0,
+								len);
+						// TODO: browser stopping a video generates an exception
+						// here. Are we sure everything is cleanly closed on the
+						// management of the exception
+						clientSideResponse.flushBuffer();
+					}
+				}
+				streamingProxyListener.onProxySuccess();
+			} catch (Exception e) {
+				log.error("Exception in streaming proxy", e);
+				streamingProxyListener.onProxyError(e.getMessage());
+			} finally {
+				if (tunnelResponseEntity != null) {
+					try {
+						EntityUtils.consume(tunnelResponseEntity);
+					} catch (IOException e) {
+						log.info("Error consuming tunneel response entity", e);
+					}
+				}
+				if (tunnelRequest != null) {
+					tunnelRequest.releaseConnection();
+				}
 			}
 		}
 	}
