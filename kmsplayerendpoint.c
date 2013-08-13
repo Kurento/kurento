@@ -32,6 +32,14 @@ struct _KmsPlayerEndPointPrivate
   GstElement *uridecodebin;
 };
 
+enum
+{
+  SIGNAL_EOS,
+  LAST_SIGNAL
+};
+
+static guint kms_player_end_point_signals[LAST_SIGNAL] = { 0 };
+
 /* pad templates */
 
 /* class initialization */
@@ -49,6 +57,12 @@ kms_player_end_point_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   if (self->priv->pipeline != NULL) {
+    GstBus *bus;
+
+    bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
+    gst_bus_remove_signal_watch (bus);
+    g_object_unref (bus);
+
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (self->priv->pipeline));
     self->priv->pipeline = NULL;
@@ -263,13 +277,31 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
   urienpoint_class->started = kms_player_end_point_started;
   urienpoint_class->paused = kms_player_end_point_paused;
 
+  kms_player_end_point_signals[SIGNAL_EOS] =
+      g_signal_new ("eos",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsPlayerEndPointClass, eos_signal), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
 }
 
 static void
+bus_message (GstBus * bus, GstMessage * msg, KmsPlayerEndPoint * self)
+{
+  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
+    g_signal_emit (G_OBJECT (self),
+        kms_player_end_point_signals[SIGNAL_EOS], 0);
+  }
+}
+
+static void
 kms_player_end_point_init (KmsPlayerEndPoint * self)
 {
+  GstBus *bus;
+
   self->priv = KMS_PLAYER_END_POINT_GET_PRIVATE (self);
 
   self->priv->pipeline = gst_pipeline_new ("pipeline");
@@ -277,6 +309,11 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (G_OBJECT (bus), "message", G_CALLBACK (bus_message), self);
+  g_object_unref (bus);
 
   /* Connect to signals */
   g_signal_connect (self->priv->uridecodebin, "pad-added",
