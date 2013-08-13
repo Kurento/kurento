@@ -1,7 +1,5 @@
 package com.kurento.kmf.content.internal;
 
-import java.io.IOException;
-
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,18 +41,10 @@ public class AsyncPlayerRequestProcessor implements RejectableRunnable {
 
 			// In case of error we do complete the AsyncContext to make the
 			// specific error visible for developers and final users.
-			if (playRequest.getHttpServletRequest().isAsyncStarted()) {
-				try {
-					((HttpServletResponse) asyncCtx.getResponse()).sendError(
-							HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-							"AsyncContext was not completed by application. Reason: "
-									+ t.getMessage());
-				} catch (IOException e) {
-				}
-				asyncCtx.complete();
-			}
+			playRequest.reject(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+					"AsyncContext was not completed by application. Reason: "
+							+ t.getMessage());
 		}
-
 	}
 
 	@Override

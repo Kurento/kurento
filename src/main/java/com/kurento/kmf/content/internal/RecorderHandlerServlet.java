@@ -127,8 +127,10 @@ public class RecorderHandlerServlet extends HttpServlet {
 				new AsyncRecorderRequestProcessor(recorderHandler,
 						recordRequest));
 
-		// Store future for using it in case of error
+		// Store future and recordRequest for using it in case of error
 		req.setAttribute(ContentAsyncListener.FUTURE_REQUEST_ATT_NAME, future);
+		req.setAttribute(ContentAsyncListener.RECORD_REQUEST_ATT_NAME,
+				recordRequest);
 	}
 
 }

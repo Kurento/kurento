@@ -97,7 +97,7 @@ public class StreamingProxy {
 
 		httpClient = new DefaultHttpClient(cm, params);
 	}
-	
+
 	public Future<?> tunnelTransaction(HttpServletRequest clientSideRequest,
 			HttpServletResponse clientSideResponse, String serverSideUrl,
 			StreamingProxyListener streamingProxyListener) throws IOException {
@@ -122,10 +122,10 @@ public class StreamingProxy {
 			this.streamingProxyListener = streamingProxyListener;
 		}
 
-		public void run() {	
+		public void run() {
 			HttpRequestBase tunnelRequest = null;
 			HttpEntity tunnelResponseEntity = null;
-			
+
 			try {
 				Enumeration<String> clientSideHeaders = clientSideRequest
 						.getHeaderNames();
@@ -138,7 +138,7 @@ public class StreamingProxy {
 								clientSideRequest.getHeader(headerName)));
 					}
 				}
-				
+
 				String method = clientSideRequest.getMethod();
 				if (method.equalsIgnoreCase("GET")) {
 					tunnelRequest = new HttpGet(serverSideUrl);
@@ -176,12 +176,12 @@ public class StreamingProxy {
 				tunnelResponseEntity = tunnelResponse.getEntity();
 				if (tunnelResponseEntity != null) {
 					byte[] block = new byte[BUFF];
-					
+
 					while (true) {
-						if(Thread.currentThread().isInterrupted()){
+						if (Thread.currentThread().isInterrupted()) {
 							throw new InterruptedException();
 						}
-						
+
 						int len = tunnelResponseEntity.getContent().read(block);
 						if (len < 0) {
 							break;

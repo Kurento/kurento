@@ -1,6 +1,7 @@
 package com.kurento.kmf.content.internal;
 
 import java.io.IOException;
+import java.util.concurrent.Future;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +22,15 @@ import com.kurento.kmf.media.MediaSrc;
 import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kms.api.MediaType;
 
-public class RecordRequestImpl implements RecordRequest, StreamingProxyListener {
+public class RecordRequestImpl implements RecordRequest {
 	private static final Logger log = LoggerFactory
 			.getLogger(RecordRequestImpl.class);
+
+	private static enum STATE {
+		IDLE, RECORDING, TERMINATED
+	};
+
+	private volatile STATE state;
 
 	@Autowired
 	private MediaManagerFactory mediaManagerFactory;
@@ -34,12 +41,14 @@ public class RecordRequestImpl implements RecordRequest, StreamingProxyListener 
 	private AsyncContext asyncContext;
 	private String contentId;
 	private boolean redirect;
+	private Future<?> tunnellingProxyFuture;
 
 	RecordRequestImpl(AsyncContext asyncContext, String contentId,
 			boolean redirect) {
 		this.asyncContext = asyncContext;
 		this.contentId = contentId;
 		this.redirect = redirect;
+		this.state = STATE.IDLE;
 	}
 
 	@Override
@@ -49,20 +58,33 @@ public class RecordRequestImpl implements RecordRequest, StreamingProxyListener 
 
 	@Override
 	public HttpServletRequest getHttpServletRequest() {
+		if (state != STATE.IDLE) {
+			throw new IllegalStateException(
+					"Cannot recover HttpServletRequest in state "
+							+ state
+							+ ". This error may be produced by several reasons including a previous invocation to record or "
+							+ "reject or a timeout");
+		}
 		return (HttpServletRequest) asyncContext.getRequest();
 	}
 
 	@Override
 	public void record(String contentPath) throws ContentException {
 
-		if (!((HttpServletRequest) asyncContext.getRequest()).isAsyncStarted()) {
-			return;
+		synchronized (this) {
+			if (state != STATE.IDLE) {
+				throw new IllegalStateException(
+						"Cannot invoke play after invoking play or reject in this object");
+			}
+			state = STATE.RECORDING;
 		}
 
 		HttpEndPoint httpEndPoint = null;
 		RecorderEndPoint recorderEndPoint = null;
 
 		try {
+			// TODO calls to blocking methods on media-api must be interruptible
+			// (in a thread sense of the term). This applies to the whole API.
 			MediaManager mediaManager = mediaManagerFactory.createMediaManager(
 					null, 0, null);
 			httpEndPoint = mediaManager.getHttpEndPoint();
@@ -88,8 +110,22 @@ public class RecordRequestImpl implements RecordRequest, StreamingProxyListener 
 				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
 				response.setHeader("Location", httpEndPoint.getUrl());
 			} else {
-				proxy.tunnelTransaction(request, response,
-						httpEndPoint.getUrl(), this);
+				tunnellingProxyFuture = proxy.tunnelTransaction(request,
+						response, httpEndPoint.getUrl(),
+						new StreamingProxyListener() {
+
+							@Override
+							public void onProxySuccess() {
+								tunnellingProxyFuture = null;
+								terminate();
+							}
+
+							@Override
+							public void onProxyError(String message) {
+								tunnellingProxyFuture = null;
+								terminate();
+							}
+						});
 			}
 
 		} catch (Throwable t) {
@@ -107,8 +143,12 @@ public class RecordRequestImpl implements RecordRequest, StreamingProxyListener 
 
 	@Override
 	public void record(MediaElement element) throws ContentException {
-		if (!((HttpServletRequest) asyncContext.getRequest()).isAsyncStarted()) {
-			return;
+		synchronized (this) {
+			if (state != STATE.IDLE) {
+				throw new IllegalStateException(
+						"Cannot invoke play after invoking play or reject in this object");
+			}
+			state = STATE.RECORDING;
 		}
 
 		HttpEndPoint httpEndPoint = null;
@@ -141,7 +181,19 @@ public class RecordRequestImpl implements RecordRequest, StreamingProxyListener 
 				response.setHeader("Location", httpEndPoint.getUrl());
 			} else {
 				proxy.tunnelTransaction(request, response,
-						httpEndPoint.getUrl(), this);
+						httpEndPoint.getUrl(), new StreamingProxyListener() {
+							@Override
+							public void onProxySuccess() {
+								tunnellingProxyFuture = null;
+								terminate();
+							}
+
+							@Override
+							public void onProxyError(String message) {
+								tunnellingProxyFuture = null;
+								terminate();
+							}
+						});
 			}
 
 		} catch (Throwable t) {
@@ -155,33 +207,47 @@ public class RecordRequestImpl implements RecordRequest, StreamingProxyListener 
 				asyncContext.complete();
 			}
 		}
-
 	}
 
 	@Override
 	public void reject(int statusCode, String message) {
-		if (!((HttpServletRequest) asyncContext.getRequest()).isAsyncStarted()) {
+		if (state == STATE.IDLE) {
+			try {
+				((HttpServletResponse) asyncContext.getResponse()).sendError(
+						statusCode, message);
+			} catch (IOException e) {
+				log.error("Exception rejecting PlayRequest", e);
+			} finally {
+				terminate();
+			}
+		} else if (state == STATE.RECORDING) {
+			terminate();
+		} else if (state == STATE.TERMINATED) {
 			return;
+		}
+	}
+
+	public void terminate() {
+		synchronized (this) {
+			if (state == STATE.TERMINATED) {
+				return;
+			}
+			state = STATE.TERMINATED;
 		}
 
 		try {
-			((HttpServletResponse) asyncContext.getResponse()).sendError(
-					statusCode, message);
-		} catch (IOException e) {
-			log.error("Exception rejecting RecordRequest", e);
+			synchronized (this) {
+				if (tunnellingProxyFuture != null) {
+					tunnellingProxyFuture.cancel(true);
+					tunnellingProxyFuture = null;
+				}
+			}
+			// TODO: Media resources created by this object should be stopped
+			// and released
+		} catch (Throwable t) {
+			log.error(t.getMessage(), t);
 		} finally {
 			asyncContext.complete();
 		}
-	}
-
-	@Override
-	public void onProxySuccess() {
-		asyncContext.complete();
-	}
-
-	@Override
-	public void onProxyError(String message) {
-		asyncContext.complete();
-		// TODO: Error handling
 	}
 }

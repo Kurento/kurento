@@ -126,7 +126,9 @@ public class PlayerHandlerServlet extends HttpServlet {
 		Future<?> future = executor.getExecutor().submit(
 				new AsyncPlayerRequestProcessor(playerHandler, playRequest));
 
-		// Store future for using it in case of error
+		// Store future and request for using it in case of error
 		req.setAttribute(ContentAsyncListener.FUTURE_REQUEST_ATT_NAME, future);
+		req.setAttribute(ContentAsyncListener.PLAY_REQUEST_ATT_NAME,
+				playRequest);
 	}
 }

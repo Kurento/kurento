@@ -185,6 +185,7 @@ public class WebRtcMediaHandlerServlet extends HttpServlet {
 		req.setAttribute(ContentAsyncListener.FUTURE_REQUEST_ATT_NAME, future);
 		req.setAttribute(ContentAsyncListener.WEBRTC_MEDIA_REQUEST_ATT_NAME,
 				mediaRequest);
-		req.setAttribute(ContentAsyncListener.WEBRTC_JSON_REQUEST_ATT_NAME, message);
+		req.setAttribute(ContentAsyncListener.WEBRTC_JSON_REQUEST_ATT_NAME,
+				message);
 	}
 }

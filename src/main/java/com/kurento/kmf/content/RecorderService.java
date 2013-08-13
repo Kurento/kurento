@@ -11,6 +11,6 @@ public @interface RecorderService {
 	String name();
 
 	String path();
-	
+
 	boolean redirect() default true;
 }

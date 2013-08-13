@@ -39,16 +39,19 @@ public class AsyncWebRtcMediaRequestProcessor implements RejectableRunnable {
 					"Error processing WebRtcControlRequest to "
 							+ ((HttpServletRequest) asyncCtx.getRequest())
 									.getRequestURI(), t);
-			//TODO: different exceptions for server error and request errors (client errors) should be managed
-			mediaRequest.terminate(asyncCtx, ERROR_SERVER_ERROR, t.getMessage(), message.getId());
+			// TODO: different exceptions for server error and request errors
+			// (client errors) should be managed
+			mediaRequest.terminate(asyncCtx, ERROR_SERVER_ERROR,
+					t.getMessage(), message.getId());
 		}
 	}
 
 	@Override
 	public void onExecutionRejected() {
 		// This reject is executed by an JVM managed thread. We need to specify
-		// asyncCtx before terminating		
+		// asyncCtx before terminating
 		mediaRequest.terminate(asyncCtx, ERROR_SERVER_ERROR,
-				"Servler overloaded. Try again in a few minutes", message.getId());
+				"Servler overloaded. Try again in a few minutes",
+				message.getId());
 	}
 }

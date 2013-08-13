@@ -11,6 +11,6 @@ public @interface PlayerService {
 	String name();
 
 	String path();
-	
+
 	boolean redirect() default true;
 }

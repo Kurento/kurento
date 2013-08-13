@@ -47,7 +47,7 @@ public class WebRtcMediaRequestImpl implements WebRtcMediaRequest {
 	@Autowired
 	private ContentApiConfiguration contentApiConfiguration;
 
-	private STATE state = STATE.IDLE;
+	private volatile STATE state = STATE.IDLE;
 	private WebRtcMediaHandler handler;
 	private WebRtcMediaRequestManager manager;
 	private String sessionId;
