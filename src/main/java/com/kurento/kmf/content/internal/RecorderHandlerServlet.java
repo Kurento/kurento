@@ -32,7 +32,7 @@ public class RecorderHandlerServlet extends HttpServlet {
 	private RecorderHandler recorderHandler;
 
 	@Autowired
-	private HandlerServletAsyncExecutor executor;
+	private ContentApiExecutorService executor;
 
 	private boolean useRedirectStrategy = true;
 

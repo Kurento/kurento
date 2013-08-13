@@ -58,7 +58,8 @@ public class AsyncPlayerRequestProcessor implements RejectableRunnable {
 	}
 
 	@Override
-	public void reject(int statusCode, String message) {
-		playRequest.reject(statusCode, message);
+	public void onExecutionRejected() {
+		playRequest.reject(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+				"Servler overloaded. Try again in a few minutes");
 	}
 }

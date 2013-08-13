@@ -32,7 +32,7 @@ public class PlayerHandlerServlet extends HttpServlet {
 	private PlayerHandler playerHandler;
 
 	@Autowired
-	private HandlerServletAsyncExecutor executor;
+	private ContentApiExecutorService executor;
 
 	private boolean useRedirectStrategy = true;
 

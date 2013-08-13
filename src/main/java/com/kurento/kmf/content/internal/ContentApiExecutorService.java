@@ -7,14 +7,13 @@ import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.kurento.kmf.content.ContentApiConfiguration;
 
-public class HandlerServletAsyncExecutor {
+public class ContentApiExecutorService {
 
 	private ThreadPoolExecutor executor;
 
@@ -22,7 +21,7 @@ public class HandlerServletAsyncExecutor {
 	@Qualifier("contentApiConfiguration")
 	private ContentApiConfiguration config;
 
-	public HandlerServletAsyncExecutor() {
+	public ContentApiExecutorService() {
 	}
 
 	@PostConstruct
@@ -35,9 +34,7 @@ public class HandlerServletAsyncExecutor {
 					@Override
 					public void rejectedExecution(Runnable r,
 							ThreadPoolExecutor executor) {
-						((RejectableRunnable) r)
-								.reject(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-										"Servler overloaded. Try again in a few minutes");
+						((RejectableRunnable) r).onExecutionRejected();
 					}
 				});
 	}

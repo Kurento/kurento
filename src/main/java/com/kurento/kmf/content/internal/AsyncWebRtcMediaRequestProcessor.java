@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonRequest;
+
 import static com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonConstants.*;
 
 public class AsyncWebRtcMediaRequestProcessor implements RejectableRunnable {
@@ -44,9 +45,10 @@ public class AsyncWebRtcMediaRequestProcessor implements RejectableRunnable {
 	}
 
 	@Override
-	public void reject(int statusCode, String description) {
+	public void onExecutionRejected() {
 		// This reject is executed by an JVM managed thread. We need to specify
-		// asyncCtx before terminating
-		mediaRequest.terminate(asyncCtx, ERROR_SERVER_ERROR, description, message.getId());
+		// asyncCtx before terminating		
+		mediaRequest.terminate(asyncCtx, ERROR_SERVER_ERROR,
+				"Servler overloaded. Try again in a few minutes", message.getId());
 	}
 }

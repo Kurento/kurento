@@ -36,7 +36,7 @@ public class WebRtcMediaHandlerServlet extends HttpServlet {
 	@Autowired
 	private WebRtcControlProtocolManager protocolManager;
 	@Autowired
-	private HandlerServletAsyncExecutor executor;
+	private ContentApiExecutorService executor;
 
 	private WebRtcMediaRequestManager webRtcMediaRequestManager;
 

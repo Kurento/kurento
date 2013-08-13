@@ -58,7 +58,8 @@ public class AsyncRecorderRequestProcessor implements RejectableRunnable {
 	}
 
 	@Override
-	public void reject(int statusCode, String message) {
-		recordRequest.reject(statusCode, message);
+	public void onExecutionRejected() {
+		recordRequest.reject(HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+				"Servler overloaded. Try again in a few minutes");
 	}
 }

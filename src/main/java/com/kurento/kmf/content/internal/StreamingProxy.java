@@ -4,8 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -47,7 +46,8 @@ public class StreamingProxy {
 
 	private HttpClient httpClient;
 
-	private ExecutorService executor;
+	@Autowired
+	private ContentApiExecutorService executorService;
 
 	private final static String[] ALLOWED_REQUEST_HEADERS = { "accept",
 			"accept-charset", "accept-encoding", "accept-language",
@@ -96,21 +96,18 @@ public class StreamingProxy {
 		cm.setDefaultMaxPerRoute(configuration.getProxyMaxConnectionsPerRoute());
 
 		httpClient = new DefaultHttpClient(cm, params);
-
-		executor = Executors.newFixedThreadPool(configuration
-				.getProxyMaxConnections());
 	}
-
-	public void tunnelTransaction(HttpServletRequest clientSideRequest,
+	
+	public Future<?> tunnelTransaction(HttpServletRequest clientSideRequest,
 			HttpServletResponse clientSideResponse, String serverSideUrl,
 			StreamingProxyListener streamingProxyListener) throws IOException {
 
 		ProxyThread proxyThread = new ProxyThread(clientSideRequest,
 				clientSideResponse, serverSideUrl, streamingProxyListener);
-		executor.execute(proxyThread);
+		return executorService.getExecutor().submit(proxyThread);
 	}
 
-	class ProxyThread implements Runnable {
+	class ProxyThread implements RejectableRunnable {
 		private HttpServletRequest clientSideRequest;
 		private HttpServletResponse clientSideResponse;
 		private String serverSideUrl;
@@ -125,22 +122,23 @@ public class StreamingProxy {
 			this.streamingProxyListener = streamingProxyListener;
 		}
 
-		public void run() {
-			Enumeration<String> clientSideHeaders = clientSideRequest
-					.getHeaderNames();
-			List<BasicHeader> tunneledHeaders = new ArrayList<BasicHeader>();
-			while (clientSideHeaders.hasMoreElements()) {
-				String headerName = clientSideHeaders.nextElement()
-						.toLowerCase();
-				if (contains(ALLOWED_REQUEST_HEADERS, headerName)) {
-					tunneledHeaders.add(new BasicHeader(headerName,
-							clientSideRequest.getHeader(headerName)));
-				}
-			}
-
+		public void run() {	
 			HttpRequestBase tunnelRequest = null;
 			HttpEntity tunnelResponseEntity = null;
+			
 			try {
+				Enumeration<String> clientSideHeaders = clientSideRequest
+						.getHeaderNames();
+				List<BasicHeader> tunneledHeaders = new ArrayList<BasicHeader>();
+				while (clientSideHeaders.hasMoreElements()) {
+					String headerName = clientSideHeaders.nextElement()
+							.toLowerCase();
+					if (contains(ALLOWED_REQUEST_HEADERS, headerName)) {
+						tunneledHeaders.add(new BasicHeader(headerName,
+								clientSideRequest.getHeader(headerName)));
+					}
+				}
+				
 				String method = clientSideRequest.getMethod();
 				if (method.equalsIgnoreCase("GET")) {
 					tunnelRequest = new HttpGet(serverSideUrl);
@@ -161,6 +159,8 @@ public class StreamingProxy {
 					tunnelRequest.addHeader(header);
 				}
 
+				// TODO: Does this throws interrupted exception? Does this
+				// recognize thread interruption? Tests must be made
 				HttpResponse tunnelResponse = httpClient.execute(tunnelRequest);
 
 				clientSideResponse.setStatus(tunnelResponse.getStatusLine()
@@ -176,7 +176,12 @@ public class StreamingProxy {
 				tunnelResponseEntity = tunnelResponse.getEntity();
 				if (tunnelResponseEntity != null) {
 					byte[] block = new byte[BUFF];
+					
 					while (true) {
+						if(Thread.currentThread().isInterrupted()){
+							throw new InterruptedException();
+						}
+						
 						int len = tunnelResponseEntity.getContent().read(block);
 						if (len < 0) {
 							break;
@@ -206,6 +211,12 @@ public class StreamingProxy {
 					tunnelRequest.releaseConnection();
 				}
 			}
+		}
+
+		@Override
+		public void onExecutionRejected() {
+			streamingProxyListener
+					.onProxyError("Servler overloaded. Try again in a few minutes");
 		}
 	}
 }

@@ -34,8 +34,8 @@ public class ContentApplicationContextConfiguration {
 	}
 
 	@Bean
-	HandlerServletAsyncExecutor handlerServletAsyncExecutor() {
-		return new HandlerServletAsyncExecutor();
+	ContentApiExecutorService contentApiExecutorService() {
+		return new ContentApiExecutorService();
 	}
 
 	@Bean
