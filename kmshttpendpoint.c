@@ -22,6 +22,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 struct _KmsHttpEndPointPrivate
 {
   GstElement *post_pipeline;
+  GstElement *postsrc;
 };
 
 enum
@@ -40,16 +41,63 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME,
         0, "debug category for httpendpoint element"));
 
+static void
+post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
+    KmsHttpEndPoint * self)
+{
+  GST_INFO ("Pad added %s", gst_pad_get_name (pad));
+}
+
+static void
+post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
+    KmsHttpEndPoint * self)
+{
+  GST_INFO ("Pad removed %s", gst_pad_get_name (pad));
+}
+
+static void
+kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
+{
+  GstElement *decodebin;
+
+  self->priv->post_pipeline = gst_pipeline_new (NULL);
+  self->priv->postsrc = gst_element_factory_make ("appsrc", NULL);
+  decodebin = gst_element_factory_make ("decodebin", NULL);
+
+  /* configure appsrc */
+  g_object_set (G_OBJECT (self->priv->postsrc), "is-live", TRUE,
+      "do-timestamp", TRUE, "min-latency", G_GUINT64_CONSTANT (0),
+      "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+
+  gst_bin_add_many (GST_BIN (self->priv->post_pipeline), self->priv->postsrc,
+      decodebin, NULL);
+
+  gst_element_link (self->priv->postsrc, decodebin);
+
+  /* Connect decodebin signals */
+  g_signal_connect (decodebin, "pad-added",
+      G_CALLBACK (post_decodebin_pad_added_handler), NULL);
+  g_signal_connect (decodebin, "pad-removed",
+      G_CALLBACK (post_decodebin_pad_removed_handler), NULL);
+
+  /* Set pipeline to playing */
+  gst_element_set_state (self->priv->post_pipeline, GST_STATE_PLAYING);
+}
+
 static GstFlowReturn
 kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
     GstBuffer * buffer)
 {
+  GstFlowReturn ret;
+
   g_return_val_if_fail (GST_IS_BUFFER (buffer), GST_FLOW_ERROR);
 
-  /* TODO: Send buffer to internal appsrc */
-  GST_DEBUG ("Received new buffer %P", buffer);
-  gst_buffer_unref (buffer);
-  return GST_FLOW_ERROR;
+  if (self->priv->post_pipeline == NULL)
+    kms_http_end_point_init_post_pipeline (self);
+
+  g_signal_emit_by_name (self->priv->postsrc, "push-buffer", buffer, &ret);
+
+  return ret;
 }
 
 static void
@@ -58,6 +106,12 @@ kms_http_end_point_dispose (GObject * object)
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
 
   GST_DEBUG_OBJECT (self, "dispose");
+
+  if (self->priv->post_pipeline != NULL) {
+    gst_element_set_state (self->priv->post_pipeline, GST_STATE_NULL);
+    gst_object_unref (GST_OBJECT (self->priv->post_pipeline));
+    self->priv->post_pipeline = NULL;
+  }
 
   /* clean up as possible.  may be called multiple times */
 
