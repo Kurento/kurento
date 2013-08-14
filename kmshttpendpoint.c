@@ -3,11 +3,18 @@
 #endif
 
 #include <gst/gst.h>
+#include <gst/pbutils/encoding-profile.h>
+
 #include "kms-marshal.h"
 #include "kmshttpendpoint.h"
 #include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "httpendpoint"
+
+#define AUDIO_APPSINK "audio_appsink"
+#define AUDIO_APPSRC "audio_appsrc"
+#define VIDEO_APPSINK "video_appsink"
+#define VIDEO_APPSRC "video_appsrc"
 
 #define APPSRC_DATA "appsrc_data"
 #define APPSINK_DATA "appsink_data"
@@ -27,6 +34,8 @@ struct _KmsHttpEndPointPrivate
 {
   GstElement *post_pipeline;
   GstElement *postsrc;
+  GstElement *get_pipeline;
+  GstElement *get_encodebin;
 };
 
 enum
@@ -52,7 +61,7 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
 static void
 new_sample_handler (GstElement * appsink, gpointer user_data)
 {
-  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstElement *appsrc;
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
@@ -65,6 +74,13 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   if (buffer == NULL)
     return;
 
+  if (user_data == NULL) {
+    /* No appsrc connected */
+    GST_WARNING ("TODO: Emit new sample Signal");
+    return;
+  }
+
+  appsrc = GST_ELEMENT (user_data);
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
@@ -72,6 +88,12 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
     GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
         GST_ELEMENT_NAME (appsrc));
   }
+}
+
+static void
+eos_handler (GstElement * appsink, gpointer user_data)
+{
+  GST_DEBUG ("TODO: Implement this");
 }
 
 static void
@@ -253,6 +275,235 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
 }
 
 static void
+kms_http_end_point_add_sink (KmsHttpEndPoint * self)
+{
+  GstElement *appsink;
+
+  appsink = gst_element_factory_make ("appsink", NULL);
+
+  g_object_set (appsink, "emit-signals", TRUE, NULL);
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
+      NULL);
+  g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), NULL);
+
+  gst_bin_add (GST_BIN (self->priv->get_pipeline), appsink);
+  gst_element_sync_state_with_parent (appsink);
+
+  gst_element_link (self->priv->get_encodebin, appsink);
+}
+
+static void
+kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
+{
+  GstEncodingContainerProfile *cprof;
+  gboolean has_audio, has_video;
+  GstCaps *pc;
+
+  has_video = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
+  has_audio = kms_element_get_audio_valve (KMS_ELEMENT (self)) != NULL;
+
+  // TODO: Add a property to select the profile, by now webm is used
+  if (has_video)
+    pc = gst_caps_from_string ("video/webm");
+  else
+    pc = gst_caps_from_string ("audio/webm");
+
+  cprof = gst_encoding_container_profile_new ("Webm", NULL, pc, NULL);
+  gst_caps_unref (pc);
+
+  if (has_audio) {
+    GstCaps *ac = gst_caps_from_string ("audio/x-vorbis");
+
+    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+        gst_encoding_audio_profile_new (ac, NULL, NULL, 0));
+
+    gst_caps_unref (ac);
+  }
+
+  if (has_video) {
+    GstCaps *vc = gst_caps_from_string ("video/x-vp8");
+
+    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
+
+    gst_caps_unref (vc);
+  }
+  // HACK: this is the maximum time that the server can recor, I don't know
+  // why but if synchronization is enabled, audio packets are droped
+  g_object_set (G_OBJECT (self->priv->get_encodebin), "profile", cprof,
+      "audio-jitter-tolerance", G_GUINT64_CONSTANT (0x0fffffffffffffff), NULL);
+}
+
+static void
+kms_http_end_point_link_old_src_to_encodebin (KmsHttpEndPoint * self,
+    GstElement * old_encodebin)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  if (old_encodebin == NULL)
+    return;
+
+  it = gst_element_iterate_sink_pads (old_encodebin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *peer;
+
+        sinkpad = g_value_get_object (&val);
+        peer = gst_pad_get_peer (sinkpad);
+
+        if (peer != NULL) {
+          GstElement *parent;
+
+          parent = gst_pad_get_parent_element (peer);
+          GST_PAD_STREAM_LOCK (peer);
+          gst_element_release_request_pad (old_encodebin, sinkpad);
+          gst_pad_unlink (peer, sinkpad);
+          gst_element_link_pads (parent, GST_OBJECT_NAME (peer),
+              self->priv->get_encodebin, GST_OBJECT_NAME (sinkpad));
+          GST_PAD_STREAM_UNLOCK (peer);
+
+          g_object_unref (parent);
+          g_object_unref (peer);
+        }
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (old_encodebin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
+remove_encodebin (GstElement * encodebin)
+{
+  GstElement *peer_element;
+  GstPad *src, *peer;
+  GstBin *pipe;
+
+  pipe = GST_BIN (gst_object_get_parent (GST_OBJECT (encodebin)));
+  src = gst_element_get_static_pad (encodebin, "src");
+  peer = gst_pad_get_peer (src);
+
+  if (peer == NULL)
+    goto end;
+
+  peer_element = gst_pad_get_parent_element (peer);
+
+  if (peer_element != NULL) {
+    gst_bin_remove (pipe, peer_element);
+    g_object_unref (peer_element);
+  }
+
+  g_object_unref (peer);
+
+end:
+
+  gst_bin_remove (pipe, encodebin);
+
+  g_object_unref (pipe);
+  g_object_unref (src);
+}
+
+static void
+kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
+    const gchar * agnostic_caps, const gchar * sinkname, const gchar * srcname,
+    const gchar * destpadname)
+{
+  GstCaps *caps = gst_caps_from_string (agnostic_caps);
+  GstElement *appsink, *appsrc;
+  GstElement *old_encodebin = NULL;
+
+  if (self->priv->get_encodebin != NULL)
+    old_encodebin = self->priv->get_encodebin;
+
+  self->priv->get_encodebin = gst_element_factory_make ("encodebin", NULL);
+  kms_http_end_point_set_profile_to_encodebin (self);
+  gst_bin_add (GST_BIN (self->priv->get_pipeline), self->priv->get_encodebin);
+
+  kms_http_end_point_add_sink (self);
+  gst_element_sync_state_with_parent (self->priv->get_encodebin);
+
+  appsink = gst_element_factory_make ("appsink", sinkname);
+
+  g_object_set (appsink, "emit-signals", TRUE, NULL);
+  g_object_set (appsink, "caps", caps, NULL);
+
+  gst_caps_unref (caps);
+
+  kms_http_end_point_link_old_src_to_encodebin (self, old_encodebin);
+
+  if (old_encodebin != NULL) {
+    if (GST_STATE (old_encodebin) <= GST_STATE_PAUSED) {
+      remove_encodebin (old_encodebin);
+    } else {
+      // TODO: Unlink encodebin and send EOS
+      // TODO: Wait for EOS message in bus to destroy encodebin and sink
+      gst_element_send_event (old_encodebin, gst_event_new_eos ());
+    }
+  }
+
+  appsrc = gst_element_factory_make ("appsrc", srcname);
+
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+
+  gst_bin_add (GST_BIN (KMS_HTTP_END_POINT (self)->priv->get_pipeline), appsrc);
+  gst_element_sync_state_with_parent (appsrc);
+  gst_element_link_pads (appsrc, "src", self->priv->get_encodebin, destpadname);
+
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
+      appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), appsrc);
+
+  gst_bin_add (GST_BIN (self), appsink);
+  gst_element_sync_state_with_parent (appsink);
+  gst_element_link (valve, appsink);
+}
+
+static void
+kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
+{
+  kms_http_end_point_add_appsrc (KMS_HTTP_END_POINT (self), valve,
+      KMS_AGNOSTIC_RAW_AUDIO_CAPS, AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
+}
+
+static void
+kms_http_end_point_audio_valve_removed (KmsElement * self, GstElement * valve)
+{
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
+kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
+{
+  kms_http_end_point_add_appsrc (KMS_HTTP_END_POINT (self), valve,
+      KMS_AGNOSTIC_RAW_VIDEO_CAPS, VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
+}
+
+static void
+kms_http_end_point_video_valve_removed (KmsElement * self, GstElement * valve)
+{
+  GST_INFO ("TODO: Implement this");
+}
+
+static void
 kms_http_end_point_dispose (GObject * object)
 {
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
@@ -271,6 +522,12 @@ kms_http_end_point_dispose (GObject * object)
     self->priv->post_pipeline = NULL;
   }
 
+  if (self->priv->get_pipeline != NULL) {
+    /* TODO: Release pipeline */
+    gst_element_set_state (self->priv->get_pipeline, GST_STATE_NULL);
+    g_object_unref (self->priv->get_pipeline);
+    self->priv->get_pipeline = NULL;
+  }
   /* clean up as possible.  may be called multiple times */
 
   G_OBJECT_CLASS (kms_http_end_point_parent_class)->dispose (object);
@@ -291,6 +548,7 @@ kms_http_end_point_finalize (GObject * object)
 static void
 kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
 {
+  KmsElementClass *kms_element_class = KMS_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
@@ -299,6 +557,15 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
 
   gobject_class->dispose = kms_http_end_point_dispose;
   gobject_class->finalize = kms_http_end_point_finalize;
+
+  kms_element_class->audio_valve_added =
+      GST_DEBUG_FUNCPTR (kms_http_end_point_audio_valve_added);
+  kms_element_class->video_valve_added =
+      GST_DEBUG_FUNCPTR (kms_http_end_point_video_valve_added);
+  kms_element_class->audio_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_http_end_point_audio_valve_removed);
+  kms_element_class->video_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_http_end_point_video_valve_removed);
 
   /* set signals */
   http_ep_signals[SIGNAL_EOS] =
@@ -336,6 +603,7 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
   self->priv = KMS_HTTP_END_POINT_GET_PRIVATE (self);
 
   self->priv->post_pipeline = NULL;
+  self->priv->get_pipeline = NULL;
 }
 
 gboolean
