@@ -5,8 +5,12 @@
 #include <gst/gst.h>
 #include "kms-marshal.h"
 #include "kmshttpendpoint.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "httpendpoint"
+
+#define APPSRC_DATA "appsrc_data"
+#define APPSINK_DATA "appsink_data"
 
 #define GST_CAT_DEFAULT kms_http_end_point_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -42,17 +46,136 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
         0, "debug category for httpendpoint element"));
 
 static void
+new_sample_handler (GstElement * appsink, gpointer user_data)
+{
+  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstFlowReturn ret;
+  GstSample *sample;
+  GstBuffer *buffer;
+
+  g_signal_emit_by_name (appsink, "pull-sample", &sample);
+  if (sample == NULL)
+    return;
+
+  buffer = gst_sample_get_buffer (sample);
+  if (buffer == NULL)
+    return;
+
+  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
+
+  if (ret != GST_FLOW_OK) {
+    // something wrong
+    GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
+        GST_ELEMENT_NAME (appsrc));
+  }
+}
+
+static void
 post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
     KmsHttpEndPoint * self)
 {
-  GST_INFO ("Pad added %s", gst_pad_get_name (pad));
+  GstElement *appsrc, *agnosticbin, *appsink;
+  GstPad *sinkpad;
+  GstCaps *audio_caps, *video_caps;
+  GstCaps *src_caps;
+
+  if (GST_PAD_IS_SINK (pad))
+    return;
+
+  GST_INFO ("pad %s added", gst_pad_get_name (pad));
+
+  /* Create and link appsrc--agnosticbin with proper caps */
+  audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
+  video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
+  src_caps = gst_pad_query_caps (pad, NULL);
+  GST_DEBUG ("caps are %" GST_PTR_FORMAT, src_caps);
+
+  if (gst_caps_can_intersect (audio_caps, src_caps))
+    agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+  else if (gst_caps_can_intersect (video_caps, src_caps))
+    agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
+  else {
+    GST_ERROR_OBJECT (self, "No agnostic caps provided");
+    gst_caps_unref (src_caps);
+    goto end;
+  }
+
+  /* Create appsrc element and link to agnosticbin */
+  appsrc = gst_element_factory_make ("appsrc", NULL);
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      "min-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
+      "caps", src_caps, NULL);
+
+  gst_bin_add (GST_BIN (self), appsrc);
+  gst_element_sync_state_with_parent (appsrc);
+  gst_element_link (appsrc, agnosticbin);
+
+  /* Create appsink and link to pad */
+  appsink = gst_element_factory_make ("appsink", NULL);
+  g_object_set (appsink, "sync", TRUE, "enable-last-sample",
+      FALSE, "emit-signals", TRUE, NULL);
+  gst_bin_add (GST_BIN (self->priv->post_pipeline), appsink);
+  gst_element_sync_state_with_parent (appsink);
+
+  sinkpad = gst_element_get_static_pad (appsink, "sink");
+  gst_pad_link (pad, sinkpad);
+  GST_DEBUG_OBJECT (self, "Linked %s---%s", GST_ELEMENT_NAME (decodebin),
+      GST_ELEMENT_NAME (appsink));
+  g_object_unref (sinkpad);
+
+  /* Connect new-sample signal to callback */
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
+      appsrc);
+  g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
+  g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
+
+end:
+  if (audio_caps != NULL)
+    gst_caps_unref (audio_caps);
+
+  if (video_caps != NULL)
+    gst_caps_unref (video_caps);
 }
 
 static void
 post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
     KmsHttpEndPoint * self)
 {
-  GST_INFO ("Pad removed %s", gst_pad_get_name (pad));
+  GstElement *appsink, *appsrc;
+
+  if (GST_PAD_IS_SINK (pad))
+    return;
+
+  GST_DEBUG ("pad %s removed", gst_pad_get_name (pad));
+
+  appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
+  appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
+
+  if (appsrc == NULL) {
+    GST_ERROR ("No appsink was found associated with %P", pad);
+    return;
+  }
+
+  if (GST_OBJECT_PARENT (appsrc) != NULL) {
+    g_object_ref (appsrc);
+    gst_bin_remove (GST_BIN (GST_OBJECT_PARENT (appsrc)), appsrc);
+    gst_element_set_state (appsrc, GST_STATE_NULL);
+    g_object_unref (appsrc);
+  }
+
+  if (appsink == NULL) {
+    GST_ERROR ("No appsink was found associated with %P", pad);
+    return;
+  }
+
+  if (!gst_element_set_locked_state (appsink, TRUE))
+    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (appsink));
+
+  GST_DEBUG ("Removing appsink %s from %s", GST_ELEMENT_NAME (appsink),
+      GST_ELEMENT_NAME (self->priv->post_pipeline));
+
+  gst_element_set_state (appsink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->post_pipeline), appsink);
 }
 
 static void
@@ -76,9 +199,9 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
 
   /* Connect decodebin signals */
   g_signal_connect (decodebin, "pad-added",
-      G_CALLBACK (post_decodebin_pad_added_handler), NULL);
+      G_CALLBACK (post_decodebin_pad_added_handler), self);
   g_signal_connect (decodebin, "pad-removed",
-      G_CALLBACK (post_decodebin_pad_removed_handler), NULL);
+      G_CALLBACK (post_decodebin_pad_removed_handler), self);
 
   /* Set pipeline to playing */
   gst_element_set_state (self->priv->post_pipeline, GST_STATE_PLAYING);
