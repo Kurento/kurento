@@ -41,15 +41,24 @@ public class MediaServerServiceManager {
 	public static synchronized void init(String serverAddress, int serverPort,
 			MediaManagerHandler handler, int handlerId, String handlerAddress,
 			int handlerPort) throws IllegalStateException, IOException {
-		MediaServerServiceManager manager;
 
 		synchronized (MediaServerServiceManager.class) {
 			if (singleton == null) {
-				manager = new MediaServerServiceManager(serverAddress,
+				singleton = new MediaServerServiceManager(serverAddress,
 						serverPort, handler, handlerId, handlerAddress,
 						handlerPort);
-				if (singleton == null)
-					singleton = manager;
+
+				MediaServerService.Client service = getMediaServerService();
+				try {
+					service.addHandlerAddress(handlerId, handlerAddress,
+							handlerPort);
+				} catch (MediaServerException e) {
+					throw new IOException(e);
+				} catch (TException e) {
+					throw new IOException(e);
+				} finally {
+					releaseMediaServerService(service);
+				}
 			} else {
 				throw new IllegalStateException("Already initialized");
 			}
@@ -74,17 +83,6 @@ public class MediaServerServiceManager {
 
 		mediaHandlerServer = new MediaHandlerServer(handlerPort, handler);
 		mediaHandlerServer.start();
-
-		MediaServerService.Client service = getMediaServerService();
-		try {
-			service.addHandlerAddress(handlerId, handlerAddress, handlerPort);
-		} catch (MediaServerException e) {
-			throw new IOException(e);
-		} catch (TException e) {
-			throw new IOException(e);
-		} finally {
-			releaseMediaServerService(service);
-		}
 	}
 
 	private synchronized void stopHandlerServer() {
