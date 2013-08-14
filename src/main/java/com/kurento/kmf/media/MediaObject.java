@@ -38,7 +38,7 @@ public abstract class MediaObject implements Serializable {
 				.getMediaServerService();
 
 		try {
-			return getParent(service.getParent(mediaObject));
+			return getMediaObject(service.getParent(mediaObject));
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -83,7 +83,7 @@ public abstract class MediaObject implements Serializable {
 						@Override
 						public void onComplete(getParent_call response) {
 							try {
-								MediaObject parent = getParent(response
+								MediaObject parent = getMediaObject(response
 										.getResult());
 								cont.onSuccess(parent);
 							} catch (MediaObjectNotFoundException e) {
@@ -147,48 +147,49 @@ public abstract class MediaObject implements Serializable {
 		}
 	}
 
-	private MediaObject getParent(com.kurento.kms.api.MediaObject parent) {
-		MediaObjectTypeUnion union = parent.getType();
+	private MediaObject getMediaObject(
+			com.kurento.kms.api.MediaObject thriftObject) {
+		MediaObjectTypeUnion union = thriftObject.getType();
 
 		if (union.isSetMediaObject()) {
 			MediaObjectType mediaObjectType = union.getMediaObject();
 			if (MediaObjectType.MEDIA_MANAGER.equals(mediaObjectType)) {
-				return new MediaManager(parent);
+				return new MediaManager(thriftObject);
 			}
 		} else if (union.isSetMediaPad()) {
 			// MediaPad will not be a parent of any media object
 			MediaPadType padType = union.getMediaPad();
 			if (MediaPadType.MEDIA_SRC.equals(padType)) {
-				return new MediaSrc(parent);
+				return new MediaSrc(thriftObject);
 			} else if (MediaPadType.MEDIA_SINK.equals(padType)) {
-				return new MediaSink(parent);
+				return new MediaSink(thriftObject);
 			}
 		} else if (union.isSetEndPoint()) {
 			EndPointType endPointType = union.getEndPoint();
 			if (EndPointType.HTTP_END_POINT.equals(endPointType)) {
-				return new HttpEndPoint(parent);
+				return new HttpEndPoint(thriftObject);
 			} else if (EndPointType.MIXER_END_POINT.equals(endPointType)) {
-				return new MixerEndPoint(parent);
+				return new MixerEndPoint(thriftObject);
 			}
 		} else if (union.isSetSdpEndPoint()) {
 			SdpEndPointType sdpEndPointType = union.getSdpEndPoint();
 			if (SdpEndPointType.RTP_END_POINT.equals(sdpEndPointType)) {
-				return new RtpEndPoint(parent);
+				return new RtpEndPoint(thriftObject);
 			} else if (SdpEndPointType.WEBRTC_END_POINT.equals(sdpEndPointType)) {
-				return new WebRtcEndPoint(parent);
+				return new WebRtcEndPoint(thriftObject);
 			}
 		} else if (union.isSetUriEndPoint()) {
 			UriEndPointType uriEndPointType = union.getUriEndPoint();
 			if (UriEndPointType.PLAYER_END_POINT.equals(uriEndPointType)) {
-				return new PlayerEndPoint(parent);
+				return new PlayerEndPoint(thriftObject);
 			} else if (UriEndPointType.RECORDER_END_POINT
 					.equals(uriEndPointType)) {
-				return new RecorderEndPoint(parent);
+				return new RecorderEndPoint(thriftObject);
 			}
 		} else if (union.isSetMixerType()) {
 			MixerType mixerType = union.getMixerType();
 			if (MixerType.MAIN_MIXER.equals(mixerType)) {
-				return new MainMixer(parent);
+				return new MainMixer(thriftObject);
 			}
 		} else if (union.isSetFilterType()) {
 			// TODO: complete when adding a filter
