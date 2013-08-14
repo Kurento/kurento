@@ -31,7 +31,14 @@ class MediaHandlerServer {
 					port);
 			server = new TNonblockingServer(new TNonblockingServer.Args(
 					serverTransport).processor(processor));
-			server.serve();
+
+			new Thread() {
+				@Override
+				public void run() {
+					server.serve();
+				}
+			}.start();
+
 		} catch (TTransportException e) {
 			throw new IOException(e);
 		}
