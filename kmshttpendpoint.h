@@ -48,6 +48,9 @@ struct _KmsHttpEndPointClass
 {
   KmsElementClass parent_class;
 
+  /* signal */
+  void (*eos_signal) (KmsHttpEndPoint * self);
+
   /* actions */
   GstFlowReturn (*push_buffer) (KmsHttpEndPoint * self, GstBuffer * buffer);
   GstFlowReturn (*end_of_stream) (KmsHttpEndPoint * self);

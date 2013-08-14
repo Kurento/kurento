@@ -31,6 +31,9 @@ struct _KmsHttpEndPointPrivate
 
 enum
 {
+  /* SIGNAL_EOS */
+  SIGNAL_EOS,
+
   /* actions */
   SIGNAL_PUSH_BUFFER,
   SIGNAL_END_OF_STREAM,
@@ -180,9 +183,17 @@ post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
 }
 
 static void
+bus_message (GstBus * bus, GstMessage * msg, KmsHttpEndPoint * self)
+{
+  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS)
+    g_signal_emit (G_OBJECT (self), http_ep_signals[SIGNAL_EOS], 0);
+}
+
+static void
 kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
 {
   GstElement *decodebin;
+  GstBus *bus;
 
   self->priv->post_pipeline = gst_pipeline_new (NULL);
   self->priv->postsrc = gst_element_factory_make ("appsrc", NULL);
@@ -203,6 +214,11 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
       G_CALLBACK (post_decodebin_pad_added_handler), self);
   g_signal_connect (decodebin, "pad-removed",
       G_CALLBACK (post_decodebin_pad_removed_handler), self);
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->post_pipeline));
+  gst_bus_add_signal_watch (bus);
+  g_signal_connect (G_OBJECT (bus), "message", G_CALLBACK (bus_message), self);
+  g_object_unref (bus);
 
   /* Set pipeline to playing */
   gst_element_set_state (self->priv->post_pipeline, GST_STATE_PLAYING);
@@ -244,6 +260,12 @@ kms_http_end_point_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   if (self->priv->post_pipeline != NULL) {
+    GstBus *bus;
+
+    bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->post_pipeline));
+    gst_bus_remove_signal_watch (bus);
+    g_object_unref (bus);
+
     gst_element_set_state (self->priv->post_pipeline, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (self->priv->post_pipeline));
     self->priv->post_pipeline = NULL;
@@ -278,6 +300,15 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
   gobject_class->dispose = kms_http_end_point_dispose;
   gobject_class->finalize = kms_http_end_point_finalize;
 
+  /* set signals */
+  http_ep_signals[SIGNAL_EOS] =
+      g_signal_new ("eos",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsHttpEndPointClass, eos_signal), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  /* set actions */
   http_ep_signals[SIGNAL_PUSH_BUFFER] =
       g_signal_new ("push-buffer", G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
@@ -305,7 +336,6 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
   self->priv = KMS_HTTP_END_POINT_GET_PRIVATE (self);
 
   self->priv->post_pipeline = NULL;
-
 }
 
 gboolean
