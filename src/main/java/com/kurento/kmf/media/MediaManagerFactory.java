@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaManager_call;

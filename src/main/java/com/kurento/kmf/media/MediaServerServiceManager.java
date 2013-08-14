@@ -1,4 +1,4 @@
-package com.kurento.kmf.media.internal;
+package com.kurento.kmf.media;
 
 import java.io.IOException;
 import java.util.Set;
@@ -18,11 +18,10 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.media.MediaManagerHandler;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 
-public class MediaServerServiceManager {
+class MediaServerServiceManager {
 
 	private static Logger log = LoggerFactory
 			.getLogger(MediaServerServiceManager.class);

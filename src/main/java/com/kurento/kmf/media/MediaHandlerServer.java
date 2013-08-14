@@ -1,4 +1,4 @@
-package com.kurento.kmf.media.internal;
+package com.kurento.kmf.media;
 
 import java.io.IOException;
 
@@ -9,7 +9,6 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import com.kurento.kmf.media.MediaManagerHandler;
 import com.kurento.kms.api.MediaError;
 import com.kurento.kms.api.MediaEvent;
 import com.kurento.kms.api.MediaHandlerService;
@@ -55,13 +54,13 @@ class MediaHandlerServer {
 			new MediaHandlerService.Iface() {
 
 				@Override
-				public void onEvent(MediaEvent arg0) throws TException {
+				public void onEvent(MediaEvent event) throws TException {
 					// TODO: build a KMF MediaEvent from this KMS MediaEvent and
 					// call onEvent over the handler
 				}
 
 				@Override
-				public void onError(MediaError arg0) throws TException {
+				public void onError(MediaError error) throws TException {
 					// TODO: build a KMF MediaError from this KMS MediaError and
 					// call onEvent over the handler
 				}

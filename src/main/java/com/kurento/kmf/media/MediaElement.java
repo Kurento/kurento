@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import com.kurento.kmf.media.internal.MediaServerServiceManager;
 import com.kurento.kms.api.Command;
 import com.kurento.kms.api.CommandResult;
 import com.kurento.kms.api.EncodingException;
