@@ -68,7 +68,7 @@ kms_player_end_point_dispose (GObject * object)
     self->priv->pipeline = NULL;
   }
 
-  /* clean up as possible.  may be called multiple times */
+  /* clean up as possible. May be called multiple times */
 
   G_OBJECT_CLASS (kms_player_end_point_parent_class)->dispose (object);
 }
@@ -85,31 +85,19 @@ kms_player_end_point_finalize (GObject * object)
   G_OBJECT_CLASS (kms_player_end_point_parent_class)->finalize (object);
 }
 
-void
+static void
 read_buffer (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
-  GstCaps *caps;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
   if (sample == NULL) {
-    GST_DEBUG_OBJECT (appsrc, "----------------->sample=NULL");
+    GST_WARNING_OBJECT (appsrc, "sample=NULL");
     return;
-  }
-
-  g_object_get (G_OBJECT (appsrc), "caps", &caps, NULL);
-
-  if (caps == NULL) {
-    /* Appsrc has not yet caps defined */
-    caps = gst_sample_get_caps (sample);
-    if (caps != NULL)
-      g_object_set (appsrc, "caps", caps, NULL);
-    else
-      GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (appsrc));
   }
 
   buffer = gst_sample_get_buffer (sample);
@@ -140,21 +128,22 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   src_caps = gst_pad_query_caps (pad, NULL);
   GST_DEBUG ("caps are %" GST_PTR_FORMAT, src_caps);
 
-  if (gst_caps_can_intersect (audio_caps, src_caps)) {
+  if (gst_caps_can_intersect (audio_caps, src_caps))
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
-    GST_DEBUG_OBJECT (self, "Linked appsrc_audio--audio_agnosticbin");
-  } else if (gst_caps_can_intersect (video_caps, src_caps)) {
+  else if (gst_caps_can_intersect (video_caps, src_caps))
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
-    GST_DEBUG_OBJECT (self, "Linked appsrc_video--video_agnosticbin");
-  } else {
-    GST_DEBUG_OBJECT (self, "NOT agnostic caps");
+  else {
+    GST_ERROR_OBJECT (self, "No agnostic caps provided");
+    gst_caps_unref (src_caps);
     goto end;
   }
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", (gint64) 0, "format", GST_FORMAT_TIME, NULL);
+      "min-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
+      "caps", src_caps, NULL);
+
   gst_bin_add (GST_BIN (self), appsrc);
   gst_element_sync_state_with_parent (appsrc);
   gst_element_link (appsrc, agnosticbin);
@@ -168,7 +157,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_link (pad, sinkpad);
-  GST_DEBUG_OBJECT (self, "Linked uridecodebin---appsink");
+  GST_DEBUG_OBJECT (self, "Linked %s---%s", GST_ELEMENT_NAME (element),
+      GST_ELEMENT_NAME (appsink));
   g_object_unref (sinkpad);
 
   /* Connect new-sample signal to callback */
@@ -182,23 +172,18 @@ end:
 
   if (video_caps != NULL)
     gst_caps_unref (video_caps);
-
-  if (src_caps != NULL)
-    gst_caps_unref (src_caps);
 }
 
 static void
-pad_removed (GstElement * element, GstPad * pad, gpointer data)
+pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 {
   GST_DEBUG ("Pad removed");
-
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
-  GstElement *sink, *appsrc;
+  GstElement *appsink, *appsrc;
 
   if (GST_PAD_IS_SINK (pad))
     return;
 
-  sink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
+  appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
   appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
 
   if (appsrc != NULL) {
@@ -211,18 +196,18 @@ pad_removed (GstElement * element, GstPad * pad, gpointer data)
     }
   }
 
-  if (sink == NULL) {
+  if (appsink == NULL) {
     GST_ERROR ("No appsink was found associated with %P", pad);
     return;
   }
-  if (!gst_element_set_locked_state (sink, TRUE))
-    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (sink));
+  if (!gst_element_set_locked_state (appsink, TRUE))
+    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (appsink));
 
-  GST_DEBUG ("Removing sink %s from %s", GST_ELEMENT_NAME (sink),
+  GST_DEBUG ("Removing appsink %s from %s", GST_ELEMENT_NAME (appsink),
       GST_ELEMENT_NAME (self->priv->pipeline));
 
-  gst_element_set_state (sink, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self->priv->pipeline), sink);
+  gst_element_set_state (appsink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), appsink);
 }
 
 static void
