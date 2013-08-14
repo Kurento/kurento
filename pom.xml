@@ -18,6 +18,7 @@
 		<!-- Dependencies Versions -->
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<slf4j-api.version>1.7.5</slf4j-api.version>
+		<kws-content-api.version>1.0.0-SNAPSHOT</kws-content-api.version>
 
 		<!-- Test Dependencies Versions -->
 		<junit.version>4.8.1</junit.version>
@@ -36,6 +37,7 @@
 		<maven-war-plugin.version>2.3</maven-war-plugin.version>
 		<maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
 		<maven-failsafe-plugin.version>2.15</maven-failsafe-plugin.version>
+		<maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
@@ -138,6 +140,33 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>${maven-surefire-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${maven-dependency-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>copy-js-deps</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.kurento.kws</groupId>
+									<artifactId>kws-content-api</artifactId>
+									<version>${kws-content-api.version}</version>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${basedir}/target/${project.artifactId}-${project.version}</outputDirectory>
+									<includes>**/*.*</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
