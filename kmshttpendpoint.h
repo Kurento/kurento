@@ -50,6 +50,7 @@ struct _KmsHttpEndPointClass
 
   /* actions */
   GstFlowReturn (*push_buffer) (KmsHttpEndPoint * self, GstBuffer * buffer);
+  GstFlowReturn (*end_of_stream) (KmsHttpEndPoint * self);
 };
 
 GType kms_http_end_point_get_type (void);

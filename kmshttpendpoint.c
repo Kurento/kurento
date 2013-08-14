@@ -33,6 +33,7 @@ enum
 {
   /* actions */
   SIGNAL_PUSH_BUFFER,
+  SIGNAL_END_OF_STREAM,
   LAST_SIGNAL
 };
 
@@ -223,6 +224,18 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
   return ret;
 }
 
+static GstFlowReturn
+kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
+{
+  GstFlowReturn ret;
+
+  if (self->priv->post_pipeline == NULL)
+    return GST_FLOW_ERROR;
+
+  g_signal_emit_by_name (self->priv->postsrc, "end-of-stream", &ret);
+  return ret;
+}
+
 static void
 kms_http_end_point_dispose (GObject * object)
 {
@@ -272,7 +285,15 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       NULL, NULL, __kms_marshal_ENUM__BOXED,
       GST_TYPE_FLOW_RETURN, 1, GST_TYPE_BUFFER);
 
+  http_ep_signals[SIGNAL_END_OF_STREAM] =
+      g_signal_new ("end-of-stream", G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsHttpEndPointClass, end_of_stream),
+      NULL, NULL, __kms_marshal_ENUM__VOID,
+      GST_TYPE_FLOW_RETURN, 0, G_TYPE_NONE);
+
   klass->push_buffer = kms_http_end_point_push_buffer_action;
+  klass->end_of_stream = kms_http_end_point_end_of_stream_action;
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsHttpEndPointPrivate));
