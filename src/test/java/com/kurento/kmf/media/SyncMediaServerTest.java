@@ -7,23 +7,21 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kurento.kmf.media.MainMixer;
-import com.kurento.kmf.media.MediaException;
-import com.kurento.kmf.media.MediaManager;
-import com.kurento.kmf.media.MediaManagerFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.RecorderEndPoint;
-import com.kurento.kmf.media.RtpEndPoint;
 import com.kurento.kms.api.MediaType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
 public class SyncMediaServerTest {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(SyncMediaServerTest.class);
 
 	@Autowired
 	@Qualifier("mediaManagerFactory")
@@ -45,11 +43,10 @@ public class SyncMediaServerTest {
 	public void testStreamSync() throws MediaException, IOException,
 			InterruptedException {
 		RtpEndPoint stream = mediaManager.createSdpEndPoint(RtpEndPoint.class);
-		System.out.println("generateOffer sessionDecriptor: "
-				+ stream.generateOffer());
-		System.out.println("processOffer sessionDecriptor: "
+		log.debug("generateOffer sessionDecriptor: " + stream.generateOffer());
+		log.debug("processOffer sessionDecriptor: "
 				+ stream.processOffer("processOffer test"));
-		System.out.println("processAnswer sessionDecriptor: "
+		log.debug("processAnswer sessionDecriptor: "
 				+ stream.processAnswer("processAnswer test"));
 		stream.release();
 	}
@@ -83,18 +80,14 @@ public class SyncMediaServerTest {
 		RtpEndPoint streamA = mediaManager.createSdpEndPoint(RtpEndPoint.class);
 		RtpEndPoint streamB = mediaManager.createSdpEndPoint(RtpEndPoint.class);
 
-		System.out.println("MediaSrcs: " + streamA.getMediaSrcs());
-		System.out.println("MediaSinks: " + streamA.getMediaSinks());
+		log.debug("MediaSrcs: " + streamA.getMediaSrcs());
+		log.debug("MediaSinks: " + streamA.getMediaSinks());
 
-		System.out.println("MediaSrcs audio: "
-				+ streamA.getMediaSrcs(MediaType.AUDIO));
-		System.out.println("MediaSrcs video: "
-				+ streamA.getMediaSrcs(MediaType.VIDEO));
+		log.debug("MediaSrcs audio: " + streamA.getMediaSrcs(MediaType.AUDIO));
+		log.debug("MediaSrcs video: " + streamA.getMediaSrcs(MediaType.VIDEO));
 
-		System.out.println("MediaSinks audio: "
-				+ streamA.getMediaSinks(MediaType.AUDIO));
-		System.out.println("MediaSinks video: "
-				+ streamA.getMediaSinks(MediaType.VIDEO));
+		log.debug("MediaSinks audio: " + streamA.getMediaSinks(MediaType.AUDIO));
+		log.debug("MediaSinks video: " + streamA.getMediaSinks(MediaType.VIDEO));
 
 		streamA.release();
 		streamB.release();
