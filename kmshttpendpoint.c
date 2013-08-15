@@ -52,8 +52,9 @@ struct _KmsHttpEndPointPrivate
 
 enum
 {
-  /* SIGNAL_EOS */
+  /* signals */
   SIGNAL_EOS,
+  SIGNAL_NEW_SAMPLE,
 
   /* actions */
   SIGNAL_PUSH_BUFFER,
@@ -91,31 +92,44 @@ fail:
   return NULL;
 }
 
-static void
+static GstFlowReturn
 new_sample_handler (GstElement * appsink, gpointer user_data)
 {
+  GstElement *element = GST_ELEMENT (user_data);
   KmsHttpEndPoint *self;
-  GstElement *appsrc;
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
+  GstCaps *caps;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
-    return;
+    return GST_FLOW_ERROR;
+
+  if (KMS_IS_HTTP_END_POINT (element)) {
+    g_signal_emit (G_OBJECT (element), http_ep_signals[SIGNAL_NEW_SAMPLE], 0,
+        &ret);
+    return ret;
+  }
+
+  /* element is an appsrc one */
+  g_object_get (G_OBJECT (element), "caps", &caps, NULL);
+  if (caps == NULL) {
+    /* Appsrc has not yet caps defined */
+    caps = gst_sample_get_caps (sample);
+    if (caps != NULL) {
+      GST_DEBUG ("Setting caps %" GST_PTR_FORMAT " to %s", caps,
+          GST_ELEMENT_NAME (element));
+      g_object_set (element, "caps", caps, NULL);
+    } else
+      GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (element));
+  }
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL)
-    return;
+    return GST_FLOW_ERROR;
 
-  if (user_data == NULL) {
-    /* No appsrc connected */
-    GST_WARNING ("TODO: Emit new sample Signal");
-    return;
-  }
-
-  appsrc = GST_ELEMENT (user_data);
-  self = get_http_ep_from_elements (appsink, appsrc);
+  self = get_http_ep_from_elements (appsink, element);
   if (self && self->priv->method == GET_METHOD) {
     /* HttpEndPoint behaves as a recorder */
     buffer->pts = G_GUINT64_CONSTANT (0);
@@ -124,13 +138,15 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
     buffer->offset_end = G_GUINT64_CONSTANT (0);
   }
 
-  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
+  g_signal_emit_by_name (element, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
     // something wrong
     GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
-        GST_ELEMENT_NAME (appsrc));
+        GST_ELEMENT_NAME (element));
   }
+
+  return ret;
 }
 
 static void
@@ -347,7 +363,7 @@ kms_http_end_point_add_sink (KmsHttpEndPoint * self)
 
   g_object_set (appsink, "emit-signals", TRUE, NULL);
   g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
-      NULL);
+      self);
   g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), NULL);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
@@ -501,9 +517,18 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
 
   self->priv->get_encodebin = gst_element_factory_make ("encodebin", NULL);
   kms_http_end_point_set_profile_to_encodebin (self);
-  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get_encodebin);
 
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get_encodebin);
   gst_element_sync_state_with_parent (self->priv->get_encodebin);
+
+  appsrc = gst_element_factory_make ("appsrc", srcname);
+
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+
+  gst_bin_add (GST_BIN (self->priv->pipeline), appsrc);
+  gst_element_sync_state_with_parent (appsrc);
   kms_http_end_point_add_sink (self);
 
   appsink = gst_element_factory_make ("appsink", sinkname);
@@ -512,7 +537,8 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
   g_object_set (appsink, "caps", caps, NULL);
 
   gst_caps_unref (caps);
-
+  /* FIXME: (Bug from recorderendpoint). */
+  /* Next function get locked with audio and video */
   kms_http_end_point_update_links (self, old_encodebin);
 
   if (old_encodebin != NULL) {
@@ -525,14 +551,6 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
     }
   }
 
-  appsrc = gst_element_factory_make ("appsrc", srcname);
-
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
-
-  gst_bin_add (GST_BIN (KMS_HTTP_END_POINT (self)->priv->pipeline), appsrc);
-  gst_element_sync_state_with_parent (appsrc);
   gst_element_link_pads (appsrc, "src", self->priv->get_encodebin, destpadname);
 
   g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
@@ -687,6 +705,12 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsHttpEndPointClass, eos_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  http_ep_signals[SIGNAL_NEW_SAMPLE] =
+      g_signal_new ("new-sample", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsHttpEndPointClass, new_sample),
+      NULL, NULL, __kms_marshal_ENUM__VOID, GST_TYPE_FLOW_RETURN, 0,
+      G_TYPE_NONE);
 
   /* set actions */
   http_ep_signals[SIGNAL_PUSH_BUFFER] =
