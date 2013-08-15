@@ -557,6 +557,8 @@ kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 
   kms_http_end_point_add_appsrc (httpep, valve, KMS_AGNOSTIC_RAW_AUDIO_CAPS,
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
+
+  g_object_set (valve, "drop", FALSE, NULL);
 }
 
 static void
@@ -583,6 +585,8 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 
   kms_http_end_point_add_appsrc (httpep, valve, KMS_AGNOSTIC_RAW_VIDEO_CAPS,
       VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
+
+  g_object_set (valve, "drop", FALSE, NULL);
 }
 
 static void
