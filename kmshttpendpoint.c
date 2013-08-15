@@ -368,7 +368,7 @@ kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
 }
 
 static void
-kms_http_end_point_link_old_src_to_encodebin (KmsHttpEndPoint * self,
+kms_http_end_point_update_links (KmsHttpEndPoint * self,
     GstElement * old_encodebin)
 {
   GstIterator *it;
@@ -482,7 +482,7 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
 
   gst_caps_unref (caps);
 
-  kms_http_end_point_link_old_src_to_encodebin (self, old_encodebin);
+  kms_http_end_point_update_links (self, old_encodebin);
 
   if (old_encodebin != NULL) {
     if (GST_STATE (old_encodebin) <= GST_STATE_PAUSED) {
