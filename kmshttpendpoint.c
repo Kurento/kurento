@@ -335,7 +335,7 @@ kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
 }
 
 static GstSample *
-kms_http_end_point_pull_sample (KmsHttpEndPoint * self)
+kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
 {
   GstSample *sample;
 
@@ -761,7 +761,7 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       NULL, NULL, __kms_marshal_ENUM__VOID,
       GST_TYPE_FLOW_RETURN, 0, G_TYPE_NONE);
 
-  klass->pull_sample = kms_http_end_point_pull_sample;
+  klass->pull_sample = kms_http_end_point_pull_sample_action;
   klass->push_buffer = kms_http_end_point_push_buffer_action;
   klass->end_of_stream = kms_http_end_point_end_of_stream_action;
 
