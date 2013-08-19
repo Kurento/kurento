@@ -57,6 +57,10 @@ class MediaHandlerServer {
 				public void onEvent(MediaEvent event) throws TException {
 					// TODO: build a KMF MediaEvent from this KMS MediaEvent and
 					// call onEvent over the handler
+					MediaObject source = MediaObject
+							.getMediaObject(event.source);
+					KmsEvent kmsEvent = source.deserializeEvent(event);
+					handler.onEvent(kmsEvent);
 				}
 
 				@Override

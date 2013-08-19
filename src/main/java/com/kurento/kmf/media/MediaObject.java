@@ -7,6 +7,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kms.api.EndPointType;
+import com.kurento.kms.api.MediaEvent;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaObjectType;
 import com.kurento.kms.api.MediaObjectTypeUnion;
@@ -146,7 +147,7 @@ public abstract class MediaObject implements Serializable {
 		}
 	}
 
-	private MediaObject getMediaObject(
+	protected static MediaObject getMediaObject(
 			com.kurento.kms.api.MediaObject thriftObject) {
 		MediaObjectTypeUnion union = thriftObject.getType();
 
@@ -195,6 +196,12 @@ public abstract class MediaObject implements Serializable {
 		}
 
 		return null;
+	}
+
+	KmsEvent deserializeEvent(MediaEvent event) {
+		// NOTE: This method should be override by childs emiting events, by
+		// default this returns an empty KmsEvent
+		return new KmsEvent(this);
 	}
 
 }
