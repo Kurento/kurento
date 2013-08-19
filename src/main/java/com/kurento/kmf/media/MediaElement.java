@@ -61,6 +61,8 @@ public abstract class MediaElement extends MediaObject {
 	 * @throws IOException
 	 */
 	public MediaManager getMediaManager() throws IOException {
+		// FIXME: This function fails for MixerEndPoints (it returns null
+		// instead of the MediaManager)
 		MediaObject parent = getParent();
 		if (parent instanceof MediaManager) {
 			return (MediaManager) parent;
