@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -36,8 +37,8 @@ public abstract class MediaPad extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaPad(com.kurento.kms.api.MediaObject mediaPad) {
-		super(mediaPad);
+	MediaPad(MediaObjectId mediaPadId) {
+		super(mediaPadId);
 	}
 
 	/* SYNC */
@@ -60,7 +61,7 @@ public abstract class MediaPad extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			return service.getMediaType(mediaObject);
+			return service.getMediaType(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -107,7 +108,7 @@ public abstract class MediaPad extends MediaObject {
 
 		try {
 			service.getMediaType(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaType_call>() {
 						@Override
 						public void onComplete(getMediaType_call response) {

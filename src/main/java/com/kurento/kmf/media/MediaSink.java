@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -35,8 +36,8 @@ public class MediaSink extends MediaPad {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaSink(com.kurento.kms.api.MediaObject mediaSink) {
-		super(mediaSink);
+	MediaSink(MediaObjectId mediaSinkId) {
+		super(mediaSinkId);
 	}
 
 	/* SYNC */
@@ -52,11 +53,11 @@ public class MediaSink extends MediaPad {
 				.getMediaServerService();
 
 		try {
-			com.kurento.kms.api.MediaObject connectedSrc = service
-					.getConnectedSrc(mediaObject);
-			if (connectedSrc == null)
+			MediaObjectId connectedSrcId = service
+					.getConnectedSrc(mediaObjectId);
+			if (connectedSrcId == null)
 				return null;
-			return new MediaSrc(connectedSrc);
+			return new MediaSrc(connectedSrcId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -83,17 +84,17 @@ public class MediaSink extends MediaPad {
 
 		try {
 			service.getConnectedSrc(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getConnectedSrc_call>() {
 						@Override
 						public void onComplete(getConnectedSrc_call response) {
 							try {
-								com.kurento.kms.api.MediaObject connectedSrc = response
+								MediaObjectId connectedSrcId = response
 										.getResult();
-								if (connectedSrc == null) {
+								if (connectedSrcId == null) {
 									cont.onSuccess(null);
 								} else {
-									cont.onSuccess(new MediaSrc(connectedSrc));
+									cont.onSuccess(new MediaSrc(connectedSrcId));
 								}
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e

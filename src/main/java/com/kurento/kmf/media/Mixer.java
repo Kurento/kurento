@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -18,8 +19,8 @@ public abstract class Mixer extends MediaObject {
 
 	private static final String MIXER_TYPE_FIELD_NAME = "mixerType";
 
-	Mixer(com.kurento.kms.api.MediaObject mixer) {
-		super(mixer);
+	Mixer(MediaObjectId mixerId) {
+		super(mixerId);
 	}
 
 	static <T extends Mixer> MixerType getType(Class<T> type) {
@@ -44,7 +45,7 @@ public abstract class Mixer extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			return new MixerEndPoint(service.createMixerEndPoint(mediaObject));
+			return new MixerEndPoint(service.createMixerEndPoint(mediaObjectId));
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -65,7 +66,7 @@ public abstract class Mixer extends MediaObject {
 
 		try {
 			service.createMixerEndPoint(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixerEndPoint_call>() {
 						@Override
 						public void onComplete(createMixerEndPoint_call response) {

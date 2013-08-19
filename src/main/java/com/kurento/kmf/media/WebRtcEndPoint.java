@@ -1,6 +1,6 @@
 package com.kurento.kmf.media;
 
-import com.kurento.kms.api.MediaObject;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.SdpEndPointType;
 
 public class WebRtcEndPoint extends SdpEndPoint {
@@ -9,8 +9,8 @@ public class WebRtcEndPoint extends SdpEndPoint {
 
 	static final SdpEndPointType sdpEndPointType = SdpEndPointType.WEBRTC_END_POINT;
 
-	public WebRtcEndPoint(MediaObject webRtcEndPoint) {
-		super(webRtcEndPoint);
+	public WebRtcEndPoint(MediaObjectId webRtcEndPointId) {
+		super(webRtcEndPointId);
 	}
 
 }

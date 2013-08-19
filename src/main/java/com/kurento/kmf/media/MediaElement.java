@@ -11,6 +11,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 import com.kurento.kms.api.Command;
 import com.kurento.kms.api.CommandResult;
 import com.kurento.kms.api.EncodingException;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -25,8 +26,8 @@ public abstract class MediaElement extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaElement(com.kurento.kms.api.MediaObject mediaElement) {
-		super(mediaElement);
+	MediaElement(MediaObjectId mediaElementId) {
+		super(mediaElementId);
 	}
 
 	/* SYNC */
@@ -43,7 +44,7 @@ public abstract class MediaElement extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			return service.sendCommand(mediaObject, command);
+			return service.sendCommand(mediaObjectId, command);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -75,10 +76,10 @@ public abstract class MediaElement extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			List<com.kurento.kms.api.MediaObject> tMediaSrcs = service
-					.getMediaSrcs(mediaObject);
+			List<MediaObjectId> tMediaSrcs = service
+					.getMediaSrcs(mediaObjectId);
 			List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-			for (com.kurento.kms.api.MediaObject tms : tMediaSrcs) {
+			for (MediaObjectId tms : tMediaSrcs) {
 				mediaSrcs.add(new MediaSrc(tms));
 			}
 
@@ -99,10 +100,10 @@ public abstract class MediaElement extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			List<com.kurento.kms.api.MediaObject> tMediaSinks = service
-					.getMediaSinks(mediaObject);
+			List<MediaObjectId> tMediaSinks = service
+					.getMediaSinks(mediaObjectId);
 			List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
-			for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+			for (MediaObjectId tms : tMediaSinks) {
 				mediaSinks.add(new MediaSink(tms));
 			}
 
@@ -124,10 +125,10 @@ public abstract class MediaElement extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			List<com.kurento.kms.api.MediaObject> tMediaSrcs = service
-					.getMediaSrcsByMediaType(mediaObject, mediaType);
+			List<MediaObjectId> tMediaSrcs = service
+					.getMediaSrcsByMediaType(mediaObjectId, mediaType);
 			List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-			for (com.kurento.kms.api.MediaObject tms : tMediaSrcs) {
+			for (MediaObjectId tms : tMediaSrcs) {
 				mediaSrcs.add(new MediaSrc(tms));
 			}
 
@@ -149,10 +150,10 @@ public abstract class MediaElement extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			List<com.kurento.kms.api.MediaObject> tMediaSinks = service
-					.getMediaSinksByMediaType(mediaObject, mediaType);
+			List<MediaObjectId> tMediaSinks = service
+					.getMediaSinksByMediaType(mediaObjectId, mediaType);
 			List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
-			for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+			for (MediaObjectId tms : tMediaSinks) {
 				mediaSinks.add(new MediaSink(tms));
 			}
 
@@ -184,7 +185,7 @@ public abstract class MediaElement extends MediaObject {
 
 		try {
 			service.sendCommand(
-					mediaObject,
+					mediaObjectId,
 					command,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.sendCommand_call>() {
 						@Override
@@ -248,15 +249,15 @@ public abstract class MediaElement extends MediaObject {
 
 		try {
 			service.getMediaSrcs(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaSrcs_call>() {
 						@Override
 						public void onComplete(getMediaSrcs_call response) {
 							try {
-								List<com.kurento.kms.api.MediaObject> tMediaSrcs = response
+								List<MediaObjectId> tMediaSrcs = response
 										.getResult();
 								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSrcs) {
+								for (MediaObjectId tms : tMediaSrcs) {
 									mediaSrcs.add(new MediaSrc(tms));
 								}
 								cont.onSuccess(mediaSrcs);
@@ -290,22 +291,22 @@ public abstract class MediaElement extends MediaObject {
 
 		try {
 			service.getMediaSinks(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaSinks_call>() {
 						@Override
 						public void onComplete(getMediaSinks_call response) {
 							try {
-								List<com.kurento.kms.api.MediaObject> tMediaSrcs = response
+								List<MediaObjectId> tMediaSrcs = response
 										.getResult();
 								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSrcs) {
+								for (MediaObjectId tms : tMediaSrcs) {
 									mediaSrcs.add(new MediaSrc(tms));
 								}
 
-								List<com.kurento.kms.api.MediaObject> tMediaSinks = response
+								List<MediaObjectId> tMediaSinks = response
 										.getResult();
 								List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+								for (MediaObjectId tms : tMediaSinks) {
 									mediaSinks.add(new MediaSink(tms));
 								}
 								cont.onSuccess(mediaSinks);
@@ -339,17 +340,17 @@ public abstract class MediaElement extends MediaObject {
 
 		try {
 			service.getMediaSrcsByMediaType(
-					mediaObject,
+					mediaObjectId,
 					mediaType,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaSrcsByMediaType_call>() {
 						@Override
 						public void onComplete(
 								getMediaSrcsByMediaType_call response) {
 							try {
-								List<com.kurento.kms.api.MediaObject> tMediaSrcs = response
+								List<MediaObjectId> tMediaSrcs = response
 										.getResult();
 								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSrcs) {
+								for (MediaObjectId tms : tMediaSrcs) {
 									mediaSrcs.add(new MediaSrc(tms));
 								}
 								cont.onSuccess(mediaSrcs);
@@ -383,24 +384,24 @@ public abstract class MediaElement extends MediaObject {
 
 		try {
 			service.getMediaSinksByMediaType(
-					mediaObject,
+					mediaObjectId,
 					mediaType,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getMediaSinksByMediaType_call>() {
 						@Override
 						public void onComplete(
 								getMediaSinksByMediaType_call response) {
 							try {
-								List<com.kurento.kms.api.MediaObject> tMediaSrcs = response
+								List<MediaObjectId> tMediaSrcs = response
 										.getResult();
 								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSrcs) {
+								for (MediaObjectId tms : tMediaSrcs) {
 									mediaSrcs.add(new MediaSrc(tms));
 								}
 
-								List<com.kurento.kms.api.MediaObject> tMediaSinks = response
+								List<MediaObjectId> tMediaSinks = response
 										.getResult();
 								List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+								for (MediaObjectId tms : tMediaSinks) {
 									mediaSinks.add(new MediaSink(tms));
 								}
 								cont.onSuccess(mediaSinks);

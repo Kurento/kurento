@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -40,8 +41,8 @@ public class MediaSrc extends MediaPad {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaSrc(com.kurento.kms.api.MediaObject mediaSrc) {
-		super(mediaSrc);
+	MediaSrc(MediaObjectId mediaSrcId) {
+		super(mediaSrcId);
 	}
 
 	/* SYNC */
@@ -59,7 +60,7 @@ public class MediaSrc extends MediaPad {
 				.getMediaServerService();
 
 		try {
-			service.connect(mediaObject, sink.mediaObject);
+			service.connect(mediaObjectId, sink.mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -83,7 +84,7 @@ public class MediaSrc extends MediaPad {
 				.getMediaServerService();
 
 		try {
-			service.disconnect(mediaObject, sink.mediaObject);
+			service.disconnect(mediaObjectId, sink.mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -100,10 +101,10 @@ public class MediaSrc extends MediaPad {
 				.getMediaServerService();
 
 		try {
-			List<com.kurento.kms.api.MediaObject> tMediaSinks = service
-					.getConnectedSinks(mediaObject);
+			List<MediaObjectId> tMediaSinks = service
+					.getConnectedSinks(mediaObjectId);
 			List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
-			for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+			for (MediaObjectId tms : tMediaSinks) {
 				mediaSinks.add(new MediaSink(tms));
 			}
 			return mediaSinks;
@@ -135,8 +136,8 @@ public class MediaSrc extends MediaPad {
 
 		try {
 			service.connect(
-					mediaObject,
-					sink.mediaObject,
+					mediaObjectId,
+					sink.mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.connect_call>() {
 						@Override
 						public void onComplete(connect_call response) {
@@ -180,8 +181,8 @@ public class MediaSrc extends MediaPad {
 
 		try {
 			service.disconnect(
-					mediaObject,
-					sink.mediaObject,
+					mediaObjectId,
+					sink.mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.disconnect_call>() {
 						@Override
 						public void onComplete(disconnect_call response) {
@@ -218,15 +219,15 @@ public class MediaSrc extends MediaPad {
 
 		try {
 			service.getConnectedSinks(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getConnectedSinks_call>() {
 						@Override
 						public void onComplete(getConnectedSinks_call response) {
 							try {
-								List<com.kurento.kms.api.MediaObject> tMediaSinks = response
+								List<MediaObjectId> tMediaSinks = response
 										.getResult();
 								List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
-								for (com.kurento.kms.api.MediaObject tms : tMediaSinks) {
+								for (MediaObjectId tms : tMediaSinks) {
 									mediaSinks.add(new MediaSink(tms));
 								}
 								cont.onSuccess(mediaSinks);

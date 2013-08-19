@@ -2,6 +2,7 @@ package com.kurento.kmf.media;
 
 import java.io.IOException;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.UriEndPointType;
 
 public class RecorderEndPoint extends UriEndPoint {
@@ -10,8 +11,8 @@ public class RecorderEndPoint extends UriEndPoint {
 
 	static final UriEndPointType uriEndPointType = UriEndPointType.RECORDER_END_POINT;
 
-	RecorderEndPoint(com.kurento.kms.api.MediaObject recorderEndPoint) {
-		super(recorderEndPoint);
+	RecorderEndPoint(MediaObjectId recorderEndPointId) {
+		super(recorderEndPointId);
 	}
 
 	/* SYNC */

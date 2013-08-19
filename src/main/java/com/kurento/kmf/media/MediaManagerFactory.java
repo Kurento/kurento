@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaManager_call;
@@ -31,10 +32,10 @@ public class MediaManagerFactory {
 		try {
 			MediaServerService.Client service = MediaServerServiceManager
 					.getMediaServerService();
-			com.kurento.kms.api.MediaObject mediaManager = service
+			MediaObjectId mediaManagerId = service
 					.createMediaManager(handlerId);
 			MediaServerServiceManager.releaseMediaServerService(service);
-			return new MediaManager(mediaManager);
+			return new MediaManager(mediaManagerId);
 		} catch (MediaServerException e) {
 			throw new MediaException(e.getMessage(), e);
 		} catch (TException e) {
@@ -57,9 +58,9 @@ public class MediaManagerFactory {
 						@Override
 						public void onComplete(createMediaManager_call response) {
 							try {
-								com.kurento.kms.api.MediaObject mediaFactory = response
+								MediaObjectId mediaFactoryId = response
 										.getResult();
-								cont.onSuccess(new MediaManager(mediaFactory));
+								cont.onSuccess(new MediaManager(mediaFactoryId));
 							} catch (MediaServerException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));

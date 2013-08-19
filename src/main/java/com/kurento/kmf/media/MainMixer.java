@@ -1,6 +1,6 @@
 package com.kurento.kmf.media;
 
-import com.kurento.kms.api.MediaObject;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MixerType;
 
 public class MainMixer extends Mixer {
@@ -9,8 +9,8 @@ public class MainMixer extends Mixer {
 
 	static final MixerType mixerType = MixerType.MAIN_MIXER;
 
-	MainMixer(MediaObject mainMixer) {
-		super(mainMixer);
+	MainMixer(MediaObjectId mainMixerId) {
+		super(mainMixerId);
 	}
 
 }

@@ -2,12 +2,14 @@ package com.kurento.kmf.media;
 
 import java.io.IOException;
 
+import com.kurento.kms.api.MediaObjectId;
+
 public class MixerEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	MixerEndPoint(com.kurento.kms.api.MediaObject mixerEndPoint) {
-		super(mixerEndPoint);
+	MixerEndPoint(MediaObjectId mixerEndPointId) {
+		super(mixerEndPointId);
 	}
 
 	/* SYNC */

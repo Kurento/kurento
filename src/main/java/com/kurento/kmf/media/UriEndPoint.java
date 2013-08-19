@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import com.kurento.kms.api.MediaObject;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -22,8 +22,8 @@ public abstract class UriEndPoint extends EndPoint {
 
 	private static final String URI_END_POINT_TYPE_FIELD_NAME = "uriEndPointType";
 
-	UriEndPoint(MediaObject uriEndPoint) {
-		super(uriEndPoint);
+	UriEndPoint(MediaObjectId uriEndPointId) {
+		super(uriEndPointId);
 	}
 
 	static <T extends UriEndPoint> UriEndPointType getType(Class<T> type) {
@@ -48,7 +48,7 @@ public abstract class UriEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.getUri(mediaObject);
+			return service.getUri(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -65,7 +65,7 @@ public abstract class UriEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			service.start(mediaObject);
+			service.start(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -82,7 +82,7 @@ public abstract class UriEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			service.pause(mediaObject);
+			service.pause(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -99,7 +99,7 @@ public abstract class UriEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			service.stop(mediaObject);
+			service.stop(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -119,7 +119,7 @@ public abstract class UriEndPoint extends EndPoint {
 
 		try {
 			service.getUri(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getUri_call>() {
 						@Override
 						public void onComplete(getUri_call response) {
@@ -154,7 +154,7 @@ public abstract class UriEndPoint extends EndPoint {
 
 		try {
 			service.start(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.start_call>() {
 						@Override
 						public void onComplete(start_call response) {
@@ -190,7 +190,7 @@ public abstract class UriEndPoint extends EndPoint {
 
 		try {
 			service.pause(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.pause_call>() {
 						@Override
 						public void onComplete(pause_call response) {
@@ -226,7 +226,7 @@ public abstract class UriEndPoint extends EndPoint {
 
 		try {
 			service.stop(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.stop_call>() {
 						@Override
 						public void onComplete(stop_call response) {

@@ -8,6 +8,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kms.api.EndPointType;
 import com.kurento.kms.api.MediaEvent;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaObjectType;
 import com.kurento.kms.api.MediaObjectTypeUnion;
@@ -25,10 +26,10 @@ public abstract class MediaObject implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	final com.kurento.kms.api.MediaObject mediaObject;
+	final MediaObjectId mediaObjectId;
 
-	MediaObject(com.kurento.kms.api.MediaObject mediaObject) {
-		this.mediaObject = mediaObject;
+	MediaObject(MediaObjectId mediaObjectId) {
+		this.mediaObjectId = mediaObjectId;
 	}
 
 	/* SYNC */
@@ -38,7 +39,7 @@ public abstract class MediaObject implements Serializable {
 				.getMediaServerService();
 
 		try {
-			return getMediaObject(service.getParent(mediaObject));
+			return getMediaObject(service.getParent(mediaObjectId));
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -57,7 +58,7 @@ public abstract class MediaObject implements Serializable {
 				.getMediaServerService();
 
 		try {
-			service.release(mediaObject);
+			service.release(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -78,7 +79,7 @@ public abstract class MediaObject implements Serializable {
 
 		try {
 			service.getParent(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getParent_call>() {
 						@Override
 						public void onComplete(getParent_call response) {
@@ -117,7 +118,7 @@ public abstract class MediaObject implements Serializable {
 
 		try {
 			service.release(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.release_call>() {
 						@Override
 						public void onComplete(release_call response) {
@@ -148,48 +149,48 @@ public abstract class MediaObject implements Serializable {
 	}
 
 	protected static MediaObject getMediaObject(
-			com.kurento.kms.api.MediaObject thriftObject) {
-		MediaObjectTypeUnion union = thriftObject.getType();
+			MediaObjectId mediaObjectId) {
+		MediaObjectTypeUnion union = mediaObjectId.getType();
 
 		if (union.isSetMediaObject()) {
 			MediaObjectType mediaObjectType = union.getMediaObject();
 			if (MediaObjectType.MEDIA_MANAGER.equals(mediaObjectType)) {
-				return new MediaManager(thriftObject);
+				return new MediaManager(mediaObjectId);
 			}
 		} else if (union.isSetMediaPad()) {
 			// MediaPad will not be a parent of any media object
 			MediaPadType padType = union.getMediaPad();
 			if (MediaPadType.MEDIA_SRC.equals(padType)) {
-				return new MediaSrc(thriftObject);
+				return new MediaSrc(mediaObjectId);
 			} else if (MediaPadType.MEDIA_SINK.equals(padType)) {
-				return new MediaSink(thriftObject);
+				return new MediaSink(mediaObjectId);
 			}
 		} else if (union.isSetEndPoint()) {
 			EndPointType endPointType = union.getEndPoint();
 			if (EndPointType.HTTP_END_POINT.equals(endPointType)) {
-				return new HttpEndPoint(thriftObject);
+				return new HttpEndPoint(mediaObjectId);
 			} else if (EndPointType.MIXER_END_POINT.equals(endPointType)) {
-				return new MixerEndPoint(thriftObject);
+				return new MixerEndPoint(mediaObjectId);
 			}
 		} else if (union.isSetSdpEndPoint()) {
 			SdpEndPointType sdpEndPointType = union.getSdpEndPoint();
 			if (SdpEndPointType.RTP_END_POINT.equals(sdpEndPointType)) {
-				return new RtpEndPoint(thriftObject);
+				return new RtpEndPoint(mediaObjectId);
 			} else if (SdpEndPointType.WEBRTC_END_POINT.equals(sdpEndPointType)) {
-				return new WebRtcEndPoint(thriftObject);
+				return new WebRtcEndPoint(mediaObjectId);
 			}
 		} else if (union.isSetUriEndPoint()) {
 			UriEndPointType uriEndPointType = union.getUriEndPoint();
 			if (UriEndPointType.PLAYER_END_POINT.equals(uriEndPointType)) {
-				return new PlayerEndPoint(thriftObject);
+				return new PlayerEndPoint(mediaObjectId);
 			} else if (UriEndPointType.RECORDER_END_POINT
 					.equals(uriEndPointType)) {
-				return new RecorderEndPoint(thriftObject);
+				return new RecorderEndPoint(mediaObjectId);
 			}
 		} else if (union.isSetMixerType()) {
 			MixerType mixerType = union.getMixerType();
 			if (MixerType.MAIN_MIXER.equals(mixerType)) {
-				return new MainMixer(thriftObject);
+				return new MainMixer(mediaObjectId);
 			}
 		} else if (union.isSetFilterType()) {
 			// TODO: complete when adding a filter

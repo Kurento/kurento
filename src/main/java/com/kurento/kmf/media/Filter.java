@@ -3,7 +3,7 @@ package com.kurento.kmf.media;
 import java.lang.reflect.Field;
 
 import com.kurento.kms.api.FilterType;
-import com.kurento.kms.api.MediaObject;
+import com.kurento.kms.api.MediaObjectId;
 
 public abstract class Filter extends MediaElement {
 
@@ -11,8 +11,8 @@ public abstract class Filter extends MediaElement {
 
 	private static final String FILTER_TYPE_FIELD_NAME = "filterType";
 
-	Filter(MediaObject filter) {
-		super(filter);
+	Filter(MediaObjectId filterId) {
+		super(filterId);
 	}
 
 	static <T extends Filter> FilterType getType(Class<T> type) {

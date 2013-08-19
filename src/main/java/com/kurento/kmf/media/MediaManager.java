@@ -8,6 +8,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kms.api.FilterType;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -25,16 +26,16 @@ public class MediaManager extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaManager(com.kurento.kms.api.MediaObject mediaManager) {
-		super(mediaManager);
+	MediaManager(MediaObjectId mediaManagerId) {
+		super(mediaManagerId);
 	}
 
 	private static <T extends MediaObject> T createInstance(Class<T> type,
-			com.kurento.kms.api.MediaObject mediaObject) {
+			MediaObjectId mediaObjectId) {
 		try {
 			Constructor<T> constructor = type
-					.getDeclaredConstructor(com.kurento.kms.api.MediaObject.class);
-			return constructor.newInstance(mediaObject);
+					.getDeclaredConstructor(MediaObjectId.class);
+			return constructor.newInstance(mediaObjectId);
 		} catch (SecurityException e) {
 			throw new IllegalArgumentException(e);
 		} catch (IllegalArgumentException e) {
@@ -64,14 +65,14 @@ public class MediaManager extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			com.kurento.kms.api.MediaObject sdpEndPoint;
+			MediaObjectId sdpEndPointId;
 			if (sdp == null) {
-				sdpEndPoint = service.createSdpEndPoint(mediaObject, t);
+				sdpEndPointId = service.createSdpEndPoint(mediaObjectId, t);
 			} else {
-				sdpEndPoint = service.createSdpEndPointWithFixedSdp(
-						mediaObject, t, sdp);
+				sdpEndPointId = service.createSdpEndPointWithFixedSdp(
+						mediaObjectId, t, sdp);
 			}
-			return createInstance(type, sdpEndPoint);
+			return createInstance(type, sdpEndPointId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -90,9 +91,9 @@ public class MediaManager extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			com.kurento.kms.api.MediaObject uriEndPoint = service
-					.createUriEndPoint(mediaObject, t, uri);
-			return createInstance(type, uriEndPoint);
+			MediaObjectId uriEndPointId = service
+					.createUriEndPoint(mediaObjectId, t, uri);
+			return createInstance(type, uriEndPointId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -109,9 +110,9 @@ public class MediaManager extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			com.kurento.kms.api.MediaObject httpEndPoint = service
-					.createHttpEndPoint(mediaObject);
-			return new HttpEndPoint(httpEndPoint);
+			MediaObjectId httpEndPointId = service
+					.createHttpEndPoint(mediaObjectId);
+			return new HttpEndPoint(httpEndPointId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -130,9 +131,9 @@ public class MediaManager extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			com.kurento.kms.api.MediaObject mixer = service.createMixer(
-					mediaObject, t);
-			return createInstance(type, mixer);
+			MediaObjectId mixerId = service.createMixer(
+					mediaObjectId, t);
+			return createInstance(type, mixerId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -151,9 +152,9 @@ public class MediaManager extends MediaObject {
 				.getMediaServerService();
 
 		try {
-			com.kurento.kms.api.MediaObject filter = service.createFilter(
-					mediaObject, t);
-			return createInstance(type, filter);
+			MediaObjectId filterId = service.createFilter(
+					mediaObjectId, t);
+			return createInstance(type, filterId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -181,17 +182,17 @@ public class MediaManager extends MediaObject {
 		try {
 			if (sdp == null) {
 				service.createSdpEndPoint(
-						mediaObject,
+						mediaObjectId,
 						t,
 						new AsyncMethodCallback<MediaServerService.AsyncClient.createSdpEndPoint_call>() {
 							@Override
 							public void onComplete(
 									createSdpEndPoint_call response) {
 								try {
-									com.kurento.kms.api.MediaObject sdpEndPoint = response
+									MediaObjectId sdpEndPointId = response
 											.getResult();
 									cont.onSuccess(createInstance(type,
-											sdpEndPoint));
+											sdpEndPointId));
 								} catch (MediaObjectNotFoundException e) {
 									cont.onError(new RuntimeException(e
 											.getMessage(), e));
@@ -211,7 +212,7 @@ public class MediaManager extends MediaObject {
 						});
 			} else {
 				service.createSdpEndPointWithFixedSdp(
-						mediaObject,
+						mediaObjectId,
 						t,
 						sdp,
 						new AsyncMethodCallback<MediaServerService.AsyncClient.createSdpEndPointWithFixedSdp_call>() {
@@ -219,10 +220,10 @@ public class MediaManager extends MediaObject {
 							public void onComplete(
 									createSdpEndPointWithFixedSdp_call response) {
 								try {
-									com.kurento.kms.api.MediaObject sdpEndPoint = response
+									MediaObjectId sdpEndPointId = response
 											.getResult();
 									cont.onSuccess(createInstance(type,
-											sdpEndPoint));
+											sdpEndPointId));
 								} catch (MediaObjectNotFoundException e) {
 									cont.onError(new RuntimeException(e
 											.getMessage(), e));
@@ -256,16 +257,16 @@ public class MediaManager extends MediaObject {
 
 		try {
 			service.createUriEndPoint(
-					mediaObject,
+					mediaObjectId,
 					t,
 					uri,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createUriEndPoint_call>() {
 						@Override
 						public void onComplete(createUriEndPoint_call response) {
 							try {
-								com.kurento.kms.api.MediaObject uriEndPoint = response
+								MediaObjectId uriEndPointId = response
 										.getResult();
-								cont.onSuccess(createInstance(type, uriEndPoint));
+								cont.onSuccess(createInstance(type, uriEndPointId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -296,14 +297,14 @@ public class MediaManager extends MediaObject {
 
 		try {
 			service.createHttpEndPoint(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createHttpEndPoint_call>() {
 						@Override
 						public void onComplete(createHttpEndPoint_call response) {
 							try {
-								com.kurento.kms.api.MediaObject httpEndPoint = response
+								MediaObjectId httpEndPointId = response
 										.getResult();
-								cont.onSuccess(new HttpEndPoint(httpEndPoint));
+								cont.onSuccess(new HttpEndPoint(httpEndPointId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -335,15 +336,15 @@ public class MediaManager extends MediaObject {
 
 		try {
 			service.createFilter(
-					mediaObject,
+					mediaObjectId,
 					t,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createFilter_call>() {
 						@Override
 						public void onComplete(createFilter_call response) {
 							try {
-								com.kurento.kms.api.MediaObject filter = response
+								MediaObjectId filterId = response
 										.getResult();
-								cont.onSuccess(createInstance(type, filter));
+								cont.onSuccess(createInstance(type, filterId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -375,15 +376,15 @@ public class MediaManager extends MediaObject {
 
 		try {
 			service.createMixer(
-					mediaObject,
+					mediaObjectId,
 					t,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createMixer_call>() {
 						@Override
 						public void onComplete(createMixer_call response) {
 							try {
-								com.kurento.kms.api.MediaObject mixer = response
+								MediaObjectId mixerId = response
 										.getResult();
-								cont.onSuccess(createInstance(type, mixer));
+								cont.onSuccess(createInstance(type, mixerId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));

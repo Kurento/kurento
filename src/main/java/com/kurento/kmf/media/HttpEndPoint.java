@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
-import com.kurento.kms.api.MediaObject;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -21,8 +21,8 @@ public class HttpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
-	HttpEndPoint(MediaObject httpEndPoint) {
-		super(httpEndPoint);
+	HttpEndPoint(MediaObjectId httpEndPointId) {
+		super(httpEndPointId);
 	}
 
 	/* SYNC */
@@ -32,7 +32,7 @@ public class HttpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.getUrl(mediaObject);
+			return service.getUrl(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -52,7 +52,7 @@ public class HttpEndPoint extends EndPoint {
 
 		try {
 			service.getUrl(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getUrl_call>() {
 						@Override
 						public void onComplete(getUrl_call response) {

@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.PlayerEvent.PlayerEventType;
 import com.kurento.kms.api.MediaEvent;
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.PlayerEndPointEvent;
 import com.kurento.kms.api.UriEndPointType;
 
@@ -24,8 +25,8 @@ public class PlayerEndPoint extends UriEndPoint {
 
 	static final UriEndPointType uriEndPointType = UriEndPointType.PLAYER_END_POINT;
 
-	PlayerEndPoint(com.kurento.kms.api.MediaObject playerEndPoint) {
-		super(playerEndPoint);
+	PlayerEndPoint(MediaObjectId playerEndPointId) {
+		super(playerEndPointId);
 	}
 
 	// TODO: Move this to a utilities class

@@ -25,6 +25,7 @@ import java.security.Policy.Parameters;
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
+import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
@@ -161,8 +162,8 @@ public abstract class SdpEndPoint extends EndPoint {
 
 	private static final String SDP_END_POINT_TYPE_FIELD_NAME = "sdpEndPointType";
 
-	SdpEndPoint(com.kurento.kms.api.MediaObject sdpEndPoint) {
-		super(sdpEndPoint);
+	SdpEndPoint(MediaObjectId sdpEndPointId) {
+		super(sdpEndPointId);
 	}
 
 	static <T extends SdpEndPoint> SdpEndPointType getType(Class<T> type) {
@@ -187,7 +188,7 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.generateOffer(mediaObject);
+			return service.generateOffer(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -204,7 +205,7 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.processOffer(mediaObject, offer);
+			return service.processOffer(mediaObjectId, offer);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -221,7 +222,7 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.processAnswer(mediaObject, answer);
+			return service.processAnswer(mediaObjectId, answer);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -252,7 +253,7 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.getLocalSessionDescription(mediaObject);
+			return service.getLocalSessionDescription(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -280,7 +281,7 @@ public abstract class SdpEndPoint extends EndPoint {
 				.getMediaServerService();
 
 		try {
-			return service.getRemoteSessionDescription(mediaObject);
+			return service.getRemoteSessionDescription(mediaObjectId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -317,7 +318,7 @@ public abstract class SdpEndPoint extends EndPoint {
 
 		try {
 			service.generateOffer(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.generateOffer_call>() {
 						@Override
 						public void onComplete(generateOffer_call response) {
@@ -367,7 +368,7 @@ public abstract class SdpEndPoint extends EndPoint {
 
 		try {
 			service.processOffer(
-					mediaObject,
+					mediaObjectId,
 					offer,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.processOffer_call>() {
 						@Override
@@ -420,7 +421,7 @@ public abstract class SdpEndPoint extends EndPoint {
 
 		try {
 			service.processAnswer(
-					mediaObject,
+					mediaObjectId,
 					answer,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.processAnswer_call>() {
 						@Override
@@ -475,7 +476,7 @@ public abstract class SdpEndPoint extends EndPoint {
 
 		try {
 			service.getLocalSessionDescription(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getLocalSessionDescription_call>() {
 						@Override
 						public void onComplete(
@@ -524,7 +525,7 @@ public abstract class SdpEndPoint extends EndPoint {
 
 		try {
 			service.getRemoteSessionDescription(
-					mediaObject,
+					mediaObjectId,
 					new AsyncMethodCallback<MediaServerService.AsyncClient.getRemoteSessionDescription_call>() {
 						@Override
 						public void onComplete(
