@@ -48,6 +48,7 @@ struct _KmsHttpEndPointPrivate
   GstElement *pipeline;
   GstElement *postsrc;
   GstElement *get_encodebin;
+  GstElement *get_appsink;
 };
 
 enum
@@ -57,6 +58,7 @@ enum
   SIGNAL_NEW_SAMPLE,
 
   /* actions */
+  SIGNAL_PULL_SAMPLE,
   SIGNAL_PUSH_BUFFER,
   SIGNAL_END_OF_STREAM,
   LAST_SIGNAL
@@ -98,19 +100,22 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   GstElement *element = GST_ELEMENT (user_data);
   KmsHttpEndPoint *self;
   GstFlowReturn ret;
-  GstSample *sample;
+  GstSample *sample = NULL;
   GstBuffer *buffer;
   GstCaps *caps;
 
-  g_signal_emit_by_name (appsink, "pull-sample", &sample);
-  if (sample == NULL)
-    return GST_FLOW_ERROR;
-
   if (KMS_IS_HTTP_END_POINT (element)) {
+    /* Data has been received in encodebin's source pad. */
+    /* Raise new-sample signal so that application can */
+    /* deal with this stuff. */
     g_signal_emit (G_OBJECT (element), http_ep_signals[SIGNAL_NEW_SAMPLE], 0,
         &ret);
     return ret;
   }
+
+  g_signal_emit_by_name (appsink, "pull-sample", &sample);
+  if (sample == NULL)
+    return GST_FLOW_ERROR;
 
   /* element is an appsrc one */
   g_object_get (G_OBJECT (element), "caps", &caps, NULL);
@@ -138,6 +143,8 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
     buffer->offset_end = G_GUINT64_CONSTANT (0);
   }
 
+  /* Pass the buffer through appsrc element which is */
+  /* placed in a different pipeline */
   g_signal_emit_by_name (element, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
@@ -315,9 +322,25 @@ kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->get_encodebin = NULL;
+  self->priv->get_appsink = NULL;
 
   /* Set pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+}
+
+static GstSample *
+kms_http_end_point_pull_sample (KmsHttpEndPoint * self)
+{
+  GstSample *sample;
+
+  if (self->priv->method != GET_METHOD) {
+    GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
+    return NULL;
+  }
+
+  g_signal_emit_by_name (self->priv->get_appsink, "pull-sample", &sample);
+
+  return sample;
 }
 
 static GstFlowReturn
@@ -357,19 +380,18 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
 static void
 kms_http_end_point_add_sink (KmsHttpEndPoint * self)
 {
-  GstElement *appsink;
+  self->priv->get_appsink = gst_element_factory_make ("appsink", NULL);
 
-  appsink = gst_element_factory_make ("appsink", NULL);
+  g_object_set (self->priv->get_appsink, "emit-signals", TRUE, NULL);
+  g_signal_connect (self->priv->get_appsink, "new-sample",
+      G_CALLBACK (new_sample_handler), self);
+  g_signal_connect (self->priv->get_appsink, "eos", G_CALLBACK (eos_handler),
+      NULL);
 
-  g_object_set (appsink, "emit-signals", TRUE, NULL);
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
-      self);
-  g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), NULL);
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get_appsink);
+  gst_element_sync_state_with_parent (self->priv->get_appsink);
 
-  gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
-  gst_element_sync_state_with_parent (appsink);
-
-  gst_element_link (self->priv->get_encodebin, appsink);
+  gst_element_link (self->priv->get_encodebin, self->priv->get_appsink);
 }
 
 static void
@@ -713,6 +735,12 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       G_TYPE_NONE);
 
   /* set actions */
+  http_ep_signals[SIGNAL_PULL_SAMPLE] =
+      g_signal_new ("pull-sample", G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsHttpEndPointClass, pull_sample),
+      NULL, NULL, __kms_marshal_BOXED__VOID, GST_TYPE_SAMPLE, 0, G_TYPE_NONE);
+
   http_ep_signals[SIGNAL_PUSH_BUFFER] =
       g_signal_new ("push-buffer", G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
@@ -727,6 +755,7 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       NULL, NULL, __kms_marshal_ENUM__VOID,
       GST_TYPE_FLOW_RETURN, 0, G_TYPE_NONE);
 
+  klass->pull_sample = kms_http_end_point_pull_sample;
   klass->push_buffer = kms_http_end_point_push_buffer_action;
   klass->end_of_stream = kms_http_end_point_end_of_stream_action;
 

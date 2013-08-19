@@ -54,6 +54,7 @@ struct _KmsHttpEndPointClass
 
   /* actions */
   GstFlowReturn (*push_buffer) (KmsHttpEndPoint * self, GstBuffer * buffer);
+  GstSample * (*pull_sample) (KmsHttpEndPoint * self);
   GstFlowReturn (*end_of_stream) (KmsHttpEndPoint * self);
 };
 
