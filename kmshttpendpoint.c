@@ -131,8 +131,10 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   }
 
   buffer = gst_sample_get_buffer (sample);
-  if (buffer == NULL)
-    return GST_FLOW_ERROR;
+  if (buffer == NULL) {
+    ret = GST_FLOW_OK;
+    goto end;
+  }
 
   self = get_http_ep_from_elements (appsink, element);
   if (self && self->priv->method == GET_METHOD) {
@@ -152,6 +154,10 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
     GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
         GST_ELEMENT_NAME (element));
   }
+
+end:
+  if (sample != NULL)
+    gst_sample_unref (sample);
 
   return ret;
 }
