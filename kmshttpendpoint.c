@@ -660,6 +660,9 @@ kms_http_end_point_dispose_POST (KmsHttpEndPoint * self)
 {
   GstBus *bus;
 
+  if (self->priv->pipeline == NULL)
+    return;
+
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
