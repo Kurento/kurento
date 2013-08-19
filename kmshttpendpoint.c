@@ -165,7 +165,20 @@ end:
 static void
 eos_handler (GstElement * appsink, gpointer user_data)
 {
-  GST_DEBUG ("TODO: Implement this");
+  if (KMS_IS_HTTP_END_POINT (user_data)) {
+    KmsHttpEndPoint *httep = KMS_HTTP_END_POINT (user_data);
+
+    GST_DEBUG ("EOS detected on %s", GST_ELEMENT_NAME (httep));
+    g_signal_emit (httep, http_ep_signals[SIGNAL_EOS], 0);
+  } else {
+    GstElement *appsrc = GST_ELEMENT (user_data);
+    GstFlowReturn ret;
+
+    GST_DEBUG ("EOS detected on %s", GST_ELEMENT_NAME (appsink));
+    g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
+    if (ret != GST_FLOW_OK)
+      GST_ERROR ("Could not send EOS to %s", GST_ELEMENT_NAME (appsrc));
+  }
 }
 
 static void
@@ -392,7 +405,7 @@ kms_http_end_point_add_sink (KmsHttpEndPoint * self)
   g_signal_connect (self->priv->get_appsink, "new-sample",
       G_CALLBACK (new_sample_handler), self);
   g_signal_connect (self->priv->get_appsink, "eos", G_CALLBACK (eos_handler),
-      NULL);
+      self);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get_appsink);
   gst_element_sync_state_with_parent (self->priv->get_appsink);
@@ -649,7 +662,9 @@ kms_http_end_point_video_valve_removed (KmsElement * self, GstElement * valve)
 static void
 kms_http_end_point_dispose_GET (KmsHttpEndPoint * self)
 {
-  /* TODO: Release pipeline */
+  if (self->priv->pipeline == NULL)
+    return;
+
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
   g_object_unref (self->priv->pipeline);
   self->priv->pipeline = NULL;
