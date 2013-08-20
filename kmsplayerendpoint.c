@@ -85,8 +85,8 @@ kms_player_end_point_finalize (GObject * object)
   G_OBJECT_CLASS (kms_player_end_point_parent_class)->finalize (object);
 }
 
-static void
-read_buffer (GstElement * appsink, gpointer user_data)
+static GstFlowReturn
+new_sample_cb (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
   GstFlowReturn ret;
@@ -95,22 +95,28 @@ read_buffer (GstElement * appsink, gpointer user_data)
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
-  if (sample == NULL) {
-    GST_WARNING_OBJECT (appsrc, "sample=NULL");
-    return;
-  }
+  if (sample == NULL)
+    return GST_FLOW_ERROR;
 
   buffer = gst_sample_get_buffer (sample);
 
   if (buffer == NULL) {
-    return;
+    ret = GST_FLOW_OK;
+    goto end;
   }
+
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
     /* something wrong */
     GST_ERROR ("Could not send buffer to appsrc. Ret code %d", ret);
   }
+
+end:
+  if (sample != NULL)
+    gst_sample_unref (sample);
+
+  return ret;
 }
 
 static void
@@ -162,7 +168,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   g_object_unref (sinkpad);
 
   /* Connect new-sample signal to callback */
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (read_buffer), appsrc);
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
   g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
 

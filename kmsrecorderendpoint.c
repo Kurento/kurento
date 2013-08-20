@@ -166,7 +166,7 @@ kms_recorder_end_point_finalize (GObject * object)
   G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->finalize (object);
 }
 
-static void
+static GstFlowReturn
 recv_sample (GstElement * appsink, gpointer user_data)
 {
   GstElement *self = GST_ELEMENT (GST_OBJECT_PARENT (appsink));
@@ -179,7 +179,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
-    return;
+    return GST_FLOW_ERROR;
 
   g_object_get (G_OBJECT (appsrc), "caps", &caps, NULL);
   if (caps == NULL) {
@@ -192,13 +192,16 @@ recv_sample (GstElement * appsink, gpointer user_data)
   }
 
   buffer = gst_sample_get_buffer (sample);
-  if (buffer == NULL)
-    return;
+  if (buffer == NULL) {
+    ret = GST_FLOW_OK;
+    goto end;
+  }
 
   g_object_get (G_OBJECT (self), "state", &state, NULL);
   if (state != KMS_URI_END_POINT_STATE_START) {
     GST_DEBUG ("Dropping buffer %P", buffer);
-    return;
+    ret = GST_FLOW_OK;
+    goto end;
   }
 
   buffer->pts = G_GUINT64_CONSTANT (0);
@@ -213,6 +216,12 @@ recv_sample (GstElement * appsink, gpointer user_data)
     GST_ERROR ("Could not send buffer to appsrc  %s. Ret code %d", ret,
         GST_ELEMENT_NAME (appsrc));
   }
+
+end:
+  if (sample != NULL)
+    gst_sample_unref (sample);
+
+  return ret;
 }
 
 static void
