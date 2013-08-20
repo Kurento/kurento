@@ -702,7 +702,7 @@ kms_http_end_point_dispose (GObject * object)
       kms_http_end_point_dispose_POST (self);
       break;
     default:
-      break;;
+      break;
   }
 
   /* clean up as possible. May be called multiple times */
