@@ -8,6 +8,7 @@ import org.apache.thrift.server.TServer;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaError;
 import com.kurento.kms.api.MediaEvent;
@@ -15,26 +16,31 @@ import com.kurento.kms.api.MediaHandlerService;
 
 class MediaHandlerServer {
 
-	private final int port;
-	private final MediaManagerHandler handler;
+	@Autowired
+	private MediaApiConfiguration configuration;
+
+	@Autowired
+	private MediaServerHandler handler;
+
+	@Autowired
+	private MediaManagerFactory mediaManagerFactory;
+
 	private TServer server;
 
-	public MediaHandlerServer(int port, MediaManagerHandler handler) {
-		this.port = port;
-		this.handler = handler;
+	MediaHandlerServer() {
 	}
 
 	public synchronized void start() throws IOException {
 		try {
 			TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(
-					port);
+					configuration.getHandlerPort());
 			server = new TNonblockingServer(new TNonblockingServer.Args(
 					serverTransport).processor(processor));
 
 			new Thread() {
 				@Override
 				public void run() {
-					server.serve();
+					server.serve(); // TODO manage errors in this thread
 				}
 			}.start();
 
@@ -57,7 +63,7 @@ class MediaHandlerServer {
 				public void onEvent(MediaEvent event) throws TException {
 					// TODO: build a KMF MediaEvent from this KMS MediaEvent and
 					// call onEvent over the handler
-					MediaObject source = MediaObject
+					MediaObject source = mediaManagerFactory
 							.getMediaObject(event.source);
 					KmsEvent kmsEvent = source.deserializeEvent(event);
 					handler.onEvent(kmsEvent);

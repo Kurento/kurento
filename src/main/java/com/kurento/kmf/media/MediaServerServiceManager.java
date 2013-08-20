@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -17,7 +20,9 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.kurento.kmf.media.internal.HandlerIdGenerator;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 
@@ -28,134 +33,92 @@ class MediaServerServiceManager {
 
 	private static final int WARN_SIZE = 3;
 
-	private final String serverAddress;
-	private final int serverPort;
-	private final MediaHandlerServer mediaHandlerServer;
+	@Autowired
+	private MediaHandlerServer mediaHandlerServer;
 
+	@Autowired
+	private MediaApiConfiguration configuration;
+
+	@Autowired
+	private HandlerIdGenerator handlerIdGenerator;
+
+	// TODO: question, what's the objective of this?
 	private final Set<MediaServerService.Client> mediaServerServicesInUse = new CopyOnWriteArraySet<MediaServerService.Client>();
 	private final Set<MediaServerService.AsyncClient> mediaServerServicesAsyncInUse = new CopyOnWriteArraySet<MediaServerService.AsyncClient>();
 
-	private static MediaServerServiceManager singleton = null;
-
-	public static synchronized void init(String serverAddress, int serverPort,
-			MediaManagerHandler handler, int handlerId, String handlerAddress,
-			int handlerPort) throws IllegalStateException, IOException {
-
-		synchronized (MediaServerServiceManager.class) {
-			if (singleton == null) {
-				singleton = new MediaServerServiceManager(serverAddress,
-						serverPort, handler, handlerId, handlerAddress,
-						handlerPort);
-
-				MediaServerService.Client service = getMediaServerService();
-				try {
-					service.addHandlerAddress(handlerId, handlerAddress,
-							handlerPort);
-				} catch (MediaServerException e) {
-					throw new IOException(e);
-				} catch (TException e) {
-					throw new IOException(e);
-				} finally {
-					releaseMediaServerService(service);
-				}
-			} else {
-				throw new IllegalStateException("Already initialized");
-			}
-		}
+	MediaServerServiceManager() {
 	}
 
-	public static synchronized void destroy() throws IllegalStateException {
-		synchronized (MediaServerServiceManager.class) {
-			if (singleton != null) {
-				singleton.stopHandlerServer();
-			} else {
-				throw new IllegalStateException("Not initialized");
-			}
-		}
-	}
+	@PostConstruct
+	public void init() throws IOException {
 
-	private MediaServerServiceManager(String serverAddress, int serverPort,
-			MediaManagerHandler handler, int handlerId, String handlerAddress,
-			int handlerPort) throws IOException {
-		this.serverAddress = serverAddress;
-		this.serverPort = serverPort;
-
-		mediaHandlerServer = new MediaHandlerServer(handlerPort, handler);
 		mediaHandlerServer.start();
-	}
 
-	private synchronized void stopHandlerServer() {
-		mediaHandlerServer.stop();
-	}
-
-	private static synchronized MediaServerServiceManager getInstance()
-			throws IllegalStateException {
-		if (singleton != null) {
-			return singleton;
-		} else {
-			throw new IllegalStateException("Not initialized");
+		MediaServerService.Client service = getMediaServerService();
+		try {
+			service.addHandlerAddress(handlerIdGenerator.getHandlerId(),
+					configuration.getHandlerAddress(),
+					configuration.getHandlerPort());
+		} catch (MediaServerException e) {
+			throw new IOException(e);
+		} catch (TException e) {
+			throw new IOException(e);
+		} finally {
+			releaseMediaServerService(service);
 		}
+	}
+
+	@PreDestroy
+	public synchronized void destroy() {
+		mediaHandlerServer.stop();
 	}
 
 	private MediaServerService.Client createMediaServerService()
 			throws TTransportException {
 		// FIXME: use pool to avoid no such sockets
-		TTransport transport = new TFramedTransport(new TSocket(serverAddress,
-				serverPort));
+		TTransport transport = new TFramedTransport(
+				new TSocket(configuration.getServerAddress(),
+						configuration.getServerPort()));
 		// TODO: Make protocol configurable
 		TProtocol prot = new TBinaryProtocol(transport);
 		transport.open();
 		return new MediaServerService.Client(prot);
 	}
 
-	private MediaServerService.Client getMediaServerServiceInternal()
-			throws TTransportException {
-		MediaServerService.Client service = createMediaServerService();
-		mediaServerServicesInUse.add(service);
+	public MediaServerService.Client getMediaServerService() throws IOException {
 
-		if (mediaServerServicesInUse.size() > WARN_SIZE)
-			log.warn("Number of serverService clients over warning size");
-
-		return service;
-	}
-
-	public static MediaServerService.Client getMediaServerService()
-			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
 		try {
-			return manager.getMediaServerServiceInternal();
+			MediaServerService.Client service = createMediaServerService();
+			mediaServerServicesInUse.add(service);
+
+			if (mediaServerServicesInUse.size() > WARN_SIZE)
+				log.warn("Number of serverService clients over warning size");
+
+			return service;
 		} catch (TTransportException e) {
 			throw new IOException(e.getMessage(), e);
 		}
 	}
 
-	private void releaseMediaServerServiceInternal(
-			MediaServerService.Client service) {
+	public void releaseMediaServerService(MediaServerService.Client service) {
+
 		mediaServerServicesInUse.remove(service);
 
 		service.getInputProtocol().getTransport().close();
 		service.getOutputProtocol().getTransport().close();
 	}
 
-	public static void releaseMediaServerService(
-			MediaServerService.Client service) {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		manager.releaseMediaServerServiceInternal(service);
-	}
-
 	private MediaServerService.AsyncClient createMediaServerServiceAsync()
 			throws IOException {
-		TNonblockingTransport transport = new TNonblockingSocket(serverAddress,
-				serverPort);
+		TNonblockingTransport transport = new TNonblockingSocket(
+				configuration.getServerAddress(), configuration.getServerPort());
 		TAsyncClientManager clientManager = new TAsyncClientManager();
 		TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
 		return new MediaServerService.AsyncClient(protocolFactory,
 				clientManager, transport);
 	}
 
-	private MediaServerService.AsyncClient getMediaServerServiceAsyncInternal()
+	public MediaServerService.AsyncClient getMediaServerServiceAsync()
 			throws IOException {
 		MediaServerService.AsyncClient service = createMediaServerServiceAsync();
 		mediaServerServicesAsyncInUse.add(service);
@@ -166,23 +129,9 @@ class MediaServerServiceManager {
 		return service;
 	}
 
-	public static MediaServerService.AsyncClient getMediaServerServiceAsync()
-			throws IOException {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		return manager.getMediaServerServiceAsyncInternal();
-	}
-
-	private void releaseMediaServerServiceAsyncInternal(
+	public void releaseMediaServerServiceAsync(
 			MediaServerService.AsyncClient service) {
 		mediaServerServicesAsyncInUse.remove(service);
-	}
-
-	public static void releaseMediaServerServiceAsync(
-			MediaServerService.AsyncClient service) {
-		MediaServerServiceManager manager = MediaServerServiceManager
-				.getInstance();
-		manager.releaseMediaServerServiceAsyncInternal(service);
 	}
 
 }

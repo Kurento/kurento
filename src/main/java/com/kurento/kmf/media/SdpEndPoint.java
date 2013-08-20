@@ -24,6 +24,7 @@ import java.security.Policy.Parameters;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -162,6 +163,9 @@ public abstract class SdpEndPoint extends EndPoint {
 
 	private static final String SDP_END_POINT_TYPE_FIELD_NAME = "sdpEndPointType";
 
+	@Autowired
+	private MediaServerServiceManager mssm;
+
 	SdpEndPoint(MediaObjectId sdpEndPointId) {
 		super(sdpEndPointId);
 	}
@@ -184,8 +188,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	/* SYNC */
 
 	public String generateOffer() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.generateOffer(mediaObjectId);
@@ -196,13 +199,12 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public String processOffer(String offer) throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.processOffer(mediaObjectId, offer);
@@ -213,13 +215,12 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public String processAnswer(String answer) throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.processAnswer(mediaObjectId, answer);
@@ -230,7 +231,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -249,8 +250,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 * @throws IOException
 	 */
 	public String getLocalSessionDescriptor() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.getLocalSessionDescription(mediaObjectId);
@@ -261,7 +261,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -277,8 +277,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 * @return The last agreed User Agent session description
 	 */
 	public String getRemoteSessionDescriptor() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.getRemoteSessionDescription(mediaObjectId);
@@ -289,7 +288,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -313,7 +312,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 */
 	public void generateOffer(final Continuation<String> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -344,7 +343,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -363,7 +362,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 */
 	public void processOffer(String offer, final Continuation<String> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -398,7 +397,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -416,7 +415,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 */
 	public void processAnswer(String answer, final Continuation<String> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -451,7 +450,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -471,7 +470,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 */
 	public void getLocalSessionDescriptor(final Continuation<String> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -503,7 +502,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -520,7 +519,7 @@ public abstract class SdpEndPoint extends EndPoint {
 	 */
 	public void getRemoteSessionDescriptor(final Continuation<String> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -552,7 +551,7 @@ public abstract class SdpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 

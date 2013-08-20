@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -41,6 +42,9 @@ public class MediaSrc extends MediaPad {
 
 	private static final long serialVersionUID = 1L;
 
+	@Autowired
+	private MediaServerServiceManager mssm;
+
 	MediaSrc(MediaObjectId mediaSrcId) {
 		super(mediaSrcId);
 	}
@@ -56,8 +60,7 @@ public class MediaSrc extends MediaPad {
 	 * @throws IOException
 	 */
 	public void connect(MediaSink sink) throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			service.connect(mediaObjectId, sink.mediaObjectId);
@@ -68,7 +71,7 @@ public class MediaSrc extends MediaPad {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -80,8 +83,7 @@ public class MediaSrc extends MediaPad {
 	 * @throws MediaException
 	 */
 	public void disconnect(MediaSink sink) throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			service.disconnect(mediaObjectId, sink.mediaObjectId);
@@ -92,13 +94,12 @@ public class MediaSrc extends MediaPad {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public Collection<MediaSink> getConnectedSinks() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			List<MediaObjectId> tMediaSinks = service
@@ -115,7 +116,7 @@ public class MediaSrc extends MediaPad {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -131,7 +132,7 @@ public class MediaSrc extends MediaPad {
 	 */
 	public void connect(MediaSink sink, final Continuation<Void> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -163,7 +164,7 @@ public class MediaSrc extends MediaPad {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
@@ -176,7 +177,7 @@ public class MediaSrc extends MediaPad {
 	 */
 	public void disconnect(MediaSink sink, final Continuation<Void> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -208,13 +209,13 @@ public class MediaSrc extends MediaPad {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public void getConnectedSinks(final Continuation<Collection<MediaSink>> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -250,7 +251,7 @@ public class MediaSrc extends MediaPad {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 

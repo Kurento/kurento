@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -18,6 +20,12 @@ public abstract class Mixer extends MediaObject {
 	private static final long serialVersionUID = 1L;
 
 	private static final String MIXER_TYPE_FIELD_NAME = "mixerType";
+
+	@Autowired
+	private MediaServerServiceManager mssm;
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	Mixer(MediaObjectId mixerId) {
 		super(mixerId);
@@ -41,11 +49,12 @@ public abstract class Mixer extends MediaObject {
 	/* SYNC */
 
 	public MixerEndPoint createMixerEndPoint() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
-			return new MixerEndPoint(service.createMixerEndPoint(mediaObjectId));
+			return (MixerEndPoint) applicationContext.getBean("mediaObject",
+					MixerEndPoint.class,
+					service.createMixerEndPoint(mediaObjectId));
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -53,7 +62,7 @@ public abstract class Mixer extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -61,7 +70,7 @@ public abstract class Mixer extends MediaObject {
 
 	public void createMixerEndPoint(final Continuation<MixerEndPoint> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -71,8 +80,10 @@ public abstract class Mixer extends MediaObject {
 						@Override
 						public void onComplete(createMixerEndPoint_call response) {
 							try {
-								cont.onSuccess(new MixerEndPoint(response
-										.getResult()));
+								cont.onSuccess((MixerEndPoint) applicationContext
+										.getBean("mediaObject",
+												MixerEndPoint.class,
+												response.getResult()));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -92,7 +103,7 @@ public abstract class Mixer extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 }

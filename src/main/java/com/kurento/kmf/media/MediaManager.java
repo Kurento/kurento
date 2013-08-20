@@ -1,11 +1,11 @@
 package com.kurento.kmf.media;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import com.kurento.kms.api.FilterType;
 import com.kurento.kms.api.MediaObjectId;
@@ -26,29 +26,21 @@ public class MediaManager extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
+	@Autowired
+	private MediaServerServiceManager mssm;
+
+	@Autowired
+	private ApplicationContext applicationContext;
+
 	MediaManager(MediaObjectId mediaManagerId) {
 		super(mediaManagerId);
 	}
 
-	private static <T extends MediaObject> T createInstance(Class<T> type,
+	@SuppressWarnings("unchecked")
+	private <T extends MediaObject> T createInstance(Class<T> type,
 			MediaObjectId mediaObjectId) {
-		try {
-			Constructor<T> constructor = type
-					.getDeclaredConstructor(MediaObjectId.class);
-			return constructor.newInstance(mediaObjectId);
-		} catch (SecurityException e) {
-			throw new IllegalArgumentException(e);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		} catch (NoSuchMethodException e) {
-			throw new IllegalArgumentException(e);
-		} catch (InstantiationException e) {
-			throw new IllegalArgumentException(e);
-		} catch (IllegalAccessException e) {
-			throw new IllegalArgumentException(e);
-		} catch (InvocationTargetException e) {
-			throw new IllegalArgumentException(e);
-		}
+		return (T) applicationContext.getBean("mediaObject", type,
+				mediaObjectId);
 	}
 
 	/* SYNC */
@@ -61,8 +53,7 @@ public class MediaManager extends MediaObject {
 	public <T extends SdpEndPoint> T createSdpEndPoint(Class<T> type, String sdp)
 			throws IOException {
 		SdpEndPointType t = SdpEndPoint.getType(type);
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			MediaObjectId sdpEndPointId;
@@ -80,19 +71,18 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public <T extends UriEndPoint> T createUriEndPoint(Class<T> type, String uri)
 			throws MediaException, IOException {
 		UriEndPointType t = UriEndPoint.getType(type);
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
-			MediaObjectId uriEndPointId = service
-					.createUriEndPoint(mediaObjectId, t, uri);
+			MediaObjectId uriEndPointId = service.createUriEndPoint(
+					mediaObjectId, t, uri);
 			return createInstance(type, uriEndPointId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -101,18 +91,17 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public HttpEndPoint createHttpEndPoint() throws MediaException, IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			MediaObjectId httpEndPointId = service
 					.createHttpEndPoint(mediaObjectId);
-			return new HttpEndPoint(httpEndPointId);
+			return createInstance(HttpEndPoint.class, httpEndPointId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		} catch (MediaServerException e) {
@@ -120,19 +109,17 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public <T extends Mixer> T createMixer(Class<T> type)
 			throws MediaException, IOException {
 		MixerType t = Mixer.getType(type);
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
-			MediaObjectId mixerId = service.createMixer(
-					mediaObjectId, t);
+			MediaObjectId mixerId = service.createMixer(mediaObjectId, t);
 			return createInstance(type, mixerId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -141,19 +128,17 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	public <T extends Filter> T createFilter(Class<T> type)
 			throws MediaException, IOException {
 		FilterType t = Filter.getType(type);
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
-			MediaObjectId filterId = service.createFilter(
-					mediaObjectId, t);
+			MediaObjectId filterId = service.createFilter(mediaObjectId, t);
 			return createInstance(type, filterId);
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -162,7 +147,7 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -176,7 +161,7 @@ public class MediaManager extends MediaObject {
 	public <T extends SdpEndPoint> void createSdpEndPoint(final Class<T> type,
 			String sdp, final Continuation<T> cont) throws IOException {
 		SdpEndPointType t = SdpEndPoint.getType(type);
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -245,14 +230,14 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public <T extends UriEndPoint> void createUriEndPoint(final Class<T> type,
 			String uri, final Continuation<T> cont) throws IOException {
 		UriEndPointType t = UriEndPoint.getType(type);
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -266,7 +251,8 @@ public class MediaManager extends MediaObject {
 							try {
 								MediaObjectId uriEndPointId = response
 										.getResult();
-								cont.onSuccess(createInstance(type, uriEndPointId));
+								cont.onSuccess(createInstance(type,
+										uriEndPointId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -286,13 +272,13 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public void createHttpEndPoint(final Continuation<HttpEndPoint> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -304,7 +290,8 @@ public class MediaManager extends MediaObject {
 							try {
 								MediaObjectId httpEndPointId = response
 										.getResult();
-								cont.onSuccess(new HttpEndPoint(httpEndPointId));
+								cont.onSuccess(createInstance(
+										HttpEndPoint.class, httpEndPointId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -324,14 +311,14 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public <T extends Filter> void createFilter(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
 		FilterType t = Filter.getType(type);
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -342,8 +329,7 @@ public class MediaManager extends MediaObject {
 						@Override
 						public void onComplete(createFilter_call response) {
 							try {
-								MediaObjectId filterId = response
-										.getResult();
+								MediaObjectId filterId = response.getResult();
 								cont.onSuccess(createInstance(type, filterId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
@@ -364,14 +350,14 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 
 	public <T extends Mixer> void createMixer(final Class<T> type,
 			final Continuation<T> cont) throws IOException {
 		MixerType t = Mixer.getType(type);
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -382,8 +368,7 @@ public class MediaManager extends MediaObject {
 						@Override
 						public void onComplete(createMixer_call response) {
 							try {
-								MediaObjectId mixerId = response
-										.getResult();
+								MediaObjectId mixerId = response.getResult();
 								cont.onSuccess(createInstance(type, mixerId));
 							} catch (MediaObjectNotFoundException e) {
 								cont.onError(new RuntimeException(e
@@ -404,7 +389,7 @@ public class MediaManager extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 

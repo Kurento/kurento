@@ -16,18 +16,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.MainMixer;
-import com.kurento.kmf.media.MediaException;
-import com.kurento.kmf.media.MediaManager;
-import com.kurento.kmf.media.MediaManagerFactory;
-import com.kurento.kmf.media.MediaObject;
-import com.kurento.kmf.media.MediaSrc;
-import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.RecorderEndPoint;
-import com.kurento.kmf.media.RtpEndPoint;
-import com.kurento.kmf.media.SdpEndPoint;
-
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
 public class AsyncMediaServerTest {
@@ -486,27 +474,29 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.createMixer(MainMixer.class, new Continuation<MainMixer>() {
-			@Override
-			public void onSuccess(MainMixer result) {
-				System.out.println("getMixer onSuccess");
-				try {
-					releaseMediaObject(result);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					Assert.fail(e.getMessage());
-				} catch (IOException e) {
-					e.printStackTrace();
-					Assert.fail(e.getMessage());
-				}
-				sem.release();
-			}
+		mediaManager.createMixer(MainMixer.class,
+				new Continuation<MainMixer>() {
+					@Override
+					public void onSuccess(MainMixer result) {
+						System.out.println("getMixer onSuccess");
+						try {
+							releaseMediaObject(result);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+							Assert.fail(e.getMessage());
+						} catch (IOException e) {
+							e.printStackTrace();
+							Assert.fail(e.getMessage());
+						}
+						sem.release();
+					}
 
-			@Override
-			public void onError(Throwable cause) {
-				System.out.println("getMixer onError: " + cause.getMessage());
-			}
-		});
+					@Override
+					public void onError(Throwable cause) {
+						System.out.println("getMixer onError: "
+								+ cause.getMessage());
+					}
+				});
 
 		Assert.assertTrue(sem.tryAcquire(500, TimeUnit.MILLISECONDS));
 	}

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -21,6 +22,9 @@ public class HttpEndPoint extends EndPoint {
 
 	private static final long serialVersionUID = 1L;
 
+	@Autowired
+	private MediaServerServiceManager mssm;
+
 	HttpEndPoint(MediaObjectId httpEndPointId) {
 		super(httpEndPointId);
 	}
@@ -28,8 +32,7 @@ public class HttpEndPoint extends EndPoint {
 	/* SYNC */
 
 	public String getUrl() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.getUrl(mediaObjectId);
@@ -40,14 +43,14 @@ public class HttpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
 	/* ASYNC */
 
 	public void getUrl(final Continuation<String> cont) throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -77,7 +80,7 @@ public class HttpEndPoint extends EndPoint {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 

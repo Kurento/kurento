@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -36,6 +37,9 @@ import com.kurento.kms.api.MediaType;
 public abstract class MediaPad extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
+
+	@Autowired
+	private MediaServerServiceManager mssm;
 
 	MediaPad(MediaObjectId mediaPadId) {
 		super(mediaPadId);
@@ -57,8 +61,7 @@ public abstract class MediaPad extends MediaObject {
 	}
 
 	public MediaType getMediaType() throws IOException {
-		MediaServerService.Client service = MediaServerServiceManager
-				.getMediaServerService();
+		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
 			return service.getMediaType(mediaObjectId);
@@ -69,7 +72,7 @@ public abstract class MediaPad extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerService(service);
+			mssm.releaseMediaServerService(service);
 		}
 	}
 
@@ -103,7 +106,7 @@ public abstract class MediaPad extends MediaObject {
 
 	public void getMediaType(final Continuation<MediaType> cont)
 			throws IOException {
-		MediaServerService.AsyncClient service = MediaServerServiceManager
+		MediaServerService.AsyncClient service = mssm
 				.getMediaServerServiceAsync();
 
 		try {
@@ -134,7 +137,7 @@ public abstract class MediaPad extends MediaObject {
 		} catch (TException e) {
 			throw new IOException(e.getMessage(), e);
 		} finally {
-			MediaServerServiceManager.releaseMediaServerServiceAsync(service);
+			mssm.releaseMediaServerServiceAsync(service);
 		}
 	}
 }

@@ -20,6 +20,7 @@
 		<kms-interface.version>2.0.0-SNAPSHOT</kms-interface.version>
 		<junit.version>4.10</junit.version>
 		<slf4j.version>1.6.4</slf4j.version>
+		<cglib.version>2.2.2</cglib.version>
 		<spring.version>3.0.6.RELEASE</spring.version>
 	</properties>
 
@@ -36,6 +37,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib</artifactId>
+			<version>${cglib.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j.version}</version>
@@ -50,7 +56,6 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
 			<version>${spring.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>

@@ -1,6 +1,6 @@
 package com.kurento.kmf.media;
 
-import com.kurento.kms.api.MediaObjectId;;
+import com.kurento.kms.api.MediaObjectId;
 
 public abstract class EndPoint extends MediaElement {
 
