@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -22,9 +21,6 @@ public abstract class UriEndPoint extends EndPoint {
 	private static final long serialVersionUID = 1L;
 
 	private static final String URI_END_POINT_TYPE_FIELD_NAME = "uriEndPointType";
-
-	@Autowired
-	private MediaServerServiceManager mssm;
 
 	UriEndPoint(MediaObjectId uriEndPointId) {
 		super(uriEndPointId);

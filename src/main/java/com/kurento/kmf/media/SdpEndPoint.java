@@ -24,7 +24,6 @@ import java.security.Policy.Parameters;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -162,9 +161,6 @@ public abstract class SdpEndPoint extends EndPoint {
 	private static final long serialVersionUID = 1L;
 
 	private static final String SDP_END_POINT_TYPE_FIELD_NAME = "sdpEndPointType";
-
-	@Autowired
-	private MediaServerServiceManager mssm;
 
 	SdpEndPoint(MediaObjectId sdpEndPointId) {
 		super(sdpEndPointId);

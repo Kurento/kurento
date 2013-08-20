@@ -9,7 +9,6 @@ import org.apache.thrift.async.AsyncMethodCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import com.kurento.kmf.media.internal.HandlerIdGenerator;
 import com.kurento.kms.api.EndPointType;
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectType;
@@ -25,7 +24,7 @@ import com.kurento.kms.api.UriEndPointType;
 public class MediaManagerFactory {
 
 	@Autowired
-	private HandlerIdGenerator handlerIdGenerator;
+	private MediaServerHandler handler;
 
 	@Autowired
 	private MediaServerServiceManager mssm;
@@ -46,8 +45,8 @@ public class MediaManagerFactory {
 	public MediaManager createMediaManager() throws MediaException {
 		try {
 			MediaServerService.Client service = mssm.getMediaServerService();
-			MediaObjectId mediaManagerId = service
-					.createMediaManager(handlerIdGenerator.getHandlerId());
+			MediaObjectId mediaManagerId = service.createMediaManager(handler
+					.getHandlerId());
 			mssm.releaseMediaServerService(service);
 			return (MediaManager) applicationContext.getBean("mediaManager",
 					mediaManagerId);
@@ -68,7 +67,7 @@ public class MediaManagerFactory {
 			MediaServerService.AsyncClient service = mssm
 					.getMediaServerServiceAsync();
 			service.createMediaManager(
-					handlerIdGenerator.getHandlerId(),
+					handler.getHandlerId(),
 					new AsyncMethodCallback<MediaServerService.AsyncClient.createMediaManager_call>() {
 						@Override
 						public void onComplete(createMediaManager_call response) {

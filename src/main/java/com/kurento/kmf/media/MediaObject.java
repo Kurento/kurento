@@ -22,13 +22,16 @@ public abstract class MediaObject implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Autowired
-	private MediaServerServiceManager mssm;
+	protected MediaServerServiceManager mssm;
 
 	@Autowired
-	private ApplicationContext applicationContext;
+	protected MediaServerHandler handler;
 
 	@Autowired
-	private MediaManagerFactory mediaManagerFactory;
+	protected ApplicationContext applicationContext;
+
+	@Autowired
+	protected MediaManagerFactory mediaManagerFactory;
 
 	protected MediaObjectId mediaObjectId;
 
@@ -70,6 +73,7 @@ public abstract class MediaObject implements Serializable {
 			throw new IOException(e.getMessage(), e);
 		} finally {
 			mssm.releaseMediaServerService(service);
+			delete();
 		}
 	}
 
@@ -112,6 +116,7 @@ public abstract class MediaObject implements Serializable {
 			throw new IOException(e.getMessage(), e);
 		} finally {
 			mssm.releaseMediaServerServiceAsync(service);
+			delete();
 		}
 	}
 
@@ -152,9 +157,30 @@ public abstract class MediaObject implements Serializable {
 	}
 
 	KmsEvent deserializeEvent(MediaEvent event) {
-		// NOTE: This method should be override by childs emiting events, by
-		// default this returns an empty KmsEvent
-		return new KmsEvent(this);
+		throw new UnsupportedOperationException(
+				"Cannot deserialize events on instances of "
+						+ this.getClass().getSimpleName());
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj.getClass().equals(this.getClass())) {
+			return false;
+		} else {
+			MediaObject mo = (MediaObject) obj;
+			return mo.mediaObjectId.getId() == this.mediaObjectId.getId();
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		return Long.valueOf(mediaObjectId.getId()).hashCode();
+	}
+
+	// TODO: we should implement a mechanism guaranteeing that this method and
+	// at least one of the release methods are called when MediaObject is not
+	// always reachable
+	protected void delete() {
+		handler.removeAllListeners(this);
+	}
 }

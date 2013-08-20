@@ -7,16 +7,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
-import com.kurento.kmf.media.internal.HandlerIdGenerator;
 import com.kurento.kms.api.MediaObjectId;
 
 @Configuration
 class MediaApiApplicationContextConfiguration {
-
-	@Bean
-	HandlerIdGenerator handlerIdGenerator() {
-		return new HandlerIdGenerator();
-	}
 
 	@Bean
 	MediaManagerFactory mediaManagerFactory() {

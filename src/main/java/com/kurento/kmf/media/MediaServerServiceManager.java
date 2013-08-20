@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.media.internal.HandlerIdGenerator;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
 
@@ -40,7 +39,7 @@ class MediaServerServiceManager {
 	private MediaApiConfiguration configuration;
 
 	@Autowired
-	private HandlerIdGenerator handlerIdGenerator;
+	private MediaServerHandler handler;
 
 	// TODO: question, what's the objective of this?
 	private final Set<MediaServerService.Client> mediaServerServicesInUse = new CopyOnWriteArraySet<MediaServerService.Client>();
@@ -56,7 +55,7 @@ class MediaServerServiceManager {
 
 		MediaServerService.Client service = getMediaServerService();
 		try {
-			service.addHandlerAddress(handlerIdGenerator.getHandlerId(),
+			service.addHandlerAddress(handler.getHandlerId(),
 					configuration.getHandlerAddress(),
 					configuration.getHandlerPort());
 		} catch (MediaServerException e) {

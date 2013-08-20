@@ -5,8 +5,6 @@ import java.lang.reflect.Field;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -20,12 +18,6 @@ public abstract class Mixer extends MediaObject {
 	private static final long serialVersionUID = 1L;
 
 	private static final String MIXER_TYPE_FIELD_NAME = "mixerType";
-
-	@Autowired
-	private MediaServerServiceManager mssm;
-
-	@Autowired
-	private ApplicationContext applicationContext;
 
 	Mixer(MediaObjectId mixerId) {
 		super(mixerId);

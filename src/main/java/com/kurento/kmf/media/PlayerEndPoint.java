@@ -1,12 +1,9 @@
 package com.kurento.kmf.media;
 
 import java.io.IOException;
-import java.nio.BufferUnderflowException;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TMemoryBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,28 +26,10 @@ public class PlayerEndPoint extends UriEndPoint {
 		super(playerEndPointId);
 	}
 
-	// TODO: Move this to a utilities class
-	private TProtocol getProtocolFromEvent(MediaEvent event) throws TException {
-		TMemoryBuffer tr = new TMemoryBuffer(event.event.remaining());
-		TProtocol prot = new TBinaryProtocol(tr);
-
-		byte data[] = new byte[event.event.remaining()];
-		try {
-			event.event.get(data);
-
-			tr.write(data);
-
-			return prot;
-		} catch (BufferUnderflowException e) {
-			log.error("Error deserializing event: " + e, e);
-			throw new TException(e);
-		}
-	}
-
 	@Override
 	KmsEvent deserializeEvent(MediaEvent event) {
 		try {
-			TProtocol prot = getProtocolFromEvent(event);
+			TProtocol prot = handler.getProtocolFromEvent(event);
 
 			PlayerEndPointEvent playerEvent = new PlayerEndPointEvent();
 			playerEvent.read(prot);
@@ -64,6 +43,15 @@ public class PlayerEndPoint extends UriEndPoint {
 		}
 
 		return super.deserializeEvent(event);
+	}
+
+	public MediaEventListener<PlayerEvent> addListener(
+			MediaEventListener<PlayerEvent> listener) {
+		return handler.addListener(this, listener);
+	}
+
+	public boolean removeListener(MediaEventListener<PlayerEvent> listener) {
+		return handler.removeListener(this, listener);
 	}
 
 	/* SYNC */

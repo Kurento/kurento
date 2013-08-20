@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 import com.kurento.kms.api.FilterType;
 import com.kurento.kms.api.MediaObjectId;
@@ -25,12 +23,6 @@ import com.kurento.kms.api.UriEndPointType;
 public class MediaManager extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
-
-	@Autowired
-	private MediaServerServiceManager mssm;
-
-	@Autowired
-	private ApplicationContext applicationContext;
 
 	MediaManager(MediaObjectId mediaManagerId) {
 		super(mediaManagerId);

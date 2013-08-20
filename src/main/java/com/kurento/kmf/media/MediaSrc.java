@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
@@ -41,9 +40,6 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.getConnectedSinks_call
 public class MediaSrc extends MediaPad {
 
 	private static final long serialVersionUID = 1L;
-
-	@Autowired
-	private MediaServerServiceManager mssm;
 
 	MediaSrc(MediaObjectId mediaSrcId) {
 		super(mediaSrcId);
