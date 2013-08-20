@@ -1,3 +1,6 @@
+SUBDIRS =				\
+	platedetector
+
 plugin_LTLIBRARIES = libkmsfilters.la
 
 glib_enum_define = KMS_FILTERS
