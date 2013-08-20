@@ -57,15 +57,15 @@ public abstract class MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * @return the MediaManager parent of this MediaElement
+	 * @return the MediaPipeline parent of this MediaElement
 	 * @throws IOException
 	 */
-	public MediaManager getMediaManager() throws IOException {
+	public MediaPipeline getMediaPipeline() throws IOException {
 		// FIXME: This function fails for MixerEndPoints (it returns null
-		// instead of the MediaManager)
+		// instead of the MediaPipeline)
 		MediaObject parent = getParent();
-		if (parent instanceof MediaManager) {
-			return (MediaManager) parent;
+		if (parent instanceof MediaPipeline) {
+			return (MediaPipeline) parent;
 		}
 		return null;
 	}
@@ -219,16 +219,16 @@ public abstract class MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * @return the MediaManager parent of this MediaElement
+	 * @return the MediaPipeline parent of this MediaElement
 	 * @throws IOException
 	 */
-	public void getMediaManager(final Continuation<MediaManager> cont)
+	public void getMediaPipeline(final Continuation<MediaPipeline> cont)
 			throws IOException {
 		getParent(new Continuation<MediaObject>() {
 			@Override
 			public void onSuccess(MediaObject result) {
-				if (result instanceof MediaManager) {
-					cont.onSuccess((MediaManager) result);
+				if (result instanceof MediaPipeline) {
+					cont.onSuccess((MediaPipeline) result);
 				} else {
 					cont.onSuccess(null);
 				}

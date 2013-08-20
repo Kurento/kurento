@@ -13,8 +13,8 @@ import com.kurento.kms.api.MediaObjectId;
 class MediaApiApplicationContextConfiguration {
 
 	@Bean
-	MediaManagerFactory mediaManagerFactory() {
-		return new MediaManagerFactory();
+	MediaPipelineFactory mediaPipelineFactory() {
+		return new MediaPipelineFactory();
 	}
 
 	@Bean
@@ -34,8 +34,8 @@ class MediaApiApplicationContextConfiguration {
 
 	@Bean
 	@Scope("prototype")
-	MediaManager mediaManager(MediaObjectId mediaManagerId) {
-		return new MediaManager(mediaManagerId);
+	MediaPipeline mediaPipeline(MediaObjectId mediaPipelineId) {
+		return new MediaPipeline(mediaPipelineId);
 	}
 
 	@Bean

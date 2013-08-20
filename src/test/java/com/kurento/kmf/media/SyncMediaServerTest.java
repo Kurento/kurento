@@ -24,25 +24,25 @@ public class SyncMediaServerTest {
 			.getLogger(SyncMediaServerTest.class);
 
 	@Autowired
-	@Qualifier("mediaManagerFactory")
-	private MediaManagerFactory mediaManagerFactory;
+	@Qualifier("mediaPipelineFactory")
+	private MediaPipelineFactory mediaPipelineFactory;
 
-	private MediaManager mediaManager;
+	private MediaPipeline mediaPipeline;
 
 	@Before
 	public void setUpBeforeClass() throws MediaException, IOException {
-		mediaManager = mediaManagerFactory.createMediaManager();
+		mediaPipeline = mediaPipelineFactory.createMediaPipeline();
 	}
 
 	@After
 	public void afterClass() throws IOException {
-		mediaManager.release();
+		mediaPipeline.release();
 	}
 
 	@Test
 	public void testStreamSync() throws MediaException, IOException,
 			InterruptedException {
-		RtpEndPoint stream = mediaManager.createSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint stream = mediaPipeline.createSdpEndPoint(RtpEndPoint.class);
 		log.debug("generateOffer sessionDecriptor: " + stream.generateOffer());
 		log.debug("processOffer sessionDecriptor: "
 				+ stream.processOffer("processOffer test"));
@@ -55,7 +55,7 @@ public class SyncMediaServerTest {
 	@Ignore
 	@Test
 	public void testPlayer() throws MediaException, IOException {
-		PlayerEndPoint player = mediaManager.createUriEndPoint(
+		PlayerEndPoint player = mediaPipeline.createUriEndPoint(
 				PlayerEndPoint.class, "");
 		player.play();
 		player.pause();
@@ -67,7 +67,7 @@ public class SyncMediaServerTest {
 	@Ignore
 	@Test
 	public void testRecorder() throws MediaException, IOException {
-		RecorderEndPoint recorder = mediaManager.createUriEndPoint(
+		RecorderEndPoint recorder = mediaPipeline.createUriEndPoint(
 				RecorderEndPoint.class, "");
 		recorder.record();
 		recorder.pause();
@@ -77,8 +77,10 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testJoinable() throws MediaException, IOException {
-		RtpEndPoint streamA = mediaManager.createSdpEndPoint(RtpEndPoint.class);
-		RtpEndPoint streamB = mediaManager.createSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint streamA = mediaPipeline
+				.createSdpEndPoint(RtpEndPoint.class);
+		RtpEndPoint streamB = mediaPipeline
+				.createSdpEndPoint(RtpEndPoint.class);
 
 		log.debug("MediaSrcs: " + streamA.getMediaSrcs());
 		log.debug("MediaSinks: " + streamA.getMediaSinks());
@@ -96,7 +98,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testMixer() throws MediaException, IOException,
 			InterruptedException {
-		MainMixer mixer = mediaManager.createMixer(MainMixer.class);
+		MainMixer mixer = mediaPipeline.createMixer(MainMixer.class);
 		mixer.release();
 	}
 

@@ -31,7 +31,7 @@ public abstract class MediaObject implements Serializable {
 	protected ApplicationContext applicationContext;
 
 	@Autowired
-	protected MediaManagerFactory mediaManagerFactory;
+	protected MediaPipelineFactory mediaPipelineFactory;
 
 	protected MediaObjectId mediaObjectId;
 
@@ -45,7 +45,7 @@ public abstract class MediaObject implements Serializable {
 		MediaServerService.Client service = mssm.getMediaServerService();
 
 		try {
-			return mediaManagerFactory.getMediaObject(service
+			return mediaPipelineFactory.getMediaObject(service
 					.getParent(mediaObjectId));
 		} catch (MediaObjectNotFoundException e) {
 			throw new RuntimeException(e.getMessage(), e);
@@ -91,7 +91,7 @@ public abstract class MediaObject implements Serializable {
 						@Override
 						public void onComplete(getParent_call response) {
 							try {
-								MediaObject parent = mediaManagerFactory
+								MediaObject parent = mediaPipelineFactory
 										.getMediaObject(response.getResult());
 								cont.onSuccess(parent);
 							} catch (MediaObjectNotFoundException e) {

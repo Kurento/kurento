@@ -16,12 +16,12 @@ import com.kurento.kms.api.MediaObjectTypeUnion;
 import com.kurento.kms.api.MediaPadType;
 import com.kurento.kms.api.MediaServerException;
 import com.kurento.kms.api.MediaServerService;
-import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaManager_call;
+import com.kurento.kms.api.MediaServerService.AsyncClient.createMediaPipeline_call;
 import com.kurento.kms.api.MixerType;
 import com.kurento.kms.api.SdpEndPointType;
 import com.kurento.kms.api.UriEndPointType;
 
-public class MediaManagerFactory {
+public class MediaPipelineFactory {
 
 	@Autowired
 	private MediaServerHandler handler;
@@ -32,7 +32,7 @@ public class MediaManagerFactory {
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	MediaManagerFactory() {
+	MediaPipelineFactory() {
 	}
 
 	@PreDestroy
@@ -42,14 +42,14 @@ public class MediaManagerFactory {
 
 	/* SYNC */
 
-	public MediaManager createMediaManager() throws MediaException {
+	public MediaPipeline createMediaPipeline() throws MediaException {
 		try {
 			MediaServerService.Client service = mssm.getMediaServerService();
-			MediaObjectId mediaManagerId = service.createMediaManager(handler
+			MediaObjectId mediaPipelineId = service.createMediaPipeline(handler
 					.getHandlerId());
 			mssm.releaseMediaServerService(service);
-			return (MediaManager) applicationContext.getBean("mediaManager",
-					mediaManagerId);
+			return (MediaPipeline) applicationContext.getBean("mediaPipeline",
+					mediaPipelineId);
 		} catch (MediaServerException e) {
 			throw new MediaException(e.getMessage(), e);
 		} catch (TException e) {
@@ -61,21 +61,22 @@ public class MediaManagerFactory {
 
 	/* ASYNC */
 
-	public void createMediaManager(final Continuation<MediaManager> cont)
+	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
 			throws IOException {
 		try {
 			MediaServerService.AsyncClient service = mssm
 					.getMediaServerServiceAsync();
-			service.createMediaManager(
+			service.createMediaPipeline(
 					handler.getHandlerId(),
-					new AsyncMethodCallback<MediaServerService.AsyncClient.createMediaManager_call>() {
+					new AsyncMethodCallback<MediaServerService.AsyncClient.createMediaPipeline_call>() {
 						@Override
-						public void onComplete(createMediaManager_call response) {
+						public void onComplete(createMediaPipeline_call response) {
 							try {
-								MediaObjectId mediaFactoryId = response
+								MediaObjectId mediaPipelineId = response
 										.getResult();
-								cont.onSuccess((MediaManager) applicationContext
-										.getBean("mediaManager", mediaFactoryId));
+								cont.onSuccess((MediaPipeline) applicationContext
+										.getBean("mediaPipeline",
+												mediaPipelineId));
 							} catch (MediaServerException e) {
 								cont.onError(new RuntimeException(e
 										.getMessage(), e));
@@ -100,9 +101,9 @@ public class MediaManagerFactory {
 
 		if (union.isSetMediaObject()) {
 			MediaObjectType mediaObjectType = union.getMediaObject();
-			if (MediaObjectType.MEDIA_MANAGER.equals(mediaObjectType)) {
-				return (MediaManager) applicationContext.getBean("mediaObject",
-						MediaManager.class, mediaObjectId);
+			if (MediaObjectType.MEDIA_PIPELINE.equals(mediaObjectType)) {
+				return (MediaPipeline) applicationContext.getBean(
+						"mediaObject", MediaPipeline.class, mediaObjectId);
 			}
 		} else if (union.isSetMediaPad()) {
 			// MediaPad will not be a parent of any media object

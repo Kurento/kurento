@@ -20,12 +20,12 @@ import com.kurento.kms.api.MixerType;
 import com.kurento.kms.api.SdpEndPointType;
 import com.kurento.kms.api.UriEndPointType;
 
-public class MediaManager extends MediaObject {
+public class MediaPipeline extends MediaObject {
 
 	private static final long serialVersionUID = 1L;
 
-	MediaManager(MediaObjectId mediaManagerId) {
-		super(mediaManagerId);
+	MediaPipeline(MediaObjectId mediaPipelineId) {
+		super(mediaPipelineId);
 	}
 
 	@SuppressWarnings("unchecked")

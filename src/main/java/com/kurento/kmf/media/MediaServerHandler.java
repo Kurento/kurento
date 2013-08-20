@@ -23,14 +23,14 @@ class MediaServerHandler {
 	private final int handlerId;
 
 	private final ConcurrentHashMap<MediaElement, Set<MediaEventListener<? extends KmsEvent>>> mediaElementMap;
-	private final ConcurrentHashMap<MediaManager, Set<MediaEventListener<? extends KmsEvent>>> mediaPipelineMap;
+	private final ConcurrentHashMap<MediaPipeline, Set<MediaEventListener<? extends KmsEvent>>> mediaPipelineMap;
 
 	// TODO handlerId should be, at least, a long and should be generated in a
 	// criptographically strong manner.
 	MediaServerHandler() {
 		handlerId = new Random(System.nanoTime()).nextInt();
 		mediaElementMap = new ConcurrentHashMap<MediaElement, Set<MediaEventListener<? extends KmsEvent>>>();
-		mediaPipelineMap = new ConcurrentHashMap<MediaManager, Set<MediaEventListener<? extends KmsEvent>>>();
+		mediaPipelineMap = new ConcurrentHashMap<MediaPipeline, Set<MediaEventListener<? extends KmsEvent>>>();
 	}
 
 	int getHandlerId() {
@@ -39,12 +39,12 @@ class MediaServerHandler {
 
 	<T extends KmsEvent> MediaEventListener<T> addListener(
 			MediaObject mediaObject, MediaEventListener<T> listener) {
-		if (mediaObject instanceof MediaManager) {
+		if (mediaObject instanceof MediaPipeline) {
 			Set<MediaEventListener<? extends KmsEvent>> listeners = mediaPipelineMap
 					.get(mediaObject);
 			if (listeners == null) {
 				listeners = new CopyOnWriteArraySet<MediaEventListener<? extends KmsEvent>>();
-				mediaPipelineMap.put((MediaManager) mediaObject, listeners);
+				mediaPipelineMap.put((MediaPipeline) mediaObject, listeners);
 			}
 			listeners.add(listener);
 			return listener;
@@ -66,7 +66,7 @@ class MediaServerHandler {
 
 	<T extends KmsEvent> boolean removeListener(MediaObject mediaObject,
 			MediaEventListener<T> listener) {
-		if (mediaObject instanceof MediaManager) {
+		if (mediaObject instanceof MediaPipeline) {
 			Set<MediaEventListener<? extends KmsEvent>> listeners = mediaPipelineMap
 					.get(mediaObject);
 			if (listeners == null) {
@@ -96,7 +96,7 @@ class MediaServerHandler {
 	}
 
 	boolean removeAllListeners(MediaObject mediaObject) {
-		if (mediaObject instanceof MediaManager) {
+		if (mediaObject instanceof MediaPipeline) {
 			return mediaPipelineMap.remove(mediaObject) != null;
 		} else if (mediaObject instanceof MediaElement) {
 			return mediaElementMap.remove(mediaObject) != null;
@@ -109,7 +109,7 @@ class MediaServerHandler {
 	}
 
 	void onEvent(KmsEvent event) {
-		if (event.getSource() instanceof MediaManager) {
+		if (event.getSource() instanceof MediaPipeline) {
 			fireEvent(mediaPipelineMap.get(event.getSource()), event);
 		} else if (event.getSource() instanceof MediaElement) {
 			fireEvent(mediaPipelineMap.get(event.getSource()), event);

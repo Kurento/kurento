@@ -86,7 +86,7 @@ public abstract class MediaPad extends MediaObject {
 		getParent(new Continuation<MediaObject>() {
 			@Override
 			public void onSuccess(MediaObject result) {
-				if (result instanceof MediaManager) {
+				if (result instanceof MediaPipeline) {
 					cont.onSuccess((MediaElement) result);
 				} else {
 					cont.onSuccess(null);

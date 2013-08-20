@@ -12,7 +12,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -21,21 +20,20 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class AsyncMediaServerTest {
 
 	@Autowired
-	@Qualifier("mediaManagerFactory")
-	private MediaManagerFactory mediaManagerFactory;
+	private MediaPipelineFactory mediaPipelineFactory;
 
-	private MediaManager mediaManager;
+	private MediaPipeline mediaPipeline;
 
 	@Before
 	public void setUpBeforeClass() throws MediaException, IOException,
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		mediaManagerFactory
-				.createMediaManager(new Continuation<MediaManager>() {
+		mediaPipelineFactory
+				.createMediaPipeline(new Continuation<MediaPipeline>() {
 					@Override
-					public void onSuccess(MediaManager result) {
+					public void onSuccess(MediaPipeline result) {
 						System.out.println("getMediaFactory onSuccess");
-						mediaManager = result;
+						mediaPipeline = result;
 						sem.release();
 					}
 
@@ -49,7 +47,7 @@ public class AsyncMediaServerTest {
 
 	@After
 	public void afterClass() throws IOException, InterruptedException {
-		releaseMediaObject(mediaManager);
+		releaseMediaObject(mediaPipeline);
 	}
 
 	@Test
@@ -57,7 +55,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.createSdpEndPoint(RtpEndPoint.class,
+		mediaPipeline.createSdpEndPoint(RtpEndPoint.class,
 				new Continuation<RtpEndPoint>() {
 					@Override
 					public void onSuccess(RtpEndPoint result) {
@@ -223,7 +221,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.createUriEndPoint(PlayerEndPoint.class, "",
+		mediaPipeline.createUriEndPoint(PlayerEndPoint.class, "",
 				new Continuation<PlayerEndPoint>() {
 					@Override
 					public void onSuccess(PlayerEndPoint result) {
@@ -305,7 +303,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.createUriEndPoint(RecorderEndPoint.class, "",
+		mediaPipeline.createUriEndPoint(RecorderEndPoint.class, "",
 				new Continuation<RecorderEndPoint>() {
 					@Override
 					public void onSuccess(RecorderEndPoint result) {
@@ -387,7 +385,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.createSdpEndPoint(RtpEndPoint.class,
+		mediaPipeline.createSdpEndPoint(RtpEndPoint.class,
 				new Continuation<RtpEndPoint>() {
 					@Override
 					public void onSuccess(RtpEndPoint result) {
@@ -396,7 +394,7 @@ public class AsyncMediaServerTest {
 						final Semaphore semContA = new Semaphore(0);
 
 						try {
-							mediaManager.createSdpEndPoint(RtpEndPoint.class,
+							mediaPipeline.createSdpEndPoint(RtpEndPoint.class,
 									new Continuation<RtpEndPoint>() {
 										@Override
 										public void onSuccess(RtpEndPoint result) {
@@ -474,7 +472,7 @@ public class AsyncMediaServerTest {
 			InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		mediaManager.createMixer(MainMixer.class,
+		mediaPipeline.createMixer(MainMixer.class,
 				new Continuation<MainMixer>() {
 					@Override
 					public void onSuccess(MainMixer result) {
