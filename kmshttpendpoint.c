@@ -34,6 +34,9 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 )
 
 typedef enum _HttpMethod HttpMethod;
+typedef struct _GetData GetData;
+typedef struct _PostData PostData;
+
 enum _HttpMethod
 {
   UNDEFINED_METHOD,
@@ -42,13 +45,26 @@ enum _HttpMethod
   UNSUPPORTED_METHOD,
 };
 
+struct _PostData
+{
+  GstElement *appsrc;
+};
+
+struct _GetData
+{
+  GstElement *encodebin;
+  GstElement *appsink;
+};
+
 struct _KmsHttpEndPointPrivate
 {
   HttpMethod method;
   GstElement *pipeline;
-  GstElement *postsrc;
-  GstElement *get_encodebin;
-  GstElement *get_appsink;
+  union
+  {
+    GetData *get;
+    PostData *post;
+  };
 };
 
 enum
@@ -303,20 +319,21 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
   GstBus *bus;
 
   self->priv->method = POST_METHOD;
+  self->priv->post = g_slice_new0 (PostData);
 
   self->priv->pipeline = gst_pipeline_new (POST_PIPELINE);
-  self->priv->postsrc = gst_element_factory_make ("appsrc", NULL);
+  self->priv->post->appsrc = gst_element_factory_make ("appsrc", NULL);
   decodebin = gst_element_factory_make ("decodebin", NULL);
 
   /* configure appsrc */
-  g_object_set (G_OBJECT (self->priv->postsrc), "is-live", TRUE,
+  g_object_set (G_OBJECT (self->priv->post->appsrc), "is-live", TRUE,
       "do-timestamp", TRUE, "min-latency", G_GUINT64_CONSTANT (0),
       "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
 
-  gst_bin_add_many (GST_BIN (self->priv->pipeline), self->priv->postsrc,
+  gst_bin_add_many (GST_BIN (self->priv->pipeline), self->priv->post->appsrc,
       decodebin, NULL);
 
-  gst_element_link (self->priv->postsrc, decodebin);
+  gst_element_link (self->priv->post->appsrc, decodebin);
 
   /* Connect decodebin signals */
   g_signal_connect (decodebin, "pad-added",
@@ -337,11 +354,10 @@ static void
 kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
 {
   self->priv->method = GET_METHOD;
+  self->priv->get = g_slice_new0 (GetData);
 
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
-  self->priv->get_encodebin = NULL;
-  self->priv->get_appsink = NULL;
 
   /* Set pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
@@ -357,7 +373,7 @@ kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
     return NULL;
   }
 
-  g_signal_emit_by_name (self->priv->get_appsink, "pull-sample", &sample);
+  g_signal_emit_by_name (self->priv->get->appsink, "pull-sample", &sample);
 
   return sample;
 }
@@ -379,7 +395,7 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
   if (self->priv->pipeline == NULL)
     kms_http_end_point_init_post_pipeline (self);
 
-  g_signal_emit_by_name (self->priv->postsrc, "push-buffer", buffer, &ret);
+  g_signal_emit_by_name (self->priv->post->appsrc, "push-buffer", buffer, &ret);
 
   return ret;
 }
@@ -392,25 +408,25 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
   if (self->priv->pipeline == NULL)
     return GST_FLOW_ERROR;
 
-  g_signal_emit_by_name (self->priv->postsrc, "end-of-stream", &ret);
+  g_signal_emit_by_name (self->priv->post->appsrc, "end-of-stream", &ret);
   return ret;
 }
 
 static void
 kms_http_end_point_add_sink (KmsHttpEndPoint * self)
 {
-  self->priv->get_appsink = gst_element_factory_make ("appsink", NULL);
+  self->priv->get->appsink = gst_element_factory_make ("appsink", NULL);
 
-  g_object_set (self->priv->get_appsink, "emit-signals", TRUE, NULL);
-  g_signal_connect (self->priv->get_appsink, "new-sample",
+  g_object_set (self->priv->get->appsink, "emit-signals", TRUE, NULL);
+  g_signal_connect (self->priv->get->appsink, "new-sample",
       G_CALLBACK (new_sample_handler), self);
-  g_signal_connect (self->priv->get_appsink, "eos", G_CALLBACK (eos_handler),
+  g_signal_connect (self->priv->get->appsink, "eos", G_CALLBACK (eos_handler),
       self);
 
-  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get_appsink);
-  gst_element_sync_state_with_parent (self->priv->get_appsink);
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get->appsink);
+  gst_element_sync_state_with_parent (self->priv->get->appsink);
 
-  gst_element_link (self->priv->get_encodebin, self->priv->get_appsink);
+  gst_element_link (self->priv->get->encodebin, self->priv->get->appsink);
 }
 
 static void
@@ -451,7 +467,7 @@ kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
   }
   // HACK: this is the maximum time that the server can recor, I don't know
   // why but if synchronization is enabled, audio packets are droped
-  g_object_set (G_OBJECT (self->priv->get_encodebin), "profile", cprof,
+  g_object_set (G_OBJECT (self->priv->get->encodebin), "profile", cprof,
       "audio-jitter-tolerance", G_GUINT64_CONSTANT (0x0fffffffffffffff), NULL);
 }
 
@@ -484,7 +500,7 @@ kms_http_end_point_update_links (KmsHttpEndPoint * self,
           gst_element_release_request_pad (old_encodebin, sinkpad);
           gst_pad_unlink (peer, sinkpad);
           gst_element_link_pads (parent, GST_OBJECT_NAME (peer),
-              self->priv->get_encodebin, GST_OBJECT_NAME (sinkpad));
+              self->priv->get->encodebin, GST_OBJECT_NAME (sinkpad));
           GST_PAD_STREAM_UNLOCK (peer);
 
           g_object_unref (parent);
@@ -553,14 +569,14 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
   if (self->priv->pipeline == NULL)
     kms_http_end_point_init_get_pipeline (self);
 
-  if (self->priv->get_encodebin != NULL)
-    old_encodebin = self->priv->get_encodebin;
+  if (self->priv->get->encodebin != NULL)
+    old_encodebin = self->priv->get->encodebin;
 
-  self->priv->get_encodebin = gst_element_factory_make ("encodebin", NULL);
+  self->priv->get->encodebin = gst_element_factory_make ("encodebin", NULL);
   kms_http_end_point_set_profile_to_encodebin (self);
 
-  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get_encodebin);
-  gst_element_sync_state_with_parent (self->priv->get_encodebin);
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get->encodebin);
+  gst_element_sync_state_with_parent (self->priv->get->encodebin);
 
   appsrc = gst_element_factory_make ("appsrc", srcname);
 
@@ -592,7 +608,8 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
     }
   }
 
-  gst_element_link_pads (appsrc, "src", self->priv->get_encodebin, destpadname);
+  gst_element_link_pads (appsrc, "src", self->priv->get->encodebin,
+      destpadname);
 
   g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
       appsrc);
@@ -716,6 +733,17 @@ kms_http_end_point_finalize (GObject * object)
   KmsHttpEndPoint *httpendpoint = KMS_HTTP_END_POINT (object);
 
   GST_DEBUG_OBJECT (httpendpoint, "finalize");
+
+  switch (httpendpoint->priv->method) {
+    case GET_METHOD:
+      g_slice_free (GetData, httpendpoint->priv->get);
+      break;
+    case POST_METHOD:
+      g_slice_free (PostData, httpendpoint->priv->post);
+      break;
+    default:
+      break;
+  }
 
   /* clean up object here */
 
