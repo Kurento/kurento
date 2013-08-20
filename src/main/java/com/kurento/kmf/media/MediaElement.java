@@ -78,7 +78,8 @@ public abstract class MediaElement extends MediaObject {
 					.getMediaSrcs(mediaObjectId);
 			List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
 			for (MediaObjectId tms : tMediaSrcs) {
-				mediaSrcs.add(new MediaSrc(tms));
+				mediaSrcs.add((MediaSrc) applicationContext.getBean(
+						"mediaObject", MediaSrc.class, tms));
 			}
 
 			return mediaSrcs;
@@ -101,7 +102,8 @@ public abstract class MediaElement extends MediaObject {
 					.getMediaSinks(mediaObjectId);
 			List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
 			for (MediaObjectId tms : tMediaSinks) {
-				mediaSinks.add(new MediaSink(tms));
+				mediaSinks.add((MediaSink) applicationContext.getBean(
+						"mediaObject", MediaSink.class, tms));
 			}
 
 			return mediaSinks;
@@ -125,7 +127,8 @@ public abstract class MediaElement extends MediaObject {
 					mediaObjectId, mediaType);
 			List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
 			for (MediaObjectId tms : tMediaSrcs) {
-				mediaSrcs.add(new MediaSrc(tms));
+				mediaSrcs.add((MediaSrc) applicationContext.getBean(
+						"mediaObject", MediaSrc.class, tms));
 			}
 
 			return mediaSrcs;
@@ -149,7 +152,8 @@ public abstract class MediaElement extends MediaObject {
 					mediaObjectId, mediaType);
 			List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
 			for (MediaObjectId tms : tMediaSinks) {
-				mediaSinks.add(new MediaSink(tms));
+				mediaSinks.add((MediaSink) applicationContext.getBean(
+						"mediaObject", MediaSink.class, tms));
 			}
 
 			return mediaSinks;
@@ -253,7 +257,9 @@ public abstract class MediaElement extends MediaObject {
 										.getResult();
 								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
 								for (MediaObjectId tms : tMediaSrcs) {
-									mediaSrcs.add(new MediaSrc(tms));
+									mediaSrcs.add((MediaSrc) applicationContext
+											.getBean("mediaObject",
+													MediaSrc.class, tms));
 								}
 								cont.onSuccess(mediaSrcs);
 							} catch (MediaObjectNotFoundException e) {
@@ -291,18 +297,15 @@ public abstract class MediaElement extends MediaObject {
 						@Override
 						public void onComplete(getMediaSinks_call response) {
 							try {
-								List<MediaObjectId> tMediaSrcs = response
-										.getResult();
-								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-								for (MediaObjectId tms : tMediaSrcs) {
-									mediaSrcs.add(new MediaSrc(tms));
-								}
-
 								List<MediaObjectId> tMediaSinks = response
 										.getResult();
 								List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
 								for (MediaObjectId tms : tMediaSinks) {
-									mediaSinks.add(new MediaSink(tms));
+									mediaSinks
+											.add((MediaSink) applicationContext
+													.getBean("mediaObject",
+															MediaSink.class,
+															tms));
 								}
 								cont.onSuccess(mediaSinks);
 							} catch (MediaObjectNotFoundException e) {
@@ -346,7 +349,9 @@ public abstract class MediaElement extends MediaObject {
 										.getResult();
 								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
 								for (MediaObjectId tms : tMediaSrcs) {
-									mediaSrcs.add(new MediaSrc(tms));
+									mediaSrcs.add((MediaSrc) applicationContext
+											.getBean("mediaObject",
+													MediaSrc.class, tms));
 								}
 								cont.onSuccess(mediaSrcs);
 							} catch (MediaObjectNotFoundException e) {
@@ -386,18 +391,15 @@ public abstract class MediaElement extends MediaObject {
 						public void onComplete(
 								getMediaSinksByMediaType_call response) {
 							try {
-								List<MediaObjectId> tMediaSrcs = response
-										.getResult();
-								List<MediaSrc> mediaSrcs = new ArrayList<MediaSrc>();
-								for (MediaObjectId tms : tMediaSrcs) {
-									mediaSrcs.add(new MediaSrc(tms));
-								}
-
 								List<MediaObjectId> tMediaSinks = response
 										.getResult();
 								List<MediaSink> mediaSinks = new ArrayList<MediaSink>();
 								for (MediaObjectId tms : tMediaSinks) {
-									mediaSinks.add(new MediaSink(tms));
+									mediaSinks
+											.add((MediaSink) applicationContext
+													.getBean("mediaObject",
+															MediaSink.class,
+															tms));
 								}
 								cont.onSuccess(mediaSinks);
 							} catch (MediaObjectNotFoundException e) {
