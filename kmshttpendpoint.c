@@ -368,10 +368,15 @@ kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
 {
   GstSample *sample;
 
+  KMS_ELEMENT_LOCK (self);
+
   if (self->priv->method != GET_METHOD) {
+    KMS_ELEMENT_UNLOCK (self);
     GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
     return NULL;
   }
+
+  KMS_ELEMENT_UNLOCK (self);
 
   g_signal_emit_by_name (self->priv->get->appsink, "pull-sample", &sample);
 
@@ -384,14 +389,19 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
 {
   GstFlowReturn ret;
 
+  KMS_ELEMENT_LOCK (self);
+
   if (self->priv->method != UNDEFINED_METHOD &&
       self->priv->method != POST_METHOD) {
+    KMS_ELEMENT_UNLOCK (self);
     GST_ERROR ("Trying to push data in a non-POST HttpEndPoint");
     return GST_FLOW_ERROR;
   }
 
   if (self->priv->pipeline == NULL)
     kms_http_end_point_init_post_pipeline (self);
+
+  KMS_ELEMENT_UNLOCK (self);
 
   g_signal_emit_by_name (self->priv->post->appsrc, "push-buffer", buffer, &ret);
 
@@ -403,8 +413,14 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
 {
   GstFlowReturn ret;
 
-  if (self->priv->pipeline == NULL)
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->pipeline == NULL) {
+    KMS_ELEMENT_UNLOCK (self);
     return GST_FLOW_ERROR;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
 
   g_signal_emit_by_name (self->priv->post->appsrc, "end-of-stream", &ret);
   return ret;
