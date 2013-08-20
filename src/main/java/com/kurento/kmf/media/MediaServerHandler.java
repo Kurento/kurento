@@ -20,10 +20,10 @@ class MediaServerHandler {
 	private static Logger log = LoggerFactory
 			.getLogger(MediaServerHandler.class);
 
-	private int handlerId;
+	private final int handlerId;
 
-	private ConcurrentHashMap<MediaElement, Set<MediaEventListener<? extends KmsEvent>>> mediaElementMap;
-	private ConcurrentHashMap<MediaManager, Set<MediaEventListener<? extends KmsEvent>>> mediaPipelineMap;
+	private final ConcurrentHashMap<MediaElement, Set<MediaEventListener<? extends KmsEvent>>> mediaElementMap;
+	private final ConcurrentHashMap<MediaManager, Set<MediaEventListener<? extends KmsEvent>>> mediaPipelineMap;
 
 	// TODO handlerId should be, at least, a long and should be generated in a
 	// criptographically strong manner.
@@ -110,11 +110,9 @@ class MediaServerHandler {
 
 	void onEvent(KmsEvent event) {
 		if (event.getSource() instanceof MediaManager) {
-			fireEvent(mediaPipelineMap.get((MediaManager) event.getSource()),
-					event);
+			fireEvent(mediaPipelineMap.get(event.getSource()), event);
 		} else if (event.getSource() instanceof MediaElement) {
-			fireEvent(mediaPipelineMap.get((MediaManager) event.getSource()),
-					event);
+			fireEvent(mediaPipelineMap.get(event.getSource()), event);
 		} else {
 			IllegalArgumentException iae = new IllegalArgumentException(
 					"Received event associated to unsupported source class "
