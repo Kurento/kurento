@@ -384,8 +384,6 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
 {
   GstFlowReturn ret;
 
-  g_return_val_if_fail (GST_IS_BUFFER (buffer), GST_FLOW_ERROR);
-
   if (self->priv->method != UNDEFINED_METHOD &&
       self->priv->method != POST_METHOD) {
     GST_ERROR ("Trying to push data in a non-POST HttpEndPoint");
