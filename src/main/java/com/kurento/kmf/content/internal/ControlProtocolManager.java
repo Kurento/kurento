@@ -16,12 +16,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import com.google.gson.Gson;
-import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonRequest;
-import com.kurento.kmf.content.internal.jsonrpc.WebRtcJsonResponse;
+import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
 
-public class WebRtcControlProtocolManager {
+public class ControlProtocolManager {
 	private static final Logger log = LoggerFactory
-			.getLogger(WebRtcControlProtocolManager.class);
+			.getLogger(ControlProtocolManager.class);
 
 	private static final int BUFF = 4096;
 
@@ -29,11 +29,11 @@ public class WebRtcControlProtocolManager {
 
 	private Gson gson;
 
-	public WebRtcControlProtocolManager() {
+	public ControlProtocolManager() {
 		gson = new Gson();
 	}
 
-	public WebRtcJsonRequest receiveJsonRequest(AsyncContext asyncCtx)
+	public JsonRpcRequest receiveJsonRequest(AsyncContext asyncCtx)
 			throws IOException {
 		HttpServletRequest request = (HttpServletRequest) asyncCtx.getRequest();
 
@@ -61,8 +61,7 @@ public class WebRtcControlProtocolManager {
 
 		InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(
 				baos.toByteArray()), UTF8);
-		WebRtcJsonRequest jsonRequest = gson.fromJson(isr,
-				WebRtcJsonRequest.class);
+		JsonRpcRequest jsonRequest = gson.fromJson(isr, JsonRpcRequest.class);
 		Assert.notNull(jsonRequest.getMethod());
 		return jsonRequest;
 	}
@@ -99,12 +98,12 @@ public class WebRtcControlProtocolManager {
 		}
 	}
 
-	public void sendJsonAnswer(AsyncContext asyncCtx, WebRtcJsonResponse message)
+	public void sendJsonAnswer(AsyncContext asyncCtx, JsonRpcResponse message)
 			throws IOException {
 		internalSendJsonAnswer(asyncCtx, message);
 	}
 
-	public void sendJsonError(AsyncContext asyncCtx, WebRtcJsonResponse message) {
+	public void sendJsonError(AsyncContext asyncCtx, JsonRpcResponse message) {
 		try {
 			internalSendJsonAnswer(asyncCtx, message);
 		} catch (Throwable e) {
@@ -118,7 +117,7 @@ public class WebRtcControlProtocolManager {
 	}
 
 	private void internalSendJsonAnswer(AsyncContext asyncCtx,
-			WebRtcJsonResponse message) throws IOException {
+			JsonRpcResponse message) throws IOException {
 		if (asyncCtx == null) {
 			throw new IOException("Cannot recover thread local AsyncContext");
 		}
@@ -130,7 +129,13 @@ public class WebRtcControlProtocolManager {
 		synchronized (asyncCtx) {
 			HttpServletResponse response = (HttpServletResponse) asyncCtx
 					.getResponse();
-			response.setContentType("application/json; charset=" + UTF8);
+			response.setContentType("application/json"); // TODO: is it
+															// necessary to
+															// specify charset
+															// here
+															// (charset=UTF8)?
+															// Check standards
+															// ...
 			OutputStreamWriter osw = new OutputStreamWriter(
 					response.getOutputStream(), UTF8);
 			osw.write(gson.toJson(message));

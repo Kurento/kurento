@@ -12,5 +12,7 @@ public @interface PlayerService {
 
 	String path();
 
+	boolean useControlProtocol() default false;
+
 	boolean redirect() default true;
 }

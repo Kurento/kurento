@@ -1,21 +1,21 @@
 package com.kurento.kmf.content.internal.jsonrpc;
 
-public class WebRtcJsonRequest {
+public class JsonRpcRequest {
 	private String jsonrpc;
 	private String method;
-	private WebRtcJsonRequestParams params;
+	private JsonRpcRequestParams params;
 	private int id;
 
-	public static WebRtcJsonRequest newRequest(String method, String sdp,
+	public static JsonRpcRequest newRequest(String method, String sdp,
 			String sessionId, int id) {
-		return new WebRtcJsonRequest(method, new WebRtcJsonRequestParams(sdp,
+		return new JsonRpcRequest(method, new JsonRpcRequestParams(sdp,
 				sessionId), id);
 	}
 
-	WebRtcJsonRequest() {
+	JsonRpcRequest() {
 	}
 
-	WebRtcJsonRequest(String method, WebRtcJsonRequestParams params, int id) {
+	JsonRpcRequest(String method, JsonRpcRequestParams params, int id) {
 		this.jsonrpc = "2.0";
 		this.method = method;
 		this.params = params;
@@ -50,14 +50,14 @@ public class WebRtcJsonRequest {
 
 }
 
-class WebRtcJsonRequestParams {
+class JsonRpcRequestParams {
 	private String sdp;
 	private String sessionId;
 
-	WebRtcJsonRequestParams() {
+	JsonRpcRequestParams() {
 	}
 
-	WebRtcJsonRequestParams(String sdp, String sessionId) {
+	JsonRpcRequestParams(String sdp, String sessionId) {
 		this.sdp = sdp;
 		this.sessionId = sessionId;
 	}

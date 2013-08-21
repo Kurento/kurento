@@ -19,24 +19,24 @@ import com.kurento.kmf.content.PlayerHandler;
 import com.kurento.kmf.content.PlayerService;
 import com.kurento.kmf.content.RecorderHandler;
 import com.kurento.kmf.content.RecorderService;
+import com.kurento.kmf.content.RtpMediaHandler;
+import com.kurento.kmf.content.RtpMediaService;
 import com.kurento.kmf.content.WebRtcMediaHandler;
 import com.kurento.kmf.content.WebRtcMediaService;
+import com.kurento.kmf.content.internal.player.PlayerHandlerServlet;
+import com.kurento.kmf.content.internal.recorder.RecorderHandlerServlet;
+import com.kurento.kmf.content.internal.rtp.RtpMediaHandlerServlet;
+import com.kurento.kmf.content.internal.webrtc.WebRtcMediaHandlerServlet;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 public class ContentApiWebApplicationInitializer implements
 		WebApplicationInitializer {
 
-	public static final String PLAYER_HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
-			.getName() + "playerHandlerClassParamName";
-
-	public static final String RECORDER_HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
-			.getName() + "recorderHandlerClassParamName";
-
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentApiWebApplicationInitializer.class);
 
-	public static final String WEB_RTC_MEDIA_HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
-			.getName() + "webRtcMediaHandlerClassParamName";
+	public static final String HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
+			.getName() + "HandlerClassParamName";
 
 	private Reflections reflections;
 
@@ -55,6 +55,7 @@ public class ContentApiWebApplicationInitializer implements
 		initializeRecorders(sc);
 		initializePlayers(sc);
 		initializeWebRtcMediaServices(sc);
+		initializeRtpMediaServices(sc);
 
 		// Register Kurento ServletContextListener
 		KurentoApplicationContextUtils
@@ -73,7 +74,7 @@ public class ContentApiWebApplicationInitializer implements
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							PlayerHandlerServlet.class);
 					sr.addMapping(path);
-					sr.setInitParameter(PLAYER_HANDLER_CLASS_PARAM_NAME, ph);
+					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, ph);
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
@@ -95,7 +96,7 @@ public class ContentApiWebApplicationInitializer implements
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							RecorderHandlerServlet.class);
 					sr.addMapping(path);
-					sr.setInitParameter(RECORDER_HANDLER_CLASS_PARAM_NAME, rh);
+					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, rh);
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
@@ -119,8 +120,31 @@ public class ContentApiWebApplicationInitializer implements
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							WebRtcMediaHandlerServlet.class);
 					sr.addMapping(path);
-					sr.setInitParameter(WEB_RTC_MEDIA_HANDLER_CLASS_PARAM_NAME,
-							wh);
+					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, wh);
+					sr.setAsyncSupported(true);
+				}
+			} catch (ClassNotFoundException e) {
+				log.error("Error: could not find recorder class in classpath",
+						e);
+				throw new ServletException(e);
+			}
+		}
+	}
+
+	private void initializeRtpMediaServices(ServletContext sc)
+			throws ServletException {
+		for (String wh : findServices(RtpMediaHandler.class,
+				RtpMediaService.class)) {
+			try {
+				RtpMediaService mediaService = Class.forName(wh).getAnnotation(
+						RtpMediaService.class);
+				if (mediaService != null) {
+					String name = mediaService.name();
+					String path = mediaService.path();
+					ServletRegistration.Dynamic sr = sc.addServlet(name,
+							RtpMediaHandlerServlet.class);
+					sr.addMapping(path);
+					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, wh);
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {

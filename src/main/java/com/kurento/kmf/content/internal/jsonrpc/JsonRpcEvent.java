@@ -1,17 +1,17 @@
 package com.kurento.kmf.content.internal.jsonrpc;
 
-public class WebRtcJsonEvent {
+public class JsonRpcEvent {
 	private String type;
 	private String data;
 
-	public static WebRtcJsonEvent newEvent(String type, String data) {
-		return new WebRtcJsonEvent(type, data);
+	public static JsonRpcEvent newEvent(String type, String data) {
+		return new JsonRpcEvent(type, data);
 	}
 
-	WebRtcJsonEvent() {
+	JsonRpcEvent() {
 	}
 
-	WebRtcJsonEvent(String type, String data) {
+	JsonRpcEvent(String type, String data) {
 		this.type = type;
 		this.data = data;
 	}

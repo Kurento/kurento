@@ -1,47 +1,53 @@
 package com.kurento.kmf.content.internal.jsonrpc;
 
-public class WebRtcJsonResponse {
+public class JsonRpcResponse {
 	private String jsonrpc;
-	private WebRtcJsonResponseResult result;
-	private WebRtcJsonResponseError error;
+	private JsonRpcResponseResult result;
+	private JsonRpcResponseError error;
 	private int id;
 
-	public static WebRtcJsonResponse newStartResponse(String sdp,
+	public static JsonRpcResponse newStartSdpResponse(String sdp,
 			String sessionId, int id) {
-		return new WebRtcJsonResponse(new WebRtcJsonResponseResult(sdp,
+		return new JsonRpcResponse(new JsonRpcResponseResult(sdp, null,
 				sessionId), id);
 	}
 
-	public static WebRtcJsonResponse newEventsResponse(int id,
-			WebRtcJsonEvent... events) {
-		return new WebRtcJsonResponse(new WebRtcJsonResponseResult(events), id);
+	public static JsonRpcResponse newStartUrlResponse(String url,
+			String sessionId, int id) {
+		return new JsonRpcResponse(new JsonRpcResponseResult(null, url,
+				sessionId), id);
 	}
 
-	public static WebRtcJsonResponse newAckResponse(int id) {
-		return new WebRtcJsonResponse(new WebRtcJsonResponseResult(), id);
+	public static JsonRpcResponse newEventsResponse(int id,
+			JsonRpcEvent... events) {
+		return new JsonRpcResponse(new JsonRpcResponseResult(events), id);
 	}
 
-	public static WebRtcJsonResponse newError(int code, String message, int id) {
-		return new WebRtcJsonResponse(new WebRtcJsonResponseError(code,
-				message, null), id);
+	public static JsonRpcResponse newAckResponse(int id) {
+		return new JsonRpcResponse(new JsonRpcResponseResult(), id);
 	}
 
-	public static WebRtcJsonResponse newError(int code, String message,
+	public static JsonRpcResponse newError(int code, String message, int id) {
+		return new JsonRpcResponse(
+				new JsonRpcResponseError(code, message, null), id);
+	}
+
+	public static JsonRpcResponse newError(int code, String message,
 			String data, int id) {
-		return new WebRtcJsonResponse(new WebRtcJsonResponseError(code,
-				message, data), id);
+		return new JsonRpcResponse(
+				new JsonRpcResponseError(code, message, data), id);
 	}
 
-	WebRtcJsonResponse() {
+	JsonRpcResponse() {
 	}
 
-	WebRtcJsonResponse(WebRtcJsonResponseResult result, int id) {
+	JsonRpcResponse(JsonRpcResponseResult result, int id) {
 		this.jsonrpc = "2.0";
 		this.result = result;
 		this.id = id;
 	}
 
-	WebRtcJsonResponse(WebRtcJsonResponseError error, int id) {
+	JsonRpcResponse(JsonRpcResponseError error, int id) {
 		this.jsonrpc = "2.0";
 		this.error = error;
 		this.id = id;
@@ -90,11 +96,11 @@ public class WebRtcJsonResponse {
 			return error.getData();
 	}
 
-	public WebRtcJsonEvent[] getEvents() {
+	public JsonRpcEvent[] getEvents() {
 		if (result == null) {
 			return null;
 		} else {
-			return result.getWebRtcJsonEvents();
+			return result.getJsonRpcEvents();
 		}
 	}
 
@@ -103,20 +109,22 @@ public class WebRtcJsonResponse {
 	}
 }
 
-class WebRtcJsonResponseResult {
+class JsonRpcResponseResult {
 	private String sdp;
+	private String url;
 	private String sessionId;
-	private WebRtcJsonEvent[] events;
+	private JsonRpcEvent[] events;
 
-	WebRtcJsonResponseResult() {
+	JsonRpcResponseResult() {
 	}
 
-	WebRtcJsonResponseResult(String sdp, String sessionId) {
+	JsonRpcResponseResult(String sdp, String url, String sessionId) {
 		this.sdp = sdp;
+		this.url = url;
 		this.sessionId = sessionId;
 	}
 
-	WebRtcJsonResponseResult(WebRtcJsonEvent[] events) {
+	JsonRpcResponseResult(JsonRpcEvent[] events) {
 		this.events = events;
 	}
 
@@ -128,6 +136,14 @@ class WebRtcJsonResponseResult {
 		this.sdp = sdp;
 	}
 
+	String getUrl() {
+		return url;
+	}
+
+	void setUrl(String url) {
+		this.url = url;
+	}
+
 	String getSessionId() {
 		return sessionId;
 	}
@@ -136,20 +152,20 @@ class WebRtcJsonResponseResult {
 		this.sessionId = sessionId;
 	}
 
-	WebRtcJsonEvent[] getWebRtcJsonEvents() {
+	JsonRpcEvent[] getJsonRpcEvents() {
 		return events;
 	}
 }
 
-class WebRtcJsonResponseError {
+class JsonRpcResponseError {
 	private int code;
 	private String message;
 	private String data;
 
-	WebRtcJsonResponseError() {
+	JsonRpcResponseError() {
 	}
 
-	WebRtcJsonResponseError(int code, String message, String data) {
+	JsonRpcResponseError(int code, String message, String data) {
 		this.code = code;
 		this.message = message;
 		this.data = data;

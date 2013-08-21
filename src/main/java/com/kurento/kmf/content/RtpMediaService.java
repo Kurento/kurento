@@ -7,12 +7,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RecorderService {
+public @interface RtpMediaService {
 	String name();
 
 	String path();
-
-	boolean useControlProtocol() default false;
-
-	boolean redirect() default true;
 }
