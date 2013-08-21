@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.kurento.kms.api.EndPointType;
+import com.kurento.kms.api.FilterType;
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectType;
 import com.kurento.kms.api.MediaObjectTypeUnion;
@@ -149,7 +150,11 @@ public class MediaPipelineFactory {
 						MainMixer.class, mediaObjectId);
 			}
 		} else if (union.isSetFilterType()) {
-			// TODO: complete when adding a filter
+			FilterType filterType = union.getFilterType();
+			if (FilterType.ZBAR_FILTER.equals(filterType)) {
+				return (ZBarFilter) applicationContext.getBean("mediaObject",
+						ZBarFilter.class, mediaObjectId);
+			}
 		}
 
 		return null;
