@@ -10,6 +10,7 @@ BUILT_SOURCES = $(built_sources) $(built_headers)
 CLEANFILES = $(BUILT_SOURCES)
 
 if HAVE_OPENCV
+if HAVE_TESSERACT
 
 plugin_LTLIBRARIES = libplatedetector.la
 
@@ -18,9 +19,10 @@ libplatedetector_la_SOURCES = platedetector.c \
 			$(BUILT_SOURCES) \
 			kmsplatedetector.c kmsplatedetector.h
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libplatedetector_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) -Werror
-libplatedetector_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS)
+libplatedetector_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) $(TESSERACT_CFLAGS)-Werror
+libplatedetector_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS) $(TESSERACT_LIBS)
 libplatedetector_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libplatedetector_la_LIBTOOLFLAGS = --tag=disable-static
 
+endif
 endif
