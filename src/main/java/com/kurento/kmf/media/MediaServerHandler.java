@@ -112,7 +112,7 @@ class MediaServerHandler {
 		if (event.getSource() instanceof MediaPipeline) {
 			fireEvent(mediaPipelineMap.get(event.getSource()), event);
 		} else if (event.getSource() instanceof MediaElement) {
-			fireEvent(mediaPipelineMap.get(event.getSource()), event);
+			fireEvent(mediaElementMap.get(event.getSource()), event);
 		} else {
 			IllegalArgumentException iae = new IllegalArgumentException(
 					"Received event associated to unsupported source class "

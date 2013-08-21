@@ -164,7 +164,7 @@ public abstract class MediaObject implements Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj.getClass().equals(this.getClass())) {
+		if (!obj.getClass().equals(this.getClass())) {
 			return false;
 		} else {
 			MediaObject mo = (MediaObject) obj;
