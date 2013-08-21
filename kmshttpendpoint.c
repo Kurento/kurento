@@ -60,6 +60,7 @@ struct _KmsHttpEndPointPrivate
 {
   HttpMethod method;
   GstElement *pipeline;
+  gboolean start;
   union
   {
     GetData *get;
@@ -67,6 +68,19 @@ struct _KmsHttpEndPointPrivate
   };
 };
 
+/* Object properties */
+enum
+{
+  PROP_0,
+  PROP_START,
+  N_PROPERTIES
+};
+
+#define DEFAULT_HTTP_END_POINT_START FALSE
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+/* Object signals */
 enum
 {
   /* signals */
@@ -358,9 +372,6 @@ kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
 
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
-
-  /* Set pipeline to playing */
-  gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
 }
 
 static GstSample *
@@ -765,6 +776,50 @@ kms_http_end_point_finalize (GObject * object)
 }
 
 static void
+kms_http_end_point_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_START:{
+      gboolean prev = self->priv->start;
+
+      self->priv->start = g_value_get_boolean (value);
+      if (self->priv->start && prev != self->priv->start) {
+        /* Set pipeline to PLAYING */
+        GST_DEBUG ("Setting pipeline to PLAYING");
+        gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+      }
+      break;
+    }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
+kms_http_end_point_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_START:
+      g_value_set_enum (value, self->priv->start);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
 kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
 {
   KmsElementClass *kms_element_class = KMS_ELEMENT_CLASS (klass);
@@ -774,6 +829,8 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       "HttpEndPoint", "Generic", "Kurento http end point plugin",
       "Santiago Carot-Nemesio <sancane.kurento@gmail.com>");
 
+  gobject_class->set_property = kms_http_end_point_set_property;
+  gobject_class->get_property = kms_http_end_point_get_property;
   gobject_class->dispose = kms_http_end_point_dispose;
   gobject_class->finalize = kms_http_end_point_finalize;
 
@@ -785,6 +842,14 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       GST_DEBUG_FUNCPTR (kms_http_end_point_audio_valve_removed);
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_http_end_point_video_valve_removed);
+
+  /* Install properties */
+  obj_properties[PROP_START] = g_param_spec_boolean ("start",
+      "start media stream",
+      "start media stream", DEFAULT_HTTP_END_POINT_START, G_PARAM_READWRITE);
+
+  g_object_class_install_properties (gobject_class,
+      N_PROPERTIES, obj_properties);
 
   /* set signals */
   http_ep_signals[SIGNAL_EOS] =
@@ -836,6 +901,7 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
 
   self->priv->method = UNDEFINED_METHOD;
   self->priv->pipeline = NULL;
+  self->priv->start = FALSE;
 }
 
 gboolean
