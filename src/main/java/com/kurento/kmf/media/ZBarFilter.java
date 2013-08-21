@@ -14,6 +14,15 @@ public class ZBarFilter extends Filter {
 		super(filterId);
 	}
 
+	public MediaEventListener<ZBarEvent> addListener(
+			MediaEventListener<ZBarEvent> listener) {
+		return handler.addListener(this, listener);
+	}
+
+	public boolean removeListener(MediaEventListener<ZBarEvent> listener) {
+		return handler.removeListener(this, listener);
+	}
+
 	@Override
 	KmsEvent deserializeEvent(MediaEvent event) {
 		return new ZBarEvent(this);
