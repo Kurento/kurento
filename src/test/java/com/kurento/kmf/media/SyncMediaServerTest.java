@@ -2,8 +2,10 @@ package com.kurento.kmf.media;
 
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -15,7 +17,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kurento.kmf.media.PlayerEvent.PlayerEventType;
 import com.kurento.kms.api.MediaType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -105,7 +106,7 @@ public class SyncMediaServerTest {
 	}
 
 	@Test
-	public void testZBaR() throws IOException, MediaException,
+	public void testZBar() throws IOException, MediaException,
 			InterruptedException {
 		PlayerEndPoint player = mediaPipeline.createUriEndPoint(
 				PlayerEndPoint.class,
@@ -121,30 +122,18 @@ public class SyncMediaServerTest {
 
 		final Semaphore sem = new Semaphore(0);
 
-		player.addListener(new MediaEventListener<PlayerEvent>() {
-
-			@Override
-			public void onEvent(PlayerEvent event) {
-				System.out.println("Event received: " + event);
-				if (event.getType() == PlayerEventType.EOS)
-					sem.release();
-			}
-		});
-
 		zbar.addListener(new MediaEventListener<ZBarEvent>() {
 
 			@Override
 			public void onEvent(ZBarEvent event) {
-				log.info("ZBar event received: " + event);
-				// TODO: Check if zbar events arrive
+				log.info("ZBar event received:\n" + event);
+				sem.release();
 			}
 		});
 
-		// TODO: Check if zbar events arrive
-
 		player.play();
 
-		sem.acquire();
+		Assert.assertTrue(sem.tryAcquire(10, TimeUnit.SECONDS));
 
 		player.stop();
 		zbar.release();
