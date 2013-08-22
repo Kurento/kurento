@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -148,10 +150,11 @@ public class SyncMediaServerTest {
 						"https://ci.kurento.com/video/small.webm");
 		HttpEndPoint httpEndPoint = mediaPipeline.createHttpEndPoint();
 
-		final MediaSink videoSink = httpEndPoint.getMediaSinks(MediaType.VIDEO)
+		MediaSink videoSink = httpEndPoint.getMediaSinks(MediaType.VIDEO)
 				.iterator().next();
-		final MediaSrc videoSrc = player.getMediaSrcs(MediaType.VIDEO)
-				.iterator().next();
+		MediaSrc videoSrc = player.getMediaSrcs(MediaType.VIDEO).iterator()
+				.next();
+		videoSrc.connect(videoSink);
 
 		final Semaphore sem = new Semaphore(0);
 
@@ -169,7 +172,6 @@ public class SyncMediaServerTest {
 			public void onEvent(HttpEndPointEvent event) {
 				log.info("received: " + event);
 				try {
-					videoSrc.connect(videoSink);
 					player.play();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -178,8 +180,10 @@ public class SyncMediaServerTest {
 			}
 		});
 
-		// TODO: Automatically do http request
 		log.info("Url: -- " + httpEndPoint.getUrl());
+		DefaultHttpClient httpclient = new DefaultHttpClient();
+		httpclient.execute(new HttpGet(httpEndPoint.getUrl()));
+
 		// TODO Change this by a try acquire when test is automated
 		sem.acquire();
 

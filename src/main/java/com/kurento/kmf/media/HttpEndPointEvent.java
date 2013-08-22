@@ -3,7 +3,7 @@ package com.kurento.kmf.media;
 public class HttpEndPointEvent extends KmsEvent {
 
 	public enum HttpEndPointEventType {
-		GET_REQUEST, POST_REQUEST
+		GET_REQUEST, POST_REQUEST, UNEXPECTED_REQUEST
 	}
 
 	private final HttpEndPointEventType type;

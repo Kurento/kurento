@@ -57,6 +57,9 @@ public class HttpEndPoint extends EndPoint {
 				case POST_REQUEST_EVENT:
 					return new HttpEndPointEvent(this,
 							HttpEndPointEventType.POST_REQUEST);
+				case UNEXPECTED_REQUEST_EVENT:
+					return new HttpEndPointEvent(this,
+							HttpEndPointEventType.UNEXPECTED_REQUEST);
 				}
 
 			}
