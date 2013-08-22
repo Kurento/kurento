@@ -8,6 +8,10 @@ public interface RtpMediaRequest {
 	String getSessionId();
 
 	String getContentId();
+	
+	public Constraints getVideoConstraints();
+	
+	public Constraints getAudioConstraints();
 
 	HttpServletRequest getHttpServletRequest();
 

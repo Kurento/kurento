@@ -1,6 +1,9 @@
 package com.kurento.kmf.content.internal.jsonrpc;
 
+import com.kurento.kmf.content.Constraints;
+
 public class JsonRpcRequest {
+
 	private String jsonrpc;
 	private String method;
 	private JsonRpcRequestParams params;
@@ -10,6 +13,12 @@ public class JsonRpcRequest {
 			String sessionId, int id) {
 		return new JsonRpcRequest(method, new JsonRpcRequestParams(sdp,
 				sessionId), id);
+	}
+
+	public static JsonRpcRequest newRequest(String method, String sdp,
+			String sessionId, int id, Constraints videoConstraints,
+			Constraints audioConstraints) {
+		return new JsonRpcRequest(method, new JsonRpcRequestParams(sdp, sessionId, videoConstraints, audioConstraints), id);
 	}
 
 	JsonRpcRequest() {
@@ -48,11 +57,25 @@ public class JsonRpcRequest {
 		return id;
 	}
 
+	public Constraints getVideoConstraints() {
+		if (params != null && params.getJsonRpcConstraints() != null)
+			return params.getJsonRpcConstraints().getVideoContraints();
+		else
+			return null;
+	}
+
+	public Constraints getAudioConstraints() {
+		if (params != null && params.getJsonRpcConstraints() != null)
+			return params.getJsonRpcConstraints().getAudioContraints();
+		else
+			return null;
+	}
 }
 
 class JsonRpcRequestParams {
 	private String sdp;
 	private String sessionId;
+	private JsonRpcConstraints constraints;
 
 	JsonRpcRequestParams() {
 	}
@@ -60,6 +83,12 @@ class JsonRpcRequestParams {
 	JsonRpcRequestParams(String sdp, String sessionId) {
 		this.sdp = sdp;
 		this.sessionId = sessionId;
+	}
+	
+	JsonRpcRequestParams(String sdp, String sessionId, Constraints videoConstraints, Constraints audioConstraints) {
+		this.sdp = sdp;
+		this.sessionId = sessionId;
+		this.constraints = new JsonRpcConstraints(videoConstraints.toString().toLowerCase(), audioConstraints.toString().toLowerCase());
 	}
 
 	String getSdp() {
@@ -76,5 +105,51 @@ class JsonRpcRequestParams {
 
 	void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
+	}
+
+	JsonRpcConstraints getJsonRpcConstraints() {
+		return constraints;
+	}
+
+	void setJsonRpcConstraints(JsonRpcConstraints constraints) {
+		this.constraints = constraints;
+	}
+}
+
+class JsonRpcConstraints {
+
+	private String video;
+	private String audio;
+
+	public JsonRpcConstraints() {
+	}
+
+	public JsonRpcConstraints(String video, String audio) {
+		this.video = video;
+		this.audio = audio;
+	}
+
+	public Constraints getVideoContraints() {
+		return Constraints.valueOf(getVideo().toUpperCase());
+	}
+
+	public Constraints getAudioContraints() {
+		return Constraints.valueOf(getAudio().toUpperCase());
+	}
+
+	String getVideo() {
+		return video;
+	}
+
+	void setVideo(String video) {
+		this.video = video;
+	}
+
+	String getAudio() {
+		return audio;
+	}
+
+	void setAudio(String audio) {
+		this.audio = audio;
 	}
 }

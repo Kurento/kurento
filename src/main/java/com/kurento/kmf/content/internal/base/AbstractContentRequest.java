@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
+import com.kurento.kmf.content.Constraints;
 import com.kurento.kmf.content.ContentApiConfiguration;
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.internal.ContentRequestManager;
@@ -86,6 +87,14 @@ public abstract class AbstractContentRequest {
 	public String getContentId() {
 		return contentId;
 	}
+	
+	public Constraints getVideoConstraints(){
+		return initialJsonRequest.getVideoConstraints();
+	}
+	
+	public Constraints getAudioConstraints(){
+		return initialJsonRequest.getAudioConstraints();
+	}
 
 	public HttpServletRequest getHttpServletRequest() {
 		if (state == STATE.ACTIVE || state == STATE.TERMINATED) {
@@ -108,6 +117,9 @@ public abstract class AbstractContentRequest {
 				state = STATE.HANDLING;
 			}
 			initialJsonRequest = message;
+			//Check validity of constraints before making them accessible to the handler
+			Assert.notNull(initialJsonRequest.getVideoConstraints(), "Malfored request message specifying inexistent or invalid video contraints");
+			Assert.notNull(initialJsonRequest.getAudioConstraints(), "Malfored request message specifying inexistent or invalid audio contraints");
 			processStartJsonRpcRequest(asyncCtx, message);
 		} else if (message.getMethod().equals(METHOD_POLL)) {
 			Assert.isTrue(state == STATE.ACTIVE, "Cannot poll on state "
