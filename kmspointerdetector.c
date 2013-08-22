@@ -452,14 +452,30 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
 
   if (buttonClickedCounter == 0) {
     if (pointerdetector->previousButtonClickedId != NULL) {
+      GstStructure *s;
+      GstMessage *m;
+
+      /* post a message to bus */
       GST_DEBUG ("exit window: %s", pointerdetector->previousButtonClickedId);
-      // TODO: raise message to the bus
+      s = gst_structure_new ("window-out",
+          "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
+          NULL);
+      m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
+      gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       pointerdetector->previousButtonClickedId = NULL;
     }
   } else {
     if (pointerdetector->previousButtonClickedId != actualButtonClickedId) {
+      GstStructure *s;
+      GstMessage *m;
+
+      /* post a message to bus */
       GST_DEBUG ("into window: %s", actualButtonClickedId);
-      // TODO: raise message to the bus
+      s = gst_structure_new ("window-in",
+          "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
+          NULL);
+      m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
+      gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       pointerdetector->previousButtonClickedId = actualButtonClickedId;
     }
   }
