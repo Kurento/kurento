@@ -390,7 +390,7 @@ kms_agnostic_bin_disconnect_srcpad (KmsAgnosticBin * agnosticbin,
 
 static void
 kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
-    GstPad * peer, const GstCaps * current_caps)
+    GstPad * peer)
 {
   GstCaps *allowed_caps, *raw_caps;
   GstElement *tee = NULL, *queue;
@@ -409,14 +409,14 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     return;
   }
 
-  if (current_caps == NULL) {
+  if (agnosticbin->current_caps == NULL) {
     GST_DEBUG ("No current caps, disconnecting %P", srcpad);
     kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
 
   raw_caps = gst_static_caps_get (&static_raw_caps);
-  if (gst_caps_can_intersect (current_caps, allowed_caps)) {
+  if (gst_caps_can_intersect (agnosticbin->current_caps, allowed_caps)) {
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
   } else if (gst_caps_can_intersect (raw_caps, allowed_caps)) {
     GST_DEBUG ("Raw caps, looking for a decodebin");
@@ -477,8 +477,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
 }
 
 static void
-kms_agnostic_bin_connect_previous_srcpads (KmsAgnosticBin * agnosticbin,
-    const GstCaps * current_caps)
+kms_agnostic_bin_connect_previous_srcpads (KmsAgnosticBin * agnosticbin)
 {
   GValue item = { 0, };
   GstIterator *it;
@@ -497,8 +496,7 @@ kms_agnostic_bin_connect_previous_srcpads (KmsAgnosticBin * agnosticbin,
         peer = gst_pad_get_peer (srcpad);
 
         if (peer != NULL) {
-          kms_agnostic_bin_connect_srcpad (agnosticbin, srcpad, peer,
-              current_caps);
+          kms_agnostic_bin_connect_srcpad (agnosticbin, srcpad, peer);
           g_object_unref (peer);
         }
 
@@ -530,15 +528,17 @@ kms_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_CAPS:
+      KMS_AGNOSTIC_BIN_LOCK (parent);
       gst_event_parse_caps (event, &caps);
+      if (KMS_AGNOSTIC_BIN (parent)->current_caps != NULL)
+        gst_caps_unref (KMS_AGNOSTIC_BIN (parent)->current_caps);
+      KMS_AGNOSTIC_BIN (parent)->current_caps = gst_caps_copy (caps);
       old_caps = gst_pad_get_current_caps (pad);
       gst_event_ref (event);
       ret = gst_pad_event_default (pad, parent, event);
-      KMS_AGNOSTIC_BIN_LOCK (parent);
       GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
-        kms_agnostic_bin_connect_previous_srcpads (KMS_AGNOSTIC_BIN (parent),
-            caps);
+        kms_agnostic_bin_connect_previous_srcpads (KMS_AGNOSTIC_BIN (parent));
       gst_event_unref (event);
       if (old_caps != NULL)
         gst_caps_unref (old_caps);
@@ -555,16 +555,14 @@ static GstPadLinkReturn
 kms_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
 {
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
-  GstCaps *current_caps;
 
+  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   GST_DEBUG ("%P linked", pad);
-  current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-  kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
-  if (current_caps != NULL)
-    gst_caps_unref (current_caps);
+  kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer);
 
   if (peer->linkfunc != NULL)
     peer->linkfunc (peer, GST_OBJECT_PARENT (peer), pad);
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   return GST_PAD_LINK_OK;
 }
 
@@ -582,17 +580,16 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   if (event->type == GST_EVENT_RECONFIGURE) {
     KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
     GstPad *peer;
-    GstCaps *current_caps;
 
+    KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     peer = gst_pad_get_peer (pad);
 
     if (peer != NULL) {
-      current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-      kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer, current_caps);
-      if (current_caps != NULL)
-        gst_caps_unref (current_caps);
+      kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer);
       g_object_unref (peer);
     }
+    KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+
     gst_event_unref (event);
     return TRUE;
   } else {
@@ -698,7 +695,6 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
   tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   if (tee == NULL) {
     GstElement *valve;
-    GstCaps *current_caps;
 
     tee = gst_element_factory_make ("tee", DECODED_TEE);
     gst_bin_add (GST_BIN (agnosticbin), tee);
@@ -711,10 +707,7 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
     kms_agnostic_bin_set_start_stop_event_handler (agnosticbin, decodebin,
         GST_OBJECT_NAME (pad), kms_agnostic_bin_decodebin_start_stop);
 
-    current_caps = gst_pad_get_current_caps (agnosticbin->sinkpad);
-    kms_agnostic_bin_connect_previous_srcpads (agnosticbin, current_caps);
-    if (current_caps != NULL)
-      gst_caps_unref (current_caps);
+    kms_agnostic_bin_connect_previous_srcpads (agnosticbin);
   } else {
     GstElement *fakesink;
 
@@ -771,6 +764,10 @@ kms_agnostic_bin_finalize (GObject * object)
 
   /* free resources allocated by this object */
   g_rec_mutex_clear (&agnosticbin->media_mutex);
+  if (agnosticbin->current_caps != NULL) {
+    gst_caps_unref (agnosticbin->current_caps);
+    agnosticbin->current_caps = NULL;
+  }
 
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin_parent_class)->finalize (object);
@@ -846,6 +843,7 @@ kms_agnostic_bin_init (KmsAgnosticBin * agnosticbin)
   agnosticbin->pad_count = 0;
   agnosticbin->sinkpad =
       gst_ghost_pad_new_from_template ("sink", target_sink, templ);
+  agnosticbin->current_caps = NULL;
 
   g_object_unref (templ);
 

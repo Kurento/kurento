@@ -36,6 +36,8 @@ struct _KmsAgnosticBin
   GRecMutex media_mutex;
 
   GHashTable *encoded_tees;
+
+  GstCaps *current_caps;
 };
 
 struct _KmsAgnosticBinClass
