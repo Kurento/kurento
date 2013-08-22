@@ -15,7 +15,7 @@ public interface WebRtcMediaRequest {
 
 	HttpServletRequest getHttpServletRequest();
 
-	void startMedia(MediaElement upStream, MediaElement downStream)
+	void startMedia(MediaElement sinkElement, MediaElement sourceElement)
 			throws ContentException;
 
 	void reject(int statusCode, String message);

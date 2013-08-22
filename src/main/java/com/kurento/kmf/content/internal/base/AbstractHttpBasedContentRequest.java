@@ -88,16 +88,26 @@ public abstract class AbstractHttpBasedContentRequest extends
 		}
 		// If session was not rejected (state=ACTIVE) we send an answer and
 		// the initialAsyncCtx becomes useless
+
+		String answerUrl = null;
+		//TODO: uncomment lines below, they are commented for testing.
+//		try{
+//			answerUrl = httpEndPoint.getUrl();
+//		} catch (IOException ioe) {
+//			throw new ContentException(ioe);
+//		}
+//		Assert.notNull(answerUrl, "Received invalid null url from media server ... aborting");
+//		Assert.isTrue(answerUrl.length() > 0, "Received invalid empty url from media server ... aborting");
 		if (useControlProtocol) {
-			answerActivateMediaRequest4JsonControlProtocolConfiguration(httpEndPoint);
+			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
 		} else {
-			answerActivateMediaRequest4SimpleHttpConfiguration(httpEndPoint);
+			answerActivateMediaRequest4SimpleHttpConfiguration(answerUrl);
 		}
 
 	}
 
 	private void answerActivateMediaRequest4SimpleHttpConfiguration(
-			HttpEndPoint httpEndPoint) throws ContentException {
+			String url) throws ContentException {
 		try {
 			HttpServletResponse response = (HttpServletResponse) initialAsyncCtx
 					.getResponse();
@@ -105,14 +115,14 @@ public abstract class AbstractHttpBasedContentRequest extends
 					.getRequest();
 			if (redirect) {
 				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-				// response.setHeader("Location", httpEndPoint.getUrl());
+				// response.setHeader("Location", url);
 				// //TODO: uncomment
 				response.setHeader("Location",
 						"http://media.w3.org/2010/05/sintel/trailer.webm"); // TODO
 																			// remove
 			} else {
 				tunnellingProxyFuture = proxy.tunnelTransaction(request,
-						response, httpEndPoint.getUrl(),
+						response, url,
 						new StreamingProxyListener() {
 
 							@Override
@@ -147,11 +157,11 @@ public abstract class AbstractHttpBasedContentRequest extends
 	}
 
 	private void answerActivateMediaRequest4JsonControlProtocolConfiguration(
-			HttpEndPoint httpEndPoint) throws ContentException {
+			String url) throws ContentException {
 		try {
 			// Send URL as answer to client
 			protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
-			// .newStartUrlResponse(httpEndPoint.getUrl(), sessionId, //TODO
+			// .newStartUrlResponse(url, sessionId, //TODO
 			// uncomment
 					.newStartUrlResponse(
 							"http://media.w3.org/2010/05/sintel/trailer.webm",

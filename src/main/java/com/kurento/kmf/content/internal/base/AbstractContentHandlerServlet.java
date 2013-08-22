@@ -154,30 +154,11 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
-
-		AbstractContentRequest contentRequest = createContentRequest(asyncCtx,
-				contentId);
-
-		Future<?> future = executor.getExecutor().submit(
-				createAsyncRequestProcessor(contentRequest, null, asyncCtx));
-		// Store future and request for using it in case of error
-		req.setAttribute(
-				ContentAsyncListener.FUTURE_REQUEST_PROCESSOR_ATT_NAME, future);
-		req.setAttribute(ContentAsyncListener.CONTENT_REQUEST_ATT_NAME,
-				contentRequest);
 	}
 
 	@Override
 	protected final void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-
-		if (!useControlProtocol) {
-			resp.sendError(
-					HttpServletResponse.SC_NOT_IMPLEMENTED,
-					"Only GET request are supported for this service. You can enable POST requests "
-							+ "by setting useControlProtocol to true on the appropriate handler annotation");
-			return;
-		}
 
 		getLogger().debug("POST request received: " + req.getRequestURI());
 
@@ -210,6 +191,36 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
+
+		if (useControlProtocol) {
+			doRequest4JsonControlProtocol(asyncCtx, contentId, resp);
+		} else {
+			// TODO: we should check that the content type correspond to
+			// the ones we support. We should avoid receiving application/json
+			// here and send a coherent error message in that case because this
+			// case corresponds to using incorrectly annotations on handlers
+			doRequest4SimpleHttpProtocol(asyncCtx, contentId, resp);
+		}
+	}
+
+	private void doRequest4SimpleHttpProtocol(AsyncContext asyncCtx,
+			String contentId, HttpServletResponse resp)
+			throws ServletException, IOException {
+		AbstractContentRequest contentRequest = createContentRequest(asyncCtx,
+				contentId);
+
+		Future<?> future = executor.getExecutor().submit(
+				createAsyncRequestProcessor(contentRequest, null, asyncCtx));
+		// Store future and request for using it in case of error
+		asyncCtx.getRequest().setAttribute(
+				ContentAsyncListener.FUTURE_REQUEST_PROCESSOR_ATT_NAME, future);
+		asyncCtx.getRequest().setAttribute(
+				ContentAsyncListener.CONTENT_REQUEST_ATT_NAME, contentRequest);
+	}
+
+	private void doRequest4JsonControlProtocol(AsyncContext asyncCtx,
+			String contentId, HttpServletResponse resp)
+			throws ServletException, IOException {
 
 		JsonRpcRequest message = null;
 		try {
@@ -260,11 +271,11 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 				createAsyncRequestProcessor(contentRequest, message, asyncCtx));
 
 		// Store future for using it in case of error
-		req.setAttribute(
+		asyncCtx.getRequest().setAttribute(
 				ContentAsyncListener.FUTURE_REQUEST_PROCESSOR_ATT_NAME, future);
-		req.setAttribute(ContentAsyncListener.CONTENT_REQUEST_ATT_NAME,
-				contentRequest);
-		req.setAttribute(
+		asyncCtx.getRequest().setAttribute(
+				ContentAsyncListener.CONTENT_REQUEST_ATT_NAME, contentRequest);
+		asyncCtx.getRequest().setAttribute(
 				ContentAsyncListener.CONTROL_PROTOCOL_REQUEST_MESSAGE_ATT_NAME,
 				message);
 	}

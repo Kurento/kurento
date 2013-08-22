@@ -20,9 +20,10 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	}
 
 	protected abstract String buildMediaEndPointAndReturnSdp(
-			MediaElement upStream, MediaElement downStream) throws Throwable;
+			MediaElement sinkElement, MediaElement sourceElement)
+			throws Throwable;
 
-	public void startMedia(MediaElement upStream, MediaElement downStream)
+	public void startMedia(MediaElement sinkElement, MediaElement sourceElement)
 			throws ContentException {
 		synchronized (this) {
 			Assert.isTrue(state == STATE.HANDLING,
@@ -32,15 +33,16 @@ public abstract class AbstractSdpBasedMediaRequest extends
 			state = STATE.STARTING;
 		}
 
-		getLogger().debug("SDP received " + initialJsonRequest.getSdp());
+		getLogger().info("SDP received " + initialJsonRequest.getSdp());
 
 		String answer = null;
 
 		try {
-			buildMediaEndPointAndReturnSdp(upStream, downStream);
+			answer = buildMediaEndPointAndReturnSdp(sinkElement, sourceElement);
 		} catch (Throwable t) {
 			// TODO when final KMS version is ready, perhaps it will be
 			// necessary to release httpEndPoint and playerEndPoint resources.
+			getLogger().error(t.getMessage(), t);
 			throw new ContentException(t);
 		}
 
@@ -65,6 +67,11 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		// the initialAsyncCtx becomes useless
 		try {
 			// Send SDP as answer to client
+			getLogger().info("Answer SDP: " + answer);
+			Assert.notNull(answer,
+					"Received invalid null SDP from media server ... aborting");
+			Assert.isTrue(answer.length() > 0,
+					"Received invalid empty SDP from media server ... aborting");
 			protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
 					.newStartSdpResponse(answer, sessionId,
 							initialJsonRequest.getId()));

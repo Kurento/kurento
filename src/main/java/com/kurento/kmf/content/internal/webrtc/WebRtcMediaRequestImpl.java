@@ -16,6 +16,8 @@ import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaSink;
+import com.kurento.kmf.media.MediaSrc;
 
 public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		implements WebRtcMediaRequest {
@@ -33,8 +35,8 @@ public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected String buildMediaEndPointAndReturnSdp(MediaElement upStream,
-			MediaElement downStream) {
+	protected String buildMediaEndPointAndReturnSdp(MediaElement sinkElement,
+			MediaElement sourceElement) throws Throwable {
 		// TODO Create WebRtcEndPoint
 		// TODO Store media elements for later clean-up
 		// TODO Provide SDP to WebRtcEndPoint

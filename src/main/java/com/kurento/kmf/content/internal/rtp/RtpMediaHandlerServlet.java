@@ -64,8 +64,7 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 
 	@Override
 	protected Logger getLogger() {
-		// TODO Auto-generated method stub
-		return null;
+		return log;
 	}
 
 }
