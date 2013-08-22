@@ -160,6 +160,12 @@ gst_udp_set_connection (KmsBaseSdpEndPoint * base_sdp_end_point,
         }
 
         name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
+
+        if (name == NULL) {
+          GST_WARNING ("Cannot resolve name, using IP as name");
+          name = g_strdup (l->data);
+        }
+
         if (name != NULL) {
           const gchar *addr_type = is_ipv6 ? "IP6" : "IP4";
           gchar *ntp = g_strdup_printf ("%" G_GUINT64_FORMAT, get_ntp_time ());
