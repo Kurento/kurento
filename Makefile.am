@@ -5,7 +5,8 @@ SUBDIRS =				\
 plugin_LTLIBRARIES = libgstkurento.la
 
 # variables used for enum generation
-glib_enum_headers = kmsuriendpointstate.h
+glib_enum_headers = kmsuriendpointstate.h \
+                kmshttpendpointmethod.h
 glib_enum_define = KMS
 glib_gen_prefix = __kms
 glib_gen_basename = kms

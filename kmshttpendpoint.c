@@ -8,6 +8,8 @@
 #include "kms-marshal.h"
 #include "kmshttpendpoint.h"
 #include "kmsagnosticcaps.h"
+#include "kmshttpendpointmethod.h"
+#include "kms-enumtypes.h"
 
 #define PLUGIN_NAME "httpendpoint"
 
@@ -32,18 +34,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
     KmsHttpEndPointPrivate                    \
   )                                           \
 )
-
-typedef enum _HttpMethod HttpMethod;
 typedef struct _GetData GetData;
 typedef struct _PostData PostData;
-
-enum _HttpMethod
-{
-  UNDEFINED_METHOD,
-  GET_METHOD,
-  POST_METHOD,
-  UNSUPPORTED_METHOD,
-};
 
 struct _PostData
 {
@@ -58,7 +50,7 @@ struct _GetData
 
 struct _KmsHttpEndPointPrivate
 {
-  HttpMethod method;
+  KmsHttpEndPointMethod method;
   GstElement *pipeline;
   gboolean start;
   union
@@ -72,6 +64,7 @@ struct _KmsHttpEndPointPrivate
 enum
 {
   PROP_0,
+  PROP_METHOD,
   PROP_START,
   N_PROPERTIES
 };
@@ -167,7 +160,7 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   }
 
   self = get_http_ep_from_elements (appsink, element);
-  if (self && self->priv->method == GET_METHOD) {
+  if (self && self->priv->method == KMS_HTTP_END_POINT_METHOD_GET) {
     /* HttpEndPoint behaves as a recorder */
     buffer->pts = G_GUINT64_CONSTANT (0);
     buffer->dts = G_GUINT64_CONSTANT (0);
@@ -332,7 +325,7 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
   GstElement *decodebin;
   GstBus *bus;
 
-  self->priv->method = POST_METHOD;
+  self->priv->method = KMS_HTTP_END_POINT_METHOD_POST;
   self->priv->post = g_slice_new0 (PostData);
 
   self->priv->pipeline = gst_pipeline_new (POST_PIPELINE);
@@ -367,7 +360,7 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
 static void
 kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
 {
-  self->priv->method = GET_METHOD;
+  self->priv->method = KMS_HTTP_END_POINT_METHOD_GET;
   self->priv->get = g_slice_new0 (GetData);
 
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
@@ -381,7 +374,7 @@ kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
 
   KMS_ELEMENT_LOCK (self);
 
-  if (self->priv->method != GET_METHOD) {
+  if (self->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
     KMS_ELEMENT_UNLOCK (self);
     GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
     return NULL;
@@ -402,8 +395,8 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
 
   KMS_ELEMENT_LOCK (self);
 
-  if (self->priv->method != UNDEFINED_METHOD &&
-      self->priv->method != POST_METHOD) {
+  if (self->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
+      self->priv->method != KMS_HTTP_END_POINT_METHOD_POST) {
     KMS_ELEMENT_UNLOCK (self);
     GST_ERROR ("Trying to push data in a non-POST HttpEndPoint");
     return GST_FLOW_ERROR;
@@ -650,8 +643,8 @@ kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (self);
 
-  if (httpep->priv->method != UNDEFINED_METHOD &&
-      httpep->priv->method != GET_METHOD) {
+  if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
+      httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
     GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
     return;
   }
@@ -667,7 +660,7 @@ kms_http_end_point_audio_valve_removed (KmsElement * self, GstElement * valve)
 {
   KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (self);
 
-  if (httpep->priv->method != GET_METHOD)
+  if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET)
     return;
 
   GST_INFO ("TODO: Implement this");
@@ -678,8 +671,8 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 {
   KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (self);
 
-  if (httpep->priv->method != UNDEFINED_METHOD &&
-      httpep->priv->method != GET_METHOD) {
+  if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
+      httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
     GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
     return;
   }
@@ -695,7 +688,7 @@ kms_http_end_point_video_valve_removed (KmsElement * self, GstElement * valve)
 {
   KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (self);
 
-  if (httpep->priv->method != GET_METHOD)
+  if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET)
     return;
 
   GST_INFO ("TODO: Implement this");
@@ -737,10 +730,10 @@ kms_http_end_point_dispose (GObject * object)
   GST_DEBUG_OBJECT (self, "dispose");
 
   switch (self->priv->method) {
-    case GET_METHOD:
+    case KMS_HTTP_END_POINT_METHOD_GET:
       kms_http_end_point_dispose_GET (self);
       break;
-    case POST_METHOD:
+    case KMS_HTTP_END_POINT_METHOD_POST:
       kms_http_end_point_dispose_POST (self);
       break;
     default:
@@ -760,10 +753,10 @@ kms_http_end_point_finalize (GObject * object)
   GST_DEBUG_OBJECT (httpendpoint, "finalize");
 
   switch (httpendpoint->priv->method) {
-    case GET_METHOD:
+    case KMS_HTTP_END_POINT_METHOD_GET:
       g_slice_free (GetData, httpendpoint->priv->get);
       break;
-    case POST_METHOD:
+    case KMS_HTTP_END_POINT_METHOD_POST:
       g_slice_free (PostData, httpendpoint->priv->post);
       break;
     default:
@@ -809,6 +802,9 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
+    case PROP_METHOD:
+      g_value_set_enum (value, self->priv->method);
+      break;
     case PROP_START:
       g_value_set_enum (value, self->priv->start);
       break;
@@ -844,6 +840,12 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       GST_DEBUG_FUNCPTR (kms_http_end_point_video_valve_removed);
 
   /* Install properties */
+  obj_properties[PROP_METHOD] = g_param_spec_enum ("http-method",
+      "Http method",
+      "Http method used in requests",
+      GST_TYPE_HTTP_END_POINT_METHOD,
+      KMS_HTTP_END_POINT_METHOD_UNDEFINED, G_PARAM_READABLE);
+
   obj_properties[PROP_START] = g_param_spec_boolean ("start",
       "start media stream",
       "start media stream", DEFAULT_HTTP_END_POINT_START, G_PARAM_READWRITE);
@@ -899,7 +901,7 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
 {
   self->priv = KMS_HTTP_END_POINT_GET_PRIVATE (self);
 
-  self->priv->method = UNDEFINED_METHOD;
+  self->priv->method = KMS_HTTP_END_POINT_METHOD_UNDEFINED;
   self->priv->pipeline = NULL;
   self->priv->start = FALSE;
 }
