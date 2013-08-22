@@ -82,7 +82,11 @@ public abstract class AbstractHttpBasedContentRequest extends
 
 		// If session was rejected, just terminate
 		if (terminate) {
+<<<<<<< HEAD
+			//TODO
+=======
 			// TODO
+>>>>>>> Implemented Rtp Media service againts real media server
 			// clean up
 			// return
 		}

@@ -122,6 +122,7 @@ public class StreamingProxy {
 			this.streamingProxyListener = streamingProxyListener;
 		}
 
+		@Override
 		public void run() {
 			HttpRequestBase tunnelRequest = null;
 			HttpEntity tunnelResponseEntity = null;

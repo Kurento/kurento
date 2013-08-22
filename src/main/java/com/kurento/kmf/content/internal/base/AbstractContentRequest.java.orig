@@ -46,7 +46,11 @@ public abstract class AbstractContentRequest {
 	protected ContentApiConfiguration contentApiConfiguration;
 
 	private List<MediaObject> cleanupList;
+<<<<<<< HEAD
+	
+=======
 
+>>>>>>> Implemented Rtp Media service againts real media server
 	protected volatile STATE state;
 	private ContentRequestManager manager;
 	protected String sessionId;
@@ -77,12 +81,21 @@ public abstract class AbstractContentRequest {
 		eventQueue = new LinkedBlockingQueue<JsonRpcEvent>();
 	}
 
+<<<<<<< HEAD
+	protected void addForCleanUp(MediaObject mediaObject){
+		if(cleanupList == null)
+			cleanupList = new ArrayList<MediaObject>();
+		cleanupList.add(mediaObject);
+	}
+	
+=======
 	protected void addForCleanUp(MediaObject mediaObject) {
 		if (cleanupList == null)
 			cleanupList = new ArrayList<MediaObject>();
 		cleanupList.add(mediaObject);
 	}
 
+>>>>>>> Implemented Rtp Media service againts real media server
 	@PostConstruct
 	void onAfterBeanInitialized() {
 		sessionId = secretGenerator.nextSecret();
@@ -269,6 +282,18 @@ public abstract class AbstractContentRequest {
 			getLogger().error(e.getMessage(), e);
 		}
 	}
+<<<<<<< HEAD
+	
+	protected void releaseOwnMediaServerResources() throws Throwable {
+		if(cleanupList == null)
+			return;
+		for(MediaObject mediaObject : cleanupList){
+			mediaObject.release(new Continuation<Void>() {				
+				@Override
+				public void onSuccess(Void result) {					
+				}
+				
+=======
 
 	protected void releaseOwnMediaServerResources() throws Throwable {
 		if (cleanupList == null)
@@ -279,6 +304,7 @@ public abstract class AbstractContentRequest {
 				public void onSuccess(Void result) {
 				}
 
+>>>>>>> Implemented Rtp Media service againts real media server
 				@Override
 				public void onError(Throwable cause) {
 					getLogger().error(cause.getMessage(), cause);

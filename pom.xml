@@ -59,11 +59,8 @@
 			<artifactId>kmf-media-api</artifactId>
 			<version>${kmf-media-api.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-http-ep</artifactId>
-			<version>${kmf-http-ep.version}</version>
-		</dependency>
+		<!-- <dependency> <groupId>com.kurento.kmf</groupId> <artifactId>kmf-http-ep</artifactId> 
+			<version>${kmf-http-ep.version}</version> </dependency> -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

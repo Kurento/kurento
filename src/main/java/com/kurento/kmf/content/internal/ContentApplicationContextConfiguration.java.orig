@@ -155,7 +155,11 @@ public class ContentApplicationContextConfiguration {
 		}
 		return new ContentApiConfiguration();
 	}
+<<<<<<< HEAD
+	
+=======
 
+>>>>>>> Implemented Rtp Media service againts real media server
 	@Bean
 	@Primary
 	MediaApiConfiguration mediaApiConfiguration() {
