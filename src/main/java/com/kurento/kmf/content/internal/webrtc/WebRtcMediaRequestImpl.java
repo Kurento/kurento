@@ -20,6 +20,9 @@ import com.kurento.kmf.media.MediaElement;
 public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		implements WebRtcMediaRequest {
 
+	private static final Logger log = LoggerFactory
+			.getLogger(WebRtcMediaRequestImpl.class);
+
 	private WebRtcMediaHandler handler;
 
 	public WebRtcMediaRequestImpl(WebRtcMediaHandler handler,
@@ -28,9 +31,6 @@ public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		super(manager, asyncContext, contentId);
 		this.handler = handler;
 	}
-
-	private static final Logger log = LoggerFactory
-			.getLogger(WebRtcMediaRequestImpl.class);
 
 	@Override
 	protected String buildMediaEndPointAndReturnSdp(MediaElement upStream,
@@ -75,11 +75,5 @@ public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 				initialAsyncCtx,
 				JsonRpcResponse.newError(code, description,
 						initialJsonRequest.getId()));
-	}
-
-	@Override
-	protected void releaseOwnMediaServerResources() throws Throwable {
-		// TODO Auto-generated method stub
-
 	}
 }

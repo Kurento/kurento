@@ -30,6 +30,8 @@ import com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcEvent;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaObject;
 
 public abstract class AbstractContentRequest {
 	protected enum STATE {
@@ -43,6 +45,8 @@ public abstract class AbstractContentRequest {
 	@Autowired
 	protected ContentApiConfiguration contentApiConfiguration;
 
+	private List<MediaObject> cleanupList;
+	
 	protected volatile STATE state;
 	private ContentRequestManager manager;
 	protected String sessionId;
@@ -63,8 +67,6 @@ public abstract class AbstractContentRequest {
 	protected abstract void sendOnTerminateErrorMessageInInitialContext(
 			int code, String description) throws IOException;
 
-	protected abstract void releaseOwnMediaServerResources() throws Throwable;
-
 	// Concrete methods and constructors
 	public AbstractContentRequest(ContentRequestManager manager,
 			AsyncContext asyncContext, String contentId) {
@@ -75,6 +77,12 @@ public abstract class AbstractContentRequest {
 		eventQueue = new LinkedBlockingQueue<JsonRpcEvent>();
 	}
 
+	protected void addForCleanUp(MediaObject mediaObject){
+		if(cleanupList == null)
+			cleanupList = new ArrayList<MediaObject>();
+		cleanupList.add(mediaObject);
+	}
+	
 	@PostConstruct
 	void onAfterBeanInitialized() {
 		sessionId = secretGenerator.nextSecret();
@@ -87,12 +95,12 @@ public abstract class AbstractContentRequest {
 	public String getContentId() {
 		return contentId;
 	}
-	
-	public Constraints getVideoConstraints(){
+
+	public Constraints getVideoConstraints() {
 		return initialJsonRequest.getVideoConstraints();
 	}
-	
-	public Constraints getAudioConstraints(){
+
+	public Constraints getAudioConstraints() {
 		return initialJsonRequest.getAudioConstraints();
 	}
 
@@ -117,9 +125,12 @@ public abstract class AbstractContentRequest {
 				state = STATE.HANDLING;
 			}
 			initialJsonRequest = message;
-			//Check validity of constraints before making them accessible to the handler
-			Assert.notNull(initialJsonRequest.getVideoConstraints(), "Malfored request message specifying inexistent or invalid video contraints");
-			Assert.notNull(initialJsonRequest.getAudioConstraints(), "Malfored request message specifying inexistent or invalid audio contraints");
+			// Check validity of constraints before making them accessible to
+			// the handler
+			Assert.notNull(initialJsonRequest.getVideoConstraints(),
+					"Malfored request message specifying inexistent or invalid video contraints");
+			Assert.notNull(initialJsonRequest.getAudioConstraints(),
+					"Malfored request message specifying inexistent or invalid audio contraints");
 			processStartJsonRpcRequest(asyncCtx, message);
 		} else if (message.getMethod().equals(METHOD_POLL)) {
 			Assert.isTrue(state == STATE.ACTIVE, "Cannot poll on state "
@@ -256,6 +267,23 @@ public abstract class AbstractContentRequest {
 			releaseOwnMediaServerResources();
 		} catch (Throwable e) {
 			getLogger().error(e.getMessage(), e);
+		}
+	}
+	
+	protected void releaseOwnMediaServerResources() throws Throwable {
+		if(cleanupList == null)
+			return;
+		for(MediaObject mediaObject : cleanupList){
+			mediaObject.release(new Continuation<Void>() {				
+				@Override
+				public void onSuccess(Void result) {					
+				}
+				
+				@Override
+				public void onError(Throwable cause) {
+					getLogger().error(cause.getMessage(), cause);
+				}
+			});
 		}
 	}
 }

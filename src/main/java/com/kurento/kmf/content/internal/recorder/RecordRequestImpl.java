@@ -72,11 +72,4 @@ public class RecordRequestImpl extends AbstractHttpBasedContentRequest
 	protected void cancelMediaTransmission() {
 		// TODO Auto-generated method stub
 	}
-
-	@Override
-	protected void releaseOwnMediaServerResources() throws Throwable {
-		// TODO Auto-generated method stub
-
-	}
-
 }

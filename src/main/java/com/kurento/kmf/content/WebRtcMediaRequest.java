@@ -10,9 +10,9 @@ public interface WebRtcMediaRequest {
 	String getContentId();
 
 	public Constraints getVideoConstraints();
-	
+
 	public Constraints getAudioConstraints();
-	
+
 	HttpServletRequest getHttpServletRequest();
 
 	void startMedia(MediaElement upStream, MediaElement downStream)

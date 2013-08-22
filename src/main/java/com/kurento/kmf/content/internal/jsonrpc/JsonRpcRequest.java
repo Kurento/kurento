@@ -18,7 +18,8 @@ public class JsonRpcRequest {
 	public static JsonRpcRequest newRequest(String method, String sdp,
 			String sessionId, int id, Constraints videoConstraints,
 			Constraints audioConstraints) {
-		return new JsonRpcRequest(method, new JsonRpcRequestParams(sdp, sessionId, videoConstraints, audioConstraints), id);
+		return new JsonRpcRequest(method, new JsonRpcRequestParams(sdp,
+				sessionId, videoConstraints, audioConstraints), id);
 	}
 
 	JsonRpcRequest() {
@@ -84,11 +85,13 @@ class JsonRpcRequestParams {
 		this.sdp = sdp;
 		this.sessionId = sessionId;
 	}
-	
-	JsonRpcRequestParams(String sdp, String sessionId, Constraints videoConstraints, Constraints audioConstraints) {
+
+	JsonRpcRequestParams(String sdp, String sessionId,
+			Constraints videoConstraints, Constraints audioConstraints) {
 		this.sdp = sdp;
 		this.sessionId = sessionId;
-		this.constraints = new JsonRpcConstraints(videoConstraints.toString().toLowerCase(), audioConstraints.toString().toLowerCase());
+		this.constraints = new JsonRpcConstraints(videoConstraints.toString()
+				.toLowerCase(), audioConstraints.toString().toLowerCase());
 	}
 
 	String getSdp() {

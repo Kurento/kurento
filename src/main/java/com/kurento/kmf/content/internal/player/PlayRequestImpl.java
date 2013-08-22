@@ -74,9 +74,4 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 		// TODO Auto-generated method stub
 
 	}
-
-	@Override
-	protected void releaseOwnMediaServerResources() throws Throwable {
-		// TODO Auto-generated method stub
-	}
 }

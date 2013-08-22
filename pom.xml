@@ -13,7 +13,7 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies Versions -->
-		<kmf-api.version>1.0.0-SNAPSHOT</kmf-api.version>
+		<kmf-media-api.version>1.0.0-SNAPSHOT</kmf-media-api.version>
 		<kmf-http-ep.version>0.0.1-SNAPSHOT</kmf-http-ep.version>
 		<kmf-spring.version>0.0.1-SNAPSHOT</kmf-spring.version>
 		<servlet-api.version>3.0.1</servlet-api.version>
@@ -53,6 +53,11 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-spring</artifactId>
 			<version>${kmf-spring.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-media-api</artifactId>
+			<version>${kmf-media-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>

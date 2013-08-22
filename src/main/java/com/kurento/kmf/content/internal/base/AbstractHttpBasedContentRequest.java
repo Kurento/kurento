@@ -7,7 +7,6 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.http.entity.ContentProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
@@ -83,6 +82,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 
 		// If session was rejected, just terminate
 		if (terminate) {
+			//TODO
 			// clean up
 			// return
 		}
@@ -105,11 +105,14 @@ public abstract class AbstractHttpBasedContentRequest extends
 					.getRequest();
 			if (redirect) {
 				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-				//response.setHeader("Location", httpEndPoint.getUrl()); //TODO: uncomment
-				response.setHeader("Location", "http://media.w3.org/2010/05/sintel/trailer.webm"); //TODO remove
+				// response.setHeader("Location", httpEndPoint.getUrl());
+				// //TODO: uncomment
+				response.setHeader("Location",
+						"http://media.w3.org/2010/05/sintel/trailer.webm"); // TODO
+																			// remove
 			} else {
 				tunnellingProxyFuture = proxy.tunnelTransaction(request,
-						response, httpEndPoint.getUrl(), 
+						response, httpEndPoint.getUrl(),
 						new StreamingProxyListener() {
 
 							@Override
@@ -148,8 +151,11 @@ public abstract class AbstractHttpBasedContentRequest extends
 		try {
 			// Send URL as answer to client
 			protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
-					//.newStartUrlResponse(httpEndPoint.getUrl(), sessionId, //TODO uncomment
-					.newStartUrlResponse("http://media.w3.org/2010/05/sintel/trailer.webm", sessionId, //TODO remove
+			// .newStartUrlResponse(httpEndPoint.getUrl(), sessionId, //TODO
+			// uncomment
+					.newStartUrlResponse(
+							"http://media.w3.org/2010/05/sintel/trailer.webm",
+							sessionId, // TODO remove
 							initialJsonRequest.getId()));
 			initialAsyncCtx = null;
 			initialJsonRequest = null;

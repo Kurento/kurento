@@ -20,7 +20,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	}
 
 	protected abstract String buildMediaEndPointAndReturnSdp(
-			MediaElement upStream, MediaElement downStream);
+			MediaElement upStream, MediaElement downStream) throws Throwable;
 
 	public void startMedia(MediaElement upStream, MediaElement downStream)
 			throws ContentException {
@@ -57,24 +57,24 @@ public abstract class AbstractSdpBasedMediaRequest extends
 
 		// If session was rejected, just terminate
 		if (terminate) {
+			// TODO
 			// clean up
 			// return
-		} else {
-			// If session was not rejected (state=ACTIVE) we send an answer and
-			// the initialAsyncCtx becomes useless
-			try {
-				// Send SDP as answer to client
-				protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
-						.newStartSdpResponse(answer, sessionId,
-								initialJsonRequest.getId()));
-				initialAsyncCtx = null;
-				initialJsonRequest = null;
-			} catch (IOException e) {
-				// TODO when final KMS version is ready, perhaps it will be
-				// necessary to release httpEndPoint and playerEndPoint
-				// resources.
-				throw new ContentException(e);
-			}
+		}
+		// If session was not rejected (state=ACTIVE) we send an answer and
+		// the initialAsyncCtx becomes useless
+		try {
+			// Send SDP as answer to client
+			protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
+					.newStartSdpResponse(answer, sessionId,
+							initialJsonRequest.getId()));
+			initialAsyncCtx = null;
+			initialJsonRequest = null;
+		} catch (IOException e) {
+			// TODO when final KMS version is ready, perhaps it will be
+			// necessary to release httpEndPoint and playerEndPoint
+			// resources.
+			throw new ContentException(e);
 		}
 	}
 }
