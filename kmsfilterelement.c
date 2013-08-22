@@ -161,6 +161,8 @@ kms_filter_element_audio_valve_added (KmsElement * element, GstElement * valve)
       filter->priv->filter_type == KMS_FILTER_TYPE_AUDIO) {
     if (gst_element_link (valve, filter->priv->filter))
       g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+  } else {
+    gst_element_link (valve, kms_element_get_audio_agnosticbin (element));
   }
 }
 
@@ -180,6 +182,8 @@ kms_filter_element_video_valve_added (KmsElement * element, GstElement * valve)
       filter->priv->filter_type == KMS_FILTER_TYPE_VIDEO) {
     if (gst_element_link (valve, filter->priv->filter))
       g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+  } else {
+    gst_element_link (valve, kms_element_get_video_agnosticbin (element));
   }
 }
 
