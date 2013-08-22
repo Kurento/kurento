@@ -4,7 +4,12 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.apache.thrift.protocol.TProtocol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.kurento.kmf.media.HttpEndPointEvent.HttpEndPointEventType;
+import com.kurento.kms.api.MediaEvent;
 import com.kurento.kms.api.MediaObjectId;
 import com.kurento.kms.api.MediaObjectNotFoundException;
 import com.kurento.kms.api.MediaServerException;
@@ -19,10 +24,51 @@ import com.kurento.kms.api.MediaServerService.AsyncClient.getUrl_call;
  */
 public class HttpEndPoint extends EndPoint {
 
+	private static Logger log = LoggerFactory.getLogger(HttpEndPoint.class);
+
 	private static final long serialVersionUID = 1L;
 
 	HttpEndPoint(MediaObjectId httpEndPointId) {
 		super(httpEndPointId);
+	}
+
+	public MediaEventListener<HttpEndPointEvent> addListener(
+			MediaEventListener<HttpEndPointEvent> listener) {
+		return handler.addListener(this, listener);
+	}
+
+	public boolean removeListener(MediaEventListener<HttpEndPointEvent> listener) {
+		return handler.removeListener(this, listener);
+	}
+
+	@Override
+	KmsEvent deserializeEvent(MediaEvent event) {
+		try {
+			TProtocol prot = handler.getProtocolFromEvent(event);
+
+			com.kurento.kms.api.HttpEndPointEvent thriftEvent = new com.kurento.kms.api.HttpEndPointEvent();
+			thriftEvent.read(prot);
+
+			if (thriftEvent.isSetRequest()) {
+				switch (thriftEvent.getRequest()) {
+				case GET_REQUEST_EVENT:
+					return new HttpEndPointEvent(this,
+							HttpEndPointEventType.GET_REQUEST);
+				case POST_REQUEST_EVENT:
+					return new HttpEndPointEvent(this,
+							HttpEndPointEventType.POST_REQUEST);
+				}
+
+			}
+
+			log.error("Unexpected HttpEndPointEvent, falling back to default deserealizer");
+		} catch (TException e) {
+			log.error(
+					"Error deserializing player event, falling back to default deserializer"
+							+ e, e);
+		}
+
+		return super.deserializeEvent(event);
 	}
 
 	/* SYNC */

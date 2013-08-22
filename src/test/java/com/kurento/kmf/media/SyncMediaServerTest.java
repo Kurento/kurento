@@ -140,4 +140,50 @@ public class SyncMediaServerTest {
 		player.release();
 	}
 
+	@Test
+	public void testHttpEndPoint() throws IOException, MediaException,
+			InterruptedException {
+		final PlayerEndPoint player = mediaPipeline
+				.createUriEndPoint(PlayerEndPoint.class,
+						"https://ci.kurento.com/video/small.webm");
+		HttpEndPoint httpEndPoint = mediaPipeline.createHttpEndPoint();
+
+		final MediaSink videoSink = httpEndPoint.getMediaSinks(MediaType.VIDEO)
+				.iterator().next();
+		final MediaSrc videoSrc = player.getMediaSrcs(MediaType.VIDEO)
+				.iterator().next();
+
+		final Semaphore sem = new Semaphore(0);
+
+		player.addListener(new MediaEventListener<PlayerEvent>() {
+
+			@Override
+			public void onEvent(PlayerEvent event) {
+				sem.release();
+			}
+		});
+
+		httpEndPoint.addListener(new MediaEventListener<HttpEndPointEvent>() {
+
+			@Override
+			public void onEvent(HttpEndPointEvent event) {
+				log.info("received: " + event);
+				try {
+					videoSrc.connect(videoSink);
+					player.play();
+				} catch (IOException e) {
+					e.printStackTrace();
+					Assert.fail();
+				}
+			}
+		});
+
+		// TODO: Automatically do http request
+		log.info("Url: -- " + httpEndPoint.getUrl());
+		// TODO Change this by a try acquire when test is automated
+		sem.acquire();
+
+		player.release();
+		httpEndPoint.release();
+	}
 }
