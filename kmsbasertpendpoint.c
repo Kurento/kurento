@@ -176,6 +176,9 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
 
   len = gst_sdp_message_medias_len (answer);
 
+  KMS_ELEMENT_LOCK (base_end_point);
+  KMS_BASE_RTP_END_POINT (base_end_point)->negotiated = TRUE;
+
   for (i = 0; i < len; i++) {
     GstElement *payloader;
     GstCaps *caps = NULL;
@@ -232,6 +235,8 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
 
     gst_caps_unref (caps);
   }
+
+  KMS_ELEMENT_UNLOCK (base_end_point);
 }
 
 static GstCaps *
@@ -349,8 +354,13 @@ end:
 static void
 kms_base_rtp_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 {
-  // TODO: Implement this calling to kms_base_rtp_end_point_connect_valve_to_payloader
-  GST_INFO ("TODO: Implement this");
+  KmsBaseRtpEndPoint *base_rtp_end_point = KMS_BASE_RTP_END_POINT (self);
+
+  KMS_ELEMENT_LOCK (self);
+  if (base_rtp_end_point->negotiated)
+    kms_base_rtp_end_point_connect_valve_to_payloader (base_rtp_end_point,
+        valve, base_rtp_end_point->audio_payloader, AUDIO_RTPBIN_SEND_SINK);
+  KMS_ELEMENT_UNLOCK (self);
 }
 
 static void
@@ -363,8 +373,13 @@ kms_base_rtp_end_point_audio_valve_removed (KmsElement * self,
 static void
 kms_base_rtp_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 {
-  // TODO: Implement this calling to kms_base_rtp_end_point_connect_valve_to_payloader
-  GST_INFO ("TODO: Implement this");
+  KmsBaseRtpEndPoint *base_rtp_end_point = KMS_BASE_RTP_END_POINT (self);
+
+  KMS_ELEMENT_LOCK (self);
+  if (base_rtp_end_point->negotiated)
+    kms_base_rtp_end_point_connect_valve_to_payloader (base_rtp_end_point,
+        valve, base_rtp_end_point->video_payloader, VIDEO_RTPBIN_SEND_SINK);
+  KMS_ELEMENT_UNLOCK (self);
 }
 
 static void
@@ -444,4 +459,5 @@ kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
 
   base_rtp_end_point->audio_payloader = NULL;
   base_rtp_end_point->video_payloader = NULL;
+  base_rtp_end_point->negotiated = FALSE;
 }

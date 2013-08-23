@@ -33,6 +33,8 @@ struct _KmsBaseRtpEndPoint
   GstElement *rtpbin;
   GstElement *audio_payloader;
   GstElement *video_payloader;
+
+  gboolean negotiated;
 };
 
 struct _KmsBaseRtpEndPointClass
