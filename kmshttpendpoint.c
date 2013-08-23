@@ -806,7 +806,7 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
       g_value_set_enum (value, self->priv->method);
       break;
     case PROP_START:
-      g_value_set_enum (value, self->priv->start);
+      g_value_set_boolean (value, self->priv->start);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
