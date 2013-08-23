@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.content.internal.base.AbstractAsyncContentRequestProcessor;
 import com.kurento.kmf.content.internal.base.AbstractContentRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
 public class AsyncWebRtcMediaRequestProcessor extends
 		AbstractAsyncContentRequestProcessor {

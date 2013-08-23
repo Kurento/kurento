@@ -13,8 +13,8 @@ import com.kurento.kmf.content.WebRtcMediaHandler;
 import com.kurento.kmf.content.WebRtcMediaRequest;
 import com.kurento.kmf.content.internal.ContentRequestManager;
 import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 
 public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest

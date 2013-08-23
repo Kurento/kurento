@@ -1,9 +1,9 @@
 package com.kurento.kmf.content.internal.base;
 
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.ERROR_INTERNAL_ERROR;
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.ERROR_INVALID_REQUEST;
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.ERROR_PARSE_ERROR;
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.METHOD_START;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.ERROR_INTERNAL_ERROR;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.ERROR_INVALID_REQUEST;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.ERROR_PARSE_ERROR;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_START;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -26,8 +26,8 @@ import com.kurento.kmf.content.internal.ContentAsyncListener;
 import com.kurento.kmf.content.internal.ContentRequestManager;
 import com.kurento.kmf.content.internal.ControlProtocolManager;
 import com.kurento.kmf.content.internal.RejectableRunnable;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 public abstract class AbstractContentHandlerServlet extends HttpServlet {

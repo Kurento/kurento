@@ -8,7 +8,7 @@ import org.springframework.util.Assert;
 
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.internal.ContentRequestManager;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 
 public abstract class AbstractSdpBasedMediaRequest extends

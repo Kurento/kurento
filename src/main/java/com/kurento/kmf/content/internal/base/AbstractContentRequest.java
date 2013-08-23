@@ -1,8 +1,8 @@
 package com.kurento.kmf.content.internal.base;
 
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.METHOD_POLL;
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.METHOD_START;
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.METHOD_TERMINATE;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_POLL;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_START;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_TERMINATE;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,16 +20,16 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import com.kurento.kmf.content.Constraints;
 import com.kurento.kmf.content.ContentApiConfiguration;
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.internal.ContentRequestManager;
 import com.kurento.kmf.content.internal.ControlProtocolManager;
 import com.kurento.kmf.content.internal.SecretGenerator;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcEvent;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.content.jsonrpc.Constraints;
+import com.kurento.kmf.content.jsonrpc.JsonRpcConstants;
+import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;

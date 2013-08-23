@@ -1,6 +1,6 @@
 package com.kurento.kmf.content.internal;
 
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.ERROR_SERVER_ERROR;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.ERROR_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.concurrent.Future;
@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.content.internal.base.AbstractContentRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
 public class ContentAsyncListener implements AsyncListener {
 

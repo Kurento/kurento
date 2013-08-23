@@ -11,7 +11,7 @@ import com.kurento.kmf.content.RtpMediaHandler;
 import com.kurento.kmf.content.internal.RejectableRunnable;
 import com.kurento.kmf.content.internal.base.AbstractContentHandlerServlet;
 import com.kurento.kmf.content.internal.base.AbstractContentRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {

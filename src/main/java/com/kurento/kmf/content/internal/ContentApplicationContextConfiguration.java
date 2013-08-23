@@ -16,7 +16,6 @@ import com.kurento.kmf.content.PlayerHandler;
 import com.kurento.kmf.content.RecorderHandler;
 import com.kurento.kmf.content.RtpMediaHandler;
 import com.kurento.kmf.content.WebRtcMediaHandler;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.internal.player.AsyncPlayerRequestProcessor;
 import com.kurento.kmf.content.internal.player.PlayRequestImpl;
 import com.kurento.kmf.content.internal.recorder.AsyncRecorderRequestProcessor;
@@ -25,6 +24,7 @@ import com.kurento.kmf.content.internal.rtp.AsyncRtpMediaRequestProcessor;
 import com.kurento.kmf.content.internal.rtp.RtpMediaRequestImpl;
 import com.kurento.kmf.content.internal.webrtc.AsyncWebRtcMediaRequestProcessor;
 import com.kurento.kmf.content.internal.webrtc.WebRtcMediaRequestImpl;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
 

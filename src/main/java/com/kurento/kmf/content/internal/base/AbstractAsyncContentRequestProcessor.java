@@ -1,6 +1,6 @@
 package com.kurento.kmf.content.internal.base;
 
-import static com.kurento.kmf.content.internal.jsonrpc.JsonRpcConstants.ERROR_SERVER_ERROR;
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.ERROR_SERVER_ERROR;
 
 import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 
 import com.kurento.kmf.content.internal.RejectableRunnable;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
 public abstract class AbstractAsyncContentRequestProcessor implements
 		RejectableRunnable {

@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import com.google.gson.Gson;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 
 public class ControlProtocolManager {
 	private static final Logger log = LoggerFactory

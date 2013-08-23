@@ -2,6 +2,7 @@ package com.kurento.kmf.content;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.kurento.kmf.content.jsonrpc.Constraints;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipelineFactory;
 

@@ -10,7 +10,7 @@ import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.PlayerHandler;
 import com.kurento.kmf.content.internal.ContentRequestManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentRequest;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
