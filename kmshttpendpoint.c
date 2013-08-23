@@ -96,32 +96,10 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME,
         0, "debug category for httpendpoint element"));
 
-static KmsHttpEndPoint *
-get_http_ep_from_elements (GstElement * appsink, GstElement * appsrc)
-{
-  GstElement *self;
-
-  self = GST_ELEMENT (GST_OBJECT_PARENT (appsink));
-  if (KMS_IS_HTTP_END_POINT (self))
-    return KMS_HTTP_END_POINT (self);
-
-  if (appsrc == NULL)
-    goto fail;
-
-  self = GST_ELEMENT (GST_OBJECT_PARENT (appsrc));
-  if (KMS_IS_HTTP_END_POINT (self))
-    return KMS_HTTP_END_POINT (self);
-
-fail:
-  GST_ERROR ("Cant get HttpEndPoint");
-  return NULL;
-}
-
 static GstFlowReturn
 new_sample_handler (GstElement * appsink, gpointer user_data)
 {
   GstElement *element = GST_ELEMENT (user_data);
-  KmsHttpEndPoint *self;
   GstFlowReturn ret;
   GstSample *sample = NULL;
   GstBuffer *buffer;
@@ -159,14 +137,10 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
     goto end;
   }
 
-  self = get_http_ep_from_elements (appsink, element);
-  if (self && self->priv->method == KMS_HTTP_END_POINT_METHOD_GET) {
-    /* HttpEndPoint behaves as a recorder */
-    buffer->pts = G_GUINT64_CONSTANT (0);
-    buffer->dts = G_GUINT64_CONSTANT (0);
-    buffer->offset = G_GUINT64_CONSTANT (0);
-    buffer->offset_end = G_GUINT64_CONSTANT (0);
-  }
+  buffer->pts = G_GUINT64_CONSTANT (0);
+  buffer->dts = G_GUINT64_CONSTANT (0);
+  buffer->offset = G_GUINT64_CONSTANT (0);
+  buffer->offset_end = G_GUINT64_CONSTANT (0);
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
