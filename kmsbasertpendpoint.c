@@ -76,6 +76,7 @@ gst_base_rtp_get_payloader_for_caps (GstCaps * caps)
   GstElementFactory *factory;
   GstElement *payloader = NULL;
   GList *payloader_list, *filtered_list;
+  GParamSpec *pspec;
 
   payloader_list =
       gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_PAYLOADER,
@@ -92,6 +93,15 @@ gst_base_rtp_get_payloader_for_caps (GstCaps * caps)
     goto end;
 
   payloader = gst_element_factory_create (factory, NULL);
+
+  pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (payloader), "pt");
+  if (pspec != NULL && G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_UINT) {
+    GstStructure *st = gst_caps_get_structure (caps, 0);
+    gint payload;
+
+    if (gst_structure_get_int (st, "payload", &payload))
+      g_object_set (payloader, "pt", payload, NULL);
+  }
 
 end:
   gst_plugin_feature_list_free (filtered_list);
