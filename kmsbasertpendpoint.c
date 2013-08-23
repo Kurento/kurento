@@ -150,6 +150,16 @@ kms_base_rtp_end_point_connect_valve_to_payloader (KmsBaseRtpEndPoint * ep,
 
   gst_element_link (valve, payloader);
   gst_element_link_pads (payloader, "src", ep->rtpbin, rtpbin_pad_name);
+
+  {
+    // Send events upstream to renegotiate valve caps
+    GstEvent *event = gst_event_new_reconfigure ();
+
+    gst_element_send_event (payloader, event);
+    event = gst_event_new_reconfigure ();
+    gst_element_send_event (valve, event);
+  }
+
   g_object_set (valve, "drop", FALSE, NULL);
 }
 

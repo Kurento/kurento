@@ -582,6 +582,7 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
     GstPad *peer;
 
     KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
+    GST_DEBUG ("Reconfiguring %P", pad);
     peer = gst_pad_get_peer (pad);
 
     if (peer != NULL) {
