@@ -295,6 +295,8 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
   GstPad *decoded_tee_sink;
   GstCaps *raw_caps;
 
+  GST_DEBUG ("Creating a new encoded tee for caps: %P", allowed_caps);
+
   decoded_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   if (decoded_tee == NULL)
     return NULL;
@@ -321,6 +323,8 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
 
   if (encoder_factory == NULL)
     goto end;
+
+  GST_DEBUG ("Factory %P", encoder_factory);
 
   convert = kms_agnostic_get_convert_element_for_raw_caps (raw_caps);
   encoder = gst_element_factory_create (encoder_factory, NULL);
@@ -354,6 +358,8 @@ end:
 release_decoded_tee:
   g_object_unref (decoded_tee_sink);
   g_object_unref (decoded_tee);
+
+  GST_DEBUG ("Created %P", tee);
 
   return tee;
 }
@@ -425,6 +431,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   } else {
     GstElement *raw_tee;
 
+    GST_DEBUG ("Looking for an encoded tee with caps: %P", allowed_caps);
     KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     raw_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
     if (raw_tee != NULL) {
