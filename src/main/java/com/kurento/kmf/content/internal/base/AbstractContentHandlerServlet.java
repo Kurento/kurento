@@ -123,7 +123,7 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 			return;
 		}
 
-		getLogger().debug("GET request received: " + req.getRequestURI());
+		getLogger().info("GET request received: " + req.getRequestURI());
 
 		if (!req.isAsyncSupported()) {
 			// Async context could not be created. It is not necessary to
@@ -154,13 +154,15 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 
 		// Add listener for managing error conditions
 		asyncCtx.addListener(new ContentAsyncListener());
+
+		doRequest4SimpleHttpProtocol(asyncCtx, contentId, resp);
 	}
 
 	@Override
 	protected final void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		getLogger().debug("POST request received: " + req.getRequestURI());
+		getLogger().info("POST request received: " + req.getRequestURI());
 
 		if (!req.isAsyncSupported()) {
 			// Async context could not be created. It is not necessary to
@@ -254,7 +256,7 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 			if (contentRequest == null) {
 				protocolManager.sendJsonError(asyncCtx, JsonRpcResponse
 						.newError(ERROR_INVALID_REQUEST,
-								"Cloud not find WebRtcMedia state associated to sessionId "
+								"Cloud not find contentRequest object associated to sessionId "
 										+ message.getSessionId(),
 								message.getId()));
 				return;

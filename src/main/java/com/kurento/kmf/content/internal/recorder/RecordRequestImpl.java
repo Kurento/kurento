@@ -13,6 +13,8 @@ import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.RecorderEndPoint;
 
 public class RecordRequestImpl extends AbstractHttpBasedContentRequest
 		implements RecordRequest {
@@ -44,16 +46,28 @@ public class RecordRequestImpl extends AbstractHttpBasedContentRequest
 	}
 
 	@Override
-	protected MediaElement buildRepositoryBasedMediaElement(String contentPath) {
-		// TODO Auto-generated method stub
-		return null;
+	protected MediaElement buildRepositoryBasedMediaElement(String contentPath)
+			throws Exception {
+		getLogger().info("Creating media pipeline ...");
+		MediaPipeline mediaPipeline = mediaPipelineFactory
+				.createMediaPipeline();
+		addForCleanUp(mediaPipeline);
+		getLogger().info("Creating RecorderEndPoint ...");
+		RecorderEndPoint recorderEndPoint = mediaPipeline.createUriEndPoint(
+				RecorderEndPoint.class, contentPath);
+		recorderEndPoint.record();
+		return recorderEndPoint;
 	}
 
 	@Override
-	protected HttpEndPoint buildHttpEndPointMediaElement(
-			MediaElement mediaElement) {
-		// TODO Auto-generated method stub
-		return null;
+	protected HttpEndPoint buildAndConnectHttpEndPointMediaElement(
+			MediaElement mediaElement) throws Exception {
+		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
+		getLogger().info("Creating HttpEndPoint ...");
+		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		addForCleanUp(httpEndPoint);
+		connect(httpEndPoint, mediaElement);
+		return httpEndPoint;
 	}
 
 	@Override

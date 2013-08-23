@@ -13,6 +13,8 @@ import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndPoint;
 
 public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 		PlayRequest {
@@ -45,17 +47,28 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 	}
 
 	@Override
-	protected MediaElement buildRepositoryBasedMediaElement(String contentPath) {
-		// TODO Build player
-		return null;
+	protected MediaElement buildRepositoryBasedMediaElement(String contentPath)
+			throws Exception {
+		getLogger().info("Creating media pipeline ...");
+		MediaPipeline mediaPipeline = mediaPipelineFactory
+				.createMediaPipeline();
+		addForCleanUp(mediaPipeline);
+		getLogger().info("Creating PlayerEndPoint ...");
+		PlayerEndPoint playerEndPoint = mediaPipeline.createUriEndPoint(
+				PlayerEndPoint.class, contentPath);
+		playerEndPoint.play();
+		return playerEndPoint;
 	}
 
 	@Override
-	protected HttpEndPoint buildHttpEndPointMediaElement(
-			MediaElement mediaElement) {
-		// TODO Build httpEndpoint in MediaPipeline of the provided mediaElement
-		// and chain to the provided media element
-		return null;
+	protected HttpEndPoint buildAndConnectHttpEndPointMediaElement(
+			MediaElement mediaElement) throws Exception {
+		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
+		getLogger().info("Creating HttpEndPoint ...");
+		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		addForCleanUp(httpEndPoint);
+		connect(mediaElement, httpEndPoint);
+		return httpEndPoint;
 	}
 
 	@Override
@@ -72,6 +85,5 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 	@Override
 	protected void cancelMediaTransmission() {
 		// TODO Auto-generated method stub
-
 	}
 }

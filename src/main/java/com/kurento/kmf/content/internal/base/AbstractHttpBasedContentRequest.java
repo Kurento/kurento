@@ -40,10 +40,10 @@ public abstract class AbstractHttpBasedContentRequest extends
 	}
 
 	protected abstract MediaElement buildRepositoryBasedMediaElement(
-			String contentPath);
+			String contentPath) throws Exception;
 
-	protected abstract HttpEndPoint buildHttpEndPointMediaElement(
-			MediaElement mediaElement);
+	protected abstract HttpEndPoint buildAndConnectHttpEndPointMediaElement(
+			MediaElement mediaElement) throws Exception;
 
 	/*
 	 * This is an utility method designed for minimizing code replication. For
@@ -64,10 +64,27 @@ public abstract class AbstractHttpBasedContentRequest extends
 		Assert.isTrue(mediaElement != null || contentPath != null,
 				"Internal error. Cannot process request containing two non null parameters");
 
+		getLogger().info(
+				"Activating media for " + this.getClass().getSimpleName()
+						+ " with contentPath " + contentPath);
+
 		if (contentPath != null) {
-			mediaElement = buildRepositoryBasedMediaElement(contentPath);
+			try {
+				mediaElement = buildRepositoryBasedMediaElement(contentPath);
+			} catch (Exception e) {
+				getLogger().error(e.getMessage(), e);
+				throw new ContentException(e);
+			}
 		}
-		HttpEndPoint httpEndPoint = buildHttpEndPointMediaElement(mediaElement);
+
+		HttpEndPoint httpEndPoint = null;
+
+		try {
+			httpEndPoint = buildAndConnectHttpEndPointMediaElement(mediaElement);
+		} catch (Exception e) {
+			getLogger().error(e.getMessage(), e);
+			throw new ContentException(e);
+		}
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -84,22 +101,24 @@ public abstract class AbstractHttpBasedContentRequest extends
 		if (terminate) {
 			// TODO
 			// clean up
-			// return
+			return;
 		}
 		// If session was not rejected (state=ACTIVE) we send an answer and
 		// the initialAsyncCtx becomes useless
 
 		String answerUrl = null;
 		// TODO: uncomment lines below, they are commented for testing.
-		// try{
-		// answerUrl = httpEndPoint.getUrl();
-		// } catch (IOException ioe) {
-		// throw new ContentException(ioe);
-		// }
-		// Assert.notNull(answerUrl,
-		// "Received invalid null url from media server ... aborting");
-		// Assert.isTrue(answerUrl.length() > 0,
-		// "Received invalid empty url from media server ... aborting");
+		try {
+			answerUrl = httpEndPoint.getUrl();
+			// TODO: ugly testing comment line above uncomment line below
+			// answerUrl = "http://media.w3.org/2010/05/sintel/trailer.webm");
+		} catch (IOException ioe) {
+			throw new ContentException(ioe);
+		}
+		Assert.notNull(answerUrl,
+				"Received invalid null url from media server ... aborting");
+		Assert.isTrue(answerUrl.length() > 0,
+				"Received invalid empty url from media server ... aborting");
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
 		} else {
@@ -117,11 +136,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 					.getRequest();
 			if (redirect) {
 				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-				// response.setHeader("Location", url);
-				// //TODO: uncomment
-				response.setHeader("Location",
-						"http://media.w3.org/2010/05/sintel/trailer.webm"); // TODO
-																			// remove
+				response.setHeader("Location", url);
 			} else {
 				tunnellingProxyFuture = proxy.tunnelTransaction(request,
 						response, url, new StreamingProxyListener() {
@@ -162,11 +177,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 		try {
 			// Send URL as answer to client
 			protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
-			// .newStartUrlResponse(url, sessionId, //TODO
-			// uncomment
-					.newStartUrlResponse(
-							"http://media.w3.org/2010/05/sintel/trailer.webm",
-							sessionId, // TODO remove
+					.newStartUrlResponse(url, sessionId,
 							initialJsonRequest.getId()));
 			initialAsyncCtx = null;
 			initialJsonRequest = null;

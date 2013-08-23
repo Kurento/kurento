@@ -6,7 +6,6 @@ import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
 import com.kurento.kmf.content.ContentException;
@@ -18,19 +17,13 @@ import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.RtpEndPoint;
-import com.kurento.kms.api.MediaType;
 
 public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		RtpMediaRequest {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(RtpMediaRequestImpl.class);
-
-	@Autowired
-	private MediaPipelineFactory mediaPipelineFactory;
 
 	private RtpMediaHandler handler;
 
@@ -93,22 +86,6 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		return answerSdp;
 	}
 
-	private void connect(MediaElement sourceElement, MediaElement sinkElement)
-			throws IOException {
-		log.info("Connecting video source of " + sourceElement
-				+ " to video Sink of " + sinkElement);
-		MediaSink videoSink = sinkElement.getMediaSinks(MediaType.VIDEO)
-				.iterator().next();
-		sourceElement.getMediaSrcs(MediaType.VIDEO).iterator().next()
-				.connect(videoSink);
-		log.info("Connecting audio source of " + sourceElement
-				+ " to audio Sink of " + sinkElement);
-		// MediaSink audioSink = sinkElement.getMediaSinks(MediaType.AUDIO)
-		// .iterator().next();
-		// sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
-		// .connect(audioSink);
-	}
-
 	@Override
 	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
 			JsonRpcRequest message) throws ContentException {
@@ -138,13 +115,5 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 				JsonRpcResponse.newError(code, description,
 						initialJsonRequest.getId()));
 
-	}
-
-	@Override
-	public MediaPipelineFactory getMediaPipelineFactory() {
-		// TODO: this returned class should be a wrapper of the real class so
-		// that when the user creates a resource the request stores the resource
-		// for later cleanup
-		return mediaPipelineFactory;
 	}
 }

@@ -31,13 +31,19 @@ import com.kurento.kmf.content.internal.jsonrpc.JsonRpcEvent;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;
+import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.MediaSink;
+import com.kurento.kms.api.MediaType;
 
 public abstract class AbstractContentRequest {
 	protected enum STATE {
 		IDLE, HANDLING, STARTING, ACTIVE, TERMINATED
 	};
 
+	@Autowired
+	protected MediaPipelineFactory mediaPipelineFactory;
 	@Autowired
 	protected ControlProtocolManager protocolManager;
 	@Autowired
@@ -77,7 +83,7 @@ public abstract class AbstractContentRequest {
 		eventQueue = new LinkedBlockingQueue<JsonRpcEvent>();
 	}
 
-	protected void addForCleanUp(MediaObject mediaObject) {
+	public void addForCleanUp(MediaObject mediaObject) {
 		if (cleanupList == null)
 			cleanupList = new ArrayList<MediaObject>();
 		cleanupList.add(mediaObject);
@@ -285,5 +291,30 @@ public abstract class AbstractContentRequest {
 				}
 			});
 		}
+	}
+
+	public MediaPipelineFactory getMediaPipelineFactory() {
+		// TODO: this returned class should be a wrapper of the real class so
+		// that when the user creates a resource the request stores the resource
+		// for later cleanup
+		return mediaPipelineFactory;
+	}
+
+	protected void connect(MediaElement sourceElement, MediaElement sinkElement)
+			throws IOException {
+		getLogger().info(
+				"Connecting video source of " + sourceElement
+						+ " to video Sink of " + sinkElement);
+		MediaSink videoSink = sinkElement.getMediaSinks(MediaType.VIDEO)
+				.iterator().next();
+		sourceElement.getMediaSrcs(MediaType.VIDEO).iterator().next()
+				.connect(videoSink);
+		// TODO: activate audio when possible
+		// getLogger().info("Connecting audio source of " + sourceElement
+		// + " to audio Sink of " + sinkElement);
+		// MediaSink audioSink = sinkElement.getMediaSinks(MediaType.AUDIO)
+		// .iterator().next();
+		// sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
+		// .connect(audioSink);
 	}
 }
