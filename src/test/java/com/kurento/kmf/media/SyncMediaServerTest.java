@@ -43,6 +43,87 @@ public class SyncMediaServerTest {
 	public void afterClass() throws IOException {
 		mediaPipeline.release();
 	}
+	
+	
+	public void testCampusPartySimulatedPipeline() throws IOException, InterruptedException, MediaException {
+		log.info("Creating RtpEndPoint ...");
+		RtpEndPoint rtpEndPoint = mediaPipeline
+				.createSdpEndPoint(RtpEndPoint.class);
+		
+		String requestSdp = "v=0\r\n" +
+				"o=- 12345 12345 IN IP4 192.168.1.18\r\n" +
+				"s=-\r\n" +
+				"c=IN IP4 192.168.1.18\r\n" +
+				"t=0 0\r\n" +
+				"m=video 45936 RTP/AVP 96\r\n" +
+				"a=rtpmap:96 H263-1998/90000\r\n" +
+				"a=sendrecv\r\n" +
+				"b=AS:3000\r\n";
+		
+		log.info("Offering SDP\n" + requestSdp);
+		String answerSdp = rtpEndPoint
+				.processOffer(requestSdp);
+		
+		log.info("Connecting loopback");
+		rtpEndPoint.getMediaSrcs(MediaType.VIDEO).iterator().next().connect(
+				rtpEndPoint.getMediaSinks(MediaType.VIDEO).iterator().next());
+		
+		//Wait some time simulating the connection to the player app
+		Thread.sleep(1000);
+
+		log.info("Creating HttpEndPoint ...");
+		HttpEndPoint httpEndPoint = mediaPipeline.createHttpEndPoint();
+		
+		log.info("Connecting HttpEndPoint ...");
+		rtpEndPoint.getMediaSrcs(MediaType.VIDEO).iterator().next().connect(
+				httpEndPoint.getMediaSinks(MediaType.VIDEO).iterator().next());
+
+		log.info("HttpEndPoint ready to serve at " + httpEndPoint.getUrl());
+	}
+	
+	
+	@Test
+	public void testRtpEndPointSimulatingAndroidSdp() throws MediaException, IOException, InterruptedException{
+		
+		log.info("Creating PlayerEndPoint ...");
+		PlayerEndPoint player = mediaPipeline.createUriEndPoint(
+				PlayerEndPoint.class,
+				"https://ci.kurento.com/video/barcodes.webm");
+
+		log.info("Creating RtpEndPoint ...");
+		RtpEndPoint rtpEndPoint = mediaPipeline
+				.createSdpEndPoint(RtpEndPoint.class);
+		
+		String requestSdp = "v=0\r\n"+
+				"o=- 12345 12345 IN IP4 95.125.31.136\r\n"+
+				"s=-\r\n"+
+				"c=IN IP4 95.125.31.136\r\n"+
+				"t=0 0\r\n"+
+				"m=video 52126 RTP/AVP 96 97 98\r\n"+
+				"a=rtpmap:96 H264/90000\r\n"+
+				"a=rtpmap:97 MP4V-ES/90000\r\n"+
+				"a=rtpmap:98 H263-1998/90000\r\n"+
+				"a=recvonly\r\n"+
+				"b=AS:384\r\n";
+		
+		log.info("Offering SDP\n" + requestSdp);
+		String answerSdp = rtpEndPoint
+				.processOffer(requestSdp);
+		
+		log.info("Answer SDP\n " + answerSdp);
+
+		log.info("Connecting element ...");
+		MediaSink videoSink = rtpEndPoint.getMediaSinks(MediaType.VIDEO)
+				.iterator().next();
+		player.getMediaSrcs(MediaType.VIDEO).iterator().next()
+				.connect(videoSink);
+
+		log.info("PlayerEndPoint.play()");
+		player.play();
+		
+		//just a little bit of time before destroying
+		Thread.sleep(2000);
+	}
 
 	@Test
 	public void testStreamSync() throws MediaException, IOException,
