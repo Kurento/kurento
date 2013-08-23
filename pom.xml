@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<packaging>war</packaging>
+	<version>1.0.0-SNAPSHOT</version>
+
+	<groupId>com.kurento.kmf</groupId>
+	<artifactId>content-api-test</artifactId>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
+
+		<!-- Dependencies Versions -->
+		<servlet-api.version>3.0.1</servlet-api.version>
+		<slf4j-api.version>1.7.5</slf4j-api.version>
+		<kmf-content-api.version>0.0.1-SNAPSHOT</kmf-content-api.version>
+		<kws-content-api.version>1.0.0-SNAPSHOT</kws-content-api.version>
+
+		<!-- Test Dependencies Versions -->
+		<junit.version>4.8.1</junit.version>
+		<arquillian.version>1.0.3.Final</arquillian.version>
+		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
+		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
+
+		<!-- JBoss -->
+		<jboss-as.version>7.1.1.Final</jboss-as.version>
+		<jboss.socket.binding.port-offset>23</jboss.socket.binding.port-offset>
+		<jboss-as.service.host>localhost</jboss-as.service.host>
+		<jboss-as.service.port>8180</jboss-as.service.port>
+		<jboss-as.management.port>10999</jboss-as.management.port>
+		<jboss-as.remoting.port>4470</jboss-as.remoting.port>
+		<jboss-javaee.version>1.0.0.Final</jboss-javaee.version>
+
+		<!-- Plugins Versions -->
+		<maven-war-plugin.version>2.3</maven-war-plugin.version>
+		<maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
+		<maven-failsafe-plugin.version>2.15</maven-failsafe-plugin.version>
+		<maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
+
+		<!-- Extensions Versions -->
+		<wagon-ssh.version>2.0</wagon-ssh.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-content-api</artifactId>
+			<version>${kmf-content-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${servlet-api.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thetransactioncompany</groupId>
+			<artifactId>cors-filter</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+
+		<!-- Test dependencies (JUnit, Arquillian) -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-api-maven</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-impl-maven</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-impl-base</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.lazerycode.jmeter</groupId>
+			<artifactId>jmeter-maven-plugin</artifactId>
+			<version>${jmeter-maven-plugin.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jmeter</groupId>
+			<artifactId>ApacheJMeter_core</artifactId>
+			<version>${ApacheJMeter_core.version}</version>
+		</dependency>
+	</dependencies>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.jboss.arquillian</groupId>
+				<artifactId>arquillian-bom</artifactId>
+				<version>${arquillian.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>${basedir}/src/test/resources</directory>
+				<filtering>true</filtering>
+				<targetPath>${project.build.directory}/jboss-as-${jboss-as.version}/standalone/configuration</targetPath>
+				<includes>
+					<include>**/standalone-*.xml</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>${basedir}/src/test/resources</directory>
+				<filtering>true</filtering>
+				<targetPath>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes</targetPath>
+				<includes>
+					<include>*.webm</include>
+				</includes>
+			</resource>
+		</resources>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>${wagon-ssh.version}</version>
+			</extension>
+		</extensions>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>${maven-war-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${maven-surefire-plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${maven-dependency-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>copy-js-deps</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.kurento.kws</groupId>
+									<artifactId>kws-content-api</artifactId>
+									<version>${kws-content-api.version}</version>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>${basedir}/target/${project.artifactId}-${project.version}</outputDirectory>
+									<includes>**/*.*</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>Kurento releases repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Kurento snapshots repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<profiles>
+		<profile>
+			<id>arquillian-jbossas-managed</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<testResources>
+					<testResource>
+						<directory>src/test/resources</directory>
+						<filtering>true</filtering>
+						<includes>
+							<include>**/arquillian.xml</include>
+						</includes>
+					</testResource>
+				</testResources>
+				<plugins>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jboss.as</groupId>
+											<artifactId>jboss-as-dist</artifactId>
+											<version>${jboss-as.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>target</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<version>${maven-failsafe-plugin.version}</version>
+						<configuration>
+							<argLine>-XX:MaxPermSize=1024m -Xmx1024m
+								-XX:+CMSClassUnloadingEnabled</argLine>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.spec</groupId>
+					<artifactId>jboss-javaee-6.0</artifactId>
+					<version>${jboss-javaee.version}</version>
+					<type>pom</type>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.as</groupId>
+					<artifactId>jboss-as-arquillian-container-managed</artifactId>
+					<version>${jboss-as.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.arquillian.protocol</groupId>
+					<artifactId>arquillian-protocol-servlet</artifactId>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
+	<repositories>
+		<repository>
+			<id>kurento-snapshots</id>
+			<name>Kurento Snapshot Repository</name>
+			<url>http://repository.kurento.com/archiva/repository/snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>kurento-releases</id>
+			<name>Kurento Repository</name>
+			<url>http://repository.kurento.com/archiva/repository/internal/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+</project>
