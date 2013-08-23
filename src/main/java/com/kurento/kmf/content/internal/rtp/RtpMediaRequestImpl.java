@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
-import com.kurento.kmf.content.Constraints;
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.RtpMediaHandler;
 import com.kurento.kmf.content.RtpMediaRequest;
@@ -18,13 +17,9 @@ import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.internal.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.MediaException;
-import com.kurento.kmf.media.MediaObject;
-import com.kurento.kmf.media.MediaPad;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.MediaSink;
-import com.kurento.kmf.media.MediaSrc;
 import com.kurento.kmf.media.RtpEndPoint;
 import com.kurento.kms.api.MediaType;
 
@@ -51,12 +46,14 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 			MediaElement sourceElement) throws Throwable {
 
 		// Candidate for providing a pipeline
+		log.info("Looking for candidate ...");
 		MediaElement candidate = sinkElement == null ? sourceElement
 				: sinkElement;
 
 		// TODO we should check that, if both elements are non-null, they belong
 		// to the same pipeline
 
+		log.info("Creating media candidate for candidate " + candidate);
 		MediaPipeline mediaPipeline = null;
 		if (candidate != null) {
 			mediaPipeline = candidate.getMediaPipeline();
@@ -65,12 +62,14 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 			addForCleanUp(mediaPipeline);
 		}
 
+		log.info("Creating rtpEndPoint ...");
 		RtpEndPoint rtpEndPoint = mediaPipeline
 				.createSdpEndPoint(RtpEndPoint.class);
 		if (candidate != null) {
 			addForCleanUp(rtpEndPoint);
 		}
 
+		log.info("Recoveing answer sdp ...");
 		String answerSdp = rtpEndPoint
 				.processOffer(initialJsonRequest.getSdp());
 
@@ -80,6 +79,7 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 			sinkElement = rtpEndPoint;// This produces a loopback.
 		}
 
+		log.info("Connecting media pads ...");
 		// TODO: should we double check constraints?
 		if (sinkElement != null) {
 			connect(rtpEndPoint, sinkElement);
@@ -89,19 +89,24 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 			connect(sourceElement, rtpEndPoint);
 		}
 
+		log.info("Returning answer sdp ...");
 		return answerSdp;
 	}
 
 	private void connect(MediaElement sourceElement, MediaElement sinkElement)
 			throws IOException {
+		log.info("Connecting video source of " + sourceElement
+				+ " to video Sink of " + sinkElement);
 		MediaSink videoSink = sinkElement.getMediaSinks(MediaType.VIDEO)
 				.iterator().next();
 		sourceElement.getMediaSrcs(MediaType.VIDEO).iterator().next()
 				.connect(videoSink);
-		MediaSink audioSink = sinkElement.getMediaSinks(MediaType.AUDIO)
-				.iterator().next();
-		sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
-				.connect(audioSink);
+		log.info("Connecting audio source of " + sourceElement
+				+ " to audio Sink of " + sinkElement);
+		// MediaSink audioSink = sinkElement.getMediaSinks(MediaType.AUDIO)
+		// .iterator().next();
+		// sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
+		// .connect(audioSink);
 	}
 
 	@Override

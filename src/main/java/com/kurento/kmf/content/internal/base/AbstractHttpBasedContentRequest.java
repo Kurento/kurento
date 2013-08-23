@@ -90,14 +90,16 @@ public abstract class AbstractHttpBasedContentRequest extends
 		// the initialAsyncCtx becomes useless
 
 		String answerUrl = null;
-		//TODO: uncomment lines below, they are commented for testing.
-//		try{
-//			answerUrl = httpEndPoint.getUrl();
-//		} catch (IOException ioe) {
-//			throw new ContentException(ioe);
-//		}
-//		Assert.notNull(answerUrl, "Received invalid null url from media server ... aborting");
-//		Assert.isTrue(answerUrl.length() > 0, "Received invalid empty url from media server ... aborting");
+		// TODO: uncomment lines below, they are commented for testing.
+		// try{
+		// answerUrl = httpEndPoint.getUrl();
+		// } catch (IOException ioe) {
+		// throw new ContentException(ioe);
+		// }
+		// Assert.notNull(answerUrl,
+		// "Received invalid null url from media server ... aborting");
+		// Assert.isTrue(answerUrl.length() > 0,
+		// "Received invalid empty url from media server ... aborting");
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
 		} else {
@@ -106,8 +108,8 @@ public abstract class AbstractHttpBasedContentRequest extends
 
 	}
 
-	private void answerActivateMediaRequest4SimpleHttpConfiguration(
-			String url) throws ContentException {
+	private void answerActivateMediaRequest4SimpleHttpConfiguration(String url)
+			throws ContentException {
 		try {
 			HttpServletResponse response = (HttpServletResponse) initialAsyncCtx
 					.getResponse();
@@ -122,8 +124,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 																			// remove
 			} else {
 				tunnellingProxyFuture = proxy.tunnelTransaction(request,
-						response, url,
-						new StreamingProxyListener() {
+						response, url, new StreamingProxyListener() {
 
 							@Override
 							public void onProxySuccess() {

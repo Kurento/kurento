@@ -71,6 +71,11 @@ public class JsonRpcRequest {
 		else
 			return null;
 	}
+
+	@Override
+	public String toString() {
+		return GsonUtils.toString(this);
+	}
 }
 
 class JsonRpcRequestParams {

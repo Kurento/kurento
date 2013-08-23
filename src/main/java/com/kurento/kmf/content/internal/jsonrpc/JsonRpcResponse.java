@@ -107,6 +107,11 @@ public class JsonRpcResponse {
 	public int getId() {
 		return id;
 	}
+
+	@Override
+	public String toString() {
+		return GsonUtils.toString(this);
+	}
 }
 
 class JsonRpcResponseResult {

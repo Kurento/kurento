@@ -63,7 +63,7 @@ public class ControlProtocolManager {
 				baos.toByteArray()), UTF8);
 		JsonRpcRequest jsonRequest = gson.fromJson(isr, JsonRpcRequest.class);
 		Assert.notNull(jsonRequest.getMethod());
-		log.info("Received JsonRpc request: " + jsonRequest.toString());
+		log.info("Received JsonRpc request ...\n " + jsonRequest.toString());
 		return jsonRequest;
 	}
 
@@ -135,8 +135,12 @@ public class ControlProtocolManager {
 					response.getOutputStream(), UTF8);
 			osw.write(gson.toJson(message));
 			osw.flush();
-			log.info("Sent JsonRpc answer " + message);
+			log.info("Sent JsonRpc answer ...\n" + message);
 			asyncCtx.complete();
 		}
+	}
+
+	public String toString(Object object) {
+		return gson.toJson(object);
 	}
 }
