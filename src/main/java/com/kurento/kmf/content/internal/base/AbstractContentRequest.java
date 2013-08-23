@@ -249,8 +249,8 @@ public abstract class AbstractContentRequest {
 		}
 
 		try {
-			if (localState == STATE.IDLE || state == STATE.HANDLING
-					|| state == STATE.STARTING) {
+			if (localState == STATE.IDLE || localState == STATE.HANDLING
+					|| localState == STATE.STARTING) {
 				sendOnTerminateErrorMessageInInitialContext(code, description);
 			} else if (localState == STATE.ACTIVE) {
 				cancelMediaTransmission();
