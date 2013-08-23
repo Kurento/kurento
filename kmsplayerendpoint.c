@@ -105,6 +105,11 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
     goto end;
   }
 
+  buffer->pts = G_GUINT64_CONSTANT (0);
+  buffer->dts = G_GUINT64_CONSTANT (0);
+  buffer->offset = G_GUINT64_CONSTANT (0);
+  buffer->offset_end = G_GUINT64_CONSTANT (0);
+
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
@@ -147,7 +152,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
+      "min-latency", G_GUINT64_CONSTANT (0),
+      "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
       "caps", src_caps, NULL);
 
   gst_bin_add (GST_BIN (self), appsrc);
