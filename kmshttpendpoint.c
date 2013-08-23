@@ -610,6 +610,8 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
 
   g_object_set (appsink, "emit-signals", TRUE, NULL);
   g_object_set (appsink, "caps", caps, NULL);
+  g_object_set (appsink, "async", FALSE, NULL);
+  g_object_set (appsink, "sync", FALSE, NULL);
 
   gst_caps_unref (caps);
   /* FIXME: (Bug from recorderendpoint). */

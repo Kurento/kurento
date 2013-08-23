@@ -593,6 +593,8 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
 
   g_object_set (appsink, "emit-signals", TRUE, NULL);
   g_object_set (appsink, "caps", caps, NULL);
+  g_object_set (appsink, "async", FALSE, NULL);
+  g_object_set (appsink, "sync", FALSE, NULL);
 
   gst_caps_unref (caps);
 
