@@ -9,7 +9,7 @@
 #include "kms-marshal.h"
 #include "sdp_utils.h"
 
-#define PLUGIN_NAME "base_sdp_end_point"
+#define PLUGIN_NAME "base_sdp_endpoint"
 
 GST_DEBUG_CATEGORY_STATIC (kms_base_sdp_end_point_debug);
 #define GST_CAT_DEFAULT kms_base_sdp_end_point_debug
