@@ -204,11 +204,11 @@ recv_sample (GstElement * appsink, gpointer user_data)
     goto end;
   }
 
-  buffer->pts = G_GUINT64_CONSTANT (0);
-  buffer->dts = G_GUINT64_CONSTANT (0);
+  buffer->pts = GST_CLOCK_TIME_NONE;
+  buffer->dts = GST_CLOCK_TIME_NONE;
 
-  buffer->offset = G_GUINT64_CONSTANT (0);
-  buffer->offset_end = G_GUINT64_CONSTANT (0);
+  buffer->offset = GST_CLOCK_TIME_NONE;
+  buffer->offset_end = GST_CLOCK_TIME_NONE;
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   if (ret != GST_FLOW_OK) {
