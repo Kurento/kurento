@@ -234,30 +234,54 @@ kms_rtp_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint * base_sdp_endpoint,
 
 static void
 kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
-    const GstSDPMessage * answer)
+    const GstSDPMessage * offer, const GstSDPMessage * answer,
+    gboolean local_offer)
 {
   KmsRtpEndPoint *rtp_end_point = KMS_RTP_END_POINT (base_rtp_end_point);
   const GstSDPConnection *con;
+  const GstSDPMessage *sdp;
   guint len, i;
 
   KMS_BASE_SDP_END_POINT_CLASS
       (kms_rtp_end_point_parent_class)->start_transport_send
-      (base_rtp_end_point, answer);
+      (base_rtp_end_point, answer, offer, local_offer);
 
   GST_DEBUG ("Start transport send");
 
-  con = gst_sdp_message_get_connection (answer);
+  if (gst_sdp_message_medias_len (answer) != gst_sdp_message_medias_len (offer))
+    GST_WARNING ("Incompatible offer and answer, possible errors in media");
 
-  len = gst_sdp_message_medias_len (answer);
+  if (local_offer)
+    sdp = answer;
+  else
+    sdp = offer;
+
+  con = gst_sdp_message_get_connection (sdp);
+
+  len = gst_sdp_message_medias_len (sdp);
 
   for (i = 0; i < len; i++) {
     const GstSDPConnection *media_con;
-    const GstSDPMedia *media = gst_sdp_message_get_media (answer, i);
+    const GstSDPMedia *offer_media = gst_sdp_message_get_media (offer, i);
+    const GstSDPMedia *answer_media = gst_sdp_message_get_media (answer, i);
+    const GstSDPMedia *media;
 
-    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0) {
-      ((GstSDPMedia *) media)->port = 0;
+    if (offer_media == NULL || answer_media == NULL)
+      break;
+
+    if (g_ascii_strcasecmp ("RTP/AVP",
+            gst_sdp_media_get_proto (answer_media)) != 0) {
+      ((GstSDPMedia *) answer_media)->port = 0;
       continue;
     }
+
+    if (answer_media->port == 0)
+      continue;
+
+    if (local_offer)
+      media = answer_media;
+    else
+      media = offer_media;
 
     if (gst_sdp_media_connections_len (media) != 0)
       media_con = gst_sdp_media_get_connection (media, 0);

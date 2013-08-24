@@ -142,7 +142,8 @@ kms_base_sdp_end_point_set_remote_answer_sdp (KmsBaseSdpEndPoint *
 
 static void
 kms_base_sdp_end_point_start_transport_send (KmsBaseSdpEndPoint *
-    base_sdp_end_point, const GstSDPMessage * answer)
+    base_sdp_end_point, const GstSDPMessage * offer,
+    const GstSDPMessage * answer, gboolean local_offer)
 {
   /* Defalut function, do nothing */
 }
@@ -156,7 +157,8 @@ kms_base_sdp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
 
 static void
 kms_base_sdp_end_point_start_media (KmsBaseSdpEndPoint * base_sdp_end_point,
-    const GstSDPMessage * answer)
+    const GstSDPMessage * offer, const GstSDPMessage * answer,
+    gboolean local_offer)
 {
   GST_DEBUG ("Start media");
 
@@ -169,7 +171,8 @@ kms_base_sdp_end_point_start_media (KmsBaseSdpEndPoint * base_sdp_end_point,
         G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
   }
 
-  base_sdp_end_point_class->start_transport_send (base_sdp_end_point, answer);
+  base_sdp_end_point_class->start_transport_send (base_sdp_end_point, offer,
+      answer, local_offer);
 
   if (base_sdp_end_point_class->connect_input_elements ==
       kms_base_sdp_end_point_connect_input_elements) {
@@ -260,13 +263,14 @@ kms_base_sdp_end_point_process_offer (KmsBaseSdpEndPoint * base_sdp_end_point,
     gst_sdp_message_free (answer);
     return NULL;
   }
-
   gst_sdp_message_free (intersec_offer);
   gst_sdp_message_free (answer);
 
   kms_base_sdp_end_point_set_local_answer_sdp (base_sdp_end_point,
       intersect_answer);
-  kms_base_sdp_end_point_start_media (base_sdp_end_point, intersect_answer);
+
+  kms_base_sdp_end_point_start_media (base_sdp_end_point, offer,
+      intersect_answer, FALSE);
 
   return intersect_answer;
 }
@@ -279,7 +283,8 @@ kms_base_sdp_end_point_process_answer (KmsBaseSdpEndPoint * base_sdp_end_point,
 
   kms_base_sdp_end_point_set_remote_answer_sdp (base_sdp_end_point, answer);
 
-  kms_base_sdp_end_point_start_media (base_sdp_end_point, answer);
+  kms_base_sdp_end_point_start_media (base_sdp_end_point,
+      base_sdp_end_point->local_offer_sdp, answer, TRUE);
 }
 
 static void

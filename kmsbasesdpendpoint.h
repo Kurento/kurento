@@ -57,7 +57,8 @@ struct _KmsBaseSdpEndPointClass
     gboolean (*set_transport_to_sdp) (KmsBaseSdpEndPoint * base_stream,
       GstSDPMessage * msg);
   void (*start_transport_send) (KmsBaseSdpEndPoint * base_stream,
-      const GstSDPMessage * answer);
+      const GstSDPMessage * offer, const GstSDPMessage * answer,
+      gboolean local_offer);
   void (*connect_input_elements) (KmsBaseSdpEndPoint * base_stream,
       const GstSDPMessage * answer);
 };
