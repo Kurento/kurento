@@ -34,6 +34,13 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		this.handler = handler;
 	}
 
+	// TODO: work-around for being able to connect this to an http-end-point.
+	// This should be removed when an identity filter is ready
+	private RtpEndPoint rtpEndPointInternalReference;
+	public RtpEndPoint getRtpEndPoint(){
+		return rtpEndPointInternalReference;
+	}
+
 	@Override
 	protected String buildMediaEndPointAndReturnSdp(MediaElement sinkElement,
 			MediaElement sourceElement) throws Throwable {
@@ -61,6 +68,7 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		if (candidate != null) {
 			addForCleanUp(rtpEndPoint);
 		}
+		rtpEndPointInternalReference = rtpEndPoint; // TODO: see comment above
 
 		log.info("Recoveing answer sdp ...");
 		String answerSdp = rtpEndPoint
@@ -69,7 +77,8 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		// If both media elements are null, the rtpEndPoint will loopback
 		// its media. This may be useful for testing purposes.
 		if (candidate == null) {
-			sinkElement = rtpEndPoint;// This produces a loopback.
+			//TODO: commented due to a problem in RtpEndPoint
+			//sinkElement = rtpEndPoint;// This produces a loopback.
 		}
 
 		log.info("Connecting media pads ...");

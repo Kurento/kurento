@@ -119,6 +119,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 				"Received invalid null url from media server ... aborting");
 		Assert.isTrue(answerUrl.length() > 0,
 				"Received invalid empty url from media server ... aborting");
+		getLogger().info("HttpEndPoint URL is " + answerUrl);
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
 		} else {
@@ -135,9 +136,11 @@ public abstract class AbstractHttpBasedContentRequest extends
 			HttpServletRequest request = (HttpServletRequest) initialAsyncCtx
 					.getRequest();
 			if (redirect) {
+				getLogger().info("Sending redirect to " + url);
 				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
 				response.setHeader("Location", url);
 			} else {
+				getLogger().info("Activating tunneling proxy to " + url);
 				tunnellingProxyFuture = proxy.tunnelTransaction(request,
 						response, url, new StreamingProxyListener() {
 

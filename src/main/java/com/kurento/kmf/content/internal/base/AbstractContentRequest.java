@@ -267,7 +267,9 @@ public abstract class AbstractContentRequest {
 			initialAsyncCtx.complete();
 			initialAsyncCtx = null;
 		}
-		manager.remove(this.sessionId);
+		if(manager != null){
+			manager.remove(this.sessionId);
+		}
 
 		try {
 			releaseOwnMediaServerResources();
@@ -309,6 +311,9 @@ public abstract class AbstractContentRequest {
 				.iterator().next();
 		sourceElement.getMediaSrcs(MediaType.VIDEO).iterator().next()
 				.connect(videoSink);
+		getLogger().info(
+				"Connected " + sourceElement
+						+ " to  " + sinkElement);
 		// TODO: activate audio when possible
 		// getLogger().info("Connecting audio source of " + sourceElement
 		// + " to audio Sink of " + sinkElement);
