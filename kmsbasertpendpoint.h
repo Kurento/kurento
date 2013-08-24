@@ -2,7 +2,7 @@
 #define __KMS_BASE_RTP_END_POINT_H__
 
 #include <gst/gst.h>
-#include <kmsbasesdpenpoint.h>
+#include <kmsbasesdpendpoint.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */

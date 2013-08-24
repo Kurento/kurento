@@ -4,7 +4,7 @@
 
 #include <gst/gst.h>
 
-#include "kmsbasesdpenpoint.h"
+#include "kmsbasesdpendpoint.h"
 #include "kmsagnosticbin.h"
 #include "kms-marshal.h"
 #include "sdp_utils.h"
