@@ -21,7 +21,7 @@ public class CampusPartyRtpPartWithFilter implements RtpMediaHandler {
 			MediaPipeline mp = mpf.createMediaPipeline();
 			((RtpMediaRequestImpl) request).addForCleanUp(mp);
 			ZBarFilter zbarFilter = mp.createFilter(ZBarFilter.class);
-			request.startMedia(zbarFilter, null);
+			request.startMedia(zbarFilter, zbarFilter);
 			zBarFilterStaticReference = zbarFilter;
 		} catch (Throwable t) {
 			zBarFilterStaticReference = null;

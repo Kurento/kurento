@@ -27,7 +27,7 @@ public class PlayerJsonHandler implements PlayerHandler {
 			public void run() {
 				for (int i = 0; i < 100; i++) {
 					try {
-						Thread.sleep(3000);
+						Thread.sleep(7000);
 					} catch (InterruptedException e) {
 					}
 					if (i % 3 == 0) {
@@ -40,9 +40,9 @@ public class PlayerJsonHandler implements PlayerHandler {
 										"http://www.urjc.es"));
 					} else {
 						((PlayRequestImpl) playRequest)
-								.produceEvents(JsonRpcEvent.newEvent(
-										"url-event-type",
-										"http://www.fi-ware.eu"));
+								.produceEvents(JsonRpcEvent
+										.newEvent("url-event-type",
+												"http://www.gsyc.es/"));
 					}
 				}
 			}

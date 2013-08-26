@@ -11,22 +11,26 @@ import com.kurento.kmf.media.ZBarEvent;
 
 @PlayerService(name = "", path = "/campusPartyPlayerFilter", useControlProtocol = true, redirect = false)
 public class CampusPartyPlayerPartWithFilter implements PlayerHandler {
-	private String lastEventValue = "";
 
 	@Override
 	public void onPlayRequest(final PlayRequest playRequest)
 			throws ContentException {
+
 		if (CampusPartyRtpPartWithFilter.zBarFilterStaticReference != null) {
 			playRequest
 					.play(CampusPartyRtpPartWithFilter.zBarFilterStaticReference);
+			playRequest.setAttribute("lastEventValue", "");
 			CampusPartyRtpPartWithFilter.zBarFilterStaticReference
 					.addListener(new MediaEventListener<ZBarEvent>() {
 						@Override
 						public void onEvent(ZBarEvent event) {
+							String lastEventValue = (String) playRequest
+									.getAttribute("lastEventValue");
 							if (lastEventValue.equals(event.getValue())) {
 								return;
 							}
-							lastEventValue = event.getValue();
+							playRequest.setAttribute("lastEventValue",
+									event.getValue());
 							((PlayRequestImpl) playRequest)
 									.produceEvents(JsonRpcEvent.newEvent(
 											event.getType(), event.getValue()));
