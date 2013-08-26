@@ -26,6 +26,10 @@ public class ControlProtocolManager {
 	private static final int BUFF = 4096;
 
 	private static final String UTF8 = "UTF-8";
+	private static final String UTF16BE = "UTF-16BE";
+	private static final String UTF16LE = "UTF-16LE";
+	private static final String UTF32BE = "UTF-32BE";
+	private static final String UTF32LE = "UTF-32LE";
 
 	private Gson gson;
 
@@ -42,6 +46,7 @@ public class ControlProtocolManager {
 		// InputStream read from request.getInputStream() should be cloned
 		// (using a ByteArrayOutputStream) to be used on detectJsonEncoding and
 		// then for reading the JSON message
+
 		InputStream inputStream = request.getInputStream();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		byte[] buffer = new byte[BUFF];
@@ -54,13 +59,14 @@ public class ControlProtocolManager {
 		String encoding = detectJsonEncoding(new ByteArrayInputStream(
 				baos.toByteArray()));
 		log.debug("Detected JSON encoding: " + encoding);
-		if (encoding == null || !encoding.equalsIgnoreCase(UTF8)) {
+		if (encoding == null) {
 			throw new IOException(
 					"Invalid charset encondig in received JSON request");
 		}
 
 		InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(
-				baos.toByteArray()), UTF8);
+				baos.toByteArray()), encoding);
+
 		JsonRpcRequest jsonRequest = gson.fromJson(isr, JsonRpcRequest.class);
 		Assert.notNull(jsonRequest.getMethod());
 		log.info("Received JsonRpc request ...\n " + jsonRequest.toString());
@@ -86,16 +92,17 @@ public class ControlProtocolManager {
 	private String match(int mask) {
 		switch (mask) {
 		case 1:
-			// UTF-32BE
+			return UTF32BE;
 		case 5:
-			// UTF-16BE
+			return UTF16BE;
 		case 8:
-			// UTF-32LE
+			return UTF32LE;
 		case 10:
-			// UTF-16LE
-			return null;
-		default:
+			return UTF16LE;
+		case 15:
 			return UTF8;
+		default:
+			return null;
 		}
 	}
 
