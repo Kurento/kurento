@@ -8,7 +8,7 @@
 #include "kmsagnosticbin.h"
 #include "kmsagnosticcaps.h"
 
-#define PLUGIN_NAME "element"
+#define PLUGIN_NAME "kmselement"
 
 GST_DEBUG_CATEGORY_STATIC (kms_element_debug_category);
 #define GST_CAT_DEFAULT kms_element_debug_category
