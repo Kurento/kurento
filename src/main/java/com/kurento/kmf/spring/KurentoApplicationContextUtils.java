@@ -168,12 +168,16 @@ public final class KurentoApplicationContextUtils {
 		if (childContexts != null) {
 			for (AnnotationConfigApplicationContext childContext : childContexts
 					.values()) {
+				log.info("Closing Kurento Servlet Application Context "
+						+ childContext);
 				childContext.close();
 			}
 		}
 		childContexts = null;
 
 		if (kurentoApplicationContextInternalReference != null) {
+			log.info("Closing Kurento Application Context "
+					+ kurentoApplicationContextInternalReference);
 			kurentoApplicationContextInternalReference.close();
 		}
 		kurentoApplicationContextInternalReference = null;
@@ -235,9 +239,12 @@ public final class KurentoApplicationContextUtils {
 	public static void registerKurentoServletContextListener(ServletContext ctx) {
 		// Add listener for closing Kurento ApplicationContexts on container
 		// shutdown
-		if (ctx.getAttribute(KURENTO_SERVLET_CONTEXT_LISTENER_ATTRIBUTE_NAME) == null) {
+
+		if (ctx.getAttribute(KURENTO_SERVLET_CONTEXT_LISTENER_ATTRIBUTE_NAME) != null) {
+			log.info("Kurento ServletContextListener already registered, we don't register it again ...");
 			return;
 		}
+		log.info("Registering Kurento ServletContextListener ...");
 		ctx.setAttribute(KURENTO_SERVLET_CONTEXT_LISTENER_ATTRIBUTE_NAME,
 				"initialized");
 		ctx.addListener(KurentoServletContextListener.class);
