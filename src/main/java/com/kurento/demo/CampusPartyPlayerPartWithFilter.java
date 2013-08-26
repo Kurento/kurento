@@ -9,21 +9,29 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
 import com.kurento.kmf.media.MediaEventListener;
 import com.kurento.kmf.media.ZBarEvent;
 
-@PlayerService(name = "", path = "/campusPartyPlayerFilter", useControlProtocol = false, redirect = false)
+@PlayerService(name = "", path = "/campusPartyPlayerFilter", useControlProtocol = true, redirect = false)
 public class CampusPartyPlayerPartWithFilter implements PlayerHandler {
+	private String lastEventValue = "";
 
 	@Override
 	public void onPlayRequest(final PlayRequest playRequest)
 			throws ContentException {
-		if (CampusPartyRtpPartWithFilter.zbarFilter != null) {
-			playRequest.play(CampusPartyRtpPartWithFilter.zbarFilter);
-			CampusPartyRtpPartWithFilter.zbarFilter
+		if (CampusPartyRtpPartWithFilter.zBarFilterStaticReference != null) {
+			playRequest
+					.play(CampusPartyRtpPartWithFilter.zBarFilterStaticReference);
+			CampusPartyRtpPartWithFilter.zBarFilterStaticReference
 					.addListener(new MediaEventListener<ZBarEvent>() {
 						@Override
 						public void onEvent(ZBarEvent event) {
+							if (lastEventValue.equals(event.getValue())) {
+								return;
+							}
+							lastEventValue = event.getValue();
 							((PlayRequestImpl) playRequest)
 									.produceEvents(JsonRpcEvent.newEvent(
 											event.getType(), event.getValue()));
+							System.out.println("Event received "
+									+ event.getValue());
 
 						}
 					});

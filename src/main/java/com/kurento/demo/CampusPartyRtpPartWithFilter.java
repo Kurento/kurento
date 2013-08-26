@@ -9,10 +9,10 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.ZBarFilter;
 
-@RtpMediaService(name = "CampusPartyStpPartWithFilter", path = "/campusPartyRtpFilter")
+@RtpMediaService(name = "CampusPartyRtpPartWithFilter", path = "/campusPartyRtpFilter")
 public class CampusPartyRtpPartWithFilter implements RtpMediaHandler {
 
-	public static ZBarFilter zbarFilter = null;
+	public static ZBarFilter zBarFilterStaticReference = null;
 
 	@Override
 	public void onMediaRequest(RtpMediaRequest request) throws ContentException {
@@ -22,8 +22,9 @@ public class CampusPartyRtpPartWithFilter implements RtpMediaHandler {
 			((RtpMediaRequestImpl) request).addForCleanUp(mp);
 			ZBarFilter zbarFilter = mp.createFilter(ZBarFilter.class);
 			request.startMedia(zbarFilter, null);
+			zBarFilterStaticReference = zbarFilter;
 		} catch (Throwable t) {
-			zbarFilter = null;
+			zBarFilterStaticReference = null;
 			request.reject(500, t.getMessage());
 		}
 	}
