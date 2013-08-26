@@ -37,7 +37,8 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 	// TODO: work-around for being able to connect this to an http-end-point.
 	// This should be removed when an identity filter is ready
 	private RtpEndPoint rtpEndPointInternalReference;
-	public RtpEndPoint getRtpEndPoint(){
+
+	public RtpEndPoint getRtpEndPoint() {
 		return rtpEndPointInternalReference;
 	}
 
@@ -77,8 +78,8 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		// If both media elements are null, the rtpEndPoint will loopback
 		// its media. This may be useful for testing purposes.
 		if (candidate == null) {
-			//TODO: commented due to a problem in RtpEndPoint
-			//sinkElement = rtpEndPoint;// This produces a loopback.
+			// TODO: commented due to a problem in RtpEndPoint
+			// sinkElement = rtpEndPoint;// This produces a loopback.
 		}
 
 		log.info("Connecting media pads ...");

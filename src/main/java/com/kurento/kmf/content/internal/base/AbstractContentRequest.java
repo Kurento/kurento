@@ -267,7 +267,7 @@ public abstract class AbstractContentRequest {
 			initialAsyncCtx.complete();
 			initialAsyncCtx = null;
 		}
-		if(manager != null){
+		if (manager != null) {
 			manager.remove(this.sessionId);
 		}
 
@@ -279,9 +279,12 @@ public abstract class AbstractContentRequest {
 	}
 
 	protected void releaseOwnMediaServerResources() throws Throwable {
-		if (cleanupList == null)
+		if (cleanupList == null) {
 			return;
+		}
 		for (MediaObject mediaObject : cleanupList) {
+			getLogger()
+					.info("Requesting release of MediaObject " + mediaObject);
 			mediaObject.release(new Continuation<Void>() {
 				@Override
 				public void onSuccess(Void result) {
@@ -289,7 +292,9 @@ public abstract class AbstractContentRequest {
 
 				@Override
 				public void onError(Throwable cause) {
-					getLogger().error(cause.getMessage(), cause);
+					getLogger().error(
+							"Error releasing MediaObject: "
+									+ cause.getMessage(), cause);
 				}
 			});
 		}
@@ -311,9 +316,7 @@ public abstract class AbstractContentRequest {
 				.iterator().next();
 		sourceElement.getMediaSrcs(MediaType.VIDEO).iterator().next()
 				.connect(videoSink);
-		getLogger().info(
-				"Connected " + sourceElement
-						+ " to  " + sinkElement);
+		getLogger().info("Connected " + sourceElement + " to  " + sinkElement);
 		// TODO: activate audio when possible
 		// getLogger().info("Connecting audio source of " + sourceElement
 		// + " to audio Sink of " + sinkElement);
