@@ -105,12 +105,17 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
     goto end;
   }
 
+  gst_buffer_ref (buffer);
+  buffer = gst_buffer_make_writable (buffer);
+
   buffer->pts = GST_CLOCK_TIME_NONE;
   buffer->dts = GST_CLOCK_TIME_NONE;
   buffer->offset = GST_CLOCK_TIME_NONE;
   buffer->offset_end = GST_CLOCK_TIME_NONE;
 
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
+
+  gst_buffer_unref (buffer);
 
   if (ret != GST_FLOW_OK) {
     /* something wrong */
