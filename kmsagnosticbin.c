@@ -284,6 +284,15 @@ kms_agnostic_get_convert_element_for_raw_caps (GstCaps * raw_caps)
   return convert;
 }
 
+static void
+configure_encoder (GstElement *encoder, const gchar *factory_name) {
+  GST_DEBUG("Configure encoder: %s", factory_name);
+  if (g_strcmp0("vp8enc", factory_name) == 0){
+    g_object_set (G_OBJECT (encoder), "deadline", 80 * GST_MSECOND,
+      "threads", 4, NULL);
+  }
+}
+
 /* This functions is called with the KMS_AGNOSTIC_BIN_LOCK held */
 static GstElement *
 kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
@@ -330,6 +339,8 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
   encoder = gst_element_factory_create (encoder_factory, NULL);
   queue = gst_element_factory_make ("queue", NULL);
   tee = gst_element_factory_make ("tee", NULL);
+
+  configure_encoder (encoder, GST_OBJECT_NAME (encoder_factory));
 
   gst_bin_add_many (GST_BIN (agnosticbin), queue, convert, encoder, tee, NULL);
   gst_element_sync_state_with_parent (queue);
