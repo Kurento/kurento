@@ -122,11 +122,18 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   g_object_get (G_OBJECT (element), "caps", &caps, NULL);
   if (caps == NULL) {
     /* Appsrc has not yet caps defined */
-    caps = gst_sample_get_caps (sample);
+    GstPad *sink_pad = gst_element_get_static_pad (appsink, "sink");
+
+    if (sink_pad != NULL) {
+      caps = gst_pad_get_current_caps (sink_pad);
+      g_object_unref (sink_pad);
+    }
+
     if (caps != NULL) {
       GST_DEBUG ("Setting caps %" GST_PTR_FORMAT " to %s", caps,
           GST_ELEMENT_NAME (element));
       g_object_set (element, "caps", caps, NULL);
+      gst_caps_unref (caps);
     } else
       GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (element));
   }
