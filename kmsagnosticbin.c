@@ -703,12 +703,55 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
   tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   if (tee == NULL) {
     GstElement *valve;
+    GstCaps *caps, *video_caps;
 
     tee = gst_element_factory_make ("tee", DECODED_TEE);
     gst_bin_add (GST_BIN (agnosticbin), tee);
-
     gst_element_sync_state_with_parent (tee);
-    gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), tee, "sink");
+
+    video_caps = gst_static_caps_get (&static_raw_video_caps);
+    caps = gst_pad_query_caps (pad, NULL);
+    if (gst_caps_can_intersect(caps, video_caps)) {
+      gint num = 15, denom = 1;
+      GstElement *capsfilter = gst_element_factory_make ("capsfilter", NULL);
+      GstElement *videorate = gst_element_factory_make ("videorate", NULL);
+      GstCaps *fps_caps;
+
+      if (gst_caps_is_fixed (caps) && gst_caps_get_size (caps) == 1) {
+        GstStructure *st;
+
+        st = gst_caps_get_structure(caps, 0);
+
+        if (gst_structure_has_field_typed (st, "framerate", GST_TYPE_FRACTION)) {
+          gst_structure_get_fraction (st, "framerate", &num, &denom);
+        }
+      }
+
+      if (num == 0) {
+        num = 15;
+        denom = 1;
+      }
+
+      fps_caps = gst_caps_new_simple("video/x-raw", "framerate",
+          GST_TYPE_FRACTION, num, denom, NULL);
+
+      g_object_set (G_OBJECT (capsfilter), "caps", fps_caps, NULL);
+      g_object_set (G_OBJECT (videorate), "average-period", 200 * GST_MSECOND, NULL);
+
+      gst_bin_add_many (GST_BIN (agnosticbin), capsfilter, videorate, NULL);
+      gst_element_sync_state_with_parent (videorate);
+      gst_element_sync_state_with_parent (capsfilter);
+
+      gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), videorate, "sink");
+      gst_element_link_many (videorate, capsfilter, tee, NULL);
+
+    } else {
+      gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), tee, "sink");
+    }
+
+    gst_caps_unref (caps);
+    gst_caps_unref (video_caps);
+
     valve = g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
     g_object_set (valve, "drop", TRUE, NULL);
 
