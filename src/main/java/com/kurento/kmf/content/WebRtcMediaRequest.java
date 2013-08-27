@@ -11,6 +11,12 @@ public interface WebRtcMediaRequest {
 
 	String getContentId();
 
+	public Object getAttribute(String name);
+
+	public Object setAttribute(String name, Object value);
+
+	public Object removeAttribute(String name);
+
 	public Constraints getVideoConstraints();
 
 	public Constraints getAudioConstraints();

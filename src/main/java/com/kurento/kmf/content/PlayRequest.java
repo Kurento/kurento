@@ -9,6 +9,12 @@ public interface PlayRequest {
 
 	public String getContentId();
 
+	public Object getAttribute(String name);
+
+	public Object setAttribute(String name, Object value);
+
+	public Object removeAttribute(String name);
+
 	public HttpServletRequest getHttpServletRequest();
 
 	public MediaPipelineFactory getMediaPipelineFactory();

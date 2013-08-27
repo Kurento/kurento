@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -59,6 +60,7 @@ public abstract class AbstractContentRequest {
 	private String contentId;
 	protected AsyncContext initialAsyncCtx;
 	protected JsonRpcRequest initialJsonRequest;
+	private ConcurrentHashMap<String, Object> attributes;
 
 	protected BlockingQueue<JsonRpcEvent> eventQueue;
 
@@ -324,5 +326,27 @@ public abstract class AbstractContentRequest {
 		// .iterator().next();
 		// sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
 		// .connect(audioSink);
+	}
+
+	public Object getAttribute(String name) {
+		if (attributes == null) {
+			return null;
+		} else {
+			return attributes.get(name);
+		}
+	}
+
+	public Object setAttribute(String name, Object value) {
+		if (attributes == null) {
+			attributes = new ConcurrentHashMap<String, Object>();
+		}
+		return attributes.put(name, value);
+	}
+
+	public Object removeAttribute(String name) {
+		if (attributes == null) {
+			return null;
+		}
+		return attributes.remove(name);
 	}
 }

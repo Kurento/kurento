@@ -13,8 +13,11 @@ import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaEventListener;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEvent;
+import com.kurento.kmf.media.PlayerEvent.PlayerEventType;
 
 public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 		PlayRequest {
@@ -56,6 +59,19 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 		getLogger().info("Creating PlayerEndPoint ...");
 		PlayerEndPoint playerEndPoint = mediaPipeline.createUriEndPoint(
 				PlayerEndPoint.class, contentPath);
+
+		// Release pipeline when player ends
+		playerEndPoint.addListener(new MediaEventListener<PlayerEvent>() {
+			@Override
+			public void onEvent(PlayerEvent event) {
+				if (event.getType() == PlayerEventType.EOS) {
+					PlayRequestImpl.this.handler
+							.onContentPlayed(PlayRequestImpl.this);
+					PlayRequestImpl.this.terminate(200, "OK");
+				}
+			}
+		});
+
 		playerEndPoint.play();
 		return playerEndPoint;
 	}
