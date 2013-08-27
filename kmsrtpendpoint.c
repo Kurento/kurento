@@ -471,12 +471,12 @@ kms_rtp_end_point_init (KmsRtpEndPoint * rtp_end_point)
       NULL);
 
   g_object_set (audio_rtp_sink, "socket", rtp_end_point->audio_rtp_socket,
-      NULL);
+      "qos", TRUE, NULL);
   g_object_set (audio_rtcp_sink, "socket", rtp_end_point->audio_rtcp_socket,
       NULL);
 
   g_object_set (video_rtp_sink, "socket", rtp_end_point->video_rtp_socket,
-      NULL);
+      "qos", TRUE, NULL);
   g_object_set (video_rtcp_sink, "socket", rtp_end_point->video_rtcp_socket,
       NULL);
 

@@ -233,7 +233,7 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
   g_object_set (appsink, "sync", TRUE, "enable-last-sample",
-      FALSE, "emit-signals", TRUE, NULL);
+      FALSE, "emit-signals", TRUE, "qos", TRUE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
   gst_element_sync_state_with_parent (appsink);
 
@@ -421,7 +421,8 @@ kms_http_end_point_add_sink (KmsHttpEndPoint * self)
 {
   self->priv->get->appsink = gst_element_factory_make ("appsink", NULL);
 
-  g_object_set (self->priv->get->appsink, "emit-signals", TRUE, NULL);
+  g_object_set (self->priv->get->appsink, "emit-signals", TRUE, "qos", TRUE,
+      NULL);
   g_signal_connect (self->priv->get->appsink, "new-sample",
       G_CALLBACK (new_sample_handler), self);
   g_signal_connect (self->priv->get->appsink, "eos", G_CALLBACK (eos_handler),
@@ -598,6 +599,7 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
   g_object_set (appsink, "caps", caps, NULL);
   g_object_set (appsink, "async", FALSE, NULL);
   g_object_set (appsink, "sync", FALSE, NULL);
+  g_object_set (appsink, "qos", TRUE, NULL);
 
   gst_caps_unref (caps);
   /* FIXME: (Bug from recorderendpoint). */

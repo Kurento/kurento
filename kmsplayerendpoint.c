@@ -168,7 +168,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
   g_object_set (appsink, "sync", TRUE, "enable-last-sample",
-      FALSE, "emit-signals", TRUE, NULL);
+      FALSE, "emit-signals", TRUE, "qos", TRUE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
   gst_element_sync_state_with_parent (appsink);
 
