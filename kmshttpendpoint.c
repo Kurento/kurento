@@ -770,14 +770,30 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_START:{
-      gboolean prev = self->priv->start;
+      gboolean prev_val = self->priv->start;
+      gboolean new_val = g_value_get_boolean (value);
 
-      self->priv->start = g_value_get_boolean (value);
-      if (self->priv->start && prev != self->priv->start) {
+      if (self->priv->pipeline == NULL) {
+        GST_ERROR ("Element %s is not initialized", GST_ELEMENT_NAME (self));
+        break;
+      }
+
+      if (prev_val == new_val) {
+        /* Nothing to do */
+        break;
+      }
+
+      if (new_val) {
         /* Set pipeline to PLAYING */
         GST_DEBUG ("Setting pipeline to PLAYING");
         gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+      } else {
+        /* Set pipeline to PAUSED */
+        GST_DEBUG ("Setting pipeline to PAUSED");
+        gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
       }
+
+      self->priv->start = new_val;
       break;
     }
     default:
