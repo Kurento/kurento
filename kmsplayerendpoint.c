@@ -304,12 +304,17 @@ static void
 kms_player_end_point_init (KmsPlayerEndPoint * self)
 {
   GstBus *bus;
+  GstCaps *deco_caps;
 
   self->priv = KMS_PLAYER_END_POINT_GET_PRIVATE (self);
 
   self->priv->pipeline = gst_pipeline_new ("pipeline");
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
+
+  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_AGNOSTIC_CAPS);
+  g_object_set (G_OBJECT( self->priv->uridecodebin), "caps", deco_caps, NULL);
+  gst_caps_unref (deco_caps);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
 
