@@ -473,7 +473,8 @@ kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
   // HACK: this is the maximum time that the server can recor, I don't know
   // why but if synchronization is enabled, audio packets are droped
   g_object_set (G_OBJECT (self->priv->get->encodebin), "profile", cprof,
-      "audio-jitter-tolerance", G_GUINT64_CONSTANT (0x0fffffffffffffff), NULL);
+      "audio-jitter-tolerance", G_GUINT64_CONSTANT (0x0fffffffffffffff),
+      "avoid-reencoding", TRUE, NULL);
 }
 
 static void
@@ -639,7 +640,8 @@ kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
     return;
   }
 
-  kms_http_end_point_add_appsrc (httpep, valve, KMS_AGNOSTIC_RAW_AUDIO_CAPS,
+  // TODO: This caps should be set using the profile data
+  kms_http_end_point_add_appsrc (httpep, valve, "audio/x-vorbis",
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 
   g_object_set (valve, "drop", FALSE, NULL);
@@ -667,7 +669,8 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
     return;
   }
 
-  kms_http_end_point_add_appsrc (httpep, valve, KMS_AGNOSTIC_RAW_VIDEO_CAPS,
+  // TODO: This caps should be set using the profile data
+  kms_http_end_point_add_appsrc (httpep, valve, "video/x-vp8",
       VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 
   g_object_set (valve, "drop", FALSE, NULL);
