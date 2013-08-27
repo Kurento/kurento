@@ -103,6 +103,11 @@ gst_base_rtp_get_payloader_for_caps (GstCaps * caps)
       g_object_set (payloader, "pt", payload, NULL);
   }
 
+  pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (payloader), "config-interval");
+  if (pspec != NULL && G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_UINT) {
+    g_object_set (payloader, "config-interval", 1, NULL);
+  }
+
 end:
   gst_plugin_feature_list_free (filtered_list);
   gst_plugin_feature_list_free (payloader_list);
