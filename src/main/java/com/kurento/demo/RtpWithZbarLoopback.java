@@ -19,7 +19,7 @@ public class RtpWithZbarLoopback implements RtpMediaHandler {
 			MediaPipeline mp = mpf.createMediaPipeline();
 			((RtpMediaRequestImpl) request).addForCleanUp(mp);
 			ZBarFilter filter = mp.createFilter(ZBarFilter.class);
-			request.startMedia(filter, filter);
+			request.startMedia(filter, null);
 		} catch (Throwable t) {
 			request.reject(500, t.getMessage());
 		}
