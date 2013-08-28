@@ -75,11 +75,10 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		String answerSdp = rtpEndPoint
 				.processOffer(initialJsonRequest.getSdp());
 
-		// If both media elements are null, the rtpEndPoint will loopback
-		// its media. This may be useful for testing purposes.
-		if (candidate == null) {
-			// TODO: commented due to a problem in RtpEndPoint
-			// sinkElement = rtpEndPoint;// This produces a loopback.
+		// If no source is provided, jut loopback for having some media back to
+		// the client
+		if (sourceElement == null) {
+			sourceElement = rtpEndPoint;// This produces a loopback.
 		}
 
 		log.info("Connecting media pads ...");
