@@ -210,9 +210,26 @@ static void
 kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
     const gchar * sink_name)
 {
-  GstPad *tee_src, *tee_sink = gst_element_get_static_pad (tee, "sink");
+  GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
 
-  kms_agnostic_bin_unlink_from_tee (element, sink_name);
+  GstPad *sink = gst_element_get_static_pad (element, sink_name);
+  GstPad *tee_src = gst_pad_get_peer (sink);
+
+  if (tee_src != NULL) {
+    GstElement *old_tee;
+    old_tee = gst_pad_get_parent_element(tee_src);
+
+    if (tee != old_tee)
+      kms_agnostic_bin_unlink_from_tee (element, sink_name);
+
+    if (old_tee)
+      g_object_unref (old_tee);
+
+    g_object_unref (tee_src);
+  }
+
+  g_object_unref (sink);
+
   GST_PAD_STREAM_LOCK (tee_sink);
   tee_src = gst_element_get_request_pad (tee, "src_%u");
   if (tee_src != NULL) {
@@ -598,6 +615,7 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   if (event->type == GST_EVENT_RECONFIGURE) {
     KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
     GstPad *peer;
+    gboolean ret;
 
     KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     GST_DEBUG ("Reconfiguring %P", pad);
@@ -607,10 +625,10 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
       kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer);
       g_object_unref (peer);
     }
+    ret = gst_pad_event_default (pad, parent, event);
     KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
-    gst_event_unref (event);
-    return TRUE;
+    return ret;
   } else {
     return gst_pad_event_default (pad, parent, event);
   }
