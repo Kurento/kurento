@@ -21,9 +21,9 @@ typedef struct _KmsAgnosticBin KmsAgnosticBin;
 typedef struct _KmsAgnosticBinClass KmsAgnosticBinClass;
 
 #define KMS_AGNOSTIC_BIN_LOCK(elem) \
-  (g_rec_mutex_lock (&KMS_AGNOSTIC_BIN_CAST ((elem))->media_mutex))
+  (GST_PAD_STREAM_LOCK (KMS_AGNOSTIC_BIN_CAST (elem)->sinkpad))
 #define KMS_AGNOSTIC_BIN_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&KMS_AGNOSTIC_BIN_CAST ((elem))->media_mutex))
+  (GST_PAD_STREAM_UNLOCK (KMS_AGNOSTIC_BIN_CAST (elem)->sinkpad))
 
 struct _KmsAgnosticBin
 {
@@ -33,7 +33,7 @@ struct _KmsAgnosticBin
 
   guint pad_count;
 
-  GRecMutex media_mutex;
+  GRecMutex mutex;
 
   GHashTable *encoded_tees;
 

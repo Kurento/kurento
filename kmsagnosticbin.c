@@ -662,9 +662,9 @@ kms_agnostic_bin_request_new_pad (GstElement * element,
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (element);
   GstElement *queue = gst_element_factory_make ("queue", NULL);
 
-  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
+  g_rec_mutex_lock(&agnosticbin->mutex);
   pad_name = g_strdup_printf ("src_%d", agnosticbin->pad_count++);
-  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
+  g_rec_mutex_unlock(&agnosticbin->mutex);
 
   gst_bin_add (GST_BIN (agnosticbin), queue);
   gst_element_sync_state_with_parent (queue);
@@ -843,7 +843,7 @@ kms_agnostic_bin_finalize (GObject * object)
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (object);
 
   /* free resources allocated by this object */
-  g_rec_mutex_clear (&agnosticbin->media_mutex);
+  g_rec_mutex_clear (&agnosticbin->mutex);
   if (agnosticbin->current_caps != NULL) {
     gst_caps_unref (agnosticbin->current_caps);
     agnosticbin->current_caps = NULL;
@@ -894,7 +894,7 @@ kms_agnostic_bin_init (KmsAgnosticBin * agnosticbin)
   GstElement *valve, *tee, *decodebin, *queue, *deco_valve;
   GstPadTemplate *templ;
 
-  g_rec_mutex_init (&agnosticbin->media_mutex);
+  g_rec_mutex_init (&agnosticbin->mutex);
 
   agnosticbin->encoded_tees =
       g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
