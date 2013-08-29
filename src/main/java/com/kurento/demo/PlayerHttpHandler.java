@@ -13,6 +13,10 @@ public class PlayerHttpHandler implements PlayerHandler {
 		if (playRequest.getContentId() != null
 				&& playRequest.getContentId().toLowerCase().startsWith("bar")) {
 			playRequest.play("https://ci.kurento.com/video/barcodes.webm");
+		} else if (playRequest.getContentId() != null
+				&& playRequest.getContentId().toLowerCase().startsWith("fi")) {
+			playRequest
+					.play("file:///home/jcaden/kurento/video_test/fiwarecut.webm");
 		} else {
 			playRequest.play("http://media.w3.org/2010/05/sintel/trailer.webm");
 		}
