@@ -450,17 +450,16 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   }
 
   raw_caps = gst_static_caps_get (&static_raw_caps);
+  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   if (gst_caps_can_intersect (agnosticbin->current_caps, allowed_caps)) {
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
   } else if (gst_caps_can_intersect (raw_caps, allowed_caps)) {
     GST_DEBUG ("Raw caps, looking for a decodebin");
-    KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   } else {
     GstElement *raw_tee;
 
     GST_DEBUG ("Looking for an encoded tee with caps: %P", allowed_caps);
-    KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     raw_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
     if (raw_tee != NULL) {
       GList *tees, *l;
@@ -492,7 +491,6 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
       g_object_unref (raw_tee);
     }
   }
-  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
   gst_caps_unref (raw_caps);
 
   queue = kms_agnostic_bin_get_queue_for_pad (srcpad);
@@ -507,6 +505,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     }
     g_object_unref (queue);
   }
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
   gst_caps_unref (allowed_caps);
 }
