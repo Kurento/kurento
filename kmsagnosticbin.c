@@ -569,13 +569,13 @@ kms_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       KMS_AGNOSTIC_BIN (parent)->current_caps = gst_caps_copy (caps);
       old_caps = gst_pad_get_current_caps (pad);
       gst_event_ref (event);
-      ret = gst_pad_event_default (pad, parent, event);
       GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
-      if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
+      if (old_caps == NULL || !gst_caps_is_equal (old_caps, caps))
         kms_agnostic_bin_connect_previous_srcpads (KMS_AGNOSTIC_BIN (parent));
       gst_event_unref (event);
       if (old_caps != NULL)
         gst_caps_unref (old_caps);
+      ret = gst_pad_event_default (pad, parent, event);
       KMS_AGNOSTIC_BIN_UNLOCK (parent);
       break;
     default:
