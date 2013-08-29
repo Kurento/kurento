@@ -32,6 +32,7 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 	private PlayerHandler handler;
 
 	private PlayerEndPoint playerEndPoint = null;
+	private HttpEndPoint httpEndPoint = null;
 
 	public PlayRequestImpl(PlayerHandler handler,
 			ContentRequestManager manager, AsyncContext asyncContext,
@@ -53,6 +54,31 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 	@Override
 	public void play(MediaElement element) throws ContentException {
 		activateMedia(element, null);
+	}
+
+	@Override
+	public void usePlayer(PlayerEndPoint player) {
+		// TODO: this is an ugly work-aroud of the problem of starting the
+		// player only when the HTTP GET is received on the end-point. It has
+		// several problems including the fact that the internal player can be
+		// overriden
+		if (player != null) {
+			this.playerEndPoint = player;
+			// Release pipeline when player ends
+			// TODO: This should be done when GET finishes instead of using
+			// player
+			// event
+			playerEndPoint.addListener(new MediaEventListener<PlayerEvent>() {
+				@Override
+				public void onEvent(PlayerEvent event) {
+					if (event.getType() == PlayerEventType.EOS) {
+						PlayRequestImpl.this.handler
+								.onContentPlayed(PlayRequestImpl.this);
+						PlayRequestImpl.this.terminate(200, "OK");
+					}
+				}
+			});
+		}
 	}
 
 	@Override
@@ -88,7 +114,7 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 			MediaElement mediaElement) throws Exception {
 		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
 		getLogger().info("Creating HttpEndPoint ...");
-		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
 		addForCleanUp(httpEndPoint);
 		connect(mediaElement, httpEndPoint);
 		httpEndPoint.addListener(new MediaEventListener<HttpEndPointEvent>() {

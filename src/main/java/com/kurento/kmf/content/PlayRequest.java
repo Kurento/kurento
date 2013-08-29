@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.PlayerEndPoint;
 
 public interface PlayRequest {
 
@@ -21,7 +22,9 @@ public interface PlayRequest {
 
 	public void play(String contentPath) throws ContentException;
 
-	public void play(MediaElement element) throws ContentException;
+	public void usePlayer(PlayerEndPoint player);
+
+	public void play(MediaElement source) throws ContentException;
 
 	public void reject(int statusCode, String message);
 }
