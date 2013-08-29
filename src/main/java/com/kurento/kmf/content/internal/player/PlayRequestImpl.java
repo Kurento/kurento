@@ -1,5 +1,7 @@
 package com.kurento.kmf.content.internal.player;
 
+import java.io.IOException;
+
 import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
@@ -12,6 +14,8 @@ import com.kurento.kmf.content.internal.ContentRequestManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.HttpEndPointEvent;
+import com.kurento.kmf.media.HttpEndPointEvent.HttpEndPointEventType;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaEventListener;
 import com.kurento.kmf.media.MediaPipeline;
@@ -26,6 +30,8 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 			.getLogger(PlayRequestImpl.class);
 
 	private PlayerHandler handler;
+
+	private PlayerEndPoint playerEndPoint = null;
 
 	public PlayRequestImpl(PlayerHandler handler,
 			ContentRequestManager manager, AsyncContext asyncContext,
@@ -57,10 +63,12 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 				.createMediaPipeline();
 		addForCleanUp(mediaPipeline);
 		getLogger().info("Creating PlayerEndPoint ...");
-		PlayerEndPoint playerEndPoint = mediaPipeline.createUriEndPoint(
-				PlayerEndPoint.class, contentPath);
+		playerEndPoint = mediaPipeline.createUriEndPoint(PlayerEndPoint.class,
+				contentPath);
 
 		// Release pipeline when player ends
+		// TODO: This should be done when GET finishes instead of using player
+		// event
 		playerEndPoint.addListener(new MediaEventListener<PlayerEvent>() {
 			@Override
 			public void onEvent(PlayerEvent event) {
@@ -72,7 +80,6 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 			}
 		});
 
-		playerEndPoint.play();
 		return playerEndPoint;
 	}
 
@@ -84,6 +91,33 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
 		addForCleanUp(httpEndPoint);
 		connect(mediaElement, httpEndPoint);
+		httpEndPoint.addListener(new MediaEventListener<HttpEndPointEvent>() {
+
+			@Override
+			public void onEvent(HttpEndPointEvent event) {
+				if (event.getType() != HttpEndPointEventType.GET_REQUEST) {
+					log.error("Unexpected HTTP method " + event.getType()
+							+ " received on HttpEndPoint. Cannot start player");
+					PlayRequestImpl.this.terminate(
+							500,
+							"Unexpected HTTP method "
+									+ event.getType()
+									+ " received on HttpEndPoint. Cannot start player");
+					return;
+				}
+
+				if (playerEndPoint != null) {
+					try {
+						playerEndPoint.play();
+					} catch (IOException e) {
+						log.error(
+								"Cannot invoke play on PlayerEndPoint: "
+										+ e.getMessage(), e);
+						PlayRequestImpl.this.terminate(500, e.getMessage());
+					}
+				}
+			}
+		});
 		return httpEndPoint;
 	}
 
