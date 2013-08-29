@@ -203,7 +203,10 @@ public abstract class AbstractHttpBasedContentRequest extends
 					.newError(code, description, initialJsonRequest.getId()));
 		} else {
 			((HttpServletResponse) initialAsyncCtx.getResponse()).sendError(
-					code, description);
+					500, description);
+			// TODO: 500 error code is a work-around for the problem related to
+			// sending JsonRpc codes as HTTP status codes. This should be
+			// refactored somehow to support fine grained HTTP error codes
 		}
 	}
 
