@@ -155,6 +155,12 @@ public class MediaPipelineFactory {
 				return (ZBarFilter) applicationContext.getBean("mediaObject",
 						ZBarFilter.class, mediaObjectId);
 			}
+		} else if (union.isSetFilterType()) {
+			FilterType filterType = union.getFilterType();
+			if (FilterType.JACK_VADER_FILTER.equals(filterType)) {
+				return (JackVaderFilter) applicationContext.getBean(
+						"mediaObject", JackVaderFilter.class, mediaObjectId);
+			}
 		}
 
 		return null;
