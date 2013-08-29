@@ -1,5 +1,6 @@
 SUBDIRS =				\
-	platedetector
+	platedetector			\
+	jackvader
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
