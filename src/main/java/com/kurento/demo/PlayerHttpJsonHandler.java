@@ -8,12 +8,12 @@ import com.kurento.kmf.content.PlayRequest;
 import com.kurento.kmf.content.PlayerHandler;
 import com.kurento.kmf.content.PlayerService;
 
-@PlayerService(name = "PlayerHttpHandler", path = "/playerHttp/*", redirect = true, useControlProtocol = false)
-public class PlayerHttpHandler implements PlayerHandler {
+@PlayerService(name="PlayerHttpJsonHandler", path="/playerJson/*", useControlProtocol=true)
+public class PlayerHttpJsonHandler implements PlayerHandler{
 
 	private static final Logger log = LoggerFactory
 			.getLogger(PlayerHttpHandler.class);
-
+	
 	@Override
 	public void onPlayRequest(PlayRequest playRequest) throws ContentException {
 		log.info("Received play request to " + playRequest.getContentId());
@@ -37,13 +37,14 @@ public class PlayerHttpHandler implements PlayerHandler {
 	@Override
 	public void onContentPlayed(PlayRequest playRequest) {
 		// TODO Auto-generated method stub
-
+		
 	}
 
 	@Override
 	public void onContentError(PlayRequest playRequest,
 			ContentException exception) {
 		// TODO Auto-generated method stub
+		
 	}
 
 }
