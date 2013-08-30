@@ -75,18 +75,31 @@ kms_jack_vader_initialize_classifiers (KmsJackVader * jackvader)
 
   GST_DEBUG ("Loading classifier: %s",
       HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
-  jackvader->pCascadeFace =
-      (CvHaarClassifierCascade *) cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX
-          FACE_HAAR_FILE), 0, 0, 0);
+  jackvader->pCascadeFace = (CvHaarClassifierCascade *)
+      cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE), 0, 0, 0);
 
   path = g_strdup_printf ("%s%s", jackvader->images_path, JACK_IMAGE_FILE);
+
   GST_DEBUG ("Loading image: %s", path);
   jackvader->originalCostume2 = cvLoadImage (path, CV_LOAD_IMAGE_UNCHANGED);
+  if (jackvader->originalCostume2 == NULL) {
+    GST_DEBUG ("cant load Jack image from %s,loading synthetic image..", path);
+    jackvader->originalCostume2 =
+        cvCreateImage (cvSize (5, 5), IPL_DEPTH_8U, 4);
+    cvSet (jackvader->originalCostume2, cvScalar (0, 255, 0, 255), 0);
+  }
   g_free (path);
 
   path = g_strdup_printf ("%s%s", jackvader->images_path, VADER_IMAGE_FILE);
+
   GST_DEBUG ("Loading image: %s", path);
   jackvader->originalCostume1 = cvLoadImage (path, CV_LOAD_IMAGE_UNCHANGED);
+  if (jackvader->originalCostume1 == NULL) {
+    GST_DEBUG ("cant load Vader image from %s,loading synthetic image..", path);
+    jackvader->originalCostume1 =
+        cvCreateImage (cvSize (5, 5), IPL_DEPTH_8U, 4);
+    cvSet (jackvader->originalCostume1, cvScalar (255, 0, 0, 255), 0);
+  }
   g_free (path);
 
   jackvader->costume3Channels1 =
@@ -256,6 +269,9 @@ kms_jack_vader_transform_frame_ip (GstVideoFilter * filter,
   KmsJackVader *jackvader = KMS_JACK_VADER (filter);
   GstMapInfo info;
 
+  if (jackvader->pCascadeFace == NULL)
+    return GST_FLOW_OK;
+
   kms_jack_vader_initialize_images (jackvader, frame);
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
   jackvader->cvImage->imageData = (char *) info.data;
@@ -264,7 +280,7 @@ kms_jack_vader_transform_frame_ip (GstVideoFilter * filter,
       jackvader->pStorageFace,
       1.2, 3,
       CV_HAAR_DO_CANNY_PRUNING,
-      cvSize (60, 60),
+      cvSize (jackvader->cvImage->width / 20, jackvader->cvImage->width / 20),
       cvSize (jackvader->cvImage->width / 2, jackvader->cvImage->height / 2));
   if (jackvader->show_debug_info == TRUE) {
     displayFaceRectangle (jackvader);
