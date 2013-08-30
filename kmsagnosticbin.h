@@ -21,9 +21,9 @@ typedef struct _KmsAgnosticBin KmsAgnosticBin;
 typedef struct _KmsAgnosticBinClass KmsAgnosticBinClass;
 
 #define KMS_AGNOSTIC_BIN_LOCK(elem) \
-  (GST_PAD_STREAM_LOCK (KMS_AGNOSTIC_BIN_CAST (elem)->sinkpad))
+  (g_rec_mutex_lock (&KMS_AGNOSTIC_BIN_CAST ((elem))->mutex))
 #define KMS_AGNOSTIC_BIN_UNLOCK(elem) \
-  (GST_PAD_STREAM_UNLOCK (KMS_AGNOSTIC_BIN_CAST (elem)->sinkpad))
+  (g_rec_mutex_unlock (&KMS_AGNOSTIC_BIN_CAST ((elem))->mutex))
 
 struct _KmsAgnosticBin
 {
