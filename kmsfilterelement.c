@@ -38,7 +38,9 @@ struct _KmsFilterElementPrivate
 {
   GRecMutex mutex;
   gchar *filter_factory;
+  GstElement *input_adapter;
   GstElement *filter;
+  GstElement *output_adapter;
   KmsFilterType filter_type;
 };
 
@@ -68,10 +70,22 @@ kms_filter_element_connect_filter (KmsFilterElement * self, GstElement * filter,
 
   self->priv->filter = filter;
 
-  gst_element_link_many (filter, agnosticbin, NULL);
+  if (self->priv->filter_type == KMS_FILTER_TYPE_AUDIO) {
+    self->priv->input_adapter = gst_element_factory_make ("audioconvert", NULL);
+    self->priv->output_adapter = gst_element_factory_make ("audioconvert", NULL);
+  } else {
+    self->priv->input_adapter = gst_element_factory_make ("videoconvert", NULL);
+    self->priv->output_adapter = gst_element_factory_make ("videoconvert", NULL);
+  }
+
+  gst_bin_add_many (GST_BIN (self), self->priv->input_adapter, self->priv->output_adapter, NULL);
+  gst_element_sync_state_with_parent (self->priv->input_adapter);
+  gst_element_sync_state_with_parent (self->priv->output_adapter);
+
+  gst_element_link_many (self->priv->input_adapter, filter, self->priv->output_adapter, agnosticbin, NULL);
 
   if (valve != NULL) {
-    if (gst_element_link (valve, filter))
+    if (gst_element_link (valve, self->priv->input_adapter))
       g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
   }
 }
@@ -159,7 +173,7 @@ kms_filter_element_audio_valve_added (KmsElement * element, GstElement * valve)
 
   if (filter->priv->filter != NULL &&
       filter->priv->filter_type == KMS_FILTER_TYPE_AUDIO) {
-    if (gst_element_link (valve, filter->priv->filter))
+    if (gst_element_link (valve, filter->priv->input_adapter))
       g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
   } else {
     gst_element_link (valve, kms_element_get_audio_agnosticbin (element));
@@ -180,7 +194,7 @@ kms_filter_element_video_valve_added (KmsElement * element, GstElement * valve)
 
   if (filter->priv->filter != NULL &&
       filter->priv->filter_type == KMS_FILTER_TYPE_VIDEO) {
-    if (gst_element_link (valve, filter->priv->filter))
+    if (gst_element_link (valve, filter->priv->input_adapter))
       g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
   } else {
     gst_element_link (valve, kms_element_get_video_agnosticbin (element));
