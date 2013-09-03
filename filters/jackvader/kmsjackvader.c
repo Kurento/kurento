@@ -47,28 +47,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsJackVader, kms_jack_vader,
         0, "debug category for jackvader element"));
 
 static void
-extractAlphaChannel (IplImage * src, IplImage * alphaMask)
-{
-
-  IplImage *channel1 = cvCreateImage (cvGetSize (src), 8, 1);
-  IplImage *channel2 = cvCreateImage (cvGetSize (src), 8, 1);
-  IplImage *channel3 = cvCreateImage (cvGetSize (src), 8, 1);
-
-  cvSplit (src, channel1, channel2, channel3, alphaMask);
-  cvReleaseImage (&channel1);
-  cvReleaseImage (&channel2);
-  cvReleaseImage (&channel3);
-}
-
-static void
-extractAlpha (IplImage * overlayImg, IplImage * alphaMask,
-    IplImage * overlayImgBGR)
-{
-  extractAlphaChannel (overlayImg, alphaMask);
-  cvCvtColor (overlayImg, overlayImgBGR, CV_BGRA2BGR);
-}
-
-static void
 kms_jack_vader_initialize_classifiers (KmsJackVader * jackvader)
 {
   gchar *path;
@@ -101,24 +79,6 @@ kms_jack_vader_initialize_classifiers (KmsJackVader * jackvader)
     cvSet (jackvader->originalCostume1, cvScalar (255, 0, 0, 255), 0);
   }
   g_free (path);
-
-  jackvader->costume3Channels1 =
-      cvCreateImage (cvSize (jackvader->originalCostume1->width,
-          jackvader->originalCostume1->height), IPL_DEPTH_8U, 3);
-  jackvader->costume3Channels2 =
-      cvCreateImage (cvSize (jackvader->originalCostume2->width,
-          jackvader->originalCostume2->height), IPL_DEPTH_8U, 3);
-  jackvader->costume1Mask =
-      cvCreateImage (cvSize (jackvader->originalCostume1->width,
-          jackvader->originalCostume1->height), IPL_DEPTH_8U, 1);
-  jackvader->costume2Mask =
-      cvCreateImage (cvSize (jackvader->originalCostume2->width,
-          jackvader->originalCostume2->height), IPL_DEPTH_8U, 1);
-
-  extractAlpha (jackvader->originalCostume1, jackvader->costume1Mask,
-      jackvader->costume3Channels1);
-  extractAlpha (jackvader->originalCostume2, jackvader->costume2Mask,
-      jackvader->costume3Channels2);
 }
 
 void
@@ -171,7 +131,6 @@ displayDetectionsOverlayImg (KmsJackVader * jackvader)
       i < (jackvader->pFaceRectSeq ? jackvader->pFaceRectSeq->total : 0); i++) {
     CvRect *r = (CvRect *) cvGetSeqElem (jackvader->pFaceRectSeq, i);
 
-    IplImage *alphaMaskAux;
     IplImage *costumeAux;
 
     if ((r->x + r->width / 2) < jackvader->cvImage->width / 2) {
@@ -179,12 +138,10 @@ displayDetectionsOverlayImg (KmsJackVader * jackvader)
       r->y = r->y - r->height / 4.5;
       r->height = r->height * 1.9;
       r->width = r->width * 1.5;
+
       costumeAux = cvCreateImage (cvSize (r->width, r->height),
-          jackvader->cvImage->depth, 3);
-      alphaMaskAux = cvCreateImage (cvSize (r->width, r->height),
-          costumeAux->depth, 1);
-      cvResize (jackvader->costume3Channels1, costumeAux, CV_INTER_LINEAR);
-      cvResize (jackvader->costume1Mask, alphaMaskAux, CV_INTER_LINEAR);
+          jackvader->cvImage->depth, 4);
+      cvResize (jackvader->originalCostume1, costumeAux, CV_INTER_LINEAR);
     } else {
       int widthAux = r->width;
 
@@ -192,40 +149,39 @@ displayDetectionsOverlayImg (KmsJackVader * jackvader)
       r->x = r->x - ((r->width - widthAux) / 2);
       r->y = r->y - r->height / 4;
       r->height = r->height * 1.5;
+
       costumeAux = cvCreateImage (cvSize (r->width, r->height),
-          jackvader->cvImage->depth, 3);
-      alphaMaskAux = cvCreateImage (cvSize (r->width, r->height),
-          costumeAux->depth, 1);
-      cvResize (jackvader->costume3Channels2, costumeAux, CV_INTER_LINEAR);
-      cvResize (jackvader->costume2Mask, alphaMaskAux, CV_INTER_LINEAR);
+          jackvader->cvImage->depth, 4);
+      cvResize (jackvader->originalCostume2, costumeAux, CV_INTER_LINEAR);
     }
+
     int i, j;
 
     for (i = 0; i < costumeAux->width; i++) {
       for (j = 0; j < costumeAux->height; j++) {
         if (((i + r->x) < jackvader->cvImage->width) && ((i + r->x) >= 0)) {
           if (((j + r->y) < jackvader->cvImage->height) && ((j + r->y) >= 0)) {
-            if (*(uchar *) (alphaMaskAux->imageData +
-                    j * alphaMaskAux->widthStep + i) == 255) {
+            if (*(uchar *) (costumeAux->imageData +
+                    (j * costumeAux->widthStep) + (i * 4) + 3) == 255) {
               *(uchar *) (jackvader->cvImage->imageData +
                   (j + r->y) * jackvader->cvImage->widthStep +
                   (i + r->x) * 3) = *(uchar *) (costumeAux->imageData +
-                  (j) * costumeAux->widthStep + (i) * 3);
+                  (j) * costumeAux->widthStep + (i * 4));
               *(uchar *) (jackvader->cvImage->imageData +
                   (j + r->y) * jackvader->cvImage->widthStep +
                   (i + r->x) * 3 + 1) = *(uchar *) (costumeAux->imageData +
-                  (j) * costumeAux->widthStep + (i) * 3 + 1);
+                  (j) * costumeAux->widthStep + (i * 4) + 1);
               *(uchar *) (jackvader->cvImage->imageData +
                   (j + r->y) * jackvader->cvImage->widthStep +
                   (i + r->x) * 3 + 2) = *(uchar *) (costumeAux->imageData +
-                  (j) * costumeAux->widthStep + (i) * 3 + 2);
+                  (j) * costumeAux->widthStep + (i * 4) + 2);
             }
           }
         }
       }
     }
+
     cvReleaseImage (&costumeAux);
-    cvReleaseImage (&alphaMaskAux);
   }
 }
 
@@ -311,10 +267,6 @@ kms_jack_vader_finalize (GObject * object)
   cvReleaseImage (&jackvader->cvImage);
   cvReleaseImage (&jackvader->originalCostume1);
   cvReleaseImage (&jackvader->originalCostume2);
-  cvReleaseImage (&jackvader->costume3Channels1);
-  cvReleaseImage (&jackvader->costume3Channels2);
-  cvReleaseImage (&jackvader->costume1Mask);
-  cvReleaseImage (&jackvader->costume2Mask);
   if (jackvader->pStorageFace != NULL)
     cvClearMemStorage (jackvader->pStorageFace);
   if (jackvader->pFaceRectSeq != NULL)

@@ -20,9 +20,7 @@ struct _KmsJackVader
 {
   GstVideoFilter base;
 
-  IplImage *cvImage,  *originalCostume1, *originalCostume2,
-  *costume3Channels1, *costume3Channels2, *costume1Mask,
-  *costume2Mask;
+  IplImage *cvImage,  *originalCostume1, *originalCostume2;
 
   gboolean show_debug_info;
   const char *images_path;
