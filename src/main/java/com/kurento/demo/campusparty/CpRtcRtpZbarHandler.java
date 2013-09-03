@@ -1,36 +1,39 @@
-package com.kurento.demo;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package com.kurento.demo.campusparty;
 
 import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.RtpMediaHandler;
 import com.kurento.kmf.content.RtpMediaRequest;
 import com.kurento.kmf.content.RtpMediaService;
-import com.kurento.kmf.media.JackVaderFilter;
+import com.kurento.kmf.content.internal.rtp.RtpMediaRequestImpl;
+import com.kurento.kmf.media.MediaEventListener;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.ZBarEvent;
+import com.kurento.kmf.media.ZBarFilter;
 
-@RtpMediaService(name = "CampusPartyRtpPart", path = "/zcampusPartyRtp")
-public class CampusPartyRtpPart implements RtpMediaHandler {
-	private static final Logger log = LoggerFactory
-			.getLogger(CampusPartyRtpPart.class);
+@RtpMediaService(name = "CpRtcRtpZbarHandler", path = "/cpRtpZbar")
+public class CpRtcRtpZbarHandler implements RtpMediaHandler {
 
-	public static JackVaderFilter sharedJackVaderReference = null;
+	public static ZBarFilter sharedFilterReference = null;
 
 	@Override
 	public void onMediaRequest(RtpMediaRequest request) throws ContentException {
 		try {
 			MediaPipelineFactory mpf = request.getMediaPipelineFactory();
+			
 			MediaPipeline mp = mpf.createMediaPipeline();
-			JackVaderFilter filter = mp.createFilter(JackVaderFilter.class);
+			
+			((RtpMediaRequestImpl) request).addForCleanUp(mp);
+
+			ZBarFilter filter = mp.createFilter(ZBarFilter.class);
+						
 			request.startMedia(filter, null);
-			sharedJackVaderReference = filter;
+			
+			sharedFilterReference = filter;
+
 		} catch (Throwable t) {
-			log.error(t.getMessage(), t);
 			request.reject(500, t.getMessage());
 		}
-
 	}
 
 	@Override
