@@ -64,45 +64,49 @@ public class RecorderIT extends BaseArquillianTst {
 	@Test
 	public void testRecordTunnel() throws ClientProtocolException, IOException,
 			NoSuchAlgorithmException {
-		testRecord("http://localhost:8180/content-demo/recorder-with-tunnel",
-				200, "myfile-with-tunnel", "application/octet-stream", false);
+		testRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-tunnel", 200,
+				"myfile-with-tunnel", "application/octet-stream", false);
 	}
 
 	@Test
 	public void testRecordRedirect() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException {
-		testRecord("http://localhost:8180/content-demo/recorder-with-redirect",
-				200, "myfile-with-redirect", "application/octet-stream", false);
+		testRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-redirect", 200,
+				"myfile-with-redirect", "application/octet-stream", false);
 	}
 
 	@Test
 	public void testRecordTunnelReject() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException {
-		testRecord(
-				"http://localhost:8180/content-demo/recorder-with-tunnel-and-reject",
-				407, "myfile-with-tunnel", null, false);
+		testRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-tunnel-and-reject", 407,
+				"myfile-with-tunnel", null, false);
 	}
 
 	@Test
 	public void testRecordRedirectReject() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException {
-		testRecord(
-				"http://localhost:8180/content-demo/recorder-with-redirect-and-reject",
-				407, "myfile-with-redirect", null, false);
+		testRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-redirect-and-reject", 407,
+				"myfile-with-redirect", null, false);
 	}
 
 	@Test
 	public void testInterruptTunnel() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException {
-		testRecord("http://localhost:8180/content-demo/recorder-with-tunnel",
-				200, "myfile-with-tunnel", null, true);
+		testRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-tunnel", 200,
+				"myfile-with-tunnel", null, true);
 	}
 
 	@Test
 	public void testnterruptRedirect() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException {
-		testRecord("http://localhost:8180/content-demo/recorder-with-redirect",
-				200, "myfile-with-redirect", null, true);
+		testRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-redirect", 200,
+				"myfile-with-redirect", null, true);
 	}
 
 	private void testRecord(String url, int statusCode,

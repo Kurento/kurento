@@ -73,8 +73,8 @@ public class ParallelRecorderIT extends BaseArquillianTst {
 	public void testParallelRecordTunnel() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException, InterruptedException,
 			ExecutionException {
-		testParallelRecord(
-				"http://localhost:8180/content-demo/recorder-with-tunnel", 200,
+		testParallelRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-tunnel", 200,
 				"myfile-with-tunnel", "application/octet-stream", false);
 	}
 
@@ -82,35 +82,35 @@ public class ParallelRecorderIT extends BaseArquillianTst {
 	public void testParallelRecordRedirect() throws ClientProtocolException,
 			IOException, NoSuchAlgorithmException, InterruptedException,
 			ExecutionException {
-		testParallelRecord(
-				"http://localhost:8180/content-demo/recorder-with-redirect",
-				200, "myfile-with-redirect", "application/octet-stream", false);
+		testParallelRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-redirect", 200,
+				"myfile-with-redirect", "application/octet-stream", false);
 	}
 
 	@Test
 	public void testParallelRecordTunnelReject()
 			throws ClientProtocolException, IOException,
 			NoSuchAlgorithmException, InterruptedException, ExecutionException {
-		testParallelRecord(
-				"http://localhost:8180/content-demo/recorder-with-tunnel-and-reject",
-				407, "myfile-with-tunnel", null, false);
+		testParallelRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-tunnel-and-reject", 407,
+				"myfile-with-tunnel", null, false);
 	}
 
 	@Test
 	public void testParallelRecordRedirectReject()
 			throws ClientProtocolException, IOException, InterruptedException,
 			ExecutionException {
-		testParallelRecord(
-				"http://localhost:8180/content-demo/recorder-with-redirect-and-reject",
-				407, "myfile-with-redirect", null, false);
+		testParallelRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-redirect-and-reject", 407,
+				"myfile-with-redirect", null, false);
 	}
 
 	@Test
 	public void testParallelRecordInterruptTunnel()
 			throws ClientProtocolException, IOException,
 			NoSuchAlgorithmException, InterruptedException, ExecutionException {
-		testParallelRecord(
-				"http://localhost:8180/content-demo/recorder-with-tunnel", 200,
+		testParallelRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-tunnel", 200,
 				"myfile-with-tunnel", null, true);
 	}
 
@@ -118,9 +118,9 @@ public class ParallelRecorderIT extends BaseArquillianTst {
 	public void testParallelRecordInterruptRedirec()
 			throws ClientProtocolException, IOException,
 			NoSuchAlgorithmException, InterruptedException, ExecutionException {
-		testParallelRecord(
-				"http://localhost:8180/content-demo/recorder-with-redirect",
-				200, "myfile-with-redirect", null, true);
+		testParallelRecord("http://localhost:" + getServerPort()
+				+ "/content-demo/recorder-with-redirect", 200,
+				"myfile-with-redirect", null, true);
 	}
 
 	private void testParallelRecord(String url, int statusCode,

@@ -2,14 +2,12 @@ package com.kurento.demo.junit;
 
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.kurento.kmf.content.ContentApiConfiguration;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
-@Ignore
 @RunWith(Arquillian.class)
 public class CustomConfigurationIT extends BaseArquillianTst {
 

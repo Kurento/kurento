@@ -17,7 +17,7 @@ public class MyPlayerHandlerPlayWithRedirect implements PlayerHandler {
 	@Override
 	public void onPlayRequest(PlayRequest playRequest) throws ContentException {
 		log.debug("onPlayRequest");
-		playRequest.play("small.webm");
+		playRequest.play("http://ci.kurento.com/downloads/small.webm");
 	}
 
 	@Override

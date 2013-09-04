@@ -17,7 +17,7 @@ public class MyPlayerHandlerPlayWithTunnel implements PlayerHandler {
 	@Override
 	public void onPlayRequest(PlayRequest playRequest) throws ContentException {
 		log.debug("onPlayRequest");
-		playRequest.play("small.webm");
+		playRequest.play("http://ci.kurento.com/downloads/small.webm");
 	}
 
 	@Override
@@ -30,5 +30,4 @@ public class MyPlayerHandlerPlayWithTunnel implements PlayerHandler {
 			ContentException exception) {
 		log.debug("onContentError " + exception.getMessage());
 	}
-
 }

@@ -7,8 +7,8 @@ import com.kurento.kmf.content.ContentException;
 import com.kurento.kmf.content.WebRtcMediaHandler;
 import com.kurento.kmf.content.WebRtcMediaRequest;
 import com.kurento.kmf.content.WebRtcMediaService;
-import com.kurento.kmf.content.internal.jsonrpc.JsonRpcEvent;
 import com.kurento.kmf.content.internal.webrtc.WebRtcMediaRequestImpl;
+import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
 
 @WebRtcMediaService(name = "WebRtcMediaHandler", path = "/webrtc")
 public class MyWebRtcMediaHandler implements WebRtcMediaHandler {

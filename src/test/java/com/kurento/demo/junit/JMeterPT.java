@@ -16,19 +16,17 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.jmeter.JMeter;
 import org.jboss.arquillian.junit.Arquillian;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
-@Ignore
 @RunWith(Arquillian.class)
-public class PerformanceIT extends BaseArquillianTst {
+public class JMeterPT extends BaseArquillianTst {
 
 	@Test
 	public void testPerformance() throws Exception {
 		final String root = "src/test/jmeter/";
-		final String jmxFolder = root + "jmx/";
+		final String jmxFolder = "target/test-classes/";
 		final String reports = "target/jmeter-reports/";
 		final String jmxExtension = ".jmx";
 		final String jtlExtension = ".jtl";
@@ -43,6 +41,7 @@ public class PerformanceIT extends BaseArquillianTst {
 		}
 		JMeter jmeter = new JMeter();
 		String[] files = new File(jmxFolder).list();
+
 		for (String file : files) {
 			if (file.toLowerCase().endsWith(jmxExtension)) {
 				// Launching JMeter for each JMX test plan found

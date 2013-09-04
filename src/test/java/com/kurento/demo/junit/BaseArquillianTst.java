@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,8 +26,9 @@ public class BaseArquillianTst {
 	@Deployment
 	public static WebArchive createDeployment() {
 		WebArchive war = ShrinkWrap
-				.create(ZipImporter.class, "content-api-tests.war")
-				.importFrom(new File("target/content-api-test-1.0.0-SNAPSHOT.war"))
+				.create(ZipImporter.class, "content-api-test.war")
+				.importFrom(
+						new File("target/content-api-test-1.0.0-SNAPSHOT.war"))
 				.as(WebArchive.class).addPackages(true, "com.kurento");
 		log.info(war.toString(true));
 		return war;
@@ -50,5 +52,14 @@ public class BaseArquillianTst {
 		} while (numRead != -1);
 		inputStream.close();
 		return new String(complete.digest());
+	}
+
+	public String getServerPort() throws IOException {
+		InputStream inputStream = new FileInputStream(
+				"target/test-classes/test.properties");
+		Properties properties = new Properties();
+		properties.load(inputStream);
+		System.out.println();
+		return properties.getProperty("jboss-as.service.port");
 	}
 }
