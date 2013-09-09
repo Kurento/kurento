@@ -1,6 +1,7 @@
 SUBDIRS =				\
 	platedetector			\
-	jackvader
+	jackvader			\
+	h264filter
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
