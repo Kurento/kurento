@@ -238,9 +238,6 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
             sink_name)) {
       gst_element_release_request_pad (tee, tee_src);
     } else {
-      GstEvent *event = gst_event_new_reconfigure ();
-
-      gst_pad_send_event (tee_src, event);
       kms_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
 
       kms_agnostic_bin_send_force_key_unit_event (tee_src);
