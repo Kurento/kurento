@@ -475,7 +475,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
         if (sink == NULL)
           continue;
 
-        tee_caps = gst_pad_get_current_caps (sink);
+        tee_caps = gst_pad_get_allowed_caps (sink);
 
         if (tee_caps != NULL) {
           if (gst_caps_can_intersect (tee_caps, allowed_caps))
