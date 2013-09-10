@@ -434,7 +434,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     return;
   }
 
-  allowed_caps = gst_pad_get_allowed_caps (srcpad);
+  allowed_caps = gst_pad_query_caps (peer, NULL);
   if (allowed_caps == NULL) {
     GST_DEBUG ("Allowed caps for %P are NULL. "
         "The pad is not linked, disconnecting", srcpad);
