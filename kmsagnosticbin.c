@@ -327,7 +327,7 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
     return NULL;
 
   decoded_tee_sink = gst_element_get_static_pad (decoded_tee, "sink");
-  raw_caps = gst_pad_query_caps (decoded_tee_sink, NULL);
+  raw_caps = gst_pad_get_allowed_caps (decoded_tee_sink);
 
   if (raw_caps == NULL)
     goto release_decoded_tee;
