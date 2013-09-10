@@ -256,11 +256,29 @@ kms_agnostic_bin_encoder_start_stop (KmsAgnosticBin * agnosticbin,
 {
   GstElement *queue, *tee, *convert;
 
-  if (start)
+  queue = g_object_get_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA);
+
+  if (start) {
+    GstElement *decoded_tee;
+    GstPad *queue_sink;
+
+    queue_sink = gst_element_get_static_pad (queue, "sink");
+
+    if (!gst_pad_is_linked (queue_sink)) {
+      GST_INFO ("Start received in encoded tee for the first time, linking");
+      decoded_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
+      if (decoded_tee != NULL) {
+        kms_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
+
+        g_object_unref (decoded_tee);
+      }
+    }
+
+    g_object_unref (queue_sink);
     return;
+  }
 
   convert = g_object_get_data (G_OBJECT (encoder), ENCODER_CONVERT_DATA);
-  queue = g_object_get_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA);
   tee = g_object_get_data (G_OBJECT (encoder), ENCODER_TEE_DATA);
 
   g_hash_table_remove (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee));
@@ -367,7 +385,6 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
   g_hash_table_insert (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee),
       g_object_ref (tee));
   gst_element_link_many (queue, convert, encoder, tee, NULL);
-  kms_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
 
   g_object_set_data (G_OBJECT (encoder), ENCODER_QUEUE_DATA, queue);
   g_object_set_data (G_OBJECT (encoder), ENCODER_TEE_DATA, tee);
