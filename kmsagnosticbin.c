@@ -217,7 +217,8 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 
   if (tee_src != NULL) {
     GstElement *old_tee;
-    old_tee = gst_pad_get_parent_element(tee_src);
+
+    old_tee = gst_pad_get_parent_element (tee_src);
 
     if (tee != old_tee)
       kms_agnostic_bin_unlink_from_tee (element, sink_name);
@@ -302,11 +303,12 @@ kms_agnostic_get_convert_element_for_raw_caps (GstCaps * raw_caps)
 }
 
 static void
-configure_encoder (GstElement *encoder, const gchar *factory_name) {
-  GST_DEBUG("Configure encoder: %s", factory_name);
-  if (g_strcmp0("vp8enc", factory_name) == 0){
+configure_encoder (GstElement * encoder, const gchar * factory_name)
+{
+  GST_DEBUG ("Configure encoder: %s", factory_name);
+  if (g_strcmp0 ("vp8enc", factory_name) == 0) {
     g_object_set (G_OBJECT (encoder), "deadline", 80 * GST_MSECOND,
-      "threads", 4, NULL);
+        "threads", 4, NULL);
   }
 }
 
@@ -661,9 +663,9 @@ kms_agnostic_bin_request_new_pad (GstElement * element,
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (element);
   GstElement *queue = gst_element_factory_make ("queue", NULL);
 
-  g_rec_mutex_lock(&agnosticbin->mutex);
+  g_rec_mutex_lock (&agnosticbin->mutex);
   pad_name = g_strdup_printf ("src_%d", agnosticbin->pad_count++);
-  g_rec_mutex_unlock(&agnosticbin->mutex);
+  g_rec_mutex_unlock (&agnosticbin->mutex);
 
   gst_bin_add (GST_BIN (agnosticbin), queue);
   gst_element_sync_state_with_parent (queue);
@@ -739,7 +741,7 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
 
     video_caps = gst_static_caps_get (&static_raw_video_caps);
     caps = gst_pad_query_caps (pad, NULL);
-    if (gst_caps_can_intersect(caps, video_caps)) {
+    if (gst_caps_can_intersect (caps, video_caps)) {
       gint num = 15, denom = 1;
       GstElement *capsfilter = gst_element_factory_make ("capsfilter", NULL);
       GstElement *videorate = gst_element_factory_make ("videorate", NULL);
@@ -748,7 +750,7 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
       if (gst_caps_is_fixed (caps) && gst_caps_get_size (caps) == 1) {
         GstStructure *st;
 
-        st = gst_caps_get_structure(caps, 0);
+        st = gst_caps_get_structure (caps, 0);
 
         if (gst_structure_has_field_typed (st, "framerate", GST_TYPE_FRACTION)) {
           gst_structure_get_fraction (st, "framerate", &num, &denom);
@@ -760,17 +762,19 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
         denom = 1;
       }
 
-      fps_caps = gst_caps_new_simple("video/x-raw", "framerate",
+      fps_caps = gst_caps_new_simple ("video/x-raw", "framerate",
           GST_TYPE_FRACTION, num, denom, NULL);
 
       g_object_set (G_OBJECT (capsfilter), "caps", fps_caps, NULL);
-      g_object_set (G_OBJECT (videorate), "average-period", 200 * GST_MSECOND, NULL);
+      g_object_set (G_OBJECT (videorate), "average-period", 200 * GST_MSECOND,
+          NULL);
 
       gst_bin_add_many (GST_BIN (agnosticbin), capsfilter, videorate, NULL);
       gst_element_sync_state_with_parent (videorate);
       gst_element_sync_state_with_parent (capsfilter);
 
-      gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), videorate, "sink");
+      gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), videorate,
+          "sink");
       gst_element_link_many (videorate, capsfilter, tee, NULL);
 
     } else {
