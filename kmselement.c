@@ -301,9 +301,9 @@ kms_element_release_pad (GstElement * element, GstPad * pad)
   GstElement *agnosticbin;
   GstPad *target;
 
-  if (g_str_has_prefix ("audio_src", GST_OBJECT_NAME (pad))) {
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), "audio_src")) {
     agnosticbin = KMS_ELEMENT (element)->priv->audio_agnosticbin;
-  } else if (g_str_has_prefix ("video_src", GST_OBJECT_NAME (pad))) {
+  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "video_src")) {
     agnosticbin = KMS_ELEMENT (element)->priv->video_agnosticbin;
   } else {
     return;
