@@ -17,7 +17,7 @@ public class PlayerConsumingRtpJackVaderFilter implements PlayerHandler {
 	public void onPlayRequest(PlayRequest playRequest) throws ContentException {
 		log.info("Received request to " + playRequest);
 		try {
-			if (RtpProducingJackVaderFilter.sharedJackVaderReference == null) {
+			if (RtpProducingJackVaderFilter.sharedJackVaderReference != null) {
 				log.info("Found sharedJackVaderReference ... invoking play");
 				playRequest
 						.play(RtpProducingJackVaderFilter.sharedJackVaderReference);

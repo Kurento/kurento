@@ -14,10 +14,9 @@ import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kms.api.MediaType;
 
-@PlayerService(name="PlayerJonJackVaderHandler", path="/playerJsonJack", useControlProtocol=true)
-public class PlayerJonJackVaderHandler implements PlayerHandler
-{
-	
+@PlayerService(name = "PlayerJonJackVaderHandler", path = "/playerJsonJack", useControlProtocol = true)
+public class PlayerJonJackVaderHandler implements PlayerHandler {
+
 	private static final Logger log = LoggerFactory
 			.getLogger(PlayerHttpHandler.class);
 
@@ -52,20 +51,20 @@ public class PlayerJonJackVaderHandler implements PlayerHandler
 			log.error(t.getMessage(), t);
 			playRequest.reject(500, t.getMessage());
 		}
-	
+
 	}
 
 	@Override
 	public void onContentPlayed(PlayRequest playRequest) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void onContentError(PlayRequest playRequest,
 			ContentException exception) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }
