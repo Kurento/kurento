@@ -326,6 +326,7 @@ public abstract class AbstractContentRequest {
 		// .iterator().next();
 		// sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
 		// .connect(audioSink);
+		getLogger().info("Connect successful  ...");
 	}
 
 	public Object getAttribute(String name) {

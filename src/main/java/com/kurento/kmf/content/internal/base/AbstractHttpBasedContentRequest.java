@@ -99,6 +99,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 
 		// If session was rejected, just terminate
 		if (terminate) {
+			getLogger().error("Exiting due to terminate ... this should only happen on user commanded termination");
 			// TODO
 			// clean up
 			return;
@@ -110,6 +111,7 @@ public abstract class AbstractHttpBasedContentRequest extends
 		// TODO: uncomment lines below, they are commented for testing.
 		try {
 			answerUrl = httpEndPoint.getUrl();
+			getLogger().info("HttpEndPoint.getUrl = " + answerUrl);
 			// TODO: ugly testing comment line above uncomment line below
 			// answerUrl = "http://media.w3.org/2010/05/sintel/trailer.webm");
 		} catch (IOException ioe) {

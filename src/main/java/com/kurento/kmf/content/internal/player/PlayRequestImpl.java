@@ -112,11 +112,14 @@ public class PlayRequestImpl extends AbstractHttpBasedContentRequest implements
 	@Override
 	protected HttpEndPoint buildAndConnectHttpEndPointMediaElement(
 			MediaElement mediaElement) throws Exception {
+		getLogger().info("Recovering media pipeline");
 		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
 		getLogger().info("Creating HttpEndPoint ...");
 		httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
 		addForCleanUp(httpEndPoint);
 		connect(mediaElement, httpEndPoint);
+		getLogger().info("Adding PlayerEndPoint.play() into HttpEndPoint listener");
+
 		httpEndPoint.addListener(new MediaEventListener<HttpEndPointEvent>() {
 
 			@Override
