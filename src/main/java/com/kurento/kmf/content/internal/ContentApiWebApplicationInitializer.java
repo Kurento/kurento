@@ -124,8 +124,7 @@ public class ContentApiWebApplicationInitializer implements
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
-				log.error("Error: could not find recorder class in classpath",
-						e);
+				log.error("Error: could not find WebRTC class in classpath", e);
 				throw new ServletException(e);
 			}
 		}
@@ -148,8 +147,7 @@ public class ContentApiWebApplicationInitializer implements
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
-				log.error("Error: could not find recorder class in classpath",
-						e);
+				log.error("Error: could not find RTP class in classpath", e);
 				throw new ServletException(e);
 			}
 		}
@@ -164,6 +162,13 @@ public class ContentApiWebApplicationInitializer implements
 		for (Class<?> clazz : annotatedList) {
 			if (handlerClass.isAssignableFrom(clazz)) {
 				handlerList.add(clazz.getCanonicalName());
+			} else {
+				log.error("Incorrect implementation of handler: class "
+						+ clazz.getCanonicalName() + " is annotated with "
+						+ serviceAnnotation.getSimpleName() + " (instead, "
+						+ clazz.getSimpleName() + " should extend "
+						+ handlerClass.getSimpleName()
+						+ " or use the correct annotation)");
 			}
 		}
 		return handlerList;
