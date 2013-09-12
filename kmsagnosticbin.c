@@ -200,6 +200,7 @@ kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 
       GST_PAD_STREAM_UNLOCK (tee_sink);
       g_object_unref (tee_sink);
+      g_object_unref (tee);
     }
 
     g_object_unref (tee_src);
@@ -376,7 +377,8 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
 
   configure_encoder (encoder, GST_OBJECT_NAME (encoder_factory));
 
-  gst_bin_add_many (GST_BIN (agnosticbin), queue, convert, encoder, tee, NULL);
+  gst_bin_add_many (GST_BIN (agnosticbin), queue, convert, encoder,
+      g_object_ref (tee), NULL);
   gst_element_sync_state_with_parent (queue);
   gst_element_sync_state_with_parent (convert);
   gst_element_sync_state_with_parent (encoder);
