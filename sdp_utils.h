@@ -31,6 +31,7 @@ typedef enum GstSDPDirection
   INACTIVE
 } GstSDPDirection;
 
+GstSDPDirection sdp_utils_media_get_direction (const GstSDPMedia * media);
 const gchar *sdp_utils_get_direction_str (GstSDPDirection direction);
 
 GstSDPResult sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,

@@ -144,8 +144,8 @@ sdp_utils_attribute_is_direction (const GstSDPAttribute * attr,
   return FALSE;
 }
 
-static GstSDPDirection
-sdp_media_get_direction (const GstSDPMedia * media)
+GstSDPDirection
+sdp_utils_media_get_direction (const GstSDPMedia * media)
 {
   guint i, attrs_len;
   const GstSDPAttribute *attr;
@@ -260,8 +260,8 @@ intersect_sdp_medias (const GstSDPMedia * offer,
     return GST_SDP_EINVAL;
   }
 
-  offer_dir = sdp_media_get_direction (offer);
-  answer_dir = sdp_media_get_direction (answer);
+  offer_dir = sdp_utils_media_get_direction (offer);
+  answer_dir = sdp_utils_media_get_direction (answer);
 
   if ((offer_dir == SENDONLY && answer_dir == SENDONLY) ||
       (offer_dir == RECVONLY && answer_dir == RECVONLY)) {
