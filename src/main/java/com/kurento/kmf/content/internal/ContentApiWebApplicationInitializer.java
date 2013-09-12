@@ -29,17 +29,46 @@ import com.kurento.kmf.content.internal.rtp.RtpMediaHandlerServlet;
 import com.kurento.kmf.content.internal.webrtc.WebRtcMediaHandlerServlet;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
+/**
+ * 
+ * This class performs the initialization of the implemented web applications,
+ * searching the declared handlers with corresponding annotations (
+ * {@link PlayerService}, {@link RecorderService}, {@link RtpMediaService},
+ * {@link RtpMediaService}).
+ * 
+ * @see PlayerService
+ * @see RecorderService
+ * @see RtpMediaService
+ * @see WebRtcMediaService
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ */
 public class ContentApiWebApplicationInitializer implements
 		WebApplicationInitializer {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentApiWebApplicationInitializer.class);
 
+	/**
+	 * Identifier for the declared handlers.
+	 */
 	public static final String HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
 			.getName() + "HandlerClassParamName";
 
+	/**
+	 * Reflections scans the classpath, indexes the metadata, allows to query it
+	 * on runtime and may save and collect that information.
+	 */
 	private Reflections reflections;
 
+	/**
+	 * Web initialization is performed in this method, calling every handler
+	 * initilizator (player, recorder, webrtc, rtp).
+	 */
 	@Override
 	public void onStartup(ServletContext sc) throws ServletException {
 
@@ -62,6 +91,17 @@ public class ContentApiWebApplicationInitializer implements
 				.registerKurentoServletContextListener(sc);
 	}
 
+	/**
+	 * Player initializator: this method search classes in the classpath using
+	 * the annotation {@link PlayerService}, and it register a servlet for each
+	 * handler found.
+	 * 
+	 * @param sc
+	 *            Servlet Context in which register servlets for each handler
+	 * @throws ServletException
+	 *             Exception raised when a reflection problem occurs, typically
+	 *             when a class has not been found in the classpath
+	 */
 	private void initializePlayers(ServletContext sc) throws ServletException {
 		for (String ph : findServices(PlayerHandler.class, PlayerService.class)) {
 			try {
@@ -84,6 +124,17 @@ public class ContentApiWebApplicationInitializer implements
 		}
 	}
 
+	/**
+	 * Recorder initializator: this method search classes in the classpath using
+	 * the annotation {@link RecorderService}, and it register a servlet for
+	 * each handler found.
+	 * 
+	 * @param sc
+	 *            Servlet Context in which registering servlets for each handler
+	 * @throws ServletException
+	 *             Exception raised when a reflection problem occurs, typically
+	 *             when a class has not been found in the classpath
+	 */
 	private void initializeRecorders(ServletContext sc) throws ServletException {
 		for (String rh : findServices(RecorderHandler.class,
 				RecorderService.class)) {
@@ -107,6 +158,17 @@ public class ContentApiWebApplicationInitializer implements
 		}
 	}
 
+	/**
+	 * WebRtc initializator: this method search classes in the classpath using
+	 * the annotation {@link WebRtcMediaService}, and it register a servlet for
+	 * each handler found.
+	 * 
+	 * @param sc
+	 *            Servlet Context in which register servlets for each handler
+	 * @throws ServletException
+	 *             Exception raised when a reflection problem occurs, typically
+	 *             when a class has not been found in the classpath
+	 */
 	private void initializeWebRtcMediaServices(ServletContext sc)
 			throws ServletException {
 		for (String wh : findServices(WebRtcMediaHandler.class,
@@ -130,6 +192,17 @@ public class ContentApiWebApplicationInitializer implements
 		}
 	}
 
+	/**
+	 * RtpMedia initializator: this method search classes in the classpath using
+	 * the annotation {@link RtpMediaService}, and it register a servlet for
+	 * each handler found.
+	 * 
+	 * @param sc
+	 *            Servlet Context in which register servlets for each handler
+	 * @throws ServletException
+	 *             Exception raised when a reflection problem occurs, typically
+	 *             when a class has not been found in the classpath
+	 */
 	private void initializeRtpMediaServices(ServletContext sc)
 			throws ServletException {
 		for (String wh : findServices(RtpMediaHandler.class,
@@ -154,6 +227,18 @@ public class ContentApiWebApplicationInitializer implements
 
 	}
 
+	/**
+	 * It seeks declared handlers in the classpath by using reflections.
+	 * 
+	 * @param handlerClass
+	 *            Handler class ({@link PlayerHandler}, {@link RecorderHandler},
+	 *            {@link WebRtcMediaHandler}, {@link RtpMediaHandler})
+	 * @param serviceAnnotation
+	 *            Servide annotation ({@link PlayerService},
+	 *            {@link RecorderService}, {@link WebRtcMediaService},
+	 *            {@link RtpMediaService})
+	 * @return List of services
+	 */
 	private List<String> findServices(Class<?> handlerClass,
 			Class<? extends Annotation> serviceAnnotation) {
 		Set<Class<?>> annotatedList = reflections

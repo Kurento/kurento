@@ -9,22 +9,48 @@ import com.kurento.kmf.content.internal.base.AbstractAsyncContentRequestProcesso
 import com.kurento.kmf.content.internal.base.AbstractContentRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
+/**
+ * 
+ * Asynchronous processor for Player.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public class AsyncPlayerRequestProcessor extends
 		AbstractAsyncContentRequestProcessor {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(AsyncPlayerRequestProcessor.class);
 
+	/**
+	 * Parameterized constructor.
+	 * 
+	 * @param contentRequest
+	 *            Content request
+	 * @param requestMessage
+	 *            JSON RPC message
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 */
 	public AsyncPlayerRequestProcessor(AbstractContentRequest contentRequest,
 			JsonRpcRequest requestMessage, AsyncContext asyncCtx) {
 		super(contentRequest, requestMessage, asyncCtx);
 	}
 
+	/**
+	 * Logger accessor (getter).
+	 */
 	@Override
 	protected Logger getLogger() {
 		return log;
 	}
 
+	/**
+	 * Actual implementation for thread execution for a player.
+	 */
 	@Override
 	protected void reallyRun() throws Throwable {
 		if (getPlayRequest().useControlProtocol()) {
@@ -34,6 +60,11 @@ public class AsyncPlayerRequestProcessor extends
 		}
 	}
 
+	/**
+	 * Play Request accessor (getter).
+	 * 
+	 * @return Play Request object
+	 */
 	private PlayRequestImpl getPlayRequest() {
 		return (PlayRequestImpl) contentRequest;
 	}

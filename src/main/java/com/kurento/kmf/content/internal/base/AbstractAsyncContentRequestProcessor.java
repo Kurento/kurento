@@ -10,13 +10,42 @@ import org.slf4j.Logger;
 import com.kurento.kmf.content.internal.RejectableRunnable;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
+/**
+ * 
+ * Abstract class with the definition of Content Request, JSON request message,
+ * and asynchronous context.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public abstract class AbstractAsyncContentRequestProcessor implements
 		RejectableRunnable {
 
+	/**
+	 * Content request.
+	 */
 	protected AbstractContentRequest contentRequest;
+
+	/**
+	 * JSON request message.
+	 */
 	protected JsonRpcRequest requestMessage;
+
+	/**
+	 * Asynchronous context.
+	 */
 	protected AsyncContext asyncCtx;
 
+	/**
+	 * Parameterized constructor.
+	 * 
+	 * @param contentRequest
+	 *            Content request
+	 * @param requestMessage
+	 *            JSON request message
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 */
 	public AbstractAsyncContentRequestProcessor(
 			AbstractContentRequest contentRequest,
 			JsonRpcRequest requestMessage, AsyncContext asyncCtx) {
@@ -25,10 +54,25 @@ public abstract class AbstractAsyncContentRequestProcessor implements
 		this.asyncCtx = asyncCtx;
 	}
 
+	/**
+	 * Looger accessor.
+	 * 
+	 * @return logger
+	 */
 	protected abstract Logger getLogger();
 
+	/**
+	 * Actual implementation of the request processor thread run (for a player,
+	 * a recorder, and so on).
+	 * 
+	 * @throws Throwable
+	 *             Error/Exception
+	 */
 	protected abstract void reallyRun() throws Throwable;
 
+	/**
+	 * Thread execution method.
+	 */
 	@Override
 	public void run() {
 		try {
@@ -46,10 +90,18 @@ public abstract class AbstractAsyncContentRequestProcessor implements
 		}
 	}
 
+	/**
+	 * Request message id accessor (getter).
+	 * 
+	 * @return Request message id
+	 */
 	private int getRequestId() {
 		return requestMessage != null ? requestMessage.getId() : 0;
 	}
 
+	/**
+	 * Execution reject event method.
+	 */
 	@Override
 	public void onExecutionRejected() {
 		// This reject is executed by an JVM managed thread. We need to specify

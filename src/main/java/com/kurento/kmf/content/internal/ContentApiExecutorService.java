@@ -13,17 +13,38 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.kurento.kmf.content.ContentApiConfiguration;
 
+/**
+ * Thread pool within Content Management.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public class ContentApiExecutorService {
 
+	/**
+	 * Thread pool implementation.
+	 */
 	private ThreadPoolExecutor executor;
 
+	/**
+	 * Autowired configuration.
+	 */
 	@Autowired
 	@Qualifier("contentApiConfiguration")
 	private ContentApiConfiguration config;
 
+	/**
+	 * Default constructor.
+	 */
 	public ContentApiExecutorService() {
 	}
 
+	/**
+	 * Post constructor method; instantiate thread pool.
+	 * 
+	 * @throws Exception
+	 *             Error in the creation of the thread pool
+	 */
 	@PostConstruct
 	public void afterPropertiesSet() throws Exception {
 		executor = new ThreadPoolExecutor(config.getPoolCoreSize(),
@@ -39,11 +60,22 @@ public class ContentApiExecutorService {
 				});
 	}
 
+	/**
+	 * Pre destroy method; shutdown the thread pool.
+	 * 
+	 * @throws Exception
+	 *             Problem while shutting down thread
+	 */
 	@PreDestroy
 	public void destroy() throws Exception {
 		executor.shutdown();
 	}
 
+	/**
+	 * Getter (accessor) of the thread pool (executor).
+	 * 
+	 * @return Thread pool (executor)
+	 */
 	public ThreadPoolExecutor getExecutor() {
 		return executor;
 	}

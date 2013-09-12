@@ -38,7 +38,20 @@ import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.MediaSink;
 import com.kurento.kms.api.MediaType;
 
+/**
+ * 
+ * Generic content request processor.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public abstract class AbstractContentRequest {
+
+	/**
+	 * 
+	 * State machine for content request.
+	 * 
+	 */
 	protected enum STATE {
 		IDLE, HANDLING, STARTING, ACTIVE, TERMINATED
 	};
@@ -47,35 +60,114 @@ public abstract class AbstractContentRequest {
 	protected MediaPipelineFactory mediaPipelineFactory;
 	@Autowired
 	protected ControlProtocolManager protocolManager;
+
+	/**
+	 * Autowired random word generator.
+	 */
 	@Autowired
 	protected SecretGenerator secretGenerator;
+
+	/**
+	 * Autowired content API configuration.
+	 */
 	@Autowired
 	protected ContentApiConfiguration contentApiConfiguration;
 
+	/**
+	 * List of Media Object to be cleaned.
+	 */
 	private List<MediaObject> cleanupList;
 
+	/**
+	 * Current state within the state machine.
+	 */
 	protected volatile STATE state;
+
+	/**
+	 * Content Request Manager.
+	 */
 	private ContentRequestManager manager;
+
+	/**
+	 * Session identifier.
+	 */
 	protected String sessionId;
+
+	/**
+	 * Content identifier.
+	 */
 	private String contentId;
+
+	/**
+	 * Asynchronous context.
+	 */
 	protected AsyncContext initialAsyncCtx;
+
+	/**
+	 * JSON request.
+	 */
 	protected JsonRpcRequest initialJsonRequest;
+
+	/**
+	 * JSON Attributes.
+	 */
 	private ConcurrentHashMap<String, Object> attributes;
 
+	/**
+	 * Event queue.
+	 */
 	protected BlockingQueue<JsonRpcEvent> eventQueue;
 
 	// Abstract methods
+	/**
+	 * JSON rpc request processor.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON message (Java object)
+	 * @throws ContentException
+	 *             Exception processing request
+	 */
 	protected abstract void processStartJsonRpcRequest(AsyncContext asyncCtx,
 			JsonRpcRequest message) throws ContentException;
 
+	/**
+	 * Logger accessor (getter).
+	 * 
+	 * @return logger
+	 */
 	protected abstract Logger getLogger();
 
+	/**
+	 * Cancellation of the transmission.
+	 */
 	protected abstract void cancelMediaTransmission();
 
+	/**
+	 * Abstract declaration of terminate on error event.
+	 * 
+	 * @param code
+	 *            Error code
+	 * @param description
+	 *            Error description
+	 * @throws IOException
+	 *             Input/Output exception
+	 */
 	protected abstract void sendOnTerminateErrorMessageInInitialContext(
 			int code, String description) throws IOException;
 
 	// Concrete methods and constructors
+	/**
+	 * Parameterized constructor.
+	 * 
+	 * @param manager
+	 *            Content request manager
+	 * @param asyncContext
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content identifier
+	 */
 	public AbstractContentRequest(ContentRequestManager manager,
 			AsyncContext asyncContext, String contentId) {
 		state = STATE.IDLE;
@@ -91,27 +183,55 @@ public abstract class AbstractContentRequest {
 		cleanupList.add(mediaObject);
 	}
 
+	/**
+	 * After construct method; it generates the random session identifier.
+	 */
 	@PostConstruct
 	void onAfterBeanInitialized() {
 		sessionId = secretGenerator.nextSecret();
 	}
 
+	/**
+	 * Session identifier accessor (getter).
+	 * 
+	 * @return Session identifier
+	 */
 	public String getSessionId() {
 		return sessionId;
 	}
 
+	/**
+	 * Content identifier accessor (getter)
+	 * 
+	 * @return Content identifier
+	 */
 	public String getContentId() {
 		return contentId;
 	}
 
+	/**
+	 * Video constraints accessor (getter).
+	 * 
+	 * @return Video constraints
+	 */
 	public Constraints getVideoConstraints() {
 		return initialJsonRequest.getVideoConstraints();
 	}
 
+	/**
+	 * Audio constraints accessor (getter).
+	 * 
+	 * @return Audio constraints
+	 */
 	public Constraints getAudioConstraints() {
 		return initialJsonRequest.getAudioConstraints();
 	}
 
+	/**
+	 * HTTP Servlet request accessor (getter).
+	 * 
+	 * @return HTTP Servlet request
+	 */
 	public HttpServletRequest getHttpServletRequest() {
 		if (state == STATE.ACTIVE || state == STATE.TERMINATED) {
 			throw new IllegalStateException(
@@ -121,6 +241,18 @@ public abstract class AbstractContentRequest {
 		return (HttpServletRequest) initialAsyncCtx.getRequest();
 	}
 
+	/**
+	 * Manages the JSON message depending on the state.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON message (Java object)
+	 * @throws ContentException
+	 *             Exception in processing, typically when unrecognized message
+	 * @throws IOException
+	 *             Input/Output exception
+	 */
 	public void processControlMessage(AsyncContext asyncCtx,
 			JsonRpcRequest message) throws ContentException, IOException {
 		Assert.notNull(message, "Cannot process null message");
@@ -158,14 +290,33 @@ public abstract class AbstractContentRequest {
 		}
 	}
 
+	/**
+	 * Reject request.
+	 * 
+	 * @param statusCode
+	 *            Error code
+	 * @param message
+	 *            Error message
+	 */
 	public void reject(int statusCode, String message) {
 		terminate(statusCode, message);
 	}
 
+	/**
+	 * Send events to the client.
+	 * 
+	 * @param events
+	 *            list of events to be sent
+	 */
 	public void produceEvents(JsonRpcEvent... events) {
 		eventQueue.addAll(Arrays.asList(events));
 	}
 
+	/**
+	 * Get poll events.
+	 * 
+	 * @return list of received poll events
+	 */
 	public JsonRpcEvent[] consumeEvents() {
 		List<JsonRpcEvent> events = null;
 		while (true) {
@@ -195,15 +346,21 @@ public abstract class AbstractContentRequest {
 
 	/**
 	 * Terminates this object in the context of an AsyncContext different from
-	 * the initial AsyncContext sending the appropriate messages if necessary
+	 * the initial AsyncContext sending the appropriate messages if necessary.
 	 * 
+	 * @param withError
+	 *            boolean value indicating whether the termination is due to an
+	 *            error or not
 	 * @param asyncCtx
 	 *            the AsynContext of the request that produced the termination
 	 *            due to an explicit termination request or due to an error in
 	 *            the processing of the request.
 	 * @param code
+	 *            termination code
 	 * @param description
+	 *            termination message
 	 * @param requestId
+	 *            request identifier
 	 */
 	public void terminate(boolean withError, AsyncContext asyncCtx, int code,
 			String description, int requestId) {
@@ -237,7 +394,9 @@ public abstract class AbstractContentRequest {
 	 * sending an answer to the initial request if necessary.
 	 * 
 	 * @param code
+	 *            termination code
 	 * @param description
+	 *            termination description
 	 */
 	protected void terminate(int code, String description) {
 		// This method cannot throw exceptions
@@ -264,6 +423,9 @@ public abstract class AbstractContentRequest {
 		}
 	}
 
+	/**
+	 * Asynchronous context completion.
+	 */
 	protected void destroy() {
 		if (initialAsyncCtx != null) {
 			initialAsyncCtx.complete();
@@ -280,6 +442,12 @@ public abstract class AbstractContentRequest {
 		}
 	}
 
+	/**
+	 * Release media server resources.
+	 * 
+	 * @throws Throwable
+	 *             Error/exception happen releasing media server resources
+	 */
 	protected void releaseOwnMediaServerResources() throws Throwable {
 		if (cleanupList == null) {
 			return;
@@ -302,6 +470,11 @@ public abstract class AbstractContentRequest {
 		}
 	}
 
+	/**
+	 * Media Pipeline Factory accessor (getter).
+	 * 
+	 * @return Media Pipeline Factory
+	 */
 	public MediaPipelineFactory getMediaPipelineFactory() {
 		// TODO: this returned class should be a wrapper of the real class so
 		// that when the user creates a resource the request stores the resource
@@ -309,6 +482,16 @@ public abstract class AbstractContentRequest {
 		return mediaPipelineFactory;
 	}
 
+	/**
+	 * Connect media element (source and sink).
+	 * 
+	 * @param sourceElement
+	 *            Out-going media element
+	 * @param sinkElement
+	 *            In-going media element
+	 * @throws IOException
+	 *             Input/Output exception
+	 */
 	protected void connect(MediaElement sourceElement, MediaElement sinkElement)
 			throws IOException {
 		getLogger().info(
@@ -329,6 +512,13 @@ public abstract class AbstractContentRequest {
 		getLogger().info("Connect successful  ...");
 	}
 
+	/**
+	 * Attribute (by name) accessor (getter).
+	 * 
+	 * @param name
+	 *            Attribute name
+	 * @return Attribute value
+	 */
 	public Object getAttribute(String name) {
 		if (attributes == null) {
 			return null;
@@ -337,6 +527,15 @@ public abstract class AbstractContentRequest {
 		}
 	}
 
+	/**
+	 * Attribute mutator (setter), using a pair key-value.
+	 * 
+	 * @param name
+	 *            Attribute name (key)
+	 * @param value
+	 *            Attribute value
+	 * @return Attribute
+	 */
 	public Object setAttribute(String name, Object value) {
 		if (attributes == null) {
 			attributes = new ConcurrentHashMap<String, Object>();
@@ -344,6 +543,13 @@ public abstract class AbstractContentRequest {
 		return attributes.put(name, value);
 	}
 
+	/**
+	 * Delete an attribute, identified by its name.
+	 * 
+	 * @param name
+	 *            Attribute name
+	 * @return Deleted attribute value
+	 */
 	public Object removeAttribute(String name) {
 		if (attributes == null) {
 			return null;

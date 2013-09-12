@@ -17,19 +17,50 @@ import org.slf4j.LoggerFactory;
 import com.kurento.kmf.content.internal.base.AbstractContentRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
+/**
+ * 
+ * Listener that will be notified for events in an asynchronous operation
+ * initiated on a ServletRequest.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ */
 public class ContentAsyncListener implements AsyncListener {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentAsyncListener.class);
 
+	/**
+	 * Future identifier (used to store future instances in the asynchronous
+	 * context).
+	 */
 	public static final String FUTURE_REQUEST_PROCESSOR_ATT_NAME = "kurento.future.request.att.name";
+
+	/**
+	 * Content request identifier (used to store future instances in the
+	 * asynchronous context).
+	 */
 	public static final String CONTENT_REQUEST_ATT_NAME = "kurento.content.request.att.name";
+
+	/**
+	 * Control protocol identifier (used to store future instances in the
+	 * asynchronous context).
+	 */
 	public static final String CONTROL_PROTOCOL_REQUEST_MESSAGE_ATT_NAME = "kurento.cjsonrequest.request.att.name";
 
-	// Public constructor is required by servlet spec
+	/**
+	 * Public constructor required by servlet specification.
+	 */
 	public ContentAsyncListener() {
 	}
 
+	/**
+	 * On complete event (for asynchronous context) implementation.
+	 */
 	@Override
 	public void onComplete(AsyncEvent ae) {
 		HttpServletRequest request = (HttpServletRequest) ae.getAsyncContext()
@@ -38,6 +69,9 @@ public class ContentAsyncListener implements AsyncListener {
 				+ request.getRequestURI());
 	}
 
+	/**
+	 * On timeout event (for asynchronous context) implementation.
+	 */
 	@Override
 	public void onTimeout(AsyncEvent ae) throws IOException {
 		HttpServletRequest request = (HttpServletRequest) ae.getAsyncContext()
@@ -53,6 +87,9 @@ public class ContentAsyncListener implements AsyncListener {
 						+ "a symptom of a bug on application logic.");
 	}
 
+	/**
+	 * On error event (for asynchronous context) implementation.
+	 */
 	@Override
 	public void onError(AsyncEvent ae) throws IOException {
 		HttpServletRequest request = (HttpServletRequest) ae.getAsyncContext()
@@ -65,6 +102,18 @@ public class ContentAsyncListener implements AsyncListener {
 				"Error processing request");
 	}
 
+	/**
+	 * Asynchronous context completion method.
+	 * 
+	 * @param ae
+	 *            Event
+	 * @param status
+	 *            Status code
+	 * @param msg
+	 *            Message for the completion
+	 * @throws IOException
+	 *             Error during completion
+	 */
 	private void internalCompleteAsyncContext(AsyncEvent ae, int status,
 			String msg) throws IOException {
 		AsyncContext asyncContext = ae.getAsyncContext();
@@ -86,6 +135,9 @@ public class ContentAsyncListener implements AsyncListener {
 		}
 	}
 
+	/**
+	 * On start event (for asynchronous context) implementation.
+	 */
 	@Override
 	public void onStartAsync(AsyncEvent ae) {
 		HttpServletRequest request = (HttpServletRequest) ae.getAsyncContext()

@@ -19,24 +19,58 @@ import com.google.gson.Gson;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 
+/**
+ * 
+ * This class handles the JSON-based representations for information exchange
+ * (media negotiation).
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ */
 public class ControlProtocolManager {
+
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(ControlProtocolManager.class);
 
+	/**
+	 * Buffer.
+	 */
 	private static final int BUFF = 4096;
 
+	/**
+	 * Encodings accepted in JSON (UTF-8, UTF-16BE/LE, UTF-32BE/LE).
+	 */
 	private static final String UTF8 = "UTF-8";
 	private static final String UTF16BE = "UTF-16BE";
 	private static final String UTF16LE = "UTF-16LE";
 	private static final String UTF32BE = "UTF-32BE";
 	private static final String UTF32LE = "UTF-32LE";
 
+	/**
+	 * Gson (Google JSON API) instance.
+	 */
 	private Gson gson;
 
+	/**
+	 * Default constructor; it creates the Gson (Google JSON API) instance.
+	 */
 	public ControlProtocolManager() {
 		gson = new Gson();
 	}
 
+	/**
+	 * Receiver method for JSON throw a request.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @return Received JSON encapsulated as a Java class
+	 * @throws IOException
+	 *             Exception while parsing JSON to Java
+	 */
 	public JsonRpcRequest receiveJsonRequest(AsyncContext asyncCtx)
 			throws IOException {
 		HttpServletRequest request = (HttpServletRequest) asyncCtx.getRequest();
@@ -73,6 +107,15 @@ public class ControlProtocolManager {
 		return jsonRequest;
 	}
 
+	/**
+	 * Reads inputStream (from request) and detects incoming JSON encoding.
+	 * 
+	 * @param inputStream
+	 *            Input Stream from request
+	 * @return String identifier for detected JSON (UTF8, UTF16LE, ...)
+	 * @throws IOException
+	 *             Exception while parsing JSON
+	 */
 	private String detectJsonEncoding(InputStream inputStream)
 			throws IOException {
 		inputStream.mark(4);
@@ -89,6 +132,13 @@ public class ControlProtocolManager {
 		return match(mask);
 	}
 
+	/**
+	 * Match recovered mask to String identifier (UTF8, UTF16LE, ...).
+	 * 
+	 * @param mask
+	 *            Mask from detectJsonEncoding method
+	 * @return String identifier for the detected JSON encoding
+	 */
 	private String match(int mask) {
 		switch (mask) {
 		case 1:
@@ -106,11 +156,31 @@ public class ControlProtocolManager {
 		}
 	}
 
+	/**
+	 * Sender method for JSON throw a request.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON message (as a Java class)
+	 * @throws IOException
+	 *             Exception while parsing operating with asynchronous context
+	 */
 	public void sendJsonAnswer(AsyncContext asyncCtx, JsonRpcResponse message)
 			throws IOException {
 		internalSendJsonAnswer(asyncCtx, message);
 	}
 
+	/**
+	 * Sender method for error messages in JSON throw a request.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON error message (as a Java class)
+	 * @throws IOException
+	 *             Exception while parsing operating with asynchronous context
+	 */
 	public void sendJsonError(AsyncContext asyncCtx, JsonRpcResponse message) {
 		try {
 			internalSendJsonAnswer(asyncCtx, message);
@@ -124,6 +194,17 @@ public class ControlProtocolManager {
 		}
 	}
 
+	/**
+	 * Internal implementation for sending JSON (called from sendJsonAnswer and
+	 * sendJsonError methods).
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON message (as a Java class)
+	 * @throws IOException
+	 *             Exception while parsing operating with asynchronous context
+	 */
 	private void internalSendJsonAnswer(AsyncContext asyncCtx,
 			JsonRpcResponse message) throws IOException {
 		if (asyncCtx == null) {
@@ -147,6 +228,13 @@ public class ControlProtocolManager {
 		}
 	}
 
+	/**
+	 * Parses Java class to JSON.
+	 * 
+	 * @param object
+	 *            Generic objetc to be parsed
+	 * @return JSON serialization
+	 */
 	public String toString(Object object) {
 		return gson.toJson(object);
 	}

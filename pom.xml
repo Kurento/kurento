@@ -24,6 +24,9 @@
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
+
+		<!-- Plugin Versions -->
+		<maven-javadoc-plugin.version>2.9.1</maven-javadoc-plugin.version>
 	</properties>
 
 	<name>Kurento Media Framework - Content Management</name>
@@ -35,8 +38,16 @@
 
 	<developers>
 		<developer>
+			<id>llopez</id>
+			<name>Luis López Fernández</name>
+		</developer>
+		<developer>
 			<id>mparis</id>
 			<name>Miguel París Díaz</name>
+		</developer>
+		<developer>
+			<id>bgarcia</id>
+			<name>Boni García Gutiérrez</name>
 		</developer>
 	</developers>
 
@@ -97,6 +108,16 @@
 	</dependencies>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${maven-javadoc-plugin.version}</version>
+				<configuration>
+					<stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
+				</configuration>
+			</plugin>
+		</plugins>
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.wagon</groupId>

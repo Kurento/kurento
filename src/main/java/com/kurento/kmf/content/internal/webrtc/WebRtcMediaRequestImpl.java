@@ -17,14 +17,39 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 
+/**
+ * 
+ * Request implementation for WebRTC.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		implements WebRtcMediaRequest {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(WebRtcMediaRequestImpl.class);
 
+	/**
+	 * WebRTC Handler reference.
+	 */
 	private WebRtcMediaHandler handler;
 
+	/**
+	 * Parameterized constructor.
+	 * 
+	 * @param handler
+	 *            WebRTC Handler
+	 * @param manager
+	 *            Content Request Manager
+	 * @param asyncContext
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content identifier
+	 */
 	public WebRtcMediaRequestImpl(WebRtcMediaHandler handler,
 			ContentRequestManager manager, AsyncContext asyncContext,
 			String contentId) {
@@ -32,6 +57,15 @@ public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		this.handler = handler;
 	}
 
+	/**
+	 * Build a Media End Point, and creates a SDP answer.
+	 * 
+	 * @param sinkElement
+	 *            Out-going media element
+	 * @param sourceElement
+	 *            In-going media element
+	 * @return SDP answer
+	 */
 	@Override
 	protected String buildMediaEndPointAndReturnSdp(MediaElement sinkElement,
 			MediaElement sourceElement) throws Throwable {
@@ -48,16 +82,25 @@ public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		return initialJsonRequest.getSdp();
 	}
 
+	/**
+	 * Logger accessor (getter).
+	 */
 	@Override
 	protected Logger getLogger() {
 		return log;
 	}
 
+	/**
+	 * Cancel of media transmission.
+	 */
 	@Override
 	protected void cancelMediaTransmission() {
 		// TODO Auto-generated method stub
 	}
 
+	/**
+	 * Performs then onMediaRequest event of the Handler.
+	 */
 	@Override
 	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
 			JsonRpcRequest message) throws ContentException {
@@ -68,6 +111,9 @@ public class WebRtcMediaRequestImpl extends AbstractSdpBasedMediaRequest
 		handler.onMediaRequest(this);
 	}
 
+	/**
+	 * Performs then sendJsonError using JSON protocol control manager.
+	 */
 	@Override
 	protected void sendOnTerminateErrorMessageInInitialContext(int code,
 			String description) throws IOException {

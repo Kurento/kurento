@@ -6,6 +6,7 @@ import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
 import com.kurento.kmf.content.ContentException;
@@ -17,16 +18,45 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.RtpEndPoint;
 
+/**
+ * 
+ * Request implementation for a Player.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		RtpMediaRequest {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(RtpMediaRequestImpl.class);
 
+	@Autowired
+	private MediaPipelineFactory mediaPipelineFactory;
+
+	/**
+	 * RTP Handler reference.
+	 */
 	private RtpMediaHandler handler;
 
+	/**
+	 * Parameterized constructor.
+	 * 
+	 * @param handler
+	 *            RTP Handler
+	 * @param manager
+	 *            Content Request Manager
+	 * @param asyncContext
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content identifier
+	 */
 	public RtpMediaRequestImpl(RtpMediaHandler handler,
 			ContentRequestManager manager, AsyncContext asyncContext,
 			String contentId) {
@@ -95,6 +125,9 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		return answerSdp;
 	}
 
+	/**
+	 * Performs then onMediaRequest event of the Handler.
+	 */
 	@Override
 	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
 			JsonRpcRequest message) throws ContentException {
@@ -105,17 +138,26 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 		handler.onMediaRequest(this);
 	}
 
+	/**
+	 * Logger accessor (getter).
+	 */
 	@Override
 	protected Logger getLogger() {
 		return log;
 	}
 
+	/**
+	 * Cancel of media transmission.
+	 */
 	@Override
 	protected void cancelMediaTransmission() {
 		// TODO improve this
 		terminate(500, "Transmission was cancelled by an external command");
 	}
 
+	/**
+	 * Performs then sendJsonError using JSON protocol control manager.
+	 */
 	@Override
 	protected void sendOnTerminateErrorMessageInInitialContext(int code,
 			String description) throws IOException {
@@ -125,4 +167,5 @@ public class RtpMediaRequestImpl extends AbstractSdpBasedMediaRequest implements
 						initialJsonRequest.getId()));
 
 	}
+
 }

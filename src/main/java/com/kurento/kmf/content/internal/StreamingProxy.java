@@ -36,19 +36,43 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.content.ContentApiConfiguration;
 
+/**
+ * Media content can be served from the Media Server directly straight to the
+ * client, but it could also be proxied through the Application Server; this
+ * class implemented this proxy.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ */
 public class StreamingProxy {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(StreamingProxy.class);
 
+	/**
+	 * Autowired configuration.
+	 */
 	@Autowired
 	private ContentApiConfiguration configuration;
 
+	/**
+	 * Apache implementation of an HTTP client.
+	 */
 	private HttpClient httpClient;
 
+	/**
+	 * Autowired thread pool.
+	 */
 	@Autowired
 	private ContentApiExecutorService executorService;
 
+	/**
+	 * HTTP headers accepted in the request by proxy.
+	 */
 	private final static String[] ALLOWED_REQUEST_HEADERS = { "accept",
 			"accept-charset", "accept-encoding", "accept-language",
 			"accept-datetime", "cache-control", "connection", "date", "expect",
@@ -56,12 +80,27 @@ public class StreamingProxy {
 			"if-unmodified-since", "max-forwards", "pragma", "range", "te",
 			"x-forwarded-for", "via" };
 
+	/**
+	 * HTTP headers sent in the response by proxy.
+	 */
 	private final static String[] ALLOWED_RESPONSES_HEADERS = {
 			"Content-Location", "Content-MD5", "ETag", "Last-Modified",
 			"Expires", "Content-Encoding", "Content-Range", "Content-Type" };
 
+	/**
+	 * Buffer size.
+	 */
 	private final static int BUFF = 2048;
 
+	/**
+	 * It seeks the occurrence of a String within an array.
+	 * 
+	 * @param strs
+	 *            Array
+	 * @param str
+	 *            String
+	 * @return true|false
+	 */
 	private static boolean contains(String[] strs, String str) {
 		if (strs == null || str == null)
 			return false;
@@ -73,9 +112,18 @@ public class StreamingProxy {
 		return false;
 	}
 
+	/**
+	 * Default constructor.
+	 */
 	public StreamingProxy() {
 	}
 
+	/**
+	 * After constructor method; it created the HTTP client using configuration
+	 * parameters {@link ContentApiConfiguration}.
+	 * 
+	 * @see ContentApiConfiguration
+	 */
 	@PostConstruct
 	public void afterPropertiesSet() {
 		HttpParams params = new BasicHttpParams();
@@ -98,6 +146,20 @@ public class StreamingProxy {
 		httpClient = new DefaultHttpClient(cm, params);
 	}
 
+	/**
+	 * It tunnels a request using by means of the thread pool.
+	 * 
+	 * @param clientSideRequest
+	 *            Client request
+	 * @param clientSideResponse
+	 *            Client response
+	 * @param serverSideUrl
+	 *            URL which triggers the request
+	 * @param streamingProxyListener
+	 *            Proxy listener
+	 * @return Future object
+	 * @throws IOException
+	 */
 	public Future<?> tunnelTransaction(HttpServletRequest clientSideRequest,
 			HttpServletResponse clientSideResponse, String serverSideUrl,
 			StreamingProxyListener streamingProxyListener) throws IOException {
@@ -107,12 +169,49 @@ public class StreamingProxy {
 		return executorService.getExecutor().submit(proxyThread);
 	}
 
+	/**
+	 * Anonymous class implementing the threads of the pool for the streaming
+	 * proxy.
+	 * 
+	 * @author Luis López (llopez@gsyc.es)
+	 * @author Boni García (bgarcia@gsyc.es)
+	 * @version 1.0.0
+	 * 
+	 */
 	class ProxyThread implements RejectableRunnable {
+
+		/**
+		 * Client HTTP request.
+		 */
 		private HttpServletRequest clientSideRequest;
+
+		/**
+		 * Client HTTP response.
+		 */
 		private HttpServletResponse clientSideResponse;
+
+		/**
+		 * Media URL.
+		 */
 		private String serverSideUrl;
+
+		/**
+		 * Event listener for proxy actions (error, success).
+		 */
 		private StreamingProxyListener streamingProxyListener;
 
+		/**
+		 * Parameterized constructor.
+		 * 
+		 * @param clientSideRequest
+		 *            Client request
+		 * @param clientSideResponse
+		 *            Client response
+		 * @param serverSideUrl
+		 *            URL which triggers the request
+		 * @param streamingProxyListener
+		 *            Proxy listener
+		 */
 		public ProxyThread(HttpServletRequest clientSideRequest,
 				HttpServletResponse clientSideResponse, String serverSideUrl,
 				StreamingProxyListener streamingProxyListener) {
@@ -122,6 +221,10 @@ public class StreamingProxy {
 			this.streamingProxyListener = streamingProxyListener;
 		}
 
+		/**
+		 * Thread runner. It does not raises any exception, but it raises events
+		 * for Proxy Listener (onProxySuccess, onProxyError).
+		 */
 		@Override
 		public void run() {
 			HttpRequestBase tunnelRequest = null;
@@ -214,6 +317,9 @@ public class StreamingProxy {
 			}
 		}
 
+		/**
+		 * Execution rejected event.
+		 */
 		@Override
 		public void onExecutionRejected() {
 			streamingProxyListener

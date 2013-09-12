@@ -18,16 +18,51 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
 
+/**
+ * 
+ * Abstract definition for HTTP based content request.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public abstract class AbstractHttpBasedContentRequest extends
 		AbstractContentRequest {
 
+	/**
+	 * Autowired streaming proxy.
+	 */
 	@Autowired
 	private StreamingProxy proxy;
 
+	/**
+	 * Boolean value for the use of JSON signaling protocol.
+	 */
 	protected boolean useControlProtocol;
+
+	/**
+	 * Boolean value for the redirect strategy.
+	 */
 	protected boolean redirect;
+
+	/**
+	 * Future instance from streaming proxy.
+	 */
 	protected volatile Future<?> tunnellingProxyFuture;
 
+	/**
+	 * Parameterized constructor; initial state here is HANDLING.
+	 * 
+	 * @param manager
+	 *            Content request manager
+	 * @param asyncContext
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content identifier
+	 * @param redirect
+	 *            Redirect strategy
+	 * @param useControlProtocol
+	 *            Use of control protocol
+	 */
 	public AbstractHttpBasedContentRequest(ContentRequestManager manager,
 			AsyncContext asyncContext, String contentId, boolean redirect,
 			boolean useControlProtocol) {
@@ -39,6 +74,14 @@ public abstract class AbstractHttpBasedContentRequest extends
 		}
 	}
 
+	/**
+	 * Build media element (such as player, recorder, and so on) in the media
+	 * server.
+	 * 
+	 * @param contentPath
+	 *            Content path in which build the media element
+	 * @return Created media element
+	 */
 	protected abstract MediaElement buildRepositoryBasedMediaElement(
 			String contentPath) throws Exception;
 
@@ -130,6 +173,16 @@ public abstract class AbstractHttpBasedContentRequest extends
 
 	}
 
+	/**
+	 * Provide an HTTP response, depending of which redirect strategy is used:
+	 * it could a redirect (HTTP 307, Temporary Redirect), or a tunneled
+	 * response using the Streaming Proxy.
+	 * 
+	 * @param url
+	 *            Content URL
+	 * @throws ContentException
+	 *             Exception in the media server
+	 */
 	private void answerActivateMediaRequest4SimpleHttpConfiguration(String url)
 			throws ContentException {
 		try {
@@ -177,6 +230,15 @@ public abstract class AbstractHttpBasedContentRequest extends
 		}
 	}
 
+	/**
+	 * Provide an HTTP response, when a JSON signaling protocol strategy is
+	 * used.
+	 * 
+	 * @param url
+	 *            Content URL
+	 * @throws ContentException
+	 *             Exception in the media server
+	 */
 	private void answerActivateMediaRequest4JsonControlProtocolConfiguration(
 			String url) throws ContentException {
 		try {
@@ -193,10 +255,18 @@ public abstract class AbstractHttpBasedContentRequest extends
 		}
 	}
 
+	/**
+	 * Control protocol accessor (getter).
+	 * 
+	 * @return Control protocol strategy
+	 */
 	public boolean useControlProtocol() {
 		return useControlProtocol;
 	}
 
+	/**
+	 * Send error code when using JSON signaling protocol.
+	 */
 	@Override
 	protected void sendOnTerminateErrorMessageInInitialContext(int code,
 			String description) throws IOException {
@@ -212,6 +282,9 @@ public abstract class AbstractHttpBasedContentRequest extends
 		}
 	}
 
+	/**
+	 * Release Streaming proxy.
+	 */
 	@Override
 	protected void destroy() {
 		super.destroy();

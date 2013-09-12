@@ -11,18 +11,56 @@ import com.kurento.kmf.content.internal.ContentRequestManager;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 
+/**
+ * 
+ * Extension of Content Request to support encapsulated SDP in requests.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public abstract class AbstractSdpBasedMediaRequest extends
 		AbstractContentRequest {
 
+	/**
+	 * Parameterized constructor; initial state here is HANDLING.
+	 * 
+	 * @param manager
+	 *            Content request manager
+	 * @param asyncContext
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content identifier
+	 */
 	public AbstractSdpBasedMediaRequest(ContentRequestManager manager,
 			AsyncContext asyncContext, String contentId) {
 		super(manager, asyncContext, contentId);
 	}
 
+	/**
+	 * Build end point for SDP declaration.
+	 * 
+	 * @param sinkElement
+	 *            Out-going media element
+	 * @param sourceElement
+	 *            In-going media element
+	 * @return answer
+	 * @throws Throwable
+	 *             Error/Exception
+	 */
 	protected abstract String buildMediaEndPointAndReturnSdp(
 			MediaElement sinkElement, MediaElement sourceElement)
 			throws Throwable;
 
+	/**
+	 * Star media element implementation.
+	 * 
+	 * @param sinkElement
+	 *            Out-going media element
+	 * @param sourceElement
+	 *            In-going media element
+	 * @throws ContentException
+	 *             Exception while sending SDP as answer to client
+	 */
 	public void startMedia(MediaElement sinkElement, MediaElement sourceElement)
 			throws ContentException {
 		synchronized (this) {

@@ -28,30 +28,65 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
 
+/**
+ * 
+ * Configuration class, declaring the Spring beans used in Content Management
+ * API.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ */
 @Configuration
 public class ContentApplicationContextConfiguration {
 
+	/**
+	 * Logger.
+	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentApplicationContextConfiguration.class);
 
+	/**
+	 * Autowired bean: parent context.
+	 */
 	@Autowired
 	private RootWebApplicationContextParentRecoverer parentRecoverer;
 
+	/**
+	 * Streaming proxy bean.
+	 * 
+	 * @return Streaming proxy bean bean
+	 */
 	@Bean
 	StreamingProxy streamingProxy() {
 		return new StreamingProxy();
 	}
 
+	/**
+	 * Thread pool.
+	 * 
+	 * @return Thread pool bean
+	 */
 	@Bean
 	ContentApiExecutorService contentApiExecutorService() {
 		return new ContentApiExecutorService();
 	}
 
+	/**
+	 * Random word generator.
+	 * 
+	 * @return Random word generator bean
+	 */
 	@Bean
 	SecretGenerator secretGenerator() {
 		return new SecretGenerator();
 	}
 
+	/**
+	 * Protocol manager.
+	 * 
+	 * @return Protocol manager bean
+	 */
 	@Bean
 	ControlProtocolManager controlPrototolManager() {
 		return new ControlProtocolManager();
@@ -76,7 +111,6 @@ public class ContentApplicationContextConfiguration {
 	}
 
 	// RECORDER STUFF
-
 	@Bean
 	@Scope("prototype")
 	RecordRequestImpl recordRequestImpl(RecorderHandler recorderHander,
@@ -133,7 +167,6 @@ public class ContentApplicationContextConfiguration {
 	}
 
 	// OTHER STUFF
-
 	@Bean
 	@Scope("prototype")
 	ContentRequestManager contentRequestManager() {

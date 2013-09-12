@@ -30,20 +30,50 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
+/**
+ * 
+ * Abstract class with the definition for Handler Servlets.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
 public abstract class AbstractContentHandlerServlet extends HttpServlet {
+
+	/**
+	 * Default serial version ID.
+	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Autowired thread pool.
+	 */
 	@Autowired
 	private ContentApiExecutorService executor;
 
+	/**
+	 * Autowired JSON-based representations for information exchange.
+	 */
 	@Autowired
 	private ControlProtocolManager protocolManager;
 
+	/**
+	 * Autowired concurrent hash map for the content request.
+	 */
 	protected ContentRequestManager contentRequestManager;
 
+	/**
+	 * Boolean value for the redirect strategy.
+	 */
 	protected boolean useRedirectStrategy = true;
+
+	/**
+	 * Boolean value for the use of JSON signaling protocol.
+	 */
 	protected boolean useControlProtocol = false;
 
+	/**
+	 * Servlet init method.
+	 */
 	@Override
 	public void init() throws ServletException {
 		super.init();
@@ -92,25 +122,81 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 
 	}
 
+	/**
+	 * Redirect strategy accessor (getter) for a handler class.
+	 * 
+	 * @param handlerClass
+	 *            Handler class implementation
+	 * @return Redirect strategy (true|false)
+	 * @throws ServletException
+	 *             Exception in servlet context
+	 */
 	protected abstract boolean getUseRedirectStrategy(String handlerClass)
 			throws ServletException;
 
+	/**
+	 * JSON protocol accessor (getter) for a handler class.
+	 * 
+	 * @param handlerClass
+	 *            Handler class implementation
+	 * @return JSON protocol use (true|false)
+	 * @throws ServletException
+	 *             Exception in servlet context
+	 */
 	protected abstract boolean getUseJsonControlProtocol(String handlerClass)
 			throws ServletException;
 
+	/**
+	 * Assess if handler is null.
+	 * 
+	 * @return true if handler is null, false on the contrary
+	 */
 	protected abstract boolean isHandlerNull();
 
+	/**
+	 * Handler class name accessor (getter).
+	 * 
+	 * @return Handler class name
+	 */
 	protected abstract String getHandlerSimpleClassName();
 
+	/**
+	 * Create content request.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content unique identifier
+	 * @return Content Request
+	 */
 	protected abstract AbstractContentRequest createContentRequest(
 			AsyncContext asyncCtx, String contentId);
 
+	/**
+	 * Create thread for asynchronous request processor.
+	 * 
+	 * @param contentRequest
+	 *            Content request
+	 * @param message
+	 *            JSON message (as a Java class)
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @return Thread for request processor
+	 */
 	protected abstract RejectableRunnable createAsyncRequestProcessor(
 			AbstractContentRequest contentRequest, JsonRpcRequest message,
 			AsyncContext asyncCtx);
 
+	/**
+	 * Logger accessor (getter).
+	 * 
+	 * @return logger
+	 */
 	protected abstract Logger getLogger();
 
+	/**
+	 * Generic processor for GET requests.
+	 */
 	@Override
 	protected final void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -158,6 +244,9 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 		doRequest4SimpleHttpProtocol(asyncCtx, contentId, resp);
 	}
 
+	/**
+	 * Generic processor for POST requests.
+	 */
 	@Override
 	protected final void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -205,6 +294,20 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 		}
 	}
 
+	/**
+	 * Generic processor of HTTP request when not using JSON control procotol.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content unique identifier
+	 * @param resp
+	 *            HTTP response
+	 * @throws ServletException
+	 *             Exception in Servlet
+	 * @throws IOException
+	 *             Input/Ouput Exception
+	 */
 	private void doRequest4SimpleHttpProtocol(AsyncContext asyncCtx,
 			String contentId, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -220,6 +323,20 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 				ContentAsyncListener.CONTENT_REQUEST_ATT_NAME, contentRequest);
 	}
 
+	/**
+	 * Generic processor of HTTP request when using JSON control protocol.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param contentId
+	 *            Content unique identifier
+	 * @param resp
+	 *            HTTP response
+	 * @throws ServletException
+	 *             Exception in servlet
+	 * @throws IOException
+	 *             Input/Ouput Exception
+	 */
 	private void doRequest4JsonControlProtocol(AsyncContext asyncCtx,
 			String contentId, HttpServletResponse resp)
 			throws ServletException, IOException {
