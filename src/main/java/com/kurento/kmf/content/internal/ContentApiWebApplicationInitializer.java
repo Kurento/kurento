@@ -238,9 +238,14 @@ public class ContentApiWebApplicationInitializer implements
 	 *            {@link RecorderService}, {@link WebRtcMediaService},
 	 *            {@link RtpMediaService})
 	 * @return List of services
+	 * @throws ServletException
+	 *             Exception raised when an incorrect implementation of handler
+	 *             is detected (mismatching between annotation and inheritance
+	 *             in handler)
 	 */
 	private List<String> findServices(Class<?> handlerClass,
-			Class<? extends Annotation> serviceAnnotation) {
+			Class<? extends Annotation> serviceAnnotation)
+			throws ServletException {
 		Set<Class<?>> annotatedList = reflections
 				.getTypesAnnotatedWith(serviceAnnotation);
 		List<String> handlerList = new ArrayList<String>();
@@ -248,12 +253,14 @@ public class ContentApiWebApplicationInitializer implements
 			if (handlerClass.isAssignableFrom(clazz)) {
 				handlerList.add(clazz.getCanonicalName());
 			} else {
-				log.error("Incorrect implementation of handler: class "
+				String error = "Incorrect implementation of handler: class "
 						+ clazz.getCanonicalName() + " is annotated with "
 						+ serviceAnnotation.getSimpleName() + " (instead, "
 						+ clazz.getSimpleName() + " should extend "
 						+ handlerClass.getSimpleName()
-						+ " or use the correct annotation)");
+						+ " or use the correct annotation)";
+				log.error(error);
+				throw new ServletException(error);
 			}
 		}
 		return handlerList;
