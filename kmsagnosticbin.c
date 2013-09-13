@@ -295,6 +295,11 @@ kms_agnostic_bin_encoder_start_stop (KmsAgnosticBin * agnosticbin,
   if (queue != NULL)
     kms_agnostic_bin_unlink_from_tee (queue, "sink");
 
+  gst_element_set_locked_state (queue, TRUE);
+  gst_element_set_locked_state (convert, TRUE);
+  gst_element_set_locked_state (encoder, TRUE);
+  gst_element_set_locked_state (tee, TRUE);
+
   gst_element_set_state (queue, GST_STATE_NULL);
   gst_element_set_state (convert, GST_STATE_NULL);
   gst_element_set_state (encoder, GST_STATE_NULL);
