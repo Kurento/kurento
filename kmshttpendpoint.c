@@ -320,7 +320,7 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
   decodebin = gst_element_factory_make ("decodebin", NULL);
 
   deco_caps = gst_caps_from_string (KMS_AGNOSTIC_AGNOSTIC_CAPS);
-  g_object_set (G_OBJECT(decodebin), "caps", deco_caps, NULL);
+  g_object_set (G_OBJECT (decodebin), "caps", deco_caps, NULL);
   gst_caps_unref (deco_caps);
   /* configure appsrc */
   g_object_set (G_OBJECT (self->priv->post->appsrc), "is-live", TRUE,
@@ -643,7 +643,6 @@ kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
     GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
     return;
   }
-
   // TODO: This caps should be set using the profile data
   kms_http_end_point_add_appsrc (httpep, valve, "audio/x-vorbis",
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
@@ -672,7 +671,6 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
     GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
     return;
   }
-
   // TODO: This caps should be set using the profile data
   kms_http_end_point_add_appsrc (httpep, valve, "video/x-vp8",
       VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
