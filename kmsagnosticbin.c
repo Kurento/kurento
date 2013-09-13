@@ -25,6 +25,8 @@
 #define START_STOP_EVENT_NAME "event/start-stop"
 #define START "start"
 
+#define QUEUE_DATA "queue"
+
 static GstStaticCaps static_raw_audio_caps =
 GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_AUDIO_CAPS);
 static GstStaticCaps static_raw_video_caps =
@@ -469,15 +471,15 @@ static GstElement *
 kms_agnostic_bin_get_queue_for_pad (GstPad * pad)
 {
   GstElement *queue;
-  GstPad *target;
+  gpointer data = g_object_get_data (G_OBJECT (pad), QUEUE_DATA);
 
-  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
-
-  if (target == NULL)
+  if (data == NULL || !GST_IS_ELEMENT (data))
     return NULL;
 
-  queue = gst_pad_get_parent_element (target);
-  g_object_unref (target);
+  queue = GST_ELEMENT (data);
+
+  if (queue != NULL)
+    g_object_ref (queue);
 
   return queue;
 }
@@ -674,9 +676,10 @@ kms_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
 }
 
 static void
-kms_agnostic_bin_src_unlinked (GstPad * pad, GstPad * peer,
-    KmsAgnosticBin * agnosticbin)
+kms_agnostic_bin_src_unlinked (GstPad * pad, GstObject * parent)
 {
+  KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
+
   GST_DEBUG ("%P unlinked", pad);
   KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   kms_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
@@ -745,6 +748,7 @@ kms_agnostic_bin_request_new_pad (GstElement * element,
   target = gst_element_get_static_pad (queue, "src");
 
   pad = gst_ghost_pad_new_from_template (pad_name, target, templ);
+  g_object_set_data (G_OBJECT (pad), QUEUE_DATA, queue);
 
   proxy_pad = gst_pad_get_peer (target);
 
@@ -757,8 +761,7 @@ kms_agnostic_bin_request_new_pad (GstElement * element,
   g_free (pad_name);
 
   gst_pad_set_link_function (pad, kms_agnostic_bin_src_linked);
-  g_signal_connect (pad, "unlinked", G_CALLBACK (kms_agnostic_bin_src_unlinked),
-      element);
+  gst_pad_set_unlink_function (pad, kms_agnostic_bin_src_unlinked);
   gst_pad_set_event_function (pad, kms_agnostic_bin_src_event);
 
   if (GST_STATE (element) >= GST_STATE_PAUSED
@@ -778,22 +781,29 @@ static void
 kms_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
 {
   GstElement *queue;
+  KmsAgnosticBin *agnosticbin;
 
-  if (GST_STATE (element) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
-    gst_pad_set_active (pad, FALSE);
+  agnosticbin = KMS_AGNOSTIC_BIN (GST_OBJECT_PARENT (pad));
 
+  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   queue = kms_agnostic_bin_get_queue_for_pad (pad);
+
+  g_object_set_data (G_OBJECT (pad), QUEUE_DATA, NULL);
 
   if (queue != NULL) {
     kms_agnostic_bin_unlink_from_tee (queue, "sink");
-    gst_element_set_state (queue, GST_STATE_NULL);
     gst_bin_remove (GST_BIN (element), queue);
+    gst_element_set_state (queue, GST_STATE_NULL);
 
     g_object_unref (queue);
   }
 
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
+    gst_pad_set_active (pad, FALSE);
   gst_element_remove_pad (element, pad);
+
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 }
 
 static void
