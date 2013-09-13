@@ -341,8 +341,8 @@ configure_encoder (GstElement * encoder, const gchar * factory_name)
 {
   GST_DEBUG ("Configure encoder: %s", factory_name);
   if (g_strcmp0 ("vp8enc", factory_name) == 0) {
-    g_object_set (G_OBJECT (encoder), "deadline", 80 * GST_MSECOND,
-        "threads", 4, NULL);
+    g_object_set (G_OBJECT (encoder), "deadline", 1, "threads", 1, "cpu-used",
+        16, NULL);
   }
 }
 
