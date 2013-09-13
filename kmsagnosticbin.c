@@ -69,7 +69,13 @@ static void
 kms_agnostic_bin_valve_start_stop (KmsAgnosticBin * agnosticbin,
     GstElement * valve, gboolean start)
 {
+  GstPad *sink = gst_element_get_static_pad (valve, "sink");
+
+  GST_PAD_STREAM_LOCK (sink);
   g_object_set (valve, "drop", !start, NULL);
+  GST_PAD_STREAM_UNLOCK (sink);
+
+  g_object_unref (sink);
 }
 
 static void
@@ -78,8 +84,13 @@ kms_agnostic_bin_decodebin_start_stop (KmsAgnosticBin * agnosticbin,
 {
   GstElement *valve =
       g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
+  GstPad *sink = gst_element_get_static_pad (valve, "sink");
 
+  GST_PAD_STREAM_LOCK (sink);
   g_object_set (valve, "drop", !start, NULL);
+  GST_PAD_STREAM_UNLOCK (sink);
+
+  g_object_unref (sink);
 }
 
 static gboolean
@@ -190,15 +201,19 @@ kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
       gint n_pads = 0;
       GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
 
-      GST_PAD_STREAM_LOCK (tee_sink);
+      GST_OBJECT_FLAG_SET (tee_sink, GST_PAD_FLAG_BLOCKED);
+      GST_OBJECT_FLAG_SET (tee_src, GST_PAD_FLAG_BLOCKED);
+
+      g_object_get (tee, "num-src-pads", &n_pads, NULL);
+
+      if (n_pads == 1)
+        kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
+
       gst_element_unlink (tee, element);
       gst_element_release_request_pad (tee, tee_src);
 
-      g_object_get (tee, "num-src-pads", &n_pads, NULL);
-      if (n_pads == 0)
-        kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
-
-      GST_PAD_STREAM_UNLOCK (tee_sink);
+      GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
+      GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
       g_object_unref (tee_sink);
       g_object_unref (tee);
     }
@@ -232,13 +247,16 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 
   g_object_unref (sink);
 
-  GST_PAD_STREAM_LOCK (tee_sink);
+  GST_OBJECT_FLAG_SET (tee_sink, GST_PAD_FLAG_BLOCKED);
   tee_src = gst_element_get_request_pad (tee, "src_%u");
   if (tee_src != NULL) {
+    GST_OBJECT_FLAG_SET (tee_src, GST_PAD_FLAG_BLOCKED);
     if (!gst_element_link_pads (tee, GST_OBJECT_NAME (tee_src), element,
             sink_name)) {
+      GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
       gst_element_release_request_pad (tee, tee_src);
     } else {
+      GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
       kms_agnostic_bin_send_start_stop_event (tee_sink, TRUE);
 
       kms_agnostic_bin_send_force_key_unit_event (tee_src);
@@ -247,7 +265,7 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
     g_object_unref (tee_src);
   }
 
-  GST_PAD_STREAM_UNLOCK (tee_sink);
+  GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
   g_object_unref (tee_sink);
 }
 
@@ -623,7 +641,9 @@ kms_agnostic_bin_src_unlinked (GstPad * pad, GstPad * peer,
     KmsAgnosticBin * agnosticbin)
 {
   GST_DEBUG ("%P unlinked", pad);
+  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   kms_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
+  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 }
 
 static gboolean
