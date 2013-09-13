@@ -343,6 +343,10 @@ configure_encoder (GstElement * encoder, const gchar * factory_name)
   if (g_strcmp0 ("vp8enc", factory_name) == 0) {
     g_object_set (G_OBJECT (encoder), "deadline", 1, "threads", 1, "cpu-used",
         16, NULL);
+  } else if (g_strcmp0 ("x264enc", factory_name) == 0) {
+    g_object_set (G_OBJECT (encoder), "speed-preset", 1 /* ultrafast */ ,
+        "tune", 4 /* zerolatency */ , "threads", 1,
+        NULL);
   }
 }
 
