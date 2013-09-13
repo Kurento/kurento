@@ -6,6 +6,7 @@
 #include "kmsagnosticbin.h"
 #include "kmsautomuxerbin.h"
 #include "kmsagnosticcaps.h"
+#include "kmsutils.h"
 
 #define PLUGIN_NAME "automuxerbin"
 
@@ -138,9 +139,9 @@ set_valve (gpointer v, gpointer s)
   ValveState *state = s;
 
   if (*state == VALVE_CLOSE)
-    g_object_set (valve, "drop", TRUE, NULL);
+    kms_utils_set_valve_drop (valve, TRUE);
   else if (*state == VALVE_OPEN)
-    g_object_set (valve, "drop", FALSE, NULL);
+    kms_utils_set_valve_drop (valve, FALSE);
 }
 
 static void

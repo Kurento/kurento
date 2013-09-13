@@ -6,6 +6,7 @@
 
 #include "kmsagnosticbin.h"
 #include "kmsagnosticcaps.h"
+#include "kmsutils.h"
 
 #define PLUGIN_NAME "agnosticbin"
 
@@ -69,13 +70,7 @@ static void
 kms_agnostic_bin_valve_start_stop (KmsAgnosticBin * agnosticbin,
     GstElement * valve, gboolean start)
 {
-  GstPad *sink = gst_element_get_static_pad (valve, "sink");
-
-  GST_PAD_STREAM_LOCK (sink);
-  g_object_set (valve, "drop", !start, NULL);
-  GST_PAD_STREAM_UNLOCK (sink);
-
-  g_object_unref (sink);
+  kms_utils_set_valve_drop (valve, !start);
 }
 
 static void
@@ -84,13 +79,8 @@ kms_agnostic_bin_decodebin_start_stop (KmsAgnosticBin * agnosticbin,
 {
   GstElement *valve =
       g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
-  GstPad *sink = gst_element_get_static_pad (valve, "sink");
 
-  GST_PAD_STREAM_LOCK (sink);
-  g_object_set (valve, "drop", !start, NULL);
-  GST_PAD_STREAM_UNLOCK (sink);
-
-  g_object_unref (sink);
+  kms_utils_set_valve_drop (valve, !start);
 }
 
 static gboolean
@@ -825,7 +815,7 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
     gst_caps_unref (video_caps);
 
     valve = g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
-    g_object_set (valve, "drop", TRUE, NULL);
+    kms_utils_set_valve_drop (valve, TRUE);
 
     kms_agnostic_bin_set_start_stop_event_handler (agnosticbin, decodebin,
         GST_OBJECT_NAME (pad), kms_agnostic_bin_decodebin_start_stop);

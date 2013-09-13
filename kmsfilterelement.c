@@ -6,6 +6,7 @@
 #include "kmselement.h"
 #include "kmsfilterelement.h"
 #include "kmsagnosticcaps.h"
+#include "kmsutils.h"
 
 #define PLUGIN_NAME "filterelement"
 
@@ -90,7 +91,7 @@ kms_filter_element_connect_filter (KmsFilterElement * self, GstElement * filter,
 
   if (valve != NULL) {
     if (gst_element_link (valve, self->priv->input_adapter))
-      g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+      kms_utils_set_valve_drop (valve, FALSE);
   }
 }
 
@@ -178,7 +179,7 @@ kms_filter_element_audio_valve_added (KmsElement * element, GstElement * valve)
   if (filter->priv->filter != NULL &&
       filter->priv->filter_type == KMS_FILTER_TYPE_AUDIO) {
     if (gst_element_link (valve, filter->priv->input_adapter))
-      g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+      kms_utils_set_valve_drop (valve, FALSE);
   } else {
     gst_element_link (valve, kms_element_get_audio_agnosticbin (element));
   }
@@ -199,7 +200,7 @@ kms_filter_element_video_valve_added (KmsElement * element, GstElement * valve)
   if (filter->priv->filter != NULL &&
       filter->priv->filter_type == KMS_FILTER_TYPE_VIDEO) {
     if (gst_element_link (valve, filter->priv->input_adapter))
-      g_object_set (G_OBJECT (valve), "drop", FALSE, NULL);
+      kms_utils_set_valve_drop (valve, FALSE);
   } else {
     gst_element_link (valve, kms_element_get_video_agnosticbin (element));
   }

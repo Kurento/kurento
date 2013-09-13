@@ -10,6 +10,7 @@
 #include "kmsagnosticcaps.h"
 #include "kmshttpendpointmethod.h"
 #include "kms-enumtypes.h"
+#include "kmsutils.h"
 
 #define PLUGIN_NAME "httpendpoint"
 
@@ -647,7 +648,7 @@ kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
   kms_http_end_point_add_appsrc (httpep, valve, "audio/x-vorbis",
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 
-  g_object_set (valve, "drop", FALSE, NULL);
+  kms_utils_set_valve_drop (valve, FALSE);
 }
 
 static void
@@ -675,7 +676,7 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
   kms_http_end_point_add_appsrc (httpep, valve, "video/x-vp8",
       VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 
-  g_object_set (valve, "drop", FALSE, NULL);
+  kms_utils_set_valve_drop (valve, FALSE);
 }
 
 static void

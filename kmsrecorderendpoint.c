@@ -8,6 +8,7 @@
 #include "kmsagnosticcaps.h"
 #include "kmsrecorderendpoint.h"
 #include "kmsuriendpointstate.h"
+#include "kmsutils.h"
 
 #define PLUGIN_NAME "recorderendpoint"
 
@@ -390,13 +391,13 @@ kms_recorder_end_point_open_valves (KmsRecorderEndPoint * self)
 
   valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
   if (valve != NULL) {
-    g_object_set (valve, "drop", FALSE, NULL);
+    kms_utils_set_valve_drop (valve, FALSE);
     kms_recorder_end_point_send_force_key_unit_event (valve);
   }
 
   valve = kms_element_get_video_valve (KMS_ELEMENT (self));
   if (valve != NULL) {
-    g_object_set (valve, "drop", FALSE, NULL);
+    kms_utils_set_valve_drop (valve, FALSE);
     kms_recorder_end_point_send_force_key_unit_event (valve);
   }
 }
@@ -408,11 +409,11 @@ kms_recorder_end_point_close_valves (KmsRecorderEndPoint * self)
 
   valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
   if (valve != NULL)
-    g_object_set (valve, "drop", TRUE, NULL);
+    kms_utils_set_valve_drop (valve, TRUE);
 
   valve = kms_element_get_video_valve (KMS_ELEMENT (self));
   if (valve != NULL)
-    g_object_set (valve, "drop", TRUE, NULL);
+    kms_utils_set_valve_drop (valve, TRUE);
 }
 
 static void
