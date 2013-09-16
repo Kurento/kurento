@@ -300,6 +300,7 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
 
       // TODO: create a function to reduce code replication
       if (direction == SENDRECV || direction == RECVONLY) {
+        KMS_ELEMENT_LOCK (rtp_end_point);
         rtp_end_point->audio_rtp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtp_sink");
         g_object_set (rtp_end_point->audio_rtp_udpsink, "socket",
@@ -321,6 +322,7 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
 
         gst_element_sync_state_with_parent (rtp_end_point->audio_rtp_udpsink);
         gst_element_sync_state_with_parent (rtp_end_point->audio_rtcp_udpsink);
+        KMS_ELEMENT_UNLOCK (rtp_end_point);
 
         GST_DEBUG ("Audio sent to: %s:%d", con->address, media->port);
       }
@@ -328,6 +330,7 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
       GstSDPDirection direction = sdp_utils_media_get_direction (media);
 
       if (direction == SENDRECV || direction == RECVONLY) {
+        KMS_ELEMENT_LOCK (rtp_end_point);
         rtp_end_point->video_rtp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtp_sink");
         g_object_set (rtp_end_point->video_rtp_udpsink, "socket",
@@ -349,6 +352,7 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
 
         gst_element_sync_state_with_parent (rtp_end_point->video_rtp_udpsink);
         gst_element_sync_state_with_parent (rtp_end_point->video_rtcp_udpsink);
+        KMS_ELEMENT_UNLOCK (rtp_end_point);
 
         GST_DEBUG ("Video sent to: %s:%d", con->address, media->port);
       }
@@ -418,19 +422,49 @@ kms_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     KmsRtpEndPoint * rtp_end_point)
 {
   if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_0") == 0) {
+    KMS_ELEMENT_LOCK (rtp_end_point);
+    if (rtp_end_point->audio_rtp_udpsink == NULL) {
+      GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+      GST_WARNING ("RtpEndPoint not configured to send audio");
+
+      GST_WARNING ("RtpEndPoint not configured to send video");
+      gst_bin_add (GST_BIN (rtp_end_point), fakesink);
+      gst_element_sync_state_with_parent (fakesink);
+      gst_element_link_pads (rtpbin, "send_rtp_src_1", fakesink, NULL);
+      KMS_ELEMENT_UNLOCK (rtp_end_point);
+
+      return;
+    }
+
     gst_element_link_pads (rtpbin,
         "send_rtp_src_0", rtp_end_point->audio_rtp_udpsink, "sink");
 
     g_idle_add_full (G_PRIORITY_DEFAULT,
         (GSourceFunc) (kms_rtp_end_point_connect_audio_rtcp),
         g_object_ref (rtp_end_point), g_object_unref);
+    KMS_ELEMENT_UNLOCK (rtp_end_point);
   } else if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_1") == 0) {
-    gst_element_link_pads (KMS_BASE_RTP_END_POINT (rtp_end_point)->rtpbin,
-        "send_rtp_src_1", rtp_end_point->video_rtp_udpsink, "sink");
+    KMS_ELEMENT_LOCK (rtp_end_point);
+    if (rtp_end_point->video_rtp_udpsink == NULL) {
+      GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+
+      GST_WARNING ("RtpEndPoint not configured to send video");
+      gst_bin_add (GST_BIN (rtp_end_point), fakesink);
+      gst_element_sync_state_with_parent (fakesink);
+      gst_element_link_pads (rtpbin, "send_rtp_src_1", fakesink, NULL);
+      KMS_ELEMENT_UNLOCK (rtp_end_point);
+
+      return;
+    }
+
+    gst_element_link_pads (rtpbin, "send_rtp_src_1",
+        rtp_end_point->video_rtp_udpsink, "sink");
 
     g_idle_add_full (G_PRIORITY_DEFAULT,
         (GSourceFunc) kms_rtp_end_point_connect_video_rtcp,
         g_object_ref (rtp_end_point), g_object_unref);
+    KMS_ELEMENT_UNLOCK (rtp_end_point);
   }
 }
 
