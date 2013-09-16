@@ -765,6 +765,49 @@ kms_http_end_point_finalize (GObject * object)
 }
 
 static void
+kms_change_internal_pipeline_state (KmsHttpEndPoint * self,
+    const GValue * value)
+{
+  gboolean prev_val = self->priv->start;
+  gboolean start = g_value_get_boolean (value);
+  GstElement *audio_v, *video_v;
+
+  if (self->priv->pipeline == NULL) {
+    GST_ERROR ("Element %s is not initialized", GST_ELEMENT_NAME (self));
+    return;
+  }
+
+  if (prev_val == start) {
+    /* Nothing to do */
+    return;
+  }
+
+  audio_v = kms_element_get_audio_valve (KMS_ELEMENT (self));
+  if (audio_v != NULL)
+    kms_utils_set_valve_drop (audio_v, !start);
+
+  video_v = kms_element_get_video_valve (KMS_ELEMENT (self));
+  if (video_v != NULL)
+    kms_utils_set_valve_drop (video_v, !start);
+
+  if (start) {
+    /* Set pipeline to PLAYING */
+    GST_DEBUG ("Setting pipeline to PLAYING");
+    if (gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING) ==
+        GST_STATE_CHANGE_ASYNC)
+      GST_DEBUG ("Change to PLAYING will be asynchronous");
+  } else {
+    /* Set pipeline to READY */
+    GST_DEBUG ("Setting pipeline to READY.");
+    if (gst_element_set_state (self->priv->pipeline, GST_STATE_READY) ==
+        GST_STATE_CHANGE_ASYNC)
+      GST_DEBUG ("Change to READY will be asynchronous");
+  }
+
+  self->priv->start = start;
+}
+
+static void
 kms_http_end_point_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -773,30 +816,7 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_START:{
-      gboolean prev_val = self->priv->start;
-      gboolean new_val = g_value_get_boolean (value);
-
-      if (self->priv->pipeline == NULL) {
-        GST_ERROR ("Element %s is not initialized", GST_ELEMENT_NAME (self));
-        break;
-      }
-
-      if (prev_val == new_val) {
-        /* Nothing to do */
-        break;
-      }
-
-      if (new_val) {
-        /* Set pipeline to PLAYING */
-        GST_DEBUG ("Setting pipeline to PLAYING");
-        gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
-      } else {
-        /* Set pipeline to PAUSED */
-        GST_DEBUG ("Setting pipeline to PAUSED");
-        gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
-      }
-
-      self->priv->start = new_val;
+      kms_change_internal_pipeline_state (self, value);
       break;
     }
     default:
