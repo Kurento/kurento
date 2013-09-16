@@ -81,6 +81,8 @@ kms_agnostic_bin_decodebin_start_stop (KmsAgnosticBin * agnosticbin,
       g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
 
   kms_utils_set_valve_drop (valve, !start);
+
+  // TODO: Unlink fakesink from tee
 }
 
 static gboolean
@@ -176,6 +178,22 @@ kms_agnostic_bin_send_force_key_unit_event (GstPad * pad)
 }
 
 static void
+queue_unlinked (GstPad * pad, GstPad * peer, GstElement * fakesink)
+{
+  GstElement *queue = gst_pad_get_parent_element (pad);
+  GstBin *parent = GST_BIN (GST_OBJECT_PARENT (queue));
+
+  if (parent != NULL)
+    gst_bin_remove_many (parent, queue, fakesink, NULL);
+
+  gst_element_set_state (queue, GST_STATE_NULL);
+  gst_element_set_state (fakesink, GST_STATE_NULL);
+
+  g_object_unref (queue);
+  g_object_unref (fakesink);
+}
+
+static void
 kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 {
   GstPad *sink = gst_element_get_static_pad (element, pad_name);
@@ -196,14 +214,34 @@ kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 
       g_object_get (tee, "num-src-pads", &n_pads, NULL);
 
-      if (n_pads == 1)
-        kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
-
       gst_element_unlink (tee, element);
-      gst_element_release_request_pad (tee, tee_src);
+      if (n_pads == 1) {
+        KmsAgnosticBin *agnosticbin =
+            KMS_AGNOSTIC_BIN (GST_OBJECT_PARENT (element));
+        GstElement *queue = gst_element_factory_make ("queue", NULL);
+        GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
+        GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
+
+        g_signal_connect (queue_sink, "unlinked", G_CALLBACK (queue_unlinked),
+            g_object_ref (fakesink));
+        g_object_unref (queue_sink);
+
+        gst_bin_add_many (GST_BIN (agnosticbin), queue, fakesink, NULL);
+        gst_element_sync_state_with_parent (queue);
+        gst_element_sync_state_with_parent (fakesink);
+        gst_element_link (queue, fakesink);
+        gst_element_link_pads (tee, GST_OBJECT_NAME (tee_src), queue, "sink");
+
+        GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
+        GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
+        kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
+      } else {
+        gst_element_release_request_pad (tee, tee_src);
+      }
 
       GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
       GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
+
       g_object_unref (tee_sink);
       g_object_unref (tee);
     }
