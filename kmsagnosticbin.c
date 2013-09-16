@@ -468,7 +468,7 @@ release_decoded_tee:
 }
 
 static GstElement *
-kms_agnostic_bin_get_queue_for_pad (GstPad * pad)
+kms_agnostic_bin_get_queue_from_pad (GstPad * pad)
 {
   GstElement *queue;
   gpointer data = g_object_get_data (G_OBJECT (pad), QUEUE_DATA);
@@ -488,7 +488,7 @@ static void
 kms_agnostic_bin_disconnect_srcpad (KmsAgnosticBin * agnosticbin,
     GstPad * srcpad)
 {
-  GstElement *queue = kms_agnostic_bin_get_queue_for_pad (srcpad);
+  GstElement *queue = kms_agnostic_bin_get_queue_from_pad (srcpad);
 
   if (queue == NULL)
     return;
@@ -568,7 +568,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   }
   gst_caps_unref (raw_caps);
 
-  queue = kms_agnostic_bin_get_queue_for_pad (srcpad);
+  queue = kms_agnostic_bin_get_queue_from_pad (srcpad);
 
   if (queue != NULL) {
     if (tee != NULL) {
@@ -786,7 +786,7 @@ kms_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
   agnosticbin = KMS_AGNOSTIC_BIN (GST_OBJECT_PARENT (pad));
 
   KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
-  queue = kms_agnostic_bin_get_queue_for_pad (pad);
+  queue = kms_agnostic_bin_get_queue_from_pad (pad);
 
   g_object_set_data (G_OBJECT (pad), QUEUE_DATA, NULL);
 
