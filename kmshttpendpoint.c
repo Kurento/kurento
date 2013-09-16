@@ -648,7 +648,8 @@ kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
   kms_http_end_point_add_appsrc (httpep, valve, "audio/x-vorbis",
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 
-  kms_utils_set_valve_drop (valve, FALSE);
+  /* Drop buffers only if it isn't started */
+  kms_utils_set_valve_drop (valve, !httpep->priv->start);
 }
 
 static void
@@ -676,7 +677,8 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
   kms_http_end_point_add_appsrc (httpep, valve, "video/x-vp8",
       VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 
-  kms_utils_set_valve_drop (valve, FALSE);
+  /* Drop buffers only if it isn't started */
+  kms_utils_set_valve_drop (valve, !httpep->priv->start);
 }
 
 static void
