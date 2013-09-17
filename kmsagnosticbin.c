@@ -521,6 +521,7 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
 {
   GstCaps *allowed_caps, *raw_caps;
   GstElement *tee = NULL, *queue;
+  GstPad *queue_sink;
 
   GST_DEBUG ("Connecting %P", srcpad);
   if (!GST_IS_GHOST_PAD (srcpad)) {
@@ -542,9 +543,30 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     return;
   }
 
-  raw_caps = gst_static_caps_get (&static_raw_caps);
   KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
-  if (gst_caps_can_intersect (agnosticbin->current_caps, allowed_caps)) {
+
+  queue = kms_agnostic_bin_get_queue_from_pad (srcpad);
+
+  if (queue != NULL && gst_caps_is_any (allowed_caps)) {
+    queue_sink = gst_element_get_static_pad (queue, "sink");
+    if (queue_sink != NULL) {
+      if (gst_pad_is_linked (queue_sink)) {
+        GstPad *peer;
+
+        peer = gst_pad_get_peer (queue_sink);
+        if (peer != NULL) {
+          tee = gst_pad_get_parent_element (peer);
+          g_object_unref (peer);
+        }
+      }
+      g_object_unref (queue_sink);
+    }
+  }
+
+  raw_caps = gst_static_caps_get (&static_raw_caps);
+  if (tee != NULL) {
+    GST_DEBUG ("Allowed caps are any and its already connected");
+  } else if (gst_caps_can_intersect (agnosticbin->current_caps, allowed_caps)) {
     tee = gst_bin_get_by_name (GST_BIN (agnosticbin), INPUT_TEE);
   } else if (gst_caps_can_intersect (raw_caps, allowed_caps)) {
     GST_DEBUG ("Raw caps, looking for a decodebin");
@@ -586,18 +608,17 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   }
   gst_caps_unref (raw_caps);
 
-  queue = kms_agnostic_bin_get_queue_from_pad (srcpad);
-
   if (queue != NULL) {
     if (tee != NULL) {
       kms_agnostic_bin_link_to_tee (tee, queue, "sink");
-
       g_object_unref (tee);
     } else {
       kms_agnostic_bin_unlink_from_tee (queue, "sink");
     }
+
     g_object_unref (queue);
   }
+
   KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
   gst_caps_unref (allowed_caps);
