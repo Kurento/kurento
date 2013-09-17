@@ -692,7 +692,6 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   if (event->type == GST_EVENT_RECONFIGURE) {
     KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
     GstPad *peer;
-    gboolean ret;
 
     KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
     GST_DEBUG ("Reconfiguring %P", pad);
@@ -702,10 +701,9 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
       kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer);
       g_object_unref (peer);
     }
-    ret = gst_pad_event_default (pad, parent, event);
     KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
-    return ret;
+    return TRUE;
   } else {
     return gst_pad_event_default (pad, parent, event);
   }
