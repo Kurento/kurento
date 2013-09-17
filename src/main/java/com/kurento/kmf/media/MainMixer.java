@@ -1,15 +1,12 @@
 package com.kurento.kmf.media;
 
-import com.kurento.kms.api.MediaObjectId;
-import com.kurento.kms.api.MixerType;
+import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
+import com.kurento.kmf.media.objects.MediaMixer;
 
-public class MainMixer extends Mixer {
+@IsMediaElement(type = "MainMixer")
+public class MainMixer extends MediaMixer {
 
-	private static final long serialVersionUID = 1L;
-
-	static final MixerType mixerType = MixerType.MAIN_MIXER;
-
-	MainMixer(MediaObjectId mainMixerId) {
+	MainMixer(MediaMixerRefDTO mainMixerId) {
 		super(mainMixerId);
 	}
 

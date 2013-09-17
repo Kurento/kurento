@@ -1,17 +1,13 @@
 package com.kurento.kmf.media;
 
-/**
- * Used as a callback for some asynchronous actions
- * 
- */
-public interface Continuation<T> {
+public interface Continuation<F> {
 
 	/**
-	 * This method is called when the operation success
+	 * This method is called when the operation succeeds
 	 * 
 	 * @param result
 	 */
-	public void onSuccess(T result);
+	public void onSuccess(F result);
 
 	/**
 	 * This method gets called when the operation fails

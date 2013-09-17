@@ -1,33 +1,13 @@
 package com.kurento.kmf.media;
 
-import java.lang.reflect.Field;
+import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.objects.MediaElement;
 
-import com.kurento.kms.api.FilterType;
-import com.kurento.kms.api.MediaObjectId;
-
+@IsMediaElement(type = "Filter")
 public abstract class Filter extends MediaElement {
 
-	private static final long serialVersionUID = 1L;
-
-	private static final String FILTER_TYPE_FIELD_NAME = "filterType";
-
-	Filter(MediaObjectId filterId) {
+	Filter(MediaElementRefDTO filterId) {
 		super(filterId);
-	}
-
-	static <T extends Filter> FilterType getType(Class<T> type) {
-		try {
-			Field field = type.getDeclaredField(FILTER_TYPE_FIELD_NAME);
-			return (FilterType) field.get(type);
-		} catch (NoSuchFieldException e) {
-			throw new IllegalArgumentException(e);
-		} catch (SecurityException e) {
-			throw new IllegalArgumentException(e);
-		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException(e);
-		} catch (IllegalAccessException e) {
-			throw new IllegalArgumentException(e);
-		}
 	}
 
 }
