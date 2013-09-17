@@ -260,14 +260,27 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
 
   GstPad *sink = gst_element_get_static_pad (element, sink_name);
   GstPad *tee_src = gst_pad_get_peer (sink);
+  gboolean already_linked = FALSE;
 
   if (tee_src != NULL) {
     GstElement *old_tee;
 
     old_tee = gst_pad_get_parent_element (tee_src);
 
-    if (tee != old_tee)
+    if (tee != old_tee) {
       kms_agnostic_bin_unlink_from_tee (element, sink_name);
+    } else {
+      GstCaps *current_caps = gst_pad_get_current_caps (tee_sink);
+
+      if (current_caps != NULL) {
+        GstEvent *event = gst_event_new_caps (current_caps);
+
+        gst_pad_push_event (tee_src, event);
+
+        gst_caps_unref (current_caps);
+      }
+      already_linked = TRUE;
+    }
 
     if (old_tee)
       g_object_unref (old_tee);
@@ -276,6 +289,9 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
   }
 
   g_object_unref (sink);
+
+  if (already_linked)
+    goto end;
 
   GST_OBJECT_FLAG_SET (tee_sink, GST_PAD_FLAG_BLOCKED);
   tee_src = gst_element_get_request_pad (tee, "src_%u");
@@ -296,6 +312,8 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
   }
 
   GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
+
+end:
   g_object_unref (tee_sink);
 }
 
