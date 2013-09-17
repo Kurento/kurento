@@ -83,8 +83,6 @@ kms_agnostic_bin_decodebin_start_stop (KmsAgnosticBin * agnosticbin,
       g_object_get_data (G_OBJECT (decodebin), DECODEBIN_VALVE_DATA);
 
   kms_utils_set_valve_drop (valve, !start);
-
-  // TODO: Unlink fakesink from tee
 }
 
 static gboolean
@@ -179,20 +177,12 @@ kms_agnostic_bin_send_force_key_unit_event (GstPad * pad)
   gst_pad_send_event (pad, force_key_unit_event);
 }
 
-static void
-queue_unlinked (GstPad * pad, GstPad * peer, GstElement * fakesink)
+static GstPadProbeReturn
+drop_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
-  GstElement *queue = gst_pad_get_parent_element (pad);
-  GstBin *parent = GST_BIN (GST_OBJECT_PARENT (queue));
-
-  if (parent != NULL)
-    gst_bin_remove_many (parent, queue, fakesink, NULL);
-
-  gst_element_set_state (queue, GST_STATE_NULL);
-  gst_element_set_state (fakesink, GST_STATE_NULL);
-
-  g_object_unref (queue);
-  g_object_unref (fakesink);
+  // Drop all events:
+  GST_DEBUG ("Info: %d", info->type);
+  return GST_PAD_PROBE_DROP;
 }
 
 static void
@@ -204,52 +194,43 @@ kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 
   g_object_unref (sink);
 
-  if (tee_src != NULL) {
-    tee = gst_pad_get_parent_element (tee_src);
+  if (tee_src == NULL)
+    return;
 
-    if (tee != NULL) {
-      gint n_pads = 0;
-      GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
+  tee = gst_pad_get_parent_element (tee_src);
 
-      GST_OBJECT_FLAG_SET (tee_sink, GST_PAD_FLAG_BLOCKED);
-      GST_OBJECT_FLAG_SET (tee_src, GST_PAD_FLAG_BLOCKED);
+  if (tee != NULL) {
+    gint n_pads = 0;
+    GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
+    gulong probe;
+    GstPad *probe_pad;
 
-      g_object_get (tee, "num-src-pads", &n_pads, NULL);
+    g_object_get (tee, "num-src-pads", &n_pads, NULL);
 
-      gst_element_unlink (tee, element);
-      if (n_pads == 1) {
-        KmsAgnosticBin *agnosticbin =
-            KMS_AGNOSTIC_BIN (GST_OBJECT_PARENT (element));
-        GstElement *queue = gst_element_factory_make ("queue", NULL);
-        GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
-        GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
-
-        g_signal_connect (queue_sink, "unlinked", G_CALLBACK (queue_unlinked),
-            g_object_ref (fakesink));
-        g_object_unref (queue_sink);
-
-        gst_bin_add_many (GST_BIN (agnosticbin), queue, fakesink, NULL);
-        gst_element_sync_state_with_parent (queue);
-        gst_element_sync_state_with_parent (fakesink);
-        gst_element_link (queue, fakesink);
-        gst_element_link_pads (tee, GST_OBJECT_NAME (tee_src), queue, "sink");
-
-        GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
-        GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
-        kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
-      } else {
-        gst_element_release_request_pad (tee, tee_src);
-      }
-
-      GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
-      GST_OBJECT_FLAG_UNSET (tee_sink, GST_PAD_FLAG_BLOCKED);
-
-      g_object_unref (tee_sink);
-      g_object_unref (tee);
+    if (n_pads == 1) {
+      GST_DEBUG ("Adding probe: %P", tee_sink);
+      probe_pad = tee_sink;
+      probe =
+          gst_pad_add_probe (probe_pad, GST_PAD_PROBE_TYPE_ALL_BOTH,
+          drop_probe, NULL, NULL);
+      kms_agnostic_bin_send_start_stop_event (tee_sink, FALSE);
+    } else {
+      probe_pad = tee_src;
+      probe =
+          gst_pad_add_probe (probe_pad, GST_PAD_PROBE_TYPE_ALL_BOTH,
+          drop_probe, NULL, NULL);
     }
 
-    g_object_unref (tee_src);
+    gst_element_unlink (tee, element);
+
+    gst_element_release_request_pad (tee, tee_src);
+    gst_pad_remove_probe (probe_pad, probe);
+
+    g_object_unref (tee_sink);
+    g_object_unref (tee);
   }
+
+  g_object_unref (tee_src);
 }
 
 static void
