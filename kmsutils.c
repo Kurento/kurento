@@ -4,6 +4,11 @@ void
 kms_utils_set_valve_drop (GstElement * valve, gboolean drop)
 {
   GstPad *sink = gst_element_get_static_pad (valve, "sink");
+  gboolean old_drop;
+
+  g_object_get (valve, "drop", &old_drop, NULL);
+  if (drop == old_drop)
+    return;
 
   GST_PAD_STREAM_LOCK (sink);
   g_object_set (valve, "drop", drop, NULL);
