@@ -301,14 +301,18 @@ public class StreamingProxy {
 				}
 				streamingProxyListener.onProxySuccess();
 			} catch (Exception e) {
-				log.error("Exception in streaming proxy", e);
-				streamingProxyListener.onProxyError(e.getMessage());
+				log.error("Code 20019. Exception in streaming proxy", e);
+				streamingProxyListener.onProxyError(e.getMessage(), 20019); // TODO;
+																			// improve
+																			// error
+																			// code
+																			// management
 			} finally {
 				if (tunnelResponseEntity != null) {
 					try {
 						EntityUtils.consume(tunnelResponseEntity);
 					} catch (IOException e) {
-						log.info("Error consuming tunneel response entity", e);
+						log.info("Error consuming tunnel response entity", e);
 					}
 				}
 				if (tunnelRequest != null) {
@@ -322,8 +326,8 @@ public class StreamingProxy {
 		 */
 		@Override
 		public void onExecutionRejected() {
-			streamingProxyListener
-					.onProxyError("Servler overloaded. Try again in a few minutes");
+			streamingProxyListener.onProxyError(
+					"Servler overloaded. Try again in a few minutes", 20011);
 		}
 	}
 }

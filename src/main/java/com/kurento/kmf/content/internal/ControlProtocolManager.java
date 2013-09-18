@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import com.google.gson.Gson;
+import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 
@@ -30,15 +31,9 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
  */
 public class ControlProtocolManager {
 
-	/**
-	 * Logger.
-	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(ControlProtocolManager.class);
 
-	/**
-	 * Buffer.
-	 */
 	private static final int BUFF = 4096;
 
 	/**
@@ -50,9 +45,6 @@ public class ControlProtocolManager {
 	private static final String UTF32BE = "UTF-32BE";
 	private static final String UTF32LE = "UTF-32LE";
 
-	/**
-	 * Gson (Google JSON API) instance.
-	 */
 	private Gson gson;
 
 	/**
@@ -68,11 +60,8 @@ public class ControlProtocolManager {
 	 * @param asyncCtx
 	 *            Asynchronous context
 	 * @return Received JSON encapsulated as a Java class
-	 * @throws IOException
-	 *             Exception while parsing JSON to Java
 	 */
-	public JsonRpcRequest receiveJsonRequest(AsyncContext asyncCtx)
-			throws IOException {
+	public JsonRpcRequest receiveJsonRequest(AsyncContext asyncCtx) {
 		HttpServletRequest request = (HttpServletRequest) asyncCtx.getRequest();
 
 		// Received character encoding should be UTF-8. In order to check this,
@@ -81,30 +70,127 @@ public class ControlProtocolManager {
 		// (using a ByteArrayOutputStream) to be used on detectJsonEncoding and
 		// then for reading the JSON message
 
-		InputStream inputStream = request.getInputStream();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		byte[] buffer = new byte[BUFF];
-		int len;
-		while ((len = inputStream.read(buffer)) > -1) {
-			baos.write(buffer, 0, len);
+		try {
+			InputStream inputStream = request.getInputStream();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[BUFF];
+			int len;
+			while ((len = inputStream.read(buffer)) > -1) {
+				baos.write(buffer, 0, len);
+			}
+			baos.flush();
+
+			String encoding = detectJsonEncoding(new ByteArrayInputStream(
+					baos.toByteArray()));
+			log.debug("Detected JSON encoding: " + encoding);
+			if (encoding == null) {
+				throw new KurentoMediaFrameworkException(
+						"Invalid or unsupported charset encondig in received JSON request",
+						10018);
+			}
+
+			InputStreamReader isr = new InputStreamReader(
+					new ByteArrayInputStream(baos.toByteArray()), encoding);
+
+			JsonRpcRequest jsonRequest = gson.fromJson(isr,
+					JsonRpcRequest.class);
+			Assert.notNull(jsonRequest.getMethod());
+			log.info("Received JsonRpc request ...\n " + jsonRequest.toString());
+			return jsonRequest;
+		} catch (IOException e) {
+			// TODO: trace this exception and double check appropriate JsonRpc
+			// answer is sent
+			throw new KurentoMediaFrameworkException(
+					"IOException reading JsonRPC request. Cause: "
+							+ e.getMessage(), e, 20016);
 		}
-		baos.flush();
+	}
 
-		String encoding = detectJsonEncoding(new ByteArrayInputStream(
-				baos.toByteArray()));
-		log.debug("Detected JSON encoding: " + encoding);
-		if (encoding == null) {
-			throw new IOException(
-					"Invalid charset encondig in received JSON request");
+	/**
+	 * Sender method for JSON throw a request.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON message (as a Java class)
+	 * @throws IOException
+	 *             Exception while parsing operating with asynchronous context
+	 */
+	public void sendJsonAnswer(AsyncContext asyncCtx, JsonRpcResponse message) {
+		internalSendJsonAnswer(asyncCtx, message);
+	}
+
+	/**
+	 * Sender method for error messages in JSON throw a request.
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON error message (as a Java class)
+	 * @throws IOException
+	 *             Exception while parsing operating with asynchronous context
+	 */
+	public void sendJsonError(AsyncContext asyncCtx, JsonRpcResponse message) {
+		try {
+			internalSendJsonAnswer(asyncCtx, message);
+		} catch (Throwable e) {
+			log.info("Cannot send answer message to destination", e);
+		} finally {
+			if (asyncCtx != null) {
+				asyncCtx.complete();
+			}
 		}
+	}
 
-		InputStreamReader isr = new InputStreamReader(new ByteArrayInputStream(
-				baos.toByteArray()), encoding);
+	/**
+	 * Internal implementation for sending JSON (called from sendJsonAnswer and
+	 * sendJsonError methods).
+	 * 
+	 * @param asyncCtx
+	 *            Asynchronous context
+	 * @param message
+	 *            JSON message (as a Java class)
+	 * @throws IOException
+	 *             Exception while parsing operating with asynchronous context
+	 */
+	private void internalSendJsonAnswer(AsyncContext asyncCtx,
+			JsonRpcResponse message) {
+		try {
+			if (asyncCtx == null) {
+				throw new KurentoMediaFrameworkException("Null asyncCtx found",
+						20017);
+			}
 
-		JsonRpcRequest jsonRequest = gson.fromJson(isr, JsonRpcRequest.class);
-		Assert.notNull(jsonRequest.getMethod());
-		log.info("Received JsonRpc request ...\n " + jsonRequest.toString());
-		return jsonRequest;
+			if (!asyncCtx.getRequest().isAsyncStarted()) {
+				return;
+			}
+
+			synchronized (asyncCtx) {
+				HttpServletResponse response = (HttpServletResponse) asyncCtx
+						.getResponse();
+				response.setContentType("application/json");
+				OutputStreamWriter osw = new OutputStreamWriter(
+						response.getOutputStream(), UTF8);
+				osw.write(gson.toJson(message));
+				osw.flush();
+				log.info("Sent JsonRpc answer ...\n" + message);
+				asyncCtx.complete();
+			}
+		} catch (IOException ioe) {
+			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
+					20018);
+		}
+	}
+
+	/**
+	 * Parses Java class to JSON.
+	 * 
+	 * @param object
+	 *            Generic objetc to be parsed
+	 * @return JSON serialization
+	 */
+	public String toString(Object object) {
+		return gson.toJson(object);
 	}
 
 	/**
@@ -154,88 +240,5 @@ public class ControlProtocolManager {
 		default:
 			return null;
 		}
-	}
-
-	/**
-	 * Sender method for JSON throw a request.
-	 * 
-	 * @param asyncCtx
-	 *            Asynchronous context
-	 * @param message
-	 *            JSON message (as a Java class)
-	 * @throws IOException
-	 *             Exception while parsing operating with asynchronous context
-	 */
-	public void sendJsonAnswer(AsyncContext asyncCtx, JsonRpcResponse message)
-			throws IOException {
-		internalSendJsonAnswer(asyncCtx, message);
-	}
-
-	/**
-	 * Sender method for error messages in JSON throw a request.
-	 * 
-	 * @param asyncCtx
-	 *            Asynchronous context
-	 * @param message
-	 *            JSON error message (as a Java class)
-	 * @throws IOException
-	 *             Exception while parsing operating with asynchronous context
-	 */
-	public void sendJsonError(AsyncContext asyncCtx, JsonRpcResponse message) {
-		try {
-			internalSendJsonAnswer(asyncCtx, message);
-		} catch (Throwable e) {
-			// TODO: perhaps debug
-			log.info("Cannot send answer message to destination", e);
-		} finally {
-			if (asyncCtx != null) {
-				asyncCtx.complete();
-			}
-		}
-	}
-
-	/**
-	 * Internal implementation for sending JSON (called from sendJsonAnswer and
-	 * sendJsonError methods).
-	 * 
-	 * @param asyncCtx
-	 *            Asynchronous context
-	 * @param message
-	 *            JSON message (as a Java class)
-	 * @throws IOException
-	 *             Exception while parsing operating with asynchronous context
-	 */
-	private void internalSendJsonAnswer(AsyncContext asyncCtx,
-			JsonRpcResponse message) throws IOException {
-		if (asyncCtx == null) {
-			throw new IOException("Cannot recover thread local AsyncContext");
-		}
-
-		if (!asyncCtx.getRequest().isAsyncStarted()) {
-			return;
-		}
-
-		synchronized (asyncCtx) {
-			HttpServletResponse response = (HttpServletResponse) asyncCtx
-					.getResponse();
-			response.setContentType("application/json");
-			OutputStreamWriter osw = new OutputStreamWriter(
-					response.getOutputStream(), UTF8);
-			osw.write(gson.toJson(message));
-			osw.flush();
-			log.info("Sent JsonRpc answer ...\n" + message);
-			asyncCtx.complete();
-		}
-	}
-
-	/**
-	 * Parses Java class to JSON.
-	 * 
-	 * @param object
-	 *            Generic objetc to be parsed
-	 * @return JSON serialization
-	 */
-	public String toString(Object object) {
-		return gson.toJson(object);
 	}
 }

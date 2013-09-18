@@ -7,11 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.content.WebRtcMediaHandler;
-import com.kurento.kmf.content.internal.RejectableRunnable;
+import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.internal.base.AbstractContentHandlerServlet;
-import com.kurento.kmf.content.internal.base.AbstractContentRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.internal.base.AbstractContentSession;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 /**
@@ -38,7 +36,7 @@ public class WebRtcMediaHandlerServlet extends AbstractContentHandlerServlet {
 	 * Autowired WebRTC Handler.
 	 */
 	@Autowired
-	private WebRtcMediaHandler webRtcMediaHandler;
+	private WebRtcContentHandler webRtcMediaHandler;
 
 	/**
 	 * Always return false since WebRTC handler does not support redirect
@@ -65,26 +63,6 @@ public class WebRtcMediaHandlerServlet extends AbstractContentHandlerServlet {
 	}
 
 	/**
-	 * Check whether or not WebRTC Handler is null.
-	 * 
-	 * @return Boolean value for whether or not WebRTC hander is null
-	 */
-	@Override
-	protected boolean isHandlerNull() {
-		return webRtcMediaHandler == null;
-	}
-
-	/**
-	 * Handler class name accessor (getter).
-	 * 
-	 * @return Handler simple name
-	 */
-	@Override
-	protected String getHandlerSimpleClassName() {
-		return webRtcMediaHandler.getClass().getSimpleName();
-	}
-
-	/**
 	 * Create a content Request instance (as a Spring Bean).
 	 * 
 	 * @param asyncCtx
@@ -94,31 +72,11 @@ public class WebRtcMediaHandlerServlet extends AbstractContentHandlerServlet {
 	 * @return Content Request
 	 */
 	@Override
-	protected AbstractContentRequest createContentRequest(
+	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
-		return (WebRtcMediaRequestImpl) KurentoApplicationContextUtils.getBean(
-				"webRtcMediaRequestImpl", webRtcMediaHandler,
-				contentRequestManager, asyncCtx, contentId);
-	}
-
-	/**
-	 * Create asynchronous processor instance (thread).
-	 * 
-	 * @param contentRequest
-	 *            Content Request
-	 * @param message
-	 *            JSON RPC message
-	 * @param asyncCtx
-	 *            Asynchronous context
-	 * @return Asynchronous processor instance (thread)
-	 */
-	@Override
-	protected RejectableRunnable createAsyncRequestProcessor(
-			AbstractContentRequest contentRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return (AsyncWebRtcMediaRequestProcessor) KurentoApplicationContextUtils
-				.getBean("asyncWebRtcMediaRequestProcessor", contentRequest,
-						message, asyncCtx);
+		return (WebRtcContentSessionImpl) KurentoApplicationContextUtils
+				.getBean("webRtcMediaRequestImpl", webRtcMediaHandler,
+						contentSessionManager, asyncCtx, contentId);
 	}
 
 	/**

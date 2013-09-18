@@ -15,14 +15,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.WebApplicationInitializer;
 
-import com.kurento.kmf.content.PlayerHandler;
-import com.kurento.kmf.content.PlayerService;
-import com.kurento.kmf.content.RecorderHandler;
-import com.kurento.kmf.content.RecorderService;
-import com.kurento.kmf.content.RtpMediaHandler;
-import com.kurento.kmf.content.RtpMediaService;
-import com.kurento.kmf.content.WebRtcMediaHandler;
-import com.kurento.kmf.content.WebRtcMediaService;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpRecorderHandler;
+import com.kurento.kmf.content.HttpRecorderService;
+import com.kurento.kmf.content.RtpContentHandler;
+import com.kurento.kmf.content.RtpContentService;
+import com.kurento.kmf.content.WebRtcContentHandler;
+import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.internal.player.PlayerHandlerServlet;
 import com.kurento.kmf.content.internal.recorder.RecorderHandlerServlet;
 import com.kurento.kmf.content.internal.rtp.RtpMediaHandlerServlet;
@@ -30,16 +30,18 @@ import com.kurento.kmf.content.internal.webrtc.WebRtcMediaHandlerServlet;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 /**
+ * TODO: review & improve javadoc
  * 
  * This class performs the initialization of the implemented web applications,
  * searching the declared handlers with corresponding annotations (
- * {@link PlayerService}, {@link RecorderService}, {@link RtpMediaService},
- * {@link RtpMediaService}).
+ * {@link HttpPlayerService}, {@link HttpRecorderService},
+ * {@link RtpContentService}, {@link RtpContentService}).
  * 
- * @see PlayerService
- * @see RecorderService
- * @see RtpMediaService
- * @see WebRtcMediaService
+ * @see HttpPlayerService
+ * @see HttpRecorderService
+ * @see RtpContentService
+ * @see WebRtcContentService
+ * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
@@ -93,8 +95,8 @@ public class ContentApiWebApplicationInitializer implements
 
 	/**
 	 * Player initializator: this method search classes in the classpath using
-	 * the annotation {@link PlayerService}, and it register a servlet for each
-	 * handler found.
+	 * the annotation {@link HttpPlayerService}, and it register a servlet for
+	 * each handler found.
 	 * 
 	 * @param sc
 	 *            Servlet Context in which register servlets for each handler
@@ -103,14 +105,16 @@ public class ContentApiWebApplicationInitializer implements
 	 *             when a class has not been found in the classpath
 	 */
 	private void initializePlayers(ServletContext sc) throws ServletException {
-		for (String ph : findServices(PlayerHandler.class, PlayerService.class)) {
+		for (String ph : findServices(HttpPlayerHandler.class,
+				HttpPlayerService.class)) {
 			try {
-				PlayerService playerService = Class.forName(ph).getAnnotation(
-						PlayerService.class);
+				HttpPlayerService playerService = Class.forName(ph)
+						.getAnnotation(HttpPlayerService.class);
 				if (playerService != null) {
 					String name = playerService.name();
 					String path = playerService.path();
-
+					log.debug("Registering HttpPlayerHandler with name " + name
+							+ " at path " + path);
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							PlayerHandlerServlet.class);
 					sr.addMapping(path);
@@ -118,7 +122,9 @@ public class ContentApiWebApplicationInitializer implements
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
-				log.error("Error: could not find player class in classpath", e);
+				log.error(
+						"Error: could not find class " + ph + " in classpath",
+						e);
 				throw new ServletException(e);
 			}
 		}
@@ -126,7 +132,7 @@ public class ContentApiWebApplicationInitializer implements
 
 	/**
 	 * Recorder initializator: this method search classes in the classpath using
-	 * the annotation {@link RecorderService}, and it register a servlet for
+	 * the annotation {@link HttpRecorderService}, and it register a servlet for
 	 * each handler found.
 	 * 
 	 * @param sc
@@ -136,14 +142,16 @@ public class ContentApiWebApplicationInitializer implements
 	 *             when a class has not been found in the classpath
 	 */
 	private void initializeRecorders(ServletContext sc) throws ServletException {
-		for (String rh : findServices(RecorderHandler.class,
-				RecorderService.class)) {
+		for (String rh : findServices(HttpRecorderHandler.class,
+				HttpRecorderService.class)) {
 			try {
-				RecorderService recorderService = Class.forName(rh)
-						.getAnnotation(RecorderService.class);
+				HttpRecorderService recorderService = Class.forName(rh)
+						.getAnnotation(HttpRecorderService.class);
 				if (recorderService != null) {
 					String name = recorderService.name();
 					String path = recorderService.path();
+					log.debug("Registering HttpRecorderHandler with name "
+							+ name + " at path " + path);
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							RecorderHandlerServlet.class);
 					sr.addMapping(path);
@@ -151,7 +159,8 @@ public class ContentApiWebApplicationInitializer implements
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
-				log.error("Error: could not find recorder class in classpath",
+				log.error(
+						"Error: could not find class " + rh + " in classpath",
 						e);
 				throw new ServletException(e);
 			}
@@ -160,8 +169,8 @@ public class ContentApiWebApplicationInitializer implements
 
 	/**
 	 * WebRtc initializator: this method search classes in the classpath using
-	 * the annotation {@link WebRtcMediaService}, and it register a servlet for
-	 * each handler found.
+	 * the annotation {@link WebRtcContentService}, and it register a servlet
+	 * for each handler found.
 	 * 
 	 * @param sc
 	 *            Servlet Context in which register servlets for each handler
@@ -171,14 +180,16 @@ public class ContentApiWebApplicationInitializer implements
 	 */
 	private void initializeWebRtcMediaServices(ServletContext sc)
 			throws ServletException {
-		for (String wh : findServices(WebRtcMediaHandler.class,
-				WebRtcMediaService.class)) {
+		for (String wh : findServices(WebRtcContentHandler.class,
+				WebRtcContentService.class)) {
 			try {
-				WebRtcMediaService mediaService = Class.forName(wh)
-						.getAnnotation(WebRtcMediaService.class);
+				WebRtcContentService mediaService = Class.forName(wh)
+						.getAnnotation(WebRtcContentService.class);
 				if (mediaService != null) {
 					String name = mediaService.name();
 					String path = mediaService.path();
+					log.debug("Registering WebRtcContentHandler with name "
+							+ name + " at path " + path);
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							WebRtcMediaHandlerServlet.class);
 					sr.addMapping(path);
@@ -186,7 +197,9 @@ public class ContentApiWebApplicationInitializer implements
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
-				log.error("Error: could not find WebRTC class in classpath", e);
+				log.error(
+						"Error: could not find class " + wh + " in classpath",
+						e);
 				throw new ServletException(e);
 			}
 		}
@@ -194,7 +207,7 @@ public class ContentApiWebApplicationInitializer implements
 
 	/**
 	 * RtpMedia initializator: this method search classes in the classpath using
-	 * the annotation {@link RtpMediaService}, and it register a servlet for
+	 * the annotation {@link RtpContentService}, and it register a servlet for
 	 * each handler found.
 	 * 
 	 * @param sc
@@ -205,22 +218,26 @@ public class ContentApiWebApplicationInitializer implements
 	 */
 	private void initializeRtpMediaServices(ServletContext sc)
 			throws ServletException {
-		for (String wh : findServices(RtpMediaHandler.class,
-				RtpMediaService.class)) {
+		for (String rh : findServices(RtpContentHandler.class,
+				RtpContentService.class)) {
 			try {
-				RtpMediaService mediaService = Class.forName(wh).getAnnotation(
-						RtpMediaService.class);
+				RtpContentService mediaService = Class.forName(rh)
+						.getAnnotation(RtpContentService.class);
 				if (mediaService != null) {
 					String name = mediaService.name();
 					String path = mediaService.path();
+					log.debug("Registering RtpContentHandler with name " + name
+							+ " at path " + path);
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							RtpMediaHandlerServlet.class);
 					sr.addMapping(path);
-					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, wh);
+					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, rh);
 					sr.setAsyncSupported(true);
 				}
 			} catch (ClassNotFoundException e) {
-				log.error("Error: could not find RTP class in classpath", e);
+				log.error(
+						"Error: could not find class " + rh + " in classpath",
+						e);
 				throw new ServletException(e);
 			}
 		}
@@ -231,12 +248,13 @@ public class ContentApiWebApplicationInitializer implements
 	 * It seeks declared handlers in the classpath by using reflections.
 	 * 
 	 * @param handlerClass
-	 *            Handler class ({@link PlayerHandler}, {@link RecorderHandler},
-	 *            {@link WebRtcMediaHandler}, {@link RtpMediaHandler})
+	 *            Handler class ({@link HttpPlayerHandler},
+	 *            {@link HttpRecorderHandler}, {@link WebRtcContentHandler},
+	 *            {@link RtpContentHandler})
 	 * @param serviceAnnotation
-	 *            Servide annotation ({@link PlayerService},
-	 *            {@link RecorderService}, {@link WebRtcMediaService},
-	 *            {@link RtpMediaService})
+	 *            Servide annotation ({@link HttpPlayerService},
+	 *            {@link HttpRecorderService}, {@link WebRtcContentService},
+	 *            {@link RtpContentService})
 	 * @return List of services
 	 * @throws ServletException
 	 *             Exception raised when an incorrect implementation of handler

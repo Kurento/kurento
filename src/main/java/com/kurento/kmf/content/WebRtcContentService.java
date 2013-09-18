@@ -6,11 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
- * Annotation for the implementation of a RtpMediaHandler; it should be used in
- * conjunction within the implementation of the {@link RtpMediaHandler}
- * interface. The following snippet shows an skeleton with the implementation of
- * a RTP Handler:
+ * TODO: review & improve javadoc Annotation for the implementation of a
+ * RtpMediaHandler; it should be used in conjunction within the implementation
+ * of the {@link RtpContentHandler} interface. The following snippet shows an
+ * skeleton with the implementation of a RTP Handler:
  * 
  * <pre>
  * &#064;RtpMediaService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
@@ -34,13 +33,13 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * @see RtpMediaHandler
+ * @see RtpContentHandler
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface WebRtcMediaService {
+public @interface WebRtcContentService {
 	/**
 	 * Name of the WebRTC Handler; this name MUST be unique; in other words, in
 	 * several handlers exists within the same application, each of them must

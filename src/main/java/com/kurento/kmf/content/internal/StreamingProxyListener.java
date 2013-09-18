@@ -18,5 +18,5 @@ public interface StreamingProxyListener {
 	/**
 	 * Proxy error event declaration.
 	 */
-	public void onProxyError(String message);
+	public void onProxyError(String message, int errorCode);
 }

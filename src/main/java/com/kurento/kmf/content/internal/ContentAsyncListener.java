@@ -1,7 +1,5 @@
 package com.kurento.kmf.content.internal;
 
-import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.ERROR_SERVER_ERROR;
-
 import java.io.IOException;
 import java.util.concurrent.Future;
 
@@ -9,12 +7,11 @@ import javax.servlet.AsyncContext;
 import javax.servlet.AsyncEvent;
 import javax.servlet.AsyncListener;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.content.internal.base.AbstractContentRequest;
+import com.kurento.kmf.content.internal.base.AbstractContentSession;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 
 /**
@@ -77,12 +74,12 @@ public class ContentAsyncListener implements AsyncListener {
 		HttpServletRequest request = (HttpServletRequest) ae.getAsyncContext()
 				.getRequest();
 
-		log.debug("AsyncListener: onTimeout on request to: "
+		log.warn("Code 20011. AsyncListener: onTimeout on request to: "
 				+ request.getRequestURI());
 
 		internalCompleteAsyncContext(
 				ae,
-				HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+				20011,
 				"Request processing timeout. You may tray to re-send your request later. Persistence of this error may be "
 						+ "a symptom of a bug on application logic.");
 	}
@@ -94,12 +91,9 @@ public class ContentAsyncListener implements AsyncListener {
 	public void onError(AsyncEvent ae) throws IOException {
 		HttpServletRequest request = (HttpServletRequest) ae.getAsyncContext()
 				.getRequest();
-		log.error(
-				"AsyncListener: onError on request to: "
-						+ request.getRequestURI(), ae.getThrowable());
-		internalCompleteAsyncContext(ae,
-				HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-				"Error processing request");
+		log.error("Code 20015. AsyncListener: onError on request to: "
+				+ request.getRequestURI(), ae.getThrowable());
+		internalCompleteAsyncContext(ae, 20015, "Error processing request");
 	}
 
 	/**
@@ -107,14 +101,14 @@ public class ContentAsyncListener implements AsyncListener {
 	 * 
 	 * @param ae
 	 *            Event
-	 * @param status
+	 * @param errorCode
 	 *            Status code
 	 * @param msg
 	 *            Message for the completion
 	 * @throws IOException
 	 *             Error during completion
 	 */
-	private void internalCompleteAsyncContext(AsyncEvent ae, int status,
+	private void internalCompleteAsyncContext(AsyncEvent ae, int errorCode,
 			String msg) throws IOException {
 		AsyncContext asyncContext = ae.getAsyncContext();
 
@@ -125,13 +119,13 @@ public class ContentAsyncListener implements AsyncListener {
 			future.cancel(true);
 		}
 
-		AbstractContentRequest contentRequest = (AbstractContentRequest) asyncContext
+		AbstractContentSession contentRequest = (AbstractContentSession) asyncContext
 				.getRequest().getAttribute(CONTENT_REQUEST_ATT_NAME);
 		JsonRpcRequest jsonRequest = (JsonRpcRequest) asyncContext.getRequest()
 				.getAttribute(CONTROL_PROTOCOL_REQUEST_MESSAGE_ATT_NAME);
 		if (contentRequest != null) {
-			contentRequest.terminate(true, asyncContext, ERROR_SERVER_ERROR,
-					msg, jsonRequest != null ? jsonRequest.getId() : 0);
+			contentRequest.terminate(true, asyncContext, errorCode, msg,
+					jsonRequest != null ? jsonRequest.getId() : 0);
 		}
 	}
 

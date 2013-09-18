@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * 
  * Annotation for the implementation of a RtpMediaHandler; it should be used in
- * conjunction within the implementation of the {@link RtpMediaHandler}
+ * conjunction within the implementation of the {@link RtpContentHandler}
  * interface. The following snippet shows an skeleton with the implementation of
  * a RTP Handler:
  * 
@@ -34,13 +34,13 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * @see RtpMediaHandler
+ * @see RtpContentHandler
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RtpMediaService {
+public @interface RtpContentService {
 
 	/**
 	 * Name of the RTP Handler; this name MUST be unique; in other words, in

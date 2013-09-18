@@ -7,12 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.content.RecorderHandler;
-import com.kurento.kmf.content.RecorderService;
-import com.kurento.kmf.content.internal.RejectableRunnable;
+import com.kurento.kmf.content.HttpRecorderHandler;
+import com.kurento.kmf.content.HttpRecorderService;
 import com.kurento.kmf.content.internal.base.AbstractContentHandlerServlet;
-import com.kurento.kmf.content.internal.base.AbstractContentRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.internal.base.AbstractContentSession;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 /**
@@ -39,10 +37,10 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	 * Autowired Recorder Handler.
 	 */
 	@Autowired
-	private RecorderHandler recorderHandler;
+	private HttpRecorderHandler recorderHandler;
 
 	/**
-	 * Look for {@link RecorderService} annotation in the handler class and
+	 * Look for {@link HttpRecorderService} annotation in the handler class and
 	 * check whether or not it is using redirect strategy.
 	 * 
 	 * @return Redirect strategy (true|false)
@@ -51,8 +49,8 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	protected boolean getUseRedirectStrategy(String handlerClass)
 			throws ServletException {
 		try {
-			RecorderService recorderService = Class.forName(handlerClass)
-					.getAnnotation(RecorderService.class);
+			HttpRecorderService recorderService = Class.forName(handlerClass)
+					.getAnnotation(HttpRecorderService.class);
 			return recorderService.redirect();
 		} catch (ClassNotFoundException e) {
 			String message = "Cannot recover class " + handlerClass
@@ -63,7 +61,7 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	}
 
 	/**
-	 * Look for {@link RecorderService} annotation in the handler class and
+	 * Look for {@link HttpRecorderService} annotation in the handler class and
 	 * check whether or not it is using JSON control protocol.
 	 * 
 	 * @return JSON Control Protocol strategy (true|false)
@@ -72,8 +70,8 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	protected boolean getUseJsonControlProtocol(String handlerClass)
 			throws ServletException {
 		try {
-			RecorderService recorderService = Class.forName(handlerClass)
-					.getAnnotation(RecorderService.class);
+			HttpRecorderService recorderService = Class.forName(handlerClass)
+					.getAnnotation(HttpRecorderService.class);
 			return recorderService.useControlProtocol();
 		} catch (ClassNotFoundException e) {
 			String message = "Cannot recover class " + handlerClass
@@ -81,26 +79,6 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 			log.error(message);
 			throw new ServletException(message);
 		}
-	}
-
-	/**
-	 * Check whether or not Recorder Handler is null.
-	 * 
-	 * @return Boolean value for whether or not recorder hander is null
-	 */
-	@Override
-	protected boolean isHandlerNull() {
-		return recorderHandler == null;
-	}
-
-	/**
-	 * Handler class name accessor (getter).
-	 * 
-	 * @return Handler simple name
-	 */
-	@Override
-	protected String getHandlerSimpleClassName() {
-		return recorderHandler.getClass().getSimpleName();
 	}
 
 	/**
@@ -113,31 +91,11 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	 * @return Content Request
 	 */
 	@Override
-	protected AbstractContentRequest createContentRequest(
+	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
-		return (RecordRequestImpl) KurentoApplicationContextUtils.getBean(
-				"recordRequestImpl", recorderHandler, contentRequestManager,
+		return (HttpRecorderSessionImpl) KurentoApplicationContextUtils.getBean(
+				"recordRequestImpl", recorderHandler, contentSessionManager,
 				asyncCtx, contentId, useRedirectStrategy, useControlProtocol);
-	}
-
-	/**
-	 * Create asynchronous processor instance (thread).
-	 * 
-	 * @param contentRequest
-	 *            Content Request
-	 * @param message
-	 *            JSON RPC message
-	 * @param asyncCtx
-	 *            Asynchronous context
-	 * @return Asynchronous processor instance (thread)
-	 */
-	@Override
-	protected RejectableRunnable createAsyncRequestProcessor(
-			AbstractContentRequest contentRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return (AsyncRecorderRequestProcessor) KurentoApplicationContextUtils
-				.getBean("asyncRecorderRequestProcessor", contentRequest,
-						message, asyncCtx);
 	}
 
 	/**

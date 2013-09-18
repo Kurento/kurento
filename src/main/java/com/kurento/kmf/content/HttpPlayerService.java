@@ -7,8 +7,9 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for the implementation of a Player; it should be used in
- * conjunction within the implementation of the {@link PlayerHandler} interface.
- * The following snippet shows an skeleton with the implementation of a Player:
+ * conjunction within the implementation of the {@link HttpPlayerHandler}
+ * interface. The following snippet shows an skeleton with the implementation of
+ * a Player:
  * 
  * <pre>
  * &#064;PlayerService(name = &quot;MyPlayerHandlerName&quot;, path = &quot;/my-player&quot;, redirect = &quot;true&quot;, useControlProtocol = &quot;false&quot;)
@@ -33,14 +34,14 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * @see PlayerHandler
+ * @see HttpPlayerHandler
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PlayerService {
+public @interface HttpPlayerService {
 
 	/**
 	 * Name of the PlayerHandler; this name MUST be unique, in other words, in
@@ -62,12 +63,12 @@ public @interface PlayerService {
 	 * Activates a JSON signaling protocol; this protocol is used for media
 	 * negotiation.
 	 */
-	boolean useControlProtocol() default false;
+	boolean useControlProtocol() default true;
 
 	/**
 	 * If true, this parameters instructs that content must be served from the
 	 * Media Server straight to the client, but it could also be proxied through
 	 * the Application Server by setting this parameter to false.
 	 */
-	boolean redirect() default true;
+	boolean redirect() default false;
 }

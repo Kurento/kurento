@@ -1,13 +1,13 @@
 package com.kurento.kmf.content.internal.base;
 
-import java.io.IOException;
-
 import javax.servlet.AsyncContext;
 
-import org.springframework.util.Assert;
-
-import com.kurento.kmf.content.ContentException;
-import com.kurento.kmf.content.internal.ContentRequestManager;
+import com.kurento.kmf.common.exception.Assert;
+import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.content.ContentHandler;
+import com.kurento.kmf.content.ContentSession;
+import com.kurento.kmf.content.SdpContentSession;
+import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 
@@ -19,7 +19,7 @@ import com.kurento.kmf.media.MediaElement;
  * @version 1.0.0
  */
 public abstract class AbstractSdpBasedMediaRequest extends
-		AbstractContentRequest {
+		AbstractContentSession implements SdpContentSession {
 
 	/**
 	 * Parameterized constructor; initial state here is HANDLING.
@@ -31,9 +31,11 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	 * @param contentId
 	 *            Content identifier
 	 */
-	public AbstractSdpBasedMediaRequest(ContentRequestManager manager,
-			AsyncContext asyncContext, String contentId) {
-		super(manager, asyncContext, contentId);
+	public AbstractSdpBasedMediaRequest(
+			ContentHandler<? extends ContentSession> handler,
+			ContentSessionManager manager, AsyncContext asyncContext,
+			String contentId) {
+		super(handler, manager, asyncContext, contentId);
 	}
 
 	/**
@@ -48,8 +50,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	 *             Error/Exception
 	 */
 	protected abstract String buildMediaEndPointAndReturnSdp(
-			MediaElement sinkElement, MediaElement sourceElement)
-			throws Throwable;
+			MediaElement sourceElement, MediaElement... sinkElements);
 
 	/**
 	 * Star media element implementation.
@@ -61,13 +62,37 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	 * @throws ContentException
 	 *             Exception while sending SDP as answer to client
 	 */
-	public void startMedia(MediaElement sinkElement, MediaElement sourceElement)
-			throws ContentException {
+	@Override
+	public void start(MediaElement sourceElement, MediaElement... sinkElements) {
+		try {
+			internalStart(sourceElement, sinkElements);
+		} catch (KurentoMediaFrameworkException ke) {
+			terminate(ke.getCode(), ke.getMessage());
+			throw ke;
+		} catch (Throwable t) {
+			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
+					t.getMessage(), t, 1);// TODO: code
+			terminate(kmfe.getCode(), kmfe.getMessage());
+			throw kmfe;
+		}
+	}
+
+	@Override
+	public void start(MediaElement sourceElement, MediaElement sinkElement) {
+		if (sinkElement == null) {
+			start(sourceElement, (MediaElement[]) null);
+		} else {
+			start(sourceElement, new MediaElement[] { sinkElement });
+		}
+	}
+
+	private void internalStart(MediaElement sourceElement,
+			MediaElement... sinkElements) {
 		synchronized (this) {
 			Assert.isTrue(state == STATE.HANDLING,
 					"Cannot start media exchange in state " + state
-							+ ". This error means ..."); // TODO further
-															// explanation
+							+ ". This error means ...", 10004); // TODO further
+			// explanation
 			state = STATE.STARTING;
 		}
 
@@ -75,14 +100,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 
 		String answer = null;
 
-		try {
-			answer = buildMediaEndPointAndReturnSdp(sinkElement, sourceElement);
-		} catch (Throwable t) {
-			// TODO when final KMS version is ready, perhaps it will be
-			// necessary to release httpEndPoint and playerEndPoint resources.
-			getLogger().error(t.getMessage(), t);
-			throw new ContentException(t);
-		}
+		answer = buildMediaEndPointAndReturnSdp(sourceElement, sinkElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -97,29 +115,26 @@ public abstract class AbstractSdpBasedMediaRequest extends
 
 		// If session was rejected, just terminate
 		if (terminate) {
-			// TODO
-			// clean up
-			// return
+			getLogger()
+					.info("Exiting due to terminate ... this should only happen on client's explicit termination");
+			return;
 		}
+
 		// If session was not rejected (state=ACTIVE) we send an answer and
 		// the initialAsyncCtx becomes useless
-		try {
-			// Send SDP as answer to client
-			getLogger().info("Answer SDP: " + answer);
-			Assert.notNull(answer,
-					"Received invalid null SDP from media server ... aborting");
-			Assert.isTrue(answer.length() > 0,
-					"Received invalid empty SDP from media server ... aborting");
-			protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
-					.newStartSdpResponse(answer, sessionId,
-							initialJsonRequest.getId()));
-			initialAsyncCtx = null;
-			initialJsonRequest = null;
-		} catch (IOException e) {
-			// TODO when final KMS version is ready, perhaps it will be
-			// necessary to release httpEndPoint and playerEndPoint
-			// resources.
-			throw new ContentException(e);
-		}
+		// Send SDP as answer to client
+		getLogger().info("Answer SDP: " + answer);
+		Assert.notNull(answer,
+				"Received invalid null SDP from media server ... aborting", 1);// TODO:
+																				// code
+		Assert.isTrue(answer.length() > 0,
+				"Received invalid empty SDP from media server ... aborting", 1);// TODO:
+																				// code
+		protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
+				.newStartSdpResponse(answer, sessionId,
+						initialJsonRequest.getId()));
+		initialAsyncCtx = null;
+		initialJsonRequest = null;
 	}
+
 }

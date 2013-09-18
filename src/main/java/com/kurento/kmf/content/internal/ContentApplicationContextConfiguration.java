@@ -11,19 +11,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Scope;
 
+import com.kurento.kmf.common.SecretGenerator;
 import com.kurento.kmf.content.ContentApiConfiguration;
-import com.kurento.kmf.content.PlayerHandler;
-import com.kurento.kmf.content.RecorderHandler;
-import com.kurento.kmf.content.RtpMediaHandler;
-import com.kurento.kmf.content.WebRtcMediaHandler;
-import com.kurento.kmf.content.internal.player.AsyncPlayerRequestProcessor;
-import com.kurento.kmf.content.internal.player.PlayRequestImpl;
-import com.kurento.kmf.content.internal.recorder.AsyncRecorderRequestProcessor;
-import com.kurento.kmf.content.internal.recorder.RecordRequestImpl;
-import com.kurento.kmf.content.internal.rtp.AsyncRtpMediaRequestProcessor;
-import com.kurento.kmf.content.internal.rtp.RtpMediaRequestImpl;
-import com.kurento.kmf.content.internal.webrtc.AsyncWebRtcMediaRequestProcessor;
-import com.kurento.kmf.content.internal.webrtc.WebRtcMediaRequestImpl;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpRecorderHandler;
+import com.kurento.kmf.content.RtpContentHandler;
+import com.kurento.kmf.content.WebRtcContentHandler;
+import com.kurento.kmf.content.internal.base.AbstractContentSession;
+import com.kurento.kmf.content.internal.base.AsyncContentRequestProcessor;
+import com.kurento.kmf.content.internal.player.HttpPlayerSessionImpl;
+import com.kurento.kmf.content.internal.recorder.HttpRecorderSessionImpl;
+import com.kurento.kmf.content.internal.rtp.RtpContentSessionImpl;
+import com.kurento.kmf.content.internal.webrtc.WebRtcContentSessionImpl;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
@@ -40,33 +39,17 @@ import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
 @Configuration
 public class ContentApplicationContextConfiguration {
 
-	/**
-	 * Logger.
-	 */
 	private static final Logger log = LoggerFactory
 			.getLogger(ContentApplicationContextConfiguration.class);
 
-	/**
-	 * Autowired bean: parent context.
-	 */
 	@Autowired
 	private RootWebApplicationContextParentRecoverer parentRecoverer;
 
-	/**
-	 * Streaming proxy bean.
-	 * 
-	 * @return Streaming proxy bean bean
-	 */
 	@Bean
 	StreamingProxy streamingProxy() {
 		return new StreamingProxy();
 	}
 
-	/**
-	 * Thread pool.
-	 * 
-	 * @return Thread pool bean
-	 */
 	@Bean
 	ContentApiExecutorService contentApiExecutorService() {
 		return new ContentApiExecutorService();
@@ -92,85 +75,61 @@ public class ContentApplicationContextConfiguration {
 		return new ControlProtocolManager();
 	}
 
+	@Bean
+	@Scope("prototype")
+	AsyncContentRequestProcessor asyncContentRequestProcessor(
+			AbstractContentSession contentSession, JsonRpcRequest message,
+			AsyncContext asyncCtx) {
+		return new AsyncContentRequestProcessor(contentSession, message,
+				asyncCtx);
+	}
+
 	// PLAYER STUFF
 	@Bean
 	@Scope("prototype")
-	PlayRequestImpl playRequestImpl(PlayerHandler playerHander,
-			ContentRequestManager manager, AsyncContext ctx, String contentId,
+	HttpPlayerSessionImpl httpPlayerSessionImpl(HttpPlayerHandler playerHander,
+			ContentSessionManager manager, AsyncContext ctx, String contentId,
 			boolean redirect, boolean useControlProtocol) {
-		return new PlayRequestImpl(playerHander, manager, ctx, contentId,
+		return new HttpPlayerSessionImpl(playerHander, manager, ctx, contentId,
 				redirect, useControlProtocol);
-	}
-
-	@Bean
-	@Scope("prototype")
-	AsyncPlayerRequestProcessor asyncPlayerRequestProcessor(
-			PlayRequestImpl playRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return new AsyncPlayerRequestProcessor(playRequest, message, asyncCtx);
 	}
 
 	// RECORDER STUFF
 	@Bean
 	@Scope("prototype")
-	RecordRequestImpl recordRequestImpl(RecorderHandler recorderHander,
-			ContentRequestManager manager, AsyncContext ctx, String contentId,
-			boolean redirect, boolean useControlProtocol) {
-		return new RecordRequestImpl(recorderHander, manager, ctx, contentId,
+	HttpRecorderSessionImpl httpRecordSessionImpl(
+			HttpRecorderHandler recorderHander, ContentSessionManager manager,
+			AsyncContext ctx, String contentId, boolean redirect,
+			boolean useControlProtocol) {
+		return new HttpRecorderSessionImpl(recorderHander, manager, ctx, contentId,
 				redirect, useControlProtocol);
-	}
-
-	@Bean
-	@Scope("prototype")
-	AsyncRecorderRequestProcessor asyncRecorderRequestProcessor(
-			PlayRequestImpl playRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return new AsyncRecorderRequestProcessor(playRequest, message, asyncCtx);
 	}
 
 	// WEBRTC MEDIA STUFF
 	@Bean
 	@Scope("prototype")
-	WebRtcMediaRequestImpl webRtcMediaRequestImpl(WebRtcMediaHandler handler,
-			ContentRequestManager manager, AsyncContext asyncContext,
-			String contentId) {
-		return new WebRtcMediaRequestImpl(handler, manager, asyncContext,
+	WebRtcContentSessionImpl webRtcContentSessionImpl(
+			WebRtcContentHandler handler, ContentSessionManager manager,
+			AsyncContext asyncContext, String contentId) {
+		return new WebRtcContentSessionImpl(handler, manager, asyncContext,
 				contentId);
-	}
-
-	@Bean
-	@Scope("prototype")
-	AsyncWebRtcMediaRequestProcessor asyncWebRtcMediaRequestProcessor(
-			WebRtcMediaRequestImpl mediaRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return new AsyncWebRtcMediaRequestProcessor(mediaRequest, message,
-				asyncCtx);
 	}
 
 	// RTP MEDIA STUFF
 	@Bean
 	@Scope("prototype")
-	RtpMediaRequestImpl rtpMediaRequestImpl(RtpMediaHandler handler,
-			ContentRequestManager manager, AsyncContext asyncContext,
+	RtpContentSessionImpl rtpContentSessionImpl(RtpContentHandler handler,
+			ContentSessionManager manager, AsyncContext asyncContext,
 			String contentId) {
-		return new RtpMediaRequestImpl(handler, manager, asyncContext,
+		return new RtpContentSessionImpl(handler, manager, asyncContext,
 				contentId);
-	}
-
-	@Bean
-	@Scope("prototype")
-	AsyncRtpMediaRequestProcessor asyncRtpMediaRequestProcessor(
-			RtpMediaRequestImpl mediaRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return new AsyncRtpMediaRequestProcessor(mediaRequest, message,
-				asyncCtx);
 	}
 
 	// OTHER STUFF
 	@Bean
 	@Scope("prototype")
-	ContentRequestManager contentRequestManager() {
-		return new ContentRequestManager();
+	ContentSessionManager contentSessionManager() {
+		return new ContentSessionManager();
 	}
 
 	@Bean

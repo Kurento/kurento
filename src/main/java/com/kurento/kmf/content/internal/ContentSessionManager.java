@@ -2,7 +2,7 @@ package com.kurento.kmf.content.internal;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.kurento.kmf.content.internal.base.AbstractContentRequest;
+import com.kurento.kmf.content.internal.base.AbstractContentSession;
 
 /**
  * 
@@ -12,17 +12,17 @@ import com.kurento.kmf.content.internal.base.AbstractContentRequest;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public class ContentRequestManager {
+public class ContentSessionManager {
 
 	/**
 	 * Map to store the content requests.
 	 */
-	private ConcurrentHashMap<String, AbstractContentRequest> requests = new ConcurrentHashMap<String, AbstractContentRequest>();
+	private ConcurrentHashMap<String, AbstractContentSession> requests = new ConcurrentHashMap<String, AbstractContentSession>();
 
 	/**
 	 * Default constructor.
 	 */
-	public ContentRequestManager() {
+	public ContentSessionManager() {
 	}
 
 	/**
@@ -32,7 +32,7 @@ public class ContentRequestManager {
 	 *            Content request to be stored in the concurrent hash map
 	 * @return stored content request
 	 */
-	public AbstractContentRequest put(AbstractContentRequest contentRequest) {
+	public AbstractContentSession put(AbstractContentSession contentRequest) {
 		return requests.put(contentRequest.getSessionId(), contentRequest);
 	}
 
@@ -43,7 +43,7 @@ public class ContentRequestManager {
 	 *            key in the map (contentRequest.sessionId)
 	 * @return found content request
 	 */
-	public AbstractContentRequest get(String requestId) {
+	public AbstractContentSession get(String requestId) {
 		return requests.get(requestId);
 	}
 
@@ -54,7 +54,7 @@ public class ContentRequestManager {
 	 *            key in the map (contentRequest.sessionId)
 	 * @return deleted content request
 	 */
-	public AbstractContentRequest remove(String requestId) {
+	public AbstractContentSession remove(String requestId) {
 		return requests.remove(requestId);
 	}
 }

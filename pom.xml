@@ -4,7 +4,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
@@ -15,7 +15,7 @@
 		<!-- Dependencies Versions -->
 		<kmf-media-api.version>1.0.0-SNAPSHOT</kmf-media-api.version>
 		<kmf-content-protocol.version>0.0.1-SNAPSHOT</kmf-content-protocol.version>
-		<kmf-http-ep.version>0.0.1-SNAPSHOT</kmf-http-ep.version>
+		<kmf-commons.version>0.0.1-SNAPSHOT</kmf-commons.version>
 		<kmf-spring.version>0.0.1-SNAPSHOT</kmf-spring.version>
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<reflections.version>0.9.9-RC1</reflections.version>
@@ -63,6 +63,11 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons</artifactId>
+			<version>${kmf-commons.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-spring</artifactId>
 			<version>${kmf-spring.version}</version>
 		</dependency>
@@ -76,8 +81,6 @@
 			<artifactId>kmf-media-api</artifactId>
 			<version>${kmf-media-api.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.kurento.kmf</groupId> <artifactId>kmf-http-ep</artifactId> 
-			<version>${kmf-http-ep.version}</version> </dependency> -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

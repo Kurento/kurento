@@ -7,11 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.content.RtpMediaHandler;
-import com.kurento.kmf.content.internal.RejectableRunnable;
+import com.kurento.kmf.content.RtpContentHandler;
 import com.kurento.kmf.content.internal.base.AbstractContentHandlerServlet;
-import com.kurento.kmf.content.internal.base.AbstractContentRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.internal.base.AbstractContentSession;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 /**
@@ -38,7 +36,7 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 	 * Autowired RTP Handler.
 	 */
 	@Autowired
-	private RtpMediaHandler rtpMediaHandler;
+	private RtpContentHandler rtpMediaHandler;
 
 	/**
 	 * Always return false since RTP handler does not support redirect strategy.
@@ -64,26 +62,6 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 	}
 
 	/**
-	 * Check whether or not RTP Handler is null.
-	 * 
-	 * @return Boolean value for whether or not RTP hander is null
-	 */
-	@Override
-	protected boolean isHandlerNull() {
-		return rtpMediaHandler == null;
-	}
-
-	/**
-	 * Handler class name accessor (getter).
-	 * 
-	 * @return Handler simple name
-	 */
-	@Override
-	protected String getHandlerSimpleClassName() {
-		return rtpMediaHandler.getClass().getSimpleName();
-	}
-
-	/**
 	 * Create a content Request instance (as a Spring Bean).
 	 * 
 	 * @param asyncCtx
@@ -93,31 +71,11 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 	 * @return Content Request
 	 */
 	@Override
-	protected AbstractContentRequest createContentRequest(
+	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
-		return (RtpMediaRequestImpl) KurentoApplicationContextUtils.getBean(
-				"rtpMediaRequestImpl", rtpMediaHandler, contentRequestManager,
+		return (RtpContentSessionImpl) KurentoApplicationContextUtils.getBean(
+				"rtpMediaRequestImpl", rtpMediaHandler, contentSessionManager,
 				asyncCtx, contentId);
-	}
-
-	/**
-	 * Create asynchronous processor instance (thread).
-	 * 
-	 * @param contentRequest
-	 *            Content Request
-	 * @param message
-	 *            JSON RPC message
-	 * @param asyncCtx
-	 *            Asynchronous context
-	 * @return Asynchronous processor instance (thread)
-	 */
-	@Override
-	protected RejectableRunnable createAsyncRequestProcessor(
-			AbstractContentRequest contentRequest, JsonRpcRequest message,
-			AsyncContext asyncCtx) {
-		return (AsyncRtpMediaRequestProcessor) KurentoApplicationContextUtils
-				.getBean("asyncRtpMediaRequestProcessor", contentRequest,
-						message, asyncCtx);
 	}
 
 	/**
@@ -129,5 +87,4 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 	protected Logger getLogger() {
 		return log;
 	}
-
 }
