@@ -427,8 +427,6 @@ kms_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
       GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
 
       GST_WARNING ("RtpEndPoint not configured to send audio");
-
-      GST_WARNING ("RtpEndPoint not configured to send video");
       gst_bin_add (GST_BIN (rtp_end_point), fakesink);
       gst_element_sync_state_with_parent (fakesink);
       gst_element_link_pads (rtpbin, "send_rtp_src_1", fakesink, NULL);
