@@ -844,6 +844,8 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
       g_object_set (G_OBJECT (videorate), "average-period", 200 * GST_MSECOND,
           NULL);
 
+      gst_caps_unref (fps_caps);
+
       gst_bin_add_many (GST_BIN (agnosticbin), capsfilter, videorate, NULL);
       gst_element_sync_state_with_parent (videorate);
       gst_element_sync_state_with_parent (capsfilter);
