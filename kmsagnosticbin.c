@@ -729,30 +729,11 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
   }
 }
 
-static GstFlowReturn
-kms_agnostic_bin_src_chain (GstPad * pad, GstObject * parent,
-    GstBuffer * buffer)
-{
-  GstPad *gp = GST_PAD (GST_OBJECT_PARENT (pad));
-  GstPad *peer;
-
-  peer = gst_pad_get_peer (gp);
-
-  if (peer == NULL) {
-    GST_WARNING ("Peer is null");
-    gst_buffer_unref (buffer);
-  } else {
-    gst_pad_chain (peer, buffer);
-    g_object_unref (peer);
-  }
-  return GST_FLOW_OK;
-}
-
 static GstPad *
 kms_agnostic_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
-  GstPad *pad, *target, *proxy_pad;
+  GstPad *pad, *target;
   gchar *pad_name;
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (element);
   GstElement *queue = gst_element_factory_make ("queue", NULL);
@@ -767,13 +748,6 @@ kms_agnostic_bin_request_new_pad (GstElement * element,
 
   pad = gst_ghost_pad_new_from_template (pad_name, target, templ);
   g_object_set_data (G_OBJECT (pad), QUEUE_DATA, queue);
-
-  proxy_pad = gst_pad_get_peer (target);
-
-  if (proxy_pad != NULL) {
-    gst_pad_set_chain_function (proxy_pad, kms_agnostic_bin_src_chain);
-    g_object_unref (proxy_pad);
-  }
 
   g_object_unref (target);
   g_free (pad_name);
