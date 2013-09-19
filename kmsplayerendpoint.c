@@ -54,8 +54,6 @@ kms_player_end_point_dispose (GObject * object)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
 
-  GST_DEBUG_OBJECT (self, "dispose");
-
   if (self->priv->pipeline != NULL) {
     GstBus *bus;
 
@@ -76,12 +74,6 @@ kms_player_end_point_dispose (GObject * object)
 static void
 kms_player_end_point_finalize (GObject * object)
 {
-  KmsPlayerEndPoint *playerendpoint = KMS_PLAYER_END_POINT (object);
-
-  GST_DEBUG_OBJECT (playerendpoint, "finalize");
-
-  /* clean up object here */
-
   G_OBJECT_CLASS (kms_player_end_point_parent_class)->finalize (object);
 }
 

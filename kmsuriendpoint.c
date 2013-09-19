@@ -119,12 +119,6 @@ kms_uri_end_point_get_property (GObject * object, guint property_id,
 static void
 kms_uri_end_point_dispose (GObject * object)
 {
-  KmsUriEndPoint *uriendpoint = KMS_URI_END_POINT (object);
-
-  GST_DEBUG_OBJECT (uriendpoint, "dispose");
-
-  /* clean up as possible.  may be called multiple times */
-
   G_OBJECT_CLASS (kms_uri_end_point_parent_class)->dispose (object);
 }
 
@@ -132,8 +126,6 @@ static void
 kms_uri_end_point_finalize (GObject * object)
 {
   KmsUriEndPoint *self = KMS_URI_END_POINT (object);
-
-  GST_DEBUG_OBJECT (self, "finalize");
 
   if (self->uri) {
     g_free (self->uri);
