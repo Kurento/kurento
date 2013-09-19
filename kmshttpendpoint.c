@@ -273,7 +273,7 @@ post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
   appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
 
   if (appsrc == NULL) {
-    GST_ERROR ("No appsink was found associated with %P", pad);
+    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
     return;
   }
 
@@ -285,7 +285,7 @@ post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
   }
 
   if (appsink == NULL) {
-    GST_ERROR ("No appsink was found associated with %P", pad);
+    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
     return;
   }
 

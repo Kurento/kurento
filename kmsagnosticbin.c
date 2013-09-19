@@ -106,7 +106,7 @@ kms_agnostic_bin_start_stop_event_handler (GstPad * pad, GstObject * parent,
             g_object_get_data (G_OBJECT (pad), AGNOSTIC_BIN_DATA);
         GstStartStopFunction callback =
             g_object_get_data (G_OBJECT (pad), START_STOP_EVENT_FUNC_DATA);
-        GST_INFO ("Received event: %P", event);
+        GST_INFO ("Received event: %" GST_PTR_FORMAT, event);
 
         if (callback != NULL)
           callback (agnosticbin, GST_ELEMENT (parent), start);
@@ -208,7 +208,7 @@ kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
     g_object_get (tee, "num-src-pads", &n_pads, NULL);
 
     if (n_pads == 1) {
-      GST_DEBUG ("Adding probe: %P", tee_sink);
+      GST_DEBUG ("Adding probe: %" GST_PTR_FORMAT, tee_sink);
       probe_pad = tee_sink;
       probe =
           gst_pad_add_probe (probe_pad, GST_PAD_PROBE_TYPE_ALL_BOTH,
@@ -395,7 +395,8 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
   GstPad *decoded_tee_sink;
   GstCaps *raw_caps;
 
-  GST_DEBUG ("Creating a new encoded tee for caps: %P", allowed_caps);
+  GST_DEBUG ("Creating a new encoded tee for caps: %" GST_PTR_FORMAT,
+      allowed_caps);
 
   decoded_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
   if (decoded_tee == NULL)
@@ -424,7 +425,7 @@ kms_agnostic_bin_create_encoded_tee (KmsAgnosticBin * agnosticbin,
   if (encoder_factory == NULL)
     goto end;
 
-  GST_DEBUG ("Factory %P", encoder_factory);
+  GST_DEBUG ("Factory %" GST_PTR_FORMAT, encoder_factory);
 
   convert = kms_agnostic_get_convert_element_for_raw_caps (raw_caps);
   encoder = gst_element_factory_create (encoder_factory, NULL);
@@ -461,7 +462,7 @@ release_decoded_tee:
   g_object_unref (decoded_tee_sink);
   g_object_unref (decoded_tee);
 
-  GST_DEBUG ("Created %P", tee);
+  GST_DEBUG ("Created %" GST_PTR_FORMAT, tee);
 
   return tee;
 }
@@ -504,22 +505,22 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   GstElement *tee = NULL, *queue;
   GstPad *queue_sink;
 
-  GST_DEBUG ("Connecting %P", srcpad);
+  GST_DEBUG ("Connecting %" GST_PTR_FORMAT, srcpad);
   if (!GST_IS_GHOST_PAD (srcpad)) {
-    GST_DEBUG ("%P is no gp", srcpad);
+    GST_DEBUG ("%" GST_PTR_FORMAT " is no gp", srcpad);
     return;
   }
 
   allowed_caps = gst_pad_query_caps (peer, NULL);
   if (allowed_caps == NULL) {
-    GST_DEBUG ("Allowed caps for %P are NULL. "
+    GST_DEBUG ("Allowed caps for %" GST_PTR_FORMAT " are NULL. "
         "The pad is not linked, disconnecting", srcpad);
     kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
 
   if (agnosticbin->current_caps == NULL) {
-    GST_DEBUG ("No current caps, disconnecting %P", srcpad);
+    GST_DEBUG ("No current caps, disconnecting %" GST_PTR_FORMAT, srcpad);
     kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
@@ -555,7 +556,8 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   } else {
     GstElement *raw_tee;
 
-    GST_DEBUG ("Looking for an encoded tee with caps: %P", allowed_caps);
+    GST_DEBUG ("Looking for an encoded tee with caps: %" GST_PTR_FORMAT,
+        allowed_caps);
     raw_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
     if (raw_tee != NULL) {
       GList *tees, *l;
@@ -665,7 +667,8 @@ kms_agnostic_bin_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       old_caps = gst_pad_get_current_caps (pad);
       gst_event_ref (event);
       ret = gst_pad_event_default (pad, parent, event);
-      GST_DEBUG ("Received new caps: %P, old was: %P", caps, old_caps);
+      GST_DEBUG ("Received new caps: %" GST_PTR_FORMAT ", old was: %"
+          GST_PTR_FORMAT, caps, old_caps);
       if (ret && (old_caps == NULL || !gst_caps_is_equal (old_caps, caps)))
         kms_agnostic_bin_connect_previous_srcpads (KMS_AGNOSTIC_BIN (parent));
       gst_event_unref (event);
@@ -686,7 +689,7 @@ kms_agnostic_bin_src_linked (GstPad * pad, GstObject * parent, GstPad * peer)
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
 
   KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
-  GST_DEBUG ("%P linked", pad);
+  GST_DEBUG ("%" GST_PTR_FORMAT " linked", pad);
   kms_agnostic_bin_connect_srcpad (agnosticbin, pad, peer);
 
   if (peer->linkfunc != NULL)
@@ -700,7 +703,7 @@ kms_agnostic_bin_src_unlinked (GstPad * pad, GstObject * parent)
 {
   KmsAgnosticBin *agnosticbin = KMS_AGNOSTIC_BIN (parent);
 
-  GST_DEBUG ("%P unlinked", pad);
+  GST_DEBUG ("%" GST_PTR_FORMAT " unlinked", pad);
   KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
   kms_agnostic_bin_disconnect_srcpad (agnosticbin, pad);
   KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
@@ -714,7 +717,7 @@ kms_agnostic_bin_src_event (GstPad * pad, GstObject * parent, GstEvent * event)
     GstPad *peer;
 
     KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
-    GST_DEBUG ("Reconfiguring %P", pad);
+    GST_DEBUG ("Reconfiguring %" GST_PTR_FORMAT, pad);
     peer = gst_pad_get_peer (pad);
 
     if (peer != NULL) {

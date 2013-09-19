@@ -64,7 +64,7 @@ kms_h264_filter_transform_frame_ip (GstBaseTransform * base_transform,
   //
   // info.data contains the buffer information in a char array
   //
-  GST_DEBUG ("Buffer len: %d", info.size);
+  GST_DEBUG ("Buffer len: %" G_GSIZE_FORMAT, info.size);
   gst_buffer_unmap (buffer, &info);
 
   return GST_FLOW_OK;

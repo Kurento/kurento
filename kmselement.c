@@ -339,32 +339,32 @@ static void
 kms_element_audio_valve_added_default (KmsElement * self, GstElement * valve)
 {
   GST_WARNING
-      ("Element class %P does not implement method \"audio_valve_added\"",
-      self);
+      ("Element class %" GST_PTR_FORMAT
+      " does not implement method \"audio_valve_added\"", self);
 }
 
 static void
 kms_element_video_valve_added_default (KmsElement * self, GstElement * valve)
 {
   GST_WARNING
-      ("Element class %P does not implement method \"video_valve_added\"",
-      self);
+      ("Element class %" GST_PTR_FORMAT
+      " does not implement method \"video_valve_added\"", self);
 }
 
 static void
 kms_element_audio_valve_removed_default (KmsElement * self, GstElement * valve)
 {
   GST_WARNING
-      ("Element class %P does not implement method \"audio_valve_removed\"",
-      self);
+      ("Element class %" GST_PTR_FORMAT
+      " does not implement method \"audio_valve_removed\"", self);
 }
 
 static void
 kms_element_video_valve_removed_default (KmsElement * self, GstElement * valve)
 {
   GST_WARNING
-      ("Element class %P does not implement method \"video_valve_removed\"",
-      self);
+      ("Element class %" GST_PTR_FORMAT
+      " does not implement method \"video_valve_removed\"", self);
 }
 
 static void

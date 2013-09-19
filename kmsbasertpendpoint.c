@@ -103,7 +103,9 @@ gst_base_rtp_get_payloader_for_caps (GstCaps * caps)
       g_object_set (payloader, "pt", payload, NULL);
   }
 
-  pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (payloader), "config-interval");
+  pspec =
+      g_object_class_find_property (G_OBJECT_GET_CLASS (payloader),
+      "config-interval");
   if (pspec != NULL && G_PARAM_SPEC_VALUE_TYPE (pspec) == G_TYPE_UINT) {
     g_object_set (payloader, "config-interval", 1, NULL);
   }
@@ -209,7 +211,7 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
     if (caps == NULL)
       continue;
 
-    GST_DEBUG ("Found caps: %P", caps);
+    GST_DEBUG ("Found caps: %" GST_PTR_FORMAT, caps);
 
     payloader = gst_base_rtp_get_payloader_for_caps (caps);
     if (payloader != NULL) {
@@ -219,7 +221,7 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
       const gchar *rtpbin_pad_name;
       GstElement *valve = NULL;
 
-      GST_DEBUG ("Found depayloader %P", payloader);
+      GST_DEBUG ("Found depayloader %" GST_PTR_FORMAT, payloader);
       if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
         rtp_end_point->audio_payloader = payloader;
         valve = kms_element_get_audio_valve (element);
@@ -331,7 +333,8 @@ kms_base_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     goto end;
 
   caps = gst_pad_query_caps (pad, NULL);
-  GST_DEBUG ("New pad: %P for linking to %P with caps %P", pad, agnostic, caps);
+  GST_DEBUG ("New pad: %" GST_PTR_FORMAT " for linking to %" GST_PTR_FORMAT
+      " with caps %" GST_PTR_FORMAT, pad, agnostic, caps);
 
   depayloader = gst_base_rtp_get_depayloader_for_caps (caps);
 

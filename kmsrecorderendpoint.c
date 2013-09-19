@@ -70,8 +70,8 @@ send_eos (GstElement * appsrc)
   g_signal_emit_by_name (appsrc, "end-of-stream", &ret);
   if (ret != GST_FLOW_OK) {
     /* something wrong */
-    GST_ERROR ("Could not send EOS to appsrc  %s. Ret code %d", ret,
-        GST_ELEMENT_NAME (appsrc));
+    GST_ERROR ("Could not send EOS to appsrc  %s. Ret code %d",
+        GST_ELEMENT_NAME (appsrc), ret);
   }
 }
 
@@ -208,7 +208,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   g_object_get (G_OBJECT (self), "state", &state, NULL);
   if (state != KMS_URI_END_POINT_STATE_START) {
-    GST_DEBUG ("Dropping buffer %P", buffer);
+    GST_DEBUG ("Dropping buffer %" GST_PTR_FORMAT, buffer);
     ret = GST_FLOW_OK;
     goto end;
   }

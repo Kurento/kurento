@@ -205,7 +205,7 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
 
   if (appsrc != NULL) {
-    GST_INFO ("Removing %P from its parent", appsrc);
+    GST_INFO ("Removing %" GST_PTR_FORMAT " from its parent", appsrc);
     if (GST_OBJECT_PARENT (appsrc) != NULL) {
       g_object_ref (appsrc);
       gst_bin_remove (GST_BIN (GST_OBJECT_PARENT (appsrc)), appsrc);
@@ -215,7 +215,7 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   }
 
   if (appsink == NULL) {
-    GST_ERROR ("No appsink was found associated with %P", pad);
+    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
     return;
   }
   if (!gst_element_set_locked_state (appsink, TRUE))
@@ -313,7 +313,7 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
   deco_caps = gst_caps_from_string (KMS_AGNOSTIC_AGNOSTIC_CAPS);
-  g_object_set (G_OBJECT( self->priv->uridecodebin), "caps", deco_caps, NULL);
+  g_object_set (G_OBJECT (self->priv->uridecodebin), "caps", deco_caps, NULL);
   gst_caps_unref (deco_caps);
 
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
