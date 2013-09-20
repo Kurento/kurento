@@ -511,16 +511,16 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     return;
   }
 
-  allowed_caps = gst_pad_query_caps (peer, NULL);
-  if (allowed_caps == NULL) {
-    GST_DEBUG ("Allowed caps for %" GST_PTR_FORMAT " are NULL. "
-        "The pad is not linked, disconnecting", srcpad);
+  if (agnosticbin->current_caps == NULL) {
+    GST_DEBUG ("No current caps, disconnecting %" GST_PTR_FORMAT, srcpad);
     kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
 
-  if (agnosticbin->current_caps == NULL) {
-    GST_DEBUG ("No current caps, disconnecting %" GST_PTR_FORMAT, srcpad);
+  allowed_caps = gst_pad_query_caps (peer, NULL);
+  if (allowed_caps == NULL) {
+    GST_DEBUG ("Allowed caps for %" GST_PTR_FORMAT " are NULL. "
+        "The pad is not linked, disconnecting", srcpad);
     kms_agnostic_bin_disconnect_srcpad (agnosticbin, srcpad);
     return;
   }
