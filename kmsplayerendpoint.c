@@ -143,7 +143,6 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
   else {
     GST_ERROR_OBJECT (self, "No agnostic caps provided");
-    gst_caps_unref (src_caps);
     goto end;
   }
 
@@ -177,6 +176,9 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
 
 end:
+  if (src_caps != NULL)
+    gst_caps_unref (src_caps);
+
   if (audio_caps != NULL)
     gst_caps_unref (audio_caps);
 
