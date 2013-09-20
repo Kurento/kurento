@@ -25,6 +25,11 @@ public class JsonRpcConstants {
 	public final static String METHOD_POLL = "poll";
 
 	/**
+	 * Execute method.
+	 */
+	public final static String METHOD_EXECUTE = "execute";
+
+	/**
 	 * No error code (O).
 	 */
 	public final static int ERROR_NO_ERROR = 0;

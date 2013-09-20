@@ -52,25 +52,34 @@ public class JsonRpcRequest {
 	 * Create an instance of JsonRpcRequest with video/audio constraints.
 	 * 
 	 * @param method
-	 *            JSPON RPC method
 	 * @param sdp
-	 *            Received SDP
 	 * @param sessionId
-	 *            Session identifier
 	 * @param id
-	 *            Request identifier
 	 * @param videoConstraints
-	 *            Operations related with the video stream (SEND, RECV, ...).
 	 * @param audioConstraints
-	 *            Get the operations related with the audio stream (SEND, RECV,
-	 *            ...).
-	 * @return JsonRpcRequest instance
+	 * @return
 	 */
 	public static JsonRpcRequest newRequest(String method, String sdp,
 			String sessionId, int id, Constraints videoConstraints,
 			Constraints audioConstraints) {
 		return new JsonRpcRequest(method, new JsonRpcRequestParams(sdp,
 				sessionId, videoConstraints, audioConstraints), id);
+	}
+
+	/**
+	 * TODO
+	 * 
+	 * @param method
+	 * @param commandType
+	 * @param commandData
+	 * @param id
+	 * @return
+	 */
+	//TODO: for symmetry rename rest of newRequest methods?
+	public static JsonRpcRequest newCommandRequest(String method, String commandType,
+			String commandData, int id) {
+		return new JsonRpcRequest(method, new JsonRpcRequestParams(
+				new JsonRpcCommand(commandType, commandData)), id);
 	}
 
 	/**
@@ -104,6 +113,20 @@ public class JsonRpcRequest {
 	public String getSdp() {
 		if (params != null)
 			return params.getSdp();
+		else
+			return null;
+	}
+
+	public String getCommandType() {
+		if (params != null && params.getCommand() != null)
+			return params.getCommand().getType();
+		else
+			return null;
+	}
+
+	public String getCommandData() {
+		if (params != null && params.getCommand() != null)
+			return params.getCommand().getData();
 		else
 			return null;
 	}
@@ -198,6 +221,8 @@ class JsonRpcRequestParams {
 	 */
 	private String sessionId;
 
+	private JsonRpcCommand command;
+
 	/**
 	 * JSON RPC constraints.
 	 */
@@ -240,6 +265,15 @@ class JsonRpcRequestParams {
 		this.sessionId = sessionId;
 		this.constraints = new JsonRpcConstraints(videoConstraints.toString()
 				.toLowerCase(), audioConstraints.toString().toLowerCase());
+	}
+
+	/**
+	 * Parameterized constructor with video/audio constraints.
+	 * 
+	 * TODO
+	 */
+	JsonRpcRequestParams(JsonRpcCommand command) {
+		this.command = command;
 	}
 
 	/**
@@ -299,6 +333,50 @@ class JsonRpcRequestParams {
 		this.constraints = constraints;
 	}
 
+	public JsonRpcCommand getCommand() {
+		return command;
+	}
+
+	public void setCommand(JsonRpcCommand command) {
+		this.command = command;
+	}
+
+}
+
+/**
+ * 
+ * Java representation for JSON commands.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @version 1.0.0
+ */
+class JsonRpcCommand {
+	private String type;
+	private String data;
+
+	public JsonRpcCommand() {
+	}
+
+	public JsonRpcCommand(String type, String data) {
+		this.type = type;
+		this.data = data;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
 }
 
 /**

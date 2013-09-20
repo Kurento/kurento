@@ -77,6 +77,11 @@ public class JsonRpcResponse {
 		return new JsonRpcResponse(new JsonRpcResponseResult(events), id);
 	}
 
+	public static JsonRpcResponse newCommandResponse(int id,
+			String commandResult) {
+		return new JsonRpcResponse(new JsonRpcResponseResult(commandResult), id);
+	}
+
 	/**
 	 * Create an instance of JsonRpcResponse for acknowledge.
 	 * 
@@ -187,6 +192,13 @@ public class JsonRpcResponse {
 			return result.getSdp();
 	}
 
+	public String getCommandResult() {
+		if (result == null)
+			return null;
+		else
+			return result.getCommandResult();
+	}
+
 	/**
 	 * Session identifier accessor (getter).
 	 * 
@@ -290,6 +302,8 @@ class JsonRpcResponseResult {
 	 */
 	private String sessionId;
 
+	private String commandResult;
+
 	/**
 	 * JSON RPC events array.
 	 */
@@ -315,6 +329,10 @@ class JsonRpcResponseResult {
 		this.sdp = sdp;
 		this.url = url;
 		this.sessionId = sessionId;
+	}
+
+	JsonRpcResponseResult(String commandResult) {
+		this.commandResult = commandResult;
 	}
 
 	/**
@@ -391,6 +409,14 @@ class JsonRpcResponseResult {
 	 */
 	JsonRpcEvent[] getJsonRpcEvents() {
 		return events;
+	}
+
+	public String getCommandResult() {
+		return commandResult;
+	}
+
+	public void setCommandResult(String commandResult) {
+		this.commandResult = commandResult;
 	}
 }
 
