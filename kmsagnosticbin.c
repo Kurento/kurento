@@ -154,15 +154,7 @@ kms_agnostic_bin_send_start_stop_event (GstPad * pad, gboolean start)
   if (GST_PAD_DIRECTION (pad) == GST_PAD_SRC) {
     gst_pad_send_event (pad, event);
   } else {
-    GstPad *peer = gst_pad_get_peer (pad);
-
-    if (peer != NULL && GST_PAD_DIRECTION (peer) == GST_PAD_SRC)
-      gst_pad_send_event (peer, event);
-    else
-      gst_event_unref (event);
-
-    if (peer != NULL)
-      g_object_unref (peer);
+    gst_pad_push_event (pad, event);
   }
 }
 
@@ -176,7 +168,12 @@ kms_agnostic_bin_send_force_key_unit_event (GstPad * pad)
   s = gst_structure_new ("GstForceKeyUnit",
       "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
   force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
-  gst_pad_send_event (pad, force_key_unit_event);
+
+  if (GST_PAD_DIRECTION (pad) == GST_PAD_SRC) {
+    gst_pad_send_event (pad, force_key_unit_event);
+  } else {
+    gst_pad_push_event (pad, force_key_unit_event);
+  }
 }
 
 static GstPadProbeReturn
