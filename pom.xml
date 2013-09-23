@@ -15,6 +15,7 @@
 		<!-- Dependencies Versions -->
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<slf4j-api.version>1.7.5</slf4j-api.version>
+		<reflections.version>0.9.9-RC1</reflections.version>
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
@@ -54,6 +55,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+			<version>${reflections.version}</version>
 		</dependency>
 	</dependencies>
 
