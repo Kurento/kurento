@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.WebApplicationInitializer;
 
+import com.kurento.kmf.common.excption.internal.ReflectionUtils;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpRecorderHandler;
@@ -61,11 +62,6 @@ public class ContentApiWebApplicationInitializer implements
 	public static final String HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
 			.getName() + "HandlerClassParamName";
 
-	/**
-	 * Reflections scans the classpath, indexes the metadata, allows to query it
-	 * on runtime and may save and collect that information.
-	 */
-	private Reflections reflections;
 
 	/**
 	 * Web initialization is performed in this method, calling every handler
@@ -78,10 +74,6 @@ public class ContentApiWebApplicationInitializer implements
 		// we don't know y App developer wants to instantiate a Spring root
 		// WebApplicationContext
 		// ... so we need to live without Spring
-
-		// Initialize ContentApi locating handlers and creating their associated
-		// servlets
-		reflections = new Reflections("", new TypeAnnotationsScanner());
 
 		initializeRecorders(sc);
 		initializePlayers(sc);
@@ -252,7 +244,7 @@ public class ContentApiWebApplicationInitializer implements
 	 *            {@link HttpRecorderHandler}, {@link WebRtcContentHandler},
 	 *            {@link RtpContentHandler})
 	 * @param serviceAnnotation
-	 *            Servide annotation ({@link HttpPlayerService},
+	 *            Service annotation ({@link HttpPlayerService},
 	 *            {@link HttpRecorderService}, {@link WebRtcContentService},
 	 *            {@link RtpContentService})
 	 * @return List of services
@@ -264,7 +256,7 @@ public class ContentApiWebApplicationInitializer implements
 	private List<String> findServices(Class<?> handlerClass,
 			Class<? extends Annotation> serviceAnnotation)
 			throws ServletException {
-		Set<Class<?>> annotatedList = reflections
+		Set<Class<?>> annotatedList = ReflectionUtils
 				.getTypesAnnotatedWith(serviceAnnotation);
 		List<String> handlerList = new ArrayList<String>();
 		for (Class<?> clazz : annotatedList) {
