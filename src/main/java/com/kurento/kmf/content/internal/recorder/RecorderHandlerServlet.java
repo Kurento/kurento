@@ -93,9 +93,10 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	@Override
 	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
-		return (HttpRecorderSessionImpl) KurentoApplicationContextUtils.getBean(
-				"recordRequestImpl", recorderHandler, contentSessionManager,
-				asyncCtx, contentId, useRedirectStrategy, useControlProtocol);
+		return (HttpRecorderSessionImpl) KurentoApplicationContextUtils
+				.getBean("recordRequestImpl", recorderHandler,
+						contentSessionManager, asyncCtx, contentId,
+						useRedirectStrategy, useControlProtocol);
 	}
 
 	/**

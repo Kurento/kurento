@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.excption.internal.ExceptionUtils;
+import com.kurento.kmf.content.ContentCommand;
+import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
@@ -104,5 +106,11 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 			throws Exception {
 		getHandler().onUncaughtException(this, t);
 
+	}
+
+	@Override
+	protected ContentCommandResult interalRawCallToOnContentCommand(
+			ContentCommand command) throws Exception {
+		return getHandler().onContentCommand(this, command);
 	}
 }

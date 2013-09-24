@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.content.ContentCommand;
+import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
@@ -189,6 +191,11 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	protected void internalRawCallToOnUncaughtExceptionThrown(Throwable t)
 			throws Exception {
 		getHandler().onUncaughtException(this, t);
+	}
 
+	@Override
+	protected ContentCommandResult interalRawCallToOnContentCommand(
+			ContentCommand command) throws Exception {
+		return getHandler().onContentCommand(this, command);
 	}
 }

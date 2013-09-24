@@ -9,8 +9,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.TypeAnnotationsScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.WebApplicationInitializer;
@@ -61,7 +59,6 @@ public class ContentApiWebApplicationInitializer implements
 	 */
 	public static final String HANDLER_CLASS_PARAM_NAME = ContentApiWebApplicationInitializer.class
 			.getName() + "HandlerClassParamName";
-
 
 	/**
 	 * Web initialization is performed in this method, calling every handler

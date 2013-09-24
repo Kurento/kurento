@@ -80,9 +80,8 @@ public class PlayerHandlerServlet extends AbstractContentHandlerServlet {
 	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
 		return (HttpPlayerSessionImpl) KurentoApplicationContextUtils.getBean(
-				"httpPlayerSessionImpl", handler,
-				contentSessionManager, asyncCtx, contentId,
-				useRedirectStrategy, useControlProtocol);
+				"httpPlayerSessionImpl", handler, contentSessionManager,
+				asyncCtx, contentId, useRedirectStrategy, useControlProtocol);
 	}
 
 	/**

@@ -101,8 +101,8 @@ public class ContentApplicationContextConfiguration {
 			HttpRecorderHandler recorderHander, ContentSessionManager manager,
 			AsyncContext ctx, String contentId, boolean redirect,
 			boolean useControlProtocol) {
-		return new HttpRecorderSessionImpl(recorderHander, manager, ctx, contentId,
-				redirect, useControlProtocol);
+		return new HttpRecorderSessionImpl(recorderHander, manager, ctx,
+				contentId, redirect, useControlProtocol);
 	}
 
 	// WEBRTC MEDIA STUFF

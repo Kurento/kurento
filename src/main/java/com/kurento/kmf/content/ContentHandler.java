@@ -68,8 +68,8 @@ public abstract class ContentHandler<T extends ContentSession> {
 	 * @throws Exception
 	 *             possible exception thrown by handler implementation
 	 */
-	public void onContentCommand(T contentSession, ContentCommand contentCommand)
-			throws Exception {
+	public ContentCommandResult onContentCommand(T contentSession,
+			ContentCommand contentCommand) throws Exception {
 		throw new KurentoMediaFrameworkException(
 				"Handler must implement onContentCommand for being able to receive commands",
 				1);// TODO code

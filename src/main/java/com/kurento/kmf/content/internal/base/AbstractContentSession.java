@@ -1,5 +1,6 @@
 package com.kurento.kmf.content.internal.base;
 
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_EXECUTE;
 import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_POLL;
 import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_START;
 import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_TERMINATE;
@@ -24,6 +25,8 @@ import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.common.excption.internal.ExceptionUtils;
 import com.kurento.kmf.content.ContentApiConfiguration;
+import com.kurento.kmf.content.ContentCommand;
+import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.ContentHandler;
 import com.kurento.kmf.content.ContentSession;
@@ -241,6 +244,9 @@ public abstract class AbstractContentSession implements ContentSession {
 
 	protected abstract void interalRawCallToOnContentStarted() throws Exception;
 
+	protected abstract ContentCommandResult interalRawCallToOnContentCommand(
+			ContentCommand command) throws Exception;
+
 	public void callOnContentErrorOnHandler(int code, String description) {
 		terminate(code, description);
 		try {
@@ -331,6 +337,10 @@ public abstract class AbstractContentSession implements ContentSession {
 
 			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
 					.newEventsResponse(message.getId(), consumeEvents()));
+		} else if (message.getMethod().equals(METHOD_EXECUTE)) {
+			Assert.isTrue(state == STATE.ACTIVE,
+					"Cannot execute command on state " + state, 10011);
+			internalProcessCommandExecution(asyncCtx, message);
 		} else if (message.getMethod().equals(METHOD_TERMINATE)) {
 			terminate(false, asyncCtx,
 					0, // No error
@@ -340,6 +350,33 @@ public abstract class AbstractContentSession implements ContentSession {
 			throw new KurentoMediaFrameworkException(
 					"Unrecognized message with method " + message.getMethod(),
 					10012);
+		}
+	}
+
+	private void internalProcessCommandExecution(AsyncContext asyncCtx,
+			JsonRpcRequest message) {
+		try {
+			ContentCommandResult result = interalRawCallToOnContentCommand(new ContentCommand(
+					message.getCommandType(), message.getCommandData()));
+			protocolManager.sendJsonAnswer(
+					asyncCtx,
+					JsonRpcResponse.newCommandResponse(message.getId(),
+							result.getResult()));
+		} catch (Throwable t) {
+			int errorCode = 1; // TODO: define error code
+			if (t instanceof KurentoMediaFrameworkException) {
+				errorCode = ((KurentoMediaFrameworkException) t).getCode();
+			}
+
+			protocolManager.sendJsonError(
+					asyncCtx,
+					JsonRpcResponse.newError(errorCode, t.getMessage(),
+							message.getId()));
+
+			getLogger().error(
+					"Error invoking onContentCommand on handler. Cause "
+							+ t.getMessage(), t);
+			callOnUncaughtExceptionThrown(t);
 		}
 	}
 

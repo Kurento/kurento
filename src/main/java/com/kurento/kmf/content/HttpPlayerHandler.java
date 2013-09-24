@@ -1,6 +1,5 @@
 package com.kurento.kmf.content;
 
-
 /**
  * 
  * Defines the events associated to the HTTP play operation (

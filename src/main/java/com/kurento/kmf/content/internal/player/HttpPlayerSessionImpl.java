@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.content.ContentCommand;
+import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
@@ -240,5 +242,11 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 			throws Exception {
 		getHandler().onUncaughtException(this, t);
 
+	}
+
+	@Override
+	protected ContentCommandResult interalRawCallToOnContentCommand(
+			ContentCommand command) throws Exception {
+		return getHandler().onContentCommand(this, command);
 	}
 }
