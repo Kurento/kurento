@@ -480,6 +480,7 @@ kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
   g_object_set (G_OBJECT (self->priv->get->encodebin), "profile", cprof,
       "audio-jitter-tolerance", G_GUINT64_CONSTANT (0x0fffffffffffffff),
       "avoid-reencoding", TRUE, NULL);
+  gst_encoding_profile_unref (cprof);
 }
 
 static void
