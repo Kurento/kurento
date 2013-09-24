@@ -1,52 +1,31 @@
 package com.kurento.demo;
 
-import java.io.IOException;
-
-import com.kurento.kmf.content.ContentException;
-import com.kurento.kmf.content.RtpMediaHandler;
-import com.kurento.kmf.content.RtpMediaRequest;
-import com.kurento.kmf.content.RtpMediaService;
+import com.kurento.kmf.content.RtpContentHandler;
+import com.kurento.kmf.content.RtpContentService;
+import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndPoint;
 
-@RtpMediaService(name = "PlayingRtpMediaHandler", path = "/rtpPlayer")
-public class RtpWithPlayerMediaHandler implements RtpMediaHandler {
+@RtpContentService(name = "PlayingRtpMediaHandler", path = "/rtpPlayer")
+public class RtpWithPlayerMediaHandler extends RtpContentHandler {
 
 	@Override
-	public void onMediaRequest(RtpMediaRequest request) throws ContentException {
+	public void onContentRequest(RtpContentSession session) throws Exception {
 		MediaPipeline mediaPipeline = null;
-		try {
-			mediaPipeline = request.getMediaPipelineFactory()
-					.createMediaPipeline();
+		mediaPipeline = session.getMediaPipelineFactory().create();
+		session.releaseOnTerminate(mediaPipeline);
 
-			PlayerEndPoint player = mediaPipeline.createUriEndPoint(
-					PlayerEndPoint.class,
-					"https://ci.kurento.com/video/barcodes.webm");
-
-			request.startMedia(null, player);
-
-			player.play();
-
-		} catch (Exception e) {
-			try {
-				mediaPipeline.release();
-			} catch (IOException e1) {
-			}
-			throw new ContentException(e.getMessage());
-		}
-
+		PlayerEndPoint player = mediaPipeline
+				.createPlayerEndPoint("https://ci.kurento.com/video/barcodes.webm");
+		session.setAttribute("player", player);
+		session.start(null);
 	}
 
 	@Override
-	public void onMediaTerminated(String requestId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onMediaError(String requestId, ContentException exception) {
-		// TODO Auto-generated method stub
-
+	public void onContentStarted(RtpContentSession session) {
+		PlayerEndPoint playerendPoint = (PlayerEndPoint) session
+				.getAttribute("player");
+		playerendPoint.play();
 	}
 
 }

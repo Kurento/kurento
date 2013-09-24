@@ -1,38 +1,24 @@
 package com.kurento.demo;
 
-import com.kurento.kmf.content.ContentException;
-import com.kurento.kmf.content.PlayRequest;
-import com.kurento.kmf.content.PlayerHandler;
-import com.kurento.kmf.content.PlayerService;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
 
-@PlayerService(name = "SimplePlayerHandler", path = "/playerHttp/*", redirect = true, useControlProtocol = false)
-public class PlayerHttpHandler implements PlayerHandler {
+@HttpPlayerService(name = "SimplePlayerHandler", path = "/playerHttp/*", redirect = true, useControlProtocol = false)
+public class PlayerHttpHandler extends HttpPlayerHandler {
 
 	@Override
-	public void onPlayRequest(PlayRequest playRequest) throws ContentException {
-		if (playRequest.getContentId() != null
-				&& playRequest.getContentId().toLowerCase().startsWith("bar")) {
-			playRequest.play("https://ci.kurento.com/video/barcodes.webm");
-		} else if (playRequest.getContentId() != null
-				&& playRequest.getContentId().toLowerCase().startsWith("fi")) {
-			playRequest
-					.play("file:///home/jcaden/kurento/video_test/fiwarecut.webm");
+	public void onContentRequest(HttpPlayerSession session) throws Exception {
+		if (session.getContentId() != null
+				&& session.getContentId().toLowerCase().startsWith("bar")) {
+			session.start("https://ci.kurento.com/video/barcodes.webm");
+		} else if (session.getContentId() != null
+				&& session.getContentId().toLowerCase()
+						.endsWith("fiwarecut.webm")) {
+			session.start("https://ci.kurento.com/video/fiwarecut.webm");
 		} else {
-			playRequest.play("http://media.w3.org/2010/05/sintel/trailer.webm");
+			session.start("http://media.w3.org/2010/05/sintel/trailer.webm");
 		}
-	}
-
-	@Override
-	public void onContentPlayed(PlayRequest playRequest) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onContentError(PlayRequest playRequest,
-			ContentException exception) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

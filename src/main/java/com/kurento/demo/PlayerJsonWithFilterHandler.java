@@ -1,72 +1,55 @@
 package com.kurento.demo;
 
-import com.kurento.kmf.content.ContentException;
-import com.kurento.kmf.content.PlayRequest;
-import com.kurento.kmf.content.PlayerHandler;
-import com.kurento.kmf.content.PlayerService;
-import com.kurento.kmf.content.internal.player.PlayRequestImpl;
-import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
-import com.kurento.kmf.media.MediaEventListener;
+import com.kurento.kmf.content.ContentEvent;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.ZBarEvent;
 import com.kurento.kmf.media.ZBarFilter;
-import com.kurento.kms.api.MediaType;
+import com.kurento.kmf.media.events.CodeFoundEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 
-@PlayerService(name = "PlayerJsonWithFilterHandler", path = "/playerJsonFilter/*", useControlProtocol = true)
-public class PlayerJsonWithFilterHandler implements PlayerHandler {
+@HttpPlayerService(name = "PlayerJsonWithFilterHandler", path = "/playerJsonFilter/*", redirect = true, useControlProtocol = true)
+public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
 
 	@Override
-	public void onPlayRequest(final PlayRequest playRequest)
-			throws ContentException {
-		try {
+	public void onContentRequest(final HttpPlayerSession session)
+			throws Exception {
 
-			MediaPipelineFactory mpf = playRequest.getMediaPipelineFactory();
-			MediaPipeline mp = mpf.createMediaPipeline();
+		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
+		MediaPipeline mp = mpf.create();
 
-			PlayerEndPoint player = mp.createUriEndPoint(PlayerEndPoint.class,
-					"https://ci.kurento.com/video/barcodes.webm");
-			ZBarFilter zBarFilter = mp.createFilter(ZBarFilter.class);
-			player.getMediaSrcs(MediaType.VIDEO)
-					.iterator()
-					.next()
-					.connect(
-							zBarFilter.getMediaSinks(MediaType.VIDEO)
-									.iterator().next());
-			playRequest.usePlayer(player);
-			playRequest.play(zBarFilter);
-			playRequest.setAttribute("eventValue", "");
-			zBarFilter.addListener(new MediaEventListener<ZBarEvent>() {
-				@Override
-				public void onEvent(ZBarEvent event) {
-					if (playRequest.getAttribute("eventValue").toString()
-							.equals(event.getValue())) {
-						return;
+		PlayerEndPoint player = mp
+				.createPlayerEndPoint("https://ci.kurento.com/video/barcodes.webm");
+		session.setAttribute("player", player);
+
+		ZBarFilter zBarFilter = mp.createZBarFilter();
+		player.connect(zBarFilter);
+		session.start(zBarFilter);
+		session.setAttribute("eventValue", "");
+		zBarFilter
+				.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+
+					@Override
+					public void onEvent(CodeFoundEvent event) {
+						if (session.getAttribute("eventValue").toString()
+								.equals(event.getValue())) {
+							return;
+						}
+						session.setAttribute("eventValue", event.getValue());
+						session.publishEvent(new ContentEvent(event.getType(),
+								event.getValue()));
 					}
-					playRequest.setAttribute("eventValue", event.getValue());
-					((PlayRequestImpl) playRequest).produceEvents(JsonRpcEvent
-							.newEvent(event.getType(), event.getValue()));
-				}
-			});
-
-		} catch (Throwable t) {
-
-		}
+				});
 
 	}
 
 	@Override
-	public void onContentPlayed(PlayRequest playRequest) {
-		// TODO Auto-generated method stub
-
+	public void onContentStarted(HttpPlayerSession session) {
+		PlayerEndPoint playerendPoint = (PlayerEndPoint) session
+				.getAttribute("player");
+		playerendPoint.play();
 	}
-
-	@Override
-	public void onContentError(PlayRequest playRequest,
-			ContentException exception) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

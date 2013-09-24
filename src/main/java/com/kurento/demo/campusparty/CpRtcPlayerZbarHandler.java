@@ -1,51 +1,33 @@
 package com.kurento.demo.campusparty;
 
-import com.kurento.kmf.content.ContentException;
-import com.kurento.kmf.content.PlayRequest;
-import com.kurento.kmf.content.PlayerHandler;
-import com.kurento.kmf.content.PlayerService;
-import com.kurento.kmf.content.internal.player.PlayRequestImpl;
-import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
-import com.kurento.kmf.media.MediaEventListener;
-import com.kurento.kmf.media.ZBarEvent;
+import com.kurento.kmf.content.ContentEvent;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.events.CodeFoundEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 
-@PlayerService(name = "CpRtcPlayerZbarHandler", path = "/cpRtcPlayerZbar", useControlProtocol = true)
-public class CpRtcPlayerZbarHandler implements PlayerHandler {
+@HttpPlayerService(name = "CpRtcPlayerZbarHandler", path = "/cpRtcPlayerZbar", redirect = true, useControlProtocol = true)
+public class CpRtcPlayerZbarHandler extends HttpPlayerHandler {
 
 	@Override
-	public void onPlayRequest(final PlayRequest playRequest)
-			throws ContentException {
+	public void onContentRequest(final HttpPlayerSession session)
+			throws Exception {
 		if (CpRtcRtpZbarHandler.sharedFilterReference == null) {
-			playRequest.reject(500, "Rtp session has not been established");
+			session.terminate(500, "Rtp session has not been established");
 			return;
 		}
-
 		CpRtcRtpZbarHandler.sharedFilterReference
-				.addListener(new MediaEventListener<ZBarEvent>() {
+				.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
 
 					@Override
-					public void onEvent(ZBarEvent event) {
-						((PlayRequestImpl) playRequest)
-								.produceEvents(JsonRpcEvent.newEvent(
-										event.getType(), event.getValue()));
+					public void onEvent(CodeFoundEvent event) {
+						session.publishEvent(new ContentEvent(event.getType(),
+								event.getValue()));
 					}
 				});
 
-		playRequest.play(CpRtcRtpZbarHandler.sharedFilterReference);
-
-	}
-
-	@Override
-	public void onContentPlayed(PlayRequest playRequest) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void onContentError(PlayRequest playRequest,
-			ContentException exception) {
-		// TODO Auto-generated method stub
-
+		session.start(CpRtcRtpZbarHandler.sharedFilterReference);
 	}
 
 }
