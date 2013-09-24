@@ -83,11 +83,15 @@ kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
   GstElement *videosrc =
       gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
 
-  if (audiosrc != NULL)
+  if (audiosrc != NULL) {
     send_eos (audiosrc);
+    g_object_unref (audiosrc);
+  }
 
-  if (videosrc != NULL)
+  if (videosrc != NULL) {
     send_eos (videosrc);
+    g_object_unref (videosrc);
+  }
 }
 
 static gboolean
