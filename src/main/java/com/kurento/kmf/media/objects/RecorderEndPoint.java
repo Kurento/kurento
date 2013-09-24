@@ -7,6 +7,8 @@ import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 @IsMediaElement(type = "RecorderEndPoint")
 public class RecorderEndPoint extends UriEndPoint {
 
+	public static final String TYPE = "RecorderEndPoint";
+
 	RecorderEndPoint(MediaElementRefDTO endpointRef) {
 		super(endpointRef);
 	}

@@ -6,14 +6,16 @@ import org.apache.thrift.protocol.TProtocol;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.IsMediaEvent;
 import com.kurento.kmf.media.ZBarFilter;
-import com.kurento.kms.thrift.api.MediaEvent;
+import com.kurento.kms.thrift.api.Event;
 
-@IsMediaEvent(type = "ZbarEvent")
+@IsMediaEvent(type = ZBarEvent.TYPE)
 public class ZBarEvent extends ThriftSerializedMediaEvent {
+
+	public static final String TYPE = "ZBarEvent";
 
 	private String data;
 
-	public ZBarEvent(MediaEvent event) {
+	public ZBarEvent(Event event) {
 		super(event);
 	}
 
@@ -27,8 +29,8 @@ public class ZBarEvent extends ThriftSerializedMediaEvent {
 		try {
 			data = pr.readString();
 		} catch (TException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000); // TODO:
-																				// code
+			// TODO change error code
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 	}
 

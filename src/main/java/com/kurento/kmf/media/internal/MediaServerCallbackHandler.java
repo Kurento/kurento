@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.media.events.KmsEvent;
+import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.objects.MediaObject;
 
 public class MediaServerCallbackHandler {
@@ -15,41 +15,41 @@ public class MediaServerCallbackHandler {
 	private static final Logger log = LoggerFactory
 			.getLogger(MediaServerCallbackHandler.class);
 
-	private final ConcurrentHashMap<Long, Set<MediaEventListener<? extends KmsEvent>>> listenerMap;
+	private final ConcurrentHashMap<Long, Set<MediaEventListener<? extends MediaEvent>>> listenerMap;
 
 	MediaServerCallbackHandler() {
-		this.listenerMap = new ConcurrentHashMap<Long, Set<MediaEventListener<? extends KmsEvent>>>();
+		this.listenerMap = new ConcurrentHashMap<Long, Set<MediaEventListener<? extends MediaEvent>>>();
 	}
 
-	public void onEvent(KmsEvent kmsEvent, Long id) {
-		Set<MediaEventListener<? extends KmsEvent>> listeners = this.listenerMap
+	public void onEvent(MediaEvent kmsEvent, Long id) {
+		Set<MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
 				.get(id);
 		fireEvent(listeners, kmsEvent);
 	}
 
-	public void onError(KmsError kmsError) {
+	public void onError(MediaError kmsError) {
 		// TODO Call the appropriate handler
 	}
 
-	public <T extends KmsEvent> MediaEventListener<T> addListener(
+	public <T extends MediaEvent> MediaEventListener<T> addListener(
 			MediaObject mediaObject, MediaEventListener<T> listener) {
 
 		Long id = mediaObject.getObjectRef().getId();
-		Set<MediaEventListener<? extends KmsEvent>> listeners = this.listenerMap
+		Set<MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
 				.get(id);
 		// TODO Sequence of calls may not be atomic here
 		if (listeners == null) {
-			listeners = new CopyOnWriteArraySet<MediaEventListener<? extends KmsEvent>>();
+			listeners = new CopyOnWriteArraySet<MediaEventListener<? extends MediaEvent>>();
 			this.listenerMap.put(id, listeners);
 		}
 		listeners.add(listener);
 		return listener;
 	}
 
-	public <T extends KmsEvent> boolean removeListener(MediaObject mediaObject,
-			MediaEventListener<T> listener) {
+	public <T extends MediaEvent> boolean removeListener(
+			MediaObject mediaObject, MediaEventListener<T> listener) {
 		boolean removed = false;
-		Set<MediaEventListener<? extends KmsEvent>> listeners = this.listenerMap
+		Set<MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
 				.get(mediaObject.getObjectRef().getId());
 		// TODO Sequence of calls may not be atomic here
 		if (listeners != null) {
@@ -66,13 +66,13 @@ public class MediaServerCallbackHandler {
 	}
 
 	private void fireEvent(
-			Set<MediaEventListener<? extends KmsEvent>> listeners,
-			KmsEvent event) {
+			Set<MediaEventListener<? extends MediaEvent>> listeners,
+			MediaEvent event) {
 		if (listeners == null) {
 			return;
 		}
 
-		for (MediaEventListener<? extends KmsEvent> listener : listeners) {
+		for (MediaEventListener<? extends MediaEvent> listener : listeners) {
 			try {
 				listener.internalOnEvent(event);
 			} catch (Throwable t) {

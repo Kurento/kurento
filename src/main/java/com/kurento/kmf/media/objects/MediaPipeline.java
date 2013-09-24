@@ -1,10 +1,13 @@
 package com.kurento.kmf.media.objects;
 
+import java.nio.ByteBuffer;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.commands.MediaParams;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
@@ -47,16 +50,19 @@ public class MediaPipeline extends MediaObject {
 		return element;
 	}
 
-	public MediaElement createMediaElement(String elementType, Command params)
-			throws KurentoMediaFrameworkException {
-		// TODO change Command to Params
-		Client client = clientPool.acquireSync();
+	public MediaElement createMediaElement(String elementType,
+			MediaParams params) throws KurentoMediaFrameworkException {
+		Command command = new Command(params.getType());
+		if (params.getData() != null) {
+			command.setData(ByteBuffer.wrap(params.getData()));
+		}
 
+		Client client = clientPool.acquireSync();
 		MediaElementRefDTO elementRefDTO;
 		try {
 			elementRefDTO = new MediaElementRefDTO(
 					client.createMediaElementWithParams(
-							this.objectRef.getThriftRef(), elementType, params));
+							this.objectRef.getThriftRef(), elementType, command));
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -175,18 +181,21 @@ public class MediaPipeline extends MediaObject {
 
 	}
 
-	public void createMediaElement(String elementType, Command params,
+	public void createMediaElement(String elementType, MediaParams params,
 			final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 
-		// TODO change Command to Params
-		final AsyncClient client = this.clientPool.acquireAsync();
+		Command command = new Command(params.getType());
+		if (params.getData() != null) {
+			command.setData(ByteBuffer.wrap(params.getData()));
+		}
 
+		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
 			client.createMediaElementWithParams(
 					this.objectRef.getThriftRef(),
 					elementType,
-					params,
+					command,
 					new AsyncMethodCallback<createMediaElementWithParams_call>() {
 
 						@Override

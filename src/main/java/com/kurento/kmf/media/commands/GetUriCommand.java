@@ -1,9 +1,14 @@
 package com.kurento.kmf.media.commands;
 
+import com.kurento.kmf.media.IsMediaCommand;
+
+@IsMediaCommand(type = GetUriCommand.TYPE)
 public class GetUriCommand extends MediaCommand {
 
+	public static final String TYPE = "GetUriCommand";
+
 	public GetUriCommand() {
-		super("GetUriCommand");
+		super(TYPE);
 	}
 
 	@Override

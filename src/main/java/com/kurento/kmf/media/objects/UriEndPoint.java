@@ -1,9 +1,7 @@
 package com.kurento.kmf.media.objects;
 
-import com.kurento.kmf.media.IsMediaElement;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 
-@IsMediaElement(type = "UriEndPoint")
 public abstract class UriEndPoint extends EndPoint {
 
 	UriEndPoint(MediaElementRefDTO endpointRef) {

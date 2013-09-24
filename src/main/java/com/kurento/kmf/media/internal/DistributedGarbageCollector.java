@@ -12,8 +12,8 @@ import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.media.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.MediaObjectRef;
 import com.kurento.kms.thrift.api.MediaServerService;
-import com.kurento.kms.thrift.api.mediaServerConstants;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.keepAlive_call;
+import com.kurento.kms.thrift.api.mediaServerConstants;
 
 public class DistributedGarbageCollector {
 
@@ -45,9 +45,8 @@ public class DistributedGarbageCollector {
 			public void run() {
 				keepAlive(objectRef);
 			}
-			// TODO: put the constant in upper case in the thrift interface
-		}, mediaServerConstants.GarbagePeriod,
-				mediaServerConstants.GarbagePeriod); // TODO: period
+		}, mediaServerConstants.GARBAGE_PERIOD,
+				mediaServerConstants.GARBAGE_PERIOD); // TODO: period
 	}
 
 	public void removeReference(MediaObjectRef objectRef) {
@@ -60,7 +59,7 @@ public class DistributedGarbageCollector {
 		} else {
 			Timer timer = timers.remove(objectRef);
 			if (timer == null) {
-				//TODO: Log error, this should never happen
+				// TODO: Log error, this should never happen
 			}
 			timer.cancel();
 		}
@@ -78,7 +77,6 @@ public class DistributedGarbageCollector {
 								@Override
 								public void onError(Exception exception) {
 									clientPool.release(asyncClient);
-									// TODO Auto-generated method stub
 									// TODO: log error
 								}
 
@@ -88,7 +86,6 @@ public class DistributedGarbageCollector {
 								}
 							});
 		} catch (TException e) {
-			// TODO Auto-generated catch block
 			// TODO log error and propagate exception
 			e.printStackTrace();
 		}

@@ -4,8 +4,10 @@ import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.IsMediaElement;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 
-@IsMediaElement(type = "HttpEndPoint")
+@IsMediaElement(type = HttpEndPoint.TYPE)
 public class HttpEndPoint extends EndPoint {
+
+	public static final String TYPE = "HttpEndPoint";
 
 	HttpEndPoint(MediaElementRefDTO endpointRef) {
 		super(endpointRef);

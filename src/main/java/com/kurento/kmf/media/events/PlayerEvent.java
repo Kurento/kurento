@@ -2,11 +2,15 @@ package com.kurento.kmf.media.events;
 
 import org.apache.thrift.protocol.TProtocol;
 
-import com.kurento.kms.thrift.api.MediaEvent;
+import com.kurento.kmf.media.IsMediaEvent;
+import com.kurento.kms.thrift.api.Event;
 
+@IsMediaEvent(type = PlayerEvent.TYPE)
 public class PlayerEvent extends ThriftSerializedMediaEvent {
 
-	PlayerEvent(MediaEvent event) {
+	public static final String TYPE = "GetUriCommandResult";
+
+	PlayerEvent(Event event) {
 		super(event);
 	}
 

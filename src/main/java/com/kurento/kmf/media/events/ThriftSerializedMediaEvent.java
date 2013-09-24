@@ -6,16 +6,16 @@ import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kms.thrift.api.MediaEvent;
+import com.kurento.kms.thrift.api.Event;
 
-public abstract class ThriftSerializedMediaEvent extends KmsEvent {
+public abstract class ThriftSerializedMediaEvent extends MediaEvent {
 
-	public ThriftSerializedMediaEvent(MediaEvent event) {
+	public ThriftSerializedMediaEvent(Event event) {
 		super(event);
 	}
 
 	@Override
-	public void deserializeData(MediaEvent event) {
+	public void deserializeData(Event event) {
 		TMemoryBuffer tr = new TMemoryBuffer(event.data.remaining());
 		TProtocol pr = new TBinaryProtocol(tr);
 		byte data[] = new byte[event.data.remaining()];
@@ -24,8 +24,8 @@ public abstract class ThriftSerializedMediaEvent extends KmsEvent {
 			tr.write(data);
 			deserializeFromTProtocol(pr);
 		} catch (TTransportException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000); // TODO
-																				// code
+			// TODO change error code
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
 	}

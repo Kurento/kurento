@@ -20,8 +20,8 @@ public abstract class ThriftSerializedCommandResult extends MediaCommandResult {
 			tr.write(data);
 			deserializeFromTProtocol(pr);
 		} catch (TTransportException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000); // TODO
-																				// code
+			// TODO change error code
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 	}
 

@@ -3,9 +3,9 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kmf.media.internal.refs.MediaRefConverter.fromThrift;
 
 import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
-import com.kurento.kms.thrift.api.MediaError;
+import com.kurento.kms.thrift.api.Error;
 
-public class KmsError {
+public class MediaError {
 
 	private MediaObjectRefDTO objectRef;
 
@@ -15,7 +15,7 @@ public class KmsError {
 
 	private String type;
 
-	KmsError(MediaError error) {
+	MediaError(Error error) {
 		this.type = error.type;
 		this.description = error.description;
 		this.errorCode = error.errorCode;

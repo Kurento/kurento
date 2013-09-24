@@ -7,10 +7,10 @@ import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
 import com.kurento.kmf.media.objects.MediaObject;
-import com.kurento.kms.thrift.api.MediaEvent;
+import com.kurento.kms.thrift.api.Event;
 
 //TODO: rename to MediaEvent. Rename thrift MediaEvent to Event
-public abstract class KmsEvent {
+public abstract class MediaEvent {
 
 	protected @Autowired
 	ApplicationContext applicationContext;
@@ -21,7 +21,7 @@ public abstract class KmsEvent {
 	private final String type;
 
 	// TODO: should not be visible to final developer
-	public KmsEvent(MediaEvent event) {
+	public MediaEvent(Event event) {
 		this.sourceRef = fromThrift(event.source);
 		this.type = event.type;
 	}
@@ -29,7 +29,7 @@ public abstract class KmsEvent {
 	public MediaObject getSource() {
 		if (source == null) {
 			source = (MediaObject) applicationContext.getBean("mediaObject",
-					sourceRef); // TODO: check that this factory exists
+					sourceRef);
 		}
 		return source;
 	}
@@ -39,6 +39,6 @@ public abstract class KmsEvent {
 	}
 
 	// TODO: should not be visible to final developer
-	public abstract void deserializeData(MediaEvent event);
+	public abstract void deserializeData(Event event);
 
 }

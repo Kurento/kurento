@@ -13,7 +13,8 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.commands.MediaCommand;
 import com.kurento.kmf.media.commands.MediaCommandResult;
-import com.kurento.kmf.media.events.KmsEvent;
+import com.kurento.kmf.media.events.MediaEvent;
+import com.kurento.kmf.media.internal.DistributedGarbageCollector;
 import com.kurento.kmf.media.internal.MediaApiConfiguration;
 import com.kurento.kmf.media.internal.MediaEventListener;
 import com.kurento.kmf.media.internal.MediaServerCallbackHandler;
@@ -35,6 +36,9 @@ import com.kurento.kms.thrift.api.MediaServerService.Client;
 public abstract class MediaObject {
 
 	protected final MediaObjectRefDTO objectRef;
+
+	@Autowired
+	private DistributedGarbageCollector distributedGarbageCollector;
 
 	@Autowired
 	protected MediaServerClientPoolService clientPool;
@@ -59,6 +63,7 @@ public abstract class MediaObject {
 
 	public MediaObject(MediaObjectRefDTO ref) {
 		objectRef = ref;
+		distributedGarbageCollector.registerReference(objectRef.getThriftRef());
 	}
 
 	/**
@@ -69,6 +74,10 @@ public abstract class MediaObject {
 	 * @throws InvokationException
 	 */
 	public void release() throws KurentoMediaFrameworkException {
+
+		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
+		handler.removeAllListeners(this);
+
 		Client client = clientPool.acquireSync();
 
 		try {
@@ -82,8 +91,6 @@ public abstract class MediaObject {
 		} finally {
 			clientPool.release(client);
 		}
-
-		// TODO remove from DGC
 	}
 
 	/**
@@ -94,7 +101,7 @@ public abstract class MediaObject {
 	 * @throws MediaServerException
 	 * @throws InvokationException
 	 */
-	public <E extends KmsEvent> String addListener(
+	public <E extends MediaEvent> String addListener(
 			MediaEventListener<E> listener)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
@@ -120,7 +127,7 @@ public abstract class MediaObject {
 		return callbackToken;
 	}
 
-	public <E extends KmsEvent> void removeListener(
+	public <E extends MediaEvent> void removeListener(
 			MediaEventListener<E> listener)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
@@ -156,9 +163,14 @@ public abstract class MediaObject {
 
 		CommandResult result;
 
+		Command thriftCommand = new Command(command.getType());
+		if (command.getData() != null) {
+			thriftCommand.setData(ByteBuffer.wrap(command.getData()));
+		}
+
 		try {
-			result = client.sendCommand(objectRef.getThriftRef(), new Command(
-					command.getType(), ByteBuffer.wrap(command.getData())));
+			result = client
+					.sendCommand(objectRef.getThriftRef(), thriftCommand);
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -170,39 +182,13 @@ public abstract class MediaObject {
 		}
 
 		return (MediaCommandResult) ctx.getBean("mediaCommandResult",
-				command.getType(), result); // TODO: implement basing on
-											// annotations and call
-											// mediaCommandResult.deserializeCommandResult(result);
-	}
-
-	/**
-	 * This method is invoked periodically to avoid garbage collection
-	 * 
-	 * @throws MediaServerException
-	 * @throws InvokationException
-	 */
-	protected void keepAlive() throws KurentoMediaFrameworkException {
-		// TODO remove from here
-		Client client = clientPool.acquireSync();
-
-		try {
-			client.keepAlive(objectRef.getThriftRef());
-		} catch (MediaServerException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e,
-					e.getErrorCode());
-		} catch (TException e) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		} finally {
-			clientPool.release(client);
-		}
+				command.getType(), result);
 	}
 
 	@Override
 	protected void finalize() {
-		// TODO remove from the DGC container that holds
-		// the referenced objects, so the keepalive method is not
-		// called any more
+		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
+		handler.removeAllListeners(this);
 	}
 
 	/**
@@ -288,6 +274,10 @@ public abstract class MediaObject {
 	 */
 	public void release(final Continuation<Void> cont)
 			throws KurentoMediaFrameworkException {
+
+		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
+		handler.removeAllListeners(this);
+
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
@@ -322,7 +312,6 @@ public abstract class MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
-
 	}
 
 	/**
@@ -333,7 +322,7 @@ public abstract class MediaObject {
 	 * @throws MediaServerException
 	 * @throws InvokationException
 	 */
-	public <E extends KmsEvent> void addListener(
+	public <E extends MediaEvent> void addListener(
 			final MediaEventListener<E> listener,
 			final Continuation<String> cont)
 			throws KurentoMediaFrameworkException {
@@ -379,7 +368,7 @@ public abstract class MediaObject {
 		}
 	}
 
-	public <E extends KmsEvent> void removeListener(
+	public <E extends MediaEvent> void removeListener(
 			final MediaEventListener<E> listener, final Continuation<Void> cont)
 			throws KurentoMediaFrameworkException {
 
@@ -425,7 +414,7 @@ public abstract class MediaObject {
 
 	/**
 	 * Sends a command to a media object. Classes that extend
-	 * {@link MediaObject} should invoke command in the server throguh this
+	 * {@link MediaObject} should invoke command in the server through this
 	 * method, wrapping the command in specific methods in the inheriting class.
 	 * 
 	 * @param command
@@ -433,13 +422,18 @@ public abstract class MediaObject {
 	 * @throws MediaServerException
 	 * @throws InvokationException
 	 */
-	protected void sendCommand(Command command,
+	protected void sendCommand(MediaCommand command,
 			final Continuation<CommandResult> cont)
 			throws KurentoMediaFrameworkException {
 		final AsyncClient client = this.clientPool.acquireAsync();
 
+		Command thriftCommand = new Command(command.getType());
+		if (command.getData() != null) {
+			thriftCommand.setData(ByteBuffer.wrap(command.getData()));
+		}
+
 		try {
-			client.sendCommand(this.objectRef.getThriftRef(), command,
+			client.sendCommand(this.objectRef.getThriftRef(), thriftCommand,
 					new AsyncMethodCallback<sendCommand_call>() {
 
 						@Override

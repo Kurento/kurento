@@ -1,6 +1,5 @@
 package com.kurento.kmf.media.objects;
 
-import com.kurento.kmf.media.IsMediaElement;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 
 //// TODO: update doc
@@ -122,7 +121,6 @@ import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 // * </p>
 // * </ul>
 // */
-@IsMediaElement(type = "SdpEndPoint")
 public abstract class SdpEndPoint extends EndPoint {
 
 	SdpEndPoint(MediaElementRefDTO endpointRef) {

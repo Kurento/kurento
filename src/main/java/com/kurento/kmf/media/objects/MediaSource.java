@@ -16,8 +16,10 @@ import com.kurento.kms.thrift.api.MediaServerException;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.MediaServerService.Client;
 
-@IsMediaElement(type = "MediaSource")
+@IsMediaElement(type = MediaSource.TYPE)
 public class MediaSource extends MediaPad {
+
+	public static final String TYPE = "MediaSource";
 
 	// TODO this is public cause it´s used in MediaApiAppContextConfiguration
 	public MediaSource(MediaPadRefDTO objectRef) {
