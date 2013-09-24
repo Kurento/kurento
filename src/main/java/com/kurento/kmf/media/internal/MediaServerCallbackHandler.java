@@ -21,9 +21,9 @@ public class MediaServerCallbackHandler {
 		this.listenerMap = new ConcurrentHashMap<Long, Set<MediaEventListener<? extends KmsEvent>>>();
 	}
 
-	public void onEvent(KmsEvent kmsEvent) {
+	public void onEvent(KmsEvent kmsEvent, Long id) {
 		Set<MediaEventListener<? extends KmsEvent>> listeners = this.listenerMap
-				.get(kmsEvent.getObjectRef().getId());
+				.get(id);
 		fireEvent(listeners, kmsEvent);
 	}
 

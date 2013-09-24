@@ -2,6 +2,8 @@ package com.kurento.kmf.media.objects;
 
 import static com.kurento.kmf.media.internal.refs.MediaRefConverter.fromThrift;
 
+import java.nio.ByteBuffer;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,8 @@ import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.commands.MediaCommand;
+import com.kurento.kmf.media.commands.MediaCommandResult;
 import com.kurento.kmf.media.events.KmsEvent;
 import com.kurento.kmf.media.internal.MediaApiConfiguration;
 import com.kurento.kmf.media.internal.MediaEventListener;
@@ -48,6 +52,7 @@ public abstract class MediaObject {
 
 	private MediaObject parent;
 
+	// TODO: this should not be visible to final developers
 	public MediaObjectRefDTO getObjectRef() {
 		return objectRef;
 	}
@@ -145,14 +150,15 @@ public abstract class MediaObject {
 	 * @throws MediaServerException
 	 * @throws InvokationException
 	 */
-	protected CommandResult sendCommand(Command command)
+	protected MediaCommandResult sendCommand(MediaCommand command)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
 
 		CommandResult result;
 
 		try {
-			result = client.sendCommand(objectRef.getThriftRef(), command);
+			result = client.sendCommand(objectRef.getThriftRef(), new Command(
+					command.getType(), ByteBuffer.wrap(command.getData())));
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -163,7 +169,10 @@ public abstract class MediaObject {
 			clientPool.release(client);
 		}
 
-		return result;
+		return (MediaCommandResult) ctx.getBean("mediaCommandResult",
+				command.getType(), result); // TODO: implement basing on
+											// annotations and call
+											// mediaCommandResult.deserializeCommandResult(result);
 	}
 
 	/**

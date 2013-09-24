@@ -10,6 +10,7 @@ import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -31,6 +32,9 @@ public class MediaHandlerServer {
 
 	@Autowired
 	private MediaServerCallbackHandler handler;
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	public MediaHandlerServer() {
 	}
@@ -106,8 +110,10 @@ public class MediaHandlerServer {
 				public void onEvent(String callbackToken, MediaEvent event)
 						throws TException {
 					// TODO create specific type of Event
-					KmsEvent kmsEvent = new KmsEvent(event);
-					handler.onEvent(kmsEvent);
+					KmsEvent kmsEvent = (KmsEvent) applicationContext.getBean(
+							"mediaEvent", event); // TODO: create and call
+													// deserializeData()
+					handler.onEvent(kmsEvent, event.getSource().id);
 				}
 			});
 }

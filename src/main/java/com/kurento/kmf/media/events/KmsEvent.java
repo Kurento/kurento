@@ -2,36 +2,43 @@ package com.kurento.kmf.media.events;
 
 import static com.kurento.kmf.media.internal.refs.MediaRefConverter.fromThrift;
 
-import java.nio.ByteBuffer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
+import com.kurento.kmf.media.objects.MediaObject;
 import com.kurento.kms.thrift.api.MediaEvent;
 
-public class KmsEvent {
+//TODO: rename to MediaEvent. Rename thrift MediaEvent to Event
+public abstract class KmsEvent {
 
-	private final MediaObjectRefDTO objectRef;
+	protected @Autowired
+	ApplicationContext applicationContext;
+
+	private final MediaObjectRefDTO sourceRef;
+	private MediaObject source;
 
 	private final String type;
 
-	private final ByteBuffer data;
-
+	// TODO: should not be visible to final developer
 	public KmsEvent(MediaEvent event) {
-		this.objectRef = fromThrift(event.source);
+		this.sourceRef = fromThrift(event.source);
 		this.type = event.type;
-		// TODO is this ok?
-		this.data = event.data;
 	}
 
-	public MediaObjectRefDTO getObjectRef() {
-		return this.objectRef;
+	public MediaObject getSource() {
+		if (source == null) {
+			source = (MediaObject) applicationContext.getBean("mediaObject",
+					sourceRef); // TODO: check that this factory exists
+		}
+		return source;
 	}
 
 	public String getType() {
 		return this.type;
 	}
 
-	public ByteBuffer getData() {
-		return data;
-	}
+	// TODO: should not be visible to final developer
+	public abstract void deserializeData(MediaEvent event);
 
 }
