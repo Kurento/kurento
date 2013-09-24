@@ -192,6 +192,8 @@ recv_sample (GstElement * appsink, gpointer user_data)
     } else {
       GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (appsrc));
     }
+  } else {
+    gst_caps_unref (caps);
   }
 
   buffer = gst_sample_get_buffer (sample);
