@@ -16,8 +16,8 @@ import org.springframework.core.task.TaskExecutor;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.objects.MediaPipelineFactory;
-import com.kurento.kms.thrift.api.Error;
-import com.kurento.kms.thrift.api.Event;
+import com.kurento.kms.thrift.api.KmsError;
+import com.kurento.kms.thrift.api.KmsEvent;
 import com.kurento.kms.thrift.api.MediaHandlerService;
 import com.kurento.kms.thrift.api.MediaHandlerService.Iface;
 import com.kurento.kms.thrift.api.MediaHandlerService.Processor;
@@ -74,7 +74,7 @@ public class MediaHandlerServer {
 		}
 	}
 
-	private TaskExecutor taskExecutor = new TaskExecutor() {
+	private final TaskExecutor taskExecutor = new TaskExecutor() {
 
 		@Override
 		public void execute(Runnable task) {
@@ -100,18 +100,20 @@ public class MediaHandlerServer {
 			new Iface() {
 
 				@Override
-				public void onError(String callbackToken, Error error)
+				public void onError(String callbackToken, KmsError error)
 						throws TException {
-					MediaError kmsError = new MediaError(error);
-					handler.onError(kmsError);
+					MediaError mediaError = (MediaError) applicationContext
+							.getBean("mediaError", error);
+					handler.onError(callbackToken, mediaError);
 				}
 
 				@Override
-				public void onEvent(String callbackToken, Event event)
+				public void onEvent(String callbackToken, KmsEvent event)
 						throws TException {
 					MediaEvent kmsEvent = (MediaEvent) applicationContext
 							.getBean("mediaEvent", event);
-					handler.onEvent(kmsEvent, event.getSource().id);
+					handler.onEvent(callbackToken,
+							Long.valueOf(event.getSource().id), kmsEvent);
 				}
 			});
 }

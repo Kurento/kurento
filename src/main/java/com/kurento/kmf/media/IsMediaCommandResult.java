@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IsMediaCommandResult {
 
-	public String commandType();
+	public String dataType();
 }

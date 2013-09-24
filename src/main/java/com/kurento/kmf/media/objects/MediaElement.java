@@ -22,7 +22,7 @@ import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaSrcs_ca
 import com.kurento.kms.thrift.api.MediaServerService.Client;
 import com.kurento.kms.thrift.api.MediaType;
 
-public abstract class MediaElement extends MediaObject {
+public class MediaElement extends MediaObject {
 
 	public MediaElement(MediaElementRefDTO objectRef) {
 		super(objectRef);
@@ -39,12 +39,12 @@ public abstract class MediaElement extends MediaObject {
 	public Collection<MediaSource> getMediaSrcs()
 			throws KurentoMediaFrameworkException {
 
-		Client client = clientPool.acquireSync();
+		Client client = this.clientPool.acquireSync();
 
 		List<MediaObjectRef> srcRefs;
 
 		try {
-			srcRefs = client.getMediaSrcs(objectRef.getThriftRef());
+			srcRefs = client.getMediaSrcs(this.objectRef.getThriftRef());
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -52,7 +52,7 @@ public abstract class MediaElement extends MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} finally {
-			clientPool.release(client);
+			this.clientPool.release(client);
 		}
 
 		return createMediaSources(srcRefs);
@@ -70,13 +70,13 @@ public abstract class MediaElement extends MediaObject {
 	 */
 	public Collection<MediaSource> getMediaSrcs(MediaType mediaType)
 			throws KurentoMediaFrameworkException {
-		Client client = clientPool.acquireSync();
+		Client client = this.clientPool.acquireSync();
 
 		List<MediaObjectRef> srcRefs;
 
 		try {
-			srcRefs = client.getMediaSrcsByMediaType(objectRef.getThriftRef(),
-					mediaType);
+			srcRefs = client.getMediaSrcsByMediaType(
+					this.objectRef.getThriftRef(), mediaType);
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -84,7 +84,7 @@ public abstract class MediaElement extends MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} finally {
-			clientPool.release(client);
+			this.clientPool.release(client);
 		}
 
 		return createMediaSources(srcRefs);
@@ -105,13 +105,13 @@ public abstract class MediaElement extends MediaObject {
 	public Collection<MediaSource> getMediaSrcs(MediaType mediaType,
 			String description) throws KurentoMediaFrameworkException {
 
-		Client client = clientPool.acquireSync();
+		Client client = this.clientPool.acquireSync();
 
 		List<MediaObjectRef> srcRefs;
 
 		try {
 			srcRefs = client.getMediaSrcsByFullDescription(
-					objectRef.getThriftRef(), mediaType, description);
+					this.objectRef.getThriftRef(), mediaType, description);
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -119,7 +119,7 @@ public abstract class MediaElement extends MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} finally {
-			clientPool.release(client);
+			this.clientPool.release(client);
 		}
 
 		return createMediaSources(srcRefs);
@@ -134,12 +134,12 @@ public abstract class MediaElement extends MediaObject {
 	public Collection<MediaSink> getMediaSinks()
 			throws KurentoMediaFrameworkException {
 
-		Client client = clientPool.acquireSync();
+		Client client = this.clientPool.acquireSync();
 
 		List<MediaObjectRef> sinkRefs;
 
 		try {
-			sinkRefs = client.getMediaSinks(objectRef.getThriftRef());
+			sinkRefs = client.getMediaSinks(this.objectRef.getThriftRef());
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -147,7 +147,7 @@ public abstract class MediaElement extends MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} finally {
-			clientPool.release(client);
+			this.clientPool.release(client);
 		}
 
 		return createMediaSinks(sinkRefs);
@@ -164,13 +164,13 @@ public abstract class MediaElement extends MediaObject {
 	 */
 	public Collection<MediaSink> getMediaSinks(MediaType mediaType)
 			throws KurentoMediaFrameworkException {
-		Client client = clientPool.acquireSync();
+		Client client = this.clientPool.acquireSync();
 
 		List<MediaObjectRef> sinkRefs;
 
 		try {
 			sinkRefs = client.getMediaSinksByMediaType(
-					objectRef.getThriftRef(), mediaType);
+					this.objectRef.getThriftRef(), mediaType);
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -178,7 +178,7 @@ public abstract class MediaElement extends MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} finally {
-			clientPool.release(client);
+			this.clientPool.release(client);
 		}
 
 		return createMediaSinks(sinkRefs);
@@ -198,13 +198,13 @@ public abstract class MediaElement extends MediaObject {
 	public Collection<MediaSink> getMediaSinks(MediaType mediaType,
 			String description) throws KurentoMediaFrameworkException {
 
-		Client client = clientPool.acquireSync();
+		Client client = this.clientPool.acquireSync();
 
 		List<MediaObjectRef> sinkRefs;
 
 		try {
 			sinkRefs = client.getMediaSinksByFullDescription(
-					objectRef.getThriftRef(), mediaType, description);
+					this.objectRef.getThriftRef(), mediaType, description);
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -212,7 +212,7 @@ public abstract class MediaElement extends MediaObject {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} finally {
-			clientPool.release(client);
+			this.clientPool.release(client);
 		}
 
 		return createMediaSinks(sinkRefs);
@@ -228,9 +228,9 @@ public abstract class MediaElement extends MediaObject {
 	 */
 	public void getMediaSrcs(final Continuation<Collection<MediaSource>> cont)
 			throws KurentoMediaFrameworkException {
-		final AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
-			client.getMediaSrcs(objectRef.getThriftRef(),
+			client.getMediaSrcs(this.objectRef.getThriftRef(),
 					new AsyncMethodCallback<getMediaSrcs_call>() {
 
 						@Override
@@ -246,20 +246,20 @@ public abstract class MediaElement extends MediaObject {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, 30000);
 							} finally {
-								clientPool.release(client);
+								MediaElement.this.clientPool.release(client);
 							}
 							cont.onSuccess(createMediaSources(srcRefs));
 						}
 
 						@Override
 						public void onError(Exception exception) {
-							clientPool.release(client);
+							MediaElement.this.clientPool.release(client);
 							cont.onError(exception);
 						}
 
 					});
 		} catch (TException e) {
-			clientPool.release(client);
+			this.clientPool.release(client);
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
@@ -279,10 +279,11 @@ public abstract class MediaElement extends MediaObject {
 	public void getMediaSrcs(MediaType mediaType,
 			final Continuation<Collection<MediaSource>> cont)
 			throws KurentoMediaFrameworkException {
-		final AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = this.clientPool.acquireAsync();
 
 		try {
-			client.getMediaSrcsByMediaType(objectRef.getThriftRef(), mediaType,
+			client.getMediaSrcsByMediaType(this.objectRef.getThriftRef(),
+					mediaType,
 					new AsyncMethodCallback<getMediaSrcsByMediaType_call>() {
 
 						@Override
@@ -299,20 +300,20 @@ public abstract class MediaElement extends MediaObject {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, 30000);
 							} finally {
-								clientPool.release(client);
+								MediaElement.this.clientPool.release(client);
 							}
 							cont.onSuccess(createMediaSources(srcRefs));
 						}
 
 						@Override
 						public void onError(Exception exception) {
-							clientPool.release(client);
+							MediaElement.this.clientPool.release(client);
 							cont.onError(exception);
 						}
 
 					});
 		} catch (TException e) {
-			clientPool.release(client);
+			this.clientPool.release(client);
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
@@ -334,10 +335,10 @@ public abstract class MediaElement extends MediaObject {
 	public void getMediaSrcs(MediaType mediaType, String description,
 			final Continuation<Collection<MediaSource>> cont)
 			throws KurentoMediaFrameworkException {
-		final AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
 			client.getMediaSrcsByFullDescription(
-					objectRef.getThriftRef(),
+					this.objectRef.getThriftRef(),
 					mediaType,
 					description,
 					new AsyncMethodCallback<getMediaSrcsByFullDescription_call>() {
@@ -356,20 +357,20 @@ public abstract class MediaElement extends MediaObject {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, 30000);
 							} finally {
-								clientPool.release(client);
+								MediaElement.this.clientPool.release(client);
 							}
 							cont.onSuccess(createMediaSources(srcRefs));
 						}
 
 						@Override
 						public void onError(Exception exception) {
-							clientPool.release(client);
+							MediaElement.this.clientPool.release(client);
 							cont.onError(exception);
 						}
 
 					});
 		} catch (TException e) {
-			clientPool.release(client);
+			this.clientPool.release(client);
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
@@ -384,9 +385,9 @@ public abstract class MediaElement extends MediaObject {
 	 */
 	public void getMediaSinks(final Continuation<Collection<MediaSink>> cont)
 			throws KurentoMediaFrameworkException {
-		final AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
-			client.getMediaSinks(objectRef.getThriftRef(),
+			client.getMediaSinks(this.objectRef.getThriftRef(),
 					new AsyncMethodCallback<AsyncClient.getMediaSinks_call>() {
 
 						@Override
@@ -403,20 +404,20 @@ public abstract class MediaElement extends MediaObject {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, 30000);
 							} finally {
-								clientPool.release(client);
+								MediaElement.this.clientPool.release(client);
 							}
 							cont.onSuccess(createMediaSinks(sinkRefs));
 						}
 
 						@Override
 						public void onError(Exception exception) {
-							clientPool.release(client);
+							MediaElement.this.clientPool.release(client);
 							cont.onError(exception);
 						}
 
 					});
 		} catch (TException e) {
-			clientPool.release(client);
+			this.clientPool.release(client);
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
@@ -435,9 +436,9 @@ public abstract class MediaElement extends MediaObject {
 	public void getMediaSinks(MediaType mediaType,
 			final Continuation<Collection<MediaSink>> cont)
 			throws KurentoMediaFrameworkException {
-		final AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
-			client.getMediaSinksByMediaType(objectRef.getThriftRef(),
+			client.getMediaSinksByMediaType(this.objectRef.getThriftRef(),
 					mediaType,
 					new AsyncMethodCallback<getMediaSinksByMediaType_call>() {
 
@@ -455,20 +456,20 @@ public abstract class MediaElement extends MediaObject {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, 30000);
 							} finally {
-								clientPool.release(client);
+								MediaElement.this.clientPool.release(client);
 							}
 							cont.onSuccess(createMediaSinks(sinkRefs));
 						}
 
 						@Override
 						public void onError(Exception exception) {
-							clientPool.release(client);
+							MediaElement.this.clientPool.release(client);
 							cont.onError(exception);
 						}
 
 					});
 		} catch (TException e) {
-			clientPool.release(client);
+			this.clientPool.release(client);
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
@@ -489,10 +490,10 @@ public abstract class MediaElement extends MediaObject {
 	public void getMediaSinks(MediaType mediaType, String description,
 			final Continuation<Collection<MediaSink>> cont)
 			throws KurentoMediaFrameworkException {
-		final AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
 			client.getMediaSinksByFullDescription(
-					objectRef.getThriftRef(),
+					this.objectRef.getThriftRef(),
 					mediaType,
 					description,
 					new AsyncMethodCallback<getMediaSinksByFullDescription_call>() {
@@ -511,7 +512,7 @@ public abstract class MediaElement extends MediaObject {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, 30000);
 							} finally {
-								clientPool.release(client);
+								MediaElement.this.clientPool.release(client);
 							}
 
 							cont.onSuccess(createMediaSinks(sinkRefs));
@@ -519,13 +520,13 @@ public abstract class MediaElement extends MediaObject {
 
 						@Override
 						public void onError(Exception exception) {
-							clientPool.release(client);
+							MediaElement.this.clientPool.release(client);
 							cont.onError(exception);
 						}
 
 					});
 		} catch (TException e) {
-			clientPool.release(client);
+			this.clientPool.release(client);
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
@@ -536,7 +537,7 @@ public abstract class MediaElement extends MediaObject {
 			Collection<MediaObjectRef> sinkRefs) {
 		Collection<MediaSink> sinks = new ArrayList<MediaSink>(sinkRefs.size());
 		for (MediaObjectRef padRef : sinkRefs) {
-			MediaSink sink = (MediaSink) ctx.getBean("mediaObject",
+			MediaSink sink = (MediaSink) this.ctx.getBean("mediaObject",
 					new MediaPadRefDTO(padRef));
 			sinks.add(sink);
 		}
@@ -549,7 +550,7 @@ public abstract class MediaElement extends MediaObject {
 		Collection<MediaSource> srcs = new ArrayList<MediaSource>(
 				srcRefs.size());
 		for (MediaObjectRef padRef : srcRefs) {
-			MediaSource src = (MediaSource) ctx.getBean("mediaObject",
+			MediaSource src = (MediaSource) this.ctx.getBean("mediaObject",
 					new MediaPadRefDTO(padRef));
 			srcs.add(src);
 		}

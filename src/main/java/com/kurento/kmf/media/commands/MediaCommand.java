@@ -9,9 +9,10 @@ public abstract class MediaCommand {
 	}
 
 	public String getType() {
-		return type;
+		return this.type;
 	}
 
 	// TODO: should not be visible to final developer
 	public abstract byte[] getData();
+
 }

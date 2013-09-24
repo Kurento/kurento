@@ -6,9 +6,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.Assert;
+import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.MediaObjectRef;
 import com.kurento.kms.thrift.api.MediaServerService;
@@ -17,11 +20,17 @@ import com.kurento.kms.thrift.api.mediaServerConstants;
 
 public class DistributedGarbageCollector {
 
+	private static final Logger log = LoggerFactory
+			.getLogger(DistributedGarbageCollector.class);
+
+	private static final long GARBAGE_PERIOD_MILIS = mediaServerConstants.GARBAGE_PERIOD * 1000;
+
 	@Autowired
 	protected MediaServerClientPoolService clientPool;
 
-	private ConcurrentHashMap<MediaObjectRef, Integer> refCounters = new ConcurrentHashMap<MediaObjectRef, Integer>();
-	private ConcurrentHashMap<MediaObjectRef, Timer> timers = new ConcurrentHashMap<MediaObjectRef, Timer>();
+	private final ConcurrentHashMap<Long, Integer> refCounters = new ConcurrentHashMap<Long, Integer>();
+	// TODO Let spring manage this timers with a TimerTaskExecutor
+	private final ConcurrentHashMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
 
 	public synchronized void registerReference(final MediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
@@ -34,10 +43,11 @@ public class DistributedGarbageCollector {
 		} else {
 			counter++;
 		}
-		refCounters.put(objectRef, counter);
+		refCounters.put(Long.valueOf(objectRef.id), counter);
 
+		// TODO Let spring manage this timers with a TimerTaskExecutor
 		timer = new Timer(true);
-		timers.put(objectRef, timer);
+		timers.put(Long.valueOf(objectRef.id), timer);
 
 		timer.scheduleAtFixedRate(new TimerTask() {
 
@@ -45,8 +55,7 @@ public class DistributedGarbageCollector {
 			public void run() {
 				keepAlive(objectRef);
 			}
-		}, mediaServerConstants.GARBAGE_PERIOD,
-				mediaServerConstants.GARBAGE_PERIOD); // TODO: period
+		}, GARBAGE_PERIOD_MILIS, GARBAGE_PERIOD_MILIS);
 	}
 
 	public void removeReference(MediaObjectRef objectRef) {
@@ -55,13 +64,14 @@ public class DistributedGarbageCollector {
 		if (counter == null) {
 			return;
 		} else if (--counter > 0) {
-			refCounters.put(objectRef, counter);
+			refCounters.put(Long.valueOf(objectRef.id), counter);
 		} else {
 			Timer timer = timers.remove(objectRef);
 			if (timer == null) {
-				// TODO: Log error, this should never happen
+				log.error("Inconsistent state in DistributedGarbageCollector");
+			} else {
+				timer.cancel();
 			}
-			timer.cancel();
 		}
 	}
 
@@ -75,9 +85,9 @@ public class DistributedGarbageCollector {
 							new AsyncMethodCallback<MediaServerService.AsyncClient.keepAlive_call>() {
 
 								@Override
-								public void onError(Exception exception) {
+								public void onError(Exception e) {
 									clientPool.release(asyncClient);
-									// TODO: log error
+									log.error(e.getMessage(), e);
 								}
 
 								@Override
@@ -86,8 +96,9 @@ public class DistributedGarbageCollector {
 								}
 							});
 		} catch (TException e) {
-			// TODO log error and propagate exception
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
+			// TODO message and error code
+			throw new KurentoMediaFrameworkException(" ", e, 30000);
 		}
 	}
 }

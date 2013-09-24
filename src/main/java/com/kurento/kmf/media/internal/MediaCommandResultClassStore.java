@@ -1,5 +1,6 @@
 package com.kurento.kmf.media.internal;
 
+import com.kurento.kmf.media.IsMediaCommand;
 import com.kurento.kmf.media.IsMediaCommandResult;
 
 class MediaCommandResultClassStore extends
@@ -11,9 +12,8 @@ class MediaCommandResultClassStore extends
 
 	@Override
 	protected String getTypeFromAnnotation(Class<?> clazz) {
-		IsMediaCommandResult annotation = clazz
-				.getAnnotation(IsMediaCommandResult.class);
-		return annotation.commandType();
+		IsMediaCommand annotation = clazz.getAnnotation(IsMediaCommand.class);
+		return annotation.type();
 	}
 
 }

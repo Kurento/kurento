@@ -18,7 +18,7 @@ public abstract class MediaObjectRefDTO {
 	}
 
 	public Long getId() {
-		return this.objectRef.getId();
+		return Long.valueOf(this.objectRef.getId());
 	}
 
 	public String getToken() {

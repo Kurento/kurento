@@ -101,7 +101,7 @@ public abstract class MediaObject {
 	 * @throws MediaServerException
 	 * @throws InvokationException
 	 */
-	public <E extends MediaEvent> String addListener(
+	public <E extends MediaEvent> String addListener(String eventType,
 			MediaEventListener<E> listener)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
@@ -110,7 +110,8 @@ public abstract class MediaObject {
 
 		try {
 			callbackToken = client.subscribe(objectRef.getThriftRef(),
-					config.getHandlerAddress(), config.getHandlerPort());
+					eventType, config.getHandlerAddress(),
+					config.getHandlerPort());
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -181,8 +182,7 @@ public abstract class MediaObject {
 			clientPool.release(client);
 		}
 
-		return (MediaCommandResult) ctx.getBean("mediaCommandResult",
-				command.getType(), result);
+		return (MediaCommandResult) ctx.getBean("mediaCommandResult", result);
 	}
 
 	@Override
@@ -323,7 +323,7 @@ public abstract class MediaObject {
 	 * @throws InvokationException
 	 */
 	public <E extends MediaEvent> void addListener(
-			final MediaEventListener<E> listener,
+			final MediaEventListener<E> listener, final String eventType,
 			final Continuation<String> cont)
 			throws KurentoMediaFrameworkException {
 
@@ -331,7 +331,7 @@ public abstract class MediaObject {
 
 		try {
 
-			client.subscribe(this.objectRef.getThriftRef(),
+			client.subscribe(this.objectRef.getThriftRef(), eventType,
 					config.getHandlerAddress(), config.getHandlerPort(),
 					new AsyncMethodCallback<subscribe_call>() {
 
@@ -422,8 +422,8 @@ public abstract class MediaObject {
 	 * @throws MediaServerException
 	 * @throws InvokationException
 	 */
-	protected void sendCommand(MediaCommand command,
-			final Continuation<CommandResult> cont)
+	protected <R extends MediaCommandResult> void sendCommand(
+			final MediaCommand command, final Continuation<R> cont)
 			throws KurentoMediaFrameworkException {
 		final AsyncClient client = this.clientPool.acquireAsync();
 
@@ -458,8 +458,12 @@ public abstract class MediaObject {
 							} finally {
 								clientPool.release(client);
 							}
-
-							cont.onSuccess(result);
+							// This casting should always return the expected
+							// MediaCommandResult child.
+							@SuppressWarnings("unchecked")
+							R mediaResult = (R) ctx.getBean(
+									"mediaCommandResult", result);
+							cont.onSuccess(mediaResult);
 						}
 					});
 		} catch (TException e) {
@@ -513,11 +517,10 @@ public abstract class MediaObject {
 									clientPool.release(client);
 								}
 
+								// FIXME parent in class is never set!
 								// TODO check if this cast is ok
-								@SuppressWarnings("unchecked")
-								F parent = (F) ctx.getBean("mediaObject",
-										refDTO);
-								cont.onSuccess(parent);
+								parent = (F) ctx.getBean("mediaObject", refDTO);
+								cont.onSuccess((F) parent);
 							}
 						});
 			} catch (TException e) {
@@ -533,7 +536,7 @@ public abstract class MediaObject {
 	}
 
 	/**
-	 * Returns the pipeline to which this MediaObject belong, or the pipeline
+	 * Returns the pipeline to which this MediaObject belongs, or the pipeline
 	 * itself if invoked over a {@link MediaPipeline}
 	 * 
 	 * @return The media pipeline for the object, or <code>this</code> in case
@@ -576,8 +579,8 @@ public abstract class MediaObject {
 									clientPool.release(client);
 								}
 
-								MediaPipeline pipeline = (MediaPipeline) ctx
-										.getBean("mediaPipeline", objRef);
+								pipeline = (MediaPipeline) ctx.getBean(
+										"mediaPipeline", objRef);
 								cont.onSuccess(pipeline);
 							}
 						});

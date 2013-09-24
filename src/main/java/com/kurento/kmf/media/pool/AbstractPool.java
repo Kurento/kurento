@@ -42,10 +42,10 @@ abstract class AbstractPool<T> implements Pool<T> {
 		} catch (Exception e) {
 			if (e instanceof KurentoMediaFrameworkException) {
 				throw (KurentoMediaFrameworkException) e;
-			} else {
-				throw new KurentoMediaFrameworkException(
-						"Object creation failed", e, 30000);
 			}
+
+			throw new KurentoMediaFrameworkException("Object creation failed",
+					e, 30000);
 		}
 	}
 

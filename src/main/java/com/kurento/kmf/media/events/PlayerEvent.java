@@ -3,21 +3,21 @@ package com.kurento.kmf.media.events;
 import org.apache.thrift.protocol.TProtocol;
 
 import com.kurento.kmf.media.IsMediaEvent;
-import com.kurento.kms.thrift.api.Event;
+import com.kurento.kms.thrift.api.KmsEvent;
 
 @IsMediaEvent(type = PlayerEvent.TYPE)
 public class PlayerEvent extends ThriftSerializedMediaEvent {
 
-	public static final String TYPE = "GetUriCommandResult";
+	// TODO Fix TYPE to something like StringEvent or other preconfigured event
+	public static final String TYPE = "PlayerEvent";
 
-	PlayerEvent(Event event) {
+	PlayerEvent(KmsEvent event) {
 		super(event);
 	}
 
 	@Override
 	protected void deserializeFromTProtocol(TProtocol pr) {
-		// TODO Auto-generated method stub
-
+		// TODO add implementation
 	}
 
 }
