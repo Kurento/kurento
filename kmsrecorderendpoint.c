@@ -131,8 +131,6 @@ kms_recorder_end_point_dispose (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
-  GST_DEBUG_OBJECT (self, "dispose");
-
   if (self->priv->pipeline_released_status != RELEASED) {
     self->priv->pipeline_released_status = RELEASING;
     if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {
@@ -158,10 +156,6 @@ kms_recorder_end_point_dispose (GObject * object)
 static void
 kms_recorder_end_point_finalize (GObject * object)
 {
-  KmsRecorderEndPoint *recorderendpoint = KMS_RECORDER_END_POINT (object);
-
-  GST_DEBUG_OBJECT (recorderendpoint, "finalize");
-
   /* clean up object here */
 
   G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->finalize (object);
