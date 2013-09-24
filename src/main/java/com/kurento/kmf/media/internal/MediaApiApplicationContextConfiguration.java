@@ -2,16 +2,12 @@ package com.kurento.kmf.media.internal;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Set;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.common.excption.internal.ReflectionUtils;
-import com.kurento.kmf.media.IsMediaElement;
-import com.kurento.kmf.media.IsMediaEvent;
+import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.media.events.KmsEvent;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
@@ -54,55 +50,14 @@ public class MediaApiApplicationContextConfiguration {
 		return new MediaServerCallbackHandler();
 	}
 
-	// TODO review
 	@Bean
-	@Scope("prototype")
-	public MediaPipeline mediaPipeline(MediaPipelineRefDTO objRef) {
-		return new MediaPipeline(objRef);
+	MediaElementClassStore mediaElementClassStore() {
+		return new MediaElementClassStore();
 	}
 
-	// TODO review
-
 	@Bean
-	@Scope("prototype")
-	public MediaObject mediaObject(MediaObjectRefDTO objRef) {
-
-		// This cast is safe as long as the type of the class refers to a
-		// type that extends from MediaObject.
-		// Nevertheless, a catch is included in the try-catch block.
-		MediaObject obj;
-
-		if (objRef instanceof MediaPadRefDTO) {
-
-			MediaPadRefDTO padRefDTO = (MediaPadRefDTO) objRef;
-			// TODO instantiate one Pad depending on type
-			switch (padRefDTO.getPadDirection()) {
-			case SINK:
-				obj = new MediaSink(padRefDTO);
-				break;
-			case SRC:
-				obj = new MediaSource(padRefDTO);
-				break;
-			default:
-				throw new IllegalArgumentException("Invalid MediaPad direction");
-			}
-		} else if (objRef instanceof MediaElementRefDTO) {
-			MediaElementRefDTO elementRefDTO = (MediaElementRefDTO) objRef;
-			String type = elementRefDTO.getType();
-			obj = (MediaObject) instantiateMediaObject(type, objRef);
-		} else if (objRef instanceof MediaMixerRefDTO) {
-			MediaMixerRefDTO mixerRefDTO = (MediaMixerRefDTO) objRef;
-			String type = mixerRefDTO.getType();
-			obj = (MediaObject) instantiateMediaObject(type, objRef);
-		} else if (objRef instanceof MediaPipelineRefDTO) {
-			// TODO is this ok?
-			obj = mediaPipeline((MediaPipelineRefDTO) objRef);
-		} else {
-			throw new IllegalArgumentException(
-					"objRef is not of any known type");
-		}
-
-		return obj;
+	MediaEventClassStore mediaEventClassStore() {
+		return new MediaEventClassStore();
 	}
 
 	@Bean
@@ -112,28 +67,13 @@ public class MediaApiApplicationContextConfiguration {
 		// This cast is safe as long as the type of the class refers to a
 		// type that extends from MediaObject.
 		// Nevertheless, a catch is included in the try-catch block.
-		Set<Class<?>> annotatedClassSet = ReflectionUtils
-				.getTypesAnnotatedWith(IsMediaEvent.class);
+		Class<?> clazz = mediaEventClassStore().get(event.getType());
 
-		Class<?> mediaEventClass = null;
-
-		for (Class<?> clazz : annotatedClassSet) {
-			IsMediaEvent annotation = clazz.getAnnotation(IsMediaEvent.class);
-			if (annotation.type().equals(event.getType())) {
-				mediaEventClass = clazz;
-				break;
-			}
-		}
-
-		if (mediaEventClass == null) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(
-					"MediaEvent class not found", 3000);
-		}
+		// TODO Change error code
+		Assert.notNull(clazz, "MediaEvent class not found", 30000);
 
 		try {
-			Constructor<?> constructor = mediaEventClass
-					.getDeclaredConstructors()[0];
+			Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
 			return (KmsEvent) constructor.newInstance(event);
 		} catch (ClassCastException e) {
 			throw new IllegalArgumentException(e);
@@ -150,31 +90,55 @@ public class MediaApiApplicationContextConfiguration {
 		}
 	}
 
-	private MediaObject instantiateMediaObject(String type,
-			MediaObjectRefDTO objRef) {
-		Set<Class<?>> annotatedClassSet = ReflectionUtils
-				.getTypesAnnotatedWith(IsMediaElement.class);
+	@Bean
+	@Scope("prototype")
+	public MediaObject mediaObject(MediaObjectRefDTO objRef) {
 
-		Class<?> mediaObjectClass = null;
+		// This cast is safe as long as the type of the class refers to a
+		// type that extends from MediaObject.
+		// Nevertheless, a catch is included in the try-catch block.
+		MediaObject obj;
+		Class<?> clazz;
+		if (objRef instanceof MediaPadRefDTO) {
 
-		for (Class<?> clazz : annotatedClassSet) {
-			IsMediaElement annotation = clazz
-					.getAnnotation(IsMediaElement.class);
-			if (annotation.type().equals(type)) {
-				mediaObjectClass = clazz;
+			MediaPadRefDTO padRefDTO = (MediaPadRefDTO) objRef;
+			switch (padRefDTO.getPadDirection()) {
+			case SINK:
+				clazz = MediaSink.class;
 				break;
+			case SRC:
+				clazz = MediaSource.class;
+				break;
+			default:
+				throw new IllegalArgumentException("Invalid MediaPad direction");
 			}
+		} else if (objRef instanceof MediaElementRefDTO) {
+			MediaElementRefDTO elementRefDTO = (MediaElementRefDTO) objRef;
+			String type = elementRefDTO.getType();
+			clazz = mediaEventClassStore().get(type);
+		} else if (objRef instanceof MediaMixerRefDTO) {
+			MediaMixerRefDTO mixerRefDTO = (MediaMixerRefDTO) objRef;
+			String type = mixerRefDTO.getType();
+			clazz = mediaEventClassStore().get(type);
+		} else if (objRef instanceof MediaPipelineRefDTO) {
+			clazz = MediaPipeline.class;
+		} else {
+			throw new IllegalArgumentException(
+					"objRef is not of any known type");
 		}
 
-		if (mediaObjectClass == null) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(
-					"MediaElement class not found", 3000);
-		}
+		obj = (MediaObject) instantiateMediaObject(clazz, objRef);
+		return obj;
+	}
+
+	private MediaObject instantiateMediaObject(Class<?> clazz,
+			MediaObjectRefDTO objRef) {
+
+		// TODO Change error code
+		Assert.notNull(clazz, "MediaObject class not found", 30000);
 
 		try {
-			Constructor<?> constructor = mediaObjectClass
-					.getDeclaredConstructors()[0];
+			Constructor<?> constructor = clazz.getDeclaredConstructors()[0];
 			return (MediaObject) constructor.newInstance(objRef);
 		} catch (ClassCastException e) {
 			throw new IllegalArgumentException(e);
