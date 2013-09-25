@@ -525,8 +525,6 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
     return;
   }
 
-  KMS_AGNOSTIC_BIN_LOCK (agnosticbin);
-
   queue = kms_agnostic_bin_get_queue_from_pad (srcpad);
 
   if (queue != NULL && gst_caps_is_any (allowed_caps)) {
@@ -601,8 +599,6 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
 
     g_object_unref (queue);
   }
-
-  KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 
   gst_caps_unref (allowed_caps);
 }
