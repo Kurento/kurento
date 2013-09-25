@@ -57,7 +57,7 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 1);// TODO: code
+					t.getMessage(), t, 20039);
 			terminate(kmfe.getCode(), kmfe.getMessage());
 			throw kmfe;
 		}
@@ -87,7 +87,7 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 1);// TODO: code
+					t.getMessage(), t, 20040);
 			terminate(kmfe.getCode(), kmfe.getMessage());
 			throw kmfe;
 		}
@@ -96,15 +96,14 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	@Override
 	public void start(MediaElement sink) {
 		try {
-			Assert.notNull(sink, "Illegal null sink element specified", 1);// TODO:
-																			// code
+			Assert.notNull(sink, "Illegal null sink element specified", 10030);
 			start(new MediaElement[] { sink });
 		} catch (KurentoMediaFrameworkException ke) {
 			terminate(ke.getCode(), ke.getMessage());
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 1);// TODO: code
+					t.getMessage(), t, 20041);
 			terminate(kmfe.getCode(), kmfe.getMessage());
 			throw kmfe;
 		}
@@ -127,12 +126,10 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			recorderEndPoint.record();
 			return recorderEndPoint;
 		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe, 1); // TODO:
-																				// //
-																				// code
+			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
+					20042);
 		} catch (MediaException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 1); // TODO:
-																			// code
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 20043);
 		}
 	}
 
@@ -152,12 +149,10 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			connect(httpEndPoint, mediaElements);
 			return httpEndPoint;
 		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe, 1); // TODO
-																				// //
-																				// code
+			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
+					20037);
 		} catch (MediaException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 1); // TODO:
-																			// code
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 20038);
 		}
 	}
 

@@ -83,10 +83,12 @@ public abstract class AbstractHttpBasedContentSession extends
 	protected void activateMedia(String contentPath,
 			MediaElement... mediaElements) {
 		synchronized (this) {
-			Assert.isTrue(state == STATE.HANDLING,
-					"Cannot start media exchange in state " + state
-							+ ". This error means ...", 10001); // TODO further
-			// explanation
+			Assert.isTrue(
+					state == STATE.HANDLING,
+					"Cannot start media exchange in state "
+							+ state
+							+ ". This error means a violatiation in the content session lifecycle",
+					10001);
 			state = STATE.STARTING;
 		}
 
@@ -266,7 +268,8 @@ public abstract class AbstractHttpBasedContentSession extends
 						(HttpServletResponse) initialAsyncCtx.getResponse(),
 						ExceptionUtils.getHttpErrorCode(code), description);
 			} catch (ServletException e) {
-				getLogger().error(e.getMessage(), e); // TODO code
+				getLogger().error(e.getMessage(), e);
+				throw new KurentoMediaFrameworkException(e, 20026);
 			}
 		}
 	}

@@ -71,7 +71,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 1);// TODO: code
+					t.getMessage(), t, 20029);
 			terminate(kmfe.getCode(), kmfe.getMessage());
 			throw kmfe;
 		}
@@ -89,10 +89,12 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	private void internalStart(MediaElement sourceElement,
 			MediaElement... sinkElements) {
 		synchronized (this) {
-			Assert.isTrue(state == STATE.HANDLING,
-					"Cannot start media exchange in state " + state
-							+ ". This error means ...", 10004); // TODO further
-			// explanation
+			Assert.isTrue(
+					state == STATE.HANDLING,
+					"Cannot start media exchange in state "
+							+ state
+							+ ". This error means a violatiation in the content session lifecycle",
+					10004);
 			state = STATE.STARTING;
 		}
 
@@ -125,11 +127,11 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		// Send SDP as answer to client
 		getLogger().info("Answer SDP: " + answer);
 		Assert.notNull(answer,
-				"Received invalid null SDP from media server ... aborting", 1);// TODO:
-																				// code
+				"Received invalid null SDP from media server ... aborting",
+				20027);
 		Assert.isTrue(answer.length() > 0,
-				"Received invalid empty SDP from media server ... aborting", 1);// TODO:
-																				// code
+				"Received invalid empty SDP from media server ... aborting",
+				20028);
 		protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
 				.newStartSdpResponse(answer, sessionId,
 						initialJsonRequest.getId()));

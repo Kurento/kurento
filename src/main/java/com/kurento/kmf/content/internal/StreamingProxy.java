@@ -300,13 +300,13 @@ public class StreamingProxy {
 					}
 				}
 				streamingProxyListener.onProxySuccess();
-			} catch (Exception e) {
+
+			} catch (IOException e) {
 				log.error("Code 20019. Exception in streaming proxy", e);
-				streamingProxyListener.onProxyError(e.getMessage(), 20019); // TODO;
-																			// improve
-																			// error
-																			// code
-																			// management
+				streamingProxyListener.onProxyError(e.getMessage(), 20019);
+			} catch (InterruptedException e) {
+				log.error("Code 20025. Exception in streaming proxy", e);
+				streamingProxyListener.onProxyError(e.getMessage(), 20025);
 			} finally {
 				if (tunnelResponseEntity != null) {
 					try {

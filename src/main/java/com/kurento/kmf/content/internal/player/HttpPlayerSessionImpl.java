@@ -56,15 +56,15 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	@Override
 	public void start(String contentPath) {
 		try {
-			Assert.notNull(contentPath, "Illegal null contentPath provided", 1); // TODO:
-																					// code
+			Assert.notNull(contentPath, "Illegal null contentPath provided",
+					10027);
 			activateMedia(contentPath, (MediaElement[]) null);
 		} catch (KurentoMediaFrameworkException ke) {
 			terminate(ke.getCode(), ke.getMessage());
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 1);// TODO: code
+					t.getMessage(), t, 20030);
 			terminate(kmfe.getCode(), kmfe.getMessage());
 			throw kmfe;
 		}
@@ -76,8 +76,8 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	@Override
 	public void start(MediaElement element) {
 		try {
-			Assert.notNull(element, "Illegal null source element provided", 1); // TODO:
-																				// code
+			Assert.notNull(element, "Illegal null source element provided",
+					10028);
 			activateMedia(null, new MediaElement[] { element });
 
 			// TODO: In the future we should avoid terminating upon exceptions
@@ -89,7 +89,7 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 1);// TODO: code
+					t.getMessage(), t, 20031);
 			terminate(kmfe.getCode(), kmfe.getMessage());
 			throw kmfe;
 		}
@@ -122,11 +122,10 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 
 			return playerEndPoint;
 		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe, 1); // TODO:
-																				// code
+			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
+					20032);
 		} catch (MediaException me) {
-			throw new KurentoMediaFrameworkException(me.getMessage(), me, 1); // TODO:
-																				// code
+			throw new KurentoMediaFrameworkException(me.getMessage(), me, 20033);
 		}
 	}
 
@@ -175,14 +174,12 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 						@Override
 						public void onEvent(HttpEndPointEvent event) {
 							if (event.getType() != HttpEndPointEventType.GET_REQUEST) {
-								log.error("Unexpected HTTP method "
+								String errorMessage = "Unexpected HTTP method "
 										+ event.getType()
-										+ " received on HttpEndPoint. Cannot start player");
-								HttpPlayerSessionImpl.this.terminate(
-										500, // TODO: error code
-										"Unexpected HTTP method "
-												+ event.getType()
-												+ " received on HttpEndPoint. Cannot start player");
+										+ " received on HttpEndPoint. Cannot start player";
+								log.error(errorMessage);
+								HttpPlayerSessionImpl.this.terminate(10029,
+										errorMessage);
 								return;
 							}
 
@@ -190,24 +187,21 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 								try {
 									playerEndPoint.play();
 								} catch (IOException e) {
-									log.error(
-											"Cannot invoke play on PlayerEndPoint: "
-													+ e.getMessage(), e);
-									HttpPlayerSessionImpl.this.terminate(500, // TODO:
-																				// error
-																				// code
-											e.getMessage());
+									String errorMessage = "Cannot invoke play on PlayerEndPoint: "
+											+ e.getMessage();
+									log.error(errorMessage, e);
+									HttpPlayerSessionImpl.this.terminate(20034,
+											errorMessage);
 								}
 							}
 						}
 					});
 			return httpEndPoint;
 		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe, 1); // TODO:
-																				// code
+			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
+					20035);
 		} catch (MediaException me) {
-			throw new KurentoMediaFrameworkException(me.getMessage(), me, 1); // TODO:
-																				// code
+			throw new KurentoMediaFrameworkException(me.getMessage(), me, 20036);
 		}
 	}
 
