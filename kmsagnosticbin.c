@@ -27,6 +27,8 @@
 
 #define QUEUE_DATA "queue"
 
+#define SINK_NAME "sink"
+
 static GstStaticCaps static_raw_audio_caps =
 GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_AUDIO_CAPS);
 static GstStaticCaps static_raw_video_caps =
@@ -186,9 +188,9 @@ drop_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 }
 
 static void
-kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
+kms_agnostic_bin_unlink_from_tee (GstElement * element)
 {
-  GstPad *sink = gst_element_get_static_pad (element, pad_name);
+  GstPad *sink = gst_element_get_static_pad (element, SINK_NAME);
   GstPad *tee_src = gst_pad_get_peer (sink);
   GstElement *tee;
 
@@ -234,12 +236,11 @@ kms_agnostic_bin_unlink_from_tee (GstElement * element, const gchar * pad_name)
 }
 
 static void
-kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
-    const gchar * sink_name)
+kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element)
 {
   GstPad *tee_sink = gst_element_get_static_pad (tee, "sink");
 
-  GstPad *sink = gst_element_get_static_pad (element, sink_name);
+  GstPad *sink = gst_element_get_static_pad (element, SINK_NAME);
   GstPad *tee_src = gst_pad_get_peer (sink);
   gboolean already_linked = FALSE;
 
@@ -249,7 +250,7 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
     old_tee = gst_pad_get_parent_element (tee_src);
 
     if (tee != old_tee) {
-      kms_agnostic_bin_unlink_from_tee (element, sink_name);
+      kms_agnostic_bin_unlink_from_tee (element);
     } else {
       GstCaps *current_caps = gst_pad_get_current_caps (tee_sink);
 
@@ -279,7 +280,7 @@ kms_agnostic_bin_link_to_tee (GstElement * tee, GstElement * element,
   if (tee_src != NULL) {
     GST_OBJECT_FLAG_SET (tee_src, GST_PAD_FLAG_BLOCKED);
     if (!gst_element_link_pads (tee, GST_OBJECT_NAME (tee_src), element,
-            sink_name)) {
+            SINK_NAME)) {
       GST_OBJECT_FLAG_UNSET (tee_src, GST_PAD_FLAG_BLOCKED);
       gst_element_release_request_pad (tee, tee_src);
     } else {
@@ -316,7 +317,7 @@ kms_agnostic_bin_encoder_start_stop (KmsAgnosticBin * agnosticbin,
       GST_INFO ("Start received in encoded tee for the first time, linking");
       decoded_tee = gst_bin_get_by_name (GST_BIN (agnosticbin), DECODED_TEE);
       if (decoded_tee != NULL) {
-        kms_agnostic_bin_link_to_tee (decoded_tee, queue, "sink");
+        kms_agnostic_bin_link_to_tee (decoded_tee, queue);
 
         g_object_unref (decoded_tee);
       }
@@ -332,7 +333,7 @@ kms_agnostic_bin_encoder_start_stop (KmsAgnosticBin * agnosticbin,
   g_hash_table_remove (agnosticbin->encoded_tees, GST_OBJECT_NAME (tee));
 
   if (queue != NULL)
-    kms_agnostic_bin_unlink_from_tee (queue, "sink");
+    kms_agnostic_bin_unlink_from_tee (queue);
 
   gst_element_set_locked_state (queue, TRUE);
   gst_element_set_locked_state (convert, TRUE);
@@ -493,7 +494,7 @@ kms_agnostic_bin_disconnect_srcpad (KmsAgnosticBin * agnosticbin,
   if (queue == NULL)
     return;
 
-  kms_agnostic_bin_unlink_from_tee (queue, "sink");
+  kms_agnostic_bin_unlink_from_tee (queue);
   g_object_unref (queue);
 }
 
@@ -591,10 +592,10 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
 
   if (queue != NULL) {
     if (tee != NULL) {
-      kms_agnostic_bin_link_to_tee (tee, queue, "sink");
+      kms_agnostic_bin_link_to_tee (tee, queue);
       g_object_unref (tee);
     } else {
-      kms_agnostic_bin_unlink_from_tee (queue, "sink");
+      kms_agnostic_bin_unlink_from_tee (queue);
     }
 
     g_object_unref (queue);
@@ -782,7 +783,7 @@ kms_agnostic_bin_release_pad (GstElement * element, GstPad * pad)
   g_object_set_data (G_OBJECT (pad), QUEUE_DATA, NULL);
 
   if (queue != NULL) {
-    kms_agnostic_bin_unlink_from_tee (queue, "sink");
+    kms_agnostic_bin_unlink_from_tee (queue);
     gst_bin_remove (GST_BIN (element), queue);
     gst_element_set_state (queue, GST_STATE_NULL);
 
