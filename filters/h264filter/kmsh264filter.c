@@ -63,6 +63,8 @@ kms_h264_filter_transform_frame_ip (GstBaseTransform * base_transform,
   //    (probably, calling to external libraries):
   //
   // info.data contains the buffer information in a char array
+  // info.size contains the ammount of bytes in info.data
+  // buffer->pts contains the presentation timestamp
   //
   GST_DEBUG ("Buffer len: %" G_GSIZE_FORMAT, info.size);
   gst_buffer_unmap (buffer, &info);
