@@ -53,6 +53,11 @@ kms_base_rtp_end_point_get_caps_from_rtpmap (const gchar * media,
   GstCaps *caps = NULL;
   gchar **tokens;
 
+  if (rtpmap == NULL) {
+    GST_WARNING ("rtpmap is NULL");
+    return NULL;
+  }
+
   tokens = g_strsplit (rtpmap, "/", 3);
 
   if (tokens[0] == NULL || tokens[1] == NULL)
@@ -283,7 +288,6 @@ kms_base_rtp_end_point_get_caps_for_pt (KmsBaseRtpEndPoint * base_rtp_end_point,
         continue;
 
       rtpmap = sdp_utils_sdp_media_get_rtpmap (media, payload);
-
       caps =
           kms_base_rtp_end_point_get_caps_from_rtpmap (media->media, payload,
           rtpmap);
