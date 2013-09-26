@@ -525,7 +525,10 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
 
   queue = kms_agnostic_bin_get_queue_from_pad (srcpad);
 
-  if (queue != NULL && gst_caps_is_any (allowed_caps)) {
+  if (queue == NULL)
+    goto end;
+
+  if (gst_caps_is_any (allowed_caps)) {
     queue_sink = gst_element_get_static_pad (queue, "sink");
     if (queue_sink != NULL) {
       if (gst_pad_is_linked (queue_sink)) {
@@ -587,17 +590,16 @@ kms_agnostic_bin_connect_srcpad (KmsAgnosticBin * agnosticbin, GstPad * srcpad,
   }
   gst_caps_unref (raw_caps);
 
-  if (queue != NULL) {
-    if (tee != NULL) {
-      kms_agnostic_bin_link_to_tee (tee, queue);
-      g_object_unref (tee);
-    } else {
-      kms_agnostic_bin_unlink_from_tee (queue);
-    }
-
-    g_object_unref (queue);
+  if (tee != NULL) {
+    kms_agnostic_bin_link_to_tee (tee, queue);
+    g_object_unref (tee);
+  } else {
+    kms_agnostic_bin_unlink_from_tee (queue);
   }
 
+  g_object_unref (queue);
+
+end:
   gst_caps_unref (allowed_caps);
 }
 
