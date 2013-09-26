@@ -415,6 +415,8 @@ kms_base_rtp_end_point_dispose (GObject * gobject)
     g_object_unref (self->video_payloader);
     self->video_payloader = NULL;
   }
+
+  G_OBJECT_CLASS (kms_base_rtp_end_point_parent_class)->dispose (gobject);
 }
 
 static void
