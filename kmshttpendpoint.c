@@ -9,6 +9,7 @@
 #include "kmshttpendpoint.h"
 #include "kmsagnosticcaps.h"
 #include "kmshttpendpointmethod.h"
+#include "kmsrecordingprofile.h"
 #include "kms-enumtypes.h"
 #include "kmsutils.h"
 
@@ -24,6 +25,8 @@
 
 #define GET_PIPELINE "get-pipeline"
 #define POST_PIPELINE "post-pipeline"
+
+#define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 
 #define GST_CAT_DEFAULT kms_http_end_point_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -54,6 +57,7 @@ struct _KmsHttpEndPointPrivate
   KmsHttpEndPointMethod method;
   GstElement *pipeline;
   gboolean start;
+  KmsRecordingProfile profile;
   union
   {
     GetData *get;
@@ -67,6 +71,7 @@ enum
   PROP_0,
   PROP_METHOD,
   PROP_START,
+  PROP_PROFILE,
   N_PROPERTIES
 };
 
@@ -822,6 +827,9 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
       kms_change_internal_pipeline_state (self, value);
       break;
     }
+    case PROP_PROFILE:
+      self->priv->profile = g_value_get_enum (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -842,6 +850,9 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
       break;
     case PROP_START:
       g_value_set_boolean (value, self->priv->start);
+      break;
+    case PROP_PROFILE:
+      g_value_set_enum (value, self->priv->profile);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -884,6 +895,11 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
   obj_properties[PROP_START] = g_param_spec_boolean ("start",
       "start media stream",
       "start media stream", DEFAULT_HTTP_END_POINT_START, G_PARAM_READWRITE);
+
+  obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
+      "Recording profile",
+      "The profile used for encapsulating the media",
+      GST_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
