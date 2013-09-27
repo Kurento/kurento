@@ -14,8 +14,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.MediaApiConfiguration;
+import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
-import com.kurento.kmf.media.objects.MediaPipelineFactory;
 import com.kurento.kms.thrift.api.KmsError;
 import com.kurento.kms.thrift.api.KmsEvent;
 import com.kurento.kms.thrift.api.MediaHandlerService;
@@ -112,7 +115,10 @@ public class MediaHandlerServer {
 						throws TException {
 					MediaEvent kmsEvent = (MediaEvent) applicationContext
 							.getBean("mediaEvent", event);
-					handler.onEvent(callbackToken,
+
+					ListenerRegistration registration = new ListenerRegistrationImpl(
+							callbackToken);
+					handler.onEvent(registration,
 							Long.valueOf(event.getSource().id), kmsEvent);
 				}
 			});

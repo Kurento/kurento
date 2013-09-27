@@ -1,7 +1,7 @@
 package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.commands.VoidCommandResult;
+import com.kurento.kmf.media.commands.internal.VoidCommandResult;
 
 public class VoidContinuationWrapper implements Continuation<VoidCommandResult> {
 

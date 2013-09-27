@@ -1,7 +1,7 @@
 package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.commands.StringCommandResult;
+import com.kurento.kmf.media.commands.internal.StringCommandResult;
 
 public class StringContinuationWrapper implements
 		Continuation<StringCommandResult> {
@@ -14,7 +14,7 @@ public class StringContinuationWrapper implements
 
 	@Override
 	public void onSuccess(StringCommandResult result) {
-		this.wrappedContinuation.onSuccess(result.getString());
+		this.wrappedContinuation.onSuccess(result.getResult());
 	}
 
 	@Override
