@@ -10,6 +10,9 @@
 #include "kmsuriendpointstate.h"
 #include "kmsutils.h"
 
+#include "kmsrecordingprofile.h"
+#include "kms-enumtypes.h"
+
 #define PLUGIN_NAME "recorderendpoint"
 
 #define AUDIO_APPSINK "audio_appsink"
@@ -18,6 +21,8 @@
 #define VIDEO_APPSRC "video_appsrc"
 
 #define HTTP_PROTO "http"
+
+#define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_end_point_debug_category
@@ -29,6 +34,15 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
     KmsRecorderEndPointPrivate                    \
   )                                               \
 )
+
+enum
+{
+  PROP_0,
+  PROP_PROFILE,
+  N_PROPERTIES
+};
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
 typedef enum
 {
@@ -42,6 +56,7 @@ struct _KmsRecorderEndPointPrivate
   PilelineReleaseStatus pipeline_released_status;
   GstElement *pipeline;
   GstElement *encodebin;
+  KmsRecordingProfile profile;
   guint count;
 };
 
@@ -676,6 +691,42 @@ kms_recorder_end_point_video_valve_removed (KmsElement * self,
 }
 
 static void
+kms_recorder_end_point_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_PROFILE:
+      self->priv->profile = g_value_get_enum (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
+kms_recorder_end_point_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+  switch (property_id) {
+    case PROP_PROFILE:
+      g_value_set_enum (value, self->priv->profile);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+}
+
+static void
 kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 {
   KmsUriEndPointClass *urienpoint_class = KMS_URI_END_POINT_CLASS (klass);
@@ -704,12 +755,25 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_recorder_end_point_video_valve_removed);
 
+  gobject_class->set_property =
+      GST_DEBUG_FUNCPTR (kms_recorder_end_point_set_property);
+  gobject_class->get_property =
+      GST_DEBUG_FUNCPTR (kms_recorder_end_point_get_property);
+
   kms_recorder_end_point_signals[SIGNAL_STOPPED] =
       g_signal_new ("stopped",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsRecorderEndPointClass, stopped_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
+      "Recording profile",
+      "The profile used for encapsulating the media",
+      GST_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
+
+  g_object_class_install_properties (gobject_class,
+      N_PROPERTIES, obj_properties);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsRecorderEndPointPrivate));
