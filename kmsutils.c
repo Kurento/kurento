@@ -18,3 +18,17 @@ kms_utils_set_valve_drop (GstElement * valve, gboolean drop)
 
   g_object_unref (sink);
 }
+
+static gboolean
+debug_graph (gpointer bin)
+{
+  GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (bin),
+      GST_DEBUG_GRAPH_SHOW_ALL, GST_ELEMENT_NAME (bin));
+  return FALSE;
+}
+
+void
+kms_utils_debug_graph_delay (GstBin * bin, guint interval)
+{
+  g_timeout_add_seconds (interval, debug_graph, bin);
+}
