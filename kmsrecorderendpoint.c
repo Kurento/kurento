@@ -207,7 +207,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
-    return GST_FLOW_ERROR;
+    return GST_FLOW_OK;
 
   g_object_get (G_OBJECT (appsrc), "caps", &caps, NULL);
   if (caps == NULL) {
