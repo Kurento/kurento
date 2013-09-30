@@ -149,13 +149,15 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
       g_object_unref (sink_pad);
     }
 
-    if (caps != NULL) {
-      GST_DEBUG ("Setting caps %" GST_PTR_FORMAT " to %s", caps,
-          GST_ELEMENT_NAME (element));
-      g_object_set (element, "caps", caps, NULL);
-      gst_caps_unref (caps);
-    } else
-      GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (element));
+    if (caps == NULL) {
+      GST_ELEMENT_ERROR (element, CORE, CAPS, ("No caps found for %s",
+              GST_ELEMENT_NAME (element)), GST_ERROR_SYSTEM);
+      ret = GST_FLOW_ERROR;
+      goto end;
+    }
+
+    g_object_set (element, "caps", caps, NULL);
+    gst_caps_unref (caps);
   }
 
   buffer = gst_sample_get_buffer (sample);
@@ -235,8 +237,8 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   else if (gst_caps_can_intersect (video_caps, src_caps))
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
   else {
-    GST_ERROR_OBJECT (self, "No agnostic caps provided");
-    gst_caps_unref (src_caps);
+    GST_ELEMENT_ERROR (self, CORE, CAPS, ("No agnostic caps provided"),
+        GST_ERROR_SYSTEM);
     goto end;
   }
 
@@ -270,6 +272,9 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
 
 end:
+  if (src_caps != NULL)
+    gst_caps_unref (src_caps);
+
   if (audio_caps != NULL)
     gst_caps_unref (audio_caps);
 
@@ -386,7 +391,8 @@ kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
 
   if (self->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
     KMS_ELEMENT_UNLOCK (self);
-    GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
+        ("Trying to get data from a non-GET HttpEndPoint"), GST_ERROR_SYSTEM);
     return NULL;
   }
 
@@ -408,7 +414,8 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
   if (self->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
       self->priv->method != KMS_HTTP_END_POINT_METHOD_POST) {
     KMS_ELEMENT_UNLOCK (self);
-    GST_ERROR ("Trying to push data in a non-POST HttpEndPoint");
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
+        ("Trying to push data in a non-POST HttpEndPoint"), GST_ERROR_SYSTEM);
     return GST_FLOW_ERROR;
   }
 
@@ -431,6 +438,8 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
 
   if (self->priv->pipeline == NULL) {
     KMS_ELEMENT_UNLOCK (self);
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
+        ("Pipeline is not initialized"), GST_ERROR_SYSTEM);
     return GST_FLOW_ERROR;
   }
 
@@ -690,7 +699,8 @@ kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 
   if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
       httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
-    GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
+        ("Trying to get data from a non-GET HttpEndPoint"), GST_ERROR_SYSTEM);
     return;
   }
   // TODO: This caps should be set using the profile data
