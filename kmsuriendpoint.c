@@ -49,11 +49,14 @@ enum
 
 #define DEFAULT_URI_END_POINT_STATE KMS_URI_END_POINT_STATE_STOP
 
-#define CALL_IF_DEFINED(obj, method) do {     \
-  if ((method) != NULL)                       \
-    method(obj);                              \
-  else                                        \
-    GST_WARNING("Undefined method " #method); \
+#define CALL_IF_DEFINED(obj, method, state) do {                        \
+  if ((method) != NULL) {                                               \
+    method(obj);                                                        \
+    GST_ELEMENT_INFO(obj, CORE, STATE_CHANGE, ("Change to %s", state ), \
+        ("Debug %s", GST_ELEMENT_NAME (obj)));                          \
+  } else {                                                              \
+    GST_WARNING("Undefined method " #method);                           \
+  }                                                                     \
 } while (0)
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
@@ -74,13 +77,16 @@ kms_uri_end_point_change_state (KmsUriEndPoint * self, KmsUriEndPointState next)
   self->priv->state = next;
   switch (self->priv->state) {
     case KMS_URI_END_POINT_STATE_STOP:
-      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->stopped);
+      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->stopped,
+          "STOPPED");
       break;
     case KMS_URI_END_POINT_STATE_START:
-      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->started);
+      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->started,
+          "STARTED");
       break;
     case KMS_URI_END_POINT_STATE_PAUSE:
-      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->paused);
+      CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->paused,
+          "PAUSED");
       break;
   }
 }

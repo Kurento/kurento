@@ -244,7 +244,6 @@ kms_player_end_point_stopped (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to NULL */
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-  GST_DEBUG_OBJECT (self, "---> STOPPED");
 }
 
 static void
@@ -258,8 +257,6 @@ kms_player_end_point_started (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
-
-  GST_DEBUG_OBJECT (self, "---> STARTED");
 }
 
 static void
@@ -269,7 +266,6 @@ kms_player_end_point_paused (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to paused */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
-  GST_DEBUG_OBJECT (self, "---> PAUSED");
 }
 
 static void
