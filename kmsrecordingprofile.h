@@ -24,7 +24,8 @@ G_BEGIN_DECLS
 
 typedef enum
 {
-  KMS_RECORDING_PROFILE_WEBM
+  KMS_RECORDING_PROFILE_WEBM,
+  KMS_RECORDING_PROFILE_MP4,
 } KmsRecordingProfile;
 
 GstEncodingContainerProfile * kms_recording_profile_create_profile (

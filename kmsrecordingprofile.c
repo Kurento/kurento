@@ -51,6 +51,40 @@ kms_recording_profile_create_webm_profile (gboolean has_audio,
   return cprof;
 }
 
+static GstEncodingContainerProfile *
+kms_recording_profile_create_mp4_profile (gboolean has_audio,
+    gboolean has_video)
+{
+  GstEncodingContainerProfile *cprof;
+  GstCaps *pc;
+
+  pc = gst_caps_from_string ("video/quicktime, variant=(string)iso");
+
+  cprof = gst_encoding_container_profile_new ("Mp4", NULL, pc, NULL);
+  gst_caps_unref (pc);
+
+  if (has_audio) {
+    GstCaps *ac = gst_caps_from_string ("audio/mpeg,mpegversion=1,layer=3");
+
+    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+        gst_encoding_audio_profile_new (ac, NULL, NULL, 0));
+
+    gst_caps_unref (ac);
+  }
+
+  if (has_video) {
+    GstCaps *vc = gst_caps_from_string ("video/x-h264, "
+        "stream-format=(string)avc, alignment=(string)au");
+
+    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
+        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
+
+    gst_caps_unref (vc);
+  }
+
+  return cprof;
+}
+
 GstEncodingContainerProfile *
 kms_recording_profile_create_profile (KmsRecordingProfile profile,
     gboolean has_audio, gboolean has_video)
@@ -58,6 +92,8 @@ kms_recording_profile_create_profile (KmsRecordingProfile profile,
   switch (profile) {
     case KMS_RECORDING_PROFILE_WEBM:
       return kms_recording_profile_create_webm_profile (has_audio, has_video);
+    case KMS_RECORDING_PROFILE_MP4:
+      return kms_recording_profile_create_mp4_profile (has_audio, has_video);
     default:
       GST_WARNING ("Invalid recording profile");
       return NULL;
