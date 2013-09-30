@@ -219,18 +219,17 @@ recv_sample (GstElement * appsink, gpointer user_data)
       g_object_unref (sink_pad);
     }
 
-    if (caps != NULL) {
-      g_object_set (appsrc, "caps", caps, NULL);
-      gst_caps_unref (caps);
-    } else {
+    if (caps == NULL) {
       GST_ELEMENT_ERROR (self, CORE, CAPS, ("No caps found for %s",
               GST_ELEMENT_NAME (appsrc)), GST_ERROR_SYSTEM);
       ret = GST_FLOW_ERROR;
       goto end;
     }
-  } else {
-    gst_caps_unref (caps);
+
+    g_object_set (appsrc, "caps", caps, NULL);
   }
+
+  gst_caps_unref (caps);
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
