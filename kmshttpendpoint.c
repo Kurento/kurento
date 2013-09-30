@@ -463,37 +463,14 @@ kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
 {
   GstEncodingContainerProfile *cprof;
   gboolean has_audio, has_video;
-  GstCaps *pc;
 
   has_video = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
   has_audio = kms_element_get_audio_valve (KMS_ELEMENT (self)) != NULL;
 
-  // TODO: Add a property to select the profile, by now webm is used
-  if (has_video)
-    pc = gst_caps_from_string ("video/webm");
-  else
-    pc = gst_caps_from_string ("audio/webm");
+  cprof =
+      kms_recording_profile_create_profile (self->priv->profile, has_audio,
+      has_video);
 
-  cprof = gst_encoding_container_profile_new ("Webm", NULL, pc, NULL);
-  gst_caps_unref (pc);
-
-  if (has_audio) {
-    GstCaps *ac = gst_caps_from_string ("audio/x-vorbis");
-
-    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
-        gst_encoding_audio_profile_new (ac, NULL, NULL, 0));
-
-    gst_caps_unref (ac);
-  }
-
-  if (has_video) {
-    GstCaps *vc = gst_caps_from_string ("video/x-vp8");
-
-    gst_encoding_container_profile_add_profile (cprof, (GstEncodingProfile *)
-        gst_encoding_video_profile_new (vc, NULL, NULL, 0));
-
-    gst_caps_unref (vc);
-  }
   // HACK: this is the maximum time that the server can recor, I don't know
   // why but if synchronization is enabled, audio packets are droped
   g_object_set (G_OBJECT (self->priv->get->encodebin), "profile", cprof,
