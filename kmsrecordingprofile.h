@@ -18,12 +18,17 @@
 
 #include <glib.h>
 
+#include <gst/pbutils/encoding-profile.h>
+
 G_BEGIN_DECLS
 
 typedef enum
 {
   KMS_RECORDING_PROFILE_WEBM
 } KmsRecordingProfile;
+
+GstEncodingContainerProfile * kms_recording_profile_create_profile (
+    KmsRecordingProfile profile, gboolean has_audio, gboolean has_video);
 
 G_END_DECLS
 #endif /* __KMS_RECORDING_PROFILE_H__ */
