@@ -156,7 +156,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   else if (gst_caps_can_intersect (video_caps, src_caps))
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
   else {
-    GST_ERROR_OBJECT (self, "No agnostic caps provided");
+    GST_ELEMENT_ERROR (self, CORE, CAPS, ("No agnostic caps provided"),
+        GST_ERROR_SYSTEM);
     goto end;
   }
 
