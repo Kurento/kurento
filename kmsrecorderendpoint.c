@@ -490,6 +490,7 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
 {
   gboolean has_audio, has_video;
   GstEncodingContainerProfile *cprof;
+  const GList *profiles, *l;
 
   has_video = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
   has_audio = kms_element_get_audio_valve (KMS_ELEMENT (self)) != NULL;
@@ -497,6 +498,35 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
   cprof =
       kms_recording_profile_create_profile (self->priv->profile, has_audio,
       has_video);
+
+  profiles = gst_encoding_container_profile_get_profiles (cprof);
+
+  for (l = profiles; l != NULL; l = l->next) {
+    GstEncodingProfile *prof = l->data;
+    GstCaps *caps;
+    const gchar *appsink_name;
+    GstElement *appsink;
+
+    if (GST_IS_ENCODING_AUDIO_PROFILE (prof))
+      appsink_name = AUDIO_APPSINK;
+    else if (GST_IS_ENCODING_VIDEO_PROFILE (prof))
+      appsink_name = VIDEO_APPSINK;
+    else
+      continue;
+
+    appsink = gst_bin_get_by_name (GST_BIN (self), appsink_name);
+
+    if (appsink == NULL)
+      continue;
+
+    caps = gst_encoding_profile_get_input_caps (prof);
+
+    g_object_set (G_OBJECT (appsink), "caps", caps, NULL);
+
+    g_object_unref (appsink);
+
+    gst_caps_unref (caps);
+  }
 
   g_object_set (G_OBJECT (self->priv->encodebin), "profile", cprof,
       "audio-jitter-tolerance", 100 * GST_MSECOND,
@@ -592,15 +622,23 @@ end:
 
 static void
 kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
-    GstElement * valve, const gchar * agnostic_caps, const gchar * sinkname,
+    GstElement * valve, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname)
 {
-  GstCaps *caps = gst_caps_from_string (agnostic_caps);
   GstElement *appsink, *appsrc;
   GstElement *old_encodebin = NULL;
 
   if (self->priv->encodebin != NULL)
     old_encodebin = self->priv->encodebin;
+
+  appsink = gst_element_factory_make ("appsink", sinkname);
+
+  g_object_set (appsink, "emit-signals", TRUE, NULL);
+  g_object_set (appsink, "async", FALSE, NULL);
+  g_object_set (appsink, "sync", FALSE, NULL);
+  g_object_set (appsink, "qos", TRUE, NULL);
+
+  gst_bin_add (GST_BIN (self), appsink);
 
   self->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
   kms_recorder_end_point_set_profile_to_encodebin (self);
@@ -608,16 +646,6 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
 
   kms_recorder_end_point_add_sink (self);
   gst_element_sync_state_with_parent (self->priv->encodebin);
-
-  appsink = gst_element_factory_make ("appsink", sinkname);
-
-  g_object_set (appsink, "emit-signals", TRUE, NULL);
-  g_object_set (appsink, "caps", caps, NULL);
-  g_object_set (appsink, "async", FALSE, NULL);
-  g_object_set (appsink, "sync", FALSE, NULL);
-  g_object_set (appsink, "qos", TRUE, NULL);
-
-  gst_caps_unref (caps);
 
   kms_recorder_end_point_link_old_src_to_encodebin (self, old_encodebin);
 
@@ -644,7 +672,6 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
   g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
   g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
 
-  gst_bin_add (GST_BIN (self), appsink);
   gst_element_sync_state_with_parent (appsink);
   gst_element_link (valve, appsink);
 }
@@ -654,7 +681,7 @@ kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   // TODO: This caps should be set using the profile data
   kms_recorder_end_point_add_appsrc (KMS_RECORDER_END_POINT (self), valve,
-      "audio/x-vorbis", AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
+      AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 }
 
 static void
@@ -669,7 +696,7 @@ kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 {
   // TODO: This caps should be set using the profile data
   kms_recorder_end_point_add_appsrc (KMS_RECORDER_END_POINT (self), valve,
-      "video/x-vp8", VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
+      VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 }
 
 static void
