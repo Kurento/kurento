@@ -136,7 +136,7 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
-    return GST_FLOW_ERROR;
+    return GST_FLOW_OK;
 
   /* element is an appsrc one */
   g_object_get (G_OBJECT (element), "caps", &caps, NULL);
