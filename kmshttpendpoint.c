@@ -157,8 +157,9 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
     }
 
     g_object_set (element, "caps", caps, NULL);
-    gst_caps_unref (caps);
   }
+
+  gst_caps_unref (caps);
 
   buffer = gst_sample_get_buffer (sample);
   if (buffer == NULL) {
