@@ -223,7 +223,10 @@ recv_sample (GstElement * appsink, gpointer user_data)
       g_object_set (appsrc, "caps", caps, NULL);
       gst_caps_unref (caps);
     } else {
-      GST_ERROR ("No caps found for %s", GST_ELEMENT_NAME (appsrc));
+      GST_ELEMENT_ERROR (self, CORE, CAPS, ("No caps found for %s",
+              GST_ELEMENT_NAME (appsrc)), GST_ERROR_SYSTEM);
+      ret = GST_FLOW_ERROR;
+      goto end;
     }
   } else {
     gst_caps_unref (caps);
@@ -343,15 +346,14 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
 
 no_uri:
   {
-    /* we should use GST_ELEMENT_ERROR instead */
-    GST_ERROR_OBJECT (self, "No URI specified to record to.");
+    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
+        ("No URI specified to record to."), GST_ERROR_SYSTEM);
     goto end;
   }
 invalid_uri:
   {
-    GST_ERROR_OBJECT (self, "Invalid URI \"%s\".",
-        KMS_URI_END_POINT (self)->uri);
-
+    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS, ("Invalid URI \"%s\".",
+            KMS_URI_END_POINT (self)->uri), GST_ERROR_SYSTEM);
     g_clear_error (&err);
     goto end;
   }
@@ -366,12 +368,14 @@ no_sink:
       if (prot == NULL)
         goto invalid_uri;
 
-      GST_ERROR_OBJECT (self, "No URI handler implemented for \"%s\".", prot);
+      GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
+          ("No URI handler implemented for \"%s\".", prot), GST_ERROR_SYSTEM);
 
       g_free (prot);
     } else {
-      GST_ERROR_OBJECT (self, "%s",
-          (err) ? err->message : "URI was not accepted by any element");
+      GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS, ("%s",
+              (err) ? err->message : "URI was not accepted by any element"),
+          GST_ERROR_SYSTEM);
     }
 
     g_clear_error (&err);
