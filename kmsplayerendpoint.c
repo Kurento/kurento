@@ -102,7 +102,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
   if (sample == NULL)
-    return GST_FLOW_ERROR;
+    return GST_FLOW_OK;
 
   buffer = gst_sample_get_buffer (sample);
 
