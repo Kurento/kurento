@@ -15,6 +15,7 @@ public class HttpEndPointImpl extends EndPointImpl implements HttpEndPoint {
 	}
 
 	/* SYNC */
+	@Override
 	public String getUrl() {
 		StringCommandResult result = (StringCommandResult) sendCommand(new GetUrlCommand());
 		return result.getResult();
@@ -22,6 +23,7 @@ public class HttpEndPointImpl extends EndPointImpl implements HttpEndPoint {
 
 	/* ASYNC */
 
+	@Override
 	public void getUrl(final Continuation<String> cont) {
 		sendCommand(new GetUrlCommand(), new StringContinuationWrapper(cont));
 	}

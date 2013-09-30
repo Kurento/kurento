@@ -14,7 +14,6 @@ import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.commands.MediaCommandResult;
 import com.kurento.kmf.media.commands.internal.AbstractMediaCommandResult;
-import com.kurento.kmf.media.commands.internal.DefaultMediaCommandResultImpl;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.internal.AbstractMediaEvent;
@@ -25,12 +24,14 @@ import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaServerCallbackHandler;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
+import com.kurento.kmf.media.internal.ProvidesMediaCommand;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPadRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
+import com.kurento.kms.thrift.api.Command;
 import com.kurento.kms.thrift.api.CommandResult;
 import com.kurento.kms.thrift.api.KmsError;
 import com.kurento.kms.thrift.api.KmsEvent;
@@ -75,11 +76,6 @@ public class MediaApiApplicationContextConfiguration {
 	}
 
 	@Bean
-	MediaCommandResultClassStore mediaCommandResultClassStore() {
-		return new MediaCommandResultClassStore();
-	}
-
-	@Bean
 	@Scope("prototype")
 	public MediaEvent mediaEvent(KmsEvent event) {
 
@@ -104,7 +100,7 @@ public class MediaApiApplicationContextConfiguration {
 		}
 
 		if (event.isSetData()) {
-			((AbstractMediaEvent) mediaEvent).deserializeData(event);
+			mediaEvent.deserializeData(event);
 		}
 
 		return mediaEvent;
@@ -118,14 +114,12 @@ public class MediaApiApplicationContextConfiguration {
 
 	@Bean
 	@Scope("prototype")
-	public MediaCommandResult mediaCommandResult(CommandResult result) {
+	public MediaCommandResult mediaCommandResult(Command command,
+			CommandResult result) {
 
-		Class<?> clazz = mediaCommandResultClassStore().get(result.dataType);
-
-		// TODO Change error code
-		if (clazz == null) {
-			clazz = DefaultMediaCommandResultImpl.class;
-		}
+		ProvidesMediaCommand annotation = command.getClass().getAnnotation(
+				ProvidesMediaCommand.class);
+		Class<?> clazz = annotation.resultClass();
 
 		AbstractMediaCommandResult mediaCommandResult;
 
@@ -139,7 +133,8 @@ public class MediaApiApplicationContextConfiguration {
 			mediaCommandResult = (AbstractMediaCommandResult) constructor
 					.newInstance();
 		} catch (Exception e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000); // TODO
+			// TODO change error code
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
 		if (result.isSetResult()) {

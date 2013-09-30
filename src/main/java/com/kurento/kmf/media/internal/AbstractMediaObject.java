@@ -156,7 +156,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 		}
 
 		return (AbstractMediaCommandResult) ctx.getBean("mediaCommandResult",
-				result);
+				command, result);
 	}
 
 	@Override
@@ -391,7 +391,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 							// MediaCommandResult child.
 							@SuppressWarnings("unchecked")
 							R mediaResult = (R) ctx.getBean(
-									"mediaCommandResult", result);
+									"mediaCommandResult", command, result);
 							cont.onSuccess(mediaResult);
 						}
 					});

@@ -1,8 +1,5 @@
 package com.kurento.kmf.media.internal;
 
-import java.util.Collection;
-import java.util.HashMap;
-
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
@@ -14,8 +11,6 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaSink;
-import com.kurento.kmf.media.MediaSource;
 import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kmf.media.RtpEndPoint;
@@ -34,7 +29,6 @@ import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaElem
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaMixerWithParams_call;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaMixer_call;
 import com.kurento.kms.thrift.api.MediaServerService.Client;
-import com.kurento.kms.thrift.api.MediaType;
 import com.kurento.kms.thrift.api.mediaServerConstants;
 
 public class MediaPipelineImpl extends AbstractMediaObject implements

@@ -11,10 +11,7 @@ import com.kurento.kms.thrift.api.CommandResult;
 public abstract class AbstractThriftSerializedCommandResult extends
 		AbstractMediaCommandResult {
 
-	AbstractThriftSerializedCommandResult(String type) {
-		super(type);
-	}
-
+	@Override
 	public void deserializeCommandResult(CommandResult result) {
 		TMemoryBuffer tr = new TMemoryBuffer(result.result.remaining());
 		TProtocol pr = new TBinaryProtocol(tr);

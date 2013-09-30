@@ -6,8 +6,8 @@ public class DefaultMediaCommandResultImpl extends AbstractMediaCommandResult {
 
 	private byte[] result;
 
-	public DefaultMediaCommandResultImpl(String dataType) {
-		super(dataType);
+	public DefaultMediaCommandResultImpl() {
+		super();
 	}
 
 	public byte[] getResult() {

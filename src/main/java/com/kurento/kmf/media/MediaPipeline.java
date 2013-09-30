@@ -1,7 +1,6 @@
 package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.commands.MediaParam;
-import com.kurento.kms.thrift.api.MediaType;
 
 public interface MediaPipeline extends MediaObject {
 

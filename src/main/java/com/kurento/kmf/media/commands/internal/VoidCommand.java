@@ -6,6 +6,7 @@ public class VoidCommand extends AbstractMediaCommand {
 		super(type);
 	}
 
+	@Override
 	public byte[] getData() {
 		return null;
 	}
