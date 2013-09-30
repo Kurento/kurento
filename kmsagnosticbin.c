@@ -888,6 +888,8 @@ kms_agnostic_bin_decodebin_pad_added (GstElement * decodebin, GstPad * pad,
     gst_bin_add (GST_BIN (agnosticbin), fakesink);
     gst_element_sync_state_with_parent (fakesink);
     gst_element_link_pads (decodebin, GST_OBJECT_NAME (pad), fakesink, "sink");
+
+    gst_object_unref (tee);
   }
   KMS_AGNOSTIC_BIN_UNLOCK (agnosticbin);
 }
