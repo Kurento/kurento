@@ -20,23 +20,26 @@ import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.thrift.transport.TTransportException;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kms.thrift.api.CommandResult;
+import com.kurento.kms.thrift.api.Params;
 
 public abstract class AbstractThriftSerializedCommandResult extends
 		AbstractMediaCommandResult {
 
 	@Override
-	public void deserializeCommandResult(CommandResult result) {
-		TMemoryBuffer tr = new TMemoryBuffer(result.result.remaining());
-		TProtocol pr = new TBinaryProtocol(tr);
-		byte data[] = new byte[result.result.remaining()];
-		try {
-			result.result.get(data);
-			tr.write(data);
-			deserializeFromTProtocol(pr);
-		} catch (TTransportException e) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
+	public void deserializeCommandResult(Params result) {
+		if (result.isSetData()) {
+			TMemoryBuffer tr = new TMemoryBuffer(result.data.remaining());
+			TProtocol pr = new TBinaryProtocol(tr);
+			byte data[] = new byte[result.data.remaining()];
+			try {
+				result.data.get(data);
+				tr.write(data);
+				deserializeFromTProtocol(pr);
+			} catch (TTransportException e) {
+				// TODO change error code
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						30000);
+			}
 		}
 	}
 

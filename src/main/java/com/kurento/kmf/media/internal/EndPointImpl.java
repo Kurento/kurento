@@ -14,7 +14,15 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.MediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_COMPLETE;
+import static com.kurento.kms.thrift.api.MediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_START;
+
+import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.EndPoint;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 
 public abstract class EndPointImpl extends MediaElementImpl implements EndPoint {
@@ -22,4 +30,35 @@ public abstract class EndPointImpl extends MediaElementImpl implements EndPoint 
 	public EndPointImpl(MediaElementRefDTO endpointRef) {
 		super(endpointRef);
 	}
+
+	/* SYNC */
+
+	@Override
+	public ListenerRegistration addMediaSessionCompleteListener(
+			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent) {
+		return addListener(EVENT_MEDIA_SESSION_COMPLETE, sessionEvent);
+	}
+
+	@Override
+	public ListenerRegistration addMediaSessionStartListener(
+			final MediaEventListener<MediaSessionStartedEvent> sessionEvent) {
+		return addListener(EVENT_MEDIA_SESSION_START, sessionEvent);
+	}
+
+	/* ASYNC */
+
+	@Override
+	public void addMediaSessionCompleteListener(
+			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent,
+			final Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_MEDIA_SESSION_COMPLETE, sessionEvent, cont);
+	}
+
+	@Override
+	public void addMediaSessionStartListener(
+			final MediaEventListener<MediaSessionStartedEvent> sessionEvent,
+			final Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_MEDIA_SESSION_START, sessionEvent, cont);
+	}
+
 }

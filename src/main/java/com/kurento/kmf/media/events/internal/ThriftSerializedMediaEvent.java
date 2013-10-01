@@ -30,12 +30,13 @@ public abstract class ThriftSerializedMediaEvent extends AbstractMediaEvent {
 
 	@Override
 	public void deserializeData(KmsEvent event) {
-		if (event.isSetData()) {
-			TMemoryBuffer tr = new TMemoryBuffer(event.data.remaining());
+		if (event.isSetEventData()) {
+			TMemoryBuffer tr = new TMemoryBuffer(
+					event.eventData.data.remaining());
 			TProtocol pr = new TBinaryProtocol(tr);
-			byte data[] = new byte[event.data.remaining()];
+			byte data[] = new byte[event.eventData.data.remaining()];
 			try {
-				event.data.get(data);
+				event.eventData.data.get(data);
 				tr.write(data);
 				deserializeFromTProtocol(pr);
 			} catch (TTransportException e) {

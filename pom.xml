@@ -10,6 +10,22 @@
 	<name>kmf-media-api</name>
 	<url>http://www.kurento.com</url>
 
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.com</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>llopez</id>
+			<name>Luis López Fernández</name>
+		</developer>
+		<developer>
+			<id>igracia</id>
+			<name>Iván Gracia Martínez</name>
+		</developer>
+	</developers>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>

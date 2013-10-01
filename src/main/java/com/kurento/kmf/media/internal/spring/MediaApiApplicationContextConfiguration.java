@@ -46,10 +46,10 @@ import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPadRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
 import com.kurento.kms.thrift.api.Command;
-import com.kurento.kms.thrift.api.CommandResult;
 import com.kurento.kms.thrift.api.KmsError;
 import com.kurento.kms.thrift.api.KmsEvent;
 import com.kurento.kms.thrift.api.PadDirection;
+import com.kurento.kms.thrift.api.Params;
 
 @Configuration
 public class MediaApiApplicationContextConfiguration {
@@ -113,7 +113,7 @@ public class MediaApiApplicationContextConfiguration {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
-		if (event.isSetData()) {
+		if (event.isSetEventData()) {
 			mediaEvent.deserializeData(event);
 		}
 
@@ -128,8 +128,7 @@ public class MediaApiApplicationContextConfiguration {
 
 	@Bean
 	@Scope("prototype")
-	public MediaCommandResult mediaCommandResult(Command command,
-			CommandResult result) {
+	public MediaCommandResult mediaCommandResult(Command command, Params result) {
 
 		ProvidesMediaCommand annotation = command.getClass().getAnnotation(
 				ProvidesMediaCommand.class);
@@ -151,7 +150,7 @@ public class MediaApiApplicationContextConfiguration {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
-		if (result.isSetResult()) {
+		if (result.isSetData()) {
 			mediaCommandResult.deserializeCommandResult(result);
 		}
 

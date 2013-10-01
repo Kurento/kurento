@@ -17,7 +17,8 @@ package com.kurento.kmf.media.commands.internal;
 public class VoidCommand extends AbstractMediaCommand {
 
 	public VoidCommand(String type) {
-		super(type);
+		// TODO complete contruction
+		super(type, null);
 	}
 
 	@Override

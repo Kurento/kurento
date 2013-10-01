@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.commands.MediaParam;
+import com.kurento.kmf.media.commands.MediaParams;
 
 public interface MediaPipeline extends MediaObject {
 
@@ -50,11 +50,11 @@ public interface MediaPipeline extends MediaObject {
 	// Generic creation methods
 	MediaElement createMediaElement(String elementType);
 
-	MediaElement createMediaElement(String elementType, MediaParam params);
+	MediaElement createMediaElement(String elementType, MediaParams params);
 
 	MediaMixer createMediaMixer(String mixerType);
 
-	MediaMixer createMediaMixer(String mixerType, MediaParam params);
+	MediaMixer createMediaMixer(String mixerType, MediaParams params);
 
 	@Override
 	MediaPipeline getParent();
@@ -63,12 +63,12 @@ public interface MediaPipeline extends MediaObject {
 			Continuation<T> cont);
 
 	<T extends MediaElement> void createMediaElement(String elementType,
-			MediaParam params, Continuation<T> cont);
+			MediaParams params, Continuation<T> cont);
 
 	<T extends MediaMixer> void createMediaMixer(String mixerType,
 			Continuation<T> cont);
 
 	<T extends MediaMixer> void createMediaMixer(String mixerType,
-			MediaParam params, Continuation<T> cont);
+			MediaParams params, Continuation<T> cont);
 
 }

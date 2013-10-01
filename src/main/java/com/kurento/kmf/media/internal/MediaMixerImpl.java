@@ -21,8 +21,8 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
-import com.kurento.kmf.media.commands.MediaParam;
-import com.kurento.kmf.media.commands.internal.AbstractMediaCommand;
+import com.kurento.kmf.media.commands.MediaParams;
+import com.kurento.kmf.media.commands.internal.AbstractMediaParams;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
 import com.kurento.kms.thrift.api.MediaServerException;
@@ -62,7 +62,7 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 	}
 
 	@Override
-	public MediaElement createEndPoint(MediaParam params)
+	public MediaElement createEndPoint(MediaParams params)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
 
@@ -72,7 +72,7 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 			endPointRef = new MediaElementRefDTO(
 					client.createMixerEndPointWithParams(
 							this.objectRef.getThriftRef(),
-							((AbstractMediaCommand) params).getThriftCommand()));
+							((AbstractMediaParams) params).getThriftParams()));
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -133,7 +133,7 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 	}
 
 	@Override
-	public void createEndPoint(MediaParam params,
+	public void createEndPoint(MediaParams params,
 			final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 
@@ -142,7 +142,7 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 		try {
 			client.createMixerEndPointWithParams(
 					objectRef.getThriftRef(),
-					((AbstractMediaCommand) params).getThriftCommand(),
+					((AbstractMediaParams) params).getThriftParams(),
 					new AsyncMethodCallback<createMixerEndPointWithParams_call>() {
 
 						@Override
@@ -179,5 +179,4 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 	}
-
 }

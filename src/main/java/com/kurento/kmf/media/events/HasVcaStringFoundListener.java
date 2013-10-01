@@ -12,12 +12,24 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.events;
 
-public interface MediaCommand {
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
 
-	String getName();
+/**
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public interface HasVcaStringFoundListener {
 
-	MediaParams getParams();
+	/* SYNC */
+	ListenerRegistration addVcaStringFoundDataListener(
+			final MediaEventListener<VcaStringFoundEvent> vcaStrEvent);
+
+	/* ASYNC */
+	void addVcaStringFoundDataListener(
+			final MediaEventListener<VcaStringFoundEvent> vcaStrEvent,
+			final Continuation<ListenerRegistration> cont);
 
 }

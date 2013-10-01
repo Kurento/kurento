@@ -14,14 +14,15 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kmf.media.internal.ProvidesMediaCommand;
-import com.kurento.kms.thrift.api.mediaCommandDataTypesConstants;
+import static com.kurento.kms.thrift.api.UriEndPointTypeConstants.STOP;
 
-@ProvidesMediaCommand(type = mediaCommandDataTypesConstants.STOP, resultClass = VoidCommandResult.class)
+import com.kurento.kmf.media.internal.ProvidesMediaCommand;
+
+@ProvidesMediaCommand(type = STOP, resultClass = VoidCommandResult.class)
 public class StopCommand extends VoidCommand {
 
 	public StopCommand() {
-		super(mediaCommandDataTypesConstants.STOP);
+		super(STOP);
 	}
 
 }

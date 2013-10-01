@@ -14,14 +14,34 @@
  */
 package com.kurento.kmf.media.internal;
 
-import com.kurento.kmf.media.ZBarFilter;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
-import com.kurento.kms.thrift.api.mediaServerConstants;
+import static com.kurento.kms.thrift.api.ZBarFilterTypeConstants.EVENT_CODE_FOUND;
+import static com.kurento.kms.thrift.api.ZBarFilterTypeConstants.TYPE_NAME;
 
-@ProvidesMediaElement(type = mediaServerConstants.ZBAR_FILTER_TYPE)
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.ZBarFilter;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.VcaStringFoundEvent;
+import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+
+@ProvidesMediaElement(type = TYPE_NAME)
 public class ZBarFilterImpl extends FilterImpl implements ZBarFilter {
 
 	ZBarFilterImpl(MediaElementRefDTO filterId) {
 		super(filterId);
 	}
+
+	@Override
+	public ListenerRegistration addVcaStringFoundDataListener(
+			final MediaEventListener<VcaStringFoundEvent> vcaStrEvent) {
+		return addListener(EVENT_CODE_FOUND, vcaStrEvent);
+	}
+
+	@Override
+	public void addVcaStringFoundDataListener(
+			final MediaEventListener<VcaStringFoundEvent> vcaStrEvent,
+			final Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_CODE_FOUND, vcaStrEvent, cont);
+	}
+
 }

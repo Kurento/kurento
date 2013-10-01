@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kms.thrift.api.CommandResult;
+import com.kurento.kms.thrift.api.Params;
 
 public class VoidCommandResult extends AbstractMediaCommandResult {
 
@@ -23,7 +23,9 @@ public class VoidCommandResult extends AbstractMediaCommandResult {
 	}
 
 	@Override
-	public void deserializeCommandResult(CommandResult result) {
+	public void deserializeCommandResult(Params result) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

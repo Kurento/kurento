@@ -12,12 +12,27 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.events.internal;
 
-public interface MediaCommand {
+import com.kurento.kmf.media.events.EndOfStreamEvent;
 
-	String getName();
+/**
+ * Event listener for {@link EndOfStreamEvent}
+ * 
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public class EndOfStreamEventListenerImpl extends
+		AbstractMediaEventListener<EndOfStreamEvent> {
 
-	MediaParams getParams();
+	@Override
+	public void onEvent(EndOfStreamEvent event) {
+		// TODO change this implementation
+		// TODO copied form kmf-media-api
+		// if (event.getType() == PlayerEventType.EOS) {
+		// HttpPlayerSessionImpl.this
+		// .callOnContentCompletedOnHandler();
+		// }
+	}
 
 }

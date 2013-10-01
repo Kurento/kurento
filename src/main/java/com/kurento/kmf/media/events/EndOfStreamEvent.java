@@ -14,6 +14,15 @@
  */
 package com.kurento.kmf.media.events;
 
-public interface MediaSessionCompleteEvent extends MediaEvent {
+/**
+ * Event raised when the stream that the element sends out is finished.. An
+ * element receiving this event will generally just process any buffered data,
+ * and then forward the event further downstream.
+ * 
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public interface EndOfStreamEvent extends MediaEvent {
 
+	// EOS events have no properties
 }

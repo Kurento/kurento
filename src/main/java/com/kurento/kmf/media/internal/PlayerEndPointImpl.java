@@ -14,12 +14,17 @@
  */
 package com.kurento.kmf.media.internal;
 
-import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
-import com.kurento.kms.thrift.api.mediaServerConstants;
+import static com.kurento.kms.thrift.api.PlayerEndPointTypeConstants.EVENT_EOS;
+import static com.kurento.kms.thrift.api.PlayerEndPointTypeConstants.TYPE_NAME;
 
-@ProvidesMediaElement(type = mediaServerConstants.PLAYER_END_POINT_TYPE)
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+
+@ProvidesMediaElement(type = TYPE_NAME)
 public class PlayerEndPointImpl extends UriEndPointImpl implements
 		PlayerEndPoint {
 
@@ -27,15 +32,29 @@ public class PlayerEndPointImpl extends UriEndPointImpl implements
 		super(endpointRef);
 	}
 
-	/* SYNC */
 	@Override
 	public void play() {
 		start();
 	}
 
+	@Override
+	public ListenerRegistration addEndOfStreamListener(
+			final MediaEventListener<EndOfStreamEvent> eosEvent) {
+		return addListener(EVENT_EOS, eosEvent);
+	}
+
 	/* ASYNC */
+
 	@Override
 	public void play(final Continuation<Void> cont) {
 		start(cont);
 	}
+
+	@Override
+	public void addEndOfStreamListener(
+			final MediaEventListener<EndOfStreamEvent> eosEvent,
+			final Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_EOS, eosEvent, cont);
+	}
+
 }

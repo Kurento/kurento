@@ -14,10 +14,9 @@
  */
 package com.kurento.kmf.media.commands;
 
-public interface MediaCommand {
+public interface MediaParams {
 
-	String getName();
+	public String getDataType();
 
-	MediaParams getParams();
-
+	public byte[] getData();
 }

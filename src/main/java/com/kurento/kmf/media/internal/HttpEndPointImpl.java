@@ -14,14 +14,15 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.HttpEndPointTypeConstants.TYPE_NAME;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndPoint;
-import com.kurento.kmf.media.commands.internal.GetUrlCommand;
 import com.kurento.kmf.media.commands.internal.StringCommandResult;
+import com.kurento.kmf.media.commands.internal.VoidCommand;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
-import com.kurento.kms.thrift.api.mediaServerConstants;
 
-@ProvidesMediaElement(type = mediaServerConstants.HTTP_END_POINT_TYPE)
+@ProvidesMediaElement(type = TYPE_NAME)
 public class HttpEndPointImpl extends EndPointImpl implements HttpEndPoint {
 
 	HttpEndPointImpl(MediaElementRefDTO endpointRef) {
@@ -31,7 +32,8 @@ public class HttpEndPointImpl extends EndPointImpl implements HttpEndPoint {
 	/* SYNC */
 	@Override
 	public String getUrl() {
-		StringCommandResult result = (StringCommandResult) sendCommand(new GetUrlCommand());
+		StringCommandResult result = (StringCommandResult) sendCommand(new VoidCommand(
+				TYPE_NAME));
 		return result.getResult();
 	}
 
@@ -39,6 +41,8 @@ public class HttpEndPointImpl extends EndPointImpl implements HttpEndPoint {
 
 	@Override
 	public void getUrl(final Continuation<String> cont) {
-		sendCommand(new GetUrlCommand(), new StringContinuationWrapper(cont));
+		sendCommand(new VoidCommand(TYPE_NAME), new StringContinuationWrapper(
+				cont));
 	}
+
 }

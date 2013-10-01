@@ -12,12 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.events;
 
-public interface MediaCommand {
-
-	String getName();
-
-	MediaParams getParams();
+public interface MediaSessionStartedEvent extends MediaEvent {
 
 }

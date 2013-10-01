@@ -14,13 +14,14 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kmf.media.internal.ProvidesMediaCommand;
-import com.kurento.kms.thrift.api.mediaCommandDataTypesConstants;
+import static com.kurento.kms.thrift.api.SdpEndPointTypeConstants.PROCESS_SDP_ANSWER;
 
-@ProvidesMediaCommand(type = mediaCommandDataTypesConstants.PROCESS_SDP_ANSWER, resultClass = StringCommandResult.class)
+import com.kurento.kmf.media.internal.ProvidesMediaCommand;
+
+@ProvidesMediaCommand(type = PROCESS_SDP_ANSWER, resultClass = StringCommandResult.class)
 public class ProcessSdpAnswerCommand extends StringCommand {
 
 	public ProcessSdpAnswerCommand(String sdp) {
-		super(mediaCommandDataTypesConstants.PROCESS_SDP_ANSWER, sdp);
+		super(PROCESS_SDP_ANSWER, sdp);
 	}
 }

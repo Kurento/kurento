@@ -14,16 +14,16 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.commands.MediaParam;
+import com.kurento.kmf.media.commands.MediaParams;
 
 public interface MediaMixer extends MediaObject {
 
 	public MediaElement createEndPoint();
 
-	public MediaElement createEndPoint(MediaParam params);
+	public MediaElement createEndPoint(MediaParams params);
 
 	public void createEndPoint(final Continuation<MediaElement> cont);
 
-	public void createEndPoint(MediaParam params,
+	public void createEndPoint(MediaParams params,
 			final Continuation<MediaElement> cont);
 }

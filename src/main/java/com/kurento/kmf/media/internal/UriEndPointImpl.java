@@ -14,13 +14,15 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.UriEndPointTypeConstants.GET_URI;
+import static com.kurento.kms.thrift.api.UriEndPointTypeConstants.PAUSE;
+import static com.kurento.kms.thrift.api.UriEndPointTypeConstants.START;
+import static com.kurento.kms.thrift.api.UriEndPointTypeConstants.STOP;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.UriEndPoint;
-import com.kurento.kmf.media.commands.internal.GetUriCommand;
-import com.kurento.kmf.media.commands.internal.PauseCommand;
-import com.kurento.kmf.media.commands.internal.StartCommand;
-import com.kurento.kmf.media.commands.internal.StopCommand;
 import com.kurento.kmf.media.commands.internal.StringCommandResult;
+import com.kurento.kmf.media.commands.internal.VoidCommand;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 
 public abstract class UriEndPointImpl extends EndPointImpl implements
@@ -33,41 +35,43 @@ public abstract class UriEndPointImpl extends EndPointImpl implements
 	/* SYNC */
 	@Override
 	public String getUri() {
-		StringCommandResult result = (StringCommandResult) sendCommand(new GetUriCommand());
+		StringCommandResult result = (StringCommandResult) sendCommand(new VoidCommand(
+				GET_URI));
 		return result.getResult();
 	}
 
 	void start() {
-		sendCommand(new StartCommand());
+		sendCommand(new VoidCommand(START));
 	}
 
 	@Override
 	public void pause() {
-		sendCommand(new PauseCommand());
+		sendCommand(new VoidCommand(PAUSE));
 	}
 
 	@Override
 	public void stop() {
-		sendCommand(new StopCommand());
+		sendCommand(new VoidCommand(STOP));
 	}
 
 	/* ASYNC */
 	@Override
 	public void getUri(final Continuation<String> cont) {
-		sendCommand(new GetUriCommand(), new StringContinuationWrapper(cont));
+		sendCommand(new VoidCommand(GET_URI), new StringContinuationWrapper(
+				cont));
 	}
 
 	void start(final Continuation<Void> cont) {
-		sendCommand(new StartCommand(), new VoidContinuationWrapper(cont));
+		sendCommand(new VoidCommand(START), new VoidContinuationWrapper(cont));
 	}
 
 	@Override
 	public void pause(final Continuation<Void> cont) {
-		sendCommand(new PauseCommand(), new VoidContinuationWrapper(cont));
+		sendCommand(new VoidCommand(PAUSE), new VoidContinuationWrapper(cont));
 	}
 
 	@Override
 	public void stop(final Continuation<Void> cont) {
-		sendCommand(new StopCommand(), new VoidContinuationWrapper(cont));
+		sendCommand(new VoidCommand(STOP), new VoidContinuationWrapper(cont));
 	}
 }

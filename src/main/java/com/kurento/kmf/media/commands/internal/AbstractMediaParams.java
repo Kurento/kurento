@@ -14,20 +14,35 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kmf.media.commands.MediaCommandResult;
+import com.kurento.kmf.media.commands.MediaParams;
 import com.kurento.kms.thrift.api.Params;
 
-public abstract class AbstractMediaCommandResult implements MediaCommandResult {
+/**
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public abstract class AbstractMediaParams implements MediaParams {
 
-	/**
-	 * Deserializes a command result obtained form the media server.
-	 * Implementations of this class are responsible for the correct
-	 * deserialization, since each command returns a different type of result.
-	 * 
-	 * @param result
-	 *            The result form the command. This is a thrift
-	 *            {@link com.kurento.kms.thrift.api.Params} structure
-	 */
-	public abstract void deserializeCommandResult(Params result);
+	private final String dataType;
+
+	private final byte[] data;
+
+	protected AbstractMediaParams(String type, byte[] data) {
+		this.dataType = type;
+		this.data = new byte[data.length];
+		System.arraycopy(data, 0, this.data, 0, data.length);
+	}
+
+	@Override
+	public String getDataType() {
+		return this.dataType;
+	}
+
+	public Params getThriftParams() {
+		Params params = new Params();
+		params.setDataType(this.getDataType());
+		params.setData(this.getData());
+		return params;
+	}
 
 }

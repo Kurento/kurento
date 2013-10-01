@@ -12,28 +12,33 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands.internal;
+package com.kurento.kmf.media.events.internal;
 
-import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.transport.TMemoryBuffer;
 
-public abstract class AbstractThriftSerializedCommand extends
-		AbstractMediaCommand {
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kms.thrift.api.KmsEvent;
 
-	protected AbstractThriftSerializedCommand(String type) {
-		// TODO correct this parameter passing
-		super(type, null);
+/**
+ * Default implementation of {@link EndOfStreamEvent}
+ * 
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public class EndOfStreamEventImpl extends ThriftSerializedMediaEvent implements
+		EndOfStreamEvent {
+
+	/**
+	 * @param event
+	 *            The Thrift event received form the server.
+	 */
+	public EndOfStreamEventImpl(KmsEvent event) {
+		super(event);
 	}
 
 	@Override
-	protected byte[] getData() {
-		TMemoryBuffer tr = new TMemoryBuffer(64); // default size. Will grow if
-													// necessary
-		TProtocol pr = new TBinaryProtocol(tr);
-		return getThriftSerializedData(pr);
+	protected void deserializeFromTProtocol(TProtocol pr) {
+		// EOS has no properties
 	}
-
-	protected abstract byte[] getThriftSerializedData(TProtocol pr);
 
 }

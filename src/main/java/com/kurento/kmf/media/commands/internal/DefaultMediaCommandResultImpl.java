@@ -14,7 +14,9 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kms.thrift.api.CommandResult;
+import java.util.Arrays;
+
+import com.kurento.kms.thrift.api.Params;
 
 public class DefaultMediaCommandResultImpl extends AbstractMediaCommandResult {
 
@@ -28,9 +30,15 @@ public class DefaultMediaCommandResultImpl extends AbstractMediaCommandResult {
 		return result;
 	}
 
+	/**
+	 * This method deserializes a command result, storing the byte array
+	 * contained in the data field from the result structure. If no data is set,
+	 * the method return an empty array. </br> {@inheritDoc}
+	 */
 	@Override
-	public void deserializeCommandResult(CommandResult result) {
-		this.result = result.getResult();
+	public void deserializeCommandResult(final Params result) {
+		this.result = (result.isSetData()) ? Arrays.copyOf(result.getData(),
+				result.getData().length) : new byte[0];
 	}
 
 }

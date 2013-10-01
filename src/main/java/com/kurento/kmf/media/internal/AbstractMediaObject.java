@@ -36,7 +36,6 @@ import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
 import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
-import com.kurento.kms.thrift.api.CommandResult;
 import com.kurento.kms.thrift.api.MediaServerException;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaPipeline_call;
@@ -46,6 +45,7 @@ import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.sendCommand_cal
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.subscribe_call;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.unsubscribe_call;
 import com.kurento.kms.thrift.api.MediaServerService.Client;
+import com.kurento.kms.thrift.api.Params;
 
 public abstract class AbstractMediaObject implements MediaObject {
 
@@ -154,7 +154,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 	protected MediaCommandResult sendCommand(MediaCommand command) {
 		Client client = clientPool.acquireSync();
 
-		CommandResult result;
+		Params result;
 
 		try {
 			result = client.sendCommand(objectRef.getThriftRef(),
@@ -278,8 +278,8 @@ public abstract class AbstractMediaObject implements MediaObject {
 	}
 
 	@Override
-	public <E extends MediaEvent> void addListener(
-			final MediaEventListener<E> listener, final String eventType,
+	public <E extends MediaEvent> void addListener(final String eventType,
+			final MediaEventListener<E> listener,
 			final Continuation<ListenerRegistration> cont) {
 
 		final AsyncClient client = clientPool.acquireAsync();
@@ -387,7 +387,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 
 						@Override
 						public void onComplete(sendCommand_call response) {
-							CommandResult result;
+							Params result;
 
 							try {
 								result = response.getResult();

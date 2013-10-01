@@ -21,7 +21,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
-import com.kurento.kmf.common.excption.internal.ReflectionUtils;
+import com.kurento.kmf.common.exception.internal.ReflectionUtils;
 
 /**
  * This class contains a map of classes annotated by T. The annotation used as

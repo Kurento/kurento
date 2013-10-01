@@ -20,7 +20,6 @@ import java.util.Random;
 import org.apache.thrift.TException;
 
 import com.kurento.kms.thrift.api.Command;
-import com.kurento.kms.thrift.api.CommandResult;
 import com.kurento.kms.thrift.api.MediaElementType;
 import com.kurento.kms.thrift.api.MediaMixerType;
 import com.kurento.kms.thrift.api.MediaObjectRef;
@@ -31,6 +30,7 @@ import com.kurento.kms.thrift.api.MediaServerException;
 import com.kurento.kms.thrift.api.MediaServerService;
 import com.kurento.kms.thrift.api.MediaType;
 import com.kurento.kms.thrift.api.PadDirection;
+import com.kurento.kms.thrift.api.Params;
 
 public class MediaServerMock implements MediaServerService.Iface {
 
@@ -55,7 +55,7 @@ public class MediaServerMock implements MediaServerService.Iface {
 
 	@Override
 	public MediaObjectRef createMediaElementWithParams(MediaObjectRef pipeline,
-			String type, Command command) throws MediaServerException,
+			String type, Params command) throws MediaServerException,
 			TException {
 		return generateObjectRef(ObjectType.ELEMENT);
 	}
@@ -68,7 +68,7 @@ public class MediaServerMock implements MediaServerService.Iface {
 
 	@Override
 	public MediaObjectRef createMediaMixerWithParams(MediaObjectRef pipeline,
-			String type, Command command) throws MediaServerException,
+			String type, Params command) throws MediaServerException,
 			TException {
 		return generateObjectRef(ObjectType.MIXER);
 	}
@@ -80,7 +80,7 @@ public class MediaServerMock implements MediaServerService.Iface {
 	}
 
 	@Override
-	public MediaObjectRef createMediaPipelineWithParams(Command command)
+	public MediaObjectRef createMediaPipelineWithParams(Params command)
 			throws MediaServerException, TException {
 		return generateObjectRef(ObjectType.PIPELINE);
 	}
@@ -93,7 +93,7 @@ public class MediaServerMock implements MediaServerService.Iface {
 
 	@Override
 	public MediaObjectRef createMixerEndPointWithParams(MediaObjectRef mixer,
-			Command command) throws MediaServerException, TException {
+			Params command) throws MediaServerException, TException {
 		return generateObjectRef(ObjectType.PAD);
 	}
 
@@ -205,7 +205,7 @@ public class MediaServerMock implements MediaServerService.Iface {
 	}
 
 	@Override
-	public CommandResult sendCommand(MediaObjectRef element, Command command)
+	public Params sendCommand(MediaObjectRef element, Command command)
 			throws MediaServerException, TException {
 		// TODO Auto-generated method stub
 		return null;

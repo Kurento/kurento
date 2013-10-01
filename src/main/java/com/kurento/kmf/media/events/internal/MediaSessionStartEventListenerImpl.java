@@ -12,10 +12,23 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.events;
+package com.kurento.kmf.media.events.internal;
 
-import com.kurento.kms.thrift.api.HttpRequestReceivedData;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 
-public interface HttpRequestReceived extends MediaEvent {
-	HttpRequestReceivedData getData();
+/**
+ * Event listener for {@link MediaSessionStartedEvent}
+ * 
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public class MediaSessionStartEventListenerImpl extends
+		AbstractMediaEventListener<MediaSessionStartedEvent> {
+
+	@Override
+	public void onEvent(MediaSessionStartedEvent event) {
+		// TODO Auto-generated method stub
+
+	}
+
 }

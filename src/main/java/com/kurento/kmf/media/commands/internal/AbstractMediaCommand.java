@@ -15,27 +15,39 @@
 package com.kurento.kmf.media.commands.internal;
 
 import com.kurento.kmf.media.commands.MediaCommand;
+import com.kurento.kmf.media.commands.MediaParams;
 import com.kurento.kms.thrift.api.Command;
+import com.kurento.kms.thrift.api.Params;
 
 public abstract class AbstractMediaCommand implements MediaCommand {
 
-	private final String type;
+	private final String name;
 
-	protected AbstractMediaCommand(String type) {
-		this.type = type;
+	private final MediaParams mediaParams;
+
+	protected AbstractMediaCommand(String name, MediaParams params) {
+		this.name = name;
+		this.mediaParams = params;// TODO maybe it´s better to create the params
+									// in here.
 	}
 
 	@Override
-	public String getType() {
-		return this.type;
+	public String getName() {
+		return this.name;
+	}
+
+	@Override
+	public MediaParams getParams() {
+		return this.getParams();
 	}
 
 	protected abstract byte[] getData();
 
 	public Command getThriftCommand() {
 		Command command = new Command();
-		command.setType(getType());
-		command.setData(getData());
+		command.params = new Params();
+		command.params.setDataType(mediaParams.getDataType());
+		command.params.setData(getData());
 		return command;
 	}
 

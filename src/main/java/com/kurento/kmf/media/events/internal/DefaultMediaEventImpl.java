@@ -40,7 +40,8 @@ public class DefaultMediaEventImpl extends AbstractMediaEvent implements
 
 	@Override
 	public void deserializeData(KmsEvent event) {
-		data = event.getData();
+		// TODO get the params
+		// data = event.getEventData();
 	}
 
 }

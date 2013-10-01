@@ -14,14 +14,15 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kmf.media.internal.ProvidesMediaCommand;
-import com.kurento.kms.thrift.api.mediaCommandDataTypesConstants;
+import static com.kurento.kms.thrift.api.SdpEndPointTypeConstants.GENERATE_SDP_OFFER;
 
-@ProvidesMediaCommand(type = mediaCommandDataTypesConstants.GENERATE_SDP_OFFER, resultClass = StringCommandResult.class)
+import com.kurento.kmf.media.internal.ProvidesMediaCommand;
+
+@ProvidesMediaCommand(type = GENERATE_SDP_OFFER, resultClass = StringCommandResult.class)
 public class GenerateSdpOfferCommand extends VoidCommand {
 
 	public GenerateSdpOfferCommand() {
-		super(mediaCommandDataTypesConstants.GENERATE_SDP_OFFER);
+		super(GENERATE_SDP_OFFER);
 	}
 
 }

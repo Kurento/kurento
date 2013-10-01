@@ -12,12 +12,23 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.events.internal;
 
-public interface MediaCommand {
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
-	String getName();
+/**
+ * Event listener for {@link HttpRequestReceivedEvent}
+ * 
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public class MediaSessionCompleteEventListenerImpl extends
+		AbstractMediaEventListener<MediaSessionTerminatedEvent> {
 
-	MediaParams getParams();
+	@Override
+	public void onEvent(MediaSessionTerminatedEvent event) {
+		// TODO add implementation
+
+	}
 
 }

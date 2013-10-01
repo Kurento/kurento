@@ -30,12 +30,13 @@ import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kmf.media.RtpEndPoint;
 import com.kurento.kmf.media.WebRtcEndPoint;
 import com.kurento.kmf.media.ZBarFilter;
-import com.kurento.kmf.media.commands.MediaParam;
-import com.kurento.kmf.media.commands.internal.AbstractMediaCommand;
-import com.kurento.kmf.media.commands.internal.SetUriCommand;
+import com.kurento.kmf.media.commands.MediaParams;
+import com.kurento.kmf.media.commands.internal.AbstractMediaParams;
 import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
+import com.kurento.kms.thrift.api.HttpEndPointTypeConstants;
+import com.kurento.kms.thrift.api.JackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.MediaServerException;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaElementWithParams_call;
@@ -43,7 +44,11 @@ import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaElem
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaMixerWithParams_call;
 import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaMixer_call;
 import com.kurento.kms.thrift.api.MediaServerService.Client;
-import com.kurento.kms.thrift.api.mediaServerConstants;
+import com.kurento.kms.thrift.api.PlayerEndPointTypeConstants;
+import com.kurento.kms.thrift.api.RecorderEndPointTypeConstants;
+import com.kurento.kms.thrift.api.RtpEndPointTypeConstants;
+import com.kurento.kms.thrift.api.WebRtcEndPointTypeConstants;
+import com.kurento.kms.thrift.api.ZBarFilterTypeConstants;
 
 public class MediaPipelineImpl extends AbstractMediaObject implements
 		MediaPipeline {
@@ -76,7 +81,8 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public MediaElement createMediaElement(String elementType, MediaParam params) {
+	public MediaElement createMediaElement(String elementType,
+			MediaParams params) {
 
 		Client client = clientPool.acquireSync();
 		MediaElementRefDTO elementRefDTO;
@@ -84,7 +90,7 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 			elementRefDTO = new MediaElementRefDTO(
 					client.createMediaElementWithParams(
 							this.objectRef.getThriftRef(), elementType,
-							((AbstractMediaCommand) params).getThriftCommand()));
+							((AbstractMediaParams) params).getThriftParams()));
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -123,7 +129,7 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public MediaMixer createMediaMixer(String mixerType, MediaParam params) {
+	public MediaMixer createMediaMixer(String mixerType, MediaParams params) {
 
 		Client client = this.clientPool.acquireSync();
 		MediaMixerRefDTO mixerRefDTO;
@@ -131,7 +137,7 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 			mixerRefDTO = new MediaMixerRefDTO(
 					client.createMediaMixerWithParams(
 							this.objectRef.getThriftRef(), mixerType,
-							((AbstractMediaCommand) params).getThriftCommand()));
+							((AbstractMediaParams) params).getThriftParams()));
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -206,14 +212,14 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 
 	@Override
 	public <T extends MediaElement> void createMediaElement(String elementType,
-			MediaParam params, final Continuation<T> cont) {
+			MediaParams params, final Continuation<T> cont) {
 
 		final AsyncClient client = this.clientPool.acquireAsync();
 		try {
 			client.createMediaElementWithParams(
 					this.objectRef.getThriftRef(),
 					elementType,
-					((AbstractMediaCommand) params).getThriftCommand(),
+					((AbstractMediaParams) params).getThriftParams(),
 					new AsyncMethodCallback<createMediaElementWithParams_call>() {
 
 						@Override
@@ -303,14 +309,14 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 
 	@Override
 	public <T extends MediaMixer> void createMediaMixer(String mixerType,
-			MediaParam params, final Continuation<T> cont) {
+			MediaParams params, final Continuation<T> cont) {
 
 		final AsyncClient client = this.clientPool.acquireAsync();
 
 		try {
 			client.createMediaMixerWithParams(this.objectRef.getThriftRef(),
 					mixerType,
-					((AbstractMediaCommand) params).getThriftCommand(),
+					((AbstractMediaParams) params).getThriftParams(),
 					new AsyncMethodCallback<createMediaMixerWithParams_call>() {
 
 						@Override
@@ -363,82 +369,83 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 
 	@Override
 	public HttpEndPoint createHttpEndPoint() {
-		return (HttpEndPoint) createMediaElement(mediaServerConstants.HTTP_END_POINT_TYPE);
+		return (HttpEndPoint) createMediaElement(HttpEndPointTypeConstants.TYPE_NAME);
 	}
 
 	@Override
 	public RtpEndPoint createRtpEndPoint() {
-		return (RtpEndPoint) createMediaElement(mediaServerConstants.RTP_END_POINT_TYPE);
+		return (RtpEndPoint) createMediaElement(RtpEndPointTypeConstants.TYPE_NAME);
 	}
 
 	@Override
 	public WebRtcEndPoint createWebRtcEndPoint() {
-		return (WebRtcEndPoint) createMediaElement(mediaServerConstants.WEB_RTP_END_POINT_TYPE);
+		return (WebRtcEndPoint) createMediaElement(WebRtcEndPointTypeConstants.TYPE_NAME);
 	}
 
 	@Override
 	public PlayerEndPoint createPlayerEndPoint(String uri) {
+		MediaParams params = null;// TODO new StringMediaParams(uri);
 		return (PlayerEndPoint) createMediaElement(
-				mediaServerConstants.PLAYER_END_POINT_TYPE, new SetUriCommand(
-						uri));
+				PlayerEndPointTypeConstants.TYPE_NAME, params);
 	}
 
 	@Override
 	public RecorderEndPoint createRecorderEndPoint(String uri) {
+		MediaParams params = null; // TODO new StringMediaParams(uri);
 		return (RecorderEndPoint) createMediaElement(
-				mediaServerConstants.RECORDER_END_POINT_TYPE,
-				new SetUriCommand(uri));
+				RecorderEndPointTypeConstants.TYPE_NAME, params);
 	}
 
 	@Override
 	public ZBarFilter createZBarFilter() {
-		return (ZBarFilter) createMediaElement(mediaServerConstants.ZBAR_FILTER_TYPE);
+		return (ZBarFilter) createMediaElement(ZBarFilterTypeConstants.TYPE_NAME);
 	}
 
 	@Override
 	public JackVaderFilter createJackVaderFilter() {
-		return (JackVaderFilter) createMediaElement(mediaServerConstants.JACK_VADER_FILTER_TYPE);
+		return (JackVaderFilter) createMediaElement(JackVaderFilterTypeConstants.TYPE_NAME);
 	}
 
 	@Override
 	public void createHttpEndPoint(Continuation<HttpEndPoint> cont) {
-		createMediaElement(mediaServerConstants.HTTP_END_POINT_TYPE, cont);
+		createMediaElement(HttpEndPointTypeConstants.TYPE_NAME, cont);
 	}
 
 	@Override
 	public void createRtpEndPoint(Continuation<RtpEndPoint> cont) {
-		createMediaElement(mediaServerConstants.RTP_END_POINT_TYPE, cont);
+		createMediaElement(RtpEndPointTypeConstants.TYPE_NAME, cont);
 
 	}
 
 	@Override
 	public void createWebRtcEndPoint(Continuation<WebRtcEndPoint> cont) {
-		createMediaElement(mediaServerConstants.WEB_RTP_END_POINT_TYPE, cont);
+		createMediaElement(WebRtcEndPointTypeConstants.TYPE_NAME, cont);
 
 	}
 
 	@Override
 	public void createPlayerEndPoint(String uri,
 			Continuation<PlayerEndPoint> cont) {
-		createMediaElement(mediaServerConstants.PLAYER_END_POINT_TYPE,
-				new SetUriCommand(uri), cont);
+		MediaParams params = null; // TODO new StringMediaParams(uri);
+		createMediaElement(PlayerEndPointTypeConstants.TYPE_NAME, params, cont);
 	}
 
 	@Override
 	public void createRecorderEndPoint(String uri,
 			Continuation<RecorderEndPoint> cont) {
-		createMediaElement(mediaServerConstants.RECORDER_END_POINT_TYPE,
-				new SetUriCommand(uri), cont);
+		MediaParams params = null; // TODO new StringMediaParams(uri);
+		createMediaElement(RecorderEndPointTypeConstants.TYPE_NAME, params,
+				cont);
 
 	}
 
 	@Override
 	public void createZBarFilter(Continuation<ZBarFilter> cont) {
-		createMediaElement(mediaServerConstants.ZBAR_FILTER_TYPE, cont);
+		createMediaElement(ZBarFilterTypeConstants.TYPE_NAME, cont);
 	}
 
 	@Override
 	public void createJackVaderFilter(Continuation<JackVaderFilter> cont) {
-		createMediaElement(mediaServerConstants.JACK_VADER_FILTER_TYPE, cont);
+		createMediaElement(JackVaderFilterTypeConstants.TYPE_NAME, cont);
 	}
 }

@@ -14,14 +14,15 @@
  */
 package com.kurento.kmf.media.events.internal;
 
-import com.kurento.kmf.media.events.MediaSessionStartEvent;
+import static com.kurento.kms.thrift.api.MediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_START;
+
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.internal.ProvidesMediaElement;
 import com.kurento.kms.thrift.api.KmsEvent;
-import com.kurento.kms.thrift.api.mediaEventDataTypesConstants;
 
-@ProvidesMediaElement(type = mediaEventDataTypesConstants.MEDIA_SESSION_START)
+@ProvidesMediaElement(type = EVENT_MEDIA_SESSION_START)
 public class MediaSessionStartEventImpl extends VoidMediaEvent implements
-		MediaSessionStartEvent {
+		MediaSessionStartedEvent {
 
 	public MediaSessionStartEventImpl(KmsEvent event) {
 		super(event);

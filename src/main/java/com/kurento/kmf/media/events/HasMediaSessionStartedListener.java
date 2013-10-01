@@ -12,12 +12,26 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.events;
 
-public interface MediaCommand {
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
 
-	String getName();
+/**
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public interface HasMediaSessionStartedListener {
 
-	MediaParams getParams();
+	/* SYNC */
+
+	public ListenerRegistration addMediaSessionStartListener(
+			final MediaEventListener<MediaSessionStartedEvent> sessionEvent);
+
+	/* ASYNC */
+
+	public void addMediaSessionStartListener(
+			final MediaEventListener<MediaSessionStartedEvent> sessionEvent,
+			final Continuation<ListenerRegistration> cont);
 
 }

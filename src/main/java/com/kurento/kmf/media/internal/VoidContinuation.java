@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import com.kurento.kmf.media.commands.MediaParams;
 import com.kurento.kmf.media.commands.internal.AbstractMediaCommand;
 import com.kurento.kmf.media.commands.internal.VoidCommandResult;
 
@@ -23,11 +24,25 @@ public class VoidContinuation extends AbstractMediaCommand {
 	public static final String TYPE = "VoidContinuation";
 
 	public VoidContinuation(String name) {
-		super(name);
+		// TODO complete impl
+		super(name, null);
 	}
 
 	@Override
 	public byte[] getData() {
 		return null;
 	}
+
+	@Override
+	public String getName() {
+		// TODO complete impl
+		return null;
+	}
+
+	@Override
+	public MediaParams getParams() {
+		// TODO complete impl
+		return null;
+	}
+
 }

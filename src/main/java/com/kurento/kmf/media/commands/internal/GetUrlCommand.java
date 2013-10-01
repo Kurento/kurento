@@ -14,14 +14,15 @@
  */
 package com.kurento.kmf.media.commands.internal;
 
-import com.kurento.kmf.media.internal.ProvidesMediaCommand;
-import com.kurento.kms.thrift.api.mediaCommandDataTypesConstants;
+import static com.kurento.kms.thrift.api.HttpEndPointTypeConstants.GET_URL;
 
-@ProvidesMediaCommand(type = mediaCommandDataTypesConstants.GET_URL, resultClass = StringCommandResult.class)
+import com.kurento.kmf.media.internal.ProvidesMediaCommand;
+
+@ProvidesMediaCommand(type = GET_URL, resultClass = StringCommandResult.class)
 public class GetUrlCommand extends VoidCommand {
 
 	public GetUrlCommand() {
-		super(mediaCommandDataTypesConstants.GET_URL);
+		super(GET_URL);
 	}
 
 }

@@ -14,6 +14,24 @@
  */
 package com.kurento.kmf.media.events;
 
-public interface MediaSessionStartEvent extends MediaEvent {
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
+
+/**
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public interface HasMediaSessionTerminatedListener {
+
+	/* SYNC */
+
+	ListenerRegistration addMediaSessionCompleteListener(
+			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent);
+
+	/* ASYNC */
+
+	void addMediaSessionCompleteListener(
+			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent,
+			final Continuation<ListenerRegistration> cont);
 
 }

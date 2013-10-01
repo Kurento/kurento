@@ -20,8 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.commands.MediaParam;
-import com.kurento.kmf.media.commands.internal.AbstractMediaCommand;
+import com.kurento.kmf.media.commands.MediaParams;
+import com.kurento.kmf.media.commands.internal.AbstractMediaParams;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
@@ -61,7 +61,7 @@ public class MediaPipelineFactory {
 		return pipeline;
 	}
 
-	public MediaPipeline create(MediaParam params)
+	public MediaPipeline create(MediaParams params)
 			throws KurentoMediaFrameworkException {
 
 		Client client = this.clientPool.acquireSync();
@@ -69,8 +69,8 @@ public class MediaPipelineFactory {
 		MediaPipelineRefDTO pipelineRefDTO;
 		try {
 			pipelineRefDTO = new MediaPipelineRefDTO(
-					client.createMediaPipelineWithParams(((AbstractMediaCommand) params)
-							.getThriftCommand()));
+					client.createMediaPipelineWithParams(((AbstractMediaParams) params)
+							.getThriftParams()));
 		} catch (MediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -127,14 +127,15 @@ public class MediaPipelineFactory {
 
 	}
 
-	public void create(MediaParam params, final Continuation<MediaPipeline> cont)
+	public void create(MediaParams params,
+			final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
 
 		final AsyncClient client = this.clientPool.acquireAsync();
 
 		try {
 			client.createMediaPipelineWithParams(
-					((AbstractMediaCommand) params).getThriftCommand(),
+					((AbstractMediaParams) params).getThriftParams(),
 					new AsyncMethodCallback<createMediaPipelineWithParams_call>() {
 
 						@Override

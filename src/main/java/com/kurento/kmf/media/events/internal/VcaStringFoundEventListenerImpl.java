@@ -12,10 +12,23 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.events.internal;
 
-public interface MediaParam {
+import com.kurento.kmf.media.events.VcaStringFoundEvent;
 
-	public String getType();
+/**
+ * Event listener for {@link VcaStringFoundEvent}
+ * 
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public class VcaStringFoundEventListenerImpl extends
+		AbstractMediaEventListener<VcaStringFoundEvent> {
+
+	@Override
+	public void onEvent(VcaStringFoundEvent event) {
+		// TODO Auto-generated method stub
+
+	}
 
 }

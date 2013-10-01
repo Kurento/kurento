@@ -12,12 +12,35 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media.commands;
+package com.kurento.kmf.media.internal;
 
-public interface MediaCommand {
+import com.kurento.kmf.media.commands.internal.AbstractMediaParams;
 
-	String getName();
+/**
+ * @author Iván Gracia (igracia@gsyc.es)
+ * 
+ */
+public class StringMediaParams extends AbstractMediaParams {
 
-	MediaParams getParams();
+	/**
+	 * @param type
+	 * @param data
+	 */
+	protected StringMediaParams(String type, byte[] data) {
+		super(type, data);
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public String getDataType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public byte[] getData() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

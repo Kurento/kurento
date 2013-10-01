@@ -14,14 +14,15 @@
  */
 package com.kurento.kmf.media.events.internal;
 
-import com.kurento.kmf.media.events.MediaSessionCompleteEvent;
+import static com.kurento.kms.thrift.api.MediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_COMPLETE;
+
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.media.internal.ProvidesMediaEvent;
 import com.kurento.kms.thrift.api.KmsEvent;
-import com.kurento.kms.thrift.api.mediaEventDataTypesConstants;
 
-@ProvidesMediaEvent(type = mediaEventDataTypesConstants.MEDIA_SESSION_COMPLETE)
+@ProvidesMediaEvent(type = EVENT_MEDIA_SESSION_COMPLETE)
 public class MediaSessionCompleteEventImpl extends VoidMediaEvent implements
-		MediaSessionCompleteEvent {
+		MediaSessionTerminatedEvent {
 
 	public MediaSessionCompleteEventImpl(KmsEvent event) {
 		super(event);
