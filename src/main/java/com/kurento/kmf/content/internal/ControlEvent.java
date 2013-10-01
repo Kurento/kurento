@@ -12,18 +12,16 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.content;
+package com.kurento.kmf.content.internal;
 
-//TODO: make javadoc
-public class ContentEvent {
-
+public class ControlEvent {
 	private String type;
 	private String data;
 
-	public ContentEvent() {
+	public ControlEvent() {
 	}
 
-	public ContentEvent(String type, String data) {
+	public ControlEvent(String type, String data) {
 		this.type = type;
 		this.data = data;
 	}

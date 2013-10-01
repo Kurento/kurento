@@ -45,8 +45,10 @@ import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.ContentHandler;
 import com.kurento.kmf.content.ContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
+import com.kurento.kmf.content.internal.ControlEvent;
 import com.kurento.kmf.content.internal.ControlProtocolManager;
 import com.kurento.kmf.content.jsonrpc.Constraints;
+import com.kurento.kmf.content.jsonrpc.JsonRpcConstants;
 import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
@@ -105,7 +107,9 @@ public abstract class AbstractContentSession implements ContentSession {
 
 	private ConcurrentHashMap<String, Object> attributes;
 
-	protected BlockingQueue<JsonRpcEvent> eventQueue;
+	protected BlockingQueue<Object> eventQueue;
+
+	private Thread currentPollingThread;
 
 	// /////////////////////////////////////////////////////
 	// Abstract methods to be implemented by derived classes
@@ -129,7 +133,7 @@ public abstract class AbstractContentSession implements ContentSession {
 		this.manager = manager;
 		this.initialAsyncCtx = asyncContext;
 		this.contentId = contentId;
-		eventQueue = new LinkedBlockingQueue<JsonRpcEvent>();
+		eventQueue = new LinkedBlockingQueue<Object>();
 	}
 
 	@PostConstruct
@@ -219,8 +223,11 @@ public abstract class AbstractContentSession implements ContentSession {
 
 	@Override
 	public void publishEvent(ContentEvent contentEvent) {
-		eventQueue.add(JsonRpcEvent.newEvent(contentEvent.getType(),
-				contentEvent.getData()));
+		eventQueue.add(contentEvent);
+	}
+
+	protected void publishControlEvent(ControlEvent controlEvent) {
+		eventQueue.add(controlEvent);
 	}
 
 	// /////////////////////////////////////////////////////
@@ -228,10 +235,14 @@ public abstract class AbstractContentSession implements ContentSession {
 	// /////////////////////////////////////////////////////
 
 	public void callOnContentCompletedOnHandler() {
+
+		ControlEvent onCompleteEvent = new ControlEvent(
+				JsonRpcConstants.EVENT_CONTENT_COMPLETE, "");
 		// TODO: when WebSockets is supported, terminate shall send error in
 		// ACTIVE state. In that case, we should review if terminating here
-		// makes sense (no error message should be sent)
-		terminate(0, "OK");
+		// makes sense (no error message should be sent).
+		publishControlEvent(onCompleteEvent);
+		terminate(0, null);
 		try {
 			interalRawCallToOnContentCompleted();
 		} catch (Throwable t) {
@@ -262,6 +273,10 @@ public abstract class AbstractContentSession implements ContentSession {
 			ContentCommand command) throws Exception;
 
 	public void callOnContentErrorOnHandler(int code, String description) {
+		ControlEvent onErrorEvent = new ControlEvent(
+				JsonRpcConstants.EVENT_CONTENT_ERROR, "Error " + code + ". "
+						+ description);
+		publishControlEvent(onErrorEvent);
 		terminate(code, description);
 		try {
 			interalRawCallToOnContentError(code, description);
@@ -349,8 +364,9 @@ public abstract class AbstractContentSession implements ContentSession {
 			Assert.isTrue(state == STATE.ACTIVE, "Cannot poll on state "
 					+ state, 10011);
 
+			JsonRpcEvent[][] events = consumeEvents();
 			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
-					.newEventsResponse(message.getId(), consumeEvents()));
+					.newEventsResponse(message.getId(), events[0], events[1]));
 		} else if (message.getMethod().equals(METHOD_EXECUTE)) {
 			Assert.isTrue(state == STATE.ACTIVE,
 					"Cannot execute command on state " + state, 10011);
@@ -405,10 +421,18 @@ public abstract class AbstractContentSession implements ContentSession {
 	 * 
 	 * @return list of received poll events
 	 */
-	public JsonRpcEvent[] consumeEvents() {
-		List<JsonRpcEvent> events = null;
+	public JsonRpcEvent[][] consumeEvents() {
+
+		if (currentPollingThread != null) {
+			currentPollingThread.interrupt();
+		}
+
+		currentPollingThread = Thread.currentThread();
+
+		List<JsonRpcEvent> contentEvents = null;
+		List<JsonRpcEvent> controlEvents = null;
 		while (true) {
-			JsonRpcEvent event;
+			Object event;
 			try {
 				event = eventQueue.poll(contentApiConfiguration
 						.getWebRtcEventQueuePollTimeout(),
@@ -416,20 +440,45 @@ public abstract class AbstractContentSession implements ContentSession {
 			} catch (InterruptedException e) {
 				break;
 			}
-			if (event != null) {
-				if (events == null)
-					events = new ArrayList<JsonRpcEvent>();
-				events.add(event);
+
+			if (event != null && event instanceof ContentEvent) {
+				if (contentEvents == null)
+					contentEvents = new ArrayList<JsonRpcEvent>();
+				contentEvents.add(JsonRpcEvent.newEvent(
+						((ContentEvent) event).getType(),
+						((ContentEvent) event).getData()));
 			}
+
+			if (event != null && event instanceof ControlEvent) {
+				if (controlEvents == null)
+					controlEvents = new ArrayList<JsonRpcEvent>();
+				controlEvents.add(JsonRpcEvent.newEvent(
+						((ControlEvent) event).getType(),
+						((ControlEvent) event).getData()));
+			}
+
 			if (eventQueue.isEmpty()) {
 				break;
 			}
 		}
-		if (events == null) {
-			return null;
+
+		currentPollingThread = null;
+
+		JsonRpcEvent[][] result = new JsonRpcEvent[2][];
+		if (contentEvents == null) {
+			result[0] = null;
 		} else {
-			return events.toArray(new JsonRpcEvent[1]);
+			result[0] = contentEvents.toArray(new JsonRpcEvent[1]);
 		}
+
+		if (controlEvents == null) {
+			result[1] = null;
+		} else {
+			result[1] = controlEvents.toArray(new JsonRpcEvent[1]);
+		}
+
+		return result;
+
 	}
 
 	/**
@@ -525,6 +574,10 @@ public abstract class AbstractContentSession implements ContentSession {
 		}
 		if (manager != null) {
 			manager.remove(this.sessionId);
+		}
+
+		if (eventQueue.isEmpty() && currentPollingThread != null) {
+			currentPollingThread.interrupt();
 		}
 
 		try {
