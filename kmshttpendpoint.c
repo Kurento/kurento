@@ -225,7 +225,7 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   if (GST_PAD_IS_SINK (pad))
     return;
 
-  GST_INFO ("pad %s added", gst_pad_get_name (pad));
+  GST_INFO ("pad %" GST_PTR_FORMAT " added", pad);
 
   /* Create and link appsrc--agnosticbin with proper caps */
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
@@ -292,7 +292,7 @@ post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
   if (GST_PAD_IS_SINK (pad))
     return;
 
-  GST_DEBUG ("pad %s removed", gst_pad_get_name (pad));
+  GST_DEBUG ("pad %" GST_PTR_FORMAT " removed", pad);
 
   appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
   appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
