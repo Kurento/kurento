@@ -89,9 +89,9 @@ public class JsonRpcRequest {
 	 * @param id
 	 * @return
 	 */
-	//TODO: for symmetry rename rest of newRequest methods?
-	public static JsonRpcRequest newCommandRequest(String method, String commandType,
-			String commandData, int id) {
+	// TODO: for symmetry rename rest of newRequest methods?
+	public static JsonRpcRequest newCommandRequest(String method,
+			String commandType, String commandData, int id) {
 		return new JsonRpcRequest(method, new JsonRpcRequestParams(
 				new JsonRpcCommand(commandType, commandData)), id);
 	}

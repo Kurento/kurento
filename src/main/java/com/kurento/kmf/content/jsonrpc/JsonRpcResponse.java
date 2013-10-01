@@ -87,8 +87,9 @@ public class JsonRpcResponse {
 	 * @return JsonRpcResponse instance
 	 */
 	public static JsonRpcResponse newEventsResponse(int id,
-			JsonRpcEvent... events) {
-		return new JsonRpcResponse(new JsonRpcResponseResult(events), id);
+			JsonRpcEvent[] contentEvents, JsonRpcEvent[] controlEvents) {
+		return new JsonRpcResponse(new JsonRpcResponseResult(contentEvents,
+				controlEvents), id);
 	}
 
 	public static JsonRpcResponse newCommandResponse(int id,
@@ -266,11 +267,19 @@ public class JsonRpcResponse {
 	 * 
 	 * @return JSON RPC event
 	 */
-	public JsonRpcEvent[] getEvents() {
+	public JsonRpcEvent[] getContentEvents() {
 		if (result == null) {
 			return null;
 		} else {
-			return result.getJsonRpcEvents();
+			return result.getJsonRpcContentEvents();
+		}
+	}
+
+	public JsonRpcEvent[] getControlEvents() {
+		if (result == null) {
+			return null;
+		} else {
+			return result.getJsonRpcControlEvents();
 		}
 	}
 
@@ -321,7 +330,9 @@ class JsonRpcResponseResult {
 	/**
 	 * JSON RPC events array.
 	 */
-	private JsonRpcEvent[] events;
+	private JsonRpcEvent[] contentEvents;
+
+	private JsonRpcEvent[] controlEvents;
 
 	/**
 	 * Default constructor.
@@ -355,8 +366,10 @@ class JsonRpcResponseResult {
 	 * @param events
 	 *            JSON RPC events array
 	 */
-	JsonRpcResponseResult(JsonRpcEvent[] events) {
-		this.events = events;
+	JsonRpcResponseResult(JsonRpcEvent[] contentEvents,
+			JsonRpcEvent[] controlEvents) {
+		this.contentEvents = contentEvents;
+		this.controlEvents = controlEvents;
 	}
 
 	/**
@@ -421,8 +434,12 @@ class JsonRpcResponseResult {
 	 * 
 	 * @return JSON RPC events array
 	 */
-	JsonRpcEvent[] getJsonRpcEvents() {
-		return events;
+	JsonRpcEvent[] getJsonRpcContentEvents() {
+		return contentEvents;
+	}
+
+	JsonRpcEvent[] getJsonRpcControlEvents() {
+		return controlEvents;
 	}
 
 	public String getCommandResult() {
