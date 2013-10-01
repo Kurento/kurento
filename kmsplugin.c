@@ -16,6 +16,7 @@
 #include <gst/gst.h>
 
 #include <kmsagnosticbin.h>
+#include <kmsagnosticbin2.h>
 #include <kmsrtpendpoint.h>
 #include <kmsautomuxerbin.h>
 #include <kmsuriendpoint.h>
@@ -28,6 +29,9 @@ static gboolean
 kurento_init (GstPlugin * kurento)
 {
   if (!kms_agnostic_bin_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_agnostic_bin2_plugin_init (kurento))
     return FALSE;
 
   if (!kms_rtp_end_point_plugin_init (kurento))

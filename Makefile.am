@@ -34,6 +34,7 @@ libgstkurento_la_SOURCES = kmsplugin.c \
 			kmsutils.c kmsutils.h \
 			sdp_utils.c sdp_utils.h \
 			kmsagnosticbin.c kmsagnosticbin.h \
+			kmsagnosticbin2.c kmsagnosticbin2.h \
 			kmselement.c kmselement.h \
 			kmsbasesdpendpoint.c kmsbasesdpendpoint.h \
 			kmsbasertpendpoint.c kmsbasertpendpoint.h \
