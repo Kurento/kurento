@@ -126,6 +126,59 @@ kms_agnostic_bin2_connect_thread (gpointer data)
   return NULL;
 }
 
+static void
+iterate_src_pads (KmsAgnosticBin2 * self)
+{
+  GstIterator *it = gst_element_iterate_src_pads (GST_ELEMENT (self));
+  gboolean done = FALSE;
+  GstPad *pad;
+  GValue item = G_VALUE_INIT;
+
+  while (!done) {
+    switch (gst_iterator_next (it, &item)) {
+      case GST_ITERATOR_OK:
+        pad = g_value_get_object (&item);
+        KMS_AGNOSTIC_BIN2_LOCK (self);
+        if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
+          GST_DEBUG_OBJECT (pad, "Adding pad to queue");
+          g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
+          KMS_AGNOSTIC_BIN2_SIGNAL (self);
+        }
+        KMS_AGNOSTIC_BIN2_UNLOCK (self);
+        g_value_reset (&item);
+        break;
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+      case GST_ITERATOR_DONE:
+        done = TRUE;
+        break;
+    }
+  }
+}
+
+static GstPadProbeReturn
+kms_agnostic_bin2_sink_block_probe (GstPad * pad, GstPadProbeInfo * info,
+    gpointer user_data)
+{
+  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
+    return GST_PAD_PROBE_OK;
+
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    GstEvent *event = gst_pad_probe_info_get_event (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_SEGMENT) {
+      KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (user_data);
+
+      GST_INFO_OBJECT (self, "New segment, we can now connect sink pads");
+      iterate_src_pads (self);
+    }
+  }
+
+  return GST_PAD_PROBE_PASS;
+}
+
 static GstPad *
 kms_agnostic_bin2_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -250,6 +303,10 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   sink = gst_ghost_pad_new_from_template ("sink", target, templ);
   g_object_unref (templ);
   g_object_unref (target);
+
+  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_BLOCK |
+      GST_PAD_PROBE_TYPE_DATA_BOTH | GST_PAD_PROBE_TYPE_QUERY_BOTH,
+      kms_agnostic_bin2_sink_block_probe, self, NULL);
 
   gst_element_add_pad (GST_ELEMENT (self), sink);
 
