@@ -106,15 +106,16 @@ public abstract class AbstractHttpBasedContentSession extends
 			state = STATE.STARTING;
 		}
 
-		boolean mediaElementProvided = mediaElements != null
-				& mediaElements.length > 0;
+		final boolean mediaElementProvided = mediaElements != null
+				&& mediaElements.length > 0;
+		final boolean contentPathProvided = contentPath != null;
 
 		Assert.isTrue(
-				mediaElementProvided || contentPath == null,
+				mediaElementProvided || contentPathProvided,
 				"Internal error. Cannot process request containing two null parameters",
 				10002);
 		Assert.isTrue(
-				mediaElementProvided || contentPath != null,
+				!(mediaElementProvided && contentPathProvided),
 				"Internal error. Cannot process request containing two non null parameters",
 				10003);
 
