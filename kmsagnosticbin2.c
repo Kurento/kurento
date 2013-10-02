@@ -232,14 +232,24 @@ static void
 kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
   GstPadTemplate *templ;
-  GstPad *sink;
+  GstElement *tee, *queue, *fakesink;
+  GstPad *target, *sink;
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
   self->priv->pad_count = 0;
 
+  tee = gst_element_factory_make ("tee", NULL);
+  queue = gst_element_factory_make ("queue", NULL);
+  fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  gst_bin_add_many (GST_BIN (self), tee, queue, fakesink, NULL);
+  gst_element_link_many (tee, queue, fakesink, NULL);
+
+  target = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
-  sink = gst_ghost_pad_new_no_target_from_template ("sink", templ);
+  sink = gst_ghost_pad_new_from_template ("sink", target, templ);
   g_object_unref (templ);
+  g_object_unref (target);
 
   gst_element_add_pad (GST_ELEMENT (self), sink);
 
