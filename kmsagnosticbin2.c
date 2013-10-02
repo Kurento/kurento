@@ -36,8 +36,41 @@ G_DEFINE_TYPE (KmsAgnosticBin2, kms_agnostic_bin2, GST_TYPE_BIN);
     KmsAgnosticBin2Private                   \
   )                                          \
 )
+
+#define KMS_AGNOSTIC_BIN2_GET_LOCK(obj) (       \
+  &KMS_AGNOSTIC_BIN2 (obj)->priv->thread_mutex  \
+)
+
+#define KMS_AGNOSTIC_BIN2_GET_COND(obj) (       \
+  &KMS_AGNOSTIC_BIN2 (obj)->priv->thread_cond   \
+)
+
+#define KMS_AGNOSTIC_BIN2_LOCK(obj) (                   \
+  g_mutex_lock (KMS_AGNOSTIC_BIN2_GET_LOCK (obj))       \
+)
+
+#define KMS_AGNOSTIC_BIN2_UNLOCK(obj) (                 \
+  g_mutex_unlock (KMS_AGNOSTIC_BIN2_GET_LOCK (obj))     \
+)
+
+#define KMS_AGNOSTIC_BIN2_WAIT(obj) (                   \
+  g_cond_wait (KMS_AGNOSTIC_BIN2_GET_COND (obj),        \
+    KMS_AGNOSTIC_BIN2_GET_LOCK (obj))                   \
+)
+
+#define KMS_AGNOSTIC_BIN2_SIGNAL(obj) (                 \
+  g_cond_signal (KMS_AGNOSTIC_BIN2_GET_COND (obj))      \
+)
+
 struct _KmsAgnosticBin2Private
 {
+  GQueue *pads_to_link;
+
+  gboolean finish_thread;
+  GThread *thread;
+  GMutex thread_mutex;
+  GCond thread_cond;
+
   guint pad_count;
 };
 
@@ -53,6 +86,45 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_PAD_REQUEST,
     GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
     );
+
+static gpointer
+kms_agnostic_bin2_connect_thread (gpointer data)
+{
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (data);
+
+  GST_DEBUG_OBJECT (self, "Thread start");
+
+  while (1) {
+    KMS_AGNOSTIC_BIN2_LOCK (self);
+    while (!self->priv->finish_thread &&
+        g_queue_is_empty (self->priv->pads_to_link)) {
+      GST_DEBUG_OBJECT (self, "Waiting for pads to link");
+      KMS_AGNOSTIC_BIN2_WAIT (self);
+      GST_DEBUG_OBJECT (self, "Waked up");
+    }
+
+    GST_DEBUG_OBJECT (self, "Checking finish");
+
+    if (self->priv->finish_thread) {
+      KMS_AGNOSTIC_BIN2_UNLOCK (self);
+      break;
+    }
+
+    {
+      GstPad *pad = g_queue_pop_head (self->priv->pads_to_link);
+
+      GST_DEBUG ("Processing pad link %" GST_PTR_FORMAT, pad);
+      g_object_unref (pad);
+    }
+    GST_DEBUG_OBJECT (self, "Doing");
+
+    KMS_AGNOSTIC_BIN2_UNLOCK (self);
+  }
+
+  GST_DEBUG_OBJECT (self, "Thread finished");
+
+  return NULL;
+}
 
 static GstPad *
 kms_agnostic_bin2_request_new_pad (GstElement * element,
@@ -104,6 +176,21 @@ kms_agnostic_bin2_dispose (GObject * object)
 static void
 kms_agnostic_bin2_finalize (GObject * object)
 {
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (object);
+
+  KMS_AGNOSTIC_BIN2_LOCK (self);
+  self->priv->finish_thread = TRUE;
+  KMS_AGNOSTIC_BIN2_SIGNAL (self);
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
+
+  g_thread_join (self->priv->thread);
+  g_thread_unref (self->priv->thread);
+
+  g_cond_clear (&self->priv->thread_cond);
+  g_mutex_clear (&self->priv->thread_mutex);
+
+  g_queue_free_full (self->priv->pads_to_link, g_object_unref);
+
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin2_parent_class)->finalize (object);
 }
@@ -157,6 +244,14 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   gst_element_add_pad (GST_ELEMENT (self), sink);
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
+
+  self->priv->pads_to_link = g_queue_new ();
+  g_cond_init (&self->priv->thread_cond);
+  g_mutex_init (&self->priv->thread_mutex);
+
+  self->priv->thread =
+      g_thread_new (GST_OBJECT_NAME (self), kms_agnostic_bin2_connect_thread,
+      self);
 }
 
 gboolean
