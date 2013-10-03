@@ -14,10 +14,12 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.events.HasMediaSessionTerminatedListener;
-import com.kurento.kmf.media.events.HasMediaSessionStartedListener;
-
-public interface EndPoint extends MediaElement,
-		HasMediaSessionTerminatedListener, HasMediaSessionStartedListener {
+/**
+ * Base interface for all end points
+ * 
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * 
+ */
+public interface EndPoint extends MediaElement {
 
 }

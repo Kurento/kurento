@@ -14,11 +14,13 @@
  */
 package com.kurento.kmf.media.internal.pool;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.MediaServerService.Client;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 /**
  * Service that exposes the asynchronous and synchronous client pools.
@@ -28,6 +30,9 @@ import com.kurento.kms.thrift.api.MediaServerService.Client;
  */
 public class MediaServerClientPoolService {
 
+	private static final Logger log = LoggerFactory
+			.getLogger(MediaServerClientPoolService.class);
+
 	@Autowired
 	private MediaServerAsyncClientPool asyncClientPool;
 
@@ -36,19 +41,23 @@ public class MediaServerClientPoolService {
 
 	public AsyncClient acquireAsync() throws PoolLimitException,
 			KurentoMediaFrameworkException {
+		log.debug("Acquiring async client from pool");
 		return asyncClientPool.acquire();
 	}
 
 	public Client acquireSync() throws PoolLimitException,
 			KurentoMediaFrameworkException {
+		log.debug("Acquiring sync client from pool");
 		return syncClientPool.acquire();
 	}
 
 	public void release(AsyncClient client) {
+		log.debug("releasin async client from pool");
 		asyncClientPool.release(client);
 	}
 
 	public void release(Client client) {
+		log.debug("Releasing sync client from pool");
 		syncClientPool.release(client);
 	}
 }

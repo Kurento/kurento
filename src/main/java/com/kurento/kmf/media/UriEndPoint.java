@@ -16,7 +16,10 @@ package com.kurento.kmf.media;
 
 public interface UriEndPoint extends EndPoint {
 
+	/* SYNC */
 	String getUri();
+
+	void setUri(String uri);
 
 	void pause();
 
@@ -25,7 +28,9 @@ public interface UriEndPoint extends EndPoint {
 	/* ASYNC */
 	void getUri(Continuation<String> cont);
 
-	public void pause(final Continuation<Void> cont);
+	void setUri(String uri, Continuation<Void> cont);
 
-	public void stop(final Continuation<Void> cont);
+	void pause(Continuation<Void> cont);
+
+	void stop(Continuation<Void> cont);
 }

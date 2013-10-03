@@ -14,8 +14,8 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.events.HasVcaStringFoundListener;
+import com.kurento.kmf.media.events.HasCodeFoundListener;
 
-public interface ZBarFilter extends Filter, HasVcaStringFoundListener {
+public interface ZBarFilter extends Filter, HasCodeFoundListener {
 
 }

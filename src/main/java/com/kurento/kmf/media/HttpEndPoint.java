@@ -14,8 +14,7 @@
  */
 package com.kurento.kmf.media;
 
-
-public interface HttpEndPoint extends EndPoint {
+public interface HttpEndPoint extends SessionEndPoint {
 
 	/* SYNC */
 	String getUrl();

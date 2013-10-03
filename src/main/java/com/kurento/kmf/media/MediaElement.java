@@ -16,7 +16,7 @@ package com.kurento.kmf.media;
 
 import java.util.Collection;
 
-import com.kurento.kms.thrift.api.MediaType;
+import com.kurento.kms.thrift.api.KmsMediaType;
 
 public interface MediaElement extends MediaObject {
 	/**
@@ -35,7 +35,7 @@ public interface MediaElement extends MediaObject {
 	 * @return A list of sources. The list will be empty if no sources are
 	 *         found.
 	 */
-	Collection<MediaSource> getMediaSrcs(MediaType mediaType);
+	Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType);
 
 	/**
 	 * Returns {@link MediaSource} of a certain type and description, associated
@@ -43,11 +43,12 @@ public interface MediaElement extends MediaObject {
 	 * 
 	 * @param mediaType
 	 *            The type of media from the sources
-	 * @param Description
+	 * @param description
 	 * @return A list of sources. The list will be empty if no sources are
 	 *         found.
 	 */
-	Collection<MediaSource> getMediaSrcs(MediaType mediaType, String description);
+	Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType,
+			String description);
 
 	/**
 	 * @return A list of sinks. The list will be empty if no sinks are found.
@@ -61,7 +62,7 @@ public interface MediaElement extends MediaObject {
 	 *            The type of media from the sink
 	 * @return A list of sinks. The list will be empty if no sinks are found.
 	 */
-	Collection<MediaSink> getMediaSinks(MediaType mediaType);
+	Collection<MediaSink> getMediaSinks(KmsMediaType mediaType);
 
 	/**
 	 * Returns {@link MediaSink} of a certain type and description, associated
@@ -72,27 +73,28 @@ public interface MediaElement extends MediaObject {
 	 * @param description
 	 * @return A list of sinks. The list will be empty if no sinks are found.
 	 */
-	Collection<MediaSink> getMediaSinks(MediaType mediaType, String description);
+	Collection<MediaSink> getMediaSinks(KmsMediaType mediaType,
+			String description);
 
 	/**
 	 * TODO: this method should be provided by the media server as well as its
 	 * async version
 	 * 
-	 * Connects all {@link MediaSources} of this element belonging to the
-	 * specified {@link MediaType} to the corresponding {@link MediaSinks
+	 * Connects all {@link MediaSource} of this element belonging to the
+	 * specified {@link KmsMediaType} to the corresponding {@link MediaSink
 	 * } of
 	 * the target {@link MediaElement}.
 	 * 
 	 * This method will throw an exception if any of the following occur: <br>
 	 * <ul>
-	 * <li>The number of sources for the specified {@link MediaType} in this
+	 * <li>The number of sources for the specified {@link KmsMediaType} in this
 	 * element is different than the number of sinks on the target element.
 	 * <li>There are duplicate mediaDescriptions on this' element sources for
-	 * the specified {@link MediaType}.
+	 * the specified {@link KmsMediaType}.
 	 * <li>There are duplicate mediaDescriptions on target's element sinks for
-	 * the specified {@link MediaType}.
+	 * the specified {@link KmsMediaType}.
 	 * <li>Target sinks' media descriptions are different form this sources'
-	 * media descriptions for the specified {@link MediaType}
+	 * media descriptions for the specified {@link KmsMediaType}
 	 * </ul>
 	 * 
 	 * This method is not transactional. In case of exception some of this
@@ -100,12 +102,12 @@ public interface MediaElement extends MediaObject {
 	 * 
 	 * @param sink
 	 *            the target {@MediaElement} from which
-	 *            {@link MediaSinks} will be obtained
+	 *            {@link MediaSink} will be obtained
 	 * @param mediaType
-	 *            the {@MediaType} of the pads that will be
+	 *            the {@KmsMediaType} of the pads that will be
 	 *            connected.
 	 */
-	void connect(MediaElement sink, MediaType mediaType);
+	void connect(MediaElement sink, KmsMediaType mediaType);
 
 	/**
 	 * 
@@ -132,13 +134,15 @@ public interface MediaElement extends MediaObject {
 	 * @param mediaType
 	 * @param mediaDescription
 	 */
-	void connect(MediaElement sink, MediaType mediaType, String mediaDescription);
+	void connect(MediaElement sink, KmsMediaType mediaType,
+			String mediaDescription);
 
 	/**
 	 * Returns all {@link MediaSource} from this element
 	 * 
-	 * @return A list of sources. The list will be empty if no sources are
-	 *         found.
+	 * @param cont
+	 *            A list of sources. The list will be empty if no sources are
+	 *            found.
 	 */
 	void getMediaSrcs(final Continuation<Collection<MediaSource>> cont);
 
@@ -147,10 +151,11 @@ public interface MediaElement extends MediaObject {
 	 * 
 	 * @param mediaType
 	 *            The type of media from the sources
-	 * @return A list of sources. The list will be empty if no sources are
-	 *         found.
+	 * @param cont
+	 *            A list of sources. The list will be empty if no sources are
+	 *            found.
 	 */
-	void getMediaSrcs(MediaType mediaType,
+	void getMediaSrcs(KmsMediaType mediaType,
 			final Continuation<Collection<MediaSource>> cont);
 
 	/**
@@ -159,16 +164,18 @@ public interface MediaElement extends MediaObject {
 	 * 
 	 * @param mediaType
 	 *            The type of media from the sources
-	 * @param Description
-	 * @return A list of sources. The list will be empty if no sources are
-	 *         found.
+	 * @param description
+	 * @param cont
+	 *            A list of sources. The list will be empty if no sources are
+	 *            found.
 	 */
-	void getMediaSrcs(MediaType mediaType, String description,
+	void getMediaSrcs(KmsMediaType mediaType, String description,
 			final Continuation<Collection<MediaSource>> cont);
 
 	/**
 	 * 
-	 * @return A list of sinks. The list will be empty if no sinks are found.
+	 * @param cont
+	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
 	void getMediaSinks(final Continuation<Collection<MediaSink>> cont);
 
@@ -177,9 +184,10 @@ public interface MediaElement extends MediaObject {
 	 * 
 	 * @param mediaType
 	 *            The type of media from the sink
-	 * @return A list of sinks. The list will be empty if no sinks are found.
+	 * @param cont
+	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
-	void getMediaSinks(MediaType mediaType,
+	void getMediaSinks(KmsMediaType mediaType,
 			final Continuation<Collection<MediaSink>> cont);
 
 	/**
@@ -189,9 +197,10 @@ public interface MediaElement extends MediaObject {
 	 * @param mediaType
 	 *            The type of media from the sink
 	 * @param description
-	 * @return A list of sinks. The list will be empty if no sinks are found.
+	 * @param cont
+	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
-	void getMediaSinks(MediaType mediaType, String description,
+	void getMediaSinks(KmsMediaType mediaType, String description,
 			final Continuation<Collection<MediaSink>> cont);
 
 }

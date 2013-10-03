@@ -14,85 +14,83 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.GENERATE_SDP_OFFER;
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.GET_LOCAL_SDP;
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.GET_REMOTE_SDP;
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_ANSWER;
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_OFFER;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.SdpEndPoint;
-import com.kurento.kmf.media.commands.internal.GenerateSdpOfferCommand;
-import com.kurento.kmf.media.commands.internal.GetLocalSdpCommand;
-import com.kurento.kmf.media.commands.internal.GetRemoteSdpCommand;
-import com.kurento.kmf.media.commands.internal.ProcessSdpAnswerCommand;
-import com.kurento.kmf.media.commands.internal.ProcessSdpOfferCommand;
-import com.kurento.kmf.media.commands.internal.StringCommandResult;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.internal.StringMediaParam;
 
-public abstract class SdpEndPointImpl extends EndPointImpl implements
+public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		SdpEndPoint {
 
-	SdpEndPointImpl(MediaElementRefDTO endpointRef) {
+	SdpEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
 	/* SYNC */
 	@Override
 	public String generateOffer() {
-		StringCommandResult result = (StringCommandResult) sendCommand(new GenerateSdpOfferCommand());
-		return result.getResult();
+		StringMediaParam result = (StringMediaParam) invoke(GENERATE_SDP_OFFER);
+		return result.getString();
 	}
 
 	@Override
 	public String processOffer(String offer) {
-		StringCommandResult result = (StringCommandResult) sendCommand(new ProcessSdpOfferCommand(
-				offer));
-		return result.getResult();
+		// TODO build params map offer
+		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_OFFER);
+		return result.getString();
 	}
 
 	@Override
 	public String processAnswer(String answer) {
-		StringCommandResult result = (StringCommandResult) sendCommand(new ProcessSdpAnswerCommand(
-				answer));
-		return result.getResult();
+		// TODO build params map answer
+		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_ANSWER);
+		return result.getString();
 	}
 
 	@Override
 	public String getLocalSessionDescriptor() {
-		StringCommandResult result = (StringCommandResult) sendCommand(new GetLocalSdpCommand());
-		return result.getResult();
+		StringMediaParam result = (StringMediaParam) invoke(GET_LOCAL_SDP);
+		return result.getString();
 	}
 
 	@Override
 	public String getRemoteSessionDescriptor() {
-		StringCommandResult result = (StringCommandResult) sendCommand(new GetRemoteSdpCommand());
-		return result.getResult();
+		StringMediaParam result = (StringMediaParam) invoke(GET_REMOTE_SDP);
+		return result.getString();
 	}
 
 	/* ASYNC */
 
 	@Override
 	public void generateOffer(final Continuation<String> cont) {
-		sendCommand(new GenerateSdpOfferCommand(),
-				new StringContinuationWrapper(cont));
+		invoke(GENERATE_SDP_OFFER, new StringContinuationWrapper(cont));
 	}
 
 	@Override
 	public void processOffer(String offer, final Continuation<String> cont) {
-		sendCommand(new ProcessSdpOfferCommand(offer),
-				new StringContinuationWrapper(cont));
+		// TODO build params map offer
+		invoke(PROCESS_SDP_OFFER, new StringContinuationWrapper(cont));
 	}
 
 	@Override
 	public void processAnswer(String answer, final Continuation<String> cont) {
-		sendCommand(new ProcessSdpAnswerCommand(answer),
-				new StringContinuationWrapper(cont));
+		// TODO build params map answer
+		invoke(PROCESS_SDP_ANSWER, new StringContinuationWrapper(cont));
 	}
 
 	@Override
 	public void getLocalSessionDescriptor(final Continuation<String> cont) {
-		sendCommand(new GetLocalSdpCommand(), new StringContinuationWrapper(
-				cont));
+		invoke(GET_LOCAL_SDP, new StringContinuationWrapper(cont));
 	}
 
 	@Override
 	public void getRemoteSessionDescriptor(final Continuation<String> cont) {
-		sendCommand(new GetRemoteSdpCommand(), new StringContinuationWrapper(
-				cont));
+		invoke(GET_REMOTE_SDP, new StringContinuationWrapper(cont));
 	}
 }

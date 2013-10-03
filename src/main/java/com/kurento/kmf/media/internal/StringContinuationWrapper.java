@@ -15,20 +15,20 @@
 package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.commands.internal.StringCommandResult;
+import com.kurento.kmf.media.params.internal.StringMediaParam;
 
 public class StringContinuationWrapper implements
-		Continuation<StringCommandResult> {
+		Continuation<StringMediaParam> {
 
-	private Continuation<String> wrappedContinuation;
+	private final Continuation<String> wrappedContinuation;
 
 	public StringContinuationWrapper(Continuation<String> continuation) {
 		this.wrappedContinuation = continuation;
 	}
 
 	@Override
-	public void onSuccess(StringCommandResult result) {
-		this.wrappedContinuation.onSuccess(result.getResult());
+	public void onSuccess(StringMediaParam result) {
+		this.wrappedContinuation.onSuccess(result.getString());
 	}
 
 	@Override

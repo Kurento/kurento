@@ -14,31 +14,24 @@
  */
 package com.kurento.kmf.media.events.internal;
 
-import org.apache.thrift.protocol.TProtocol;
-
 import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kms.thrift.api.KmsEvent;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
 
 /**
  * Default implementation of {@link EndOfStreamEvent}
  * 
- * @author Iván Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
-public class EndOfStreamEventImpl extends ThriftSerializedMediaEvent implements
+public class EndOfStreamEventImpl extends VoidMediaEvent implements
 		EndOfStreamEvent {
 
 	/**
 	 * @param event
 	 *            The Thrift event received form the server.
 	 */
-	public EndOfStreamEventImpl(KmsEvent event) {
+	public EndOfStreamEventImpl(KmsMediaEvent event) {
 		super(event);
-	}
-
-	@Override
-	protected void deserializeFromTProtocol(TProtocol pr) {
-		// EOS has no properties
 	}
 
 }

@@ -18,43 +18,109 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.kurento.kmf.media.ListenerRegistration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.events.MediaError;
+import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.internal.AbstractMediaEventListener;
 
 public class MediaServerCallbackHandler {
 
-	private final Map<Long, Map<ListenerRegistration, MediaEventListener<? extends MediaEvent>>> listenerMap;
+	private static final Logger log = LoggerFactory
+			.getLogger(MediaServerCallbackHandler.class);
+
+	private final Map<Long, Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>>> listenerMap;
+	private final Map<Long, Map<ErrorListenerRegistration, MediaErrorListener>> errorListenerMap;
 
 	public MediaServerCallbackHandler() {
 		// TODO change to listener registration
-		this.listenerMap = new ConcurrentHashMap<Long, Map<ListenerRegistration, MediaEventListener<? extends MediaEvent>>>();
+		this.listenerMap = new ConcurrentHashMap<Long, Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>>>();
+		this.errorListenerMap = new ConcurrentHashMap<Long, Map<ErrorListenerRegistration, MediaErrorListener>>();
 	}
 
-	public void onEvent(ListenerRegistration registration, Long id,
-			MediaEvent kmsEvent) {
-		Map<ListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
+	public void onEvent(EventListenerRegistration registration, Long id,
+			MediaEvent KmsMediaEvent) {
+		Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
 				.get(id);
-		fireEvent(registration, listeners, kmsEvent);
+		try {
+			fireEvent(registration, listeners, KmsMediaEvent);
+		} catch (Throwable t) {
+			log.error(
+					"Exception invoking event listener "
+							+ registration.getRegistrationId()
+							+ " for event type" + KmsMediaEvent.getType(), t);
+		}
 	}
 
-	public void onError(String callbackToken, MediaError kmsError) {
-		// TODO Call the appropriate handler
+	public void onError(ErrorListenerRegistration registration, Long id,
+			MediaError error) {
+		Map<ErrorListenerRegistration, MediaErrorListener> listeners = this.errorListenerMap
+				.get(id);
+		try {
+			fireError(registration, listeners, error);
+		} catch (Throwable t) {
+			log.error(
+					"Exception invoking error listener "
+							+ registration.getRegistrationId(), t);
+		}
 	}
 
-	public <T extends MediaEvent> MediaEventListener<T> addListener(
-			MediaObject mediaObject, ListenerRegistration registration,
-			MediaEventListener<T> listener) {
+	/**
+	 * Adds a {@link MediaErrorListener} to a {@link MediaObject}, that will
+	 * handle all errors produced by this object.
+	 * </br><strong>NOTE</strong></br> Already registered listeners can be
+	 * replaced by invoking this method with a different listener
+	 * 
+	 * @param mediaObject
+	 *            The media object to add the listener to
+	 * @param registration
+	 *            The object that will be used to identify the listener
+	 *            registration. This object will be used to unregister the event
+	 *            also
+	 * @param listener
+	 *            The listener to handle the error events
+	 * @return The error listener stored in the map
+	 */
+	public MediaErrorListener addErrorListener(MediaObject mediaObject,
+			ErrorListenerRegistration registration, MediaErrorListener listener) {
 
 		Long id = ((AbstractMediaObject) mediaObject).getObjectRef().getId();
-		Map<ListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
+		Map<ErrorListenerRegistration, MediaErrorListener> listeners = this.errorListenerMap
 				.get(id);
 		synchronized (this) {
 			if (listeners == null) {
-				listeners = new HashMap<ListenerRegistration, MediaEventListener<? extends MediaEvent>>();
+				listeners = new HashMap<ErrorListenerRegistration, MediaErrorListener>();
+				this.errorListenerMap.put(id, listeners);
+			}
+		}
+		listeners.put(registration, listener);
+		return listener;
+	}
+
+	/**
+	 * Removes a listener that handles errors for a given {@link MediaObject}
+	 * 
+	 * @param mediaObj
+	 */
+	public void removeErrorListener(MediaObject mediaObj,
+			ErrorListenerRegistration registration) {
+		errorListenerMap.remove(((AbstractMediaObject) mediaObj).getId());
+	}
+
+	public <T extends MediaEvent> MediaEventListener<T> addListener(
+			MediaObject mediaObject, EventListenerRegistration registration,
+			MediaEventListener<T> listener) {
+
+		Long id = ((AbstractMediaObject) mediaObject).getObjectRef().getId();
+		Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
+				.get(id);
+		synchronized (this) {
+			if (listeners == null) {
+				listeners = new HashMap<EventListenerRegistration, MediaEventListener<? extends MediaEvent>>();
 				this.listenerMap.put(id, listeners);
 			}
 		}
@@ -63,9 +129,10 @@ public class MediaServerCallbackHandler {
 	}
 
 	public <T extends MediaEvent> boolean removeListener(
-			MediaObject mediaObject, ListenerRegistration listenerRegistration) {
+			MediaObject mediaObject,
+			EventListenerRegistration listenerRegistration) {
 		MediaEventListener<? extends MediaEvent> removed = null;
-		Map<ListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
+		Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners = this.listenerMap
 				.get(((AbstractMediaObject) mediaObject).getObjectRef().getId());
 		synchronized (this) {
 			if (listeners != null) {
@@ -85,15 +152,29 @@ public class MediaServerCallbackHandler {
 				.getObjectRef().getId()) != null;
 	}
 
+	public boolean removeAllErrorListeners(MediaObject mediaObject) {
+		return this.errorListenerMap.remove(((AbstractMediaObject) mediaObject)
+				.getObjectRef().getId()) != null;
+	}
+
 	private void fireEvent(
-			ListenerRegistration registration,
-			Map<ListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners,
+			EventListenerRegistration registration,
+			Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners,
 			MediaEvent event) {
 		if (listeners != null) {
 			MediaEventListener<? extends MediaEvent> listener = listeners
 					.get(registration);
 			((AbstractMediaEventListener<? extends MediaEvent>) listener)
 					.internalOnEvent(event);
+		}
+	}
+
+	private void fireError(ErrorListenerRegistration registration,
+			Map<ErrorListenerRegistration, MediaErrorListener> listeners,
+			MediaError error) {
+		if (listeners != null) {
+			MediaErrorListener listener = listeners.get(registration);
+			listener.onError(error);
 		}
 	}
 

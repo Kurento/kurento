@@ -21,22 +21,28 @@ import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.events.MediaEvent;
-import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
-import com.kurento.kms.thrift.api.KmsEvent;
+import com.kurento.kmf.media.internal.refs.MediaObjectRef;
+import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
+import com.kurento.kms.thrift.api.KmsMediaParam;
 
-public abstract class AbstractMediaEvent implements MediaEvent {
+public abstract class AbstractMediaEvent<T extends MediaParam> implements
+		MediaEvent {
 
 	@Autowired
 	protected ApplicationContext applicationContext;
 
-	private final MediaObjectRefDTO sourceRef;
+	private final MediaObjectRef sourceRef;
 	private MediaObject source;
 	private final String type;
+	private final KmsMediaParam kmsParam;
+	protected T param;
 
 	// TODO: should not be visible to final developer
-	public AbstractMediaEvent(KmsEvent event) {
+	public AbstractMediaEvent(KmsMediaEvent event) {
 		this.sourceRef = fromThrift(event.source);
 		this.type = event.type;
+		this.kmsParam = event.eventData;
 	}
 
 	@Override
@@ -53,7 +59,12 @@ public abstract class AbstractMediaEvent implements MediaEvent {
 		return this.type;
 	}
 
-	// TODO: should not be visible to final developer
-	public abstract void deserializeData(KmsEvent event);
+	@SuppressWarnings("unchecked")
+	protected T getParam() {
+		if (param != null) {
+			param = (T) applicationContext.getBean("mediaObject", kmsParam);
+		}
+		return param;
+	}
 
 }

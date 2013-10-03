@@ -19,7 +19,7 @@ package com.kurento.kmf.media.events;
  * element receiving this event will generally just process any buffered data,
  * and then forward the event further downstream.
  * 
- * @author Iván Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
 public interface EndOfStreamEvent extends MediaEvent {

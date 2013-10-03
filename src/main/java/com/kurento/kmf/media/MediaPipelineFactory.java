@@ -14,22 +14,25 @@
  */
 package com.kurento.kmf.media;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.commands.MediaParams;
-import com.kurento.kmf.media.commands.internal.AbstractMediaParams;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
-import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
-import com.kurento.kms.thrift.api.MediaServerException;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaPipelineWithParams_call;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.createMediaPipeline_call;
-import com.kurento.kms.thrift.api.MediaServerService.Client;
+import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
+import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kms.thrift.api.KmsMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaServerException;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaPipelineWithParams_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaPipeline_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class MediaPipelineFactory {
 
@@ -42,11 +45,11 @@ public class MediaPipelineFactory {
 	public MediaPipeline create() {
 		Client client = this.clientPool.acquireSync();
 
-		MediaPipelineRefDTO pipelineRefDTO;
+		MediaPipelineRef pipelineRefDTO;
 		try {
-			pipelineRefDTO = new MediaPipelineRefDTO(
+			pipelineRefDTO = new MediaPipelineRef(
 					client.createMediaPipeline());
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -61,17 +64,17 @@ public class MediaPipelineFactory {
 		return pipeline;
 	}
 
-	public MediaPipeline create(MediaParams params)
+	public MediaPipeline create(Map<String, MediaParam> params)
 			throws KurentoMediaFrameworkException {
 
 		Client client = this.clientPool.acquireSync();
 
-		MediaPipelineRefDTO pipelineRefDTO;
+		MediaPipelineRef pipelineRefDTO;
 		try {
-			pipelineRefDTO = new MediaPipelineRefDTO(
-					client.createMediaPipelineWithParams(((AbstractMediaParams) params)
-							.getThriftParams()));
-		} catch (MediaServerException e) {
+			// TODO Add real params map
+			pipelineRefDTO = new MediaPipelineRef(
+					client.createMediaPipelineWithParams(new HashMap<String, KmsMediaParam>()));
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -100,11 +103,11 @@ public class MediaPipelineFactory {
 
 				@Override
 				public void onComplete(createMediaPipeline_call response) {
-					MediaPipelineRefDTO pipelineRefDTO;
+					MediaPipelineRef pipelineRefDTO;
 					try {
-						pipelineRefDTO = new MediaPipelineRefDTO(response
+						pipelineRefDTO = new MediaPipelineRef(response
 								.getResult());
-					} catch (MediaServerException e) {
+					} catch (KmsMediaServerException e) {
 						throw new KurentoMediaFrameworkException(
 								e.getMessage(), e, e.getErrorCode());
 					} catch (TException e) {
@@ -127,15 +130,16 @@ public class MediaPipelineFactory {
 
 	}
 
-	public void create(MediaParams params,
+	public void create(Map<String, MediaParam> params,
 			final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
 
 		final AsyncClient client = this.clientPool.acquireAsync();
 
 		try {
+			// TODO add real params
 			client.createMediaPipelineWithParams(
-					((AbstractMediaParams) params).getThriftParams(),
+					new HashMap<String, KmsMediaParam>(),
 					new AsyncMethodCallback<createMediaPipelineWithParams_call>() {
 
 						@Override
@@ -146,11 +150,11 @@ public class MediaPipelineFactory {
 						@Override
 						public void onComplete(
 								createMediaPipelineWithParams_call response) {
-							MediaPipelineRefDTO pipelineRefDTO;
+							MediaPipelineRef pipelineRefDTO;
 							try {
-								pipelineRefDTO = new MediaPipelineRefDTO(
+								pipelineRefDTO = new MediaPipelineRef(
 										response.getResult());
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {

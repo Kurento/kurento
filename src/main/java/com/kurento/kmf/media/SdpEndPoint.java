@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media;
 
-public interface SdpEndPoint extends EndPoint {
+public interface SdpEndPoint extends SessionEndPoint {
 
 	/* SYNC */
 	String generateOffer();
@@ -30,7 +30,7 @@ public interface SdpEndPoint extends EndPoint {
 	 * <p>
 	 * <b>Note:</b> This method returns the local MediaSpec, negotiated or not.
 	 * If no offer has been generated yet, it returns null. It an offer has been
-	 * generated it returns the offer and if an asnwer has been processed it
+	 * generated it returns the offer and if an answer has been processed it
 	 * returns the negotiated local SessionSpec.
 	 * </p>
 	 * 
@@ -99,7 +99,9 @@ public interface SdpEndPoint extends EndPoint {
 	 * returns the negotiated local SessionSpec.
 	 * </p>
 	 * 
-	 * @return The last agreed SessionSpec
+	 * @param cont
+	 *            The last agreed SessionSpec
+	 * 
 	 */
 	void getLocalSessionDescriptor(final Continuation<String> cont);
 
@@ -112,7 +114,8 @@ public interface SdpEndPoint extends EndPoint {
 	 * returns null.
 	 * </p>
 	 * 
-	 * @return The last agreed User Agent session description
+	 * @param cont
+	 *            The last agreed User Agent session description
 	 */
 	void getRemoteSessionDescriptor(final Continuation<String> cont);
 }

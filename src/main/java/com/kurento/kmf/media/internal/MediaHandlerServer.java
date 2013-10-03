@@ -28,16 +28,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
-import com.kurento.kms.thrift.api.KmsError;
-import com.kurento.kms.thrift.api.KmsEvent;
-import com.kurento.kms.thrift.api.MediaHandlerService;
-import com.kurento.kms.thrift.api.MediaHandlerService.Iface;
-import com.kurento.kms.thrift.api.MediaHandlerService.Processor;
+import com.kurento.kms.thrift.api.KmsMediaError;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 
 public class MediaHandlerServer {
 
@@ -53,11 +52,14 @@ public class MediaHandlerServer {
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	@Autowired
+	private TaskExecutor taskExecutor;
+
 	public MediaHandlerServer() {
 	}
 
 	@PostConstruct
-	private void init() throws KurentoMediaFrameworkException {
+	private void init() {
 		start();
 	}
 
@@ -66,7 +68,7 @@ public class MediaHandlerServer {
 		stop();
 	}
 
-	private synchronized void start() throws KurentoMediaFrameworkException {
+	private synchronized void start() {
 		try {
 			TNonblockingServerTransport serverTransport = new TNonblockingServerSocket(
 					config.getHandlerPort());
@@ -91,14 +93,6 @@ public class MediaHandlerServer {
 		}
 	}
 
-	private final TaskExecutor taskExecutor = new TaskExecutor() {
-
-		@Override
-		public void execute(Runnable task) {
-			task.run();
-		}
-	};
-
 	private static class ServerTask implements Runnable {
 
 		private static TServer server;
@@ -113,27 +107,30 @@ public class MediaHandlerServer {
 		}
 	}
 
-	private final Processor<MediaHandlerService.Iface> processor = new Processor<Iface>(
+	private final Processor<KmsMediaHandlerService.Iface> processor = new Processor<Iface>(
 			new Iface() {
 
 				@Override
-				public void onError(String callbackToken, KmsError error)
+				public void onError(String callbackToken, KmsMediaError error)
 						throws TException {
 					MediaError mediaError = (MediaError) applicationContext
 							.getBean("mediaError", error);
-					handler.onError(callbackToken, mediaError);
+					ErrorListenerRegistration registration = new ErrorListenerRegistration(
+							callbackToken);
+					handler.onError(registration,
+							Long.valueOf(error.getSource().id), mediaError);
 				}
 
 				@Override
-				public void onEvent(String callbackToken, KmsEvent event)
+				public void onEvent(String callbackToken, KmsMediaEvent event)
 						throws TException {
-					MediaEvent kmsEvent = (MediaEvent) applicationContext
+					MediaEvent mediaEvent = (MediaEvent) applicationContext
 							.getBean("mediaEvent", event);
 
-					ListenerRegistration registration = new ListenerRegistrationImpl(
+					EventListenerRegistration registration = new EventListenerRegistration(
 							callbackToken);
 					handler.onEvent(registration,
-							Long.valueOf(event.getSource().id), kmsEvent);
+							Long.valueOf(event.getSource().id), mediaEvent);
 				}
 			});
 }

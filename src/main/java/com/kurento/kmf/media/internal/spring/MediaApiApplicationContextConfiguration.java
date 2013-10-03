@@ -26,8 +26,6 @@ import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.commands.MediaCommandResult;
-import com.kurento.kmf.media.commands.internal.AbstractMediaCommandResult;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.internal.AbstractMediaEvent;
@@ -38,18 +36,20 @@ import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaServerCallbackHandler;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
-import com.kurento.kmf.media.internal.ProvidesMediaCommand;
+import com.kurento.kmf.media.internal.pool.MediaServerAsyncClientPool;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
-import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
-import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
-import com.kurento.kmf.media.internal.refs.MediaPadRefDTO;
-import com.kurento.kmf.media.internal.refs.MediaPipelineRefDTO;
-import com.kurento.kms.thrift.api.Command;
-import com.kurento.kms.thrift.api.KmsError;
-import com.kurento.kms.thrift.api.KmsEvent;
-import com.kurento.kms.thrift.api.PadDirection;
-import com.kurento.kms.thrift.api.Params;
+import com.kurento.kmf.media.internal.pool.MediaServerSyncClientPool;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.internal.refs.MediaMixerRef;
+import com.kurento.kmf.media.internal.refs.MediaObjectRef;
+import com.kurento.kmf.media.internal.refs.MediaPadRef;
+import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
+import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.AbstractMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaError;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
+import com.kurento.kms.thrift.api.KmsMediaPadDirection;
+import com.kurento.kms.thrift.api.KmsMediaParam;
 
 @Configuration
 public class MediaApiApplicationContextConfiguration {
@@ -57,6 +57,16 @@ public class MediaApiApplicationContextConfiguration {
 	@Bean
 	MediaServerClientPoolService mediaServerClientPoolService() {
 		return new MediaServerClientPoolService();
+	}
+
+	@Bean
+	MediaServerSyncClientPool mediaServerSyncClientPool() {
+		return new MediaServerSyncClientPool();
+	}
+
+	@Bean
+	MediaServerAsyncClientPool mediaServerAsyncClientPool() {
+		return new MediaServerAsyncClientPool();
 	}
 
 	@Bean
@@ -90,8 +100,13 @@ public class MediaApiApplicationContextConfiguration {
 	}
 
 	@Bean
+	MediaParamClassStore mediaParamClassStore() {
+		return new MediaParamClassStore();
+	}
+
+	@Bean
 	@Scope("prototype")
-	public MediaEvent mediaEvent(KmsEvent event) {
+	public MediaEvent mediaEvent(KmsMediaEvent event) {
 
 		Class<?> clazz = mediaEventClassStore().get(event.getType());
 
@@ -99,22 +114,19 @@ public class MediaApiApplicationContextConfiguration {
 			clazz = DefaultMediaEventImpl.class;
 		}
 
-		AbstractMediaEvent mediaEvent;
+		AbstractMediaEvent<?> mediaEvent;
 		try {
 			// TODO: Document that all event classes must have one constructor
-			// taking a KmsEvent
-			Constructor<?> constructor = clazz.getConstructor(KmsEvent.class);
+			// taking a KmsMediaEvent
+			Constructor<?> constructor = clazz
+					.getConstructor(KmsMediaEvent.class);
 			// This cast is safe as long as the type of the class refers to a
 			// type that extends from AbstarctMediaEvent.
 			// Nevertheless, a catch is included in the try-catch block.
-			mediaEvent = (AbstractMediaEvent) constructor.newInstance(event);
+			mediaEvent = (AbstractMediaEvent<?>) constructor.newInstance(event);
 		} catch (Exception e) {
 			// TODO error code and message
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		}
-
-		if (event.isSetEventData()) {
-			mediaEvent.deserializeData(event);
 		}
 
 		return mediaEvent;
@@ -122,19 +134,17 @@ public class MediaApiApplicationContextConfiguration {
 
 	@Bean
 	@Scope("prototype")
-	public MediaError mediaError(KmsError error) {
+	public MediaError mediaError(KmsMediaError error) {
 		return new MediaError(error);
 	}
 
 	@Bean
 	@Scope("prototype")
-	public MediaCommandResult mediaCommandResult(Command command, Params result) {
+	public MediaParam mediaParam(KmsMediaParam result) {
 
-		ProvidesMediaCommand annotation = command.getClass().getAnnotation(
-				ProvidesMediaCommand.class);
-		Class<?> clazz = annotation.resultClass();
+		Class<?> clazz = mediaParamClassStore().get(result.dataType);
 
-		AbstractMediaCommandResult mediaCommandResult;
+		AbstractMediaParam mediaParam;
 
 		try {
 			// TODO: document that command result must have a default
@@ -143,39 +153,38 @@ public class MediaApiApplicationContextConfiguration {
 			// This cast is safe as long as the type of the class refers to a
 			// type that extends from MediaObject.
 			// Nevertheless, a catch is included in the try-catch block.
-			mediaCommandResult = (AbstractMediaCommandResult) constructor
-					.newInstance();
+			mediaParam = (AbstractMediaParam) constructor.newInstance();
 		} catch (Exception e) {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
 		if (result.isSetData()) {
-			mediaCommandResult.deserializeCommandResult(result);
+			mediaParam.deserializeCommandResult(result);
 		}
 
-		return mediaCommandResult;
+		return mediaParam;
 	}
 
 	@Bean
 	@Scope("prototype")
-	public MediaObject mediaObject(MediaObjectRefDTO objRef) {
+	public MediaObject mediaObject(MediaObjectRef objRef) {
 
 		Class<?> clazz;
-		if (objRef instanceof MediaPadRefDTO) {
-			MediaPadRefDTO padRefDTO = (MediaPadRefDTO) objRef;
+		if (objRef instanceof MediaPadRef) {
+			MediaPadRef padRefDTO = (MediaPadRef) objRef;
 			clazz = classFromPadDirection(padRefDTO.getPadDirection());
 
-		} else if (objRef instanceof MediaElementRefDTO) {
-			MediaElementRefDTO elementRefDTO = (MediaElementRefDTO) objRef;
+		} else if (objRef instanceof MediaElementRef) {
+			MediaElementRef elementRefDTO = (MediaElementRef) objRef;
 			String type = elementRefDTO.getType();
 			clazz = mediaEventClassStore().get(type);
 			if (clazz == null) {
 				clazz = MediaElementImpl.class;
 			}
 
-		} else if (objRef instanceof MediaMixerRefDTO) {
-			MediaMixerRefDTO mixerRefDTO = (MediaMixerRefDTO) objRef;
+		} else if (objRef instanceof MediaMixerRef) {
+			MediaMixerRef mixerRefDTO = (MediaMixerRef) objRef;
 			String type = mixerRefDTO.getType();
 			clazz = mediaEventClassStore().get(type);
 
@@ -183,7 +192,7 @@ public class MediaApiApplicationContextConfiguration {
 				clazz = MediaMixer.class;
 			}
 
-		} else if (objRef instanceof MediaPipelineRefDTO) {
+		} else if (objRef instanceof MediaPipelineRef) {
 			clazz = MediaPipelineImpl.class;
 
 		} else {
@@ -197,7 +206,8 @@ public class MediaApiApplicationContextConfiguration {
 		return obj;
 	}
 
-	private static Class<?> classFromPadDirection(PadDirection padDirection) {
+	private static Class<?> classFromPadDirection(
+			KmsMediaPadDirection padDirection) {
 		Class<?> clazz;
 		switch (padDirection) {
 		case SINK:
@@ -215,7 +225,7 @@ public class MediaApiApplicationContextConfiguration {
 	}
 
 	private static MediaObject instantiateMediaObject(Class<?> clazz,
-			MediaObjectRefDTO objRef) {
+			MediaObjectRef objRef) {
 
 		// TODO Change error code
 		Assert.notNull(clazz, "MediaObject class not found", 30000);
@@ -224,7 +234,7 @@ public class MediaApiApplicationContextConfiguration {
 		try {
 			// TODO: document that all media objects must have such constructor
 			Constructor<?> constructor = clazz
-					.getConstructor(MediaObjectRefDTO.class);
+					.getConstructor(MediaObjectRef.class);
 			// This cast is safe as long as the type of the class refers to a
 			// type that extends from MediaObject.
 			// Nevertheless, a catch is included in the try-catch block.

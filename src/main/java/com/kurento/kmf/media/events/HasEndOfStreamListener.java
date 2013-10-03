@@ -20,7 +20,7 @@ import com.kurento.kmf.media.ListenerRegistration;
 /**
  * 
  * 
- * @author Iván Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
 public interface HasEndOfStreamListener {

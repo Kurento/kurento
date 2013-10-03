@@ -13,5 +13,14 @@
 		<property name="serverPort" value="9090" />
 		<property name="handlerAddress" value="193.147.51.10" />
 		<property name="handlerPort" value="9191" />
+		<property name="poolSize" value="5" />
 	</bean>
+
+	<bean id="taskExecutor"
+		class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+		<property name="corePoolSize" value="5" />
+		<property name="maxPoolSize" value="10" />
+		<property name="queueCapacity" value="25" />
+	</bean>
+
 </beans>

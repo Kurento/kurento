@@ -14,32 +14,32 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.ZBarFilterTypeConstants.EVENT_CODE_FOUND;
-import static com.kurento.kms.thrift.api.ZBarFilterTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND;
+import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.TYPE_NAME;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.ZBarFilter;
+import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.media.events.VcaStringFoundEvent;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class ZBarFilterImpl extends FilterImpl implements ZBarFilter {
 
-	ZBarFilterImpl(MediaElementRefDTO filterId) {
+	ZBarFilterImpl(MediaElementRef filterId) {
 		super(filterId);
 	}
 
 	@Override
-	public ListenerRegistration addVcaStringFoundDataListener(
-			final MediaEventListener<VcaStringFoundEvent> vcaStrEvent) {
+	public ListenerRegistration addCodeFoundDataListener(
+			final MediaEventListener<CodeFoundEvent> vcaStrEvent) {
 		return addListener(EVENT_CODE_FOUND, vcaStrEvent);
 	}
 
 	@Override
-	public void addVcaStringFoundDataListener(
-			final MediaEventListener<VcaStringFoundEvent> vcaStrEvent,
+	public void addCodeFoundDataListener(
+			final MediaEventListener<CodeFoundEvent> vcaStrEvent,
 			final Continuation<ListenerRegistration> cont) {
 		addListener(EVENT_CODE_FOUND, vcaStrEvent, cont);
 	}

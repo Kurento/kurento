@@ -27,22 +27,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.MediaApiConfiguration;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 
-class MediaServerAsyncClientFactory extends
+public class MediaServerAsyncClientFactory extends
 		BasePoolableObjectFactory<AsyncClient> {
 
 	@Autowired
 	private MediaApiConfiguration apiConfig;
 
 	@Override
-	public AsyncClient makeObject() throws KurentoMediaFrameworkException {
+	public AsyncClient makeObject() {
 		return createAsyncClient();
 	}
 
 	/**
-	 * Validates a {@link Client} before returning it to the queue. This check
-	 * is done based on {@link TAsyncClient#hasError()}.
+	 * Validates an {@link AsyncClient} before returning it to the queue. This
+	 * check is done based on {@link TAsyncClient#hasError()}.
 	 * 
 	 * @param obj
 	 *            The object to validate.
@@ -59,8 +59,7 @@ class MediaServerAsyncClientFactory extends
 		// TODO add impl if needed
 	}
 
-	private AsyncClient createAsyncClient()
-			throws KurentoMediaFrameworkException {
+	private AsyncClient createAsyncClient() {
 		TNonblockingTransport transport;
 
 		try {

@@ -18,6 +18,8 @@ import static org.apache.commons.pool.impl.GenericObjectPool.WHEN_EXHAUSTED_FAIL
 
 import java.util.NoSuchElementException;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
@@ -27,16 +29,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.MediaApiConfiguration;
 
-abstract class AbstractPool<T> implements Pool<T> {
+public abstract class AbstractPool<T> implements Pool<T> {
 
 	@Autowired
 	private MediaApiConfiguration apiConfig;
 
-	private final ObjectPool<T> pool;
+	private ObjectPool<T> pool;
+
+	private final BasePoolableObjectFactory<T> factory;
 
 	AbstractPool(BasePoolableObjectFactory<T> factory) {
+		this.factory = factory;
+	}
+
+	@PostConstruct
+	private void init() {
 		Config config = new Config();
-		config.maxActive = this.apiConfig.getPoolSize();
+		config.maxActive = apiConfig.getPoolSize();
 		config.whenExhaustedAction = WHEN_EXHAUSTED_FAIL;
 		this.pool = new GenericObjectPool<T>(factory, config);
 	}

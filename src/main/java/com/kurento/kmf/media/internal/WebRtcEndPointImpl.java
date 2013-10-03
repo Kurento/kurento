@@ -14,16 +14,16 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.WebRtcEndPointTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME;
 
 import com.kurento.kmf.media.WebRtcEndPoint;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class WebRtcEndPointImpl extends SdpEndPointImpl implements
 		WebRtcEndPoint {
 
-	WebRtcEndPointImpl(MediaElementRefDTO endpointRef) {
+	WebRtcEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 

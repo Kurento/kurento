@@ -35,13 +35,14 @@ public interface MediaSink extends MediaPad {
 	 * 
 	 * @param sink
 	 *            The sink to connect this source
+	 * @param cont
 	 */
 	void disconnect(MediaSink sink, final Continuation<Void> cont);
 
-/**
-	 * Gets all {@link MediaSink to which this source is connected.
+	/**
+	 * Gets all {@link MediaSink} to which this source is connected.
 	 * 
-	 * @return The list of sinks that the source is connected to.
+	 * @param cont
 	 */
 	public void getConnectedSrc(final Continuation<MediaSource> cont);
 }

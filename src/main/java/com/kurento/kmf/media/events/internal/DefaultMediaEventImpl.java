@@ -15,7 +15,8 @@
 package com.kurento.kmf.media.events.internal;
 
 import com.kurento.kmf.media.events.DefaultMediaEvent;
-import com.kurento.kms.thrift.api.KmsEvent;
+import com.kurento.kmf.media.params.internal.DefaultMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
 
 /**
  * Default media event that is used when an unknown event type is received from
@@ -24,24 +25,17 @@ import com.kurento.kms.thrift.api.KmsEvent;
  * @author llopez
  * 
  */
-public class DefaultMediaEventImpl extends AbstractMediaEvent implements
-		DefaultMediaEvent {
+public class DefaultMediaEventImpl extends
+		AbstractMediaEvent<DefaultMediaParam> implements DefaultMediaEvent {
 
-	private byte[] data;
-
-	public DefaultMediaEventImpl(KmsEvent event) {
+	public DefaultMediaEventImpl(KmsMediaEvent event) {
 		super(event);
 	}
 
 	@Override
 	public byte[] getData() {
-		return data;
-	}
-
-	@Override
-	public void deserializeData(KmsEvent event) {
-		// TODO get the params
-		// data = event.getEventData();
+		DefaultMediaParam param = this.getParam();
+		return param.getData();
 	}
 
 }

@@ -14,18 +14,13 @@
  */
 package com.kurento.kmf.media.events.internal;
 
-import org.apache.thrift.protocol.TProtocol;
+import com.kurento.kmf.media.params.internal.VoidMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
 
-import com.kurento.kms.thrift.api.KmsEvent;
+public class VoidMediaEvent extends AbstractMediaEvent<VoidMediaParam> {
 
-public class VoidMediaEvent extends ThriftSerializedMediaEvent {
-
-	public VoidMediaEvent(KmsEvent event) {
+	public VoidMediaEvent(KmsMediaEvent event) {
 		super(event);
-	}
-
-	@Override
-	protected void deserializeFromTProtocol(TProtocol pr) {
 	}
 
 }

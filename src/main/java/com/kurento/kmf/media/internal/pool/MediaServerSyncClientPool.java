@@ -14,11 +14,11 @@
  */
 package com.kurento.kmf.media.internal.pool;
 
-import com.kurento.kms.thrift.api.MediaServerService.Client;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
-class MediaServerSyncClientPool extends AbstractPool<Client> {
+public class MediaServerSyncClientPool extends AbstractPool<Client> {
 
-	MediaServerSyncClientPool() {
+	public MediaServerSyncClientPool() {
 		super(new MediaServerSyncClientFactory());
 	}
 }

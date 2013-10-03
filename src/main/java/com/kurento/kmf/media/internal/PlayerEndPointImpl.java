@@ -14,21 +14,21 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.PlayerEndPointTypeConstants.EVENT_EOS;
-import static com.kurento.kms.thrift.api.PlayerEndPointTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
+import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.TYPE_NAME;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
 
 @ProvidesMediaElement(type = TYPE_NAME)
-public class PlayerEndPointImpl extends UriEndPointImpl implements
+public class PlayerEndPointImpl extends AbstractUriEndPoint implements
 		PlayerEndPoint {
 
-	PlayerEndPointImpl(MediaElementRefDTO endpointRef) {
+	PlayerEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 

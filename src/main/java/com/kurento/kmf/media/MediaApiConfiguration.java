@@ -61,4 +61,5 @@ public class MediaApiConfiguration {
 	public void setPoolSize(int poolSize) {
 		this.poolSize = poolSize;
 	}
+
 }

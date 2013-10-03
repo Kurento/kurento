@@ -16,12 +16,12 @@ package com.kurento.kmf.media.events;
 
 import static com.kurento.kmf.media.internal.refs.MediaRefConverter.fromThrift;
 
-import com.kurento.kmf.media.internal.refs.MediaObjectRefDTO;
-import com.kurento.kms.thrift.api.KmsError;
+import com.kurento.kmf.media.internal.refs.MediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaError;
 
 public final class MediaError {
 
-	private final MediaObjectRefDTO objectRef;
+	private final MediaObjectRef objectRef;
 
 	private final String description;
 
@@ -29,14 +29,14 @@ public final class MediaError {
 
 	private final String type;
 
-	public MediaError(KmsError error) {
+	public MediaError(KmsMediaError error) {
 		this.type = error.type;
 		this.description = error.description;
 		this.errorCode = Integer.valueOf(error.errorCode);
 		this.objectRef = fromThrift(error.source);
 	}
 
-	public MediaObjectRefDTO getObjectRef() {
+	public MediaObjectRef getObjectRef() {
 		return this.objectRef;
 	}
 

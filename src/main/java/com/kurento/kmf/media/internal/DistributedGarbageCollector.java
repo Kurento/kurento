@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaServerConstants.GARBAGE_PERIOD;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,17 +29,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
-import com.kurento.kms.thrift.api.MediaObjectRef;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.keepAlive_call;
-import com.kurento.kms.thrift.api.mediaServerConstants;
+import com.kurento.kms.thrift.api.KmsMediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.keepAlive_call;
 
 public class DistributedGarbageCollector {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(DistributedGarbageCollector.class);
 
-	private static final long GARBAGE_PERIOD_MILIS = mediaServerConstants.GARBAGE_PERIOD * 1000;
+	private static final long GARBAGE_PERIOD_MILIS = GARBAGE_PERIOD * 1000;
 
 	@Autowired
 	protected MediaServerClientPoolService clientPool;
@@ -46,7 +47,7 @@ public class DistributedGarbageCollector {
 	// TODO Let spring manage this timers with a TimerTaskExecutor
 	private final ConcurrentHashMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
 
-	public synchronized void registerReference(final MediaObjectRef objectRef) {
+	public synchronized void registerReference(final KmsMediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
 
 		Long refId = Long.valueOf(objectRef.id);
@@ -71,7 +72,7 @@ public class DistributedGarbageCollector {
 		}, GARBAGE_PERIOD_MILIS, GARBAGE_PERIOD_MILIS);
 	}
 
-	public void removeReference(MediaObjectRef objectRef) {
+	public void removeReference(KmsMediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
 		Long refId = Long.valueOf(objectRef.id);
 		Integer counter = refCounters.remove(refId);
@@ -90,10 +91,10 @@ public class DistributedGarbageCollector {
 		}
 	}
 
-	private void keepAlive(MediaObjectRef mediaObjectRef) {
+	private void keepAlive(KmsMediaObjectRef KmsMediaObjectRef) {
 		final AsyncClient asyncClient = clientPool.acquireAsync();
 		try {
-			asyncClient.keepAlive(mediaObjectRef,
+			asyncClient.keepAlive(KmsMediaObjectRef,
 					new AsyncMethodCallback<keepAlive_call>() {
 
 						@Override

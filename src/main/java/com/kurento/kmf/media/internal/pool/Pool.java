@@ -15,7 +15,6 @@
 package com.kurento.kmf.media.internal.pool;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kms.thrift.api.MediaServerException;
 
 public interface Pool<T> {
 
@@ -26,9 +25,7 @@ public interface Pool<T> {
 	 * @throws PoolLimitException
 	 *             If the maximum number of allowed instances have already been
 	 *             created
-	 * @throws InvokationException
-	 *             If an object can´t be created
-	 * @throws MediaServerException
+	 * @throws KurentoMediaFrameworkException
 	 */
 	public T acquire() throws PoolLimitException,
 			KurentoMediaFrameworkException;
@@ -37,8 +34,8 @@ public interface Pool<T> {
 	 * Returns an object to the pool
 	 * 
 	 * @param obj
-	 * @throws MediaServerException
+	 * @throws KurentoMediaFrameworkException
 	 *             In case of an internal exception in the pool
 	 */
-	public void release(T obj) throws KurentoMediaFrameworkException;
+	public void release(T obj);
 }

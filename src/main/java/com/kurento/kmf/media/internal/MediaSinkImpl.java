@@ -21,14 +21,14 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.MediaSource;
-import com.kurento.kmf.media.internal.refs.MediaPadRefDTO;
-import com.kurento.kms.thrift.api.MediaServerException;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.MediaServerService.Client;
+import com.kurento.kmf.media.internal.refs.MediaPadRef;
+import com.kurento.kms.thrift.api.KmsMediaServerException;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class MediaSinkImpl extends MediaPadImpl implements MediaSink {
 
-	public MediaSinkImpl(MediaPadRefDTO objectRef) {
+	public MediaSinkImpl(MediaPadRef objectRef) {
 		super(objectRef);
 	}
 
@@ -40,7 +40,7 @@ public class MediaSinkImpl extends MediaPadImpl implements MediaSink {
 		try {
 			client.disconnect(((MediaSourceImpl) src).objectRef.getThriftRef(),
 					this.objectRef.getThriftRef());
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -56,11 +56,11 @@ public class MediaSinkImpl extends MediaPadImpl implements MediaSink {
 
 		Client client = this.clientPool.acquireSync();
 
-		MediaPadRefDTO padRefDTO;
+		MediaPadRef padRefDTO;
 		try {
-			padRefDTO = new MediaPadRefDTO(
+			padRefDTO = new MediaPadRef(
 					client.getConnectedSrc(this.objectRef.getThriftRef()));
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		} catch (TException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
@@ -93,7 +93,7 @@ public class MediaSinkImpl extends MediaPadImpl implements MediaSink {
 								AsyncClient.disconnect_call response) {
 							try {
 								response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -132,11 +132,11 @@ public class MediaSinkImpl extends MediaPadImpl implements MediaSink {
 						@Override
 						public void onComplete(
 								AsyncClient.getConnectedSrc_call response) {
-							MediaPadRefDTO srcRef;
+							MediaPadRef srcRef;
 							try {
-								srcRef = new MediaPadRefDTO(response
+								srcRef = new MediaPadRef(response
 										.getResult());
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {

@@ -16,37 +16,37 @@ package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPad;
-import com.kurento.kmf.media.internal.refs.MediaPadRefDTO;
-import com.kurento.kms.thrift.api.MediaType;
+import com.kurento.kmf.media.internal.refs.MediaPadRef;
+import com.kurento.kms.thrift.api.KmsMediaType;
 
 public abstract class MediaPadImpl extends AbstractMediaObject implements
 		MediaPad {
 
-	public MediaPadImpl(MediaPadRefDTO objectRef) {
+	public MediaPadImpl(MediaPadRef objectRef) {
 		super(objectRef);
 	}
 
 	@Override
-	public MediaElementImpl getMediaElement()
-			throws KurentoMediaFrameworkException {
-		return (MediaElementImpl) getParent();
+	public MediaElement getMediaElement() {
+		return (MediaElement) getParent();
 	}
 
 	@Override
-	public void getMediaElement(final Continuation<MediaElementImpl> cont)
+	public void getMediaElement(final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 		super.getParent(cont);
 	}
 
 	@Override
-	public MediaType getMediaType() {
-		return ((MediaPadRefDTO) objectRef).getType();
+	public KmsMediaType getMediaType() {
+		return ((MediaPadRef) objectRef).getType();
 	}
 
 	@Override
 	public String getMediaDescription() {
-		return ((MediaPadRefDTO) objectRef).getMediaDescription();
+		return ((MediaPadRef) objectRef).getMediaDescription();
 	}
 
 }

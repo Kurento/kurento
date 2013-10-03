@@ -16,7 +16,6 @@ package com.kurento.kmf.media.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.thrift.TException;
@@ -27,36 +26,36 @@ import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.MediaSource;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
-import com.kurento.kmf.media.internal.refs.MediaPadRefDTO;
-import com.kurento.kms.thrift.api.MediaObjectRef;
-import com.kurento.kms.thrift.api.MediaServerException;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaSinksByFullDescription_call;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaSinksByMediaType_call;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaSrcsByFullDescription_call;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaSrcsByMediaType_call;
-import com.kurento.kms.thrift.api.MediaServerService.AsyncClient.getMediaSrcs_call;
-import com.kurento.kms.thrift.api.MediaServerService.Client;
-import com.kurento.kms.thrift.api.MediaType;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.internal.refs.MediaPadRef;
+import com.kurento.kms.thrift.api.KmsMediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaServerException;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSinksByFullDescription_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSinksByMediaType_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcsByFullDescription_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcsByMediaType_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcs_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
+import com.kurento.kms.thrift.api.KmsMediaType;
 
 public class MediaElementImpl extends AbstractMediaObject implements
 		MediaElement {
 
-	public MediaElementImpl(MediaElementRefDTO objectRef) {
+	public MediaElementImpl(MediaElementRef objectRef) {
 		super(objectRef);
 	}
 
 	@Override
 	public Collection<MediaSource> getMediaSrcs() {
 
-		Client client = this.clientPool.acquireSync();
+		Client client = clientPool.acquireSync();
 
-		List<MediaObjectRef> srcRefs;
+		List<KmsMediaObjectRef> srcRefs;
 
 		try {
 			srcRefs = client.getMediaSrcs(this.objectRef.getThriftRef());
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -70,15 +69,15 @@ public class MediaElementImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public Collection<MediaSource> getMediaSrcs(MediaType mediaType) {
-		Client client = this.clientPool.acquireSync();
+	public Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType) {
+		Client client = clientPool.acquireSync();
 
-		List<MediaObjectRef> srcRefs;
+		List<KmsMediaObjectRef> srcRefs;
 
 		try {
 			srcRefs = client.getMediaSrcsByMediaType(
 					this.objectRef.getThriftRef(), mediaType);
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -89,20 +88,21 @@ public class MediaElementImpl extends AbstractMediaObject implements
 		}
 
 		return createMediaSources(srcRefs);
+
 	}
 
 	@Override
-	public Collection<MediaSource> getMediaSrcs(MediaType mediaType,
+	public Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType,
 			String description) {
 
-		Client client = this.clientPool.acquireSync();
+		Client client = clientPool.acquireSync();
 
-		List<MediaObjectRef> srcRefs;
+		List<KmsMediaObjectRef> srcRefs;
 
 		try {
 			srcRefs = client.getMediaSrcsByFullDescription(
 					this.objectRef.getThriftRef(), mediaType, description);
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -113,18 +113,19 @@ public class MediaElementImpl extends AbstractMediaObject implements
 		}
 
 		return createMediaSources(srcRefs);
+
 	}
 
 	@Override
 	public Collection<MediaSink> getMediaSinks() {
 
-		Client client = this.clientPool.acquireSync();
+		Client client = clientPool.acquireSync();
 
-		List<MediaObjectRef> sinkRefs;
+		List<KmsMediaObjectRef> sinkRefs;
 
 		try {
 			sinkRefs = client.getMediaSinks(this.objectRef.getThriftRef());
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -135,18 +136,19 @@ public class MediaElementImpl extends AbstractMediaObject implements
 		}
 
 		return createMediaSinks(sinkRefs);
+
 	}
 
 	@Override
-	public Collection<MediaSink> getMediaSinks(MediaType mediaType) {
-		Client client = this.clientPool.acquireSync();
+	public Collection<MediaSink> getMediaSinks(KmsMediaType mediaType) {
+		Client client = clientPool.acquireSync();
 
-		List<MediaObjectRef> sinkRefs;
+		List<KmsMediaObjectRef> sinkRefs;
 
 		try {
 			sinkRefs = client.getMediaSinksByMediaType(
 					this.objectRef.getThriftRef(), mediaType);
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -157,20 +159,21 @@ public class MediaElementImpl extends AbstractMediaObject implements
 		}
 
 		return createMediaSinks(sinkRefs);
+
 	}
 
 	@Override
-	public Collection<MediaSink> getMediaSinks(MediaType mediaType,
+	public Collection<MediaSink> getMediaSinks(KmsMediaType mediaType,
 			String description) {
 
-		Client client = this.clientPool.acquireSync();
+		Client client = clientPool.acquireSync();
 
-		List<MediaObjectRef> sinkRefs;
+		List<KmsMediaObjectRef> sinkRefs;
 
 		try {
 			sinkRefs = client.getMediaSinksByFullDescription(
 					this.objectRef.getThriftRef(), mediaType, description);
-		} catch (MediaServerException e) {
+		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
 		} catch (TException e) {
@@ -181,108 +184,117 @@ public class MediaElementImpl extends AbstractMediaObject implements
 		}
 
 		return createMediaSinks(sinkRefs);
+
 	}
 
 	@Override
-	public void connect(MediaElement sink, MediaType mediaType) {
+	public void connect(MediaElement sink, KmsMediaType mediaType) {
+		// TODO this connect should be done in the server
+		// Collection<MediaSource> sources = this.getMediaSrcs(mediaType);
+		// Collection<MediaSink> sinks = sink.getMediaSinks(mediaType);
+		//
+		// if (sources.size() != sinks.size()) {
+		// // TODO change error code
+		// throw new KurentoMediaFrameworkException("Cannot connect "
+		// + sources.size() + " sources to " + sinks.size()
+		// + " sinks. Perform connect individually", 30000);
+		// }
+		//
+		// // If there is nothing to connect, return
+		// if (sinks.size() == 0) {
+		// return;
+		// }
+		//
+		// // Map all sinks to their description (null description supported)
+		// HashMap<String, MediaSink> descriptionToSinkMap = new HashMap<String,
+		// MediaSink>();
+		// for (MediaSink snk : sinks) {
+		// descriptionToSinkMap.put(snk.getMediaDescription(), snk);
+		// }
+		//
+		// if (descriptionToSinkMap.size() != sinks.size()) {
+		// throw new KurentoMediaFrameworkException(
+		// "Cannot connect to sinks having duplicate media descriptions",
+		// 30000); // TODO change error code
+		// }
+		//
+		// HashMap<String, MediaSource> descriptionToSourceMap = new
+		// HashMap<String, MediaSource>();
+		// for (MediaSource src : sources) {
+		// descriptionToSourceMap.put(src.getMediaDescription(), src);
+		// }
+		//
+		// if (descriptionToSourceMap.size() != sources.size()) {
+		// throw new KurentoMediaFrameworkException(
+		// "Cannot connect from sources having duplicate media descriptions",
+		// 30000); // TODO change error code
+		// }
+		//
+		// if (!descriptionToSinkMap.keySet().equals(
+		// descriptionToSourceMap.keySet())) {
+		// throw new KurentoMediaFrameworkException(
+		// "Cannot connect sources to sinks with different media descriptioins",
+		// 30000); // TODO change error code
+		// }
+		//
+		// for (String mediaDescription : descriptionToSourceMap.keySet()) {
+		// descriptionToSourceMap.get(mediaDescription).connect(
+		// descriptionToSinkMap.get(mediaDescription));
+		// }
 
-		Collection<MediaSource> sources = this.getMediaSrcs(mediaType);
-		Collection<MediaSink> sinks = sink.getMediaSinks(mediaType);
-
-		if (sources.size() != sinks.size()) {
-			throw new KurentoMediaFrameworkException("Cannot connect "
-					+ sources.size() + " sources to " + sinks.size()
-					+ " sinks. Perform connect individually", 30000); // TODO
-		}
-
-		// If there is nothing to connect, return
-		if (sinks.size() == 0) {
-			return;
-		}
-
-		// Map all sinks to their description (null description supported)
-		HashMap<String, MediaSink> descriptionToSinkMap = new HashMap<String, MediaSink>();
-		for (MediaSink snk : sinks) {
-			descriptionToSinkMap.put(snk.getMediaDescription(), snk);
-		}
-
-		if (descriptionToSinkMap.size() != sinks.size()) {
-			throw new KurentoMediaFrameworkException(
-					"Cannot connect to sinks having duplicate media descriptions",
-					30000); // TODO
-		}
-
-		HashMap<String, MediaSource> descriptionToSourceMap = new HashMap<String, MediaSource>();
-		for (MediaSource src : sources) {
-			descriptionToSourceMap.put(src.getMediaDescription(), src);
-		}
-
-		if (descriptionToSourceMap.size() != sources.size()) {
-			throw new KurentoMediaFrameworkException(
-					"Cannot connect from sources having duplicate media descriptions",
-					30000); // TODO
-		}
-
-		if (!descriptionToSinkMap.keySet().equals(
-				descriptionToSourceMap.keySet())) {
-			throw new KurentoMediaFrameworkException(
-					"Cannot connect sources to sinks with different media descriptioins",
-					30000); // TODO
-		}
-
-		for (String mediaDescription : descriptionToSourceMap.keySet()) {
-			descriptionToSourceMap.get(mediaDescription).connect(
-					descriptionToSinkMap.get(mediaDescription));
-		}
 	}
 
 	@Override
 	public void connect(MediaElement sink) {
-		connect(sink, MediaType.VIDEO);
-		connect(sink, MediaType.AUDIO);
-		connect(sink, MediaType.DATA);
+		// TODO this connect should be done in the server
+		// connect(sink, KmsMediaType.VIDEO);
+		// connect(sink, KmsMediaType.AUDIO);
+		// connect(sink, KmsMediaType.DATA);
+
 	}
 
 	@Override
-	public void connect(MediaElement sink, MediaType mediaType,
+	public void connect(MediaElement sink, KmsMediaType mediaType,
 			String mediaDescription) {
-		Collection<MediaSource> sources = this.getMediaSrcs(mediaType,
-				mediaDescription);
-		if (sources.size() > 1) {
-			throw new KurentoMediaFrameworkException(
-					"Cannot connect having multiple sources with the same media description",
-					30000); // TODO
-		}
-
-		Collection<MediaSink> sinks = sink.getMediaSinks(mediaType,
-				mediaDescription);
-
-		if (sources.size() != sinks.size()) {
-			throw new KurentoMediaFrameworkException(
-					"Cannot connect to sinks with different cardinality", 30000); // TODO
-		}
-
-		if (sources.size() == 0) {
-			return;
-		}
-
-		sources.iterator().next().connect(sinks.iterator().next());
+		// TODO this connect should be done in the server
+		// Collection<MediaSource> sources = this.getMediaSrcs(mediaType,
+		// mediaDescription);
+		// if (sources.size() > 1) {
+		// throw new KurentoMediaFrameworkException(
+		// "Cannot connect having multiple sources with the same media description",
+		// 30000); // TODO change error code
+		// }
+		//
+		// Collection<MediaSink> sinks = sink.getMediaSinks(mediaType,
+		// mediaDescription);
+		//
+		// if (sources.size() != sinks.size()) {
+		// // TODO change error code
+		// throw new KurentoMediaFrameworkException(
+		// "Cannot connect to sinks with different cardinality", 30000);
+		// }
+		//
+		// if (sources.size() == 0) {
+		// return;
+		// }
+		//
+		// sources.iterator().next().connect(sinks.iterator().next());
 
 	}
 
 	@Override
 	public void getMediaSrcs(final Continuation<Collection<MediaSource>> cont) {
-		final AsyncClient client = this.clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSrcs(this.objectRef.getThriftRef(),
 					new AsyncMethodCallback<getMediaSrcs_call>() {
 
 						@Override
 						public void onComplete(getMediaSrcs_call response) {
-							List<MediaObjectRef> srcRefs;
+							List<KmsMediaObjectRef> srcRefs;
 							try {
 								srcRefs = response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -312,9 +324,9 @@ public class MediaElementImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public void getMediaSrcs(MediaType mediaType,
+	public void getMediaSrcs(KmsMediaType mediaType,
 			final Continuation<Collection<MediaSource>> cont) {
-		final AsyncClient client = this.clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
 			client.getMediaSrcsByMediaType(this.objectRef.getThriftRef(),
@@ -324,10 +336,10 @@ public class MediaElementImpl extends AbstractMediaObject implements
 						@Override
 						public void onComplete(
 								getMediaSrcsByMediaType_call response) {
-							List<MediaObjectRef> srcRefs;
+							List<KmsMediaObjectRef> srcRefs;
 							try {
 								srcRefs = response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -357,9 +369,9 @@ public class MediaElementImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public void getMediaSrcs(MediaType mediaType, String description,
+	public void getMediaSrcs(KmsMediaType mediaType, String description,
 			final Continuation<Collection<MediaSource>> cont) {
-		final AsyncClient client = this.clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSrcsByFullDescription(
 					this.objectRef.getThriftRef(),
@@ -370,10 +382,10 @@ public class MediaElementImpl extends AbstractMediaObject implements
 						@Override
 						public void onComplete(
 								getMediaSrcsByFullDescription_call response) {
-							List<MediaObjectRef> srcRefs;
+							List<KmsMediaObjectRef> srcRefs;
 							try {
 								srcRefs = response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -404,7 +416,7 @@ public class MediaElementImpl extends AbstractMediaObject implements
 
 	@Override
 	public void getMediaSinks(final Continuation<Collection<MediaSink>> cont) {
-		final AsyncClient client = this.clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSinks(this.objectRef.getThriftRef(),
 					new AsyncMethodCallback<AsyncClient.getMediaSinks_call>() {
@@ -412,10 +424,10 @@ public class MediaElementImpl extends AbstractMediaObject implements
 						@Override
 						public void onComplete(
 								AsyncClient.getMediaSinks_call response) {
-							List<MediaObjectRef> sinkRefs;
+							List<KmsMediaObjectRef> sinkRefs;
 							try {
 								sinkRefs = response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -445,9 +457,9 @@ public class MediaElementImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public void getMediaSinks(MediaType mediaType,
+	public void getMediaSinks(KmsMediaType mediaType,
 			final Continuation<Collection<MediaSink>> cont) {
-		final AsyncClient client = this.clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSinksByMediaType(this.objectRef.getThriftRef(),
 					mediaType,
@@ -456,10 +468,10 @@ public class MediaElementImpl extends AbstractMediaObject implements
 						@Override
 						public void onComplete(
 								getMediaSinksByMediaType_call response) {
-							List<MediaObjectRef> sinkRefs;
+							List<KmsMediaObjectRef> sinkRefs;
 							try {
 								sinkRefs = response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -489,9 +501,9 @@ public class MediaElementImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public void getMediaSinks(MediaType mediaType, String description,
+	public void getMediaSinks(KmsMediaType mediaType, String description,
 			final Continuation<Collection<MediaSink>> cont) {
-		final AsyncClient client = this.clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSinksByFullDescription(
 					this.objectRef.getThriftRef(),
@@ -502,10 +514,10 @@ public class MediaElementImpl extends AbstractMediaObject implements
 						@Override
 						public void onComplete(
 								getMediaSinksByFullDescription_call response) {
-							List<MediaObjectRef> sinkRefs;
+							List<KmsMediaObjectRef> sinkRefs;
 							try {
 								sinkRefs = response.getResult();
-							} catch (MediaServerException e) {
+							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());
 							} catch (TException e) {
@@ -536,28 +548,30 @@ public class MediaElementImpl extends AbstractMediaObject implements
 	}
 
 	private Collection<MediaSink> createMediaSinks(
-			Collection<MediaObjectRef> sinkRefs) {
+			Collection<KmsMediaObjectRef> sinkRefs) {
 		Collection<MediaSink> sinks = new ArrayList<MediaSink>(sinkRefs.size());
-		for (MediaObjectRef padRef : sinkRefs) {
+		for (KmsMediaObjectRef padRef : sinkRefs) {
 			MediaSinkImpl sink = (MediaSinkImpl) this.ctx.getBean(
-					"mediaObject", new MediaPadRefDTO(padRef));
+					"mediaObject", new MediaPadRef(padRef));
 			sinks.add(sink);
 		}
 
 		return sinks;
+
 	}
 
 	private Collection<MediaSource> createMediaSources(
-			List<MediaObjectRef> srcRefs) {
+			List<KmsMediaObjectRef> srcRefs) {
 		Collection<MediaSource> srcs = new ArrayList<MediaSource>(
 				srcRefs.size());
-		for (MediaObjectRef padRef : srcRefs) {
+		for (KmsMediaObjectRef padRef : srcRefs) {
 			MediaSourceImpl src = (MediaSourceImpl) this.ctx.getBean(
-					"mediaObject", new MediaPadRefDTO(padRef));
+					"mediaObject", new MediaPadRef(padRef));
 			srcs.add(src);
 		}
 
 		return srcs;
+
 	}
 
 }

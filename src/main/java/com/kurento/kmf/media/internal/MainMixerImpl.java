@@ -15,14 +15,15 @@
 package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.media.MainMixer;
-import com.kurento.kmf.media.internal.refs.MediaMixerRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 
+// TODO is this used? If so, add it to the thrift interface
 @ProvidesMediaElement(type = MainMixerImpl.TYPE)
 public class MainMixerImpl extends MediaMixerImpl implements MainMixer {
 
 	public static final String TYPE = "MainMixer";
 
-	MainMixerImpl(MediaMixerRefDTO mainMixerId) {
+	MainMixerImpl(MediaMixerRef mainMixerId) {
 		super(mainMixerId);
 	}
 

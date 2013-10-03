@@ -25,15 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.MediaApiConfiguration;
-import com.kurento.kms.thrift.api.MediaServerService.Client;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
-class MediaServerSyncClientFactory extends BasePoolableObjectFactory<Client> {
+public class MediaServerSyncClientFactory extends
+		BasePoolableObjectFactory<Client> {
 
 	@Autowired
 	private MediaApiConfiguration apiConfig;
 
 	@Override
-	public Client makeObject() throws KurentoMediaFrameworkException {
+	public Client makeObject() {
 		return createSyncClient();
 	}
 
@@ -62,7 +63,7 @@ class MediaServerSyncClientFactory extends BasePoolableObjectFactory<Client> {
 		obj.getOutputProtocol().getTransport().close();
 	}
 
-	private Client createSyncClient() throws KurentoMediaFrameworkException {
+	private Client createSyncClient() {
 		TSocket socket = new TSocket(this.apiConfig.getServerAddress(),
 				this.apiConfig.getServerPort());
 		TTransport transport = new TFramedTransport(socket);

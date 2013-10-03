@@ -15,11 +15,11 @@
 package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.media.Filter;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
 
 public class FilterImpl extends MediaElementImpl implements Filter {
 
-	FilterImpl(MediaElementRefDTO filterId) {
+	FilterImpl(MediaElementRef filterId) {
 		super(filterId);
 	}
 

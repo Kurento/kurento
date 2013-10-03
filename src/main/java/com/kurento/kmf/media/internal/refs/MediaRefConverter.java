@@ -15,23 +15,23 @@
 package com.kurento.kmf.media.internal.refs;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kms.thrift.api.MediaObjectRef;
-import com.kurento.kms.thrift.api.MediaObjectType;
+import com.kurento.kms.thrift.api.KmsMediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaObjectType;
 
 public class MediaRefConverter {
 
-	public static MediaObjectRefDTO fromThrift(MediaObjectRef in) {
-		MediaObjectRefDTO out;
-		MediaObjectType type = in.getType();
+	public static MediaObjectRef fromThrift(KmsMediaObjectRef in) {
+		MediaObjectRef out;
+		KmsMediaObjectType type = in.getObjectType();
 
-		if (type.isSetElementType()) {
-			out = new MediaElementRefDTO(in);
-		} else if (type.isSetMixerType()) {
-			out = new MediaMixerRefDTO(in);
-		} else if (type.isSetPadType()) {
-			out = new MediaPadRefDTO(in);
-		} else if (type.isSetPipelineType()) {
-			out = new MediaPipelineRefDTO(in);
+		if (type.isSetElement()) {
+			out = new MediaElementRef(in);
+		} else if (type.isSetMixer()) {
+			out = new MediaMixerRef(in);
+		} else if (type.isSetPad()) {
+			out = new MediaPadRef(in);
+		} else if (type.isSetPipeline()) {
+			out = new MediaPipelineRef(in);
 		} else {
 			throw new KurentoMediaFrameworkException(
 					"Unexpected object ref received from server");

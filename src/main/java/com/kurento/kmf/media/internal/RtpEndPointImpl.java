@@ -14,15 +14,15 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.RecorderEndPointTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
 
 import com.kurento.kmf.media.RtpEndPoint;
-import com.kurento.kmf.media.internal.refs.MediaElementRefDTO;
+import com.kurento.kmf.media.internal.refs.MediaElementRef;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class RtpEndPointImpl extends SdpEndPointImpl implements RtpEndPoint {
 
-	RtpEndPointImpl(MediaElementRefDTO endpointRef) {
+	RtpEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
