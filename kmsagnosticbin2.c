@@ -88,6 +88,75 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
     );
 
+/**
+ * Link a pad internally
+ *
+ * @self: The #KmsAgnosticBin2 owner of the pad
+ * @pad: (transfer full): The pad to be linked
+ * @peer: (transfer full): The peer pad
+ */
+static void
+kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
+{
+  GstCaps *caps;
+
+  GST_DEBUG_OBJECT (self, "Linking: %" GST_PTR_FORMAT, pad);
+
+  caps = gst_pad_query_caps (peer, NULL);
+
+  if (caps == NULL)
+    goto end;
+
+  GST_DEBUG ("Query caps are: %" GST_PTR_FORMAT, caps);
+
+  gst_caps_unref (caps);
+
+end:
+  g_object_unref (pad);
+  g_object_unref (peer);
+}
+
+/**
+ * Unlink a pad internally
+ *
+ * @self: The #KmsAgnosticBin2 owner of the pad
+ * @pad: (transfer full): The pad to be unlinked
+ */
+static void
+kms_agnostic_bin2_unlink_pad (KmsAgnosticBin2 * self, GstPad * pad)
+{
+  GST_DEBUG_OBJECT (self, "Unlinking: %" GST_PTR_FORMAT, pad);
+
+  // TODO: Implement this
+  g_object_unref (pad);
+}
+
+/**
+ * Process a pad for connecting or disconnecting, it should be always called
+ * from the connect_thread.
+ *
+ * @self: The #KmsAgnosticBin2 owner of the pad
+ * @pad: (transfer full): The pad to be processed
+ */
+static void
+kms_agnostic_bin2_process_pad (KmsAgnosticBin2 * self, GstPad * pad)
+{
+  GstPad *peer = NULL;
+
+  GST_DEBUG_OBJECT (self, "Processing pad: %" GST_PTR_FORMAT, pad);
+
+  if (pad == NULL)
+    return;
+
+  peer = gst_pad_get_peer (pad);
+
+  if (peer == NULL)
+    kms_agnostic_bin2_unlink_pad (self, pad);
+  else
+    kms_agnostic_bin2_link_pad (self, pad, peer);
+
+}
+
 static gpointer
 kms_agnostic_bin2_connect_thread (gpointer data)
 {
@@ -111,13 +180,8 @@ kms_agnostic_bin2_connect_thread (gpointer data)
       break;
     }
 
-    {
-      GstPad *pad = g_queue_pop_head (self->priv->pads_to_link);
-
-      GST_DEBUG ("Processing pad link %" GST_PTR_FORMAT, pad);
-      g_object_unref (pad);
-    }
-    GST_DEBUG_OBJECT (self, "Doing");
+    kms_agnostic_bin2_process_pad (self,
+        g_queue_pop_head (self->priv->pads_to_link));
 
     KMS_AGNOSTIC_BIN2_UNLOCK (self);
   }
