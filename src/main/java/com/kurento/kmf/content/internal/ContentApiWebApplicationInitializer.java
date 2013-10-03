@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.WebApplicationInitializer;
 
-import com.kurento.kmf.common.excption.internal.ReflectionUtils;
+import com.kurento.kmf.common.exception.internal.ReflectionUtils;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpRecorderHandler;

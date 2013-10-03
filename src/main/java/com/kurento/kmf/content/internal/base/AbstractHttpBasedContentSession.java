@@ -26,8 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.common.excption.internal.ExceptionUtils;
-import com.kurento.kmf.common.excption.internal.ServletUtils;
+import com.kurento.kmf.common.exception.internal.ExceptionUtils;
+import com.kurento.kmf.common.exception.internal.ServletUtils;
 import com.kurento.kmf.content.ContentHandler;
 import com.kurento.kmf.content.ContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;

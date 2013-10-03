@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.common.excption.internal.ExceptionUtils;
+import com.kurento.kmf.common.exception.internal.ExceptionUtils;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.RtpContentHandler;
