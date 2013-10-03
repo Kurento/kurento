@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.common.excption.internal;
+package com.kurento.kmf.common.exception.internal;
 
 import java.util.Locale;
 import java.util.ResourceBundle;

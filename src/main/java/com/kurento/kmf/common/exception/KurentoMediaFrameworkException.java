@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.common.exception;
 
-import com.kurento.kmf.common.excption.internal.ExceptionUtils;
+import com.kurento.kmf.common.exception.internal.ExceptionUtils;
 
 public class KurentoMediaFrameworkException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
