@@ -71,6 +71,7 @@ struct _KmsAgnosticBin2Private
   GMutex thread_mutex;
   GCond thread_cond;
 
+  GstPad *sink;
   guint pad_count;
 };
 
@@ -286,7 +287,7 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
   GstPadTemplate *templ;
   GstElement *tee, *queue, *fakesink;
-  GstPad *target, *sink;
+  GstPad *target;
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
   self->priv->pad_count = 0;
@@ -300,15 +301,15 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 
   target = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
-  sink = gst_ghost_pad_new_from_template ("sink", target, templ);
+  self->priv->sink = gst_ghost_pad_new_from_template ("sink", target, templ);
   g_object_unref (templ);
   g_object_unref (target);
 
-  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_BLOCK |
+  gst_pad_add_probe (self->priv->sink, GST_PAD_PROBE_TYPE_BLOCK |
       GST_PAD_PROBE_TYPE_DATA_BOTH | GST_PAD_PROBE_TYPE_QUERY_BOTH,
       kms_agnostic_bin2_sink_block_probe, self, NULL);
 
-  gst_element_add_pad (GST_ELEMENT (self), sink);
+  gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
 
