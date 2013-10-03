@@ -64,6 +64,7 @@ G_DEFINE_TYPE (KmsAgnosticBin2, kms_agnostic_bin2, GST_TYPE_BIN);
 
 struct _KmsAgnosticBin2Private
 {
+  GHashTable *tees;
   GQueue *pads_to_link;
 
   gboolean finish_thread;
@@ -88,6 +89,23 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
     );
 
+static void
+kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
+    GstElement * tee)
+{
+  GstElement *queue = gst_element_factory_make ("queue", NULL);
+  GstPad *src = gst_element_get_static_pad (queue, "src");
+
+  GST_DEBUG ("Link to input tee");
+  gst_bin_add (GST_BIN (self), queue);
+  gst_element_sync_state_with_parent (queue);
+
+  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), src);
+  g_object_unref (src);
+
+  gst_element_link (tee, queue);
+}
+
 /**
  * Link a pad internally
  *
@@ -99,6 +117,8 @@ static void
 kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
 {
   GstCaps *caps;
+  GList *tees, *l;
+  GstElement *tee = NULL;
 
   GST_DEBUG_OBJECT (self, "Linking: %" GST_PTR_FORMAT, pad);
 
@@ -108,6 +128,28 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
     goto end;
 
   GST_DEBUG ("Query caps are: %" GST_PTR_FORMAT, caps);
+
+  tees = g_hash_table_get_values (self->priv->tees);
+  for (l = tees; l != NULL && tee == NULL; l = l->next) {
+    GstPad *tee_sink = gst_element_get_static_pad (l->data, "sink");
+    GstCaps *current_caps = gst_pad_get_current_caps (tee_sink);
+
+    GST_DEBUG_OBJECT (l->data, "Current caps are: %" GST_PTR_FORMAT,
+        current_caps);
+
+    if (current_caps != NULL) {
+      if (gst_caps_can_intersect (caps, current_caps))
+        tee = l->data;
+      gst_caps_unref (current_caps);
+    }
+
+    g_object_unref (tee_sink);
+  }
+
+  if (tee != NULL) {
+    kms_agnostic_bin2_link_to_tee (self, pad, tee);
+  }
+  // TODO: Create a new tee if there is no one suitable
 
   gst_caps_unref (caps);
 
@@ -308,6 +350,7 @@ kms_agnostic_bin2_finalize (GObject * object)
   g_mutex_clear (&self->priv->thread_mutex);
 
   g_queue_free_full (self->priv->pads_to_link, g_object_unref);
+  g_hash_table_unref (self->priv->tees);
 
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin2_parent_class)->finalize (object);
@@ -376,6 +419,11 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
+
+  self->priv->tees =
+      g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
+  g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
+      g_object_ref (tee));
 
   self->priv->pads_to_link = g_queue_new ();
   g_cond_init (&self->priv->thread_cond);
