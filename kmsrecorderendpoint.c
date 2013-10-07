@@ -159,6 +159,18 @@ send_eos (GstElement * appsrc)
 }
 
 static void
+kms_recorder_end_point_remove_element (KmsRecorderEndPoint * self,
+    GstElement * e)
+{
+  KMS_RECORDER_END_POINT_LOCK (self);
+
+  g_queue_push_tail (self->priv->tdata.elements_to_remove, e);
+
+  KMS_RECORDER_END_POINT_UNLOCK (self);
+  KMS_RECORDER_END_POINT_SIGNAL (self);
+}
+
+static void
 kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
 {
   GstElement *audiosrc =
@@ -688,8 +700,8 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 
   g_object_unref (G_OBJECT (srcpad));
 
-  /* TODO: Remove encodebin in a separate thread different */
-  /* from the streaming thread */
+  /* Remove old encodebin */
+  kms_recorder_end_point_remove_element (recorder, recorder->priv->encodebin);
 
   /* Add the new encodebin to the pipeline */
   recorder->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
@@ -1015,6 +1027,7 @@ static gpointer
 kms_recorder_end_point_thread (gpointer data)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
+  GstElement *encodebin;
 
   /* Main thread loop */
   while (TRUE) {
@@ -1030,6 +1043,15 @@ kms_recorder_end_point_thread (gpointer data)
       KMS_RECORDER_END_POINT_UNLOCK (self);
       break;
     }
+
+    encodebin =
+        GST_ELEMENT (g_queue_pop_head (self->priv->tdata.elements_to_remove));
+
+    GST_DEBUG ("Remove element %" GST_PTR_FORMAT, encodebin);
+
+    gst_element_set_locked_state (encodebin, TRUE);
+    gst_element_set_state (encodebin, GST_STATE_NULL);
+    gst_bin_remove (GST_BIN (self->priv->pipeline), encodebin);
 
     KMS_RECORDER_END_POINT_UNLOCK (self);
   }
