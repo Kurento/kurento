@@ -678,6 +678,7 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
   KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
   GstPad *srcpad, *sinkpad;
+  GstElement *sink;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
     return GST_PAD_PROBE_PASS;
@@ -699,23 +700,22 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
         GST_ELEMENT_NAME (recorder->priv->encodebin));
 
   g_object_unref (G_OBJECT (srcpad));
+  g_object_unref (G_OBJECT (sinkpad));
 
-  /* Remove old encodebin */
+  /* Remove old encodebin and sink elements */
+  sink = gst_pad_get_parent_element (pad);
+  kms_recorder_end_point_remove_element (recorder, sink);
+  g_object_unref (G_OBJECT (sink));
   kms_recorder_end_point_remove_element (recorder, recorder->priv->encodebin);
 
   /* Add the new encodebin to the pipeline */
   recorder->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
   kms_recorder_end_point_set_profile_to_encodebin (recorder);
   gst_bin_add (GST_BIN (recorder->priv->pipeline), recorder->priv->encodebin);
+
+  /* Add new sink linked to the new encodebin */
+  kms_recorder_end_point_add_sink (recorder);
   gst_element_sync_state_with_parent (recorder->priv->encodebin);
-
-  /* Link new encodebin and appsink */
-  srcpad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
-  if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-    GST_ERROR ("New encodebin could not be linked");
-
-  g_object_unref (G_OBJECT (srcpad));
-  g_object_unref (G_OBJECT (sinkpad));
 
   /* Reconnect sources pads */
   kms_recorder_end_point_reconnect_pads (recorder,
@@ -803,14 +803,18 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
       g_slist_prepend (recorder->priv->confdata->blockedpads, srcpad);
   if (g_slist_length (recorder->priv->confdata->blockedpads) ==
       recorder->priv->confdata->padblocked) {
-    GstPad *pad;
+    GstPad *pad, *peer;
 
     GST_DEBUG ("Encodebin source pads blocked");
     /* install new probe for EOS */
     pad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
-    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BLOCK |
+    peer = gst_pad_get_peer (pad);
+
+    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_BLOCK |
         GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, event_probe_cb, recorder, NULL);
-    gst_object_unref (pad);
+    g_object_unref (G_OBJECT (pad));
+    g_object_unref (G_OBJECT (peer));
+
     /* Flush out encodebin data by sending an EOS in all its sinkpads */
     send_eos_to_sink_pads (recorder->priv->encodebin);
   }
