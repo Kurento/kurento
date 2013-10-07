@@ -23,6 +23,15 @@
 
 #define PLUGIN_NAME "agnosticbin2"
 
+static GstStaticCaps static_audio_caps =
+GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS);
+static GstStaticCaps static_video_caps =
+GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS);
+static GstStaticCaps static_raw_audio_caps =
+GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_AUDIO_CAPS);
+static GstStaticCaps static_raw_video_caps =
+GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_VIDEO_CAPS);
+
 #define GST_CAT_DEFAULT kms_agnostic_bin2_debug
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
@@ -110,21 +119,9 @@ tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 }
 
 static void
-kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
-    GstElement * tee)
+link_queue_to_tee (GstElement * tee, GstElement * queue)
 {
-  GstElement *queue = gst_element_factory_make ("queue", NULL);
-  GstPad *src = gst_element_get_static_pad (queue, "src");
-  GstPad *tee_src;
-
-  GST_DEBUG ("Link to input tee");
-  gst_bin_add (GST_BIN (self), queue);
-  gst_element_sync_state_with_parent (queue);
-
-  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), src);
-  g_object_unref (src);
-
-  tee_src = gst_element_get_request_pad (tee, "src_%u");
+  GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
 
   gst_pad_add_probe (tee_src,
       GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_DATA_BOTH, tee_src_probe,
@@ -133,28 +130,28 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
   g_object_unref (tee_src);
 }
 
-/**
- * Link a pad internally
- *
- * @self: The #KmsAgnosticBin2 owner of the pad
- * @pad: (transfer full): The pad to be linked
- * @peer: (transfer full): The peer pad
- */
 static void
-kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
+kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
+    GstElement * tee)
 {
-  GstCaps *caps;
+  GstElement *queue = gst_element_factory_make ("queue", NULL);
+  GstPad *src = gst_element_get_static_pad (queue, "src");
+
+  GST_DEBUG ("Link to input tee");
+  gst_bin_add (GST_BIN (self), queue);
+  gst_element_sync_state_with_parent (queue);
+
+  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), src);
+  g_object_unref (src);
+
+  link_queue_to_tee (tee, queue);
+}
+
+static GstElement *
+kms_agnostic_bin2_find_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
+{
   GList *tees, *l;
   GstElement *tee = NULL;
-
-  GST_DEBUG_OBJECT (self, "Linking: %" GST_PTR_FORMAT, pad);
-
-  caps = gst_pad_query_caps (peer, NULL);
-
-  if (caps == NULL)
-    goto end;
-
-  GST_DEBUG ("Query caps are: %" GST_PTR_FORMAT, caps);
 
   tees = g_hash_table_get_values (self->priv->tees);
   for (l = tees; l != NULL && tee == NULL; l = l->next) {
@@ -173,10 +170,171 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
     g_object_unref (tee_sink);
   }
 
+  return tee;
+}
+
+static GstCaps *
+kms_agnostic_bin2_get_raw_caps (GstCaps * caps)
+{
+  GstCaps *audio_caps, *video_caps, *raw_caps = NULL;
+
+  audio_caps = gst_static_caps_get (&static_audio_caps);
+  video_caps = gst_static_caps_get (&static_video_caps);
+
+  if (gst_caps_can_intersect (caps, audio_caps))
+    raw_caps = gst_static_caps_get (&static_raw_audio_caps);
+  else if (gst_caps_can_intersect (caps, video_caps))
+    raw_caps = gst_static_caps_get (&static_raw_video_caps);
+
+  gst_caps_unref (audio_caps);
+  gst_caps_unref (video_caps);
+
+  return raw_caps;
+}
+
+static GstElement *
+kms_agnostic_bin2_get_or_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * caps)
+{
+  GstCaps *raw_caps = kms_agnostic_bin2_get_raw_caps (caps);
+
+  if (raw_caps != NULL) {
+    GstElement *raw_tee;
+
+    GST_DEBUG ("Raw caps: %" GST_PTR_FORMAT, raw_caps);
+    raw_tee = kms_agnostic_bin2_find_tee_for_caps (self, raw_caps);
+
+    if (raw_tee == NULL) {
+      // TODO: Create and link raw tee
+    }
+
+    gst_caps_unref (raw_caps);
+
+    return raw_tee;
+  } else {
+    GST_ELEMENT_WARNING (self, CORE, NEGOTIATION,
+        ("Formats are not compatible"), (""));
+    return NULL;
+  }
+}
+
+static GstElement *
+create_convert_for_caps (GstCaps * caps)
+{
+  GstCaps *audio_caps = gst_static_caps_get (&static_audio_caps);
+  GstElement *convert;
+
+  if (gst_caps_can_intersect (caps, audio_caps))
+    convert = gst_element_factory_make ("audioconvert", NULL);
+  else
+    convert = gst_element_factory_make ("videoconvert", NULL);
+
+  gst_caps_unref (audio_caps);
+
+  return convert;
+}
+
+static GstElement *
+create_encoder_for_caps (GstCaps * caps)
+{
+  GList *encoder_list, *filtered_list, *l;
+  GstElementFactory *encoder_factory = NULL;
+  GstElement *encoder = NULL;
+
+  encoder_list =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_ENCODER,
+      GST_RANK_NONE);
+  filtered_list =
+      gst_element_factory_list_filter (encoder_list, caps, GST_PAD_SRC, FALSE);
+
+  for (l = filtered_list; l != NULL && encoder_factory == NULL; l = l->next) {
+    encoder_factory = GST_ELEMENT_FACTORY (l->data);
+    if (gst_element_factory_get_num_pad_templates (encoder_factory) != 2)
+      encoder_factory = NULL;
+  }
+
+  if (encoder_factory != NULL) {
+    encoder = gst_element_factory_create (encoder_factory, NULL);
+    // TODO: Configure encoder
+  }
+
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (encoder_list);
+
+  return encoder;
+}
+
+static GstElement *
+kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
+{
+  GstElement *tee;
+  GstElement *raw_tee = kms_agnostic_bin2_get_or_create_raw_tee (self, caps);
+  GstElement *encoder, *queue, *convert, *fakequeue, *fakesink;
+
+  if (raw_tee == NULL)
+    return NULL;
+
+  encoder = create_encoder_for_caps (caps);
+
+  if (encoder == NULL)
+    return NULL;
+
+  queue = gst_element_factory_make ("queue", NULL);
+  convert = create_convert_for_caps (caps);
+  tee = gst_element_factory_make ("tee", NULL);
+  fakequeue = gst_element_factory_make ("queue", NULL);
+  fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  gst_bin_add_many (GST_BIN (self), queue, convert, encoder, tee, fakequeue,
+      fakesink, NULL);
+
+  gst_element_sync_state_with_parent (queue);
+  gst_element_sync_state_with_parent (convert);
+  gst_element_sync_state_with_parent (encoder);
+  gst_element_sync_state_with_parent (tee);
+  gst_element_sync_state_with_parent (fakequeue);
+  gst_element_sync_state_with_parent (fakesink);
+
+  gst_element_link_many (queue, convert, encoder, tee, fakequeue, fakesink,
+      NULL);
+  link_queue_to_tee (raw_tee, queue);
+
+  g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
+      g_object_ref (tee));
+
+  return tee;
+}
+
+/**
+ * Link a pad internally
+ *
+ * @self: The #KmsAgnosticBin2 owner of the pad
+ * @pad: (transfer full): The pad to be linked
+ * @peer: (transfer full): The peer pad
+ */
+static void
+kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
+{
+  GstCaps *caps;
+  GstElement *tee;
+
+  GST_DEBUG_OBJECT (self, "Linking: %" GST_PTR_FORMAT, pad);
+
+  caps = gst_pad_query_caps (peer, NULL);
+
+  if (caps == NULL)
+    goto end;
+
+  GST_DEBUG ("Query caps are: %" GST_PTR_FORMAT, caps);
+  tee = kms_agnostic_bin2_find_tee_for_caps (self, caps);
+
+  if (tee == NULL) {
+    tee = kms_agnostic_bin2_create_tee_for_caps (self, caps);
+    GST_DEBUG_OBJECT (self, "Created tee: %" GST_PTR_FORMAT, tee);
+  }
+
   if (tee != NULL) {
     kms_agnostic_bin2_link_to_tee (self, pad, tee);
   }
-  // TODO: Create a new tee if there is no one suitable
 
   gst_caps_unref (caps);
 
