@@ -122,7 +122,6 @@ struct _KmsRecorderEndPointPrivate
   GstElement *pipeline;
   GstElement *encodebin;
   KmsRecordingProfile profile;
-  guint count;
   RecorderState state;
   struct config_data *confdata;
   struct thread_data tdata;
@@ -395,19 +394,17 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
   GstElement *sink = NULL;
   GParamSpec *pspec;
   GError *err = NULL;
-  gchar *uri = NULL;
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
   if (KMS_URI_END_POINT (self)->uri == NULL)
     goto no_uri;
 
-  uri = g_strdup_printf (KMS_URI_END_POINT (self)->uri, self->priv->count);
-
-  if (!gst_uri_is_valid (uri))
+  if (!gst_uri_is_valid (KMS_URI_END_POINT (self)->uri))
     goto invalid_uri;
 
-  sink = gst_element_make_from_uri (GST_URI_SINK, uri, NULL, &err);
+  sink = gst_element_make_from_uri (GST_URI_SINK, KMS_URI_END_POINT (self)->uri,
+      NULL, &err);
   if (sink == NULL) {
     /* Some elements have no URI handling capabilities though they can */
     /* handle them. We try to find such element before failing to attend */
@@ -425,17 +422,18 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
     if (g_strcmp0 (GST_OBJECT_NAME (gst_element_get_factory (sink)),
             "filesink") == 0) {
       /* Work around for filesink elements */
-      gchar *location = gst_uri_get_location (uri);
+      gchar *location = gst_uri_get_location (KMS_URI_END_POINT (self)->uri);
 
-      g_free (uri);
-      uri = location;
+      GST_DEBUG_OBJECT (sink, "filesink location=%s", location);
+      g_object_set (sink, "location", location, NULL);
+      g_free (location);
+    } else {
+      GST_DEBUG_OBJECT (sink, "configuring location=%s",
+          KMS_URI_END_POINT (self)->uri);
+      g_object_set (sink, "location", KMS_URI_END_POINT (self)->uri, NULL);
     }
-    GST_DEBUG_OBJECT (sink, "configuring location=%s", uri);
-    g_object_set (sink, "location", uri, NULL);
   }
 
-  /* Increment file counter */
-  self->priv->count++;
   goto end;
 
 no_uri:
@@ -477,10 +475,6 @@ no_sink:
   }
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-
-  if (uri != NULL)
-    g_free (uri);
-
   return sink;
 }
 
