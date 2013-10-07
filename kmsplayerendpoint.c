@@ -317,7 +317,7 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
-  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_AGNOSTIC_CAPS);
+  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_CAPS_CAPS);
   g_object_set (G_OBJECT (self->priv->uridecodebin), "caps", deco_caps, NULL);
   gst_caps_unref (deco_caps);
 

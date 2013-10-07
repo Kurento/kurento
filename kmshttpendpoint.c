@@ -345,7 +345,7 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
   self->priv->post->appsrc = gst_element_factory_make ("appsrc", NULL);
   decodebin = gst_element_factory_make ("decodebin", NULL);
 
-  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_AGNOSTIC_CAPS);
+  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_CAPS_CAPS);
   g_object_set (G_OBJECT (decodebin), "caps", deco_caps, NULL);
   gst_caps_unref (deco_caps);
   /* configure appsrc */

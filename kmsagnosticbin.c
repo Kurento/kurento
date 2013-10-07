@@ -75,13 +75,13 @@ enum
 static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink",
     GST_PAD_SINK,
     GST_PAD_ALWAYS,
-    GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_CAPS_CAPS)
     );
 
 static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_PAD_SRC,
     GST_PAD_REQUEST,
-    GST_STATIC_CAPS (KMS_AGNOSTIC_AGNOSTIC_CAPS)
+    GST_STATIC_CAPS (KMS_AGNOSTIC_CAPS_CAPS)
     );
 
 static void
