@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.content.jsonrpc;
+package com.kurento.kmf.content.jsonrpc.result;
 
 /**
  * 
@@ -21,7 +21,7 @@ package com.kurento.kmf.content.jsonrpc;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public class JsonRpcEvent {
+public class JsonRpcContentEvent {
 
 	/**
 	 * Event type.
@@ -42,14 +42,14 @@ public class JsonRpcEvent {
 	 *            Event data
 	 * @return JsonRpcEvent instance
 	 */
-	public static JsonRpcEvent newEvent(String type, String data) {
-		return new JsonRpcEvent(type, data);
+	public static JsonRpcContentEvent newEvent(String type, String data) {
+		return new JsonRpcContentEvent(type, data);
 	}
 
 	/**
 	 * Default constructor.
 	 */
-	JsonRpcEvent() {
+	public JsonRpcContentEvent() {
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class JsonRpcEvent {
 	 * @param data
 	 *            Event data
 	 */
-	JsonRpcEvent(String type, String data) {
+	public JsonRpcContentEvent(String type, String data) {
 		this.type = type;
 		this.data = data;
 	}
@@ -82,4 +82,5 @@ public class JsonRpcEvent {
 	public String getData() {
 		return data;
 	}
+
 }

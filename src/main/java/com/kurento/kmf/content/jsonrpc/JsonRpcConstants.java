@@ -24,6 +24,8 @@ package com.kurento.kmf.content.jsonrpc;
  */
 public class JsonRpcConstants {
 
+	public final static String JSON_RPC_VERSION = "2.0";
+
 	public final static String METHOD_START = "start";
 
 	public final static String METHOD_TERMINATE = "terminate";
@@ -32,9 +34,9 @@ public class JsonRpcConstants {
 
 	public final static String METHOD_EXECUTE = "execute";
 
-	public final static String EVENT_CONTENT_COMPLETE = "contentComplete";
+	public final static String EVENT_SESSION_TERMINATED = "sessionTerminated";
 
-	public final static String EVENT_CONTENT_ERROR = "contentError";
+	public final static String EVENT_SESSION_ERROR = "sessionError";
 
 	public final static int ERROR_NO_ERROR = 0;
 
