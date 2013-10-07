@@ -82,6 +82,40 @@ struct config_data
   GSList *pendingpads;
 };
 
+#define KMS_RECORDER_END_POINT_GET_LOCK(obj) (               \
+  &KMS_RECORDER_END_POINT (obj)->priv->tdata.thread_mutex    \
+)
+
+#define KMS_RECORDER_END_POINT_GET_COND(obj) (               \
+  &KMS_RECORDER_END_POINT (obj)->priv->tdata.thread_cond     \
+)
+
+#define KMS_RECORDER_END_POINT_LOCK(obj) (                   \
+  g_mutex_lock (KMS_RECORDER_END_POINT_GET_LOCK (obj))       \
+)
+
+#define KMS_RECORDER_END_POINT_UNLOCK(obj) (                 \
+  g_mutex_unlock (KMS_RECORDER_END_POINT_GET_LOCK (obj))     \
+)
+
+#define KMS_RECORDER_END_POINT_WAIT(obj) (                   \
+  g_cond_wait (KMS_RECORDER_END_POINT_GET_COND (obj),        \
+    KMS_RECORDER_END_POINT_GET_LOCK (obj))                   \
+)
+
+#define KMS_RECORDER_END_POINT_SIGNAL(obj) (                 \
+  g_cond_signal (KMS_RECORDER_END_POINT_GET_COND (obj))      \
+)
+
+struct thread_data
+{
+  GQueue *elements_to_remove;
+  gboolean finish_thread;
+  GThread *thread;
+  GCond thread_cond;
+  GMutex thread_mutex;
+};
+
 struct _KmsRecorderEndPointPrivate
 {
   PilelineReleaseStatus pipeline_released_status;
@@ -91,6 +125,7 @@ struct _KmsRecorderEndPointPrivate
   guint count;
   RecorderState state;
   struct config_data *confdata;
+  struct thread_data tdata;
 };
 
 enum
@@ -208,8 +243,21 @@ kms_recorder_end_point_dispose (GObject * object)
 static void
 kms_recorder_end_point_finalize (GObject * object)
 {
-  /* clean up object here */
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
+  /* clean up object here */
+  KMS_RECORDER_END_POINT_LOCK (self);
+  self->priv->tdata.finish_thread = TRUE;
+  KMS_RECORDER_END_POINT_SIGNAL (self);
+  KMS_RECORDER_END_POINT_UNLOCK (self);
+
+  g_thread_join (self->priv->tdata.thread);
+  g_thread_unref (self->priv->tdata.thread);
+
+  g_cond_clear (&self->priv->tdata.thread_cond);
+  g_mutex_clear (&self->priv->tdata.thread_mutex);
+
+  g_queue_free_full (self->priv->tdata.elements_to_remove, g_object_unref);
   G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->finalize (object);
 }
 
@@ -949,6 +997,33 @@ kms_recorder_end_point_get_property (GObject * object, guint property_id,
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
+static gpointer
+kms_recorder_end_point_thread (gpointer data)
+{
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
+
+  /* Main thread loop */
+  while (TRUE) {
+    KMS_RECORDER_END_POINT_LOCK (self);
+    while (!self->priv->tdata.finish_thread &&
+        g_queue_is_empty (self->priv->tdata.elements_to_remove)) {
+      GST_DEBUG_OBJECT (self, "Waiting for elements to remove");
+      KMS_RECORDER_END_POINT_WAIT (self);
+      GST_DEBUG_OBJECT (self, "Waked up");
+    }
+
+    if (self->priv->tdata.finish_thread) {
+      KMS_RECORDER_END_POINT_UNLOCK (self);
+      break;
+    }
+
+    KMS_RECORDER_END_POINT_UNLOCK (self);
+  }
+
+  GST_DEBUG_OBJECT (self, "Thread finished");
+  return NULL;
+}
+
 static void
 kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 {
@@ -1013,6 +1088,13 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   self->priv->encodebin = NULL;
   self->priv->state = UNCONFIGURED;
   self->priv->pipeline_released_status = RUNNING;
+
+  self->priv->tdata.elements_to_remove = g_queue_new ();
+  g_cond_init (&self->priv->tdata.thread_cond);
+  self->priv->tdata.finish_thread = FALSE;
+  self->priv->tdata.thread =
+      g_thread_new (GST_OBJECT_NAME (self), kms_recorder_end_point_thread,
+      self);
 }
 
 gboolean
