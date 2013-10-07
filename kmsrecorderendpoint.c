@@ -177,6 +177,19 @@ kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
   }
 }
 
+static void
+kms_recorder_end_point_free_config_data (KmsRecorderEndPoint * self)
+{
+  if (self->priv->confdata == NULL)
+    return;
+
+  g_slist_free (self->priv->confdata->blockedpads);
+  g_slist_free (self->priv->confdata->pendingpads);
+  g_slice_free (struct config_data, self->priv->confdata);
+
+  self->priv->confdata = NULL;
+}
+
 static gboolean
 set_to_null_state_on_EOS (GstBus * bus, GstMessage * message, gpointer data)
 {
@@ -258,6 +271,9 @@ kms_recorder_end_point_finalize (GObject * object)
   g_mutex_clear (&self->priv->tdata.thread_mutex);
 
   g_queue_free_full (self->priv->tdata.elements_to_remove, g_object_unref);
+
+  kms_recorder_end_point_free_config_data (self);
+
   G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->finalize (object);
 }
 
@@ -705,9 +721,7 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 
   recorder->priv->state = CONFIGURED;
 
-  g_slist_free (recorder->priv->confdata->blockedpads);
-  g_slist_free (recorder->priv->confdata->pendingpads);
-  g_slice_free (struct config_data, recorder->priv->confdata);
+  kms_recorder_end_point_free_config_data (recorder);
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 
