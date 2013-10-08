@@ -122,11 +122,19 @@ static void
 link_queue_to_tee (GstElement * tee, GstElement * queue)
 {
   GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
+  GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
+  GstPadLinkReturn ret;
 
   gst_pad_add_probe (tee_src,
       GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_DATA_BOTH, tee_src_probe,
       NULL, NULL);
-  gst_element_link_pads (tee, GST_OBJECT_NAME (tee_src), queue, "sink");
+  ret = gst_pad_link (tee_src, queue_sink);
+
+  if (G_UNLIKELY (GST_PAD_LINK_FAILED (ret)))
+    GST_ERROR ("Linking %" GST_PTR_FORMAT " with %" GST_PTR_FORMAT " result %d",
+        tee_src, queue_sink, ret);
+
+  g_object_unref (queue_sink);
   g_object_unref (tee_src);
 }
 
