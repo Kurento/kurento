@@ -233,6 +233,20 @@ create_convert_for_caps (GstCaps * caps)
   return convert;
 }
 
+static void
+configure_encoder (GstElement * encoder, const gchar * factory_name)
+{
+  GST_DEBUG ("Configure encoder: %s", factory_name);
+  if (g_strcmp0 ("vp8enc", factory_name) == 0) {
+    g_object_set (G_OBJECT (encoder), "deadline", G_GINT64_CONSTANT (1),
+        "threads", 1, "cpu-used", 16, NULL);
+  } else if (g_strcmp0 ("x264enc", factory_name) == 0) {
+    g_object_set (G_OBJECT (encoder), "speed-preset", 1 /* ultrafast */ ,
+        "tune", 4 /* zerolatency */ , "threads", (guint) 1,
+        NULL);
+  }
+}
+
 static GstElement *
 create_encoder_for_caps (GstCaps * caps)
 {
@@ -254,7 +268,7 @@ create_encoder_for_caps (GstCaps * caps)
 
   if (encoder_factory != NULL) {
     encoder = gst_element_factory_create (encoder_factory, NULL);
-    // TODO: Configure encoder
+    configure_encoder (encoder, GST_OBJECT_NAME (encoder_factory));
   }
 
   gst_plugin_feature_list_free (filtered_list);
