@@ -81,6 +81,7 @@ struct _KmsAgnosticBin2Private
   GMutex thread_mutex;
   GCond thread_cond;
 
+  GstElement *input_tee;
   GstPad *sink;
   guint pad_count;
 };
@@ -258,6 +259,79 @@ kms_agnostic_bin2_get_raw_caps (GstCaps * caps)
 }
 
 static GstElement *
+create_decoder_for_caps (GstCaps * caps, GstCaps * raw_caps)
+{
+  GList *decoder_list, *filtered_list, *l;
+  GstElementFactory *decoder_factory = NULL;
+  GstElement *decoder = NULL;
+
+  decoder_list =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_DECODER,
+      GST_RANK_NONE);
+  filtered_list =
+      gst_element_factory_list_filter (decoder_list, caps, GST_PAD_SINK, FALSE);
+  filtered_list =
+      gst_element_factory_list_filter (filtered_list, raw_caps, GST_PAD_SRC,
+      FALSE);
+
+  for (l = filtered_list; l != NULL && decoder_factory == NULL; l = l->next) {
+    decoder_factory = GST_ELEMENT_FACTORY (l->data);
+    if (gst_element_factory_get_num_pad_templates (decoder_factory) != 2)
+      decoder_factory = NULL;
+  }
+
+  if (decoder_factory != NULL) {
+    decoder = gst_element_factory_create (decoder_factory, NULL);
+  }
+
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (decoder_list);
+
+  return decoder;
+}
+
+static GstElement *
+kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
+{
+  GstCaps *current_caps = gst_pad_get_current_caps (self->priv->sink);
+
+  if (current_caps == NULL)
+    return NULL;
+
+  GstElement *decoder, *queue, *tee, *fakequeue, *fakesink;
+
+  decoder = create_decoder_for_caps (current_caps, raw_caps);
+
+  if (decoder == NULL) {
+    gst_caps_unref (current_caps);
+    GST_DEBUG ("Invalid decoder");
+    return NULL;
+  }
+
+  GST_DEBUG_OBJECT (self, "Decoder found: %" GST_PTR_FORMAT, decoder);
+
+  queue = gst_element_factory_make ("queue", NULL);
+  tee = gst_element_factory_make ("tee", NULL);
+  fakequeue = gst_element_factory_make ("queue", NULL);
+  fakesink = gst_element_factory_make ("fakesink", NULL);
+
+  gst_bin_add_many (GST_BIN (self), queue, decoder, tee, fakequeue, fakesink,
+      NULL);
+  gst_element_sync_state_with_parent (queue);
+  gst_element_sync_state_with_parent (decoder);
+  gst_element_sync_state_with_parent (tee);
+  gst_element_sync_state_with_parent (fakequeue);
+  gst_element_sync_state_with_parent (fakesink);
+  gst_element_link_many (queue, decoder, tee, fakequeue, fakesink, NULL);
+
+  link_queue_to_tee (self->priv->input_tee, queue);
+
+  gst_caps_unref (current_caps);
+
+  return tee;
+}
+
+static GstElement *
 kms_agnostic_bin2_get_or_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * caps)
 {
   GstCaps *raw_caps = kms_agnostic_bin2_get_raw_caps (caps);
@@ -269,7 +343,9 @@ kms_agnostic_bin2_get_or_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * caps)
     raw_tee = kms_agnostic_bin2_find_tee_for_caps (self, raw_caps);
 
     if (raw_tee == NULL) {
-      // TODO: Create and link raw tee
+      raw_tee = kms_agnostic_bin2_create_raw_tee (self, raw_caps);
+      g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (raw_tee),
+          g_object_ref (raw_tee));
     }
 
     gst_caps_unref (raw_caps);
@@ -335,6 +411,9 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
 
   if (raw_tee == NULL)
     return NULL;
+
+  if (is_raw_caps (caps))
+    return raw_tee;
 
   encoder = create_encoder_for_caps (caps);
 
@@ -679,6 +758,7 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   self->priv->pad_count = 0;
 
   tee = gst_element_factory_make ("tee", NULL);
+  self->priv->input_tee = tee;
   queue = gst_element_factory_make ("queue", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
 
