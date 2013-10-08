@@ -70,13 +70,6 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-typedef enum
-{
-  RUNNING,
-  RELEASING,
-  RELEASED
-} PilelineReleaseStatus;
-
 struct remove_data
 {
   KmsRecorderEndPoint *recorder;
@@ -133,7 +126,6 @@ struct thread_cb_data
 
 struct _KmsRecorderEndPointPrivate
 {
-  PilelineReleaseStatus pipeline_released_status;
   GstElement *pipeline;
   GstElement *encodebin;
   KmsRecordingProfile profile;
@@ -158,6 +150,12 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndPoint, kms_recorder_end_point,
         0, "debug category for recorderendpoint element"));
 
 static void
+destroy_ulong (gpointer data)
+{
+  g_slice_free (gulong, data);
+}
+
+static void
 send_eos (GstElement * appsrc)
 {
   GstFlowReturn ret;
@@ -170,6 +168,26 @@ send_eos (GstElement * appsrc)
     GST_ERROR ("Could not send EOS to appsrc  %s. Ret code %d",
         GST_ELEMENT_NAME (appsrc), ret);
   }
+}
+
+static void
+kms_recorder_end_point_add_action (KmsRecorderEndPoint * self,
+    KmsActionFunc function, gpointer data, GDestroyNotify notify)
+{
+  struct thread_cb_data *th_data;
+
+  th_data = g_slice_new0 (struct thread_cb_data);
+
+  th_data->data = data;
+  th_data->function = function;
+  th_data->notify = notify;
+
+  KMS_RECORDER_END_POINT_LOCK (self);
+
+  g_queue_push_tail (self->priv->tdata.actions, th_data);
+
+  KMS_RECORDER_END_POINT_UNLOCK (self);
+  KMS_RECORDER_END_POINT_SIGNAL (self);
 }
 
 static void
@@ -204,37 +222,26 @@ kms_recorder_end_point_free_config_data (KmsRecorderEndPoint * self)
   self->priv->confdata = NULL;
 }
 
-static gboolean
-set_to_null_state_on_EOS (GstBus * bus, GstMessage * message, gpointer data)
+static void
+set_to_null_state_on_EOS (gpointer data)
 {
-  KmsRecorderEndPoint *self = data;
+  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (data);
 
-  if (GST_MESSAGE_TYPE (message) == GST_MESSAGE_EOS &&
-      GST_MESSAGE_SRC (message) == GST_OBJECT_CAST (self->priv->pipeline)) {
-    GST_DEBUG ("Received EOS in pipeline, setting NULL state");
+  GST_DEBUG ("Received EOS in pipeline, setting NULL state");
 
-    gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-    g_signal_emit (G_OBJECT (self),
-        kms_recorder_end_point_signals[SIGNAL_STOPPED], 0);
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
 
-    if (self->priv->pipeline_released_status == RELEASING)
-      self->priv->pipeline_released_status = RELEASED;
-    return FALSE;
-  }
+  gst_element_set_state (recorder->priv->pipeline, GST_STATE_NULL);
 
-  return TRUE;
+  g_signal_emit (G_OBJECT (recorder),
+      kms_recorder_end_point_signals[SIGNAL_STOPPED], 0);
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 }
 
 static void
 kms_recorder_end_point_wait_for_pipeline_eos (KmsRecorderEndPoint * self)
 {
-  GstBus *bus;
-
-  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
-  gst_bus_add_watch_full (bus, G_PRIORITY_DEFAULT, set_to_null_state_on_EOS,
-      g_object_ref (self), g_object_unref);
-  g_object_unref (bus);
-
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
   // Wait for EOS event to set pipeline to NULL
   kms_recorder_end_point_send_eos_to_appsrcs (self);
@@ -245,18 +252,11 @@ kms_recorder_end_point_dispose (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
-  if (self->priv->pipeline_released_status != RELEASED) {
-    self->priv->pipeline_released_status = RELEASING;
+  if (self->priv->pipeline != NULL) {
     if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {
-      kms_recorder_end_point_wait_for_pipeline_eos (self);
-      return;
-    } else {
-      self->priv->pipeline_released_status = RELEASED;
-      gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-      g_object_unref (self->priv->pipeline);
-      self->priv->pipeline = NULL;
+      /* TODO: Send a warning message to the bus */
+      GST_WARNING ("Disposing recorder when it isn't stopped.");
     }
-  } else if (self->priv->pipeline != NULL) {
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
     g_object_unref (self->priv->pipeline);
     self->priv->pipeline = NULL;
@@ -492,10 +492,27 @@ end:
   return sink;
 }
 
+static GstPadProbeReturn
+stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
+    gpointer user_data)
+{
+  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
+
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
+    return GST_PAD_PROBE_OK;
+
+  kms_recorder_end_point_add_action (recorder, set_to_null_state_on_EOS,
+      recorder, NULL);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
 {
+  gulong *probe_id;
   GstElement *sink;
+  GstPad *sinkpad;
 
   sink = kms_recorder_end_point_get_sink (self);
 
@@ -504,6 +521,13 @@ kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
 
   gst_element_link (self->priv->encodebin, sink);
 
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  probe_id = g_slice_new0 (gulong);
+  *probe_id = gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      stop_notification_cb, self, NULL);
+  g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, probe_id,
+      destroy_ulong);
+  g_object_unref (G_OBJECT (sinkpad));
 }
 
 static void
@@ -641,12 +665,6 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
 }
 
 static void
-destroy_ulong (gpointer data)
-{
-  g_slice_free (gulong, data);
-}
-
-static void
 kms_recorder_end_point_reconnect_pads (KmsRecorderEndPoint * self,
     GSList * pads)
 {
@@ -679,26 +697,6 @@ kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
 
     gst_pad_remove_probe (srcpad, *probe_id);
   }
-}
-
-static void
-kms_recorder_end_point_add_action (KmsRecorderEndPoint * self,
-    KmsActionFunc function, gpointer data, GDestroyNotify notify)
-{
-  struct thread_cb_data *th_data;
-
-  th_data = g_slice_new0 (struct thread_cb_data);
-
-  th_data->data = data;
-  th_data->function = function;
-  th_data->notify = notify;
-
-  KMS_RECORDER_END_POINT_LOCK (self);
-
-  g_queue_push_tail (self->priv->tdata.actions, th_data);
-
-  KMS_RECORDER_END_POINT_UNLOCK (self);
-  KMS_RECORDER_END_POINT_SIGNAL (self);
 }
 
 static void
@@ -864,11 +862,18 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
   if (g_slist_length (recorder->priv->confdata->blockedpads) ==
       recorder->priv->confdata->padblocked) {
     GstPad *pad, *peer;
+    gulong *probe_id;
 
     GST_DEBUG ("Encodebin source pads blocked");
     /* install new probe for EOS */
     pad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
     peer = gst_pad_get_peer (pad);
+
+    probe_id = g_object_get_data (G_OBJECT (peer), KEY_PAD_PROBE_ID);
+    if (probe_id != NULL) {
+      gst_pad_remove_probe (peer, *probe_id);
+      g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, NULL, NULL);
+    }
 
     gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
         event_probe_cb, recorder, NULL);
@@ -1185,7 +1190,6 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->encodebin = NULL;
   self->priv->state = UNCONFIGURED;
-  self->priv->pipeline_released_status = RUNNING;
 
   self->priv->tdata.actions = g_queue_new ();
   g_cond_init (&self->priv->tdata.thread_cond);
