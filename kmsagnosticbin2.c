@@ -119,6 +119,23 @@ tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 }
 
 static void
+send_force_key_unit_event (GstPad * pad)
+{
+  GstStructure *s;
+  GstEvent *force_key_unit_event;
+
+  s = gst_structure_new ("GstForceKeyUnit",
+      "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
+  force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+
+  if (GST_PAD_DIRECTION (pad) == GST_PAD_SRC) {
+    gst_pad_send_event (pad, force_key_unit_event);
+  } else {
+    gst_pad_push_event (pad, force_key_unit_event);
+  }
+}
+
+static void
 link_queue_to_tee (GstElement * tee, GstElement * queue)
 {
   GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
@@ -134,6 +151,7 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
     GST_ERROR ("Linking %" GST_PTR_FORMAT " with %" GST_PTR_FORMAT " result %d",
         tee_src, queue_sink, ret);
 
+  send_force_key_unit_event (tee_src);
   g_object_unref (queue_sink);
   g_object_unref (tee_src);
 }
