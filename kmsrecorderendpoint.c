@@ -52,6 +52,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
   )                                               \
 )
 
+typedef void (*KmsActionFunc) (gpointer user_data);
+
 typedef enum
 {
   UNCONFIGURED,
@@ -74,6 +76,12 @@ typedef enum
   RELEASING,
   RELEASED
 } PilelineReleaseStatus;
+
+struct remove_data
+{
+  KmsRecorderEndPoint *recorder;
+  GstElement *element;
+};
 
 struct config_data
 {
@@ -109,11 +117,18 @@ struct config_data
 
 struct thread_data
 {
-  GQueue *elements_to_remove;
+  GQueue *actions;
   gboolean finish_thread;
   GThread *thread;
   GCond thread_cond;
   GMutex thread_mutex;
+};
+
+struct thread_cb_data
+{
+  KmsActionFunc function;
+  gpointer data;
+  GDestroyNotify notify;
 };
 
 struct _KmsRecorderEndPointPrivate
@@ -155,18 +170,6 @@ send_eos (GstElement * appsrc)
     GST_ERROR ("Could not send EOS to appsrc  %s. Ret code %d",
         GST_ELEMENT_NAME (appsrc), ret);
   }
-}
-
-static void
-kms_recorder_end_point_remove_element (KmsRecorderEndPoint * self,
-    GstElement * e)
-{
-  KMS_RECORDER_END_POINT_LOCK (self);
-
-  g_queue_push_tail (self->priv->tdata.elements_to_remove, e);
-
-  KMS_RECORDER_END_POINT_UNLOCK (self);
-  KMS_RECORDER_END_POINT_SIGNAL (self);
 }
 
 static void
@@ -265,6 +268,17 @@ kms_recorder_end_point_dispose (GObject * object)
 }
 
 static void
+destroy_thread_cb_data (gpointer data)
+{
+  struct thread_cb_data *th_data = data;
+
+  if (th_data->notify)
+    th_data->notify (th_data->data);
+
+  g_slice_free (struct thread_cb_data, th_data);
+}
+
+static void
 kms_recorder_end_point_finalize (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
@@ -281,7 +295,7 @@ kms_recorder_end_point_finalize (GObject * object)
   g_cond_clear (&self->priv->tdata.thread_cond);
   g_mutex_clear (&self->priv->tdata.thread_mutex);
 
-  g_queue_free_full (self->priv->tdata.elements_to_remove, g_object_unref);
+  g_queue_free_full (self->priv->tdata.actions, destroy_thread_cb_data);
 
   kms_recorder_end_point_free_config_data (self);
 
@@ -667,12 +681,54 @@ kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
   }
 }
 
+static void
+kms_recorder_end_point_add_action (KmsRecorderEndPoint * self,
+    KmsActionFunc function, gpointer data, GDestroyNotify notify)
+{
+  struct thread_cb_data *th_data;
+
+  th_data = g_slice_new0 (struct thread_cb_data);
+
+  th_data->data = data;
+  th_data->function = function;
+  th_data->notify = notify;
+
+  KMS_RECORDER_END_POINT_LOCK (self);
+
+  g_queue_push_tail (self->priv->tdata.actions, th_data);
+
+  KMS_RECORDER_END_POINT_UNLOCK (self);
+  KMS_RECORDER_END_POINT_SIGNAL (self);
+}
+
+static void
+remove_element_from_pipeline (gpointer user_data)
+{
+  struct remove_data *data = user_data;
+
+  GST_DEBUG ("Remove element %" GST_PTR_FORMAT, data->element);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (data->recorder));
+
+  gst_element_set_locked_state (data->element, TRUE);
+  gst_element_set_state (data->element, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (data->recorder->priv->pipeline), data->element);
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (data->recorder));
+}
+
+static void
+destroy_remove_data (gpointer data)
+{
+  g_slice_free (struct remove_data, data);
+}
+
 static GstPadProbeReturn
 event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
   KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
+  struct remove_data *data;
   GstPad *srcpad, *sinkpad;
-  GstElement *sink;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
     return GST_PAD_PROBE_PASS;
@@ -697,10 +753,20 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   g_object_unref (G_OBJECT (sinkpad));
 
   /* Remove old encodebin and sink elements */
-  sink = gst_pad_get_parent_element (pad);
-  kms_recorder_end_point_remove_element (recorder, sink);
-  g_object_unref (G_OBJECT (sink));
-  kms_recorder_end_point_remove_element (recorder, recorder->priv->encodebin);
+  data = g_slice_new0 (struct remove_data);
+
+  data->recorder = recorder;
+  data->element = gst_pad_get_parent_element (pad);
+  kms_recorder_end_point_add_action (recorder, remove_element_from_pipeline,
+      data, destroy_remove_data);
+  g_object_unref (G_OBJECT (data->element));
+
+  data = g_slice_new0 (struct remove_data);
+
+  data->recorder = recorder;
+  data->element = recorder->priv->encodebin;
+  kms_recorder_end_point_add_action (recorder, remove_element_from_pipeline,
+      data, destroy_remove_data);
 
   /* Add the new encodebin to the pipeline */
   recorder->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
@@ -1025,13 +1091,13 @@ static gpointer
 kms_recorder_end_point_thread (gpointer data)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
-  GstElement *encodebin;
+  struct thread_cb_data *th_data;
 
   /* Main thread loop */
   while (TRUE) {
     KMS_RECORDER_END_POINT_LOCK (self);
     while (!self->priv->tdata.finish_thread &&
-        g_queue_is_empty (self->priv->tdata.elements_to_remove)) {
+        g_queue_is_empty (self->priv->tdata.actions)) {
       GST_DEBUG_OBJECT (self, "Waiting for elements to remove");
       KMS_RECORDER_END_POINT_WAIT (self);
       GST_DEBUG_OBJECT (self, "Waked up");
@@ -1042,16 +1108,14 @@ kms_recorder_end_point_thread (gpointer data)
       break;
     }
 
-    encodebin =
-        GST_ELEMENT (g_queue_pop_head (self->priv->tdata.elements_to_remove));
-
-    GST_DEBUG ("Remove element %" GST_PTR_FORMAT, encodebin);
-
-    gst_element_set_locked_state (encodebin, TRUE);
-    gst_element_set_state (encodebin, GST_STATE_NULL);
-    gst_bin_remove (GST_BIN (self->priv->pipeline), encodebin);
+    th_data = g_queue_pop_head (self->priv->tdata.actions);
 
     KMS_RECORDER_END_POINT_UNLOCK (self);
+
+    if (th_data->function)
+      th_data->function (th_data->data);
+
+    destroy_thread_cb_data (th_data);
   }
 
   GST_DEBUG_OBJECT (self, "Thread finished");
@@ -1123,7 +1187,7 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   self->priv->state = UNCONFIGURED;
   self->priv->pipeline_released_status = RUNNING;
 
-  self->priv->tdata.elements_to_remove = g_queue_new ();
+  self->priv->tdata.actions = g_queue_new ();
   g_cond_init (&self->priv->tdata.thread_cond);
   self->priv->tdata.finish_thread = FALSE;
   self->priv->tdata.thread =
