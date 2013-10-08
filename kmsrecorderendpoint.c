@@ -34,8 +34,8 @@
 #define VIDEO_APPSINK "video_appsink"
 #define VIDEO_APPSRC "video_appsrc"
 
-#define PAD_KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
-#define PAD_KEY_PROBE_ID "kms-pad-key-probe-id"
+#define KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
+#define KEY_PAD_PROBE_ID "kms-pad-key-probe-id"
 
 #define HTTP_PROTO "http"
 
@@ -642,7 +642,7 @@ kms_recorder_end_point_reconnect_pads (KmsRecorderEndPoint * self,
     GstPad *srcpad = e->data;
     GstElement *appsrc = gst_pad_get_parent_element (srcpad);
     gchar *destpad = g_object_get_data (G_OBJECT (appsrc),
-        PAD_KEY_DESTINATION_PAD_NAME);
+        KEY_DESTINATION_PAD_NAME);
 
     GST_DEBUG ("Relinking pad %" GST_PTR_FORMAT " %s", srcpad, destpad);
     if (!gst_element_link_pads (appsrc, "src", self->priv->encodebin, destpad)) {
@@ -661,7 +661,7 @@ kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
 
   for (e = pads; e != NULL; e = e->next) {
     GstPad *srcpad = e->data;
-    gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), PAD_KEY_PROBE_ID);
+    gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
 
     gst_pad_remove_probe (srcpad, *probe_id);
   }
@@ -844,7 +844,7 @@ kms_recorder_end_point_remove_encodebin (KmsRecorderEndPoint * self)
           probe_id = g_slice_new0 (gulong);
           *probe_id = gst_pad_add_probe (srcpad,
               GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, pad_probe_cb, self, NULL);
-          g_object_set_data_full (G_OBJECT (srcpad), PAD_KEY_PROBE_ID, probe_id,
+          g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
               destroy_ulong);
           self->priv->confdata->padblocked++;
           g_object_unref (srcpad);
@@ -889,7 +889,7 @@ kms_recorder_end_point_block_appsrc (KmsRecorderEndPoint * self,
   probe_id = g_slice_new0 (gulong);
   *probe_id = gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM,
       pad_probe_blocked_cb, NULL, NULL);
-  g_object_set_data_full (G_OBJECT (srcpad), PAD_KEY_PROBE_ID, probe_id,
+  g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
       destroy_ulong);
 
   self->priv->confdata->pendingpads =
@@ -917,7 +917,7 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
   gst_bin_add (GST_BIN (self), appsink);
 
   appsrc = gst_element_factory_make ("appsrc", srcname);
-  g_object_set_data_full (G_OBJECT (appsrc), PAD_KEY_DESTINATION_PAD_NAME,
+  g_object_set_data_full (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
       g_strdup (destpadname), g_free);
 
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
