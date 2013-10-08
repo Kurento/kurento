@@ -98,6 +98,18 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_STATIC_CAPS (KMS_AGNOSTIC_CAPS_CAPS)
     );
 
+static gboolean
+is_raw_caps (GstCaps * caps)
+{
+  gboolean ret;
+  GstCaps *raw_caps = gst_caps_from_string (KMS_AGNOSTIC_RAW_CAPS);
+
+  ret = gst_caps_can_intersect (caps, raw_caps);
+
+  gst_caps_unref (raw_caps);
+  return ret;
+}
+
 static GstPadProbeReturn
 tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
@@ -156,19 +168,46 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
   g_object_unref (tee_src);
 }
 
+static GstElement *
+create_convert_for_caps (GstCaps * caps)
+{
+  GstCaps *audio_caps = gst_static_caps_get (&static_audio_caps);
+  GstElement *convert;
+
+  if (gst_caps_can_intersect (caps, audio_caps))
+    convert = gst_element_factory_make ("audioconvert", NULL);
+  else
+    convert = gst_element_factory_make ("videoconvert", NULL);
+
+  gst_caps_unref (audio_caps);
+
+  return convert;
+}
+
 static void
 kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
-    GstElement * tee)
+    GstElement * tee, GstCaps * caps)
 {
   GstElement *queue = gst_element_factory_make ("queue", NULL);
-  GstPad *src = gst_element_get_static_pad (queue, "src");
+  GstPad *target;
 
-  GST_DEBUG ("Link to input tee");
   gst_bin_add (GST_BIN (self), queue);
   gst_element_sync_state_with_parent (queue);
 
-  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), src);
-  g_object_unref (src);
+  if (!gst_caps_is_any (caps) && is_raw_caps (caps)) {
+    GstElement *convert = create_convert_for_caps (caps);
+
+    gst_bin_add (GST_BIN (self), convert);
+    gst_element_sync_state_with_parent (convert);
+    gst_element_link (queue, convert);
+
+    target = gst_element_get_static_pad (convert, "src");
+  } else {
+    target = gst_element_get_static_pad (queue, "src");
+  }
+
+  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), target);
+  g_object_unref (target);
 
   link_queue_to_tee (tee, queue);
 }
@@ -241,22 +280,6 @@ kms_agnostic_bin2_get_or_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * caps)
         ("Formats are not compatible"), (""));
     return NULL;
   }
-}
-
-static GstElement *
-create_convert_for_caps (GstCaps * caps)
-{
-  GstCaps *audio_caps = gst_static_caps_get (&static_audio_caps);
-  GstElement *convert;
-
-  if (gst_caps_can_intersect (caps, audio_caps))
-    convert = gst_element_factory_make ("audioconvert", NULL);
-  else
-    convert = gst_element_factory_make ("videoconvert", NULL);
-
-  gst_caps_unref (audio_caps);
-
-  return convert;
 }
 
 static void
@@ -372,9 +395,8 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
     GST_DEBUG_OBJECT (self, "Created tee: %" GST_PTR_FORMAT, tee);
   }
 
-  if (tee != NULL) {
-    kms_agnostic_bin2_link_to_tee (self, pad, tee);
-  }
+  if (tee != NULL)
+    kms_agnostic_bin2_link_to_tee (self, pad, tee, caps);
 
   gst_caps_unref (caps);
 
