@@ -731,7 +731,7 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   GstPad *srcpad, *sinkpad;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
-    return GST_PAD_PROBE_PASS;
+    return GST_PAD_PROBE_OK;
 
   /* Old encodebin has been flushed out. It's time to remove it */
   GST_DEBUG ("Event EOS received");
@@ -870,8 +870,8 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
     pad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
     peer = gst_pad_get_peer (pad);
 
-    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_BLOCK |
-        GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, event_probe_cb, recorder, NULL);
+    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        event_probe_cb, recorder, NULL);
     g_object_unref (G_OBJECT (pad));
     g_object_unref (G_OBJECT (peer));
 
