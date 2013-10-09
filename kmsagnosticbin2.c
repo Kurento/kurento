@@ -75,6 +75,7 @@ struct _KmsAgnosticBin2Private
 {
   GHashTable *tees;
   GQueue *pads_to_link;
+  gulong block_probe;
 
   gboolean finish_thread;
   GThread *thread;
@@ -185,12 +186,33 @@ create_convert_for_caps (GstCaps * caps)
   return convert;
 }
 
+static GstPadProbeReturn
+sink_block (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
+    return GST_PAD_PROBE_OK;
+
+  KMS_AGNOSTIC_BIN2_LOCK (user_data);
+  // Stop while internal pipeline is bein reconfigured
+  KMS_AGNOSTIC_BIN2_UNLOCK (user_data);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 {
   KMS_AGNOSTIC_BIN2_LOCK (self);
   if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
     GST_DEBUG_OBJECT (pad, "Adding pad to queue");
+    if (self->priv->block_probe == 0L) {
+      self->priv->block_probe =
+          gst_pad_add_probe (self->priv->sink,
+          GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, sink_block, self, NULL);
+      GST_DEBUG_OBJECT (pad, "Adding probe %ld while connecting",
+          self->priv->block_probe);
+    }
+
     g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
     KMS_AGNOSTIC_BIN2_SIGNAL (self);
   }
@@ -548,6 +570,10 @@ kms_agnostic_bin2_connect_thread (gpointer data)
     KMS_AGNOSTIC_BIN2_LOCK (self);
     while (!self->priv->finish_thread &&
         g_queue_is_empty (self->priv->pads_to_link)) {
+      if (self->priv->block_probe != 0L) {
+        gst_pad_remove_probe (self->priv->sink, self->priv->block_probe);
+        self->priv->block_probe = 0L;
+      }
       GST_DEBUG_OBJECT (self, "Waiting for pads to link");
       KMS_AGNOSTIC_BIN2_WAIT (self);
       GST_DEBUG_OBJECT (self, "Waked up");
@@ -778,6 +804,8 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
+
+  self->priv->block_probe = 0L;
 
   self->priv->tees =
       g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
