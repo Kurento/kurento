@@ -254,8 +254,11 @@ kms_recorder_end_point_dispose (GObject * object)
 
   if (self->priv->pipeline != NULL) {
     if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {
-      /* TODO: Send a warning message to the bus */
-      GST_WARNING ("Disposing recorder when it isn't stopped.");
+      GST_ELEMENT_WARNING (self, RESOURCE, BUSY,
+          ("Recorder may have buffers to save"),
+          ("Disposing recorder when it isn't stopped."));
+      GST_WARNING ("%s is not stopped when realesing resources",
+          GST_ELEMENT_NAME (self));
     }
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
     g_object_unref (self->priv->pipeline);
