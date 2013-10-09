@@ -134,14 +134,6 @@ struct _KmsRecorderEndPointPrivate
   struct thread_data tdata;
 };
 
-enum
-{
-  SIGNAL_STOPPED,
-  LAST_SIGNAL
-};
-
-static guint kms_recorder_end_point_signals[LAST_SIGNAL] = { 0 };
-
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndPoint, kms_recorder_end_point,
@@ -234,9 +226,6 @@ set_to_null_state_on_EOS (gpointer data)
   gst_element_set_state (recorder->priv->pipeline, GST_STATE_NULL);
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-
-  g_signal_emit (G_OBJECT (recorder),
-      kms_recorder_end_point_signals[SIGNAL_STOPPED], 0);
 
   KMS_URI_END_POINT_GET_CLASS (recorder)->change_state (KMS_URI_END_POINT
       (recorder), KMS_URI_END_POINT_STATE_STOP);
@@ -1173,13 +1162,6 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
       GST_DEBUG_FUNCPTR (kms_recorder_end_point_set_property);
   gobject_class->get_property =
       GST_DEBUG_FUNCPTR (kms_recorder_end_point_get_property);
-
-  kms_recorder_end_point_signals[SIGNAL_STOPPED] =
-      g_signal_new ("stopped",
-      G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsRecorderEndPointClass, stopped_signal), NULL, NULL,
-      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
