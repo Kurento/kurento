@@ -186,6 +186,18 @@ create_convert_for_caps (GstCaps * caps)
 }
 
 static void
+kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
+{
+  KMS_AGNOSTIC_BIN2_LOCK (self);
+  if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
+    GST_DEBUG_OBJECT (pad, "Adding pad to queue");
+    g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
+    KMS_AGNOSTIC_BIN2_SIGNAL (self);
+  }
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
+}
+
+static void
 kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
     GstElement * tee, GstCaps * caps)
 {
@@ -571,13 +583,7 @@ iterate_src_pads (KmsAgnosticBin2 * self)
     switch (gst_iterator_next (it, &item)) {
       case GST_ITERATOR_OK:
         pad = g_value_get_object (&item);
-        KMS_AGNOSTIC_BIN2_LOCK (self);
-        if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
-          GST_DEBUG_OBJECT (pad, "Adding pad to queue");
-          g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
-          KMS_AGNOSTIC_BIN2_SIGNAL (self);
-        }
-        KMS_AGNOSTIC_BIN2_UNLOCK (self);
+        kms_agnostic_bin2_add_pad_to_queue (self, pad);
         g_value_reset (&item);
         break;
       case GST_ITERATOR_RESYNC:
@@ -627,13 +633,7 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
     KmsAgnosticBin2 *self = user_data;
 
     GST_INFO_OBJECT (pad, "Received reconfigure event");
-    KMS_AGNOSTIC_BIN2_LOCK (self);
-    if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
-      GST_DEBUG_OBJECT (pad, "Adding pad to queue");
-      g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
-      KMS_AGNOSTIC_BIN2_SIGNAL (self);
-    }
-    KMS_AGNOSTIC_BIN2_UNLOCK (self);
+    kms_agnostic_bin2_add_pad_to_queue (self, pad);
     return GST_PAD_PROBE_DROP;
   }
 
