@@ -18,7 +18,6 @@
 
 #include <gst/gst.h>
 #include "kmselement.h"
-#include "kmsuriendpointstate.h"
 #include "kms-enumtypes.h"
 #include "kmsuriendpoint.h"
 
@@ -38,6 +37,14 @@ struct _KmsUriEndPointPrivate
 {
   KmsUriEndPointState state;
 };
+
+enum
+{
+  STATE_CHANGED,
+  LAST_SIGNAL
+};
+
+static guint kms_uri_end_point_signals[LAST_SIGNAL] = { 0 };
 
 enum
 {
@@ -69,13 +76,24 @@ G_DEFINE_TYPE_WITH_CODE (KmsUriEndPoint, kms_uri_end_point,
         0, "debug category for uriendpoint element"));
 
 static void
+kms_uri_end_point_change_state_impl (KmsUriEndPoint * self,
+    KmsUriEndPointState state)
+{
+  if (self->priv->state == state)
+    return;
+
+  self->priv->state = state;
+  g_signal_emit (G_OBJECT (self), kms_uri_end_point_signals[STATE_CHANGED], 0,
+      state);
+}
+
+static void
 kms_uri_end_point_change_state (KmsUriEndPoint * self, KmsUriEndPointState next)
 {
   if (self->priv->state == next)
     return;
 
-  self->priv->state = next;
-  switch (self->priv->state) {
+  switch (next) {
     case KMS_URI_END_POINT_STATE_STOP:
       CALL_IF_DEFINED (self, KMS_URI_END_POINT_GET_CLASS (self)->stopped,
           "STOPPED");
@@ -169,6 +187,9 @@ kms_uri_end_point_class_init (KmsUriEndPointClass * klass)
   gobject_class->dispose = kms_uri_end_point_dispose;
   gobject_class->finalize = kms_uri_end_point_finalize;
 
+  /* protected methods */
+  klass->change_state = kms_uri_end_point_change_state_impl;
+
   /* pure virtual methods: mandates implementation in children. */
   klass->paused = NULL;
   klass->started = NULL;
@@ -186,6 +207,14 @@ kms_uri_end_point_class_init (KmsUriEndPointClass * klass)
 
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
+
+  kms_uri_end_point_signals[STATE_CHANGED] =
+      g_signal_new ("state-changed",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsUriEndPointClass, state_changed), NULL, NULL,
+      g_cclosure_marshal_VOID__ENUM, G_TYPE_NONE, 1,
+      GST_TYPE_URI_END_POINT_STATE);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsUriEndPointPrivate));

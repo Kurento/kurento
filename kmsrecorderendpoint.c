@@ -233,10 +233,13 @@ set_to_null_state_on_EOS (gpointer data)
 
   gst_element_set_state (recorder->priv->pipeline, GST_STATE_NULL);
 
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
+
   g_signal_emit (G_OBJECT (recorder),
       kms_recorder_end_point_signals[SIGNAL_STOPPED], 0);
 
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
+  KMS_URI_END_POINT_GET_CLASS (recorder)->change_state (KMS_URI_END_POINT
+      (recorder), KMS_URI_END_POINT_STATE_STOP);
 }
 
 static void
@@ -589,8 +592,9 @@ kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
   if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
     kms_recorder_end_point_wait_for_pipeline_eos (self);
   } else {
-    // TODO Initialize sinks to a new url to avoid overwriting
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+    KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
+        KMS_URI_END_POINT_STATE_STOP);
   }
 }
 
@@ -604,6 +608,9 @@ kms_recorder_end_point_started (KmsUriEndPoint * obj)
 
   /* Open valves */
   kms_recorder_end_point_open_valves (self);
+
+  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
+      KMS_URI_END_POINT_STATE_START);
 }
 
 static void
@@ -616,6 +623,9 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to GST_STATE_PAUSED */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+
+  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
+      KMS_URI_END_POINT_STATE_PAUSE);
 }
 
 static void

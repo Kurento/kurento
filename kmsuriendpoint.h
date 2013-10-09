@@ -16,6 +16,7 @@
 #define _KMS_URI_END_POINT_H_
 
 #include "kmselement.h"
+#include "kmsuriendpointstate.h"
 
 G_BEGIN_DECLS
 #define KMS_TYPE_URI_END_POINT \
@@ -68,10 +69,16 @@ struct _KmsUriEndPointClass
 {
   KmsElementClass parent_class;
 
+  /*< protected >*/
+  void (*change_state) (KmsUriEndPoint *self, KmsUriEndPointState state);
+
   /*< protected abstract methods > */
   void (*stopped) (KmsUriEndPoint *self);
   void (*started) (KmsUriEndPoint *self);
   void (*paused) (KmsUriEndPoint *self);
+
+  /*< Signals >*/
+  void (*state_changed) (KmsUriEndPoint *self, KmsUriEndPointState state);
 };
 
 GType kms_uri_end_point_get_type (void);
