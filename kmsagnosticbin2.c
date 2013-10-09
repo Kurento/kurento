@@ -111,26 +111,6 @@ is_raw_caps (GstCaps * caps)
   return ret;
 }
 
-static GstPadProbeReturn
-tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
-{
-  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
-    return GST_PAD_PROBE_OK;
-
-  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_BOTH) {
-    GstEvent *event = gst_pad_probe_info_get_event (info);
-
-    if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
-      // We drop reconfigure events to avoid not negotiated error caused by
-      // continious negotiations
-      GST_DEBUG_OBJECT (pad, "Dropping reconfigure event");
-      return GST_PAD_PROBE_DROP;
-    }
-  }
-
-  return GST_PAD_PROBE_PASS;
-}
-
 static void
 send_force_key_unit_event (GstPad * pad)
 {
@@ -146,6 +126,27 @@ send_force_key_unit_event (GstPad * pad)
   } else {
     gst_pad_push_event (pad, force_key_unit_event);
   }
+}
+
+static GstPadProbeReturn
+tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
+    return GST_PAD_PROBE_OK;
+
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_BOTH) {
+    GstEvent *event = gst_pad_probe_info_get_event (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
+      // We drop reconfigure events to avoid not negotiated error caused by
+      // continious negotiations
+      send_force_key_unit_event (pad);
+      GST_DEBUG_OBJECT (pad, "Dropping reconfigure event");
+      return GST_PAD_PROBE_DROP;
+    }
+  }
+
+  return GST_PAD_PROBE_PASS;
 }
 
 static void
@@ -164,7 +165,6 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
     GST_ERROR ("Linking %" GST_PTR_FORMAT " with %" GST_PTR_FORMAT " result %d",
         tee_src, queue_sink, ret);
 
-  send_force_key_unit_event (tee_src);
   g_object_unref (queue_sink);
   g_object_unref (tee_src);
 }
