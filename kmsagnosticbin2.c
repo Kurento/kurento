@@ -253,6 +253,10 @@ kms_agnostic_bin2_find_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
   GList *tees, *l;
   GstElement *tee = NULL;
 
+  if (gst_caps_is_any (caps)) {
+    return self->priv->input_tee;
+  }
+
   tees = g_hash_table_get_values (self->priv->tees);
   for (l = tees; l != NULL && tee == NULL; l = l->next) {
     GstPad *tee_sink = gst_element_get_static_pad (l->data, "sink");
