@@ -55,6 +55,41 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
     KmsHttpEndPointPrivate                    \
   )                                           \
 )
+
+#define KMS_HTTP_END_POINT_GET_LOCK(obj) (               \
+  &KMS_HTTP_END_POINT (obj)->priv->tdata.thread_mutex    \
+)
+
+#define KMS_HTTP_END_POINT_GET_COND(obj) (               \
+  &KMS_HTTP_END_POINT (obj)->priv->tdata.thread_cond     \
+)
+
+#define KMS_HTTP_END_POINT_LOCK(obj) (                   \
+  g_mutex_lock (KMS_HTTP_END_POINT_GET_LOCK (obj))       \
+)
+
+#define KMS_HTTP_END_POINT_UNLOCK(obj) (                 \
+  g_mutex_unlock (KMS_HTTP_END_POINT_GET_LOCK (obj))     \
+)
+
+#define KMS_HTTP_END_POINT_WAIT(obj) (                   \
+  g_cond_wait (KMS_HTTP_END_POINT_GET_COND (obj),        \
+    KMS_HTTP_END_POINT_GET_LOCK (obj))                   \
+)
+
+#define KMS_HTTP_END_POINT_SIGNAL(obj) (                 \
+  g_cond_signal (KMS_HTTP_END_POINT_GET_COND (obj))      \
+)
+
+struct thread_data
+{
+  GQueue *actions;
+  gboolean finish_thread;
+  GThread *thread;
+  GCond thread_cond;
+  GMutex thread_mutex;
+};
+
 typedef struct _GetData GetData;
 typedef struct _PostData PostData;
 
@@ -91,6 +126,7 @@ struct _KmsHttpEndPointPrivate
   GstElement *pipeline;
   gboolean start;
   KmsRecordingProfile profile;
+  struct thread_data tdata;
   union
   {
     GetData *get;
@@ -998,16 +1034,29 @@ kms_http_end_point_dispose (GObject * object)
 static void
 kms_http_end_point_finalize (GObject * object)
 {
-  KmsHttpEndPoint *httpendpoint = KMS_HTTP_END_POINT (object);
+  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
 
-  GST_DEBUG_OBJECT (httpendpoint, "finalize");
+  GST_DEBUG_OBJECT (self, "finalize");
 
-  switch (httpendpoint->priv->method) {
+  /* clean up object here */
+  KMS_HTTP_END_POINT_LOCK (self);
+  self->priv->tdata.finish_thread = TRUE;
+  KMS_HTTP_END_POINT_SIGNAL (self);
+  KMS_HTTP_END_POINT_UNLOCK (self);
+
+  g_thread_join (self->priv->tdata.thread);
+  g_thread_unref (self->priv->tdata.thread);
+
+  g_cond_clear (&self->priv->tdata.thread_cond);
+  g_mutex_clear (&self->priv->tdata.thread_mutex);
+
+  switch (self->priv->method) {
     case KMS_HTTP_END_POINT_METHOD_GET:
-      g_slice_free (GetData, httpendpoint->priv->get);
+      kms_http_end_point_free_config_data (self);
+      g_slice_free (GetData, self->priv->get);
       break;
     case KMS_HTTP_END_POINT_METHOD_POST:
-      g_slice_free (PostData, httpendpoint->priv->post);
+      g_slice_free (PostData, self->priv->post);
       break;
     default:
       break;
@@ -1107,6 +1156,34 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
+static gpointer
+kms_http_end_point_thread (gpointer data)
+{
+  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (data);
+
+  /* Main thread loop */
+  while (TRUE) {
+    KMS_HTTP_END_POINT_LOCK (self);
+    while (!self->priv->tdata.finish_thread &&
+        g_queue_is_empty (self->priv->tdata.actions)) {
+      GST_DEBUG_OBJECT (self, "Waiting for elements to remove");
+      KMS_HTTP_END_POINT_WAIT (self);
+      GST_DEBUG_OBJECT (self, "Waked up");
+    }
+
+    if (self->priv->tdata.finish_thread) {
+      KMS_HTTP_END_POINT_UNLOCK (self);
+      break;
+    }
+
+    /* TODO: Do something */
+    KMS_HTTP_END_POINT_UNLOCK (self);
+  }
+
+  GST_DEBUG_OBJECT (self, "Thread finished");
+  return NULL;
+}
+
 static void
 kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
 {
@@ -1201,6 +1278,12 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
   self->priv->method = KMS_HTTP_END_POINT_METHOD_UNDEFINED;
   self->priv->pipeline = NULL;
   self->priv->start = FALSE;
+
+  self->priv->tdata.actions = g_queue_new ();
+  g_cond_init (&self->priv->tdata.thread_cond);
+  self->priv->tdata.finish_thread = FALSE;
+  self->priv->tdata.thread =
+      g_thread_new (GST_OBJECT_NAME (self), kms_http_end_point_thread, self);
 }
 
 gboolean
