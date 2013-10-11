@@ -689,6 +689,46 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
   return GST_PAD_PROBE_PASS;
 }
 
+static GstPadProbeReturn
+queue_block (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
+    return GST_PAD_PROBE_OK;
+
+  // TODO: Start disconnection of this queue and all the  element chain
+  // related to it
+  return GST_PAD_PROBE_DROP;
+}
+
+static void
+kms_agnostic_bin2_src_unlinked_just_lock (GstPad * pad, GstObject * parent)
+{
+  KMS_AGNOSTIC_BIN2_LOCK (parent);
+  // We get the lock here an it will be release in the unlinked signal watcher
+  // We need to do this becausse we cannot get the target pad in this function
+  // because the object lock of pad is locked
+}
+
+static void
+kms_agnostic_bin2_src_unlinked (GstPad * pad, GstPad * peer,
+    KmsAgnosticBin2 * self)
+{
+  GstPad *target;
+
+  GST_DEBUG_OBJECT (pad, "Unlinked");
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target != NULL) {
+    gst_pad_add_probe (target,
+        GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_ALL_BOTH, queue_block,
+        NULL, NULL);
+    g_object_unref (target);
+  }
+  // We get the lock here an it will be release in the unlinked signal watcher
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
+  GST_DEBUG_OBJECT (pad, "Unlinked OK");
+}
+
 static GstPad *
 kms_agnostic_bin2_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -707,6 +747,10 @@ kms_agnostic_bin2_request_new_pad (GstElement * element,
   gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BLOCK |
       GST_PAD_PROBE_TYPE_EVENT_UPSTREAM,
       kms_agnostic_bin2_src_reconfigure_probe, element, NULL);
+
+  g_signal_connect (pad, "unlinked",
+      G_CALLBACK (kms_agnostic_bin2_src_unlinked), self);
+  gst_pad_set_unlink_function (pad, kms_agnostic_bin2_src_unlinked_just_lock);
 
   GST_OBJECT_LOCK (self);
 
