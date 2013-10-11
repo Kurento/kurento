@@ -66,25 +66,16 @@ public class AsyncContentRequestProcessor implements RejectableRunnable {
 					"Error processing request to "
 							+ ((HttpServletRequest) asyncCtx.getRequest())
 									.getRequestURI(), kge);
-			contentSession.terminate(true, asyncCtx, kge.getCode(),
-					kge.getMessage(), getRequestId());
+			contentSession.internalTerminateWithError(asyncCtx, kge.getCode(),
+					kge.getMessage(), requestMessage);
 		} catch (Throwable t) {
 			log.error(
 					"Error processing request to "
 							+ ((HttpServletRequest) asyncCtx.getRequest())
 									.getRequestURI(), t);
-			contentSession.terminate(true, asyncCtx, 1, t.getMessage(),
-					getRequestId());
+			contentSession.internalTerminateWithError(asyncCtx, 1,
+					t.getMessage(), requestMessage);
 		}
-	}
-
-	/**
-	 * Request message id accessor (getter).
-	 * 
-	 * @return Request message id
-	 */
-	private int getRequestId() {
-		return requestMessage != null ? requestMessage.getId() : 0;
 	}
 
 	/**
@@ -94,8 +85,8 @@ public class AsyncContentRequestProcessor implements RejectableRunnable {
 	public void onExecutionRejected() {
 		// This reject is executed by an JVM managed thread. We need to specify
 		// asyncCtx before terminating
-		contentSession.terminate(true, asyncCtx, 20011,
+		contentSession.internalTerminateWithError(asyncCtx, 20011,
 				"Servler overloaded. Try again in a few minutes",
-				getRequestId());
+				requestMessage);
 	}
 }

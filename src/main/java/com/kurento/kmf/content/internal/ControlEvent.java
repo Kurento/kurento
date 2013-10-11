@@ -16,22 +16,16 @@ package com.kurento.kmf.content.internal;
 
 public class ControlEvent {
 	private String type;
-	private String data;
+	private Integer code;
+	private String message;
 
 	public ControlEvent() {
 	}
 
-	public ControlEvent(String type, String data) {
-		this.type = type;
-		this.data = data;
-	}
-
-	public String getData() {
-		return data;
-	}
-
-	public void setData(String data) {
-		this.data = data;
+	public ControlEvent(String type, Integer code, String message) {
+		this.setType(type);
+		this.setCode(code);
+		this.setMessage(message);
 	}
 
 	public String getType() {
@@ -41,4 +35,21 @@ public class ControlEvent {
 	public void setType(String type) {
 		this.type = type;
 	}
+
+	public Integer getCode() {
+		return code;
+	}
+
+	public void setCode(Integer code) {
+		this.code = code;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
 }

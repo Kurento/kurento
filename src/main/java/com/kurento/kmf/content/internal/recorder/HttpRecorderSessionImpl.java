@@ -14,8 +14,6 @@
  */
 package com.kurento.kmf.content.internal.recorder;
 
-import java.io.IOException;
-
 import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
@@ -31,9 +29,9 @@ import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.MediaException;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RecorderEndPoint;
+import com.kurento.kmf.media.UriEndPoint;
 
 /**
  * 
@@ -67,12 +65,14 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 					10016);
 			activateMedia(contentPath, (MediaElement[]) null);
 		} catch (KurentoMediaFrameworkException ke) {
-			terminate(ke.getCode(), ke.getMessage());
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
 					t.getMessage(), t, 20039);
-			terminate(kmfe.getCode(), kmfe.getMessage());
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
 			throw kmfe;
 		}
 	}
@@ -97,12 +97,14 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			}
 			activateMedia(null, elements);
 		} catch (KurentoMediaFrameworkException ke) {
-			terminate(ke.getCode(), ke.getMessage());
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20040);
-			terminate(kmfe.getCode(), kmfe.getMessage());
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
 			throw kmfe;
 		}
 	}
@@ -113,12 +115,14 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			Assert.notNull(sink, "Illegal null sink element specified", 10030);
 			start(new MediaElement[] { sink });
 		} catch (KurentoMediaFrameworkException ke) {
-			terminate(ke.getCode(), ke.getMessage());
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20041);
-			terminate(kmfe.getCode(), kmfe.getMessage());
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
 			throw kmfe;
 		}
 	}
@@ -128,46 +132,31 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	 * 
 	 */
 	@Override
-	protected MediaElement buildRepositoryBasedMediaElement(String contentPath) {
+	protected UriEndPoint buildUriEndPoint(String contentPath) {
 		getLogger().info("Creating media pipeline ...");
-		try {
-			MediaPipeline mediaPipeline = mediaPipelineFactory
-					.createMediaPipeline();
-			releaseOnTerminate(mediaPipeline);
-			getLogger().info("Creating RecorderEndPoint ...");
-			RecorderEndPoint recorderEndPoint = mediaPipeline
-					.createUriEndPoint(RecorderEndPoint.class, contentPath);
-			recorderEndPoint.record();
-			return recorderEndPoint;
-		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
-					20042);
-		} catch (MediaException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 20043);
-		}
+
+		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
+		releaseOnTerminate(mediaPipeline);
+		getLogger().info("Creating RecorderEndPoint ...");
+		RecorderEndPoint recorderEndPoint = mediaPipeline
+				.createRecorderEndPoint(contentPath);
+		return recorderEndPoint;
 	}
 
 	/**
 	 * Creates a Media Element repository using a MediaElement.
 	 */
 	@Override
-	protected HttpEndPoint buildAndConnectHttpEndPointMediaElement(
+	protected HttpEndPoint buildAndConnectHttpEndPoint(
 			MediaElement... mediaElements) {
 
-		try {
-			MediaPipeline mediaPiplePipeline = mediaElements[0]
-					.getMediaPipeline();
-			getLogger().info("Creating HttpEndPoint ...");
-			HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
-			releaseOnTerminate(httpEndPoint);
-			connect(httpEndPoint, mediaElements);
-			return httpEndPoint;
-		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
-					20037);
-		} catch (MediaException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 20038);
-		}
+		MediaPipeline mediaPiplePipeline = mediaElements[0].getMediaPipeline();
+		getLogger().info("Creating HttpEndPoint ...");
+		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		releaseOnTerminate(httpEndPoint);
+		connect(httpEndPoint, mediaElements);
+		return httpEndPoint;
+
 	}
 
 	@Override
@@ -176,8 +165,9 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	}
 
 	@Override
-	protected void interalRawCallToOnContentCompleted() throws Exception {
-		getHandler().onContentCompleted(this);
+	protected void interalRawCallToOnSessionTerminated(int code,
+			String description) throws Exception {
+		getHandler().onSessionTerminated(this, code, description);
 	}
 
 	@Override
@@ -188,7 +178,7 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	@Override
 	protected void interalRawCallToOnContentError(int code, String description)
 			throws Exception {
-		getHandler().onContentError(this, code, description);
+		getHandler().onSessionError(this, code, description);
 	}
 
 	@Override

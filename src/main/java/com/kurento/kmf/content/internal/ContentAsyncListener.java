@@ -138,8 +138,8 @@ public class ContentAsyncListener implements AsyncListener {
 		JsonRpcRequest jsonRequest = (JsonRpcRequest) asyncContext.getRequest()
 				.getAttribute(CONTROL_PROTOCOL_REQUEST_MESSAGE_ATT_NAME);
 		if (contentRequest != null) {
-			contentRequest.terminate(true, asyncContext, errorCode, msg,
-					jsonRequest != null ? jsonRequest.getId() : 0);
+			contentRequest.internalTerminateWithError(asyncContext, errorCode,
+					msg, jsonRequest);
 		}
 	}
 

@@ -68,7 +68,8 @@ public abstract class ContentHandler<T extends ContentSession> {
 	 * @throws Exception
 	 *             possible exception thrown by handler implementation
 	 */
-	public void onContentCompleted(T contentSession) throws Exception {
+	public void onSessionTerminated(T contentSession, int code, String reason)
+			throws Exception {
 	}
 
 	/**
@@ -102,7 +103,7 @@ public abstract class ContentHandler<T extends ContentSession> {
 	 *            the exception, if any, the caused the error.
 	 * @throws Exception
 	 */
-	public void onContentError(T contentSession, int code, String description)
+	public void onSessionError(T contentSession, int code, String description)
 			throws Exception {
 		log.error(description);
 	}

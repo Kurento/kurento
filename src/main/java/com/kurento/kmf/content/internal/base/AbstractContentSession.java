@@ -37,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.kurento.kmf.common.SecretGenerator;
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.common.exception.internal.ExceptionUtils;
 import com.kurento.kmf.content.ContentApiConfiguration;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
@@ -49,15 +48,14 @@ import com.kurento.kmf.content.internal.ControlEvent;
 import com.kurento.kmf.content.internal.ControlProtocolManager;
 import com.kurento.kmf.content.jsonrpc.Constraints;
 import com.kurento.kmf.content.jsonrpc.JsonRpcConstants;
-import com.kurento.kmf.content.jsonrpc.JsonRpcEvent;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
+import com.kurento.kmf.content.jsonrpc.result.JsonRpcContentEvent;
+import com.kurento.kmf.content.jsonrpc.result.JsonRpcControlEvent;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.MediaSink;
-import com.kurento.kms.api.MediaType;
 
 /**
  * 
@@ -116,9 +114,6 @@ public abstract class AbstractContentSession implements ContentSession {
 	// /////////////////////////////////////////////////////
 
 	protected abstract Logger getLogger();
-
-	protected abstract void sendOnTerminateErrorMessageInInitialContext(
-			int code, String description);
 
 	// /////////////////////////////////////////////////////
 	// Constructor and utility methods
@@ -203,11 +198,21 @@ public abstract class AbstractContentSession implements ContentSession {
 	}
 
 	public Constraints getVideoConstraints() {
-		return initialJsonRequest.getVideoConstraints();
+		try {
+			return initialJsonRequest.getParams().getConstraints()
+					.getVideoContraints();
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 
 	public Constraints getAudioConstraints() {
-		return initialJsonRequest.getAudioConstraints();
+		try {
+			return initialJsonRequest.getParams().getConstraints()
+					.getAudioContraints();
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 
 	@Override
@@ -234,17 +239,9 @@ public abstract class AbstractContentSession implements ContentSession {
 	// Methods used by framework to reach the handler
 	// /////////////////////////////////////////////////////
 
-	public void callOnContentCompletedOnHandler() {
-
-		ControlEvent onCompleteEvent = new ControlEvent(
-				JsonRpcConstants.EVENT_CONTENT_COMPLETE, "");
-		// TODO: when WebSockets is supported, terminate shall send error in
-		// ACTIVE state. In that case, we should review if terminating here
-		// makes sense (no error message should be sent).
-		publishControlEvent(onCompleteEvent);
-		terminate(0, null);
+	private void callOnSessionTerminatedOnHandler(int code, String description) {
 		try {
-			interalRawCallToOnContentCompleted();
+			interalRawCallToOnSessionTerminated(code, description);
 		} catch (Throwable t) {
 			getLogger().error(
 					"Error invoking onContentCompleted on handler. Cause "
@@ -253,10 +250,10 @@ public abstract class AbstractContentSession implements ContentSession {
 		}
 	}
 
-	protected abstract void interalRawCallToOnContentCompleted()
-			throws Exception;
+	protected abstract void interalRawCallToOnSessionTerminated(int code,
+			String description) throws Exception;
 
-	public void callOnContentStartedOnHanlder() {
+	protected void callOnContentStartedOnHanlder() {
 		try {
 			interalRawCallToOnContentStarted();
 		} catch (Throwable t) {
@@ -272,12 +269,7 @@ public abstract class AbstractContentSession implements ContentSession {
 	protected abstract ContentCommandResult interalRawCallToOnContentCommand(
 			ContentCommand command) throws Exception;
 
-	public void callOnContentErrorOnHandler(int code, String description) {
-		ControlEvent onErrorEvent = new ControlEvent(
-				JsonRpcConstants.EVENT_CONTENT_ERROR, "Error " + code + ". "
-						+ description);
-		publishControlEvent(onErrorEvent);
-		terminate(code, description);
+	private void callOnContentErrorOnHandler(int code, String description) {
 		try {
 			interalRawCallToOnContentError(code, description);
 		} catch (Throwable t) {
@@ -291,7 +283,7 @@ public abstract class AbstractContentSession implements ContentSession {
 	protected abstract void interalRawCallToOnContentError(int code,
 			String description) throws Exception;
 
-	public void callOnContentRequestOnHandler() {
+	protected void callOnContentRequestOnHandler() {
 		try {
 			internalRawCallToOnContentRequest();
 		} catch (Throwable t) {
@@ -306,11 +298,6 @@ public abstract class AbstractContentSession implements ContentSession {
 			throws Exception;
 
 	public void callOnUncaughtExceptionThrown(Throwable t) {
-		int code = 9999;
-		if (t instanceof KurentoMediaFrameworkException) {
-			code = ((KurentoMediaFrameworkException) t).getCode();
-		}
-		terminate(code, t.getMessage());
 		try {
 			internalRawCallToOnUncaughtExceptionThrown(t);
 		} catch (Throwable tw) {
@@ -352,11 +339,13 @@ public abstract class AbstractContentSession implements ContentSession {
 			// Check validity of constraints before making them accessible to
 			// the handler
 			Assert.notNull(
-					initialJsonRequest.getVideoConstraints(),
+					initialJsonRequest.getParams().getConstraints()
+							.getVideoContraints(),
 					"Malfored request message specifying inexistent or invalid video contraints",
 					10009);
 			Assert.notNull(
-					initialJsonRequest.getAudioConstraints(),
+					initialJsonRequest.getParams().getConstraints()
+							.getVideoContraints(),
 					"Malfored request message specifying inexistent or invalid audio contraints",
 					10010);
 			processStartJsonRpcRequest(asyncCtx, message);
@@ -364,18 +353,18 @@ public abstract class AbstractContentSession implements ContentSession {
 			Assert.isTrue(state == STATE.ACTIVE, "Cannot poll on state "
 					+ state, 10011);
 
-			JsonRpcEvent[][] events = consumeEvents();
+			ConsumeEventsResultType events = consumeEvents();
 			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
-					.newEventsResponse(message.getId(), events[0], events[1]));
+					.newPollResponse(events.contentEvents,
+							events.controlEvents, message.getId()));
 		} else if (message.getMethod().equals(METHOD_EXECUTE)) {
 			Assert.isTrue(state == STATE.ACTIVE,
 					"Cannot execute command on state " + state, 10011);
 			internalProcessCommandExecution(asyncCtx, message);
 		} else if (message.getMethod().equals(METHOD_TERMINATE)) {
-			terminate(false, asyncCtx,
-					0, // No error
-					"Application requested explicit termiantion",
-					message.getId());
+			internalTerminateWithoutError(asyncCtx, message.getParams()
+					.getReason().getCode(), message.getParams().getReason()
+					.getMessage(), message);
 		} else {
 			throw new KurentoMediaFrameworkException(
 					"Unrecognized message with method " + message.getMethod(),
@@ -385,13 +374,14 @@ public abstract class AbstractContentSession implements ContentSession {
 
 	private void internalProcessCommandExecution(AsyncContext asyncCtx,
 			JsonRpcRequest message) {
+		Assert.notNull(message.getParams(), "", 1); // TODO
+		Assert.notNull(message.getParams().getCommand(), "", 1); // TODO
 		try {
 			ContentCommandResult result = interalRawCallToOnContentCommand(new ContentCommand(
-					message.getCommandType(), message.getCommandData()));
-			protocolManager.sendJsonAnswer(
-					asyncCtx,
-					JsonRpcResponse.newCommandResponse(message.getId(),
-							result.getResult()));
+					message.getParams().getCommand().getType(), message
+							.getParams().getCommand().getData()));
+			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
+					.newExecuteResponse(result.getResult(), message.getId()));
 		} catch (Throwable t) {
 			int errorCode = 1; // TODO: define error code
 			if (t instanceof KurentoMediaFrameworkException) {
@@ -421,7 +411,13 @@ public abstract class AbstractContentSession implements ContentSession {
 	 * 
 	 * @return list of received poll events
 	 */
-	public JsonRpcEvent[][] consumeEvents() {
+
+	private static class ConsumeEventsResultType {
+		private JsonRpcContentEvent[] contentEvents;
+		private JsonRpcControlEvent[] controlEvents;
+	}
+
+	public ConsumeEventsResultType consumeEvents() {
 
 		if (currentPollingThread != null) {
 			currentPollingThread.interrupt();
@@ -429,8 +425,8 @@ public abstract class AbstractContentSession implements ContentSession {
 
 		currentPollingThread = Thread.currentThread();
 
-		List<JsonRpcEvent> contentEvents = null;
-		List<JsonRpcEvent> controlEvents = null;
+		List<JsonRpcContentEvent> contentEvents = null;
+		List<JsonRpcControlEvent> controlEvents = null;
 		while (true) {
 			Object event;
 			try {
@@ -443,18 +439,19 @@ public abstract class AbstractContentSession implements ContentSession {
 
 			if (event != null && event instanceof ContentEvent) {
 				if (contentEvents == null)
-					contentEvents = new ArrayList<JsonRpcEvent>();
-				contentEvents.add(JsonRpcEvent.newEvent(
+					contentEvents = new ArrayList<JsonRpcContentEvent>();
+				contentEvents.add(JsonRpcContentEvent.newEvent(
 						((ContentEvent) event).getType(),
 						((ContentEvent) event).getData()));
 			}
 
 			if (event != null && event instanceof ControlEvent) {
 				if (controlEvents == null)
-					controlEvents = new ArrayList<JsonRpcEvent>();
-				controlEvents.add(JsonRpcEvent.newEvent(
+					controlEvents = new ArrayList<JsonRpcControlEvent>();
+				controlEvents.add(JsonRpcControlEvent.newEvent(
 						((ControlEvent) event).getType(),
-						((ControlEvent) event).getData()));
+						((ControlEvent) event).getCode(),
+						((ControlEvent) event).getMessage()));
 			}
 
 			if (eventQueue.isEmpty()) {
@@ -464,69 +461,19 @@ public abstract class AbstractContentSession implements ContentSession {
 
 		currentPollingThread = null;
 
-		JsonRpcEvent[][] result = new JsonRpcEvent[2][];
-		if (contentEvents == null) {
-			result[0] = null;
-		} else {
-			result[0] = contentEvents.toArray(new JsonRpcEvent[1]);
+		ConsumeEventsResultType result = new ConsumeEventsResultType();
+		if (contentEvents != null) {
+			result.contentEvents = contentEvents
+					.toArray(new JsonRpcContentEvent[1]);
 		}
 
-		if (controlEvents == null) {
-			result[1] = null;
-		} else {
-			result[1] = controlEvents.toArray(new JsonRpcEvent[1]);
+		if (controlEvents != null) {
+			result.controlEvents = controlEvents
+					.toArray(new JsonRpcControlEvent[1]);
 		}
 
 		return result;
 
-	}
-
-	/**
-	 * Terminates this object in the context of an AsyncContext different from
-	 * the initial AsyncContext sending the appropriate messages if necessary.
-	 * 
-	 * @param withError
-	 *            boolean value indicating whether the termination is due to an
-	 *            error or not
-	 * @param asyncCtx
-	 *            the AsynContext of the request that produced the termination
-	 *            due to an explicit termination request or due to an error in
-	 *            the processing of the request.
-	 * @param code
-	 *            termination code TODO: explain where are the codes
-	 * @param description
-	 *            termination message
-	 * @param requestId
-	 *            request identifier
-	 */
-	public void terminate(boolean withError, AsyncContext asyncCtx, int code,
-			String description, int requestId) {
-
-		// If we are terminating from the initial AsyncContext, then no special
-		// actions need to be taken
-		if (asyncCtx == initialAsyncCtx) {
-			terminate(code, description);
-			return;
-		}
-
-		// If we are terminating from a different AsyncContext, then we need to
-		// answer the request appropriately
-		try {
-			if (!withError) {
-				// Send ACK to connection requesting termination
-				protocolManager.sendJsonAnswer(asyncCtx,
-						JsonRpcResponse.newAckResponse(requestId));
-			} else {
-				// Send error to connection of terminating session
-				protocolManager.sendJsonError(asyncCtx, JsonRpcResponse
-						.newError(ExceptionUtils.getJsonErrorCode(code),
-								description, requestId));
-			}
-		} catch (Throwable e) {
-			getLogger().debug(e.getMessage(), e);
-		} finally {
-			terminate(code, description);
-		}
 	}
 
 	/**
@@ -538,8 +485,37 @@ public abstract class AbstractContentSession implements ContentSession {
 	 * @param description
 	 *            termination description
 	 */
+
 	@Override
 	public void terminate(int code, String description) {
+		internalTerminateWithoutError(null, code, description, null);
+	}
+
+	/**
+	 * This method must be invoked by the framework whenever a session needs to
+	 * be terminated with an error condition. This may occur due to different
+	 * reasons, such as:
+	 * 
+	 * - Exception thrown by the communication layer while processing a message.<br>
+	 * - Asynchronous error comming from the media server. <br>
+	 * - Exception thrown when processing a "start" call on the session <br>
+	 * 
+	 * @param asyncCtx
+	 *            represents the client request where the error has emerged. May
+	 *            be null for async errors coming from the media server or when
+	 *            the error occurs in the initialAsyncCtx (ex. while executing a
+	 *            start call on the session). If this parameter is non-null, the
+	 *            request parameter must also be non-null (except for
+	 *            useControlProtocol=false).
+	 * @param code
+	 * @param description
+	 * @param request
+	 *            represents the client request that is causing this
+	 *            termination. May be null if termination comes from async media
+	 *            event or from invocation to terminate method on session.
+	 */
+	public void internalTerminateWithError(AsyncContext asyncCtx, int code,
+			String description, JsonRpcRequest request) {
 		// This method cannot throw exceptions
 
 		STATE localState;
@@ -553,18 +529,143 @@ public abstract class AbstractContentSession implements ContentSession {
 		try {
 			if (localState == STATE.IDLE || localState == STATE.HANDLING
 					|| localState == STATE.STARTING) {
-				sendOnTerminateErrorMessageInInitialContext(code, description);
+				if (asyncCtx != null && asyncCtx != initialAsyncCtx) {
+					// This case represents an error in the processing of a
+					// client request coming in parallel with a start request
+
+					sendErrorAnswerOnSpecificContext(asyncCtx, code,
+							description, request);
+				}
+				sendErrorAnswerOnInitialContext(code, description);
 			} else if (localState == STATE.ACTIVE) {
-				// TODO: when we support real push of signaling, we should
-				// notify the client that the session is terminating. This
-				// should not overlap with the processing of a "terminate"
-				// request explicitly received from client
+				if (asyncCtx == null) {
+					// This case represents an async error coming from the media
+					// server
+
+					pushErrorEvent(code, description);
+				} else {
+					// This case represents an error processing a message from
+					// the client arriving after the start has been answered
+					// (eg. poll)
+
+					sendErrorAnswerOnSpecificContext(asyncCtx, code,
+							description, request);
+				}
 			}
+
 		} catch (Throwable t) {
 			getLogger().error(t.getMessage(), t);
 		} finally {
 			destroy();
 		}
+
+		callOnContentErrorOnHandler(code, description);
+	}
+
+	protected void sendErrorAnswerOnInitialContext(int code, String description) {
+		protocolManager.sendJsonAnswer(
+				initialAsyncCtx,
+				JsonRpcResponse.newError(code, description,
+						initialJsonRequest.getId()));
+	}
+
+	private void sendErrorAnswerOnSpecificContext(AsyncContext asyncCtx,
+			int code, String description, JsonRpcRequest request) {
+		protocolManager.sendJsonAnswer(asyncCtx,
+				JsonRpcResponse.newError(code, description, request.getId()));
+	}
+
+	private void pushErrorEvent(int code, String description) {
+		publishControlEvent(new ControlEvent(
+				JsonRpcConstants.EVENT_SESSION_ERROR, code, description));
+	}
+
+	/**
+	 * This method needs to be invoked when a session terminate without error.
+	 * This may happen due to several reasons:
+	 * 
+	 * - Client sends a terminate message <br>
+	 * - Handler invokes terminate on the session <br>
+	 * - Media server produces an async event showing that the media session has
+	 * completed <br>
+	 * 
+	 * @param asyncCtx
+	 *            represents the context of the client request causing this
+	 *            termination. If this parameter is non-null, request must be
+	 *            non-null (except for useControlProtocol=false).
+	 * @param code
+	 * @param description
+	 * @param request
+	 *            represents the client request that is causing this
+	 *            termination. May be null if termination comes from async media
+	 *            event or from invocation to terminate method on session.
+	 */
+	public void internalTerminateWithoutError(AsyncContext asyncCtx, int code,
+			String description, JsonRpcRequest request) {
+		// This method cannot throw exceptions
+
+		STATE localState;
+		synchronized (this) {
+			if (state == STATE.TERMINATED)
+				return;
+			localState = state;
+			state = STATE.TERMINATED;
+		}
+
+		try {
+			if (localState == STATE.IDLE || localState == STATE.HANDLING
+					|| localState == STATE.STARTING) {
+				if (asyncCtx != null && asyncCtx != initialAsyncCtx) {
+					// This case represents a client terminate message in
+					// parallel with a start message
+
+					sendAckToExplicitClientTermination(asyncCtx, code,
+							description, request);
+				}
+
+				sendRejectOnInitialContext(code, description);
+			} else if (localState == STATE.ACTIVE) {
+				if (asyncCtx == null) {
+					// This case represents an async terminate invocation on the
+					// session or a media session termination coming from the
+					// media server asynchronously
+
+					pushTerminateEvent(code, description);
+				} else {
+					// This case represents a client terminate message after
+					// start has been answered
+
+					sendAckToExplicitClientTermination(asyncCtx, code,
+							description, request);
+				}
+			}
+
+		} catch (Throwable t) {
+			getLogger().error(t.getMessage(), t);
+		} finally {
+			destroy();
+		}
+
+		callOnSessionTerminatedOnHandler(code, description);
+	}
+
+	private void sendAckToExplicitClientTermination(AsyncContext asyncCtx,
+			int code, String description, JsonRpcRequest request) {
+		protocolManager.sendJsonAnswer(
+				asyncCtx,
+				JsonRpcResponse.newTerminateResponse(code, description,
+						request.getId()));
+	}
+
+	private void pushTerminateEvent(int code, String description) {
+		publishControlEvent(new ControlEvent(
+				JsonRpcConstants.EVENT_SESSION_TERMINATED, code, description));
+	}
+
+	protected void sendRejectOnInitialContext(int code, String description) {
+		protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
+				.newStartRejectedResponse(code, description,
+						initialJsonRequest.getId()));
 	}
 
 	protected void destroy() {
@@ -626,34 +727,7 @@ public abstract class AbstractContentSession implements ContentSession {
 				"Cannot connect empty sinkElements", 10016);
 
 		for (MediaElement sinkElement : sinkElements) {
-			Assert.notNull(sinkElement, "Cannot connect to null sinkElement",
-					10017);
-			getLogger().info(
-					"Connecting video source of " + sourceElement
-							+ " to video Sink of " + sinkElement);
-			try {
-				MediaSink videoSink = sinkElement
-						.getMediaSinks(MediaType.VIDEO).iterator().next();
-				sourceElement.getMediaSrcs(MediaType.VIDEO).iterator().next()
-						.connect(videoSink);
-				getLogger().info(
-						"Connected " + sourceElement + " to  " + sinkElement);
-				// TODO: activate audio when possible
-				// getLogger().info("Connecting audio source of " +
-				// sourceElement
-				// + " to audio Sink of " + sinkElement);
-				// MediaSink audioSink =
-				// sinkElement.getMediaSinks(MediaType.AUDIO)
-				// .iterator().next();
-				// sourceElement.getMediaSrcs(MediaType.AUDIO).iterator().next()
-				// .connect(audioSink);
-			} catch (IOException ioe) {
-				throw new KurentoMediaFrameworkException(
-						"Cannot connect source media element " + sourceElement
-								+ " to sink media element " + sinkElement,
-						20021);
-			}
-			getLogger().info("Connect successful  ...");
+			sourceElement.connect(sinkElement);
 		}
 	}
 }

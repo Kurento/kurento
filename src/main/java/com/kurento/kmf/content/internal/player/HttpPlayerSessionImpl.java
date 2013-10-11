@@ -14,8 +14,6 @@
  */
 package com.kurento.kmf.content.internal.player;
 
-import java.io.IOException;
-
 import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
@@ -30,15 +28,10 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
 import com.kurento.kmf.media.HttpEndPoint;
-import com.kurento.kmf.media.HttpEndPointEvent;
-import com.kurento.kmf.media.HttpEndPointEvent.HttpEndPointEventType;
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.MediaEventListener;
-import com.kurento.kmf.media.MediaException;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.PlayerEvent;
-import com.kurento.kmf.media.PlayerEvent.PlayerEventType;
+import com.kurento.kmf.media.UriEndPoint;
 
 /**
  * 
@@ -52,8 +45,6 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 
 	private static final Logger log = LoggerFactory
 			.getLogger(HttpPlayerSessionImpl.class);
-
-	private PlayerEndPoint playerEndPoint = null;
 
 	public HttpPlayerSessionImpl(HttpPlayerHandler handler,
 			ContentSessionManager manager, AsyncContext asyncContext,
@@ -74,12 +65,14 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 					10027);
 			activateMedia(contentPath, (MediaElement[]) null);
 		} catch (KurentoMediaFrameworkException ke) {
-			terminate(ke.getCode(), ke.getMessage());
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20030);
-			terminate(kmfe.getCode(), kmfe.getMessage());
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
 			throw kmfe;
 		}
 	}
@@ -94,129 +87,53 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 					10028);
 			activateMedia(null, new MediaElement[] { element });
 
-			// TODO: In the future we should avoid terminating upon exceptions
-			// on start. This would mean to clean and make whaeterver is
-			// necessary on the media server for letting everything ready for
-			// calling again start without redundant media elements.
 		} catch (KurentoMediaFrameworkException ke) {
-			terminate(ke.getCode(), ke.getMessage());
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20031);
-			terminate(kmfe.getCode(), kmfe.getMessage());
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
 			throw kmfe;
 		}
 	}
 
-	/**
-	 * Creates a Media Element repository using a ContentPath.
-	 */
 	@Override
-	public void usePlayer(PlayerEndPoint player) {
-		// TODO: this is an ugly work-aroud of the problem of starting the
-		// player only when the HTTP GET is received on the end-point. It has
-		// several problems including the fact that the internal player can be
-		// overriden
-		if (player != null) {
-			this.playerEndPoint = player;
-		}
-	}
-
-	@Override
-	protected MediaElement buildRepositoryBasedMediaElement(String contentPath) {
-		try {
-			getLogger().info("Creating media pipeline ...");
-			MediaPipeline mediaPipeline = mediaPipelineFactory
-					.createMediaPipeline();
-			releaseOnTerminate(mediaPipeline);
-			getLogger().info("Creating PlayerEndPoint ...");
-			playerEndPoint = mediaPipeline.createUriEndPoint(
-					PlayerEndPoint.class, contentPath);
-
-			return playerEndPoint;
-		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
-					20032);
-		} catch (MediaException me) {
-			throw new KurentoMediaFrameworkException(me.getMessage(), me, 20033);
-		}
+	protected UriEndPoint buildUriEndPoint(String contentPath) {
+		getLogger().info("Creating media pipeline ...");
+		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
+		releaseOnTerminate(mediaPipeline);
+		getLogger().info("Creating PlayerEndPoint ...");
+		PlayerEndPoint playerEndPoint = mediaPipeline
+				.createPlayerEndPoint(contentPath);
+		return playerEndPoint;
 	}
 
 	/**
 	 * Creates a Media Element repository using a MediaElement.
 	 */
 	@Override
-	protected HttpEndPoint buildAndConnectHttpEndPointMediaElement(
+	protected HttpEndPoint buildAndConnectHttpEndPoint(
 			MediaElement... mediaElements) {
-		try {
-			// In this case (player) we can connect to one media element
-			// (source) that must be the first in the array. This is not very
-			// beautiful but makes possible to have player and recorder on the
-			// same inheritance hierarchy
-			MediaElement mediaElement = mediaElements[0];
-			getLogger().info("Recovering media pipeline");
-			MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
-			getLogger().info("Creating HttpEndPoint ...");
-			HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
-			releaseOnTerminate(httpEndPoint);
-			connect(mediaElement, new MediaElement[] { httpEndPoint });
 
-			if (playerEndPoint != null) {
-				// Release pipeline when player ends
-				// TODO: This should be done with events on activateMedia, see
-				// TODO there
-				playerEndPoint
-						.addListener(new MediaEventListener<PlayerEvent>() {
-							@Override
-							public void onEvent(PlayerEvent event) {
-								if (event.getType() == PlayerEventType.EOS) {
-									HttpPlayerSessionImpl.this
-											.callOnContentCompletedOnHandler();
-								}
-							}
-						});
-			}
+		// In this case (player) we can connect to one media element
+		// (source) that must be the first in the array. This is not very
+		// beautiful but makes possible to have player and recorder on the
+		// same inheritance hierarchy
+		MediaElement mediaElement = mediaElements[0];
+		getLogger().info("Recovering media pipeline");
+		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
+		getLogger().info("Creating HttpEndPoint ...");
+		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		releaseOnTerminate(httpEndPoint);
+		mediaElement.connect(httpEndPoint);
 
-			getLogger().info(
-					"Adding PlayerEndPoint.play() into HttpEndPoint listener");
-			// TODO: this should be done with events on activateMedia, see TODO
-			// there
-			httpEndPoint
-					.addListener(new MediaEventListener<HttpEndPointEvent>() {
+		getLogger().info(
+				"Adding PlayerEndPoint.play() into HttpEndPoint listener");
 
-						@Override
-						public void onEvent(HttpEndPointEvent event) {
-							if (event.getType() != HttpEndPointEventType.GET_REQUEST) {
-								String errorMessage = "Unexpected HTTP method "
-										+ event.getType()
-										+ " received on HttpEndPoint. Cannot start player";
-								log.error(errorMessage);
-								HttpPlayerSessionImpl.this.terminate(10029,
-										errorMessage);
-								return;
-							}
-
-							if (playerEndPoint != null) {
-								try {
-									playerEndPoint.play();
-								} catch (IOException e) {
-									String errorMessage = "Cannot invoke play on PlayerEndPoint: "
-											+ e.getMessage();
-									log.error(errorMessage, e);
-									HttpPlayerSessionImpl.this.terminate(20034,
-											errorMessage);
-								}
-							}
-						}
-					});
-			return httpEndPoint;
-		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
-					20035);
-		} catch (MediaException me) {
-			throw new KurentoMediaFrameworkException(me.getMessage(), me, 20036);
-		}
+		return httpEndPoint;
 	}
 
 	@Override
@@ -225,8 +142,9 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	}
 
 	@Override
-	protected void interalRawCallToOnContentCompleted() throws Exception {
-		getHandler().onContentCompleted(this);
+	protected void interalRawCallToOnSessionTerminated(int code,
+			String description) throws Exception {
+		getHandler().onSessionTerminated(this, code, description);
 	}
 
 	@Override
@@ -237,7 +155,7 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	@Override
 	protected void interalRawCallToOnContentError(int code, String description)
 			throws Exception {
-		getHandler().onContentError(this, code, description);
+		getHandler().onSessionError(this, code, description);
 	}
 
 	@Override

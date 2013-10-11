@@ -14,16 +14,12 @@
  */
 package com.kurento.kmf.content.internal.rtp;
 
-import java.io.IOException;
-
 import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.common.exception.internal.ExceptionUtils;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.RtpContentHandler;
@@ -31,11 +27,8 @@ import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
-import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.MediaException;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.RtpEndPoint;
+import com.kurento.kmf.media.SdpEndPoint;
 
 /**
  * 
@@ -60,78 +53,15 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected String buildMediaEndPointAndReturnSdp(MediaElement sourceElement,
-			MediaElement... sinkElements) {
-
-		try {
-			// Candidate for providing a pipeline
-			log.info("Looking for candidate ...");
-
-			if (sinkElements != null && sinkElements.length > 0) {
-				for (MediaElement e : sinkElements) {
-					Assert.notNull(e, "Illegal null sink provided", 10023);
-				}
-			}
-
-			MediaElement candidate = null;
-			if (sinkElements == null || sinkElements.length == 0) {
-				candidate = sourceElement;
-			} else {
-				candidate = sinkElements[0];
-			}
-
-			log.info("Creating media candidate for candidate " + candidate);
-			MediaPipeline mediaPipeline = null;
-			if (candidate != null) {
-				mediaPipeline = candidate.getMediaPipeline();
-			} else {
-				mediaPipeline = mediaPipelineFactory.createMediaPipeline();
-				releaseOnTerminate(mediaPipeline);
-			}
-
-			log.info("Creating rtpEndPoint ...");
-			RtpEndPoint rtpEndPoint = mediaPipeline
-					.createSdpEndPoint(RtpEndPoint.class);
-			if (candidate != null) {
-				releaseOnTerminate(rtpEndPoint);
-			}
-
-			log.info("Recoveing answer sdp ...");
-			String answerSdp = rtpEndPoint.processOffer(initialJsonRequest
-					.getSdp());
-
-			// If no source is provided, jut loopback for having some media back
-			// to
-			// the client
-			if (sourceElement == null) {
-				sourceElement = rtpEndPoint; // This produces a loopback.
-			}
-
-			log.info("Connecting media pads ...");
-			// TODO: should we double check constraints?
-			if (sinkElements != null) {
-				connect(rtpEndPoint, sinkElements);
-			}
-
-			if (sourceElement != null) {
-				connect(sourceElement, new MediaElement[] { rtpEndPoint });
-			}
-
-			log.info("Returning answer sdp ...");
-			return answerSdp;
-		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(ioe.getMessage(), ioe,
-					20023);
-		} catch (MediaException me) {
-			throw new KurentoMediaFrameworkException(me.getMessage(), me, 20024);
-		}
+	protected SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline) {
+		return mediaPipeline.createRtpEndPoint();
 	}
 
 	@Override
 	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
 			JsonRpcRequest message) {
 		Assert.notNull(
-				initialJsonRequest.getSdp(),
+				initialJsonRequest.getParams().getSdp(),
 				"SDP cannot be null on message with method "
 						+ message.getMethod(), 10024);
 		super.processStartJsonRpcRequest(asyncCtx, message);
@@ -145,25 +75,15 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 		return log;
 	}
 
-	/**
-	 * Performs then sendJsonError using JSON protocol control manager.
-	 */
-	@Override
-	protected void sendOnTerminateErrorMessageInInitialContext(int code,
-			String description) {
-		protocolManager.sendJsonError(initialAsyncCtx, JsonRpcResponse
-				.newError(ExceptionUtils.getJsonErrorCode(code), description,
-						initialJsonRequest.getId()));
-	}
-
 	@Override
 	public RtpContentHandler getHandler() {
 		return (RtpContentHandler) super.getHandler();
 	}
 
 	@Override
-	protected void interalRawCallToOnContentCompleted() throws Exception {
-		getHandler().onContentCompleted(this);
+	protected void interalRawCallToOnSessionTerminated(int code,
+			String description) throws Exception {
+		getHandler().onSessionTerminated(this, code, description);
 	}
 
 	@Override
@@ -174,7 +94,7 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 	@Override
 	protected void interalRawCallToOnContentError(int code, String description)
 			throws Exception {
-		getHandler().onContentError(this, code, description);
+		getHandler().onSessionError(this, code, description);
 	}
 
 	@Override

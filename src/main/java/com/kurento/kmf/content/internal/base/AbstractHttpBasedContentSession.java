@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.content.internal.base;
 
-import java.io.IOException;
 import java.util.concurrent.Future;
 
 import javax.servlet.AsyncContext;
@@ -35,9 +34,15 @@ import com.kurento.kmf.content.internal.StreamingProxy;
 import com.kurento.kmf.content.internal.StreamingProxyListener;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.HttpEndPoint;
-import com.kurento.kmf.media.HttpEndPointEvent;
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.MediaEventListener;
+import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.RecorderEndPoint;
+import com.kurento.kmf.media.UriEndPoint;
+import com.kurento.kmf.media.events.MediaError;
+import com.kurento.kmf.media.events.MediaErrorListener;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
  * 
@@ -57,6 +62,8 @@ public abstract class AbstractHttpBasedContentSession extends
 	protected boolean redirect;
 
 	protected volatile Future<?> tunnellingProxyFuture;
+
+	private UriEndPoint uriEndPoint;
 
 	public AbstractHttpBasedContentSession(
 			ContentHandler<? extends ContentSession> handler,
@@ -78,8 +85,7 @@ public abstract class AbstractHttpBasedContentSession extends
 	 *            Content path in which build the media element
 	 * @return Created media element
 	 */
-	protected abstract MediaElement buildRepositoryBasedMediaElement(
-			String contentPath);
+	protected abstract UriEndPoint buildUriEndPoint(String contentPath);
 
 	/**
 	 * 
@@ -87,7 +93,7 @@ public abstract class AbstractHttpBasedContentSession extends
 	 *            must be non-null and non-empty
 	 * @return
 	 */
-	protected abstract HttpEndPoint buildAndConnectHttpEndPointMediaElement(
+	protected abstract HttpEndPoint buildAndConnectHttpEndPoint(
 			MediaElement... mediaElements);
 
 	/*
@@ -125,10 +131,11 @@ public abstract class AbstractHttpBasedContentSession extends
 
 		if (contentPath != null) {
 			mediaElements = new MediaElement[1];
-			mediaElements[0] = buildRepositoryBasedMediaElement(contentPath);
+			uriEndPoint = buildUriEndPoint(contentPath);
+			mediaElements[0] = uriEndPoint;
 		}
 
-		HttpEndPoint httpEndPoint = buildAndConnectHttpEndPointMediaElement(mediaElements);
+		HttpEndPoint httpEndPoint = buildAndConnectHttpEndPoint(mediaElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -145,37 +152,61 @@ public abstract class AbstractHttpBasedContentSession extends
 		if (terminate) {
 			getLogger()
 					.info("Exiting due to terminate ... this should only happen on client's explicit termination");
+			destroy(); // idempotent call. Just in case pipeline gets build
+						// after session executes termination
 			return;
 		}
 
 		// If session was not rejected (state=ACTIVE) we send an answer and
 		// the initialAsyncCtx becomes useless
-		String answerUrl = null;
-		try {
-			answerUrl = httpEndPoint.getUrl();
-			getLogger().info("HttpEndPoint.getUrl = " + answerUrl);
-		} catch (IOException ioe) {
-			throw new KurentoMediaFrameworkException(
-					"Error recovering URL from HttpEndPoint. Cause: "
-							+ ioe.getMessage(), ioe, 20006);
-		}
+		String answerUrl = httpEndPoint.getUrl();
+		getLogger().info("HttpEndPoint.getUrl = " + answerUrl);
+
 		Assert.notNull(answerUrl, "Received null url from HttpEndPoint", 20012);
 		Assert.isTrue(answerUrl.length() > 0,
 				"Received invalid empty url from media server", 20012);
 
-		getLogger().info("HttpEndPoint URL is " + answerUrl);
+		// Manage fatal errors occurring in the pipeline
+		httpEndPoint.getMediaPipeline().addErrorListener(
+				new MediaErrorListener() {
+					@Override
+					public void onError(MediaError error) {
+						getLogger().error(error.getDescription()); // TODO:
+																	// improve
+																	// message
+						internalTerminateWithError(null, error.getErrorCode(),
+								error.getDescription(), null);
+					}
+				});
 
-		// Add listeners for generating events on handler
-		httpEndPoint.addListener(new MediaEventListener<HttpEndPointEvent>() {
-			@Override
-			public void onEvent(HttpEndPointEvent event) {
-				// TODO: here we should send onContentCompleted and
-				// onContentStarted
-			}
-		});
+		// Generate appropiate actions when content is started
+		httpEndPoint
+				.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
+					@Override
+					public void onEvent(MediaSessionStartedEvent event) {
+						callOnContentStartedOnHanlder();
+						if (uriEndPoint != null
+								&& uriEndPoint instanceof PlayerEndPoint) {
+							((PlayerEndPoint) uriEndPoint).play();
+						} else if (uriEndPoint != null
+								&& uriEndPoint instanceof RecorderEndPoint) {
+							((RecorderEndPoint) uriEndPoint).record();
+							// TODO: ask Jose if this may produce losses in
+							// recorder
+						}
+					}
+				});
 
-		// TODO add listeners for generating onContentError to handler
-		// httpEndPoint.getMediaPipeline().addListener
+		// Generate appropriate actions when content is terminated
+		httpEndPoint
+				.addMediaSessionCompleteListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+					@Override
+					public void onEvent(MediaSessionTerminatedEvent event) {
+						internalTerminateWithoutError(null, 1,
+								"MediaServer MediaSessionTerminated", null); // TODO
+
+					}
+				});
 
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
@@ -266,16 +297,27 @@ public abstract class AbstractHttpBasedContentSession extends
 		return useControlProtocol;
 	}
 
-	/**
-	 * Send error code when using JSON signaling protocol.
-	 */
 	@Override
-	protected void sendOnTerminateErrorMessageInInitialContext(int code,
-			String description) {
+	protected void sendErrorAnswerOnInitialContext(int code, String description) {
 		if (useControlProtocol) {
-			protocolManager.sendJsonError(initialAsyncCtx, JsonRpcResponse
-					.newError(ExceptionUtils.getJsonErrorCode(code),
-							description, initialJsonRequest.getId()));
+			super.sendErrorAnswerOnInitialContext(code, description);
+		} else {
+			try {
+				ServletUtils.sendHttpError(
+						(HttpServletRequest) initialAsyncCtx.getRequest(),
+						(HttpServletResponse) initialAsyncCtx.getResponse(),
+						ExceptionUtils.getHttpErrorCode(code), description);
+			} catch (ServletException e) {
+				getLogger().error(e.getMessage(), e);
+				throw new KurentoMediaFrameworkException(e, 20026);
+			}
+		}
+	}
+
+	@Override
+	protected void sendRejectOnInitialContext(int code, String description) {
+		if (useControlProtocol) {
+			super.sendRejectOnInitialContext(code, description);
 		} else {
 			try {
 				ServletUtils.sendHttpError(

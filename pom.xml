@@ -13,7 +13,7 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies Versions -->
-		<kmf-media-api.version>1.0.0-SNAPSHOT</kmf-media-api.version>
+		<kmf-media-api.version>2.0.0-SNAPSHOT</kmf-media-api.version>
 		<kmf-content-protocol.version>0.0.1-SNAPSHOT</kmf-content-protocol.version>
 		<kmf-commons.version>0.0.1-SNAPSHOT</kmf-commons.version>
 		<kmf-spring.version>0.0.1-SNAPSHOT</kmf-spring.version>

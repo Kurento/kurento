@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
-import com.kurento.kmf.common.exception.internal.ExceptionUtils;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.WebRtcContentHandler;
@@ -28,8 +27,8 @@ import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
-import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.SdpEndPoint;
 
 /**
  * 
@@ -51,19 +50,8 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected String buildMediaEndPointAndReturnSdp(MediaElement sourceElement,
-			MediaElement... sinkElements) {
-		// TODO Create WebRtcEndPoint
-		// TODO Store media elements for later clean-up
-		// TODO Provide SDP to WebRtcEndPoint
-		// TODO connect endpoint to provided MediaElements
-		// TODO send SDP as answer to client
-		// TODO blocking calls here should be interruptible
-
-		// TODO: This answer is temporary, for debugging purposes (returning the
-		// same
-		// SDP received)
-		return initialJsonRequest.getSdp();
+	protected SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline) {
+		return mediaPipeline.createWebRtcEndPoint();
 	}
 
 	@Override
@@ -75,18 +63,10 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
 			JsonRpcRequest message) {
 		Assert.notNull(
-				initialJsonRequest.getSdp(),
+				initialJsonRequest.getParams().getSdp(),
 				"SDP cannot be null on message with method "
 						+ message.getMethod(), 10005);
 		super.processStartJsonRpcRequest(asyncCtx, message);
-	}
-
-	@Override
-	protected void sendOnTerminateErrorMessageInInitialContext(int code,
-			String description) {
-		protocolManager.sendJsonError(initialAsyncCtx, JsonRpcResponse
-				.newError(ExceptionUtils.getJsonErrorCode(code), description,
-						initialJsonRequest.getId()));
 	}
 
 	@Override
@@ -95,8 +75,9 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected void interalRawCallToOnContentCompleted() throws Exception {
-		getHandler().onContentCompleted(this);
+	protected void interalRawCallToOnSessionTerminated(int code,
+			String description) throws Exception {
+		getHandler().onSessionTerminated(this, code, description);
 	}
 
 	@Override
@@ -107,7 +88,7 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	@Override
 	protected void interalRawCallToOnContentError(int code, String description)
 			throws Exception {
-		getHandler().onContentError(this, code, description);
+		getHandler().onSessionError(this, code, description);
 	}
 
 	@Override

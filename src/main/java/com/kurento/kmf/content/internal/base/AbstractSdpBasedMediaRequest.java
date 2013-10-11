@@ -24,6 +24,13 @@ import com.kurento.kmf.content.SdpContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.SdpEndPoint;
+import com.kurento.kmf.media.events.MediaError;
+import com.kurento.kmf.media.events.MediaErrorListener;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
  * 
@@ -63,8 +70,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	 * @throws Throwable
 	 *             Error/Exception
 	 */
-	protected abstract String buildMediaEndPointAndReturnSdp(
-			MediaElement sourceElement, MediaElement... sinkElements);
+	protected abstract SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline);
 
 	/**
 	 * Star media element implementation.
@@ -81,12 +87,14 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		try {
 			internalStart(sourceElement, sinkElements);
 		} catch (KurentoMediaFrameworkException ke) {
-			terminate(ke.getCode(), ke.getMessage());
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
 			throw ke;
 		} catch (Throwable t) {
 			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
 					t.getMessage(), t, 20029);
-			terminate(kmfe.getCode(), kmfe.getMessage());
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
 			throw kmfe;
 		}
 	}
@@ -112,11 +120,11 @@ public abstract class AbstractSdpBasedMediaRequest extends
 			state = STATE.STARTING;
 		}
 
-		getLogger().info("SDP received " + initialJsonRequest.getSdp());
+		getLogger().info(
+				"SDP received " + initialJsonRequest.getParams().getSdp());
 
-		String answer = null;
-
-		answer = buildMediaEndPointAndReturnSdp(sourceElement, sinkElements);
+		SdpEndPoint sdpEndPoint = buildAndConnectSdpEndPoint(sourceElement,
+				sinkElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -133,24 +141,112 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		if (terminate) {
 			getLogger()
 					.info("Exiting due to terminate ... this should only happen on client's explicit termination");
+			destroy(); // idempotent call. Just in case pipeline gets build
+						// after session executes termination
 			return;
 		}
+
+		// Manage fatal errors in pipeline
+		sdpEndPoint.getMediaPipeline().addErrorListener(
+				new MediaErrorListener() {
+
+					@Override
+					public void onError(MediaError error) {
+						getLogger().error(error.getDescription()); // TODO
+						internalTerminateWithError(null, error.getErrorCode(),
+								error.getDescription(), null);
+					}
+				});
+
+		// Invoke handler when content start
+		sdpEndPoint
+				.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
+
+					@Override
+					public void onEvent(MediaSessionStartedEvent event) {
+						callOnContentStartedOnHanlder();
+					}
+				});
+
+		// Manage end of media session
+		sdpEndPoint
+				.addMediaSessionCompleteListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+
+					@Override
+					public void onEvent(MediaSessionTerminatedEvent event) {
+						internalTerminateWithoutError(null, 1, "TODO", null);// TODO
+
+					}
+				});
+
+		String answerSdp = sdpEndPoint.processOffer(initialJsonRequest
+				.getParams().getSdp());
 
 		// If session was not rejected (state=ACTIVE) we send an answer and
 		// the initialAsyncCtx becomes useless
 		// Send SDP as answer to client
-		getLogger().info("Answer SDP: " + answer);
-		Assert.notNull(answer,
+		getLogger().info("Answer SDP: " + answerSdp);
+		Assert.notNull(answerSdp,
 				"Received invalid null SDP from media server ... aborting",
 				20027);
-		Assert.isTrue(answer.length() > 0,
+		Assert.isTrue(answerSdp.length() > 0,
 				"Received invalid empty SDP from media server ... aborting",
 				20028);
 		protocolManager.sendJsonAnswer(initialAsyncCtx, JsonRpcResponse
-				.newStartSdpResponse(answer, sessionId,
+				.newStartSdpResponse(answerSdp, sessionId,
 						initialJsonRequest.getId()));
 		initialAsyncCtx = null;
 		initialJsonRequest = null;
+	}
+
+	private SdpEndPoint buildAndConnectSdpEndPoint(MediaElement sourceElement,
+			MediaElement[] sinkElements) {
+		// Candidate for providing a pipeline
+		getLogger().info("Looking for candidate ...");
+
+		if (sinkElements != null && sinkElements.length > 0) {
+			for (MediaElement e : sinkElements) {
+				Assert.notNull(e, "Illegal null sink provided", 10023);
+			}
+		}
+
+		MediaElement candidate = null;
+		if (sinkElements == null || sinkElements.length == 0) {
+			candidate = sourceElement;
+		} else {
+			candidate = sinkElements[0];
+		}
+
+		getLogger().info("Creating media candidate for candidate " + candidate);
+		MediaPipeline mediaPipeline = null;
+		if (candidate != null) {
+			mediaPipeline = candidate.getMediaPipeline();
+		} else {
+			mediaPipeline = mediaPipelineFactory.create();
+			releaseOnTerminate(mediaPipeline);
+		}
+
+		getLogger().info("Creating rtpEndPoint ...");
+		SdpEndPoint sdpEndPoint = buildSdpEndPoint(mediaPipeline);
+		releaseOnTerminate(sdpEndPoint);
+
+		// If no source is provided, jut loopback for having some media back
+		// to the client
+		if (sourceElement == null) {
+			sourceElement = sdpEndPoint; // This produces a loopback.
+		}
+
+		getLogger().info("Connecting media pads ...");
+		// TODO: should we double check constraints?
+		if (sinkElements != null) {
+			connect(sdpEndPoint, sinkElements);
+		}
+
+		if (sourceElement != null) {
+			sourceElement.connect(sdpEndPoint);
+		}
+
+		return sdpEndPoint;
 	}
 
 }

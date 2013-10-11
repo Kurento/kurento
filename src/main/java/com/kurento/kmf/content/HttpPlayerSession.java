@@ -15,7 +15,6 @@
 package com.kurento.kmf.content;
 
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.PlayerEndPoint;
 
 /**
  * Defines the operations performed by the PlayRequest object, which is in
@@ -64,12 +63,4 @@ public interface HttpPlayerSession extends ContentSession {
 	 * @param message
 	 *            Descriptive message to cancel the play operation
 	 */
-
-	/**
-	 * Temporal work-around.
-	 * 
-	 * @param player
-	 *            Player end point
-	 */
-	public void usePlayer(PlayerEndPoint player);
 }

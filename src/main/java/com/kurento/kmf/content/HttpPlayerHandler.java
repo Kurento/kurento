@@ -18,7 +18,7 @@ package com.kurento.kmf.content;
  * 
  * Defines the events associated to the HTTP play operation (
  * {@link #onContentRequest(HttpPlayerSession)},
- * {@link #onContentCompleted(HttpPlaySession)}, and
+ * {@link #onSessionTerminated(HttpPlaySession)}, and
  * {@link #onContentError(PlayRequest, ContentException)}); the implementation
  * of the PlayerHandler should be used in conjunction with
  * {@link HttpPlayerService} annotation. The following snippet shows an skeleton

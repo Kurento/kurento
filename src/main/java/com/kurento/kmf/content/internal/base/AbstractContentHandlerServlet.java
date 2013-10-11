@@ -307,16 +307,18 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 			}
 
 			AbstractContentSession contentRequest = null;
+			String sessionId = message.getParams() != null ? message
+					.getParams().getSessionId() : null;
+
 			if (message.getMethod().equals(METHOD_START)) {
 				contentRequest = createContentSession(asyncCtx, contentId);
 				contentSessionManager.put(contentRequest);
-			} else if (message.getSessionId() != null) {
-				contentRequest = contentSessionManager.get(message
-						.getSessionId());
+			} else if (sessionId != null) {
+				contentRequest = contentSessionManager.get(sessionId);
 				if (contentRequest == null) {
 					throw new KurentoMediaFrameworkException(
 							"Cloud not find contentRequest object associated to sessionId "
-									+ message.getSessionId(), 10021);
+									+ sessionId, 10021);
 				}
 			} else {
 				throw new KurentoMediaFrameworkException(
