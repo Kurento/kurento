@@ -117,6 +117,16 @@ send_force_key_unit_event (GstPad * pad)
 {
   GstStructure *s;
   GstEvent *force_key_unit_event;
+  GstCaps *caps = gst_pad_get_current_caps (pad);
+
+  if (caps == NULL)
+    caps = gst_pad_get_allowed_caps (pad);
+
+  if (caps == NULL)
+    return;
+
+  if (is_raw_caps (caps))
+    goto end;
 
   s = gst_structure_new ("GstForceKeyUnit",
       "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
@@ -127,6 +137,9 @@ send_force_key_unit_event (GstPad * pad)
   } else {
     gst_pad_push_event (pad, force_key_unit_event);
   }
+
+end:
+  gst_caps_unref (caps);
 }
 
 static GstPadProbeReturn
