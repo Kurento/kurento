@@ -695,11 +695,11 @@ kms_agnostic_bin2_request_new_pad (GstElement * element,
 {
   GstPad *pad;
   gchar *pad_name;
-  KmsAgnosticBin2 *agnosticbin = KMS_AGNOSTIC_BIN2 (element);
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (element);
 
-  GST_OBJECT_LOCK (agnosticbin);
-  pad_name = g_strdup_printf ("src_%d", agnosticbin->priv->pad_count++);
-  GST_OBJECT_UNLOCK (agnosticbin);
+  GST_OBJECT_LOCK (self);
+  pad_name = g_strdup_printf ("src_%d", self->priv->pad_count++);
+  GST_OBJECT_UNLOCK (self);
 
   pad = gst_ghost_pad_new_no_target_from_template (pad_name, templ);
   g_free (pad_name);
@@ -708,12 +708,12 @@ kms_agnostic_bin2_request_new_pad (GstElement * element,
       GST_PAD_PROBE_TYPE_EVENT_UPSTREAM,
       kms_agnostic_bin2_src_reconfigure_probe, element, NULL);
 
-  GST_OBJECT_LOCK (agnosticbin);
+  GST_OBJECT_LOCK (self);
 
   if (GST_STATE (element) >= GST_STATE_PAUSED)
     gst_pad_set_active (pad, TRUE);
 
-  GST_OBJECT_UNLOCK (agnosticbin);
+  GST_OBJECT_UNLOCK (self);
 
   if (gst_element_add_pad (element, pad))
     return pad;
