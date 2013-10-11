@@ -56,6 +56,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
   )                                           \
 )
 
+typedef void (*KmsActionFunc) (gpointer user_data);
+
 #define KMS_HTTP_END_POINT_GET_LOCK(obj) (               \
   &KMS_HTTP_END_POINT (obj)->priv->tdata.thread_mutex    \
 )
@@ -90,6 +92,13 @@ struct thread_data
   GMutex thread_mutex;
 };
 
+struct thread_cb_data
+{
+  KmsActionFunc function;
+  gpointer data;
+  GDestroyNotify notify;
+};
+
 typedef struct _GetData GetData;
 typedef struct _PostData PostData;
 
@@ -99,6 +108,12 @@ typedef enum
   CONFIGURING,
   CONFIGURED
 } HttpGetState;
+
+struct remove_data
+{
+  KmsHttpEndPoint *httpep;
+  GstElement *element;
+};
 
 struct config_data
 {
@@ -175,6 +190,28 @@ static void
 destroy_ulong (gpointer data)
 {
   g_slice_free (gulong, data);
+}
+
+static void
+remove_element_from_pipeline (gpointer user_data)
+{
+  struct remove_data *data = user_data;
+
+  GST_DEBUG ("Remove element %" GST_PTR_FORMAT, data->element);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (data->httpep));
+
+  gst_element_set_locked_state (data->element, TRUE);
+  gst_element_set_state (data->element, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (data->httpep->priv->pipeline), data->element);
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (data->httpep));
+}
+
+static void
+destroy_remove_data (gpointer data)
+{
+  g_slice_free (struct remove_data, data);
 }
 
 static GstFlowReturn
@@ -390,6 +427,26 @@ bus_message (GstBus * bus, GstMessage * msg, KmsHttpEndPoint * self)
 {
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS)
     g_signal_emit (G_OBJECT (self), http_ep_signals[SIGNAL_EOS], 0);
+}
+
+static void
+kms_http_end_point_add_action (KmsHttpEndPoint * self,
+    KmsActionFunc function, gpointer data, GDestroyNotify notify)
+{
+  struct thread_cb_data *th_data;
+
+  th_data = g_slice_new0 (struct thread_cb_data);
+
+  th_data->data = data;
+  th_data->function = function;
+  th_data->notify = notify;
+
+  KMS_HTTP_END_POINT_LOCK (self);
+
+  g_queue_push_tail (self->priv->tdata.actions, th_data);
+
+  KMS_HTTP_END_POINT_SIGNAL (self);
+  KMS_HTTP_END_POINT_UNLOCK (self);
 }
 
 static void
@@ -632,6 +689,7 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
   KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (user_data);
   GstPad *srcpad, *sinkpad;
+  struct remove_data *data;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
     return GST_PAD_PROBE_OK;
@@ -655,7 +713,21 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   g_object_unref (G_OBJECT (srcpad));
   g_object_unref (G_OBJECT (sinkpad));
 
-  /* TODO: Remove old encodebin and sink elements */
+  /* Remove old encodebin and sink elements */
+  data = g_slice_new0 (struct remove_data);
+
+  data->httpep = httpep;
+  data->element = gst_pad_get_parent_element (pad);
+  kms_http_end_point_add_action (httpep, remove_element_from_pipeline, data,
+      destroy_remove_data);
+  g_object_unref (G_OBJECT (data->element));
+
+  data = g_slice_new0 (struct remove_data);
+
+  data->httpep = httpep;
+  data->element = httpep->priv->get->encodebin;
+  kms_http_end_point_add_action (httpep, remove_element_from_pipeline, data,
+      destroy_remove_data);
 
   /* Add the new encodebin to the pipeline */
   httpep->priv->get->encodebin = gst_element_factory_make ("encodebin", NULL);
@@ -1032,6 +1104,17 @@ kms_http_end_point_dispose (GObject * object)
 }
 
 static void
+destroy_thread_cb_data (gpointer data)
+{
+  struct thread_cb_data *th_data = data;
+
+  if (th_data->notify)
+    th_data->notify (th_data->data);
+
+  g_slice_free (struct thread_cb_data, th_data);
+}
+
+static void
 kms_http_end_point_finalize (GObject * object)
 {
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
@@ -1049,6 +1132,8 @@ kms_http_end_point_finalize (GObject * object)
 
   g_cond_clear (&self->priv->tdata.thread_cond);
   g_mutex_clear (&self->priv->tdata.thread_mutex);
+
+  g_queue_free_full (self->priv->tdata.actions, destroy_thread_cb_data);
 
   switch (self->priv->method) {
     case KMS_HTTP_END_POINT_METHOD_GET:
@@ -1160,6 +1245,7 @@ static gpointer
 kms_http_end_point_thread (gpointer data)
 {
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (data);
+  struct thread_cb_data *th_data;
 
   /* Main thread loop */
   while (TRUE) {
@@ -1176,8 +1262,14 @@ kms_http_end_point_thread (gpointer data)
       break;
     }
 
-    /* TODO: Do something */
+    th_data = g_queue_pop_head (self->priv->tdata.actions);
+
     KMS_HTTP_END_POINT_UNLOCK (self);
+
+    if (th_data->function)
+      th_data->function (th_data->data);
+
+    destroy_thread_cb_data (th_data);
   }
 
   GST_DEBUG_OBJECT (self, "Thread finished");
