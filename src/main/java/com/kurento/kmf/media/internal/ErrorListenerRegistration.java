@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.media.internal;
 
-
 public class ErrorListenerRegistration extends AbstractListenerRegistration {
 
 	public ErrorListenerRegistration(String callbackToken) {

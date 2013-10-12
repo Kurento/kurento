@@ -47,8 +47,7 @@ public class MediaPipelineFactory {
 
 		MediaPipelineRef pipelineRefDTO;
 		try {
-			pipelineRefDTO = new MediaPipelineRef(
-					client.createMediaPipeline());
+			pipelineRefDTO = new MediaPipelineRef(client.createMediaPipeline());
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -152,8 +151,8 @@ public class MediaPipelineFactory {
 								createMediaPipelineWithParams_call response) {
 							MediaPipelineRef pipelineRefDTO;
 							try {
-								pipelineRefDTO = new MediaPipelineRef(
-										response.getResult());
+								pipelineRefDTO = new MediaPipelineRef(response
+										.getResult());
 							} catch (KmsMediaServerException e) {
 								throw new KurentoMediaFrameworkException(e
 										.getMessage(), e, e.getErrorCode());

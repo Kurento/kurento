@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.media.internal;
 
-
 public class EventListenerRegistration extends AbstractListenerRegistration {
 
 	public EventListenerRegistration(String callbackToken) {

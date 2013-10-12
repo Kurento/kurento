@@ -19,11 +19,12 @@ import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_C
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.internal.ProvidesMediaEvent;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
+import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 
 @ProvidesMediaEvent(type = EVENT_CODE_FOUND)
-public class CodeFoundEventImpl extends AbstractMediaEvent implements
-		CodeFoundEvent {
+public class CodeFoundEventImpl extends AbstractMediaEvent<EventCodeFoundParam>
+		implements CodeFoundEvent {
 
 	private String codeType;
 

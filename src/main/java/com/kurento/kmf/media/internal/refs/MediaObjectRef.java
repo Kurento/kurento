@@ -22,8 +22,8 @@ public abstract class MediaObjectRef {
 
 	/**
 	 * This constructor is used to preserve immutability of
-	 * {@link MediaObjectRef#objectId}. A defensive copy of the id takes
-	 * place, in order to have a unique reference.
+	 * {@link MediaObjectRef#objectId}. A defensive copy of the id takes place,
+	 * in order to have a unique reference.
 	 * 
 	 * @param id
 	 */
