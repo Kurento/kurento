@@ -72,7 +72,7 @@ kms_player_end_point_dispose (GObject * object)
     GstBus *bus;
 
     bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
-    gst_bus_remove_signal_watch (bus);
+    gst_bus_set_sync_handler (bus, NULL, NULL, NULL);
     g_object_unref (bus);
 
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
@@ -333,13 +333,17 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
   g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
 }
 
-static void
-bus_message (GstBus * bus, GstMessage * msg, KmsPlayerEndPoint * self)
+static GstBusSyncReply
+bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 {
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
     g_signal_emit (G_OBJECT (self),
         kms_player_end_point_signals[SIGNAL_EOS], 0);
   }
+
+  return GST_BUS_PASS;
 }
 
 static void
@@ -361,8 +365,7 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
-  gst_bus_add_signal_watch (bus);
-  g_signal_connect (G_OBJECT (bus), "message", G_CALLBACK (bus_message), self);
+  gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
   g_object_unref (bus);
 
   /* Connect to signals */
