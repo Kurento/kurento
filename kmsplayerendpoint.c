@@ -137,6 +137,32 @@ end:
 }
 
 static void
+eos_cb (GstElement * appsink, gpointer user_data)
+{
+  GstElement *appsrc = GST_ELEMENT (user_data);
+  GstStructure *s;
+  GstEvent *event;
+  GstPad *srcpad;
+
+  GST_DEBUG ("Sending custom playerendpoint eos event to %s",
+      GST_ELEMENT_NAME (appsrc));
+
+  srcpad = gst_element_get_static_pad (appsrc, "src");
+  if (srcpad == NULL) {
+    GST_ERROR ("Can not get source pad from %s", GST_ELEMENT_NAME (appsrc));
+    return;
+  }
+
+  s = gst_structure_new_empty ("PlayerEndPointEOS");
+  event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM, s);
+
+  if (!gst_pad_push_event (srcpad, event))
+    GST_ERROR ("PlayerEndPointEOS event could not be sent");
+
+  g_object_unref (srcpad);
+}
+
+static void
 pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 {
   GST_DEBUG ("Pad added");
@@ -185,10 +211,12 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
       GST_ELEMENT_NAME (appsink));
   g_object_unref (sinkpad);
 
-  /* Connect new-sample signal to callback */
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
   g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
+
+  /* Connect new-sample signal to callback */
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
 
 end:
   if (src_caps != NULL)
