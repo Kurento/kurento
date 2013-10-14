@@ -781,10 +781,6 @@ kms_agnostic_bin2_request_new_pad (GstElement * element,
 static void
 kms_agnostic_bin2_release_pad (GstElement * element, GstPad * pad)
 {
-  GST_OBJECT_LOCK (element);
-  if (GST_STATE (element) >= GST_STATE_PAUSED)
-    gst_pad_set_active (pad, FALSE);
-  GST_OBJECT_UNLOCK (element);
   gst_element_remove_pad (element, pad);
 }
 
