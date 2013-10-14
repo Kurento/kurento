@@ -254,6 +254,7 @@ kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
           self->priv->block_probe);
     }
 
+    remove_target_pad (pad);
     g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
     KMS_AGNOSTIC_BIN2_SIGNAL (self);
   }
