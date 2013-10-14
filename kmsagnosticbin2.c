@@ -212,6 +212,34 @@ sink_block (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   return GST_PAD_PROBE_OK;
 }
 
+static GstPadProbeReturn
+queue_block (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
+    return GST_PAD_PROBE_OK;
+
+  // TODO: Start disconnection of this queue and all the  element chain
+  // related to it
+  return GST_PAD_PROBE_DROP;
+}
+
+static void
+remove_target_pad (GstPad * pad)
+{
+  GstPad *target;
+
+  GST_DEBUG_OBJECT (pad, "Removing target pad");
+
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target != NULL) {
+    gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, queue_block,
+        NULL, NULL);
+    g_object_unref (target);
+    gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
+  }
+}
+
 static void
 kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 {
@@ -689,17 +717,6 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
   return GST_PAD_PROBE_PASS;
 }
 
-static GstPadProbeReturn
-queue_block (GstPad * pad, GstPadProbeInfo * info, gpointer data)
-{
-  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
-    return GST_PAD_PROBE_OK;
-
-  // TODO: Start disconnection of this queue and all the  element chain
-  // related to it
-  return GST_PAD_PROBE_DROP;
-}
-
 static void
 kms_agnostic_bin2_src_unlinked_just_lock (GstPad * pad, GstObject * parent)
 {
@@ -713,17 +730,10 @@ static void
 kms_agnostic_bin2_src_unlinked (GstPad * pad, GstPad * peer,
     KmsAgnosticBin2 * self)
 {
-  GstPad *target;
-
   GST_DEBUG_OBJECT (pad, "Unlinked");
-  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
 
-  if (target != NULL) {
-    gst_pad_add_probe (target,
-        GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_ALL_BOTH, queue_block,
-        NULL, NULL);
-    g_object_unref (target);
-  }
+  remove_target_pad (pad);
+
   // We get the lock here an it will be release in the unlinked signal watcher
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
   GST_DEBUG_OBJECT (pad, "Unlinked OK");
