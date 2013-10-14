@@ -439,7 +439,7 @@ kms_agnostic_bin2_get_or_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * caps)
     return raw_tee;
   } else {
     GST_ELEMENT_WARNING (self, CORE, NEGOTIATION,
-        ("Formats are not compatible"), (""));
+        ("Formats are not compatible"), ("Formats are not compatible"));
     return NULL;
   }
 }
