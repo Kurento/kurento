@@ -178,8 +178,8 @@ kms_recorder_end_point_add_action (KmsRecorderEndPoint * self,
 
   g_queue_push_tail (self->priv->tdata.actions, th_data);
 
-  KMS_RECORDER_END_POINT_UNLOCK (self);
   KMS_RECORDER_END_POINT_SIGNAL (self);
+  KMS_RECORDER_END_POINT_UNLOCK (self);
 }
 
 static void
