@@ -773,12 +773,7 @@ kms_agnostic_bin2_request_new_pad (GstElement * element,
       G_CALLBACK (kms_agnostic_bin2_src_unlinked), self);
   gst_pad_set_unlink_function (pad, kms_agnostic_bin2_src_unlinked_just_lock);
 
-  GST_OBJECT_LOCK (self);
-
-  if (GST_STATE (element) >= GST_STATE_PAUSED)
-    gst_pad_set_active (pad, TRUE);
-
-  GST_OBJECT_UNLOCK (self);
+  gst_pad_set_active (pad, TRUE);
 
   if (gst_element_add_pad (element, pad))
     return pad;
