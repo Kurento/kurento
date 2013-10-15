@@ -196,7 +196,10 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 
   gst_bin_add (GST_BIN (self), appsrc);
   gst_element_sync_state_with_parent (appsrc);
-  gst_element_link (appsrc, agnosticbin);
+  if (!gst_element_link (appsrc, agnosticbin)) {
+    GST_ERROR ("Could not link %s to element %s", GST_ELEMENT_NAME (appsrc),
+        GST_ELEMENT_NAME (agnosticbin));
+  }
 
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
