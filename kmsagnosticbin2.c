@@ -107,7 +107,7 @@ is_raw_caps (GstCaps * caps)
   gboolean ret;
   GstCaps *raw_caps = gst_caps_from_string (KMS_AGNOSTIC_RAW_CAPS);
 
-  ret = gst_caps_can_intersect (caps, raw_caps);
+  ret = gst_caps_is_always_compatible (caps, raw_caps);
 
   gst_caps_unref (raw_caps);
   return ret;
