@@ -31,12 +31,13 @@ public class BooleanMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
-	public BooleanMediaParam() {
+	public BooleanMediaParam(boolean data) {
 		super(BOOL_DATA_TYPE);
+		this.data = data;
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeBool(data);
 		} catch (TException e) {

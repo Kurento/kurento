@@ -18,8 +18,6 @@ import static org.apache.commons.pool.impl.GenericObjectPool.WHEN_EXHAUSTED_FAIL
 
 import java.util.NoSuchElementException;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
@@ -36,14 +34,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
 	private ObjectPool<T> pool;
 
-	private final BasePoolableObjectFactory<T> factory;
-
-	AbstractPool(BasePoolableObjectFactory<T> factory) {
-		this.factory = factory;
-	}
-
-	@PostConstruct
-	private void init() {
+	protected void init(BasePoolableObjectFactory<T> factory) {
 		Config config = new Config();
 		config.maxActive = apiConfig.getPoolSize();
 		config.whenExhaustedAction = WHEN_EXHAUSTED_FAIL;

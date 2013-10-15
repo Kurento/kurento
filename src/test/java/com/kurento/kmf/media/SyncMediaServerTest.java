@@ -87,7 +87,6 @@ public class SyncMediaServerTest {
 		log.info("Offering SDP\n" + requestSdp);
 		String answerSdp = rtpEndPoint.processOffer(requestSdp);
 		log.info("AnswerSDP is " + answerSdp);
-
 		log.info("Connecting loopback");
 		rtpEndPoint
 				.getMediaSrcs(KmsMediaType.VIDEO)

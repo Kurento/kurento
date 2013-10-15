@@ -34,8 +34,7 @@ public class DefaultMediaEventImpl extends
 
 	@Override
 	public byte[] getData() {
-		DefaultMediaParam param = this.getParam();
-		return param.getData();
+		return this.getParam().getData();
 	}
 
 }

@@ -15,5 +15,5 @@
 package com.kurento.kmf.media.events;
 
 public interface MediaErrorListener {
-	public void onError(MediaError error);
+	void onError(MediaError error);
 }

@@ -31,20 +31,20 @@ public class StringMediaParam extends AbstractThriftSerializedMediaParam {
 
 	private String data;
 
-	/**
-	 * @param data
-	 */
-	public StringMediaParam(String data) {
+	public StringMediaParam() {
 		super(STRING_DATA_TYPE);
-		this.data = data;
 	}
 
 	public String getString() {
 		return this.data;
 	}
 
+	public void setString(String data) {
+		this.data = data;
+	}
+
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeString(data);
 		} catch (TException e) {

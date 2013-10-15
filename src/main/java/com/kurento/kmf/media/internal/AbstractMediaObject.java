@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.slf4j.Logger;
@@ -86,6 +88,10 @@ public abstract class AbstractMediaObject implements MediaObject {
 
 	public AbstractMediaObject(MediaObjectRef ref) {
 		objectRef = ref;
+	}
+
+	@PostConstruct
+	private void init() {
 		distributedGarbageCollector.registerReference(objectRef.getThriftRef());
 	}
 
@@ -320,7 +326,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 				clientPool.release(client);
 			}
 
-			pipeline = (MediaPipelineImpl) ctx.getBean("mediaPipeline",
+			pipeline = (MediaPipelineImpl) ctx.getBean("mediaObject",
 					pipelineRefDTO);
 		}
 
@@ -757,7 +763,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 								}
 
 								pipeline = (MediaPipelineImpl) ctx.getBean(
-										"mediaPipeline", objRef);
+										"mediaObject", objRef);
 								cont.onSuccess(pipeline);
 							}
 						});

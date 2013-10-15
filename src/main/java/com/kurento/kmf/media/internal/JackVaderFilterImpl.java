@@ -22,7 +22,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 @ProvidesMediaElement(type = TYPE_NAME)
 public class JackVaderFilterImpl extends FilterImpl implements JackVaderFilter {
 
-	JackVaderFilterImpl(MediaElementRef filterId) {
+	public JackVaderFilterImpl(MediaElementRef filterId) {
 		super(filterId);
 	}
 

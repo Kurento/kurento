@@ -31,12 +31,16 @@ public class IntegerMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
+	public void setInteger(int data) {
+		this.data = data;
+	}
+
 	public IntegerMediaParam() {
 		super(I32_DATA_TYPE);
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeI32(data);
 		} catch (TException e) {

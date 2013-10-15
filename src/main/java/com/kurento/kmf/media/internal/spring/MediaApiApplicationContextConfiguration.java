@@ -19,6 +19,8 @@ import java.lang.reflect.Constructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -30,14 +32,17 @@ import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.internal.AbstractMediaEvent;
 import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
+import com.kurento.kmf.media.internal.DistributedGarbageCollector;
 import com.kurento.kmf.media.internal.MediaElementImpl;
 import com.kurento.kmf.media.internal.MediaHandlerServer;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaServerCallbackHandler;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
+import com.kurento.kmf.media.internal.pool.MediaServerAsyncClientFactory;
 import com.kurento.kmf.media.internal.pool.MediaServerAsyncClientPool;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
+import com.kurento.kmf.media.internal.pool.MediaServerSyncClientFactory;
 import com.kurento.kmf.media.internal.pool.MediaServerSyncClientPool;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
@@ -53,6 +58,26 @@ import com.kurento.kms.thrift.api.KmsMediaParam;
 
 @Configuration
 public class MediaApiApplicationContextConfiguration {
+
+	@Bean
+	public TaskExecutor taskExecutor() {
+		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+		executor.setCorePoolSize(5);
+		executor.setMaxPoolSize(10);
+		executor.setQueueCapacity(10);
+		executor.initialize();
+		return executor;
+	}
+
+	@Bean
+	MediaServerAsyncClientFactory mediaServerAsyncClientFactory() {
+		return new MediaServerAsyncClientFactory();
+	}
+
+	@Bean
+	MediaServerSyncClientFactory mediaServerSyncClientFactory() {
+		return new MediaServerSyncClientFactory();
+	}
 
 	@Bean
 	MediaServerClientPoolService mediaServerClientPoolService() {
@@ -105,6 +130,11 @@ public class MediaApiApplicationContextConfiguration {
 	}
 
 	@Bean
+	DistributedGarbageCollector distributedGarbageCollector() {
+		return new DistributedGarbageCollector();
+	}
+
+	@Bean
 	@Scope("prototype")
 	public MediaEvent mediaEvent(KmsMediaEvent event) {
 
@@ -140,9 +170,9 @@ public class MediaApiApplicationContextConfiguration {
 
 	@Bean
 	@Scope("prototype")
-	public MediaParam mediaParam(KmsMediaParam result) {
+	public MediaParam mediaParam(KmsMediaParam param) {
 
-		Class<?> clazz = mediaParamClassStore().get(result.dataType);
+		Class<?> clazz = mediaParamClassStore().get(param.dataType);
 
 		AbstractMediaParam mediaParam;
 
@@ -159,8 +189,8 @@ public class MediaApiApplicationContextConfiguration {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
-		if (result.isSetData()) {
-			mediaParam.deserializeCommandResult(result);
+		if (param.isSetData()) {
+			mediaParam.deserializeParam(param);
 		}
 
 		return mediaParam;
@@ -178,7 +208,7 @@ public class MediaApiApplicationContextConfiguration {
 		} else if (objRef instanceof MediaElementRef) {
 			MediaElementRef elementRefDTO = (MediaElementRef) objRef;
 			String type = elementRefDTO.getType();
-			clazz = mediaEventClassStore().get(type);
+			clazz = mediaElementClassStore().get(type);
 			if (clazz == null) {
 				clazz = MediaElementImpl.class;
 			}
@@ -186,7 +216,7 @@ public class MediaApiApplicationContextConfiguration {
 		} else if (objRef instanceof MediaMixerRef) {
 			MediaMixerRef mixerRefDTO = (MediaMixerRef) objRef;
 			String type = mixerRefDTO.getType();
-			clazz = mediaEventClassStore().get(type);
+			clazz = mediaElementClassStore().get(type);
 
 			if (clazz == null) {
 				clazz = MediaMixer.class;
@@ -198,7 +228,7 @@ public class MediaApiApplicationContextConfiguration {
 		} else {
 			// TODO error code and message
 			throw new KurentoMediaFrameworkException(
-					"objRef is not of any known type", 30000);
+					"Unknown object ref of type " + objRef.getClass(), 30000);
 		}
 
 		MediaObject obj = instantiateMediaObject(clazz, objRef);
@@ -234,7 +264,7 @@ public class MediaApiApplicationContextConfiguration {
 		try {
 			// TODO: document that all media objects must have such constructor
 			Constructor<?> constructor = clazz
-					.getConstructor(MediaObjectRef.class);
+					.getConstructor(objRef.getClass());
 			// This cast is safe as long as the type of the class refers to a
 			// type that extends from MediaObject.
 			// Nevertheless, a catch is included in the try-catch block.

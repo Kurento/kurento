@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.params.internal;
 
+import java.util.Arrays;
+
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
@@ -37,25 +39,20 @@ public abstract class AbstractThriftSerializedMediaParam extends
 		return this.dataType;
 	}
 
+	/**
+	 * Serialises the information stored in the param as a Thrift-serialised
+	 * byte array. This method is invoked when constructing the thrift param.
+	 */
 	@Override
 	protected byte[] getData() {
-		TMemoryBuffer tr = new TMemoryBuffer(64);
+		TMemoryBuffer tr = new TMemoryBuffer(512);
 		TProtocol pr = new TBinaryProtocol(tr);
-		pr = this.getThriftSerializedData(pr);
-		byte[] buf = new byte[pr.getTransport().getBytesRemainingInBuffer()];
-
-		try {
-			pr.getTransport().read(buf, 0,
-					pr.getTransport().getBytesRemainingInBuffer());
-		} catch (TTransportException e) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		}
-		return buf;
+		pr = this.serializeDataToThrift(pr);
+		return Arrays.copyOf(tr.getArray(), tr.length());
 	}
 
 	@Override
-	public void deserializeCommandResult(KmsMediaParam result) {
+	public void deserializeParam(KmsMediaParam result) {
 		if (result.isSetData()) {
 			TMemoryBuffer tr = new TMemoryBuffer(result.data.remaining());
 			TProtocol pr = new TBinaryProtocol(tr);
@@ -74,5 +71,5 @@ public abstract class AbstractThriftSerializedMediaParam extends
 
 	protected abstract void deserializeFromTProtocol(TProtocol pr);
 
-	protected abstract TProtocol getThriftSerializedData(TProtocol pr);
+	protected abstract TProtocol serializeDataToThrift(TProtocol pr);
 }

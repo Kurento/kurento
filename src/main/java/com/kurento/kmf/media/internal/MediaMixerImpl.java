@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -26,7 +26,6 @@ import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.params.MediaParam;
-import com.kurento.kms.thrift.api.KmsMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerEndPointWithParams_call;
@@ -64,18 +63,17 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 	}
 
 	@Override
-	public MediaElement createEndPoint(MediaParam params)
+	public MediaElement createEndPoint(Map<String, MediaParam> params)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
 
 		MediaElementRef endPointRef;
 
 		try {
-			// TODO add params
 			endPointRef = new MediaElementRef(
 					client.createMixerEndPointWithParams(
 							this.objectRef.getThriftRef(),
-							new HashMap<String, KmsMediaParam>()));
+							transformMediaParamsMap(params)));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -136,17 +134,16 @@ public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
 	}
 
 	@Override
-	public void createEndPoint(MediaParam params,
+	public void createEndPoint(Map<String, MediaParam> params,
 			final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
-			// TODO add params
 			client.createMixerEndPointWithParams(
 					objectRef.getThriftRef(),
-					new HashMap<String, KmsMediaParam>(),
+					transformMediaParamsMap(params),
 					new AsyncMethodCallback<createMixerEndPointWithParams_call>() {
 
 						@Override

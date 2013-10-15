@@ -35,7 +35,7 @@ public abstract class AbstractMediaEvent<T extends MediaParam> implements
 	private final MediaObjectRef sourceRef;
 	private MediaObject source;
 	private final String type;
-	private final KmsMediaParam kmsParam;
+	protected final KmsMediaParam kmsParam;
 	protected T param;
 
 	// TODO: should not be visible to final developer
@@ -62,7 +62,7 @@ public abstract class AbstractMediaEvent<T extends MediaParam> implements
 	@SuppressWarnings("unchecked")
 	protected T getParam() {
 		if (param != null) {
-			param = (T) applicationContext.getBean("mediaObject", kmsParam);
+			param = (T) applicationContext.getBean("mediaParam", kmsParam);
 		}
 		return param;
 	}

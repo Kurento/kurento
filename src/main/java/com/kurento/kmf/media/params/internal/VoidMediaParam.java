@@ -24,12 +24,12 @@ import com.kurento.kms.thrift.api.KmsMediaParam;
 @ProvidesMediaParam(type = VOID_DATA_TYPE)
 public class VoidMediaParam extends AbstractThriftSerializedMediaParam {
 
-	VoidMediaParam() {
+	public VoidMediaParam() {
 		super(VOID_DATA_TYPE);
 	}
 
 	@Override
-	public void deserializeCommandResult(KmsMediaParam result) {
+	public void deserializeParam(KmsMediaParam result) {
 		// Nothing to do here
 	}
 
@@ -39,7 +39,7 @@ public class VoidMediaParam extends AbstractThriftSerializedMediaParam {
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		// Nothing to do here
 		return pr;
 	}

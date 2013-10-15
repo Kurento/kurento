@@ -31,12 +31,16 @@ public class DoubleMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
+	public void setDouble(double dbl) {
+		this.data = dbl;
+	}
+
 	public DoubleMediaParam() {
 		super(DOUBLE_DATA_TYPE);
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeDouble(data);
 		} catch (TException e) {

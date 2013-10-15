@@ -56,7 +56,7 @@ public class HttpEndpointConstructorParam extends
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaHttpEndPointConstructorParams kmsParams = new KmsMediaHttpEndPointConstructorParams();
 		if (cookieLifetime != null) {
 			kmsParams.setCookieLifetime(cookieLifetime.intValue());

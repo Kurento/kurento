@@ -24,7 +24,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 public class RecorderEndPointImpl extends AbstractUriEndPoint implements
 		RecorderEndPoint {
 
-	RecorderEndPointImpl(MediaElementRef endpointRef) {
+	public RecorderEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 

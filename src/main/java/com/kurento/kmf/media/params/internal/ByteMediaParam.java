@@ -31,12 +31,16 @@ public class ByteMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
+	public void setByte(byte data) {
+		this.data = data;
+	}
+
 	public ByteMediaParam() {
 		super(BYTE_DATA_TYPE);
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeByte(data);
 		} catch (TException e) {

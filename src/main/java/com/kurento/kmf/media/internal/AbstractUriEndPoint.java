@@ -17,12 +17,17 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.GET_URI;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.PAUSE;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.SET_URI;
+import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.SET_URI_PARAM_URI_STR;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.START;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.STOP;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.UriEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
 public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
@@ -41,8 +46,11 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 
 	@Override
 	public void setUri(String uri) {
-		// TODO add uri param
-		invoke(SET_URI);
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		StringMediaParam param = new StringMediaParam();
+		param.setString(uri);
+		params.put(SET_URI_PARAM_URI_STR, param);
+		invoke(SET_URI, params);
 	}
 
 	void start() {
@@ -67,7 +75,10 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 
 	@Override
 	public void setUri(final String uri, final Continuation<Void> cont) {
-		// TODO add uri param
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		StringMediaParam param = new StringMediaParam();
+		param.setString(uri);
+		params.put(SET_URI_PARAM_URI_STR, param);
 		invoke(SET_URI, new VoidContinuationWrapper(cont));
 	}
 

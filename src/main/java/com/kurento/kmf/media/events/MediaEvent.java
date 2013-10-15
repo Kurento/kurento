@@ -18,8 +18,8 @@ import com.kurento.kmf.media.MediaObject;
 
 public interface MediaEvent {
 
-	public MediaObject getSource();
+	MediaObject getSource();
 
-	public String getType();
+	String getType();
 
 }

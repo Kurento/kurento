@@ -36,15 +36,15 @@ public abstract class AbstractMediaParam implements MediaParam {
 	protected abstract byte[] getData();
 
 	/**
-	 * Deserializes a command result obtained form the media server.
-	 * Implementations of this class are responsible for the correct
-	 * deserialization, since each command returns a different type of result.
+	 * Deserializes a param obtained form the media server. Implementations of
+	 * this class are responsible for the correct deserialization, since each
+	 * param has different payload.
 	 * 
-	 * @param result
-	 *            The result form the command. This is a thrift
+	 * @param param
+	 *            The param as a thrift
 	 *            {@link com.kurento.kms.thrift.api.KmsMediaParam} structure
 	 */
-	public abstract void deserializeCommandResult(KmsMediaParam result);
+	public abstract void deserializeParam(KmsMediaParam param);
 
 	public KmsMediaParam getThriftParams() {
 		KmsMediaParam params = new KmsMediaParam();

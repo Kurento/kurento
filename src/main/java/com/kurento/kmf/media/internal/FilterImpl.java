@@ -19,7 +19,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 
 public class FilterImpl extends MediaElementImpl implements Filter {
 
-	FilterImpl(MediaElementRef filterId) {
+	public FilterImpl(MediaElementRef filterId) {
 		super(filterId);
 	}
 

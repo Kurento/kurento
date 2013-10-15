@@ -31,12 +31,16 @@ public class ShortMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
+	public void setShort(short data) {
+		this.data = data;
+	}
+
 	public ShortMediaParam() {
 		super(I16_DATA_TYPE);
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeI16(data);
 		} catch (TException e) {

@@ -76,6 +76,7 @@ public class MediaHandlerServer {
 			TServer server = new TNonblockingServer(
 					new TNonblockingServer.Args(serverTransport)
 							.processor(processor));
+			// TODO for now, only one thread is created.
 			taskExecutor.execute(new ServerTask(server));
 		} catch (TTransportException e) {
 			// TODO change error code

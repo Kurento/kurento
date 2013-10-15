@@ -31,12 +31,16 @@ public class LongMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
+	public void setLong(long data) {
+		this.data = data;
+	}
+
 	public LongMediaParam() {
 		super(I64_DATA_TYPE);
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		try {
 			pr.writeI64(data);
 		} catch (TException e) {

@@ -105,6 +105,7 @@ public class MediaServerCallbackHandler {
 	 * Removes a listener that handles errors for a given {@link MediaObject}
 	 * 
 	 * @param mediaObj
+	 * @param registration
 	 */
 	public void removeErrorListener(MediaObject mediaObj,
 			ErrorListenerRegistration registration) {

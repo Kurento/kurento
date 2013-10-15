@@ -27,7 +27,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 @ProvidesMediaElement(type = TYPE_NAME)
 public class ZBarFilterImpl extends FilterImpl implements ZBarFilter {
 
-	ZBarFilterImpl(MediaElementRef filterId) {
+	public ZBarFilterImpl(MediaElementRef filterId) {
 		super(filterId);
 	}
 

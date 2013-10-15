@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.params.internal;
 
+import java.util.Arrays;
+
 import com.kurento.kms.thrift.api.KmsMediaParam;
 
 /**
@@ -22,22 +24,27 @@ import com.kurento.kms.thrift.api.KmsMediaParam;
  */
 public class DefaultMediaParam extends AbstractMediaParam {
 
+	private byte[] data;
+
 	/**
 	 * @param type
 	 */
-	protected DefaultMediaParam(String type) {
-		super("UNKNOWN PARAM TYPE");
+	public DefaultMediaParam(String type) {
+		super(type);
 	}
 
 	@Override
 	public byte[] getData() {
-		// TODO provide impl
-		return null;
+		return this.data;
+	}
+
+	public void setData(byte[] data) {
+		this.data = Arrays.copyOf(data, data.length);
 	}
 
 	@Override
-	public void deserializeCommandResult(KmsMediaParam result) {
-		// TODO provide impl
+	public void deserializeParam(KmsMediaParam result) {
+		// TODO What to do with default media param?
 	}
 
 }

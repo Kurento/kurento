@@ -56,7 +56,7 @@ public class UriEndPointConstructorParam extends
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaUriEndPointConstructorParams kmsParams = new KmsMediaUriEndPointConstructorParams();
 		kmsParams.setUri(uri.toString());
 

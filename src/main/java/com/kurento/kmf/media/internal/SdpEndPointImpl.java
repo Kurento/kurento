@@ -18,17 +18,23 @@ import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.GENERA
 import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.GET_LOCAL_SDP;
 import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.GET_REMOTE_SDP;
 import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_ANSWER;
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_ANSWER_PARAM_ANSWER_STR;
 import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_OFFER;
+import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_OFFER_PARAM_OFFER_STR;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.SdpEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
 public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		SdpEndPoint {
 
-	SdpEndPointImpl(MediaElementRef endpointRef) {
+	public SdpEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -41,14 +47,20 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 
 	@Override
 	public String processOffer(String offer) {
-		// TODO build params map offer
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		StringMediaParam param = new StringMediaParam();
+		param.setString(offer);
+		params.put(PROCESS_SDP_OFFER_PARAM_OFFER_STR, param);
 		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_OFFER);
 		return result.getString();
 	}
 
 	@Override
 	public String processAnswer(String answer) {
-		// TODO build params map answer
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		StringMediaParam param = new StringMediaParam();
+		param.setString(answer);
+		params.put(PROCESS_SDP_ANSWER_PARAM_ANSWER_STR, param);
 		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_ANSWER);
 		return result.getString();
 	}
@@ -74,13 +86,19 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 
 	@Override
 	public void processOffer(String offer, final Continuation<String> cont) {
-		// TODO build params map offer
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		StringMediaParam param = new StringMediaParam();
+		param.setString(offer);
+		params.put(PROCESS_SDP_OFFER_PARAM_OFFER_STR, param);
 		invoke(PROCESS_SDP_OFFER, new StringContinuationWrapper(cont));
 	}
 
 	@Override
 	public void processAnswer(String answer, final Continuation<String> cont) {
-		// TODO build params map answer
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		StringMediaParam param = new StringMediaParam();
+		param.setString(answer);
+		params.put(PROCESS_SDP_ANSWER_PARAM_ANSWER_STR, param);
 		invoke(PROCESS_SDP_ANSWER, new StringContinuationWrapper(cont));
 	}
 

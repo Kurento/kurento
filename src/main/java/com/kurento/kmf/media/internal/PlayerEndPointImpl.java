@@ -28,7 +28,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 public class PlayerEndPointImpl extends AbstractUriEndPoint implements
 		PlayerEndPoint {
 
-	PlayerEndPointImpl(MediaElementRef endpointRef) {
+	public PlayerEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 

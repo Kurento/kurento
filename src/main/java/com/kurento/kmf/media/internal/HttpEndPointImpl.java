@@ -26,7 +26,7 @@ import com.kurento.kmf.media.params.internal.StringMediaParam;
 public class HttpEndPointImpl extends AbstractSessionEndPoint implements
 		HttpEndPoint {
 
-	HttpEndPointImpl(MediaElementRef endpointRef) {
+	public HttpEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 

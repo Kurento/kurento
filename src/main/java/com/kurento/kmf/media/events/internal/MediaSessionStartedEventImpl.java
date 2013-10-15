@@ -17,10 +17,10 @@ package com.kurento.kmf.media.events.internal;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_START;
 
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
-import com.kurento.kmf.media.internal.ProvidesMediaElement;
+import com.kurento.kmf.media.internal.ProvidesMediaEvent;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 
-@ProvidesMediaElement(type = EVENT_MEDIA_SESSION_START)
+@ProvidesMediaEvent(type = EVENT_MEDIA_SESSION_START)
 public class MediaSessionStartedEventImpl extends VoidMediaEvent implements
 		MediaSessionStartedEvent {
 

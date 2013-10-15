@@ -16,6 +16,7 @@ package com.kurento.kmf.media;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -27,6 +28,7 @@ import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.AbstractMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -59,7 +61,7 @@ public class MediaPipelineFactory {
 		}
 
 		MediaPipelineImpl pipeline = (MediaPipelineImpl) ctx.getBean(
-				"mediaPipeline", pipelineRefDTO);
+				"mediaObject", pipelineRefDTO);
 		return pipeline;
 	}
 
@@ -68,11 +70,11 @@ public class MediaPipelineFactory {
 
 		Client client = this.clientPool.acquireSync();
 
-		MediaPipelineRef pipelineRefDTO;
+		MediaPipelineRef pipelineRef;
 		try {
 			// TODO Add real params map
-			pipelineRefDTO = new MediaPipelineRef(
-					client.createMediaPipelineWithParams(new HashMap<String, KmsMediaParam>()));
+			pipelineRef = new MediaPipelineRef(
+					client.createMediaPipelineWithParams(transformMediaParamsMap(params)));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -84,7 +86,7 @@ public class MediaPipelineFactory {
 		}
 
 		MediaPipelineImpl pipeline = (MediaPipelineImpl) ctx.getBean(
-				"mediaPipeline", pipelineRefDTO);
+				"mediaObject", pipelineRef);
 		return pipeline;
 	}
 
@@ -117,7 +119,7 @@ public class MediaPipelineFactory {
 						clientPool.release(client);
 					}
 					MediaPipelineImpl pipeline = (MediaPipelineImpl) ctx
-							.getBean("mediaPipeline", pipelineRefDTO);
+							.getBean("mediaObject", pipelineRefDTO);
 					cont.onSuccess(pipeline);
 				}
 			});
@@ -138,7 +140,7 @@ public class MediaPipelineFactory {
 		try {
 			// TODO add real params
 			client.createMediaPipelineWithParams(
-					new HashMap<String, KmsMediaParam>(),
+					transformMediaParamsMap(params),
 					new AsyncMethodCallback<createMediaPipelineWithParams_call>() {
 
 						@Override
@@ -164,7 +166,7 @@ public class MediaPipelineFactory {
 								clientPool.release(client);
 							}
 							MediaPipelineImpl pipeline = (MediaPipelineImpl) ctx
-									.getBean("mediaPipeline", pipelineRefDTO);
+									.getBean("mediaObject", pipelineRefDTO);
 							cont.onSuccess(pipeline);
 						}
 					});
@@ -174,6 +176,20 @@ public class MediaPipelineFactory {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 
+	}
+
+	private Map<String, KmsMediaParam> transformMediaParamsMap(
+			Map<String, MediaParam> params) {
+		// hashMap size taking into account load factor
+		int mapSize = 1 + (int) (params.size() / 0.75);
+		Map<String, KmsMediaParam> kmsParams = new HashMap<String, KmsMediaParam>(
+				mapSize);
+
+		for (Entry<String, MediaParam> entry : params.entrySet()) {
+			kmsParams.put(entry.getKey(),
+					((AbstractMediaParam) entry.getValue()).getThriftParams());
+		}
+		return kmsParams;
 	}
 
 }

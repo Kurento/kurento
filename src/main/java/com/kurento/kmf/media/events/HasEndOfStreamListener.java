@@ -27,12 +27,12 @@ public interface HasEndOfStreamListener {
 
 	/* SYNC */
 
-	public ListenerRegistration addEndOfStreamListener(
+	ListenerRegistration addEndOfStreamListener(
 			final MediaEventListener<EndOfStreamEvent> eosEvent);
 
 	/* ASYNC */
 
-	public void addEndOfStreamListener(
+	void addEndOfStreamListener(
 			final MediaEventListener<EndOfStreamEvent> eosEvent,
 			final Continuation<ListenerRegistration> cont);
 

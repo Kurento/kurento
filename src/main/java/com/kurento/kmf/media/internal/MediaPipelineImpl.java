@@ -46,7 +46,6 @@ import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
-import com.kurento.kms.thrift.api.KmsMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants;
@@ -169,8 +168,9 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 		try {
 			// TODO transform map
 			elementRefDTO = new MediaElementRef(
-					client.createMediaElementWithParams(null, "",
-							new HashMap<String, KmsMediaParam>()));
+					client.createMediaElementWithParams(
+							this.objectRef.getThriftRef(), elementType,
+							transformMediaParamsMap(params)));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -218,7 +218,7 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 			// TODO add params
 			mixerRefDTO = new MediaMixerRef(client.createMediaMixerWithParams(
 					this.objectRef.getThriftRef(), mixerType,
-					new HashMap<String, KmsMediaParam>()));
+					transformMediaParamsMap(params)));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -398,7 +398,7 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 		try {
 			// TODO add params
 			client.createMediaMixerWithParams(this.objectRef.getThriftRef(),
-					mixerType, new HashMap<String, KmsMediaParam>(),
+					mixerType, transformMediaParamsMap(params),
 					new AsyncMethodCallback<createMediaMixerWithParams_call>() {
 
 						@Override
@@ -472,10 +472,10 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 	private Map<String, MediaParam> internalCreateMediaObjectConstructorParams(
 			Map<String, MediaParam> params, boolean excludeFromDGC) {
 		if (params == null) {
-			params = new HashMap<String, MediaParam>(1);
+			params = new HashMap<String, MediaParam>(4);
 		}
 		MediaObjectConstructorParam mocp = new MediaObjectConstructorParam();
-		mocp.excludeFromGC = excludeFromDGC;
+		mocp.excludeFromGC = Boolean.valueOf(excludeFromDGC);
 		params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE, mocp);
 		return params;
 	}
@@ -484,12 +484,12 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 			Map<String, MediaParam> params, int cookieLifetime,
 			int disconnectionTimeout, boolean excludeFromDGC) {
 		if (params == null) {
-			params = new HashMap<String, MediaParam>(2);
+			params = new HashMap<String, MediaParam>(4);
 		}
 
 		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
-		hecp.setCookieLifetime(cookieLifetime);
-		hecp.setDisconnectionTimeout(disconnectionTimeout);
+		hecp.setCookieLifetime(Integer.valueOf(cookieLifetime));
+		hecp.setDisconnectionTimeout(Integer.valueOf(disconnectionTimeout));
 		params.put(
 				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				hecp);
@@ -582,7 +582,7 @@ public class MediaPipelineImpl extends AbstractMediaObject implements
 	private Map<String, MediaParam> internalCreateUriEndPointConstructorParams(
 			Map<String, MediaParam> params, URI uri, boolean excludeFromDGC) {
 		if (params == null) {
-			params = new HashMap<String, MediaParam>(3);
+			params = new HashMap<String, MediaParam>(4);
 		}
 		UriEndPointConstructorParam param = new UriEndPointConstructorParam();
 		param.setUri(uri);

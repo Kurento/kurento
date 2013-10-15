@@ -48,7 +48,7 @@ public class MediaObjectConstructorParam extends
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaObjectConstructorParams kmsParams = new KmsMediaObjectConstructorParams();
 		if (Boolean.TRUE.equals(excludeFromGC)) {
 			kmsParams.setExcludeFromGC(excludeFromGC.booleanValue());

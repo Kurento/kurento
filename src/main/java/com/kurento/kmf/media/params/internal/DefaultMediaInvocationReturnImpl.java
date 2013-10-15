@@ -36,16 +36,14 @@ public class DefaultMediaInvocationReturnImpl extends AbstractMediaParam {
 	 * the method return an empty array. </br> {@inheritDoc}
 	 */
 	@Override
-	public void deserializeCommandResult(final KmsMediaParam commandResult) {
-		this.result = (commandResult.isSetData()) ? Arrays.copyOf(
-				commandResult.getData(), commandResult.getData().length)
-				: new byte[0];
+	public void deserializeParam(final KmsMediaParam param) {
+		this.result = (param.isSetData()) ? Arrays.copyOf(param.getData(),
+				param.getData().length) : new byte[0];
 	}
 
 	@Override
 	protected byte[] getData() {
-		// TODO Auto-generated method stub
-		return null;
+		return result;
 	}
 
 }

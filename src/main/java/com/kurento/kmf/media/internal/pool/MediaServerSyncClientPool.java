@@ -14,11 +14,23 @@
  */
 package com.kurento.kmf.media.internal.pool;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class MediaServerSyncClientPool extends AbstractPool<Client> {
 
+	@Autowired
+	private MediaServerSyncClientFactory syncFactory;
+
 	public MediaServerSyncClientPool() {
-		super(new MediaServerSyncClientFactory());
+		super();
+	}
+
+	@PostConstruct
+	private void init() {
+		super.init(syncFactory);
 	}
 }

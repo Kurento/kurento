@@ -55,7 +55,7 @@ public class EventCodeFoundParam extends AbstractThriftSerializedMediaParam {
 	}
 
 	@Override
-	protected TProtocol getThriftSerializedData(TProtocol pr) {
+	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaEventCodeFoundData kmsParams = new KmsMediaEventCodeFoundData();
 		if (codeType != null) {
 			kmsParams.setType(codeType);
