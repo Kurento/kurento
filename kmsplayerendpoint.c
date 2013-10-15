@@ -17,6 +17,7 @@
 #endif
 
 #include <gst/gst.h>
+#include "kmsutils.h"
 #include "kmselement.h"
 #include "kmsagnosticcaps.h"
 #include "kmsplayerendpoint.h"
@@ -153,7 +154,7 @@ eos_cb (GstElement * appsink, gpointer user_data)
     return;
   }
 
-  s = gst_structure_new_empty ("PlayerEndPointEOS");
+  s = gst_structure_new_empty (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME);
   event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM, s);
 
   if (!gst_pad_push_event (srcpad, event))

@@ -17,6 +17,9 @@
 
 #include "gst/gst.h"
 
+/* Names of strucutres used in custom events */
+#define KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME "PlayerEndPointEOS"
+
 void kms_utils_set_valve_drop (GstElement * valve, gboolean drop);
 void kms_utils_debug_graph_delay (GstBin * bin, guint interval);
 
