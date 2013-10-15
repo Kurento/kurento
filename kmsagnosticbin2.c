@@ -85,6 +85,7 @@ struct _KmsAgnosticBin2Private
   GstElement *input_tee;
   GstPad *sink;
   guint pad_count;
+  gboolean started;
 };
 
 /* the capabilities of the inputs and outputs. */
@@ -244,6 +245,9 @@ static void
 kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 {
   KMS_AGNOSTIC_BIN2_LOCK (self);
+  if (!self->priv->started)
+    goto end;
+
   if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
     GST_DEBUG_OBJECT (pad, "Adding pad to queue");
     if (self->priv->block_probe == 0L) {
@@ -258,6 +262,9 @@ kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
     g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
     KMS_AGNOSTIC_BIN2_SIGNAL (self);
   }
+
+end:
+
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 }
 
@@ -689,6 +696,9 @@ kms_agnostic_bin2_sink_block_probe (GstPad * pad, GstPadProbeInfo * info,
       KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (user_data);
 
       GST_INFO_OBJECT (self, "New segment, we can now connect sink pads");
+      KMS_AGNOSTIC_BIN2_LOCK (self);
+      self->priv->started = TRUE;
+      KMS_AGNOSTIC_BIN2_UNLOCK (self);
       iterate_src_pads (self);
     }
   }
@@ -878,6 +888,8 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
+
+  self->priv->started = FALSE;
 
   self->priv->block_probe = 0L;
 
