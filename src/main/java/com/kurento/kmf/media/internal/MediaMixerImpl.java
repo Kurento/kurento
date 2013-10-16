@@ -32,7 +32,8 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerE
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerEndPoint_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
-public class MediaMixerImpl extends AbstractMediaObject implements MediaMixer {
+public class MediaMixerImpl extends AbstractCollectableMediaObject implements
+		MediaMixer {
 
 	public MediaMixerImpl(MediaMixerRef objectRef) {
 		super(objectRef);

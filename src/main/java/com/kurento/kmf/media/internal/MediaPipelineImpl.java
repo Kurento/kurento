@@ -61,7 +61,7 @@ import com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaWebRtcEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants;
 
-public class MediaPipelineImpl extends AbstractMediaObject implements
+public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		MediaPipeline {
 
 	public MediaPipelineImpl(MediaPipelineRef objectRef) {

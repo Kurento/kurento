@@ -39,7 +39,7 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcs
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 import com.kurento.kms.thrift.api.KmsMediaType;
 
-public class MediaElementImpl extends AbstractMediaObject implements
+public class MediaElementImpl extends AbstractCollectableMediaObject implements
 		MediaElement {
 
 	public MediaElementImpl(MediaElementRef objectRef) {

@@ -64,9 +64,6 @@ public abstract class AbstractMediaObject implements MediaObject {
 	protected final MediaObjectRef objectRef;
 
 	@Autowired
-	private DistributedGarbageCollector distributedGarbageCollector;
-
-	@Autowired
 	protected MediaServerClientPoolService clientPool;
 
 	@Autowired
@@ -90,19 +87,19 @@ public abstract class AbstractMediaObject implements MediaObject {
 		objectRef = ref;
 	}
 
-	@PostConstruct
-	private void init() {
-		distributedGarbageCollector.registerReference(objectRef.getThriftRef());
-	}
-
 	public Long getId() {
 		return objectRef.getId();
+	}
+
+	@PostConstruct
+	protected void init() {
+		// This method is left blank, and intended to be used by future
+		// expansions.
 	}
 
 	@Override
 	public void release() {
 
-		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
 		handler.removeAllListeners(this);
 
 		Client client = clientPool.acquireSync();
@@ -272,7 +269,6 @@ public abstract class AbstractMediaObject implements MediaObject {
 
 	@Override
 	protected void finalize() {
-		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
 		handler.removeAllListeners(this);
 		log.debug("Object {0}: Removed reference", getId());
 	}
@@ -335,8 +331,6 @@ public abstract class AbstractMediaObject implements MediaObject {
 
 	@Override
 	public void release(final Continuation<Void> cont) {
-
-		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
 		handler.removeAllListeners(this);
 
 		final AsyncClient client = clientPool.acquireAsync();
