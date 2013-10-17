@@ -35,7 +35,6 @@ struct _KmsMovementDetector {
   GstVideoFilter parent;
   IplImage* img;
   IplImage* imgAntBN;
-  gboolean first;
 };
 
 struct _KmsMovementDetectorClass {
