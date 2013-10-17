@@ -104,7 +104,7 @@ kms_movement_detector_set_info (GstVideoFilter * filter, GstCaps * incaps,
   return TRUE;
 }
 
-static void
+static gboolean
 kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
     GstVideoFrame * frame)
 {
@@ -115,6 +115,7 @@ kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
     movementdetector->img =
         cvCreateImage (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
+    return TRUE;
   } else if ((movementdetector->imgAntBN->width != frame->info.width)
       || (movementdetector->imgAntBN->height != frame->info.height)) {
     cvReleaseImage (&movementdetector->imgAntBN);
@@ -124,7 +125,10 @@ kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
     movementdetector->img =
         cvCreateImage (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
+    return TRUE;
   }
+
+  return FALSE;
 }
 
 static GstFlowReturn
@@ -135,7 +139,8 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
   GstMapInfo info;
 
   //checking image sizes
-  kms_movement_detector_initialize_images (movementdetector, frame);
+  gboolean imagesChanged =
+      kms_movement_detector_initialize_images (movementdetector, frame);
 
   //get current frame
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
@@ -144,9 +149,9 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
       movementdetector->img->depth, 1);
 
   cvConvertImage (movementdetector->img, imgBN, CV_BGR2GRAY);
-  if (movementdetector->first) {
+  if (imagesChanged) {
     cvCopy (imgBN, movementdetector->imgAntBN, NULL);
-    movementdetector->first = FALSE;
+    goto end;
   }
   //image difference
   IplImage *imgDiff = cvCreateImage (cvGetSize (movementdetector->img),
@@ -175,10 +180,11 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
 
   cvCopy (imgBN, movementdetector->imgAntBN, NULL);
 
-  cvReleaseImage (&imgBN);
   cvReleaseImage (&imgDiff);
   cvReleaseMemStorage (&mem);
 
+end:
+  cvReleaseImage (&imgBN);
   gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
 }
@@ -220,7 +226,6 @@ kms_movement_detector_init (KmsMovementDetector * movementdetector)
 {
   movementdetector->imgAntBN = NULL;
   movementdetector->img = NULL;
-  movementdetector->first = TRUE;
 }
 
 gboolean
