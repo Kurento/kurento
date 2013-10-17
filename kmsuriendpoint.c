@@ -59,8 +59,6 @@ enum
 #define CALL_IF_DEFINED(obj, method, state) do {                        \
   if ((method) != NULL) {                                               \
     method(obj);                                                        \
-    GST_ELEMENT_INFO(obj, CORE, STATE_CHANGE, ("Change to %s", state ), \
-        ("Debug %s", GST_ELEMENT_NAME (obj)));                          \
   } else {                                                              \
     GST_WARNING("Undefined method " #method);                           \
   }                                                                     \
