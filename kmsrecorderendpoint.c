@@ -668,7 +668,12 @@ kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
   gst_bin_add (GST_BIN (self->priv->pipeline), sink);
   gst_element_sync_state_with_parent (sink);
 
-  gst_element_link (self->priv->encodebin, sink);
+  GST_DEBUG ("Added sink %s", GST_ELEMENT_NAME (sink));
+
+  if (!gst_element_link (self->priv->encodebin, sink)) {
+    GST_ERROR ("Could not link %s to %s",
+        GST_ELEMENT_NAME (self->priv->encodebin), GST_ELEMENT_NAME (sink));
+  }
 
   sinkpad = gst_element_get_static_pad (sink, "sink");
   probe_id = g_slice_new0 (gulong);
