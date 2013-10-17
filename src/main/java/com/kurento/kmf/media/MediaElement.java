@@ -77,9 +77,6 @@ public interface MediaElement extends MediaObject {
 			String description);
 
 	/**
-	 * TODO: this method should be provided by the media server as well as its
-	 * async version
-	 * 
 	 * Connects all {@link MediaSource} of this element belonging to the
 	 * specified {@link KmsMediaType} to the corresponding {@link MediaSink
 	 * } of
@@ -110,10 +107,6 @@ public interface MediaElement extends MediaObject {
 	void connect(MediaElement sink, KmsMediaType mediaType);
 
 	/**
-	 * 
-	 * TODO: this method should be provided by the media server as well as its
-	 * async version
-	 * 
 	 * TODO: invokes the method above for all available MediaTypes
 	 * 
 	 * This method is not transactional. In case of exception some of this
@@ -124,9 +117,6 @@ public interface MediaElement extends MediaObject {
 	void connect(MediaElement sink);
 
 	/**
-	 * TODO: for symmetry this method should be provided by the media server as
-	 * well as its async version
-	 * 
 	 * TODO: only connects if there is exactly one source and one sink for the
 	 * specified media type and description
 	 * 
@@ -202,5 +192,60 @@ public interface MediaElement extends MediaObject {
 	 */
 	void getMediaSinks(KmsMediaType mediaType, String description,
 			final Continuation<Collection<MediaSink>> cont);
+
+	/**
+	 * Connects all {@link MediaSource} of this element belonging to the
+	 * specified {@link KmsMediaType} to the corresponding {@link MediaSink
+	 * } of
+	 * the target {@link MediaElement}.
+	 * 
+	 * This method will throw an exception if any of the following occur: <br>
+	 * <ul>
+	 * <li>The number of sources for the specified {@link KmsMediaType} in this
+	 * element is different than the number of sinks on the target element.
+	 * <li>There are duplicate mediaDescriptions on this' element sources for
+	 * the specified {@link KmsMediaType}.
+	 * <li>There are duplicate mediaDescriptions on target's element sinks for
+	 * the specified {@link KmsMediaType}.
+	 * <li>Target sinks' media descriptions are different form this sources'
+	 * media descriptions for the specified {@link KmsMediaType}
+	 * </ul>
+	 * 
+	 * This method is not transactional. In case of exception some of this
+	 * element sources may be connected with target sinks.
+	 * 
+	 * @param sink
+	 *            the target {@MediaElement} from which
+	 *            {@link MediaSink} will be obtained
+	 * @param mediaType
+	 *            the {@KmsMediaType} of the pads that will be
+	 *            connected.
+	 * @param cont
+	 */
+	void connect(MediaElement sink, KmsMediaType mediaType,
+			final Continuation<Void> cont);
+
+	/**
+	 * TODO: invokes the method above for all available MediaTypes
+	 * 
+	 * This method is not transactional. In case of exception some of this
+	 * element sources may be connected with target sinks.
+	 * 
+	 * @param sink
+	 * @param cont
+	 */
+	void connect(MediaElement sink, final Continuation<Void> cont);
+
+	/**
+	 * TODO: only connects if there is exactly one source and one sink for the
+	 * specified media type and description
+	 * 
+	 * @param sink
+	 * @param mediaType
+	 * @param mediaDescription
+	 * @param cont
+	 */
+	void connect(MediaElement sink, KmsMediaType mediaType,
+			String mediaDescription, final Continuation<Void> cont);
 
 }

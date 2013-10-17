@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Map;
 
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kms.thrift.api.KmsMediaType;
 
 public interface MediaPipeline extends MediaObject {
 
@@ -30,6 +31,26 @@ public interface MediaPipeline extends MediaObject {
 	void connect(MediaElement source, MediaElement sink);
 
 	/**
+	 * Connects two {@link MediaElement}
+	 * 
+	 * @param source
+	 * @param sink
+	 * @param mediaType
+	 */
+	void connect(MediaElement source, MediaElement sink, KmsMediaType mediaType);
+
+	/**
+	 * Connects two {@link MediaElement}
+	 * 
+	 * @param source
+	 * @param sink
+	 * @param mediaType
+	 * @param mediaDescription
+	 */
+	void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType, String mediaDescription);
+
+	/**
 	 * Connects two media elements
 	 * 
 	 * @param source
@@ -37,6 +58,31 @@ public interface MediaPipeline extends MediaObject {
 	 * @param cont
 	 */
 	void connect(MediaElement source, MediaElement sink, Continuation<Void> cont);
+
+	/**
+	 * Connects two media elements
+	 * 
+	 * @param source
+	 * @param sink
+	 * @param mediaType
+	 * @param cont
+	 */
+	void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType, Continuation<Void> cont);
+
+	/**
+	 * Connects two media elements
+	 * 
+	 * @param source
+	 * @param sink
+	 * @param mediaType
+	 * @param mediaDescription
+	 * @param meContinuation
+	 * @param cont
+	 */
+	void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType, String mediaDescription,
+			Continuation<Void> cont);
 
 	// Creation of specific framework types
 

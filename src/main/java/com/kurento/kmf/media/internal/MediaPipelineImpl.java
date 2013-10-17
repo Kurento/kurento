@@ -47,18 +47,17 @@ import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
-import com.kurento.kms.thrift.api.KmsMediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.connectElements_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaElementWithParams_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaElement_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaMixerWithParams_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaMixer_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
+import com.kurento.kms.thrift.api.KmsMediaType;
 import com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaWebRtcEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants;
@@ -77,70 +76,38 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public void connect(MediaElement source, MediaElement sink) {
-		Client client = clientPool.acquireSync();
+		source.connect(sink);
+	}
 
-		KmsMediaObjectRef sinkRef = ((AbstractMediaObject) sink).getObjectRef()
-				.getThriftRef();
-		KmsMediaObjectRef srcRef = ((AbstractMediaObject) source)
-				.getObjectRef().getThriftRef();
-		try {
-			client.connectElements(srcRef, sinkRef);
-		} catch (KmsMediaServerException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e,
-					e.getErrorCode());
-		} catch (TException e) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		} finally {
-			this.clientPool.release(client);
-		}
+	@Override
+	public void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType) {
+		source.connect(sink, mediaType);
+	}
 
+	@Override
+	public void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType, String mediaDescription) {
+		source.connect(sink, mediaType, mediaDescription);
 	}
 
 	@Override
 	public void connect(MediaElement source, MediaElement sink,
 			final Continuation<Void> cont) {
-		final AsyncClient client = clientPool.acquireAsync();
-		try {
-			KmsMediaObjectRef sinkRef = ((AbstractMediaObject) sink)
-					.getObjectRef().getThriftRef();
-			KmsMediaObjectRef srcRef = ((AbstractMediaObject) source)
-					.getObjectRef().getThriftRef();
-			client.connectElements(srcRef, sinkRef,
-					new AsyncMethodCallback<connectElements_call>() {
+		source.connect(sink, cont);
+	}
 
-						@Override
-						public void onComplete(connectElements_call response) {
+	@Override
+	public void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType, Continuation<Void> cont) {
+		source.connect(sink, mediaType, cont);
+	}
 
-							try {
-								response.getResult();
-							} catch (KmsMediaServerException e) {
-								throw new KurentoMediaFrameworkException(e
-										.getMessage(), e, e.getErrorCode());
-							} catch (TException e) {
-								// TODO change error code
-								throw new KurentoMediaFrameworkException(e
-										.getMessage(), e, 30000);
-							} finally {
-								MediaPipelineImpl.this.clientPool
-										.release(client);
-							}
-							cont.onSuccess(null);
-						}
-
-						@Override
-						public void onError(Exception exception) {
-							MediaPipelineImpl.this.clientPool.release(client);
-							cont.onError(exception);
-						}
-
-					});
-		} catch (TException e) {
-			this.clientPool.release(client);
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		}
-
+	@Override
+	public void connect(MediaElement source, MediaElement sink,
+			KmsMediaType mediaType, String mediaDescription,
+			Continuation<Void> cont) {
+		source.connect(sink, mediaType, mediaDescription, cont);
 	}
 
 	@Override
