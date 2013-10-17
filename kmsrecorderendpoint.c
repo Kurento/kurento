@@ -1446,7 +1446,7 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
 
   /* Create internal pipeline */
-  self->priv->pipeline = gst_pipeline_new ("automuxer-sink");
+  self->priv->pipeline = gst_pipeline_new ("recorder-pipeline");
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->encodebin = NULL;
   self->priv->state = UNCONFIGURED;
