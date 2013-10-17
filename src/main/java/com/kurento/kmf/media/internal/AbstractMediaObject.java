@@ -255,7 +255,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 		KmsMediaParam result;
 
 		try {
-			result = client.invoke(objectRef.getThriftRef(), "",
+			result = client.invoke(objectRef.getThriftRef(), method,
 					transformMediaParamsMap(params));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,

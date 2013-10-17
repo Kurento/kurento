@@ -60,7 +60,8 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		StringMediaParam param = new StringMediaParam();
 		param.setString(offer);
 		params.put(PROCESS_SDP_OFFER_PARAM_OFFER_STR, param);
-		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_OFFER);
+		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_OFFER,
+				params);
 		return result.getString();
 	}
 
@@ -70,7 +71,8 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		StringMediaParam param = new StringMediaParam();
 		param.setString(answer);
 		params.put(PROCESS_SDP_ANSWER_PARAM_ANSWER_STR, param);
-		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_ANSWER);
+		StringMediaParam result = (StringMediaParam) invoke(PROCESS_SDP_ANSWER,
+				params);
 		return result.getString();
 	}
 
@@ -99,7 +101,7 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		StringMediaParam param = new StringMediaParam();
 		param.setString(offer);
 		params.put(PROCESS_SDP_OFFER_PARAM_OFFER_STR, param);
-		invoke(PROCESS_SDP_OFFER, new StringContinuationWrapper(cont));
+		invoke(PROCESS_SDP_OFFER, params, new StringContinuationWrapper(cont));
 	}
 
 	@Override
@@ -108,7 +110,7 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		StringMediaParam param = new StringMediaParam();
 		param.setString(answer);
 		params.put(PROCESS_SDP_ANSWER_PARAM_ANSWER_STR, param);
-		invoke(PROCESS_SDP_ANSWER, new StringContinuationWrapper(cont));
+		invoke(PROCESS_SDP_ANSWER, params, new StringContinuationWrapper(cont));
 	}
 
 	@Override

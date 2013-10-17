@@ -31,8 +31,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -47,8 +45,6 @@ import com.kurento.kmf.media.internal.MainMixerImpl;
 import com.kurento.kms.thrift.api.KmsMediaType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-// TODO maybe remove this
-@DirtiesContext(classMode = ClassMode.AFTER_EACH_TEST_METHOD)
 @ContextConfiguration("/kmf-api-test-context.xml")
 public class SyncMediaServerTest {
 
@@ -140,13 +136,12 @@ public class SyncMediaServerTest {
 		log.info("Answer SDP\n " + answerSdp);
 
 		log.info("Connecting element ...");
-		MediaSink videoSink = rtpEndPoint.getMediaSinks(KmsMediaType.VIDEO)
-				.iterator().next();
-		player.getMediaSrcs(KmsMediaType.VIDEO).iterator().next()
-				.connect(videoSink);
+		player.connect(rtpEndPoint, KmsMediaType.VIDEO);
 
 		log.info("PlayerEndPoint.play()");
-		player.play();
+		// TODO Enable this part when START command is implemented in
+		// PlayerEndPoints
+		// player.play();
 
 		// just a little bit of time before destroying
 		Thread.sleep(2000);
@@ -207,6 +202,8 @@ public class SyncMediaServerTest {
 		streamB.release();
 	}
 
+	// TODO: Enable this test when mixer is implemented
+	@Ignore
 	@Test
 	public void testMixer() throws KurentoMediaFrameworkException {
 		MainMixer mixer = (MainMixer) mediaPipeline
@@ -221,12 +218,7 @@ public class SyncMediaServerTest {
 				.createPlayerEndPoint("https://ci.kurento.com/video/barcodes.webm");
 		ZBarFilter zbar = mediaPipeline.createZBarFilter();
 
-		MediaSink videoSink = zbar.getMediaSinks(KmsMediaType.VIDEO).iterator()
-				.next();
-		MediaSource videoSrc = player.getMediaSrcs(KmsMediaType.VIDEO)
-				.iterator().next();
-
-		videoSrc.connect(videoSink);
+		player.connect(zbar, KmsMediaType.VIDEO);
 
 		final Semaphore sem = new Semaphore(0);
 
@@ -249,17 +241,33 @@ public class SyncMediaServerTest {
 	}
 
 	@Test
+	public void testJackVader() throws KurentoMediaFrameworkException,
+			InterruptedException {
+		PlayerEndPoint player = mediaPipeline
+				.createPlayerEndPoint("https://ci.kurento.com/video/small.webm");
+		JackVaderFilter jackVader = mediaPipeline.createJackVaderFilter();
+
+		player.connect(jackVader, KmsMediaType.VIDEO);
+
+		final Semaphore sem = new Semaphore(0);
+
+		player.play();
+
+		Assert.assertTrue(sem.tryAcquire(10, TimeUnit.SECONDS));
+
+		player.stop();
+		jackVader.release();
+		player.release();
+	}
+
+	@Test
 	public void testHttpEndPoint() throws KurentoMediaFrameworkException,
 			InterruptedException {
 		final PlayerEndPoint player = mediaPipeline
 				.createPlayerEndPoint("https://ci.kurento.com/video/small.webm");
 		HttpEndPoint httpEndPoint = mediaPipeline.createHttpEndPoint(0, 0);
 
-		MediaSink videoSink = httpEndPoint.getMediaSinks(KmsMediaType.VIDEO)
-				.iterator().next();
-		MediaSource videoSrc = player.getMediaSrcs(KmsMediaType.VIDEO)
-				.iterator().next();
-		videoSrc.connect(videoSink);
+		player.connect(httpEndPoint, KmsMediaType.VIDEO);
 
 		final Semaphore sem = new Semaphore(0);
 

@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants.TYPE_NAME;
 
 import java.util.Map;
 
