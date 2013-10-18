@@ -109,9 +109,6 @@ kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
     GstVideoFrame * frame)
 {
   if (movementdetector->imgAntBN == NULL) {
-    movementdetector->imgAntBN =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
-        IPL_DEPTH_8U, 1);
     movementdetector->img =
         cvCreateImage (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
@@ -119,9 +116,6 @@ kms_movement_detector_initialize_images (KmsMovementDetector * movementdetector,
   } else if ((movementdetector->imgAntBN->width != frame->info.width)
       || (movementdetector->imgAntBN->height != frame->info.height)) {
     cvReleaseImage (&movementdetector->imgAntBN);
-    movementdetector->imgAntBN =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
-        IPL_DEPTH_8U, 1);
     movementdetector->img =
         cvCreateImage (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
@@ -150,7 +144,7 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
 
   cvConvertImage (movementdetector->img, imgBN, CV_BGR2GRAY);
   if (imagesChanged) {
-    cvCopy (imgBN, movementdetector->imgAntBN, NULL);
+    movementdetector->imgAntBN = imgBN;
     goto end;
   }
   //image difference
@@ -178,13 +172,13 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
 
   }
 
-  cvCopy (imgBN, movementdetector->imgAntBN, NULL);
+  cvReleaseImage (&movementdetector->imgAntBN);
+  movementdetector->imgAntBN = imgBN;
 
   cvReleaseImage (&imgDiff);
   cvReleaseMemStorage (&mem);
 
 end:
-  cvReleaseImage (&imgBN);
   gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
 }
