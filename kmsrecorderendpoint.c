@@ -746,7 +746,7 @@ kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
       stop_notification_cb, self, NULL);
   g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, probe_id,
       destroy_ulong);
-  g_object_unref (G_OBJECT (sinkpad));
+  g_object_unref (sinkpad);
 }
 
 static void
@@ -944,7 +944,7 @@ unlock_pending_valves (gpointer data, gpointer user_data)
   GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
   gst_pad_remove_probe (srcpad, *probe_id);
 
-  g_object_unref (G_OBJECT (srcpad));
+  g_object_unref (srcpad);
 }
 
 static void
@@ -1019,7 +1019,7 @@ kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
     GST_ERROR ("Encodebin %s could not be removed",
         GST_ELEMENT_NAME (recorder->priv->encodebin));
 
-  g_object_unref (G_OBJECT (srcpad));
+  g_object_unref (srcpad);
 
   /* Remove old encodebin and sink elements */
   data = g_slice_new0 (struct remove_data);
@@ -1028,8 +1028,8 @@ kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
   data->element = gst_pad_get_parent_element (sinkpad);
   kms_recorder_end_point_add_action (recorder, remove_element_from_pipeline,
       data, destroy_remove_data);
-  g_object_unref (G_OBJECT (data->element));
-  g_object_unref (G_OBJECT (sinkpad));
+  g_object_unref (data->element);
+  g_object_unref (sinkpad);
 
   data = g_slice_new0 (struct remove_data);
 
@@ -1157,7 +1157,7 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
   }
 
   gst_pad_unlink (srcpad, sinkpad);
-  g_object_unref (G_OBJECT (sinkpad));
+  g_object_unref (sinkpad);
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
 
@@ -1181,8 +1181,8 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
 
     gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
         event_probe_cb, recorder, NULL);
-    g_object_unref (G_OBJECT (pad));
-    g_object_unref (G_OBJECT (peer));
+    g_object_unref (pad);
+    g_object_unref (peer);
 
     /* Flush out encodebin data by sending an EOS in all its sinkpads */
     send_eos_to_sink_pads (recorder->priv->encodebin);
@@ -1320,7 +1320,7 @@ kms_recorder_end_point_block_valve (KmsRecorderEndPoint * self,
 
   self->priv->confdata->pendingvalves =
       g_slist_prepend (self->priv->confdata->pendingvalves, conf);
-  g_object_unref (G_OBJECT (srcpad));
+  g_object_unref (srcpad);
 }
 
 static void
