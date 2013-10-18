@@ -33,8 +33,17 @@ import com.kurento.kmf.media.params.internal.StringMediaParam;
 public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 		UriEndPoint {
 
-	AbstractUriEndPoint(MediaElementRef endpointRef) {
+	public AbstractUriEndPoint(MediaElementRef endpointRef) {
 		super(endpointRef);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public AbstractUriEndPoint(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	/* SYNC */

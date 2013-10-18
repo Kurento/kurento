@@ -47,34 +47,33 @@ public interface MediaPipeline extends MediaObject {
 	HttpEndPoint createHttpEndPoint(int cookieLifetime, int disconnectionTimeout);
 
 	HttpEndPoint createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout, boolean excludeFormDGC);
+			int disconnectionTimeout, int garbagePeriod);
 
 	void createHttpEndPoint(int cookieLifetime, int disconnectionTimeout,
 			Continuation<HttpEndPoint> cont);
 
 	void createHttpEndPoint(int cookieLifetime, int disconnectionTimeout,
-			boolean excludeFromDGC, Continuation<HttpEndPoint> cont);
+			int garbagePeriod, Continuation<HttpEndPoint> cont);
 
 	/* RTP ENDPOINT */
 
 	RtpEndPoint createRtpEndPoint();
 
-	RtpEndPoint createRtpEndPoint(boolean excludeFromDGC);
+	RtpEndPoint createRtpEndPoint(int garbagePeriod);
 
 	void createRtpEndPoint(Continuation<RtpEndPoint> cont);
 
-	void createRtpEndPoint(boolean excludeFromDGC,
-			Continuation<RtpEndPoint> cont);
+	void createRtpEndPoint(int garbagePeriod, Continuation<RtpEndPoint> cont);
 
 	/* WEB RTC ENDPOINT */
 
 	WebRtcEndPoint createWebRtcEndPoint();
 
-	WebRtcEndPoint createWebRtcEndPoint(boolean excludeFromDGC);
+	WebRtcEndPoint createWebRtcEndPoint(int garbagePeriod);
 
 	void createWebRtcEndPoint(Continuation<WebRtcEndPoint> cont);
 
-	void createWebRtcEndPoint(boolean excludeFromDGC,
+	void createWebRtcEndPoint(int garbagePeriod,
 			Continuation<WebRtcEndPoint> cont);
 
 	/* PLAYER ENDPOINT */
@@ -83,18 +82,18 @@ public interface MediaPipeline extends MediaObject {
 
 	PlayerEndPoint createPlayerEndPoint(URI uri);
 
-	PlayerEndPoint createPlayerEndPoint(String uri, boolean excludeFromDGC);
+	PlayerEndPoint createPlayerEndPoint(String uri, int garbagePeriod);
 
-	PlayerEndPoint createPlayerEndPoint(URI uri, boolean excludeFromDGC);
+	PlayerEndPoint createPlayerEndPoint(URI uri, int garbagePeriod);
 
 	void createPlayerEndPoint(String uri, Continuation<PlayerEndPoint> cont);
 
 	void createPlayerEndPoint(URI uri, Continuation<PlayerEndPoint> cont);
 
-	void createPlayerEndPoint(String uri, boolean excludeFromDGC,
+	void createPlayerEndPoint(String uri, int garbagePeriod,
 			Continuation<PlayerEndPoint> cont);
 
-	void createPlayerEndPoint(URI uri, boolean excludeFromDGC,
+	void createPlayerEndPoint(URI uri, int garbagePeriod,
 			Continuation<PlayerEndPoint> cont);
 
 	/* RECORDER ENDPOINT */
@@ -103,39 +102,39 @@ public interface MediaPipeline extends MediaObject {
 
 	RecorderEndPoint createRecorderEndPoint(URI uri);
 
-	RecorderEndPoint createRecorderEndPoint(String uri, boolean excludeFromDGC);
+	RecorderEndPoint createRecorderEndPoint(String uri, int garbagePeriod);
 
-	RecorderEndPoint createRecorderEndPoint(URI uri, boolean excludeFromDGC);
+	RecorderEndPoint createRecorderEndPoint(URI uri, int garbagePeriod);
 
 	void createRecorderEndPoint(String uri, Continuation<RecorderEndPoint> cont);
 
 	void createRecorderEndPoint(URI uri, Continuation<RecorderEndPoint> cont);
 
-	void createRecorderEndPoint(URI uri, boolean excludeFromDGC,
+	void createRecorderEndPoint(URI uri, int garbagePeriod,
 			Continuation<RecorderEndPoint> cont);
 
-	void createRecorderEndPoint(String uri, boolean excludeFromDGC,
+	void createRecorderEndPoint(String uri, int garbagePeriod,
 			Continuation<RecorderEndPoint> cont);
 
 	/* ZBAR FILTER */
 
 	ZBarFilter createZBarFilter();
 
-	ZBarFilter createZBarFilter(boolean excludeFromDGC);
+	ZBarFilter createZBarFilter(int garbagePeriod);
 
 	void createZBarFilter(Continuation<ZBarFilter> cont);
 
-	void createZBarFilter(boolean excludeFromDGC, Continuation<ZBarFilter> cont);
+	void createZBarFilter(int garbagePeriod, Continuation<ZBarFilter> cont);
 
 	/* JACKVADER FILTER */
 
 	JackVaderFilter createJackVaderFilter();
 
-	JackVaderFilter createJackVaderFilter(boolean excludeFromDGC);
+	JackVaderFilter createJackVaderFilter(int garbagePeriod);
 
 	void createJackVaderFilter(Continuation<JackVaderFilter> cont);
 
-	void createJackVaderFilter(boolean excludeFromDGC,
+	void createJackVaderFilter(int garbagePeriod,
 			Continuation<JackVaderFilter> cont);
 
 	// Generic creation methods

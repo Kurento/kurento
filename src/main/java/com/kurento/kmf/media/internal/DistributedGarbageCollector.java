@@ -14,8 +14,10 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaServerConstants.GARBAGE_PERIOD;
+import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,27 +40,33 @@ public class DistributedGarbageCollector {
 	private static final Logger log = LoggerFactory
 			.getLogger(DistributedGarbageCollector.class);
 
-	private static final long GARBAGE_PERIOD_MILIS = GARBAGE_PERIOD * 1000;
+	private static final long GARBAGE_PERIOD_MILIS = DEFAULT_GARBAGE_COLLECTOR_PERIOD * 1000;
 
 	@Autowired
 	protected MediaServerClientPoolService clientPool;
 
-	private final ConcurrentHashMap<Long, Integer> refCounters = new ConcurrentHashMap<Long, Integer>();
+	private final Map<Long, Integer> refCounters = new HashMap<Long, Integer>();
 	// TODO Let spring manage this timers with a TimerTaskExecutor
 	private final ConcurrentHashMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
 
-	public synchronized void registerReference(final KmsMediaObjectRef objectRef) {
+	public void registerReference(final KmsMediaObjectRef objectRef) {
+		registerReference(objectRef, GARBAGE_PERIOD_MILIS);
+	}
+
+	public void registerReference(final KmsMediaObjectRef objectRef,
+			long collectorPeriod) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
 
 		Long refId = Long.valueOf(objectRef.id);
-		Integer counter = refCounters.get(refId);
-		if (counter == null) {
-			counter = Integer.valueOf(1);
-		} else {
-			counter++;
+		synchronized (this) {
+			Integer counter = refCounters.get(refId);
+			if (counter == null) {
+				counter = Integer.valueOf(1);
+			} else {
+				counter++;
+			}
+			refCounters.put(refId, counter);
 		}
-		refCounters.put(refId, counter);
-
 		// TODO Let spring manage this timers with a TimerTaskExecutor
 		Timer timer = new Timer(true);
 		timers.put(refId, timer);
@@ -69,26 +77,29 @@ public class DistributedGarbageCollector {
 			public void run() {
 				keepAlive(objectRef);
 			}
-		}, GARBAGE_PERIOD_MILIS, GARBAGE_PERIOD_MILIS);
+		}, collectorPeriod, collectorPeriod);
 	}
 
 	public void removeReference(KmsMediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
 		Long refId = Long.valueOf(objectRef.id);
-		Integer counter = refCounters.remove(refId);
-
-		if (counter == null) {
-			return;
-		} else if (--counter > 0) {
-			refCounters.put(refId, counter);
-		} else {
-			Timer timer = timers.remove(refId);
-			if (timer == null) {
-				log.error("Inconsistent state in DistributedGarbageCollector");
-			} else {
-				timer.cancel();
+		synchronized (this) {
+			Integer counter = refCounters.remove(refId);
+			if (counter == null) {
+				return;
+			} else if (--counter > 0) {
+				refCounters.put(refId, counter);
+				return;
 			}
 		}
+
+		Timer timer = timers.remove(refId);
+		if (timer == null) {
+			log.error("Inconsistent state in DistributedGarbageCollector");
+		} else {
+			timer.cancel();
+		}
+
 	}
 
 	private void keepAlive(KmsMediaObjectRef KmsMediaObjectRef) {

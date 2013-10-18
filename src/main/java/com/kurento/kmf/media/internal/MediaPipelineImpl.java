@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -66,6 +68,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	public MediaPipelineImpl(MediaPipelineRef objectRef) {
 		super(objectRef);
+	}
+
+	public MediaPipelineImpl(MediaMixerRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	@Override
@@ -162,27 +169,32 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public MediaElement createMediaElement(String elementType,
 			Map<String, MediaParam> params) {
+		MediaElement element;
 
-		Client client = clientPool.acquireSync();
-		MediaElementRef elementRefDTO;
-		try {
-			// TODO transform map
-			elementRefDTO = new MediaElementRef(
-					client.createMediaElementWithParams(
-							this.objectRef.getThriftRef(), elementType,
-							transformMediaParamsMap(params)));
-		} catch (KmsMediaServerException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e,
-					e.getErrorCode());
-		} catch (TException e) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		} finally {
-			clientPool.release(client);
+		if (params == null || params.isEmpty()) {
+			element = createMediaElement(elementType);
+		} else {
+			Client client = clientPool.acquireSync();
+			MediaElementRef elementRefDTO;
+			try {
+				elementRefDTO = new MediaElementRef(
+						client.createMediaElementWithParams(
+								this.objectRef.getThriftRef(), elementType,
+								transformMediaParamsMap(params)));
+			} catch (KmsMediaServerException e) {
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						e.getErrorCode());
+			} catch (TException e) {
+				// TODO change error code
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						30000);
+			} finally {
+				clientPool.release(client);
+			}
+
+			element = (MediaElementImpl) ctx.getBean("mediaObjectWithParams",
+					elementRefDTO, params);
 		}
-
-		MediaElementImpl element = (MediaElementImpl) ctx.getBean(
-				"mediaObject", elementRefDTO);
 		return element;
 	}
 
@@ -211,25 +223,32 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public MediaMixer createMediaMixer(String mixerType,
 			Map<String, MediaParam> params) {
+		MediaMixer mixer;
 
-		Client client = this.clientPool.acquireSync();
-		MediaMixerRef mixerRefDTO;
-		try {
-			// TODO add params
-			mixerRefDTO = new MediaMixerRef(client.createMediaMixerWithParams(
-					this.objectRef.getThriftRef(), mixerType,
-					transformMediaParamsMap(params)));
-		} catch (KmsMediaServerException e) {
-			throw new KurentoMediaFrameworkException(e.getMessage(), e,
-					e.getErrorCode());
-		} catch (TException e) {
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		} finally {
-			this.clientPool.release(client);
+		if (params == null || params.isEmpty()) {
+			mixer = createMediaMixer(mixerType);
+		} else {
+			Client client = this.clientPool.acquireSync();
+			MediaMixerRef mixerRefDTO;
+			try {
+				mixerRefDTO = new MediaMixerRef(
+						client.createMediaMixerWithParams(
+								this.objectRef.getThriftRef(), mixerType,
+								transformMediaParamsMap(params)));
+			} catch (KmsMediaServerException e) {
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						e.getErrorCode());
+			} catch (TException e) {
+				// TODO change error code
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						30000);
+			} finally {
+				this.clientPool.release(client);
+			}
+
+			mixer = (MediaMixer) ctx.getBean("mediaObjectWithParams",
+					mixerRefDTO, params);
 		}
-
-		MediaMixer mixer = (MediaMixer) ctx.getBean("mediaObject", mixerRefDTO);
 		return mixer;
 	}
 
@@ -293,54 +312,58 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public <T extends MediaElement> void createMediaElement(String elementType,
-			Map<String, MediaParam> params, final Continuation<T> cont) {
+			final Map<String, MediaParam> params, final Continuation<T> cont) {
+		if (params == null || params.isEmpty()) {
+			createMediaElement(elementType, cont);
+		} else {
+			final AsyncClient client = this.clientPool.acquireAsync();
+			try {
 
-		final AsyncClient client = this.clientPool.acquireAsync();
-		try {
+				client.createMediaElementWithParams(
+						this.objectRef.getThriftRef(),
+						elementType,
+						transformMediaParamsMap(params),
+						new AsyncMethodCallback<createMediaElementWithParams_call>() {
 
-			client.createMediaElementWithParams(
-					this.objectRef.getThriftRef(),
-					elementType,
-					transformMediaParamsMap(params),
-					new AsyncMethodCallback<createMediaElementWithParams_call>() {
-
-						@Override
-						public void onError(Exception exception) {
-							clientPool.release(client);
-							cont.onError(exception);
-						}
-
-						@SuppressWarnings("unchecked")
-						@Override
-						public void onComplete(
-								createMediaElementWithParams_call response) {
-							MediaElementRef elementRefDTO;
-							try {
-								elementRefDTO = new MediaElementRef(response
-										.getResult());
-
-							} catch (KmsMediaServerException e) {
-								throw new KurentoMediaFrameworkException(e
-										.getMessage(), e, e.getErrorCode());
-							} catch (TException e) {
-								// TODO change error code
-								throw new KurentoMediaFrameworkException(e
-										.getMessage(), e, 30000);
-							} finally {
+							@Override
+							public void onError(Exception exception) {
 								clientPool.release(client);
+								cont.onError(exception);
 							}
 
-							MediaElementImpl element = (MediaElementImpl) ctx
-									.getBean("mediaObject", elementRefDTO);
-							cont.onSuccess((T) element);
-						}
-					});
-		} catch (TException e) {
-			clientPool.release(client);
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		}
+							@SuppressWarnings("unchecked")
+							@Override
+							public void onComplete(
+									createMediaElementWithParams_call response) {
+								MediaElementRef elementRefDTO;
+								try {
+									elementRefDTO = new MediaElementRef(
+											response.getResult());
 
+								} catch (KmsMediaServerException e) {
+									throw new KurentoMediaFrameworkException(e
+											.getMessage(), e, e.getErrorCode());
+								} catch (TException e) {
+									// TODO change error code
+									throw new KurentoMediaFrameworkException(e
+											.getMessage(), e, 30000);
+								} finally {
+									clientPool.release(client);
+								}
+
+								MediaElementImpl element = (MediaElementImpl) ctx
+										.getBean("mediaObjectWithParams",
+												elementRefDTO, params);
+								cont.onSuccess((T) element);
+							}
+						});
+			} catch (TException e) {
+				clientPool.release(client);
+				// TODO change error code
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						30000);
+			}
+		}
 	}
 
 	@Override
@@ -392,50 +415,54 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public <T extends MediaMixer> void createMediaMixer(String mixerType,
 			Map<String, MediaParam> params, final Continuation<T> cont) {
+		if (params == null || params.isEmpty()) {
+			createMediaMixer(mixerType, cont);
+		} else {
+			final AsyncClient client = this.clientPool.acquireAsync();
 
-		final AsyncClient client = this.clientPool.acquireAsync();
+			try {
+				client.createMediaMixerWithParams(
+						this.objectRef.getThriftRef(),
+						mixerType,
+						transformMediaParamsMap(params),
+						new AsyncMethodCallback<createMediaMixerWithParams_call>() {
 
-		try {
-			// TODO add params
-			client.createMediaMixerWithParams(this.objectRef.getThriftRef(),
-					mixerType, transformMediaParamsMap(params),
-					new AsyncMethodCallback<createMediaMixerWithParams_call>() {
-
-						@Override
-						public void onError(Exception exception) {
-							clientPool.release(client);
-							cont.onError(exception);
-						}
-
-						@SuppressWarnings("unchecked")
-						@Override
-						public void onComplete(
-								createMediaMixerWithParams_call response) {
-							MediaMixerRef mixerRefDTO;
-							try {
-								mixerRefDTO = new MediaMixerRef(response
-										.getResult());
-							} catch (KmsMediaServerException e) {
-								throw new KurentoMediaFrameworkException(e
-										.getMessage(), e, e.getErrorCode());
-							} catch (TException e) {
-								// TODO change error code
-								throw new KurentoMediaFrameworkException(e
-										.getMessage(), e, 30000);
-							} finally {
+							@Override
+							public void onError(Exception exception) {
 								clientPool.release(client);
+								cont.onError(exception);
 							}
-							MediaMixer mixer = (MediaMixer) ctx.getBean(
-									"mediaObject", mixerRefDTO);
-							cont.onSuccess((T) mixer);
-						}
-					});
-		} catch (TException e) {
-			clientPool.release(client);
-			// TODO change error code
-			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
-		}
 
+							@SuppressWarnings("unchecked")
+							@Override
+							public void onComplete(
+									createMediaMixerWithParams_call response) {
+								MediaMixerRef mixerRefDTO;
+								try {
+									mixerRefDTO = new MediaMixerRef(response
+											.getResult());
+								} catch (KmsMediaServerException e) {
+									throw new KurentoMediaFrameworkException(e
+											.getMessage(), e, e.getErrorCode());
+								} catch (TException e) {
+									// TODO change error code
+									throw new KurentoMediaFrameworkException(e
+											.getMessage(), e, 30000);
+								} finally {
+									clientPool.release(client);
+								}
+								MediaMixer mixer = (MediaMixer) ctx.getBean(
+										"mediaObject", mixerRefDTO);
+								cont.onSuccess((T) mixer);
+							}
+						});
+			} catch (TException e) {
+				clientPool.release(client);
+				// TODO change error code
+				throw new KurentoMediaFrameworkException(e.getMessage(), e,
+						30000);
+			}
+		}
 	}
 
 	@Override
@@ -457,32 +484,38 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public HttpEndPoint createHttpEndPoint(int cookieLifetime,
 			int disconnectionTimeout) {
-		return createHttpEndPoint(cookieLifetime, disconnectionTimeout, false);
+		return createHttpEndPoint(cookieLifetime, disconnectionTimeout,
+				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
 	}
 
 	@Override
 	public HttpEndPoint createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout, boolean excudeFromDGC) {
+			int disconnectionTimeout, int garbagePeriod) {
 		return (HttpEndPoint) createMediaElement(
 				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
 				internalCreateHttpEndPointConstructorParams(null,
-						cookieLifetime, disconnectionTimeout, excudeFromDGC));
+						cookieLifetime, disconnectionTimeout, garbagePeriod));
 	}
 
 	private Map<String, MediaParam> internalCreateMediaObjectConstructorParams(
-			Map<String, MediaParam> params, boolean excludeFromDGC) {
+			Map<String, MediaParam> params, int garbagePeriod) {
 		if (params == null) {
 			params = new HashMap<String, MediaParam>(4);
 		}
-		MediaObjectConstructorParam mocp = new MediaObjectConstructorParam();
-		mocp.excludeFromGC = Boolean.valueOf(excludeFromDGC);
-		params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE, mocp);
+
+		if (garbagePeriod != DEFAULT_GARBAGE_COLLECTOR_PERIOD) {
+			MediaObjectConstructorParam mocp = new MediaObjectConstructorParam();
+			mocp.setGarbageCollectorPeriod(garbagePeriod);
+			params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+					mocp);
+		}
+
 		return params;
 	}
 
 	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
 			Map<String, MediaParam> params, int cookieLifetime,
-			int disconnectionTimeout, boolean excludeFromDGC) {
+			int disconnectionTimeout, int garbagePeriod) {
 		if (params == null) {
 			params = new HashMap<String, MediaParam>(4);
 		}
@@ -494,24 +527,24 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				hecp);
 
-		return internalCreateMediaObjectConstructorParams(params,
-				excludeFromDGC);
+		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
 	}
 
 	@Override
 	public void createHttpEndPoint(int cookieLifetime,
 			int disconnectionTimeout, Continuation<HttpEndPoint> cont) {
-		createHttpEndPoint(cookieLifetime, disconnectionTimeout, false, cont);
+		createHttpEndPoint(cookieLifetime, disconnectionTimeout,
+				DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
 	}
 
 	@Override
 	public void createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout, boolean excludeFromDGC,
+			int disconnectionTimeout, int garbagePeriod,
 			Continuation<HttpEndPoint> cont) {
 		createMediaElement(
 				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
 				internalCreateHttpEndPointConstructorParams(null,
-						cookieLifetime, disconnectionTimeout, excludeFromDGC),
+						cookieLifetime, disconnectionTimeout, garbagePeriod),
 				cont);
 	}
 
@@ -521,10 +554,10 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public RtpEndPoint createRtpEndPoint(boolean excludeFromDGC) {
+	public RtpEndPoint createRtpEndPoint(int garbagePeriod) {
 		return (RtpEndPoint) createMediaElement(
 				KmsMediaRtpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC));
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
 	}
 
 	@Override
@@ -533,11 +566,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createRtpEndPoint(boolean excludeFromDGC,
+	public void createRtpEndPoint(int garbagePeriod,
 			Continuation<RtpEndPoint> cont) {
 		createMediaElement(
 				KmsMediaRtpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC),
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
 				cont);
 	}
 
@@ -547,10 +580,10 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public WebRtcEndPoint createWebRtcEndPoint(boolean excludeFromDGC) {
+	public WebRtcEndPoint createWebRtcEndPoint(int garbagePeriod) {
 		return (WebRtcEndPoint) createMediaElement(
 				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC));
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
 	}
 
 	@Override
@@ -559,11 +592,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createWebRtcEndPoint(boolean excludeFromDGC,
+	public void createWebRtcEndPoint(int garbagePeriod,
 			Continuation<WebRtcEndPoint> cont) {
 		createMediaElement(
 				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC),
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
 				cont);
 	}
 
@@ -580,7 +613,7 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	private Map<String, MediaParam> internalCreateUriEndPointConstructorParams(
-			Map<String, MediaParam> params, URI uri, boolean excludeFromDGC) {
+			Map<String, MediaParam> params, URI uri, int garbagePeriod) {
 		if (params == null) {
 			params = new HashMap<String, MediaParam>(4);
 		}
@@ -589,21 +622,19 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		params.put(
 				KmsMediaUriEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				param);
-		return internalCreateMediaObjectConstructorParams(params,
-				excludeFromDGC);
-
+		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
 	}
 
 	@Override
 	public PlayerEndPoint createPlayerEndPoint(URI uri) {
 		return (PlayerEndPoint) createMediaElement(
 				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri, false));
+				internalCreateUriEndPointConstructorParams(null, uri,
+						DEFAULT_GARBAGE_COLLECTOR_PERIOD));
 	}
 
 	@Override
-	public PlayerEndPoint createPlayerEndPoint(String uriStr,
-			boolean excludeFromDGC) {
+	public PlayerEndPoint createPlayerEndPoint(String uriStr, int garbagePeriod) {
 		URI uri;
 		try {
 			uri = new URI(uriStr);
@@ -611,15 +642,15 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 			// TODO Add error code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-		return createPlayerEndPoint(uri, excludeFromDGC);
+		return createPlayerEndPoint(uri, garbagePeriod);
 	}
 
 	@Override
-	public PlayerEndPoint createPlayerEndPoint(URI uri, boolean excludeFromDGC) {
+	public PlayerEndPoint createPlayerEndPoint(URI uri, int garbagePeriod) {
 		return (PlayerEndPoint) createMediaElement(
 				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
 				internalCreateUriEndPointConstructorParams(null, uri,
-						excludeFromDGC));
+						garbagePeriod));
 	}
 
 	@Override
@@ -637,13 +668,14 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public void createPlayerEndPoint(URI uri, Continuation<PlayerEndPoint> cont) {
-		createMediaElement(KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri, false),
-				cont);
+		createMediaElement(
+				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
+				internalCreateUriEndPointConstructorParams(null, uri,
+						DEFAULT_GARBAGE_COLLECTOR_PERIOD), cont);
 	}
 
 	@Override
-	public void createPlayerEndPoint(String uriStr, boolean excludeFromDGC,
+	public void createPlayerEndPoint(String uriStr, int garbagePeriod,
 			Continuation<PlayerEndPoint> cont) {
 		URI uri;
 		try {
@@ -652,16 +684,16 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 			// TODO Add error code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-		createPlayerEndPoint(uri, excludeFromDGC, cont);
+		createPlayerEndPoint(uri, garbagePeriod, cont);
 	}
 
 	@Override
-	public void createPlayerEndPoint(URI uri, boolean excludeFromDGC,
+	public void createPlayerEndPoint(URI uri, int garbagePeriod,
 			Continuation<PlayerEndPoint> cont) {
 		createMediaElement(
 				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
 				internalCreateUriEndPointConstructorParams(null, uri,
-						excludeFromDGC), cont);
+						garbagePeriod), cont);
 	}
 
 	@Override
@@ -680,12 +712,13 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	public RecorderEndPoint createRecorderEndPoint(URI uri) {
 		return (RecorderEndPoint) createMediaElement(
 				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri, false));
+				internalCreateUriEndPointConstructorParams(null, uri,
+						DEFAULT_GARBAGE_COLLECTOR_PERIOD));
 	}
 
 	@Override
 	public RecorderEndPoint createRecorderEndPoint(String uriStr,
-			boolean excludeFromDGC) {
+			int garbagePeriod) {
 		URI uri;
 		try {
 			uri = new URI(uriStr);
@@ -693,16 +726,15 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 			// TODO Add error code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-		return createRecorderEndPoint(uri, excludeFromDGC);
+		return createRecorderEndPoint(uri, garbagePeriod);
 	}
 
 	@Override
-	public RecorderEndPoint createRecorderEndPoint(URI uri,
-			boolean excludeFromDGC) {
+	public RecorderEndPoint createRecorderEndPoint(URI uri, int garbagePeriod) {
 		return (RecorderEndPoint) createMediaElement(
 				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
 				internalCreateUriEndPointConstructorParams(null, uri,
-						excludeFromDGC));
+						garbagePeriod));
 	}
 
 	@Override
@@ -721,13 +753,14 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public void createRecorderEndPoint(URI uri,
 			Continuation<RecorderEndPoint> cont) {
-		createMediaElement(KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri, false),
-				cont);
+		createMediaElement(
+				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
+				internalCreateUriEndPointConstructorParams(null, uri,
+						DEFAULT_GARBAGE_COLLECTOR_PERIOD), cont);
 	}
 
 	@Override
-	public void createRecorderEndPoint(String uriStr, boolean excludeFromDGC,
+	public void createRecorderEndPoint(String uriStr, int garbagePeriod,
 			Continuation<RecorderEndPoint> cont) {
 		URI uri;
 		try {
@@ -736,16 +769,16 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 			// TODO Add error code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-		createRecorderEndPoint(uri, excludeFromDGC, cont);
+		createRecorderEndPoint(uri, garbagePeriod, cont);
 	}
 
 	@Override
-	public void createRecorderEndPoint(URI uri, boolean excludeFromDGC,
+	public void createRecorderEndPoint(URI uri, int garbagePeriod,
 			Continuation<RecorderEndPoint> cont) {
 		createMediaElement(
 				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
 				internalCreateUriEndPointConstructorParams(null, uri,
-						excludeFromDGC), cont);
+						garbagePeriod), cont);
 	}
 
 	@Override
@@ -754,10 +787,10 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public ZBarFilter createZBarFilter(boolean excludeFromDGC) {
+	public ZBarFilter createZBarFilter(int garbagePeriod) {
 		return (ZBarFilter) createMediaElement(
 				KmsMediaZBarFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC));
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
 	}
 
 	@Override
@@ -766,11 +799,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createZBarFilter(boolean excludeFromDGC,
+	public void createZBarFilter(int garbagePeriod,
 			Continuation<ZBarFilter> cont) {
 		createMediaElement(
 				KmsMediaZBarFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC),
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
 				cont);
 	}
 
@@ -780,10 +813,10 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public JackVaderFilter createJackVaderFilter(boolean excludeFromDGC) {
+	public JackVaderFilter createJackVaderFilter(int garbagePeriod) {
 		return (JackVaderFilter) createMediaElement(
 				KmsMediaJackVaderFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC));
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
 	}
 
 	@Override
@@ -792,12 +825,12 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createJackVaderFilter(boolean excludeFromDGC,
+	public void createJackVaderFilter(int garbagePeriod,
 			Continuation<JackVaderFilter> cont) {
-
 		createMediaElement(
 				KmsMediaJackVaderFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, excludeFromDGC),
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
 				cont);
 	}
+
 }

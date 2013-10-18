@@ -17,9 +17,12 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.GET_URL;
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.TYPE_NAME;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
@@ -28,6 +31,15 @@ public class HttpEndPointImpl extends AbstractSessionEndPoint implements
 
 	public HttpEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public HttpEndPointImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	/* SYNC */

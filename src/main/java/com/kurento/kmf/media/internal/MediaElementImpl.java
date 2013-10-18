@@ -17,6 +17,7 @@ package com.kurento.kmf.media.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -28,6 +29,7 @@ import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.MediaSource;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaPadRef;
+import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -44,6 +46,11 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 
 	public MediaElementImpl(MediaElementRef objectRef) {
 		super(objectRef);
+	}
+
+	public MediaElementImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	@Override

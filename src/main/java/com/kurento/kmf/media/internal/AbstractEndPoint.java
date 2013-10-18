@@ -14,8 +14,11 @@
  */
 package com.kurento.kmf.media.internal;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.EndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -29,6 +32,15 @@ public abstract class AbstractEndPoint extends MediaElementImpl implements
 	 */
 	public AbstractEndPoint(MediaElementRef objectRef) {
 		super(objectRef);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public AbstractEndPoint(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 }

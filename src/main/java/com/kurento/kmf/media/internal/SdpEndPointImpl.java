@@ -38,6 +38,15 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		super(endpointRef);
 	}
 
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public SdpEndPointImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
+	}
+
 	/* SYNC */
 	@Override
 	public String generateOffer() {

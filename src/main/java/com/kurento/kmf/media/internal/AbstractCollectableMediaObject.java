@@ -14,11 +14,18 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
+
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
+import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
+import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 
 /**
  * Abstract class that encapsulates the registration of a {@link MediaObject} in
@@ -35,16 +42,40 @@ public abstract class AbstractCollectableMediaObject extends
 	@Autowired
 	private DistributedGarbageCollector distributedGarbageCollector;
 
+	private final int garbagePeriod;
+
 	/**
 	 * @param ref
 	 */
 	public AbstractCollectableMediaObject(MediaObjectRef ref) {
 		super(ref);
+		this.garbagePeriod = DEFAULT_GARBAGE_COLLECTOR_PERIOD;
+	}
+
+	/**
+	 * @param ref
+	 * @param params
+	 */
+	public AbstractCollectableMediaObject(MediaObjectRef ref,
+			Map<String, MediaParam> params) {
+		super(ref, params);
+		MediaObjectConstructorParam objConstructorParam = (MediaObjectConstructorParam) params
+				.get(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE);
+		if (objConstructorParam != null) {
+			this.garbagePeriod = objConstructorParam
+					.getGarbageCollectorPeriod();
+		} else {
+			this.garbagePeriod = DEFAULT_GARBAGE_COLLECTOR_PERIOD;
+		}
 	}
 
 	@Override
 	protected void init() {
-		distributedGarbageCollector.registerReference(objectRef.getThriftRef());
+		if (garbagePeriod > 0) {
+			distributedGarbageCollector.registerReference(
+					objectRef.getThriftRef(), garbagePeriod);
+		}
+
 		super.init();
 	}
 

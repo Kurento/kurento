@@ -16,9 +16,12 @@ package com.kurento.kmf.media.internal;
 
 import static com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class RecorderEndPointImpl extends AbstractUriEndPoint implements
@@ -26,6 +29,15 @@ public class RecorderEndPointImpl extends AbstractUriEndPoint implements
 
 	public RecorderEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public RecorderEndPointImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	/* SYNC */

@@ -17,12 +17,15 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.TYPE_NAME;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class PlayerEndPointImpl extends AbstractUriEndPoint implements
@@ -30,6 +33,15 @@ public class PlayerEndPointImpl extends AbstractUriEndPoint implements
 
 	public PlayerEndPointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public PlayerEndPointImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	@Override

@@ -17,6 +17,8 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_COMPLETE;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_START;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.SessionEndPoint;
@@ -24,12 +26,22 @@ import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 		implements SessionEndPoint {
 
 	public AbstractSessionEndPoint(MediaElementRef endpointRef) {
 		super(endpointRef);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public AbstractSessionEndPoint(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	/* SYNC */

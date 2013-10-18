@@ -17,18 +17,30 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND;
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.TYPE_NAME;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class ZBarFilterImpl extends FilterImpl implements ZBarFilter {
 
 	public ZBarFilterImpl(MediaElementRef filterId) {
 		super(filterId);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public ZBarFilterImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 	@Override

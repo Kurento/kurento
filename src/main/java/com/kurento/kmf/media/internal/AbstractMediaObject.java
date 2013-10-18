@@ -87,6 +87,11 @@ public abstract class AbstractMediaObject implements MediaObject {
 		objectRef = ref;
 	}
 
+	public AbstractMediaObject(MediaObjectRef ref,
+			Map<String, MediaParam> params) {
+		this(ref);
+	}
+
 	public Long getId() {
 		return objectRef.getId();
 	}

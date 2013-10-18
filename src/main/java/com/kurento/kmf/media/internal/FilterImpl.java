@@ -14,13 +14,24 @@
  */
 package com.kurento.kmf.media.internal;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.Filter;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 public class FilterImpl extends MediaElementImpl implements Filter {
 
 	public FilterImpl(MediaElementRef filterId) {
 		super(filterId);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public FilterImpl(MediaElementRef objectRef, Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 }

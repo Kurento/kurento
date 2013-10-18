@@ -16,14 +16,26 @@ package com.kurento.kmf.media.internal;
 
 import static com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants.TYPE_NAME;
 
+import java.util.Map;
+
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
+import com.kurento.kmf.media.params.MediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class JackVaderFilterImpl extends FilterImpl implements JackVaderFilter {
 
 	public JackVaderFilterImpl(MediaElementRef filterId) {
 		super(filterId);
+	}
+
+	/**
+	 * @param objectRef
+	 * @param params
+	 */
+	public JackVaderFilterImpl(MediaElementRef objectRef,
+			Map<String, MediaParam> params) {
+		super(objectRef, params);
 	}
 
 }

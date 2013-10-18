@@ -33,14 +33,14 @@ import com.kurento.kms.thrift.api.KmsMediaObjectConstructorParams;
 public class MediaObjectConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
-	public Boolean excludeFromGC;
+	private int garbageCollectorPeriod;
 
-	public void excludeFromGC() {
-		this.excludeFromGC = Boolean.TRUE;
+	public void setGarbageCollectorPeriod(int secs) {
+		this.garbageCollectorPeriod = secs;
 	}
 
-	public void includeInGC() {
-		this.excludeFromGC = Boolean.FALSE;
+	public int getGarbageCollectorPeriod() {
+		return garbageCollectorPeriod;
 	}
 
 	public MediaObjectConstructorParam() {
@@ -50,8 +50,11 @@ public class MediaObjectConstructorParam extends
 	@Override
 	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaObjectConstructorParams kmsParams = new KmsMediaObjectConstructorParams();
-		if (Boolean.TRUE.equals(excludeFromGC)) {
-			kmsParams.setExcludeFromGC(excludeFromGC.booleanValue());
+
+		kmsParams.setExcludeFromGC(garbageCollectorPeriod <= 0);
+
+		if (garbageCollectorPeriod > 0) {
+			kmsParams.setGarbageCollectorPeriod(garbageCollectorPeriod);
 		}
 
 		try {
@@ -73,6 +76,13 @@ public class MediaObjectConstructorParam extends
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), 30000);
 		}
+
+		if (kmsParams.isSetExcludeFromGC() && kmsParams.excludeFromGC) {
+			this.garbageCollectorPeriod = 0;
+		} else if (kmsParams.isSetGarbageCollectorPeriod()) {
+			this.garbageCollectorPeriod = kmsParams.garbageCollectorPeriod;
+		}
+
 	}
 
 }

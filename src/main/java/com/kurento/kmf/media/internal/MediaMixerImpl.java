@@ -25,6 +25,7 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
+import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -37,6 +38,14 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 
 	public MediaMixerImpl(MediaMixerRef objectRef) {
 		super(objectRef);
+	}
+
+	/**
+	 * @param ref
+	 * @param params
+	 */
+	public MediaMixerImpl(MediaObjectRef ref, Map<String, MediaParam> params) {
+		super(ref, params);
 	}
 
 	@Override
@@ -86,7 +95,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 		}
 
 		MediaElementImpl endPoint = (MediaElementImpl) ctx.getBean(
-				"mediaObject", endPointRef);
+				"mediaObjectWithParams", endPointRef, params);
 		return endPoint;
 	}
 
@@ -135,7 +144,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createEndPoint(Map<String, MediaParam> params,
+	public void createEndPoint(final Map<String, MediaParam> params,
 			final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 
@@ -171,7 +180,8 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 								clientPool.release(client);
 							}
 							MediaElementImpl endPoint = (MediaElementImpl) ctx
-									.getBean("mediaObject", endPointRef);
+									.getBean("mediaObjectWithParams",
+											endPointRef, params);
 							cont.onSuccess(endPoint);
 						}
 					});

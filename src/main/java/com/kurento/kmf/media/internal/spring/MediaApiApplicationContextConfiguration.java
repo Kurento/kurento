@@ -15,6 +15,7 @@
 package com.kurento.kmf.media.internal.spring;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -199,8 +200,23 @@ public class MediaApiApplicationContextConfiguration {
 	@Bean
 	@Scope("prototype")
 	public MediaObject mediaObject(MediaObjectRef objRef) {
+		Class<?> clazz = getMediaObjectClass(objRef);
+		MediaObject obj = instantiateMediaObject(clazz, objRef);
+		return obj;
+	}
 
+	@Bean
+	@Scope("prototype")
+	public MediaObject mediaObjectWithParams(MediaObjectRef objRef,
+			Map<String, MediaParam> params) {
+		Class<?> clazz = getMediaObjectClass(objRef);
+		MediaObject obj = instantiateMediaObject(clazz, objRef, params);
+		return obj;
+	}
+
+	private Class<?> getMediaObjectClass(MediaObjectRef objRef) {
 		Class<?> clazz;
+
 		if (objRef instanceof MediaPadRef) {
 			MediaPadRef padRefDTO = (MediaPadRef) objRef;
 			clazz = classFromPadDirection(padRefDTO.getPadDirection());
@@ -231,13 +247,10 @@ public class MediaApiApplicationContextConfiguration {
 					"Unknown object ref of type " + objRef.getClass(), 30000);
 		}
 
-		MediaObject obj = instantiateMediaObject(clazz, objRef);
-
-		return obj;
+		return clazz;
 	}
 
-	private static Class<?> classFromPadDirection(
-			KmsMediaPadDirection padDirection) {
+	private Class<?> classFromPadDirection(KmsMediaPadDirection padDirection) {
 		Class<?> clazz;
 		switch (padDirection) {
 		case SINK:
@@ -254,7 +267,7 @@ public class MediaApiApplicationContextConfiguration {
 		return clazz;
 	}
 
-	private static MediaObject instantiateMediaObject(Class<?> clazz,
+	private MediaObject instantiateMediaObject(Class<?> clazz,
 			MediaObjectRef objRef) {
 
 		// TODO Change error code
@@ -265,10 +278,26 @@ public class MediaApiApplicationContextConfiguration {
 			// TODO: document that all media objects must have such constructor
 			Constructor<?> constructor = clazz
 					.getConstructor(objRef.getClass());
-			// This cast is safe as long as the type of the class refers to a
-			// type that extends from MediaObject.
-			// Nevertheless, a catch is included in the try-catch block.
 			obj = (MediaObject) constructor.newInstance(objRef);
+		} catch (Exception e) {
+			// TODO error code and message
+			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
+		}
+
+		return obj;
+	}
+
+	private MediaObject instantiateMediaObject(Class<?> clazz,
+			MediaObjectRef objRef, Map<String, MediaParam> params) {
+
+		// TODO Change error code
+		Assert.notNull(clazz, "MediaObject class not found", 30000);
+
+		MediaObject obj;
+		try {
+			Constructor<?> constructor = clazz.getConstructor(
+					objRef.getClass(), Map.class);
+			obj = (MediaObject) constructor.newInstance(objRef, params);
 		} catch (Exception e) {
 			// TODO error code and message
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
