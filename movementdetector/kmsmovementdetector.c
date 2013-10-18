@@ -131,15 +131,19 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
 {
   KmsMovementDetector *movementdetector = KMS_MOVEMENT_DETECTOR (filter);
   GstMapInfo info;
+  IplImage *imgBN, *imgDiff;
+  CvMemStorage *mem;
+  CvSeq *contours = 0;
+  gboolean imagesChanged;
 
   //checking image sizes
-  gboolean imagesChanged =
+  imagesChanged =
       kms_movement_detector_initialize_images (movementdetector, frame);
 
   //get current frame
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
   movementdetector->img->imageData = (char *) info.data;
-  IplImage *imgBN = cvCreateImage (cvGetSize (movementdetector->img),
+  imgBN = cvCreateImage (cvGetSize (movementdetector->img),
       movementdetector->img->depth, 1);
 
   cvConvertImage (movementdetector->img, imgBN, CV_BGR2GRAY);
@@ -148,18 +152,15 @@ kms_movement_detector_transform_frame_ip (GstVideoFilter * filter,
     goto end;
   }
   //image difference
-  IplImage *imgDiff = cvCreateImage (cvGetSize (movementdetector->img),
+  imgDiff = cvCreateImage (cvGetSize (movementdetector->img),
       movementdetector->img->depth, 1);
 
   cvSub (movementdetector->imgAntBN, imgBN, imgDiff, NULL);
   cvThreshold (imgDiff, imgDiff, 125, 255, CV_THRESH_OTSU);
   cvErode (imgDiff, imgDiff, NULL, 1);
   cvDilate (imgDiff, imgDiff, NULL, 1);
-  CvMemStorage *mem;
 
   mem = cvCreateMemStorage (0);
-  CvSeq *contours = 0;
-
   cvFindContours (imgDiff, mem, &contours, sizeof (CvContour), CV_RETR_CCOMP,
       CV_CHAIN_APPROX_NONE, cvPoint (0, 0));
 
