@@ -135,6 +135,14 @@ struct thread_cb_data
   GDestroyNotify notify;
 };
 
+struct state_controller
+{
+  GCond cond;
+  GMutex mutex;
+  guint locked;
+  gboolean changing;
+};
+
 struct _KmsRecorderEndPointPrivate
 {
   GstElement *pipeline;
@@ -143,6 +151,7 @@ struct _KmsRecorderEndPointPrivate
   RecorderState state;
   struct config_data *confdata;
   struct thread_data tdata;
+  struct state_controller state_manager;
 };
 
 /* class initialization */
@@ -287,6 +296,43 @@ recv_eos (GstElement * appsink, gpointer user_data)
   GstElement *appsrc = GST_ELEMENT (user_data);
 
   send_eos (appsrc);
+}
+
+static void
+kms_recorder_end_point_change_state (KmsRecorderEndPoint * self)
+{
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  g_mutex_lock (&self->priv->state_manager.mutex);
+  while (self->priv->state_manager.changing) {
+    GST_WARNING ("Change of state is taking place");
+    self->priv->state_manager.locked++;
+    g_cond_wait (&self->priv->state_manager.cond,
+        &self->priv->state_manager.mutex);
+    self->priv->state_manager.locked--;
+  }
+
+  self->priv->state_manager.changing = TRUE;
+  g_mutex_unlock (&self->priv->state_manager.mutex);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
+}
+
+static void
+kms_recorder_end_point_state_changed (KmsRecorderEndPoint * self,
+    KmsUriEndPointState state)
+{
+  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
+      state);
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
+
+  g_mutex_lock (&self->priv->state_manager.mutex);
+  self->priv->state_manager.changing = FALSE;
+  if (self->priv->state_manager.locked > 0)
+    g_cond_signal (&self->priv->state_manager.cond);
+  g_mutex_unlock (&self->priv->state_manager.mutex);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 }
 
 static void
@@ -464,10 +510,9 @@ set_to_null_state_on_EOS (gpointer data)
 
   gst_element_set_state (recorder->priv->pipeline, GST_STATE_NULL);
 
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
+  kms_recorder_end_point_state_changed (recorder, KMS_URI_END_POINT_STATE_STOP);
 
-  KMS_URI_END_POINT_GET_CLASS (recorder)->change_state (KMS_URI_END_POINT
-      (recorder), KMS_URI_END_POINT_STATE_STOP);
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 }
 
 static void
@@ -511,6 +556,24 @@ destroy_thread_cb_data (gpointer data)
 }
 
 static void
+kms_recorder_end_point_release_pending_requests (KmsRecorderEndPoint * self)
+{
+  g_mutex_lock (&self->priv->state_manager.mutex);
+  while (self->priv->state_manager.changing ||
+      self->priv->state_manager.locked > 0) {
+    GST_WARNING ("Waiting to all process blocked");
+    self->priv->state_manager.locked++;
+    g_cond_wait (&self->priv->state_manager.cond,
+        &self->priv->state_manager.mutex);
+    self->priv->state_manager.locked--;
+  }
+  g_mutex_unlock (&self->priv->state_manager.mutex);
+
+  g_cond_clear (&self->priv->state_manager.cond);
+  g_mutex_clear (&self->priv->state_manager.mutex);
+}
+
+static void
 kms_recorder_end_point_finalize (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
@@ -526,6 +589,8 @@ kms_recorder_end_point_finalize (GObject * object)
 
   g_cond_clear (&self->priv->tdata.thread_cond);
   g_mutex_clear (&self->priv->tdata.thread_mutex);
+
+  kms_recorder_end_point_release_pending_requests (self);
 
   g_queue_free_full (self->priv->tdata.actions, destroy_thread_cb_data);
 
@@ -734,6 +799,8 @@ kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
 
+  kms_recorder_end_point_change_state (self);
+
   /* Close valves */
   kms_recorder_end_point_close_valves (self);
 
@@ -751,14 +818,15 @@ kms_recorder_end_point_started (KmsUriEndPoint * obj)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
 
+  kms_recorder_end_point_change_state (self);
+
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
 
   /* Open valves */
   kms_recorder_end_point_open_valves (self);
 
-  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
-      KMS_URI_END_POINT_STATE_START);
+  kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_START);
 }
 
 static void
@@ -766,14 +834,15 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
 
+  kms_recorder_end_point_change_state (self);
+
   /* Close valves */
   kms_recorder_end_point_close_valves (self);
 
   /* Set internal pipeline to GST_STATE_PAUSED */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
 
-  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
-      KMS_URI_END_POINT_STATE_PAUSE);
+  kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_PAUSE);
 }
 
 static void
@@ -1030,7 +1099,6 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   }
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-
   /* Do not pass the EOS event downstream */
   return GST_PAD_PROBE_DROP;
 }
@@ -1450,6 +1518,7 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->encodebin = NULL;
   self->priv->state = UNCONFIGURED;
+  g_cond_init (&self->priv->state_manager.cond);
 
   self->priv->tdata.actions = g_queue_new ();
   g_cond_init (&self->priv->tdata.thread_cond);
