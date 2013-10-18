@@ -34,7 +34,7 @@ typedef struct _KmsMovementDetectorClass KmsMovementDetectorClass;
 struct _KmsMovementDetector {
   GstVideoFilter parent;
   IplImage* img;
-  IplImage* imgAntBN;
+  IplImage* imgOldBW;
 };
 
 struct _KmsMovementDetectorClass {
