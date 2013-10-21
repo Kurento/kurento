@@ -14,11 +14,17 @@
  */
 package com.kurento.kmf.media;
 
+import java.util.Random;
+import java.util.UUID;
+
+import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
+import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.internal.refs.MediaPadRef;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
 import com.kurento.kms.thrift.api.KmsMediaElement;
+import com.kurento.kms.thrift.api.KmsMediaError;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 import com.kurento.kms.thrift.api.KmsMediaMixer;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
@@ -35,6 +41,28 @@ import com.kurento.kms.thrift.api.KmsMediaType;
  */
 public class Utils {
 
+	private static final Random rnd = new Random(System.nanoTime());
+
+	/**
+	 * Creates a {@link KmsMediaEvent}
+	 * 
+	 * @param ref
+	 *            The {@link MediaObjectRef} to the object
+	 * 
+	 * @param type
+	 *            type of the event
+	 * @param dataType
+	 *            type of the data associated to the event
+	 * @param payload
+	 *            the serialised data of the event
+	 * @return The event
+	 */
+	public static KmsMediaEvent createKmsEvent(MediaObjectRef ref, String type,
+			String dataType, byte[] payload) {
+		KmsMediaObjectRef element = ref.getThriftRef();
+		return createKmsEvent(element, type, dataType, payload);
+	}
+
 	/**
 	 * Creates a {@link KmsMediaEvent}
 	 * 
@@ -49,6 +77,12 @@ public class Utils {
 	public static KmsMediaEvent createKmsEvent(String type, String dataType,
 			byte[] payload) {
 		KmsMediaObjectRef element = createKmsElementRef("Any type");
+		return createKmsEvent(element, type, dataType, payload);
+	}
+
+	private static KmsMediaEvent createKmsEvent(KmsMediaObjectRef ref,
+			String type, String dataType, byte[] payload) {
+		KmsMediaObjectRef element = ref;
 		KmsMediaEvent kmsEvent = new KmsMediaEvent(type, element);
 		kmsEvent.setEventData(createKmsParam(dataType, payload));
 		return kmsEvent;
@@ -78,7 +112,8 @@ public class Utils {
 		KmsMediaElement el = new KmsMediaElement(typeName);
 		KmsMediaObjectType type = new KmsMediaObjectType();
 		type.setElement(el);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "token", type);
+		KmsMediaObjectRef objRef = new KmsMediaObjectRef(rnd.nextLong(), UUID
+				.randomUUID().toString(), type);
 		return objRef;
 	}
 
@@ -90,7 +125,8 @@ public class Utils {
 		KmsMediaPipeline pipeline = new KmsMediaPipeline();
 		KmsMediaObjectType type = new KmsMediaObjectType();
 		type.setPipeline(pipeline);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "", type);
+		KmsMediaObjectRef objRef = new KmsMediaObjectRef(rnd.nextLong(), UUID
+				.randomUUID().toString(), type);
 		return objRef;
 	}
 
@@ -102,7 +138,8 @@ public class Utils {
 		KmsMediaMixer mixer = new KmsMediaMixer(typeName);
 		KmsMediaObjectType type = new KmsMediaObjectType();
 		type.setMixer(mixer);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "token", type);
+		KmsMediaObjectRef objRef = new KmsMediaObjectRef(rnd.nextLong(), UUID
+				.randomUUID().toString(), type);
 		return objRef;
 	}
 
@@ -116,7 +153,26 @@ public class Utils {
 		KmsMediaPad pad = new KmsMediaPad(direction, padType, description);
 		KmsMediaObjectType type = new KmsMediaObjectType();
 		type.setPad(pad);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "token", type);
+		KmsMediaObjectRef objRef = new KmsMediaObjectRef(rnd.nextLong(), UUID
+				.randomUUID().toString(), type);
 		return objRef;
 	}
+
+	/**
+	 * Creates a {@link MediaError} to be used in tests
+	 * 
+	 * @param ref
+	 *            The reference structure of the object
+	 * 
+	 * @return The media error
+	 */
+	public static MediaError createMediaError(MediaObjectRef ref) {
+		KmsMediaError kmsError = new KmsMediaError();
+		kmsError.description = "An error";
+		kmsError.errorCode = rnd.nextInt();
+		kmsError.source = ref.getThriftRef();
+		kmsError.type = "Some type";
+		return (new MediaError(kmsError));
+	}
+
 }

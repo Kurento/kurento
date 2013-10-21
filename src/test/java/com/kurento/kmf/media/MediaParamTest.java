@@ -16,12 +16,14 @@ package com.kurento.kmf.media;
 
 import static com.kurento.kmf.media.Utils.createKmsParam;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.BOOL_DATA_TYPE;
+import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.BYTE_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.DOUBLE_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.I16_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.I32_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.I64_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.STRING_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.VOID_DATA_TYPE;
+import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND_DATA_TYPE;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,21 +35,46 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.BooleanMediaParam;
+import com.kurento.kmf.media.params.internal.ByteMediaParam;
+import com.kurento.kmf.media.params.internal.DefaultMediaParam;
 import com.kurento.kmf.media.params.internal.DoubleMediaParam;
+import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
+import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
+import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
 import com.kurento.kmf.media.params.internal.ShortMediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
+import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
 import com.kurento.kmf.media.params.internal.VoidMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants;
 
-//TODO put the correct payload in all params
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
 public class MediaParamTest {
 
+	private static final String DEFAULT_PARAM = "default media param";
+
 	@Autowired
 	private ApplicationContext ctx;
+
+	@Test
+	public void testDefaultMediaParam() {
+		DefaultMediaParam in = new DefaultMediaParam(DEFAULT_PARAM);
+		String str = "string to use as payload";
+		in.setData(str.getBytes());
+		// This will get the payload serialised
+		KmsMediaParam param = createKmsParam(DEFAULT_PARAM, in
+				.getThriftParams().getData());
+		DefaultMediaParam out = instantiateAndCheck(DefaultMediaParam.class,
+				param);
+		// Check if what was serialised is the same as what was received.
+		String outStr = new String(out.getData());
+		Assert.assertEquals(str, outStr);
+	}
 
 	@Test
 	public void testBoolDataTypeInstantiation() {
@@ -63,6 +90,18 @@ public class MediaParamTest {
 	}
 
 	@Test
+	public void testByteDataTypeInstantiation() {
+		ByteMediaParam in = new ByteMediaParam();
+		in.setByte((byte) 100);
+		// This will get the payload serialised
+		KmsMediaParam param = createKmsParam(BYTE_DATA_TYPE, in
+				.getThriftParams().getData());
+		ByteMediaParam out = instantiateAndCheck(ByteMediaParam.class, param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertTrue(out.getByte() == in.getByte());
+	}
+
+	@Test
 	public void testDoubleDataTypeInstantiation() {
 		DoubleMediaParam in = new DoubleMediaParam();
 		in.setDouble(123.123);
@@ -73,6 +112,21 @@ public class MediaParamTest {
 				param);
 		// Check if what was serialised is the same as what was received.
 		Assert.assertTrue(out.getDouble() == in.getDouble());
+	}
+
+	@Test
+	public void testEventCodeFoundInstantiation() {
+		EventCodeFoundParam in = new EventCodeFoundParam();
+		in.setCodeType("A code");
+		in.setValue("A value");
+		KmsMediaParam param = createKmsParam(EVENT_CODE_FOUND_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		EventCodeFoundParam out = instantiateAndCheck(
+				EventCodeFoundParam.class, param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertEquals(in.getCodeType(), out.getCodeType());
+		Assert.assertEquals(in.getValue(), out.getValue());
 	}
 
 	@Test
@@ -134,6 +188,50 @@ public class MediaParamTest {
 		VoidMediaParam out = instantiateAndCheck(VoidMediaParam.class, param);
 		// This object has no params
 		Assert.assertTrue(out.getThriftParams().getData().length == 0);
+	}
+
+	@Test
+	public void testUriParamConstructor() {
+		UriEndPointConstructorParam in = new UriEndPointConstructorParam();
+		in.setUri("http://test.com");
+		KmsMediaParam param = createKmsParam(
+				KmsMediaUriEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		UriEndPointConstructorParam out = instantiateAndCheck(
+				UriEndPointConstructorParam.class, param);
+		Assert.assertTrue(in.getUri().equals(out.getUri()));
+	}
+
+	@Test
+	public void testMediaObjectConstructor() {
+		MediaObjectConstructorParam in = new MediaObjectConstructorParam();
+		in.setGarbageCollectorPeriod(100);
+		KmsMediaParam param = createKmsParam(
+				KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE, in
+						.getThriftParams().getData());
+
+		MediaObjectConstructorParam out = instantiateAndCheck(
+				MediaObjectConstructorParam.class, param);
+		Assert.assertTrue(in.getGarbageCollectorPeriod() == out
+				.getGarbageCollectorPeriod());
+	}
+
+	@Test
+	public void testHttpEndPointConstructor() {
+		HttpEndpointConstructorParam in = new HttpEndpointConstructorParam();
+		in.setCookieLifetime(Integer.valueOf(100));
+		in.setDisconnectionTimeout(Integer.valueOf(200));
+		KmsMediaParam param = createKmsParam(
+				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		HttpEndpointConstructorParam out = instantiateAndCheck(
+				HttpEndpointConstructorParam.class, param);
+		Assert.assertTrue(in.getCookieLifetime()
+				.equals(out.getCookieLifetime()));
+		Assert.assertTrue(in.getDisconnectionTimeout().equals(
+				out.getDisconnectionTimeout()));
 	}
 
 	private <T extends MediaParam> T instantiateAndCheck(
