@@ -36,7 +36,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
 	protected void init(BasePoolableObjectFactory<T> factory) {
 		Config config = new Config();
-		config.maxActive = apiConfig.getPoolSize();
+		config.maxActive = apiConfig.getClientPoolSize();
 		config.whenExhaustedAction = WHEN_EXHAUSTED_FAIL;
 		this.pool = new GenericObjectPool<T>(factory, config);
 	}

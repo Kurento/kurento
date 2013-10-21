@@ -20,8 +20,6 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -34,6 +32,7 @@ import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.internal.AbstractMediaEvent;
 import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
 import com.kurento.kmf.media.internal.DistributedGarbageCollector;
+import com.kurento.kmf.media.internal.MediaApiExecutorService;
 import com.kurento.kmf.media.internal.MediaElementImpl;
 import com.kurento.kmf.media.internal.MediaHandlerServer;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
@@ -61,13 +60,8 @@ import com.kurento.kms.thrift.api.KmsMediaParam;
 public class MediaApiApplicationContextConfiguration {
 
 	@Bean
-	public TaskExecutor taskExecutor() {
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-		executor.setCorePoolSize(5);
-		executor.setMaxPoolSize(10);
-		executor.setQueueCapacity(10);
-		executor.initialize();
-		return executor;
+	MediaApiExecutorService executorServcie() {
+		return new MediaApiExecutorService();
 	}
 
 	@Bean

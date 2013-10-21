@@ -13,7 +13,6 @@
 		<property name="serverPort" value="9090" />
 		<property name="handlerAddress" value="193.147.51.46" />
 		<property name="handlerPort" value="9191" />
-		<property name="poolSize" value="5" />
 	</bean>
 
 </beans>
