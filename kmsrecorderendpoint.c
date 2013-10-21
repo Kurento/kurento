@@ -71,12 +71,6 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
-struct remove_data
-{
-  KmsRecorderEndPoint *recorder;
-  GstElement *element;
-};
-
 struct config_valve
 {
   GstElement *valve;
@@ -947,28 +941,6 @@ unlock_pending_valves (gpointer data, gpointer user_data)
 }
 
 static void
-remove_element_from_pipeline (gpointer user_data)
-{
-  struct remove_data *data = user_data;
-
-  GST_DEBUG ("Remove element %" GST_PTR_FORMAT, data->element);
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (data->recorder));
-
-  gst_element_set_locked_state (data->element, TRUE);
-  gst_element_set_state (data->element, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (data->recorder->priv->pipeline), data->element);
-
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (data->recorder));
-}
-
-static void
-destroy_remove_data (gpointer data)
-{
-  g_slice_free (struct remove_data, data);
-}
-
-static void
 add_pending_appsinks (gpointer data, gpointer user_data)
 {
   KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
@@ -1007,8 +979,8 @@ connect_pending_appsrcs_to_encodebin (gpointer data, gpointer user_data)
 static void
 kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
 {
-  struct remove_data *data;
   GstPad *srcpad, *sinkpad;
+  GstElement *sink;
 
   /* Unlink encodebin from sinkapp */
   srcpad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
@@ -1021,21 +993,16 @@ kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
   g_object_unref (srcpad);
 
   /* Remove old encodebin and sink elements */
-  data = g_slice_new0 (struct remove_data);
+  sink = gst_pad_get_parent_element (sinkpad);
+  gst_element_set_locked_state (sink, TRUE);
+  gst_element_set_state (sink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (recorder->priv->pipeline), sink);
+  g_object_unref (sink);
 
-  data->recorder = recorder;
-  data->element = gst_pad_get_parent_element (sinkpad);
-  kms_recorder_end_point_add_action (recorder, remove_element_from_pipeline,
-      data, destroy_remove_data);
-  g_object_unref (data->element);
-  g_object_unref (sinkpad);
-
-  data = g_slice_new0 (struct remove_data);
-
-  data->recorder = recorder;
-  data->element = recorder->priv->encodebin;
-  kms_recorder_end_point_add_action (recorder, remove_element_from_pipeline,
-      data, destroy_remove_data);
+  gst_element_set_locked_state (recorder->priv->encodebin, TRUE);
+  gst_element_set_state (recorder->priv->encodebin, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (recorder->priv->pipeline),
+      recorder->priv->encodebin);
 
   /* Add the new encodebin to the pipeline */
   recorder->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
@@ -1068,6 +1035,19 @@ kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
   kms_recorder_end_point_free_config_data (recorder);
 }
 
+static void
+kms_recorder_end_point_do_reconfiguration (gpointer user_data)
+{
+  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
+
+  kms_recorder_end_point_reconfigure_pipeline (recorder);
+  recorder->priv->state = CONFIGURED;
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
+}
+
 static GstPadProbeReturn
 event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
@@ -1090,8 +1070,8 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
     GST_DEBUG ("No pad in blocking state");
     /* No more pending valves in blocking state */
     /* so we can remove probes to unlock pads */
-    kms_recorder_end_point_reconfigure_pipeline (recorder);
-    recorder->priv->state = CONFIGURED;
+    kms_recorder_end_point_add_action (recorder,
+        kms_recorder_end_point_do_reconfiguration, recorder, NULL);
   } else {
     GST_DEBUG ("Waiting for pads to block");
     recorder->priv->state = WAIT_PENDING;
@@ -1293,8 +1273,8 @@ pad_probe_blocked_cb (GstPad * srcpad, GstPadProbeInfo * info,
     goto end;
   }
 
-  kms_recorder_end_point_reconfigure_pipeline (recorder);
-  recorder->priv->state = CONFIGURED;
+  kms_recorder_end_point_add_action (recorder,
+      kms_recorder_end_point_do_reconfiguration, recorder, NULL);
 
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
