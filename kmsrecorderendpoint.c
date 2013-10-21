@@ -273,8 +273,8 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   if (ret != GST_FLOW_OK) {
     /* something wrong */
-    GST_ERROR ("Could not send buffer to appsrc %s. Ret code %d",
-        GST_ELEMENT_NAME (appsrc), ret);
+    GST_ERROR ("Could not send buffer to appsrc %s. Cause: %s",
+        GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
   }
 
 end:
