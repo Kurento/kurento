@@ -25,12 +25,12 @@ public interface HasMediaSessionTerminatedListener {
 
 	/* SYNC */
 
-	ListenerRegistration addMediaSessionCompleteListener(
+	ListenerRegistration addMediaSessionTerminatedListener(
 			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent);
 
 	/* ASYNC */
 
-	void addMediaSessionCompleteListener(
+	void addMediaSessionTerminatedListener(
 			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent,
 			final Continuation<ListenerRegistration> cont);
 

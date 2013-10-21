@@ -40,8 +40,6 @@ public class DistributedGarbageCollector {
 	private static final Logger log = LoggerFactory
 			.getLogger(DistributedGarbageCollector.class);
 
-	private static final long GARBAGE_PERIOD_MILIS = DEFAULT_GARBAGE_COLLECTOR_PERIOD * 1000;
-
 	@Autowired
 	protected MediaServerClientPoolService clientPool;
 
@@ -50,12 +48,14 @@ public class DistributedGarbageCollector {
 	private final ConcurrentHashMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
 
 	public void registerReference(final KmsMediaObjectRef objectRef) {
-		registerReference(objectRef, GARBAGE_PERIOD_MILIS);
+		registerReference(objectRef, DEFAULT_GARBAGE_COLLECTOR_PERIOD);
 	}
 
 	public void registerReference(final KmsMediaObjectRef objectRef,
-			long collectorPeriod) {
-		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
+			int collectorPeriod) {
+		Assert.notNull(objectRef,
+				"Invalid reference passed to DistributedGarbageCollector",
+				30000); // TODO: message and error code
 
 		Long refId = Long.valueOf(objectRef.id);
 		synchronized (this) {
@@ -71,13 +71,14 @@ public class DistributedGarbageCollector {
 		Timer timer = new Timer(true);
 		timers.put(refId, timer);
 
+		long collectorPeriodInMilis = collectorPeriod * 1000;
 		timer.scheduleAtFixedRate(new TimerTask() {
 
 			@Override
 			public void run() {
 				keepAlive(objectRef);
 			}
-		}, collectorPeriod, collectorPeriod);
+		}, collectorPeriodInMilis, collectorPeriodInMilis);
 	}
 
 	public void removeReference(KmsMediaObjectRef objectRef) {

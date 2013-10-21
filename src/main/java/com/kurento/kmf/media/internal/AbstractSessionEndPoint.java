@@ -47,7 +47,7 @@ public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 	/* SYNC */
 
 	@Override
-	public ListenerRegistration addMediaSessionCompleteListener(
+	public ListenerRegistration addMediaSessionTerminatedListener(
 			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent) {
 		return addListener(EVENT_MEDIA_SESSION_COMPLETE, sessionEvent);
 	}
@@ -61,7 +61,7 @@ public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 	/* ASYNC */
 
 	@Override
-	public void addMediaSessionCompleteListener(
+	public void addMediaSessionTerminatedListener(
 			final MediaEventListener<MediaSessionTerminatedEvent> sessionEvent,
 			final Continuation<ListenerRegistration> cont) {
 		addListener(EVENT_MEDIA_SESSION_COMPLETE, sessionEvent, cont);

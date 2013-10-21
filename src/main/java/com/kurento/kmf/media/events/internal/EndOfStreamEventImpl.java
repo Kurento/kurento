@@ -14,7 +14,10 @@
  */
 package com.kurento.kmf.media.events.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
+
 import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.internal.ProvidesMediaEvent;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 
 /**
@@ -23,6 +26,7 @@ import com.kurento.kms.thrift.api.KmsMediaEvent;
  * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
+@ProvidesMediaEvent(type = EVENT_EOS)
 public class EndOfStreamEventImpl extends VoidMediaEvent implements
 		EndOfStreamEvent {
 
