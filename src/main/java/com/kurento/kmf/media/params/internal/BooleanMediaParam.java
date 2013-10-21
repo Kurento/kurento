@@ -31,9 +31,12 @@ public class BooleanMediaParam extends AbstractThriftSerializedMediaParam {
 		return this.data;
 	}
 
-	public BooleanMediaParam(boolean data) {
-		super(BOOL_DATA_TYPE);
+	public void setBoolean(boolean data) {
 		this.data = data;
+	}
+
+	public BooleanMediaParam() {
+		super(BOOL_DATA_TYPE);
 	}
 
 	@Override

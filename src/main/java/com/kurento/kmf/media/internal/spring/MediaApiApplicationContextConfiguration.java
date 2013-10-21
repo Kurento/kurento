@@ -29,7 +29,6 @@ import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
-import com.kurento.kmf.media.events.internal.AbstractMediaEvent;
 import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
 import com.kurento.kmf.media.internal.DistributedGarbageCollector;
 import com.kurento.kmf.media.internal.MediaApiExecutorService;
@@ -139,7 +138,7 @@ public class MediaApiApplicationContextConfiguration {
 			clazz = DefaultMediaEventImpl.class;
 		}
 
-		AbstractMediaEvent<?> mediaEvent;
+		MediaEvent mediaEvent;
 		try {
 			// TODO: Document that all event classes must have one constructor
 			// taking a KmsMediaEvent
@@ -148,7 +147,7 @@ public class MediaApiApplicationContextConfiguration {
 			// This cast is safe as long as the type of the class refers to a
 			// type that extends from AbstarctMediaEvent.
 			// Nevertheless, a catch is included in the try-catch block.
-			mediaEvent = (AbstractMediaEvent<?>) constructor.newInstance(event);
+			mediaEvent = (MediaEvent) constructor.newInstance(event);
 		} catch (Exception e) {
 			// TODO error code and message
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);

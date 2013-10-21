@@ -9,10 +9,11 @@
 	<context:component-scan base-package="com.kurento.kmf.media" />
 
 	<bean id="mediaApiConfiguration" class="com.kurento.kmf.media.MediaApiConfiguration">
-		<property name="serverAddress" value="192.168.0.106" />
+		<!--property name="serverAddress" value="192.168.0.106" />
 		<property name="serverPort" value="9090" />
-		<property name="handlerAddress" value="192.168.0.104" />
-		<property name="handlerPort" value="9191" />
+		<property name="handlerAddress" value="localhost" />
+		<property name="handlerPort" value="9191" /-->
+		<property name="clientPoolSize" value="0"/>
 	</bean>
 
 </beans>
