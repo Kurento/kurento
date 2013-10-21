@@ -808,8 +808,7 @@ kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
     kms_recorder_end_point_wait_for_pipeline_eos (self);
   } else {
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-    KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
-        KMS_URI_END_POINT_STATE_STOP);
+    kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_STOP);
   }
 }
 
