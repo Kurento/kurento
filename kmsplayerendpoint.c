@@ -158,7 +158,7 @@ eos_cb (GstElement * appsink, gpointer user_data)
   event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM, s);
 
   if (!gst_pad_push_event (srcpad, event))
-    GST_ERROR ("PlayerEndPointEOS event could not be sent");
+    GST_ERROR (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME " event could not be sent");
 
   g_object_unref (srcpad);
 }
