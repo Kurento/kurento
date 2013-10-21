@@ -14,6 +14,11 @@
  */
 package com.kurento.kmf.media;
 
+import static com.kurento.kmf.media.Utils.createMediaElementRef;
+import static com.kurento.kmf.media.Utils.createMediaMixerRef;
+import static com.kurento.kmf.media.Utils.createMediaPadRef;
+import static com.kurento.kmf.media.Utils.createMediaPipelineRef;
+
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -36,20 +41,10 @@ import com.kurento.kmf.media.internal.RecorderEndPointImpl;
 import com.kurento.kmf.media.internal.RtpEndPointImpl;
 import com.kurento.kmf.media.internal.WebRtcEndPointImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
-import com.kurento.kmf.media.internal.refs.MediaElementRef;
-import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
-import com.kurento.kmf.media.internal.refs.MediaPadRef;
-import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
-import com.kurento.kms.thrift.api.KmsMediaElement;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaMixer;
-import com.kurento.kms.thrift.api.KmsMediaObjectRef;
-import com.kurento.kms.thrift.api.KmsMediaObjectType;
-import com.kurento.kms.thrift.api.KmsMediaPad;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
-import com.kurento.kms.thrift.api.KmsMediaPipeline;
 import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants;
@@ -165,42 +160,7 @@ public class MediaObjectTest {
 		instantiateAndCheck(MediaMixerImpl.class, objRef);
 	}
 
-	private MediaElementRef createMediaElementRef(String typeName) {
-		KmsMediaElement el = new KmsMediaElement(typeName);
-		KmsMediaObjectType type = new KmsMediaObjectType();
-		type.setElement(el);
-
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "token", type);
-		return new MediaElementRef(objRef);
-	}
-
-	private MediaPipelineRef createMediaPipelineRef() {
-		KmsMediaPipeline pipeline = new KmsMediaPipeline();
-		KmsMediaObjectType type = new KmsMediaObjectType();
-		type.setPipeline(pipeline);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "", type);
-		return new MediaPipelineRef(objRef);
-	}
-
-	private MediaMixerRef createMediaMixerRef(String typeName) {
-		KmsMediaMixer mixer = new KmsMediaMixer(typeName);
-		KmsMediaObjectType type = new KmsMediaObjectType();
-		type.setMixer(mixer);
-
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "token", type);
-		return new MediaMixerRef(objRef);
-	}
-
-	private MediaPadRef createMediaPadRef(KmsMediaType padType,
-			KmsMediaPadDirection direction, String description) {
-		KmsMediaPad pad = new KmsMediaPad(direction, padType, description);
-		KmsMediaObjectType type = new KmsMediaObjectType();
-		type.setPad(pad);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "token", type);
-		return new MediaPadRef(objRef);
-	}
-
-	public void instantiateAndCheck(Class<?> expectedClass,
+	private void instantiateAndCheck(Class<?> expectedClass,
 			MediaObjectRef objRef) {
 		final MediaObject obj = (MediaObject) ctx
 				.getBean("mediaObject", objRef);

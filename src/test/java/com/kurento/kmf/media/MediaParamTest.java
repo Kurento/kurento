@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media;
 
+import static com.kurento.kmf.media.Utils.createKmsParam;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.BOOL_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.DOUBLE_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.I16_DATA_TYPE;
@@ -50,58 +51,97 @@ public class MediaParamTest {
 
 	@Test
 	public void testBoolDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(BOOL_DATA_TYPE, null);
-		instantiateAndCheck(BooleanMediaParam.class, param);
+		BooleanMediaParam in = new BooleanMediaParam();
+		in.setBoolean(true);
+		// This will get the payload serialised
+		KmsMediaParam param = createKmsParam(BOOL_DATA_TYPE, in
+				.getThriftParams().getData());
+		BooleanMediaParam out = instantiateAndCheck(BooleanMediaParam.class,
+				param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertTrue(out.getBoolean() == in.getBoolean());
 	}
 
 	@Test
 	public void testDoubleDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(DOUBLE_DATA_TYPE, null);
-		instantiateAndCheck(DoubleMediaParam.class, param);
+		DoubleMediaParam in = new DoubleMediaParam();
+		in.setDouble(123.123);
+		KmsMediaParam param = createKmsParam(DOUBLE_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		DoubleMediaParam out = instantiateAndCheck(DoubleMediaParam.class,
+				param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertTrue(out.getDouble() == in.getDouble());
 	}
 
 	@Test
 	public void testIntegerDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(I32_DATA_TYPE, null);
-		instantiateAndCheck(IntegerMediaParam.class, param);
+		IntegerMediaParam in = new IntegerMediaParam();
+		in.setInteger(123);
+		KmsMediaParam param = createKmsParam(I32_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		IntegerMediaParam out = instantiateAndCheck(IntegerMediaParam.class,
+				param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertTrue(out.getInteger() == in.getInteger());
 	}
 
 	@Test
 	public void testLongDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(I64_DATA_TYPE, null);
-		instantiateAndCheck(LongMediaParam.class, param);
+		LongMediaParam in = new LongMediaParam();
+		in.setLong(123);
+		KmsMediaParam param = createKmsParam(I64_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		LongMediaParam out = instantiateAndCheck(LongMediaParam.class, param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertTrue(out.getLong() == in.getLong());
 	}
 
 	@Test
 	public void testShorDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(I16_DATA_TYPE, null);
-		instantiateAndCheck(ShortMediaParam.class, param);
+		ShortMediaParam in = new ShortMediaParam();
+		in.setShort((short) 123);
+		KmsMediaParam param = createKmsParam(I16_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		ShortMediaParam out = instantiateAndCheck(ShortMediaParam.class, param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertTrue(out.getShort() == in.getShort());
 	}
 
 	@Test
 	public void testStringDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(STRING_DATA_TYPE, null);
-		instantiateAndCheck(StringMediaParam.class, param);
+		StringMediaParam in = new StringMediaParam();
+		in.setString("A string");
+		KmsMediaParam param = createKmsParam(STRING_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		StringMediaParam out = instantiateAndCheck(StringMediaParam.class,
+				param);
+		// Check if what was serialised is the same as what was received.
+		Assert.assertEquals(out.getString(), in.getString());
 	}
 
 	@Test
 	public void testVoidDataTypeInstantiation() {
-		KmsMediaParam param = createKmsParam(VOID_DATA_TYPE, null);
-		instantiateAndCheck(VoidMediaParam.class, param);
+		VoidMediaParam in = new VoidMediaParam();
+		KmsMediaParam param = createKmsParam(VOID_DATA_TYPE, in
+				.getThriftParams().getData());
+
+		VoidMediaParam out = instantiateAndCheck(VoidMediaParam.class, param);
+		// This object has no params
+		Assert.assertTrue(out.getThriftParams().getData().length == 0);
 	}
 
-	private KmsMediaParam createKmsParam(String dataType, byte[] payload) {
-		KmsMediaParam eventData = new KmsMediaParam();
-		eventData.dataType = dataType;
-		eventData.setData(payload);
-		return eventData;
-	}
-
-	private void instantiateAndCheck(Class<?> expectedClass,
-			KmsMediaParam kmsParam) {
+	private <T extends MediaParam> T instantiateAndCheck(
+			Class<T> expectedClass, KmsMediaParam kmsParam) {
 		final MediaParam param = (MediaParam) ctx.getBean("mediaParam",
 				kmsParam);
 		Assert.assertEquals(param.getClass(), expectedClass);
+		return (T) param;
 	}
 
 }

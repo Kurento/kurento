@@ -14,11 +14,13 @@
  */
 package com.kurento.kmf.media;
 
+import static com.kurento.kmf.media.Utils.createKmsEvent;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.VOID_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_COMPLETE;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_START;
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND;
+import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND_DATA_TYPE;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,17 +30,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.internal.CodeFoundEventImpl;
 import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
 import com.kurento.kmf.media.events.internal.EndOfStreamEventImpl;
 import com.kurento.kmf.media.events.internal.MediaSessionStartedEventImpl;
 import com.kurento.kmf.media.events.internal.MediaSessionTerminatedEventImpl;
-import com.kurento.kms.thrift.api.KmsMediaElement;
+import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
-import com.kurento.kms.thrift.api.KmsMediaObjectRef;
-import com.kurento.kms.thrift.api.KmsMediaObjectType;
-import com.kurento.kms.thrift.api.KmsMediaParam;
 
 //TODO create new events to check deserialization, although there are separate tests for media params
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -50,47 +50,47 @@ public class MediaEventTest {
 
 	@Test
 	public void testCodeFoundEventInstantiation() {
+		String code = "code";
+		String value = "value";
+		EventCodeFoundParam param = new EventCodeFoundParam();
+		param.setCodeType(code);
+		param.setValue(value);
+		byte[] payload = param.getThriftParams().getData();
+
 		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_CODE_FOUND,
-				VOID_DATA_TYPE);
-		instantiateAndCheck(CodeFoundEventImpl.class, kmsEvent);
+				EVENT_CODE_FOUND_DATA_TYPE, payload);
+		CodeFoundEvent out = (CodeFoundEvent) instantiateAndCheck(
+				CodeFoundEventImpl.class, kmsEvent);
+
+		Assert.assertEquals(code, out.getCodeType());
+		Assert.assertEquals(value, out.getValue());
 	}
 
 	@Test
 	public void testDefaultMediaEventInstantiation() {
-		KmsMediaEvent kmsEvent = createKmsEvent("DefaultEvent", VOID_DATA_TYPE);
+		KmsMediaEvent kmsEvent = createKmsEvent("DefaultEvent", VOID_DATA_TYPE,
+				null);
 		instantiateAndCheck(DefaultMediaEventImpl.class, kmsEvent);
 	}
 
 	@Test
 	public void testEndOfStreamEventInstantiation() {
-		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_EOS, VOID_DATA_TYPE);
+		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_EOS, VOID_DATA_TYPE, null);
 		instantiateAndCheck(EndOfStreamEventImpl.class, kmsEvent);
 	}
 
 	@Test
 	public void testMediaSessionStartedEventInstantiation() {
 		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_MEDIA_SESSION_START,
-				VOID_DATA_TYPE);
+				VOID_DATA_TYPE, null);
 		instantiateAndCheck(MediaSessionStartedEventImpl.class, kmsEvent);
 	}
 
 	@Test
 	public void testMediaSessionTerminatedEventInstantiation() {
 		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_MEDIA_SESSION_COMPLETE,
-				VOID_DATA_TYPE);
+				VOID_DATA_TYPE, null);
 		instantiateAndCheck(MediaSessionTerminatedEventImpl.class, kmsEvent);
-	}
-
-	private KmsMediaEvent createKmsEvent(String type, String dataType) {
-		KmsMediaParam eventData = new KmsMediaParam();
-		eventData.dataType = dataType;
-		KmsMediaElement element = new KmsMediaElement("Some type");
-		KmsMediaObjectType objType = new KmsMediaObjectType();
-		objType.setElement(element);
-		KmsMediaObjectRef objRef = new KmsMediaObjectRef(1, "", objType);
-		KmsMediaEvent kmsEvent = new KmsMediaEvent(type, objRef);
-		kmsEvent.setEventData(eventData);
-		return kmsEvent;
 	}
 
 	private MediaEvent instantiateAndCheck(Class<?> expectedClass,
