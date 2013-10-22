@@ -1,0 +1,24 @@
+{
+  "name": "RPC-Builder",
+  "version": "0.0.0",
+  "description": "Transport and format agnostic RPC library for browser and Node.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/piranna/RPC-Builder.git"
+  },
+  "keywords": [
+    "RPC",
+    "JsonRPC",
+    "XML-RPC",
+    "HTTP",
+    "WebSocket"
+  ],
+  "author": "Jesús Leganés Combarro \"piranna\" <piranna@gmail.com>",
+  "license": "BSD",
+  "gitHead": "91061b5530030f28a440cb26ba3d44dbfa0240dc",
+  "readmeFilename": "README.md"
+}

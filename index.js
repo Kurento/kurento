@@ -17,14 +17,14 @@ function RpcBuilder()
     RpcNotification.call(this, method, params);
 
     /**
-     *
+     * Generate a response to this message
      *
      * @param {Error} error
      * @param {*} value
      *
      * @returns {string}
      */
-    this.reply = function(error, value)
+    this.response = function(error, value)
     {
       var message =
       {
@@ -37,16 +37,13 @@ function RpcBuilder()
       else
         message.value = value;
 
+      responses[id] = message;
+
       return JSON.stringify(message);
     };
   };
   RpcRequest.prototype.__proto__   = RpcNotification.prototype;
   RpcRequest.prototype.constructor = RpcRequest;
-
-  function RpcResponse(value)
-  {
-    Object.defineProperty(this, 'value', {value: value});
-  };
 
 
   // JsonRPC 2.0
@@ -96,44 +93,50 @@ function RpcBuilder()
    *
    * @param {string} message - JSON message
    *
-   * @returns {RpcNotification|RpcRequest|RpcResponse|Error}
+   * @returns {RpcNotification|RpcRequest|Error|null}
+   *
+   * @throws {TypeError}
    */
   this.decodeJSON = function(message)
   {
     message = JSON.parse(message);
 
-    var version = message.jsonrpc;
-    if(version != "2.0")
+    function throwException(text)
     {
-      console.error("Invalid JsonRPC version: "+version);
-      console.error(message);
-      return;
+      var error = new TypeError(text);
+          error.data = message;
+
+      throw error;
     };
 
-    var id = message.id;
+    var version = message.jsonrpc;
+    if(version != "2.0")
+      throwException("Invalid JsonRPC version: "+version);
+
+    var id     = message.id;
     var method = message.method;
+    var params = message.params;
 
     if(id)
     {
       // Request
       if(method)
-        return new RpcRequest(method, message.params, id);
+        return new RpcRequest(method, params, id);
 
       // Response
       var result = message.result;
       if(result)
       {
         var request = requests[id];
-        delete requests[id];
-
         if(request)
         {
-          request.callback(result);
+          delete requests[id];
 
-          return new RpcResponse(result);
+          request.callback(result);
+          return;
         };
 
-        throw new TypeError("No callback was defined for this message");
+        throwException("No callback was defined for this message");
       };
 
       // Error
@@ -146,7 +149,7 @@ function RpcBuilder()
     if(method)
       return new RpcNotification(method, params);
 
-    throw new TypeError("Invalid message type");
+    throwException("Invalid message type");
   };
 
 
