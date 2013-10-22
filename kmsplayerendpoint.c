@@ -120,6 +120,26 @@ destroy_thread_cb_data (gpointer data)
 }
 
 static void
+kms_player_end_point_add_action (KmsPlayerEndPoint * self,
+    KmsActionFunc function, gpointer data, GDestroyNotify notify)
+{
+  struct thread_cb_data *th_data;
+
+  th_data = g_slice_new0 (struct thread_cb_data);
+
+  th_data->data = data;
+  th_data->function = function;
+  th_data->notify = notify;
+
+  KMS_PLAYER_END_POINT_LOCK (self);
+
+  g_queue_push_tail (self->priv->tdata.actions, th_data);
+
+  KMS_PLAYER_END_POINT_SIGNAL (self);
+  KMS_PLAYER_END_POINT_UNLOCK (self);
+}
+
+static void
 kms_player_end_point_dispose (GObject * object)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
@@ -408,14 +428,23 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
   g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
 }
 
+static void
+kms_player_end_point_emit_EOS_signal (gpointer data)
+{
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+
+  GST_DEBUG ("Emit EOS Signal");
+  g_signal_emit (G_OBJECT (self), kms_player_end_point_signals[SIGNAL_EOS], 0);
+}
+
 static GstBusSyncReply
 bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
-    g_signal_emit (G_OBJECT (self),
-        kms_player_end_point_signals[SIGNAL_EOS], 0);
+    kms_player_end_point_add_action (self, kms_player_end_point_emit_EOS_signal,
+        self, NULL);
   }
 
   return GST_BUS_PASS;
