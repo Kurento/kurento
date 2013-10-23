@@ -226,7 +226,7 @@ new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 }
 
 static GstFlowReturn
-new_sample_handler (GstElement * appsink, gpointer user_data)
+new_sample_get_handler (GstElement * appsink, gpointer user_data)
 {
   GstElement *element = GST_ELEMENT (user_data);
   GstFlowReturn ret;
@@ -270,6 +270,7 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
+  /* TODO: adjust timestamp of this buffer */
   buffer->pts = GST_CLOCK_TIME_NONE;
   buffer->dts = GST_CLOCK_TIME_NONE;
   buffer->offset = GST_CLOCK_TIME_NONE;
@@ -282,7 +283,7 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_unref (buffer);
 
   if (ret != GST_FLOW_OK) {
-    // something wrong
+    /* something went wrong */
     GST_ERROR ("Could not send buffer to appsrc %s. Cause %s",
         GST_ELEMENT_NAME (element), gst_flow_get_name (ret));
   }
@@ -1010,7 +1011,7 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
   gst_bin_add (GST_BIN (self->priv->pipeline), appsrc);
   gst_element_sync_state_with_parent (appsrc);
 
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_get_handler),
       appsrc);
   g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), appsrc);
 
