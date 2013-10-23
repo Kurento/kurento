@@ -215,6 +215,17 @@ destroy_remove_data (gpointer data)
 }
 
 static GstFlowReturn
+new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
+{
+  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (user_data);
+  GstFlowReturn ret;
+
+  g_signal_emit (G_OBJECT (self), http_ep_signals[SIGNAL_NEW_SAMPLE], 0, &ret);
+
+  return ret;
+}
+
+static GstFlowReturn
 new_sample_handler (GstElement * appsink, gpointer user_data)
 {
   GstElement *element = GST_ELEMENT (user_data);
@@ -222,15 +233,6 @@ new_sample_handler (GstElement * appsink, gpointer user_data)
   GstSample *sample = NULL;
   GstBuffer *buffer;
   GstCaps *caps;
-
-  if (KMS_IS_HTTP_END_POINT (element)) {
-    /* Data has been received in encodebin's source pad. */
-    /* Raise new-sample signal so that application can */
-    /* deal with this stuff. */
-    g_signal_emit (G_OBJECT (element), http_ep_signals[SIGNAL_NEW_SAMPLE], 0,
-        &ret);
-    return ret;
-  }
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -577,7 +579,7 @@ kms_http_end_point_add_sink (KmsHttpEndPoint * self)
   g_object_set (self->priv->get->appsink, "emit-signals", TRUE, "qos", TRUE,
       NULL);
   g_signal_connect (self->priv->get->appsink, "new-sample",
-      G_CALLBACK (new_sample_handler), self);
+      G_CALLBACK (new_sample_emit_signal_handler), self);
   g_signal_connect (self->priv->get->appsink, "eos", G_CALLBACK (eos_handler),
       self);
 
