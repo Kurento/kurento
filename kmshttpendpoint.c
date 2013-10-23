@@ -294,6 +294,51 @@ end:
   return ret;
 }
 
+static GstFlowReturn
+new_sample_post_handler (GstElement * appsink, gpointer user_data)
+{
+  GstElement *element = GST_ELEMENT (user_data);
+  GstSample *sample = NULL;
+  GstBuffer *buffer;
+  GstFlowReturn ret;
+
+  g_signal_emit_by_name (appsink, "pull-sample", &sample);
+  if (sample == NULL)
+    return GST_FLOW_OK;
+
+  buffer = gst_sample_get_buffer (sample);
+  if (buffer == NULL) {
+    ret = GST_FLOW_OK;
+    goto end;
+  }
+
+  gst_buffer_ref (buffer);
+  buffer = gst_buffer_make_writable (buffer);
+
+  buffer->pts = GST_CLOCK_TIME_NONE;
+  buffer->dts = GST_CLOCK_TIME_NONE;
+  buffer->offset = GST_CLOCK_TIME_NONE;
+  buffer->offset_end = GST_CLOCK_TIME_NONE;
+
+  /* Pass the buffer through appsrc element which is */
+  /* placed in a different pipeline */
+  g_signal_emit_by_name (element, "push-buffer", buffer, &ret);
+
+  gst_buffer_unref (buffer);
+
+  if (ret != GST_FLOW_OK) {
+    /* something went wrong */
+    GST_ERROR ("Could not send buffer to appsrc %s. Cause %s",
+        GST_ELEMENT_NAME (element), gst_flow_get_name (ret));
+  }
+
+end:
+  if (sample != NULL)
+    gst_sample_unref (sample);
+
+  return ret;
+}
+
 static void
 eos_handler (GstElement * appsink, gpointer user_data)
 {
@@ -367,7 +412,7 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   g_object_unref (sinkpad);
 
   /* Connect new-sample signal to callback */
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_handler),
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_post_handler),
       appsrc);
   g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
