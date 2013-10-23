@@ -26,7 +26,6 @@ import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.media.events.internal.AbstractMediaEventListener;
 
 public class MediaServerCallbackHandler {
 
@@ -158,15 +157,17 @@ public class MediaServerCallbackHandler {
 				.getObjectRef().getId()) != null;
 	}
 
+	@SuppressWarnings("unchecked")
 	private void fireEvent(
 			EventListenerRegistration registration,
 			Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners,
 			MediaEvent event) {
 		if (listeners != null) {
-			MediaEventListener<? extends MediaEvent> listener = listeners
-					.get(registration);
-			((AbstractMediaEventListener<? extends MediaEvent>) listener)
-					.internalOnEvent(event);
+			@SuppressWarnings("rawtypes")
+			MediaEventListener listener = listeners.get(registration);
+			// TODO Unchecked exception suppressed. Maybe a more safe check
+			// should be done here.
+			listener.onEvent(event);
 		}
 	}
 

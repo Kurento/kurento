@@ -37,10 +37,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
-import com.kurento.kmf.media.events.internal.AbstractCodeFoundEventListener;
-import com.kurento.kmf.media.events.internal.AbstractEndOfStreamEventListener;
-import com.kurento.kmf.media.events.internal.AbstractMediaSessionStartedEventListener;
 import com.kurento.kmf.media.internal.MainMixerImpl;
 import com.kurento.kms.thrift.api.KmsMediaType;
 
@@ -222,7 +220,7 @@ public class SyncMediaServerTest {
 
 		final Semaphore sem = new Semaphore(0);
 
-		zbar.addCodeFoundDataListener(new AbstractCodeFoundEventListener() {
+		zbar.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
 
 			@Override
 			public void onEvent(CodeFoundEvent event) {
@@ -271,7 +269,7 @@ public class SyncMediaServerTest {
 
 		final Semaphore sem = new Semaphore(0);
 
-		player.addEndOfStreamListener(new AbstractEndOfStreamEventListener() {
+		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
 
 			@Override
 			public void onEvent(EndOfStreamEvent event) {
@@ -280,7 +278,7 @@ public class SyncMediaServerTest {
 		});
 
 		httpEndPoint
-				.addMediaSessionStartListener(new AbstractMediaSessionStartedEventListener() {
+				.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
 
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
