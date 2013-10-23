@@ -48,7 +48,7 @@ public class GsonUtils {
 	 * @return Serialized JSON message (as String)
 	 */
 	public static String toString(Object obj) {
-		return gson.toJson(obj);
+		return GsonUtils.getGson().toJson(obj);
 	}
 
 	/**
