@@ -15,7 +15,11 @@
 package com.kurento.kmf.common.exception.internal;
 
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Exception utility singleton class; it reads Kurento exceptions properties
@@ -32,6 +36,10 @@ import java.util.ResourceBundle;
  * 
  */
 public class ExceptionUtils {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(ExceptionUtils.class);
+
 	/**
 	 * Kurento exceptions properties name.
 	 */
@@ -84,10 +92,14 @@ public class ExceptionUtils {
 	 * @return Error message
 	 */
 	public static String getErrorMessage(int errorCode) {
-		// TODO: manage exceptions here in case bundle cannot load or key is not
-		// found
-		return ResourceBundle.getBundle(EXCEPTIONS, getLocale())
-				.getString(String.valueOf(errorCode)).split(SEPARATOR)[0];
+		String message = readBundleString(1, 0); // Default error message
+		try {
+			message = readBundleString(errorCode, 0);
+		} catch (MissingResourceException e) {
+			log.warn("Especific description for error code " + errorCode
+					+ " not found");
+		}
+		return message;
 	}
 
 	/**
@@ -99,12 +111,19 @@ public class ExceptionUtils {
 	 * @return HTTP error code
 	 */
 	public static int getHttpErrorCode(int errorCode) {
-		// TODO: manage exceptions here in case bundle cannot load or key is not
-		// found
-		String result = ResourceBundle.getBundle(EXCEPTIONS, getLocale())
-				.getString(String.valueOf(errorCode)).split(SEPARATOR)[1];
-		// TODO: manage exception here in case result is not an int
-		return Integer.parseInt(result);
+		int result = Integer.parseInt(readBundleString(1, 1)); // Default HTTP
+																// error code
+		String httpErrorCode = "";
+		try {
+			httpErrorCode = readBundleString(errorCode, 1);
+			result = Integer.parseInt(httpErrorCode);
+		} catch (MissingResourceException e1) {
+			log.warn("Especific description for error code " + errorCode
+					+ " not found");
+		} catch (NumberFormatException e2) {
+			log.warn("Error parsing HTTP Error Code " + httpErrorCode);
+		}
+		return result;
 	}
 
 	/**
@@ -116,12 +135,44 @@ public class ExceptionUtils {
 	 * @return JSON error code
 	 */
 	public static int getJsonErrorCode(int errorCode) {
-		// TODO: manage exceptions here in case bundle cannot load or key is not
-		// found
-		String result = ResourceBundle.getBundle(EXCEPTIONS, getLocale())
-				.getString(String.valueOf(errorCode)).split(SEPARATOR)[2];
-		// TODO: manage exception here in case result is not an int
-		return Integer.parseInt(result);
+		int result = Integer.parseInt(readBundleString(1, 2)); // Default JSON
+																// error code
+		String jsonErrorCode = "";
+		try {
+			jsonErrorCode = readBundleString(errorCode, 2);
+			result = Integer.parseInt(jsonErrorCode);
+		} catch (MissingResourceException e1) {
+			log.warn("Especific description for error code " + errorCode
+					+ " not found");
+		} catch (NumberFormatException e2) {
+			log.warn("Error parsing JSON Error Code " + jsonErrorCode);
+		}
+		return result;
+	}
+
+	/**
+	 * Read error code from resource bundle (stored as a properties file), and
+	 * returns the String depending of the position passed as argument. The
+	 * notation of the properties files is:
+	 * 
+	 * <pre>
+	 * errorCode=error description;httpErrorCode;jsonRpcErrorCode
+	 * </pre>
+	 * 
+	 * Therefore, the position 0 is for description, 1 for httpErrorCode, and 2
+	 * for jsonRpcErrorCode.
+	 * 
+	 * @param errorCode
+	 *            Error code
+	 * @param position
+	 *            0, 1, or 2, depending the value to be read from properties
+	 *            (error description, HTTP error code, or JSON error code
+	 *            respectively).
+	 * @return Value from properties
+	 */
+	private static String readBundleString(int errorCode, int position) {
+		return ResourceBundle.getBundle(EXCEPTIONS, getLocale())
+				.getString(String.valueOf(errorCode)).split(SEPARATOR)[position];
 	}
 
 	/**
