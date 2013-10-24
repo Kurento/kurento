@@ -19,16 +19,12 @@ public interface UriEndPoint extends EndPoint {
 	/* SYNC */
 	String getUri();
 
-	void setUri(String uri);
-
 	void pause();
 
 	void stop();
 
 	/* ASYNC */
 	void getUri(Continuation<String> cont);
-
-	void setUri(String uri, Continuation<Void> cont);
 
 	void pause(Continuation<Void> cont);
 

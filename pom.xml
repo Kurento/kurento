@@ -33,7 +33,7 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies version -->
-		<kms-interface.version>3.0.0-2-SNAPSHOT</kms-interface.version>
+		<kms-interface.version>3.0.0-3-SNAPSHOT</kms-interface.version>
 		<junit.version>4.10</junit.version>
 		<slf4j.version>1.6.4</slf4j.version>
 		<cglib.version>2.2.2</cglib.version>
