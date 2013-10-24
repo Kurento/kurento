@@ -200,7 +200,7 @@ public abstract class AbstractHttpBasedContentSession extends
 
 		// Generate appropriate actions when content is terminated
 		httpEndPoint
-				.addMediaSessionCompleteListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 					@Override
 					public void onEvent(MediaSessionTerminatedEvent event) {
 						getLogger().info("Received event with type " + event.getType());

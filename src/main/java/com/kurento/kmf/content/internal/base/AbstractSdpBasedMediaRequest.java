@@ -170,7 +170,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 
 		// Manage end of media session
 		sdpEndPoint
-				.addMediaSessionCompleteListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 
 					@Override
 					public void onEvent(MediaSessionTerminatedEvent event) {
