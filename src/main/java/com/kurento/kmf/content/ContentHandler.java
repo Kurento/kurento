@@ -56,6 +56,9 @@ public abstract class ContentHandler<T extends ContentSession> {
 	 *             possible exception thrown by handler implementation
 	 */
 	public void onContentStarted(T contentSession) throws Exception {
+		getLogger().info(
+				"Call to default onContentStarted in session "
+						+ contentSession.getContentId());
 	}
 
 	/**
@@ -70,6 +73,9 @@ public abstract class ContentHandler<T extends ContentSession> {
 	 */
 	public void onSessionTerminated(T contentSession, int code, String reason)
 			throws Exception {
+		getLogger().info(
+				"Call to default onSessionTerminated in session "
+						+ contentSession.getContentId());
 	}
 
 	/**

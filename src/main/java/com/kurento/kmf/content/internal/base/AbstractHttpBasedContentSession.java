@@ -185,6 +185,7 @@ public abstract class AbstractHttpBasedContentSession extends
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
 						callOnContentStartedOnHanlder();
+						getLogger().info("Received event with type " + event.getType());
 						if (uriEndPoint != null
 								&& uriEndPoint instanceof PlayerEndPoint) {
 							((PlayerEndPoint) uriEndPoint).play();
@@ -202,6 +203,7 @@ public abstract class AbstractHttpBasedContentSession extends
 				.addMediaSessionCompleteListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 					@Override
 					public void onEvent(MediaSessionTerminatedEvent event) {
+						getLogger().info("Received event with type " + event.getType());
 						internalTerminateWithoutError(null, 1,
 								"MediaServer MediaSessionTerminated", null); // TODO
 
