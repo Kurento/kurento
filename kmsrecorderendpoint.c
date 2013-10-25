@@ -84,7 +84,6 @@ struct config_data
   guint padblocked;
   guint pendingpadsblocked;
   GSList *blockedpads;
-  GSList *pendingpads;
   GSList *pendingvalves;
 };
 
@@ -473,7 +472,6 @@ kms_recorder_end_point_free_config_data (KmsRecorderEndPoint * self)
     return;
 
   g_slist_free (self->priv->confdata->blockedpads);
-  g_slist_free (self->priv->confdata->pendingpads);
   g_slist_free_full (self->priv->confdata->pendingvalves,
       destroy_valve_configuration);
 
