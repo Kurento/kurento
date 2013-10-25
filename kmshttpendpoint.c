@@ -119,7 +119,7 @@ struct config_data
 {
   guint padblocked;
   GSList *blockedpads;
-  GSList *pendingpads;
+  GSList *pendingvalves;
 };
 
 struct _PostData
@@ -163,6 +163,14 @@ enum
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
+struct config_valve
+{
+  GstElement *valve;
+  gchar *sinkname;
+  gchar *srcname;
+  gchar *destpadname;
+};
+
 /* Object signals */
 enum
 {
@@ -185,6 +193,39 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
     KMS_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME,
         0, "debug category for httpendpoint element"));
+
+static void
+destroy_valve_configuration (gpointer data)
+{
+  struct config_valve *conf = data;
+
+  if (conf->sinkname != NULL)
+    g_free (conf->sinkname);
+
+  if (conf->srcname != NULL)
+    g_free (conf->srcname);
+
+  if (conf->destpadname != NULL)
+    g_free (conf->destpadname);
+
+  g_slice_free (struct config_valve, conf);
+}
+
+static struct config_valve *
+generate_valve_configuration (GstElement * valve, const gchar * sinkname,
+    const gchar * srcname, const gchar * destpadname)
+{
+  struct config_valve *conf;
+
+  conf = g_slice_new0 (struct config_valve);
+
+  conf->valve = valve;
+  conf->sinkname = g_strdup (sinkname);
+  conf->srcname = g_strdup (srcname);
+  conf->destpadname = g_strdup (destpadname);
+
+  return conf;
+}
 
 static void
 destroy_ulong (gpointer data)
@@ -618,6 +659,105 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
 }
 
 static void
+kms_http_end_point_add_appsink (KmsHttpEndPoint * self,
+    struct config_valve *conf)
+{
+  GstElement *appsink;
+
+  GST_DEBUG ("Adding appsink %s", conf->sinkname);
+
+  appsink = gst_element_factory_make ("appsink", conf->sinkname);
+
+  g_object_set (appsink, "emit-signals", TRUE, NULL);
+  g_object_set (appsink, "async", FALSE, NULL);
+  g_object_set (appsink, "sync", FALSE, NULL);
+  g_object_set (appsink, "qos", TRUE, NULL);
+
+  gst_bin_add (GST_BIN (self), appsink);
+  gst_element_sync_state_with_parent (appsink);
+}
+
+static void
+kms_http_end_point_connect_valve_to_appsink (KmsHttpEndPoint * self,
+    struct config_valve *conf)
+{
+  GstElement *appsink;
+
+  appsink = gst_bin_get_by_name (GST_BIN (self), conf->sinkname);
+  if (appsink == NULL) {
+    GST_ERROR ("No appsink %s found", conf->sinkname);
+    return;
+  }
+
+  GST_DEBUG ("Connecting %s to %s", GST_ELEMENT_NAME (conf->valve),
+      GST_ELEMENT_NAME (appsink));
+
+  if (!gst_element_link (conf->valve, appsink)) {
+    GST_ERROR ("Could not link %s to %s", GST_ELEMENT_NAME (conf->valve),
+        GST_ELEMENT_NAME (appsink));
+  }
+
+  g_object_unref (appsink);
+}
+
+static void
+kms_http_end_point_connect_appsink_to_appsrc (KmsHttpEndPoint * self,
+    struct config_valve *conf)
+{
+  GstElement *appsink, *appsrc;
+
+  appsink = gst_bin_get_by_name (GST_BIN (self), conf->sinkname);
+  if (appsink == NULL) {
+    GST_ERROR ("No appsink %s found", conf->sinkname);
+    return;
+  }
+
+  appsrc = gst_element_factory_make ("appsrc", conf->srcname);
+  g_object_set_data_full (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
+      g_strdup (conf->destpadname), g_free);
+
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
+      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
+
+  gst_bin_add (GST_BIN (self->priv->pipeline), appsrc);
+  gst_element_sync_state_with_parent (appsrc);
+
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_get_handler),
+      appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), appsrc);
+
+  GST_DEBUG ("Connected %s to %s", GST_ELEMENT_NAME (appsink),
+      GST_ELEMENT_NAME (appsrc));
+
+  g_object_unref (appsink);
+}
+
+static void
+kms_http_end_point_connect_appsrc_to_encodebin (KmsHttpEndPoint * self,
+    struct config_valve *conf)
+{
+  GstElement *appsrc;
+
+  appsrc = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), conf->srcname);
+  if (appsrc == NULL) {
+    GST_ERROR ("No appsrc %s found", conf->srcname);
+    return;
+  }
+
+  GST_DEBUG ("Connecting %s to %s (%s)", GST_ELEMENT_NAME (appsrc),
+      GST_ELEMENT_NAME (self->priv->get->encodebin), conf->destpadname);
+
+  if (!gst_element_link_pads (appsrc, "src", self->priv->get->encodebin,
+          conf->destpadname)) {
+    GST_DEBUG ("Connecting %s to %s (%s)", GST_ELEMENT_NAME (appsrc),
+        GST_ELEMENT_NAME (self->priv->get->encodebin), conf->destpadname);
+  }
+
+  g_object_unref (appsrc);
+}
+
+static void
 kms_http_end_point_add_sink (KmsHttpEndPoint * self)
 {
   self->priv->get->appsink = gst_element_factory_make ("appsink", NULL);
@@ -691,10 +831,23 @@ kms_http_end_point_free_config_data (KmsHttpEndPoint * self)
     return;
 
   g_slist_free (self->priv->get->confdata->blockedpads);
-  g_slist_free (self->priv->get->confdata->pendingpads);
+  g_slist_free_full (self->priv->get->confdata->pendingvalves,
+      destroy_valve_configuration);
+
   g_slice_free (struct config_data, self->priv->get->confdata);
 
   self->priv->get->confdata = NULL;
+}
+
+static void
+kms_http_end_point_init_config_data (KmsHttpEndPoint * self)
+{
+  if (self->priv->get->confdata != NULL) {
+    GST_WARNING ("Configuration data is not empty.");
+    kms_http_end_point_free_config_data (self);
+  }
+
+  self->priv->get->confdata = g_slice_new0 (struct config_data);
 }
 
 static void
@@ -730,6 +883,58 @@ kms_http_end_point_unblock_pads (KmsHttpEndPoint * self, GSList * pads)
 
     gst_pad_remove_probe (srcpad, *probe_id);
   }
+}
+
+static void
+unlock_pending_valves (gpointer data, gpointer user_data)
+{
+  struct config_valve *config = data;
+  gulong *probe_id;
+  GstPad *srcpad;
+
+  srcpad = gst_element_get_static_pad (config->valve, "src");
+  probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
+
+  GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
+  gst_pad_remove_probe (srcpad, *probe_id);
+
+  g_object_unref (srcpad);
+}
+
+static void
+add_pending_appsinks (gpointer data, gpointer user_data)
+{
+  KmsHttpEndPoint *recorder = KMS_HTTP_END_POINT (user_data);
+  struct config_valve *config = data;
+
+  kms_http_end_point_add_appsink (recorder, config);
+}
+
+static void
+connect_pending_valves_to_appsinks (gpointer data, gpointer user_data)
+{
+  KmsHttpEndPoint *recorder = KMS_HTTP_END_POINT (user_data);
+  struct config_valve *config = data;
+
+  kms_http_end_point_connect_valve_to_appsink (recorder, config);
+}
+
+static void
+connect_pending_appsinks_to_appsrcs (gpointer data, gpointer user_data)
+{
+  KmsHttpEndPoint *recorder = KMS_HTTP_END_POINT (user_data);
+  struct config_valve *config = data;
+
+  kms_http_end_point_connect_appsink_to_appsrc (recorder, config);
+}
+
+static void
+connect_pending_appsrcs_to_encodebin (gpointer data, gpointer user_data)
+{
+  KmsHttpEndPoint *recorder = KMS_HTTP_END_POINT (user_data);
+  struct config_valve *config = data;
+
+  kms_http_end_point_connect_appsrc_to_encodebin (recorder, config);
 }
 
 static GstPadProbeReturn
@@ -777,9 +982,16 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   kms_http_end_point_add_action (httpep, remove_element_from_pipeline, data,
       destroy_remove_data);
 
+  GST_DEBUG ("Adding New encodebin");
   /* Add the new encodebin to the pipeline */
   httpep->priv->get->encodebin = gst_element_factory_make ("encodebin", NULL);
+  g_slist_foreach (httpep->priv->get->confdata->pendingvalves,
+      add_pending_appsinks, httpep);
   kms_http_end_point_set_profile_to_encodebin (httpep);
+  g_slist_foreach (httpep->priv->get->confdata->pendingvalves,
+      connect_pending_valves_to_appsinks, httpep);
+  g_slist_foreach (httpep->priv->get->confdata->pendingvalves,
+      connect_pending_appsinks_to_appsrcs, httpep);
   gst_bin_add (GST_BIN (httpep->priv->pipeline), httpep->priv->get->encodebin);
 
   /* Add new sink linked to the new encodebin */
@@ -791,14 +1003,14 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
       httpep->priv->get->confdata->blockedpads);
 
   /* Reconnect pending pads */
-  kms_http_end_point_reconnect_pads (httpep,
-      httpep->priv->get->confdata->pendingpads);
+  g_slist_foreach (httpep->priv->get->confdata->pendingvalves,
+      connect_pending_appsrcs_to_encodebin, httpep);
 
   /* Remove probes */
   kms_http_end_point_unblock_pads (httpep,
       httpep->priv->get->confdata->blockedpads);
-  kms_http_end_point_unblock_pads (httpep,
-      httpep->priv->get->confdata->pendingpads);
+  g_slist_foreach (httpep->priv->get->confdata->pendingvalves,
+      unlock_pending_valves, httpep);
 
   httpep->priv->get->state = CONFIGURED;
 
@@ -955,88 +1167,66 @@ static GstPadProbeReturn
 pad_probe_blocked_cb (GstPad * srcpad, GstPadProbeInfo * info,
     gpointer user_data)
 {
-  GST_DEBUG ("Blocked pad %" GST_PTR_FORMAT, srcpad);
+  GST_WARNING ("Blocked pad %" GST_PTR_FORMAT, srcpad);
   return GST_PAD_PROBE_OK;
 }
 
 static void
-kms_http_end_point_block_appsrc (KmsHttpEndPoint * self,
-    GstElement * appsrc, const gchar * destpadname)
+kms_http_end_point_block_valve (KmsHttpEndPoint * self,
+    struct config_valve *conf)
 {
   gulong *probe_id;
   GstPad *srcpad;
 
-  srcpad = gst_element_get_static_pad (appsrc, "src");
+  GST_DEBUG ("Blocking valve %s", GST_ELEMENT_NAME (conf->valve));
+  srcpad = gst_element_get_static_pad (conf->valve, "src");
 
   probe_id = g_slice_new0 (gulong);
   *probe_id = gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM,
-      pad_probe_blocked_cb, NULL, NULL);
+      pad_probe_blocked_cb, self, NULL);
   g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
       destroy_ulong);
 
-  self->priv->get->confdata->pendingpads =
-      g_slist_prepend (self->priv->get->confdata->pendingpads, srcpad);
-
-  g_object_unref (G_OBJECT (srcpad));
+  self->priv->get->confdata->pendingvalves =
+      g_slist_prepend (self->priv->get->confdata->pendingvalves, conf);
+  g_object_unref (srcpad);
 }
 
 static void
 kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
     const gchar * sinkname, const gchar * srcname, const gchar * destpadname)
 {
-  GstElement *appsink, *appsrc;
+  struct config_valve *config;
 
-  GST_DEBUG ("Adding valve %s", GST_ELEMENT_NAME (valve));
+  config = generate_valve_configuration (valve, sinkname, srcname, destpadname);
 
   if (self->priv->pipeline == NULL)
     kms_http_end_point_init_get_pipeline (self);
 
-  appsink = gst_element_factory_make ("appsink", sinkname);
-
-  g_object_set (appsink, "emit-signals", TRUE, NULL);
-  g_object_set (appsink, "async", FALSE, NULL);
-  g_object_set (appsink, "sync", FALSE, NULL);
-  g_object_set (appsink, "qos", TRUE, NULL);
-
-  gst_bin_add (GST_BIN (self), appsink);
-
-  appsrc = gst_element_factory_make ("appsrc", srcname);
-  g_object_set_data_full (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
-      g_strdup (destpadname), g_free);
-
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
-      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
-
-  gst_bin_add (GST_BIN (self->priv->pipeline), appsrc);
-  gst_element_sync_state_with_parent (appsrc);
-
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_get_handler),
-      appsrc);
-  g_signal_connect (appsink, "eos", G_CALLBACK (eos_handler), appsrc);
-
-  gst_element_sync_state_with_parent (appsink);
-  gst_element_link (valve, appsink);
+  GST_DEBUG ("Connecting %s", GST_ELEMENT_NAME (valve));
 
   switch (self->priv->get->state) {
     case UNCONFIGURED:
       self->priv->get->encodebin = gst_element_factory_make ("encodebin", NULL);
+      kms_http_end_point_add_appsink (self, config);
       kms_http_end_point_set_profile_to_encodebin (self);
+      kms_http_end_point_connect_valve_to_appsink (self, config);
+      kms_http_end_point_connect_appsink_to_appsrc (self, config);
+
       gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->get->encodebin);
 
       kms_http_end_point_add_sink (self);
       gst_element_sync_state_with_parent (self->priv->get->encodebin);
-      gst_element_link_pads (appsrc, "src", self->priv->get->encodebin,
-          destpadname);
+      kms_http_end_point_connect_appsrc_to_encodebin (self, config);
+      destroy_valve_configuration (config);
       self->priv->get->state = CONFIGURED;
       break;
     case CONFIGURED:
-      self->priv->get->confdata = g_slice_new0 (struct config_data);
-
+      kms_http_end_point_init_config_data (self);
       kms_http_end_point_remove_encodebin (self);
       self->priv->get->state = CONFIGURING;
     default:
-      kms_http_end_point_block_appsrc (self, appsrc, destpadname);
+      kms_http_end_point_block_valve (self, config);
       break;
   }
 }
