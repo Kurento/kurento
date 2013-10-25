@@ -93,7 +93,7 @@ function RpcBuilder()
    *
    * @param {string} message - JSON message
    *
-   * @returns {RpcNotification|RpcRequest|Error|null}
+   * @returns {RpcNotification|RpcRequest|null}
    *
    * @throws {TypeError}
    */
@@ -127,27 +127,19 @@ function RpcBuilder()
       var request = requests[id];
       if(request)
       {
-        // Success
         var result = message.result;
-        if(result)
+        var error  = message.error;
+
+        if(!result ^ !error)
         {
           delete requests[id];
 
-          request.callback(null, result);
+          request.callback(error, result);
           return;
         };
 
-        // Error
-        var error = message.error;
-        if(error)
-        {
-          delete requests[id];
-
-          request.callback(error);
-          return;
-        };
-
-        throwException("Invalid response message (no result or error defined)");
+        // Both result and error are (or aren't) defined
+        throwException("Invalid response message");
       };
 
       // Request not found for this response
