@@ -1,6 +1,6 @@
 {
-  "name": "RPC-Builder",
-  "version": "0.0.0",
+  "name": "rpc-builder",
+  "version": "0.0.1",
   "description": "Transport and format agnostic RPC library for browser and Node.js",
   "main": "index.js",
   "scripts": {

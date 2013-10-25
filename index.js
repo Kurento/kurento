@@ -124,25 +124,34 @@ function RpcBuilder()
         return new RpcRequest(method, params, id);
 
       // Response
-      var result = message.result;
-      if(result)
+      var request = requests[id];
+      if(request)
       {
-        var request = requests[id];
-        if(request)
+        // Success
+        var result = message.result;
+        if(result)
         {
           delete requests[id];
 
-          request.callback(result);
+          request.callback(null, result);
           return;
         };
 
-        throwException("No callback was defined for this message");
+        // Error
+        var error = message.error;
+        if(error)
+        {
+          delete requests[id];
+
+          request.callback(error);
+          return;
+        };
+
+        throwException("Invalid response message (no result or error defined)");
       };
 
-      // Error
-      var error = message.error;
-      if(error)
-        return error;
+      // Request not found for this response
+      throwException("No callback was defined for this message");
     };
 
     // Notification
