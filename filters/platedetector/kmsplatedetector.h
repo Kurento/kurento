@@ -17,6 +17,8 @@
 
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_PLATE_DETECTOR   (kms_plate_detector_get_type())
@@ -27,10 +29,18 @@ G_BEGIN_DECLS
 typedef struct _KmsPlateDetector KmsPlateDetector;
 typedef struct _KmsPlateDetectorClass KmsPlateDetectorClass;
 
+typedef enum
+{
+  PREPROCESSING_ONE,
+  PREPROCESSING_TWO,
+  PREPROCESSING_THREE
+} KmsPlateDetectorPreprocessingType;
+
 struct _KmsPlateDetector
 {
   GstVideoFilter base_platedetector;
-
+  IplImage *cvImage, *edges, *edgesDilatedMask, *characterContoursMask;
+  KmsPlateDetectorPreprocessingType preprocessingType;
 };
 
 struct _KmsPlateDetectorClass
