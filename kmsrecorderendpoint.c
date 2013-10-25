@@ -992,6 +992,7 @@ kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
 
   /* Remove old encodebin and sink elements */
   sink = gst_pad_get_parent_element (sinkpad);
+  g_object_unref (sinkpad);
   gst_element_set_locked_state (sink, TRUE);
   gst_element_set_state (sink, GST_STATE_NULL);
   gst_bin_remove (GST_BIN (recorder->priv->pipeline), sink);
