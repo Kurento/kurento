@@ -200,6 +200,11 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
       (base_end_point, answer);
   GST_DEBUG ("connect_input_elements");
 
+  if (answer == NULL) {
+    GST_ERROR ("Asnwer is NULL");
+    return;
+  }
+
   len = gst_sdp_message_medias_len (answer);
 
   KMS_ELEMENT_LOCK (base_end_point);

@@ -210,6 +210,8 @@ kms_rtp_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint * base_sdp_endpoint,
   gboolean ret;
   guint len, i;
 
+  g_return_val_if_fail (msg != NULL, FALSE);
+
   ret =
       KMS_BASE_SDP_END_POINT_CLASS
       (kms_rtp_end_point_parent_class)->set_transport_to_sdp (base_sdp_endpoint,
