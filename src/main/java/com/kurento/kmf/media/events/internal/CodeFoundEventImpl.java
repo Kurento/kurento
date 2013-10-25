@@ -16,9 +16,9 @@ package com.kurento.kmf.media.events.internal;
 
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND;
 
+import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.internal.ProvidesMediaEvent;
-import com.kurento.kmf.media.internal.ZBarFilterImpl;
 import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 
@@ -26,26 +26,22 @@ import com.kurento.kms.thrift.api.KmsMediaEvent;
 public class CodeFoundEventImpl extends AbstractMediaEvent<EventCodeFoundParam>
 		implements CodeFoundEvent {
 
-	private String codeType;
-
-	private String value;
-
 	public CodeFoundEventImpl(KmsMediaEvent event) {
 		super(event);
 	}
 
 	@Override
-	public ZBarFilterImpl getSource() {
-		return (ZBarFilterImpl) super.getSource();
+	public ZBarFilter getSource() {
+		return (ZBarFilter) super.getSource();
 	}
 
 	@Override
 	public String getCodeType() {
-		return this.codeType;
+		return this.getParam().getCodeType();
 	}
 
 	@Override
 	public String getValue() {
-		return this.value;
+		return this.getParam().getValue();
 	}
 }

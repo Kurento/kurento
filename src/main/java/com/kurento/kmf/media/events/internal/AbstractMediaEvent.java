@@ -61,7 +61,7 @@ public abstract class AbstractMediaEvent<T extends MediaParam> implements
 
 	@SuppressWarnings("unchecked")
 	protected T getParam() {
-		if (param != null) {
+		if (param == null) {
 			param = (T) applicationContext.getBean("mediaParam", kmsParam);
 		}
 		return param;

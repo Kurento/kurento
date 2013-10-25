@@ -38,7 +38,7 @@ public class EventCodeFoundParam extends AbstractThriftSerializedMediaParam {
 		return codeType;
 	}
 
-	public void setCookieLifetime(String codeType) {
+	public void setCodeType(String codeType) {
 		this.codeType = codeType;
 	}
 
