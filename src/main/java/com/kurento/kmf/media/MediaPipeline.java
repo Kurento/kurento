@@ -87,13 +87,18 @@ public interface MediaPipeline extends MediaObject {
 	// Creation of specific framework types
 
 	/* HTTP ENDPOINT */
-
 	HttpEndPoint createHttpEndPoint();
+
+	HttpEndPoint createHttpEndPoint(int garbagePeriod);
 
 	HttpEndPoint createHttpEndPoint(int cookieLifetime, int disconnectionTimeout);
 
 	HttpEndPoint createHttpEndPoint(int cookieLifetime,
 			int disconnectionTimeout, int garbagePeriod);
+
+	void createHttpEndPoint(Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(int garbagePeriod, Continuation<HttpEndPoint> cont);
 
 	void createHttpEndPoint(int cookieLifetime, int disconnectionTimeout,
 			Continuation<HttpEndPoint> cont);

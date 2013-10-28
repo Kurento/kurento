@@ -42,9 +42,15 @@ public class DefaultMediaParam extends AbstractMediaParam {
 		this.data = Arrays.copyOf(data, data.length);
 	}
 
+	/**
+	 * This method deserializes a command result, storing the byte array
+	 * contained in the data field from the result structure. If no data is set,
+	 * the method return an empty array. </br> {@inheritDoc}
+	 */
 	@Override
-	public void deserializeParam(KmsMediaParam result) {
-		// TODO What to do with default media param?
+	public void deserializeParam(final KmsMediaParam param) {
+		this.data = (param.isSetData()) ? Arrays.copyOf(param.getData(),
+				param.getData().length) : new byte[0];
 	}
 
 }

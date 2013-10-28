@@ -92,7 +92,7 @@ public class HttpEndpointConstructorParam extends
 
 		if (kmsParams.isSetDisconnectionTimeout()) {
 			this.disconnectionTimeout = Integer.valueOf(kmsParams
-					.getCookieLifetime());
+					.getDisconnectionTimeout());
 		}
 	}
 

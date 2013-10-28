@@ -51,6 +51,10 @@ public class UriEndPointConstructorParam extends
 		this.uri = uri;
 	}
 
+	public URI getUri() {
+		return this.uri;
+	}
+
 	public UriEndPointConstructorParam() {
 		super(CONSTRUCTOR_PARAMS_DATA_TYPE);
 	}
@@ -78,6 +82,10 @@ public class UriEndPointConstructorParam extends
 		} catch (TException e) {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), 30000);
+		}
+
+		if (kmsParams.isSetUri()) {
+			this.setUri(kmsParams.uri);
 		}
 	}
 

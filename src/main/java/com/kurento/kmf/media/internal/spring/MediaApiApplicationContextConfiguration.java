@@ -50,6 +50,7 @@ import com.kurento.kmf.media.internal.refs.MediaPadRef;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.AbstractMediaParam;
+import com.kurento.kmf.media.params.internal.DefaultMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaError;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
@@ -172,12 +173,17 @@ public class MediaApiApplicationContextConfiguration {
 
 		try {
 			// TODO: document that command result must have a default
-			// constructor
-			Constructor<?> constructor = clazz.getConstructor();
-			// This cast is safe as long as the type of the class refers to a
-			// type that extends from MediaObject.
-			// Nevertheless, a catch is included in the try-catch block.
-			mediaParam = (AbstractMediaParam) constructor.newInstance();
+			// constructor. DefaultMediaParam does not have an empty
+			// constructor, so the appropriate constructor is invoked
+			if (clazz == null) {
+				clazz = DefaultMediaParam.class;
+				Constructor<?> constructor = clazz.getConstructor(String.class);
+				mediaParam = (AbstractMediaParam) constructor
+						.newInstance(param.dataType);
+			} else {
+				Constructor<?> constructor = clazz.getConstructor();
+				mediaParam = (AbstractMediaParam) constructor.newInstance();
+			}
 		} catch (Exception e) {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);

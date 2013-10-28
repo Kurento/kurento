@@ -449,6 +449,13 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
+	public HttpEndPoint createHttpEndPoint(int garbagePeriod) {
+		return (HttpEndPoint) createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
+	}
+
+	@Override
 	public HttpEndPoint createHttpEndPoint(int cookieLifetime,
 			int disconnectionTimeout) {
 		return createHttpEndPoint(cookieLifetime, disconnectionTimeout,
@@ -495,6 +502,20 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 				hecp);
 
 		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
+	}
+
+	@Override
+	public void createHttpEndPoint(Continuation<HttpEndPoint> cont) {
+		createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME, cont);
+	}
+
+	@Override
+	public void createHttpEndPoint(int garbagePeriod,
+			Continuation<HttpEndPoint> cont) {
+		createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
+				cont);
 	}
 
 	@Override
