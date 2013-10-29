@@ -108,7 +108,7 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
 		return (HttpRecorderSessionImpl) KurentoApplicationContextUtils
-				.getBean("recordRequestImpl", recorderHandler,
+				.getBean("httpRecordSessionImpl", recorderHandler,
 						contentSessionManager, asyncCtx, contentId,
 						useRedirectStrategy, useControlProtocol);
 	}
