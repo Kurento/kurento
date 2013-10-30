@@ -30,6 +30,11 @@ public class MediaPadRef extends MediaObjectRef {
 		}
 	}
 
+	@Override
+	public MediaPadRef deepCopy() {
+		return new MediaPadRef(objectRef);
+	}
+
 	public KmsMediaType getType() {
 		KmsMediaObjectType objType = this.objectRef.getObjectType();
 		return objType.getPad().mediaType;

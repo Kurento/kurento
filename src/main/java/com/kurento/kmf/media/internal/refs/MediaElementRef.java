@@ -28,6 +28,11 @@ public class MediaElementRef extends MediaObjectRef {
 		}
 	}
 
+	@Override
+	public MediaElementRef deepCopy() {
+		return new MediaElementRef(objectRef);
+	}
+
 	public String getType() {
 		KmsMediaObjectType objType = this.objectRef.getObjectType();
 		return objType.getElement().elementType;

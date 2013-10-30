@@ -25,7 +25,6 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
-import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -44,7 +43,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	 * @param ref
 	 * @param params
 	 */
-	public MediaMixerImpl(MediaObjectRef ref, Map<String, MediaParam> params) {
+	public MediaMixerImpl(MediaMixerRef ref, Map<String, MediaParam> params) {
 		super(ref, params);
 	}
 

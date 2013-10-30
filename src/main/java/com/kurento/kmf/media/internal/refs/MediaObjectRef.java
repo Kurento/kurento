@@ -31,6 +31,8 @@ public abstract class MediaObjectRef {
 		this.objectRef = ref.deepCopy();
 	}
 
+	public abstract MediaObjectRef deepCopy();
+
 	public Long getId() {
 		return Long.valueOf(this.objectRef.getId());
 	}

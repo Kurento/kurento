@@ -22,4 +22,9 @@ public class MediaPipelineRef extends MediaObjectRef {
 		super(ref);
 	}
 
+	@Override
+	public MediaPipelineRef deepCopy() {
+		return new MediaPipelineRef(objectRef);
+	}
+
 }

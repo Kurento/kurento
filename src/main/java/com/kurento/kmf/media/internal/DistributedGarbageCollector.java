@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -47,10 +48,25 @@ public class DistributedGarbageCollector {
 	// TODO Let spring manage this timers with a TimerTaskExecutor
 	private final ConcurrentHashMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
 
+	/**
+	 * Registers a {@link MediaObject} in the distributed garbage collector. A
+	 * keepalive will be sent to the media server every. No reference to the
+	 * objectRef is stored.
+	 * 
+	 * @param objectRef
+	 */
 	public void registerReference(final KmsMediaObjectRef objectRef) {
 		registerReference(objectRef, DEFAULT_GARBAGE_COLLECTOR_PERIOD);
 	}
 
+	/**
+	 * Registers a {@link MediaObject} in the distributed garbage collector. A
+	 * keepalive will be sent to the media server every {@code collectorPeriod}
+	 * seconds. No reference to the objectRef is stored.
+	 * 
+	 * @param objectRef
+	 * @param collectorPeriod
+	 */
 	public void registerReference(final KmsMediaObjectRef objectRef,
 			int collectorPeriod) {
 		Assert.notNull(objectRef,
@@ -81,16 +97,25 @@ public class DistributedGarbageCollector {
 		}, collectorPeriodInMilis, collectorPeriodInMilis);
 	}
 
-	public void removeReference(KmsMediaObjectRef objectRef) {
+	/**
+	 * Removes a reference to a {@link MediaObject} form the Distributed Garbage
+	 * Collector. This implies that no more keepalives will be sent to the media
+	 * server.
+	 * 
+	 * @param objectRef
+	 * @return true if the object was removed. False if no reference to the
+	 *         object was found.
+	 */
+	public boolean removeReference(KmsMediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
 		Long refId = Long.valueOf(objectRef.id);
 		synchronized (this) {
 			Integer counter = refCounters.remove(refId);
 			if (counter == null) {
-				return;
+				return false;
 			} else if (--counter > 0) {
 				refCounters.put(refId, counter);
-				return;
+				return true;
 			}
 		}
 
@@ -100,7 +125,7 @@ public class DistributedGarbageCollector {
 		} else {
 			timer.cancel();
 		}
-
+		return true;
 	}
 
 	private void keepAlive(KmsMediaObjectRef KmsMediaObjectRef) {

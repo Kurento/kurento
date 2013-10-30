@@ -69,7 +69,7 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		super(objectRef);
 	}
 
-	public MediaPipelineImpl(MediaMixerRef objectRef,
+	public MediaPipelineImpl(MediaPipelineRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
@@ -657,7 +657,7 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public void createPlayerEndPoint(URI uri, Continuation<PlayerEndPoint> cont) {
 		createMediaElement(
-				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
+				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
 				internalCreateUriEndPointConstructorParams(null, uri,
 						DEFAULT_GARBAGE_COLLECTOR_PERIOD), cont);
 	}
@@ -679,7 +679,7 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	public void createPlayerEndPoint(URI uri, int garbagePeriod,
 			Continuation<PlayerEndPoint> cont) {
 		createMediaElement(
-				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
+				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
 				internalCreateUriEndPointConstructorParams(null, uri,
 						garbagePeriod), cont);
 	}

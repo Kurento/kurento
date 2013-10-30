@@ -28,6 +28,11 @@ public class MediaMixerRef extends MediaObjectRef {
 		}
 	}
 
+	@Override
+	public MediaMixerRef deepCopy() {
+		return new MediaMixerRef(objectRef);
+	}
+
 	public String getType() {
 		KmsMediaObjectType objType = this.objectRef.getObjectType();
 		return objType.getMixer().mixerType;

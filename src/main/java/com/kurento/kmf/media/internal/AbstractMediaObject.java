@@ -84,7 +84,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 	}
 
 	public AbstractMediaObject(MediaObjectRef ref) {
-		objectRef = ref;
+		objectRef = ref.deepCopy();
 	}
 
 	public AbstractMediaObject(MediaObjectRef ref,

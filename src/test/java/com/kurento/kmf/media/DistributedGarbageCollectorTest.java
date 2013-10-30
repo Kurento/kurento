@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,7 @@ public class DistributedGarbageCollectorTest {
 			String[] strArr = new String[100000];
 		}
 
+		Assert.assertFalse(dgc.removeReference(ref.getThriftRef()));
 		// TODO complete the test checking wether the obj has been removed or
 		// not
 	}
