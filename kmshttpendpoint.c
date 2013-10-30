@@ -1141,6 +1141,9 @@ kms_http_end_point_remove_encodebin (KmsHttpEndPoint * self)
           g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
               destroy_ulong);
           self->priv->get->confdata->padblocked++;
+          gst_pad_push_event (srcpad,
+              gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM,
+                  gst_structure_new_empty ("DummyEvent")));
           g_object_unref (srcpad);
         }
 
