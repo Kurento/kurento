@@ -944,6 +944,11 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   GstPad *srcpad, *sinkpad;
   struct remove_data *data;
 
+  // We drop buffer during this reconfiguration stage
+  if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_BUFFER |
+          GST_PAD_PROBE_TYPE_BUFFER_LIST))
+    return GST_PAD_PROBE_DROP;
+
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
     return GST_PAD_PROBE_OK;
 
@@ -1098,7 +1103,7 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
       g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, NULL, NULL);
     }
 
-    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_DATA_DOWNSTREAM,
         event_probe_cb, httpep, NULL);
     g_object_unref (G_OBJECT (pad));
     g_object_unref (G_OBJECT (peer));
