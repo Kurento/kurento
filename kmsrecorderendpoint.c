@@ -917,8 +917,11 @@ kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
     GstPad *srcpad = e->data;
     gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
 
-    GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
-    gst_pad_remove_probe (srcpad, *probe_id);
+    if (probe_id != NULL) {
+      GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
+      gst_pad_remove_probe (srcpad, *probe_id);
+      g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
+    }
   }
 }
 
@@ -932,8 +935,11 @@ unlock_pending_valves (gpointer data, gpointer user_data)
   srcpad = gst_element_get_static_pad (config->valve, "src");
   probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
 
-  GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
-  gst_pad_remove_probe (srcpad, *probe_id);
+  if (probe_id != NULL) {
+    GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
+    gst_pad_remove_probe (srcpad, *probe_id);
+    g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
+  }
 
   g_object_unref (srcpad);
 }
@@ -1302,6 +1308,48 @@ kms_recorder_end_point_block_valve (KmsRecorderEndPoint * self,
 }
 
 static void
+kms_recorder_end_point_add_appsrc_pads (KmsRecorderEndPoint * self)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_sink_pads (self->priv->encodebin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *srcpad;
+
+        sinkpad = g_value_get_object (&val);
+        srcpad = gst_pad_get_peer (sinkpad);
+
+        if (srcpad != NULL) {
+          self->priv->confdata->blockedpads =
+              g_slist_prepend (self->priv->confdata->blockedpads, srcpad);
+          g_object_unref (srcpad);
+        }
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (self->priv->encodebin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
 kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
     GstElement * valve, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname)
@@ -1330,8 +1378,19 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
       break;
     case CONFIGURED:
       kms_recorder_end_point_init_config_data (self);
-      kms_recorder_end_point_remove_encodebin (self);
-      self->priv->state = CONFIGURING;
+
+      if (GST_STATE (self->priv->encodebin) >= GST_STATE_PAUSED
+          || GST_STATE_PENDING (self->priv->encodebin) >= GST_STATE_PAUSED
+          || GST_STATE_TARGET (self->priv->encodebin) >= GST_STATE_PAUSED) {
+        kms_recorder_end_point_remove_encodebin (self);
+        self->priv->state = CONFIGURING;
+      } else {
+        kms_recorder_end_point_add_appsrc_pads (self);
+        self->priv->confdata->pendingvalves =
+            g_slist_prepend (self->priv->confdata->pendingvalves, config);
+        kms_recorder_end_point_reconfigure_pipeline (self);
+        break;
+      }
     case CONFIGURING:
     case WAIT_PENDING:
       kms_recorder_end_point_block_valve (self, config);
