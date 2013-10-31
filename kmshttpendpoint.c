@@ -658,11 +658,41 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
   return ret;
 }
 
+static GstPadProbeReturn
+send_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+  const GstStructure *st;
+  KmsHttpEndPoint *self;
+  GstElement *src;
+  GstFlowReturn ret;
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CUSTOM_DOWNSTREAM)
+    return GST_PAD_PROBE_OK;
+
+  st = gst_event_get_structure (event);
+
+  if (g_strcmp0 (gst_structure_get_name (st),
+          KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME) != 0)
+    return GST_PAD_PROBE_OK;
+
+  self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (GST_OBJECT_PARENT (pad)));
+  src = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), data);
+
+  GST_ERROR_OBJECT (pad, "Event player eos received: %" GST_PTR_FORMAT, event);
+  g_signal_emit_by_name (src, "end-of-stream", &ret);
+
+  g_object_unref (src);
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_http_end_point_add_appsink (KmsHttpEndPoint * self,
     struct config_valve *conf)
 {
   GstElement *appsink;
+  GstPad *sink;
 
   GST_DEBUG ("Adding appsink %s", conf->sinkname);
 
@@ -675,6 +705,11 @@ kms_http_end_point_add_appsink (KmsHttpEndPoint * self,
 
   gst_bin_add (GST_BIN (self), appsink);
   gst_element_sync_state_with_parent (appsink);
+
+  sink = gst_element_get_static_pad (appsink, "sink");
+  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      send_eos_probe, g_strdup (conf->srcname), g_free);
+  g_object_unref (sink);
 }
 
 static void
