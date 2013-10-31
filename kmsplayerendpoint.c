@@ -267,7 +267,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
   video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
   src_caps = gst_pad_query_caps (pad, NULL);
-  GST_DEBUG ("caps are %" GST_PTR_FORMAT, src_caps);
+  GST_TRACE ("caps are %" GST_PTR_FORMAT, src_caps);
 
   if (gst_caps_can_intersect (audio_caps, src_caps))
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
