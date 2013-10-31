@@ -211,6 +211,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   buffer->offset = GST_CLOCK_TIME_NONE;
   buffer->offset_end = GST_CLOCK_TIME_NONE;
 
+  // TODO: Do something to fix a possible previous EOS event
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   gst_buffer_unref (buffer);
@@ -232,12 +233,9 @@ static void
 eos_cb (GstElement * appsink, gpointer user_data)
 {
   GstElement *appsrc = GST_ELEMENT (user_data);
-  GstStructure *s;
-  GstEvent *event;
   GstPad *srcpad;
 
-  GST_DEBUG ("Sending custom playerendpoint eos event to %s",
-      GST_ELEMENT_NAME (appsrc));
+  GST_DEBUG_OBJECT (appsrc, "Sending eos event to main pipeline");
 
   srcpad = gst_element_get_static_pad (appsrc, "src");
   if (srcpad == NULL) {
@@ -245,11 +243,8 @@ eos_cb (GstElement * appsink, gpointer user_data)
     return;
   }
 
-  s = gst_structure_new_empty (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME);
-  event = gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM, s);
-
-  if (!gst_pad_push_event (srcpad, event))
-    GST_ERROR (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME " event could not be sent");
+  if (!gst_pad_push_event (srcpad, gst_event_new_eos ()))
+    GST_ERROR ("EOS event could not be sent");
 
   g_object_unref (srcpad);
 }
@@ -403,6 +398,21 @@ kms_player_end_point_paused (KmsUriEndPoint * obj)
 static GstPadProbeReturn
 catch_eos (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
+    GST_WARNING_OBJECT (pad, "Dropping flush EOS event");
+
+    if (!gst_pad_push_event (pad,
+            gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM,
+                gst_structure_new_empty
+                (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME))))
+      GST_ERROR (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME
+          " event could not be sent");
+
+    return GST_PAD_PROBE_DROP;
+  }
+
   return GST_PAD_PROBE_OK;
 }
 
