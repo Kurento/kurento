@@ -237,28 +237,6 @@ destroy_ulong (gpointer data)
   g_slice_free (gulong, data);
 }
 
-static void
-remove_element_from_pipeline (gpointer user_data)
-{
-  struct remove_data *data = user_data;
-
-  GST_DEBUG ("Remove element %" GST_PTR_FORMAT, data->element);
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (data->httpep));
-
-  gst_element_set_locked_state (data->element, TRUE);
-  gst_element_set_state (data->element, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (data->httpep->priv->pipeline), data->element);
-
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (data->httpep));
-}
-
-static void
-destroy_remove_data (gpointer data)
-{
-  g_slice_free (struct remove_data, data);
-}
-
 static GstFlowReturn
 new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 {
@@ -924,7 +902,8 @@ kms_http_end_point_unblock_pads (KmsHttpEndPoint * self, GSList * pads)
     GstPad *srcpad = e->data;
     gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
 
-    gst_pad_remove_probe (srcpad, *probe_id);
+    if (probe_id != NULL)
+      gst_pad_remove_probe (srcpad, *probe_id);
   }
 }
 
@@ -938,8 +917,10 @@ unlock_pending_valves (gpointer data, gpointer user_data)
   srcpad = gst_element_get_static_pad (config->valve, "src");
   probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
 
-  GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
-  gst_pad_remove_probe (srcpad, *probe_id);
+  if (probe_id != NULL) {
+    GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
+    gst_pad_remove_probe (srcpad, *probe_id);
+  }
 
   g_object_unref (srcpad);
 }
@@ -980,28 +961,11 @@ connect_pending_appsrcs_to_encodebin (gpointer data, gpointer user_data)
   kms_http_end_point_connect_appsrc_to_encodebin (recorder, config);
 }
 
-static GstPadProbeReturn
-event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+static void
+kms_http_end_point_reconfigure_pipeline (KmsHttpEndPoint * httpep)
 {
-  KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (user_data);
   GstPad *srcpad, *sinkpad;
-  struct remove_data *data;
-
-  // We drop buffer during this reconfiguration stage
-  if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_BUFFER |
-          GST_PAD_PROBE_TYPE_BUFFER_LIST))
-    return GST_PAD_PROBE_DROP;
-
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
-    return GST_PAD_PROBE_OK;
-
-  /* Old encodebin has been flushed out. It's time to remove it */
-  GST_DEBUG ("Event EOS received");
-
-  /* remove the probe first */
-  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (httpep));
+  GstElement *sink;
 
   /* Unlink encodebin from sinkapp */
   srcpad = gst_element_get_static_pad (httpep->priv->get->encodebin, "src");
@@ -1012,23 +976,19 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
         GST_ELEMENT_NAME (httpep->priv->get->encodebin));
 
   g_object_unref (G_OBJECT (srcpad));
-  g_object_unref (G_OBJECT (sinkpad));
 
   /* Remove old encodebin and sink elements */
-  data = g_slice_new0 (struct remove_data);
+  sink = gst_pad_get_parent_element (sinkpad);
+  g_object_unref (sinkpad);
+  gst_element_set_locked_state (sink, TRUE);
+  gst_element_set_state (sink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (httpep->priv->pipeline), sink);
+  g_object_unref (sink);
 
-  data->httpep = httpep;
-  data->element = gst_pad_get_parent_element (pad);
-  kms_http_end_point_add_action (httpep, remove_element_from_pipeline, data,
-      destroy_remove_data);
-  g_object_unref (G_OBJECT (data->element));
-
-  data = g_slice_new0 (struct remove_data);
-
-  data->httpep = httpep;
-  data->element = httpep->priv->get->encodebin;
-  kms_http_end_point_add_action (httpep, remove_element_from_pipeline, data,
-      destroy_remove_data);
+  gst_element_set_locked_state (httpep->priv->get->encodebin, TRUE);
+  gst_element_set_state (httpep->priv->get->encodebin, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (httpep->priv->pipeline),
+      httpep->priv->get->encodebin);
 
   GST_DEBUG ("Adding New encodebin");
   /* Add the new encodebin to the pipeline */
@@ -1060,11 +1020,43 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   g_slist_foreach (httpep->priv->get->confdata->pendingvalves,
       unlock_pending_valves, httpep);
 
+  kms_http_end_point_free_config_data (httpep);
+}
+
+static void
+kms_http_end_point_do_reconfiguration (gpointer user_data)
+{
+  KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (user_data);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (httpep));
+
+  kms_http_end_point_reconfigure_pipeline (httpep);
   httpep->priv->get->state = CONFIGURED;
 
-  kms_http_end_point_free_config_data (httpep);
-
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (httpep));
+}
+
+static GstPadProbeReturn
+event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (user_data);
+
+  // We drop buffer during this reconfiguration stage
+  if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_BUFFER |
+          GST_PAD_PROBE_TYPE_BUFFER_LIST))
+    return GST_PAD_PROBE_DROP;
+
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
+    return GST_PAD_PROBE_OK;
+
+  /* Old encodebin has been flushed out. It's time to remove it */
+  GST_DEBUG ("Event EOS received");
+
+  /* remove the probe first */
+  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
+
+  kms_http_end_point_add_action (httpep,
+      kms_http_end_point_do_reconfiguration, httpep, NULL);
 
   /* Do not pass the EOS event downstream */
   return GST_PAD_PROBE_DROP;
@@ -1244,6 +1236,48 @@ kms_http_end_point_block_valve (KmsHttpEndPoint * self,
 }
 
 static void
+kms_http_end_point_add_appsrc_pads (KmsHttpEndPoint * self)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_sink_pads (self->priv->get->encodebin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *srcpad;
+
+        sinkpad = g_value_get_object (&val);
+        srcpad = gst_pad_get_peer (sinkpad);
+
+        if (srcpad != NULL) {
+          self->priv->get->confdata->blockedpads =
+              g_slist_prepend (self->priv->get->confdata->blockedpads, srcpad);
+          g_object_unref (srcpad);
+        }
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (self->priv->get->encodebin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
 kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
     const gchar * sinkname, const gchar * srcname, const gchar * destpadname)
 {
@@ -1274,8 +1308,20 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
       break;
     case CONFIGURED:
       kms_http_end_point_init_config_data (self);
-      kms_http_end_point_remove_encodebin (self);
-      self->priv->get->state = CONFIGURING;
+
+      if (GST_STATE (self->priv->get->encodebin) >= GST_STATE_PAUSED
+          || GST_STATE_PENDING (self->priv->get->encodebin) >= GST_STATE_PAUSED
+          || GST_STATE_TARGET (self->priv->get->encodebin) >=
+          GST_STATE_PAUSED) {
+        kms_http_end_point_remove_encodebin (self);
+        self->priv->get->state = CONFIGURING;
+      } else {
+        kms_http_end_point_add_appsrc_pads (self);
+        self->priv->get->confdata->pendingvalves =
+            g_slist_prepend (self->priv->get->confdata->pendingvalves, config);
+        kms_http_end_point_reconfigure_pipeline (self);
+        break;
+      }
     default:
       kms_http_end_point_block_valve (self, config);
       break;
