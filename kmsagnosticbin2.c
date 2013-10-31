@@ -313,10 +313,10 @@ kms_agnostic_bin2_find_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
 
     if (current_caps == NULL) {
       current_caps = gst_pad_get_allowed_caps (tee_sink);
-      GST_WARNING_OBJECT (l->data, "Allowed caps are: %" GST_PTR_FORMAT,
+      GST_TRACE_OBJECT (l->data, "Allowed caps are: %" GST_PTR_FORMAT,
           current_caps);
     } else {
-      GST_DEBUG_OBJECT (l->data, "Current caps are: %" GST_PTR_FORMAT,
+      GST_TRACE_OBJECT (l->data, "Current caps are: %" GST_PTR_FORMAT,
           current_caps);
     }
 
