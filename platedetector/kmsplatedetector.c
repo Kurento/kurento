@@ -57,6 +57,13 @@
 GST_DEBUG_CATEGORY_STATIC (kms_plate_detector_debug_category);
 #define GST_CAT_DEFAULT kms_plate_detector_debug_category
 
+#define KMS_PLATE_DETECTOR_GET_PRIVATE(obj) (   \
+  G_TYPE_INSTANCE_GET_PRIVATE (                 \
+    (obj),                                      \
+    KMS_TYPE_PLATE_DETECTOR,                    \
+    KmsPlateDetectorPrivate                     \
+  )                                             \
+)
 /* prototypes */
 
 static void kms_plate_detector_set_property (GObject * object,
@@ -75,6 +82,24 @@ static GstFlowReturn kms_plate_detector_transform_frame_ip (GstVideoFilter *
     filter, GstVideoFrame * frame);
 static void kms_plate_detector_plate_store_initialization (KmsPlateDetector *
     platedetector);
+
+struct _KmsPlateDetectorPrivate
+{
+  GstVideoFilter base_platedetector;
+  IplImage *cvImage, *edges, *edgesDilatedMask, *characterContoursMask;
+  KmsPlateDetectorPreprocessingType preprocessingType;
+  TessBaseAPI *handle;
+  char plateStore[NUM_PLATES_SAMPLES][NUM_PLATE_CHARACTERS + 1];
+  int storePosition;
+  int plateRepetition;
+  gboolean sendPlateEvent;
+  char finalPlate[NUM_PLATE_CHARACTERS + 1];
+  char previousFinalPlate[NUM_PLATE_CHARACTERS + 1];
+  float resizeFactor;
+  CvFont littleFont;
+  CvFont bigFont;
+  gboolean show_debug_info;
+};
 
 enum
 {
@@ -135,11 +160,14 @@ kms_plate_detector_class_init (KmsPlateDetectorClass * klass)
           "show characters segmentation and ocr results", FALSE,
           G_PARAM_READWRITE));
 
+  /* Registers a private structure for the instantiatable type */
+  g_type_class_add_private (klass, sizeof (KmsPlateDetectorPrivate));
 }
 
 static void
 kms_plate_detector_init (KmsPlateDetector * platedetector)
 {
+  platedetector->priv = KMS_PLATE_DETECTOR_GET_PRIVATE (platedetector);
   double hScaleLittle = 0.6;
   double vScaleLittle = 0.6;
   int lineWidthLittle = 18;
@@ -147,24 +175,25 @@ kms_plate_detector_init (KmsPlateDetector * platedetector)
   double vScaleBig = 1.0;
   int lineWidthBig = 18;
 
-  platedetector->cvImage = NULL;
-  platedetector->preprocessingType = PREPROCESSING_ONE;
-  platedetector->handle = TessBaseAPICreate ();
+  platedetector->priv->cvImage = NULL;
+  platedetector->priv->preprocessingType = PREPROCESSING_ONE;
+  platedetector->priv->handle = TessBaseAPICreate ();
   setlocale (LC_NUMERIC, "C");
-  TessBaseAPIInit3 (platedetector->handle, "", "plateLanguage");
-  TessBaseAPISetPageSegMode (platedetector->handle, PSM_SINGLE_LINE);
+  TessBaseAPIInit3 (platedetector->priv->handle, "", "plateLanguage");
+  TessBaseAPISetPageSegMode (platedetector->priv->handle, PSM_SINGLE_LINE);
   kms_plate_detector_plate_store_initialization (platedetector);
-  platedetector->storePosition = 0;
-  platedetector->plateRepetition = 0;
-  platedetector->sendPlateEvent = FALSE;
-  platedetector->resizeFactor = RESIZE_FACTOR_1;
-  strncpy (platedetector->previousFinalPlate, PREVIOUS_PLATE_INI,
+  platedetector->priv->storePosition = 0;
+  platedetector->priv->plateRepetition = 0;
+  platedetector->priv->sendPlateEvent = FALSE;
+  platedetector->priv->resizeFactor = RESIZE_FACTOR_1;
+  strncpy (platedetector->priv->previousFinalPlate, PREVIOUS_PLATE_INI,
       NUM_PLATE_CHARACTERS);
-  cvInitFont (&platedetector->littleFont,
+  cvInitFont (&platedetector->priv->littleFont,
       CV_FONT_HERSHEY_SIMPLEX | CV_FONT_ITALIC, hScaleLittle, vScaleLittle, 0,
       1, lineWidthLittle);
-  cvInitFont (&platedetector->bigFont, CV_FONT_HERSHEY_SIMPLEX | CV_FONT_ITALIC,
-      hScaleBig, vScaleBig, 0, 1, lineWidthBig);
+  cvInitFont (&platedetector->priv->bigFont,
+      CV_FONT_HERSHEY_SIMPLEX | CV_FONT_ITALIC, hScaleBig, vScaleBig, 0, 1,
+      lineWidthBig);
 }
 
 void
@@ -177,7 +206,7 @@ kms_plate_detector_set_property (GObject * object, guint property_id,
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
-      platedetector->show_debug_info = g_value_get_boolean (value);
+      platedetector->priv->show_debug_info = g_value_get_boolean (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -195,7 +224,7 @@ kms_plate_detector_get_property (GObject * object, guint property_id,
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
-      g_value_set_boolean (value, platedetector->show_debug_info);
+      g_value_set_boolean (value, platedetector->priv->show_debug_info);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -218,10 +247,10 @@ kms_plate_detector_dispose (GObject * object)
 static void
 kms_plate_detector_release_images (KmsPlateDetector * platedetector)
 {
-  cvReleaseImage (&platedetector->cvImage);
-  cvReleaseImage (&platedetector->edges);
-  cvReleaseImage (&platedetector->edgesDilatedMask);
-  cvReleaseImage (&platedetector->characterContoursMask);
+  cvReleaseImage (&platedetector->priv->cvImage);
+  cvReleaseImage (&platedetector->priv->edges);
+  cvReleaseImage (&platedetector->priv->edgesDilatedMask);
+  cvReleaseImage (&platedetector->priv->characterContoursMask);
 }
 
 void
@@ -232,7 +261,7 @@ kms_plate_detector_finalize (GObject * object)
   GST_DEBUG_OBJECT (platedetector, "finalize");
 
   kms_plate_detector_release_images (platedetector);
-  TessBaseAPIDelete (platedetector->handle);
+  TessBaseAPIDelete (platedetector->priv->handle);
 
   G_OBJECT_CLASS (kms_plate_detector_parent_class)->finalize (object);
 }
@@ -275,25 +304,25 @@ kms_plate_detector_plate_store_initialization (KmsPlateDetector * platedetector)
   char nullPlate[10] = NULL_PLATE;
 
   for (t = 0; t < NUM_PLATES_SAMPLES; t++) {
-    strcpy (platedetector->plateStore[t], nullPlate);
+    strcpy (platedetector->priv->plateStore[t], nullPlate);
   }
-  platedetector->storePosition = 0;
+  platedetector->priv->storePosition = 0;
 }
 
 static void
 kms_plate_detector_create_images (KmsPlateDetector * platedetector,
     GstVideoFrame * frame)
 {
-  platedetector->cvImage =
+  platedetector->priv->cvImage =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 3);
-  platedetector->edges =
+  platedetector->priv->edges =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
-  platedetector->edgesDilatedMask =
+  platedetector->priv->edgesDilatedMask =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
-  platedetector->characterContoursMask =
+  platedetector->priv->characterContoursMask =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
 }
@@ -302,10 +331,10 @@ static void
 kms_plate_detector_initialize_images (KmsPlateDetector * platedetector,
     GstVideoFrame * frame)
 {
-  if (platedetector->cvImage == NULL) {
+  if (platedetector->priv->cvImage == NULL) {
     kms_plate_detector_create_images (platedetector, frame);
-  } else if ((platedetector->cvImage->width != frame->info.width)
-      || (platedetector->cvImage->height != frame->info.height)) {
+  } else if ((platedetector->priv->cvImage->width != frame->info.width)
+      || (platedetector->priv->cvImage->height != frame->info.height)) {
 
     kms_plate_detector_release_images (platedetector);
     kms_plate_detector_create_images (platedetector, frame);
@@ -317,14 +346,14 @@ kms_plate_detector_preprocessing_method_one (KmsPlateDetector * platedetector)
 {
   IplConvKernel *kernel;
 
-  cvCanny (platedetector->edges, platedetector->edges, 70, 150, 3);
+  cvCanny (platedetector->priv->edges, platedetector->priv->edges, 70, 150, 3);
   kernel = cvCreateStructuringElementEx (13, 5, 3, 3, CV_SHAPE_RECT, 0);
-  cvMorphologyEx (platedetector->edges, platedetector->edgesDilatedMask, NULL,
-      kernel, CV_MOP_CLOSE, 1);
+  cvMorphologyEx (platedetector->priv->edges,
+      platedetector->priv->edgesDilatedMask, NULL, kernel, CV_MOP_CLOSE, 1);
   cvReleaseStructuringElement (&kernel);
   kernel = cvCreateStructuringElementEx (9, 5, 5, 3, CV_SHAPE_RECT, 0);
-  cvMorphologyEx (platedetector->edgesDilatedMask,
-      platedetector->edgesDilatedMask, NULL, kernel, CV_MOP_OPEN, 1);
+  cvMorphologyEx (platedetector->priv->edgesDilatedMask,
+      platedetector->priv->edgesDilatedMask, NULL, kernel, CV_MOP_OPEN, 1);
   cvReleaseStructuringElement (&kernel);
   kernel = cvCreateStructuringElementEx (21, 3, 11, 2, CV_SHAPE_RECT, 0);
   cvReleaseStructuringElement (&kernel);
@@ -336,29 +365,30 @@ kms_plate_detector_preprocessing_method_two (KmsPlateDetector * platedetector)
   IplConvKernel *kernel;
   IplImage *edgesAux;
 
-  cvCanny (platedetector->edges, platedetector->edges, 70, 150, 3);
-  cvSobel (platedetector->edges, platedetector->edges, 2, 0, 3);
+  cvCanny (platedetector->priv->edges, platedetector->priv->edges, 70, 150, 3);
+  cvSobel (platedetector->priv->edges, platedetector->priv->edges, 2, 0, 3);
   kernel = cvCreateStructuringElementEx (11, 3, 6, 2, CV_SHAPE_RECT, 0);
-  cvNot (platedetector->edges, platedetector->edges);
-  cvErode (platedetector->edges, platedetector->edges, kernel, 1);
-  cvNot (platedetector->edges, platedetector->edges);
+  cvNot (platedetector->priv->edges, platedetector->priv->edges);
+  cvErode (platedetector->priv->edges, platedetector->priv->edges, kernel, 1);
+  cvNot (platedetector->priv->edges, platedetector->priv->edges);
   cvReleaseStructuringElement (&kernel);
-  edgesAux = cvCreateImage (cvSize (platedetector->cvImage->width,
-          platedetector->cvImage->height), platedetector->cvImage->depth, 1);
+  edgesAux = cvCreateImage (cvSize (platedetector->priv->cvImage->width,
+          platedetector->priv->cvImage->height),
+      platedetector->priv->cvImage->depth, 1);
 
-  cvSobel (platedetector->edges, edgesAux, 0, 2, 3);
+  cvSobel (platedetector->priv->edges, edgesAux, 0, 2, 3);
   kernel = cvCreateStructuringElementEx (15, 3, 8, 2, CV_SHAPE_RECT, 0);
   cvDilate (edgesAux, edgesAux, kernel, 1);
-  cvSub (platedetector->edges, edgesAux, platedetector->edges, 0);
+  cvSub (platedetector->priv->edges, edgesAux, platedetector->priv->edges, 0);
 
-  cvSobel (platedetector->edges, edgesAux, 2, 0, 3);
+  cvSobel (platedetector->priv->edges, edgesAux, 2, 0, 3);
   cvReleaseStructuringElement (&kernel);
   kernel = cvCreateStructuringElementEx (3, 15, 2, 8, CV_SHAPE_RECT, 0);
   cvDilate (edgesAux, edgesAux, kernel, 1);
-  cvSub (platedetector->edges, edgesAux, platedetector->edges, 0);
+  cvSub (platedetector->priv->edges, edgesAux, platedetector->priv->edges, 0);
   cvReleaseStructuringElement (&kernel);
   kernel = cvCreateStructuringElementEx (7, 3, 4, 2, CV_SHAPE_RECT, 0);
-  cvDilate (platedetector->edges, platedetector->edges, kernel, 1);
+  cvDilate (platedetector->priv->edges, platedetector->priv->edges, kernel, 1);
   cvReleaseImage (&edgesAux);
   cvReleaseStructuringElement (&kernel);
 }
@@ -366,7 +396,7 @@ kms_plate_detector_preprocessing_method_two (KmsPlateDetector * platedetector)
 static void
 kms_plate_detector_preprocessing_method_three (KmsPlateDetector * platedetector)
 {
-  cvCanny (platedetector->edges, platedetector->edges, 70, 150, 3);
+  cvCanny (platedetector->priv->edges, platedetector->priv->edges, 70, 150, 3);
 }
 
 static void
@@ -378,9 +408,10 @@ kms_plate_detector_create_little_contour_mask (KmsPlateDetector * platedetector)
 
   memCharacters = cvCreateMemStorage (0);
 
-  cvSetZero (platedetector->characterContoursMask);
-  cvFindContours (platedetector->edges, memCharacters, &contoursCharacters,
-      sizeof (CvContour), CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, cvPoint (0, 0));
+  cvSetZero (platedetector->priv->characterContoursMask);
+  cvFindContours (platedetector->priv->edges, memCharacters,
+      &contoursCharacters, sizeof (CvContour), CV_RETR_CCOMP,
+      CV_CHAIN_APPROX_NONE, cvPoint (0, 0));
 
   for (; contoursCharacters != 0;
       contoursCharacters = contoursCharacters->h_next) {
@@ -405,13 +436,13 @@ kms_plate_detector_create_little_contour_mask (KmsPlateDetector * platedetector)
         (contourArea < MAX_CHARACTER_CONTOUR_AREA)
         && (abs (proportionWidthHeight - CHARACTER_IDEAL_PROPORTION) <
             MAX_DIF_CHARACTER_PROPORTIONS)) {
-      cvDrawContours (platedetector->characterContoursMask, contoursCharacters,
-          WHITE, WHITE, -1, 1, 8, cvPoint (0, 0));
+      cvDrawContours (platedetector->priv->characterContoursMask,
+          contoursCharacters, WHITE, WHITE, -1, 1, 8, cvPoint (0, 0));
     }
   }
   kernel = cvCreateStructuringElementEx (31, 1, 16, 0, CV_SHAPE_RECT, 0);
-  cvDilate (platedetector->characterContoursMask,
-      platedetector->characterContoursMask, kernel, 1);
+  cvDilate (platedetector->priv->characterContoursMask,
+      platedetector->priv->characterContoursMask, kernel, 1);
   cvClearMemStorage (memCharacters);
   cvReleaseMemStorage (&memCharacters);
   cvReleaseStructuringElement (&kernel);
@@ -803,7 +834,7 @@ kms_plate_detector_check_is_plate (KmsPlateDetector * platedetector,
     medHeight = 1000;
   }
 
-  return (counter > 5) && (medHeight > 7 * platedetector->resizeFactor);
+  return (counter > 5) && (medHeight > 7 * platedetector->priv->resizeFactor);
 }
 
 static void
@@ -854,7 +885,7 @@ static void
 kms_plate_detector_extract_final_plate (KmsPlateDetector * platedetector)
 {
   int f, g, h;
-  int longString = strlen (platedetector->finalPlate);
+  int longString = strlen (platedetector->priv->finalPlate);
   char stabilizedPlate[longString];
   int characterMatches = 0;
   int r;
@@ -866,9 +897,9 @@ kms_plate_detector_extract_final_plate (KmsPlateDetector * platedetector)
     int matchesCounter = 0;
 
     for (g = 0; g < NUM_PLATES_SAMPLES; g++) {
-      selectedCharacter = platedetector->plateStore[g][f];
+      selectedCharacter = platedetector->priv->plateStore[g][f];
       for (h = 0; (h < NUM_PLATES_SAMPLES); h++) {
-        char characerToCompare = platedetector->plateStore[h][f];
+        char characerToCompare = platedetector->priv->plateStore[h][f];
 
         if ((selectedCharacter == characerToCompare)) {
           matchesCounter++;
@@ -886,38 +917,39 @@ kms_plate_detector_extract_final_plate (KmsPlateDetector * platedetector)
   }
 
   for (r = 0; r < NUM_PLATE_CHARACTERS; r++) {
-    if ((platedetector->previousFinalPlate[r] != stabilizedPlate[r])) {
+    if ((platedetector->priv->previousFinalPlate[r] != stabilizedPlate[r])) {
       characterMatches++;
     }
   }
 
   if ((characterMatches > MAX_NUM_DIF_CHARACTERS)) {
-    platedetector->plateRepetition = 1;
-    platedetector->sendPlateEvent = TRUE;
-    strcpy (platedetector->previousFinalPlate, platedetector->finalPlate);
+    platedetector->priv->plateRepetition = 1;
+    platedetector->priv->sendPlateEvent = TRUE;
+    strcpy (platedetector->priv->previousFinalPlate,
+        platedetector->priv->finalPlate);
   } else if (characterMatches == 0) {
-    platedetector->plateRepetition++;
+    platedetector->priv->plateRepetition++;
   }
   characterMatches = 0;
 
-  if ((platedetector->plateRepetition > NUM_ACCUMULATED_PLATES)
-      && (platedetector->sendPlateEvent == TRUE)) {
-    platedetector->sendPlateEvent = FALSE;
-    platedetector->plateRepetition = 0;
-    GST_DEBUG ("NEW PLATE: %s", platedetector->previousFinalPlate);
+  if ((platedetector->priv->plateRepetition > NUM_ACCUMULATED_PLATES)
+      && (platedetector->priv->sendPlateEvent == TRUE)) {
+    platedetector->priv->sendPlateEvent = FALSE;
+    platedetector->priv->plateRepetition = 0;
+    GST_DEBUG ("NEW PLATE: %s", platedetector->priv->previousFinalPlate);
     GST_DEBUG ("TODO: send event to the bus");
   }
 
-  if (platedetector->show_debug_info == TRUE) {
-    cvRectangle (platedetector->cvImage,
-        cvPoint (platedetector->cvImage->width / 2 - 95,
-            platedetector->cvImage->height - 65),
-        cvPoint (platedetector->cvImage->width / 2 + 165,
-            platedetector->cvImage->height - 35), WHITE, -2, 8, 0);
-    cvPutText (platedetector->cvImage, stabilizedPlate,
-        cvPoint (platedetector->cvImage->width / 2 - 90,
-            platedetector->cvImage->height - 40),
-        &platedetector->bigFont, cvScalar (0, 0, 0, 0));
+  if (platedetector->priv->show_debug_info == TRUE) {
+    cvRectangle (platedetector->priv->cvImage,
+        cvPoint (platedetector->priv->cvImage->width / 2 - 95,
+            platedetector->priv->cvImage->height - 65),
+        cvPoint (platedetector->priv->cvImage->width / 2 + 165,
+            platedetector->priv->cvImage->height - 35), WHITE, -2, 8, 0);
+    cvPutText (platedetector->priv->cvImage, stabilizedPlate,
+        cvPoint (platedetector->priv->cvImage->width / 2 - 90,
+            platedetector->priv->cvImage->height - 40),
+        &platedetector->priv->bigFont, cvScalar (0, 0, 0, 0));
   }
   GST_DEBUG ("STABILIZED PLATE: %s", stabilizedPlate);
 }
@@ -990,14 +1022,14 @@ kms_plate_detector_select_tesseract_whitelist (KmsPlateDetector * platedetector,
     int d, TessBaseAPI * handle, int initialPosition, int *numbersCounter)
 {
   if (d < initialPosition) {
-    TessBaseAPISetVariable (platedetector->handle,
+    TessBaseAPISetVariable (platedetector->priv->handle,
         "tessedit_char_whitelist", PLATE_LETTERS);
   } else if ((d >= initialPosition) && (*numbersCounter < 4)) {
-    TessBaseAPISetVariable (platedetector->handle,
+    TessBaseAPISetVariable (platedetector->priv->handle,
         "tessedit_char_whitelist", PLATE_NUMBERS);
     *numbersCounter = *numbersCounter + 1;
   } else {
-    TessBaseAPISetVariable (platedetector->handle,
+    TessBaseAPISetVariable (platedetector->priv->handle,
         "tessedit_char_whitelist", PLATE_LETTERS);
   }
 }
@@ -1028,19 +1060,19 @@ kms_plate_detector_show_original_characters (KmsPlateDetector * platedetector,
     IplImage * imAux, IplImage * imAuxRGB, int spacePositionX, int d)
 {
   if ((finalPlateStore[d][0] + finalPlateStore[d][2] <
-          platedetector->cvImage->width) && (finalPlateStore[d][1] + 40 +
-          finalPlateStore[d][3] < platedetector->cvImage->height)) {
-    cvSetImageROI (platedetector->cvImage,
+          platedetector->priv->cvImage->width) && (finalPlateStore[d][1] + 40 +
+          finalPlateStore[d][3] < platedetector->priv->cvImage->height)) {
+    cvSetImageROI (platedetector->priv->cvImage,
         cvRect (finalPlateStore[d][0],
             finalPlateStore[d][1] + 40,
             finalPlateStore[d][2], finalPlateStore[d][3]));
     cvCvtColor (imAux, imAuxRGB, CV_GRAY2BGR);
-    cvCopy (imAuxRGB, platedetector->cvImage, 0);
-    cvResetImageROI (platedetector->cvImage);
+    cvCopy (imAuxRGB, platedetector->priv->cvImage, 0);
+    cvResetImageROI (platedetector->priv->cvImage);
   }
 
   if (d == 0) {
-    cvRectangle (platedetector->cvImage, cvPoint (spacePositionX,
+    cvRectangle (platedetector->priv->cvImage, cvPoint (spacePositionX,
             finalPlateStore[d][1] + 30),
         cvPoint (spacePositionX + 3, 2 * finalPlateStore[d][1] + 40 +
             finalPlateStore[d][3]), RED, -2, 8, 0);
@@ -1052,14 +1084,15 @@ kms_plate_detector_show_proccesed_characters (KmsPlateDetector * platedetector,
     int finalPlateStore[][7], IplImage * imAuxRGB2, int d)
 {
   if ((finalPlateStore[d][0] + d * EDGE_MARGIN + imAuxRGB2->width <
-          platedetector->cvImage->width) && (2 * finalPlateStore[d][1] + 120
-          + imAuxRGB2->height < platedetector->cvImage->height)) {
-    cvSetImageROI (platedetector->cvImage,
-        cvRect (finalPlateStore[d][0] +
-            d * EDGE_MARGIN, 2 * finalPlateStore[d][1] + 120,
-            imAuxRGB2->width, imAuxRGB2->height));
-    cvCopy (imAuxRGB2, platedetector->cvImage, 0);
-    cvResetImageROI (platedetector->cvImage);
+          platedetector->priv->cvImage->width)
+      && (2 * finalPlateStore[d][1] + 120 + imAuxRGB2->height <
+          platedetector->priv->cvImage->height)) {
+    cvSetImageROI (platedetector->priv->cvImage,
+        cvRect (finalPlateStore[d][0] + d * EDGE_MARGIN,
+            2 * finalPlateStore[d][1] + 120, imAuxRGB2->width,
+            imAuxRGB2->height));
+    cvCopy (imAuxRGB2, platedetector->priv->cvImage, 0);
+    cvResetImageROI (platedetector->priv->cvImage);
   }
 }
 
@@ -1068,22 +1101,22 @@ kms_plate_detector_show_ocr_results (KmsPlateDetector * platedetector,
     int position, char *ocrResultAux1,
     char *ocrResultAux2, char *textConf1, char *textConf2)
 {
-  cvPutText (platedetector->cvImage, ocrResultAux1,
-      cvPoint (10, +platedetector->cvImage->height -
+  cvPutText (platedetector->priv->cvImage, ocrResultAux1,
+      cvPoint (10, +platedetector->priv->cvImage->height -
           200 + 20 * position),
-      &platedetector->littleFont, cvScalar (0, 0, 255, 0));
-  cvPutText (platedetector->cvImage, textConf1,
-      cvPoint (40, +platedetector->cvImage->height -
-          200 + 20 * position), &platedetector->littleFont, cvScalar (0, 0, 255,
-          0));
+      &platedetector->priv->littleFont, cvScalar (0, 0, 255, 0));
+  cvPutText (platedetector->priv->cvImage, textConf1,
+      cvPoint (40, +platedetector->priv->cvImage->height -
+          200 + 20 * position), &platedetector->priv->littleFont, cvScalar (0,
+          0, 255, 0));
 
-  cvPutText (platedetector->cvImage, ocrResultAux2,
-      cvPoint (200, +platedetector->cvImage->height -
-          200 + 25 * position), &platedetector->littleFont, cvScalar (255, 0, 0,
-          0));
-  cvPutText (platedetector->cvImage, textConf2, cvPoint (240,
-          +platedetector->cvImage->height - 200 + 25 * position),
-      &platedetector->littleFont, cvScalar (255, 0, 0, 0));
+  cvPutText (platedetector->priv->cvImage, ocrResultAux2,
+      cvPoint (200, +platedetector->priv->cvImage->height -
+          200 + 25 * position), &platedetector->priv->littleFont, cvScalar (255,
+          0, 0, 0));
+  cvPutText (platedetector->priv->cvImage, textConf2, cvPoint (240,
+          +platedetector->priv->cvImage->height - 200 + 25 * position),
+      &platedetector->priv->littleFont, cvScalar (255, 0, 0, 0));
 }
 
 static void
@@ -1093,7 +1126,8 @@ kms_plate_detector_insert_plate_in_store (KmsPlateDetector * platedetector)
   int r;
 
   for (r = 0; r < NUM_PLATE_CHARACTERS; r++) {
-    if (platedetector->previousFinalPlate[r] == platedetector->finalPlate[r]) {
+    if (platedetector->priv->previousFinalPlate[r] ==
+        platedetector->priv->finalPlate[r]) {
       characterMatches++;
     }
   }
@@ -1103,17 +1137,19 @@ kms_plate_detector_insert_plate_in_store (KmsPlateDetector * platedetector)
     GST_DEBUG ("new plate detected...");
   }
 
-  if (platedetector->storePosition < NUM_PLATES_SAMPLES) {
-    strcpy (platedetector->plateStore[platedetector->storePosition],
-        platedetector->finalPlate);
-    platedetector->storePosition++;
-  } else if (platedetector->storePosition == NUM_PLATES_SAMPLES) {
+  if (platedetector->priv->storePosition < NUM_PLATES_SAMPLES) {
+    strcpy (platedetector->priv->plateStore[platedetector->priv->storePosition],
+        platedetector->priv->finalPlate);
+    platedetector->priv->storePosition++;
+  } else if (platedetector->priv->storePosition == NUM_PLATES_SAMPLES) {
     int t;
 
     for (t = NUM_PLATES_SAMPLES - 1; t > 0; t--) {
-      strcpy (platedetector->plateStore[t], platedetector->plateStore[t - 1]);
+      strcpy (platedetector->priv->plateStore[t],
+          platedetector->priv->plateStore[t - 1]);
     }
-    strcpy (platedetector->plateStore[0], platedetector->finalPlate);
+    strcpy (platedetector->priv->plateStore[0],
+        platedetector->priv->finalPlate);
   }
 }
 
@@ -1169,7 +1205,7 @@ kms_plate_detector_format_plate (KmsPlateDetector * platedetector,
 
   if (validPlate) {
     for (r = 0; r < NUM_PLATE_CHARACTERS; r++) {
-      platedetector->finalPlate[r] = finalPlateAux[r];
+      platedetector->priv->finalPlate[r] = finalPlateAux[r];
     }
   }
 
@@ -1209,10 +1245,10 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
 
   strncpy (finalPlateAux, NULL_PLATE, NUM_PLATE_CHARACTERS);
 
-  if (platedetector->show_debug_info == TRUE) {
-    cvRectangle (platedetector->cvImage,
-        cvPoint (0, platedetector->cvImage->height - 230),
-        cvPoint (400, platedetector->cvImage->height), BLACK, -2, 8, 0);
+  if (platedetector->priv->show_debug_info == TRUE) {
+    cvRectangle (platedetector->priv->cvImage,
+        cvPoint (0, platedetector->priv->cvImage->height - 230),
+        cvPoint (400, platedetector->priv->cvImage->height), BLACK, -2, 8, 0);
   }
 
   initialPosition =
@@ -1223,13 +1259,14 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       continue;
 
     kms_plate_detector_select_tesseract_whitelist (platedetector, d,
-        platedetector->handle, initialPosition, &numbersCounter);
+        platedetector->priv->handle, initialPosition, &numbersCounter);
     imAux = cvCreateImage (cvSize (finalPlateStore[d][2],
             finalPlateStore[d][3]),
         plateInterpolated->depth, plateInterpolated->nChannels);
     imAuxRGB = cvCreateImage (cvSize (finalPlateStore[d][2],
             finalPlateStore[d][3]),
-        platedetector->cvImage->depth, platedetector->cvImage->nChannels);
+        platedetector->priv->cvImage->depth,
+        platedetector->priv->cvImage->nChannels);
 
     if ((finalPlateStore[d][0] + finalPlateStore[d][2] <
             plateInterpolated->width) && (finalPlateStore[d][1] +
@@ -1240,7 +1277,7 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       cvCopy (plateInterpolated, imAux, 0);
     }
 
-    if (platedetector->show_debug_info == TRUE) {
+    if (platedetector->priv->show_debug_info == TRUE) {
       kms_plate_detector_show_original_characters (platedetector,
           finalPlateStore, imAux, imAuxRGB, spacePositionX, d);
     }
@@ -1262,7 +1299,8 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
     imAuxRGB2 =
         cvCreateImage (cvSize (imAux->width + 2 * EDGE_MARGIN,
             imAux->height + EDGE_MARGIN),
-        platedetector->cvImage->depth, platedetector->cvImage->nChannels);
+        platedetector->priv->cvImage->depth,
+        platedetector->priv->cvImage->nChannels);
 
     cvSetZero (imAux2);
     cvNot (imAux2, imAux2);
@@ -1274,7 +1312,7 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       cvResetImageROI (imAux2);
     }
 
-    if (platedetector->resizeFactor == RESIZE_FACTOR_3) {
+    if (platedetector->priv->resizeFactor == RESIZE_FACTOR_3) {
       cvDilate (imAux2, imAux2, 0, 1);
       cvSmooth (imAux2, imAux2, CV_MEDIAN, 3, 0, 0, 0);
       cvSmooth (imAux2, imAux2, CV_MEDIAN, 3, 0, 0, 0);
@@ -1283,33 +1321,33 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
     kms_plate_detector_clean_character (imAux, imAux2);
     cvCvtColor (imAux2, imAuxRGB2, CV_GRAY2BGR);
 
-    if (platedetector->show_debug_info == TRUE) {
+    if (platedetector->priv->show_debug_info == TRUE) {
       kms_plate_detector_show_proccesed_characters (platedetector,
           finalPlateStore, imAuxRGB2, d);
     }
 
-    TessBaseAPISetImage (platedetector->handle,
+    TessBaseAPISetImage (platedetector->priv->handle,
         (unsigned char *) imAux->imageData, imAux->width,
         imAux->height, (imAux->depth / 8) / imAux->nChannels, imAux->widthStep);
-    ocrResultAux1 = TessBaseAPIGetUTF8Text (platedetector->handle);
+    ocrResultAux1 = TessBaseAPIGetUTF8Text (platedetector->priv->handle);
     kms_plate_detector_chop_char (ocrResultAux1);
-    confidenceRate1 = TessBaseAPIMeanTextConf (platedetector->handle);
+    confidenceRate1 = TessBaseAPIMeanTextConf (platedetector->priv->handle);
 
-    TessBaseAPIClear (platedetector->handle);
+    TessBaseAPIClear (platedetector->priv->handle);
 
     sprintf (textConf1, "Conf:%d", (int) confidenceRate1);
 
-    TessBaseAPISetImage (platedetector->handle,
+    TessBaseAPISetImage (platedetector->priv->handle,
         (unsigned char *) imAux2->imageData, imAux2->width,
         imAux2->height, (imAux2->depth / 8) / imAux2->nChannels,
         imAux2->widthStep);
 
-    ocrResultAux2 = TessBaseAPIGetUTF8Text (platedetector->handle);
+    ocrResultAux2 = TessBaseAPIGetUTF8Text (platedetector->priv->handle);
 
     kms_plate_detector_chop_char (ocrResultAux2);
-    confidenceRate2 = TessBaseAPIMeanTextConf (platedetector->handle);
+    confidenceRate2 = TessBaseAPIMeanTextConf (platedetector->priv->handle);
 
-    TessBaseAPIClear (platedetector->handle);
+    TessBaseAPIClear (platedetector->priv->handle);
 
     sprintf (textConf2, "Conf:%d", (int) confidenceRate2);
 
@@ -1329,7 +1367,7 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       finalPlateAux[position + 2 - initialPosition] = '-';
     }
 
-    if (platedetector->show_debug_info == TRUE) {
+    if (platedetector->priv->show_debug_info == TRUE) {
       kms_plate_detector_show_ocr_results (platedetector, position,
           ocrResultAux1, ocrResultAux2, textConf1, textConf2);
     }
@@ -1382,9 +1420,9 @@ kms_plate_detector_expand_potential_plate_rect (KmsPlateDetector *
   if ((rect->x - rect->width * expandRateWidth / 2 > 0) &&
       (rect->y - rect->height * expandRateHeight / 2 > 0) &&
       (rect->x + rect->width + rect->width * expandRateWidth <
-          platedetector->cvImage->width) &&
+          platedetector->priv->cvImage->width) &&
       (rect->y + rect->height + rect->height * expandRateHeight <
-          platedetector->cvImage->height)) {
+          platedetector->priv->cvImage->height)) {
     rect->x = rect->x - rect->width * expandRateWidth / 2;
     rect->y = rect->y - rect->height * expandRateHeight / 2;
     rect->width = rect->width + rect->width * expandRateWidth;
@@ -1396,11 +1434,14 @@ static void
 kms_plate_detector_check_rect_into_margins (KmsPlateDetector * platedetector,
     CvRect * detectedRect)
 {
-  if (detectedRect->x - detectedRect->width > platedetector->cvImage->width) {
-    detectedRect->width = platedetector->cvImage->width - detectedRect->x;
+  if (detectedRect->x - detectedRect->width >
+      platedetector->priv->cvImage->width) {
+    detectedRect->width = platedetector->priv->cvImage->width - detectedRect->x;
   }
-  if (detectedRect->y - detectedRect->height > platedetector->cvImage->height) {
-    detectedRect->height = platedetector->cvImage->height - detectedRect->y;
+  if (detectedRect->y - detectedRect->height >
+      platedetector->priv->cvImage->height) {
+    detectedRect->height =
+        platedetector->priv->cvImage->height - detectedRect->y;
   }
 }
 
@@ -1430,20 +1471,22 @@ kms_plate_detector_preprocessing_images (IplImage * plateROI,
 static void
 kms_plate_detector_select_preprocessing_type (KmsPlateDetector * platedetector)
 {
-  if (platedetector->preprocessingType == PREPROCESSING_ONE) {
+  if (platedetector->priv->preprocessingType == PREPROCESSING_ONE) {
     kms_plate_detector_preprocessing_method_one (platedetector);
-  } else if (platedetector->preprocessingType == PREPROCESSING_TWO) {
+  } else if (platedetector->priv->preprocessingType == PREPROCESSING_TWO) {
     kms_plate_detector_preprocessing_method_two (platedetector);
-  } else if (platedetector->preprocessingType == PREPROCESSING_THREE) {
+  } else if (platedetector->priv->preprocessingType == PREPROCESSING_THREE) {
     IplConvKernel *kernel;
 
     kms_plate_detector_preprocessing_method_three (platedetector);
     kms_plate_detector_create_little_contour_mask (platedetector);
     kernel = cvCreateStructuringElementEx (5, 5, 3, 3, CV_SHAPE_RECT, 0);
-    cvMorphologyEx (platedetector->characterContoursMask,
-        platedetector->characterContoursMask, NULL, kernel, CV_MOP_CLOSE, 1);
+    cvMorphologyEx (platedetector->priv->characterContoursMask,
+        platedetector->priv->characterContoursMask, NULL, kernel, CV_MOP_CLOSE,
+        1);
     cvReleaseStructuringElement (&kernel);
-    cvCopy (platedetector->characterContoursMask, platedetector->edges, 0);
+    cvCopy (platedetector->priv->characterContoursMask,
+        platedetector->priv->edges, 0);
   }
 }
 
@@ -1512,7 +1555,7 @@ static void
 kms_plate_detector_draw_plate_rectang (KmsPlateDetector * platedetector,
     CvRect * rect)
 {
-  cvRectangle (platedetector->cvImage, cvPoint (rect->x, rect->y),
+  cvRectangle (platedetector->priv->cvImage, cvPoint (rect->x, rect->y),
       cvPoint (rect->x + rect->width, rect->y + rect->height), GREEN, 2, 8, 0);
 }
 
@@ -1522,11 +1565,11 @@ kms_plate_detector_select_character_resize_factor (KmsPlateDetector *
 {
   if ((plateStore[mostSimContPos][2] >= RESIZE_LOW_THRES) &&
       (plateStore[mostSimContPos][2] < RESIZE_HIGH_THRES)) {
-    platedetector->resizeFactor = RESIZE_FACTOR_2;
+    platedetector->priv->resizeFactor = RESIZE_FACTOR_2;
   } else if (plateStore[mostSimContPos][2] < RESIZE_LOW_THRES) {
-    platedetector->resizeFactor = RESIZE_FACTOR_3;
+    platedetector->priv->resizeFactor = RESIZE_FACTOR_3;
   } else {
-    platedetector->resizeFactor = RESIZE_FACTOR_1;
+    platedetector->priv->resizeFactor = RESIZE_FACTOR_1;
   }
 }
 
@@ -1554,11 +1597,12 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
 
   kms_plate_detector_initialize_images (platedetector, frame);
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-  platedetector->cvImage->imageData = (char *) info.data;
-  cvCvtColor (platedetector->cvImage, platedetector->edges, CV_BGR2GRAY);
+  platedetector->priv->cvImage->imageData = (char *) info.data;
+  cvCvtColor (platedetector->priv->cvImage, platedetector->priv->edges,
+      CV_BGR2GRAY);
   kms_plate_detector_select_preprocessing_type (platedetector);
 
-  cvFindContours (platedetector->edges, memPlates, &contoursPlates,
+  cvFindContours (platedetector->priv->edges, memPlates, &contoursPlates,
       sizeof (CvContour), CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, cvPoint (0, 0));
 
   for (; contoursPlates != 0; contoursPlates = contoursPlates->h_next) {
@@ -1600,29 +1644,29 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
     plateROI = cvCreateImage (cvSize (rect.width, rect.height),
         IPL_DEPTH_8U, 3);
 
-    cvSetImageROI (platedetector->cvImage, rect);
-    cvCopy (platedetector->cvImage, plateROI, 0);
+    cvSetImageROI (platedetector->priv->cvImage, rect);
+    cvCopy (platedetector->priv->cvImage, plateROI, 0);
 
     plateBinRoi = cvCreateImage (cvGetSize (plateROI), plateROI->depth, 1);
     plateInterpolated =
-        cvCreateImage (cvSize (platedetector->resizeFactor *
+        cvCreateImage (cvSize (platedetector->priv->resizeFactor *
             plateBinRoi->width,
-            platedetector->resizeFactor * plateBinRoi->height),
+            platedetector->priv->resizeFactor * plateBinRoi->height),
         plateBinRoi->depth, 1);
     plateInterpolatedAux1 =
-        cvCreateImage (cvSize (platedetector->resizeFactor *
+        cvCreateImage (cvSize (platedetector->priv->resizeFactor *
             plateBinRoi->width,
-            platedetector->resizeFactor * plateBinRoi->height),
+            platedetector->priv->resizeFactor * plateBinRoi->height),
         plateBinRoi->depth, 1);
     plateInterpolatedAux2 =
-        cvCreateImage (cvSize (platedetector->resizeFactor *
+        cvCreateImage (cvSize (platedetector->priv->resizeFactor *
             plateBinRoi->width,
-            platedetector->resizeFactor * plateBinRoi->height),
+            platedetector->priv->resizeFactor * plateBinRoi->height),
         plateBinRoi->depth, 1);
     plateInterAux1Color =
-        cvCreateImage (cvSize (platedetector->resizeFactor *
+        cvCreateImage (cvSize (platedetector->priv->resizeFactor *
             plateBinRoi->width,
-            platedetector->resizeFactor * plateBinRoi->height),
+            platedetector->priv->resizeFactor * plateBinRoi->height),
         plateBinRoi->depth, 3);
     plateColorRoi = cvCreateImage (cvGetSize (plateROI), plateROI->depth, 3);
     plateContour = cvCreateImage (cvGetSize (plateROI), plateROI->depth, 1);
@@ -1679,7 +1723,7 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
 
     kms_plate_detector_extend_character_rois (plateInterpolated,
         finalPlateStore, numOfCharacters, 2);
-    cvResetImageROI (platedetector->cvImage);
+    cvResetImageROI (platedetector->priv->cvImage);
 
     if (numOfCharacters > MIN_NUMBER_CHARACTERS) {
       if (checkIsPlate) {
@@ -1690,7 +1734,7 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
             checkIsPlate, spacePositionX, mostSimContPos);
 
         kms_plate_detector_extract_final_plate (platedetector);
-        if (platedetector->show_debug_info == TRUE) {
+        if (platedetector->priv->show_debug_info == TRUE) {
           kms_plate_detector_draw_plate_rectang (platedetector, &rect);
         }
       }
@@ -1708,12 +1752,12 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
     cvReleaseImage (&plateInterAux1Color);
   }
 
-  if (platedetector->preprocessingType == PREPROCESSING_ONE) {
-    platedetector->preprocessingType = PREPROCESSING_TWO;
-  } else if (platedetector->preprocessingType == PREPROCESSING_TWO) {
-    platedetector->preprocessingType = PREPROCESSING_THREE;
-  } else if (platedetector->preprocessingType == PREPROCESSING_THREE) {
-    platedetector->preprocessingType = PREPROCESSING_ONE;
+  if (platedetector->priv->preprocessingType == PREPROCESSING_ONE) {
+    platedetector->priv->preprocessingType = PREPROCESSING_TWO;
+  } else if (platedetector->priv->preprocessingType == PREPROCESSING_TWO) {
+    platedetector->priv->preprocessingType = PREPROCESSING_THREE;
+  } else if (platedetector->priv->preprocessingType == PREPROCESSING_THREE) {
+    platedetector->priv->preprocessingType = PREPROCESSING_ONE;
   }
 
   cvClearMemStorage (memPlates);

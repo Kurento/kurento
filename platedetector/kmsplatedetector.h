@@ -31,6 +31,7 @@ G_BEGIN_DECLS
 #define NUM_PLATES_SAMPLES ((int) 11)
 typedef struct _KmsPlateDetector KmsPlateDetector;
 typedef struct _KmsPlateDetectorClass KmsPlateDetectorClass;
+typedef struct _KmsPlateDetectorPrivate KmsPlateDetectorPrivate;
 
 typedef struct _AngleData
   {
@@ -47,20 +48,10 @@ typedef enum
 struct _KmsPlateDetector
 {
   GstVideoFilter base_platedetector;
-  IplImage *cvImage, *edges, *edgesDilatedMask, *characterContoursMask;
-  KmsPlateDetectorPreprocessingType preprocessingType;
-  TessBaseAPI *handle;
-  char plateStore[NUM_PLATES_SAMPLES][NUM_PLATE_CHARACTERS+1];
-  int storePosition;
-  int plateRepetition;
-  gboolean sendPlateEvent;
-  char finalPlate[NUM_PLATE_CHARACTERS+1];
-  char previousFinalPlate[NUM_PLATE_CHARACTERS+1];
-  float resizeFactor;
-  CvFont littleFont;
-  CvFont bigFont;
-  gboolean show_debug_info;
-  };
+
+  /*< private > */
+  KmsPlateDetectorPrivate *priv;
+};
 
 struct _KmsPlateDetectorClass
 {
