@@ -147,6 +147,7 @@ struct _KmsHttpEndPointPrivate
     GetData *get;
     PostData *post;
   };
+  gboolean live;
 };
 
 /* Object properties */
@@ -156,10 +157,12 @@ enum
   PROP_METHOD,
   PROP_START,
   PROP_PROFILE,
+  PROP_LIVE,
   N_PROPERTIES
 };
 
 #define DEFAULT_HTTP_END_POINT_START FALSE
+#define DEFAULT_HTTP_END_POINT_LIVE TRUE
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
@@ -680,7 +683,9 @@ send_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   src = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), data);
 
   GST_ERROR_OBJECT (pad, "Event player eos received: %" GST_PTR_FORMAT, event);
-  g_signal_emit_by_name (src, "end-of-stream", &ret);
+
+  if (!self->priv->live)
+    g_signal_emit_by_name (src, "end-of-stream", &ret);
 
   g_object_unref (src);
 
@@ -1491,6 +1496,9 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
     case PROP_PROFILE:
       self->priv->profile = g_value_get_enum (value);
       break;
+    case PROP_LIVE:
+      self->priv->live = g_value_get_boolean (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1514,6 +1522,9 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
       break;
     case PROP_PROFILE:
       g_value_set_enum (value, self->priv->profile);
+      break;
+    case PROP_LIVE:
+      g_value_set_boolean (value, self->priv->live);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -1597,6 +1608,12 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       "The profile used for encapsulating the media",
       GST_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
+  obj_properties[PROP_LIVE] = g_param_spec_boolean ("is-live",
+      "Element is live",
+      "Indicates that the httpendpoint behaves as live source or sink. "
+      "If it is live it will not be stopped by a eos signal during get.",
+      DEFAULT_HTTP_END_POINT_LIVE, G_PARAM_READWRITE);
+
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);
 
@@ -1651,6 +1668,7 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
   self->priv->method = KMS_HTTP_END_POINT_METHOD_UNDEFINED;
   self->priv->pipeline = NULL;
   self->priv->start = FALSE;
+  self->priv->live = TRUE;
 
   self->priv->tdata.actions = g_queue_new ();
   g_cond_init (&self->priv->tdata.thread_cond);
