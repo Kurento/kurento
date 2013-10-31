@@ -180,6 +180,7 @@ enum
   /* signals */
   SIGNAL_EOS,
   SIGNAL_NEW_SAMPLE,
+  SIGNAL_EOS_DETECTED,
 
   /* actions */
   SIGNAL_PULL_SAMPLE,
@@ -683,6 +684,8 @@ send_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   src = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), data);
 
   GST_ERROR_OBJECT (pad, "Event player eos received: %" GST_PTR_FORMAT, event);
+
+  g_signal_emit (self, http_ep_signals[SIGNAL_EOS_DETECTED], 0);
 
   if (!self->priv->live)
     g_signal_emit_by_name (src, "end-of-stream", &ret);
@@ -1651,6 +1654,13 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       G_STRUCT_OFFSET (KmsHttpEndPointClass, end_of_stream),
       NULL, NULL, __kms_marshal_ENUM__VOID,
       GST_TYPE_FLOW_RETURN, 0, G_TYPE_NONE);
+
+  http_ep_signals[SIGNAL_EOS_DETECTED] =
+      g_signal_new ("eos-detected",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsHttpEndPointClass, eos_detected_signal), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   klass->pull_sample = kms_http_end_point_pull_sample_action;
   klass->push_buffer = kms_http_end_point_push_buffer_action;

@@ -65,6 +65,7 @@ struct _KmsHttpEndPointClass
   /* signals */
   void (*eos_signal) (KmsHttpEndPoint * self);
   GstFlowReturn (*new_sample) (KmsHttpEndPoint *appsink);
+  void (*eos_detected_signal) (KmsHttpEndPoint * self);
 
   /* actions */
   GstFlowReturn (*push_buffer) (KmsHttpEndPoint * self, GstBuffer * buffer);
