@@ -2,8 +2,8 @@ function RpcBuilder()
 {
   var requestID = 0;
 
-  var requests  = HandshakeConnector.requests;
-  var responses = HandshakeConnector.responses;
+  var requests  = {};
+  var responses = {};
 
 
   function RpcNotification(method, params)
@@ -16,6 +16,13 @@ function RpcBuilder()
   {
     RpcNotification.call(this, method, params);
 
+    var previousResponse = responses[id];
+
+    Object.defineProperty(this, 'duplicated',
+    {
+      value: Boolean(previousResponse)
+    });
+
     /**
      * Generate a response to this message
      *
@@ -26,6 +33,9 @@ function RpcBuilder()
      */
     this.response = function(error, value)
     {
+      if(previousResponse)
+        return previousResponse;
+
       var message =
       {
         jsonrpc: "2.0",
