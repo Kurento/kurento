@@ -127,7 +127,7 @@ function RpcBuilder()
     var method = message.method;
     var params = message.params;
 
-    if(id)
+    if(id != undefined)
     {
       // Request
       if(method)
