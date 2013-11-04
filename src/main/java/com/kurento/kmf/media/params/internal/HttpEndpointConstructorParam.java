@@ -32,6 +32,7 @@ public class HttpEndpointConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
 	private Integer disconnectionTimeout;
+	private Boolean terminateOnEOS;
 
 	public Integer getDisconnectionTimeout() {
 		return disconnectionTimeout;
@@ -39,6 +40,14 @@ public class HttpEndpointConstructorParam extends
 
 	public void setDisconnectionTimeout(Integer disconnectTimeout) {
 		this.disconnectionTimeout = disconnectTimeout;
+	}
+
+	public Boolean getTerminateOnEOS() {
+		return terminateOnEOS;
+	}
+
+	public void setTerminateOnEOS(Boolean terminateOnEOS) {
+		this.terminateOnEOS = terminateOnEOS;
 	}
 
 	public HttpEndpointConstructorParam() {
@@ -51,6 +60,10 @@ public class HttpEndpointConstructorParam extends
 
 		if (disconnectionTimeout != null) {
 			kmsParams.setDisconnectionTimeout(disconnectionTimeout.intValue());
+		}
+
+		if (terminateOnEOS != null) {
+			kmsParams.setTerminateOnEOS(terminateOnEOS.booleanValue());
 		}
 
 		try {
@@ -76,6 +89,9 @@ public class HttpEndpointConstructorParam extends
 			this.disconnectionTimeout = Integer.valueOf(kmsParams
 					.getDisconnectionTimeout());
 		}
-	}
 
+		if (kmsParams.isSetTerminateOnEOS()) {
+			this.terminateOnEOS = Boolean.valueOf(kmsParams.isTerminateOnEOS());
+		}
+	}
 }

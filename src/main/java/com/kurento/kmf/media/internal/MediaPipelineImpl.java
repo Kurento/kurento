@@ -449,6 +449,21 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
+	public HttpEndPoint createHttpEndPoint(boolean terminateOnEOS) {
+		return createHttpEndPoint(terminateOnEOS,
+				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
+	}
+
+	@Override
+	public HttpEndPoint createHttpEndPoint(boolean terminateOnEOS,
+			int garbagePeriod) {
+		return (HttpEndPoint) createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateHttpEndPointConstructorParams(null,
+						terminateOnEOS, garbagePeriod));
+	}
+
+	@Override
 	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout) {
 		return createHttpEndPoint(disconnectionTimeout,
 				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
@@ -461,6 +476,22 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
 				internalCreateHttpEndPointConstructorParams(null,
 						disconnectionTimeout, garbagePeriod));
+	}
+
+	@Override
+	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
+			boolean terminateOnEOS) {
+		return createHttpEndPoint(disconnectionTimeout, terminateOnEOS,
+				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
+	}
+
+	@Override
+	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
+			boolean terminateOnEOS, int garbagePeriod) {
+		return (HttpEndPoint) createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateHttpEndPointConstructorParams(null,
+						disconnectionTimeout, terminateOnEOS, garbagePeriod));
 	}
 
 	private Map<String, MediaParam> internalCreateMediaObjectConstructorParams(
@@ -480,6 +511,22 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
+			Map<String, MediaParam> params, boolean terminateOnEOS,
+			int garbagePeriod) {
+		if (params == null) {
+			params = new HashMap<String, MediaParam>(4);
+		}
+
+		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
+		hecp.setTerminateOnEOS(Boolean.valueOf(terminateOnEOS));
+		params.put(
+				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				hecp);
+
+		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
+	}
+
+	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
 			Map<String, MediaParam> params, int disconnectionTimeout,
 			int garbagePeriod) {
 		if (params == null) {
@@ -495,9 +542,42 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
 	}
 
+	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
+			Map<String, MediaParam> params, int disconnectionTimeout,
+			boolean terminateOnEOS, int garbagePeriod) {
+		if (params == null) {
+			params = new HashMap<String, MediaParam>(4);
+		}
+
+		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
+		hecp.setTerminateOnEOS(Boolean.valueOf(terminateOnEOS));
+		hecp.setDisconnectionTimeout(Integer.valueOf(disconnectionTimeout));
+		params.put(
+				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				hecp);
+
+		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
+	}
+
 	@Override
 	public void createHttpEndPoint(Continuation<HttpEndPoint> cont) {
 		createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME, cont);
+	}
+
+	@Override
+	public void createHttpEndPoint(boolean terminateOnEOS,
+			Continuation<HttpEndPoint> cont) {
+		createHttpEndPoint(terminateOnEOS, DEFAULT_GARBAGE_COLLECTOR_PERIOD,
+				cont);
+	}
+
+	@Override
+	public void createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod,
+			Continuation<HttpEndPoint> cont) {
+		createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateHttpEndPointConstructorParams(null,
+						terminateOnEOS, garbagePeriod), cont);
 	}
 
 	@Override
@@ -514,6 +594,24 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
 				internalCreateHttpEndPointConstructorParams(null,
 						disconnectionTimeout, garbagePeriod), cont);
+	}
+
+	@Override
+	public void createHttpEndPoint(int disconnectionTimeout,
+			boolean terminateOnEOS, Continuation<HttpEndPoint> cont) {
+		createHttpEndPoint(disconnectionTimeout, terminateOnEOS,
+				DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
+	}
+
+	@Override
+	public void createHttpEndPoint(int disconnectionTimeout,
+			boolean terminateOnEOS, int garbagePeriod,
+			Continuation<HttpEndPoint> cont) {
+		createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateHttpEndPointConstructorParams(null,
+						disconnectionTimeout, terminateOnEOS, garbagePeriod),
+				cont);
 	}
 
 	@Override

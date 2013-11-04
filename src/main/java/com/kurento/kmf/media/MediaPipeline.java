@@ -89,17 +89,39 @@ public interface MediaPipeline extends MediaObject {
 	/* HTTP ENDPOINT */
 	HttpEndPoint createHttpEndPoint();
 
+	HttpEndPoint createHttpEndPoint(boolean terminateOnEOS);
+
+	HttpEndPoint createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod);
+
 	HttpEndPoint createHttpEndPoint(int disconnectionTimeout);
 
 	HttpEndPoint createHttpEndPoint(int disconnectionTimeout, int garbagePeriod);
 
+	HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
+			boolean terminateOnEOS);
+
+	HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
+			boolean terminateOnEOS, int garbagePeriod);
+
 	void createHttpEndPoint(Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(boolean terminateOnEOS,
+			Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod,
+			Continuation<HttpEndPoint> cont);
 
 	void createHttpEndPoint(int disconnectionTimeout,
 			Continuation<HttpEndPoint> cont);
 
 	void createHttpEndPoint(int disconnectionTimeout, int garbagePeriod,
 			Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(int disconnectionTimeout, boolean terminateOnEOS,
+			Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(int disconnectionTimeout, boolean terminateOnEOS,
+			int garbagePeriod, Continuation<HttpEndPoint> cont);
 
 	/* RTP ENDPOINT */
 
