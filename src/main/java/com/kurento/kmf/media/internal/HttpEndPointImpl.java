@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.EVENT_EOS_DETECTED;
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.GET_URL;
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.TYPE_NAME;
 
@@ -21,6 +22,9 @@ import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.events.HttpEndPointEOSDetected;
+import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
@@ -49,11 +53,24 @@ public class HttpEndPointImpl extends AbstractSessionEndPoint implements
 		return result.getString();
 	}
 
+	@Override
+	public ListenerRegistration addEOSDetectedListener(
+			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent) {
+		return addListener(EVENT_EOS_DETECTED, sessionEvent);
+	}
+
 	/* ASYNC */
 
 	@Override
 	public void getUrl(final Continuation<String> cont) {
 		invoke(GET_URL, new StringContinuationWrapper(cont));
+	}
+
+	@Override
+	public void addEOSDetectedListener(
+			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent,
+			final Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_EOS_DETECTED, sessionEvent, cont);
 	}
 
 }

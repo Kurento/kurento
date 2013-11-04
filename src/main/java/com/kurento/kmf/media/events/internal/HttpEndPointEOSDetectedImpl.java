@@ -12,25 +12,20 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media;
+package com.kurento.kmf.media.events.internal;
+
+import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.EVENT_EOS_DETECTED;
 
 import com.kurento.kmf.media.events.HttpEndPointEOSDetected;
-import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.internal.ProvidesMediaEvent;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
 
-public interface HttpEndPoint extends SessionEndPoint {
+@ProvidesMediaEvent(type = EVENT_EOS_DETECTED)
+public class HttpEndPointEOSDetectedImpl extends VoidMediaEvent implements
+		HttpEndPointEOSDetected {
 
-	/* SYNC */
-	String getUrl();
-
-	ListenerRegistration addEOSDetectedListener(
-			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent);
-
-	/* ASYNC */
-
-	void getUrl(final Continuation<String> cont);
-
-	void addEOSDetectedListener(
-			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent,
-			final Continuation<ListenerRegistration> cont);
+	public HttpEndPointEOSDetectedImpl(KmsMediaEvent event) {
+		super(event);
+	}
 
 }
