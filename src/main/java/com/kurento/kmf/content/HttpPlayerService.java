@@ -85,4 +85,6 @@ public @interface HttpPlayerService {
 	 * the Application Server by setting this parameter to false.
 	 */
 	boolean redirect() default false;
+
+	boolean terminateOnEOS() default true;
 }

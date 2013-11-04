@@ -32,6 +32,8 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kmf.media.UriEndPoint;
+import com.kurento.kmf.media.events.HttpEndPointEOSDetected;
+import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
  * 
@@ -46,11 +48,15 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	private static final Logger log = LoggerFactory
 			.getLogger(HttpPlayerSessionImpl.class);
 
+	private boolean terminateOnEOS;
+
 	public HttpPlayerSessionImpl(HttpPlayerHandler handler,
 			ContentSessionManager manager, AsyncContext asyncContext,
-			String contentId, boolean redirect, boolean useControlProtocol) {
+			String contentId, boolean redirect, boolean useControlProtocol,
+			boolean terminateOnEOS) {
 		super(handler, manager, asyncContext, contentId, redirect,
 				useControlProtocol);
+		this.terminateOnEOS = terminateOnEOS;
 	}
 
 	@Override
@@ -126,7 +132,21 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		getLogger().info("Recovering media pipeline");
 		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
 		getLogger().info("Creating HttpEndPoint ...");
-		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		HttpEndPoint httpEndPoint = mediaPiplePipeline
+				.createHttpEndPoint(terminateOnEOS);
+
+		// TODO: this listener is just for debugging purposes. Remove in the
+		// future
+		httpEndPoint
+				.addEOSDetectedListener(new MediaEventListener<HttpEndPointEOSDetected>() {
+					@Override
+					public void onEvent(HttpEndPointEOSDetected event) {
+						getLogger().info(
+								"Received OES on HttpPlayerSessionImpl with id "
+										+ getSessionId());
+					}
+				});
+
 		releaseOnTerminate(httpEndPoint);
 		mediaElement.connect(httpEndPoint);
 

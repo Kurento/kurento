@@ -527,7 +527,7 @@ public abstract class AbstractContentSession implements ContentSession {
 		}
 
 		getLogger().info("internalTerminateWithError called");
-		
+
 		try {
 			if (localState == STATE.IDLE || localState == STATE.HANDLING
 					|| localState == STATE.STARTING) {
@@ -613,7 +613,7 @@ public abstract class AbstractContentSession implements ContentSession {
 			localState = state;
 			state = STATE.TERMINATED;
 		}
-		
+
 		getLogger().info("internalTerminateWithoutError called");
 
 		try {

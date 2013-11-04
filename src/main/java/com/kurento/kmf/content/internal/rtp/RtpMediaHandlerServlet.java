@@ -53,24 +53,13 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 	private RtpContentHandler rtpMediaHandler;
 
 	/**
-	 * Always return false since RTP handler does not support redirect strategy.
-	 * 
-	 * @return Redirect strategy (true|false)
-	 */
-	@Override
-	protected boolean getUseRedirectStrategy(String handlerClass)
-			throws ServletException {
-		return false;
-	}
-
-	/**
 	 * Always return false since RTP handler does not support JSON control
 	 * protocol.
 	 * 
 	 * @return JSON Control Protocol strategy (true|false)
 	 */
 	@Override
-	protected boolean getUseJsonControlProtocol(String handlerClass)
+	protected boolean getUseJsonControlProtocol(Class<?> handlerClass)
 			throws ServletException {
 		return true;
 	}

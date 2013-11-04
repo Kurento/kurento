@@ -179,13 +179,14 @@ public abstract class AbstractHttpBasedContentSession extends
 					}
 				});
 
-		// Generate appropiate actions when content is started
+		// Generate appropriate actions when content is started
 		httpEndPoint
 				.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
 						callOnContentStartedOnHanlder();
-						getLogger().info("Received event with type " + event.getType());
+						getLogger().info(
+								"Received event with type " + event.getType());
 						if (uriEndPoint != null
 								&& uriEndPoint instanceof PlayerEndPoint) {
 							((PlayerEndPoint) uriEndPoint).play();
@@ -198,12 +199,13 @@ public abstract class AbstractHttpBasedContentSession extends
 					}
 				});
 
-		// Generate appropriate actions when content is terminated
+		// Generate appropriate actions when media session is terminated
 		httpEndPoint
 				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 					@Override
 					public void onEvent(MediaSessionTerminatedEvent event) {
-						getLogger().info("Received event with type " + event.getType());
+						getLogger().info(
+								"Received event with type " + event.getType());
 						internalTerminateWithoutError(null, 1,
 								"MediaServer MediaSessionTerminated", null); // TODO
 

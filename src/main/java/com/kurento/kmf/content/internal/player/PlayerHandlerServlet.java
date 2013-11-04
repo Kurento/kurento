@@ -41,44 +41,15 @@ public class PlayerHandlerServlet extends AbstractContentHandlerServlet {
 
 	/**
 	 * Look for {@link HttpPlayerService} annotation in the handler class and
-	 * check whether or not it is using redirect strategy.
-	 * 
-	 * @return Redirect strategy (true|false)
-	 */
-	@Override
-	protected boolean getUseRedirectStrategy(String handlerClass)
-			throws ServletException {
-		try {
-			HttpPlayerService playerService = Class.forName(handlerClass)
-					.getAnnotation(HttpPlayerService.class);
-			return playerService.redirect();
-		} catch (ClassNotFoundException e) {
-			String message = "Cannot recover class " + handlerClass
-					+ " on classpath";
-			log.error(message);
-			throw new ServletException(message);
-		}
-	}
-
-	/**
-	 * Look for {@link HttpPlayerService} annotation in the handler class and
 	 * check whether or not it is using JSON control protocol.
 	 * 
 	 * @return JSON Control Protocol strategy (true|false)
 	 */
 	@Override
-	protected boolean getUseJsonControlProtocol(String handlerClass)
+	protected boolean getUseJsonControlProtocol(Class<?> handlerClass)
 			throws ServletException {
-		try {
-			HttpPlayerService playerService = Class.forName(handlerClass)
-					.getAnnotation(HttpPlayerService.class);
-			return playerService.useControlProtocol();
-		} catch (ClassNotFoundException e) {
-			String message = "Cannot recover class " + handlerClass
-					+ " on classpath";
-			log.error(message);
-			throw new ServletException(message);
-		}
+		return handlerClass.getAnnotation(HttpPlayerService.class)
+				.useControlProtocol();
 	}
 
 	/**
@@ -95,7 +66,11 @@ public class PlayerHandlerServlet extends AbstractContentHandlerServlet {
 			AsyncContext asyncCtx, String contentId) {
 		return (HttpPlayerSessionImpl) KurentoApplicationContextUtils.getBean(
 				"httpPlayerSessionImpl", handler, contentSessionManager,
-				asyncCtx, contentId, useRedirectStrategy, useControlProtocol);
+				asyncCtx, contentId,
+				handlerClass.getAnnotation(HttpPlayerService.class).redirect(),
+				useControlProtocol,
+				handlerClass.getAnnotation(HttpPlayerService.class)
+						.terminateOnEOS());
 	}
 
 	/**

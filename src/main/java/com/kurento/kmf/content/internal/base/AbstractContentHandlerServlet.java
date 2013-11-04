@@ -66,14 +66,12 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 
 	protected ContentSessionManager contentSessionManager;
 
-	protected boolean useRedirectStrategy = true;
+	// protected boolean useRedirectStrategy = true;
+	protected Class<?> handlerClass;
 
 	protected boolean useControlProtocol = false;
 
-	protected abstract boolean getUseRedirectStrategy(String handlerClass)
-			throws ServletException;
-
-	protected abstract boolean getUseJsonControlProtocol(String handlerClass)
+	protected abstract boolean getUseJsonControlProtocol(Class<?> handlerClass)
 			throws ServletException;
 
 	protected abstract AbstractContentSession createContentSession(
@@ -95,9 +93,9 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 		// create one
 		if (thisServletContext == null) {
 			// Locate the handler class associated to this servlet
-			String handlerClass = this
+			String handlerClassName = this
 					.getInitParameter(ContentApiWebApplicationInitializer.HANDLER_CLASS_PARAM_NAME);
-			if (handlerClass == null || handlerClass.equals("")) {
+			if (handlerClassName == null || handlerClassName.equals("")) {
 				String message = "Cannot find handler class associated to handler servlet with name "
 						+ this.getServletConfig().getServletName()
 						+ " and class " + this.getClass().getName();
@@ -109,9 +107,17 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 			thisServletContext = KurentoApplicationContextUtils
 					.createKurentoServletApplicationContext(this.getClass(),
 							this.getServletName(), this.getServletContext(),
-							handlerClass);
+							handlerClassName);
 
-			useRedirectStrategy = getUseRedirectStrategy(handlerClass);
+			// useRedirectStrategy = getUseRedirectStrategy(handlerClass);
+			try {
+				handlerClass = Class.forName(handlerClassName);
+			} catch (ClassNotFoundException e) {
+				String message = "Cannot recover class " + handlerClass
+						+ " on classpath";
+				getLogger().error(message);
+				throw new ServletException(message);
+			}
 			useControlProtocol = getUseJsonControlProtocol(handlerClass);
 		}
 

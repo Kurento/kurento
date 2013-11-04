@@ -55,44 +55,15 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 
 	/**
 	 * Look for {@link HttpRecorderService} annotation in the handler class and
-	 * check whether or not it is using redirect strategy.
-	 * 
-	 * @return Redirect strategy (true|false)
-	 */
-	@Override
-	protected boolean getUseRedirectStrategy(String handlerClass)
-			throws ServletException {
-		try {
-			HttpRecorderService recorderService = Class.forName(handlerClass)
-					.getAnnotation(HttpRecorderService.class);
-			return recorderService.redirect();
-		} catch (ClassNotFoundException e) {
-			String message = "Cannot recover class " + handlerClass
-					+ " on classpath";
-			log.error(message);
-			throw new ServletException(message);
-		}
-	}
-
-	/**
-	 * Look for {@link HttpRecorderService} annotation in the handler class and
 	 * check whether or not it is using JSON control protocol.
 	 * 
 	 * @return JSON Control Protocol strategy (true|false)
 	 */
 	@Override
-	protected boolean getUseJsonControlProtocol(String handlerClass)
+	protected boolean getUseJsonControlProtocol(Class<?> handlerClass)
 			throws ServletException {
-		try {
-			HttpRecorderService recorderService = Class.forName(handlerClass)
-					.getAnnotation(HttpRecorderService.class);
-			return recorderService.useControlProtocol();
-		} catch (ClassNotFoundException e) {
-			String message = "Cannot recover class " + handlerClass
-					+ " on classpath";
-			log.error(message);
-			throw new ServletException(message);
-		}
+		return handlerClass.getAnnotation(HttpRecorderService.class)
+				.useControlProtocol();
 	}
 
 	/**
@@ -110,7 +81,8 @@ public class RecorderHandlerServlet extends AbstractContentHandlerServlet {
 		return (HttpRecorderSessionImpl) KurentoApplicationContextUtils
 				.getBean("httpRecordSessionImpl", recorderHandler,
 						contentSessionManager, asyncCtx, contentId,
-						useRedirectStrategy, useControlProtocol);
+						handlerClass.getAnnotation(HttpRecorderService.class)
+								.redirect(), useControlProtocol);
 	}
 
 	/**
