@@ -449,26 +449,18 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public HttpEndPoint createHttpEndPoint(int garbagePeriod) {
-		return (HttpEndPoint) createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
-	}
-
-	@Override
-	public HttpEndPoint createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout) {
-		return createHttpEndPoint(cookieLifetime, disconnectionTimeout,
+	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout) {
+		return createHttpEndPoint(disconnectionTimeout,
 				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
 	}
 
 	@Override
-	public HttpEndPoint createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout, int garbagePeriod) {
+	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
+			int garbagePeriod) {
 		return (HttpEndPoint) createMediaElement(
 				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
 				internalCreateHttpEndPointConstructorParams(null,
-						cookieLifetime, disconnectionTimeout, garbagePeriod));
+						disconnectionTimeout, garbagePeriod));
 	}
 
 	private Map<String, MediaParam> internalCreateMediaObjectConstructorParams(
@@ -488,14 +480,13 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
-			Map<String, MediaParam> params, int cookieLifetime,
-			int disconnectionTimeout, int garbagePeriod) {
+			Map<String, MediaParam> params, int disconnectionTimeout,
+			int garbagePeriod) {
 		if (params == null) {
 			params = new HashMap<String, MediaParam>(4);
 		}
 
 		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
-		hecp.setCookieLifetime(Integer.valueOf(cookieLifetime));
 		hecp.setDisconnectionTimeout(Integer.valueOf(disconnectionTimeout));
 		params.put(
 				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
@@ -510,30 +501,19 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createHttpEndPoint(int garbagePeriod,
+	public void createHttpEndPoint(int disconnectionTimeout,
 			Continuation<HttpEndPoint> cont) {
-		createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
-				cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout, Continuation<HttpEndPoint> cont) {
-		createHttpEndPoint(cookieLifetime, disconnectionTimeout,
+		createHttpEndPoint(disconnectionTimeout,
 				DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
 	}
 
 	@Override
-	public void createHttpEndPoint(int cookieLifetime,
-			int disconnectionTimeout, int garbagePeriod,
+	public void createHttpEndPoint(int disconnectionTimeout, int garbagePeriod,
 			Continuation<HttpEndPoint> cont) {
 		createMediaElement(
 				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
 				internalCreateHttpEndPointConstructorParams(null,
-						cookieLifetime, disconnectionTimeout, garbagePeriod),
-				cont);
+						disconnectionTimeout, garbagePeriod), cont);
 	}
 
 	@Override

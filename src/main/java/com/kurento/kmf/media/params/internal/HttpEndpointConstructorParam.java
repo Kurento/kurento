@@ -31,17 +31,7 @@ import com.kurento.kms.thrift.api.KmsMediaHttpEndPointConstructorParams;
 public class HttpEndpointConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
-	private Integer cookieLifetime;
-
 	private Integer disconnectionTimeout;
-
-	public Integer getCookieLifetime() {
-		return cookieLifetime;
-	}
-
-	public void setCookieLifetime(Integer cookieLifetime) {
-		this.cookieLifetime = cookieLifetime;
-	}
 
 	public Integer getDisconnectionTimeout() {
 		return disconnectionTimeout;
@@ -58,9 +48,6 @@ public class HttpEndpointConstructorParam extends
 	@Override
 	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaHttpEndPointConstructorParams kmsParams = new KmsMediaHttpEndPointConstructorParams();
-		if (cookieLifetime != null) {
-			kmsParams.setCookieLifetime(cookieLifetime.intValue());
-		}
 
 		if (disconnectionTimeout != null) {
 			kmsParams.setDisconnectionTimeout(disconnectionTimeout.intValue());
@@ -83,11 +70,6 @@ public class HttpEndpointConstructorParam extends
 		} catch (TException e) {
 			// TODO change error code
 			throw new KurentoMediaFrameworkException(e.getMessage(), 30000);
-		}
-
-		if (kmsParams.isSetCookieLifetime()) {
-			this.cookieLifetime = Integer
-					.valueOf(kmsParams.getCookieLifetime());
 		}
 
 		if (kmsParams.isSetDisconnectionTimeout()) {

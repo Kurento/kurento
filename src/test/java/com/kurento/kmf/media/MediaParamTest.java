@@ -220,7 +220,6 @@ public class MediaParamTest {
 	@Test
 	public void testHttpEndPointConstructor() {
 		HttpEndpointConstructorParam in = new HttpEndpointConstructorParam();
-		in.setCookieLifetime(Integer.valueOf(100));
 		in.setDisconnectionTimeout(Integer.valueOf(200));
 		KmsMediaParam param = createKmsParam(
 				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
@@ -228,8 +227,6 @@ public class MediaParamTest {
 
 		HttpEndpointConstructorParam out = instantiateAndCheck(
 				HttpEndpointConstructorParam.class, param);
-		Assert.assertTrue(in.getCookieLifetime()
-				.equals(out.getCookieLifetime()));
 		Assert.assertTrue(in.getDisconnectionTimeout().equals(
 				out.getDisconnectionTimeout()));
 	}
