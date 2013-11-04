@@ -19,6 +19,7 @@
 #include <gst/video/gstvideofilter.h>
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#include <tesseract/capi.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_PLATE_DETECTOR   (kms_plate_detector_get_type())
@@ -26,8 +27,15 @@ G_BEGIN_DECLS
 #define KMS_PLATE_DETECTOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_PLATE_DETECTOR,KmsPlateDetectorClass))
 #define KMS_IS_PLATE_DETECTOR(obj)   (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_PLATE_DETECTOR))
 #define KMS_IS_PLATE_DETECTOR_CLASS(klass)   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_PLATE_DETECTOR))
+#define NUM_PLATE_CHARACTERS ((int)9)
+#define NUM_PLATES_SAMPLES ((int) 11)
 typedef struct _KmsPlateDetector KmsPlateDetector;
 typedef struct _KmsPlateDetectorClass KmsPlateDetectorClass;
+
+typedef struct _AngleData
+  {
+    float angle;
+  }AngleData;
 
 typedef enum
 {
@@ -41,7 +49,18 @@ struct _KmsPlateDetector
   GstVideoFilter base_platedetector;
   IplImage *cvImage, *edges, *edgesDilatedMask, *characterContoursMask;
   KmsPlateDetectorPreprocessingType preprocessingType;
-};
+  TessBaseAPI *handle;
+  char plateStore[NUM_PLATES_SAMPLES][NUM_PLATE_CHARACTERS+1];
+  int storePosition;
+  int plateRepetition;
+  gboolean sendPlateEvent;
+  char finalPlate[NUM_PLATE_CHARACTERS+1];
+  char previousFinalPlate[NUM_PLATE_CHARACTERS+1];
+  float resizeFactor;
+  CvFont littleFont;
+  CvFont bigFont;
+  gboolean show_debug_info;
+  };
 
 struct _KmsPlateDetectorClass
 {
