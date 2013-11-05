@@ -27,6 +27,8 @@
 
 #include "gstdtlsconnection.h"
 
+#include "src/ext/gio/kmsgtlscertificate.h"
+
 GST_DEBUG_CATEGORY_STATIC (dtls_base_debug);
 #define GST_CAT_DEFAULT (dtls_base_debug)
 
@@ -228,7 +230,11 @@ gst_dtls_base_update_certificate (GstDtlsBase * self)
   if (self->certificate_pem_file && self->certificate_pem_file[0]) {
     GTlsCertificate *cert;
 
+#if 0 /* glib */
     cert = g_tls_certificate_new_from_file (self->certificate_pem_file, &error);
+#else
+    cert = kms_g_tls_certificate_new_from_file (self->certificate_pem_file, &error);
+#endif
 
     if (cert) {
       g_tls_connection_set_certificate (self->conn->conn, cert);
