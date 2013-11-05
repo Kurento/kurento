@@ -1,3 +1,4 @@
+
 plugin_LTLIBRARIES = libkmsdtls.la
 
 # variables used for enum generation
@@ -16,15 +17,36 @@ BUILT_SOURCES = $(built_sources) $(built_headers)
 CLEANFILES = $(BUILT_SOURCES)
 
 # sources used to compile this plug-in
-libkmsdtls_la_SOURCES = = gstdtls.c \
-	gstdtlsenc.c \
-	gstdtlsdec.c \
-	gstdtlsbase.c \
-	gstiostream.c \
-	gstdtlsconnection.c \
-	gstdtlssrtpdemux.c \
-	gstdtlssrtpdec.c \
-	gstdtlssrtpenc.c
+libkmsdtls_la_SOURCES = = gstdtls.c			\
+	gstdtlsenc.c					\
+	gstdtlsdec.c					\
+	gstdtlsbase.c					\
+	gstiostream.c					\
+	gstdtlsconnection.c				\
+	gstdtlssrtpdemux.c				\
+	gstdtlssrtpdec.c				\
+	gstdtlssrtpenc.c				\
+	ext/gio/kmsgtlsconnection.c			\
+	ext/gio/kmsgioenumtypes.c			\
+	ext/gio/kmsgtlscertificate.c			\
+	ext/gnutls/gtlsbackend-gnutls.c			\
+	ext/gnutls/gtlsbackend-gnutls.h			\
+	ext/gnutls/gtlscertificate-gnutls.c		\
+	ext/gnutls/gtlscertificate-gnutls.h		\
+	ext/gnutls/gtlsclientconnection-gnutls.c	\
+	ext/gnutls/gtlsclientconnection-gnutls.h	\
+	ext/gnutls/gtlsconnection-gnutls.c		\
+	ext/gnutls/gtlsconnection-gnutls.h		\
+	ext/gnutls/gtlsdatabase-gnutls.c		\
+	ext/gnutls/gtlsdatabase-gnutls.h		\
+	ext/gnutls/gtlsfiledatabase-gnutls.c		\
+	ext/gnutls/gtlsfiledatabase-gnutls.h		\
+	ext/gnutls/gtlsinputstream-gnutls.c		\
+	ext/gnutls/gtlsinputstream-gnutls.h		\
+	ext/gnutls/gtlsoutputstream-gnutls.c		\
+	ext/gnutls/gtlsoutputstream-gnutls.h		\
+	ext/gnutls/gtlsserverconnection-gnutls.c	\
+	ext/gnutls/gtlsserverconnection-gnutls.h
 
 nodist_libkmsdtls_la_SOURCES = \
         $(built_sources)
@@ -39,7 +61,9 @@ noinst_HEADERS = 	\
 	gstdtlssrtpdemux.h \
 	gstdtlssrtpdec.h \
 	gstdtlssrtpenc.h \
-	gstdtlssrtp.h
+	gstdtlssrtp.h \
+	ext/gio/kmsgioenums.h \
+	ext/gio/kmsgtlsconnection.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libkmsdtls_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) \
