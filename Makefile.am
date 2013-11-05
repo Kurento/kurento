@@ -27,6 +27,7 @@ libkmsdtls_la_SOURCES = = gstdtls.c			\
 	gstdtlssrtpdec.c				\
 	gstdtlssrtpenc.c				\
 	ext/gio/kmsgtlsconnection.c			\
+	ext/gio/kmsgtlsclientconnection.c               \
 	ext/gio/kmsgioenumtypes.c			\
 	ext/gio/kmsgtlscertificate.c			\
 	ext/gnutls/gtlsbackend-gnutls.c			\
@@ -63,7 +64,8 @@ noinst_HEADERS = 	\
 	gstdtlssrtpenc.h \
 	gstdtlssrtp.h \
 	ext/gio/kmsgioenums.h \
-	ext/gio/kmsgtlsconnection.h
+	ext/gio/kmsgtlsconnection.h \
+	ext/gio/kmsgtlsclientconnection.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libkmsdtls_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) \

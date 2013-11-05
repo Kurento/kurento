@@ -26,7 +26,7 @@
 #endif
 
 #include "gstdtlsconnection.h"
-
+#include <src/ext/gio/kmsgtlsclientconnection.h>
 
 #define GST_DTLS_CONNECTION_LOCK(self)   g_mutex_lock (&self->lock)
 #define GST_DTLS_CONNECTION_UNLOCK(self) g_mutex_unlock (&self->lock)
@@ -112,7 +112,7 @@ gst_dtls_connection_get_by_id (const gchar * id, gboolean is_client,
     self->is_client = is_client;
     if (is_client) {
       self->conn = (GTlsConnection *)
-          g_tls_client_connection_new (G_IO_STREAM (self->base_stream), NULL,
+          kms_g_tls_client_connection_new (G_IO_STREAM (self->base_stream), NULL,
           &error);
     } else {
       self->conn = (GTlsConnection *)
