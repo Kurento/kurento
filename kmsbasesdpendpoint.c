@@ -295,6 +295,13 @@ kms_base_sdp_end_point_process_answer (KmsBaseSdpEndPoint * base_sdp_end_point,
 {
   GST_DEBUG ("process_answer");
 
+  if (base_sdp_end_point->local_offer_sdp == NULL) {
+    // TODO: This should raise an error
+    GST_ERROR_OBJECT (base_sdp_end_point,
+        "Answer received without a local offer generated");
+    return;
+  }
+
   kms_base_sdp_end_point_set_remote_answer_sdp (base_sdp_end_point, answer);
 
   kms_base_sdp_end_point_start_media (base_sdp_end_point,
