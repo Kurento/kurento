@@ -83,6 +83,17 @@ static GstFlowReturn kms_plate_detector_transform_frame_ip (GstVideoFilter *
 static void kms_plate_detector_plate_store_initialization (KmsPlateDetector *
     platedetector);
 
+typedef struct _CharacterData
+{
+  int x;
+  int y;
+  int width;
+  int height;
+  gboolean exclude;
+  gboolean similarProportion;
+  gboolean isMostSimilar;
+} CharacterData;
+
 struct _KmsPlateDetectorPrivate
 {
   GstVideoFilter base_platedetector;
@@ -518,7 +529,7 @@ kms_plate_detector_adaptive_threshold (IplImage * src, IplImage * srcAux)
 }
 
 static int
-kms_plate_detector_median (int plateStore[][7], int platesCounter)
+kms_plate_detector_median (CharacterData plateStore[], int platesCounter)
 {
   gboolean flag = FALSE;
   int counter = 0;
@@ -526,12 +537,12 @@ kms_plate_detector_median (int plateStore[][7], int platesCounter)
   int counter3 = 0;
   int number = 0;
   int number2 = 0;
-  int plateStore2[platesCounter][2];
+  CharacterData plateStore2[platesCounter];
 
   for (counter = 0; counter < platesCounter; counter++) {
-    if (plateStore[counter][5] == 1) {
-      plateStore2[counter3][1] = plateStore[counter][3];
-      plateStore2[counter3][0] = counter;
+    if (plateStore[counter].similarProportion == TRUE) {
+      plateStore2[counter3].y = plateStore[counter].height;
+      plateStore2[counter3].x = counter;
       counter3++;
     }
   }
@@ -539,14 +550,14 @@ kms_plate_detector_median (int plateStore[][7], int platesCounter)
   for (counter = counter3 - 1; counter >= 0 && flag == FALSE; counter--) {
     flag = TRUE;
     for (counter2 = 0; counter2 < counter; counter2++) {
-      if (plateStore2[counter2][1] <= plateStore2[counter2 + 1][1])
+      if (plateStore2[counter2].y <= plateStore2[counter2 + 1].y)
         continue;
-      number = plateStore2[counter2][1];
-      number2 = plateStore2[counter2][0];
-      plateStore2[counter2][1] = plateStore2[counter2 + 1][1];
-      plateStore2[counter2][0] = plateStore2[counter2 + 1][0];
-      plateStore2[counter2 + 1][1] = number;
-      plateStore2[counter2 + 1][0] = number2;
+      number = plateStore2[counter2].y;
+      number2 = plateStore2[counter2].x;
+      plateStore2[counter2].y = plateStore2[counter2 + 1].y;
+      plateStore2[counter2].x = plateStore2[counter2 + 1].x;
+      plateStore2[counter2 + 1].y = number;
+      plateStore2[counter2 + 1].x = number2;
       flag = FALSE;
     }
   }
@@ -554,27 +565,27 @@ kms_plate_detector_median (int plateStore[][7], int platesCounter)
   if (counter3 <= 0)
     return 0;
   if (counter3 % 2 != 0)
-    return plateStore2[(counter3 - 1) / 2][0];
+    return plateStore2[(counter3 - 1) / 2].x;
 
-  return plateStore2[(counter3) / 2][0];
+  return plateStore2[(counter3) / 2].x;
 }
 
 static void
-kms_plate_detector_select_best_characters_contours (int plateStore[][7],
+kms_plate_detector_select_best_characters_contours (CharacterData plateStore[],
     int numContours, int selectedContourPosition)
 {
   int k;
   int difference;
 
   for (k = 0; k < numContours; k++) {
-    if (plateStore[k][5] != 1)
+    if (plateStore[k].similarProportion != TRUE)
       continue;
-    difference = abs (plateStore[k][3] -
-        plateStore[selectedContourPosition][3]);
+    difference = abs (plateStore[k].height -
+        plateStore[selectedContourPosition].height);
     if (difference < 5) {
-      plateStore[k][6] = 1;
+      plateStore[k].isMostSimilar = TRUE;
     } else {
-      plateStore[k][6] = 0;
+      plateStore[k].isMostSimilar = FALSE;
     }
   }
 }
@@ -603,7 +614,8 @@ kms_plate_detector_angle_median (float angleStore[], int anglesCounter)
 }
 
 static float
-kms_plate_detector_calc_rotation_angle (int plateStore[][7], int numContours)
+kms_plate_detector_calc_rotation_angle (CharacterData plateStore[],
+    int numContours)
 {
   int i, j;
   int angleCounter = 0;
@@ -611,9 +623,11 @@ kms_plate_detector_calc_rotation_angle (int plateStore[][7], int numContours)
 
   for (i = 0; i < numContours; i++) {
     for (j = 0; j < numContours; j++) {
-      if ((j > i) && (plateStore[j][0] - plateStore[i][0] != 0) &&
-          (plateStore[i][5] == 1) && (plateStore[j][5] == 1) &&
-          (plateStore[i][6] == 1) && (plateStore[j][6] == 1)) {
+      if ((j > i) && (plateStore[j].x - plateStore[i].x != 0) &&
+          (plateStore[i].similarProportion == TRUE)
+          && (plateStore[j].similarProportion == TRUE)
+          && (plateStore[i].isMostSimilar == TRUE)
+          && (plateStore[j].isMostSimilar == TRUE)) {
         counter++;
       }
     }
@@ -622,11 +636,15 @@ kms_plate_detector_calc_rotation_angle (int plateStore[][7], int numContours)
 
   for (i = 0; i < numContours; i++) {
     for (j = 0; j < numContours; j++) {
-      if ((j > i) && (plateStore[j][0] - plateStore[i][0] != 0) &&
-          (plateStore[i][5] == 1) && (plateStore[j][5] == 1) &&
-          (plateStore[i][6] == 1) && (plateStore[j][6] == 1)) {
-        float angle = atan ((float) (plateStore[j][1] - plateStore[i][1]) /
-            (float) (plateStore[j][0] - plateStore[i][0])) * 180 / 3.14;
+      if ((j > i) && (plateStore[j].x - plateStore[i].x != 0) &&
+          (plateStore[i].similarProportion == TRUE)
+          && (plateStore[j].similarProportion == TRUE)
+          && (plateStore[i].isMostSimilar == TRUE)
+          && (plateStore[j].isMostSimilar == TRUE)) {
+        float angle =
+            atan ((float) (plateStore[j].y -
+                plateStore[i].y) / (float) (plateStore[j].x -
+                plateStore[i].x)) * 180 / 3.14;
         angleStore[angleCounter] = (int) angle;
         angleCounter++;
       }
@@ -642,27 +660,27 @@ kms_plate_detector_calc_rotation_angle (int plateStore[][7], int numContours)
 static gboolean
 check_proportion_like_character (int rectangleArea,
     CvRect rect,
-    int plateStore[][7],
+    CharacterData plateStore[],
     int mostSimContPos,
     double heightTolerance, double widthUpTolerance, double widthDownTolerance)
 {
-  return (((rectangleArea > plateStore[mostSimContPos][2] *
-              plateStore[mostSimContPos][3] / 3) &&
-          (abs (rect.height - plateStore[mostSimContPos][3]) <
-              plateStore[mostSimContPos][3] * heightTolerance) &&
-          (rect.width > plateStore[mostSimContPos][2] * widthDownTolerance) &&
-          (rectangleArea > 100))
-      && (((rect.width < plateStore[mostSimContPos][2] * widthUpTolerance)
-              || (rect.width > plateStore[mostSimContPos][2] * 2))
+  return (((rectangleArea > plateStore[mostSimContPos].width *
+              plateStore[mostSimContPos].height / 3) &&
+          (abs (rect.height - plateStore[mostSimContPos].height) <
+              plateStore[mostSimContPos].height * heightTolerance) &&
+          (rect.width > plateStore[mostSimContPos].width * widthDownTolerance)
+          && (rectangleArea > 100))
+      && (((rect.width < plateStore[mostSimContPos].width * widthUpTolerance)
+              || (rect.width > plateStore[mostSimContPos].width * 2))
           && (rect.width <
-              plateStore[mostSimContPos][2] * widthUpTolerance * 2)));
+              plateStore[mostSimContPos].width * widthUpTolerance * 2)));
 }
 
 static int
 kms_plate_detector_find_charac_cont (IplImage * plateInterpolatedAux1,
     CvRect rect,
-    int plateStore[][7],
-    int finalPlateStore[][7],
+    CharacterData plateStore[],
+    CharacterData finalPlateStore[],
     int mostSimContPos,
     double heightTolerance, double widthUpTolerance, double widthDownTolerance)
 {
@@ -687,16 +705,20 @@ kms_plate_detector_find_charac_cont (IplImage * plateInterpolatedAux1,
     cvRectangle (plateInterpolatedAux1, cvPoint (rect.x, rect.y),
         cvPoint (rect.x + rect.width, rect.y + rect.height), cvScalar (0, 0,
             0, 0), 1, 8, 0);
-    finalPlateStore[counter][0] = rect.x;
-    finalPlateStore[counter][1] = rect.y;
-    finalPlateStore[counter][2] = rect.width;
-    finalPlateStore[counter][3] = rect.height;
-    if ((rect.width > plateStore[mostSimContPos][2] * 2) &&
-        (rect.width < plateStore[mostSimContPos][2] * widthUpTolerance * 2)) {
-      finalPlateStore[counter][4] = 1;
+    finalPlateStore[counter].x = rect.x;
+    finalPlateStore[counter].y = rect.y;
+    finalPlateStore[counter].width = rect.width;
+    finalPlateStore[counter].height = rect.height;
+
+    if ((rect.width > plateStore[mostSimContPos].width * 2) &&
+        (rect.width <
+            plateStore[mostSimContPos].width * widthUpTolerance * 2)) {
+      finalPlateStore[counter].exclude = TRUE;
     } else {
-      finalPlateStore[counter][4] = 0;
+      finalPlateStore[counter].exclude = FALSE;
     }
+    finalPlateStore[counter].similarProportion = FALSE;
+    finalPlateStore[counter].isMostSimilar = FALSE;
     counter++;
   }
   cvClearMemStorage (memCharacters);
@@ -707,7 +729,7 @@ kms_plate_detector_find_charac_cont (IplImage * plateInterpolatedAux1,
 
 static void
 kms_plate_detector_clear_edges (IplImage * plateInterpolatedAux1,
-    CvRect rect, int plateStore[][7], int mostSimContPos)
+    CvRect rect, CharacterData plateStore[], int mostSimContPos)
 {
   int i, j;
   uint8_t *aux2;
@@ -716,8 +738,8 @@ kms_plate_detector_clear_edges (IplImage * plateInterpolatedAux1,
   for (j = 0; j < plateInterpolatedAux1->height; j++) {
     aux2 = aux;
     for (i = 0; i < plateInterpolatedAux1->width; i++) {
-      if ((j < plateStore[mostSimContPos][1] - 1) && (j >
-              plateStore[mostSimContPos][1] + plateStore[mostSimContPos][3] +
+      if ((j < plateStore[mostSimContPos].y - 1) && (j >
+              plateStore[mostSimContPos].y + plateStore[mostSimContPos].height +
               1))
         *aux2 = 0;
       aux2++;
@@ -727,80 +749,79 @@ kms_plate_detector_clear_edges (IplImage * plateInterpolatedAux1,
 }
 
 static void
-kms_plate_detector_sort_store (int finalPlateStore[][7], int numContours)
+kms_plate_detector_sort_store (CharacterData finalPlateStore[],
+    int numOfCharacters)
 {
-  int finalPlateStoreAux[1][7];
-  int c1, c2, d;
+  CharacterData finalPlateStoreAux;
+  int c1, c2;
 
-  for (c1 = 0; c1 < numContours - 1; c1++) {
-    for (c2 = 0; c2 < numContours - 1; c2++) {
-      if (finalPlateStore[c2][0] <= finalPlateStore[c2 + 1][0])
+  for (c1 = 0; c1 < numOfCharacters - 1; c1++) {
+    for (c2 = 0; c2 < numOfCharacters - 1; c2++) {
+      if (finalPlateStore[c2].x <= finalPlateStore[c2 + 1].x)
         continue;
-      for (d = 0; d < 7; d++) {
-        finalPlateStoreAux[0][d] = finalPlateStore[c2][d];
-        finalPlateStore[c2][d] = finalPlateStore[c2 + 1][d];
-        finalPlateStore[c2 + 1][d] = finalPlateStoreAux[0][d];
-      }
+      finalPlateStoreAux = finalPlateStore[c2];
+      finalPlateStore[c2] = finalPlateStore[c2 + 1];
+      finalPlateStore[c2 + 1] = finalPlateStoreAux;
     }
   }
 }
 
 static gboolean
-check_is_contour_into_contour (int finalPlateStore[][7], int c1)
+check_is_contour_into_contour (CharacterData finalPlateStore[], int c1)
 {
-  return ((finalPlateStore[c1 + 1][0] > finalPlateStore[c1][0]) &&
-      (finalPlateStore[c1 + 1][0] < (finalPlateStore[c1][0] +
-              finalPlateStore[c1][2])) && (finalPlateStore[c1 + 1][0] +
-          finalPlateStore[c1 + 1][2] < finalPlateStore[c1][0] +
-          finalPlateStore[c1][2]) && (finalPlateStore[c1 + 1][1] >
-          finalPlateStore[c1][1]) && (finalPlateStore[c1 + 1][1] +
-          finalPlateStore[c1 + 1][3] < finalPlateStore[c1][1] +
-          finalPlateStore[c1][3]));
+  return ((finalPlateStore[c1 + 1].x > finalPlateStore[c1].x) &&
+      (finalPlateStore[c1 + 1].x < (finalPlateStore[c1].x +
+              finalPlateStore[c1].width)) && (finalPlateStore[c1 + 1].x +
+          finalPlateStore[c1 + 1].width < finalPlateStore[c1].x +
+          finalPlateStore[c1].width) && (finalPlateStore[c1 + 1].y >
+          finalPlateStore[c1].y) && (finalPlateStore[c1 + 1].y +
+          finalPlateStore[c1 + 1].height < finalPlateStore[c1].y +
+          finalPlateStore[c1].height));
 }
 
 static gboolean
-check_is_split_character (int plateStore[][7],
-    int finalPlateStore[][7], int mostSimContPos, int c1)
+check_is_split_character (CharacterData plateStore[],
+    CharacterData finalPlateStore[], int mostSimContPos, int c1)
 {
-  return ((finalPlateStore[c1][4] != 1) &&
-      (finalPlateStore[c1][2] < plateStore[mostSimContPos][2] * 0.7) &&
-      (finalPlateStore[c1 + 1][2] < plateStore[mostSimContPos][2] * 0.7) &&
-      (finalPlateStore[c1][2] + finalPlateStore[c1 + 1][2] <
-          plateStore[mostSimContPos][2] * 1.2) &&
-      (finalPlateStore[c1 + 1][4] != 1) &&
-      (abs (finalPlateStore[c1][0] - finalPlateStore[c1 + 1][0])
-          < plateStore[mostSimContPos][2] * 0.8));
+  return ((finalPlateStore[c1].exclude != TRUE) &&
+      (finalPlateStore[c1].width < plateStore[mostSimContPos].width * 0.7) &&
+      (finalPlateStore[c1 + 1].width < plateStore[mostSimContPos].width * 0.7)
+      && (finalPlateStore[c1].width + finalPlateStore[c1 + 1].width <
+          plateStore[mostSimContPos].width * 1.2)
+      && (finalPlateStore[c1 + 1].exclude != TRUE)
+      && (abs (finalPlateStore[c1].x - finalPlateStore[c1 + 1].x)
+          < plateStore[mostSimContPos].width * 0.8));
 }
 
 static void
 kms_plate_detector_simplify_store (KmsPlateDetector * platedetector,
     IplImage * plateInterpolatedAux1,
     IplImage * plateInterpolatedAux2,
-    int finalPlateStore[][7],
-    int numContours, int plateStore[][7], int mostSimContPos)
+    CharacterData finalPlateStore[],
+    int numContours, CharacterData plateStore[], int mostSimContPos)
 {
   int c1;
 
   for (c1 = 0; c1 < numContours - 1; c1++) {
     if (check_is_contour_into_contour (finalPlateStore, c1)) {
-      finalPlateStore[c1 + 1][4] = 1;
+      finalPlateStore[c1 + 1].exclude = TRUE;
     }
   }
 
   for (c1 = 0; c1 < numContours - 1; c1++) {
-    if ((finalPlateStore[c1][4] == 1) ||
-        (finalPlateStore[c1][1] <= plateStore[mostSimContPos][2] * 2))
+    if ((finalPlateStore[c1].exclude == TRUE) ||
+        (finalPlateStore[c1].y <= plateStore[mostSimContPos].width * 2))
       continue;
-    finalPlateStore[c1 + 1][4] = 1;
+    finalPlateStore[c1 + 1].exclude = TRUE;
   }
 
   for (c1 = 0; c1 < numContours - 1; c1++) {
     if (!check_is_split_character (plateStore, finalPlateStore,
             mostSimContPos, c1))
       continue;
-    finalPlateStore[c1][2] = abs (finalPlateStore[c1 + 1][0] +
-        finalPlateStore[c1 + 1][2] - finalPlateStore[c1][0]);
-    finalPlateStore[c1 + 1][4] = 1;
+    finalPlateStore[c1].width = abs (finalPlateStore[c1 + 1].x +
+        finalPlateStore[c1 + 1].width - finalPlateStore[c1].x);
+    finalPlateStore[c1 + 1].exclude = TRUE;
     cvErode (plateInterpolatedAux2, plateInterpolatedAux2, 0, 2);
     cvCanny (plateInterpolatedAux2, plateInterpolatedAux2, 210, 120, 3);
     cvDilate (plateInterpolatedAux2, plateInterpolatedAux2, 0, 3);
@@ -809,21 +830,21 @@ kms_plate_detector_simplify_store (KmsPlateDetector * platedetector,
 
 static gboolean
 kms_plate_detector_check_is_plate (KmsPlateDetector * platedetector,
-    int finalPlateStore[][7],
-    int platesCounter2, int plateStore[][7], int mostSimContPos)
+    CharacterData finalPlateStore[],
+    int platesCounter2, CharacterData plateStore[], int mostSimContPos)
 {
   int c;
   int medPosY = 0;
   int medHeight = 0;
   int counter = 0;
 
-  medPosY = plateStore[mostSimContPos][1];
+  medPosY = plateStore[mostSimContPos].y;
   for (c = 0; c < platesCounter2; c++) {
-    if (finalPlateStore[c + 1][4] == 1)
+    if (finalPlateStore[c + 1].exclude == TRUE)
       continue;
 
-    if (abs (medPosY - finalPlateStore[c][1]) < 3) {
-      medHeight = medHeight + finalPlateStore[c][3];
+    if (abs (medPosY - finalPlateStore[c].y) < 3) {
+      medHeight = medHeight + finalPlateStore[c].height;
       counter++;
     }
   }
@@ -839,42 +860,42 @@ kms_plate_detector_check_is_plate (KmsPlateDetector * platedetector,
 
 static void
 kms_plate_detector_extend_character_rois (IplImage * plateInterpolated,
-    int finalPlateStore[][7], int characters, int margin)
+    CharacterData finalPlateStore[], int characters, int margin)
 {
   int d;
 
   for (d = 0; d < characters; d++) {
-    if (finalPlateStore[d][0] - margin > 0) {
-      finalPlateStore[d][0] = finalPlateStore[d][0] - margin;
+    if (finalPlateStore[d].x - margin > 0) {
+      finalPlateStore[d].x = finalPlateStore[d].x - margin;
     }
-    if (finalPlateStore[d][1] - margin > 0) {
-      finalPlateStore[d][1] = finalPlateStore[d][1] - margin;
+    if (finalPlateStore[d].y - margin > 0) {
+      finalPlateStore[d].y = finalPlateStore[d].y - margin;
     }
-    if (finalPlateStore[d][0] + finalPlateStore[d][2] +
+    if (finalPlateStore[d].x + finalPlateStore[d].width +
         margin < plateInterpolated->width) {
-      finalPlateStore[d][2] = finalPlateStore[d][2] + margin;
+      finalPlateStore[d].width = finalPlateStore[d].width + margin;
     }
-    if (finalPlateStore[d][1] + finalPlateStore[d][3] +
+    if (finalPlateStore[d].y + finalPlateStore[d].height +
         margin < plateInterpolated->height) {
-      finalPlateStore[d][3] = finalPlateStore[d][3] + margin;
+      finalPlateStore[d].height = finalPlateStore[d].height + margin;
     }
   }
 }
 
 static int
-kms_plate_detector_extract_plate_space_position (int finalPlateStore[][7],
-    int characters, float smallSpaceProportion)
+kms_plate_detector_extract_plate_space_position (CharacterData
+    finalPlateStore[], int characters, float smallSpaceProportion)
 {
   int d;
   int maxDistance = 0;
   int posMaxDistance = 0;
 
   for (d = 3; d < characters - 3; d++) {
-    int distance = abs (finalPlateStore[d][0] +
-        finalPlateStore[d][2] - finalPlateStore[d + 1][0]);
+    int distance = abs (finalPlateStore[d].x +
+        finalPlateStore[d].width - finalPlateStore[d + 1].x);
     if (distance > maxDistance) {
       maxDistance = distance;
-      posMaxDistance = finalPlateStore[d][0] + finalPlateStore[d][2] + 5;
+      posMaxDistance = finalPlateStore[d].x + finalPlateStore[d].width + 5;
     }
   }
 
@@ -1035,14 +1056,14 @@ kms_plate_detector_select_tesseract_whitelist (KmsPlateDetector * platedetector,
 }
 
 static int
-kms_plate_detector_first_character_position (int finalPlateStore[][7],
+kms_plate_detector_first_character_position (CharacterData finalPlateStore[],
     int *characters, int *spacePositionX, int *spaceFound)
 {
   int d;
   int initialPosition = 0;
 
   for (d = 0; d < *characters; d++) {
-    if ((finalPlateStore[d][0] > *spacePositionX) && (*spaceFound == 0)) {
+    if ((finalPlateStore[d].x > *spacePositionX) && (*spaceFound == 0)) {
       initialPosition = d - 4;
       *spaceFound = 1;
       if (initialPosition < 0) {
@@ -1056,16 +1077,16 @@ kms_plate_detector_first_character_position (int finalPlateStore[][7],
 
 static void
 kms_plate_detector_show_original_characters (KmsPlateDetector * platedetector,
-    int finalPlateStore[][7],
+    CharacterData finalPlateStore[],
     IplImage * imAux, IplImage * imAuxRGB, int spacePositionX, int d)
 {
-  if ((finalPlateStore[d][0] + finalPlateStore[d][2] <
-          platedetector->priv->cvImage->width) && (finalPlateStore[d][1] + 40 +
-          finalPlateStore[d][3] < platedetector->priv->cvImage->height)) {
+  if ((finalPlateStore[d].x + finalPlateStore[d].width <
+          platedetector->priv->cvImage->width) && (finalPlateStore[d].y + 40 +
+          finalPlateStore[d].height < platedetector->priv->cvImage->height)) {
     cvSetImageROI (platedetector->priv->cvImage,
-        cvRect (finalPlateStore[d][0],
-            finalPlateStore[d][1] + 40,
-            finalPlateStore[d][2], finalPlateStore[d][3]));
+        cvRect (finalPlateStore[d].x,
+            finalPlateStore[d].y + 40,
+            finalPlateStore[d].width, finalPlateStore[d].height));
     cvCvtColor (imAux, imAuxRGB, CV_GRAY2BGR);
     cvCopy (imAuxRGB, platedetector->priv->cvImage, 0);
     cvResetImageROI (platedetector->priv->cvImage);
@@ -1073,23 +1094,23 @@ kms_plate_detector_show_original_characters (KmsPlateDetector * platedetector,
 
   if (d == 0) {
     cvRectangle (platedetector->priv->cvImage, cvPoint (spacePositionX,
-            finalPlateStore[d][1] + 30),
-        cvPoint (spacePositionX + 3, 2 * finalPlateStore[d][1] + 40 +
-            finalPlateStore[d][3]), RED, -2, 8, 0);
+            finalPlateStore[d].y + 30),
+        cvPoint (spacePositionX + 3, 2 * finalPlateStore[d].y + 40 +
+            finalPlateStore[d].height), RED, -2, 8, 0);
   }
 }
 
 static void
 kms_plate_detector_show_proccesed_characters (KmsPlateDetector * platedetector,
-    int finalPlateStore[][7], IplImage * imAuxRGB2, int d)
+    CharacterData finalPlateStore[], IplImage * imAuxRGB2, int d)
 {
-  if ((finalPlateStore[d][0] + d * EDGE_MARGIN + imAuxRGB2->width <
+  if ((finalPlateStore[d].x + d * EDGE_MARGIN + imAuxRGB2->width <
           platedetector->priv->cvImage->width)
-      && (2 * finalPlateStore[d][1] + 120 + imAuxRGB2->height <
+      && (2 * finalPlateStore[d].y + 120 + imAuxRGB2->height <
           platedetector->priv->cvImage->height)) {
     cvSetImageROI (platedetector->priv->cvImage,
-        cvRect (finalPlateStore[d][0] + d * EDGE_MARGIN,
-            2 * finalPlateStore[d][1] + 120, imAuxRGB2->width,
+        cvRect (finalPlateStore[d].x + d * EDGE_MARGIN,
+            2 * finalPlateStore[d].y + 120, imAuxRGB2->width,
             imAuxRGB2->height));
     cvCopy (imAuxRGB2, platedetector->priv->cvImage, 0);
     cvResetImageROI (platedetector->priv->cvImage);
@@ -1218,8 +1239,8 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
     IplImage * plateBinRoi,
     IplImage * plateInterpolated,
     IplImage * plateInterpolatedAux2,
-    int plateStore[][7],
-    int finalPlateStore[][7],
+    CharacterData plateStore[],
+    CharacterData finalPlateStore[],
     int characters,
     gboolean checkIsPlate, int spacePositionX, int mostSimContPos)
 {
@@ -1255,25 +1276,25 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       kms_plate_detector_first_character_position (finalPlateStore, &characters,
       &spacePositionX, &spaceFound);
   for (d = 0; d < characters; d++) {
-    if (finalPlateStore[d][4] == 1)
+    if (finalPlateStore[d].exclude == TRUE)
       continue;
 
     kms_plate_detector_select_tesseract_whitelist (platedetector, d,
         platedetector->priv->handle, initialPosition, &numbersCounter);
-    imAux = cvCreateImage (cvSize (finalPlateStore[d][2],
-            finalPlateStore[d][3]),
+    imAux = cvCreateImage (cvSize (finalPlateStore[d].width,
+            finalPlateStore[d].height),
         plateInterpolated->depth, plateInterpolated->nChannels);
-    imAuxRGB = cvCreateImage (cvSize (finalPlateStore[d][2],
-            finalPlateStore[d][3]),
+    imAuxRGB = cvCreateImage (cvSize (finalPlateStore[d].width,
+            finalPlateStore[d].height),
         platedetector->priv->cvImage->depth,
         platedetector->priv->cvImage->nChannels);
 
-    if ((finalPlateStore[d][0] + finalPlateStore[d][2] <
-            plateInterpolated->width) && (finalPlateStore[d][1] +
-            finalPlateStore[d][3] < plateInterpolated->height)) {
-      cvSetImageROI (plateInterpolated, cvRect (finalPlateStore[d][0],
-              finalPlateStore[d][1],
-              finalPlateStore[d][2], finalPlateStore[d][3]));
+    if ((finalPlateStore[d].x + finalPlateStore[d].width <
+            plateInterpolated->width) && (finalPlateStore[d].y +
+            finalPlateStore[d].height < plateInterpolated->height)) {
+      cvSetImageROI (plateInterpolated, cvRect (finalPlateStore[d].x,
+              finalPlateStore[d].y,
+              finalPlateStore[d].width, finalPlateStore[d].height));
       cvCopy (plateInterpolated, imAux, 0);
     }
 
@@ -1282,13 +1303,13 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
           finalPlateStore, imAux, imAuxRGB, spacePositionX, d);
     }
 
-    if ((finalPlateStore[d][0] + finalPlateStore[d][2] <
-            plateInterpolatedAux2->width) && (finalPlateStore[d][1] +
-            finalPlateStore[d][3] < plateInterpolatedAux2->height)) {
+    if ((finalPlateStore[d].x + finalPlateStore[d].width <
+            plateInterpolatedAux2->width) && (finalPlateStore[d].y +
+            finalPlateStore[d].height < plateInterpolatedAux2->height)) {
       cvSetImageROI (plateInterpolatedAux2,
-          cvRect (finalPlateStore[d][0],
-              finalPlateStore[d][1],
-              finalPlateStore[d][2], finalPlateStore[d][3]));
+          cvRect (finalPlateStore[d].x,
+              finalPlateStore[d].y,
+              finalPlateStore[d].width, finalPlateStore[d].height));
       cvCopy (plateInterpolatedAux2, imAux, 0);
       cvResetImageROI (plateInterpolatedAux2);
     }
@@ -1325,7 +1346,6 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       kms_plate_detector_show_proccesed_characters (platedetector,
           finalPlateStore, imAuxRGB2, d);
     }
-
     TessBaseAPISetImage (platedetector->priv->handle,
         (unsigned char *) imAux->imageData, imAux->width,
         imAux->height, (imAux->depth / 8) / imAux->nChannels, imAux->widthStep);
@@ -1493,8 +1513,8 @@ kms_plate_detector_select_preprocessing_type (KmsPlateDetector * platedetector)
 static void
 kms_plate_detector_extract_potential_characters (KmsPlateDetector *
     platedetector, CvSeq * contoursCharacters, IplImage * plateInterpolatedAux1,
-    IplImage * plateInterAux1Color, int plateStore[][7],
-    int finalPlateStore[][7], int *numContours)
+    IplImage * plateInterAux1Color, CharacterData plateStore[],
+    CharacterData finalPlateStore[], int *numContours)
 {
   int platesCounter = 0;
 
@@ -1506,11 +1526,13 @@ kms_plate_detector_extract_potential_characters (KmsPlateDetector *
     float proporcion1 = DEFAULT_CHARACTER_PROPORTION;
 
     rectangleArea = rect.width * rect.height;
-    plateStore[platesCounter][0] = rect.x;
-    plateStore[platesCounter][1] = rect.y;
-    plateStore[platesCounter][2] = rect.width;
-    plateStore[platesCounter][3] = rect.height;
-    plateStore[platesCounter][4] = rectangleArea;
+    plateStore[platesCounter].x = rect.x;
+    plateStore[platesCounter].y = rect.y;
+    plateStore[platesCounter].width = rect.width;
+    plateStore[platesCounter].height = rect.height;
+    plateStore[platesCounter].exclude = FALSE;
+    plateStore[platesCounter].similarProportion = FALSE;
+    plateStore[platesCounter].isMostSimilar = FALSE;
 
     if ((rect.width != 0)) {
       proporcion1 = (float) rect.height / (float) rect.width;
@@ -1518,7 +1540,7 @@ kms_plate_detector_extract_potential_characters (KmsPlateDetector *
 
     if ((fabsf (proporcionPatronCharac - proporcion1) < 0.25)
         && (rectangleArea > 100)) {
-      plateStore[platesCounter][5] = 1;
+      plateStore[platesCounter].similarProportion = TRUE;
       cvDrawContours (plateInterAux1Color, contoursCharacters, WHITE, WHITE,
           -1, 1, 8, cvPoint (0, 0));
     }
@@ -1531,23 +1553,23 @@ kms_plate_detector_rotate_images (IplImage * plateInterAux1Color,
     IplImage * plateInterpolatedAux1,
     IplImage * plateInterpolatedAux2,
     IplImage * plateInterpolated,
-    int mostSimContPos, float angle, int plateStore[][7])
+    int mostSimContPos, float angle, CharacterData plateStore[])
 {
   kms_plate_detector_rotate_image (plateInterAux1Color, angle,
-      cvRect (plateStore[mostSimContPos][0],
-          plateStore[mostSimContPos][1],
+      cvRect (plateStore[mostSimContPos].x,
+          plateStore[mostSimContPos].y,
           plateInterpolatedAux1->width, plateInterpolatedAux1->height));
   kms_plate_detector_rotate_image (plateInterpolatedAux1, angle,
-      cvRect (plateStore[mostSimContPos][0],
-          plateStore[mostSimContPos][1],
+      cvRect (plateStore[mostSimContPos].x,
+          plateStore[mostSimContPos].y,
           plateInterpolatedAux1->width, plateInterpolatedAux1->height));
   kms_plate_detector_rotate_image (plateInterpolatedAux2, angle,
-      cvRect (plateStore[mostSimContPos][0],
-          plateStore[mostSimContPos][1],
+      cvRect (plateStore[mostSimContPos].x,
+          plateStore[mostSimContPos].y,
           plateInterpolatedAux1->width, plateInterpolatedAux1->height));
   kms_plate_detector_rotate_image (plateInterpolated, angle,
-      cvRect (plateStore[mostSimContPos][0],
-          plateStore[mostSimContPos][1],
+      cvRect (plateStore[mostSimContPos].x,
+          plateStore[mostSimContPos].y,
           plateInterpolated->width, plateInterpolated->height));
 }
 
@@ -1561,12 +1583,12 @@ kms_plate_detector_draw_plate_rectang (KmsPlateDetector * platedetector,
 
 static void
 kms_plate_detector_select_character_resize_factor (KmsPlateDetector *
-    platedetector, int plateStore[][7], int mostSimContPos)
+    platedetector, CharacterData plateStore[], int mostSimContPos)
 {
-  if ((plateStore[mostSimContPos][2] >= RESIZE_LOW_THRES) &&
-      (plateStore[mostSimContPos][2] < RESIZE_HIGH_THRES)) {
+  if ((plateStore[mostSimContPos].width >= RESIZE_LOW_THRES) &&
+      (plateStore[mostSimContPos].width < RESIZE_HIGH_THRES)) {
     platedetector->priv->resizeFactor = RESIZE_FACTOR_2;
-  } else if (plateStore[mostSimContPos][2] < RESIZE_LOW_THRES) {
+  } else if (plateStore[mostSimContPos].width < RESIZE_LOW_THRES) {
     platedetector->priv->resizeFactor = RESIZE_FACTOR_3;
   } else {
     platedetector->priv->resizeFactor = RESIZE_FACTOR_1;
@@ -1679,8 +1701,8 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
     numContours = cvFindContours (plateInterpolatedAux1, memCharacters,
         &contoursCharacters, sizeof (CvContour),
         CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, cvPoint (0, 0));
-    int plateStore[numContours][7];
-    int finalPlateStore[numContours][7];
+    CharacterData plateStore[numContours];
+    CharacterData finalPlateStore[numContours];
 
     kms_plate_detector_extract_potential_characters (platedetector,
         contoursCharacters,
