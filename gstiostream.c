@@ -277,6 +277,8 @@ gst_input_stream_read_locked (GstInputStream * self, void *buffer, gsize size,
     g_set_error (error, G_IO_ERROR, G_IO_ERROR_MESSAGE_TOO_LARGE,
         "buffer is too small");
 #endif
+    g_set_error (error, G_IO_ERROR, G_IO_ERROR_INVALID_DATA,
+        "buffer is too small");
     return -1;
   }
 
