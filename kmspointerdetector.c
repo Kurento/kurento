@@ -143,6 +143,7 @@ kms_pointer_detector_dispose_buttons_layout_list (KmsPointerDetector *
     pointerdetector)
 {
   g_slist_free_full (pointerdetector->buttonsLayoutList, dispose_button_struct);
+  pointerdetector->buttonsLayoutList = NULL;
 }
 
 static void
@@ -150,7 +151,7 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
 {
   int aux, len;
 
-  if (pointerdetector->buttonsLayout != NULL) {
+  if (pointerdetector->buttonsLayoutList != NULL) {
     kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
   }
 
@@ -262,7 +263,10 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
       pointerdetector->show_debug_info = g_value_get_boolean (value);
       break;
     case PROP_BUTTONS_STRUCTURE:
-      pointerdetector->buttonsLayout = g_value_get_boxed (value);
+      if (pointerdetector->buttonsLayout != NULL)
+        gst_structure_free (pointerdetector->buttonsLayout);
+
+      pointerdetector->buttonsLayout = g_value_dup_boxed (value);
       kms_pointer_detector_load_buttonsLayout (pointerdetector);
       break;
   }
@@ -315,6 +319,8 @@ kms_pointer_detector_finalize (GObject * object)
   GST_DEBUG_OBJECT (pointerdetector, "finalize");
 
   /* clean up object here */
+
+  // TODO: Release window structure and window list
 
   cvReleaseImageHeader (&pointerdetector->cvImage);
   cvReleaseImageHeader (&pointerdetector->cvImageAux1);
@@ -440,7 +446,7 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
   ButtonStruct *structAux;
   GSList *l;
   int buttonClickedCounter = 0;
-  gchar *actualButtonClickedId;
+  const gchar *actualButtonClickedId;
 
   for (l = pointerdetector->buttonsLayoutList; l != NULL; l = l->next) {
     structAux = l->data;
