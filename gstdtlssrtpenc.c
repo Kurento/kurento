@@ -478,9 +478,7 @@ gst_dtls_srtp_enc_change_state (GstElement * element, GstStateChange transition)
     case GST_STATE_CHANGE_PAUSED_TO_READY:
       clear_pad_blocks (self);
       gst_buffer_replace (&self->key_and_salt, NULL);
-#if 0 /* Disabled */
       self->srtp_profile = G_TLS_SRTP_PROFILE_NONE;
-#endif
       break;
     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
       g_object_get (self->dtls_enc, "is-client", &is_client, NULL);

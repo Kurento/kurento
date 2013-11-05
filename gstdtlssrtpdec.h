@@ -27,6 +27,8 @@
 #include <gst/gst.h>
 #include <gio/gio.h>
 
+#include <ext/gio/kmsgioenums.h>
+
 #include "gstdtlssrtp.h"
 
 G_BEGIN_DECLS
@@ -69,9 +71,8 @@ struct _GstDtlsSrtpDec
   gulong srtpdec_request_id;
 
   GstBuffer *key_and_salt;
-#if 0 /* Disabled */
+
   GTlsSrtpProfile srtp_profile;
-#endif
 
   GstDtlsSrtpProfile profiles;
 };

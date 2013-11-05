@@ -457,9 +457,7 @@ gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
     case GST_STATE_CHANGE_PAUSED_TO_READY:
       clear_queue_block (self);
       gst_buffer_replace (&self->key_and_salt, NULL);
-#if 0 /* Disabled */
       self->srtp_profile = G_TLS_SRTP_PROFILE_NONE;
-#endif
       break;
     default:
       break;
