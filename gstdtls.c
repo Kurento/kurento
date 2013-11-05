@@ -31,7 +31,7 @@
 #include "gstdtlssrtpdec.h"
 
 static gboolean
-plugin_init (GstPlugin * plugin)
+kms_dtls_init (GstPlugin * plugin)
 {
   if (!gst_element_register (plugin, "dtlsenc", GST_RANK_NONE,
           GST_TYPE_DTLS_ENC)) {
@@ -63,6 +63,7 @@ plugin_init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    dtls,
-    "Datagram TLS",
-    plugin_init, VERSION, GST_LICENSE, GST_PACKAGE_NAME, GST_PACKAGE_ORIGIN)
+    kmsdtls,
+    "Kurento Datagram TLS",
+    kms_dtls_init, VERSION, GST_LICENSE_UNKNOWN, "Kurento",
+    "http://kurento.com/")

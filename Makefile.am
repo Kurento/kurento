@@ -43,7 +43,7 @@ noinst_HEADERS = 	\
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libkmsdtls_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) \
-	$(GST_BASE_CFLAGS) $(GST_CFLAGS) $(GIO_CFLAGS)
+	$(GST_BASE_CFLAGS) $(GST_CFLAGS) $(GIO_CFLAGS) -Werror
 libkmsdtls_la_LIBADD = $(GST_PLUGINS_BASE_LIBS) \
 	$(GST_BASE_LIBS) $(GST_LIBS) $(GIO_LIBS)
 libkmsdtls_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
