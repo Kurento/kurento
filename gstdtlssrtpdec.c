@@ -284,6 +284,7 @@ static void
 tls_status_changed (GTlsConnection * connection, GParamSpec * param,
     GstDtlsSrtpDec * self)
 {
+#if 0 /* Disabled */
   GTlsStatus status;
   GTlsSrtpProfile profile;
   GByteArray *key = NULL;
@@ -336,6 +337,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 
     clear_queue_block (self);
   }
+#endif
 }
 
 static GstCaps *
@@ -343,6 +345,7 @@ srtpdec_request_key (GstElement * srtpdec, guint ssrc, GstDtlsSrtpDec * self)
 {
   GstCaps *caps;
 
+#if 0 /* Disabled */
   GST_OBJECT_LOCK (self);
 
   if (self->key_and_salt == NULL) {
@@ -384,7 +387,9 @@ srtpdec_request_key (GstElement * srtpdec, guint ssrc, GstDtlsSrtpDec * self)
   }
 
   GST_OBJECT_UNLOCK (self);
+#endif
 
+  caps = NULL; // TODO: delete
   return caps;
 }
 
@@ -428,6 +433,7 @@ gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
         GST_ERROR_OBJECT (self, "Could not get TLS connection object");
         return GST_STATE_CHANGE_FAILURE;
       }
+#if 0 /* Disabled */
       if (self->profiles & GST_DTLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80)
         g_tls_connection_add_srtp_profile (self->conn,
             G_TLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80);
@@ -440,6 +446,7 @@ gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
       else if (self->profiles & GST_DTLS_SRTP_PROFILE_NULL_HMAC_SHA1_32)
         g_tls_connection_add_srtp_profile (self->conn,
             G_TLS_SRTP_PROFILE_NULL_HMAC_SHA1_32);
+#endif
       self->status_changed_id =
           g_signal_connect (self->conn, "notify::status",
           G_CALLBACK (tls_status_changed), self);
@@ -450,7 +457,9 @@ gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
     case GST_STATE_CHANGE_PAUSED_TO_READY:
       clear_queue_block (self);
       gst_buffer_replace (&self->key_and_salt, NULL);
+#if 0 /* Disabled */
       self->srtp_profile = G_TLS_SRTP_PROFILE_NONE;
+#endif
       break;
     default:
       break;

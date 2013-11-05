@@ -70,7 +70,9 @@ struct _GstDtlsSrtpEnc
   gulong rtcp_probe_id;
 
   GstBuffer *key_and_salt;
+#if 0 /* Disabled */
   GTlsSrtpProfile srtp_profile;
+#endif
 
   GstDtlsSrtpProfile profiles;
 };

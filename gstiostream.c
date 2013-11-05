@@ -32,7 +32,9 @@ G_DEFINE_QUARK (GstIOStreamFlowReturn, gst_io_stream_flow_return);
 static void gst_io_stream_dispose (GObject * object);
 static GInputStream *gst_io_stream_get_input_stream (GIOStream * stream);
 static GOutputStream *gst_io_stream_get_output_stream (GIOStream * stream);
+#if 0 /* Disabled */
 static gboolean gst_io_stream_is_datagram (GIOStream * stream);
+#endif
 
 G_DEFINE_TYPE (GstIOStream, gst_io_stream, G_TYPE_IO_STREAM)
 
@@ -45,7 +47,9 @@ G_DEFINE_TYPE (GstIOStream, gst_io_stream, G_TYPE_IO_STREAM)
 
   iostream_class->get_input_stream = gst_io_stream_get_input_stream;
   iostream_class->get_output_stream = gst_io_stream_get_output_stream;
+#if 0 /* Disabled */
   iostream_class->is_datagram = gst_io_stream_is_datagram;
+#endif
 }
 
 static void
@@ -71,11 +75,13 @@ gst_io_stream_get_output_stream (GIOStream * stream)
   return self->ostream;
 }
 
+#if 0 /* Disabled */
 static gboolean
 gst_io_stream_is_datagram (GIOStream * stream)
 {
   return TRUE;
 }
+#endif
 
 static void
 gst_io_stream_dispose (GObject * object)
@@ -267,8 +273,10 @@ gst_input_stream_read_locked (GstInputStream * self, void *buffer, gsize size,
 
   bufsize = gst_buffer_get_size (self->buffer);
   if (bufsize > size) {
+#if 0 /* Disabled */
     g_set_error (error, G_IO_ERROR, G_IO_ERROR_MESSAGE_TOO_LARGE,
         "buffer is too small");
+#endif
     return -1;
   }
 

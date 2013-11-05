@@ -256,6 +256,7 @@ clear_pad_blocks (GstDtlsSrtpEnc * self)
   self->rtcp_probe_id = 0;
 }
 
+#if 0 /* Disabled */
 static void
 release_funnel_pad (const GValue * item, gpointer user_data)
 {
@@ -403,6 +404,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
     clear_pad_blocks (self);
   }
 }
+#endif
 
 static GstStateChangeReturn
 gst_dtls_srtp_enc_change_state (GstElement * element, GstStateChange transition)
@@ -456,6 +458,7 @@ gst_dtls_srtp_enc_change_state (GstElement * element, GstStateChange transition)
         GST_ERROR_OBJECT (self, "Could not get TLS connection object");
         return GST_STATE_CHANGE_FAILURE;
       }
+#if 0 /* Disabled */
       if (self->profiles & GST_DTLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80)
         g_tls_connection_add_srtp_profile (self->conn,
             G_TLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80);
@@ -470,11 +473,14 @@ gst_dtls_srtp_enc_change_state (GstElement * element, GstStateChange transition)
             G_TLS_SRTP_PROFILE_NULL_HMAC_SHA1_32);
       self->status_changed_id = g_signal_connect (self->conn, "notify::status",
           G_CALLBACK (tls_status_changed), self);
+#endif
       break;
     case GST_STATE_CHANGE_PAUSED_TO_READY:
       clear_pad_blocks (self);
       gst_buffer_replace (&self->key_and_salt, NULL);
+#if 0 /* Disabled */
       self->srtp_profile = G_TLS_SRTP_PROFILE_NONE;
+#endif
       break;
     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
       g_object_get (self->dtls_enc, "is-client", &is_client, NULL);
