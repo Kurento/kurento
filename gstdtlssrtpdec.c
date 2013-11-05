@@ -345,7 +345,6 @@ srtpdec_request_key (GstElement * srtpdec, guint ssrc, GstDtlsSrtpDec * self)
 {
   GstCaps *caps;
 
-#if 0 /* Disabled */
   GST_OBJECT_LOCK (self);
 
   if (self->key_and_salt == NULL) {
@@ -387,9 +386,7 @@ srtpdec_request_key (GstElement * srtpdec, guint ssrc, GstDtlsSrtpDec * self)
   }
 
   GST_OBJECT_UNLOCK (self);
-#endif
 
-  caps = NULL; // TODO: delete
   return caps;
 }
 
