@@ -29,6 +29,8 @@
 
 #include "gstdtls-enumtypes.h"
 
+#include "ext/gio/kmsgtlsconnection.h"
+
 GST_DEBUG_CATEGORY_STATIC (dtls_srtp_dec_debug);
 #define GST_CAT_DEFAULT (dtls_srtp_dec_debug)
 
@@ -284,7 +286,6 @@ static void
 tls_status_changed (GTlsConnection * connection, GParamSpec * param,
     GstDtlsSrtpDec * self)
 {
-#if 0 /* Disabled */
   GTlsStatus status;
   GTlsSrtpProfile profile;
   GByteArray *key = NULL;
@@ -337,7 +338,6 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 
     clear_queue_block (self);
   }
-#endif
 }
 
 static GstCaps *
@@ -430,7 +430,7 @@ gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
         GST_ERROR_OBJECT (self, "Could not get TLS connection object");
         return GST_STATE_CHANGE_FAILURE;
       }
-#if 0 /* Disabled */
+
       if (self->profiles & GST_DTLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80)
         g_tls_connection_add_srtp_profile (self->conn,
             G_TLS_SRTP_PROFILE_AES128_CM_HMAC_SHA1_80);
@@ -443,7 +443,7 @@ gst_dtls_srtp_dec_change_state (GstElement * element, GstStateChange transition)
       else if (self->profiles & GST_DTLS_SRTP_PROFILE_NULL_HMAC_SHA1_32)
         g_tls_connection_add_srtp_profile (self->conn,
             G_TLS_SRTP_PROFILE_NULL_HMAC_SHA1_32);
-#endif
+
       self->status_changed_id =
           g_signal_connect (self->conn, "notify::status",
           G_CALLBACK (tls_status_changed), self);
