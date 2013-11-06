@@ -15,6 +15,7 @@
 package com.kurento.kmf.spring;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,6 +84,16 @@ public final class KurentoApplicationContextUtils {
 			kurentoApplicationContextInternalReference.setParent(rootContext);
 		}
 
+		//TODO: first look into env for this variable:
+		//Map<String, String> env = System.getenv();
+		//env.get("jboss.server.config.dir");
+		//if variable exists, look for properties into an input stream associated to a File in that dir.
+		//look for env.get("kurento.properties.dir") 
+		//if that variable exists, look for properties file there
+		//else look for properties file in /WEB-INF using the code below.
+		
+		//TODO: this makes 3 different ways of creating property files, we must test all of them.
+		
 		// Custom properties
 		ServletContextResource servletContextResource = new ServletContextResource(
 				ctx, "/WEB-INF/kurento.properties");
