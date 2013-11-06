@@ -62,6 +62,7 @@ struct _KmsPointerDetector {
   GstStructure *buttonsLayout;
   GSList *buttonsLayoutList;
   const gchar *previousButtonClickedId;
+  gboolean putMessage;
 };
 
 struct _KmsPointerDetectorClass {

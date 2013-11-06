@@ -56,7 +56,8 @@ enum
   PROP_NUM_REGIONS,
   PROP_WINDOW_SCALE,
   PROP_SHOW_DEBUG_INFO,
-  PROP_WINDOWS_LAYOUT
+  PROP_WINDOWS_LAYOUT,
+  PROP_MESSAGE
 };
 
 /* pad templates */
@@ -126,6 +127,11 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
       g_param_spec_boxed ("windows-layout", "windows layout",
           "supply the positions and dimensions of windows into the main window",
           GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_MESSAGE,
+      g_param_spec_boolean ("message", "message",
+          "Put a window-in or window-out message in the bus if "
+          "an object enters o leaves a window", TRUE, G_PARAM_READWRITE));
 }
 
 static void
@@ -242,6 +248,7 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   pointerdetector->show_debug_info = FALSE;
   pointerdetector->buttonsLayout = NULL;
   pointerdetector->buttonsLayoutList = NULL;
+  pointerdetector->putMessage = TRUE;
 }
 
 void
@@ -269,6 +276,9 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
       pointerdetector->buttonsLayout = g_value_dup_boxed (value);
       kms_pointer_detector_load_buttonsLayout (pointerdetector);
       break;
+    case PROP_MESSAGE:
+      pointerdetector->putMessage = g_value_get_boolean (value);
+      break;
   }
 }
 
@@ -292,6 +302,9 @@ kms_pointer_detector_get_property (GObject * object, guint property_id,
       break;
     case PROP_WINDOWS_LAYOUT:
       g_value_set_boxed (value, pointerdetector->buttonsLayout);
+      break;
+    case PROP_MESSAGE:
+      g_value_set_boolean (value, pointerdetector->putMessage);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -477,11 +490,13 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
 
       /* post a message to bus */
       GST_DEBUG ("exit window: %s", pointerdetector->previousButtonClickedId);
-      s = gst_structure_new ("window-out",
-          "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
-          NULL);
-      m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
-      gst_element_post_message (GST_ELEMENT (pointerdetector), m);
+      if (pointerdetector->putMessage) {
+        s = gst_structure_new ("window-out",
+            "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
+            NULL);
+        m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
+        gst_element_post_message (GST_ELEMENT (pointerdetector), m);
+      }
       pointerdetector->previousButtonClickedId = NULL;
     }
   } else {
@@ -491,11 +506,13 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
 
       /* post a message to bus */
       GST_DEBUG ("into window: %s", actualButtonClickedId);
-      s = gst_structure_new ("window-in",
-          "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
-          NULL);
-      m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
-      gst_element_post_message (GST_ELEMENT (pointerdetector), m);
+      if (pointerdetector->putMessage) {
+        s = gst_structure_new ("window-in",
+            "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
+            NULL);
+        m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
+        gst_element_post_message (GST_ELEMENT (pointerdetector), m);
+      }
       pointerdetector->previousButtonClickedId = actualButtonClickedId;
     }
   }
