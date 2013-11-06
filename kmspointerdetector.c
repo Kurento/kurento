@@ -56,7 +56,7 @@ enum
   PROP_NUM_REGIONS,
   PROP_WINDOW_SCALE,
   PROP_SHOW_DEBUG_INFO,
-  PROP_BUTTONS_STRUCTURE
+  PROP_WINDOWS_LAYOUT
 };
 
 /* pad templates */
@@ -122,9 +122,9 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
       g_param_spec_boolean ("show-debug-region", "show debug region",
           "show evaluation regions over the image", FALSE, G_PARAM_READWRITE));
 
-  g_object_class_install_property (gobject_class, PROP_BUTTONS_STRUCTURE,
-      g_param_spec_boxed ("buttons-layout", "buttons layout",
-          "supply the positions and dimensions of buttons into the window",
+  g_object_class_install_property (gobject_class, PROP_WINDOWS_LAYOUT,
+      g_param_spec_boxed ("windows-layout", "windows layout",
+          "supply the positions and dimensions of windows into the main window",
           GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
@@ -262,7 +262,7 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
     case PROP_SHOW_DEBUG_INFO:
       pointerdetector->show_debug_info = g_value_get_boolean (value);
       break;
-    case PROP_BUTTONS_STRUCTURE:
+    case PROP_WINDOWS_LAYOUT:
       if (pointerdetector->buttonsLayout != NULL)
         gst_structure_free (pointerdetector->buttonsLayout);
 
@@ -290,7 +290,7 @@ kms_pointer_detector_get_property (GObject * object, guint property_id,
     case PROP_SHOW_DEBUG_INFO:
       g_value_set_boolean (value, pointerdetector->show_debug_info);
       break;
-    case PROP_BUTTONS_STRUCTURE:
+    case PROP_WINDOWS_LAYOUT:
       g_value_set_boxed (value, pointerdetector->buttonsLayout);
       break;
     default:
