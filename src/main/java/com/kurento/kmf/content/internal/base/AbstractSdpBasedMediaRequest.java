@@ -238,7 +238,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 
 		getLogger().info("Connecting media pads ...");
 		// TODO: should we double check constraints?
-		if (sinkElements != null) {
+		if (sinkElements != null && sinkElements.length > 0) {
 			connect(sdpEndPoint, sinkElements);
 		}
 

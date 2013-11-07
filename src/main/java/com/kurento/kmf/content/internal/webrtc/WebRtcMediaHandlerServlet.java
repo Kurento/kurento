@@ -77,7 +77,7 @@ public class WebRtcMediaHandlerServlet extends AbstractContentHandlerServlet {
 	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
 		return (WebRtcContentSessionImpl) KurentoApplicationContextUtils
-				.getBean("webRtcMediaRequestImpl", webRtcMediaHandler,
+				.getBean("webRtcContentSessionImpl", webRtcMediaHandler,
 						contentSessionManager, asyncCtx, contentId);
 	}
 
