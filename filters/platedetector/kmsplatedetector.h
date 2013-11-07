@@ -33,11 +33,6 @@ typedef struct _KmsPlateDetector KmsPlateDetector;
 typedef struct _KmsPlateDetectorClass KmsPlateDetectorClass;
 typedef struct _KmsPlateDetectorPrivate KmsPlateDetectorPrivate;
 
-typedef struct _AngleData
-  {
-    float angle;
-  }AngleData;
-
 typedef enum
 {
   PREPROCESSING_ONE,
