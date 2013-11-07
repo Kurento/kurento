@@ -15,10 +15,15 @@
 package com.kurento.kmf.common.exception.internal;
 
 import java.lang.annotation.Annotation;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.TypeAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 /**
  * Annotation singleton utility class; it uses
@@ -48,7 +53,19 @@ public class ReflectionUtils {
 	 * <code>org.reflections.Reflections</code>) object.
 	 */
 	private ReflectionUtils() {
-		this.reflections = new Reflections("", new TypeAnnotationsScanner());
+		// Former Reflections instantiation:
+		// this.reflections = new Reflections("", new TypeAnnotationsScanner());
+
+		List<URL> urls = new ArrayList<URL>();
+		for (URL url : ClasspathHelper.forManifest(ClasspathHelper
+				.forClassLoader())) {
+			if (url.toString().toLowerCase().endsWith(".jar")) {
+				urls.add(url);
+			}
+		}
+		this.reflections = new Reflections(new ConfigurationBuilder()
+				.setScanners(new TypeAnnotationsScanner())
+				.setUrls(ClasspathHelper.forPackage("")).addUrls(urls));
 	}
 
 	/**
