@@ -32,12 +32,15 @@ G_BEGIN_DECLS
   (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_WEBRTC_END_POINT))
 #define KMS_WEBRTC_END_POINT_CAST(obj) ((KmsWebrtcEndPoint*)(obj))
 
+typedef struct _KmsWebrtcEndPointPrivate KmsWebrtcEndPointPrivate;
 typedef struct _KmsWebrtcEndPoint KmsWebrtcEndPoint;
 typedef struct _KmsWebrtcEndPointClass KmsWebrtcEndPointClass;
 
 struct _KmsWebrtcEndPoint
 {
   KmsBaseRtpEndPoint parent;
+
+  KmsWebrtcEndPointPrivate *priv;
 };
 
 struct _KmsWebrtcEndPointClass

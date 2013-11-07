@@ -17,6 +17,7 @@
 #endif
 
 #include "kmswebrtcendpoint.h"
+#include <nice/nice.h>
 
 #define PLUGIN_NAME "webrtcendpoint"
 
@@ -26,6 +27,19 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define kms_webrtc_end_point_parent_class parent_class
 G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
     KMS_TYPE_BASE_RTP_END_POINT);
+
+#define KMS_WEBRTC_END_POINT_GET_PRIVATE(obj) ( \
+  G_TYPE_INSTANCE_GET_PRIVATE (                 \
+    (obj),                                      \
+    KMS_TYPE_WEBRTC_END_POINT,                  \
+    KmsWebrtcEndPointPrivate                    \
+  )                                             \
+)
+
+struct _KmsWebrtcEndPointPrivate
+{
+  NiceAgent *agent;
+};
 
 static gboolean
 kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
@@ -61,11 +75,14 @@ kms_webrtc_end_point_class_init (KmsWebrtcEndPointClass * klass)
       kms_webrtc_end_point_set_transport_to_sdp;
   base_sdp_end_point_class->start_transport_send =
       kms_webrtc_end_point_start_transport_send;
+
+  g_type_class_add_private (klass, sizeof (KmsWebrtcEndPointPrivate));
 }
 
 static void
-kms_webrtc_end_point_init (KmsWebrtcEndPoint * element)
+kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
 {
+  self->priv = KMS_WEBRTC_END_POINT_GET_PRIVATE (self);
 }
 
 gboolean
