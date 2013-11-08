@@ -20,7 +20,7 @@
 
 		1. Launch maven adding parameters to set the variables value:
 
-			$ mvn test -Dtests.serverAddress=myServer.domain
+			$ mvn test -Dkurento.serverAddress=myServer.domain
 
 		2. Modify your maven settings.xml to add the default values:
 
@@ -34,10 +34,10 @@
 				        <activeByDefault>true</activeByDefault>
 				      </activation>
 				      <properties>
-				        <tests.serverAddress>localhost</tests.serverAddress>
-				        <tests.serverPort>9090</tests.serverPort>
-				        <tests.handlerAddress>localhost</tests.handlerAddress>
-				        <tests.handlerPort>9191</tests.handlerPort>
+				        <kurento.serverAddress>localhost</kurento.serverAddress>
+				        <kurento.serverPort>9090</kurento.serverPort>
+				        <kurento.handlerAddress>localhost</kurento.handlerAddress>
+				        <kurento.handlerPort>9191</kurento.handlerPort>
 				      </properties>
 				    </profile>
 				  </profiles>
