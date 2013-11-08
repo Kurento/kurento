@@ -57,6 +57,7 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndPoint> {
 	// TODO connect a local sdp or fails
 	@Test
 	public void testGetLocalSdpMethod() {
+		sdp.generateOffer();
 		String localDescriptor = sdp.getLocalSessionDescriptor();
 		Assert.assertFalse(localDescriptor.isEmpty());
 	}

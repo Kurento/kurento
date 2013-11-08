@@ -39,13 +39,25 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndPoint> extends
 	@Test
 	public void testGetLocalSdpMethod() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		sdp.getLocalSessionDescriptor(new Continuation<String>() {
+		sdp.generateOffer(new Continuation<String>() {
 
 			@Override
 			public void onSuccess(String result) {
-				if (!result.isEmpty()) {
-					sem.release();
-				}
+				sdp.getLocalSessionDescriptor(new Continuation<String>() {
+
+					@Override
+					public void onSuccess(String result) {
+						if (!result.isEmpty()) {
+							sem.release();
+						}
+					}
+
+					@Override
+					public void onError(Throwable cause) {
+						// TODO Auto-generated method stub
+
+					}
+				});
 			}
 
 			@Override
