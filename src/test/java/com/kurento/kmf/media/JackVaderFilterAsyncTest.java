@@ -60,7 +60,7 @@ public class JackVaderFilterAsyncTest extends AbstractAsyncBaseTest {
 				throw new KurentoMediaFrameworkException(cause);
 			}
 		});
-		jackVader = events.poll(1, SECONDS);
+		jackVader = events.poll(4, SECONDS);
 		Assert.assertNotNull(jackVader);
 	}
 
@@ -93,6 +93,6 @@ public class JackVaderFilterAsyncTest extends AbstractAsyncBaseTest {
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(7, SECONDS));
+		Assert.assertNotNull(events.poll(10, SECONDS));
 	}
 }
