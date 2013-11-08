@@ -661,7 +661,7 @@ send_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (GST_OBJECT_PARENT (pad)));
   src = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), data);
 
-  GST_ERROR_OBJECT (pad, "Event player eos received: %" GST_PTR_FORMAT, event);
+  GST_DEBUG_OBJECT (pad, "Event player eos received: %" GST_PTR_FORMAT, event);
 
   g_signal_emit (self, http_ep_signals[SIGNAL_EOS_DETECTED], 0);
 
