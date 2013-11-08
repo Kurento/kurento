@@ -72,9 +72,44 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndPoint> extends
 
 	// TODO connect a remote sdp or fails
 	@Test
-	public void testGetRemoteSdpMethod() {
-		String removeDescriptor = sdp.getRemoteSessionDescriptor();
-		Assert.assertFalse(removeDescriptor.isEmpty());
+	public void testGetRemoteSdpMethod() throws InterruptedException {
+		final Semaphore sem = new Semaphore(0);
+		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
+				+ "s=-\r\n" + "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
+				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n"
+				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
+				+ "b=AS:384\r\n";
+		sdp.processOffer(offer, new Continuation<String>() {
+
+			@Override
+			public void onSuccess(String result) {
+				sdp.getRemoteSessionDescriptor(new Continuation<String>() {
+
+					@Override
+					public void onSuccess(String result) {
+						Assert.assertFalse(result.isEmpty());
+						sem.release();
+					}
+
+					@Override
+					public void onError(Throwable cause) {
+						// TODO Auto-generated method stub
+
+					}
+				});
+
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
 	}
 
 	@Test
