@@ -89,7 +89,7 @@ public class JackVaderFilterTest {
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(7, SECONDS));
+		Assert.assertNotNull(events.poll(10, SECONDS));
 
 		player.stop();
 		player.release();

@@ -15,7 +15,6 @@
 package com.kurento.kmf.media;
 
 import static com.kurento.kmf.media.SyncMediaServerTest.URL_SMALL;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -61,7 +60,7 @@ public class JackVaderFilterAsyncTest extends AbstractAsyncBaseTest {
 				throw new KurentoMediaFrameworkException(cause);
 			}
 		});
-		jackVader = events.poll(500, MILLISECONDS);
+		jackVader = events.poll(1, SECONDS);
 		Assert.assertNotNull(jackVader);
 	}
 
