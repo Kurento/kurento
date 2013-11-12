@@ -120,6 +120,12 @@ public class ContentApiWebApplicationInitializer implements
 							+ " at path " + path);
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							PlayerHandlerServlet.class);
+					if (sr == null) {
+						throw new ServletException(
+								"Duplicated handler named "
+										+ name
+										+ " found. You must check your handlers' annotations to assert that no name duplications are declared.");
+					}
 					sr.addMapping(path);
 					sr.setInitParameter(HANDLER_CLASS_PARAM_NAME, ph);
 					sr.setAsyncSupported(true);
