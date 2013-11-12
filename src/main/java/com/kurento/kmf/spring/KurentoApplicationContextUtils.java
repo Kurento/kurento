@@ -14,8 +14,10 @@
  */
 package com.kurento.kmf.spring;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Map;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -84,34 +86,53 @@ public final class KurentoApplicationContextUtils {
 			kurentoApplicationContextInternalReference.setParent(rootContext);
 		}
 
-		//TODO: first look into env for this variable:
-		//Map<String, String> env = System.getenv();
-		//env.get("jboss.server.config.dir");
-		//if variable exists, look for properties into an input stream associated to a File in that dir.
-		//look for env.get("kurento.properties.dir") 
-		//if that variable exists, look for properties file there
-		//else look for properties file in /WEB-INF using the code below.
-		
-		//TODO: this makes 3 different ways of creating property files, we must test all of them.
-		
-		// Custom properties
-		ServletContextResource servletContextResource = new ServletContextResource(
-				ctx, "/WEB-INF/kurento.properties");
-		if (servletContextResource.exists()) {
-			log.info("Found custom properties (/WEB-INF/kurento.properties)");
-			Properties properties = new Properties();
-			try {
-				properties.load(servletContextResource.getInputStream());
-			} catch (IOException e) {
-				log.error(
-						"Exception loading custom properties (/WEB-INF/kurento.properties)",
-						e);
-				throw new RuntimeException(e);
+		final String jbossServerConfigDir = System
+				.getProperty("jboss.server.config.dir");
+		final String kurentoPropertiesDir = System
+				.getProperty("kurento.properties.dir");
+		final String kurentoProperties = "/kurento.properties";
+		InputStream inputStream = null;
+		try {
+			if (jbossServerConfigDir != null
+					&& new File(jbossServerConfigDir + kurentoProperties)
+							.exists()) {
+				// First, look for JVM argument "jboss.server.config.dir"
+				inputStream = new FileInputStream(jbossServerConfigDir
+						+ kurentoProperties);
+				log.info("Found custom properties in 'jboss.server.config.dir': "
+						+ jbossServerConfigDir);
+			} else if (kurentoPropertiesDir != null
+					&& new File(kurentoPropertiesDir + kurentoProperties)
+							.exists()) {
+				// Second, look for JVM argument "kurento.properties.dir"
+				log.info("Found custom properties in 'kurento.properties.dir': "
+						+ kurentoPropertiesDir);
+				inputStream = new FileInputStream(kurentoPropertiesDir
+						+ kurentoProperties);
+			} else {
+				// Third, look for properties in Servlet Context
+				ServletContextResource servletContextResource = new ServletContextResource(
+						ctx, "/WEB-INF" + kurentoProperties);
+				if (servletContextResource.exists()) {
+					log.info("Found custom properties in Servlet Context: /WEB-INF"
+							+ kurentoProperties);
+					inputStream = servletContextResource.getInputStream();
+				}
 			}
-			PropertyOverrideConfigurer propertyOverrideConfigurer = new PropertyOverrideConfigurer();
-			propertyOverrideConfigurer.setProperties(properties);
-			kurentoApplicationContextInternalReference
-					.addBeanFactoryPostProcessor(propertyOverrideConfigurer);
+
+			if (inputStream != null) {
+				Properties properties = new Properties();
+				properties.load(inputStream);
+				PropertyOverrideConfigurer propertyOverrideConfigurer = new PropertyOverrideConfigurer();
+				propertyOverrideConfigurer.setProperties(properties);
+				kurentoApplicationContextInternalReference
+						.addBeanFactoryPostProcessor(propertyOverrideConfigurer);
+				inputStream.close();
+			}
+
+		} catch (IOException e) {
+			log.error("Exception loading custom properties", e);
+			throw new RuntimeException(e);
 		}
 
 		kurentoApplicationContextInternalReference.refresh();
