@@ -18,7 +18,7 @@
     "WebSocket"
   ],
   "author": "Jesús Leganés Combarro \"piranna\" <piranna@gmail.com>",
-  "license": "BSD",
+  "license": "LGPL",
   "gitHead": "91061b5530030f28a440cb26ba3d44dbfa0240dc",
   "readmeFilename": "README.md"
 }

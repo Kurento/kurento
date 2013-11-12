@@ -109,7 +109,7 @@ function RpcBuilder()
    */
   this.decodeJSON = function(message)
   {
-    if(message instanceof string)
+    if(typeof message == 'string')
        message = JSON.parse(message);
 
     function throwException(text)
