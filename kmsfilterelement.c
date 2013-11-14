@@ -196,6 +196,7 @@ kms_filter_element_audio_valve_added (KmsElement * element, GstElement * valve)
       kms_utils_set_valve_drop (valve, FALSE);
   } else {
     gst_element_link (valve, kms_element_get_audio_agnosticbin (element));
+    kms_utils_set_valve_drop (valve, FALSE);
   }
 }
 
@@ -217,6 +218,7 @@ kms_filter_element_video_valve_added (KmsElement * element, GstElement * valve)
       kms_utils_set_valve_drop (valve, FALSE);
   } else {
     gst_element_link (valve, kms_element_get_video_agnosticbin (element));
+    kms_utils_set_valve_drop (valve, FALSE);
   }
 }
 
