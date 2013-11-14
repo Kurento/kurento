@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaErrorCodesConstants.MEDIA_OBJECT_NOT_FOUND;
 import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
 
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.keepAlive_call;
 
@@ -128,7 +130,7 @@ public class DistributedGarbageCollector {
 		return true;
 	}
 
-	private void keepAlive(KmsMediaObjectRef KmsMediaObjectRef) {
+	private void keepAlive(final KmsMediaObjectRef KmsMediaObjectRef) {
 		final AsyncClient asyncClient = clientPool.acquireAsync();
 		try {
 			asyncClient.keepAlive(KmsMediaObjectRef,
@@ -137,6 +139,14 @@ public class DistributedGarbageCollector {
 						@Override
 						public void onError(Exception e) {
 							clientPool.release(asyncClient);
+
+							if (e instanceof KmsMediaServerException
+									&& ((KmsMediaServerException) e)
+											.getErrorCode() == MEDIA_OBJECT_NOT_FOUND) {
+								DistributedGarbageCollector.this
+										.removeReference(KmsMediaObjectRef);
+							}
+
 							log.error(e.getMessage(), e);
 						}
 
