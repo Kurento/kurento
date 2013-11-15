@@ -36,6 +36,11 @@ G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
   )                                             \
 )
 
+#define NICE_N_COMPONENTS 2
+
+#define AUDIO_STREAM_NAME "audio"
+#define VIDEO_STREAM_NAME "video"
+
 struct _KmsWebrtcEndPointPrivate
 {
   GMainContext *context;
@@ -43,6 +48,8 @@ struct _KmsWebrtcEndPointPrivate
   GThread *thread;
 
   NiceAgent *agent;
+  guint audio_stream_id;
+  guint video_stream_id;
 };
 
 static gboolean
@@ -60,6 +67,13 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
     const GstSDPMessage * answer, gboolean local_offer)
 {
   GST_WARNING ("TODO: complete");
+}
+
+static void
+nice_agent_recv (NiceAgent * agent, guint stream_id, guint component_id,
+    guint len, gchar * buf, gpointer user_data)
+{
+  /* Nothing to do, this callback is only for negotiation */
 }
 
 static void
@@ -101,6 +115,8 @@ kms_webrtc_end_point_finalize (GObject * object)
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
 
   if (self->priv->agent != NULL) {
+    nice_agent_remove_stream (self->priv->agent, self->priv->audio_stream_id);
+    nice_agent_remove_stream (self->priv->agent, self->priv->video_stream_id);
     g_object_unref (self->priv->agent);
     self->priv->agent = NULL;
   }
@@ -185,6 +201,50 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   g_object_set (self->priv->agent, "upnp", FALSE, NULL);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (gathering_done), self);
+
+  /* audio stream */
+  self->priv->audio_stream_id =
+      nice_agent_add_stream (self->priv->agent, NICE_N_COMPONENTS);
+  if (self->priv->audio_stream_id == 0) {
+    GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.",
+        AUDIO_STREAM_NAME);
+    return;
+  }
+
+  nice_agent_set_stream_name (self->priv->agent, self->priv->audio_stream_id,
+      AUDIO_STREAM_NAME);
+  nice_agent_attach_recv (self->priv->agent, self->priv->audio_stream_id,
+      NICE_COMPONENT_TYPE_RTP, self->priv->context, nice_agent_recv, NULL);
+  nice_agent_attach_recv (self->priv->agent, self->priv->audio_stream_id,
+      NICE_COMPONENT_TYPE_RTCP, self->priv->context, nice_agent_recv, NULL);
+
+  if (!nice_agent_gather_candidates (self->priv->agent,
+          self->priv->audio_stream_id)) {
+    GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
+        AUDIO_STREAM_NAME);
+  }
+
+  /* video stream */
+  self->priv->video_stream_id =
+      nice_agent_add_stream (self->priv->agent, NICE_N_COMPONENTS);
+  if (self->priv->video_stream_id == 0) {
+    GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.",
+        VIDEO_STREAM_NAME);
+    return;
+  }
+
+  nice_agent_set_stream_name (self->priv->agent, self->priv->video_stream_id,
+      VIDEO_STREAM_NAME);
+  nice_agent_attach_recv (self->priv->agent, self->priv->video_stream_id,
+      NICE_COMPONENT_TYPE_RTP, self->priv->context, nice_agent_recv, NULL);
+  nice_agent_attach_recv (self->priv->agent, self->priv->video_stream_id,
+      NICE_COMPONENT_TYPE_RTCP, self->priv->context, nice_agent_recv, NULL);
+
+  if (!nice_agent_gather_candidates (self->priv->agent,
+          self->priv->video_stream_id)) {
+    GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
+        VIDEO_STREAM_NAME);
+  }
 }
 
 gboolean
