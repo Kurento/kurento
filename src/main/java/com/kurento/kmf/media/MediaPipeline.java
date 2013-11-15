@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Map;
 
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kms.thrift.api.KmsMediaType;
 
 public interface MediaPipeline extends MediaObject {
@@ -89,6 +90,11 @@ public interface MediaPipeline extends MediaObject {
 	/* HTTP ENDPOINT */
 	HttpEndPoint createHttpEndPoint();
 
+	HttpEndPoint createHttpEndPoint(HttpEndpointConstructorParam constParams);
+
+	HttpEndPoint createHttpEndPoint(HttpEndpointConstructorParam constParams,
+			int garbagePeriod);
+
 	HttpEndPoint createHttpEndPoint(boolean terminateOnEOS);
 
 	HttpEndPoint createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod);
@@ -104,6 +110,12 @@ public interface MediaPipeline extends MediaObject {
 			boolean terminateOnEOS, int garbagePeriod);
 
 	void createHttpEndPoint(Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(HttpEndpointConstructorParam constParams,
+			Continuation<HttpEndPoint> cont);
+
+	void createHttpEndPoint(HttpEndpointConstructorParam constParams,
+			int garbagePeriod, Continuation<HttpEndPoint> cont);
 
 	void createHttpEndPoint(boolean terminateOnEOS,
 			Continuation<HttpEndPoint> cont);

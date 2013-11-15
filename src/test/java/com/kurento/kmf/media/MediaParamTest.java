@@ -43,13 +43,16 @@ import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
+import com.kurento.kmf.media.params.internal.RecorderEndPointConstructorParam;
 import com.kurento.kmf.media.params.internal.ShortMediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
 import com.kurento.kmf.media.params.internal.VoidMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaMuxer;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -221,6 +224,8 @@ public class MediaParamTest {
 	public void testHttpEndPointConstructor() {
 		HttpEndpointConstructorParam in = new HttpEndpointConstructorParam();
 		in.setDisconnectionTimeout(Integer.valueOf(200));
+		in.setMediaMuxer(KmsMediaMuxer.MP4);
+		in.setTerminateOnEOS(Boolean.FALSE);
 		KmsMediaParam param = createKmsParam(
 				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				in.getThriftParams().getData());
@@ -229,6 +234,22 @@ public class MediaParamTest {
 				HttpEndpointConstructorParam.class, param);
 		Assert.assertTrue(in.getDisconnectionTimeout().equals(
 				out.getDisconnectionTimeout()));
+		Assert.assertTrue(in.getMediaMuxer().equals(out.getMediaMuxer()));
+		Assert.assertTrue(in.getTerminateOnEOS()
+				.equals(out.getTerminateOnEOS()));
+	}
+
+	@Test
+	public void testRecoderEndPointConstructor() {
+		RecorderEndPointConstructorParam in = new RecorderEndPointConstructorParam();
+		in.setMediaMuxer(KmsMediaMuxer.MP4);
+		KmsMediaParam param = createKmsParam(
+				KmsMediaRecorderEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		RecorderEndPointConstructorParam out = instantiateAndCheck(
+				RecorderEndPointConstructorParam.class, param);
+		Assert.assertTrue(in.getMediaMuxer().equals(out.getMediaMuxer()));
 	}
 
 	private <T extends MediaParam> T instantiateAndCheck(

@@ -560,6 +560,42 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
+	public HttpEndPoint createHttpEndPoint(
+			HttpEndpointConstructorParam constParams) {
+		return createHttpEndPoint(constParams, DEFAULT_GARBAGE_COLLECTOR_PERIOD);
+	}
+
+	@Override
+	public HttpEndPoint createHttpEndPoint(
+			HttpEndpointConstructorParam constParams, int garbagePeriod) {
+		// TODO fix this with the builder
+		Map<String, MediaParam> map = new HashMap<String, MediaParam>(6);
+		map.put(KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				constParams);
+		return (HttpEndPoint) createMediaElement(
+				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateMediaObjectConstructorParams(map, garbagePeriod));
+	}
+
+	@Override
+	public void createHttpEndPoint(HttpEndpointConstructorParam constParams,
+			Continuation<HttpEndPoint> cont) {
+		createHttpEndPoint(constParams, DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
+	}
+
+	@Override
+	public void createHttpEndPoint(HttpEndpointConstructorParam constParams,
+			int garbagePeriod, Continuation<HttpEndPoint> cont) {
+		// TODO fix this with the builder
+		Map<String, MediaParam> map = new HashMap<String, MediaParam>(6);
+		map.put(KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				constParams);
+		createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
+				internalCreateMediaObjectConstructorParams(map, garbagePeriod),
+				cont);
+	}
+
+	@Override
 	public void createHttpEndPoint(Continuation<HttpEndPoint> cont) {
 		createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME, cont);
 	}
