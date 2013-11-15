@@ -17,18 +17,13 @@
 void
 kms_utils_set_valve_drop (GstElement * valve, gboolean drop)
 {
-  GstPad *sink;
   gboolean old_drop;
 
   g_object_get (valve, "drop", &old_drop, NULL);
   if (drop == old_drop)
     return;
 
-  sink = gst_element_get_static_pad (valve, "sink");
-
   g_object_set (valve, "drop", drop, NULL);
-
-  g_object_unref (sink);
 }
 
 static gboolean
