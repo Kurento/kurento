@@ -234,7 +234,7 @@ public abstract class AbstractHttpBasedContentSession extends
 		try {
 			HttpServletResponse response = (HttpServletResponse) initialAsyncCtx
 					.getResponse();
-			HttpServletRequest request = (HttpServletRequest) initialAsyncCtx
+			final HttpServletRequest request = (HttpServletRequest) initialAsyncCtx
 					.getRequest();
 			if (redirect) {
 				getLogger().info("Sending redirect to " + url);
@@ -251,6 +251,7 @@ public abstract class AbstractHttpBasedContentSession extends
 								// Parameters no matter, no answer will be sent
 								// given that we are already in ACTIVE state
 								terminate(0, "");
+								request.getAsyncContext().complete();
 							}
 
 							@Override
@@ -260,6 +261,7 @@ public abstract class AbstractHttpBasedContentSession extends
 								// Parameters no matter, no answer will be sent
 								// given that we are already in ACTIVE state
 								terminate(errorCode, message);
+								request.getAsyncContext().complete();
 							}
 						});
 			}
