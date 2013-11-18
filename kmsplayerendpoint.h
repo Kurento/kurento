@@ -51,6 +51,8 @@ struct _KmsPlayerEndPointClass
   KmsUriEndPointClass parent_class;
 
   void (*eos_signal) (KmsPlayerEndPoint * self);
+  void (*invalid_uri_signal) (KmsPlayerEndPoint * self);
+  void (*invalid_media_signal) (KmsPlayerEndPoint * self);
 };
 
 GType kms_player_end_point_get_type (void);

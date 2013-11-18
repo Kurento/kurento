@@ -94,6 +94,8 @@ struct _KmsPlayerEndPointPrivate
 enum
 {
   SIGNAL_EOS,
+  SIGNAL_INVALID_URI,
+  SIGNAL_INVALID_MEDIA,
   LAST_SIGNAL
 };
 
@@ -458,6 +460,20 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
       G_STRUCT_OFFSET (KmsPlayerEndPointClass, eos_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
+  kms_player_end_point_signals[SIGNAL_INVALID_URI] =
+      g_signal_new ("invalid-uri",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsPlayerEndPointClass, invalid_uri_signal), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  kms_player_end_point_signals[SIGNAL_INVALID_MEDIA] =
+      g_signal_new ("invalid-media",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsPlayerEndPointClass, invalid_media_signal), NULL,
+      NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
 }
@@ -471,6 +487,34 @@ kms_player_end_point_emit_EOS_signal (gpointer data)
   g_signal_emit (G_OBJECT (self), kms_player_end_point_signals[SIGNAL_EOS], 0);
 }
 
+static void
+kms_player_end_point_emit_invalid_uri_signal (gpointer data)
+{
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+
+  GST_DEBUG ("Emit invalid uri signal");
+  g_signal_emit (G_OBJECT (self),
+      kms_player_end_point_signals[SIGNAL_INVALID_URI], 0);
+}
+
+static void
+kms_player_end_point_emit_invalid_media_signal (gpointer data)
+{
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+
+  GST_DEBUG ("Emit invalid media signal");
+  g_signal_emit (G_OBJECT (self),
+      kms_player_end_point_signals[SIGNAL_INVALID_MEDIA], 0);
+}
+
+static void
+kms_player_end_point_post_media_error (gpointer data)
+{
+  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+
+  GST_ELEMENT_ERROR (self, STREAM, FORMAT, ("Wrong video format"), (NULL));
+}
+
 static GstBusSyncReply
 bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 {
@@ -479,8 +523,19 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
     kms_player_end_point_add_action (self, kms_player_end_point_emit_EOS_signal,
         self, NULL);
-  }
+  } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
 
+    if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
+      kms_player_end_point_add_action (self,
+          kms_player_end_point_emit_invalid_media_signal, self, NULL);
+    } else if (g_strcmp0 (GST_OBJECT_NAME (msg->src), "source") == 0) {
+      kms_player_end_point_add_action (self,
+          kms_player_end_point_emit_invalid_uri_signal, self, NULL);
+    } else {
+      kms_player_end_point_add_action (self,
+          kms_player_end_point_post_media_error, self, NULL);
+    }
+  }
   return GST_BUS_PASS;
 }
 
