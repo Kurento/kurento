@@ -60,6 +60,9 @@ struct _KmsElementClass
 {
   GstBinClass parent_class;
 
+  /* signals */
+  void (*agnosticbin_added) (KmsElementClass * self);
+
   /* private */
   /* actions */
   void (*audio_valve_added) (KmsElement *self, GstElement * valve);

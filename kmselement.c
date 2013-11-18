@@ -59,8 +59,11 @@ struct _KmsElementPrivate
 /* Signals and args */
 enum
 {
+  AGNOSTICBIN_ADDED,
   LAST_SIGNAL
 };
+
+static guint element_signals[LAST_SIGNAL] = { 0 };
 
 enum
 {
@@ -97,50 +100,6 @@ GST_STATIC_PAD_TEMPLATE ("video_src_%u",
     GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
-static void
-kms_element_set_target_pads (KmsElement * element, const gchar * pad_prefix,
-    GstElement * agnosticbin)
-{
-  gboolean done = FALSE;
-  GstIterator *it;
-  GValue val = G_VALUE_INIT;
-
-  it = gst_element_iterate_src_pads (GST_ELEMENT (element));
-  do {
-    switch (gst_iterator_next (it, &val)) {
-      case GST_ITERATOR_OK:
-      {
-        GstPad *srcpad;
-
-        srcpad = g_value_get_object (&val);
-        if ((gst_ghost_pad_get_target (GST_GHOST_PAD (srcpad)) == NULL) &&
-            g_str_has_prefix (GST_OBJECT_NAME (srcpad), pad_prefix)) {
-          GstPad *target;
-
-          target = gst_element_get_request_pad (agnosticbin, "src_%u");
-          gst_ghost_pad_set_target (GST_GHOST_PAD (srcpad), target);
-          g_object_unref (target);
-        }
-
-        g_value_reset (&val);
-        break;
-      }
-      case GST_ITERATOR_RESYNC:
-        gst_iterator_resync (it);
-        break;
-      case GST_ITERATOR_ERROR:
-        GST_ERROR ("Error iterating over %s's src pads",
-            GST_ELEMENT_NAME (element));
-      case GST_ITERATOR_DONE:
-        g_value_unset (&val);
-        done = TRUE;
-        break;
-    }
-  } while (!done);
-
-  gst_iterator_free (it);
-}
-
 GstElement *
 kms_element_get_audio_agnosticbin (KmsElement * self)
 {
@@ -153,10 +112,12 @@ kms_element_get_audio_agnosticbin (KmsElement * self)
       gst_element_factory_make ("agnosticbin2", AUDIO_AGNOSTICBIN);
   gst_bin_add (GST_BIN (self), self->priv->audio_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->audio_agnosticbin);
-  kms_element_set_target_pads (self, "audio", self->priv->audio_agnosticbin);
+
+  g_signal_emit (self, element_signals[AGNOSTICBIN_ADDED], 0);
 
 end:
   KMS_ELEMENT_UNLOCK (self);
+
   return self->priv->audio_agnosticbin;
 }
 
@@ -172,10 +133,12 @@ kms_element_get_video_agnosticbin (KmsElement * self)
       gst_element_factory_make ("agnosticbin2", VIDEO_AGNOSTICBIN);
   gst_bin_add (GST_BIN (self), self->priv->video_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->video_agnosticbin);
-  kms_element_set_target_pads (self, "video", self->priv->video_agnosticbin);
+
+  g_signal_emit (self, element_signals[AGNOSTICBIN_ADDED], 0);
 
 end:
   KMS_ELEMENT_UNLOCK (self);
+
   return self->priv->video_agnosticbin;
 }
 
@@ -227,13 +190,12 @@ kms_element_generate_src_pad (KmsElement * element, const gchar * name,
   GstPad *agnostic_pad;
   GstPad *ret_pad;
 
-  if (agnosticbin != NULL) {
-    agnostic_pad = gst_element_get_request_pad (agnosticbin, "src_%u");
-    ret_pad = gst_ghost_pad_new_from_template (name, agnostic_pad, templ);
-    g_object_unref (agnostic_pad);
-  } else {
-    ret_pad = gst_ghost_pad_new_no_target_from_template (name, templ);
-  }
+  if (agnosticbin == NULL)
+    return NULL;
+
+  agnostic_pad = gst_element_get_request_pad (agnosticbin, "src_%u");
+  ret_pad = gst_ghost_pad_new_from_template (name, agnostic_pad, templ);
+  g_object_unref (agnostic_pad);
 
   return ret_pad;
 }
@@ -287,6 +249,9 @@ kms_element_request_new_pad (GstElement * element,
 
     ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
         KMS_ELEMENT (element)->priv->audio_agnosticbin, templ);
+    if (ret_pad == NULL)
+      KMS_ELEMENT (element)->priv->audio_pad_count--;
+
     g_free (pad_name);
 
   } else if (templ ==
@@ -297,6 +262,9 @@ kms_element_request_new_pad (GstElement * element,
 
     ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
         KMS_ELEMENT (element)->priv->video_agnosticbin, templ);
+    if (ret_pad == NULL)
+      KMS_ELEMENT (element)->priv->video_pad_count--;
+
     g_free (pad_name);
 
   } else if (templ ==
@@ -327,6 +295,7 @@ kms_element_request_new_pad (GstElement * element,
 
   if (ret_pad == NULL) {
     KMS_ELEMENT_UNLOCK (element);
+    GST_WARNING ("No pad created");
     return NULL;
   }
 
@@ -508,6 +477,14 @@ kms_element_class_init (KmsElementClass * klass)
       GST_DEBUG_FUNCPTR (kms_element_audio_valve_removed_default);
   klass->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_element_video_valve_removed_default);
+
+  /* set signals */
+  element_signals[AGNOSTICBIN_ADDED] =
+      g_signal_new ("agnosticbin-added",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsElementClass, agnosticbin_added), NULL, NULL,
+      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   g_type_class_add_private (klass, sizeof (KmsElementPrivate));
 }

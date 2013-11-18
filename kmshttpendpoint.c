@@ -196,6 +196,8 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME,
         0, "debug category for httpendpoint element"));
 
+static void kms_change_internal_pipeline_state (KmsHttpEndPoint *, gboolean);
+
 static void
 destroy_valve_configuration (gpointer data)
 {
@@ -1195,10 +1197,6 @@ kms_http_end_point_remove_encodebin (KmsHttpEndPoint * self)
           g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
               destroy_ulong);
           self->priv->get->confdata->padblocked++;
-          gst_pad_push_event (srcpad,
-              gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM,
-                  gst_structure_new_empty ("DummyEvent")));
-          g_object_unref (srcpad);
         }
 
         g_value_reset (&val);
@@ -1296,11 +1294,14 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
     const gchar * sinkname, const gchar * srcname, const gchar * destpadname)
 {
   struct config_valve *config;
+  gboolean initialized = FALSE;
 
   config = generate_valve_configuration (valve, sinkname, srcname, destpadname);
 
-  if (self->priv->pipeline == NULL)
+  if (self->priv->pipeline == NULL) {
     kms_http_end_point_init_get_pipeline (self);
+    initialized = TRUE;
+  }
 
   GST_DEBUG ("Connecting %s", GST_ELEMENT_NAME (valve));
 
@@ -1339,6 +1340,17 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
     default:
       kms_http_end_point_block_valve (self, config);
       break;
+  }
+
+  if (self->priv->start) {
+    if (initialized) {
+      /* Force pipeline to change to Playing state */
+      self->priv->start = FALSE;
+      kms_change_internal_pipeline_state (self, TRUE);
+    } else {
+      GST_DEBUG ("Setting %" GST_PTR_FORMAT " drop to FALSE", valve);
+      kms_utils_set_valve_drop (valve, FALSE);
+    }
   }
 }
 
@@ -1502,20 +1514,13 @@ kms_http_end_point_finalize (GObject * object)
 }
 
 static void
-kms_change_internal_pipeline_state (KmsHttpEndPoint * self,
-    const GValue * value)
+kms_change_internal_pipeline_state (KmsHttpEndPoint * self, gboolean start)
 {
-  gboolean prev_val = self->priv->start;
-  gboolean start = g_value_get_boolean (value);
   GstElement *audio_v, *video_v;
 
   if (self->priv->pipeline == NULL) {
-    GST_ERROR ("Element %s is not initialized", GST_ELEMENT_NAME (self));
-    return;
-  }
-
-  if (prev_val == start) {
-    /* Nothing to do */
+    GST_WARNING ("Element %s is not initialized", GST_ELEMENT_NAME (self));
+    self->priv->start = start;
     return;
   }
 
@@ -1576,7 +1581,8 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_START:{
-      kms_change_internal_pipeline_state (self, value);
+      if (self->priv->start != g_value_get_boolean (value))
+        kms_change_internal_pipeline_state (self, g_value_get_boolean (value));
       break;
     }
     case PROP_PROFILE:

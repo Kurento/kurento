@@ -1442,6 +1442,7 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
     const gchar * srcname, const gchar * destpadname)
 {
   struct config_valve *config;
+  KmsUriEndPointState state;
 
   config = generate_valve_configuration (valve, sinkname, srcname, destpadname);
 
@@ -1482,6 +1483,12 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
     case WAIT_PENDING:
       kms_recorder_end_point_block_valve (self, config);
       break;
+  }
+
+  g_object_get (self, "state", &state, NULL);
+  if (state == KMS_URI_END_POINT_STATE_START) {
+    GST_DEBUG ("Setting %" GST_PTR_FORMAT " drop to FALSE", valve);
+    kms_utils_set_valve_drop (valve, FALSE);
   }
 }
 
