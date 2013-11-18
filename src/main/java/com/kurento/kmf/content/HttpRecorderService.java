@@ -63,7 +63,7 @@ public @interface HttpRecorderService {
 	 * have a different name.
 	 * 
 	 */
-	String name();
+	String name() default "";
 
 	/**
 	 * The handler will be instrumented as a HTTP Servlet in the application

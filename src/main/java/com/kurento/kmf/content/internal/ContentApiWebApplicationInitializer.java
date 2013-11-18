@@ -114,7 +114,8 @@ public class ContentApiWebApplicationInitializer implements
 				HttpPlayerService playerService = Class.forName(ph)
 						.getAnnotation(HttpPlayerService.class);
 				if (playerService != null) {
-					String name = playerService.name();
+					String name = playerService.name().isEmpty() ? ph
+							: playerService.name();
 					String path = playerService.path();
 					log.debug("Registering HttpPlayerHandler with name " + name
 							+ " at path " + path);
@@ -157,7 +158,8 @@ public class ContentApiWebApplicationInitializer implements
 				HttpRecorderService recorderService = Class.forName(rh)
 						.getAnnotation(HttpRecorderService.class);
 				if (recorderService != null) {
-					String name = recorderService.name();
+					String name = recorderService.name().isEmpty() ? rh
+							: recorderService.name();
 					String path = recorderService.path();
 					log.debug("Registering HttpRecorderHandler with name "
 							+ name + " at path " + path);
@@ -195,7 +197,8 @@ public class ContentApiWebApplicationInitializer implements
 				WebRtcContentService mediaService = Class.forName(wh)
 						.getAnnotation(WebRtcContentService.class);
 				if (mediaService != null) {
-					String name = mediaService.name();
+					String name = mediaService.name().isEmpty() ? wh
+							: mediaService.name();
 					String path = mediaService.path();
 					log.debug("Registering WebRtcContentHandler with name "
 							+ name + " at path " + path);
@@ -233,7 +236,8 @@ public class ContentApiWebApplicationInitializer implements
 				RtpContentService mediaService = Class.forName(rh)
 						.getAnnotation(RtpContentService.class);
 				if (mediaService != null) {
-					String name = mediaService.name();
+					String name = mediaService.name().isEmpty() ? rh
+							: mediaService.name();
 					String path = mediaService.path();
 					log.debug("Registering RtpContentHandler with name " + name
 							+ " at path " + path);
