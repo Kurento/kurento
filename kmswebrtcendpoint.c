@@ -46,16 +46,41 @@ struct _KmsWebrtcEndPointPrivate
   GMainContext *context;
   GMainLoop *loop;
   GThread *thread;
+  gboolean finalized;
 
   NiceAgent *agent;
   guint audio_stream_id;
+  gboolean audio_ice_gathering_done;
+
   guint video_stream_id;
+  gboolean video_ice_gathering_done;
+
+  GMutex gather_mutex;
+  GCond gather_cond;
+  gboolean wait_gathering;
+  gboolean ice_gathering_done;
 };
 
 static gboolean
 kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
-    base_sdp_endpoint, GstSDPMessage * msg)
+    base_sdp_end_point, GstSDPMessage * msg)
 {
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_sdp_end_point);
+
+  /* Wait for ICE candidates */
+  g_mutex_lock (&self->priv->gather_mutex);
+  self->priv->wait_gathering = TRUE;
+  while (!self->priv->finalized && !self->priv->ice_gathering_done)
+    g_cond_wait (&self->priv->gather_cond, &self->priv->gather_mutex);
+  self->priv->wait_gathering = FALSE;
+  g_cond_signal (&self->priv->gather_cond);
+  g_mutex_unlock (&self->priv->gather_mutex);
+
+  if (self->priv->finalized) {
+    GST_ERROR_OBJECT (self, "WebrtcEndPoint has finalized.");
+    return FALSE;
+  }
+
   GST_WARNING ("TODO: complete");
 
   return TRUE;
@@ -79,18 +104,31 @@ nice_agent_recv (NiceAgent * agent, guint stream_id, guint component_id,
 static void
 gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndPoint * self)
 {
-  GST_WARNING ("TODO: implement");
+  GST_DEBUG_OBJECT (self, "ICE gathering done for %s stream.",
+      nice_agent_get_stream_name (agent, stream_id));
+
+  g_mutex_lock (&self->priv->gather_mutex);
+
+  if (stream_id == self->priv->audio_stream_id)
+    self->priv->audio_ice_gathering_done = TRUE;
+  if (stream_id == self->priv->video_stream_id)
+    self->priv->video_ice_gathering_done = TRUE;
+
+  self->priv->ice_gathering_done = self->priv->audio_ice_gathering_done &&
+      self->priv->video_ice_gathering_done;
+
+  g_cond_signal (&self->priv->gather_cond);
+  g_mutex_unlock (&self->priv->gather_mutex);
 }
 
 static gpointer
-loop_thread (gpointer loop)
+loop_thread (gpointer user_data)
 {
-  GMainContext *context;
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (user_data);
 
-  context = g_main_loop_get_context (loop);
-  g_main_context_acquire (context);
-  g_main_loop_run (loop);
-  g_main_context_release (context);
+  g_main_context_acquire (self->priv->context);
+  g_main_loop_run (self->priv->loop);
+  g_main_context_release (self->priv->context);
 
   return NULL;
 }
@@ -142,6 +180,16 @@ kms_webrtc_end_point_finalize (GObject * object)
     self->priv->context = NULL;
   }
 
+  g_mutex_lock (&self->priv->gather_mutex);
+  self->priv->finalized = TRUE;
+  g_cond_signal (&self->priv->gather_cond);
+  while (self->priv->wait_gathering)
+    g_cond_wait (&self->priv->gather_cond, &self->priv->gather_mutex);
+  g_mutex_unlock (&self->priv->gather_mutex);
+
+  g_cond_clear (&self->priv->gather_cond);
+  g_mutex_clear (&self->priv->gather_mutex);
+
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_end_point_parent_class)->finalize (object);
 }
@@ -176,6 +224,10 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
 {
   self->priv = KMS_WEBRTC_END_POINT_GET_PRIVATE (self);
 
+  g_mutex_init (&self->priv->gather_mutex);
+  g_cond_init (&self->priv->gather_cond);
+  self->priv->finalized = FALSE;
+
   self->priv->context = g_main_context_new ();
   if (self->priv->context == NULL) {
     GST_ERROR_OBJECT (self, "Cannot create context.");
@@ -189,7 +241,7 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   }
 
   self->priv->thread =
-      g_thread_new (GST_ELEMENT_NAME (self), loop_thread, self->priv->loop);
+      g_thread_new (GST_ELEMENT_NAME (self), loop_thread, self);
 
   self->priv->agent =
       nice_agent_new (self->priv->context, NICE_COMPATIBILITY_RFC5245);
