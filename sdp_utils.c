@@ -235,6 +235,34 @@ sdp_utils_sdp_media_add_format (GstSDPMedia * media, const gchar * format,
   }
 }
 
+static void
+sdp_media_add_extra_info_from_src (const GstSDPMedia * src,
+    GstSDPMedia * result)
+{
+  guint len, i;
+
+  len = gst_sdp_media_connections_len (src);
+  for (i = 0; i < len; i++) {
+    const GstSDPConnection *conn;
+
+    conn = gst_sdp_media_get_connection (src, i);
+    gst_sdp_media_add_connection (result, conn->nettype, conn->addrtype,
+        conn->address, conn->ttl, conn->addr_number);
+  }
+
+  len = gst_sdp_media_attributes_len (src);
+  for (i = 0; i < len; i++) {
+    const GstSDPAttribute *attr;
+
+    attr = gst_sdp_media_get_attribute (src, i);
+    if (sdp_utils_attribute_is_direction (attr, NULL) ||
+        g_ascii_strcasecmp (RTPMAP, attr->key) == 0)
+      continue;
+
+    gst_sdp_media_add_attribute (result, attr->key, attr->value);
+  }
+}
+
 static GstSDPResult
 intersect_sdp_medias (const GstSDPMedia * offer,
     const GstSDPMedia * answer, GstSDPMedia ** offer_result,
@@ -311,6 +339,9 @@ intersect_sdp_medias (const GstSDPMedia * offer,
       sdp_media_set_direction (*answer_result, answer_result_dir);
     }
   }
+
+  sdp_media_add_extra_info_from_src (offer, *offer_result);
+  sdp_media_add_extra_info_from_src (answer, *answer_result);
 
   if (gst_sdp_media_formats_len (*answer_result) == 0
       && gst_sdp_media_formats_len (*offer_result) == 0) {
