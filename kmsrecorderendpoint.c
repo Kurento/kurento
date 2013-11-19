@@ -144,6 +144,8 @@ struct _KmsRecorderEndPointPrivate
   GstElement *encodebin;
   KmsRecordingProfile profile;
   RecorderState state;
+  GstClockTime paused_time;
+  GstClockTime paused_start;
   struct config_data *confdata;
   struct thread_data tdata;
   struct state_controller state_manager;
@@ -219,7 +221,8 @@ release_gst_clock (gpointer data)
 static GstFlowReturn
 recv_sample (GstElement * appsink, gpointer user_data)
 {
-  GstElement *self = GST_ELEMENT (GST_OBJECT_PARENT (appsink));
+  KmsRecorderEndPoint *self =
+      KMS_RECORDER_END_POINT (GST_OBJECT_PARENT (appsink));
   GstElement *appsrc = GST_ELEMENT (user_data);
   KmsUriEndPointState state;
   GstFlowReturn ret;
@@ -289,9 +292,9 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
     if (GST_BUFFER_DTS_IS_VALID (buffer))
-      buffer->dts -= *base_time;
+      buffer->dts -= *base_time + self->priv->paused_time;
     if (GST_BUFFER_PTS_IS_VALID (buffer))
-      buffer->pts -= *base_time;
+      buffer->pts -= *base_time + self->priv->paused_time;
   }
 
   GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
@@ -846,6 +849,9 @@ kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
     g_object_unref (video_src);
   }
 
+  self->priv->paused_time = G_GUINT64_CONSTANT (0);
+  self->priv->paused_start = GST_CLOCK_TIME_NONE;
+
   if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
     kms_recorder_end_point_wait_for_pipeline_eos (self);
   } else {
@@ -863,6 +869,13 @@ kms_recorder_end_point_started (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+
+  if (GST_CLOCK_TIME_IS_VALID (self->priv->paused_start)) {
+    self->priv->paused_time +=
+        gst_clock_get_time (GST_ELEMENT (self->priv->pipeline)->clock) -
+        self->priv->paused_start;
+    self->priv->paused_start = GST_CLOCK_TIME_NONE;
+  }
 
   /* Open valves */
   kms_recorder_end_point_open_valves (self);
@@ -882,6 +895,9 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to GST_STATE_PAUSED */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
+
+  self->priv->paused_start =
+      gst_clock_get_time (GST_ELEMENT (self->priv->pipeline)->clock);
 
   kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_PAUSE);
 }
@@ -1599,6 +1615,9 @@ static void
 kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 {
   self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
+
+  self->priv->paused_time = G_GUINT64_CONSTANT (0);
+  self->priv->paused_start = GST_CLOCK_TIME_NONE;
 
   /* Create internal pipeline */
   self->priv->pipeline = gst_pipeline_new ("recorder-pipeline");
