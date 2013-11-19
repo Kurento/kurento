@@ -41,6 +41,10 @@ G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
 #define AUDIO_STREAM_NAME "audio"
 #define VIDEO_STREAM_NAME "video"
 
+#define SDP_MEDIA_RTP_AVP_PROTO "RTP/AVP"
+#define SDP_MEDIA_RTP_SAVPF_PROTO "RTP/SAVPF"
+#define SDP_ICE_UFRAG_ATTR "ice-ufrag"
+#define SDP_ICE_PWD_ATTR "ice-pwd"
 #define SDP_CANDIDATE_ATTR "candidate"
 #define SDP_CANDIDATE_ATTR_LEN 12
 
@@ -82,12 +86,14 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
   gchar *str;
 
   proto_str = gst_sdp_media_get_proto (media);
-  if (g_ascii_strcasecmp ("RTP/AVP", proto_str) != 0 &&
-      g_ascii_strcasecmp ("RTP/SAVPF", proto_str) != 0) {
+  if (g_ascii_strcasecmp (SDP_MEDIA_RTP_AVP_PROTO, proto_str) != 0 &&
+      g_ascii_strcasecmp (SDP_MEDIA_RTP_SAVPF_PROTO, proto_str)) {
     GST_WARNING ("Proto \"%s\" not supported", proto_str);
     ((GstSDPMedia *) media)->port = 0;
     return;
   }
+
+  gst_sdp_media_set_proto (media, SDP_MEDIA_RTP_SAVPF_PROTO);
 
   rtp_default_candidate =
       nice_agent_get_default_local_candidate (agent, stream_id,
@@ -128,9 +134,10 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
 
   /* ICE credentials */
   nice_agent_get_local_credentials (agent, stream_id, &ufrag, &pwd);
-  gst_sdp_media_add_attribute ((GstSDPMedia *) media, "ice-ufrag", ufrag);
+  gst_sdp_media_add_attribute ((GstSDPMedia *) media, SDP_ICE_UFRAG_ATTR,
+      ufrag);
   g_free (ufrag);
-  gst_sdp_media_add_attribute ((GstSDPMedia *) media, "ice-pwd", pwd);
+  gst_sdp_media_add_attribute ((GstSDPMedia *) media, SDP_ICE_PWD_ATTR, pwd);
   g_free (pwd);
   /* TODO: add fingerprint */
 
@@ -200,11 +207,156 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
 }
 
 static void
+process_sdp_media (const GstSDPMedia * media, NiceAgent * agent,
+    guint stream_id, const gchar * msg_ufrag, const gchar * msg_pwd)
+{
+  const gchar *proto_str;
+  const gchar *ufrag, *pwd;
+  GRegex *regex;
+  guint len, i;
+
+  proto_str = gst_sdp_media_get_proto (media);
+  if (g_ascii_strcasecmp (SDP_MEDIA_RTP_SAVPF_PROTO, proto_str) != 0) {
+    GST_WARNING ("Proto \"%s\" not supported", proto_str);
+    return;
+  }
+
+  ufrag = gst_sdp_media_get_attribute_val (media, SDP_ICE_UFRAG_ATTR);
+  pwd = gst_sdp_media_get_attribute_val (media, SDP_ICE_PWD_ATTR);
+  if (!nice_agent_set_remote_credentials (agent, stream_id, ufrag, pwd)) {
+    GST_WARNING ("Cannot set remote media credentials.");
+    if (!nice_agent_set_remote_credentials (agent, stream_id, msg_ufrag,
+            msg_pwd)) {
+      GST_WARNING ("Cannot set remote message credentials.");
+      return;
+    }
+  }
+
+  regex = g_regex_new ("^(?<foundation>[0-9]+) (?<cid>[0-9]+)"
+      " (udp|UDP) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
+      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))( generation [0-9]+)?$",
+      0, 0, NULL);
+
+  len = gst_sdp_media_attributes_len (media);
+  for (i = 0; i < len; i++) {
+    const GstSDPAttribute *attr;
+    GMatchInfo *match_info = NULL;
+
+    attr = gst_sdp_media_get_attribute (media, i);
+    if (g_strcmp0 (SDP_CANDIDATE_ATTR, attr->key) != 0)
+      continue;
+
+    g_regex_match (regex, attr->value, 0, &match_info);
+
+    while (g_match_info_matches (match_info)) {
+      NiceCandidateType type;
+      NiceCandidate *cand = NULL;
+      GSList *candidates;
+
+      gchar *foundation = g_match_info_fetch_named (match_info, "foundation");
+      gchar *cid_str = g_match_info_fetch_named (match_info, "cid");
+      gchar *prio_str = g_match_info_fetch_named (match_info, "prio");
+      gchar *addr = g_match_info_fetch_named (match_info, "addr");
+      gchar *port_str = g_match_info_fetch_named (match_info, "port");
+      gchar *type_str = g_match_info_fetch_named (match_info, "type");
+
+      /* rfc5245-15.1 */
+      if (g_strcmp0 ("host", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_HOST;
+      } else if (g_strcmp0 ("srflx", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_SERVER_REFLEXIVE;
+      } else if (g_strcmp0 ("prflx", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_PEER_REFLEXIVE;
+      } else if (g_strcmp0 ("relay", type_str) == 0) {
+        type = NICE_CANDIDATE_TYPE_RELAYED;
+      } else {
+        GST_WARNING ("Candidate type '%s' not supported", type_str);
+        goto next;
+      }
+
+      cand = nice_candidate_new (type);
+      cand->component_id = g_ascii_strtoll (cid_str, NULL, 10);
+      cand->priority = g_ascii_strtoll (prio_str, NULL, 10);
+      g_strlcpy (cand->foundation, foundation, NICE_CANDIDATE_MAX_FOUNDATION);
+
+      if (!nice_address_set_from_string (&cand->addr, addr)) {
+        GST_WARNING ("Cannot set address '%s' to candidate", addr);
+        goto next;
+      }
+      nice_address_set_port (&cand->addr, g_ascii_strtoll (port_str, NULL, 10));
+
+      candidates = g_slist_append (NULL, cand);
+      if (nice_agent_set_remote_candidates (agent, stream_id,
+              cand->component_id, candidates) < 0) {
+        GST_WARNING ("Cannot add candidate: '%s'in stream_id: %d.", attr->value,
+            stream_id);
+      } else {
+        GST_TRACE ("Candidate added: '%s' in stream_id: %d.", attr->value,
+            stream_id);
+      }
+      g_slist_free (candidates);
+
+    next:
+      g_free (addr);
+      g_free (foundation);
+      g_free (cid_str);
+      g_free (prio_str);
+      g_free (port_str);
+      g_free (type_str);
+
+      if (cand != NULL)
+        nice_candidate_free (cand);
+
+      g_match_info_next (match_info, NULL);
+    }
+
+    g_match_info_free (match_info);
+  }
+
+  g_regex_unref (regex);
+}
+
+static void
 kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
     base_rtp_end_point, const GstSDPMessage * offer,
     const GstSDPMessage * answer, gboolean local_offer)
 {
-  GST_WARNING ("TODO: complete");
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_rtp_end_point);
+  const GstSDPMessage *sdp;
+  const gchar *ufrag, *pwd;
+  guint len, i;
+
+  if (gst_sdp_message_medias_len (answer) != gst_sdp_message_medias_len (offer)) {
+    GST_WARNING ("Incompatible offer and answer, possible errors in media");
+  }
+
+  if (local_offer) {
+    sdp = answer;
+  } else {
+    sdp = offer;
+  }
+
+  ufrag = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_UFRAG_ATTR);
+  pwd = gst_sdp_message_get_attribute_val (sdp, SDP_ICE_PWD_ATTR);
+
+  len = gst_sdp_message_medias_len (sdp);
+  for (i = 0; i < len; i++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (sdp, i);
+    const gchar *media_str;
+    guint stream_id;
+
+    media_str = gst_sdp_media_get_media (media);
+    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+      stream_id = self->priv->audio_stream_id;
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+      stream_id = self->priv->video_stream_id;
+    } else {
+      GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
+      continue;
+    }
+
+    process_sdp_media (media, self->priv->agent, stream_id, ufrag, pwd);
+  }
 }
 
 static void
