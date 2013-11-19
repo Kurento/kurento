@@ -37,6 +37,8 @@
 #define KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
 #define KEY_PAD_PROBE_ID "kms-pad-key-probe-id"
 
+#define BASE_TIME_DATA "base_time_data"
+
 #define HTTP_PROTO "http"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
@@ -208,6 +210,12 @@ send_eos (GstElement * appsrc)
   }
 }
 
+static void
+release_gst_clock (gpointer data)
+{
+  g_slice_free (GstClockTime, data);
+}
+
 static GstFlowReturn
 recv_sample (GstElement * appsink, gpointer user_data)
 {
@@ -218,6 +226,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   GstSample *sample;
   GstBuffer *buffer;
   GstCaps *caps;
+  GstClockTime *base_time;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -261,11 +270,35 @@ recv_sample (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  buffer->pts = GST_CLOCK_TIME_NONE;
-  buffer->dts = GST_CLOCK_TIME_NONE;
+  base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
 
-  buffer->offset = GST_CLOCK_TIME_NONE;
-  buffer->offset_end = GST_CLOCK_TIME_NONE;
+  if (base_time == NULL || !GST_CLOCK_TIME_IS_VALID (*base_time)) {
+    base_time = g_slice_new0 (GstClockTime);
+    g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
+        release_gst_clock);
+
+    if (GST_BUFFER_DTS_IS_VALID (buffer))
+      *base_time = buffer->dts;
+    else if (GST_BUFFER_PTS_IS_VALID (buffer))
+      *base_time = buffer->pts;
+    else
+      *base_time = GST_CLOCK_TIME_NONE;
+
+    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
+  }
+
+  if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
+    if (GST_BUFFER_DTS_IS_VALID (buffer))
+      buffer->dts -= *base_time;
+    if (GST_BUFFER_PTS_IS_VALID (buffer))
+      buffer->pts -= *base_time;
+  }
+
+  GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
+
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
+    GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
+
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   gst_buffer_unref (buffer);
@@ -386,7 +419,7 @@ kms_recorder_end_point_connect_appsink_to_appsrc (KmsRecorderEndPoint * self,
   g_object_set_data_full (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
       g_strdup (conf->destpadname), g_free);
 
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
       G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
 
@@ -790,11 +823,28 @@ static void
 kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
+  GstElement *audio_src, *video_src;
 
   kms_recorder_end_point_change_state (self);
 
   /* Close valves */
   kms_recorder_end_point_close_valves (self);
+
+  // Reset base time data
+  audio_src =
+      gst_bin_get_by_name (GST_BIN (self->priv->pipeline), AUDIO_APPSRC);
+  video_src =
+      gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
+
+  if (audio_src != NULL) {
+    g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
+    g_object_unref (audio_src);
+  }
+
+  if (video_src != NULL) {
+    g_object_set_data_full (G_OBJECT (video_src), BASE_TIME_DATA, NULL, NULL);
+    g_object_unref (video_src);
+  }
 
   if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
     kms_recorder_end_point_wait_for_pipeline_eos (self);

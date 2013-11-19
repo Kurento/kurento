@@ -29,6 +29,7 @@
 
 #define APPSRC_DATA "appsrc_data"
 #define APPSINK_DATA "appsink_data"
+#define BASE_TIME_DATA "base_time_data"
 
 GST_DEBUG_CATEGORY_STATIC (kms_player_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_player_end_point_debug_category
@@ -185,6 +186,12 @@ kms_player_end_point_finalize (GObject * object)
   G_OBJECT_CLASS (kms_player_end_point_parent_class)->finalize (object);
 }
 
+static void
+release_gst_clock (gpointer data)
+{
+  g_slice_free (GstClockTime, data);
+}
+
 static GstFlowReturn
 new_sample_cb (GstElement * appsink, gpointer user_data)
 {
@@ -192,6 +199,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
+  GstClockTime *base_time;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
@@ -206,12 +214,30 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   }
 
   gst_buffer_ref (buffer);
+
   buffer = gst_buffer_make_writable (buffer);
 
-  buffer->pts = GST_CLOCK_TIME_NONE;
-  buffer->dts = GST_CLOCK_TIME_NONE;
-  buffer->offset = GST_CLOCK_TIME_NONE;
-  buffer->offset_end = GST_CLOCK_TIME_NONE;
+  base_time =
+      g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
+
+  if (base_time == NULL) {
+    GstClock *clock;
+
+    clock = gst_element_get_clock (appsrc);
+    base_time = g_slice_new0 (GstClockTime);
+
+    g_object_set_data_full (G_OBJECT (GST_OBJECT_PARENT (appsrc)),
+        BASE_TIME_DATA, base_time, release_gst_clock);
+    *base_time =
+        gst_clock_get_time (clock) - gst_element_get_base_time (appsrc);
+    g_object_unref (clock);
+    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
+  }
+
+  if (GST_BUFFER_PTS_IS_VALID (buffer))
+    buffer->pts += *base_time;
+  if (GST_BUFFER_DTS_IS_VALID (buffer))
+    buffer->dts += *base_time;
 
   // TODO: Do something to fix a possible previous EOS event
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
@@ -278,7 +304,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+  g_object_set (G_OBJECT (appsrc), "is-live", FALSE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0),
       "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
       "caps", src_caps, NULL);

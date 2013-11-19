@@ -39,6 +39,7 @@
 
 #define APPSRC_DATA "appsrc_data"
 #define APPSINK_DATA "appsink_data"
+#define BASE_TIME_DATA "base_time_data"
 
 #define GET_PIPELINE "get-pipeline"
 #define POST_PIPELINE "post-pipeline"
@@ -248,6 +249,12 @@ new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
   return ret;
 }
 
+static void
+release_gst_clock (gpointer data)
+{
+  g_slice_free (GstClockTime, data);
+}
+
 static GstFlowReturn
 new_sample_get_handler (GstElement * appsink, gpointer user_data)
 {
@@ -256,6 +263,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   GstSample *sample = NULL;
   GstBuffer *buffer;
   GstCaps *caps;
+  GstClockTime *base_time;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -292,11 +300,34 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  /* TODO: adjust timestamp of this buffer */
-  buffer->pts = GST_CLOCK_TIME_NONE;
-  buffer->dts = GST_CLOCK_TIME_NONE;
-  buffer->offset = GST_CLOCK_TIME_NONE;
-  buffer->offset_end = GST_CLOCK_TIME_NONE;
+  base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
+
+  if (base_time == NULL || !GST_CLOCK_TIME_IS_VALID (*base_time)) {
+    base_time = g_slice_new0 (GstClockTime);
+    g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
+        release_gst_clock);
+
+    if (GST_BUFFER_DTS_IS_VALID (buffer))
+      *base_time = buffer->dts;
+    else if (GST_BUFFER_PTS_IS_VALID (buffer))
+      *base_time = buffer->pts;
+    else
+      *base_time = GST_CLOCK_TIME_NONE;
+
+    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
+  }
+
+  if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
+    if (GST_BUFFER_DTS_IS_VALID (buffer))
+      buffer->dts -= *base_time;
+    if (GST_BUFFER_PTS_IS_VALID (buffer))
+      buffer->pts -= *base_time;
+  }
+
+  GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
+
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_HEADER))
+    GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
@@ -324,6 +355,7 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
   GstSample *sample = NULL;
   GstBuffer *buffer;
   GstFlowReturn ret;
+  GstClockTime *base_time;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -338,10 +370,27 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  buffer->pts = GST_CLOCK_TIME_NONE;
-  buffer->dts = GST_CLOCK_TIME_NONE;
-  buffer->offset = GST_CLOCK_TIME_NONE;
-  buffer->offset_end = GST_CLOCK_TIME_NONE;
+  base_time =
+      g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
+
+  if (base_time == NULL) {
+    GstClock *clock;
+
+    clock = gst_element_get_clock (appsrc);
+    base_time = g_slice_new0 (GstClockTime);
+
+    g_object_set_data_full (G_OBJECT (GST_OBJECT_PARENT (appsrc)),
+        BASE_TIME_DATA, base_time, release_gst_clock);
+    *base_time =
+        gst_clock_get_time (clock) - gst_element_get_base_time (appsrc);
+    g_object_unref (clock);
+    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
+  }
+
+  if (GST_BUFFER_PTS_IS_VALID (buffer))
+    buffer->pts += *base_time;
+  if (GST_BUFFER_DTS_IS_VALID (buffer))
+    buffer->dts += *base_time;
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
@@ -413,7 +462,7 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+  g_object_set (G_OBJECT (appsrc), "is-live", FALSE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
       "caps", src_caps, NULL);
 
@@ -736,7 +785,7 @@ kms_http_end_point_connect_appsink_to_appsrc (KmsHttpEndPoint * self,
   g_object_set_data_full (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
       g_strdup (conf->destpadname), g_free);
 
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", TRUE,
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
       G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
 
@@ -1519,11 +1568,32 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self,
         GST_STATE_CHANGE_ASYNC)
       GST_DEBUG ("Change to PLAYING will be asynchronous");
   } else {
+    GstElement *audio_src;
+    GstElement *video_src;
+
     /* Set pipeline to READY */
     GST_DEBUG ("Setting pipeline to READY.");
     if (gst_element_set_state (self->priv->pipeline, GST_STATE_READY) ==
         GST_STATE_CHANGE_ASYNC)
       GST_DEBUG ("Change to READY will be asynchronous");
+
+    // Reset base time data
+    audio_src =
+        gst_bin_get_by_name (GST_BIN (self->priv->pipeline), AUDIO_APPSRC);
+    video_src =
+        gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
+
+    if (audio_src != NULL) {
+      g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
+      g_object_unref (audio_src);
+    }
+
+    if (video_src != NULL) {
+      g_object_set_data_full (G_OBJECT (video_src), BASE_TIME_DATA, NULL, NULL);
+      g_object_unref (video_src);
+    }
+
+    g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
   }
 
   self->priv->start = start;
