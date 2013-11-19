@@ -19,7 +19,7 @@
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<slf4j-api.version>1.7.5</slf4j-api.version>
 		<cors-filter.version>1.7.1</cors-filter.version>
-		<kmf-content-api.version>0.0.1-SNAPSHOT</kmf-content-api.version>
+		<kmf-content-api.version>1.0.0-SNAPSHOT</kmf-content-api.version>
 		<kws-content-api.version>1.0.0-SNAPSHOT</kws-content-api.version>
 
 		<!-- Plugins Versions -->
