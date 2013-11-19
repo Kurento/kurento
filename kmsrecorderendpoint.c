@@ -636,8 +636,8 @@ kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
   prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
 
   if (g_strcmp0 (prot, HTTP_PROTO) == 0) {
-    /* We use curlhttpsink */
-    sink = gst_element_factory_make ("curlhttpsink", NULL);
+    /* We use souphttpclientsink */
+    sink = gst_element_factory_make ("souphttpclientsink", NULL);
   }
   /* Add more if required */
   return sink;
@@ -757,6 +757,11 @@ kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
   GstPad *sinkpad;
 
   sink = kms_recorder_end_point_get_sink (self);
+
+  if (sink == NULL) {
+    sink = gst_element_factory_make ("fakesink", NULL);
+    GST_ELEMENT_ERROR (self, STREAM, WRONG_TYPE, ("No available sink"), (NULL));
+  }
 
   gst_bin_add (GST_BIN (self->priv->pipeline), sink);
   gst_element_sync_state_with_parent (sink);
@@ -1612,8 +1617,41 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
 }
 
 static void
+kms_recorder_end_point_post_error (gpointer data)
+{
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
+
+  gchar *message = (gchar *) g_object_steal_data (G_OBJECT (self), "message");
+
+  GST_ELEMENT_ERROR (self, STREAM, FAILED, ("%s", message), (NULL));
+  g_free (message);
+}
+
+static GstBusSyncReply
+bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
+{
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
+
+  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
+    GError *err = NULL;
+
+    gst_message_parse_error (msg, &err, NULL);
+    GST_ERROR ("ERROR %s", err->message);
+    g_object_set_data_full (G_OBJECT (self), "message",
+        g_strdup (err->message), (GDestroyNotify) g_free);
+
+    kms_recorder_end_point_add_action (self,
+        kms_recorder_end_point_post_error, self, NULL);
+    g_error_free (err);
+  }
+  return GST_BUS_PASS;
+}
+
+static void
 kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 {
+  GstBus *bus;
+
   self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
@@ -1625,6 +1663,10 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   self->priv->encodebin = NULL;
   self->priv->state = UNCONFIGURED;
   g_cond_init (&self->priv->state_manager.cond);
+
+  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
+  gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
+  g_object_unref (bus);
 
   self->priv->tdata.actions = g_queue_new ();
   g_cond_init (&self->priv->tdata.thread_cond);
