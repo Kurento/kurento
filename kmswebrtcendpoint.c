@@ -41,6 +41,9 @@ G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
 #define AUDIO_STREAM_NAME "audio"
 #define VIDEO_STREAM_NAME "video"
 
+#define SDP_CANDIDATE_ATTR "candidate"
+#define SDP_CANDIDATE_ATTR_LEN 12
+
 struct _KmsWebrtcEndPointPrivate
 {
   GMainContext *context;
@@ -61,11 +64,103 @@ struct _KmsWebrtcEndPointPrivate
   gboolean ice_gathering_done;
 };
 
+static void
+update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
+    gboolean use_ipv6)
+{
+  const gchar *proto_str;
+  GSList *candidates;
+  GSList *walk;
+  NiceCandidate *rtp_default_candidate, *rtcp_default_candidate;
+  gchar rtp_addr[NICE_ADDRESS_STRING_LEN + 1];
+  gchar rtcp_addr[NICE_ADDRESS_STRING_LEN + 1];
+  const gchar *rtp_addr_type, *rtcp_addr_type;
+  gboolean rtp_is_ipv6, rtcp_is_ipv6;
+  guint rtp_port, rtcp_port;
+  gchar *ufrag, *pwd;
+  guint conn_len, c;
+  gchar *str;
+
+  proto_str = gst_sdp_media_get_proto (media);
+  if (g_ascii_strcasecmp ("RTP/AVP", proto_str) != 0 &&
+      g_ascii_strcasecmp ("RTP/SAVPF", proto_str) != 0) {
+    GST_WARNING ("Proto \"%s\" not supported", proto_str);
+    ((GstSDPMedia *) media)->port = 0;
+    return;
+  }
+
+  rtp_default_candidate =
+      nice_agent_get_default_local_candidate (agent, stream_id,
+      NICE_COMPONENT_TYPE_RTP);
+  rtcp_default_candidate =
+      nice_agent_get_default_local_candidate (agent, stream_id,
+      NICE_COMPONENT_TYPE_RTCP);
+
+  nice_address_to_string (&rtp_default_candidate->addr, rtp_addr);
+  rtp_port = nice_address_get_port (&rtp_default_candidate->addr);
+  rtp_is_ipv6 = nice_address_ip_version (&rtp_default_candidate->addr) == 6;
+  nice_candidate_free (rtp_default_candidate);
+
+  nice_address_to_string (&rtcp_default_candidate->addr, rtcp_addr);
+  rtcp_port = nice_address_get_port (&rtcp_default_candidate->addr);
+  rtcp_is_ipv6 = nice_address_ip_version (&rtcp_default_candidate->addr) == 6;
+  nice_candidate_free (rtcp_default_candidate);
+
+  rtp_addr_type = rtp_is_ipv6 ? "IP6" : "IP4";
+  rtcp_addr_type = rtcp_is_ipv6 ? "IP6" : "IP4";
+
+  if (use_ipv6 != rtp_is_ipv6) {
+    GST_WARNING ("No valid rtp address type: %s", rtp_addr_type);
+    return;
+  }
+
+  ((GstSDPMedia *) media)->port = rtp_port;
+  conn_len = gst_sdp_media_connections_len (media);
+  for (c = 0; c < conn_len; c++) {
+    gst_sdp_media_remove_connection ((GstSDPMedia *) media, c);
+  }
+  gst_sdp_media_add_connection ((GstSDPMedia *) media, "IN", rtp_addr_type,
+      rtp_addr, 0, 0);
+
+  str = g_strdup_printf ("%d IN %s %s", rtcp_port, rtcp_addr_type, rtcp_addr);
+  gst_sdp_media_add_attribute ((GstSDPMedia *) media, "rtcp", str);
+  g_free (str);
+
+  /* ICE credentials */
+  nice_agent_get_local_credentials (agent, stream_id, &ufrag, &pwd);
+  gst_sdp_media_add_attribute ((GstSDPMedia *) media, "ice-ufrag", ufrag);
+  g_free (ufrag);
+  gst_sdp_media_add_attribute ((GstSDPMedia *) media, "ice-pwd", pwd);
+  g_free (pwd);
+  /* TODO: add fingerprint */
+
+  /* ICE candidates */
+  candidates =
+      nice_agent_get_local_candidates (agent, stream_id,
+      NICE_COMPONENT_TYPE_RTP);
+  candidates =
+      g_slist_concat (candidates,
+      nice_agent_get_local_candidates (agent, stream_id,
+          NICE_COMPONENT_TYPE_RTCP));
+
+  for (walk = candidates; walk; walk = walk->next) {
+    NiceCandidate *cand = walk->data;
+
+    str = nice_agent_generate_local_candidate_sdp (agent, cand);
+    gst_sdp_media_add_attribute ((GstSDPMedia *) media, SDP_CANDIDATE_ATTR,
+        str + SDP_CANDIDATE_ATTR_LEN);
+    g_free (str);
+  }
+
+  g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
+}
+
 static gboolean
 kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     base_sdp_end_point, GstSDPMessage * msg)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_sdp_end_point);
+  guint len, i;
 
   /* Wait for ICE candidates */
   g_mutex_lock (&self->priv->gather_mutex);
@@ -81,7 +176,25 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     return FALSE;
   }
 
-  GST_WARNING ("TODO: complete");
+  len = gst_sdp_message_medias_len (msg);
+  for (i = 0; i < len; i++) {
+    const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
+    const gchar *media_str;
+    guint stream_id;
+
+    media_str = gst_sdp_media_get_media (media);
+    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+      stream_id = self->priv->audio_stream_id;
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+      stream_id = self->priv->video_stream_id;
+    } else {
+      GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
+      continue;
+    }
+
+    update_sdp_media ((GstSDPMedia *) media, self->priv->agent,
+        stream_id, base_sdp_end_point->use_ipv6);
+  }
 
   return TRUE;
 }
