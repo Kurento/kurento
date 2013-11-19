@@ -251,7 +251,7 @@ new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 static GstFlowReturn
 new_sample_get_handler (GstElement * appsink, gpointer user_data)
 {
-  GstElement *element = GST_ELEMENT (user_data);
+  GstElement *appsrc = GST_ELEMENT (user_data);
   GstFlowReturn ret;
   GstSample *sample = NULL;
   GstBuffer *buffer;
@@ -261,8 +261,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   if (sample == NULL)
     return GST_FLOW_OK;
 
-  /* element is an appsrc one */
-  g_object_get (G_OBJECT (element), "caps", &caps, NULL);
+  g_object_get (G_OBJECT (appsrc), "caps", &caps, NULL);
   if (caps == NULL) {
     /* Appsrc has not yet caps defined */
     GstPad *sink_pad = gst_element_get_static_pad (appsink, "sink");
@@ -273,13 +272,13 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
     }
 
     if (caps == NULL) {
-      GST_ELEMENT_ERROR (element, CORE, CAPS, ("No caps found for %s",
-              GST_ELEMENT_NAME (element)), GST_ERROR_SYSTEM);
+      GST_ELEMENT_ERROR (appsrc, CORE, CAPS, ("No caps found for %s",
+              GST_ELEMENT_NAME (appsrc)), GST_ERROR_SYSTEM);
       ret = GST_FLOW_ERROR;
       goto end;
     }
 
-    g_object_set (element, "caps", caps, NULL);
+    g_object_set (appsrc, "caps", caps, NULL);
   }
 
   gst_caps_unref (caps);
@@ -301,14 +300,14 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
-  g_signal_emit_by_name (element, "push-buffer", buffer, &ret);
+  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   gst_buffer_unref (buffer);
 
   if (ret != GST_FLOW_OK) {
     /* something went wrong */
     GST_ERROR ("Could not send buffer to appsrc %s. Cause %s",
-        GST_ELEMENT_NAME (element), gst_flow_get_name (ret));
+        GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
   }
 
 end:
@@ -321,7 +320,7 @@ end:
 static GstFlowReturn
 new_sample_post_handler (GstElement * appsink, gpointer user_data)
 {
-  GstElement *element = GST_ELEMENT (user_data);
+  GstElement *appsrc = GST_ELEMENT (user_data);
   GstSample *sample = NULL;
   GstBuffer *buffer;
   GstFlowReturn ret;
@@ -346,14 +345,14 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
-  g_signal_emit_by_name (element, "push-buffer", buffer, &ret);
+  g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
 
   gst_buffer_unref (buffer);
 
   if (ret != GST_FLOW_OK) {
     /* something went wrong */
     GST_ERROR ("Could not send buffer to appsrc %s. Cause %s",
-        GST_ELEMENT_NAME (element), gst_flow_get_name (ret));
+        GST_ELEMENT_NAME (appsrc), gst_flow_get_name (ret));
   }
 
 end:
