@@ -371,6 +371,49 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
 }
 
 static void
+add_webrtc_transport_src (KmsWebrtcEndPoint * webrtc_end_point,
+    KmsWebRTCTransport * tr, gboolean is_client, const gchar * sink_pad_name)
+{
+  KmsBaseRtpEndPoint *base_rtp_end_point =
+      KMS_BASE_RTP_END_POINT (webrtc_end_point);
+
+  g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", is_client, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", is_client, NULL);
+
+  gst_bin_add_many (GST_BIN (webrtc_end_point),
+      g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
+
+  gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
+  gst_element_link_pads (tr->dtlssrtpdec, "src",
+      base_rtp_end_point->rtpbin, sink_pad_name);
+
+  gst_element_sync_state_with_parent (tr->dtlssrtpdec);
+  gst_element_sync_state_with_parent (tr->nicesrc);
+}
+
+static void
+add_webrtc_connection_src (KmsWebrtcEndPoint * webrtc_end_point,
+    KmsWebRTCConnection * conn, gboolean is_client)
+{
+  const gchar *stream_name;
+  const gchar *rtp_sink_name, *rtcp_sink_name;
+
+  /* FIXME: improve this */
+  rtp_sink_name = "recv_rtp_sink_0";    /* audio by default */
+  rtcp_sink_name = "recv_rtcp_sink_0";  /* audio by default */
+  stream_name = nice_agent_get_stream_name (conn->agent, conn->stream_id);
+  if (g_strcmp0 (VIDEO_STREAM_NAME, stream_name) == 0) {
+    rtp_sink_name = "recv_rtp_sink_1";
+    rtcp_sink_name = "recv_rtcp_sink_1";
+  }
+
+  add_webrtc_transport_src (webrtc_end_point, conn->rtp_transport, is_client,
+      rtp_sink_name);
+  add_webrtc_transport_src (webrtc_end_point, conn->rtcp_transport, is_client,
+      rtcp_sink_name);
+}
+
+static void
 process_sdp_media (const GstSDPMedia * media, NiceAgent * agent,
     guint stream_id, const gchar * msg_ufrag, const gchar * msg_pwd)
 {
@@ -507,19 +550,20 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (sdp, i);
     const gchar *media_str;
-    guint stream_id;
+    KmsWebRTCConnection *conn;
 
     media_str = gst_sdp_media_get_media (media);
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->audio_connection->stream_id;
+      conn = self->priv->audio_connection;
     } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->video_connection->stream_id;
+      conn = self->priv->video_connection;
     } else {
       GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
       continue;
     }
 
-    process_sdp_media (media, self->priv->agent, stream_id, ufrag, pwd);
+    process_sdp_media (media, self->priv->agent, conn->stream_id, ufrag, pwd);
+    add_webrtc_connection_src (self, conn, !local_offer);
   }
 }
 
@@ -583,14 +627,18 @@ kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
         g_free (self->priv->certificate_pem_file);
 
       self->priv->certificate_pem_file = g_value_dup_string (value);
-      g_object_set_property (G_OBJECT (self->priv->audio_connection->
-              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->audio_connection->
-              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->video_connection->
-              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->video_connection->
-              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              audio_connection->rtp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              audio_connection->rtcp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              video_connection->rtp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              video_connection->rtcp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
