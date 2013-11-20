@@ -211,6 +211,7 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
   KMS_BASE_RTP_END_POINT (base_end_point)->negotiated = TRUE;
 
   for (i = 0; i < len; i++) {
+    const gchar *proto_str;
     GstElement *payloader;
     GstCaps *caps = NULL;
     const gchar *rtpmap;
@@ -218,8 +219,12 @@ kms_base_rtp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
     guint j, f_len;
 
     // TODO: Change constant RTP/AVP by a paremeter
-    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0)
+    proto_str = gst_sdp_media_get_proto (media);
+    if (g_ascii_strcasecmp ("RTP/AVP", proto_str) != 0 &&
+        g_ascii_strcasecmp ("RTP/SAVPF", proto_str) != 0) {
+      GST_WARNING ("Proto \"%s\" not supported", proto_str);
       continue;
+    }
 
     f_len = gst_sdp_media_formats_len (media);
 
@@ -289,13 +294,18 @@ kms_base_rtp_end_point_get_caps_for_pt (KmsBaseRtpEndPoint * base_rtp_end_point,
   len = gst_sdp_message_medias_len (answer);
 
   for (i = 0; i < len; i++) {
+    const gchar *proto_str;
     const gchar *rtpmap;
     const GstSDPMedia *media = gst_sdp_message_get_media (answer, i);
     guint j, f_len;
 
     // TODO: Change constant RTP/AVP by a paremeter
-    if (g_ascii_strcasecmp ("RTP/AVP", gst_sdp_media_get_proto (media)) != 0)
+    proto_str = gst_sdp_media_get_proto (media);
+    if (g_ascii_strcasecmp ("RTP/AVP", proto_str) != 0 &&
+        g_ascii_strcasecmp ("RTP/SAVPF", proto_str) != 0) {
+      GST_WARNING ("Proto \"%s\" not supported", proto_str);
       continue;
+    }
 
     f_len = gst_sdp_media_formats_len (media);
 
