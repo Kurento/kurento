@@ -18,6 +18,7 @@
 
 #include "kmswebrtcendpoint.h"
 #include <nice/nice.h>
+#include <gio/gio.h>
 
 #define PLUGIN_NAME "webrtcendpoint"
 
@@ -54,6 +55,8 @@ enum
 #define SDP_ICE_PWD_ATTR "ice-pwd"
 #define SDP_CANDIDATE_ATTR "candidate"
 #define SDP_CANDIDATE_ATTR_LEN 12
+
+#define FINGERPRINT_CHECKSUM G_CHECKSUM_SHA256
 
 typedef struct _KmsWebRTCTransport
 {
@@ -252,9 +255,63 @@ connect_rtcp_data_destroy (gpointer data)
 
 /* ConnectRtcpData */
 
+static gchar *
+generate_fingerprint (const gchar * pem_file)
+{
+  GTlsCertificate *cert;
+  GError *error = NULL;
+  GByteArray *ba;
+  gssize length;
+  int size;
+  gchar *fingerprint;
+  gchar *fingerprint_colon;
+  int i, j;
+
+  cert = g_tls_certificate_new_from_file (pem_file, &error);
+  g_object_get (cert, "certificate", &ba, NULL);
+  fingerprint =
+      g_compute_checksum_for_data (FINGERPRINT_CHECKSUM, ba->data, ba->len);
+  g_object_unref (cert);
+
+  length = g_checksum_type_get_length (FINGERPRINT_CHECKSUM);
+  size = (int) (length * 2 + length) * sizeof (gchar);
+  fingerprint_colon = g_malloc0 (size);
+
+  j = 0;
+  for (i = 0; i < length * 2; i += 2) {
+    fingerprint_colon[j] = g_ascii_toupper (fingerprint[i]);
+    fingerprint_colon[++j] = g_ascii_toupper (fingerprint[i + 1]);
+    fingerprint_colon[++j] = ':';
+    j++;
+  };
+  fingerprint_colon[size - 1] = '\0';
+  g_free (fingerprint);
+
+  return fingerprint_colon;
+}
+
+static gchar *
+generate_fingerprint_sdp_attr (KmsWebrtcEndPoint * webrtc_end_point)
+{
+  gchar *fp, *ret;
+
+  if (webrtc_end_point->priv->certificate_pem_file == NULL) {
+    /* TODO: generate a certificate */
+    GST_WARNING_OBJECT (webrtc_end_point,
+        "\"certificate_pem_file\" property not set.");
+    return NULL;
+  }
+
+  fp = generate_fingerprint (webrtc_end_point->priv->certificate_pem_file);
+  ret = g_strconcat ("sha-256 ", fp, NULL);
+  g_free (fp);
+
+  return ret;
+}
+
 static void
 update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
-    gboolean use_ipv6)
+    const gchar * fingerprint, gboolean use_ipv6)
 {
   const gchar *proto_str;
   GSList *candidates;
@@ -323,7 +380,10 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
   g_free (ufrag);
   gst_sdp_media_add_attribute ((GstSDPMedia *) media, SDP_ICE_PWD_ATTR, pwd);
   g_free (pwd);
-  /* TODO: add fingerprint */
+
+  if (fingerprint != NULL)
+    gst_sdp_media_add_attribute ((GstSDPMedia *) media, "fingerprint",
+        fingerprint);
 
   /* ICE candidates */
   candidates =
@@ -351,6 +411,7 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     base_sdp_end_point, GstSDPMessage * msg)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_sdp_end_point);
+  gchar *fingerprint;
   guint len, i;
 
   /* Wait for ICE candidates */
@@ -366,6 +427,8 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     GST_ERROR_OBJECT (self, "WebrtcEndPoint has finalized.");
     return FALSE;
   }
+
+  fingerprint = generate_fingerprint_sdp_attr (self);
 
   len = gst_sdp_message_medias_len (msg);
   for (i = 0; i < len; i++) {
@@ -384,8 +447,11 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     }
 
     update_sdp_media ((GstSDPMedia *) media, self->priv->agent,
-        stream_id, base_sdp_end_point->use_ipv6);
+        stream_id, fingerprint, base_sdp_end_point->use_ipv6);
   }
+
+  if (fingerprint != NULL)
+    g_free (fingerprint);
 
   return TRUE;
 }
@@ -720,14 +786,18 @@ kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
         g_free (self->priv->certificate_pem_file);
 
       self->priv->certificate_pem_file = g_value_dup_string (value);
-      g_object_set_property (G_OBJECT (self->priv->audio_connection->
-              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->audio_connection->
-              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->video_connection->
-              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->video_connection->
-              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              audio_connection->rtp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              audio_connection->rtcp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              video_connection->rtp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->
+              video_connection->rtcp_transport->dtlssrtpdec),
+          "certificate-pem-file", value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
