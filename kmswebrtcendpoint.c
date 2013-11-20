@@ -232,6 +232,26 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
 
 /* WebRTCConnection */
 
+/* ConnectRtcpData */
+
+typedef struct _ConnectRtcpData
+{
+  KmsWebrtcEndPoint *webrtc_end_point;
+  KmsWebRTCTransport *tr;
+  const gchar *src_pad_name;
+} ConnectRtcpData;
+
+static void
+connect_rtcp_data_destroy (gpointer data)
+{
+  if (data == NULL)
+    return;
+
+  g_slice_free (ConnectRtcpData, data);
+}
+
+/* ConnectRtcpData */
+
 static void
 update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
     gboolean use_ipv6)
@@ -616,6 +636,79 @@ destroy_main_loop (gpointer loop)
 }
 
 static void
+add_webrtc_transport_sink (KmsWebrtcEndPoint * webrtc_end_point,
+    KmsWebRTCTransport * tr, const gchar * src_pad_name,
+    const gchar * sink_pad_name)
+{
+  KmsBaseRtpEndPoint *base_rtp_end_point =
+      KMS_BASE_RTP_END_POINT (webrtc_end_point);
+
+  gst_bin_add_many (GST_BIN (webrtc_end_point),
+      g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
+
+  gst_element_link (tr->dtlssrtpenc, tr->nicesink);
+  gst_element_link_pads (base_rtp_end_point->rtpbin,
+      src_pad_name, tr->dtlssrtpenc, sink_pad_name);
+
+  gst_element_sync_state_with_parent (tr->dtlssrtpenc);
+  gst_element_sync_state_with_parent (tr->nicesink);
+}
+
+static gboolean
+connect_rtcp (ConnectRtcpData * data)
+{
+  add_webrtc_transport_sink (data->webrtc_end_point, data->tr,
+      data->src_pad_name, "rtcp_sink");
+
+  return FALSE;
+}
+
+static void
+add_webrtc_connection_sink (KmsWebrtcEndPoint * webrtc_end_point,
+    KmsWebRTCConnection * conn)
+{
+  const gchar *stream_name;
+  const gchar *rtp_src_name, *rtcp_src_name;
+  ConnectRtcpData *data;
+
+  /* FIXME: improve this */
+  rtp_src_name = "send_rtp_src_0";      /* audio by default */
+  rtcp_src_name = "send_rtcp_src_0";    /* audio by default */
+  stream_name = nice_agent_get_stream_name (conn->agent, conn->stream_id);
+  if (g_strcmp0 (VIDEO_STREAM_NAME, stream_name) == 0) {
+    rtp_src_name = "send_rtp_src_1";
+    rtcp_src_name = "send_rtcp_src_1";
+  }
+
+  data = g_slice_new0 (ConnectRtcpData);
+  data->webrtc_end_point = webrtc_end_point;
+  data->tr = conn->rtcp_transport;
+  data->src_pad_name = rtcp_src_name;
+
+  add_webrtc_transport_sink (webrtc_end_point, conn->rtp_transport,
+      rtp_src_name, "rtp_sink");
+  g_idle_add_full (G_PRIORITY_DEFAULT, (GSourceFunc) (connect_rtcp), data,
+      connect_rtcp_data_destroy);
+}
+
+static void
+rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
+    KmsWebrtcEndPoint * webrtc_end_point)
+{
+  KmsWebRTCConnection *conn = NULL;
+
+  if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_0") == 0) {
+    conn = webrtc_end_point->priv->audio_connection;
+  } else if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_1") == 0) {
+    conn = webrtc_end_point->priv->video_connection;
+  }
+
+  if (conn != NULL) {
+    add_webrtc_connection_sink (webrtc_end_point, conn);
+  }
+}
+
+static void
 kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -627,18 +720,14 @@ kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
         g_free (self->priv->certificate_pem_file);
 
       self->priv->certificate_pem_file = g_value_dup_string (value);
-      g_object_set_property (G_OBJECT (self->priv->
-              audio_connection->rtp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->
-              audio_connection->rtcp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->
-              video_connection->rtp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->
-              video_connection->rtcp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->audio_connection->
+              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->audio_connection->
+              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->video_connection->
+              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->video_connection->
+              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -748,6 +837,8 @@ kms_webrtc_end_point_class_init (KmsWebrtcEndPointClass * klass)
 static void
 kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
 {
+  KmsBaseRtpEndPoint *base_rtp_end_point = KMS_BASE_RTP_END_POINT (self);
+
   self->priv = KMS_WEBRTC_END_POINT_GET_PRIVATE (self);
 
   g_mutex_init (&self->priv->gather_mutex);
@@ -807,6 +898,9 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
     GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
         VIDEO_STREAM_NAME);
   }
+
+  g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
+      G_CALLBACK (rtpbin_pad_added), self);
 }
 
 gboolean
