@@ -527,7 +527,8 @@ process_sdp_media (const GstSDPMedia * media, NiceAgent * agent,
 
   regex = g_regex_new ("^(?<foundation>[0-9]+) (?<cid>[0-9]+)"
       " (udp|UDP) (?<prio>[0-9]+) (?<addr>[0-9.:a-zA-Z]+)"
-      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))( generation [0-9]+)?$",
+      " (?<port>[0-9]+) typ (?<type>(host|srflx|prflx|relay))"
+      "( raddr [0-9.:a-zA-Z]+ rport [0-9]+)?( generation [0-9]+)?$",
       0, 0, NULL);
 
   len = gst_sdp_media_attributes_len (media);
