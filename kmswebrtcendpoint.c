@@ -36,6 +36,13 @@ G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
   )                                             \
 )
 
+enum
+{
+  PROP_0,
+  PROP_CERTIFICATE_PEM_FILE,
+  N_PROPERTIES
+};
+
 #define NICE_N_COMPONENTS 2
 
 #define AUDIO_STREAM_NAME "audio"
@@ -84,6 +91,8 @@ struct _KmsWebrtcEndPointPrivate
   GCond gather_cond;
   gboolean wait_gathering;
   gboolean ice_gathering_done;
+
+  gchar *certificate_pem_file;
 };
 
 /* KmsWebRTCTransport */
@@ -563,6 +572,50 @@ destroy_main_loop (gpointer loop)
 }
 
 static void
+kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
+
+  switch (prop_id) {
+    case PROP_CERTIFICATE_PEM_FILE:
+      if (self->priv->certificate_pem_file != NULL)
+        g_free (self->priv->certificate_pem_file);
+
+      self->priv->certificate_pem_file = g_value_dup_string (value);
+      g_object_set_property (G_OBJECT (self->priv->audio_connection->
+              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->audio_connection->
+              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->video_connection->
+              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->video_connection->
+              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+
+}
+
+static void
+kms_webrtc_end_point_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
+
+  switch (prop_id) {
+    case PROP_CERTIFICATE_PEM_FILE:
+      g_value_set_string (value, self->priv->certificate_pem_file);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
 kms_webrtc_end_point_finalize (GObject * object)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
@@ -616,6 +669,8 @@ kms_webrtc_end_point_class_init (KmsWebrtcEndPointClass * klass)
   KmsBaseSdpEndPointClass *base_sdp_end_point_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->set_property = kms_webrtc_end_point_set_property;
+  gobject_class->get_property = kms_webrtc_end_point_get_property;
   gobject_class->finalize = kms_webrtc_end_point_finalize;
 
   gst_element_class_set_details_simple (GST_ELEMENT_CLASS (klass),
@@ -630,6 +685,14 @@ kms_webrtc_end_point_class_init (KmsWebrtcEndPointClass * klass)
       kms_webrtc_end_point_set_transport_to_sdp;
   base_sdp_end_point_class->start_transport_send =
       kms_webrtc_end_point_start_transport_send;
+
+  g_object_class_install_property (gobject_class, PROP_CERTIFICATE_PEM_FILE,
+      g_param_spec_string ("certificate-pem-file",
+          "Certificate PEM File",
+          "PEM File name containing the certificate and private key",
+          NULL,
+          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
+          G_PARAM_STATIC_STRINGS));
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndPointPrivate));
 }
