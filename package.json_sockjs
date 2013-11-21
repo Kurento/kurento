@@ -7,7 +7,7 @@
   "author": "Kurento <info@kurento.com> (http://kurento.org)",
   "contributors": [
     {
-      "name": "Jesus Leganes Combarro 'piranna'",
+      "name": "Jesús Leganés Combarro 'piranna'",
       "email": "piranna@gmail.com",
       "url": "http://pirannafs.blogspot.com.es"
     }
@@ -36,8 +36,7 @@
   "dependencies": {
     "async": "~0.2.9",
     "rpc-builder": "~0.0.3",
-    "ws": "~0.4.31",
-    "xmlhttprequest": "piranna/node-XMLHttpRequest"
+    "ws": "~0.4.31"
   },
   "devDependencies": {
     "bower": "latest",
@@ -53,5 +52,8 @@
     "grunt-jsdoc": "latest",
     "nock": "latest",
     "nodeunit": "latest"
+  },
+  "browser": {
+    "ws": "./shims/sockjs-0.3.js"
   }
 }

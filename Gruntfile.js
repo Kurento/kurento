@@ -43,6 +43,11 @@ module.exports = function(grunt)
       all: ['test/**/*.js']
     },
 
+    curl:
+    {
+      'shims/sockjs-0.3.js': 'http://cdn.sockjs.org/sockjs-0.3.js'
+    },
+
     browserify:
     {
       standalone:
@@ -100,11 +105,14 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-curl');
 
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
 
   // Default task(s).
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify', 'uglify']);
+  grunt.registerTask('browser', ['curl', 'browserify', 'uglify']);
+  grunt.registerTask('default', ['clean', 'browser']);
+//  grunt.registerTask('default', ['nodeunit', 'clean', 'jsdoc', 'browser']);
   grunt.registerTask('maven',   ['default', 'copy']);
 };
