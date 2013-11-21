@@ -23,6 +23,7 @@
 #include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "kmselement"
+#define DEFAULT_ACCEPT_EOS TRUE
 
 GST_DEBUG_CATEGORY_STATIC (kms_element_debug_category);
 #define GST_CAT_DEFAULT kms_element_debug_category
@@ -46,6 +47,8 @@ struct _KmsElementPrivate
   guint audio_pad_count;
   guint video_pad_count;
 
+  gboolean accept_eos;
+
   GstElement *audio_valve;
   GstElement *video_valve;
 
@@ -61,7 +64,8 @@ enum
 
 enum
 {
-  PROP_0
+  PROP_0,
+  PROP_ACCEPT_EOS
 };
 
 /* the capabilities of the inputs and outputs. */
@@ -243,6 +247,29 @@ send_flush_on_unlink (GstPad * pad, GstPad * peer, gpointer user_data)
   }
 }
 
+static GstPadProbeReturn
+accept_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
+    KmsElement *self;
+    gboolean accept;
+
+    self = KMS_ELEMENT (data);
+    KMS_ELEMENT_LOCK (self);
+    accept = self->priv->accept_eos;
+    KMS_ELEMENT_UNLOCK (self);
+
+    if (!accept)
+      GST_DEBUG_OBJECT (pad, "Eos dropped");
+
+    return (accept) ? GST_PAD_PROBE_OK : GST_PAD_PROBE_DROP;
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
 static GstPad *
 kms_element_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -279,6 +306,9 @@ kms_element_request_new_pad (GstElement * element,
         kms_element_generate_sink_pad (KMS_ELEMENT (element), AUDIO_SINK_PAD,
         &KMS_ELEMENT (element)->priv->audio_valve, templ);
 
+    gst_pad_add_probe (ret_pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        accept_eos_probe, element, NULL);
+
     g_signal_connect (G_OBJECT (ret_pad), "unlinked",
         G_CALLBACK (send_flush_on_unlink), NULL);
   } else if (templ ==
@@ -287,6 +317,9 @@ kms_element_request_new_pad (GstElement * element,
     ret_pad =
         kms_element_generate_sink_pad (KMS_ELEMENT (element), VIDEO_SINK_PAD,
         &KMS_ELEMENT (element)->priv->video_valve, templ);
+
+    gst_pad_add_probe (ret_pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        accept_eos_probe, element, NULL);
 
     g_signal_connect (G_OBJECT (ret_pad), "unlinked",
         G_CALLBACK (send_flush_on_unlink), NULL);
@@ -353,6 +386,42 @@ kms_element_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
+kms_element_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsElement *self = KMS_ELEMENT (object);
+
+  KMS_ELEMENT_LOCK (self);
+  switch (property_id) {
+    case PROP_ACCEPT_EOS:
+      self->priv->accept_eos = g_value_get_boolean (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_element_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsElement *self = KMS_ELEMENT (object);
+
+  KMS_ELEMENT_LOCK (self);
+  switch (property_id) {
+    case PROP_ACCEPT_EOS:
+      g_value_set_boolean (value, self->priv->accept_eos);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
 kms_element_finalize (GObject * object)
 {
   KmsElement *element = KMS_ELEMENT (object);
@@ -403,6 +472,8 @@ kms_element_class_init (KmsElementClass * klass)
   GObjectClass *gobject_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->set_property = kms_element_set_property;
+  gobject_class->get_property = kms_element_get_property;
   gobject_class->finalize = kms_element_finalize;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
@@ -422,6 +493,12 @@ kms_element_class_init (KmsElementClass * klass)
       gst_static_pad_template_get (&audio_sink_factory));
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&video_sink_factory));
+
+  g_object_class_install_property (gobject_class, PROP_ACCEPT_EOS,
+      g_param_spec_boolean ("accept-eos",
+          "Accept EOS",
+          "Indicates if the element should accept EOS events.",
+          DEFAULT_ACCEPT_EOS, G_PARAM_READWRITE));
 
   klass->audio_valve_added =
       GST_DEBUG_FUNCPTR (kms_element_audio_valve_added_default);
@@ -444,6 +521,7 @@ kms_element_init (KmsElement * element)
 
   g_object_set (G_OBJECT (element), "async-handling", TRUE, NULL);
 
+  element->priv->accept_eos = DEFAULT_ACCEPT_EOS;
   element->priv->audio_pad_count = 0;
   element->priv->video_pad_count = 0;
   element->priv->audio_agnosticbin = NULL;

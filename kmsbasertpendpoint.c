@@ -487,6 +487,7 @@ kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_pad_added), base_rtp_end_point);
 
   g_object_set (base_rtp_end_point->rtpbin, "do-lost", TRUE, NULL);
+  g_object_set (base_rtp_end_point, "accept-eos", FALSE, NULL);
 
   gst_bin_add (GST_BIN (base_rtp_end_point), base_rtp_end_point->rtpbin);
 
