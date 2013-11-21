@@ -77,8 +77,8 @@ public class RtpMediaHandlerServlet extends AbstractContentHandlerServlet {
 	protected AbstractContentSession createContentSession(
 			AsyncContext asyncCtx, String contentId) {
 		return (RtpContentSessionImpl) KurentoApplicationContextUtils.getBean(
-				"rtpContentSessionImpl", rtpMediaHandler, contentSessionManager,
-				asyncCtx, contentId);
+				"rtpContentSessionImpl", rtpMediaHandler,
+				contentSessionManager, asyncCtx, contentId);
 	}
 
 	/**

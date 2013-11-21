@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.content;
 
+import com.kurento.kmf.media.RtpEndPoint;
+
 /**
  * TODO: review & improve javadoc s Defines the operations performed by the
  * RtpMediaRequest object, which is in charge of the requesting to a content to
@@ -23,4 +25,11 @@ package com.kurento.kmf.content;
  * @version 1.0.0
  */
 public interface RtpContentSession extends SdpContentSession {
+	/**
+	 * TODO
+	 * 
+	 * @return
+	 */
+	@Override
+	RtpEndPoint getSessionEndPoint();
 }

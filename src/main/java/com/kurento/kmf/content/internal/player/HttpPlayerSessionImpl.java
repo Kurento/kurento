@@ -35,6 +35,8 @@ import com.kurento.kmf.media.PlayerEndPoint;
 import com.kurento.kmf.media.UriEndPoint;
 import com.kurento.kmf.media.events.HttpEndPointEOSDetected;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.repository.RepositoryHttpEndpoint;
+import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * 
@@ -94,6 +96,25 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 					10028);
 			activateMedia(null, new MediaElement[] { element });
 
+		} catch (KurentoMediaFrameworkException ke) {
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
+			throw ke;
+		} catch (Throwable t) {
+			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
+			throw kmfe;
+		}
+	}
+	
+	@Override
+	public void start(RepositoryItem repositoryItem) {
+		try {
+			Assert.notNull(repositoryItem, "Illegal null repository provided",
+					10027);
+			activateMedia(repositoryItem);
 		} catch (KurentoMediaFrameworkException ke) {
 			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
 					null);
@@ -201,4 +222,14 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 			ContentCommand command) throws Exception {
 		return getHandler().onContentCommand(this, command);
 	}
+
+	@Override
+	protected RepositoryHttpEndpoint createRepositoryHttpEndpoint(
+			RepositoryItem repositoryItem) {
+		return repositoryItem.createRepositoryHttpPlayer();
+		// TODO: who releases this?
+		// Should it be released in a per-session basis? In that case, we cannot
+		// re-use if useControlProtocol = false.
+	}
+
 }

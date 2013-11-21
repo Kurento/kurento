@@ -14,7 +14,9 @@
  */
 package com.kurento.kmf.content;
 
+import com.kurento.kmf.media.HttpEndPoint;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * Defines the operations performed by the PlayRequest object, which is in
@@ -42,7 +44,7 @@ public interface HttpPlayerSession extends ContentSession {
 	 * @throws ContentException
 	 *             Exception in the strat
 	 */
-	public void start(String contentPath);
+	void start(String contentPath);
 
 	/**
 	 * Starts the content exchange for a given media element. TODO: Explain what
@@ -53,14 +55,20 @@ public interface HttpPlayerSession extends ContentSession {
 	 * @throws ContentException
 	 *             Exception in the play
 	 */
-	public void start(MediaElement source);
+	void start(MediaElement source);
 
 	/**
-	 * Cancel the play operation.
+	 * TODO
 	 * 
-	 * @param statusCode
-	 *            Error code
-	 * @param message
-	 *            Descriptive message to cancel the play operation
+	 * @param repositoryItem
 	 */
+	void start(RepositoryItem repositoryItem);
+
+	/**
+	 * TODO
+	 * 
+	 * @return
+	 */
+	@Override
+	HttpEndPoint getSessionEndPoint();
 }

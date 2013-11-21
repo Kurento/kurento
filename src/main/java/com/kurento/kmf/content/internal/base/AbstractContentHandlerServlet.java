@@ -105,9 +105,9 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 			// Create application context for this servlet containing the
 			// handler
 			thisServletContext = KurentoApplicationContextUtils
-					.createKurentoServletApplicationContext(this.getClass(),
-							this.getServletName(), this.getServletContext(),
-							handlerClassName);
+					.createKurentoHandlerServletApplicationContext(
+							this.getClass(), this.getServletName(),
+							this.getServletContext(), handlerClassName);
 
 			// useRedirectStrategy = getUseRedirectStrategy(handlerClass);
 			try {

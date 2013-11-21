@@ -16,8 +16,10 @@ package com.kurento.kmf.content;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.repository.Repository;
 
 /**
  * 
@@ -34,7 +36,7 @@ public interface ContentSession {
 	 * 
 	 * @return unique Id of this session
 	 */
-	public String getSessionId();
+	String getSessionId();
 
 	/**
 	 * Get the media resource public identification, that can be permanently or
@@ -44,7 +46,7 @@ public interface ContentSession {
 	 * 
 	 * @return Media identification
 	 */
-	public String getContentId();
+	String getContentId();
 
 	/**
 	 * Media attribute accessor (getter).
@@ -53,7 +55,7 @@ public interface ContentSession {
 	 *            Name of the attribute
 	 * @return Media Attribute
 	 */
-	public Object getAttribute(String name);
+	Object getAttribute(String name);
 
 	/**
 	 * Media attribute mutator (setter).
@@ -64,7 +66,7 @@ public interface ContentSession {
 	 *            Value of the attribute
 	 * @return Value of the set attribute
 	 */
-	public Object setAttribute(String name, Object value);
+	Object setAttribute(String name, Object value);
 
 	/**
 	 * Media attribute eraser.
@@ -73,7 +75,7 @@ public interface ContentSession {
 	 *            Name of the attribute
 	 * @return Value of the deleted attribute
 	 */
-	public Object removeAttribute(String name);
+	Object removeAttribute(String name);
 
 	/**
 	 * Get the Servlet Request, handled by the application server. Given that
@@ -83,14 +85,14 @@ public interface ContentSession {
 	 * 
 	 * @return HTTP Servlet Request
 	 */
-	public HttpServletRequest getHttpServletRequest();
+	HttpServletRequest getHttpServletRequest();
 
 	/**
 	 * Media Pipeline Factory accessor (getter).
 	 * 
 	 * @return Media Pipeline Factory
 	 */
-	public MediaPipelineFactory getMediaPipelineFactory();
+	MediaPipelineFactory getMediaPipelineFactory();
 
 	/**
 	 * Terminates this session. The session cannot be used after invoking this
@@ -101,7 +103,7 @@ public interface ContentSession {
 	 * @param message
 	 *            Descriptive message to cancel the record operation
 	 */
-	public void terminate(int statusCode, String message);
+	void terminate(int statusCode, String message);
 
 	/**
 	 * Publishes a media event to the client. This method only makes sense when
@@ -111,7 +113,7 @@ public interface ContentSession {
 	 * @param event
 	 *            the event to be published
 	 */
-	public void publishEvent(ContentEvent contentEvent);
+	void publishEvent(ContentEvent contentEvent);
 
 	/**
 	 * Guarantees that a given media object is released (invoking its release
@@ -119,5 +121,20 @@ public interface ContentSession {
 	 * 
 	 * @param mediaObject
 	 */
-	public void releaseOnTerminate(MediaObject mediaObject);
+	void releaseOnTerminate(MediaObject mediaObject);
+
+	/**
+	 * TODO
+	 * 
+	 * @return
+	 */
+	Repository getRepository();
+	
+	/**
+	 * TODO
+	 * 
+	 * @return
+	 */
+	MediaElement getSessionEndPoint();
+
 }

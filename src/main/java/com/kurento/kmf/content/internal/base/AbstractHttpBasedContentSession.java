@@ -43,6 +43,12 @@ import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
+import com.kurento.kmf.repository.HttpSessionErrorEvent;
+import com.kurento.kmf.repository.HttpSessionStartedEvent;
+import com.kurento.kmf.repository.HttpSessionTerminatedEvent;
+import com.kurento.kmf.repository.RepositoryHttpEndpoint;
+import com.kurento.kmf.repository.RepositoryHttpEventListener;
+import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * 
@@ -64,6 +70,10 @@ public abstract class AbstractHttpBasedContentSession extends
 	protected volatile Future<?> tunnellingProxyFuture;
 
 	private UriEndPoint uriEndPoint;
+
+	private HttpEndPoint httpEndPoint;
+	
+	private RepositoryHttpEndpoint repositoryHttpEndpoint;
 
 	public AbstractHttpBasedContentSession(
 			ContentHandler<? extends ContentSession> handler,
@@ -95,6 +105,9 @@ public abstract class AbstractHttpBasedContentSession extends
 	 */
 	protected abstract HttpEndPoint buildAndConnectHttpEndPoint(
 			MediaElement... mediaElements);
+
+	protected abstract RepositoryHttpEndpoint createRepositoryHttpEndpoint(
+			RepositoryItem repositoryItem);
 
 	/*
 	 * This is an utility method designed for minimizing code replication. For
@@ -135,7 +148,7 @@ public abstract class AbstractHttpBasedContentSession extends
 			mediaElements[0] = uriEndPoint;
 		}
 
-		HttpEndPoint httpEndPoint = buildAndConnectHttpEndPoint(mediaElements);
+		httpEndPoint = buildAndConnectHttpEndPoint(mediaElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -214,8 +227,106 @@ public abstract class AbstractHttpBasedContentSession extends
 
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
+		} else if (redirect) {
+			answerActivateMediaRequest4SimpleHttpConfigurationWithRedirect(answerUrl);
 		} else {
-			answerActivateMediaRequest4SimpleHttpConfiguration(answerUrl);
+			answerActivateMediaRequest4SimpleHttpConfigurationWithTunnel(answerUrl);
+		}
+	}
+
+	protected void activateMedia(RepositoryItem repositoryItem) {
+		synchronized (this) {
+			Assert.isTrue(
+					state == STATE.HANDLING,
+					"Cannot start media exchange in state "
+							+ state
+							+ ". This error means a violatiation in the content session lifecycle",
+					10001);
+			state = STATE.STARTING;
+		}
+
+		getLogger().info(
+				"Activating media for " + this.getClass().getSimpleName()
+						+ " with repositoryItemId " + repositoryItem.getId());
+
+		// TODO: RepoItemHttpPlayer evil name, look for more reasonable name.
+		repositoryHttpEndpoint = createRepositoryHttpEndpoint(repositoryItem);
+
+		// We need to assert that session was not rejected while we were
+		// creating media infrastructure
+		boolean terminate = false;
+		synchronized (this) {
+			if (state == STATE.TERMINATED) {
+				terminate = true;
+			} else if (state == STATE.STARTING) {
+				state = STATE.ACTIVE;
+			}
+		}
+
+		// If session was rejected, just terminate
+		if (terminate) {
+			getLogger()
+					.info("Exiting due to terminate ... this should only happen on client's explicit termination");
+			destroy(); // idempotent call. Just in case pipeline gets build
+						// after session executes termination
+			return;
+		}
+
+		// If session was not rejected (state=ACTIVE) we send an answer and
+		// the initialAsyncCtx becomes useless
+		String answerUrl = repositoryHttpEndpoint.getURL();
+		getLogger().info("RepoItemHttpElement.getUrl = " + answerUrl);
+
+		Assert.notNull(answerUrl, "Received null url from RepoItemHttpElement",
+				20012);
+		Assert.isTrue(answerUrl.length() > 0,
+				"Received invalid empty url from RepoItemHttpElement", 20012);
+
+		// Manage fatal errors occurring in the pipeline
+		repositoryHttpEndpoint
+				.addSessionErrorListener(new RepositoryHttpEventListener<HttpSessionErrorEvent>() {
+					@Override
+					public void onEvent(HttpSessionErrorEvent event) {
+						getLogger().error(event.getDescription()); // TODO:
+						internalTerminateWithError(null, 1, // TODO
+								event.getDescription(), null);
+					}
+				});
+
+		// Generate appropriate actions when content is started
+		// TODO: addMediaSessionStartListener (symmetry)
+		repositoryHttpEndpoint
+				.addSessionStartedListener(new RepositoryHttpEventListener<HttpSessionStartedEvent>() {
+
+					@Override
+					public void onEvent(HttpSessionStartedEvent event) {
+						callOnContentStartedOnHanlder();
+						getLogger().info(
+								"Received event with type "
+										+ event.getClass().getSimpleName());
+					}
+				});
+
+		repositoryHttpEndpoint
+				.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
+
+					@Override
+					public void onEvent(HttpSessionTerminatedEvent event) {
+						getLogger().info(
+								"Received event with type "
+										+ event.getClass().getSimpleName());
+						internalTerminateWithoutError(null, 1,
+								"MediaServer MediaSessionTerminated", null); // TODO
+					}
+				});
+
+		if (useControlProtocol) {
+			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
+		} else if (redirect) {
+			answerActivateMediaRequest4SimpleHttpConfigurationWithRedirect(answerUrl);
+		} else {
+			answerActivateMediaRequest4SimpleHttpConfigurationWithDispatch(repositoryHttpEndpoint
+					.getDispatchURL());
 		}
 
 	}
@@ -230,47 +341,67 @@ public abstract class AbstractHttpBasedContentSession extends
 	 * @throws ContentException
 	 *             Exception in the media server
 	 */
-	private void answerActivateMediaRequest4SimpleHttpConfiguration(String url) {
+	private void answerActivateMediaRequest4SimpleHttpConfigurationWithRedirect(
+			String url) {
+		try {
+			HttpServletResponse response = (HttpServletResponse) initialAsyncCtx
+					.getResponse();
+			getLogger().info("Sending redirect to " + url);
+			response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+			response.setHeader("Location", url);
+
+		} catch (Throwable t) {
+			throw new KurentoMediaFrameworkException(t.getMessage(), t, 20013);
+		} finally {
+			initialAsyncCtx.complete();
+			initialAsyncCtx = null;
+		}
+	}
+
+	private void answerActivateMediaRequest4SimpleHttpConfigurationWithTunnel(
+			String url) {
 		try {
 			HttpServletResponse response = (HttpServletResponse) initialAsyncCtx
 					.getResponse();
 			final HttpServletRequest request = (HttpServletRequest) initialAsyncCtx
 					.getRequest();
-			if (redirect) {
-				getLogger().info("Sending redirect to " + url);
-				response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
-				response.setHeader("Location", url);
-			} else {
-				getLogger().info("Activating tunneling proxy to " + url);
-				tunnellingProxyFuture = proxy.tunnelTransaction(request,
-						response, url, new StreamingProxyListener() {
+			getLogger().info("Activating tunneling proxy to " + url);
+			tunnellingProxyFuture = proxy.tunnelTransaction(request, response,
+					url, new StreamingProxyListener() {
 
-							@Override
-							public void onProxySuccess() {
-								tunnellingProxyFuture = null;
-								// Parameters no matter, no answer will be sent
-								// given that we are already in ACTIVE state
-								terminate(0, "");
-								request.getAsyncContext().complete();
-							}
+						@Override
+						public void onProxySuccess() {
+							tunnellingProxyFuture = null;
+							// Parameters no matter, no answer will be sent
+							// given that we are already in ACTIVE state
+							terminate(0, "");
+							request.getAsyncContext().complete();
+						}
 
-							@Override
-							public void onProxyError(String message,
-									int errorCode) {
-								tunnellingProxyFuture = null;
-								// Parameters no matter, no answer will be sent
-								// given that we are already in ACTIVE state
-								terminate(errorCode, message);
-								request.getAsyncContext().complete();
-							}
-						});
-			}
+						@Override
+						public void onProxyError(String message, int errorCode) {
+							tunnellingProxyFuture = null;
+							// Parameters no matter, no answer will be sent
+							// given that we are already in ACTIVE state
+							terminate(errorCode, message);
+							request.getAsyncContext().complete();
+						}
+					});
+
 		} catch (Throwable t) {
 			throw new KurentoMediaFrameworkException(t.getMessage(), t, 20013);
 		} finally {
-			if (redirect) {
-				initialAsyncCtx.complete();
-			}
+			initialAsyncCtx = null;
+		}
+	}
+
+	private void answerActivateMediaRequest4SimpleHttpConfigurationWithDispatch(
+			String path) {
+		try {
+			initialAsyncCtx.dispatch(path);
+		} catch (Throwable t) {
+			throw new KurentoMediaFrameworkException(t.getMessage(), t, 20013);
+		} finally {
 			initialAsyncCtx = null;
 		}
 	}
@@ -344,10 +475,25 @@ public abstract class AbstractHttpBasedContentSession extends
 	protected void destroy() {
 		super.destroy();
 
+		if(repositoryHttpEndpoint != null){
+			repositoryHttpEndpoint.stop();
+		}
+		
 		Future<?> localTunnelingProxyFuture = tunnellingProxyFuture;
 		if (localTunnelingProxyFuture != null) {
 			localTunnelingProxyFuture.cancel(true);
 			tunnellingProxyFuture = null;
 		}
 	}
+
+	@Override
+	public HttpEndPoint getSessionEndPoint() {
+		if (httpEndPoint == null) {
+			throw new KurentoMediaFrameworkException(
+					"Cannot invoke getSessionEndPoint before invoking start ",
+					1); // TODO
+		}
+		return httpEndPoint;
+	}
+
 }

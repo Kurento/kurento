@@ -56,6 +56,7 @@ import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.repository.Repository;
 
 /**
  * 
@@ -85,6 +86,9 @@ public abstract class AbstractContentSession implements ContentSession {
 	@Autowired
 	protected ContentApiConfiguration contentApiConfiguration;
 
+	@Autowired
+	private Repository repository;
+	
 	private ContentHandler<? extends ContentSession> handler;
 
 	// List of Media Object to be cleaned-up (released) when this object
@@ -733,5 +737,9 @@ public abstract class AbstractContentSession implements ContentSession {
 		for (MediaElement sinkElement : sinkElements) {
 			sourceElement.connect(sinkElement);
 		}
+	}
+	
+	public Repository getRepository(){
+		return repository;
 	}
 }

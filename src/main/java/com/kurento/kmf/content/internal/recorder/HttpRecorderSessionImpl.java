@@ -32,6 +32,8 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kmf.media.UriEndPoint;
+import com.kurento.kmf.repository.RepositoryHttpEndpoint;
+import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * 
@@ -126,6 +128,25 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			throw kmfe;
 		}
 	}
+	
+	@Override
+	public void start(RepositoryItem repositoryItem) {
+		try {
+			Assert.notNull(repositoryItem, "Illegal null repository provided",
+					10027);
+			activateMedia(repositoryItem);
+		} catch (KurentoMediaFrameworkException ke) {
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
+			throw ke;
+		} catch (Throwable t) {
+			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
+			throw kmfe;
+		}
+	}
 
 	/**
 	 * Creates a Media Element repository using a ContentPath.
@@ -197,5 +218,11 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	protected ContentCommandResult interalRawCallToOnContentCommand(
 			ContentCommand command) throws Exception {
 		return getHandler().onContentCommand(this, command);
+	}
+
+	@Override
+	protected RepositoryHttpEndpoint createRepositoryHttpEndpoint(
+			RepositoryItem repositoryItem) {
+		return repositoryItem.createRepositoryHttpRecorder();
 	}
 }

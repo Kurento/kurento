@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.content;
 
+import com.kurento.kmf.media.WebRtcEndPoint;
+
 /**
  * TODO: review & improve javadoc
  * 
@@ -25,4 +27,11 @@ package com.kurento.kmf.content;
  * @version 1.0.0
  */
 public interface WebRtcContentSession extends SdpContentSession {
+	/**
+	 * TODO
+	 * 
+	 * @return
+	 */
+	@Override
+	WebRtcEndPoint getSessionEndPoint();
 }

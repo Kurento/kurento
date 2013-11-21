@@ -29,6 +29,7 @@ import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.SdpEndPoint;
+import com.kurento.kmf.media.WebRtcEndPoint;
 
 /**
  * 
@@ -107,5 +108,10 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	protected ContentCommandResult interalRawCallToOnContentCommand(
 			ContentCommand command) throws Exception {
 		return getHandler().onContentCommand(this, command);
+	}
+
+	@Override
+	public WebRtcEndPoint getSessionEndPoint() {
+		return (WebRtcEndPoint) super.getSessionEndPoint();
 	}
 }

@@ -16,6 +16,7 @@ package com.kurento.kmf.content;
 
 import com.kurento.kmf.content.jsonrpc.Constraints;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.SdpEndPoint;
 
 /**
  * TODO: write javadoc
@@ -29,14 +30,14 @@ public interface SdpContentSession extends ContentSession {
 	 * 
 	 * @return video stream operation
 	 */
-	public Constraints getVideoConstraints();
+	Constraints getVideoConstraints();
 
 	/**
 	 * Get the operations related with the audio stream (SEND, RECV, ...).
 	 * 
 	 * @return audio stream operation
 	 */
-	public Constraints getAudioConstraints();
+	Constraints getAudioConstraints();
 
 	/**
 	 * Start the RTP session.
@@ -52,4 +53,12 @@ public interface SdpContentSession extends ContentSession {
 
 	// TODO: javadoc
 	void start(MediaElement sourceElement, MediaElement sinkElement);
+
+	/**
+	 * TODO
+	 * 
+	 * @return
+	 */
+	@Override
+	SdpEndPoint getSessionEndPoint();
 }

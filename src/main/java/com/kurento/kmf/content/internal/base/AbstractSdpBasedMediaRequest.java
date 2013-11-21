@@ -42,6 +42,8 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 public abstract class AbstractSdpBasedMediaRequest extends
 		AbstractContentSession implements SdpContentSession {
 
+	private SdpEndPoint sdpEndPoint;
+
 	/**
 	 * Parameterized constructor; initial state here is HANDLING.
 	 * 
@@ -123,8 +125,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		getLogger().info(
 				"SDP received " + initialJsonRequest.getParams().getSdp());
 
-		SdpEndPoint sdpEndPoint = buildAndConnectSdpEndPoint(sourceElement,
-				sinkElements);
+		sdpEndPoint = buildAndConnectSdpEndPoint(sourceElement, sinkElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -246,6 +247,16 @@ public abstract class AbstractSdpBasedMediaRequest extends
 			sourceElement.connect(sdpEndPoint);
 		}
 
+		return sdpEndPoint;
+	}
+
+	@Override
+	public SdpEndPoint getSessionEndPoint() {
+		if (sdpEndPoint == null) {
+			throw new KurentoMediaFrameworkException(
+					"Cannot invoke getSessionEndPoint before invoking start ",
+					1); // TODO
+		}
 		return sdpEndPoint;
 	}
 
