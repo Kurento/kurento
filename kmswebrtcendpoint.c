@@ -51,6 +51,11 @@ G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
 typedef struct _KmsWebRTCTransport
 {
   guint component_id;
+
+  GstElement *dtlssrtpenc;
+  GstElement *dtlssrtpdec;
+  GstElement *nicesink;
+  GstElement *nicesrc;
 } KmsWebRTCTransport;
 
 typedef struct _KmsWebRTCConnection
@@ -89,6 +94,26 @@ kms_webrtc_transport_destroy (KmsWebRTCTransport * tr)
   if (tr == NULL)
     return;
 
+  if (tr->dtlssrtpenc != NULL) {
+    g_object_unref (tr->dtlssrtpenc);
+    tr->dtlssrtpenc = NULL;
+  }
+
+  if (tr->dtlssrtpdec != NULL) {
+    g_object_unref (tr->dtlssrtpdec);
+    tr->dtlssrtpdec = NULL;
+  }
+
+  if (tr->nicesink != NULL) {
+    g_object_unref (tr->nicesink);
+    tr->nicesink = NULL;
+  }
+
+  if (tr->nicesrc != NULL) {
+    g_object_unref (tr->nicesrc);
+    tr->nicesrc = NULL;
+  }
+
   g_slice_free (KmsWebRTCTransport, tr);
 }
 
@@ -97,9 +122,36 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
     guint component_id)
 {
   KmsWebRTCTransport *tr;
+  gchar *str;
 
   tr = g_slice_new0 (KmsWebRTCTransport);
+
+  /* TODO: improve creating elements when needed */
   tr->component_id = component_id;
+  tr->dtlssrtpenc = gst_element_factory_make ("dtlssrtpenc", NULL);
+  tr->dtlssrtpdec = gst_element_factory_make ("dtlssrtpdec", NULL);
+  tr->nicesink = gst_element_factory_make ("nicesink", NULL);
+  tr->nicesrc = gst_element_factory_make ("nicesrc", NULL);
+
+  if (tr->dtlssrtpenc == NULL || tr->dtlssrtpenc == NULL
+      || tr->dtlssrtpenc == NULL || tr->dtlssrtpenc == NULL) {
+    GST_ERROR ("Cannot create KmsWebRTCTransport");
+    kms_webrtc_transport_destroy (tr);
+    return NULL;
+  }
+
+  str =
+      g_strdup_printf ("%s-%s-%" G_GUINT32_FORMAT "-%" G_GUINT32_FORMAT,
+      GST_OBJECT_NAME (tr->dtlssrtpenc), GST_OBJECT_NAME (tr->dtlssrtpdec),
+      stream_id, component_id);
+  g_object_set (G_OBJECT (tr->dtlssrtpenc), "channel-id", str, NULL);
+  g_object_set (G_OBJECT (tr->dtlssrtpdec), "channel-id", str, NULL);
+  g_free (str);
+
+  g_object_set (G_OBJECT (tr->nicesink), "agent", agent, "stream", stream_id,
+      "component", component_id, NULL);
+  g_object_set (G_OBJECT (tr->nicesrc), "agent", agent, "stream", stream_id,
+      "component", component_id, NULL);
 
   return tr;
 }
