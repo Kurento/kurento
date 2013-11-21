@@ -217,6 +217,8 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
 
   buffer = gst_buffer_make_writable (buffer);
 
+  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsrc));
+
   base_time =
       g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
 
@@ -238,6 +240,8 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
     buffer->pts += *base_time;
   if (GST_BUFFER_DTS_IS_VALID (buffer))
     buffer->dts += *base_time;
+
+  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsrc));
 
   // TODO: Do something to fix a possible previous EOS event
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
@@ -390,6 +394,9 @@ kms_player_end_point_stopped (KmsUriEndPoint * obj)
 
   /* Set internal pipeline to NULL */
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+  KMS_ELEMENT_LOCK (self);
+  g_object_set_data (G_OBJECT (self), BASE_TIME_DATA, NULL);
+  KMS_ELEMENT_UNLOCK (self);
 
   KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
       KMS_URI_END_POINT_STATE_STOP);
