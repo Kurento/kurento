@@ -57,14 +57,20 @@ module.exports = function(grunt)
 
         options:
         {
-          standalone: '<%= pkg.name %>'
+          standalone: '<%= pkg.name %>',
+          transform: ['deamdify', 'deglobalify']
         }
       },
 
       require:
       {
         src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
+        dest: DIST_DIR+'/<%= pkg.name %>_require.js',
+
+        options:
+        {
+          transform: ['deamdify', 'deglobalify']
+        }
       }
     },
 

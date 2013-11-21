@@ -53,7 +53,14 @@
     "grunt-jsdoc": "latest",
     "nock": "latest",
     "nodeunit": "latest",
+    "deglobalify" : "latest",
+    "deamdify": "latest",    
     "qunit": "~0.5.18",
     "wock": "latest"
+  },
+
+  "browser":
+  {
+    "ws": "./shims/sockjs-0.3.js"
   }
 }
