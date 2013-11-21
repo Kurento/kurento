@@ -1,26 +1,37 @@
 {
-  "name": "kwsMedia",
+  "name": "kws-media-api",
   "version": "0.0.1",
-  "author": "Kurento <info@kurento.com> (http://kurento.org)",
   "description": "Media API for the Kurento Web SDK",
+  "homepage": "http://www.kurento.com",
+  "license": "LGPL",
+
+  "author": "Kurento <info@kurento.com> (http://kurento.org)",
   "contributors":
   [
     {
-      "name": "Jesús Leganés Combarro 'piranna'",
+      "name": "Jesus Leganes Combarro 'piranna'",
       "email": "piranna@gmail.com",
       "url": "http://pirannafs.blogspot.com.es"
     }
   ],
+
+  "main": "./lib/index.js",
   "scripts":
   {
-    "test": "echo \"Error: no test specified! Configure in package.json\" && exit 1"
+    
   },
-  "main": "./lib/index.js",
+
   "repository":
   {
     "type": "git",
     "url": "https://github.com/Kurento/kws-media-api.git"
   },
+  "bugs":
+  {
+    "url": "https://github.com/Kurento/kws-media-api/issues",
+    "email": "info@kurento.com"
+  },
+
   "keywords":
   [
     "API",
@@ -34,10 +45,12 @@
   "dependencies":
   {
     "rpc-builder": "~0.0.3",
-    "ws": "~0.4.31"
+    "ws": "~0.4.31",
+    "xmlhttprequest": "piranna/node-XMLHttpRequest"
   },
   "devDependencies":
   {
+    "bower": "latest",
     "grunt": "latest",
     "grunt-cli": "latest",
     "grunt-contrib-clean": "latest",
@@ -46,13 +59,8 @@
     "grunt-contrib-nodeunit": "latest",
     "grunt-contrib-uglify": "latest",
     "grunt-browserify": "latest",
-    "grunt-jsdoc": "latest"
-  },
-  "license": "LGPL",
-  "homepage": "http://www.kurento.com",
-  "bugs":
-  {
-    "url": "https://github.com/Kurento/kws-media-api/issues",
-    "email": "info@kurento.com"
+    "grunt-jsdoc": "latest",
+    "nock": "latest",
+    "nodeunit": "latest"
   }
 }
