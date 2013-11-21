@@ -48,6 +48,20 @@ G_DEFINE_TYPE (KmsWebrtcEndPoint, kms_webrtc_end_point,
 #define SDP_CANDIDATE_ATTR "candidate"
 #define SDP_CANDIDATE_ATTR_LEN 12
 
+typedef struct _KmsWebRTCTransport
+{
+  guint component_id;
+} KmsWebRTCTransport;
+
+typedef struct _KmsWebRTCConnection
+{
+  NiceAgent *agent;
+  guint stream_id;
+
+  KmsWebRTCTransport *rtp_transport;
+  KmsWebRTCTransport *rtcp_transport;
+} KmsWebRTCConnection;
+
 struct _KmsWebrtcEndPointPrivate
 {
   GMainContext *context;
@@ -56,10 +70,9 @@ struct _KmsWebrtcEndPointPrivate
   gboolean finalized;
 
   NiceAgent *agent;
-  guint audio_stream_id;
+  KmsWebRTCConnection *audio_connection;
   gboolean audio_ice_gathering_done;
-
-  guint video_stream_id;
+  KmsWebRTCConnection *video_connection;
   gboolean video_ice_gathering_done;
 
   GMutex gather_mutex;
@@ -67,6 +80,96 @@ struct _KmsWebrtcEndPointPrivate
   gboolean wait_gathering;
   gboolean ice_gathering_done;
 };
+
+/* KmsWebRTCTransport */
+
+static void
+kms_webrtc_transport_destroy (KmsWebRTCTransport * tr)
+{
+  if (tr == NULL)
+    return;
+
+  g_slice_free (KmsWebRTCTransport, tr);
+}
+
+static KmsWebRTCTransport *
+kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
+    guint component_id)
+{
+  KmsWebRTCTransport *tr;
+
+  tr = g_slice_new0 (KmsWebRTCTransport);
+  tr->component_id = component_id;
+
+  return tr;
+}
+
+/* KmsWebRTCTransport */
+
+/* WebRTCConnection */
+
+static void
+nice_agent_recv (NiceAgent * agent, guint stream_id, guint component_id,
+    guint len, gchar * buf, gpointer user_data)
+{
+  /* Nothing to do, this callback is only for negotiation */
+  GST_TRACE ("ICE data received on stream_id: '%" G_GUINT32_FORMAT
+      "' component_id: '%" G_GUINT32_FORMAT "'", stream_id, component_id);
+}
+
+static void
+kms_webrtc_connection_destroy (KmsWebRTCConnection * conn)
+{
+  if (conn == NULL)
+    return;
+
+  kms_webrtc_transport_destroy (conn->rtp_transport);
+  kms_webrtc_transport_destroy (conn->rtcp_transport);
+
+  nice_agent_remove_stream (conn->agent, conn->stream_id);
+
+  g_slice_free (KmsWebRTCConnection, conn);
+}
+
+static KmsWebRTCConnection *
+kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
+    const gchar * name)
+{
+  KmsWebRTCConnection *conn;
+
+  conn = g_slice_new0 (KmsWebRTCConnection);
+
+  conn->agent = agent;
+  conn->stream_id = nice_agent_add_stream (agent, NICE_N_COMPONENTS);
+  if (conn->stream_id == 0) {
+    GST_ERROR ("Cannot add nice stream for %s.", name);
+    kms_webrtc_connection_destroy (conn);
+    return NULL;
+  }
+
+  nice_agent_set_stream_name (agent, conn->stream_id, name);
+  nice_agent_attach_recv (agent, conn->stream_id,
+      NICE_COMPONENT_TYPE_RTP, context, nice_agent_recv, NULL);
+  nice_agent_attach_recv (agent, conn->stream_id,
+      NICE_COMPONENT_TYPE_RTCP, context, nice_agent_recv, NULL);
+
+  conn->rtp_transport =
+      kms_webrtc_transport_create (agent, conn->stream_id,
+      NICE_COMPONENT_TYPE_RTP);
+  conn->rtcp_transport =
+      kms_webrtc_transport_create (agent, conn->stream_id,
+      NICE_COMPONENT_TYPE_RTCP);
+
+  if (conn->rtp_transport == NULL || conn->rtp_transport == NULL) {
+    GST_ERROR ("Cannot create KmsWebRTCConnection.");
+    g_slice_free (KmsWebRTCConnection, conn);
+    return NULL;
+  }
+
+  return conn;
+}
+
+/* WebRTCConnection */
 
 static void
 update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
@@ -191,9 +294,9 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
 
     media_str = gst_sdp_media_get_media (media);
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->audio_stream_id;
+      stream_id = self->priv->audio_connection->stream_id;
     } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->video_stream_id;
+      stream_id = self->priv->video_connection->stream_id;
     } else {
       GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
       continue;
@@ -347,9 +450,9 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
 
     media_str = gst_sdp_media_get_media (media);
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->audio_stream_id;
+      stream_id = self->priv->audio_connection->stream_id;
     } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->video_stream_id;
+      stream_id = self->priv->video_connection->stream_id;
     } else {
       GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
       continue;
@@ -360,13 +463,6 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
 }
 
 static void
-nice_agent_recv (NiceAgent * agent, guint stream_id, guint component_id,
-    guint len, gchar * buf, gpointer user_data)
-{
-  /* Nothing to do, this callback is only for negotiation */
-}
-
-static void
 gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndPoint * self)
 {
   GST_DEBUG_OBJECT (self, "ICE gathering done for %s stream.",
@@ -374,9 +470,11 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndPoint * self)
 
   g_mutex_lock (&self->priv->gather_mutex);
 
-  if (stream_id == self->priv->audio_stream_id)
+  if (self->priv->audio_connection != NULL
+      && stream_id == self->priv->audio_connection->stream_id)
     self->priv->audio_ice_gathering_done = TRUE;
-  if (stream_id == self->priv->video_stream_id)
+  if (self->priv->video_connection != NULL
+      && stream_id == self->priv->video_connection->stream_id)
     self->priv->video_ice_gathering_done = TRUE;
 
   self->priv->ice_gathering_done = self->priv->audio_ice_gathering_done &&
@@ -418,8 +516,8 @@ kms_webrtc_end_point_finalize (GObject * object)
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
 
   if (self->priv->agent != NULL) {
-    nice_agent_remove_stream (self->priv->agent, self->priv->audio_stream_id);
-    nice_agent_remove_stream (self->priv->agent, self->priv->video_stream_id);
+    kms_webrtc_connection_destroy (self->priv->audio_connection);
+    kms_webrtc_connection_destroy (self->priv->video_connection);
     g_object_unref (self->priv->agent);
     self->priv->agent = NULL;
   }
@@ -519,46 +617,30 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (gathering_done), self);
 
-  /* audio stream */
-  self->priv->audio_stream_id =
-      nice_agent_add_stream (self->priv->agent, NICE_N_COMPONENTS);
-  if (self->priv->audio_stream_id == 0) {
-    GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.",
-        AUDIO_STREAM_NAME);
+  self->priv->audio_connection =
+      kms_webrtc_connection_create (self->priv->agent, self->priv->context,
+      AUDIO_STREAM_NAME);
+  if (self->priv->audio_connection == NULL) {
+    GST_ERROR_OBJECT (self, "Cannot create audio connection.");
     return;
   }
 
-  nice_agent_set_stream_name (self->priv->agent, self->priv->audio_stream_id,
-      AUDIO_STREAM_NAME);
-  nice_agent_attach_recv (self->priv->agent, self->priv->audio_stream_id,
-      NICE_COMPONENT_TYPE_RTP, self->priv->context, nice_agent_recv, NULL);
-  nice_agent_attach_recv (self->priv->agent, self->priv->audio_stream_id,
-      NICE_COMPONENT_TYPE_RTCP, self->priv->context, nice_agent_recv, NULL);
+  self->priv->video_connection =
+      kms_webrtc_connection_create (self->priv->agent, self->priv->context,
+      VIDEO_STREAM_NAME);
+  if (self->priv->video_connection == NULL) {
+    GST_ERROR_OBJECT (self, "Cannot create video connection.");
+    return;
+  }
 
   if (!nice_agent_gather_candidates (self->priv->agent,
-          self->priv->audio_stream_id)) {
+          self->priv->audio_connection->stream_id)) {
     GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
         AUDIO_STREAM_NAME);
   }
 
-  /* video stream */
-  self->priv->video_stream_id =
-      nice_agent_add_stream (self->priv->agent, NICE_N_COMPONENTS);
-  if (self->priv->video_stream_id == 0) {
-    GST_ERROR_OBJECT (self, "Cannot add nice stream for %s.",
-        VIDEO_STREAM_NAME);
-    return;
-  }
-
-  nice_agent_set_stream_name (self->priv->agent, self->priv->video_stream_id,
-      VIDEO_STREAM_NAME);
-  nice_agent_attach_recv (self->priv->agent, self->priv->video_stream_id,
-      NICE_COMPONENT_TYPE_RTP, self->priv->context, nice_agent_recv, NULL);
-  nice_agent_attach_recv (self->priv->agent, self->priv->video_stream_id,
-      NICE_COMPONENT_TYPE_RTCP, self->priv->context, nice_agent_recv, NULL);
-
   if (!nice_agent_gather_candidates (self->priv->agent,
-          self->priv->video_stream_id)) {
+          self->priv->video_connection->stream_id)) {
     GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
         VIDEO_STREAM_NAME);
   }
