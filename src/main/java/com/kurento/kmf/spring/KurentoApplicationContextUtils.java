@@ -173,7 +173,7 @@ public final class KurentoApplicationContextUtils {
 		return childAppContext;
 	}
 
-	public static AnnotationConfigApplicationContext createKurentoServletApplicationContext(
+	public static AnnotationConfigApplicationContext createKurentoHandlerServletApplicationContext(
 			Class<?> servletClass, String servletName, ServletContext sc,
 			String handlerClassName) {
 		Assert.notNull(sc,
