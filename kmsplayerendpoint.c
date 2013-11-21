@@ -225,6 +225,11 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   if (base_time == NULL) {
     GstClock *clock;
 
+    gst_element_send_event (GST_ELEMENT (GST_OBJECT_PARENT (appsrc)),
+        gst_event_new_flush_start ());
+    gst_element_send_event (GST_ELEMENT (GST_OBJECT_PARENT (appsrc)),
+        gst_event_new_flush_stop (FALSE));
+
     clock = gst_element_get_clock (appsrc);
     base_time = g_slice_new0 (GstClockTime);
 
@@ -430,46 +435,10 @@ kms_player_end_point_paused (KmsUriEndPoint * obj)
       KMS_URI_END_POINT_STATE_PAUSE);
 }
 
-static GstPadProbeReturn
-catch_eos (GstPad * pad, GstPadProbeInfo * info, gpointer data)
-{
-  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
-
-  if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
-    GST_WARNING_OBJECT (pad, "Dropping flush EOS event");
-
-    if (!gst_pad_push_event (pad,
-            gst_event_new_custom (GST_EVENT_CUSTOM_DOWNSTREAM,
-                gst_structure_new_empty
-                (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME))))
-      GST_ERROR (KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME
-          " event could not be sent");
-
-    return GST_PAD_PROBE_DROP;
-  }
-
-  return GST_PAD_PROBE_OK;
-}
-
-static GstPad *
-kms_player_end_point_request_new_pad (GstElement * element,
-    GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
-{
-  GstPad *ret_pad =
-      GST_ELEMENT_CLASS (kms_player_end_point_parent_class)->request_new_pad
-      (element, templ, name, caps);
-
-  gst_pad_add_probe (ret_pad, GST_PAD_PROBE_TYPE_EVENT_BOTH, catch_eos, element,
-      NULL);
-
-  return ret_pad;
-}
-
 static void
 kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
   KmsUriEndPointClass *urienpoint_class = KMS_URI_END_POINT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
@@ -482,9 +451,6 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
   urienpoint_class->stopped = kms_player_end_point_stopped;
   urienpoint_class->started = kms_player_end_point_started;
   urienpoint_class->paused = kms_player_end_point_paused;
-
-  gstelement_class->request_new_pad =
-      GST_DEBUG_FUNCPTR (kms_player_end_point_request_new_pad);
 
   kms_player_end_point_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
@@ -514,10 +480,9 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
 static void
 kms_player_end_point_emit_EOS_signal (gpointer data)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
-
   GST_DEBUG ("Emit EOS Signal");
-  g_signal_emit (G_OBJECT (self), kms_player_end_point_signals[SIGNAL_EOS], 0);
+  kms_player_end_point_stopped (KMS_URI_END_POINT (data));
+  g_signal_emit (G_OBJECT (data), kms_player_end_point_signals[SIGNAL_EOS], 0);
 }
 
 static void

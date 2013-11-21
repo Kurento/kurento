@@ -234,6 +234,15 @@ kms_element_generate_src_pad (KmsElement * element, const gchar * name,
   return ret_pad;
 }
 
+static void
+send_flush_on_unlink (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  if (GST_OBJECT_FLAG_IS_SET (pad, GST_PAD_FLAG_EOS)) {
+    gst_pad_send_event (pad, gst_event_new_flush_start ());
+    gst_pad_send_event (pad, gst_event_new_flush_stop (FALSE));
+  }
+}
+
 static GstPad *
 kms_element_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -269,12 +278,18 @@ kms_element_request_new_pad (GstElement * element,
     ret_pad =
         kms_element_generate_sink_pad (KMS_ELEMENT (element), AUDIO_SINK_PAD,
         &KMS_ELEMENT (element)->priv->audio_valve, templ);
+
+    g_signal_connect (G_OBJECT (ret_pad), "unlinked",
+        G_CALLBACK (send_flush_on_unlink), NULL);
   } else if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), VIDEO_SINK_PAD)) {
     ret_pad =
         kms_element_generate_sink_pad (KMS_ELEMENT (element), VIDEO_SINK_PAD,
         &KMS_ELEMENT (element)->priv->video_valve, templ);
+
+    g_signal_connect (G_OBJECT (ret_pad), "unlinked",
+        G_CALLBACK (send_flush_on_unlink), NULL);
   }
 
   if (ret_pad == NULL) {
