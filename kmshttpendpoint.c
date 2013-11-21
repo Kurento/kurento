@@ -700,38 +700,15 @@ static GstPadProbeReturn
 send_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
   GstEvent *event = gst_pad_probe_info_get_event (info);
-  const GstStructure *st;
-  KmsHttpEndPoint *self;
-  GstElement *src;
-  GstFlowReturn ret;
 
   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
+    KmsHttpEndPoint *self;
+
     self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (GST_OBJECT_PARENT (pad)));
     GST_DEBUG ("Sending detected eos signal");
     g_signal_emit (self, http_ep_signals[SIGNAL_EOS_DETECTED], 0);
     return (self->priv->live) ? GST_PAD_PROBE_DROP : GST_PAD_PROBE_OK;
   }
-
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CUSTOM_DOWNSTREAM)
-    return GST_PAD_PROBE_OK;
-
-  st = gst_event_get_structure (event);
-
-  if (g_strcmp0 (gst_structure_get_name (st),
-          KMS_PLAYERENDPOINT_CUSTOM_EVENT_NAME) != 0)
-    return GST_PAD_PROBE_OK;
-
-  self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (GST_OBJECT_PARENT (pad)));
-  src = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), data);
-
-  GST_DEBUG_OBJECT (pad, "Event player eos received: %" GST_PTR_FORMAT, event);
-
-  g_signal_emit (self, http_ep_signals[SIGNAL_EOS_DETECTED], 0);
-
-  if (!self->priv->live)
-    g_signal_emit_by_name (src, "end-of-stream", &ret);
-
-  g_object_unref (src);
 
   return GST_PAD_PROBE_OK;
 }
