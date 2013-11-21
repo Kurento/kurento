@@ -52,7 +52,6 @@
     "grunt-curl": "latest",
     "grunt-jsdoc": "latest",
     "nock": "latest",
-    "nodeunit": "latest",
     "deglobalify" : "latest",
     "deamdify": "latest",    
     "qunit": "~0.5.18",

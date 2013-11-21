@@ -30,7 +30,7 @@ module.exports = function(grunt)
     {
         dist:
         {
-            src: ['README.md', 'lib/*.js', 'test/*.js'], 
+            src: ['README.md', 'lib/**/*.js', 'test/*.js'], 
             options:
             {
                 destination: 'doc/jsdoc'
@@ -57,20 +57,14 @@ module.exports = function(grunt)
 
         options:
         {
-          standalone: '<%= pkg.name %>',
-          transform: ['deamdify', 'deglobalify']
+          standalone: '<%= pkg.name %>'
         }
       },
 
       require:
       {
         src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.js',
-
-        options:
-        {
-          transform: ['deamdify', 'deglobalify']
-        }
+        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
       }
     },
 
@@ -119,6 +113,5 @@ module.exports = function(grunt)
   // Default task(s).
   grunt.registerTask('browser', ['curl', 'browserify', 'uglify']);
   grunt.registerTask('default', ['clean', 'browser']);
-//  grunt.registerTask('default', ['nodeunit', 'clean', 'jsdoc', 'browser']);
   grunt.registerTask('maven',   ['default', 'copy']);
 };
