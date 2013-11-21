@@ -300,6 +300,8 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
+  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsink));
+
   base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
 
   if (base_time == NULL || !GST_CLOCK_TIME_IS_VALID (*base_time)) {
@@ -323,6 +325,8 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
     if (GST_BUFFER_PTS_IS_VALID (buffer))
       buffer->pts -= *base_time;
   }
+
+  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsink));
 
   GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_LIVE);
 
@@ -370,6 +374,8 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
+  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsrc));
+
   base_time =
       g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
 
@@ -391,6 +397,8 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
     buffer->pts += *base_time;
   if (GST_BUFFER_DTS_IS_VALID (buffer))
     buffer->dts += *base_time;
+
+  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsrc));
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
@@ -1583,6 +1591,7 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self,
     video_src =
         gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
 
+    KMS_ELEMENT_LOCK (self);
     if (audio_src != NULL) {
       g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
       g_object_unref (audio_src);
@@ -1594,6 +1603,7 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self,
     }
 
     g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
+    KMS_ELEMENT_UNLOCK (self);
   }
 
   self->priv->start = start;
