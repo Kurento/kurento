@@ -7,7 +7,7 @@
 	<version>1.0.0-SNAPSHOT</version>
 
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>content-demo</artifactId>
+	<artifactId>kmf-content-demo</artifactId>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
