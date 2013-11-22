@@ -106,7 +106,10 @@ kms_jack_vader_set_property (GObject * object, guint property_id,
       jackvader->show_debug_info = g_value_get_boolean (value);
       break;
     case PROP_IMAGES_PATH:
-      jackvader->images_path = g_value_get_string (value);
+      if (jackvader->images_path != NULL)
+        g_free ((gpointer) jackvader->images_path);
+
+      jackvader->images_path = g_value_dup_string (value);
       kms_jack_vader_initialize_classifiers (jackvader);
       break;
     default:
@@ -285,6 +288,10 @@ kms_jack_vader_finalize (GObject * object)
     cvClearMemStorage (jackvader->pStorageFace);
   if (jackvader->pFaceRectSeq != NULL)
     cvClearSeq (jackvader->pFaceRectSeq);
+
+  if (jackvader->images_path != NULL)
+    g_free ((gpointer) jackvader->images_path);
+
   cvReleaseMemStorage (&jackvader->pStorageFace);
   cvReleaseHaarClassifierCascade (&jackvader->pCascadeFace);
 
@@ -297,6 +304,7 @@ kms_jack_vader_init (KmsJackVader * jackvader)
   jackvader->pCascadeFace = 0;
   jackvader->pStorageFace = cvCreateMemStorage (0);
   jackvader->show_debug_info = FALSE;
+  jackvader->images_path = g_strdup (COSTUME_IMAGES_PATH_DEFAULT);
 }
 
 static void
