@@ -181,7 +181,6 @@ enum
   /* signals */
   SIGNAL_EOS,
   SIGNAL_NEW_SAMPLE,
-  SIGNAL_EOS_DETECTED,
 
   /* actions */
   SIGNAL_PULL_SAMPLE,
@@ -696,29 +695,11 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
   return ret;
 }
 
-static GstPadProbeReturn
-send_eos_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
-{
-  GstEvent *event = gst_pad_probe_info_get_event (info);
-
-  if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
-    KmsHttpEndPoint *self;
-
-    self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (GST_OBJECT_PARENT (pad)));
-    GST_DEBUG ("Sending detected eos signal");
-    g_signal_emit (self, http_ep_signals[SIGNAL_EOS_DETECTED], 0);
-    return (self->priv->live) ? GST_PAD_PROBE_DROP : GST_PAD_PROBE_OK;
-  }
-
-  return GST_PAD_PROBE_OK;
-}
-
 static void
 kms_http_end_point_add_appsink (KmsHttpEndPoint * self,
     struct config_valve *conf)
 {
   GstElement *appsink;
-  GstPad *sink;
 
   GST_DEBUG ("Adding appsink %s", conf->sinkname);
 
@@ -731,11 +712,6 @@ kms_http_end_point_add_appsink (KmsHttpEndPoint * self,
 
   gst_bin_add (GST_BIN (self), appsink);
   gst_element_sync_state_with_parent (appsink);
-
-  sink = gst_element_get_static_pad (appsink, "sink");
-  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      send_eos_probe, g_strdup (conf->srcname), g_free);
-  g_object_unref (sink);
 }
 
 static void
@@ -1763,13 +1739,6 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       G_STRUCT_OFFSET (KmsHttpEndPointClass, end_of_stream),
       NULL, NULL, __kms_marshal_ENUM__VOID,
       GST_TYPE_FLOW_RETURN, 0, G_TYPE_NONE);
-
-  http_ep_signals[SIGNAL_EOS_DETECTED] =
-      g_signal_new ("eos-detected",
-      G_TYPE_FROM_CLASS (klass),
-      G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsHttpEndPointClass, eos_detected_signal), NULL, NULL,
-      g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   klass->pull_sample = kms_http_end_point_pull_sample_action;
   klass->push_buffer = kms_http_end_point_push_buffer_action;
