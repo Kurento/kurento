@@ -41,6 +41,8 @@ enum
 {
   PROP_0,
   PROP_CERTIFICATE_PEM_FILE,
+  PROP_STUN_SERVER_IP,
+  PROP_STUN_SERVER_PORT,
   N_PROPERTIES
 };
 
@@ -413,6 +415,20 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_sdp_end_point);
   gchar *fingerprint;
   guint len, i;
+
+  if (!nice_agent_gather_candidates (self->priv->agent,
+          self->priv->audio_connection->stream_id)) {
+    GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
+        AUDIO_STREAM_NAME);
+    return FALSE;
+  }
+
+  if (!nice_agent_gather_candidates (self->priv->agent,
+          self->priv->video_connection->stream_id)) {
+    GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
+        VIDEO_STREAM_NAME);
+    return FALSE;
+  }
 
   /* Wait for ICE candidates */
   g_mutex_lock (&self->priv->gather_mutex);
@@ -800,6 +816,24 @@ kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
               video_connection->rtcp_transport->dtlssrtpdec),
           "certificate-pem-file", value);
       break;
+    case PROP_STUN_SERVER_IP:
+      if (self->priv->agent == NULL) {
+        GST_ERROR_OBJECT (self, "ICE agent not initialized.");
+        break;
+      }
+
+      g_object_set_property (G_OBJECT (self->priv->agent), "stun-server",
+          value);
+      break;
+    case PROP_STUN_SERVER_PORT:
+      if (self->priv->agent == NULL) {
+        GST_ERROR_OBJECT (self, "ICE agent not initialized.");
+        break;
+      }
+
+      g_object_set_property (G_OBJECT (self->priv->agent), "stun-server-port",
+          value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -816,6 +850,24 @@ kms_webrtc_end_point_get_property (GObject * object, guint prop_id,
   switch (prop_id) {
     case PROP_CERTIFICATE_PEM_FILE:
       g_value_set_string (value, self->priv->certificate_pem_file);
+      break;
+    case PROP_STUN_SERVER_IP:
+      if (self->priv->agent == NULL) {
+        GST_ERROR_OBJECT (self, "ICE agent not initialized.");
+        break;
+      }
+
+      g_object_get_property (G_OBJECT (self->priv->agent), "stun-server",
+          value);
+      break;
+    case PROP_STUN_SERVER_PORT:
+      if (self->priv->agent == NULL) {
+        GST_ERROR_OBJECT (self, "ICE agent not initialized.");
+        break;
+      }
+
+      g_object_get_property (G_OBJECT (self->priv->agent), "stun-server-port",
+          value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -902,6 +954,18 @@ kms_webrtc_end_point_class_init (KmsWebrtcEndPointClass * klass)
           G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
           G_PARAM_STATIC_STRINGS));
 
+  g_object_class_install_property (gobject_class, PROP_STUN_SERVER_IP,
+      g_param_spec_string ("stun-server",
+          "StunServer",
+          "Stun Server IP Address",
+          NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_STUN_SERVER_PORT,
+      g_param_spec_uint ("stun-server-port",
+          "StunServerPort",
+          "Stun Server Port",
+          1, G_MAXUINT16, 3478, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndPointPrivate));
 }
 
@@ -956,18 +1020,6 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   if (self->priv->video_connection == NULL) {
     GST_ERROR_OBJECT (self, "Cannot create video connection.");
     return;
-  }
-
-  if (!nice_agent_gather_candidates (self->priv->agent,
-          self->priv->audio_connection->stream_id)) {
-    GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
-        AUDIO_STREAM_NAME);
-  }
-
-  if (!nice_agent_gather_candidates (self->priv->agent,
-          self->priv->video_connection->stream_id)) {
-    GST_ERROR_OBJECT (self, "Failed to start candidate gathering for %s.",
-        VIDEO_STREAM_NAME);
   }
 
   g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
