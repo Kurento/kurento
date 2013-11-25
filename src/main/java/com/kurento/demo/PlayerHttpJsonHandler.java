@@ -18,26 +18,32 @@ import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 
+/**
+ * HTTP Player Handler which plays a collection of videos depending on the
+ * <code>contentId</code> of the request; using tunneling strategy (by default
+ * <code>redirect=true</code> in {@link @HttpPlayerService} annotation; with
+ * JSON signaling protocol.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ * @see VideoURLs
+ */
 @HttpPlayerService(name = "PlayerHttpJsonHandler", path = "/playerJson/*", useControlProtocol = true)
 public class PlayerHttpJsonHandler extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		getLogger().info("Received play request to " + session.getContentId());
+		// MP4 video by default
+		String url = VideoURLs.map.get("mp4");
 
-		String fileUri = "";
-		if (session.getContentId() != null
-				&& session.getContentId().toLowerCase().startsWith("b")) {
-			fileUri = "file:///opt/video/barcodes.webm";
-		} else if (session.getContentId() != null
-				&& session.getContentId().toLowerCase().startsWith("f")) {
-			fileUri = "file:///opt/video/fiwarecut.webm";
-		} else {
-			fileUri = "file:///opt/video/sintel.webm";
+		// Depending of contentId, we can play a different video
+		String contentId = session.getContentId();
+		if (contentId != null && VideoURLs.map.containsKey(contentId)) {
+			url = VideoURLs.map.get(contentId);
 		}
-
-		getLogger().info("playRequest.play( " + fileUri + ")");
-		session.start(fileUri);
+		getLogger().info("Playing " + url);
+		session.start(url);
 	}
 
 }

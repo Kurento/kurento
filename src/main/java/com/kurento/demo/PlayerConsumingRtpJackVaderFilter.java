@@ -18,6 +18,17 @@ import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 
+/**
+ * HTTP Player Handler which plays a RTP stream previously produced in
+ * {@link RtpProducingJackVaderFilter} handler; using tunneling strategy (by
+ * default <code>redirect=true</code> in {@link @HttpPlayerService} annotation;
+ * using JSON signaling protocol.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ * @see RtpProducingJackVaderFilter
+ */
 @HttpPlayerService(name = "PlayerConsumingRtpJackVaderFilter", path = "/playerRtpJack", useControlProtocol = true)
 public class PlayerConsumingRtpJackVaderFilter extends HttpPlayerHandler {
 

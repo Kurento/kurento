@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP Player</title>
+</head>
+<body>
+	<h1>HTTP Player</h1>
+
+	<table style="border-spacing: 10px;">
+		<tr>
+			<td valign="top"><button id="play" onclick="play();">Play</button>
+				<select id="url" name="url">
+					<option value="playerHttp/webm">WEBM video</option>
+					<option value="playerHttp/mov">MOV video</option>
+					<option value="playerHttp/mkv">MKV video</option>
+					<option value="playerHttp/3gp">3GP video</option>
+					<option value="playerHttp/ogv">OGV video</option>
+					<option value="playerHttp/avi">AVI video</option>
+					<option value="playerHttp/mp4">MP4 video</option>
+					<option value="playerHttpJackVader">JackVader Filter</option>
+			</select></td>
+			<td><video id="video" autoplay></video></td>
+		</tr>
+	</table>
+
+	<script type="text/javascript">
+		var video = document.getElementById("video");
+		var myUrl = document.URL;
+		var myPath = myUrl.substring(0, myUrl.lastIndexOf("/") + 1);
+
+	    function play() {
+			var url = document.getElementById("url");
+			video.src = myPath + url.value;
+			video.play();
+	    }
+	</script>
+</body>
+</html>

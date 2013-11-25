@@ -21,6 +21,15 @@ import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 
+/**
+ * RTP Content Handler which produces a media pipeline composed by a
+ * <code>JackVaderFilter</code>.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ * @see PlayerConsumingRtpJackVaderFilter
+ */
 @RtpContentService(name = "RtpProducingJackVaderFilter", path = "/rtpJack")
 public class RtpProducingJackVaderFilter extends RtpContentHandler {
 

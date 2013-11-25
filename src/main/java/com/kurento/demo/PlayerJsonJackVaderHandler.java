@@ -22,23 +22,26 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndPoint;
 
-@HttpPlayerService(name = "PlayerJonJackVaderHandler", path = "/playerJsonJack", useControlProtocol = true)
-public class PlayerJonJackVaderHandler extends HttpPlayerHandler {
+/**
+ * HTTP Player Handler which plays a media pipeline composed by a
+ * <code>PlayerEndPoint</code> with a <code>JackVaderFilter</code>; using
+ * redirect strategy; with JSON signaling protocol.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Boni García (bgarcia@gsyc.es)
+ * @version 1.0.0
+ */
+@HttpPlayerService(name = "PlayerJonJackVaderHandler", path = "/playerJsonJackVader", useControlProtocol = true)
+public class PlayerJsonJackVaderHandler extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		getLogger().info("Received request to " + session.getContentId());
-		getLogger().info("Recovering MediaPipelineFactory");
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
-		getLogger().info("Creating MediaPipeline");
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		getLogger().info("Creating PlayerEndPoint");
-		PlayerEndPoint playerEndPoint = mp
-				.createPlayerEndPoint("file:///opt/video/fiwarecut.webm");
-		getLogger().info("Creating JackVaderFilter");
+		PlayerEndPoint playerEndPoint = mp.createPlayerEndPoint(VideoURLs.map
+				.get("jack"));
 		JackVaderFilter filter = mp.createJackVaderFilter();
-		getLogger().info("Connecting " + playerEndPoint + " to " + filter);
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
 		session.start(filter);
@@ -48,7 +51,6 @@ public class PlayerJonJackVaderHandler extends HttpPlayerHandler {
 	public void onContentStarted(HttpPlayerSession session) {
 		PlayerEndPoint playerendPoint = (PlayerEndPoint) session
 				.getAttribute("player");
-		getLogger().info("Invoking play on " + playerendPoint);
 		playerendPoint.play();
 	}
 
