@@ -48,8 +48,8 @@ libgstkurento_la_SOURCES = kmsplugin.c \
                         kmshttpendpoint.c httpendpoint.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libgstkurento_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) -Werror
-libgstkurento_la_LIBADD = $(GST_LIBS) $(GIO_LIBS) $(NICE_LIBS)
+libgstkurento_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) $(SOUP_CFLAGS) -Werror
+libgstkurento_la_LIBADD = $(GST_LIBS) $(GIO_LIBS) $(NICE_LIBS) $(SOUP_LIBS)
 libgstkurento_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libgstkurento_la_LIBTOOLFLAGS = --tag=disable-static
 

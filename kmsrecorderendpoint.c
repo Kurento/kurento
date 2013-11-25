@@ -18,6 +18,7 @@
 
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
+#include <libsoup/soup.h>
 
 #include "kmsagnosticcaps.h"
 #include "kmsrecorderendpoint.h"
@@ -42,6 +43,8 @@
 #define HTTP_PROTO "http"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
+
+#define HTTP_TIMEOUT 10
 
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_end_point_debug_category
@@ -639,14 +642,17 @@ kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
 {
   GstElement *sink = NULL;
   gchar *prot;
-
   prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
 
   if (g_strcmp0 (prot, HTTP_PROTO) == 0) {
+    SoupSession* ss;
     /* We use souphttpclientsink */
     sink = gst_element_factory_make ("souphttpclientsink", NULL);
+    ss = soup_session_new_with_options  ("timeout", HTTP_TIMEOUT,
+                                          "ssl-strict", FALSE, NULL);
+    g_object_set ( G_OBJECT (sink), "session", ss, NULL);
   }
-  /* Add more if required */
+   /* Add more if required */
   return sink;
 }
 
