@@ -1566,7 +1566,6 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self, gboolean start)
     video_src =
         gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
 
-    KMS_ELEMENT_LOCK (self);
     if (audio_src != NULL) {
       g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
       g_object_unref (audio_src);
@@ -1578,7 +1577,6 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self, gboolean start)
     }
 
     g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
-    KMS_ELEMENT_UNLOCK (self);
   }
 
   self->priv->start = start;
