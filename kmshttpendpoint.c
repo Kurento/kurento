@@ -173,6 +173,12 @@ struct config_valve
   gchar *destpadname;
 };
 
+struct cb_data
+{
+  KmsHttpEndPoint *self;
+  gboolean start;
+};
+
 /* Object signals */
 enum
 {
@@ -232,9 +238,15 @@ generate_valve_configuration (GstElement * valve, const gchar * sinkname,
 }
 
 static void
+destroy_cb_data (gpointer data)
+{
+  g_slice_free (struct cb_data, data);
+}
+
+static void
 destroy_ulong (gpointer data)
 {
-  g_slice_free (gulong, data);
+  g_slice_free (struct cb_data, data);
 }
 
 static GstFlowReturn
@@ -1573,6 +1585,19 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self, gboolean start)
 }
 
 static void
+change_state_cb (gpointer user_data)
+{
+  struct cb_data *tmp_data = (struct cb_data *) user_data;
+
+  KMS_ELEMENT_LOCK (tmp_data->self);
+
+  if (tmp_data->self->priv->start != tmp_data->start)
+    kms_change_internal_pipeline_state (tmp_data->self, tmp_data->start);
+
+  KMS_ELEMENT_UNLOCK (tmp_data->self);
+}
+
+static void
 kms_http_end_point_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -1581,8 +1606,17 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
     case PROP_START:{
-      if (self->priv->start != g_value_get_boolean (value))
-        kms_change_internal_pipeline_state (self, g_value_get_boolean (value));
+      if (self->priv->start != g_value_get_boolean (value)) {
+        struct cb_data *tmp_data;
+
+        tmp_data = g_slice_new0 (struct cb_data);
+
+        tmp_data->self = self;
+        tmp_data->start = g_value_get_boolean (value);
+
+        kms_http_end_point_add_action (self, change_state_cb, tmp_data,
+            destroy_cb_data);
+      }
       break;
     }
     case PROP_PROFILE:
