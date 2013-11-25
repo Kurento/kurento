@@ -147,6 +147,18 @@ kms_player_end_point_dispose (GObject * object)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
 
+  if (self->priv->tdata.thread != NULL) {
+    /* clean up object here */
+    KMS_PLAYER_END_POINT_LOCK (self);
+    self->priv->tdata.finish_thread = TRUE;
+    KMS_PLAYER_END_POINT_SIGNAL (self);
+    KMS_PLAYER_END_POINT_UNLOCK (self);
+
+    g_thread_join (self->priv->tdata.thread);
+    g_thread_unref (self->priv->tdata.thread);
+    self->priv->tdata.thread = NULL;
+  }
+
   if (self->priv->pipeline != NULL) {
     GstBus *bus;
 
@@ -168,15 +180,6 @@ static void
 kms_player_end_point_finalize (GObject * object)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
-
-  /* clean up object here */
-  KMS_PLAYER_END_POINT_LOCK (self);
-  self->priv->tdata.finish_thread = TRUE;
-  KMS_PLAYER_END_POINT_SIGNAL (self);
-  KMS_PLAYER_END_POINT_UNLOCK (self);
-
-  g_thread_join (self->priv->tdata.thread);
-  g_thread_unref (self->priv->tdata.thread);
 
   g_cond_clear (&self->priv->tdata.thread_cond);
   g_mutex_clear (&self->priv->tdata.thread_mutex);
