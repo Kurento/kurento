@@ -918,6 +918,10 @@ kms_webrtc_end_point_finalize (GObject * object)
   g_cond_clear (&self->priv->gather_cond);
   g_mutex_clear (&self->priv->gather_mutex);
 
+  if (self->priv->certificate_pem_file != NULL) {
+    g_free (self->priv->certificate_pem_file);
+  }
+
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_end_point_parent_class)->finalize (object);
 }
