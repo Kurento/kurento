@@ -560,6 +560,18 @@ kms_recorder_end_point_dispose (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
+  if (self->priv->tdata.thread != NULL) {
+    /* clean up object here */
+    KMS_RECORDER_END_POINT_LOCK (self);
+    self->priv->tdata.finish_thread = TRUE;
+    KMS_RECORDER_END_POINT_SIGNAL (self);
+    KMS_RECORDER_END_POINT_UNLOCK (self);
+
+    g_thread_join (self->priv->tdata.thread);
+    g_thread_unref (self->priv->tdata.thread);
+    self->priv->tdata.thread = NULL;
+  }
+
   if (self->priv->pipeline != NULL) {
     if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {
       GST_ELEMENT_WARNING (self, RESOURCE, BUSY,
@@ -609,15 +621,6 @@ static void
 kms_recorder_end_point_finalize (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
-
-  /* clean up object here */
-  KMS_RECORDER_END_POINT_LOCK (self);
-  self->priv->tdata.finish_thread = TRUE;
-  KMS_RECORDER_END_POINT_SIGNAL (self);
-  KMS_RECORDER_END_POINT_UNLOCK (self);
-
-  g_thread_join (self->priv->tdata.thread);
-  g_thread_unref (self->priv->tdata.thread);
 
   g_cond_clear (&self->priv->tdata.thread_cond);
   g_mutex_clear (&self->priv->tdata.thread_mutex);
