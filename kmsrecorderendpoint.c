@@ -642,17 +642,25 @@ kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
 {
   GstElement *sink = NULL;
   gchar *prot;
+
   prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
 
   if (g_strcmp0 (prot, HTTP_PROTO) == 0) {
-    SoupSession* ss;
-    /* We use souphttpclientsink */
-    sink = gst_element_factory_make ("souphttpclientsink", NULL);
-    ss = soup_session_new_with_options  ("timeout", HTTP_TIMEOUT,
-                                          "ssl-strict", FALSE, NULL);
-    g_object_set ( G_OBJECT (sink), "session", ss, NULL);
+    SoupSession *ss;
+
+    if (kms_is_valid_uri (KMS_URI_END_POINT (self)->uri)) {
+      //valid url
+      /* We use souphttpclientsink */
+      sink = gst_element_factory_make ("souphttpclientsink", NULL);
+      ss = soup_session_new_with_options ("timeout", HTTP_TIMEOUT,
+          "ssl-strict", FALSE, NULL);
+      g_object_set (G_OBJECT (sink), "session", ss, NULL);
+    } else {
+      GST_ERROR ("URL not valid");
+    }
+
   }
-   /* Add more if required */
+  /* Add more if required */
   return sink;
 }
 

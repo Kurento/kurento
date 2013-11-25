@@ -39,3 +39,17 @@ kms_utils_debug_graph_delay (GstBin * bin, guint interval)
 {
   g_timeout_add_seconds (interval, debug_graph, bin);
 }
+
+gboolean
+kms_is_valid_uri (const gchar * url)
+{
+  gboolean ret;
+  GRegex *regex;
+
+  regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
+      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
+  ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
+  g_regex_unref (regex);
+
+  return ret;
+}
