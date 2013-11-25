@@ -1460,6 +1460,18 @@ kms_http_end_point_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
+  if (self->priv->tdata.thread != NULL) {
+    /* clean up object here */
+    KMS_HTTP_END_POINT_LOCK (self);
+    self->priv->tdata.finish_thread = TRUE;
+    KMS_HTTP_END_POINT_SIGNAL (self);
+    KMS_HTTP_END_POINT_UNLOCK (self);
+
+    g_thread_join (self->priv->tdata.thread);
+    g_thread_unref (self->priv->tdata.thread);
+    self->priv->tdata.thread = NULL;
+  }
+
   switch (self->priv->method) {
     case KMS_HTTP_END_POINT_METHOD_GET:
       kms_http_end_point_dispose_GET (self);
@@ -1493,15 +1505,6 @@ kms_http_end_point_finalize (GObject * object)
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
-
-  /* clean up object here */
-  KMS_HTTP_END_POINT_LOCK (self);
-  self->priv->tdata.finish_thread = TRUE;
-  KMS_HTTP_END_POINT_SIGNAL (self);
-  KMS_HTTP_END_POINT_UNLOCK (self);
-
-  g_thread_join (self->priv->tdata.thread);
-  g_thread_unref (self->priv->tdata.thread);
 
   g_cond_clear (&self->priv->tdata.thread_cond);
   g_mutex_clear (&self->priv->tdata.thread_mutex);
