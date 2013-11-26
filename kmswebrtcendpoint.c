@@ -49,6 +49,9 @@ enum
   N_PROPERTIES
 };
 
+#define IPV4 4
+#define IPV6 6
+
 #define NICE_N_COMPONENTS 2
 
 #define AUDIO_STREAM_NAME "audio"
@@ -413,12 +416,13 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
 
   nice_address_to_string (&rtp_default_candidate->addr, rtp_addr);
   rtp_port = nice_address_get_port (&rtp_default_candidate->addr);
-  rtp_is_ipv6 = nice_address_ip_version (&rtp_default_candidate->addr) == 6;
+  rtp_is_ipv6 = nice_address_ip_version (&rtp_default_candidate->addr) == IPV6;
   nice_candidate_free (rtp_default_candidate);
 
   nice_address_to_string (&rtcp_default_candidate->addr, rtcp_addr);
   rtcp_port = nice_address_get_port (&rtcp_default_candidate->addr);
-  rtcp_is_ipv6 = nice_address_ip_version (&rtcp_default_candidate->addr) == 6;
+  rtcp_is_ipv6 =
+      nice_address_ip_version (&rtcp_default_candidate->addr) == IPV6;
   nice_candidate_free (rtcp_default_candidate);
 
   rtp_addr_type = rtp_is_ipv6 ? "IP6" : "IP4";
@@ -464,6 +468,9 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
 
   for (walk = candidates; walk; walk = walk->next) {
     NiceCandidate *cand = walk->data;
+
+    if (nice_address_ip_version (&cand->addr) == IPV6 && !use_ipv6)
+      continue;
 
     str = nice_agent_generate_local_candidate_sdp (agent, cand);
     gst_sdp_media_add_attribute ((GstSDPMedia *) media, SDP_CANDIDATE_ATTR,
