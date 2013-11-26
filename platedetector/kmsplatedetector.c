@@ -54,6 +54,8 @@
 #define PLATE_NUMBERS "0123456789"
 #define PLATE_LETTERS "BCDFGHJKLMNPQRSTVWXYZ"
 
+#define TESSERAC_PREFIX_DEFAULT FINAL_INSTALL_DIR "/share/" PACKAGE "/"
+
 GST_DEBUG_CATEGORY_STATIC (kms_plate_detector_debug_category);
 #define GST_CAT_DEFAULT kms_plate_detector_debug_category
 
@@ -190,6 +192,7 @@ kms_plate_detector_init (KmsPlateDetector * platedetector)
   platedetector->priv->preprocessingType = PREPROCESSING_ONE;
   platedetector->priv->handle = TessBaseAPICreate ();
   setlocale (LC_NUMERIC, "C");
+  setenv ("TESSDATA_PREFIX", TESSERAC_PREFIX_DEFAULT, FALSE);
   TessBaseAPIInit3 (platedetector->priv->handle, "", "plateLanguage");
   TessBaseAPISetPageSegMode (platedetector->priv->handle, PSM_SINGLE_LINE);
   kms_plate_detector_plate_store_initialization (platedetector);

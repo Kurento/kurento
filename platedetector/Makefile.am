@@ -24,5 +24,8 @@ libplatedetector_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS) -ltesseract
 libplatedetector_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libplatedetector_la_LIBTOOLFLAGS = --tag=disable-static
 
+libplatedetector_ladir = $(datadir)/@PACKAGE@/tessdata
+libplatedetector_la_DATA = tessdata/plateLanguage.traineddata
+
 endif
 endif
