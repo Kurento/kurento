@@ -187,13 +187,24 @@ kms_plate_detector_init (KmsPlateDetector * platedetector)
   double hScaleBig = 1.0;
   double vScaleBig = 1.0;
   int lineWidthBig = 18;
+  gint ret_value;
 
   platedetector->priv->cvImage = NULL;
   platedetector->priv->preprocessingType = PREPROCESSING_ONE;
   platedetector->priv->handle = TessBaseAPICreate ();
   setlocale (LC_NUMERIC, "C");
   setenv ("TESSDATA_PREFIX", TESSERAC_PREFIX_DEFAULT, FALSE);
-  TessBaseAPIInit3 (platedetector->priv->handle, "", "plateLanguage");
+  ret_value =
+      TessBaseAPIInit3 (platedetector->priv->handle, "", "plateLanguage");
+
+  if (ret_value == -1) {
+    GST_ELEMENT_ERROR (platedetector, RESOURCE, NOT_FOUND,
+        ("Tesseract dictionary not found"), (NULL));
+    TessBaseAPIDelete (platedetector->priv->handle);
+    platedetector->priv->handle = NULL;
+
+    return;
+  }
   TessBaseAPISetPageSegMode (platedetector->priv->handle, PSM_SINGLE_LINE);
   kms_plate_detector_plate_store_initialization (platedetector);
   platedetector->priv->storePosition = 0;
@@ -1616,6 +1627,9 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
   GstMapInfo info;
   CvSeq *contoursPlates = 0;
   CvMemStorage *memPlates;
+
+  if (platedetector->priv->handle == NULL)
+    return GST_FLOW_OK;;
 
   memPlates = cvCreateMemStorage (0);
 
