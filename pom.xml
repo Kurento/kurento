@@ -8,7 +8,19 @@
 	<packaging>jar</packaging>
 
 	<name>kmf-media-api</name>
-	<url>http://www.kurento.com</url>
+	<description>
+			Kurento Media Manager API
+
+			The Kurento kmf-media-api project allows server applications to control media server resources.
+	</description>
+	<url>https://github.com/Kurento/kmf-media-api</url>
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
 	<organization>
 		<name>Kurento</name>
@@ -134,49 +146,11 @@
 		</extensions>
 
 	</build>
-	<distributionManagement>
-		<site>
-			<id>maven-site</id>
-			<url>scp://repository.kurento.com/var/www/kurento/site/${project.name}/${project.version}
-                        </url>
-		</site>
-		<repository>
-			<id>releases</id>
-			<name>Kurento releases repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Kurento snapshots repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-	<repositories>
-		<repository>
-			<id>kurento-snapshots</id>
-			<name>Kurento Snapshot Repository</name>
-			<url>http://repository.kurento.com/archiva/repository/snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>kurento-releases</id>
-			<name>Kurento Repository</name>
-			<url>http://repository.kurento.com/archiva/repository/internal/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
+
 	<scm>
-		<developerConnection>scm:git:https://github.com/Kurento/kmf-media-api</developerConnection>
-                <tag>develop</tag>
+		<url>https://github.com/Kurento/${project.artifactId}</url>
+		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<tag>develop</tag>
 	</scm>
 </project>
