@@ -969,10 +969,18 @@ kms_plate_detector_extract_final_plate (KmsPlateDetector * platedetector)
 
   if ((platedetector->priv->plateRepetition > NUM_ACCUMULATED_PLATES)
       && (platedetector->priv->sendPlateEvent == TRUE)) {
+    GstStructure *s;
+    GstMessage *m;
+
     platedetector->priv->sendPlateEvent = FALSE;
     platedetector->priv->plateRepetition = 0;
     GST_DEBUG ("NEW PLATE: %s", platedetector->priv->previousFinalPlate);
-    GST_DEBUG ("TODO: send event to the bus");
+
+    /* post a plate-detected message to bus */
+    s = gst_structure_new ("plate-detected",
+        "plate", G_TYPE_STRING, platedetector->priv->previousFinalPlate, NULL);
+    m = gst_message_new_element (GST_OBJECT (platedetector), s);
+    gst_element_post_message (GST_ELEMENT (platedetector), m);
   }
 
   if (platedetector->priv->show_debug_info == TRUE) {
