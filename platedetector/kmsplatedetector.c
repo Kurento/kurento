@@ -1614,7 +1614,6 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
 {
   KmsPlateDetector *platedetector = KMS_PLATE_DETECTOR (filter);
   GstMapInfo info;
-  IplConvKernel *kernel;
   CvSeq *contoursPlates = 0;
   CvMemStorage *memPlates;
 
@@ -1788,7 +1787,6 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
   cvClearMemStorage (memPlates);
   cvReleaseMemStorage (&memPlates);
   gst_buffer_unmap (frame->buffer, &info);
-  cvReleaseStructuringElement (&kernel);
 
   return GST_FLOW_OK;
 }
