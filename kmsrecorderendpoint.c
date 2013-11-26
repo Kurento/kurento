@@ -41,6 +41,7 @@
 #define BASE_TIME_DATA "base_time_data"
 
 #define HTTP_PROTO "http"
+#define HTTPS_PROTO "https"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 
@@ -645,7 +646,8 @@ kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
 
   prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
 
-  if (g_strcmp0 (prot, HTTP_PROTO) == 0) {
+  if ((g_strcmp0 (prot, HTTP_PROTO) == 0)
+      || (g_strcmp0 (prot, HTTPS_PROTO) == 0)) {
     SoupSession *ss;
 
     if (kms_is_valid_uri (KMS_URI_END_POINT (self)->uri)) {
