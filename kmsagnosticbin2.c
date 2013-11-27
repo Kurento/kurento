@@ -710,6 +710,8 @@ iterate_src_pads (KmsAgnosticBin2 * self)
         break;
     }
   }
+
+  gst_iterator_free (it);
 }
 
 static GstPadProbeReturn
