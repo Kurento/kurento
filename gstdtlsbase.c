@@ -282,7 +282,9 @@ gst_dtls_base_change_state (GstElement * element, GstStateChange transition)
     case GST_STATE_CHANGE_READY_TO_NULL:
       g_io_stream_close_async (G_IO_STREAM (self->conn->conn), 0, NULL, NULL,
           NULL);
-      g_clear_object (&self->conn);
+       // g_clear_object (&self->conn);
+      /* FIXME: this causes:
+            "g_output_stream_close: assertion 'G_IS_OUTPUT_STREAM (stream)' failed"*/
       break;
     default:
       break;
