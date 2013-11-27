@@ -378,9 +378,6 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
   const GstSDPMedia *offer_media, *answer_media;
   GstSDPMedia *offer_media_result, *answer_media_result;
 
-  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
-      GST_DEFAULT_NAME);
-
   result = sdp_message_create_from_src (offer, offer_result);
   if (result != GST_SDP_OK) {
     GST_ERROR ("Error creating sdp message");
@@ -459,4 +456,13 @@ end:
   g_list_free (ans_used_media_list);
 
   return result;
+}
+
+static void init_debug (void) __attribute__ ((constructor));
+
+static void
+init_debug (void)
+{
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
+      GST_DEFAULT_NAME);
 }
