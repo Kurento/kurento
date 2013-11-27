@@ -209,7 +209,7 @@ sink_block (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
     return GST_PAD_PROBE_OK;
 
   if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_BUFFER |
-      GST_PAD_PROBE_TYPE_BUFFER_LIST)) {
+          GST_PAD_PROBE_TYPE_BUFFER_LIST)) {
     KmsAgnosticBin2 *self = user_data;
 
     g_mutex_lock (&self->priv->probe_mutex);
@@ -244,10 +244,10 @@ kms_agnostic_bin2_set_block_probe (KmsAgnosticBin2 * self)
   g_mutex_lock (&self->priv->probe_mutex);
   if (self->priv->block_probe == 0L) {
     self->priv->block_probe =
-          gst_pad_add_probe (self->priv->sink,
-          GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, sink_block, self, NULL);
-      GST_DEBUG_OBJECT (self, "Adding probe %ld while connecting",
-          self->priv->block_probe);
+        gst_pad_add_probe (self->priv->sink,
+        GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, sink_block, self, NULL);
+    GST_DEBUG_OBJECT (self, "Adding probe %ld while connecting",
+        self->priv->block_probe);
   }
   g_mutex_unlock (&self->priv->probe_mutex);
 }
