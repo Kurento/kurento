@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants.TYPE_NAME;
+
 import java.util.Map;
 
 import org.apache.thrift.TException;
@@ -23,6 +25,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.params.MediaParam;
@@ -190,4 +193,33 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 			throw new KurentoMediaFrameworkException(e.getMessage(), e, 30000);
 		}
 	}
+
+	static class MediaMixerBuilderImpl<T extends MediaMixerBuilderImpl<T, E>, E extends MediaMixer>
+			extends AbstractCollectableMediaObjectBuilder<T, E> {
+
+		/**
+		 * @param elementType
+		 */
+		protected MediaMixerBuilderImpl(final String elementType,
+				final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+		}
+
+		public MediaMixerBuilderImpl(final MediaPipeline pipeline) {
+			this(TYPE_NAME, pipeline);
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public E build() {
+			return (E) pipeline.createMediaMixer(elementName, params);
+		}
+
+		@Override
+		public void buildAsync(Continuation<E> cont) {
+			pipeline.createMediaMixer(elementName, params, cont);
+		}
+
+	}
+
 }

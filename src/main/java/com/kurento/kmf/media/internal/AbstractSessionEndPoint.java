@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.SessionEndPoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
@@ -72,6 +73,19 @@ public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 			final MediaEventListener<MediaSessionStartedEvent> sessionEvent,
 			final Continuation<ListenerRegistration> cont) {
 		addListener(EVENT_MEDIA_SESSION_START, sessionEvent, cont);
+	}
+
+	protected static abstract class AbstractSessionEndPointBuilder<T extends AbstractSessionEndPointBuilder<T, E>, E extends SessionEndPoint>
+			extends AbstractEndPointBuilder<T, E> {
+
+		/**
+		 * @param elementType
+		 */
+		protected AbstractSessionEndPointBuilder(final String elementType,
+				final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+		}
+
 	}
 
 }

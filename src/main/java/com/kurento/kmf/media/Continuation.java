@@ -21,7 +21,7 @@ public interface Continuation<F> {
 	 * 
 	 * @param result
 	 */
-	public void onSuccess(F result);
+	void onSuccess(F result);
 
 	/**
 	 * This method gets called when the operation fails
@@ -29,6 +29,6 @@ public interface Continuation<F> {
 	 * @param cause
 	 *            The cause of the failure
 	 */
-	public void onError(Throwable cause);
+	void onError(Throwable cause);
 
 }

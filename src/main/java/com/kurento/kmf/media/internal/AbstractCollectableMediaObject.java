@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaObject;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
@@ -96,4 +97,24 @@ public abstract class AbstractCollectableMediaObject extends
 		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
 		super.finalize();
 	}
+
+	protected static abstract class AbstractCollectableMediaObjectBuilder<T extends AbstractCollectableMediaObjectBuilder<T, E>, E extends MediaObject>
+			extends AbstractMediaObjectBuilder<T, E> {
+
+		private final MediaObjectConstructorParam param = new MediaObjectConstructorParam();
+
+		protected AbstractCollectableMediaObjectBuilder(
+				final String elementType, final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+		}
+
+		public final T withGarbagePeriod(int period) {
+			param.setGarbageCollectorPeriod(period);
+			params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+					param);
+			return self();
+		}
+
+	}
+
 }

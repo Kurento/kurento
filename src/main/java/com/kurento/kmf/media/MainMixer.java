@@ -15,4 +15,10 @@
 package com.kurento.kmf.media;
 
 public interface MainMixer extends MediaMixer {
+
+	public interface MainMixerBuilder extends
+			MediaObjectBuilder<MainMixerBuilder, MainMixer> {
+
+	}
+
 }

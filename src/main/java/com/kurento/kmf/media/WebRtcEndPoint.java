@@ -15,4 +15,10 @@
 package com.kurento.kmf.media;
 
 public interface WebRtcEndPoint extends SdpEndPoint {
+
+	public interface WebRtcEndPointBuilder extends
+			MediaObjectBuilder<WebRtcEndPointBuilder, WebRtcEndPoint> {
+
+	}
+
 }

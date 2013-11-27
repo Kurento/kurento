@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.MediaSource;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
@@ -717,6 +718,30 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 		}
 
 		return srcs;
+
+	}
+
+	static class MediaElementBuilderImpl<T extends MediaElementBuilderImpl<T, E>, E extends MediaElement>
+			extends AbstractCollectableMediaObjectBuilder<T, E> {
+
+		/**
+		 * @param elementType
+		 */
+		protected MediaElementBuilderImpl(final String elementType,
+				final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public E build() {
+			return (E) pipeline.createMediaElement(elementName, params);
+		}
+
+		@Override
+		public void buildAsync(Continuation<E> cont) {
+			pipeline.createMediaElement(elementName, params, cont);
+		}
 
 	}
 

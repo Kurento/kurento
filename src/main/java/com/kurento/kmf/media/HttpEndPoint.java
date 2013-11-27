@@ -33,4 +33,13 @@ public interface HttpEndPoint extends SessionEndPoint {
 			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent,
 			final Continuation<ListenerRegistration> cont);
 
+	public interface HttpEndPointBuilder extends
+			MediaObjectBuilder<HttpEndPointBuilder, HttpEndPoint> {
+
+		HttpEndPointBuilder terminateOnEOS();
+
+		HttpEndPointBuilder withDisconnectionTimeout(int disconnectionTimeout);
+
+		HttpEndPointBuilder withMediaProfile(MediaProfileSpecType type);
+	}
 }

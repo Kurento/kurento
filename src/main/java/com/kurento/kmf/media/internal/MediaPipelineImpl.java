@@ -14,11 +14,8 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.thrift.TException;
@@ -26,30 +23,28 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.HttpEndPoint;
-import com.kurento.kmf.media.JackVaderFilter;
+import com.kurento.kmf.media.HttpEndPoint.HttpEndPointBuilder;
+import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.RecorderEndPoint;
-import com.kurento.kmf.media.RtpEndPoint;
-import com.kurento.kmf.media.WebRtcEndPoint;
-import com.kurento.kmf.media.ZBarFilter;
+import com.kurento.kmf.media.PlayerEndPoint.PlayerEndPointBuilder;
+import com.kurento.kmf.media.RecorderEndPoint.RecorderEndPointBuilder;
+import com.kurento.kmf.media.RtpEndPoint.RtpEndPointBuilder;
+import com.kurento.kmf.media.WebRtcEndPoint.WebRtcEndPointBuilder;
+import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
+import com.kurento.kmf.media.internal.HttpEndPointImpl.HttpEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
+import com.kurento.kmf.media.internal.PlayerEndPointImpl.PlayerEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.RecorderEndPointImpl.RecorderEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.RtpEndPointImpl.RtpEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.WebRtcEndPointImpl.WebRtcEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.ZBarFilterImpl.ZBarFilterBuilderImpl;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
 import com.kurento.kmf.media.params.MediaParam;
-import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
-import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
-import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
-import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
-import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaElementWithParams_call;
@@ -58,9 +53,6 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaM
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaMixer_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 import com.kurento.kms.thrift.api.KmsMediaType;
-import com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaWebRtcEndPointTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants;
 
 public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		MediaPipeline {
@@ -444,495 +436,66 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public HttpEndPoint createHttpEndPoint() {
-		return (HttpEndPoint) createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME);
+	public HttpEndPointBuilder newHttpEndPoint() {
+		return new HttpEndPointBuilderImpl(this);
 	}
 
 	@Override
-	public HttpEndPoint createHttpEndPoint(boolean terminateOnEOS) {
-		return createHttpEndPoint(terminateOnEOS,
-				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
+	public RtpEndPointBuilder newRtpEndPoint() {
+		return new RtpEndPointBuilderImpl(this);
 	}
 
 	@Override
-	public HttpEndPoint createHttpEndPoint(boolean terminateOnEOS,
-			int garbagePeriod) {
-		return (HttpEndPoint) createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateHttpEndPointConstructorParams(null,
-						terminateOnEOS, garbagePeriod));
+	public WebRtcEndPointBuilder newWebRtcEndPoint() {
+		return new WebRtcEndPointBuilderImpl(this);
 	}
 
 	@Override
-	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout) {
-		return createHttpEndPoint(disconnectionTimeout,
-				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
-	}
-
-	@Override
-	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
-			int garbagePeriod) {
-		return (HttpEndPoint) createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateHttpEndPointConstructorParams(null,
-						disconnectionTimeout, garbagePeriod));
-	}
-
-	@Override
-	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
-			boolean terminateOnEOS) {
-		return createHttpEndPoint(disconnectionTimeout, terminateOnEOS,
-				DEFAULT_GARBAGE_COLLECTOR_PERIOD);
-	}
-
-	@Override
-	public HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
-			boolean terminateOnEOS, int garbagePeriod) {
-		return (HttpEndPoint) createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateHttpEndPointConstructorParams(null,
-						disconnectionTimeout, terminateOnEOS, garbagePeriod));
-	}
-
-	private Map<String, MediaParam> internalCreateMediaObjectConstructorParams(
-			Map<String, MediaParam> params, int garbagePeriod) {
-		if (params == null) {
-			params = new HashMap<String, MediaParam>(4);
-		}
-
-		if (garbagePeriod != DEFAULT_GARBAGE_COLLECTOR_PERIOD) {
-			MediaObjectConstructorParam mocp = new MediaObjectConstructorParam();
-			mocp.setGarbageCollectorPeriod(garbagePeriod);
-			params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-					mocp);
-		}
-
-		return params;
-	}
-
-	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
-			Map<String, MediaParam> params, boolean terminateOnEOS,
-			int garbagePeriod) {
-		if (params == null) {
-			params = new HashMap<String, MediaParam>(4);
-		}
-
-		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
-		hecp.setTerminateOnEOS(Boolean.valueOf(terminateOnEOS));
-		params.put(
-				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-				hecp);
-
-		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
-	}
-
-	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
-			Map<String, MediaParam> params, int disconnectionTimeout,
-			int garbagePeriod) {
-		if (params == null) {
-			params = new HashMap<String, MediaParam>(4);
-		}
-
-		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
-		hecp.setDisconnectionTimeout(Integer.valueOf(disconnectionTimeout));
-		params.put(
-				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-				hecp);
-
-		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
-	}
-
-	private Map<String, MediaParam> internalCreateHttpEndPointConstructorParams(
-			Map<String, MediaParam> params, int disconnectionTimeout,
-			boolean terminateOnEOS, int garbagePeriod) {
-		if (params == null) {
-			params = new HashMap<String, MediaParam>(4);
-		}
-
-		HttpEndpointConstructorParam hecp = new HttpEndpointConstructorParam();
-		hecp.setTerminateOnEOS(Boolean.valueOf(terminateOnEOS));
-		hecp.setDisconnectionTimeout(Integer.valueOf(disconnectionTimeout));
-		params.put(
-				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-				hecp);
-
-		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
-	}
-
-	@Override
-	public HttpEndPoint createHttpEndPoint(
-			HttpEndpointConstructorParam constParams) {
-		return createHttpEndPoint(constParams, DEFAULT_GARBAGE_COLLECTOR_PERIOD);
-	}
-
-	@Override
-	public HttpEndPoint createHttpEndPoint(
-			HttpEndpointConstructorParam constParams, int garbagePeriod) {
-		// TODO fix this with the builder
-		Map<String, MediaParam> map = new HashMap<String, MediaParam>(6);
-		map.put(KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-				constParams);
-		return (HttpEndPoint) createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(map, garbagePeriod));
-	}
-
-	@Override
-	public void createHttpEndPoint(HttpEndpointConstructorParam constParams,
-			Continuation<HttpEndPoint> cont) {
-		createHttpEndPoint(constParams, DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(HttpEndpointConstructorParam constParams,
-			int garbagePeriod, Continuation<HttpEndPoint> cont) {
-		// TODO fix this with the builder
-		Map<String, MediaParam> map = new HashMap<String, MediaParam>(6);
-		map.put(KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-				constParams);
-		createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(map, garbagePeriod),
-				cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(Continuation<HttpEndPoint> cont) {
-		createMediaElement(KmsMediaHttpEndPointTypeConstants.TYPE_NAME, cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(boolean terminateOnEOS,
-			Continuation<HttpEndPoint> cont) {
-		createHttpEndPoint(terminateOnEOS, DEFAULT_GARBAGE_COLLECTOR_PERIOD,
-				cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod,
-			Continuation<HttpEndPoint> cont) {
-		createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateHttpEndPointConstructorParams(null,
-						terminateOnEOS, garbagePeriod), cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(int disconnectionTimeout,
-			Continuation<HttpEndPoint> cont) {
-		createHttpEndPoint(disconnectionTimeout,
-				DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(int disconnectionTimeout, int garbagePeriod,
-			Continuation<HttpEndPoint> cont) {
-		createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateHttpEndPointConstructorParams(null,
-						disconnectionTimeout, garbagePeriod), cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(int disconnectionTimeout,
-			boolean terminateOnEOS, Continuation<HttpEndPoint> cont) {
-		createHttpEndPoint(disconnectionTimeout, terminateOnEOS,
-				DEFAULT_GARBAGE_COLLECTOR_PERIOD, cont);
-	}
-
-	@Override
-	public void createHttpEndPoint(int disconnectionTimeout,
-			boolean terminateOnEOS, int garbagePeriod,
-			Continuation<HttpEndPoint> cont) {
-		createMediaElement(
-				KmsMediaHttpEndPointTypeConstants.TYPE_NAME,
-				internalCreateHttpEndPointConstructorParams(null,
-						disconnectionTimeout, terminateOnEOS, garbagePeriod),
-				cont);
-	}
-
-	@Override
-	public RtpEndPoint createRtpEndPoint() {
-		return (RtpEndPoint) createMediaElement(KmsMediaRtpEndPointTypeConstants.TYPE_NAME);
-	}
-
-	@Override
-	public RtpEndPoint createRtpEndPoint(int garbagePeriod) {
-		return (RtpEndPoint) createMediaElement(
-				KmsMediaRtpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
-	}
-
-	@Override
-	public void createRtpEndPoint(Continuation<RtpEndPoint> cont) {
-		createMediaElement(KmsMediaRtpEndPointTypeConstants.TYPE_NAME, cont);
-	}
-
-	@Override
-	public void createRtpEndPoint(int garbagePeriod,
-			Continuation<RtpEndPoint> cont) {
-		createMediaElement(
-				KmsMediaRtpEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
-				cont);
-	}
-
-	@Override
-	public WebRtcEndPoint createWebRtcEndPoint() {
-		return (WebRtcEndPoint) createMediaElement(KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME);
-	}
-
-	@Override
-	public WebRtcEndPoint createWebRtcEndPoint(int garbagePeriod) {
-		return (WebRtcEndPoint) createMediaElement(
-				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
-	}
-
-	@Override
-	public void createWebRtcEndPoint(Continuation<WebRtcEndPoint> cont) {
-		createMediaElement(KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME);
-	}
-
-	@Override
-	public void createWebRtcEndPoint(int garbagePeriod,
-			Continuation<WebRtcEndPoint> cont) {
-		createMediaElement(
-				KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
-				cont);
-	}
-
-	@Override
-	public PlayerEndPoint createPlayerEndPoint(String uriStr) {
+	public PlayerEndPointBuilder newPlayerEndPoint(String uriStr) {
 		URI uri;
+
 		try {
 			uri = new URI(uriStr);
 		} catch (URISyntaxException e) {
-			// TODO Add error code
+			// TODO error-code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-		return createPlayerEndPoint(uri);
-	}
 
-	private Map<String, MediaParam> internalCreateUriEndPointConstructorParams(
-			Map<String, MediaParam> params, URI uri, int garbagePeriod) {
-		if (params == null) {
-			params = new HashMap<String, MediaParam>(4);
-		}
-		UriEndPointConstructorParam param = new UriEndPointConstructorParam();
-		param.setUri(uri);
-		params.put(
-				KmsMediaUriEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-				param);
-		return internalCreateMediaObjectConstructorParams(params, garbagePeriod);
+		return this.newPlayerEndPoint(uri);
 	}
 
 	@Override
-	public PlayerEndPoint createPlayerEndPoint(URI uri) {
-		return (PlayerEndPoint) createMediaElement(
-				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						DEFAULT_GARBAGE_COLLECTOR_PERIOD));
+	public PlayerEndPointBuilder newPlayerEndPoint(URI uri) {
+		return new PlayerEndPointBuilderImpl(uri, this);
 	}
 
 	@Override
-	public PlayerEndPoint createPlayerEndPoint(String uriStr, int garbagePeriod) {
+	public RecorderEndPointBuilder newRecorderEndPoint(String uriStr) {
 		URI uri;
+
 		try {
 			uri = new URI(uriStr);
 		} catch (URISyntaxException e) {
-			// TODO Add error code
+			// TODO error-code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-		return createPlayerEndPoint(uri, garbagePeriod);
+
+		return this.newRecorderEndPoint(uri);
 	}
 
 	@Override
-	public PlayerEndPoint createPlayerEndPoint(URI uri, int garbagePeriod) {
-		return (PlayerEndPoint) createMediaElement(
-				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						garbagePeriod));
+	public RecorderEndPointBuilder newRecorderEndPoint(URI uri) {
+		return new RecorderEndPointBuilderImpl(uri, this);
 	}
 
 	@Override
-	public void createPlayerEndPoint(String uriStr,
-			Continuation<PlayerEndPoint> cont) {
-		URI uri;
-		try {
-			uri = new URI(uriStr);
-		} catch (URISyntaxException e) {
-			// TODO Add error code
-			throw new KurentoMediaFrameworkException("", 30000);
-		}
-		createPlayerEndPoint(uri, cont);
+	public ZBarFilterBuilder newZBarFilter() {
+		return new ZBarFilterBuilderImpl(this);
 	}
 
 	@Override
-	public void createPlayerEndPoint(URI uri, Continuation<PlayerEndPoint> cont) {
-		createMediaElement(
-				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						DEFAULT_GARBAGE_COLLECTOR_PERIOD), cont);
-	}
-
-	@Override
-	public void createPlayerEndPoint(String uriStr, int garbagePeriod,
-			Continuation<PlayerEndPoint> cont) {
-		URI uri;
-		try {
-			uri = new URI(uriStr);
-		} catch (URISyntaxException e) {
-			// TODO Add error code
-			throw new KurentoMediaFrameworkException("", 30000);
-		}
-		createPlayerEndPoint(uri, garbagePeriod, cont);
-	}
-
-	@Override
-	public void createPlayerEndPoint(URI uri, int garbagePeriod,
-			Continuation<PlayerEndPoint> cont) {
-		createMediaElement(
-				KmsMediaPlayerEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						garbagePeriod), cont);
-	}
-
-	@Override
-	public RecorderEndPoint createRecorderEndPoint(String uriStr) {
-		URI uri;
-		try {
-			uri = new URI(uriStr);
-		} catch (URISyntaxException e) {
-			// TODO Add error code
-			throw new KurentoMediaFrameworkException("", 30000);
-		}
-		return createRecorderEndPoint(uri);
-	}
-
-	@Override
-	public RecorderEndPoint createRecorderEndPoint(URI uri) {
-		return (RecorderEndPoint) createMediaElement(
-				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						DEFAULT_GARBAGE_COLLECTOR_PERIOD));
-	}
-
-	@Override
-	public RecorderEndPoint createRecorderEndPoint(String uriStr,
-			int garbagePeriod) {
-		URI uri;
-		try {
-			uri = new URI(uriStr);
-		} catch (URISyntaxException e) {
-			// TODO Add error code
-			throw new KurentoMediaFrameworkException("", 30000);
-		}
-		return createRecorderEndPoint(uri, garbagePeriod);
-	}
-
-	@Override
-	public RecorderEndPoint createRecorderEndPoint(URI uri, int garbagePeriod) {
-		return (RecorderEndPoint) createMediaElement(
-				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						garbagePeriod));
-	}
-
-	@Override
-	public void createRecorderEndPoint(String uriStr,
-			Continuation<RecorderEndPoint> cont) {
-		URI uri;
-		try {
-			uri = new URI(uriStr);
-		} catch (URISyntaxException e) {
-			// TODO Add error code
-			throw new KurentoMediaFrameworkException("", 30000);
-		}
-		createRecorderEndPoint(uri, cont);
-	}
-
-	@Override
-	public void createRecorderEndPoint(URI uri,
-			Continuation<RecorderEndPoint> cont) {
-		createMediaElement(
-				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						DEFAULT_GARBAGE_COLLECTOR_PERIOD), cont);
-	}
-
-	@Override
-	public void createRecorderEndPoint(String uriStr, int garbagePeriod,
-			Continuation<RecorderEndPoint> cont) {
-		URI uri;
-		try {
-			uri = new URI(uriStr);
-		} catch (URISyntaxException e) {
-			// TODO Add error code
-			throw new KurentoMediaFrameworkException("", 30000);
-		}
-		createRecorderEndPoint(uri, garbagePeriod, cont);
-	}
-
-	@Override
-	public void createRecorderEndPoint(URI uri, int garbagePeriod,
-			Continuation<RecorderEndPoint> cont) {
-		createMediaElement(
-				KmsMediaRecorderEndPointTypeConstants.TYPE_NAME,
-				internalCreateUriEndPointConstructorParams(null, uri,
-						garbagePeriod), cont);
-	}
-
-	@Override
-	public ZBarFilter createZBarFilter() {
-		return (ZBarFilter) createMediaElement(KmsMediaZBarFilterTypeConstants.TYPE_NAME);
-	}
-
-	@Override
-	public ZBarFilter createZBarFilter(int garbagePeriod) {
-		return (ZBarFilter) createMediaElement(
-				KmsMediaZBarFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
-	}
-
-	@Override
-	public void createZBarFilter(Continuation<ZBarFilter> cont) {
-		createMediaElement(KmsMediaZBarFilterTypeConstants.TYPE_NAME, cont);
-	}
-
-	@Override
-	public void createZBarFilter(int garbagePeriod,
-			Continuation<ZBarFilter> cont) {
-		createMediaElement(
-				KmsMediaZBarFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
-				cont);
-	}
-
-	@Override
-	public JackVaderFilter createJackVaderFilter() {
-		return (JackVaderFilter) createMediaElement(KmsMediaJackVaderFilterTypeConstants.TYPE_NAME);
-	}
-
-	@Override
-	public JackVaderFilter createJackVaderFilter(int garbagePeriod) {
-		return (JackVaderFilter) createMediaElement(
-				KmsMediaJackVaderFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod));
-	}
-
-	@Override
-	public void createJackVaderFilter(Continuation<JackVaderFilter> cont) {
-		createMediaElement(KmsMediaJackVaderFilterTypeConstants.TYPE_NAME, cont);
-	}
-
-	@Override
-	public void createJackVaderFilter(int garbagePeriod,
-			Continuation<JackVaderFilter> cont) {
-		createMediaElement(
-				KmsMediaJackVaderFilterTypeConstants.TYPE_NAME,
-				internalCreateMediaObjectConstructorParams(null, garbagePeriod),
-				cont);
+	public JackVaderFilterBuilder newJackVaderFilter() {
+		return new JackVaderFilterBuilderImpl(this);
 	}
 
 }

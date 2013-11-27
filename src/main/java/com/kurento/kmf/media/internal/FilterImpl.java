@@ -17,6 +17,7 @@ package com.kurento.kmf.media.internal;
 import java.util.Map;
 
 import com.kurento.kmf.media.Filter;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 
@@ -32,6 +33,16 @@ public class FilterImpl extends MediaElementImpl implements Filter {
 	 */
 	public FilterImpl(MediaElementRef objectRef, Map<String, MediaParam> params) {
 		super(objectRef, params);
+	}
+
+	static class FilterBuilderImpl<T extends FilterBuilderImpl<T, E>, E extends Filter>
+			extends MediaElementBuilderImpl<T, E> {
+
+		protected FilterBuilderImpl(final String elementType,
+				final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+		}
+
 	}
 
 }

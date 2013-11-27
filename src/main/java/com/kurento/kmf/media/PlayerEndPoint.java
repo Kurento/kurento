@@ -23,4 +23,9 @@ public interface PlayerEndPoint extends UriEndPoint, HasEndOfStreamListener {
 	/* ASYNC */
 	public void play(final Continuation<Void> cont);
 
+	public interface PlayerEndPointBuilder extends
+			MediaObjectBuilder<PlayerEndPointBuilder, PlayerEndPoint> {
+
+	}
+
 }

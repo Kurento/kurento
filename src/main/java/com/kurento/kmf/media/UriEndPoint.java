@@ -29,4 +29,5 @@ public interface UriEndPoint extends EndPoint {
 	void pause(Continuation<Void> cont);
 
 	void stop(Continuation<Void> cont);
+
 }

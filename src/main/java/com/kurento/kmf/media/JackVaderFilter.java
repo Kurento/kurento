@@ -15,4 +15,10 @@
 package com.kurento.kmf.media;
 
 public interface JackVaderFilter extends Filter {
+
+	public interface JackVaderFilterBuilder extends
+			MediaObjectBuilder<JackVaderFilterBuilder, JackVaderFilter> {
+
+	}
+
 }

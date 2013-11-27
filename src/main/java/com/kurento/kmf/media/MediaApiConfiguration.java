@@ -72,10 +72,10 @@ public class MediaApiConfiguration {
 	private int poolMaxQueueSize = 100;
 
 	/**
-	 * Size of the pool of thrift clients. Each pool created by the
-	 * {@link AbstractPool} will be instantiated with this number of clients.
+	 * Size of the pool of thrift clients. Each pool created by the abstract
+	 * pool will be instantiated with this number of clients.
 	 */
-	private int clientPoolSize = 5;
+	private int clientPoolSize = 20;
 
 	/**
 	 * Getter (accessor) for serverAddress field.

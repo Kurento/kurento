@@ -14,14 +14,19 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
 
+import java.net.URI;
 import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.MediaProfileSpecType;
 import com.kurento.kmf.media.RecorderEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.RecorderEndPointConstructorParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class RecorderEndPointImpl extends AbstractUriEndPoint implements
@@ -51,4 +56,25 @@ public class RecorderEndPointImpl extends AbstractUriEndPoint implements
 	public void record(final Continuation<Void> cont) {
 		start(cont);
 	}
+
+	static class RecorderEndPointBuilderImpl<T extends RecorderEndPointBuilderImpl<T>>
+			extends AbstractUriEndPointBuilder<T, RecorderEndPoint> implements
+			RecorderEndPointBuilder {
+
+		private final RecorderEndPointConstructorParam param = new RecorderEndPointConstructorParam();
+
+		public RecorderEndPointBuilderImpl(final URI uri,
+				final MediaPipeline pipeline) {
+			super(uri, TYPE_NAME, pipeline);
+		}
+
+		@Override
+		public T withMediaProfile(MediaProfileSpecType type) {
+			param.setMediaMuxer(type.toThrift());
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
+			return self();
+		}
+
+	}
+
 }

@@ -14,18 +14,22 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.GET_URI;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.PAUSE;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.START;
 import static com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants.STOP;
 
+import java.net.URI;
 import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.UriEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
+import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
 
 public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 		UriEndPoint {
@@ -50,7 +54,7 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 		return result.getString();
 	}
 
-	void start() {
+	protected void start() {
 		invoke(START);
 	}
 
@@ -70,7 +74,7 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 		invoke(GET_URI, new StringContinuationWrapper(cont));
 	}
 
-	void start(final Continuation<Void> cont) {
+	protected void start(final Continuation<Void> cont) {
 		invoke(START, new VoidContinuationWrapper(cont));
 	}
 
@@ -83,4 +87,18 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 	public void stop(final Continuation<Void> cont) {
 		invoke(STOP, new VoidContinuationWrapper(cont));
 	}
+
+	protected static abstract class AbstractUriEndPointBuilder<T extends AbstractUriEndPointBuilder<T, E>, E extends UriEndPoint>
+			extends AbstractEndPointBuilder<T, E> {
+
+		private final UriEndPointConstructorParam param = new UriEndPointConstructorParam();
+
+		protected AbstractUriEndPointBuilder(final URI uri,
+				final String elementType, final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
+			param.setUri(uri);
+		}
+	}
+
 }

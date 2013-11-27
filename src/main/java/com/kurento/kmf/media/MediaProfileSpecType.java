@@ -14,24 +14,25 @@
  */
 package com.kurento.kmf.media;
 
-import java.util.Map;
+import com.kurento.kms.thrift.api.KmsMediaMuxer;
 
-import com.kurento.kmf.media.params.MediaParam;
+/**
+ * 
+ * 
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @version 1.0.0
+ * 
+ */
+public enum MediaProfileSpecType {
+	WEBM(KmsMediaMuxer.WEBM), MP4(KmsMediaMuxer.MP4);
 
-public interface MediaMixer extends MediaObject {
+	private final KmsMediaMuxer specType;
 
-	MediaElement createEndPoint();
-
-	MediaElement createEndPoint(Map<String, MediaParam> params);
-
-	void createEndPoint(final Continuation<MediaElement> cont);
-
-	void createEndPoint(Map<String, MediaParam> params,
-			final Continuation<MediaElement> cont);
-
-	public interface MediaMixerBuilder extends
-			MediaObjectBuilder<MediaMixerBuilder, MediaMixer> {
-
+	private MediaProfileSpecType(KmsMediaMuxer specType) {
+		this.specType = specType;
 	}
 
+	public KmsMediaMuxer toThrift() {
+		return this.specType;
+	}
 }

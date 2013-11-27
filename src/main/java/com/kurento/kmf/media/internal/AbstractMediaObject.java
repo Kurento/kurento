@@ -813,4 +813,31 @@ public abstract class AbstractMediaObject implements MediaObject {
 		}
 		return kmsParams;
 	}
+
+	// TODO think about MediaElement here...
+	protected static abstract class AbstractMediaObjectBuilder<T extends AbstractMediaObjectBuilder<T, E>, E extends MediaObject> {
+
+		protected final Map<String, MediaParam> params = new HashMap<String, MediaParam>();
+
+		protected final String elementName;
+
+		protected final MediaPipeline pipeline;
+
+		protected AbstractMediaObjectBuilder(final String elementName,
+				final MediaPipeline pipeline) {
+			this.elementName = elementName;
+			this.pipeline = pipeline;
+		}
+
+		@SuppressWarnings("unchecked")
+		protected final T self() {
+			return (T) this;
+		}
+
+		public abstract E build();
+
+		public abstract void buildAsync(Continuation<E> cont);
+
+	}
+
 }

@@ -22,10 +22,12 @@ import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCES
 import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_OFFER;
 import static com.kurento.kms.thrift.api.KmsMediaSdpEndPointTypeConstants.PROCESS_SDP_OFFER_PARAM_OFFER_STR;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.SdpEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
@@ -121,5 +123,19 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 	@Override
 	public void getRemoteSessionDescriptor(final Continuation<String> cont) {
 		invoke(GET_REMOTE_SDP, new StringContinuationWrapper(cont));
+	}
+
+	protected static abstract class AbstractSdpEndPointBuilder<T extends AbstractSdpEndPointBuilder<T, E>, E extends SdpEndPoint>
+			extends AbstractSessionEndPointBuilder<T, E> {
+
+		/**
+		 * @param uri
+		 * @throws URISyntaxException
+		 */
+		protected AbstractSdpEndPointBuilder(final String elementType,
+				final MediaPipeline pipeline) {
+			super(elementType, pipeline);
+		}
+
 	}
 }

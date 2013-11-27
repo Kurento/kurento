@@ -21,6 +21,7 @@ import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -54,6 +55,16 @@ public class ZBarFilterImpl extends FilterImpl implements ZBarFilter {
 			final MediaEventListener<CodeFoundEvent> vcaStrEvent,
 			final Continuation<ListenerRegistration> cont) {
 		addListener(EVENT_CODE_FOUND, vcaStrEvent, cont);
+	}
+
+	public static class ZBarFilterBuilderImpl<T extends ZBarFilterBuilderImpl<T>>
+			extends FilterBuilderImpl<T, ZBarFilter> implements
+			ZBarFilterBuilder {
+
+		public ZBarFilterBuilderImpl(final MediaPipeline pipeline) {
+			super(TYPE_NAME, pipeline);
+		}
+
 	}
 
 }

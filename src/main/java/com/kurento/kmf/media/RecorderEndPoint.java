@@ -16,8 +16,16 @@ package com.kurento.kmf.media;
 
 public interface RecorderEndPoint extends UriEndPoint {
 	/* SYNC */
-	public void record();
+	void record();
 
 	/* ASYNC */
-	public void record(final Continuation<Void> cont);
+	void record(final Continuation<Void> cont);
+
+	public interface RecorderEndPointBuilder extends
+			MediaObjectBuilder<RecorderEndPointBuilder, RecorderEndPoint> {
+
+		RecorderEndPointBuilder withMediaProfile(MediaProfileSpecType type);
+
+	}
+
 }

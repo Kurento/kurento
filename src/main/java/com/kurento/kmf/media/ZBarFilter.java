@@ -18,4 +18,8 @@ import com.kurento.kmf.media.events.HasCodeFoundListener;
 
 public interface ZBarFilter extends Filter, HasCodeFoundListener {
 
+	public interface ZBarFilterBuilder extends
+			MediaObjectBuilder<ZBarFilterBuilder, ZBarFilter> {
+
+	}
 }

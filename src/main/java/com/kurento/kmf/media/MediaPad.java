@@ -14,20 +14,19 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.internal.MediaElementImpl;
 import com.kurento.kms.thrift.api.KmsMediaType;
 
 public interface MediaPad extends MediaObject {
 
 	/**
-	 * Obtains the {@link MediaElementImpl} that encloses this pad
+	 * Obtains the {@link MediaElement} that encloses this pad
 	 * 
 	 * @return The element
 	 */
 	MediaElement getMediaElement();
 
 	/**
-	 * Obtains the {@link MediaElementImpl} that encloses this pad
+	 * Obtains the {@link MediaElement} that encloses this pad
 	 * 
 	 * @param cont
 	 */

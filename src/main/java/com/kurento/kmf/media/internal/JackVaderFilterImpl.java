@@ -19,6 +19,7 @@ import static com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants.TY
 import java.util.Map;
 
 import com.kurento.kmf.media.JackVaderFilter;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 
@@ -36,6 +37,16 @@ public class JackVaderFilterImpl extends FilterImpl implements JackVaderFilter {
 	public JackVaderFilterImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
+	}
+
+	public static class JackVaderFilterBuilderImpl<T extends JackVaderFilterBuilderImpl<T>>
+			extends FilterBuilderImpl<T, JackVaderFilter> implements
+			JackVaderFilterBuilder {
+
+		public JackVaderFilterBuilderImpl(final MediaPipeline pipeline) {
+			super(TYPE_NAME, pipeline);
+		}
+
 	}
 
 }

@@ -118,4 +118,5 @@ public interface SdpEndPoint extends SessionEndPoint {
 	 *            The last agreed User Agent session description
 	 */
 	void getRemoteSessionDescriptor(final Continuation<String> cont);
+
 }

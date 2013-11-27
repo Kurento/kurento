@@ -139,4 +139,13 @@ public interface MediaObject {
 	 */
 	public void getMediaPipeline(final Continuation<MediaPipeline> cont);
 
+	interface MediaObjectBuilder<T, E> {
+
+		T withGarbagePeriod(int period);
+
+		E build();
+
+		void buildAsync(Continuation<E> cont);
+	}
+
 }

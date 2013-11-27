@@ -15,6 +15,7 @@
 package com.kurento.kmf.media.internal;
 
 import com.kurento.kmf.media.MainMixer;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 
 // TODO is this used? If so, add it to the thrift interface
@@ -25,6 +26,16 @@ public class MainMixerImpl extends MediaMixerImpl implements MainMixer {
 
 	MainMixerImpl(MediaMixerRef mainMixerId) {
 		super(mainMixerId);
+	}
+
+	static class MainMixerBuilderImpl<T extends MainMixerBuilderImpl<T>>
+			extends MediaMixerBuilderImpl<T, MainMixer> implements
+			MainMixerBuilder {
+
+		public MainMixerBuilderImpl(final MediaPipeline pipeline) {
+			super(TYPE, pipeline);
+		}
+
 	}
 
 }

@@ -17,8 +17,14 @@ package com.kurento.kmf.media;
 import java.net.URI;
 import java.util.Map;
 
+import com.kurento.kmf.media.HttpEndPoint.HttpEndPointBuilder;
+import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
+import com.kurento.kmf.media.PlayerEndPoint.PlayerEndPointBuilder;
+import com.kurento.kmf.media.RecorderEndPoint.RecorderEndPointBuilder;
+import com.kurento.kmf.media.RtpEndPoint.RtpEndPointBuilder;
+import com.kurento.kmf.media.WebRtcEndPoint.WebRtcEndPointBuilder;
+import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.params.MediaParam;
-import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kms.thrift.api.KmsMediaType;
 
 public interface MediaPipeline extends MediaObject {
@@ -86,136 +92,23 @@ public interface MediaPipeline extends MediaObject {
 			Continuation<Void> cont);
 
 	// Creation of specific framework types
+	HttpEndPointBuilder newHttpEndPoint();
 
-	/* HTTP ENDPOINT */
-	HttpEndPoint createHttpEndPoint();
+	RtpEndPointBuilder newRtpEndPoint();
 
-	HttpEndPoint createHttpEndPoint(HttpEndpointConstructorParam constParams);
+	WebRtcEndPointBuilder newWebRtcEndPoint();
 
-	HttpEndPoint createHttpEndPoint(HttpEndpointConstructorParam constParams,
-			int garbagePeriod);
+	PlayerEndPointBuilder newPlayerEndPoint(String uri);
 
-	HttpEndPoint createHttpEndPoint(boolean terminateOnEOS);
+	PlayerEndPointBuilder newPlayerEndPoint(URI uri);
 
-	HttpEndPoint createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod);
+	RecorderEndPointBuilder newRecorderEndPoint(String uri);
 
-	HttpEndPoint createHttpEndPoint(int disconnectionTimeout);
+	RecorderEndPointBuilder newRecorderEndPoint(URI uri);
 
-	HttpEndPoint createHttpEndPoint(int disconnectionTimeout, int garbagePeriod);
+	ZBarFilterBuilder newZBarFilter();
 
-	HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
-			boolean terminateOnEOS);
-
-	HttpEndPoint createHttpEndPoint(int disconnectionTimeout,
-			boolean terminateOnEOS, int garbagePeriod);
-
-	void createHttpEndPoint(Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(HttpEndpointConstructorParam constParams,
-			Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(HttpEndpointConstructorParam constParams,
-			int garbagePeriod, Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(boolean terminateOnEOS,
-			Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(boolean terminateOnEOS, int garbagePeriod,
-			Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(int disconnectionTimeout,
-			Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(int disconnectionTimeout, int garbagePeriod,
-			Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(int disconnectionTimeout, boolean terminateOnEOS,
-			Continuation<HttpEndPoint> cont);
-
-	void createHttpEndPoint(int disconnectionTimeout, boolean terminateOnEOS,
-			int garbagePeriod, Continuation<HttpEndPoint> cont);
-
-	/* RTP ENDPOINT */
-
-	RtpEndPoint createRtpEndPoint();
-
-	RtpEndPoint createRtpEndPoint(int garbagePeriod);
-
-	void createRtpEndPoint(Continuation<RtpEndPoint> cont);
-
-	void createRtpEndPoint(int garbagePeriod, Continuation<RtpEndPoint> cont);
-
-	/* WEB RTC ENDPOINT */
-
-	WebRtcEndPoint createWebRtcEndPoint();
-
-	WebRtcEndPoint createWebRtcEndPoint(int garbagePeriod);
-
-	void createWebRtcEndPoint(Continuation<WebRtcEndPoint> cont);
-
-	void createWebRtcEndPoint(int garbagePeriod,
-			Continuation<WebRtcEndPoint> cont);
-
-	/* PLAYER ENDPOINT */
-
-	PlayerEndPoint createPlayerEndPoint(String uri);
-
-	PlayerEndPoint createPlayerEndPoint(URI uri);
-
-	PlayerEndPoint createPlayerEndPoint(String uri, int garbagePeriod);
-
-	PlayerEndPoint createPlayerEndPoint(URI uri, int garbagePeriod);
-
-	void createPlayerEndPoint(String uri, Continuation<PlayerEndPoint> cont);
-
-	void createPlayerEndPoint(URI uri, Continuation<PlayerEndPoint> cont);
-
-	void createPlayerEndPoint(String uri, int garbagePeriod,
-			Continuation<PlayerEndPoint> cont);
-
-	void createPlayerEndPoint(URI uri, int garbagePeriod,
-			Continuation<PlayerEndPoint> cont);
-
-	/* RECORDER ENDPOINT */
-
-	RecorderEndPoint createRecorderEndPoint(String uri);
-
-	RecorderEndPoint createRecorderEndPoint(URI uri);
-
-	RecorderEndPoint createRecorderEndPoint(String uri, int garbagePeriod);
-
-	RecorderEndPoint createRecorderEndPoint(URI uri, int garbagePeriod);
-
-	void createRecorderEndPoint(String uri, Continuation<RecorderEndPoint> cont);
-
-	void createRecorderEndPoint(URI uri, Continuation<RecorderEndPoint> cont);
-
-	void createRecorderEndPoint(URI uri, int garbagePeriod,
-			Continuation<RecorderEndPoint> cont);
-
-	void createRecorderEndPoint(String uri, int garbagePeriod,
-			Continuation<RecorderEndPoint> cont);
-
-	/* ZBAR FILTER */
-
-	ZBarFilter createZBarFilter();
-
-	ZBarFilter createZBarFilter(int garbagePeriod);
-
-	void createZBarFilter(Continuation<ZBarFilter> cont);
-
-	void createZBarFilter(int garbagePeriod, Continuation<ZBarFilter> cont);
-
-	/* JACKVADER FILTER */
-
-	JackVaderFilter createJackVaderFilter();
-
-	JackVaderFilter createJackVaderFilter(int garbagePeriod);
-
-	void createJackVaderFilter(Continuation<JackVaderFilter> cont);
-
-	void createJackVaderFilter(int garbagePeriod,
-			Continuation<JackVaderFilter> cont);
+	JackVaderFilterBuilder newJackVaderFilter();
 
 	// Generic creation methods
 	MediaElement createMediaElement(String elementType);

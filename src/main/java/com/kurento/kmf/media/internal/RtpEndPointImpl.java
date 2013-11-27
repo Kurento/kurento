@@ -18,6 +18,7 @@ import static com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants.TYPE_N
 
 import java.util.Map;
 
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RtpEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
@@ -38,4 +39,13 @@ public class RtpEndPointImpl extends SdpEndPointImpl implements RtpEndPoint {
 		super(objectRef, params);
 	}
 
+	public static class RtpEndPointBuilderImpl<T extends RtpEndPointBuilderImpl<T>>
+			extends AbstractSdpEndPointBuilder<T, RtpEndPoint> implements
+			RtpEndPointBuilder {
+
+		public RtpEndPointBuilderImpl(final MediaPipeline pipeline) {
+			super(TYPE_NAME, pipeline);
+		}
+
+	}
 }

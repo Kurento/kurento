@@ -16,4 +16,8 @@ package com.kurento.kmf.media;
 
 public interface RtpEndPoint extends SdpEndPoint {
 
+	public interface RtpEndPointBuilder extends
+			MediaObjectBuilder<RtpEndPointBuilder, RtpEndPoint> {
+
+	}
 }
