@@ -28,6 +28,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
 import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.HttpEndPoint.HttpEndPointBuilder;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndPoint;
@@ -48,7 +49,7 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	private static final Logger log = LoggerFactory
 			.getLogger(HttpPlayerSessionImpl.class);
 
-	private boolean terminateOnEOS;
+	private final boolean terminateOnEOS;
 
 	public HttpPlayerSessionImpl(HttpPlayerHandler handler,
 			ContentSessionManager manager, AsyncContext asyncContext,
@@ -112,8 +113,8 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
 		releaseOnTerminate(mediaPipeline);
 		getLogger().info("Creating PlayerEndPoint ...");
-		PlayerEndPoint playerEndPoint = mediaPipeline
-				.createPlayerEndPoint(contentPath);
+		PlayerEndPoint playerEndPoint = mediaPipeline.newPlayerEndPoint(
+				contentPath).build();
 		return playerEndPoint;
 	}
 
@@ -132,8 +133,13 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		getLogger().info("Recovering media pipeline");
 		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
 		getLogger().info("Creating HttpEndPoint ...");
-		HttpEndPoint httpEndPoint = mediaPiplePipeline
-				.createHttpEndPoint(terminateOnEOS);
+		HttpEndPointBuilder builder = mediaPiplePipeline.newHttpEndPoint();
+
+		if (terminateOnEOS) {
+			builder.terminateOnEOS();
+		}
+
+		HttpEndPoint httpEndPoint = builder.build();
 
 		// TODO: this listener is just for debugging purposes. Remove in the
 		// future

@@ -54,7 +54,7 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 
 	@Override
 	protected SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline) {
-		return mediaPipeline.createRtpEndPoint();
+		return mediaPipeline.newRtpEndPoint().build();
 	}
 
 	@Override

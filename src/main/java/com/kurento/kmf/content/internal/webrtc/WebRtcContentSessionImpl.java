@@ -51,7 +51,7 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 
 	@Override
 	protected SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline) {
-		return mediaPipeline.createWebRtcEndPoint();
+		return mediaPipeline.newWebRtcEndPoint().build();
 	}
 
 	@Override

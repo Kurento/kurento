@@ -138,8 +138,8 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
 		releaseOnTerminate(mediaPipeline);
 		getLogger().info("Creating RecorderEndPoint ...");
-		RecorderEndPoint recorderEndPoint = mediaPipeline
-				.createRecorderEndPoint(contentPath);
+		RecorderEndPoint recorderEndPoint = mediaPipeline.newRecorderEndPoint(
+				contentPath).build();
 		return recorderEndPoint;
 	}
 
@@ -152,7 +152,8 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 
 		MediaPipeline mediaPiplePipeline = mediaElements[0].getMediaPipeline();
 		getLogger().info("Creating HttpEndPoint ...");
-		HttpEndPoint httpEndPoint = mediaPiplePipeline.createHttpEndPoint();
+		HttpEndPoint httpEndPoint = mediaPiplePipeline.newHttpEndPoint()
+				.build();
 		releaseOnTerminate(httpEndPoint);
 		connect(httpEndPoint, mediaElements);
 		return httpEndPoint;
