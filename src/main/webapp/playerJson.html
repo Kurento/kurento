@@ -33,10 +33,12 @@
 		// Start and terminate events
 		conn.on("start", function() {
 			log("onstart");
+			document.getElementById("play").disabled = true;
 		});
 		conn.on("terminate", function() {
 			log("onterminate");
 			inputStatus.value = "end ok";
+			document.getElementById("play").disabled = false;
 		});
 
 		// LocalStream and remoteStream events
@@ -57,6 +59,7 @@
 		conn.on("error", function(error) {
 			log("onerror");
 			inputStatus.value = "end with error " + error.message;
+			document.getElementById("play").disabled = false;
 		});
 	}
 
@@ -82,7 +85,6 @@
 					<option value="playerJson/mkv">MKV video</option>
 					<option value="playerJson/3gp">3GP video</option>
 					<option value="playerJson/ogv">OGV video</option>
-					<option value="playerJson/avi">AVI video</option>
 					<option value="playerJson/mp4">MP4 video</option>
 					<option value="playerJsonJackVader">JackVader Filter</option>
 					<option value="playerJsonEvents">ZBar Filter</option>
@@ -118,10 +120,10 @@
 			inputStatus.value = 'play';
 			console.log(status.value);
 		});
-		remoteVideo.addEventListener('playing', function(event) {
-			inputStatus.value = 'playing';
-			console.log(status.value);
-		});
+		//remoteVideo.addEventListener('playing', function(event) {
+		//	inputStatus.value = 'playing';
+		//	console.log(status.value);
+		//});
 	</script>
 </body>
 </html>

@@ -29,7 +29,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
  * @version 1.0.0
  * @see VideoURLs
  */
-@HttpPlayerService(name = "PlayerHttpJsonHandler", path = "/playerJson/*", useControlProtocol = true)
+@HttpPlayerService(name = "PlayerHttpJsonHandler", path = "/playerJson/*", useControlProtocol = true, redirect = true)
 public class PlayerHttpJsonHandler extends HttpPlayerHandler {
 
 	@Override

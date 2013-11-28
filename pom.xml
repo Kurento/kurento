@@ -98,7 +98,7 @@
 									<type>jar</type>
 									<overWrite>true</overWrite>
 									<outputDirectory>${basedir}/target/${project.artifactId}-${project.version}</outputDirectory>
-									<includes>js/*.*</includes>
+									<includes>**/*.*</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

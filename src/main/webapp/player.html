@@ -15,7 +15,6 @@
 					<option value="playerHttp/mkv">MKV video</option>
 					<option value="playerHttp/3gp">3GP video</option>
 					<option value="playerHttp/ogv">OGV video</option>
-					<option value="playerHttp/avi">AVI video</option>
 					<option value="playerHttp/mp4">MP4 video</option>
 					<option value="playerHttpJackVader">JackVader Filter</option>
 			</select></td>
@@ -28,10 +27,17 @@
 		var myUrl = document.URL;
 		var myPath = myUrl.substring(0, myUrl.lastIndexOf("/") + 1);
 
+		video.addEventListener('ended', videoEnd, false);
+	    function videoEnd(e) {
+	        if(!e) { e = window.event; }
+	        document.getElementById("play").disabled = false;
+	    }
+
 	    function play() {
 			var url = document.getElementById("url");
 			video.src = myPath + url.value;
 			video.play();
+			document.getElementById("play").disabled = true;
 	    }
 	</script>
 </body>
