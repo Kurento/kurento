@@ -69,7 +69,7 @@ public class PlayerEndPointTest {
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		pipeline = pipelineFactory.create();
-		player = pipeline.createPlayerEndPoint(URL_SMALL);
+		player = pipeline.newPlayerEndPoint(URL_SMALL).build();
 	}
 
 	@After

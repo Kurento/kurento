@@ -55,7 +55,7 @@ public class SyncMediaServerTest {
 
 	public void testCampusPartySimulatedPipeline() throws InterruptedException,
 			KurentoMediaFrameworkException {
-		RtpEndPoint rtpEndPoint = pipeline.createRtpEndPoint();
+		RtpEndPoint rtpEndPoint = pipeline.newRtpEndPoint().build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 192.168.1.18\r\n" + "s=-\r\n"
@@ -76,14 +76,14 @@ public class SyncMediaServerTest {
 		// Wait some time simulating the connection to the player app
 		Thread.sleep(1000);
 
-		HttpEndPoint httpEndPoint = pipeline.createHttpEndPoint();
+		HttpEndPoint httpEndPoint = pipeline.newHttpEndPoint().build();
 
 		rtpEndPoint.connect(httpEndPoint, KmsMediaType.VIDEO);
 	}
 
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException {
-		RtpEndPoint rtp = pipeline.createRtpEndPoint();
+		RtpEndPoint rtp = pipeline.newRtpEndPoint().build();
 
 		Collection<MediaSource> videoSrcsA = rtp
 				.getMediaSrcs(KmsMediaType.VIDEO);
@@ -106,8 +106,8 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testConnect() throws KurentoMediaFrameworkException {
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
-		HttpEndPoint http = pipeline.createHttpEndPoint();
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
+		HttpEndPoint http = pipeline.newHttpEndPoint().build();
 
 		player.connect(http);
 
@@ -118,8 +118,8 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testConnectByType() throws KurentoMediaFrameworkException {
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
-		HttpEndPoint http = pipeline.createHttpEndPoint();
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
+		HttpEndPoint http = pipeline.newHttpEndPoint().build();
 
 		player.connect(http, KmsMediaType.AUDIO);
 		player.connect(http, KmsMediaType.VIDEO);

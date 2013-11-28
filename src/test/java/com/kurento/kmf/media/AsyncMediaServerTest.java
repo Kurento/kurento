@@ -38,7 +38,7 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 	public void testStream() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
 
-		pipeline.createRtpEndPoint(new Continuation<RtpEndPoint>() {
+		pipeline.newRtpEndPoint().buildAsync(new Continuation<RtpEndPoint>() {
 			@Override
 			public void onSuccess(RtpEndPoint result) {
 				RtpEndPoint stream = result;
@@ -175,7 +175,7 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException,
 			InterruptedException {
-		RtpEndPoint rtp = pipeline.createRtpEndPoint();
+		RtpEndPoint rtp = pipeline.newRtpEndPoint().build();
 
 		final BlockingQueue<Collection<MediaSink>> sinkEvent = new ArrayBlockingQueue<Collection<MediaSink>>(
 				1);
@@ -247,8 +247,8 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
 	@Test
 	public void testConnect() throws InterruptedException {
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
-		HttpEndPoint http = pipeline.createHttpEndPoint();
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
+		HttpEndPoint http = pipeline.newHttpEndPoint().build();
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		player.connect(http, new Continuation<Void>() {
@@ -273,8 +273,8 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
 	@Test
 	public void testConnectByType() throws InterruptedException {
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
-		HttpEndPoint http = pipeline.createHttpEndPoint();
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
+		HttpEndPoint http = pipeline.newHttpEndPoint().build();
 
 		final CountDownLatch audioLatch = new CountDownLatch(1);
 		player.connect(http, KmsMediaType.AUDIO, new Continuation<Void>() {

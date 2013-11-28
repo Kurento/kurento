@@ -67,7 +67,7 @@ public class HttpEndpointAsyncTest extends AbstractAsyncBaseTest {
 	@Before
 	public void setup() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		pipeline.createHttpEndPoint(new Continuation<HttpEndPoint>() {
+		pipeline.newHttpEndPoint().buildAsync(new Continuation<HttpEndPoint>() {
 
 			@Override
 			public void onSuccess(HttpEndPoint result) {
@@ -121,7 +121,8 @@ public class HttpEndpointAsyncTest extends AbstractAsyncBaseTest {
 	@Test
 	public void testEventMediaSessionStarted() throws InterruptedException {
 
-		final PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
+		final PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL)
+				.build();
 		player.connect(httpEp);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);

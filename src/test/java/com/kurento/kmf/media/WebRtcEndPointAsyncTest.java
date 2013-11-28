@@ -57,18 +57,19 @@ public class WebRtcEndPointAsyncTest extends
 	public void setup() throws InterruptedException {
 		final BlockingQueue<WebRtcEndPoint> events = new ArrayBlockingQueue<WebRtcEndPoint>(
 				1);
-		pipeline.createWebRtcEndPoint(new Continuation<WebRtcEndPoint>() {
+		pipeline.newWebRtcEndPoint().buildAsync(
+				new Continuation<WebRtcEndPoint>() {
 
-			@Override
-			public void onSuccess(WebRtcEndPoint result) {
-				events.add(result);
-			}
+					@Override
+					public void onSuccess(WebRtcEndPoint result) {
+						events.add(result);
+					}
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
-			}
-		});
+					@Override
+					public void onError(Throwable cause) {
+						throw new KurentoMediaFrameworkException(cause);
+					}
+				});
 		sdp = events.poll(500, MILLISECONDS);
 		Assert.assertNotNull(sdp);
 	}

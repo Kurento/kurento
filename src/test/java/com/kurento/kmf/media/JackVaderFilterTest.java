@@ -55,7 +55,7 @@ public class JackVaderFilterTest {
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		pipeline = pipelineFactory.create();
-		jackVader = pipeline.createJackVaderFilter();
+		jackVader = pipeline.newJackVaderFilter().build();
 	}
 
 	@After
@@ -74,7 +74,7 @@ public class JackVaderFilterTest {
 	 */
 	@Test
 	public void testJackVaderFilter() throws InterruptedException {
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
 		player.connect(jackVader);
 
 		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(

@@ -53,7 +53,7 @@ public class RecorderEndPointAsyncTest extends AbstractAsyncBaseTest {
 	public void setup() throws InterruptedException {
 		final BlockingQueue<RecorderEndPoint> events = new ArrayBlockingQueue<RecorderEndPoint>(
 				1);
-		pipeline.createRecorderEndPoint(URL_SMALL,
+		pipeline.newRecorderEndPoint(URL_SMALL).buildAsync(
 				new Continuation<RecorderEndPoint>() {
 
 					@Override

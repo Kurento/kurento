@@ -60,7 +60,7 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 	@Before
 	public void setup() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		pipeline.createZBarFilter(new Continuation<ZBarFilter>() {
+		pipeline.newZBarFilter().buildAsync(new Continuation<ZBarFilter>() {
 
 			@Override
 			public void onSuccess(ZBarFilter result) {
@@ -75,7 +75,7 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 		});
 		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
 
-		pipeline.createPlayerEndPoint(URL_BARCODES);
+		player = pipeline.newPlayerEndPoint(URL_BARCODES).build();
 	}
 
 	@After
@@ -103,9 +103,7 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 		player.play();
 
 		CodeFoundEvent event = events.poll(500, MILLISECONDS);
-		if (event == null) {
-			Assert.fail();
-		}
+		Assert.assertNotNull(event);
 
 		player.stop();
 	}

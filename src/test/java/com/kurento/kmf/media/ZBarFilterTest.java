@@ -69,7 +69,7 @@ public class ZBarFilterTest {
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		pipeline = pipelineFactory.create();
-		zbar = pipeline.createZBarFilter();
+		zbar = pipeline.newZBarFilter().build();
 	}
 
 	@After
@@ -82,7 +82,8 @@ public class ZBarFilterTest {
 	@Ignore
 	@Test
 	public void testCodeFoundEvent() throws InterruptedException {
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_BARCODES);
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_BARCODES)
+				.build();
 		player.connect(zbar);
 
 		final BlockingQueue<CodeFoundEvent> events = new ArrayBlockingQueue<CodeFoundEvent>(

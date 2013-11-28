@@ -86,7 +86,7 @@ public class HttpEndpointTest {
 	 */
 	@Test
 	public void testMethodGetUrl() {
-		HttpEndPoint httpEP = pipeline.createHttpEndPoint();
+		HttpEndPoint httpEP = pipeline.newHttpEndPoint().build();
 		Assert.assertTrue(!httpEP.getUrl().isEmpty());
 	}
 
@@ -97,8 +97,9 @@ public class HttpEndpointTest {
 	 */
 	@Test
 	public void testEventMediaSessionStarted() throws InterruptedException {
-		final PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_SMALL);
-		HttpEndPoint httpEP = pipeline.createHttpEndPoint();
+		final PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL)
+				.build();
+		HttpEndPoint httpEP = pipeline.newHttpEndPoint().build();
 		player.connect(httpEP);
 
 		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<EndOfStreamEvent>(

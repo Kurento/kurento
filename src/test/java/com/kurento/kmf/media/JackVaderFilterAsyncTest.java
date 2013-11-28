@@ -44,22 +44,23 @@ public class JackVaderFilterAsyncTest extends AbstractAsyncBaseTest {
 
 	@Before
 	public void setup() throws InterruptedException {
-		player = pipeline.createPlayerEndPoint(URL_SMALL);
+		player = pipeline.newPlayerEndPoint(URL_SMALL).build();
 
 		final BlockingQueue<JackVaderFilter> events = new ArrayBlockingQueue<JackVaderFilter>(
 				1);
-		pipeline.createJackVaderFilter(new Continuation<JackVaderFilter>() {
+		pipeline.newJackVaderFilter().buildAsync(
+				new Continuation<JackVaderFilter>() {
 
-			@Override
-			public void onSuccess(JackVaderFilter result) {
-				events.add(result);
-			}
+					@Override
+					public void onSuccess(JackVaderFilter result) {
+						events.add(result);
+					}
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
-			}
-		});
+					@Override
+					public void onError(Throwable cause) {
+						throw new KurentoMediaFrameworkException(cause);
+					}
+				});
 		jackVader = events.poll(4, SECONDS);
 		Assert.assertNotNull(jackVader);
 	}

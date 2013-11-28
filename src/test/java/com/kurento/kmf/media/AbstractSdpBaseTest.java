@@ -114,7 +114,8 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndPoint> {
 	public void testRtpEndPointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndPoint player = pipeline.createPlayerEndPoint(URL_BARCODES);
+		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_BARCODES)
+				.build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"

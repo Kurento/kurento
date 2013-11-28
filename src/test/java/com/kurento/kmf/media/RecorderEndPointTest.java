@@ -58,7 +58,7 @@ public class RecorderEndPointTest {
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		pipeline = pipelineFactory.create();
-		recorder = pipeline.createRecorderEndPoint(URL_SMALL);
+		recorder = pipeline.newRecorderEndPoint(URL_SMALL).build();
 	}
 
 	@After

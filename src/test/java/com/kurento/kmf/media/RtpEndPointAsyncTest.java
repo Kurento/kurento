@@ -57,7 +57,7 @@ public class RtpEndPointAsyncTest extends AbstractSdpAsyncBaseTest<RtpEndPoint> 
 	public void setup() throws InterruptedException {
 		final BlockingQueue<RtpEndPoint> events = new ArrayBlockingQueue<RtpEndPoint>(
 				1);
-		pipeline.createRtpEndPoint(new Continuation<RtpEndPoint>() {
+		pipeline.newRtpEndPoint().buildAsync(new Continuation<RtpEndPoint>() {
 
 			@Override
 			public void onSuccess(RtpEndPoint result) {

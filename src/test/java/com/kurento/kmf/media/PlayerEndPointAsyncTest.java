@@ -63,7 +63,7 @@ public class PlayerEndPointAsyncTest extends AbstractAsyncBaseTest {
 		final BlockingQueue<PlayerEndPoint> events = new ArrayBlockingQueue<PlayerEndPoint>(
 				1);
 
-		pipeline.createPlayerEndPoint(URL_SMALL,
+		pipeline.newPlayerEndPoint(URL_SMALL).buildAsync(
 				new Continuation<PlayerEndPoint>() {
 
 					@Override

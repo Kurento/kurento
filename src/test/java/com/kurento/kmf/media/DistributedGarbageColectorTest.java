@@ -53,7 +53,7 @@ public class DistributedGarbageColectorTest {
 			throws InterruptedException {
 		// Create a media pipeline with 1s. garbage collection time
 		MediaPipeline pipeline = pipelineFactory.create(1);
-		PlayerEndPoint player = pipeline.createPlayerEndPoint("");
+		PlayerEndPoint player = pipeline.newPlayerEndPoint("").build();
 
 		dgc.removeReference(((AbstractMediaObject) pipeline).getObjectRef()
 				.getThriftRef());
@@ -67,7 +67,7 @@ public class DistributedGarbageColectorTest {
 
 		// Pipeline should now be deleted in KMS, so this should throw an
 		// exception
-		pipeline.createHttpEndPoint();
+		pipeline.newHttpEndPoint().build();
 	}
 
 }
