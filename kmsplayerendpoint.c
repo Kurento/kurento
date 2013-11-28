@@ -203,6 +203,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   GstSample *sample;
   GstBuffer *buffer;
   GstClockTime *base_time;
+  GstPad *src, *sink;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
 
@@ -228,11 +229,6 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   if (base_time == NULL) {
     GstClock *clock;
 
-    gst_element_send_event (GST_ELEMENT (GST_OBJECT_PARENT (appsrc)),
-        gst_event_new_flush_start ());
-    gst_element_send_event (GST_ELEMENT (GST_OBJECT_PARENT (appsrc)),
-        gst_event_new_flush_stop (FALSE));
-
     clock = gst_element_get_clock (appsrc);
     base_time = g_slice_new0 (GstClockTime);
 
@@ -243,6 +239,20 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
     g_object_unref (clock);
     GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
   }
+
+  src = gst_element_get_static_pad (appsrc, "src");
+  sink = gst_pad_get_peer (src);
+
+  if (sink != NULL) {
+    if (GST_OBJECT_FLAG_IS_SET (sink, GST_PAD_FLAG_EOS)) {
+      GST_INFO_OBJECT (sink, "Sending flush events");
+      gst_pad_send_event (sink, gst_event_new_flush_start ());
+      gst_pad_send_event (sink, gst_event_new_flush_stop (FALSE));
+    }
+    g_object_unref (sink);
+  }
+
+  g_object_unref (src);
 
   if (GST_BUFFER_PTS_IS_VALID (buffer))
     buffer->pts += *base_time;
