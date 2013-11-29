@@ -571,7 +571,9 @@ kms_recorder_end_point_dispose (GObject * object)
     KMS_RECORDER_END_POINT_SIGNAL (self);
     KMS_RECORDER_END_POINT_UNLOCK (self);
 
-    g_thread_join (self->priv->tdata.thread);
+    if (g_thread_self () != self->priv->tdata.thread)
+      g_thread_join (self->priv->tdata.thread);
+
     g_thread_unref (self->priv->tdata.thread);
     self->priv->tdata.thread = NULL;
   }
@@ -767,7 +769,7 @@ stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
     return GST_PAD_PROBE_OK;
 
   kms_recorder_end_point_add_action (recorder, set_to_null_state_on_EOS,
-      recorder, NULL);
+      g_object_ref (recorder), g_object_unref);
 
   return GST_PAD_PROBE_OK;
 }
@@ -1182,7 +1184,8 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
     /* No more pending valves in blocking state */
     /* so we can remove probes to unlock pads */
     kms_recorder_end_point_add_action (recorder,
-        kms_recorder_end_point_do_reconfiguration, recorder, NULL);
+        kms_recorder_end_point_do_reconfiguration, g_object_ref (recorder),
+        g_object_unref);
   } else {
     GST_DEBUG ("Waiting for pads to block");
     recorder->priv->state = WAIT_PENDING;
@@ -1385,7 +1388,8 @@ pad_probe_blocked_cb (GstPad * srcpad, GstPadProbeInfo * info,
   }
 
   kms_recorder_end_point_add_action (recorder,
-      kms_recorder_end_point_do_reconfiguration, recorder, NULL);
+      kms_recorder_end_point_do_reconfiguration, g_object_ref (recorder),
+      g_object_unref);
 
 end:
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
@@ -1577,14 +1581,22 @@ kms_recorder_end_point_get_property (GObject * object, guint property_id,
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
+static void
+finish_thread (gpointer data, GObject * self)
+{
+  g_atomic_pointer_compare_and_exchange ((gpointer *) data, self, NULL);
+}
+
 static gpointer
 kms_recorder_end_point_thread (gpointer data)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
   struct thread_cb_data *th_data;
 
+  g_object_weak_ref (G_OBJECT (self), finish_thread, &self);
+
   /* Main thread loop */
-  while (TRUE) {
+  while (g_atomic_pointer_get (&self)) {
     KMS_RECORDER_END_POINT_LOCK (self);
     while (!self->priv->tdata.finish_thread &&
         g_queue_is_empty (self->priv->tdata.actions)) {
@@ -1594,6 +1606,7 @@ kms_recorder_end_point_thread (gpointer data)
     }
 
     if (self->priv->tdata.finish_thread) {
+      g_object_weak_unref (G_OBJECT (self), finish_thread, &self);
       KMS_RECORDER_END_POINT_UNLOCK (self);
       break;
     }
@@ -1683,7 +1696,7 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
         g_strdup (err->message), (GDestroyNotify) g_free);
 
     kms_recorder_end_point_add_action (self,
-        kms_recorder_end_point_post_error, self, NULL);
+        kms_recorder_end_point_post_error, g_object_ref (self), g_object_unref);
     g_error_free (err);
   }
   return GST_BUS_PASS;
