@@ -154,7 +154,9 @@ kms_player_end_point_dispose (GObject * object)
     KMS_PLAYER_END_POINT_SIGNAL (self);
     KMS_PLAYER_END_POINT_UNLOCK (self);
 
-    g_thread_join (self->priv->tdata.thread);
+    if (g_thread_self () != self->priv->tdata.thread) {
+      g_thread_join (self->priv->tdata.thread);
+    }
     g_thread_unref (self->priv->tdata.thread);
     self->priv->tdata.thread = NULL;
   }
@@ -533,21 +535,30 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
     kms_player_end_point_add_action (self, kms_player_end_point_emit_EOS_signal,
-        self, NULL);
+        g_object_ref (self), g_object_unref);
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
 
     if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
       kms_player_end_point_add_action (self,
-          kms_player_end_point_emit_invalid_media_signal, self, NULL);
+          kms_player_end_point_emit_invalid_media_signal,
+          g_object_ref (self), g_object_unref);
     } else if (g_strcmp0 (GST_OBJECT_NAME (msg->src), "source") == 0) {
       kms_player_end_point_add_action (self,
-          kms_player_end_point_emit_invalid_uri_signal, self, NULL);
+          kms_player_end_point_emit_invalid_uri_signal,
+          g_object_ref (self), g_object_unref);
     } else {
       kms_player_end_point_add_action (self,
-          kms_player_end_point_post_media_error, self, NULL);
+          kms_player_end_point_post_media_error,
+          g_object_ref (self), g_object_unref);
     }
   }
   return GST_BUS_PASS;
+}
+
+static void
+finish_thread (gpointer data, GObject * self)
+{
+  g_atomic_pointer_compare_and_exchange ((gpointer *) data, self, NULL);
 }
 
 static gpointer
@@ -556,8 +567,10 @@ kms_player_end_point_thread (gpointer data)
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
   struct thread_cb_data *th_data;
 
+  g_object_weak_ref (G_OBJECT (self), finish_thread, &self);
+
   /* Main thread loop */
-  while (TRUE) {
+  while (g_atomic_pointer_get (&self)) {
     KMS_PLAYER_END_POINT_LOCK (self);
     while (!self->priv->tdata.finish_thread &&
         g_queue_is_empty (self->priv->tdata.actions)) {
@@ -567,6 +580,7 @@ kms_player_end_point_thread (gpointer data)
     }
 
     if (self->priv->tdata.finish_thread) {
+      g_object_weak_unref (G_OBJECT (self), finish_thread, &self);
       KMS_PLAYER_END_POINT_UNLOCK (self);
       break;
     }
