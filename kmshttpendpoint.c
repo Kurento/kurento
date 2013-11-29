@@ -240,6 +240,9 @@ generate_valve_configuration (GstElement * valve, const gchar * sinkname,
 static void
 destroy_cb_data (gpointer data)
 {
+  struct cb_data *cb_data = data;
+
+  g_object_unref (cb_data->self);
   g_slice_free (struct cb_data, data);
 }
 
@@ -1084,7 +1087,8 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
 
   kms_http_end_point_add_action (httpep,
-      kms_http_end_point_do_reconfiguration, httpep, NULL);
+      kms_http_end_point_do_reconfiguration, g_object_ref (httpep),
+      g_object_unref);
 
   /* Do not pass the EOS event downstream */
   return GST_PAD_PROBE_DROP;
@@ -1467,7 +1471,9 @@ kms_http_end_point_dispose (GObject * object)
     KMS_HTTP_END_POINT_SIGNAL (self);
     KMS_HTTP_END_POINT_UNLOCK (self);
 
-    g_thread_join (self->priv->tdata.thread);
+    if (g_thread_self () != self->priv->tdata.thread)
+      g_thread_join (self->priv->tdata.thread);
+
     g_thread_unref (self->priv->tdata.thread);
     self->priv->tdata.thread = NULL;
   }
@@ -1612,7 +1618,7 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
 
         tmp_data = g_slice_new0 (struct cb_data);
 
-        tmp_data->self = self;
+        tmp_data->self = g_object_ref (self);
         tmp_data->start = g_value_get_boolean (value);
 
         kms_http_end_point_add_action (self, change_state_cb, tmp_data,
@@ -1654,14 +1660,22 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
+static void
+finish_thread (gpointer data, GObject * self)
+{
+  g_atomic_pointer_compare_and_exchange ((gpointer *) data, self, NULL);
+}
+
 static gpointer
 kms_http_end_point_thread (gpointer data)
 {
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (data);
   struct thread_cb_data *th_data;
 
+  g_object_weak_ref (G_OBJECT (self), finish_thread, &self);
+
   /* Main thread loop */
-  while (TRUE) {
+  while (g_atomic_pointer_get (&self)) {
     KMS_HTTP_END_POINT_LOCK (self);
     while (!self->priv->tdata.finish_thread &&
         g_queue_is_empty (self->priv->tdata.actions)) {
@@ -1671,6 +1685,7 @@ kms_http_end_point_thread (gpointer data)
     }
 
     if (self->priv->tdata.finish_thread) {
+      g_object_weak_unref (G_OBJECT (self), finish_thread, &self);
       KMS_HTTP_END_POINT_UNLOCK (self);
       break;
     }
