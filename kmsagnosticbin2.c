@@ -824,6 +824,19 @@ kms_agnostic_bin2_release_pad (GstElement * element, GstPad * pad)
 static void
 kms_agnostic_bin2_dispose (GObject * object)
 {
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (object);
+
+  KMS_AGNOSTIC_BIN2_LOCK (self);
+  self->priv->finish_thread = TRUE;
+  KMS_AGNOSTIC_BIN2_SIGNAL (self);
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
+
+  if (self->priv->thread != NULL) {
+    g_thread_join (self->priv->thread);
+    g_thread_unref (self->priv->thread);
+    self->priv->thread = NULL;
+  }
+
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin2_parent_class)->dispose (object);
 }
@@ -832,14 +845,6 @@ static void
 kms_agnostic_bin2_finalize (GObject * object)
 {
   KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (object);
-
-  KMS_AGNOSTIC_BIN2_LOCK (self);
-  self->priv->finish_thread = TRUE;
-  KMS_AGNOSTIC_BIN2_SIGNAL (self);
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
-
-  g_thread_join (self->priv->thread);
-  g_thread_unref (self->priv->thread);
 
   g_cond_clear (&self->priv->thread_cond);
   g_mutex_clear (&self->priv->thread_mutex);
