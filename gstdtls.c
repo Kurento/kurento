@@ -65,5 +65,5 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     kmsdtls,
     "Kurento Datagram TLS",
-    kms_dtls_init, VERSION, GST_LICENSE_UNKNOWN, "Kurento",
+    kms_dtls_init, VERSION, "LGPL", "Kurento",
     "http://kurento.com/")
