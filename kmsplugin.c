@@ -66,5 +66,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     kurento,
     "Kurento plugin",
-    kurento_init, VERSION, GST_LICENSE_UNKNOWN, "Kurento",
-    "http://kurento.com/")
+    kurento_init, VERSION, "LGPL", "Kurento", "http://kurento.com/")
