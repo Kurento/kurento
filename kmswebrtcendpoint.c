@@ -970,7 +970,8 @@ kms_webrtc_end_point_finalize (GObject * object)
   }
 
   if (self->priv->thread != NULL) {
-    g_thread_join (self->priv->thread);
+    if (g_thread_self () != self->priv->thread)
+      g_thread_join (self->priv->thread);
     g_thread_unref (self->priv->thread);
   }
 
