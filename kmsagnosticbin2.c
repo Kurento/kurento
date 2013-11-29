@@ -651,6 +651,12 @@ kms_agnostic_bin2_process_pad (KmsAgnosticBin2 * self, GstPad * pad)
 
 }
 
+static void
+finish_thread (gpointer data, GObject * self)
+{
+  g_atomic_pointer_compare_and_exchange ((gpointer *) data, self, NULL);
+}
+
 static gpointer
 kms_agnostic_bin2_connect_thread (gpointer data)
 {
@@ -658,7 +664,9 @@ kms_agnostic_bin2_connect_thread (gpointer data)
 
   GST_DEBUG_OBJECT (self, "Thread start");
 
-  while (1) {
+  g_object_weak_ref (G_OBJECT (self), finish_thread, &self);
+
+  while (g_atomic_pointer_get (&self)) {
     KMS_AGNOSTIC_BIN2_LOCK (self);
     while (!self->priv->finish_thread &&
         g_queue_is_empty (self->priv->pads_to_link)) {
@@ -671,6 +679,7 @@ kms_agnostic_bin2_connect_thread (gpointer data)
     GST_DEBUG_OBJECT (self, "Checking finish");
 
     if (self->priv->finish_thread) {
+      g_object_weak_unref (G_OBJECT (self), finish_thread, &self);
       KMS_AGNOSTIC_BIN2_UNLOCK (self);
       break;
     }
@@ -832,7 +841,8 @@ kms_agnostic_bin2_dispose (GObject * object)
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   if (self->priv->thread != NULL) {
-    g_thread_join (self->priv->thread);
+    if (g_thread_self () != self->priv->thread)
+      g_thread_join (self->priv->thread);
     g_thread_unref (self->priv->thread);
     self->priv->thread = NULL;
   }
