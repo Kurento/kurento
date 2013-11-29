@@ -18,6 +18,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+#define CERTTOOL_TEMPLATE "/tmp/certtool.tmpl"
 #define CERT_KEY_PEM_FILE "/tmp/certkey.pem"
 
 static void
@@ -116,9 +117,9 @@ generate_certkey_pem_file ()
 
   cmd =
       g_strconcat
-      ("/bin/sh -c \"certtool --generate-self-signed --load-privkey ",
-      CERT_KEY_PEM_FILE, " --template ", CERTTOOL_TEMPLATE,
-      " >> ", CERT_KEY_PEM_FILE, "\"", NULL);
+      ("/bin/sh -c \"echo 'organization = kurento' > ", CERTTOOL_TEMPLATE,
+      " && certtool --generate-self-signed --load-privkey ", CERT_KEY_PEM_FILE,
+      " --template ", CERTTOOL_TEMPLATE, " >> ", CERT_KEY_PEM_FILE, "\"", NULL);
   ret = system (cmd);
   g_free (cmd);
   fail_unless (ret != -1);
