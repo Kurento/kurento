@@ -249,7 +249,7 @@ destroy_cb_data (gpointer data)
 static void
 destroy_ulong (gpointer data)
 {
-  g_slice_free (struct cb_data, data);
+  g_slice_free (gulong, data);
 }
 
 static GstFlowReturn
