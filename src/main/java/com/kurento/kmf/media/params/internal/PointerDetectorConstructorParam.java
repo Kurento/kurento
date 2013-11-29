@@ -35,16 +35,12 @@ import com.kurento.kms.thrift.api.KmsMediaPointerDetectorWindowSet;
 public final class PointerDetectorConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
-	private final Set<PointerDetectorWindow> windows = new HashSet<PointerDetectorWindow>();
-
-	public Set<PointerDetectorWindow> getWindows() {
-		return this.windows;
-	}
+	private final Set<KmsMediaPointerDetectorWindow> windows = new HashSet<KmsMediaPointerDetectorWindow>();
 
 	public void addDetectorWindow(final String id, final int height,
 			final int width, final int upperRightX, final int upperRightY) {
-		final PointerDetectorWindow window = new PointerDetectorWindow(id,
-				height, width, upperRightX, upperRightY);
+		final KmsMediaPointerDetectorWindow window = new KmsMediaPointerDetectorWindow(
+				upperRightX, upperRightY, height, width, id);
 		windows.add(window);
 	}
 
@@ -55,18 +51,7 @@ public final class PointerDetectorConstructorParam extends
 	@Override
 	protected TProtocol serializeDataToThrift(final TProtocol pr) {
 		final KmsMediaPointerDetectorWindowSet kmsWindowSet = new KmsMediaPointerDetectorWindowSet();
-		kmsWindowSet.setWindows(new HashSet<KmsMediaPointerDetectorWindow>(
-				windows.size()));
-
-		for (final PointerDetectorWindow window : windows) {
-			final KmsMediaPointerDetectorWindow kmsWindow = new KmsMediaPointerDetectorWindow();
-			kmsWindow.height = window.getHeight();
-			kmsWindow.id = window.getId();
-			kmsWindow.topRightCornerX = window.getUpperRightX();
-			kmsWindow.topRightCornerY = window.getUpperRightY();
-			kmsWindow.width = window.getWidth();
-			kmsWindowSet.addToWindows(kmsWindow);
-		}
+		kmsWindowSet.setWindows(windows);
 
 		try {
 			kmsWindowSet.write(pr);
@@ -89,64 +74,33 @@ public final class PointerDetectorConstructorParam extends
 
 		for (final KmsMediaPointerDetectorWindow kmsWindow : kmsParams
 				.getWindows()) {
-			final PointerDetectorWindow window = new PointerDetectorWindow(
-					kmsWindow);
-			windows.add(window);
+			windows.add(kmsWindow.deepCopy());
 		}
-
 	}
 
-	private static final class PointerDetectorWindow {
+	@Override
+	public boolean equals(Object obj) {
 
-		private final int upperRightX;
-
-		private final int upperRightY;
-
-		private final int width;
-
-		private final int height;
-
-		private final String id;
-
-		public int getUpperRightX() {
-			return upperRightX;
+		if (obj == null) {
+			return false;
 		}
 
-		public int getUpperRightY() {
-			return upperRightY;
+		if (this == obj) {
+			return true;
 		}
 
-		public int getWidth() {
-			return width;
+		if (!obj.getClass().equals(this.getClass())) {
+			return false;
 		}
 
-		public int getHeight() {
-			return height;
-		}
+		PointerDetectorConstructorParam param = (PointerDetectorConstructorParam) obj;
 
-		public String getId() {
-			return id;
-		}
-
-		/**
-		 * @param type
-		 */
-		PointerDetectorWindow(KmsMediaPointerDetectorWindow kmsWindow) {
-			this(kmsWindow.id, kmsWindow.height, kmsWindow.width,
-					kmsWindow.topRightCornerX, kmsWindow.topRightCornerY);
-		}
-
-		/**
-		 * @param type
-		 */
-		PointerDetectorWindow(String id, int height, int width,
-				int upperRightX, int upperRightY) {
-			this.height = height;
-			this.id = id;
-			this.upperRightX = upperRightX;
-			this.upperRightY = upperRightY;
-			this.width = width;
-		}
-
+		return this.windows.equals(param.windows);
 	}
+
+	@Override
+	public int hashCode() {
+		return this.windows.hashCode();
+	}
+
 }

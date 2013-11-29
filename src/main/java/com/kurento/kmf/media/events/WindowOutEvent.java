@@ -12,20 +12,19 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media;
+package com.kurento.kmf.media.events;
 
-import com.kurento.kmf.media.events.HasEndOfStreamListener;
+/**
+ * This event is generated when an object enters in a window. This event has
+ * string data type indicated window id.
+ * 
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * 
+ * @version 1.0.0
+ * 
+ */
+public interface WindowOutEvent extends MediaEvent {
 
-public interface PlayerEndpoint extends UriEndpoint, HasEndOfStreamListener {
-	/* SYNC */
-	void play();
-
-	/* ASYNC */
-	void play(final Continuation<Void> cont);
-
-	public interface PlayerEndpointBuilder extends
-			MediaObjectBuilder<PlayerEndpointBuilder, PlayerEndpoint> {
-
-	}
+	String getWindowId();
 
 }

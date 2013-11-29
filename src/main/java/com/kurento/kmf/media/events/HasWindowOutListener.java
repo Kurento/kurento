@@ -12,20 +12,24 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media;
+package com.kurento.kmf.media.events;
 
-import com.kurento.kmf.media.events.HasEndOfStreamListener;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
 
-public interface PlayerEndpoint extends UriEndpoint, HasEndOfStreamListener {
+/**
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * 
+ */
+public interface HasWindowOutListener {
+
 	/* SYNC */
-	void play();
+	ListenerRegistration addWindowOutListener(
+			final MediaEventListener<WindowOutEvent> windowOutListener);
 
 	/* ASYNC */
-	void play(final Continuation<Void> cont);
-
-	public interface PlayerEndpointBuilder extends
-			MediaObjectBuilder<PlayerEndpointBuilder, PlayerEndpoint> {
-
-	}
+	void addWindowOutListener(
+			final MediaEventListener<WindowOutEvent> windowOutListener,
+			final Continuation<ListenerRegistration> cont);
 
 }
