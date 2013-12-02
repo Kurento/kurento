@@ -18,9 +18,9 @@ public class PlayerHttpJackVader extends HttpPlayerHandler {
 		session.releaseOnTerminate(mp); // Release this pipeline all all its
 										// media elements upon session
 										// termination
-		PlayerEndPoint playerEndPoint = mp
-				.createPlayerEndPoint("https://ci.kurento.com/video/fiwarecut.webm");
-		JackVaderFilter filter = mp.createJackVaderFilter();
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				"https://ci.kurento.com/video/fiwarecut.webm").build();
+		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
 		session.start(filter);

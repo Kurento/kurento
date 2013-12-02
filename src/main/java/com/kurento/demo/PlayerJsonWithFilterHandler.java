@@ -21,11 +21,11 @@ public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 
-		PlayerEndPoint player = mp
-				.createPlayerEndPoint("https://ci.kurento.com/video/barcodes.webm");
+		PlayerEndPoint player = mp.newPlayerEndPoint(
+				"https://ci.kurento.com/video/barcodes.webm").build();
 		session.setAttribute("player", player);
 
-		ZBarFilter zBarFilter = mp.createZBarFilter();
+		ZBarFilter zBarFilter = mp.newZBarFilter().build();
 		player.connect(zBarFilter);
 		session.start(zBarFilter);
 		session.setAttribute("eventValue", "");

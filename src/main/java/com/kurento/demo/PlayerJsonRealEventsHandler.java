@@ -28,9 +28,9 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 
-		PlayerEndPoint playerEndPoint = mp
-				.createPlayerEndPoint("https://ci.kurento.com/video/barcodes.webm");
-		ZBarFilter filter = mp.createZBarFilter();
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				"https://ci.kurento.com/video/barcodes.webm").build();
+		ZBarFilter filter = mp.newZBarFilter().build();
 		playerEndPoint.connect(filter);
 
 		filter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {

@@ -17,7 +17,7 @@ public class CpRtcRtpJackHandler extends RtpContentHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		JackVaderFilter filter = mp.createJackVaderFilter();
+		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		session.start(filter);
 		sharedFilterReference = filter;
 	}

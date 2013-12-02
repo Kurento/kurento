@@ -15,8 +15,8 @@ public class CpPlayerHandler extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		PlayerEndPoint playerEndPoint = mp
-				.createPlayerEndPoint("https://ci.kurento.com/video/fiwarecut.webm");
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				"https://ci.kurento.com/video/fiwarecut.webm").build();
 		session.setAttribute("player", playerEndPoint);
 		session.start(playerEndPoint);
 	}

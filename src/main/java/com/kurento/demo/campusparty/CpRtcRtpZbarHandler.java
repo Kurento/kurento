@@ -17,7 +17,7 @@ public class CpRtcRtpZbarHandler extends RtpContentHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		ZBarFilter filter = mp.createZBarFilter();
+		ZBarFilter filter = mp.newZBarFilter().build();
 		session.start(filter);
 		sharedFilterReference = filter;
 	}

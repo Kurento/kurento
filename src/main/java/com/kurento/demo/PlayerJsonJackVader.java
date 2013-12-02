@@ -16,9 +16,9 @@ public class PlayerJsonJackVader extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		PlayerEndPoint playerEndPoint = mp
-				.createPlayerEndPoint("https://ci.kurento.com/video/fiwarecut.webm");
-		JackVaderFilter filter = mp.createJackVaderFilter();
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				"https://ci.kurento.com/video/fiwarecut.webm").build();
+		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
 		session.start(filter);

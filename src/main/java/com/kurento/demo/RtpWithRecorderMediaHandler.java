@@ -15,9 +15,9 @@ public class RtpWithRecorderMediaHandler extends RtpContentHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		RecorderEndPoint recorderEndPoint = mp.createRecorderEndPoint(""); // TODO:
-																			// set
-																			// URI
+		RecorderEndPoint recorderEndPoint = mp.newRecorderEndPoint("").build(); // TODO:
+		// set
+		// URI
 		recorderEndPoint.record(); // TODO: is it necessary to invoke this?
 		session.start(recorderEndPoint);
 	}

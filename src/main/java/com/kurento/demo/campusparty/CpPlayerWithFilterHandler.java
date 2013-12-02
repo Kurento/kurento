@@ -17,10 +17,10 @@ public class CpPlayerWithFilterHandler extends HttpPlayerHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 
-		PlayerEndPoint playerEndPoint = mp
-				.createPlayerEndPoint("https://ci.kurento.com/video/fiwarecut.webm");
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				"https://ci.kurento.com/video/fiwarecut.webm").build();
 
-		JackVaderFilter filter = mp.createJackVaderFilter();
+		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
 		session.start(filter);

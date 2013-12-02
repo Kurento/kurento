@@ -15,8 +15,8 @@ public class RtpWithPlayerMediaHandler extends RtpContentHandler {
 		mediaPipeline = session.getMediaPipelineFactory().create();
 		session.releaseOnTerminate(mediaPipeline);
 
-		PlayerEndPoint player = mediaPipeline
-				.createPlayerEndPoint("https://ci.kurento.com/video/barcodes.webm");
+		PlayerEndPoint player = mediaPipeline.newPlayerEndPoint(
+				"https://ci.kurento.com/video/barcodes.webm").build();
 		session.setAttribute("player", player);
 		session.start(null);
 	}
