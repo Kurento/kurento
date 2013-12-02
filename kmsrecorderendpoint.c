@@ -80,9 +80,9 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 struct config_valve
 {
   GstElement *valve;
-  gchar *sinkname;
-  gchar *srcname;
-  gchar *destpadname;
+  const gchar *sinkname;
+  const gchar *srcname;
+  const gchar *destpadname;
 };
 
 struct config_data
@@ -165,18 +165,7 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndPoint, kms_recorder_end_point,
 static void
 destroy_valve_configuration (gpointer data)
 {
-  struct config_valve *conf = data;
-
-  if (conf->sinkname != NULL)
-    g_free (conf->sinkname);
-
-  if (conf->srcname != NULL)
-    g_free (conf->srcname);
-
-  if (conf->destpadname != NULL)
-    g_free (conf->destpadname);
-
-  g_slice_free (struct config_valve, conf);
+  g_slice_free (struct config_valve, data);
 }
 
 static struct config_valve *
@@ -188,9 +177,9 @@ generate_valve_configuration (GstElement * valve, const gchar * sinkname,
   conf = g_slice_new0 (struct config_valve);
 
   conf->valve = valve;
-  conf->sinkname = g_strdup (sinkname);
-  conf->srcname = g_strdup (srcname);
-  conf->destpadname = g_strdup (destpadname);
+  conf->sinkname = sinkname;
+  conf->srcname = srcname;
+  conf->destpadname = destpadname;
 
   return conf;
 }
@@ -427,8 +416,8 @@ kms_recorder_end_point_connect_appsink_to_appsrc (KmsRecorderEndPoint * self,
   }
 
   appsrc = gst_element_factory_make ("appsrc", conf->srcname);
-  g_object_set_data_full (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
-      g_strdup (conf->destpadname), g_free);
+  g_object_set_data (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
+      (gpointer) conf->destpadname);
 
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
