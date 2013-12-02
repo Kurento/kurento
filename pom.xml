@@ -152,6 +152,37 @@
 		</extensions>
 	</build>
 
+	<profiles>
+		<profile>
+			<id>bundle</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-shade-plugin</artifactId>
+						<version>2.2</version>
+						<configuration>
+							<finalName>kmf-api</finalName>
+							<artifactSet>
+								<includes>
+									<include>com.kurento.*:*</include>
+								</includes>
+							</artifactSet>
+						</configuration>
+						<executions>
+							<execution>
+							<phase>package</phase>
+							<goals>
+							<goal>shade</goal>
+							</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<scm>
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
