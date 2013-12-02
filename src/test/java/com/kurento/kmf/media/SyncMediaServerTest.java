@@ -55,7 +55,7 @@ public class SyncMediaServerTest {
 
 	public void testCampusPartySimulatedPipeline() throws InterruptedException,
 			KurentoMediaFrameworkException {
-		RtpEndPoint rtpEndPoint = pipeline.newRtpEndPoint().build();
+		RtpEndpoint rtpEndpoint = pipeline.newRtpEndpoint().build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 192.168.1.18\r\n" + "s=-\r\n"
@@ -64,26 +64,26 @@ public class SyncMediaServerTest {
 				+ "a=rtpmap:96 H263-1998/90000\r\n" + "a=sendrecv\r\n"
 				+ "b=AS:3000\r\n";
 
-		rtpEndPoint.processOffer(requestSdp);
-		rtpEndPoint
+		rtpEndpoint.processOffer(requestSdp);
+		rtpEndpoint
 				.getMediaSrcs(KmsMediaType.VIDEO)
 				.iterator()
 				.next()
 				.connect(
-						rtpEndPoint.getMediaSinks(KmsMediaType.VIDEO)
+						rtpEndpoint.getMediaSinks(KmsMediaType.VIDEO)
 								.iterator().next());
 
 		// Wait some time simulating the connection to the player app
 		Thread.sleep(1000);
 
-		HttpEndPoint httpEndPoint = pipeline.newHttpEndPoint().build();
+		HttpEndpoint httpEndpoint = pipeline.newHttpEndpoint().build();
 
-		rtpEndPoint.connect(httpEndPoint, KmsMediaType.VIDEO);
+		rtpEndpoint.connect(httpEndpoint, KmsMediaType.VIDEO);
 	}
 
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException {
-		RtpEndPoint rtp = pipeline.newRtpEndPoint().build();
+		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
 
 		Collection<MediaSource> videoSrcsA = rtp
 				.getMediaSrcs(KmsMediaType.VIDEO);
@@ -106,8 +106,8 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testConnect() throws KurentoMediaFrameworkException {
-		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
-		HttpEndPoint http = pipeline.newHttpEndPoint().build();
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
+		HttpEndpoint http = pipeline.newHttpEndpoint().build();
 
 		player.connect(http);
 
@@ -118,8 +118,8 @@ public class SyncMediaServerTest {
 
 	@Test
 	public void testConnectByType() throws KurentoMediaFrameworkException {
-		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
-		HttpEndPoint http = pipeline.newHttpEndPoint().build();
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
+		HttpEndpoint http = pipeline.newHttpEndpoint().build();
 
 		player.connect(http, KmsMediaType.AUDIO);
 		player.connect(http, KmsMediaType.VIDEO);

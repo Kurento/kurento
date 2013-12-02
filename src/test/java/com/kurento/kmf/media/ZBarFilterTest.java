@@ -35,19 +35,19 @@ import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link HttpEndPoint} test suite.
+ * {@link HttpEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link HttpEndPoint#getUrl()}
+ * <li>{@link HttpEndpoint#getUrl()}
  * </ul>
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndPoint#addMediaSessionStartListener(MediaEventListener)}
+ * <li>{@link HttpEndpoint#addMediaSessionStartListener(MediaEventListener)}
  * <li>
- * {@link HttpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  * 
  * 
@@ -82,7 +82,7 @@ public class ZBarFilterTest {
 	@Ignore
 	@Test
 	public void testCodeFoundEvent() throws InterruptedException {
-		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_BARCODES)
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
 				.build();
 		player.connect(zbar);
 

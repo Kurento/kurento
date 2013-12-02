@@ -16,44 +16,36 @@ package com.kurento.kmf.media;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link RtpEndPoint} test suite.
+ * {@link WebRtcEndpoint} test suite.
  * 
- * <p>
- * Methods tested:
- * <ul>
- * <li>{@link RtpEndPoint#getLocalSessionDescriptor()}
- * <li>{@link RtpEndPoint#getRemoteSessionDescriptor()}
- * <li>{@link RtpEndPoint#generateOffer()}
- * <li>{@link RtpEndPoint#processOffer(String)}
- * <li>{@link RtpEndPoint#processAnswer(String)}
- * </ul>
- * <p>
- * Events tested:
- * <ul>
- * <li>{@link RtpEndPoint#addMediaSessionStartListener(MediaEventListener)}
- * <li>
- * {@link RtpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
- * </ul>
  * 
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  * 
  */
-public class RtpEndPointTest extends AbstractSdpBaseTest<RtpEndPoint> {
+// TODO enable when WebRTC type is recognised by server
+@Ignore
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/kmf-api-test-context.xml")
+public class WebRtcEndpointTest extends AbstractSdpBaseTest<WebRtcEndpoint> {
 
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
-		sdp = pipeline.newRtpEndPoint().build();
+		sdp = pipeline.newWebRtcEndpoint().build();
 	}
 
 	@After
 	public void teardown() {
 		sdp.release();
 	}
+
 }

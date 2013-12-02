@@ -66,7 +66,7 @@ public class JackVaderFilterTest {
 
 	/**
 	 * Test if a {@link JackVaderFilter} can be created in the KMS. The filter
-	 * is pipelined with a {@link PlayerEndPoint}, which feeds video to the
+	 * is pipelined with a {@link PlayerEndpoint}, which feeds video to the
 	 * filter. This test depends on the correct behaviour of the player and its
 	 * events.
 	 * 
@@ -74,7 +74,7 @@ public class JackVaderFilterTest {
 	 */
 	@Test
 	public void testJackVaderFilter() throws InterruptedException {
-		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL).build();
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 		player.connect(jackVader);
 
 		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(

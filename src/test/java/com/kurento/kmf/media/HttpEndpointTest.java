@@ -42,19 +42,19 @@ import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
- * {@link HttpEndPoint} test suite.
+ * {@link HttpEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link HttpEndPoint#getUrl()}
+ * <li>{@link HttpEndpoint#getUrl()}
  * </ul>
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndPoint#addMediaSessionStartListener(MediaEventListener)}
+ * <li>{@link HttpEndpoint#addMediaSessionStartedListener(MediaEventListener)}
  * <li>
- * {@link HttpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  * 
  * 
@@ -86,7 +86,7 @@ public class HttpEndpointTest {
 	 */
 	@Test
 	public void testMethodGetUrl() {
-		HttpEndPoint httpEP = pipeline.newHttpEndPoint().build();
+		HttpEndpoint httpEP = pipeline.newHttpEndpoint().build();
 		Assert.assertTrue(!httpEP.getUrl().isEmpty());
 	}
 
@@ -97,9 +97,9 @@ public class HttpEndpointTest {
 	 */
 	@Test
 	public void testEventMediaSessionStarted() throws InterruptedException {
-		final PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL)
+		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
-		HttpEndPoint httpEP = pipeline.newHttpEndPoint().build();
+		HttpEndpoint httpEP = pipeline.newHttpEndpoint().build();
 		player.connect(httpEP);
 
 		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<EndOfStreamEvent>(
@@ -112,7 +112,7 @@ public class HttpEndpointTest {
 			}
 		});
 
-		httpEP.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
+		httpEP.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
 
 			@Override
 			public void onEvent(MediaSessionStartedEvent event) {
@@ -145,7 +145,7 @@ public class HttpEndpointTest {
 	@Ignore
 	@Test
 	public void testEventMediaSessionTerminated() throws InterruptedException {
-		// HttpEndPoint httpEP = pipeline.createHttpEndPoint(1, 1);
+		// HttpEndpoint httpEP = pipeline.createHttpEndpoint(1, 1);
 		//
 		// final Semaphore sem = new Semaphore(0);
 		//

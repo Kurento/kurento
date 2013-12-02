@@ -15,11 +15,14 @@
 package com.kurento.kmf.media;
 
 import static com.kurento.kmf.media.SyncMediaServerTest.URL_SMALL;
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,18 +30,26 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link RecorderEndPoint} test suite.
+ * {@link PlayerEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link RecorderEndPoint#getUri()}
- * <li>{@link RecorderEndPoint#record()}
- * <li>{@link RecorderEndPoint#pause()}
- * <li>{@link RecorderEndPoint#stop()}
+ * <li>{@link PlayerEndpoint#getUri()}
+ * <li>{@link PlayerEndpoint#play()}
+ * <li>{@link PlayerEndpoint#pause()}
+ * <li>{@link PlayerEndpoint#stop()}
  * </ul>
+ * <p>
+ * Events tested:
+ * <ul>
+ * <li>{@link PlayerEndpoint#addEndOfStreamListener(MediaEventListener)}
+ * </ul>
+ * 
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
@@ -46,42 +57,57 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
-public class RecorderEndPointTest {
+public class PlayerEndpointTest {
 
 	@Autowired
 	private MediaPipelineFactory pipelineFactory;
 
 	private MediaPipeline pipeline;
 
-	private RecorderEndPoint recorder;
+	private PlayerEndpoint player;
 
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		pipeline = pipelineFactory.create();
-		recorder = pipeline.newRecorderEndPoint(URL_SMALL).build();
+		player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 	}
 
 	@After
 	public void teardown() {
-		recorder.release();
+		player.release();
 		pipeline.release();
 	}
 
 	/**
 	 * start/pause/stop sequence test
 	 */
-	// TODO enable when release() after this sequence works
-	@Ignore
 	@Test
-	public void testRecorder() {
-		recorder.record();
-		recorder.pause();
-		recorder.stop();
+	public void testPlayer() {
+		player.play();
+		player.pause();
+		player.stop();
+	}
+
+	@Test
+	public void testEventEndOfStream() throws InterruptedException {
+		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
+				1);
+		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				events.add(event);
+			}
+		});
+
+		player.play();
+
+		Assert.assertNotNull(events.poll(7, SECONDS));
 	}
 
 	@Test
 	public void testCommandGetUri() {
-		Assert.assertEquals(URL_SMALL, recorder.getUri());
+		Assert.assertTrue(URL_SMALL.equals(player.getUri()));
 	}
 
 }

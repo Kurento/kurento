@@ -32,19 +32,19 @@ import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link HttpEndPoint} test suite.
+ * {@link HttpEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link HttpEndPoint#getUrl()}
+ * <li>{@link HttpEndpoint#getUrl()}
  * </ul>
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndPoint#addMediaSessionStartListener(MediaEventListener)}
+ * <li>{@link HttpEndpoint#addMediaSessionStartListener(MediaEventListener)}
  * <li>
- * {@link HttpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  * 
  * 
@@ -55,7 +55,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
 public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 
 	private ZBarFilter zbar;
-	private PlayerEndPoint player;
+	private PlayerEndpoint player;
 
 	@Before
 	public void setup() throws InterruptedException {
@@ -75,7 +75,7 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 		});
 		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
 
-		player = pipeline.newPlayerEndPoint(URL_BARCODES).build();
+		player = pipeline.newPlayerEndpoint(URL_BARCODES).build();
 	}
 
 	@After

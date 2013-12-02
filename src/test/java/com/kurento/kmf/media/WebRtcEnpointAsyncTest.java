@@ -22,53 +22,40 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link RtpEndPoint} test suite.
- * 
- * <p>
- * Methods tested:
- * <ul>
- * <li>{@link RtpEndPoint#getLocalSessionDescriptor()}
- * <li>{@link RtpEndPoint#getRemoteSessionDescriptor()}
- * <li>{@link RtpEndPoint#generateOffer()}
- * <li>{@link RtpEndPoint#processOffer(String)}
- * <li>{@link RtpEndPoint#processAnswer(String)}
- * </ul>
- * <p>
- * Events tested:
- * <ul>
- * <li>{@link RtpEndPoint#addMediaSessionStartListener(MediaEventListener)}
- * <li>
- * {@link RtpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
- * </ul>
+ * {@link WebRtcEndpoint} test suite.
  * 
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  * 
  */
-public class RtpEndPointAsyncTest extends AbstractSdpAsyncBaseTest<RtpEndPoint> {
+// TODO enable when WebRTC type is recognised by server
+@Ignore
+public class WebRtcEnpointAsyncTest extends
+		AbstractSdpAsyncBaseTest<WebRtcEndpoint> {
 
 	@Before
 	public void setup() throws InterruptedException {
-		final BlockingQueue<RtpEndPoint> events = new ArrayBlockingQueue<RtpEndPoint>(
+		final BlockingQueue<WebRtcEndpoint> events = new ArrayBlockingQueue<WebRtcEndpoint>(
 				1);
-		pipeline.newRtpEndPoint().buildAsync(new Continuation<RtpEndPoint>() {
+		pipeline.newWebRtcEndpoint().buildAsync(
+				new Continuation<WebRtcEndpoint>() {
 
-			@Override
-			public void onSuccess(RtpEndPoint result) {
-				events.add(result);
-			}
+					@Override
+					public void onSuccess(WebRtcEndpoint result) {
+						events.add(result);
+					}
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
-			}
-		});
+					@Override
+					public void onError(Throwable cause) {
+						throw new KurentoMediaFrameworkException(cause);
+					}
+				});
 		sdp = events.poll(500, MILLISECONDS);
 		Assert.assertNotNull(sdp);
 	}
@@ -77,5 +64,4 @@ public class RtpEndPointAsyncTest extends AbstractSdpAsyncBaseTest<RtpEndPoint> 
 	public void teardown() throws InterruptedException {
 		releaseMediaObject(sdp);
 	}
-
 }

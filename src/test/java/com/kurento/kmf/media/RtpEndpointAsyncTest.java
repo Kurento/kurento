@@ -22,25 +22,28 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link HttpEndPoint} test suite.
+ * {@link RtpEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link HttpEndPoint#getUrl()}
+ * <li>{@link RtpEndpoint#getLocalSessionDescriptor()}
+ * <li>{@link RtpEndpoint#getRemoteSessionDescriptor()}
+ * <li>{@link RtpEndpoint#generateOffer()}
+ * <li>{@link RtpEndpoint#processOffer(String)}
+ * <li>{@link RtpEndpoint#processAnswer(String)}
  * </ul>
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndPoint#addMediaSessionStartListener(MediaEventListener)}
+ * <li>{@link RtpEndpoint#addMediaSessionStartedListener(MediaEventListener)}
  * <li>
- * {@link HttpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link RtpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  * 
  * 
@@ -48,28 +51,24 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * @version 1.0.0
  * 
  */
-// TODO enable when WebRTC type is recognised by server
-@Ignore
-public class WebRtcEndPointAsyncTest extends
-		AbstractSdpAsyncBaseTest<WebRtcEndPoint> {
+public class RtpEndpointAsyncTest extends AbstractSdpAsyncBaseTest<RtpEndpoint> {
 
 	@Before
 	public void setup() throws InterruptedException {
-		final BlockingQueue<WebRtcEndPoint> events = new ArrayBlockingQueue<WebRtcEndPoint>(
+		final BlockingQueue<RtpEndpoint> events = new ArrayBlockingQueue<RtpEndpoint>(
 				1);
-		pipeline.newWebRtcEndPoint().buildAsync(
-				new Continuation<WebRtcEndPoint>() {
+		pipeline.newRtpEndpoint().buildAsync(new Continuation<RtpEndpoint>() {
 
-					@Override
-					public void onSuccess(WebRtcEndPoint result) {
-						events.add(result);
-					}
+			@Override
+			public void onSuccess(RtpEndpoint result) {
+				events.add(result);
+			}
 
-					@Override
-					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
-					}
-				});
+			@Override
+			public void onError(Throwable cause) {
+				throw new KurentoMediaFrameworkException(cause);
+			}
+		});
 		sdp = events.poll(500, MILLISECONDS);
 		Assert.assertNotNull(sdp);
 	}
@@ -78,4 +77,5 @@ public class WebRtcEndPointAsyncTest extends
 	public void teardown() throws InterruptedException {
 		releaseMediaObject(sdp);
 	}
+
 }

@@ -30,7 +30,7 @@ import com.kurento.kms.thrift.api.KmsMediaType;
  * @param <T>
  * 
  */
-public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndPoint> extends
+public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 		AbstractAsyncBaseTest {
 
 	protected T sdp;
@@ -145,13 +145,13 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndPoint> extends
 	// TODO This test shuts down the remote KMS!
 	@Ignore
 	@Test
-	public void testRtpEndPointSimulatingAndroidSdp()
+	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_BARCODES)
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
 				.build();
 
-		RtpEndPoint rtpEndPoint = pipeline.newRtpEndPoint().build();
+		RtpEndpoint rtpEndpoint = pipeline.newRtpEndpoint().build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
@@ -162,8 +162,8 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndPoint> extends
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 
-		rtpEndPoint.processOffer(requestSdp);
-		player.connect(rtpEndPoint, KmsMediaType.VIDEO);
+		rtpEndpoint.processOffer(requestSdp);
+		player.connect(rtpEndpoint, KmsMediaType.VIDEO);
 		player.play();
 
 		// just a little bit of time before destroying

@@ -40,19 +40,19 @@ import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
- * {@link HttpEndPoint} test suite.
+ * {@link HttpEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link HttpEndPoint#getUrl()}
+ * <li>{@link HttpEndpoint#getUrl()}
  * </ul>
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndPoint#addMediaSessionStartListener(MediaEventListener)}
+ * <li>{@link HttpEndpoint#addMediaSessionStartedListener(MediaEventListener)}
  * <li>
- * {@link HttpEndPoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  * 
  * 
@@ -62,15 +62,15 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  */
 public class HttpEndpointAsyncTest extends AbstractAsyncBaseTest {
 
-	private HttpEndPoint httpEp;
+	private HttpEndpoint httpEp;
 
 	@Before
 	public void setup() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		pipeline.newHttpEndPoint().buildAsync(new Continuation<HttpEndPoint>() {
+		pipeline.newHttpEndpoint().buildAsync(new Continuation<HttpEndpoint>() {
 
 			@Override
-			public void onSuccess(HttpEndPoint result) {
+			public void onSuccess(HttpEndpoint result) {
 				httpEp = result;
 				sem.release();
 			}
@@ -121,7 +121,7 @@ public class HttpEndpointAsyncTest extends AbstractAsyncBaseTest {
 	@Test
 	public void testEventMediaSessionStarted() throws InterruptedException {
 
-		final PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_SMALL)
+		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
 		player.connect(httpEp);
 
@@ -136,7 +136,7 @@ public class HttpEndpointAsyncTest extends AbstractAsyncBaseTest {
 
 		final BlockingQueue<ListenerRegistration> events = new ArrayBlockingQueue<ListenerRegistration>(
 				1);
-		httpEp.addMediaSessionStartListener(
+		httpEp.addMediaSessionStartedListener(
 				new MediaEventListener<MediaSessionStartedEvent>() {
 
 					@Override

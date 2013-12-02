@@ -35,7 +35,7 @@ import com.kurento.kms.thrift.api.KmsMediaType;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
-public abstract class AbstractSdpBaseTest<T extends SdpEndPoint> {
+public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 
 	@Autowired
 	private MediaPipelineFactory pipelineFactory;
@@ -111,10 +111,10 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndPoint> {
 	// TODO This test shuts down the remote KMS!
 	@Ignore
 	@Test
-	public void testRtpEndPointSimulatingAndroidSdp()
+	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndPoint player = pipeline.newPlayerEndPoint(URL_BARCODES)
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
 				.build();
 
 		String requestSdp = "v=0\r\n"

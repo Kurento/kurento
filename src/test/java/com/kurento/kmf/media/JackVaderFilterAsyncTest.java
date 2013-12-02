@@ -38,13 +38,13 @@ import com.kurento.kmf.media.events.MediaEventListener;
  */
 public class JackVaderFilterAsyncTest extends AbstractAsyncBaseTest {
 
-	private PlayerEndPoint player;
+	private PlayerEndpoint player;
 
 	private JackVaderFilter jackVader;
 
 	@Before
 	public void setup() throws InterruptedException {
-		player = pipeline.newPlayerEndPoint(URL_SMALL).build();
+		player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 
 		final BlockingQueue<JackVaderFilter> events = new ArrayBlockingQueue<JackVaderFilter>(
 				1);
@@ -73,7 +73,7 @@ public class JackVaderFilterAsyncTest extends AbstractAsyncBaseTest {
 
 	/**
 	 * Test if a {@link JackVaderFilter} can be created in the KMS. The filter
-	 * is pipelined with a {@link PlayerEndPoint}, which feeds video to the
+	 * is pipelined with a {@link PlayerEndpoint}, which feeds video to the
 	 * filter. This test depends on the correct behaviour of the player and its
 	 * events.
 	 * 
