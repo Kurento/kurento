@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media;
 
-import static com.kurento.kmf.media.SyncMediaServerTest.URL_POINTER_DETECOR;
+import static com.kurento.kmf.media.SyncMediaServerTest.URL_POINTER_DETECTOR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.util.concurrent.ArrayBlockingQueue;
@@ -73,8 +73,8 @@ public class FaceOverlayFilterTest {
 	 */
 	@Test
 	public void testFaceOverlayFilter() throws InterruptedException {
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_POINTER_DETECOR)
-				.build();
+		PlayerEndpoint player = pipeline
+				.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
 		player.connect(overlayFilter);
 
 		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(

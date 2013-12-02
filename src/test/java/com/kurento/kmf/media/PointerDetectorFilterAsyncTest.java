@@ -30,29 +30,29 @@ import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
- * {@link FaceOverlayFilter} test suite.
+ * {@link PointerDetectorFilter} test suite.
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
- * @since 2.0.1
+ * @version 1.0.0
  * 
  */
-public class FaceOverlayFilterAsyncTest extends AbstractAsyncBaseTest {
+public class PointerDetectorFilterAsyncTest extends AbstractAsyncBaseTest {
 
 	private PlayerEndpoint player;
 
-	private FaceOverlayFilter overlayFilter;
+	private PointerDetectorFilter filter;
 
 	@Before
 	public void setup() throws InterruptedException {
 		player = pipeline.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
 
-		final BlockingQueue<FaceOverlayFilter> events = new ArrayBlockingQueue<FaceOverlayFilter>(
+		final BlockingQueue<PointerDetectorFilter> events = new ArrayBlockingQueue<PointerDetectorFilter>(
 				1);
-		pipeline.newFaceOverlayFilter().buildAsync(
-				new Continuation<FaceOverlayFilter>() {
+		pipeline.newPointerDetectorFilter().buildAsync(
+				new Continuation<PointerDetectorFilter>() {
 
 					@Override
-					public void onSuccess(FaceOverlayFilter result) {
+					public void onSuccess(PointerDetectorFilter result) {
 						events.add(result);
 					}
 
@@ -61,27 +61,27 @@ public class FaceOverlayFilterAsyncTest extends AbstractAsyncBaseTest {
 						throw new KurentoMediaFrameworkException(cause);
 					}
 				});
-		overlayFilter = events.poll(4, SECONDS);
-		Assert.assertNotNull(overlayFilter);
+		filter = events.poll(4, SECONDS);
+		Assert.assertNotNull(filter);
 	}
 
 	@After
 	public void teardown() throws InterruptedException {
 		player.release();
-		releaseMediaObject(overlayFilter);
+		releaseMediaObject(filter);
 	}
 
 	/**
-	 * Test if a {@link FaceOverlayFilter} can be created in the KMS. The filter
-	 * is pipelined with a {@link PlayerEndpoint}, which feeds video to the
-	 * filter. This test depends on the correct behaviour of the player and its
-	 * events.
+	 * Test if a {@link PointerDetectorFilter} can be created in the KMS. The
+	 * filter is pipelined with a {@link PlayerEndpoint}, which feeds video to
+	 * the filter. This test depends on the correct behaviour of the player and
+	 * its events.
 	 * 
 	 * @throws InterruptedException
 	 */
 	@Test
-	public void testFaceOverlayFilter() throws InterruptedException {
-		player.connect(overlayFilter);
+	public void testPointerDetectorFilter() throws InterruptedException {
+		player.connect(filter);
 		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
 				1);
 		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
@@ -96,5 +96,4 @@ public class FaceOverlayFilterAsyncTest extends AbstractAsyncBaseTest {
 
 		Assert.assertNotNull(events.poll(20, SECONDS));
 	}
-
 }
