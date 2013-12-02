@@ -25,12 +25,12 @@ public interface HasMediaSessionStartedListener {
 
 	/* SYNC */
 
-	ListenerRegistration addMediaSessionStartListener(
+	ListenerRegistration addMediaSessionStartedListener(
 			final MediaEventListener<MediaSessionStartedEvent> sessionEvent);
 
 	/* ASYNC */
 
-	void addMediaSessionStartListener(
+	void addMediaSessionStartedListener(
 			final MediaEventListener<MediaSessionStartedEvent> sessionEvent,
 			final Continuation<ListenerRegistration> cont);
 

@@ -17,12 +17,12 @@ package com.kurento.kmf.media;
 import java.net.URI;
 import java.util.Map;
 
-import com.kurento.kmf.media.HttpEndPoint.HttpEndPointBuilder;
+import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
-import com.kurento.kmf.media.PlayerEndPoint.PlayerEndPointBuilder;
-import com.kurento.kmf.media.RecorderEndPoint.RecorderEndPointBuilder;
-import com.kurento.kmf.media.RtpEndPoint.RtpEndPointBuilder;
-import com.kurento.kmf.media.WebRtcEndPoint.WebRtcEndPointBuilder;
+import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
+import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
+import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
+import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kms.thrift.api.KmsMediaType;
@@ -92,19 +92,19 @@ public interface MediaPipeline extends MediaObject {
 			Continuation<Void> cont);
 
 	// Creation of specific framework types
-	HttpEndPointBuilder newHttpEndPoint();
+	HttpEndpointBuilder newHttpEndpoint();
 
-	RtpEndPointBuilder newRtpEndPoint();
+	RtpEndpointBuilder newRtpEndpoint();
 
-	WebRtcEndPointBuilder newWebRtcEndPoint();
+	WebRtcEndpointBuilder newWebRtcEndpoint();
 
-	PlayerEndPointBuilder newPlayerEndPoint(String uri);
+	PlayerEndpointBuilder newPlayerEndpoint(String uri);
 
-	PlayerEndPointBuilder newPlayerEndPoint(URI uri);
+	PlayerEndpointBuilder newPlayerEndpoint(URI uri);
 
-	RecorderEndPointBuilder newRecorderEndPoint(String uri);
+	RecorderEndpointBuilder newRecorderEndpoint(String uri);
 
-	RecorderEndPointBuilder newRecorderEndPoint(URI uri);
+	RecorderEndpointBuilder newRecorderEndpoint(URI uri);
 
 	ZBarFilterBuilder newZBarFilter();
 

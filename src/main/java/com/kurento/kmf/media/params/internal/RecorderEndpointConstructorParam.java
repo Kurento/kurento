@@ -30,7 +30,7 @@ import com.kurento.kms.thrift.api.KmsMediaRecoderEndPointConstructorParams;
  * 
  */
 @ProvidesMediaParam(type = CONSTRUCTOR_PARAMS_DATA_TYPE)
-public class RecorderEndPointConstructorParam extends
+public class RecorderEndpointConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
 	private KmsMediaMuxer mediaMuxer;
@@ -43,7 +43,7 @@ public class RecorderEndPointConstructorParam extends
 		this.mediaMuxer = mediaMuxer;
 	}
 
-	public RecorderEndPointConstructorParam() {
+	public RecorderEndpointConstructorParam() {
 		super(CONSTRUCTOR_PARAMS_DATA_TYPE);
 	}
 

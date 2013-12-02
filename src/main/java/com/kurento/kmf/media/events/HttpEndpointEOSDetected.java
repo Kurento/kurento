@@ -14,6 +14,6 @@
  */
 package com.kurento.kmf.media.events;
 
-public interface HttpEndPointEOSDetected extends MediaEvent {
+public interface HttpEndpointEOSDetected extends MediaEvent {
 
 }

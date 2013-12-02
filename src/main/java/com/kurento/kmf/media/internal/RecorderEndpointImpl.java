@@ -23,16 +23,16 @@ import java.util.Map;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaProfileSpecType;
-import com.kurento.kmf.media.RecorderEndPoint;
+import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
-import com.kurento.kmf.media.params.internal.RecorderEndPointConstructorParam;
+import com.kurento.kmf.media.params.internal.RecorderEndpointConstructorParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
-public class RecorderEndPointImpl extends AbstractUriEndPoint implements
-		RecorderEndPoint {
+public class RecorderEndpointImpl extends AbstractUriEndpoint implements
+		RecorderEndpoint {
 
-	public RecorderEndPointImpl(MediaElementRef endpointRef) {
+	public RecorderEndpointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -40,7 +40,7 @@ public class RecorderEndPointImpl extends AbstractUriEndPoint implements
 	 * @param objectRef
 	 * @param params
 	 */
-	public RecorderEndPointImpl(MediaElementRef objectRef,
+	public RecorderEndpointImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
@@ -57,13 +57,13 @@ public class RecorderEndPointImpl extends AbstractUriEndPoint implements
 		start(cont);
 	}
 
-	static class RecorderEndPointBuilderImpl<T extends RecorderEndPointBuilderImpl<T>>
-			extends AbstractUriEndPointBuilder<T, RecorderEndPoint> implements
-			RecorderEndPointBuilder {
+	static class RecorderEndpointBuilderImpl<T extends RecorderEndpointBuilderImpl<T>>
+			extends AbstractUriEndpointBuilder<T, RecorderEndpoint> implements
+			RecorderEndpointBuilder {
 
-		private final RecorderEndPointConstructorParam param = new RecorderEndPointConstructorParam();
+		private final RecorderEndpointConstructorParam param = new RecorderEndpointConstructorParam();
 
-		public RecorderEndPointBuilderImpl(final URI uri,
+		public RecorderEndpointBuilderImpl(final URI uri,
 				final MediaPipeline pipeline) {
 			super(uri, TYPE_NAME, pipeline);
 		}

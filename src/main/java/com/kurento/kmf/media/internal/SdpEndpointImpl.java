@@ -28,15 +28,15 @@ import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.SdpEndPoint;
+import com.kurento.kmf.media.SdpEndpoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
-public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
-		SdpEndPoint {
+public abstract class SdpEndpointImpl extends AbstractSessionEndpoint implements
+		SdpEndpoint {
 
-	public SdpEndPointImpl(MediaElementRef endpointRef) {
+	public SdpEndpointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -44,7 +44,7 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 	 * @param objectRef
 	 * @param params
 	 */
-	public SdpEndPointImpl(MediaElementRef objectRef,
+	public SdpEndpointImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
@@ -125,14 +125,14 @@ public abstract class SdpEndPointImpl extends AbstractSessionEndPoint implements
 		invoke(GET_REMOTE_SDP, new StringContinuationWrapper(cont));
 	}
 
-	protected static abstract class AbstractSdpEndPointBuilder<T extends AbstractSdpEndPointBuilder<T, E>, E extends SdpEndPoint>
-			extends AbstractSessionEndPointBuilder<T, E> {
+	protected static abstract class AbstractSdpEndpointBuilder<T extends AbstractSdpEndpointBuilder<T, E>, E extends SdpEndpoint>
+			extends AbstractSessionEndpointBuilder<T, E> {
 
 		/**
 		 * @param uri
 		 * @throws URISyntaxException
 		 */
-		protected AbstractSdpEndPointBuilder(final String elementType,
+		protected AbstractSdpEndpointBuilder(final String elementType,
 				final MediaPipeline pipeline) {
 			super(elementType, pipeline);
 		}

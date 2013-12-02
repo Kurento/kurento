@@ -43,10 +43,10 @@ import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
-import com.kurento.kmf.media.params.internal.RecorderEndPointConstructorParam;
+import com.kurento.kmf.media.params.internal.RecorderEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.ShortMediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
-import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
+import com.kurento.kmf.media.params.internal.UriEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.VoidMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
@@ -195,14 +195,14 @@ public class MediaParamTest {
 
 	@Test
 	public void testUriParamConstructor() {
-		UriEndPointConstructorParam in = new UriEndPointConstructorParam();
+		UriEndpointConstructorParam in = new UriEndpointConstructorParam();
 		in.setUri("http://test.com");
 		KmsMediaParam param = createKmsParam(
 				KmsMediaUriEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				in.getThriftParams().getData());
 
-		UriEndPointConstructorParam out = instantiateAndCheck(
-				UriEndPointConstructorParam.class, param);
+		UriEndpointConstructorParam out = instantiateAndCheck(
+				UriEndpointConstructorParam.class, param);
 		Assert.assertTrue(in.getUri().equals(out.getUri()));
 	}
 
@@ -221,7 +221,7 @@ public class MediaParamTest {
 	}
 
 	@Test
-	public void testHttpEndPointConstructor() {
+	public void testHttpEndpointConstructor() {
 		HttpEndpointConstructorParam in = new HttpEndpointConstructorParam();
 		in.setDisconnectionTimeout(Integer.valueOf(200));
 		in.setMediaMuxer(KmsMediaMuxer.MP4);
@@ -240,15 +240,15 @@ public class MediaParamTest {
 	}
 
 	@Test
-	public void testRecoderEndPointConstructor() {
-		RecorderEndPointConstructorParam in = new RecorderEndPointConstructorParam();
+	public void testRecoderEndpointConstructor() {
+		RecorderEndpointConstructorParam in = new RecorderEndpointConstructorParam();
 		in.setMediaMuxer(KmsMediaMuxer.MP4);
 		KmsMediaParam param = createKmsParam(
 				KmsMediaRecorderEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				in.getThriftParams().getData());
 
-		RecorderEndPointConstructorParam out = instantiateAndCheck(
-				RecorderEndPointConstructorParam.class, param);
+		RecorderEndpointConstructorParam out = instantiateAndCheck(
+				RecorderEndpointConstructorParam.class, param);
 		Assert.assertTrue(in.getMediaMuxer().equals(out.getMediaMuxer()));
 	}
 

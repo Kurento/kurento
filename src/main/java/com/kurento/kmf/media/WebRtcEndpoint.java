@@ -14,20 +14,11 @@
  */
 package com.kurento.kmf.media;
 
-public interface UriEndPoint extends EndPoint {
+public interface WebRtcEndpoint extends SdpEndpoint {
 
-	/* SYNC */
-	String getUri();
+	public interface WebRtcEndpointBuilder extends
+			MediaObjectBuilder<WebRtcEndpointBuilder, WebRtcEndpoint> {
 
-	void pause();
-
-	void stop();
-
-	/* ASYNC */
-	void getUri(Continuation<String> cont);
-
-	void pause(Continuation<Void> cont);
-
-	void stop(Continuation<Void> cont);
+	}
 
 }

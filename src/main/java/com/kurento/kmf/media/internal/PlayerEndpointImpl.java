@@ -23,17 +23,17 @@ import java.util.Map;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
-public class PlayerEndPointImpl extends AbstractUriEndPoint implements
-		PlayerEndPoint {
+public class PlayerEndpointImpl extends AbstractUriEndpoint implements
+		PlayerEndpoint {
 
-	public PlayerEndPointImpl(MediaElementRef endpointRef) {
+	public PlayerEndpointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -41,7 +41,7 @@ public class PlayerEndPointImpl extends AbstractUriEndPoint implements
 	 * @param objectRef
 	 * @param params
 	 */
-	public PlayerEndPointImpl(MediaElementRef objectRef,
+	public PlayerEndpointImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
@@ -71,11 +71,11 @@ public class PlayerEndPointImpl extends AbstractUriEndPoint implements
 		addListener(EVENT_EOS, eosEvent, cont);
 	}
 
-	public static class PlayerEndPointBuilderImpl<T extends PlayerEndPointBuilderImpl<T>>
-			extends AbstractUriEndPointBuilder<T, PlayerEndPoint> implements
-			PlayerEndPointBuilder {
+	public static class PlayerEndpointBuilderImpl<T extends PlayerEndpointBuilderImpl<T>>
+			extends AbstractUriEndpointBuilder<T, PlayerEndpoint> implements
+			PlayerEndpointBuilder {
 
-		public PlayerEndPointBuilderImpl(final URI uri,
+		public PlayerEndpointBuilderImpl(final URI uri,
 				final MediaPipeline pipeline) {
 			super(uri, TYPE_NAME, pipeline);
 		}

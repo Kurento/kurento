@@ -20,6 +20,6 @@ package com.kurento.kmf.media;
  * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
-public interface EndPoint extends MediaElement {
+public interface Endpoint extends MediaElement {
 
 }

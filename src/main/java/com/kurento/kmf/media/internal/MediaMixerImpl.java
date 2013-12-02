@@ -51,7 +51,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public MediaElement createEndPoint() {
+	public MediaElement createEndpoint() {
 
 		Client client = clientPool.acquireSync();
 
@@ -75,7 +75,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public MediaElement createEndPoint(Map<String, MediaParam> params)
+	public MediaElement createEndpoint(Map<String, MediaParam> params)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
 
@@ -102,7 +102,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createEndPoint(final Continuation<MediaElement> cont)
+	public void createEndpoint(final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 		final AsyncClient client = clientPool.acquireAsync();
 
@@ -146,7 +146,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createEndPoint(final Map<String, MediaParam> params,
+	public void createEndpoint(final Map<String, MediaParam> params,
 			final Continuation<MediaElement> cont)
 			throws KurentoMediaFrameworkException {
 

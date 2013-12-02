@@ -25,16 +25,16 @@ import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.UriEndPoint;
+import com.kurento.kmf.media.UriEndpoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
-import com.kurento.kmf.media.params.internal.UriEndPointConstructorParam;
+import com.kurento.kmf.media.params.internal.UriEndpointConstructorParam;
 
-public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
-		UriEndPoint {
+public abstract class AbstractUriEndpoint extends AbstractEndpoint implements
+		UriEndpoint {
 
-	public AbstractUriEndPoint(MediaElementRef endpointRef) {
+	public AbstractUriEndpoint(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -42,7 +42,7 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 	 * @param objectRef
 	 * @param params
 	 */
-	public AbstractUriEndPoint(MediaElementRef objectRef,
+	public AbstractUriEndpoint(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
@@ -88,12 +88,12 @@ public abstract class AbstractUriEndPoint extends AbstractEndPoint implements
 		invoke(STOP, new VoidContinuationWrapper(cont));
 	}
 
-	protected static abstract class AbstractUriEndPointBuilder<T extends AbstractUriEndPointBuilder<T, E>, E extends UriEndPoint>
-			extends AbstractEndPointBuilder<T, E> {
+	protected static abstract class AbstractUriEndpointBuilder<T extends AbstractUriEndpointBuilder<T, E>, E extends UriEndpoint>
+			extends AbstractEndpointBuilder<T, E> {
 
-		private final UriEndPointConstructorParam param = new UriEndPointConstructorParam();
+		private final UriEndpointConstructorParam param = new UriEndpointConstructorParam();
 
-		protected AbstractUriEndPointBuilder(final URI uri,
+		protected AbstractUriEndpointBuilder(final URI uri,
 				final String elementType, final MediaPipeline pipeline) {
 			super(elementType, pipeline);
 			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);

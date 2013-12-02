@@ -31,7 +31,7 @@ import com.kurento.kms.thrift.api.KmsMediaUriEndPointConstructorParams;
  * 
  */
 @ProvidesMediaParam(type = CONSTRUCTOR_PARAMS_DATA_TYPE)
-public class UriEndPointConstructorParam extends
+public class UriEndpointConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
 	private URI uri;
@@ -55,7 +55,7 @@ public class UriEndPointConstructorParam extends
 		return this.uri;
 	}
 
-	public UriEndPointConstructorParam() {
+	public UriEndpointConstructorParam() {
 		super(CONSTRUCTOR_PARAMS_DATA_TYPE);
 	}
 

@@ -14,10 +14,18 @@
  */
 package com.kurento.kmf.media;
 
-public interface RtpEndPoint extends SdpEndPoint {
+public interface RecorderEndpoint extends UriEndpoint {
+	/* SYNC */
+	void record();
 
-	public interface RtpEndPointBuilder extends
-			MediaObjectBuilder<RtpEndPointBuilder, RtpEndPoint> {
+	/* ASYNC */
+	void record(final Continuation<Void> cont);
+
+	public interface RecorderEndpointBuilder extends
+			MediaObjectBuilder<RecorderEndpointBuilder, RecorderEndpoint> {
+
+		RecorderEndpointBuilder withMediaProfile(MediaProfileSpecType type);
 
 	}
+
 }

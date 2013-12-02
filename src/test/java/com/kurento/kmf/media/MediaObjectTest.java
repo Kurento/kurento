@@ -28,7 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kurento.kmf.media.internal.HttpEndPointImpl;
+import com.kurento.kmf.media.internal.HttpEndpointImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl;
 import com.kurento.kmf.media.internal.MainMixerImpl;
 import com.kurento.kmf.media.internal.MediaElementImpl;
@@ -36,10 +36,10 @@ import com.kurento.kmf.media.internal.MediaMixerImpl;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
-import com.kurento.kmf.media.internal.PlayerEndPointImpl;
-import com.kurento.kmf.media.internal.RecorderEndPointImpl;
-import com.kurento.kmf.media.internal.RtpEndPointImpl;
-import com.kurento.kmf.media.internal.WebRtcEndPointImpl;
+import com.kurento.kmf.media.internal.PlayerEndpointImpl;
+import com.kurento.kmf.media.internal.RecorderEndpointImpl;
+import com.kurento.kmf.media.internal.RtpEndpointImpl;
+import com.kurento.kmf.media.internal.WebRtcEndpointImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
@@ -121,34 +121,34 @@ public class MediaObjectTest {
 	}
 
 	@Test
-	public void testHttpEndPointInstantiation() {
+	public void testHttpEndpointInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(HTTP_EP_TYPE);
-		instantiateAndCheck(HttpEndPointImpl.class, objRef);
+		instantiateAndCheck(HttpEndpointImpl.class, objRef);
 	}
 
 	@Test
 	public void testWebRtcEndpointInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(WEB_RTC_EP_TYPE);
-		instantiateAndCheck(WebRtcEndPointImpl.class, objRef);
+		instantiateAndCheck(WebRtcEndpointImpl.class, objRef);
 	}
 
 	@Test
-	public void testPlayerEndPointInstantiation() {
+	public void testPlayerEndpointInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(PLAYER_EP_TYPE);
-		instantiateAndCheck(PlayerEndPointImpl.class, objRef);
+		instantiateAndCheck(PlayerEndpointImpl.class, objRef);
 	}
 
 	@Test
-	public void testRtpEndPointInstantiation() {
+	public void testRtpEndpointInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(RTP_EP_TYPE);
-		instantiateAndCheck(RtpEndPointImpl.class, objRef);
+		instantiateAndCheck(RtpEndpointImpl.class, objRef);
 
 	}
 
 	@Test
-	public void testRecorderEndPointInstantiation() {
+	public void testRecorderEndpointInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(RECORDER_EP_TYPE);
-		instantiateAndCheck(RecorderEndPointImpl.class, objRef);
+		instantiateAndCheck(RecorderEndpointImpl.class, objRef);
 	}
 
 	// TODO activate after correcting error found in the instantiation of

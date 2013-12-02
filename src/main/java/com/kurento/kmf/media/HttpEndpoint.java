@@ -14,32 +14,32 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.events.HttpEndPointEOSDetected;
+import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
 import com.kurento.kmf.media.events.MediaEventListener;
 
-public interface HttpEndPoint extends SessionEndPoint {
+public interface HttpEndpoint extends SessionEndpoint {
 
 	/* SYNC */
 	String getUrl();
 
 	ListenerRegistration addEOSDetectedListener(
-			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent);
+			final MediaEventListener<HttpEndpointEOSDetected> sessionEvent);
 
 	/* ASYNC */
 
 	void getUrl(final Continuation<String> cont);
 
 	void addEOSDetectedListener(
-			final MediaEventListener<HttpEndPointEOSDetected> sessionEvent,
+			final MediaEventListener<HttpEndpointEOSDetected> sessionEvent,
 			final Continuation<ListenerRegistration> cont);
 
-	public interface HttpEndPointBuilder extends
-			MediaObjectBuilder<HttpEndPointBuilder, HttpEndPoint> {
+	public interface HttpEndpointBuilder extends
+			MediaObjectBuilder<HttpEndpointBuilder, HttpEndpoint> {
 
-		HttpEndPointBuilder terminateOnEOS();
+		HttpEndpointBuilder terminateOnEOS();
 
-		HttpEndPointBuilder withDisconnectionTimeout(int disconnectionTimeout);
+		HttpEndpointBuilder withDisconnectionTimeout(int disconnectionTimeout);
 
-		HttpEndPointBuilder withMediaProfile(MediaProfileSpecType type);
+		HttpEndpointBuilder withMediaProfile(MediaProfileSpecType type);
 	}
 }

@@ -12,13 +12,20 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media;
+package com.kurento.kmf.media.events.internal;
 
-public interface WebRtcEndPoint extends SdpEndPoint {
+import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.EVENT_EOS_DETECTED;
 
-	public interface WebRtcEndPointBuilder extends
-			MediaObjectBuilder<WebRtcEndPointBuilder, WebRtcEndPoint> {
+import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
+import com.kurento.kmf.media.internal.ProvidesMediaEvent;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
 
+@ProvidesMediaEvent(type = EVENT_EOS_DETECTED)
+public class HttpEndpointEOSDetectedImpl extends VoidMediaEvent implements
+		HttpEndpointEOSDetected {
+
+	public HttpEndpointEOSDetectedImpl(KmsMediaEvent event) {
+		super(event);
 	}
 
 }

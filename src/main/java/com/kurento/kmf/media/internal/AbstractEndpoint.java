@@ -14,38 +14,45 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME;
-
 import java.util.Map;
 
+import com.kurento.kmf.media.Endpoint;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.WebRtcEndPoint;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 
-@ProvidesMediaElement(type = TYPE_NAME)
-public class WebRtcEndPointImpl extends SdpEndPointImpl implements
-		WebRtcEndPoint {
+/**
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * 
+ */
+public abstract class AbstractEndpoint extends MediaElementImpl implements
+		Endpoint {
 
-	public WebRtcEndPointImpl(MediaElementRef endpointRef) {
-		super(endpointRef);
+	/**
+	 * @param objectRef
+	 */
+	public AbstractEndpoint(MediaElementRef objectRef) {
+		super(objectRef);
 	}
 
 	/**
 	 * @param objectRef
 	 * @param params
 	 */
-	public WebRtcEndPointImpl(MediaElementRef objectRef,
+	public AbstractEndpoint(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
 
-	public static class WebRtcEndPointBuilderImpl<T extends WebRtcEndPointBuilderImpl<T>>
-			extends AbstractSdpEndPointBuilder<T, WebRtcEndPoint> implements
-			WebRtcEndPointBuilder {
+	protected static abstract class AbstractEndpointBuilder<T extends AbstractEndpointBuilder<T, E>, E extends Endpoint>
+			extends MediaElementBuilderImpl<T, E> {
 
-		public WebRtcEndPointBuilderImpl(final MediaPipeline pipeline) {
-			super(TYPE_NAME, pipeline);
+		/**
+		 * @param elementType
+		 */
+		protected AbstractEndpointBuilder(final String elementType,
+				final MediaPipeline pipeline) {
+			super(elementType, pipeline);
 		}
 
 	}

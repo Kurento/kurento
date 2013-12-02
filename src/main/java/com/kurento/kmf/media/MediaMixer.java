@@ -20,13 +20,13 @@ import com.kurento.kmf.media.params.MediaParam;
 
 public interface MediaMixer extends MediaObject {
 
-	MediaElement createEndPoint();
+	MediaElement createEndpoint();
 
-	MediaElement createEndPoint(Map<String, MediaParam> params);
+	MediaElement createEndpoint(Map<String, MediaParam> params);
 
-	void createEndPoint(final Continuation<MediaElement> cont);
+	void createEndpoint(final Continuation<MediaElement> cont);
 
-	void createEndPoint(Map<String, MediaParam> params,
+	void createEndpoint(Map<String, MediaParam> params,
 			final Continuation<MediaElement> cont);
 
 	public interface MediaMixerBuilder extends

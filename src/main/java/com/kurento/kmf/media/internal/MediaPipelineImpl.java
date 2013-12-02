@@ -23,23 +23,23 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.HttpEndPoint.HttpEndPointBuilder;
+import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndPoint.PlayerEndPointBuilder;
-import com.kurento.kmf.media.RecorderEndPoint.RecorderEndPointBuilder;
-import com.kurento.kmf.media.RtpEndPoint.RtpEndPointBuilder;
-import com.kurento.kmf.media.WebRtcEndPoint.WebRtcEndPointBuilder;
+import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
+import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
+import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
+import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
-import com.kurento.kmf.media.internal.HttpEndPointImpl.HttpEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.HttpEndpointImpl.HttpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
-import com.kurento.kmf.media.internal.PlayerEndPointImpl.PlayerEndPointBuilderImpl;
-import com.kurento.kmf.media.internal.RecorderEndPointImpl.RecorderEndPointBuilderImpl;
-import com.kurento.kmf.media.internal.RtpEndPointImpl.RtpEndPointBuilderImpl;
-import com.kurento.kmf.media.internal.WebRtcEndPointImpl.WebRtcEndPointBuilderImpl;
+import com.kurento.kmf.media.internal.PlayerEndpointImpl.PlayerEndpointBuilderImpl;
+import com.kurento.kmf.media.internal.RecorderEndpointImpl.RecorderEndpointBuilderImpl;
+import com.kurento.kmf.media.internal.RtpEndpointImpl.RtpEndpointBuilderImpl;
+import com.kurento.kmf.media.internal.WebRtcEndpointImpl.WebRtcEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl.ZBarFilterBuilderImpl;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
@@ -436,22 +436,22 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public HttpEndPointBuilder newHttpEndPoint() {
-		return new HttpEndPointBuilderImpl(this);
+	public HttpEndpointBuilder newHttpEndpoint() {
+		return new HttpEndpointBuilderImpl(this);
 	}
 
 	@Override
-	public RtpEndPointBuilder newRtpEndPoint() {
-		return new RtpEndPointBuilderImpl(this);
+	public RtpEndpointBuilder newRtpEndpoint() {
+		return new RtpEndpointBuilderImpl(this);
 	}
 
 	@Override
-	public WebRtcEndPointBuilder newWebRtcEndPoint() {
-		return new WebRtcEndPointBuilderImpl(this);
+	public WebRtcEndpointBuilder newWebRtcEndpoint() {
+		return new WebRtcEndpointBuilderImpl(this);
 	}
 
 	@Override
-	public PlayerEndPointBuilder newPlayerEndPoint(String uriStr) {
+	public PlayerEndpointBuilder newPlayerEndpoint(String uriStr) {
 		URI uri;
 
 		try {
@@ -461,16 +461,16 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
 
-		return this.newPlayerEndPoint(uri);
+		return this.newPlayerEndpoint(uri);
 	}
 
 	@Override
-	public PlayerEndPointBuilder newPlayerEndPoint(URI uri) {
-		return new PlayerEndPointBuilderImpl(uri, this);
+	public PlayerEndpointBuilder newPlayerEndpoint(URI uri) {
+		return new PlayerEndpointBuilderImpl(uri, this);
 	}
 
 	@Override
-	public RecorderEndPointBuilder newRecorderEndPoint(String uriStr) {
+	public RecorderEndpointBuilder newRecorderEndpoint(String uriStr) {
 		URI uri;
 
 		try {
@@ -480,12 +480,12 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
 
-		return this.newRecorderEndPoint(uri);
+		return this.newRecorderEndpoint(uri);
 	}
 
 	@Override
-	public RecorderEndPointBuilder newRecorderEndPoint(URI uri) {
-		return new RecorderEndPointBuilderImpl(uri, this);
+	public RecorderEndpointBuilder newRecorderEndpoint(URI uri) {
+		return new RecorderEndpointBuilderImpl(uri, this);
 	}
 
 	@Override

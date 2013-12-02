@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media;
 
-public interface SdpEndPoint extends SessionEndPoint {
+public interface SdpEndpoint extends SessionEndpoint {
 
 	/* SYNC */
 	String generateOffer();

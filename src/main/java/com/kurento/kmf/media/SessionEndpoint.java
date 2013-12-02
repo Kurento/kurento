@@ -14,18 +14,10 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.events.HasEndOfStreamListener;
+import com.kurento.kmf.media.events.HasMediaSessionStartedListener;
+import com.kurento.kmf.media.events.HasMediaSessionTerminatedListener;
 
-public interface PlayerEndPoint extends UriEndPoint, HasEndOfStreamListener {
-	/* SYNC */
-	public void play();
-
-	/* ASYNC */
-	public void play(final Continuation<Void> cont);
-
-	public interface PlayerEndPointBuilder extends
-			MediaObjectBuilder<PlayerEndPointBuilder, PlayerEndPoint> {
-
-	}
+public interface SessionEndpoint extends Endpoint,
+		HasMediaSessionTerminatedListener, HasMediaSessionStartedListener {
 
 }

@@ -22,17 +22,17 @@ import java.util.Map;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.SessionEndPoint;
+import com.kurento.kmf.media.SessionEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 
-public abstract class AbstractSessionEndPoint extends AbstractEndPoint
-		implements SessionEndPoint {
+public abstract class AbstractSessionEndpoint extends AbstractEndpoint
+		implements SessionEndpoint {
 
-	public AbstractSessionEndPoint(MediaElementRef endpointRef) {
+	public AbstractSessionEndpoint(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -40,7 +40,7 @@ public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 	 * @param objectRef
 	 * @param params
 	 */
-	public AbstractSessionEndPoint(MediaElementRef objectRef,
+	public AbstractSessionEndpoint(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
@@ -54,7 +54,7 @@ public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 	}
 
 	@Override
-	public ListenerRegistration addMediaSessionStartListener(
+	public ListenerRegistration addMediaSessionStartedListener(
 			final MediaEventListener<MediaSessionStartedEvent> sessionEvent) {
 		return addListener(EVENT_MEDIA_SESSION_START, sessionEvent);
 	}
@@ -69,19 +69,19 @@ public abstract class AbstractSessionEndPoint extends AbstractEndPoint
 	}
 
 	@Override
-	public void addMediaSessionStartListener(
+	public void addMediaSessionStartedListener(
 			final MediaEventListener<MediaSessionStartedEvent> sessionEvent,
 			final Continuation<ListenerRegistration> cont) {
 		addListener(EVENT_MEDIA_SESSION_START, sessionEvent, cont);
 	}
 
-	protected static abstract class AbstractSessionEndPointBuilder<T extends AbstractSessionEndPointBuilder<T, E>, E extends SessionEndPoint>
-			extends AbstractEndPointBuilder<T, E> {
+	protected static abstract class AbstractSessionEndpointBuilder<T extends AbstractSessionEndpointBuilder<T, E>, E extends SessionEndpoint>
+			extends AbstractEndpointBuilder<T, E> {
 
 		/**
 		 * @param elementType
 		 */
-		protected AbstractSessionEndPointBuilder(final String elementType,
+		protected AbstractSessionEndpointBuilder(final String elementType,
 				final MediaPipeline pipeline) {
 			super(elementType, pipeline);
 		}
