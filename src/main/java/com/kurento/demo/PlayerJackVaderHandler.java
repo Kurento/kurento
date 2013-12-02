@@ -25,7 +25,7 @@ import com.kurento.kmf.media.PlayerEndPoint;
 /**
  * HTTP Player Handler which plays a media pipeline composed by a
  * <code>PlayerEndPoint</code> with a <code>JackVaderFilter</code>; using
- * redirect strategy; without JSON signaling protocol.
+ * redirect strategy; without JSON signalling protocol.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
@@ -39,9 +39,9 @@ public class PlayerJackVaderHandler extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		PlayerEndPoint playerEndPoint = mp.createPlayerEndPoint(VideoURLs.map
-				.get("jack"));
-		JackVaderFilter filter = mp.createJackVaderFilter();
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				VideoURLs.map.get("jack")).build();
+		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
 		session.start(filter);

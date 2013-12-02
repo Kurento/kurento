@@ -21,8 +21,8 @@ import com.kurento.kmf.content.HttpPlayerSession;
 /**
  * HTTP Player Handler which plays a collection of videos depending on the
  * <code>contentId</code> of the request; using tunneling strategy (by default
- * <code>redirect=true</code> in {@link @HttpPlayerService} annotation; with
- * JSON signaling protocol.
+ * <code>redirect=true</code> in {@link HttpPlayerService} annotation; with JSON
+ * signalling protocol.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)

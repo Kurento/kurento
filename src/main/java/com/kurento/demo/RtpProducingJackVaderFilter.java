@@ -33,14 +33,14 @@ import com.kurento.kmf.media.MediaPipelineFactory;
 @RtpContentService(name = "RtpProducingJackVaderFilter", path = "/rtpJack")
 public class RtpProducingJackVaderFilter extends RtpContentHandler {
 
-	public static JackVaderFilter sharedJackVaderReference = null;
+	public static JackVaderFilter sharedJackVaderReference;
 
 	@Override
 	public void onContentRequest(RtpContentSession session) throws Exception {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		JackVaderFilter filter = mp.createJackVaderFilter();
+		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		session.start(filter);
 		sharedJackVaderReference = filter;
 	}

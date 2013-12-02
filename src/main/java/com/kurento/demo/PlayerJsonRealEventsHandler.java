@@ -14,7 +14,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
 /**
  * HTTP Player Handler which plays a media pipeline composed by a
  * <code>PlayerEndPoint</code> with a <code>ZBarFilter</code>; using redirect
- * strategy; with JSON signaling protocol.
+ * strategy; with JSON signalling protocol.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
@@ -32,9 +32,9 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 
-		PlayerEndPoint playerEndPoint = mp.createPlayerEndPoint(VideoURLs.map
-				.get("zbar"));
-		ZBarFilter filter = mp.createZBarFilter();
+		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+				VideoURLs.map.get("zbar")).build();
+		ZBarFilter filter = mp.newZBarFilter().build();
 		playerEndPoint.connect(filter);
 
 		filter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
