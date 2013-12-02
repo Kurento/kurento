@@ -21,6 +21,11 @@
 #define CERTTOOL_TEMPLATE "/tmp/certtool.tmpl"
 #define CERT_KEY_PEM_FILE "/tmp/certkey.pem"
 
+#define CLIENT_RECEIVES_VIDEO "offerer_receives_video"
+#define SERVER_RECEIVES_VIDEO "answerer_receives_video"
+
+G_LOCK_DEFINE_STATIC (check_receive_lock);
+
 static void
 bus_msg (GstBus * bus, GstMessage * msg, gpointer pipe)
 {
@@ -134,6 +139,46 @@ quit_main_loop (gpointer loop)
   return FALSE;
 }
 
+static void
+fakesink_client_hand_off (GstElement * fakesink, GstBuffer * buf,
+    GstPad * pad, gpointer loop)
+{
+  GstElement *pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
+
+  G_LOCK (check_receive_lock);
+  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
+              SERVER_RECEIVES_VIDEO))) {
+    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+    g_idle_add (quit_main_loop, loop);
+  } else {
+    g_object_set_data (G_OBJECT (pipeline), CLIENT_RECEIVES_VIDEO,
+        GINT_TO_POINTER (TRUE));
+  }
+  G_UNLOCK (check_receive_lock);
+
+  g_object_unref (pipeline);
+}
+
+static void
+fakesink_server_hand_off (GstElement * fakesink, GstBuffer * buf,
+    GstPad * pad, gpointer loop)
+{
+  GstElement *pipeline = GST_ELEMENT (gst_element_get_parent (fakesink));
+
+  G_LOCK (check_receive_lock);
+  if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (pipeline),
+              CLIENT_RECEIVES_VIDEO))) {
+    g_object_set (G_OBJECT (fakesink), "signal-handoffs", FALSE, NULL);
+    g_idle_add (quit_main_loop, loop);
+  } else {
+    g_object_set_data (G_OBJECT (pipeline), SERVER_RECEIVES_VIDEO,
+        GINT_TO_POINTER (TRUE));
+  }
+  G_UNLOCK (check_receive_lock);
+
+  g_object_unref (pipeline);
+}
+
 GST_START_TEST (test_dtlssrtp)
 {
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
@@ -171,6 +216,13 @@ GST_START_TEST (test_dtlssrtp)
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
   g_signal_connect (bus, "message", G_CALLBACK (bus_msg), pipeline);
+
+  g_object_set (G_OBJECT (fakesink_client), "signal-handoffs", TRUE, NULL);
+  g_signal_connect (G_OBJECT (fakesink_client), "handoff",
+      G_CALLBACK (fakesink_client_hand_off), loop);
+  g_object_set (G_OBJECT (fakesink_server), "signal-handoffs", TRUE, NULL);
+  g_signal_connect (G_OBJECT (fakesink_server), "handoff",
+      G_CALLBACK (fakesink_server_hand_off), loop);
 
   socket_client = open_socket (0);
   socket_server = open_socket (0);
@@ -225,7 +277,6 @@ GST_START_TEST (test_dtlssrtp)
 
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
-  g_timeout_add (2000, quit_main_loop, loop);
   g_main_loop_run (loop);
 
   GST_DEBUG_BIN_TO_DOT_FILE_WITH_TS (GST_BIN (pipeline),
