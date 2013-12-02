@@ -300,7 +300,8 @@ generate_certkey_pem_file (const gchar * cert_key_pem_file)
       g_strconcat
       ("/bin/sh -c \"echo 'organization = kurento' > ", CERTTOOL_TEMPLATE,
       " && certtool --generate-self-signed --load-privkey ", cert_key_pem_file,
-      " --template ", CERTTOOL_TEMPLATE, " >> ", cert_key_pem_file, "\"", NULL);
+      " --template ", CERTTOOL_TEMPLATE, " >> ", cert_key_pem_file,
+      " 2>/dev/null\"", NULL);
   ret = system (cmd);
   g_free (cmd);
 
