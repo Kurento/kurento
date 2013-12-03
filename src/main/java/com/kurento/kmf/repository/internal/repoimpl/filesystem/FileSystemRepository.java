@@ -8,7 +8,11 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
+import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +24,9 @@ import com.kurento.kmf.repository.internal.repoimpl.RepositoryWithHttp;
 
 @Component
 public class FileSystemRepository implements RepositoryWithHttp {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(FileSystemRepository.class);
 
 	private static final String ITEMS_METADATA_FILE_PATH = "metadata/metadata.json";
 
@@ -42,6 +49,12 @@ public class FileSystemRepository implements RepositoryWithHttp {
 		calculateNextId();
 		metadata = new ItemsMetadata(new File(baseFolder,
 				ITEMS_METADATA_FILE_PATH));
+	}
+
+	@PreDestroy
+	public void close() {
+		log.debug("Closing file system repository");
+		this.metadata.save();
 	}
 
 	private synchronized String calculateNextId() {
@@ -110,15 +123,13 @@ public class FileSystemRepository implements RepositoryWithHttp {
 	@Override
 	public List<RepositoryItem> findRepositoryItemsByAttValue(
 			String attributeName, String value) {
-		return createItemsForIds(metadata.findRepositoryItemsByAttValue(
-				attributeName, value));
+		return createItemsForIds(metadata.findByAttValue(attributeName, value));
 	}
 
 	@Override
 	public List<RepositoryItem> findRepositoryItemsByAttRegex(
 			String attributeName, String regex) {
-		return createItemsForIds(metadata.findRepositoryItemsByAttRegex(
-				attributeName, regex));
+		return createItemsForIds(metadata.findByAttRegex(attributeName, regex));
 	}
 
 	private List<RepositoryItem> createItemsForIds(

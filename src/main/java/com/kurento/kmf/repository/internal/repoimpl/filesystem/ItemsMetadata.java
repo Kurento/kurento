@@ -39,25 +39,34 @@ public class ItemsMetadata {
 	}
 
 	private void loadItemsMetadata() throws IOException {
-		DBObject contents = (DBObject) JSON.parse(loadFileAsString());
 		itemsMetadata = new ConcurrentHashMap<String, Map<String, String>>();
-		for (String key : contents.keySet()) {
-			try {
-				DBObject metadata = (DBObject) contents.get(key);
-				Map<String, String> map = new HashMap<String, String>();
-				for (String metadataKey : metadata.keySet()) {
-					map.put(key, metadata.get(metadataKey).toString());
+		DBObject contents = (DBObject) JSON.parse(loadFileAsString());
+		if (contents != null) {
+			for (String key : contents.keySet()) {
+				try {
+					DBObject metadata = (DBObject) contents.get(key);
+					Map<String, String> map = new HashMap<String, String>();
+					for (String metadataKey : metadata.keySet()) {
+						map.put(metadataKey, metadata.get(metadataKey)
+								.toString());
+					}
+					itemsMetadata.put(key, map);
+				} catch (ClassCastException e) {
+					log.warn("Attribute '" + key + "' should be an object");
 				}
-			} catch (ClassCastException e) {
-				log.warn("Attribute '" + key + "' should be an object");
 			}
 		}
 	}
 
 	private String loadFileAsString() throws IOException {
+
+		if (!itemsMetadataFile.exists()) {
+			return "";
+		}
+
 		StringBuilder sb = new StringBuilder();
-		BufferedReader br = new BufferedReader(
-				new FileReader(itemsMetadataFile));
+		FileReader metadataFile = new FileReader(itemsMetadataFile);
+		BufferedReader br = new BufferedReader(metadataFile);
 		String line;
 		while ((line = br.readLine()) != null) {
 			sb.append(line).append("\n");
@@ -80,13 +89,14 @@ public class ItemsMetadata {
 		return metadata;
 	}
 
-	public List<Entry<String, Map<String, String>>> findRepositoryItemsByAttValue(
+	public List<Entry<String, Map<String, String>>> findByAttValue(
 			String attributeName, String value) {
 
 		List<Entry<String, Map<String, String>>> list = new ArrayList<Map.Entry<String, Map<String, String>>>();
 
 		for (Entry<String, Map<String, String>> item : itemsMetadata.entrySet()) {
-			if (item.getValue().get(attributeName).equals(value)) {
+			String attValue = item.getValue().get(attributeName);
+			if (attValue != null && attValue.equals(value)) {
 				list.add(item);
 			}
 		}
@@ -94,7 +104,7 @@ public class ItemsMetadata {
 		return list;
 	}
 
-	public List<Entry<String, Map<String, String>>> findRepositoryItemsByAttRegex(
+	public List<Entry<String, Map<String, String>>> findByAttRegex(
 			String attributeName, String regex) {
 
 		Pattern pattern = Pattern.compile(regex);
@@ -102,7 +112,8 @@ public class ItemsMetadata {
 		List<Entry<String, Map<String, String>>> list = new ArrayList<Map.Entry<String, Map<String, String>>>();
 
 		for (Entry<String, Map<String, String>> item : itemsMetadata.entrySet()) {
-			if (pattern.matcher(item.getValue().get(attributeName)).matches()) {
+			String value = item.getValue().get(attributeName);
+			if (value != null && pattern.matcher(value).matches()) {
 				list.add(item);
 			}
 		}
@@ -111,7 +122,12 @@ public class ItemsMetadata {
 	}
 
 	public void save() {
+
 		try {
+			if (!itemsMetadataFile.exists()) {
+				itemsMetadataFile.getParentFile().mkdirs();
+				itemsMetadataFile.createNewFile();
+			}
 			PrintWriter writer = new PrintWriter(itemsMetadataFile);
 			String content = JSON.serialize(itemsMetadata);
 			writer.print(content);
