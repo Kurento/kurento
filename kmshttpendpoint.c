@@ -133,6 +133,7 @@ struct _GetData
   GstElement *encodebin;
   GstElement *appsink;
   HttpGetState state;
+  gboolean has_data;
   struct config_data *confdata;
 };
 
@@ -267,6 +268,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   GstBuffer *buffer;
   GstCaps *caps;
   GstClockTime *base_time;
+  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (appsink));
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -328,6 +330,8 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
     if (GST_BUFFER_PTS_IS_VALID (buffer))
       buffer->pts -= *base_time;
   }
+
+  self->priv->get->has_data = TRUE;
 
   KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsink));
 
@@ -627,6 +631,7 @@ kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
   self->priv->method = KMS_HTTP_END_POINT_METHOD_GET;
   self->priv->get = g_slice_new0 (GetData);
   self->priv->get->state = UNCONFIGURED;
+  self->priv->get->has_data = FALSE;
 
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
@@ -1062,6 +1067,7 @@ kms_http_end_point_do_reconfiguration (gpointer user_data)
 
   kms_http_end_point_reconfigure_pipeline (httpep);
   httpep->priv->get->state = CONFIGURED;
+  httpep->priv->get->has_data = FALSE;
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (httpep));
 }
@@ -1335,14 +1341,17 @@ kms_http_end_point_add_appsrc (KmsHttpEndPoint * self, GstElement * valve,
       kms_http_end_point_connect_appsrc_to_encodebin (self, config);
       destroy_valve_configuration (config);
       self->priv->get->state = CONFIGURED;
+      self->priv->get->has_data = FALSE;
       break;
     case CONFIGURED:
       kms_http_end_point_init_config_data (self);
 
-      if (GST_STATE (self->priv->get->encodebin) >= GST_STATE_PAUSED
-          || GST_STATE_PENDING (self->priv->get->encodebin) >= GST_STATE_PAUSED
-          || GST_STATE_TARGET (self->priv->get->encodebin) >=
-          GST_STATE_PAUSED) {
+      if (self->priv->get->has_data &&
+          (GST_STATE (self->priv->get->encodebin) >= GST_STATE_PAUSED
+              || GST_STATE_PENDING (self->priv->get->encodebin) >=
+              GST_STATE_PAUSED
+              || GST_STATE_TARGET (self->priv->get->encodebin) >=
+              GST_STATE_PAUSED)) {
         kms_http_end_point_remove_encodebin (self);
         self->priv->get->state = CONFIGURING;
       } else {
