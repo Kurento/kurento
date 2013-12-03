@@ -17,13 +17,13 @@ package com.kurento.kmf.media;
 /**
  * This interface is to be used in asynchronous calls to the media server.
  * 
- * @author Ivan Gracia (igracia@gsyc.es)
- * 
- * @Version 1.0.0
- * 
  * @param <F>
  *            The data type of the callback´s response in case of successful
  *            outcome.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
  */
 public interface Continuation<F> {
 

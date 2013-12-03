@@ -17,6 +17,15 @@ package com.kurento.kmf.media;
 import com.kurento.kmf.media.events.HasMediaSessionStartedListener;
 import com.kurento.kmf.media.events.HasMediaSessionTerminatedListener;
 
+/**
+ * Session based endpoint. A session is considered to be started when the media
+ * exchange starts. On the other hand, sessions terminate when a timeout,
+ * defined by the developer, takes place after the connection is lost.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface SessionEndpoint extends Endpoint,
 		HasMediaSessionTerminatedListener, HasMediaSessionStartedListener {
 

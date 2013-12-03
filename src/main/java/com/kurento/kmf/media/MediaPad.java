@@ -16,6 +16,15 @@ package com.kurento.kmf.media;
 
 import com.kurento.kms.thrift.api.KmsMediaType;
 
+/**
+ * A {@code MediaPad} is an element´s interface with the outside world. Data
+ * streams from the {@link MediaSource} pad to another element's
+ * {@link MediaSink} pad.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaPad extends MediaObject {
 
 	/**
@@ -30,9 +39,19 @@ public interface MediaPad extends MediaObject {
 	 * 
 	 * @param cont
 	 */
-	void getMediaElement(final Continuation<MediaElement> cont);
+	void getMediaElement(Continuation<MediaElement> cont);
 
+	/**
+	 * Obtains the type of media that this pad accepts.
+	 * 
+	 * @return The type of media.
+	 */
 	KmsMediaType getMediaType();
 
+	/**
+	 * Obtains the description for this pad.
+	 * 
+	 * @return The description.
+	 */
 	String getMediaDescription();
 }

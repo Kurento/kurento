@@ -17,11 +17,11 @@ package com.kurento.kmf.media;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
 
 /**
+ * Enumeration of media profile types.
  * 
- * 
+ * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
- * @version 1.0.0
- * 
+ * @since 2.0.0
  */
 public enum MediaProfileSpecType {
 	WEBM(KmsMediaMuxer.WEBM), MP4(KmsMediaMuxer.MP4);
@@ -32,6 +32,11 @@ public enum MediaProfileSpecType {
 		this.specType = specType;
 	}
 
+	/**
+	 * Obtains the thrift equivalent type
+	 * 
+	 * @return The thrift type
+	 */
 	public KmsMediaMuxer toThrift() {
 		return this.specType;
 	}

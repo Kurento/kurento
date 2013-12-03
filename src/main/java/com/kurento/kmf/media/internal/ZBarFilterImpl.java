@@ -46,15 +46,15 @@ public class ZBarFilterImpl extends FilterImpl implements ZBarFilter {
 
 	@Override
 	public ListenerRegistration addCodeFoundDataListener(
-			final MediaEventListener<CodeFoundEvent> vcaStrEvent) {
-		return addListener(EVENT_CODE_FOUND, vcaStrEvent);
+			final MediaEventListener<CodeFoundEvent> listener) {
+		return addListener(EVENT_CODE_FOUND, listener);
 	}
 
 	@Override
 	public void addCodeFoundDataListener(
-			final MediaEventListener<CodeFoundEvent> vcaStrEvent,
+			final MediaEventListener<CodeFoundEvent> listener,
 			final Continuation<ListenerRegistration> cont) {
-		addListener(EVENT_CODE_FOUND, vcaStrEvent, cont);
+		addListener(EVENT_CODE_FOUND, listener, cont);
 	}
 
 	public static class ZBarFilterBuilderImpl<T extends ZBarFilterBuilderImpl<T>>

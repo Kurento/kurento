@@ -14,8 +14,22 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * WebRtcEndpoint interface. This type of {@code Endpoint} offers media
+ * streaming using WebRTC.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface WebRtcEndpoint extends SdpEndpoint {
 
+	/**
+	 * Builder for the {@link WebRtcEndpoint}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface WebRtcEndpointBuilder extends
 			MediaObjectBuilder<WebRtcEndpointBuilder, WebRtcEndpoint> {
 

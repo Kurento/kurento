@@ -20,10 +20,11 @@ import com.kurento.kmf.media.PlayerEndpoint;
 /**
  * Event raised by a {@link HttpEndpoint} when the underlying
  * {@link PlayerEndpoint} connected to it reaches the end ot the stream being
- * played. HttpEndpointEOSDetected
+ * played.
  * 
+ * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
- * 
+ * @since 2.0.0
  */
 @Deprecated
 public interface HttpEndpointEOSDetected extends MediaEvent {

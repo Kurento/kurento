@@ -16,6 +16,13 @@ package com.kurento.kmf.media;
 
 import java.util.Collection;
 
+/**
+ * Special type of pad, used by a media element to generate a media stream.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaSource extends MediaPad {
 	/**
 	 * Connects the current source with a {@link MediaSink}
@@ -23,14 +30,14 @@ public interface MediaSource extends MediaPad {
 	 * @param sink
 	 *            The sink to connect this source
 	 */
-	public void connect(MediaSink sink);
+	void connect(MediaSink sink);
 
 	/**
 	 * Gets all {@link MediaSink} to which this source is connected.
 	 * 
 	 * @return The list of sinks that the source is connected to.
 	 */
-	public Collection<MediaSink> getConnectedSinks();
+	Collection<MediaSink> getConnectedSinks();
 
 	/**
 	 * Connects the current source with a {@link MediaSink}
@@ -38,8 +45,11 @@ public interface MediaSource extends MediaPad {
 	 * @param sink
 	 *            The sink to connect this source
 	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked in case of correct
+	 *            connection, but no extra information will be provided.
 	 */
-	public void connect(MediaSink sink, final Continuation<Void> cont);
+	void connect(MediaSink sink, Continuation<Void> cont);
 
 	/**
 	 * Gets all {@link MediaSink} to which this source is connected.
@@ -48,5 +58,5 @@ public interface MediaSource extends MediaPad {
 	 *            The list of sinks that the source is connected to.
 	 * 
 	 */
-	public void getConnectedSinks(final Continuation<Collection<MediaSink>> cont);
+	void getConnectedSinks(Continuation<Collection<MediaSink>> cont);
 }

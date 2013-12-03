@@ -14,6 +14,26 @@
  */
 package com.kurento.kmf.media.events;
 
+/**
+ * Interface to be implemented by {@link MediaEvent} listeners. Implementors of
+ * this interface will be on charge of processing the events raised by media
+ * elements.
+ * 
+ * @param <T>
+ *            A class that extends from a {@link MediaEvent}
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaEventListener<T extends MediaEvent> {
+
+	/**
+	 * Method invoked by the framework when an event is raised in the media
+	 * server.
+	 * 
+	 * @param event
+	 *            The event
+	 */
 	void onEvent(T event);
 }

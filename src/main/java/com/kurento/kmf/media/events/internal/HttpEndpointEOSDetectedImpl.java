@@ -20,6 +20,7 @@ import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
 import com.kurento.kmf.media.internal.ProvidesMediaEvent;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 
+@Deprecated
 @ProvidesMediaEvent(type = EVENT_EOS_DETECTED)
 public class HttpEndpointEOSDetectedImpl extends VoidMediaEvent implements
 		HttpEndpointEOSDetected {

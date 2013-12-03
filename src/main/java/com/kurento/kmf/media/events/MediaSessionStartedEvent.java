@@ -14,6 +14,13 @@
  */
 package com.kurento.kmf.media.events;
 
+/**
+ * Event raised when a session starts. This event has no data.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaSessionStartedEvent extends MediaEvent {
 
 }

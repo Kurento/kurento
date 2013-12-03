@@ -15,12 +15,13 @@
 package com.kurento.kmf.media.events;
 
 /**
- * Event raised when the stream that the element sends out is finished.. An
+ * Event raised when the stream that the element sends out is finished. An
  * element receiving this event will generally just process any buffered data,
  * and then forward the event further downstream.
  * 
+ * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
- * 
+ * @since 2.0.0
  */
 public interface EndOfStreamEvent extends MediaEvent {
 

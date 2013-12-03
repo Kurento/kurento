@@ -38,6 +38,13 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaP
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaPipeline_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
+/**
+ * Factory to create {@link MediaPipeline} in the media server.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public class MediaPipelineFactory {
 
 	@Autowired
@@ -46,6 +53,11 @@ public class MediaPipelineFactory {
 	@Autowired
 	private ApplicationContext ctx;
 
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 * 
+	 * @return The media pipeline
+	 */
 	public MediaPipeline create() {
 		Client client = this.clientPool.acquireSync();
 
@@ -67,6 +79,12 @@ public class MediaPipelineFactory {
 		return pipeline;
 	}
 
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 * 
+	 * @param garbagePeriod
+	 * @return The media pipeline
+	 */
 	public MediaPipeline create(int garbagePeriod) {
 		Map<String, MediaParam> params = new HashMap<String, MediaParam>(3);
 
@@ -77,6 +95,15 @@ public class MediaPipelineFactory {
 		return create(params);
 	}
 
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 * 
+	 * @param params
+	 *            Parameters to be used by the server to configure the object
+	 *            during creation
+	 * @return The media pipeline
+	 * @throws KurentoMediaFrameworkException
+	 */
 	public MediaPipeline create(Map<String, MediaParam> params)
 			throws KurentoMediaFrameworkException {
 		MediaPipeline pipeline;
@@ -108,6 +135,17 @@ public class MediaPipelineFactory {
 		return pipeline;
 	}
 
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. If the element was
+	 *            successfully created, the {@code onSuccess} method from the
+	 *            handler will receive a {@link MediaPipeline} stub from the
+	 *            media server.
+	 * @throws KurentoMediaFrameworkException
+	 * 
+	 */
 	public void create(final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
 		final AsyncClient client = this.clientPool.acquireAsync();
@@ -149,6 +187,18 @@ public class MediaPipelineFactory {
 
 	}
 
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 * 
+	 * @param garbagePeriod
+	 * @param cont
+	 *            An asynchronous callback handler. If the element was
+	 *            successfully created, the {@code onSuccess} method from the
+	 *            handler will receive a {@link MediaPipeline} stub from the
+	 *            media server.
+	 * @throws KurentoMediaFrameworkException
+	 * 
+	 */
 	public void create(int garbagePeriod, final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
 		final Map<String, MediaParam> params = new HashMap<String, MediaParam>(
@@ -161,6 +211,20 @@ public class MediaPipelineFactory {
 		create(params, cont);
 	}
 
+	/**
+	 * Creates a new {@link MediaPipeline} in the media server
+	 * 
+	 * @param params
+	 *            Parameters to be used by the server to configure the object
+	 *            during creation
+	 * @param cont
+	 *            An asynchronous callback handler. If the element was
+	 *            successfully created, the {@code onSuccess} method from the
+	 *            handler will receive a {@link MediaPipeline} stub from the
+	 *            media server.
+	 * @throws KurentoMediaFrameworkException
+	 * 
+	 */
 	public void create(final Map<String, MediaParam> params,
 			final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {

@@ -16,22 +16,44 @@ package com.kurento.kmf.media.events;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.MediaElement;
 
 /**
- * @author Ivan Gracia (igracia@gsyc.es)
+ * Marker interface to indicate that a certain {@link MediaElement} can raise a
+ * {@link MediaSessionStartedEvent}, and thus listeners for this kind of event
+ * can be added.
  * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
  */
 public interface HasMediaSessionStartedListener {
 
-	/* SYNC */
-
+	/**
+	 * Adds a listener for {@link MediaSessionStartedEvent}.
+	 * 
+	 * @param listener
+	 *            The listener to be invoked when the event is raised.
+	 * @return A {@link ListenerRegistration} to uniquely identify the listener
+	 *         throughout the system.
+	 */
 	ListenerRegistration addMediaSessionStartedListener(
-			final MediaEventListener<MediaSessionStartedEvent> sessionEvent);
+			MediaEventListener<MediaSessionStartedEvent> listener);
 
-	/* ASYNC */
-
+	/**
+	 * Adds a listener for {@link MediaSessionStartedEvent}.
+	 * 
+	 * @param listener
+	 *            The listener to be invoked when the event is raised.
+	 * @param cont
+	 *            An asynchronous callback handler. If the event was
+	 *            successfully added to the {@code HttpEndpoint}, the
+	 *            {@code onSuccess} method from the handler will receive a
+	 *            {@link ListenerRegistration} to uniquely identify the listener
+	 *            throughout the system.
+	 */
 	void addMediaSessionStartedListener(
-			final MediaEventListener<MediaSessionStartedEvent> sessionEvent,
-			final Continuation<ListenerRegistration> cont);
+			MediaEventListener<MediaSessionStartedEvent> listener,
+			Continuation<ListenerRegistration> cont);
 
 }

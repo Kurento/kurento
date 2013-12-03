@@ -14,8 +14,25 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Filter that detects faces in a video feed. Those on the right half of the
+ * feed are overlaid with a pirate hat, and those on the left half are covered
+ * by a Darth Vader helmet. This is an example filter, intended to demonstrate
+ * how to integrate computer vision capabilities into the multimedia
+ * infrastructure.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface JackVaderFilter extends Filter {
 
+	/**
+	 * Builder for the {@link JackVaderFilter}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface JackVaderFilterBuilder extends
 			MediaObjectBuilder<JackVaderFilterBuilder, JackVaderFilter> {
 

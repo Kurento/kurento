@@ -14,6 +14,15 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Base interface for all filters. This is a certain type of
+ * {@link MediaElement}, that processes media injected through its
+ * {@link MediaSink}, and delivers the outcome through its {@link MediaSource}.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface Filter extends MediaElement {
 
 }

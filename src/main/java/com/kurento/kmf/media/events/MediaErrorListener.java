@@ -14,6 +14,21 @@
  */
 package com.kurento.kmf.media.events;
 
+/**
+ * Interface to be implemented by {@link MediaError} listeners. Implementors of
+ * this interface will be on charge of processing the error messages produced
+ * during the normal execution of media elements.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaErrorListener {
+
+	/**
+	 * Method to be invoked by the framework when an error is received.
+	 * 
+	 * @param error
+	 */
 	void onError(MediaError error);
 }

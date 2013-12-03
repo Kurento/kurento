@@ -14,32 +14,116 @@
  */
 package com.kurento.kmf.media;
 
+import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
+/**
+ * Endpoint that enables Kurento to work as an HTTP server, allowing peer HTTP
+ * clients to access media. An {@code HttpEndpoint} contains both SINK and
+ * SOURCE pads for AUDIO and VIDEO. SINK elements provide access to an HTTP file
+ * upload function while SOURCE delivers media using HTML5 pseudostreaming
+ * mechanism.
+ * <p>
+ * This type of endpoint provide bidirectional communications. Its
+ * {@link MediaSink} are associated with the HTTP GET method, while
+ * {@link MediaSource} are related to HTTP POST method.
+ * </p>
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface HttpEndpoint extends SessionEndpoint {
 
-	/* SYNC */
+	/**
+	 * Obtains the URL associated to this endpoint
+	 * 
+	 * @return The url
+	 */
 	String getUrl();
 
+	/**
+	 * Adds a listener for {@link HttpEndpointEOSDetected} events.
+	 * </b><strong>NOTE</strong></br>This event is no longer raised by this kind
+	 * of endpoint.
+	 * 
+	 * @param listener
+	 *            The user-defined listener for the event
+	 * @return A {@link ListenerRegistration} to uniquely identify the listener
+	 *         throughout the system.
+	 */
+	@Deprecated
 	ListenerRegistration addEOSDetectedListener(
-			final MediaEventListener<HttpEndpointEOSDetected> sessionEvent);
+			MediaEventListener<HttpEndpointEOSDetected> listener);
 
-	/* ASYNC */
+	/**
+	 * Obtains the URL associated to this endpoint
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. If the command was invoked
+	 *            successfully on the {@code HttpEndpoint}, the
+	 *            {@code onSuccess} method from the handler will receive a
+	 *            {@code String} representing the URL.
+	 */
+	void getUrl(Continuation<String> cont);
 
-	void getUrl(final Continuation<String> cont);
-
+	/**
+	 * Adds a listener for {@link HttpEndpointEOSDetected} events.
+	 * </b><strong>NOTE</strong></br>This event is no longer raised by this kind
+	 * of endpoint.
+	 * 
+	 * @param listener
+	 *            The user-defined listener for the event
+	 * @param cont
+	 *            An asynchronous callback handler. If the event was
+	 *            successfully added to the {@code HttpEndpoint}, the
+	 *            {@code onSuccess} method from the handler will receive a
+	 *            {@link ListenerRegistration} to uniquely identify the listener
+	 *            throughout the system.
+	 */
+	@Deprecated
 	void addEOSDetectedListener(
-			final MediaEventListener<HttpEndpointEOSDetected> sessionEvent,
-			final Continuation<ListenerRegistration> cont);
+			MediaEventListener<HttpEndpointEOSDetected> listener,
+			Continuation<ListenerRegistration> cont);
 
+	/**
+	 * Builder for the {@link HttpEndpoint}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface HttpEndpointBuilder extends
 			MediaObjectBuilder<HttpEndpointBuilder, HttpEndpoint> {
 
+		/**
+		 * This method configures the endpoint to raise a
+		 * {@link MediaSessionTerminatedEvent} when the associated player raises
+		 * a {@link EndOfStreamEvent}
+		 * 
+		 * @return The builder
+		 */
 		HttpEndpointBuilder terminateOnEOS();
 
+		/**
+		 * Sets the disconnection timeout. This is the time that an http
+		 * endpoint will wait for a reconnection, in case an HTTP connection is
+		 * lost.
+		 * 
+		 * @param disconnectionTimeout
+		 *            Time (in seconds)
+		 * @return The builder
+		 */
 		HttpEndpointBuilder withDisconnectionTimeout(int disconnectionTimeout);
 
+		/**
+		 * Configures the media profile type (WEBM, MP4...) for the endpoint.
+		 * 
+		 * @param type
+		 *            The media profile tpye.
+		 * @return The builder
+		 */
 		HttpEndpointBuilder withMediaProfile(MediaProfileSpecType type);
 	}
 }

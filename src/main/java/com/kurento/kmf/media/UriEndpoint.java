@@ -14,20 +14,56 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Interface for endpoints the require a URI to work. An example of this, would
+ * be a {@link PlayerEndpoint}, whose URI property could be used to locate a
+ * file to stream through is {@link MediaSource}
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface UriEndpoint extends Endpoint {
 
-	/* SYNC */
+	/**
+	 * Returns the uri for this endpoint.
+	 * 
+	 * @return The uri
+	 */
 	String getUri();
 
+	/**
+	 * Pauses the feed.
+	 */
 	void pause();
 
+	/**
+	 * Stops the feed
+	 */
 	void stop();
 
-	/* ASYNC */
+	/**
+	 * Returns the uri for this endpoint.
+	 * 
+	 * @param cont
+	 *            The callback function to be invoked asynchronously
+	 */
 	void getUri(Continuation<String> cont);
 
+	/**
+	 * Pauses the feed
+	 * 
+	 * @param cont
+	 *            The callback function to be invoked asynchronously
+	 */
 	void pause(Continuation<Void> cont);
 
+	/**
+	 * Stops the feed
+	 * 
+	 * @param cont
+	 *            The callback function to be invoked asynchronously
+	 */
 	void stop(Continuation<Void> cont);
 
 }

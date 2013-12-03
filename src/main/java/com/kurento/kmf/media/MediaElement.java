@@ -18,7 +18,25 @@ import java.util.Collection;
 
 import com.kurento.kms.thrift.api.KmsMediaType;
 
+/**
+ * Basic building blocks of the media server, that can be interconnected through
+ * the API. A {@code MediaElement} is a module that encapsulates a specific
+ * media capability. They can be connected to create media pipelines where those
+ * capabilities are applied, in sequence, to the stream going through the
+ * pipeline.
+ * <p>
+ * {@code MediaElement} objects are classified by its supported media type
+ * (audio, video, etc.) and the flow direction: {@link MediaSource} pads are
+ * intended for media delivery while {@link MediaSink} behave as reception
+ * points.
+ * </p>
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaElement extends MediaObject {
+
 	/**
 	 * Returns all {@link MediaSource} from this element
 	 * 
@@ -134,7 +152,7 @@ public interface MediaElement extends MediaObject {
 	 *            A list of sources. The list will be empty if no sources are
 	 *            found.
 	 */
-	void getMediaSrcs(final Continuation<Collection<MediaSource>> cont);
+	void getMediaSrcs(Continuation<Collection<MediaSource>> cont);
 
 	/**
 	 * Returns {@link MediaSource} of a certain type, associated to this element
@@ -146,7 +164,7 @@ public interface MediaElement extends MediaObject {
 	 *            found.
 	 */
 	void getMediaSrcs(KmsMediaType mediaType,
-			final Continuation<Collection<MediaSource>> cont);
+			Continuation<Collection<MediaSource>> cont);
 
 	/**
 	 * Returns {@link MediaSource} of a certain type and description, associated
@@ -160,14 +178,14 @@ public interface MediaElement extends MediaObject {
 	 *            found.
 	 */
 	void getMediaSrcs(KmsMediaType mediaType, String description,
-			final Continuation<Collection<MediaSource>> cont);
+			Continuation<Collection<MediaSource>> cont);
 
 	/**
 	 * 
 	 * @param cont
 	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
-	void getMediaSinks(final Continuation<Collection<MediaSink>> cont);
+	void getMediaSinks(Continuation<Collection<MediaSink>> cont);
 
 	/**
 	 * Returns {@link MediaSink} of a certain type, associated to this element
@@ -178,7 +196,7 @@ public interface MediaElement extends MediaObject {
 	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
 	void getMediaSinks(KmsMediaType mediaType,
-			final Continuation<Collection<MediaSink>> cont);
+			Continuation<Collection<MediaSink>> cont);
 
 	/**
 	 * Returns {@link MediaSink} of a certain type and description, associated
@@ -191,7 +209,7 @@ public interface MediaElement extends MediaObject {
 	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
 	void getMediaSinks(KmsMediaType mediaType, String description,
-			final Continuation<Collection<MediaSink>> cont);
+			Continuation<Collection<MediaSink>> cont);
 
 	/**
 	 * Connects all {@link MediaSource} of this element belonging to the
@@ -223,7 +241,7 @@ public interface MediaElement extends MediaObject {
 	 * @param cont
 	 */
 	void connect(MediaElement sink, KmsMediaType mediaType,
-			final Continuation<Void> cont);
+			Continuation<Void> cont);
 
 	/**
 	 * TODO: invokes the method above for all available MediaTypes
@@ -234,7 +252,7 @@ public interface MediaElement extends MediaObject {
 	 * @param sink
 	 * @param cont
 	 */
-	void connect(MediaElement sink, final Continuation<Void> cont);
+	void connect(MediaElement sink, Continuation<Void> cont);
 
 	/**
 	 * TODO: only connects if there is exactly one source and one sink for the
@@ -246,6 +264,6 @@ public interface MediaElement extends MediaObject {
 	 * @param cont
 	 */
 	void connect(MediaElement sink, KmsMediaType mediaType,
-			String mediaDescription, final Continuation<Void> cont);
+			String mediaDescription, Continuation<Void> cont);
 
 }

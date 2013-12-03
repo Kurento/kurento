@@ -14,13 +14,37 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Provides function to store contents in reliable mode (doesn't discard data).
+ * It contains {@link MediaSink} pads for audio and video.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface RecorderEndpoint extends UriEndpoint {
-	/* SYNC */
+
+	/**
+	 * Starts storing media received through the {@link MediaSink} pad
+	 */
 	void record();
 
-	/* ASYNC */
-	void record(final Continuation<Void> cont);
+	/**
+	 * Starts storing media received through the {@link MediaSink} pad
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked in case of correct
+	 *            invocation, but no extra information will be provided.
+	 */
+	void record(Continuation<Void> cont);
 
+	/**
+	 * Builder for the {@link ZBarFilter}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface RecorderEndpointBuilder extends
 			MediaObjectBuilder<RecorderEndpointBuilder, RecorderEndpoint> {
 

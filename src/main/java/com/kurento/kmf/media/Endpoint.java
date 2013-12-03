@@ -15,10 +15,15 @@
 package com.kurento.kmf.media;
 
 /**
- * Base interface for all end points
+ * Base interface for all end points. Endpoints are those {@code MediaElement}
+ * enabling KMS to interchange media contents with external systems, supporting
+ * different transport protocols and mechanisms (RTP, WebRTC, HTTP, FILE). An
+ * {@code Endpoint} may contain both sources and sinks for different media
+ * types, to provide bidirectional communication.
  * 
+ * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
- * 
+ * @since 2.0.0
  */
 public interface Endpoint extends MediaElement {
 

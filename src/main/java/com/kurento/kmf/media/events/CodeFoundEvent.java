@@ -14,9 +14,29 @@
  */
 package com.kurento.kmf.media.events;
 
+import com.kurento.kmf.media.ZBarFilter;
+
+/**
+ * Event raised by a {@link ZBarFilter} when a code is found in the data
+ * streamed.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface CodeFoundEvent extends MediaEvent {
 
+	/**
+	 * Type of code found
+	 * 
+	 * @return The type of code
+	 */
 	String getCodeType();
 
+	/**
+	 * Gets the value contained in the code
+	 * 
+	 * @return The value
+	 */
 	String getValue();
 }

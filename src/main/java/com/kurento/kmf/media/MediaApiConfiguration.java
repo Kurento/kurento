@@ -14,16 +14,21 @@
  */
 package com.kurento.kmf.media;
 
+import com.kurento.kmf.media.events.MediaErrorListener;
+import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.pool.AbstractPool;
 
 /**
- * Configuration parameters for Media API.
+ * Configuration parameters for Media API. This class is intended to be created
+ * as a bean inside an Spring context, and is needed by the Media API to work
+ * correctly.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Iván Gracia (igracia@gsyc.es)
  * @version 2.0.0
  */
 public class MediaApiConfiguration {
+
 	/**
 	 * Address where the thrift server exposed by the Kurento Media Server is
 	 * listening.
@@ -45,8 +50,6 @@ public class MediaApiConfiguration {
 	 * Port where the local thrift server will be listening.
 	 */
 	private int handlerPort = 9191;
-
-	// Default values
 
 	/**
 	 * Minimal size of the thread pool serving requests from the thrift server.
@@ -78,191 +81,192 @@ public class MediaApiConfiguration {
 	private int clientPoolSize = 20;
 
 	/**
-	 * Getter (accessor) for serverAddress field.
+	 * Obtains the address where the thrift server exposed by the Kurento Media
+	 * Server is listening.
 	 * 
-	 * @return Address where the thrift server exposed by the Kurento Media
-	 *         Server is listening.
+	 * @return The address.
 	 */
 	public String getServerAddress() {
 		return serverAddress;
 	}
 
 	/**
-	 * Setter (mutator) for serverAddress field.
+	 * Sets the address where the thrift server exposed by the Kurento Media
+	 * Server is listening.
 	 * 
 	 * @param serverAddress
-	 *            Address where the thrift server exposed by the Kurento Media
-	 *            Server is listening.
+	 *            The address to set.
+	 * 
 	 */
 	public void setServerAddress(String serverAddress) {
 		this.serverAddress = serverAddress;
 	}
 
 	/**
-	 * Getter (accessor) for serverPort field.
+	 * Gets the port of the Kurento Media Server thrift server
 	 * 
-	 * @return Port of the Kurento Media Server thrift server.
+	 * @return The port.
 	 */
 	public int getServerPort() {
 		return serverPort;
 	}
 
 	/**
-	 * Setter (mutator) for serverPort field.
+	 * Sets the port of the Kurento Media Server thrift server
 	 * 
 	 * @param serverPort
-	 *            Port of the Kurento Media Server thrift server.
+	 *            The port.
 	 */
 	public void setServerPort(int serverPort) {
 		this.serverPort = serverPort;
 	}
 
 	/**
-	 * Getter (accessor) for handlerAddress field.
+	 * Gets the address of the local thrift server, which will be used to
+	 * receive events and error notifications sent by the Kurento Media Server.
 	 * 
-	 * @return Address of the local thrift server, which will be used to receive
-	 *         events and error notifications sent by the Kurento Media Server.
+	 * @return The handler address.
 	 */
 	public String getHandlerAddress() {
 		return handlerAddress;
 	}
 
 	/**
-	 * Setter (mutator) for handlerAddress field.
+	 * Sets the address of the local thrift server, which will be used to
+	 * receive events and error notifications sent by the Kurento Media Server.
 	 * 
 	 * @param handlerAddress
-	 *            Address of the local thrift server, which will be used to
-	 *            receive events and error notifications sent by the Kurento
-	 *            Media Server.
+	 *            The address.
 	 */
 	public void setHandlerAddress(String handlerAddress) {
 		this.handlerAddress = handlerAddress;
 	}
 
 	/**
-	 * Getter (accessor) for handlerPort field.
+	 * Gets the port of the local thrift server, which will be used to receive
+	 * events and error notifications sent by the Kurento Media Server.
 	 * 
-	 * @return Port where the local thrift server will be listening.
+	 * @return The local thrift server port.
 	 */
 	public int getHandlerPort() {
 		return handlerPort;
 	}
 
 	/**
-	 * Setter (mutator) for handlerPort field.
+	 * Sets the port of the local thrift server, which will be used to receive
+	 * events and error notifications sent by the Kurento Media Server.
 	 * 
 	 * @param handlerPort
-	 *            Port where the local thrift server will be listening.
+	 *            The local thrift server port.
 	 */
 	public void setHandlerPort(int handlerPort) {
 		this.handlerPort = handlerPort;
 	}
 
 	/**
-	 * Setter (mutator) for poolCoreSize field.
+	 * Gets the minimal size of the Thread pool executing callbacks on listeners
+	 * of the type {@link MediaEventListener} and {@link MediaErrorListener}
+	 * Default: 10
 	 * 
-	 * @param poolCoreSize
-	 *            Minimal size of the Thread pool executing callbacks on content
-	 *            Handlers (e.g. PlayerHander, RecorderHandler, etc.) Default:
-	 *            10
-	 */
-	public void setPoolCoreSize(int poolCoreSize) {
-		this.poolCoreSize = poolCoreSize;
-	}
-
-	/**
-	 * Setter (mutator) for poolExecutionTimeout field.
-	 * 
-	 * @param poolExecutionTimeout
-	 *            timeout (in milliseconds) that a Hanlder callback Thread will
-	 *            wait before canceling the request and throwing and exception.
-	 *            Default: 50000
-	 */
-	public void setPoolExecutionTimeout(long poolExecutionTimeout) {
-		this.poolExecutionTimeout = poolExecutionTimeout;
-	}
-
-	/**
-	 * Setter (mutator) for poolMaxSize field.
-	 * 
-	 * @param poolMaxSize
-	 *            Maximum size of the of the Thread pool executing callbacks on
-	 *            content Handlers (e.g. PlayerHander, RecorderHandler, etc.)
-	 *            Default: 100
-	 */
-	public void setPoolMaxSize(int poolMaxSize) {
-		this.poolMaxSize = poolMaxSize;
-	}
-
-	/**
-	 * Setter (mutator) for poolMaxQueueSize field.
-	 * 
-	 * @param poolMaxQueueSize
-	 *            Maximum size of the waiting queue of the Thread pool executing
-	 *            callbacks. Threads wait in this queue up to
-	 *            poolExecutionTimeout. Default: 100
-	 */
-	public void setPoolMaxQueueSize(int poolMaxQueueSize) {
-		this.poolMaxQueueSize = poolMaxQueueSize;
-	}
-
-	/**
-	 * Getter (accessor) for poolMaxQueueSize field.
-	 * 
-	 * @return Maximum size of the waiting queue of the Thread pool executing
-	 *         callbacks
-	 */
-	public int getPoolMaxQueueSize() {
-		return poolMaxQueueSize;
-	}
-
-	/**
-	 * Getter (accessor) for poolCoreSize field.
-	 * 
-	 * @return Minimal size of the Thread pool
+	 * @return The configured pool size.
 	 */
 	public int getPoolCoreSize() {
 		return poolCoreSize;
 	}
 
 	/**
-	 * Getter (accessor) for poolExecutionTimeout field.
+	 * Sets the minimal size of the Thread pool executing callbacks on listeners
+	 * of the type {@link MediaEventListener} and {@link MediaErrorListener}
+	 * Default: 10
 	 * 
-	 * @return Timeout (in milliseconds) that a Hanlder callback thread will
-	 *         wait
+	 * @param poolCoreSize
+	 *            Size of the pool.
+	 */
+	public void setPoolCoreSize(int poolCoreSize) {
+		this.poolCoreSize = poolCoreSize;
+	}
+
+	/**
+	 * Gets the time (in milliseconds) that a listener callback Thread will wait
+	 * before cancelling the request and throwing and exception. Default: 50000
+	 * 
+	 * @return The time in milliseconds.
 	 */
 	public long getPoolExecutionTimeout() {
 		return poolExecutionTimeout;
 	}
 
 	/**
-	 * Getter (accessor) for poolMaxSize field.
+	 * Sets the time (in milliseconds) that a listener callback Thread will wait
+	 * before cancelling the request and throwing and exception. Default: 50000
 	 * 
-	 * @return Maximum size of the of the Thread pool executing callbacks on
-	 *         content Handlers
+	 * @param poolExecutionTimeout
+	 *            Time in milliseconds.
+	 */
+	public void setPoolExecutionTimeout(long poolExecutionTimeout) {
+		this.poolExecutionTimeout = poolExecutionTimeout;
+	}
+
+	/**
+	 * Gets the maximum number of threads to allow in the pool.
+	 * 
+	 * @return The maximum number of threads in the pool.
 	 */
 	public int getPoolMaxSize() {
 		return poolMaxSize;
 	}
 
 	/**
-	 * Getter (accessor) for clientPoolSize field.
+	 * Sets the maximum number of threads to allow in the pool.
 	 * 
-	 * @return Size of the pool of thrift clients. Each pool created by the
-	 *         {@link AbstractPool} will be instantiated with this number of
-	 *         clients.
+	 * @param poolMaxSize
+	 *            The threads to be allowed in the pool.
+	 */
+	public void setPoolMaxSize(int poolMaxSize) {
+		this.poolMaxSize = poolMaxSize;
+	}
+
+	/**
+	 * Gets the number of threads that can be waiting to be processed. In the
+	 * context of the Media API, each thread represents a thrift connection
+	 * waiting to be processed. Threads wait in this queue up to
+	 * {@code poolExecutionTimeout}. Default: 100
+	 * 
+	 * @return The size of the waiting queue
+	 */
+	public int getPoolMaxQueueSize() {
+		return poolMaxQueueSize;
+	}
+
+	/**
+	 * Sets the number of threads that can be waiting to be processed. In the
+	 * context of the Media API, each thread represents a thrift connection
+	 * waiting to be processed. Threads wait in this queue up to
+	 * {@code poolExecutionTimeout}. Default: 100
+	 * 
+	 * @param poolMaxQueueSize
+	 *            The maximum number of waiting threads.
+	 */
+	public void setPoolMaxQueueSize(int poolMaxQueueSize) {
+		this.poolMaxQueueSize = poolMaxQueueSize;
+	}
+
+	/**
+	 * Gets the size of the pool of thrift clients. Each pool created by the
+	 * {@link AbstractPool} will be instantiated with this number of clients.
+	 * 
+	 * @return The size of the pool.
 	 */
 	public int getClientPoolSize() {
 		return clientPoolSize;
 	}
 
 	/**
-	 * Setter (mutator) for clientPoolSize field.
+	 * Sets the size of the pool of thrift clients. Each pool created by the
+	 * {@link AbstractPool} will be instantiated with this number of clients.
 	 * 
 	 * @param clientPoolSize
-	 *            Size of the pool of thrift clients. Each pool created by the
-	 *            {@link AbstractPool} will be instantiated with this number of
-	 *            clients.
+	 *            The size of the client pool.
 	 */
 	public void setClientPoolSize(int clientPoolSize) {
 		this.clientPoolSize = clientPoolSize;

@@ -14,8 +14,21 @@
  */
 package com.kurento.kmf.media;
 
+//TODO what info should we include about the main mixer?
+/**
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MainMixer extends MediaMixer {
 
+	/**
+	 * Builder for the {@link MainMixer}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface MainMixerBuilder extends
 			MediaObjectBuilder<MainMixerBuilder, MainMixer> {
 

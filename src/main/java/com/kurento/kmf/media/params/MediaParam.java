@@ -15,8 +15,8 @@
 package com.kurento.kmf.media.params;
 
 /**
- * Interface to be implemented by parameters that will accompany commands sent
- * to the Thrift interface
+ * Interface to be implemented by parameters to be sent to the media server, in
+ * order to be used in method invocations or object construction.
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
  * 

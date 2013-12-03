@@ -14,8 +14,23 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Endpoint that provides bidirectional content delivery capabilities with
+ * remote networked peers through RTP protocol. An {@code RtpEndpoint} contains
+ * paired sink and source {@link MediaPad} for audio and video.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface RtpEndpoint extends SdpEndpoint {
 
+	/**
+	 * Builder for the {@link ZBarFilter}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface RtpEndpointBuilder extends
 			MediaObjectBuilder<RtpEndpointBuilder, RtpEndpoint> {
 

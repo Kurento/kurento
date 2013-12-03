@@ -59,8 +59,8 @@ public class HttpEndpointImpl extends AbstractSessionEndpoint implements
 
 	@Override
 	public ListenerRegistration addEOSDetectedListener(
-			final MediaEventListener<HttpEndpointEOSDetected> sessionEvent) {
-		return addListener(EVENT_EOS_DETECTED, sessionEvent);
+			final MediaEventListener<HttpEndpointEOSDetected> listener) {
+		return addListener(EVENT_EOS_DETECTED, listener);
 	}
 
 	/* ASYNC */
@@ -72,9 +72,9 @@ public class HttpEndpointImpl extends AbstractSessionEndpoint implements
 
 	@Override
 	public void addEOSDetectedListener(
-			final MediaEventListener<HttpEndpointEOSDetected> sessionEvent,
+			final MediaEventListener<HttpEndpointEOSDetected> listener,
 			final Continuation<ListenerRegistration> cont) {
-		addListener(EVENT_EOS_DETECTED, sessionEvent, cont);
+		addListener(EVENT_EOS_DETECTED, listener, cont);
 	}
 
 	static class HttpEndpointBuilderImpl<T extends HttpEndpointBuilderImpl<T>>

@@ -16,10 +16,27 @@ package com.kurento.kmf.media.events;
 
 import com.kurento.kmf.media.MediaObject;
 
+/**
+ * Base interface for all events raised by elements in the media server.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaEvent {
 
+	/**
+	 * Object that raised the event
+	 * 
+	 * @return The object
+	 */
 	MediaObject getSource();
 
+	/**
+	 * Type of event
+	 * 
+	 * @return The type
+	 */
 	String getType();
 
 }

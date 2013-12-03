@@ -14,6 +14,21 @@
  */
 package com.kurento.kmf.media.events;
 
+/**
+ * Default event for not implemented events. The payload from this kind of
+ * events will be the byte stream contained in the event received from the
+ * server. It is up to the client to unmarshal this payload.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface DefaultMediaEvent extends MediaEvent {
+
+	/**
+	 * The data from the event.
+	 * 
+	 * @return The data.
+	 */
 	byte[] getData();
 }

@@ -14,13 +14,45 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Implements an SDP negotiation endpoint able to generate and process
+ * offers/responses and that configures resources according to negotiated
+ * Session Description
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface SdpEndpoint extends SessionEndpoint {
 
-	/* SYNC */
+	/**
+	 * Request a SessionSpec offer.
+	 * <p>
+	 * This can be used to initiate a connection.
+	 * </p>
+	 * 
+	 * @return The SDP offer.
+	 */
 	String generateOffer();
 
+	/**
+	 * Request the NetworkConnection to process the given SessionSpec offer
+	 * (from the remote User Agent).<br>
+	 * 
+	 * @param offer
+	 *            SessionSpec offer from the remote User Agent
+	 * @return The chosen configuration from the ones stated in the SDP offer
+	 */
 	String processOffer(String offer);
 
+	/**
+	 * Request the NetworkConnection to process the given SessionSpec answer
+	 * (from the remote User Agent).<br>
+	 * 
+	 * @param answer
+	 *            SessionSpec answer from the remote User Agent
+	 * @return Updated SDP offer, based on the answer received.
+	 */
 	String processAnswer(String answer);
 
 	/**
@@ -54,7 +86,7 @@ public interface SdpEndpoint extends SessionEndpoint {
 	/* ASYNC */
 
 	/**
-	 * Request a SessionSpec offer. *
+	 * Request a SessionSpec offer.
 	 * <p>
 	 * This can be used to initiate a connection.
 	 * </p>
@@ -74,7 +106,7 @@ public interface SdpEndpoint extends SessionEndpoint {
 	 *            Continuation object to notify when operation completes and to
 	 *            provide the answer SessionSpec.
 	 */
-	void processOffer(String offer, final Continuation<String> cont);
+	void processOffer(String offer, Continuation<String> cont);
 
 	/**
 	 * Request the NetworkConnection to process the given SessionSpec answer
@@ -86,7 +118,7 @@ public interface SdpEndpoint extends SessionEndpoint {
 	 *            Continuation object to notify when operation completes,
 	 *            returned SessionSpec is the local SessionSpec.
 	 */
-	void processAnswer(String answer, final Continuation<String> cont);
+	void processAnswer(String answer, Continuation<String> cont);
 
 	/**
 	 * This method gives access to the SessionSpec offered by this
@@ -103,7 +135,7 @@ public interface SdpEndpoint extends SessionEndpoint {
 	 *            The last agreed SessionSpec
 	 * 
 	 */
-	void getLocalSessionDescriptor(final Continuation<String> cont);
+	void getLocalSessionDescriptor(Continuation<String> cont);
 
 	/**
 	 * This method gives access to the remote session description.
@@ -117,6 +149,6 @@ public interface SdpEndpoint extends SessionEndpoint {
 	 * @param cont
 	 *            The last agreed User Agent session description
 	 */
-	void getRemoteSessionDescriptor(final Continuation<String> cont);
+	void getRemoteSessionDescriptor(Continuation<String> cont);
 
 }

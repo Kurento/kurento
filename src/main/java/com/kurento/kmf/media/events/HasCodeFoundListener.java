@@ -16,20 +16,43 @@ package com.kurento.kmf.media.events;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.MediaElement;
 
 /**
- * @author Ivan Gracia (igracia@gsyc.es)
+ * Marker interface to indicate that a certain {@link MediaElement} can raise a
+ * {@link CodeFoundEvent}, and thus listeners for this kind of event can be
+ * added.
  * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
  */
 public interface HasCodeFoundListener {
 
-	/* SYNC */
+	/**
+	 * Adds a listener for {@link CodeFoundEvent}.
+	 * 
+	 * @param listener
+	 *            The listener to be invoked when the event is raised.
+	 * @return A {@link ListenerRegistration} to uniquely identify the listener
+	 *         throughout the system.
+	 */
 	ListenerRegistration addCodeFoundDataListener(
-			final MediaEventListener<CodeFoundEvent> vcaStrEvent);
+			MediaEventListener<CodeFoundEvent> listener);
 
-	/* ASYNC */
-	void addCodeFoundDataListener(
-			final MediaEventListener<CodeFoundEvent> vcaStrEvent,
-			final Continuation<ListenerRegistration> cont);
+	/**
+	 * Adds a listener for {@link CodeFoundEvent}.
+	 * 
+	 * @param listener
+	 *            The listener to be invoked when the event is raised.
+	 * @param cont
+	 *            An asynchronous callback handler. If the event was
+	 *            successfully added to the {@code HttpEndpoint}, the
+	 *            {@code onSuccess} method from the handler will receive a
+	 *            {@link ListenerRegistration} to uniquely identify the listener
+	 *            throughout the system.
+	 */
+	void addCodeFoundDataListener(MediaEventListener<CodeFoundEvent> listener,
+			Continuation<ListenerRegistration> cont);
 
 }

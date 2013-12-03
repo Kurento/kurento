@@ -14,7 +14,15 @@
  */
 package com.kurento.kmf.media;
 
+/**
+ * Special type of pad, used by a media element to receive a media stream.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface MediaSink extends MediaPad {
+
 	/**
 	 * Disconnects the current sink from the referred {@link MediaSource}
 	 * 
@@ -31,18 +39,25 @@ public interface MediaSink extends MediaPad {
 	MediaSource getConnectedSrc();
 
 	/**
-	 * Connects the current source with a {@link MediaSink}
+	 * Disconnects the current sink from the referred {@link MediaSource}
 	 * 
 	 * @param sink
-	 *            The sink to connect this source
+	 *            The source to disconnect
 	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked in case of correct
+	 *            disconnection, but no extra information will be provided.
 	 */
-	void disconnect(MediaSink sink, final Continuation<Void> cont);
+	void disconnect(MediaSink sink, Continuation<Void> cont);
 
 	/**
-	 * Gets all {@link MediaSink} to which this source is connected.
+	 * Gets the {@link MediaSource} to which this sink is connected.
 	 * 
 	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked if the command executed
+	 *            correctly, receiving the {@link MediaSource}
 	 */
-	public void getConnectedSrc(final Continuation<MediaSource> cont);
+	void getConnectedSrc(Continuation<MediaSource> cont);
+
 }

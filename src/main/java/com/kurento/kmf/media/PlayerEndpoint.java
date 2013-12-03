@@ -16,13 +16,38 @@ package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.events.HasEndOfStreamListener;
 
+/**
+ * Provides function to retrieve contents from seekable sources in reliable mode
+ * (does not discard media information) and inject them into KMS. It contains
+ * one {@link MediaSource} for each media type detected.
+ * 
+ * @author Luis López (llopez@gsyc.es)
+ * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.0
+ */
 public interface PlayerEndpoint extends UriEndpoint, HasEndOfStreamListener {
-	/* SYNC */
+
+	/**
+	 * Starts to send data to the endpoint's {@link MediaSource}
+	 */
 	void play();
 
-	/* ASYNC */
-	void play(final Continuation<Void> cont);
+	/**
+	 * Starts to send data to the endpoint's {@link MediaSource}
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked in case of correct
+	 *            connection, but no extra information will be provided.
+	 */
+	void play(Continuation<Void> cont);
 
+	/**
+	 * Builder for the {@link PlayerEndpoint}.
+	 * 
+	 * @author Ivan Gracia (igracia@gsyc.es)
+	 * @since 2.0.0
+	 */
 	public interface PlayerEndpointBuilder extends
 			MediaObjectBuilder<PlayerEndpointBuilder, PlayerEndpoint> {
 
