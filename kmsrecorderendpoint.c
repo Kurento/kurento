@@ -153,6 +153,7 @@ struct _KmsRecorderEndPointPrivate
   struct config_data *confdata;
   struct thread_data tdata;
   struct state_controller state_manager;
+  gboolean has_data;
 };
 
 /* class initialization */
@@ -291,6 +292,8 @@ recv_sample (GstElement * appsink, gpointer user_data)
     if (GST_BUFFER_PTS_IS_VALID (buffer))
       buffer->pts -= *base_time + self->priv->paused_time;
   }
+
+  self->priv->has_data = TRUE;
 
   KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsink));
 
@@ -1156,6 +1159,7 @@ kms_recorder_end_point_do_reconfiguration (gpointer user_data)
 
   kms_recorder_end_point_reconfigure_pipeline (recorder);
   recorder->priv->state = CONFIGURED;
+  recorder->priv->has_data = FALSE;
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 }
@@ -1485,13 +1489,16 @@ kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
       kms_recorder_end_point_connect_appsrc_to_encodebin (self, config);
       destroy_valve_configuration (config);
       self->priv->state = CONFIGURED;
+      self->priv->has_data = FALSE;
       break;
     case CONFIGURED:
       kms_recorder_end_point_init_config_data (self);
 
-      if (GST_STATE (self->priv->encodebin) >= GST_STATE_PAUSED
-          || GST_STATE_PENDING (self->priv->encodebin) >= GST_STATE_PAUSED
-          || GST_STATE_TARGET (self->priv->encodebin) >= GST_STATE_PAUSED) {
+      if (self->priv->has_data
+          && (GST_STATE (self->priv->encodebin) >= GST_STATE_PAUSED
+              || GST_STATE_PENDING (self->priv->encodebin) >= GST_STATE_PAUSED
+              || GST_STATE_TARGET (self->priv->encodebin) >=
+              GST_STATE_PAUSED)) {
         kms_recorder_end_point_remove_encodebin (self);
         self->priv->state = CONFIGURING;
       } else {
@@ -1716,6 +1723,7 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->encodebin = NULL;
   self->priv->state = UNCONFIGURED;
+  self->priv->has_data = FALSE;
   g_cond_init (&self->priv->state_manager.cond);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
