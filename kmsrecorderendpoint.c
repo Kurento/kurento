@@ -980,6 +980,16 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
       "audio-jitter-tolerance", 100 * GST_MSECOND,
       "avoid-reencoding", TRUE, NULL);
   gst_encoding_profile_unref (cprof);
+
+  if (self->priv->profile == KMS_RECORDING_PROFILE_MP4) {
+    GstElement *mux =
+        gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
+
+    g_object_set (G_OBJECT (mux), "fragment-duration", 2000, "streamable", TRUE,
+        NULL);
+
+    g_object_unref (mux);
+  }
 }
 
 static void
