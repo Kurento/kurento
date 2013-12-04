@@ -992,6 +992,13 @@ kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
         NULL);
 
     g_object_unref (mux);
+  } else if (self->priv->profile == KMS_RECORDING_PROFILE_WEBM) {
+    GstElement *mux =
+        gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
+
+    g_object_set (G_OBJECT (mux), "streamable", TRUE, NULL);
+
+    g_object_unref (mux);
   }
 }
 
