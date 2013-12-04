@@ -594,7 +594,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 										.release(client);
 							}
 							log.debug(
-									"Object {0}: Async. connection to sink {1} succeeded}",
+									"Object {}: Async. connection to sink {} succeeded}",
 									getId(), Long.valueOf(sinkRef.getId()));
 							cont.onSuccess(null);
 						}
@@ -603,7 +603,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 						public void onError(Exception exception) {
 							MediaElementImpl.this.clientPool.release(client);
 							log.error(
-									"Object {0}: Async. connection to sink {1} failed}",
+									"Object {}: Async. connection to sink {} failed}",
 									getId(), Long.valueOf(sinkRef.getId()));
 							cont.onError(exception);
 						}
@@ -645,7 +645,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 										.release(client);
 							}
 							log.debug(
-									"Object {0}: Async. connection to sink {1} succeeded}",
+									"Object {}: Async. connection to sink {} succeeded}",
 									getId(), Long.valueOf(sinkRef.getId()));
 							cont.onSuccess(null);
 						}
@@ -654,7 +654,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 						public void onError(Exception exception) {
 							MediaElementImpl.this.clientPool.release(client);
 							log.error(
-									"Object {0}: Async. connection to sink {1} failed}",
+									"Object {}: Async. connection to sink {} failed}",
 									getId(), Long.valueOf(sinkRef.getId()));
 							cont.onError(exception);
 						}
@@ -702,7 +702,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 										.release(client);
 							}
 							log.debug(
-									"Object {0}: Async. connection to sink {1} succeeded}",
+									"Object {}: Async. connection to sink {} succeeded}",
 									getId(), Long.valueOf(sinkRef.getId()));
 							cont.onSuccess(null);
 						}
@@ -711,7 +711,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 						public void onError(Exception exception) {
 							MediaElementImpl.this.clientPool.release(client);
 							log.error(
-									"Object {0}: Async. connection to sink {1} failed}",
+									"Object {}: Async. connection to sink {} failed}",
 									getId(), Long.valueOf(sinkRef.getId()));
 							cont.onError(exception);
 						}

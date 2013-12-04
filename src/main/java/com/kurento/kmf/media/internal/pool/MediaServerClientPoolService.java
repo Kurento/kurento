@@ -41,23 +41,23 @@ public class MediaServerClientPoolService {
 
 	public AsyncClient acquireAsync() throws PoolLimitException,
 			KurentoMediaFrameworkException {
-		log.debug("Acquiring async client from pool");
+		log.trace("Acquiring async client from pool");
 		return asyncClientPool.acquire();
 	}
 
 	public Client acquireSync() throws PoolLimitException,
 			KurentoMediaFrameworkException {
-		log.debug("Acquiring sync client from pool");
+		log.trace("Acquiring sync client from pool");
 		return syncClientPool.acquire();
 	}
 
 	public void release(AsyncClient client) {
-		log.debug("releasin async client from pool");
+		log.trace("Releasing async client from pool");
 		asyncClientPool.release(client);
 	}
 
 	public void release(Client client) {
-		log.debug("Releasing sync client from pool");
+		log.trace("Releasing sync client from pool");
 		syncClientPool.release(client);
 	}
 }

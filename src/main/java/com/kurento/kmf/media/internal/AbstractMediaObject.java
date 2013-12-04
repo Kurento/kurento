@@ -121,7 +121,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 			clientPool.release(client);
 		}
 
-		log.debug("Object {0}: released", getId());
+		log.debug("Object {}: released", getId());
 	}
 
 	@Override
@@ -148,7 +148,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 		EventListenerRegistration reg = new EventListenerRegistration(
 				callbackToken);
 		handler.addListener(this, reg, listener);
-		log.debug("Object {0}: Added listener of {1}", getId(), eventType);
+		log.debug("Object {}: Added listener of {}", getId(), eventType);
 		return reg;
 	}
 
@@ -176,7 +176,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 			clientPool.release(client);
 		}
 		handler.removeErrorListener(this, listenerRegistration);
-		log.debug("Object {0}: Removed listener {1}", getId(),
+		log.debug("Object {}: Removed listener {}", getId(),
 				listenerRegistration.getRegistrationId());
 	}
 
@@ -195,7 +195,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 			clientPool.release(client);
 		}
 		handler.removeListener(this, listenerRegistration);
-		log.debug("Object {0}: Removed listener {1}", getId(),
+		log.debug("Object {}: Removed listener {}", getId(),
 				listenerRegistration.getRegistrationId());
 	}
 
@@ -222,7 +222,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 		ErrorListenerRegistration reg = new ErrorListenerRegistration(
 				callbackToken);
 		handler.addErrorListener(this, reg, listener);
-		log.debug("Object {0}: Added error listener", getId());
+		log.debug("Object {}: Added error listener", getId());
 		return reg;
 	}
 
@@ -267,8 +267,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 			clientPool.release(client);
 		}
 
-		log.debug("Object {0}: Successfully invoked method {1}", getId(),
-				method);
+		log.debug("Object {}: Successfully invoked method {}", getId(), method);
 		return (AbstractMediaParam) ctx.getBean("mediaParam", result);
 	}
 
@@ -341,8 +340,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							log.error("Object {0}: Async release error",
-									getId());
+							log.error("Object {}: Async release error", getId());
 							cont.onError(exception);
 						}
 
@@ -360,7 +358,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 							} finally {
 								clientPool.release(client);
 							}
-							log.debug("Object {0}: Async released", getId());
+							log.debug("Object {}: Async released", getId());
 							cont.onSuccess(null);
 						}
 					});
@@ -387,8 +385,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							log.error(
-									"Object {0}: Async add listener error {1}",
+							log.error("Object {}: Async add listener error {}",
 									getId(), exception.getMessage());
 							cont.onError(exception);
 						}
@@ -414,7 +411,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 							handler.addListener(AbstractMediaObject.this, reg,
 									listener);
 							log.debug(
-									"Object {0}: Async. added listener for event {1}",
+									"Object {}: Async. added listener for event {}",
 									getId(), eventType);
 							cont.onSuccess(reg);
 						}
@@ -452,7 +449,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							log.error("Object {0}: Async. remove listener {1}",
+							log.error("Object {}: Async. remove listener {}",
 									getId(),
 									listenerRegistration.getRegistrationId());
 							cont.onError(exception);
@@ -475,8 +472,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 
 							handler.removeListener(AbstractMediaObject.this,
 									listenerRegistration);
-							log.debug(
-									"Object {0}: Async. removed listener {1}",
+							log.debug("Object {}: Async. removed listener {}",
 									getId(),
 									listenerRegistration.getRegistrationId());
 							cont.onSuccess(null);
@@ -503,7 +499,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							log.error("Object {0}: Async. remove listener {1}",
+							log.error("Object {}: Async. remove listener {}",
 									getId(),
 									listenerRegistration.getRegistrationId());
 							cont.onError(exception);
@@ -527,8 +523,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 							handler.removeErrorListener(
 									AbstractMediaObject.this,
 									listenerRegistration);
-							log.debug(
-									"Object {0}: Async. removed listener {1}",
+							log.debug("Object {}: Async. removed listener {}",
 									getId(),
 									listenerRegistration.getRegistrationId());
 							cont.onSuccess(null);
@@ -556,8 +551,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							log.error(
-									"Object {0}: Async add listener error {1}",
+							log.error("Object {}: Async add listener error {}",
 									getId(), exception.getMessage());
 							cont.onError(exception);
 						}
@@ -582,8 +576,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 									token);
 							handler.addErrorListener(AbstractMediaObject.this,
 									reg, listener);
-							log.debug(
-									"Object {0}: Async. added error listener",
+							log.debug("Object {}: Async. added error listener",
 									getId());
 							cont.onSuccess(reg);
 						}
@@ -629,7 +622,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							log.error("Object {0}: Async. invocation {1}",
+							log.error("Object {}: Async. invocation {}",
 									getId(), method);
 							cont.onError(exception);
 						}
@@ -656,7 +649,7 @@ public abstract class AbstractMediaObject implements MediaObject {
 							R mediaResult = (R) ctx.getBean("mediaParam",
 									result);
 							log.debug(
-									"Object {0}: Async. successfully invoked method {1}",
+									"Object {}: Async. successfully invoked method {}",
 									getId(), method);
 							cont.onSuccess(mediaResult);
 						}
@@ -792,6 +785,12 @@ public abstract class AbstractMediaObject implements MediaObject {
 	@Override
 	public int hashCode() {
 		return this.objectRef.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return ("Id: " + this.objectRef.getId().toString() + "\n Token: " + this.objectRef
+				.getToken());
 	}
 
 	protected Map<String, KmsMediaParam> transformMediaParamsMap(

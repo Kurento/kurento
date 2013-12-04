@@ -26,6 +26,8 @@ import org.apache.thrift.server.TThreadedSelectorServer.Args;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -48,6 +50,9 @@ import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
  * 
  */
 public class MediaHandlerServer {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(MediaHandlerServer.class.getName());
 
 	/**
 	 * Autowired configuration.
@@ -122,6 +127,9 @@ public class MediaHandlerServer {
 				@Override
 				public void onError(String callbackToken, KmsMediaError error)
 						throws TException {
+					log.trace("KMS error {} received on object {}",
+							Integer.toString(error.errorCode),
+							Long.toString(error.getSource().getId()));
 					MediaError mediaError = (MediaError) applicationContext
 							.getBean("mediaError", error);
 					ErrorListenerRegistration registration = new ErrorListenerRegistration(
@@ -133,6 +141,8 @@ public class MediaHandlerServer {
 				@Override
 				public void onEvent(String callbackToken, KmsMediaEvent event)
 						throws TException {
+					log.trace("KMS event {} received on object {}", event.type,
+							Long.toString(event.getSource().getId()));
 					MediaEvent mediaEvent = (MediaEvent) applicationContext
 							.getBean("mediaEvent", event);
 

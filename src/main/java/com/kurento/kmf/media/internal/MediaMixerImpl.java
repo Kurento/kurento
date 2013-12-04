@@ -134,6 +134,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
+
 			client.createMixerEndPoint(objectRef.getThriftRef(),
 					new AsyncMethodCallback<createMixerEndPoint_call>() {
 

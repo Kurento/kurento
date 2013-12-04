@@ -171,20 +171,33 @@ public class MediaServerCallbackHandler {
 			Map<EventListenerRegistration, MediaEventListener<? extends MediaEvent>> listeners,
 			MediaEvent event) {
 		if (listeners != null) {
+			log.trace("{} Listeners registered for object {}", Integer
+					.toString(listeners.size()), event.getSource().toString());
 			@SuppressWarnings("rawtypes")
 			MediaEventListener listener = listeners.get(registration);
 			// TODO Unchecked exception suppressed. Maybe a more safe check
 			// should be done here.
+			log.trace("Listener for event {} found? {}", event.getType(),
+					Boolean.toString(listener != null));
 			listener.onEvent(event);
+		} else {
+			log.trace("No listeners registered for object object {}", event
+					.getSource().toString());
 		}
 	}
 
 	private void fireError(ErrorListenerRegistration registration,
 			Map<ErrorListenerRegistration, MediaErrorListener> listeners,
 			MediaError error) {
+
 		if (listeners != null) {
+			log.trace("{} error listener registered",
+					Integer.toString(listeners.size()));
 			MediaErrorListener listener = listeners.get(registration);
 			listener.onError(error);
+		} else {
+			log.trace("No error listeners registered for object object {}",
+					error.getObjectRef().toString());
 		}
 	}
 
