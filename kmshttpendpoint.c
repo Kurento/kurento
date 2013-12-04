@@ -803,6 +803,35 @@ kms_http_end_point_connect_appsrc_to_encodebin (KmsHttpEndPoint * self,
   g_object_unref (appsrc);
 }
 
+static GstPadProbeReturn
+fake_seek_support (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_SEEK) {
+    GST_INFO ("Seek event received, dropping: %" GST_PTR_FORMAT, event);
+    return GST_PAD_PROBE_DROP;
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+static gboolean
+fake_query_func (GstPad * pad, GstObject * parent, GstQuery * query)
+{
+  if (GST_QUERY_TYPE (query) == GST_QUERY_SEEKING) {
+    gst_query_set_seeking (query, GST_FORMAT_BYTES, TRUE,
+        G_GUINT64_CONSTANT (0), GST_CLOCK_TIME_NONE);
+
+    return TRUE;
+  } else if (GST_QUERY_TYPE (query) | GST_QUERY_TYPE_UPSTREAM) {
+    return gst_pad_peer_query (pad, query);
+  } else {
+    return FALSE;
+  }
+
+}
+
 static void
 kms_http_end_point_add_sink (KmsHttpEndPoint * self)
 {
@@ -819,6 +848,19 @@ kms_http_end_point_add_sink (KmsHttpEndPoint * self)
   gst_element_sync_state_with_parent (self->priv->get->appsink);
 
   gst_element_link (self->priv->get->encodebin, self->priv->get->appsink);
+
+  if (self->priv->profile == KMS_RECORDING_PROFILE_MP4) {
+    /* As mp4mux do not work unless the sink supports seeks, as is configured */
+    /* for fragment output it won't really need to seek */
+    GstPad *pad = gst_element_get_static_pad (self->priv->get->appsink, "sink");
+
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        fake_seek_support, NULL, NULL);
+
+    pad->queryfunc = fake_query_func;
+
+    g_object_unref (pad);
+  }
 }
 
 static void
@@ -874,7 +916,7 @@ kms_http_end_point_set_profile_to_encodebin (KmsHttpEndPoint * self)
         gst_bin_get_by_name (GST_BIN (self->priv->get->encodebin), "muxer");
 
     g_object_set (G_OBJECT (mux), "fragment-duration", 2000, "streamable", TRUE,
-        "faststart", TRUE, NULL);
+        NULL);
 
     g_object_unref (mux);
   } else if (self->priv->profile == KMS_RECORDING_PROFILE_WEBM) {
