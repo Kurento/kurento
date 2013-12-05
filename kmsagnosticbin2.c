@@ -418,6 +418,35 @@ create_decoder_for_caps (GstCaps * caps, GstCaps * raw_caps)
 }
 
 static GstElement *
+create_parser_for_caps (GstCaps * caps)
+{
+  GList *parser_list, *filtered_list, *l;
+  GstElementFactory *parser_factory = NULL;
+  GstElement *parser = NULL;
+
+  parser_list =
+      gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_PARSER |
+      GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO, GST_RANK_NONE);
+  filtered_list =
+      gst_element_factory_list_filter (parser_list, caps, GST_PAD_SINK, FALSE);
+
+  for (l = filtered_list; l != NULL && parser_factory == NULL; l = l->next) {
+    parser_factory = GST_ELEMENT_FACTORY (l->data);
+    if (gst_element_factory_get_num_pad_templates (parser_factory) != 2)
+      parser_factory = NULL;
+  }
+
+  if (parser_factory != NULL) {
+    parser = gst_element_factory_create (parser_factory, NULL);
+  }
+
+  gst_plugin_feature_list_free (filtered_list);
+  gst_plugin_feature_list_free (parser_list);
+
+  return parser;
+}
+
+static GstElement *
 kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
 {
   GstCaps *current_caps = gst_caps_ref (self->priv->input_caps);
@@ -728,7 +757,7 @@ static void
 kms_agnostic_bin2_have_type (GstElement * typefind, guint prob, GstCaps * caps,
     KmsAgnosticBin2 * self)
 {
-  GstElement *tee, *queue, *fakesink;
+  GstElement *parser, *tee, *queue, *fakesink;
 
   GST_INFO_OBJECT (self, "Have type: %d -> %" GST_PTR_FORMAT, prob, caps);
 
@@ -755,7 +784,16 @@ kms_agnostic_bin2_have_type (GstElement * typefind, guint prob, GstCaps * caps,
   gst_element_sync_state_with_parent (tee);
   gst_element_sync_state_with_parent (queue);
   gst_element_sync_state_with_parent (fakesink);
-  gst_element_link_many (typefind, tee, queue, fakesink, NULL);
+
+  parser = create_parser_for_caps (caps);
+
+  if (parser != NULL) {
+    gst_bin_add (GST_BIN (self), parser);
+    gst_element_sync_state_with_parent (parser);
+    gst_element_link_many (typefind, parser, tee, queue, fakesink, NULL);
+  } else {
+    gst_element_link_many (typefind, tee, queue, fakesink, NULL);
+  }
 
   g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
       g_object_ref (tee));
@@ -885,9 +923,6 @@ kms_agnostic_bin2_finalize (GObject * object)
   g_cond_clear (&self->priv->probe_cond);
   g_mutex_clear (&self->priv->probe_mutex);
 
-  if (self->priv->input_caps != NULL)
-    gst_caps_unref (self->priv->input_caps);
-
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin2_parent_class)->finalize (object);
 }
@@ -944,7 +979,6 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   target = gst_element_get_static_pad (typefind, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
   self->priv->sink = gst_ghost_pad_new_from_template ("sink", target, templ);
-  self->priv->input_caps = NULL;
   g_object_unref (templ);
   g_object_unref (target);
 
