@@ -582,7 +582,7 @@ kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
         pointerdetector->secondHistCapturesCounter = 0;
         pointerdetector->state = BOTH_HIST_SIMILAR;
         pointerdetector->colorRect2 = CV_RGB (0, 255, 0);
-        pointerdetector->histModel = pointerdetector->histSetUp2;
+        cvCopyHist (pointerdetector->histSetUp2, &pointerdetector->histModel);
         pointerdetector->upCornerFinalRect.x = 10;
         pointerdetector->upCornerFinalRect.y = 10;
         pointerdetector->histRefCapturesCounter = 0;
