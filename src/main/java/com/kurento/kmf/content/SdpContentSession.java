@@ -16,7 +16,7 @@ package com.kurento.kmf.content;
 
 import com.kurento.kmf.content.jsonrpc.Constraints;
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.SdpEndPoint;
+import com.kurento.kmf.media.SdpEndpoint;
 
 /**
  * TODO: write javadoc
@@ -60,5 +60,5 @@ public interface SdpContentSession extends ContentSession {
 	 * @return
 	 */
 	@Override
-	SdpEndPoint getSessionEndPoint();
+	SdpEndpoint getSessionEndpoint();
 }

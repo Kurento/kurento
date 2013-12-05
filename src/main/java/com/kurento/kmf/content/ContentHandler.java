@@ -48,7 +48,7 @@ public abstract class ContentHandler<T extends ContentSession> {
 	/**
 	 * Invoked by the framework when the content exchange really starts. For
 	 * example, in an HttpPlayerService, this methods is invoked when the
-	 * HttpEndPoint really receives the media request from the client
+	 * HttpEndpoint really receives the media request from the client
 	 * 
 	 * @param contentSession
 	 *            the session for which the content exchange started

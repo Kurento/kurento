@@ -135,6 +135,6 @@ public interface ContentSession {
 	 * 
 	 * @return
 	 */
-	MediaElement getSessionEndPoint();
+	MediaElement getSessionEndpoint();
 
 }

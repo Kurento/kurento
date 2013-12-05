@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.content;
 
-import com.kurento.kmf.media.RtpEndPoint;
+import com.kurento.kmf.media.RtpEndpoint;
 
 /**
  * TODO: review & improve javadoc s Defines the operations performed by the
@@ -31,5 +31,5 @@ public interface RtpContentSession extends SdpContentSession {
 	 * @return
 	 */
 	@Override
-	RtpEndPoint getSessionEndPoint();
+	RtpEndpoint getSessionEndpoint();
 }

@@ -27,11 +27,11 @@ import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
-import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.RecorderEndPoint;
-import com.kurento.kmf.media.UriEndPoint;
+import com.kurento.kmf.media.RecorderEndpoint;
+import com.kurento.kmf.media.UriEndpoint;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -153,31 +153,31 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	 * 
 	 */
 	@Override
-	protected UriEndPoint buildUriEndPoint(String contentPath) {
+	protected UriEndpoint buildUriEndpoint(String contentPath) {
 		getLogger().info("Creating media pipeline ...");
 
 		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
 		releaseOnTerminate(mediaPipeline);
-		getLogger().info("Creating RecorderEndPoint ...");
-		RecorderEndPoint recorderEndPoint = mediaPipeline.newRecorderEndPoint(
+		getLogger().info("Creating RecorderEndpoint ...");
+		RecorderEndpoint recorderEndpoint = mediaPipeline.newRecorderEndpoint(
 				contentPath).build();
-		return recorderEndPoint;
+		return recorderEndpoint;
 	}
 
 	/**
 	 * Creates a Media Element repository using a MediaElement.
 	 */
 	@Override
-	protected HttpEndPoint buildAndConnectHttpEndPoint(
+	protected HttpEndpoint buildAndConnectHttpEndpoint(
 			MediaElement... mediaElements) {
 
 		MediaPipeline mediaPiplePipeline = mediaElements[0].getMediaPipeline();
-		getLogger().info("Creating HttpEndPoint ...");
-		HttpEndPoint httpEndPoint = mediaPiplePipeline.newHttpEndPoint()
+		getLogger().info("Creating HttpEndpoint ...");
+		HttpEndpoint httpEndpoint = mediaPiplePipeline.newHttpEndpoint()
 				.build();
-		releaseOnTerminate(httpEndPoint);
-		connect(httpEndPoint, mediaElements);
-		return httpEndPoint;
+		releaseOnTerminate(httpEndpoint);
+		connect(httpEndpoint, mediaElements);
+		return httpEndpoint;
 
 	}
 

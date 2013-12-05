@@ -28,8 +28,8 @@ import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.RtpEndPoint;
-import com.kurento.kmf.media.SdpEndPoint;
+import com.kurento.kmf.media.RtpEndpoint;
+import com.kurento.kmf.media.SdpEndpoint;
 
 /**
  * 
@@ -54,8 +54,8 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline) {
-		return mediaPipeline.newRtpEndPoint().build();
+	protected SdpEndpoint buildSdpEndpoint(MediaPipeline mediaPipeline) {
+		return mediaPipeline.newRtpEndpoint().build();
 	}
 
 	@Override
@@ -117,7 +117,7 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	public RtpEndPoint getSessionEndPoint() {
-		return (RtpEndPoint) super.getSessionEndPoint();
+	public RtpEndpoint getSessionEndpoint() {
+		return (RtpEndpoint) super.getSessionEndpoint();
 	}
 }

@@ -27,13 +27,13 @@ import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
-import com.kurento.kmf.media.HttpEndPoint;
-import com.kurento.kmf.media.HttpEndPoint.HttpEndPointBuilder;
+import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.UriEndPoint;
-import com.kurento.kmf.media.events.HttpEndPointEOSDetected;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.UriEndpoint;
+import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
@@ -129,21 +129,21 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	}
 
 	@Override
-	protected UriEndPoint buildUriEndPoint(String contentPath) {
+	protected UriEndpoint buildUriEndpoint(String contentPath) {
 		getLogger().info("Creating media pipeline ...");
 		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
 		releaseOnTerminate(mediaPipeline);
-		getLogger().info("Creating PlayerEndPoint ...");
-		PlayerEndPoint playerEndPoint = mediaPipeline.newPlayerEndPoint(
+		getLogger().info("Creating PlayerEndpoint ...");
+		PlayerEndpoint playerEndpoint = mediaPipeline.newPlayerEndpoint(
 				contentPath).build();
-		return playerEndPoint;
+		return playerEndpoint;
 	}
 
 	/**
 	 * Creates a Media Element repository using a MediaElement.
 	 */
 	@Override
-	protected HttpEndPoint buildAndConnectHttpEndPoint(
+	protected HttpEndpoint buildAndConnectHttpEndpoint(
 			MediaElement... mediaElements) {
 
 		// In this case (player) we can connect to one media element
@@ -153,34 +153,34 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		MediaElement mediaElement = mediaElements[0];
 		getLogger().info("Recovering media pipeline");
 		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
-		getLogger().info("Creating HttpEndPoint ...");
-		HttpEndPointBuilder builder = mediaPiplePipeline.newHttpEndPoint();
+		getLogger().info("Creating HttpEndpoint ...");
+		HttpEndpointBuilder builder = mediaPiplePipeline.newHttpEndpoint();
 
 		if (terminateOnEOS) {
 			builder.terminateOnEOS();
 		}
 
-		HttpEndPoint httpEndPoint = builder.build();
+		HttpEndpoint httpEndpoint = builder.build();
 
 		// TODO: this listener is just for debugging purposes. Remove in the
 		// future
-		httpEndPoint
-				.addEOSDetectedListener(new MediaEventListener<HttpEndPointEOSDetected>() {
+		httpEndpoint
+				.addEOSDetectedListener(new MediaEventListener<HttpEndpointEOSDetected>() {
 					@Override
-					public void onEvent(HttpEndPointEOSDetected event) {
+					public void onEvent(HttpEndpointEOSDetected event) {
 						getLogger().info(
 								"Received OES on HttpPlayerSessionImpl with id "
 										+ getSessionId());
 					}
 				});
 
-		releaseOnTerminate(httpEndPoint);
-		mediaElement.connect(httpEndPoint);
+		releaseOnTerminate(httpEndpoint);
+		mediaElement.connect(httpEndpoint);
 
 		getLogger().info(
-				"Adding PlayerEndPoint.play() into HttpEndPoint listener");
+				"Adding PlayerEndpoint.play() into HttpEndpoint listener");
 
-		return httpEndPoint;
+		return httpEndpoint;
 	}
 
 	@Override

@@ -33,11 +33,11 @@ import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.StreamingProxy;
 import com.kurento.kmf.content.internal.StreamingProxyListener;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
-import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.PlayerEndPoint;
-import com.kurento.kmf.media.RecorderEndPoint;
-import com.kurento.kmf.media.UriEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.RecorderEndpoint;
+import com.kurento.kmf.media.UriEndpoint;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -69,10 +69,10 @@ public abstract class AbstractHttpBasedContentSession extends
 
 	protected volatile Future<?> tunnellingProxyFuture;
 
-	private UriEndPoint uriEndPoint;
+	private UriEndpoint uriEndpoint;
 
-	private HttpEndPoint httpEndPoint;
-	
+	private HttpEndpoint httpEndpoint;
+
 	private RepositoryHttpEndpoint repositoryHttpEndpoint;
 
 	public AbstractHttpBasedContentSession(
@@ -95,7 +95,7 @@ public abstract class AbstractHttpBasedContentSession extends
 	 *            Content path in which build the media element
 	 * @return Created media element
 	 */
-	protected abstract UriEndPoint buildUriEndPoint(String contentPath);
+	protected abstract UriEndpoint buildUriEndpoint(String contentPath);
 
 	/**
 	 * 
@@ -103,7 +103,7 @@ public abstract class AbstractHttpBasedContentSession extends
 	 *            must be non-null and non-empty
 	 * @return
 	 */
-	protected abstract HttpEndPoint buildAndConnectHttpEndPoint(
+	protected abstract HttpEndpoint buildAndConnectHttpEndpoint(
 			MediaElement... mediaElements);
 
 	protected abstract RepositoryHttpEndpoint createRepositoryHttpEndpoint(
@@ -144,11 +144,11 @@ public abstract class AbstractHttpBasedContentSession extends
 
 		if (contentPath != null) {
 			mediaElements = new MediaElement[1];
-			uriEndPoint = buildUriEndPoint(contentPath);
-			mediaElements[0] = uriEndPoint;
+			uriEndpoint = buildUriEndpoint(contentPath);
+			mediaElements[0] = uriEndpoint;
 		}
 
-		httpEndPoint = buildAndConnectHttpEndPoint(mediaElements);
+		httpEndpoint = buildAndConnectHttpEndpoint(mediaElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -172,15 +172,15 @@ public abstract class AbstractHttpBasedContentSession extends
 
 		// If session was not rejected (state=ACTIVE) we send an answer and
 		// the initialAsyncCtx becomes useless
-		String answerUrl = httpEndPoint.getUrl();
-		getLogger().info("HttpEndPoint.getUrl = " + answerUrl);
+		String answerUrl = httpEndpoint.getUrl();
+		getLogger().info("HttpEndpoint.getUrl = " + answerUrl);
 
-		Assert.notNull(answerUrl, "Received null url from HttpEndPoint", 20012);
+		Assert.notNull(answerUrl, "Received null url from HttpEndpoint", 20012);
 		Assert.isTrue(answerUrl.length() > 0,
 				"Received invalid empty url from media server", 20012);
 
 		// Manage fatal errors occurring in the pipeline
-		httpEndPoint.getMediaPipeline().addErrorListener(
+		httpEndpoint.getMediaPipeline().addErrorListener(
 				new MediaErrorListener() {
 					@Override
 					public void onError(MediaError error) {
@@ -193,19 +193,19 @@ public abstract class AbstractHttpBasedContentSession extends
 				});
 
 		// Generate appropriate actions when content is started
-		httpEndPoint
-				.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
+		httpEndpoint
+				.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
 						callOnContentStartedOnHanlder();
 						getLogger().info(
 								"Received event with type " + event.getType());
-						if (uriEndPoint != null
-								&& uriEndPoint instanceof PlayerEndPoint) {
-							((PlayerEndPoint) uriEndPoint).play();
-						} else if (uriEndPoint != null
-								&& uriEndPoint instanceof RecorderEndPoint) {
-							((RecorderEndPoint) uriEndPoint).record();
+						if (uriEndpoint != null
+								&& uriEndpoint instanceof PlayerEndpoint) {
+							((PlayerEndpoint) uriEndpoint).play();
+						} else if (uriEndpoint != null
+								&& uriEndpoint instanceof RecorderEndpoint) {
+							((RecorderEndpoint) uriEndpoint).record();
 							// TODO: ask Jose if this may produce losses in
 							// recorder
 						}
@@ -213,7 +213,7 @@ public abstract class AbstractHttpBasedContentSession extends
 				});
 
 		// Generate appropriate actions when media session is terminated
-		httpEndPoint
+		httpEndpoint
 				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 					@Override
 					public void onEvent(MediaSessionTerminatedEvent event) {
@@ -475,10 +475,10 @@ public abstract class AbstractHttpBasedContentSession extends
 	protected void destroy() {
 		super.destroy();
 
-		if(repositoryHttpEndpoint != null){
+		if (repositoryHttpEndpoint != null) {
 			repositoryHttpEndpoint.stop();
 		}
-		
+
 		Future<?> localTunnelingProxyFuture = tunnellingProxyFuture;
 		if (localTunnelingProxyFuture != null) {
 			localTunnelingProxyFuture.cancel(true);
@@ -487,13 +487,13 @@ public abstract class AbstractHttpBasedContentSession extends
 	}
 
 	@Override
-	public HttpEndPoint getSessionEndPoint() {
-		if (httpEndPoint == null) {
+	public HttpEndpoint getSessionEndpoint() {
+		if (httpEndpoint == null) {
 			throw new KurentoMediaFrameworkException(
-					"Cannot invoke getSessionEndPoint before invoking start ",
+					"Cannot invoke getSessionEndpoint before invoking start ",
 					1); // TODO
 		}
-		return httpEndPoint;
+		return httpEndpoint;
 	}
 
 }

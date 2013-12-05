@@ -28,8 +28,8 @@ import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.SdpEndPoint;
-import com.kurento.kmf.media.WebRtcEndPoint;
+import com.kurento.kmf.media.SdpEndpoint;
+import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * 
@@ -51,8 +51,8 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline) {
-		return mediaPipeline.newWebRtcEndPoint().build();
+	protected SdpEndpoint buildSdpEndpoint(MediaPipeline mediaPipeline) {
+		return mediaPipeline.newWebRtcEndpoint().build();
 	}
 
 	@Override
@@ -111,7 +111,7 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	public WebRtcEndPoint getSessionEndPoint() {
-		return (WebRtcEndPoint) super.getSessionEndPoint();
+	public WebRtcEndpoint getSessionEndpoint() {
+		return (WebRtcEndpoint) super.getSessionEndpoint();
 	}
 }

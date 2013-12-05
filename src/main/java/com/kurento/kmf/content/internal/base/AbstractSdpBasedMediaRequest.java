@@ -25,7 +25,7 @@ import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.SdpEndPoint;
+import com.kurento.kmf.media.SdpEndpoint;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -42,7 +42,7 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 public abstract class AbstractSdpBasedMediaRequest extends
 		AbstractContentSession implements SdpContentSession {
 
-	private SdpEndPoint sdpEndPoint;
+	private SdpEndpoint sdpEndpoint;
 
 	/**
 	 * Parameterized constructor; initial state here is HANDLING.
@@ -72,7 +72,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 	 * @throws Throwable
 	 *             Error/Exception
 	 */
-	protected abstract SdpEndPoint buildSdpEndPoint(MediaPipeline mediaPipeline);
+	protected abstract SdpEndpoint buildSdpEndpoint(MediaPipeline mediaPipeline);
 
 	/**
 	 * Star media element implementation.
@@ -125,7 +125,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		getLogger().info(
 				"SDP received " + initialJsonRequest.getParams().getSdp());
 
-		sdpEndPoint = buildAndConnectSdpEndPoint(sourceElement, sinkElements);
+		sdpEndpoint = buildAndConnectSdpEndpoint(sourceElement, sinkElements);
 
 		// We need to assert that session was not rejected while we were
 		// creating media infrastructure
@@ -148,7 +148,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		}
 
 		// Manage fatal errors in pipeline
-		sdpEndPoint.getMediaPipeline().addErrorListener(
+		sdpEndpoint.getMediaPipeline().addErrorListener(
 				new MediaErrorListener() {
 
 					@Override
@@ -160,8 +160,8 @@ public abstract class AbstractSdpBasedMediaRequest extends
 				});
 
 		// Invoke handler when content start
-		sdpEndPoint
-				.addMediaSessionStartListener(new MediaEventListener<MediaSessionStartedEvent>() {
+		sdpEndpoint
+				.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
 
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
@@ -170,7 +170,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 				});
 
 		// Manage end of media session
-		sdpEndPoint
+		sdpEndpoint
 				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 
 					@Override
@@ -180,7 +180,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 					}
 				});
 
-		String answerSdp = sdpEndPoint.processOffer(initialJsonRequest
+		String answerSdp = sdpEndpoint.processOffer(initialJsonRequest
 				.getParams().getSdp());
 
 		// If session was not rejected (state=ACTIVE) we send an answer and
@@ -200,7 +200,7 @@ public abstract class AbstractSdpBasedMediaRequest extends
 		initialJsonRequest = null;
 	}
 
-	private SdpEndPoint buildAndConnectSdpEndPoint(MediaElement sourceElement,
+	private SdpEndpoint buildAndConnectSdpEndpoint(MediaElement sourceElement,
 			MediaElement[] sinkElements) {
 		// Candidate for providing a pipeline
 		getLogger().info("Looking for candidate ...");
@@ -227,37 +227,37 @@ public abstract class AbstractSdpBasedMediaRequest extends
 			releaseOnTerminate(mediaPipeline);
 		}
 
-		getLogger().info("Creating rtpEndPoint ...");
-		SdpEndPoint sdpEndPoint = buildSdpEndPoint(mediaPipeline);
-		releaseOnTerminate(sdpEndPoint);
+		getLogger().info("Creating rtpEndpoint ...");
+		SdpEndpoint sdpEndpoint = buildSdpEndpoint(mediaPipeline);
+		releaseOnTerminate(sdpEndpoint);
 
 		// If no source is provided, jut loopback for having some media back
 		// to the client
 		if (sourceElement == null) {
-			sourceElement = sdpEndPoint; // This produces a loopback.
+			sourceElement = sdpEndpoint; // This produces a loopback.
 		}
 
 		getLogger().info("Connecting media pads ...");
 		// TODO: should we double check constraints?
 		if (sinkElements != null && sinkElements.length > 0) {
-			connect(sdpEndPoint, sinkElements);
+			connect(sdpEndpoint, sinkElements);
 		}
 
 		if (sourceElement != null) {
-			sourceElement.connect(sdpEndPoint);
+			sourceElement.connect(sdpEndpoint);
 		}
 
-		return sdpEndPoint;
+		return sdpEndpoint;
 	}
 
 	@Override
-	public SdpEndPoint getSessionEndPoint() {
-		if (sdpEndPoint == null) {
+	public SdpEndpoint getSessionEndpoint() {
+		if (sdpEndpoint == null) {
 			throw new KurentoMediaFrameworkException(
-					"Cannot invoke getSessionEndPoint before invoking start ",
+					"Cannot invoke getSessionEndpoint before invoking start ",
 					1); // TODO
 		}
-		return sdpEndPoint;
+		return sdpEndpoint;
 	}
 
 }

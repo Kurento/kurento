@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.content;
 
-import com.kurento.kmf.media.HttpEndPoint;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -63,5 +63,5 @@ public interface HttpRecorderSession extends ContentSession {
 	 * @return
 	 */
 	@Override
-	HttpEndPoint getSessionEndPoint();
+	HttpEndpoint getSessionEndpoint();
 }
