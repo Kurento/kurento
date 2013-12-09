@@ -702,10 +702,10 @@ process_sdp_media (const GstSDPMedia * media, NiceAgent * agent,
 
 static void
 kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
-    base_rtp_end_point, const GstSDPMessage * offer,
+    base_sdp_end_point, const GstSDPMessage * offer,
     const GstSDPMessage * answer, gboolean local_offer)
 {
-  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_rtp_end_point);
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_sdp_end_point);
   const GstSDPMessage *sdp;
   const gchar *ufrag, *pwd;
   guint len, i;
