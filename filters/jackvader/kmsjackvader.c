@@ -36,6 +36,9 @@
 #define JACK_IMAGE_FILE "jack.png"
 #define VADER_IMAGE_FILE "vader.png"
 
+#define MIN_FPS 5
+#define MIN_TIME (float)(1.0/7.0)
+
 GST_DEBUG_CATEGORY_STATIC (kms_jack_vader_debug_category);
 #define GST_CAT_DEFAULT kms_jack_vader_debug_category
 
@@ -260,6 +263,11 @@ kms_jack_vader_transform_frame_ip (GstVideoFilter * filter,
 
   jackvader->cvImage->imageData = (char *) info.data;
 
+  if (g_atomic_int_get (&jackvader->qos_control)) {
+    GST_DEBUG ("Filter is too slow. Frame dropped\n");
+    goto display;
+  }
+
   cvClearSeq (jackvader->pFaceRectSeq);
 
   if (jackvader->haarDetector) {
@@ -275,6 +283,7 @@ kms_jack_vader_transform_frame_ip (GstVideoFilter * filter,
     classify_image (jackvader->cvImage, jackvader->pFaceRectSeq);
   }
 
+display:
   if (jackvader->show_debug_info == TRUE) {
     displayFaceRectangle (jackvader);
   }
@@ -328,6 +337,44 @@ kms_jack_vader_init (KmsJackVader * jackvader)
   jackvader->haarDetector = TRUE;
 }
 
+static gboolean
+kms_jack_vader_src_eventfunc (GstBaseTransform * trans, GstEvent * event)
+{
+  gboolean ret;
+  KmsJackVader *jackvader = KMS_JACK_VADER (trans);
+
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_QOS:
+    {
+      gdouble proportion;
+      GstClockTimeDiff diff;
+      GstClockTime timestamp;
+      GstQOSType type;
+
+      gst_event_parse_qos (event, &type, &proportion, &diff, &timestamp);
+      gst_base_transform_update_qos (trans, proportion, diff, timestamp);
+      gfloat difference = (((gfloat) (gint) diff) / (gfloat) GST_SECOND);
+
+      g_atomic_int_set (&jackvader->qos_control, FALSE);
+
+      if (difference > MIN_TIME) {
+        if (jackvader->throw_frames <= MIN_FPS) {
+          g_atomic_int_set (&jackvader->qos_control, TRUE);
+          jackvader->throw_frames++;
+        } else {
+          jackvader->throw_frames = 0;
+        }
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  ret = gst_pad_push_event (trans->sinkpad, event);
+  return ret;
+}
+
 static void
 kms_jack_vader_class_init (KmsJackVaderClass * klass)
 {
@@ -374,6 +421,9 @@ kms_jack_vader_class_init (KmsJackVaderClass * klass)
       g_param_spec_boolean ("filter-version", "filter version",
           "True means filter based on haar detector. False filter based on lbp",
           TRUE, G_PARAM_READWRITE));
+
+  klass->base_facedetector_class.parent_class.src_event =
+      GST_DEBUG_FUNCPTR (kms_jack_vader_src_eventfunc);
 }
 
 gboolean
