@@ -17,6 +17,7 @@
 #endif
 
 #include "kmsjackvader.h"
+#include "classifier.h"
 
 #include <gst/gst.h>
 #include <gst/video/video.h>
@@ -42,7 +43,8 @@ enum
 {
   PROP_0,
   PROP_IMAGES_PATH,
-  PROP_SHOW_DEBUG_INFO
+  PROP_SHOW_DEBUG_INFO,
+  PROP_FILTER_VERSION
 };
 
 /* pad templates */
@@ -112,6 +114,9 @@ kms_jack_vader_set_property (GObject * object, guint property_id,
       jackvader->images_path = g_value_dup_string (value);
       kms_jack_vader_initialize_classifiers (jackvader);
       break;
+    case PROP_FILTER_VERSION:
+      jackvader->haarDetector = g_value_get_boolean (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -132,6 +137,9 @@ kms_jack_vader_get_property (GObject * object, guint property_id,
       break;
     case PROP_IMAGES_PATH:
       g_value_set_string (value, jackvader->images_path);
+      break;
+    case PROP_FILTER_VERSION:
+      g_value_set_boolean (value, jackvader->haarDetector);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -242,27 +250,37 @@ kms_jack_vader_transform_frame_ip (GstVideoFilter * filter,
   KmsJackVader *jackvader = KMS_JACK_VADER (filter);
   GstMapInfo info;
 
-  if (jackvader->pCascadeFace == NULL)
-    return GST_FLOW_OK;
+  if (jackvader->haarDetector) {
+    if (jackvader->pCascadeFace == NULL)
+      return GST_FLOW_OK;
+  }
 
   kms_jack_vader_initialize_images (jackvader, frame);
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
+
   jackvader->cvImage->imageData = (char *) info.data;
-  jackvader->pFaceRectSeq = cvHaarDetectObjects (jackvader->cvImage,
-      jackvader->pCascadeFace,
-      jackvader->pStorageFace,
-      1.2, 3,
-      CV_HAAR_DO_CANNY_PRUNING,
-      cvSize (jackvader->cvImage->width / 20, jackvader->cvImage->width / 20),
-      cvSize (jackvader->cvImage->width / 2, jackvader->cvImage->height / 2));
+
+  cvClearSeq (jackvader->pFaceRectSeq);
+
+  if (jackvader->haarDetector) {
+    jackvader->pFaceRectSeq = cvHaarDetectObjects (jackvader->cvImage,
+        jackvader->pCascadeFace,
+        jackvader->pStorageFace,
+        1.2, 3,
+        CV_HAAR_DO_CANNY_PRUNING,
+        cvSize (jackvader->cvImage->width / 20, jackvader->cvImage->width / 20),
+        cvSize (jackvader->cvImage->width / 2, jackvader->cvImage->height / 2));
+
+  } else {
+    classify_image (jackvader->cvImage, jackvader->pFaceRectSeq);
+  }
+
   if (jackvader->show_debug_info == TRUE) {
     displayFaceRectangle (jackvader);
   }
 
   displayDetectionsOverlayImg (jackvader);
 
-  cvClearMemStorage (jackvader->pStorageFace);
-  cvClearSeq (jackvader->pFaceRectSeq);
   gst_buffer_unmap (frame->buffer, &info);
 
   return GST_FLOW_OK;
@@ -303,8 +321,11 @@ kms_jack_vader_init (KmsJackVader * jackvader)
 {
   jackvader->pCascadeFace = 0;
   jackvader->pStorageFace = cvCreateMemStorage (0);
+  jackvader->pFaceRectSeq = cvCreateSeq (0, sizeof (CvSeq), sizeof (CvRect),
+      jackvader->pStorageFace);
   jackvader->show_debug_info = FALSE;
   jackvader->images_path = g_strdup (COSTUME_IMAGES_PATH_DEFAULT);
+  jackvader->haarDetector = TRUE;
 }
 
 static void
@@ -348,6 +369,11 @@ kms_jack_vader_class_init (KmsJackVaderClass * klass)
       g_param_spec_string ("costume-images-path", "costume images path",
           "path of folder that contain the costume images",
           COSTUME_IMAGES_PATH_DEFAULT, G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+  g_object_class_install_property (gobject_class, PROP_FILTER_VERSION,
+      g_param_spec_boolean ("filter-version", "filter version",
+          "True means filter based on haar detector. False filter based on lbp",
+          TRUE, G_PARAM_READWRITE));
 }
 
 gboolean

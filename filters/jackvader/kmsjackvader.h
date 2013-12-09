@@ -38,6 +38,7 @@ struct _KmsJackVader
 
   gboolean show_debug_info;
   const char *images_path;
+  gboolean haarDetector;
 
   CvHaarClassifierCascade * pCascadeFace;
   CvMemStorage * pStorageFace;

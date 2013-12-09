@@ -15,10 +15,12 @@ plugin_LTLIBRARIES = libjackvader.la
 # sources used to compile this plug-in
 libjackvader_la_SOURCES = jackvader.c \
 			$(BUILT_SOURCES) \
-			kmsjackvader.c kmsjackvader.h
+			kmsjackvader.c kmsjackvader.h \
+			classifier.h classifier.cpp
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libjackvader_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) -Werror
+libjackvader_la_CXXFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) -Werror
 libjackvader_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS)
 libjackvader_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libjackvader_la_LIBTOOLFLAGS = --tag=disable-static
