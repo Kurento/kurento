@@ -21,6 +21,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
+import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
 import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
@@ -207,6 +208,13 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	JackVaderFilterBuilder newJackVaderFilter();
+
+	/**
+	 * Obtains the builder for a {@link PointerDetectorFilter}.
+	 * 
+	 * @return The builder
+	 */
+	PointerDetectorFilterBuilder newPointerDetectorFilter();
 
 	/**
 	 * Creates a {@link MediaElement} associated to this pipeline.

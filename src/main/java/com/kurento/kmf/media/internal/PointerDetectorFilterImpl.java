@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW_PARAM_WINDOW;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.CLEAR_WINDOWS;
@@ -35,6 +36,7 @@ import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.events.WindowOutEvent;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.PointerDetectorConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
@@ -133,8 +135,23 @@ public class PointerDetectorFilterImpl extends FilterImpl implements
 			extends FilterBuilderImpl<T, PointerDetectorFilter> implements
 			PointerDetectorFilterBuilder {
 
+		private PointerDetectorConstructorParam param;
+
 		public PointerDetectorFilterBuilderImpl(final MediaPipeline pipeline) {
 			super(TYPE_NAME, pipeline);
+		}
+
+		@Override
+		public T withWindow(String windowId, int heigt, int width,
+				int upperRightX, int upperRightY) {
+			if (param == null) {
+				param = new PointerDetectorConstructorParam();
+				params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
+			}
+
+			param.addDetectorWindow(windowId, heigt, width, upperRightX,
+					upperRightY);
+			return self();
 		}
 
 	}

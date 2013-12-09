@@ -30,6 +30,7 @@ import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
+import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
 import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
@@ -37,6 +38,7 @@ import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.internal.HttpEndpointImpl.HttpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlayerEndpointImpl.PlayerEndpointBuilderImpl;
+import com.kurento.kmf.media.internal.PointerDetectorFilterImpl.PointerDetectorFilterBuilderImpl;
 import com.kurento.kmf.media.internal.RecorderEndpointImpl.RecorderEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.RtpEndpointImpl.RtpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.WebRtcEndpointImpl.WebRtcEndpointBuilderImpl;
@@ -496,6 +498,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public JackVaderFilterBuilder newJackVaderFilter() {
 		return new JackVaderFilterBuilderImpl(this);
+	}
+
+	@Override
+	public PointerDetectorFilterBuilder newPointerDetectorFilter() {
+		return new PointerDetectorFilterBuilderImpl(this);
 	}
 
 }
