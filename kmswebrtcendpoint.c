@@ -238,7 +238,7 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
       kms_webrtc_transport_create (agent, conn->stream_id,
       NICE_COMPONENT_TYPE_RTCP);
 
-  if (conn->rtp_transport == NULL || conn->rtp_transport == NULL) {
+  if (conn->rtp_transport == NULL || conn->rtcp_transport == NULL) {
     GST_ERROR ("Cannot create KmsWebRTCConnection.");
     g_slice_free (KmsWebRTCConnection, conn);
     return NULL;
