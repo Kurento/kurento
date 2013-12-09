@@ -82,6 +82,7 @@ sdp_message_create_from_src (const GstSDPMessage * src, GstSDPMessage ** msg)
   GstSDPResult result;
   const GstSDPConnection *conn;
   const GstSDPOrigin *orig;
+  guint len, i;
 
   result = gst_sdp_message_new (msg);
   if (result != GST_SDP_OK) {
@@ -99,6 +100,14 @@ sdp_message_create_from_src (const GstSDPMessage * src, GstSDPMessage ** msg)
       conn->address, conn->ttl, conn->addr_number);
   gst_sdp_message_set_origin (*msg, orig->username, orig->sess_id,
       orig->sess_version, orig->nettype, orig->addrtype, orig->addr);
+
+  len = gst_sdp_message_attributes_len (src);
+  for (i = 0; i < len; i++) {
+    const GstSDPAttribute *attr;
+
+    attr = gst_sdp_message_get_attribute (src, i);
+    gst_sdp_message_add_attribute (*msg, attr->key, attr->value);
+  }
 
   return GST_SDP_OK;
 }
