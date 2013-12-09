@@ -57,7 +57,8 @@ enum
   PROP_WINDOW_SCALE,
   PROP_SHOW_DEBUG_INFO,
   PROP_WINDOWS_LAYOUT,
-  PROP_MESSAGE
+  PROP_MESSAGE,
+  PROP_SHOW_WINDOWS_LAYOUT
 };
 
 /* pad templates */
@@ -132,6 +133,11 @@ kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
       g_param_spec_boolean ("message", "message",
           "Put a window-in or window-out message in the bus if "
           "an object enters o leaves a window", TRUE, G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, PROP_SHOW_WINDOWS_LAYOUT,
+      g_param_spec_boolean ("show-windows-layout", "show windows layout",
+          "show windows layout over the image", TRUE, G_PARAM_READWRITE));
+
 }
 
 static void
@@ -249,6 +255,7 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   pointerdetector->buttonsLayout = NULL;
   pointerdetector->buttonsLayoutList = NULL;
   pointerdetector->putMessage = TRUE;
+  pointerdetector->show_windows_layout = TRUE;
 }
 
 void
@@ -279,6 +286,9 @@ kms_pointer_detector_set_property (GObject * object, guint property_id,
     case PROP_MESSAGE:
       pointerdetector->putMessage = g_value_get_boolean (value);
       break;
+    case PROP_SHOW_WINDOWS_LAYOUT:
+      pointerdetector->show_windows_layout = g_value_get_boolean (value);
+      break;
   }
 }
 
@@ -305,6 +315,9 @@ kms_pointer_detector_get_property (GObject * object, guint property_id,
       break;
     case PROP_MESSAGE:
       g_value_set_boolean (value, pointerdetector->putMessage);
+      break;
+    case PROP_SHOW_WINDOWS_LAYOUT:
+      g_value_set_boolean (value, pointerdetector->show_windows_layout);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -462,24 +475,31 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
   const gchar *actualButtonClickedId;
 
   for (l = pointerdetector->buttonsLayoutList; l != NULL; l = l->next) {
+    CvPoint upRightCorner;
+    CvPoint downLeftCorner;
+    CvScalar color;
+
     structAux = l->data;
+    upRightCorner.x = structAux->cvButtonLayout.x;
+    upRightCorner.y = structAux->cvButtonLayout.y;
+    downLeftCorner.x =
+        structAux->cvButtonLayout.x + structAux->cvButtonLayout.width;
+    downLeftCorner.y =
+        structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
+    color = WHITE;
 
     if (kms_pointer_detector_check_pointer_into_button
         (&pointerdetector->finalPointerPosition, structAux)) {
-      CvPoint upRightCorner;
-      CvPoint downLeftCorner;
-
       buttonClickedCounter++;
-      upRightCorner.x = structAux->cvButtonLayout.x;
-      upRightCorner.y = structAux->cvButtonLayout.y;
-      downLeftCorner.x =
-          structAux->cvButtonLayout.x + structAux->cvButtonLayout.width;
-      downLeftCorner.y =
-          structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
-      cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
-          GREEN, 1, 8, 0);
+
+      color = GREEN;
       actualButtonClickedId = structAux->id;
       GST_DEBUG ("TODO: send event to the bus");
+    }
+
+    if (pointerdetector->show_windows_layout) {
+      cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
+          color, 1, 8, 0);
     }
   }
 

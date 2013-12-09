@@ -63,6 +63,7 @@ struct _KmsPointerDetector {
   GSList *buttonsLayoutList;
   const gchar *previousButtonClickedId;
   gboolean putMessage;
+  gboolean show_windows_layout;
 };
 
 struct _KmsPointerDetectorClass {
