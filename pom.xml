@@ -1,13 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>war</packaging>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0</version>
 
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>content-api-test</artifactId>
+	<artifactId>kmf-content-api-test</artifactId>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
@@ -18,14 +17,19 @@
 		<!-- Dependencies Versions -->
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<slf4j-api.version>1.7.5</slf4j-api.version>
-		<kmf-content-api.version>0.0.1-SNAPSHOT</kmf-content-api.version>
-		<kws-content-api.version>1.0.0-SNAPSHOT</kws-content-api.version>
+		<cors-filter.version>1.7.1</cors-filter.version>
+		<commons-lang.version>2.6</commons-lang.version>
+
+		<!-- Kurento Dependencies Versions -->
+		<kmf-content-api.version>1.0.0</kmf-content-api.version>
+		<kws-content-api.version>1.0.0</kws-content-api.version>
 
 		<!-- Test Dependencies Versions -->
 		<junit.version>4.8.1</junit.version>
 		<arquillian.version>1.1.1.Final</arquillian.version>
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
+		<selenium-java.version>2.35.0</selenium-java.version>
 
 		<!-- JBoss -->
 		<jboss-as.version>7.1.1.Final</jboss-as.version>
@@ -37,21 +41,73 @@
 		<jboss-javaee.version>1.0.0.Final</jboss-javaee.version>
 
 		<!-- Plugins Versions -->
-		<maven-war-plugin.version>2.3</maven-war-plugin.version>
-		<maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
-		<maven-failsafe-plugin.version>2.15</maven-failsafe-plugin.version>
+		<maven-war-plugin.version>2.4</maven-war-plugin.version>
+		<maven-surefire-plugin.version>2.16</maven-surefire-plugin.version>
+		<maven-failsafe-plugin.version>2.16</maven-failsafe-plugin.version>
 		<maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
+		<maven-surefire-report-plugin.version>2.16</maven-surefire-report-plugin.version>
+		<maven-project-info-reports-plugin.version>2.0</maven-project-info-reports-plugin.version>
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
+
+		<!-- Webdrivers versions -->
+		<linux32-webdriver.version>2.7</linux32-webdriver.version>
+		<linux64-webdriver.version>2.7</linux64-webdriver.version>
+		<mac32-webdriver.version>2.7</mac32-webdriver.version>
+		<win32-webdriver.version>2.7</win32-webdriver.version>
 	</properties>
 
+	<name>Kurento Media Framework - Content Management API Tests</name>
+	<description>
+		Kurento Content Management API Tests
+
+		The kmf-content-api-test project contains the test cases
+		of the Kurento server side Content Management API.
+	</description>
+	<url>https://github.com/Kurento/kmf-content-api-test</url>
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.com</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>llopez</id>
+			<name>Luis López Fernández</name>
+		</developer>
+		<developer>
+			<id>bgarcia</id>
+			<name>Boni García Gutiérrez</name>
+		</developer>
+	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>Kurento</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+	</mailingLists>
+
 	<dependencies>
+		<!-- Kurento Dependencies -->
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-content-api</artifactId>
 			<version>${kmf-content-api.version}</version>
 		</dependency>
+
+		<!-- Other Dependencies -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -66,19 +122,44 @@
 		<dependency>
 			<groupId>com.thetransactioncompany</groupId>
 			<artifactId>cors-filter</artifactId>
-			<version>1.7.1</version>
+			<version>${cors-filter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>${commons-lang.version}</version>
 		</dependency>
 
-		<!-- Test dependencies (JUnit, Arquillian) -->
+		<!-- JUnit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Arquillian -->
 		<dependency>
 			<groupId>org.jboss.arquillian.junit</groupId>
 			<artifactId>arquillian-junit-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.spec</groupId>
+			<artifactId>jboss-javaee-6.0</artifactId>
+			<version>${jboss-javaee.version}</version>
+			<type>pom</type>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.as</groupId>
+			<artifactId>jboss-as-arquillian-container-managed</artifactId>
+			<version>${jboss-as.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.protocol</groupId>
+			<artifactId>arquillian-protocol-servlet</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -101,6 +182,7 @@
 			<artifactId>shrinkwrap-impl-base</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- JMeter -->
 		<dependency>
 			<groupId>com.lazerycode.jmeter</groupId>
 			<artifactId>jmeter-maven-plugin</artifactId>
@@ -110,6 +192,13 @@
 			<groupId>org.apache.jmeter</groupId>
 			<artifactId>ApacheJMeter_core</artifactId>
 			<version>${ApacheJMeter_core.version}</version>
+		</dependency>
+
+		<!-- Selenium -->
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>${selenium-java.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -138,9 +227,10 @@
 			<resource>
 				<directory>${basedir}/src/test/resources</directory>
 				<filtering>true</filtering>
-				<targetPath>${project.build.directory}/${project.artifactId}-${project.version}/WEB-INF/classes</targetPath>
+				<targetPath>${project.build.directory}/test-classes</targetPath>
 				<includes>
-					<include>*.webm</include>
+					<include>**/*.jmx</include>
+					<include>**/arquillian.xml</include>
 				</includes>
 			</resource>
 		</resources>
@@ -168,6 +258,25 @@
 				<version>${maven-dependency-plugin.version}</version>
 				<executions>
 					<execution>
+						<id>unpack-jboss</id>
+						<phase>process-test-classes</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.jboss.as</groupId>
+									<artifactId>jboss-as-dist</artifactId>
+									<version>${jboss-as.version}</version>
+									<type>zip</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${basedir}/target</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<execution>
 						<id>copy-js-deps</id>
 						<phase>generate-sources</phase>
 						<goals>
@@ -189,6 +298,39 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven-failsafe-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>${maven-surefire-report-plugin.version}</version>
+				<executions>
+					<execution>
+						<phase>post-integration-test</phase>
+						<goals>
+							<goal>failsafe-report-only</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>${maven-project-info-reports-plugin.version}</version>
+				<configuration>
+					<dependencyLocationEnabled>false</dependencyLocationEnabled>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -206,23 +348,15 @@
 	</distributionManagement>
 
 	<profiles>
+		<!-- Webdrivers for Chrome (binary dependencies in the repository) -->
 		<profile>
-			<id>arquillian-jbossas-managed</id>
+			<id>mac</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<os>
+					<family>mac</family>
+				</os>
 			</activation>
 			<build>
-				<testResources>
-					<testResource>
-						<directory>src/test/resources</directory>
-						<filtering>true</filtering>
-						<includes>
-							<include>**/*.jmx</include>
-							<include>**/arquillian.xml</include>
-							<include>**/test.properties</include>
-						</includes>
-					</testResource>
-				</testResources>
 				<plugins>
 					<plugin>
 						<artifactId>maven-dependency-plugin</artifactId>
@@ -236,57 +370,132 @@
 								<configuration>
 									<artifactItems>
 										<artifactItem>
-											<groupId>org.jboss.as</groupId>
-											<artifactId>jboss-as-dist</artifactId>
-											<version>${jboss-as.version}</version>
+											<groupId>com.google.webdriver</groupId>
+											<artifactId>mac32</artifactId>
+											<version>${mac32-webdriver.version}</version>
 											<type>zip</type>
 											<overWrite>false</overWrite>
-											<outputDirectory>target</outputDirectory>
+											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
 										</artifactItem>
 									</artifactItems>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>linux32</id>
+			<activation>
+				<os>
+					<family>linux</family>
+					<arch>i386</arch>
+				</os>
+			</activation>
+			<build>
+				<plugins>
 					<plugin>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<version>${maven-failsafe-plugin.version}</version>
-						<configuration>
-							<argLine>-XX:MaxPermSize=1024m -Xmx1024m
-								-XX:+CMSClassUnloadingEnabled</argLine>
-						</configuration>
+						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
 							<execution>
+								<id>unpack</id>
+								<phase>process-test-classes</phase>
 								<goals>
-									<goal>integration-test</goal>
-									<goal>verify</goal>
+									<goal>unpack</goal>
 								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>com.google.webdriver</groupId>
+											<artifactId>linux32</artifactId>
+											<version>${linux32-webdriver.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>
 				</plugins>
 			</build>
-			<dependencies>
-				<dependency>
-					<groupId>org.jboss.spec</groupId>
-					<artifactId>jboss-javaee-6.0</artifactId>
-					<version>${jboss-javaee.version}</version>
-					<type>pom</type>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.jboss.as</groupId>
-					<artifactId>jboss-as-arquillian-container-managed</artifactId>
-					<version>${jboss-as.version}</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.jboss.arquillian.protocol</groupId>
-					<artifactId>arquillian-protocol-servlet</artifactId>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
 		</profile>
+		<profile>
+			<id>linux64</id>
+			<activation>
+				<os>
+					<family>linux</family>
+					<arch>amd64</arch>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>com.google.webdriver</groupId>
+											<artifactId>linux64</artifactId>
+											<version>${linux64-webdriver.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>windows</id>
+			<activation>
+				<os>
+					<family>windows</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-dependency-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>unpack</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>com.google.webdriver</groupId>
+											<artifactId>win32</artifactId>
+											<version>${win32-webdriver.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${basedir}/target/webdriver</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<!-- /Webdrivers for Chrome (binary dependencies in the repository) -->
 	</profiles>
 
 	<repositories>
@@ -313,4 +522,11 @@
 			</snapshots>
 		</repository>
 	</repositories>
+
+	<scm>
+		<url>https://github.com/Kurento/${project.artifactId}</url>
+		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<tag>develop</tag>
+	</scm>
 </project>

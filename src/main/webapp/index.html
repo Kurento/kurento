@@ -1,16 +1,22 @@
+<!DOCTYPE html>
 <html>
 <head>
-<title>Kurento Content Demo</title>
+<title>Kurento Content API test</title>
 </head>
 <body>
-	<h1>Kurento Content Demo</h1>
+	<h1>Kurento Content API test</h1>
 	This demo contains the following examples:
 	<ul>
-		<li><a href="player-with-tunnel.html">Player with tunnel</a></li>
-		<li><a href="player-with-redirect.html">Player with redirect</a></li>
-		<li><a href="recorder-with-tunnel.html">Recorder with tunnel</a></li>
-		<li><a href="recorder-with-redirect.html">Recorder with redirect</a></li>
-		<li><a href="example">WebRTC Example</a></li>
+		<li><a href="player.html">HTTP Player</a></li>
+		<li><a href="playerJson.html">HTTP Player with JSON protocol</a><sup>*</sup></li>
 	</ul>
+	<div style="width: 500px;">
+		<sup>*</sup> The JSON protocol enhances a HTTP Player by implementing
+		a signaling communication between the client (JavaScript API) and the
+		Kurento Application Server (KAS). Using this protocol the client will
+		be able to negotiate the transfer of media using SDP (Session
+		Description Protocol), and also it will be notified with media and
+		flow execution events.
+	</div>
 </body>
 </html>
