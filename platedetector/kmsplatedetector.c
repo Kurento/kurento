@@ -106,7 +106,6 @@ typedef struct _CharacterData
 
 struct _KmsPlateDetectorPrivate
 {
-  GstVideoFilter base_platedetector;
   IplImage *cvImage, *edges, *edgesDilatedMask, *characterContoursMask;
   KmsPlateDetectorPreprocessingType preprocessingType;
   TessBaseAPI *handle;
