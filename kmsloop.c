@@ -39,12 +39,65 @@ G_DEFINE_TYPE_WITH_CODE (KmsLoop, kms_loop,
 struct _KmsLoopPrivate
 {
   GThread *thread;
+  GMainLoop *loop;
+  GMainContext *context;
 };
+
+static gboolean
+quit_main_loop (GMainLoop * loop)
+{
+  GST_INFO ("Exiting main loop");
+
+  g_main_loop_quit (loop);
+
+  return G_SOURCE_REMOVE;
+}
+
+static gpointer
+loop_thread_init (gpointer data)
+{
+  KmsLoop *self = KMS_LOOP (data);
+
+  if (!g_main_context_acquire (self->priv->context)) {
+    GST_ERROR ("Can not acquire context");
+    return NULL;
+  }
+
+  GST_DEBUG ("Running main loop");
+  g_main_loop_run (self->priv->loop);
+  GST_DEBUG ("Thread finished");
+
+  g_main_context_release (self->priv->context);
+  return NULL;
+}
 
 static void
 kms_loop_dispose (GObject * obj)
 {
+  KmsLoop *self = KMS_LOOP (obj);
+
   GST_DEBUG_OBJECT (obj, "Dispose");
+
+  if (self->priv->loop != NULL) {
+    kms_loop_idle_add_full (self, G_PRIORITY_DEFAULT_IDLE,
+        (GSourceFunc) quit_main_loop, self->priv->loop,
+        (GDestroyNotify) g_main_loop_unref);
+    self->priv->loop = NULL;
+  }
+
+  if (self->priv->thread != NULL) {
+    if (g_thread_self () != self->priv->thread)
+      g_thread_join (self->priv->thread);
+
+    g_thread_unref (self->priv->thread);
+    self->priv->thread = NULL;
+  }
+
+  if (self->priv->context != NULL) {
+    g_main_context_unref (self->priv->context);
+    self->priv->context = NULL;
+  }
+
   G_OBJECT_CLASS (kms_loop_parent_class)->dispose (obj);
 }
 
@@ -52,6 +105,7 @@ static void
 kms_loop_finalize (GObject * obj)
 {
   GST_DEBUG_OBJECT (obj, "Finalize");
+
   G_OBJECT_CLASS (kms_loop_parent_class)->finalize (obj);
 }
 
@@ -71,4 +125,41 @@ static void
 kms_loop_init (KmsLoop * self)
 {
   self->priv = KMS_LOOP_GET_PRIVATE (self);
+  self->priv->context = g_main_context_new ();
+  self->priv->loop = g_main_loop_new (self->priv->context, FALSE);
+
+  self->priv->thread = g_thread_new (GST_OBJECT_NAME (self),
+      loop_thread_init, self);
+}
+
+KmsLoop *
+kms_loop_new (void)
+{
+  GObject *loop;
+
+  loop = g_object_new (KMS_TYPE_LOOP, NULL);
+
+  return KMS_LOOP (loop);
+}
+
+guint
+kms_loop_idle_add_full (KmsLoop * self, gint priority, GSourceFunc function,
+    gpointer data, GDestroyNotify notify)
+{
+  GSource *source;
+  guint id;
+
+  source = g_idle_source_new ();
+  id = g_source_attach (source, self->priv->context);
+  g_source_set_callback (source, function, data, notify);
+  g_source_unref (source);
+
+  return id;
+}
+
+guint
+kms_loop_idle_add (KmsLoop * self, GSourceFunc function, gpointer data)
+{
+  return kms_loop_idle_add_full (self, G_PRIORITY_DEFAULT_IDLE, function, data,
+      NULL);
 }

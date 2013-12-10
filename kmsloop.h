@@ -65,5 +65,13 @@ struct _KmsLoopClass
 
 GType kms_loop_get_type (void);
 
+KmsLoop * kms_loop_new (void);
+
+guint kms_loop_idle_add (KmsLoop *self, GSourceFunc function,
+  gpointer data);
+
+guint kms_loop_idle_add_full (KmsLoop *self, gint priority,
+  GSourceFunc function, gpointer data, GDestroyNotify notify);
+
 G_END_DECLS
 #endif
