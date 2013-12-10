@@ -16,7 +16,7 @@ libvp8parse_la_SOURCES = vp8parse.c \
 			kmsvp8parse.c kmsvp8parse.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libvp8parse_la_CFLAGS = $(GST_CFLAGS) -Werror
-libvp8parse_la_LIBADD = $(GST_LIBS)
+libvp8parse_la_CFLAGS = $(GST_CFLAGS) $(VPX_CFLAGS) -Werror
+libvp8parse_la_LIBADD = $(GST_LIBS) $(VPX_LIBS)
 libvp8parse_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libvp8parse_la_LIBTOOLFLAGS = --tag=disable-static
