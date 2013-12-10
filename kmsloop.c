@@ -42,6 +42,7 @@ struct _KmsLoopPrivate
   GMainLoop *loop;
   GMainContext *context;
   gboolean stopping;
+  GMutex mutex;
 };
 
 static gboolean
@@ -61,6 +62,9 @@ loop_thread_init (gpointer data)
 
   self->priv->context = g_main_context_new ();
   self->priv->loop = g_main_loop_new (self->priv->context, FALSE);
+
+  /* unlock main process because context is already initialized */
+  g_mutex_unlock (&self->priv->mutex);
 
   if (!g_main_context_acquire (self->priv->context)) {
     GST_ERROR ("Can not acquire context");
@@ -105,7 +109,11 @@ kms_loop_dispose (GObject * obj)
 static void
 kms_loop_finalize (GObject * obj)
 {
+  KmsLoop *self = KMS_LOOP (obj);
+
   GST_DEBUG_OBJECT (obj, "Finalize");
+
+  g_mutex_clear (&self->priv->mutex);
 
   G_OBJECT_CLASS (kms_loop_parent_class)->finalize (obj);
 }
@@ -127,8 +135,14 @@ kms_loop_init (KmsLoop * self)
 {
   self->priv = KMS_LOOP_GET_PRIVATE (self);
 
+  g_mutex_init (&self->priv->mutex);
+  g_mutex_lock (&self->priv->mutex);
+
   self->priv->thread = g_thread_new (GST_OBJECT_NAME (self),
       loop_thread_init, self);
+
+  g_mutex_lock (&self->priv->mutex);
+  g_mutex_unlock (&self->priv->mutex);
 }
 
 KmsLoop *
