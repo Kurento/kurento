@@ -142,6 +142,19 @@ kms_loop_new (void)
   return KMS_LOOP (loop);
 }
 
+static guint
+kms_loop_attach (KmsLoop * self, GSource * source, gint priority,
+    GSourceFunc function, gpointer data, GDestroyNotify notify)
+{
+  guint id;
+
+  g_source_set_priority (source, priority);
+  g_source_set_callback (source, function, data, notify);
+  id = g_source_attach (source, self->priv->context);
+
+  return id;
+}
+
 guint
 kms_loop_idle_add_full (KmsLoop * self, gint priority, GSourceFunc function,
     gpointer data, GDestroyNotify notify)
@@ -150,8 +163,7 @@ kms_loop_idle_add_full (KmsLoop * self, gint priority, GSourceFunc function,
   guint id;
 
   source = g_idle_source_new ();
-  id = g_source_attach (source, self->priv->context);
-  g_source_set_callback (source, function, data, notify);
+  id = kms_loop_attach (self, source, priority, function, data, notify);
   g_source_unref (source);
 
   return id;
@@ -162,4 +174,26 @@ kms_loop_idle_add (KmsLoop * self, GSourceFunc function, gpointer data)
 {
   return kms_loop_idle_add_full (self, G_PRIORITY_DEFAULT_IDLE, function, data,
       NULL);
+}
+
+guint
+kms_loop_timeout_add_full (KmsLoop * self, gint priority, guint interval,
+    GSourceFunc function, gpointer data, GDestroyNotify notify)
+{
+  GSource *source;
+  guint id;
+
+  source = g_timeout_source_new (interval);
+  id = kms_loop_attach (self, source, priority, function, data, notify);
+  g_source_unref (source);
+
+  return id;
+}
+
+guint
+kms_loop_timeout_add (KmsLoop * self, guint interval, GSourceFunc function,
+    gpointer data)
+{
+  return kms_loop_timeout_add_full (self, G_PRIORITY_DEFAULT, interval,
+      function, data, NULL);
 }

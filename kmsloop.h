@@ -73,5 +73,11 @@ guint kms_loop_idle_add (KmsLoop *self, GSourceFunc function,
 guint kms_loop_idle_add_full (KmsLoop *self, gint priority,
   GSourceFunc function, gpointer data, GDestroyNotify notify);
 
+guint kms_loop_timeout_add (KmsLoop *self, guint interval, GSourceFunc function,
+  gpointer data);
+
+guint kms_loop_timeout_add_full (KmsLoop *self, gint priority, guint interval,
+  GSourceFunc function, gpointer data, GDestroyNotify notify);
+
 G_END_DECLS
 #endif
