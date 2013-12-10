@@ -528,8 +528,7 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
       GST_DEBUG ("into window: %s", actualButtonClickedId);
       if (pointerdetector->putMessage) {
         s = gst_structure_new ("window-in",
-            "window", G_TYPE_STRING, pointerdetector->previousButtonClickedId,
-            NULL);
+            "window", G_TYPE_STRING, actualButtonClickedId, NULL);
         m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
         gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       }
