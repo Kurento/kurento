@@ -15,8 +15,11 @@
 package com.kurento.kmf.media;
 
 import static com.kurento.kmf.media.Utils.createKmsEvent;
+import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.STRING_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.VOID_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
+import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.EVENT_WINDOW_IN;
+import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.EVENT_WINDOW_OUT;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_COMPLETE;
 import static com.kurento.kms.thrift.api.KmsMediaSessionEndPointTypeConstants.EVENT_MEDIA_SESSION_START;
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND;
@@ -37,6 +40,8 @@ import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
 import com.kurento.kmf.media.events.internal.EndOfStreamEventImpl;
 import com.kurento.kmf.media.events.internal.MediaSessionStartedEventImpl;
 import com.kurento.kmf.media.events.internal.MediaSessionTerminatedEventImpl;
+import com.kurento.kmf.media.events.internal.WindowInEventImpl;
+import com.kurento.kmf.media.events.internal.WindowOutEventImpl;
 import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
 import com.kurento.kms.thrift.api.KmsMediaEvent;
 
@@ -91,6 +96,20 @@ public class MediaEventTest {
 		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_MEDIA_SESSION_COMPLETE,
 				VOID_DATA_TYPE, null);
 		instantiateAndCheck(MediaSessionTerminatedEventImpl.class, kmsEvent);
+	}
+
+	@Test
+	public void testWindowOutEventInstantiation() {
+		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_WINDOW_OUT,
+				STRING_DATA_TYPE, null);
+		instantiateAndCheck(WindowOutEventImpl.class, kmsEvent);
+	}
+
+	@Test
+	public void testWindowInEventInstantiation() {
+		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_WINDOW_IN,
+				STRING_DATA_TYPE, null);
+		instantiateAndCheck(WindowInEventImpl.class, kmsEvent);
 	}
 
 	private MediaEvent instantiateAndCheck(Class<?> expectedClass,
