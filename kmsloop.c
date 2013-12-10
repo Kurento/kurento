@@ -41,6 +41,7 @@ struct _KmsLoopPrivate
   GThread *thread;
   GMainLoop *loop;
   GMainContext *context;
+  gboolean stopping;
 };
 
 static gboolean
@@ -58,16 +59,23 @@ loop_thread_init (gpointer data)
 {
   KmsLoop *self = KMS_LOOP (data);
 
+  self->priv->context = g_main_context_new ();
+  self->priv->loop = g_main_loop_new (self->priv->context, FALSE);
+
   if (!g_main_context_acquire (self->priv->context)) {
     GST_ERROR ("Can not acquire context");
-    return NULL;
+    goto end;
   }
 
   GST_DEBUG ("Running main loop");
   g_main_loop_run (self->priv->loop);
-  GST_DEBUG ("Thread finished");
 
+end:
+  GST_DEBUG ("Thread finished");
   g_main_context_release (self->priv->context);
+  g_main_context_unref (self->priv->context);
+  g_main_loop_unref (self->priv->loop);
+
   return NULL;
 }
 
@@ -78,11 +86,9 @@ kms_loop_dispose (GObject * obj)
 
   GST_DEBUG_OBJECT (obj, "Dispose");
 
-  if (self->priv->loop != NULL) {
-    kms_loop_idle_add_full (self, G_PRIORITY_DEFAULT_IDLE,
-        (GSourceFunc) quit_main_loop, self->priv->loop,
-        (GDestroyNotify) g_main_loop_unref);
-    self->priv->loop = NULL;
+  if (!self->priv->stopping) {
+    kms_loop_idle_add (self, (GSourceFunc) quit_main_loop, self->priv->loop);
+    self->priv->stopping = TRUE;
   }
 
   if (self->priv->thread != NULL) {
@@ -91,11 +97,6 @@ kms_loop_dispose (GObject * obj)
 
     g_thread_unref (self->priv->thread);
     self->priv->thread = NULL;
-  }
-
-  if (self->priv->context != NULL) {
-    g_main_context_unref (self->priv->context);
-    self->priv->context = NULL;
   }
 
   G_OBJECT_CLASS (kms_loop_parent_class)->dispose (obj);
@@ -125,8 +126,6 @@ static void
 kms_loop_init (KmsLoop * self)
 {
   self->priv = KMS_LOOP_GET_PRIVATE (self);
-  self->priv->context = g_main_context_new ();
-  self->priv->loop = g_main_loop_new (self->priv->context, FALSE);
 
   self->priv->thread = g_thread_new (GST_OBJECT_NAME (self),
       loop_thread_init, self);
