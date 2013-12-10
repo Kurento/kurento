@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,11 +48,21 @@ public class BaseArquillianTst {
 	public static final String ALGORITHM = "MD5";
 
 	@Deployment
-	public static WebArchive createDeployment() {
+	public static WebArchive createDeployment() throws IOException {
+		InputStream inputStream = new FileInputStream(
+				"target/test-classes/test.properties");
+		Properties properties = new Properties();
+		properties.load(inputStream);
 		WebArchive war = ShrinkWrap
 				.create(ZipImporter.class, "kmf-content-api-test.war")
-				.importFrom(new File("target/kmf-content-api-test-1.0.0.war"))
-				.as(WebArchive.class).addPackages(true, "com.kurento");
+				.importFrom(
+						new File("target/"
+								+ properties.getProperty("project.artifactId")
+								+ "-"
+								+ properties.getProperty("project.version")
+								+ ".war")).as(WebArchive.class)
+				.addPackages(true, "com.kurento");
+
 		return war;
 	}
 

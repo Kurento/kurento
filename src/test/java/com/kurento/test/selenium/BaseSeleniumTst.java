@@ -96,6 +96,14 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 		if (expectedHandlerFlow != null
 				&& Arrays.asList(expectedHandlerFlow).contains(
 						HANDLER_ON_CONTENT_COMMAND)) {
+			// Wait the video to be started (TIMEOUT seconds at the most)
+			(new WebDriverWait(driver, TIMEOUT))
+					.until(new ExpectedCondition<Boolean>() {
+						public Boolean apply(WebDriver d) {
+							return d.findElement(By.id("status"))
+									.getAttribute("value").startsWith("play");
+						}
+					});
 			driver.findElement(By.id("sendCommands")).click();
 		}
 
@@ -134,7 +142,6 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 					+ " ... Expected: " + Arrays.asList(expectedEvents));
 			Assert.assertTrue(Arrays.asList(expectedEvents).containsAll(
 					Arrays.asList(actualEvents)));
-			// Assert.assertArrayEquals(expectedEvents, actualEvents);
 		}
 
 		if (expectedHandlerFlow == null || expectedJavaScriptFlow == null) {

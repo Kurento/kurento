@@ -74,7 +74,6 @@ public class PlayerTst implements Runnable {
 				EntityUtils.consume(resEntity);
 				final long seconds = (new Date().getTime() - initTime) / 1000 % 60;
 				log.info("Play time: " + seconds + " seconds");
-				Assert.assertTrue("Not received content", seconds > 1);
 			}
 
 			final int responseStatusCode = response.getStatusLine()
@@ -101,7 +100,7 @@ public class PlayerTst implements Runnable {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Exception in Player Test", e);
 		}
 	}
 }

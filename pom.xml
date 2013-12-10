@@ -3,7 +3,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>war</packaging>
-	<version>1.0.0</version>
+	<version>1.0.0-SNAPSHOT</version>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-api-test</artifactId>
@@ -47,6 +47,7 @@
 		<maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
 		<maven-surefire-report-plugin.version>2.16</maven-surefire-report-plugin.version>
 		<maven-project-info-reports-plugin.version>2.0</maven-project-info-reports-plugin.version>
+		<maven-jxr-plugin.version>2.3</maven-jxr-plugin.version>
 
 		<!-- Extensions Versions -->
 		<wagon-ssh.version>2.0</wagon-ssh.version>
@@ -231,6 +232,7 @@
 				<includes>
 					<include>**/*.jmx</include>
 					<include>**/arquillian.xml</include>
+					<include>**/test.properties</include>
 				</includes>
 			</resource>
 		</resources>
@@ -301,6 +303,9 @@
 			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${maven-failsafe-plugin.version}</version>
+				<configuration>
+					<argLine>-Xms128m -Xmx1024m -XX:MaxPermSize=512m</argLine>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
@@ -333,6 +338,16 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+				<version>${maven-jxr-plugin.version}</version>
+			</plugin>
+		</plugins>
+	</reporting>
 
 	<distributionManagement>
 		<repository>
