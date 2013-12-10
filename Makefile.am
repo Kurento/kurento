@@ -1,5 +1,6 @@
 SUBDIRS =				\
-	filters
+	filters				\
+	vp8parse
 
 
 plugin_LTLIBRARIES = libgstkurento.la
