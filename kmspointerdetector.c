@@ -311,6 +311,9 @@ kms_pointer_detector_get_property (GObject * object, guint property_id,
       g_value_set_boolean (value, pointerdetector->show_debug_info);
       break;
     case PROP_WINDOWS_LAYOUT:
+      if (pointerdetector->buttonsLayout == NULL) {
+        pointerdetector->buttonsLayout = gst_structure_new_empty ("windows");
+      }
       g_value_set_boxed (value, pointerdetector->buttonsLayout);
       break;
     case PROP_MESSAGE:
