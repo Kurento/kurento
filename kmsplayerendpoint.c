@@ -21,6 +21,7 @@
 #include "kmselement.h"
 #include "kmsagnosticcaps.h"
 #include "kmsplayerendpoint.h"
+#include "kmsloop.h"
 
 #define PLUGIN_NAME "playerendpoint"
 #define AUDIO_APPSRC "audio_appsrc"
@@ -42,54 +43,13 @@ GST_DEBUG_CATEGORY_STATIC (kms_player_end_point_debug_category);
   )                                             \
 )
 
-#define KMS_PLAYER_END_POINT_GET_LOCK(obj) (               \
-  &KMS_PLAYER_END_POINT (obj)->priv->tdata.thread_mutex    \
-)
-
-#define KMS_PLAYER_END_POINT_GET_COND(obj) (               \
-  &KMS_PLAYER_END_POINT (obj)->priv->tdata.thread_cond     \
-)
-
-#define KMS_PLAYER_END_POINT_LOCK(obj) (                   \
-  g_mutex_lock (KMS_PLAYER_END_POINT_GET_LOCK (obj))       \
-)
-
-#define KMS_PLAYER_END_POINT_UNLOCK(obj) (                 \
-  g_mutex_unlock (KMS_PLAYER_END_POINT_GET_LOCK (obj))     \
-)
-
-#define KMS_PLAYER_END_POINT_WAIT(obj) (                   \
-  g_cond_wait (KMS_PLAYER_END_POINT_GET_COND (obj),        \
-    KMS_PLAYER_END_POINT_GET_LOCK (obj))                   \
-)
-
-#define KMS_PLAYER_END_POINT_SIGNAL(obj) (                 \
-  g_cond_signal (KMS_PLAYER_END_POINT_GET_COND (obj))      \
-)
-
 typedef void (*KmsActionFunc) (gpointer user_data);
-
-struct thread_data
-{
-  GQueue *actions;
-  gboolean finish_thread;
-  GThread *thread;
-  GCond thread_cond;
-  GMutex thread_mutex;
-};
-
-struct thread_cb_data
-{
-  KmsActionFunc function;
-  gpointer data;
-  GDestroyNotify notify;
-};
 
 struct _KmsPlayerEndPointPrivate
 {
   GstElement *pipeline;
   GstElement *uridecodebin;
-  struct thread_data tdata;
+  KmsLoop *loop;
 };
 
 enum
@@ -112,54 +72,12 @@ G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndPoint, kms_player_end_point,
         0, "debug category for playerendpoint element"));
 
 static void
-destroy_thread_cb_data (gpointer data)
-{
-  struct thread_cb_data *th_data = data;
-
-  if (th_data->notify)
-    th_data->notify (th_data->data);
-
-  g_slice_free (struct thread_cb_data, th_data);
-}
-
-static void
-kms_player_end_point_add_action (KmsPlayerEndPoint * self,
-    KmsActionFunc function, gpointer data, GDestroyNotify notify)
-{
-  struct thread_cb_data *th_data;
-
-  th_data = g_slice_new0 (struct thread_cb_data);
-
-  th_data->data = data;
-  th_data->function = function;
-  th_data->notify = notify;
-
-  KMS_PLAYER_END_POINT_LOCK (self);
-
-  g_queue_push_tail (self->priv->tdata.actions, th_data);
-
-  KMS_PLAYER_END_POINT_SIGNAL (self);
-  KMS_PLAYER_END_POINT_UNLOCK (self);
-}
-
-static void
 kms_player_end_point_dispose (GObject * object)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
 
-  if (self->priv->tdata.thread != NULL) {
-    /* clean up object here */
-    KMS_PLAYER_END_POINT_LOCK (self);
-    self->priv->tdata.finish_thread = TRUE;
-    KMS_PLAYER_END_POINT_SIGNAL (self);
-    KMS_PLAYER_END_POINT_UNLOCK (self);
-
-    if (g_thread_self () != self->priv->tdata.thread) {
-      g_thread_join (self->priv->tdata.thread);
-    }
-    g_thread_unref (self->priv->tdata.thread);
-    self->priv->tdata.thread = NULL;
-  }
+  if (self->priv->loop)
+    g_clear_object (&self->priv->loop);
 
   if (self->priv->pipeline != NULL) {
     GstBus *bus;
@@ -176,19 +94,6 @@ kms_player_end_point_dispose (GObject * object)
   /* clean up as possible. May be called multiple times */
 
   G_OBJECT_CLASS (kms_player_end_point_parent_class)->dispose (object);
-}
-
-static void
-kms_player_end_point_finalize (GObject * object)
-{
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
-
-  g_cond_clear (&self->priv->tdata.thread_cond);
-  g_mutex_clear (&self->priv->tdata.thread_mutex);
-
-  g_queue_free_full (self->priv->tdata.actions, destroy_thread_cb_data);
-
-  G_OBJECT_CLASS (kms_player_end_point_parent_class)->finalize (object);
 }
 
 static void
@@ -461,7 +366,6 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
       "Joaquin Mengual García <kini.mengual@gmail.com>");
 
   gobject_class->dispose = kms_player_end_point_dispose;
-  gobject_class->finalize = kms_player_end_point_finalize;
 
   urienpoint_class->stopped = kms_player_end_point_stopped;
   urienpoint_class->started = kms_player_end_point_started;
@@ -492,15 +396,17 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
   g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
 }
 
-static void
+static gboolean
 kms_player_end_point_emit_EOS_signal (gpointer data)
 {
   GST_DEBUG ("Emit EOS Signal");
   kms_player_end_point_stopped (KMS_URI_END_POINT (data));
   g_signal_emit (G_OBJECT (data), kms_player_end_point_signals[SIGNAL_EOS], 0);
+
+  return G_SOURCE_REMOVE;
 }
 
-static void
+static gboolean
 kms_player_end_point_emit_invalid_uri_signal (gpointer data)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
@@ -508,9 +414,11 @@ kms_player_end_point_emit_invalid_uri_signal (gpointer data)
   GST_DEBUG ("Emit invalid uri signal");
   g_signal_emit (G_OBJECT (self),
       kms_player_end_point_signals[SIGNAL_INVALID_URI], 0);
+
+  return G_SOURCE_REMOVE;
 }
 
-static void
+static gboolean
 kms_player_end_point_emit_invalid_media_signal (gpointer data)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
@@ -518,14 +426,18 @@ kms_player_end_point_emit_invalid_media_signal (gpointer data)
   GST_DEBUG ("Emit invalid media signal");
   g_signal_emit (G_OBJECT (self),
       kms_player_end_point_signals[SIGNAL_INVALID_MEDIA], 0);
+
+  return G_SOURCE_REMOVE;
 }
 
-static void
+static gboolean
 kms_player_end_point_post_media_error (gpointer data)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
 
   GST_ELEMENT_ERROR (self, STREAM, FORMAT, ("Wrong video format"), (NULL));
+
+  return G_SOURCE_REMOVE;
 }
 
 static GstBusSyncReply
@@ -534,69 +446,26 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
-    kms_player_end_point_add_action (self, kms_player_end_point_emit_EOS_signal,
-        g_object_ref (self), g_object_unref);
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+        kms_player_end_point_emit_EOS_signal, g_object_ref (self),
+        g_object_unref);
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
 
     if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
-      kms_player_end_point_add_action (self,
-          kms_player_end_point_emit_invalid_media_signal,
-          g_object_ref (self), g_object_unref);
+      kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+          kms_player_end_point_emit_invalid_media_signal, g_object_ref (self),
+          g_object_unref);
     } else if (g_strcmp0 (GST_OBJECT_NAME (msg->src), "source") == 0) {
-      kms_player_end_point_add_action (self,
-          kms_player_end_point_emit_invalid_uri_signal,
-          g_object_ref (self), g_object_unref);
+      kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+          kms_player_end_point_emit_invalid_uri_signal, g_object_ref (self),
+          g_object_unref);
     } else {
-      kms_player_end_point_add_action (self,
-          kms_player_end_point_post_media_error,
-          g_object_ref (self), g_object_unref);
+      kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+          kms_player_end_point_post_media_error, g_object_ref (self),
+          g_object_unref);
     }
   }
   return GST_BUS_PASS;
-}
-
-static void
-finish_thread (gpointer data, GObject * self)
-{
-  g_atomic_pointer_compare_and_exchange ((gpointer *) data, self, NULL);
-}
-
-static gpointer
-kms_player_end_point_thread (gpointer data)
-{
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
-  struct thread_cb_data *th_data;
-
-  g_object_weak_ref (G_OBJECT (self), finish_thread, &self);
-
-  /* Main thread loop */
-  while (g_atomic_pointer_get (&self)) {
-    KMS_PLAYER_END_POINT_LOCK (self);
-    while (!self->priv->tdata.finish_thread &&
-        g_queue_is_empty (self->priv->tdata.actions)) {
-      GST_DEBUG_OBJECT (self, "Waiting for elements to remove");
-      KMS_PLAYER_END_POINT_WAIT (self);
-      GST_DEBUG_OBJECT (self, "Waked up");
-    }
-
-    if (self->priv->tdata.finish_thread) {
-      g_object_weak_unref (G_OBJECT (self), finish_thread, &self);
-      KMS_PLAYER_END_POINT_UNLOCK (self);
-      break;
-    }
-
-    th_data = g_queue_pop_head (self->priv->tdata.actions);
-
-    KMS_PLAYER_END_POINT_UNLOCK (self);
-
-    if (th_data->function)
-      th_data->function (th_data->data);
-
-    destroy_thread_cb_data (th_data);
-  }
-
-  GST_DEBUG_OBJECT (self, "Thread finished");
-  return NULL;
 }
 
 static void
@@ -607,6 +476,7 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
 
   self->priv = KMS_PLAYER_END_POINT_GET_PRIVATE (self);
 
+  self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("pipeline");
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
@@ -626,12 +496,6 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
       G_CALLBACK (pad_added), self);
   g_signal_connect (self->priv->uridecodebin, "pad-removed",
       G_CALLBACK (pad_removed), self);
-
-  self->priv->tdata.actions = g_queue_new ();
-  g_cond_init (&self->priv->tdata.thread_cond);
-  self->priv->tdata.finish_thread = FALSE;
-  self->priv->tdata.thread =
-      g_thread_new (GST_OBJECT_NAME (self), kms_player_end_point_thread, self);
 }
 
 gboolean
