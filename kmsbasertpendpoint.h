@@ -39,6 +39,9 @@ typedef struct _KmsBaseRtpEndPointClass KmsBaseRtpEndPointClass;
 #define KMS_BASE_RTP_END_POINT_UNLOCK(elem) \
   (g_rec_mutex_unlock (&KMS_BASE_RTP_END_POINT_CAST ((elem))->media_mutex))
 
+#define AUDIO_RTPBIN_SEND_SINK "send_rtp_sink_0"
+#define VIDEO_RTPBIN_SEND_SINK "send_rtp_sink_1"
+
 struct _KmsBaseRtpEndPoint
 {
   KmsBaseSdpEndPoint parent;

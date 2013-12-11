@@ -33,9 +33,6 @@ G_DEFINE_TYPE (KmsBaseRtpEndPoint, kms_base_rtp_end_point,
 
 #define RTPBIN "rtpbin"
 
-#define AUDIO_RTPBIN_SEND_SINK "send_rtp_sink_0"
-#define VIDEO_RTPBIN_SEND_SINK "send_rtp_sink_1"
-
 /* Signals and args */
 enum
 {

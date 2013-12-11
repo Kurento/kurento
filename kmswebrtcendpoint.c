@@ -98,6 +98,10 @@ struct _KmsWebrtcEndPointPrivate
   gboolean finalized;
 
   NiceAgent *agent;
+  gint is_bundle;               /* Implies rtcp-mux */
+
+  KmsWebRTCConnection *bundle_connection;       /* Uses audio_connection */
+
   KmsWebRTCConnection *audio_connection;
   gboolean audio_ice_gathering_done;
   KmsWebRTCConnection *video_connection;
@@ -381,10 +385,56 @@ generate_fingerprint_sdp_attr (KmsWebrtcEndPoint * webrtc_end_point)
   return ret;
 }
 
-static void
-update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
+static guint
+rtpbin_get_ssrc (GstElement * rtpbin, const gchar * rtpbin_pad_name)
+{
+  guint ssrc = 0;
+  GstPad *pad = gst_element_get_static_pad (rtpbin, rtpbin_pad_name);
+  GstCaps *caps;
+  int i;
+
+  if (pad == NULL) {            /* FIXME: race condition problem */
+    pad = gst_element_get_request_pad (rtpbin, rtpbin_pad_name);
+  }
+
+  if (pad == NULL) {
+    GST_WARNING ("No pad");
+    return 0;
+  }
+
+  caps = gst_pad_query_caps (pad, NULL);
+  g_object_unref (pad);
+  if (caps == NULL) {
+    GST_WARNING ("No caps");
+    return 0;
+  }
+
+  GST_DEBUG ("Peer caps: %" GST_PTR_FORMAT, caps);
+
+  for (i = 0; i < gst_caps_get_size (caps); i++) {
+    GstStructure *st;
+
+    st = gst_caps_get_structure (caps, 0);
+    if (gst_structure_get_uint (st, "ssrc", &ssrc))
+      break;
+  }
+
+  gst_caps_unref (caps);
+
+  return ssrc;
+}
+
+static const gchar *
+update_sdp_media (KmsWebrtcEndPoint * webrtc_end_point, GstSDPMedia * media,
     const gchar * fingerprint, gboolean use_ipv6)
 {
+  KmsBaseRtpEndPoint *base_rtp_end_point =
+      KMS_BASE_RTP_END_POINT (webrtc_end_point);
+  gint is_bundle = g_atomic_int_get (&webrtc_end_point->priv->is_bundle);
+  const gchar *media_str;
+  guint stream_id;
+  const gchar *rtpbin_pad_name = NULL;
+  NiceAgent *agent = webrtc_end_point->priv->agent;
   const gchar *proto_str;
   GSList *candidates;
   GSList *walk;
@@ -398,12 +448,37 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
   guint conn_len, c;
   gchar *str;
 
+  media_str = gst_sdp_media_get_media (media);
+
+  if (is_bundle) {
+    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+      rtpbin_pad_name = AUDIO_RTPBIN_SEND_SINK;
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+      rtpbin_pad_name = VIDEO_RTPBIN_SEND_SINK;
+    } else {
+      GST_WARNING_OBJECT (webrtc_end_point, "Media \"%s\" not supported",
+          media_str);
+      return NULL;
+    }
+    stream_id = webrtc_end_point->priv->bundle_connection->stream_id;
+  } else {
+    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+      stream_id = webrtc_end_point->priv->audio_connection->stream_id;
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+      stream_id = webrtc_end_point->priv->video_connection->stream_id;
+    } else {
+      GST_WARNING_OBJECT (webrtc_end_point, "Media \"%s\" not supported",
+          media_str);
+      return NULL;
+    }
+  }
+
   proto_str = gst_sdp_media_get_proto (media);
   if (g_ascii_strcasecmp (SDP_MEDIA_RTP_AVP_PROTO, proto_str) != 0 &&
       g_ascii_strcasecmp (SDP_MEDIA_RTP_SAVPF_PROTO, proto_str)) {
     GST_WARNING ("Proto \"%s\" not supported", proto_str);
     ((GstSDPMedia *) media)->port = 0;
-    return;
+    return NULL;
   }
 
   gst_sdp_media_set_proto (media, SDP_MEDIA_RTP_SAVPF_PROTO);
@@ -411,9 +486,16 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
   rtp_default_candidate =
       nice_agent_get_default_local_candidate (agent, stream_id,
       NICE_COMPONENT_TYPE_RTP);
-  rtcp_default_candidate =
-      nice_agent_get_default_local_candidate (agent, stream_id,
-      NICE_COMPONENT_TYPE_RTCP);
+
+  if (is_bundle) {
+    rtcp_default_candidate =
+        nice_agent_get_default_local_candidate (agent, stream_id,
+        NICE_COMPONENT_TYPE_RTP);
+  } else {
+    rtcp_default_candidate =
+        nice_agent_get_default_local_candidate (agent, stream_id,
+        NICE_COMPONENT_TYPE_RTCP);
+  }
 
   nice_address_to_string (&rtp_default_candidate->addr, rtp_addr);
   rtp_port = nice_address_get_port (&rtp_default_candidate->addr);
@@ -431,7 +513,7 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
 
   if (use_ipv6 != rtp_is_ipv6) {
     GST_WARNING ("No valid rtp address type: %s", rtp_addr_type);
-    return;
+    return NULL;
   }
 
   ((GstSDPMedia *) media)->port = rtp_port;
@@ -462,10 +544,15 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
   candidates =
       nice_agent_get_local_candidates (agent, stream_id,
       NICE_COMPONENT_TYPE_RTP);
-  candidates =
-      g_slist_concat (candidates,
-      nice_agent_get_local_candidates (agent, stream_id,
-          NICE_COMPONENT_TYPE_RTCP));
+
+  if (is_bundle) {
+    gst_sdp_media_add_attribute ((GstSDPMedia *) media, "rtcp-mux", "");
+  } else {
+    candidates =
+        g_slist_concat (candidates,
+        nice_agent_get_local_candidates (agent, stream_id,
+            NICE_COMPONENT_TYPE_RTCP));
+  }
 
   for (walk = candidates; walk; walk = walk->next) {
     NiceCandidate *cand = walk->data;
@@ -480,6 +567,66 @@ update_sdp_media (GstSDPMedia * media, NiceAgent * agent, guint stream_id,
   }
 
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
+
+  if (rtpbin_pad_name != NULL) {
+    guint ssrc = rtpbin_get_ssrc (base_rtp_end_point->rtpbin, rtpbin_pad_name);
+
+    if (ssrc != 0) {
+      gchar *value;
+      GstStructure *sdes;
+
+      g_object_get (base_rtp_end_point->rtpbin, "sdes", &sdes, NULL);
+      value =
+          g_strdup_printf ("%" G_GUINT32_FORMAT " cname:%s", ssrc,
+          gst_structure_get_string (sdes, "cname"));
+      gst_structure_free (sdes);
+      gst_sdp_media_add_attribute (media, "ssrc", value);
+      g_free (value);
+    }
+  }
+
+  return media_str;
+}
+
+static gboolean
+sdp_message_is_bundle (GstSDPMessage * msg)
+{
+  gboolean is_bundle = FALSE;
+  guint i;
+
+  if (msg == NULL)
+    return FALSE;
+
+  for (i = 0;; i++) {
+    const gchar *val;
+    GRegex *regex;
+    GMatchInfo *match_info = NULL;
+
+    val = gst_sdp_message_get_attribute_val_n (msg, "group", i);
+    if (val == NULL)
+      break;
+
+    regex = g_regex_new ("BUNDLE(?<mids>.*)?", 0, 0, NULL);
+    g_regex_match (regex, val, 0, &match_info);
+    g_regex_unref (regex);
+
+    if (g_match_info_matches (match_info)) {
+      gchar *mids_str = g_match_info_fetch_named (match_info, "mids");
+      gchar **mids;
+
+      mids = g_strsplit (mids_str, " ", 0);
+      g_free (mids_str);
+      is_bundle = g_strv_length (mids) > 0;
+      g_strfreev (mids);
+      g_match_info_free (match_info);
+
+      break;
+    }
+
+    g_match_info_free (match_info);
+  }
+
+  return is_bundle;
 }
 
 static gboolean
@@ -487,8 +634,10 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     base_sdp_end_point, GstSDPMessage * msg)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (base_sdp_end_point);
+  gboolean is_bundle = FALSE;
   gchar *fingerprint;
   guint len, i;
+  gchar *bundle_mids = NULL;
 
   if (!nice_agent_gather_candidates (self->priv->agent,
           self->priv->audio_connection->stream_id)) {
@@ -518,26 +667,40 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     return FALSE;
   }
 
-  fingerprint = generate_fingerprint_sdp_attr (self);
+  is_bundle = sdp_message_is_bundle (base_sdp_end_point->remote_offer_sdp);
+  g_atomic_int_set (&self->priv->is_bundle, is_bundle);
 
+  GST_INFO ("BUNDLE: %" G_GUINT32_FORMAT, is_bundle);
+
+  if (is_bundle) {
+    self->priv->bundle_connection = self->priv->audio_connection;
+    bundle_mids = g_strdup ("BUNDLE");
+  }
+
+  fingerprint = generate_fingerprint_sdp_attr (self);
   len = gst_sdp_message_medias_len (msg);
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
     const gchar *media_str;
-    guint stream_id;
 
-    media_str = gst_sdp_media_get_media (media);
-    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->audio_connection->stream_id;
-    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
-      stream_id = self->priv->video_connection->stream_id;
-    } else {
-      GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
+    media_str = update_sdp_media (self, (GstSDPMedia *) media,
+        fingerprint, base_sdp_end_point->use_ipv6);
+
+    if (media_str == NULL)
       continue;
-    }
 
-    update_sdp_media ((GstSDPMedia *) media, self->priv->agent,
-        stream_id, fingerprint, base_sdp_end_point->use_ipv6);
+    if (is_bundle) {
+      gchar *tmp;
+
+      tmp = g_strconcat (bundle_mids, " ", media_str, NULL);
+      g_free (bundle_mids);
+      bundle_mids = tmp;
+    }
+  }
+
+  if (is_bundle) {
+    gst_sdp_message_add_attribute (msg, "group", bundle_mids);
+    g_free (bundle_mids);
   }
 
   if (fingerprint != NULL)
