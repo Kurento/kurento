@@ -54,7 +54,7 @@ public class DistributedGarbageCollectorTest {
 		}
 
 		Assert.assertFalse(dgc.removeReference(ref.getThriftRef()));
-		// TODO complete the test checking wether the obj has been removed or
+		// TODO complete the test checking whether the obj has been removed or
 		// not
 	}
 

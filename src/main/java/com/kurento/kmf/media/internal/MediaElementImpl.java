@@ -33,6 +33,7 @@ import com.kurento.kmf.media.MediaSource;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaPadRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -53,13 +54,43 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	private static final Logger log = LoggerFactory
 			.getLogger(MediaElementImpl.class);
 
+	/**
+	 * Constructor that configures, by default, the element as a non-collectable
+	 * object: No keepalives will be sent to the media server, and the
+	 * collection of this object by the JVM will NOT imply a destruction of the
+	 * object in the server.
+	 * 
+	 * The object created by this means, will be associated with the life cycle
+	 * of the enclosing {@link MediaPipeline}. In order to release the element,
+	 * the user can invoke {@link MediaElement#release()}
+	 * 
+	 * @param objectRef
+	 *            element reference
+	 */
 	public MediaElementImpl(MediaElementRef objectRef) {
-		super(objectRef);
+		super(objectRef, 0);
 	}
 
+	/**
+	 * Constructor with parameters to be sent to the media server. The entries
+	 * in the map will be used by the server to configure the object while
+	 * creating it.
+	 * 
+	 * If no garbage period is configured, using the structure
+	 * {@link MediaObjectConstructorParam}, the object will NOT be collected in
+	 * the media server, and will be associated with the life cycle of the
+	 * enclosing {@link MediaPipeline}. In order to release the element, the
+	 * user can invoke {@link MediaElement#release()}
+	 * 
+	 * @param objectRef
+	 *            element reference
+	 * @param params
+	 *            map of parameters. The key is the name of the parameter, while
+	 *            the value represents the param itself.
+	 */
 	public MediaElementImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
-		super(objectRef, params);
+		super(objectRef, setDefaultGarbagePeriodParam(params, 0));
 	}
 
 	@Override
@@ -729,7 +760,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 		 */
 		protected MediaElementBuilderImpl(final String elementType,
 				final MediaPipeline pipeline) {
-			super(elementType, pipeline);
+			super(elementType, pipeline, 0);
 		}
 
 		@SuppressWarnings("unchecked")

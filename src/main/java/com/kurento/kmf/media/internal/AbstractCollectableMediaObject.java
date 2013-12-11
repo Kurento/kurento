@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
 
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
+import com.kurento.kms.thrift.api.KmsMediaServerConstants;
 
 /**
  * Abstract class that encapsulates the registration of a {@link MediaObject} in
@@ -46,11 +48,31 @@ public abstract class AbstractCollectableMediaObject extends
 	private final int garbagePeriod;
 
 	/**
+	 * Default constructor. The distributed garbage collector will be configured
+	 * with an interval defined in
+	 * {@link KmsMediaServerConstants#DEFAULT_GARBAGE_COLLECTOR_PERIOD}
+	 * 
 	 * @param ref
 	 */
 	public AbstractCollectableMediaObject(MediaObjectRef ref) {
+		this(ref, DEFAULT_GARBAGE_COLLECTOR_PERIOD);
+	}
+
+	/**
+	 * Constructor intended to be used by extending classes that wish to
+	 * configure the garbage period. This is convenient for developers that want
+	 * to be relieved from having to create the map of constructor parameters.
+	 * 
+	 * @param ref
+	 *            reference to the object.
+	 * @param garbagePeriod
+	 *            the desired garbage period. 0 means the object will be
+	 *            excluded from the garbage collector.
+	 */
+	protected AbstractCollectableMediaObject(MediaObjectRef ref,
+			int garbagePeriod) {
 		super(ref);
-		this.garbagePeriod = DEFAULT_GARBAGE_COLLECTOR_PERIOD;
+		this.garbagePeriod = garbagePeriod;
 	}
 
 	/**
@@ -68,6 +90,28 @@ public abstract class AbstractCollectableMediaObject extends
 		} else {
 			this.garbagePeriod = DEFAULT_GARBAGE_COLLECTOR_PERIOD;
 		}
+	}
+
+	/**
+	 * Set a garbage period if none is found in the params map.
+	 * 
+	 * @param params
+	 *            parameters used to build the object
+	 * @param garbagePeriod
+	 *            the garbage period to use if not previously set.
+	 * @return The map of parameters, with the garbage period set.
+	 */
+	protected static Map<String, MediaParam> setDefaultGarbagePeriodParam(
+			Map<String, MediaParam> params, int garbagePeriod) {
+		MediaObjectConstructorParam objConstructorParam = (MediaObjectConstructorParam) params
+				.get(CONSTRUCTOR_PARAMS_DATA_TYPE);
+		if (objConstructorParam == null) {
+			objConstructorParam = new MediaObjectConstructorParam();
+			objConstructorParam.setGarbageCollectorPeriod(garbagePeriod);
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, objConstructorParam);
+		}
+
+		return params;
 	}
 
 	@Override
@@ -95,7 +139,6 @@ public abstract class AbstractCollectableMediaObject extends
 	@Override
 	protected void finalize() {
 		distributedGarbageCollector.removeReference(objectRef.getThriftRef());
-		super.finalize();
 	}
 
 	protected static abstract class AbstractCollectableMediaObjectBuilder<T extends AbstractCollectableMediaObjectBuilder<T, E>, E extends MediaObject>
@@ -104,15 +147,21 @@ public abstract class AbstractCollectableMediaObject extends
 		private final MediaObjectConstructorParam param = new MediaObjectConstructorParam();
 
 		protected AbstractCollectableMediaObjectBuilder(
-				final String elementType, final MediaPipeline pipeline) {
+				final String elementType, final MediaPipeline pipeline,
+				final int garbagePeriod) {
 			super(elementType, pipeline);
+			setGarbagePeriod(garbagePeriod);
 		}
 
 		public final T withGarbagePeriod(int period) {
+			setGarbagePeriod(period);
+			return self();
+		}
+
+		private void setGarbagePeriod(int period) {
 			param.setGarbageCollectorPeriod(period);
 			params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 					param);
-			return self();
 		}
 
 	}

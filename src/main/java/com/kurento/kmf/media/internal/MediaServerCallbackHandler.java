@@ -148,13 +148,21 @@ public class MediaServerCallbackHandler {
 	}
 
 	public boolean removeAllListeners(MediaObject mediaObject) {
-		return this.listenerMap.remove(((AbstractMediaObject) mediaObject)
-				.getObjectRef().getId()) != null;
+		return this.removeAllListeners(((AbstractMediaObject) mediaObject)
+				.getObjectRef().getId());
+	}
+
+	public boolean removeAllListeners(Long mediaObjectId) {
+		return this.listenerMap.remove(mediaObjectId) != null;
 	}
 
 	public boolean removeAllErrorListeners(MediaObject mediaObject) {
-		return this.errorListenerMap.remove(((AbstractMediaObject) mediaObject)
-				.getObjectRef().getId()) != null;
+		return this.removeAllErrorListeners(((AbstractMediaObject) mediaObject)
+				.getObjectRef().getId());
+	}
+
+	public boolean removeAllErrorListeners(Long mediaObjectId) {
+		return this.errorListenerMap.remove(mediaObjectId) != null;
 	}
 
 	@SuppressWarnings("unchecked")

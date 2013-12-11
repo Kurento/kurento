@@ -67,10 +67,10 @@ public abstract class AbstractMediaObject implements MediaObject {
 	protected MediaServerClientPoolService clientPool;
 
 	@Autowired
-	private MediaServerCallbackHandler handler;
+	protected ApplicationContext ctx;
 
 	@Autowired
-	protected ApplicationContext ctx;
+	private MediaServerCallbackHandler handler;
 
 	@Autowired
 	private MediaApiConfiguration config;
@@ -270,12 +270,6 @@ public abstract class AbstractMediaObject implements MediaObject {
 		log.debug("Object {0}: Successfully invoked method {1}", getId(),
 				method);
 		return (AbstractMediaParam) ctx.getBean("mediaParam", result);
-	}
-
-	@Override
-	protected void finalize() {
-		handler.removeAllListeners(this);
-		log.debug("Object {0}: Removed reference", getId());
 	}
 
 	@Override

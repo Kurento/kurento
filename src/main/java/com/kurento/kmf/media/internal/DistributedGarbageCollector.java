@@ -17,11 +17,11 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaErrorCodesConstants.MEDIA_OBJECT_NOT_FOUND;
 import static com.kurento.kms.thrift.api.KmsMediaServerConstants.DEFAULT_GARBAGE_COLLECTOR_PERIOD;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -46,9 +46,12 @@ public class DistributedGarbageCollector {
 	@Autowired
 	protected MediaServerClientPoolService clientPool;
 
-	private final Map<Long, Integer> refCounters = new HashMap<Long, Integer>();
+	@Autowired
+	private MediaServerCallbackHandler handler;
+
+	private final ConcurrentMap<Long, AtomicInteger> refCounters = new ConcurrentHashMap<Long, AtomicInteger>();
 	// TODO Let spring manage this timers with a TimerTaskExecutor
-	private final ConcurrentHashMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
+	private final ConcurrentMap<Long, Timer> timers = new ConcurrentHashMap<Long, Timer>();
 
 	/**
 	 * Registers a {@link MediaObject} in the distributed garbage collector. A
@@ -76,15 +79,14 @@ public class DistributedGarbageCollector {
 				30000); // TODO: message and error code
 
 		Long refId = Long.valueOf(objectRef.id);
-		synchronized (this) {
-			Integer counter = refCounters.get(refId);
-			if (counter == null) {
-				counter = Integer.valueOf(1);
-			} else {
-				counter++;
-			}
-			refCounters.put(refId, counter);
+
+		AtomicInteger counter = refCounters.putIfAbsent(refId,
+				new AtomicInteger(1));
+
+		if (counter != null) {
+			counter.incrementAndGet();
 		}
+
 		// TODO Let spring manage this timers with a TimerTaskExecutor
 		Timer timer = new Timer(true);
 		timers.put(refId, timer);
@@ -100,7 +102,7 @@ public class DistributedGarbageCollector {
 	}
 
 	/**
-	 * Removes a reference to a {@link MediaObject} form the Distributed Garbage
+	 * Removes a reference to a {@link MediaObject} from the Distributed Garbage
 	 * Collector. This implies that no more keepalives will be sent to the media
 	 * server.
 	 * 
@@ -108,25 +110,30 @@ public class DistributedGarbageCollector {
 	 * @return true if the object was removed. False if no reference to the
 	 *         object was found.
 	 */
-	public boolean removeReference(KmsMediaObjectRef objectRef) {
+	public boolean removeReference(final KmsMediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
+
 		Long refId = Long.valueOf(objectRef.id);
-		synchronized (this) {
-			Integer counter = refCounters.remove(refId);
-			if (counter == null) {
-				return false;
-			} else if (--counter > 0) {
-				refCounters.put(refId, counter);
-				return true;
-			}
+
+		AtomicInteger counter = refCounters.get(refId);
+		if (counter == null) {
+			return false;
+		} else if (counter.decrementAndGet() > 0) {
+			return true;
 		}
+
+		refCounters.remove(refId);
+
+		handler.removeAllListeners(refId);
+		handler.removeAllErrorListeners(refId);
 
 		Timer timer = timers.remove(refId);
 		if (timer == null) {
-			log.error("Inconsistent state in DistributedGarbageCollector");
+			log.error("Inconsistent state in DistributedGarbageCollector: no timer found for a media object that was not collected.");
 		} else {
 			timer.cancel();
 		}
+
 		return true;
 	}
 
