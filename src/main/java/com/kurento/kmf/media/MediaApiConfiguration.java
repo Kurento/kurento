@@ -78,7 +78,7 @@ public class MediaApiConfiguration {
 	 * Size of the pool of thrift clients. Each pool created by the abstract
 	 * pool will be instantiated with this number of clients.
 	 */
-	private int clientPoolSize = 20;
+	private int clientPoolSize = 5;
 
 	/**
 	 * Obtains the address where the thrift server exposed by the Kurento Media

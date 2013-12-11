@@ -14,14 +14,13 @@
  */
 package com.kurento.kmf.media.internal.pool;
 
-import static org.apache.commons.pool.impl.GenericObjectPool.WHEN_EXHAUSTED_FAIL;
-
 import java.util.NoSuchElementException;
 
-import org.apache.commons.pool.BasePoolableObjectFactory;
-import org.apache.commons.pool.ObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool;
-import org.apache.commons.pool.impl.GenericObjectPool.Config;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PoolUtils;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -34,11 +33,11 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
 	private ObjectPool<T> pool;
 
-	protected void init(BasePoolableObjectFactory<T> factory) {
-		Config config = new Config();
-		config.maxActive = apiConfig.getClientPoolSize();
-		config.whenExhaustedAction = WHEN_EXHAUSTED_FAIL;
-		this.pool = new GenericObjectPool<T>(factory, config);
+	protected void init(BasePooledObjectFactory<T> factory) {
+		GenericObjectPoolConfig config = new GenericObjectPoolConfig();
+		config.setMinIdle(apiConfig.getClientPoolSize());
+		this.pool = PoolUtils.erodingPool(new GenericObjectPool<T>(factory,
+				config));
 	}
 
 	@Override

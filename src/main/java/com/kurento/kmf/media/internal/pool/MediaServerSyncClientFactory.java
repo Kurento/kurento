@@ -14,7 +14,9 @@
  */
 package com.kurento.kmf.media.internal.pool;
 
-import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
@@ -28,14 +30,19 @@ import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class MediaServerSyncClientFactory extends
-		BasePoolableObjectFactory<Client> {
+		BasePooledObjectFactory<Client> {
 
 	@Autowired
 	private MediaApiConfiguration apiConfig;
 
 	@Override
-	public Client makeObject() {
+	public Client create() throws Exception {
 		return createSyncClient();
+	}
+
+	@Override
+	public PooledObject<Client> wrap(Client obj) {
+		return new DefaultPooledObject<Client>(obj);
 	}
 
 	/**
@@ -48,8 +55,8 @@ public class MediaServerSyncClientFactory extends
 	 * @return <code>true</code> if the transport is open.
 	 */
 	@Override
-	public boolean validateObject(Client obj) {
-		return obj.getOutputProtocol().getTransport().isOpen();
+	public boolean validateObject(PooledObject<Client> obj) {
+		return obj.getObject().getOutputProtocol().getTransport().isOpen();
 	}
 
 	/**
@@ -59,8 +66,8 @@ public class MediaServerSyncClientFactory extends
 	 *            The object to destroy.
 	 */
 	@Override
-	public void destroyObject(Client obj) {
-		obj.getOutputProtocol().getTransport().close();
+	public void destroyObject(PooledObject<Client> obj) {
+		obj.getObject().getOutputProtocol().getTransport().close();
 	}
 
 	private Client createSyncClient() {
@@ -78,4 +85,5 @@ public class MediaServerSyncClientFactory extends
 
 		return new Client(prot);
 	}
+
 }

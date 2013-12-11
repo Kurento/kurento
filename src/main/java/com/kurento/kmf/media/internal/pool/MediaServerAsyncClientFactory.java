@@ -16,7 +16,9 @@ package com.kurento.kmf.media.internal.pool;
 
 import java.io.IOException;
 
-import org.apache.commons.pool.BasePoolableObjectFactory;
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.thrift.async.TAsyncClient;
 import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -30,14 +32,19 @@ import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 
 public class MediaServerAsyncClientFactory extends
-		BasePoolableObjectFactory<AsyncClient> {
+		BasePooledObjectFactory<AsyncClient> {
 
 	@Autowired
 	private MediaApiConfiguration apiConfig;
 
 	@Override
-	public AsyncClient makeObject() {
+	public AsyncClient create() throws Exception {
 		return createAsyncClient();
+	}
+
+	@Override
+	public PooledObject<AsyncClient> wrap(AsyncClient obj) {
+		return new DefaultPooledObject<AsyncClient>(obj);
 	}
 
 	/**
@@ -49,13 +56,13 @@ public class MediaServerAsyncClientFactory extends
 	 * @return <code>true</code> If the client has no error
 	 */
 	@Override
-	public boolean validateObject(AsyncClient obj) {
+	public boolean validateObject(PooledObject<AsyncClient> obj) {
 		// TODO check if this is enough to guarantee the client
-		return !obj.hasError();
+		return !obj.getObject().hasError();
 	}
 
 	@Override
-	public void destroyObject(AsyncClient obj) {
+	public void destroyObject(PooledObject<AsyncClient> obj) {
 		// TODO add impl if needed
 	}
 
