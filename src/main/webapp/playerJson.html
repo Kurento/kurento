@@ -6,15 +6,16 @@
 <script src="./js/kws-content-api.js"></script>
 <script>
 	var conn;
-	var myUrl = document.URL;
-	var myPath = myUrl.substring(0, myUrl.lastIndexOf("/") + 1);
+	var playing = false;
 
 	function stop() {
 		conn.terminate();
+		remoteVideo.style.background = "";
+		playing = false;
 	}
 
 	function play() {
-		var endpoint = myPath + selectUrl.value;
+		var handler = document.getElementById("handler").value;
 		var options = {
 			remoteVideoTag: "remoteVideo",
 			audio: "sendrecv",
@@ -26,9 +27,14 @@
 		document.getElementById("flows").value = "";
 		document.getElementById("events").value = "";
 
+		// Show spinner
+		remoteVideo.poster = "img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('img/spinner.gif') no-repeat";
+
 		// Kws-Content-API instantiation
 		var KwsContentPlayer = kwsContentApi.KwsContentPlayer;
-		conn = new KwsContentPlayer(endpoint, options);
+		conn = new KwsContentPlayer(handler, options);
+		playing = true;
 
 		// Start and terminate events
 		conn.on("start", function() {
@@ -78,7 +84,7 @@
 	<table style="border-spacing: 10px;">
 		<tr>
 			<td><label for="url">Video type</label></td>
-			<td style="width: 300px;"><select id="url" name="url"
+			<td style="width: 300px;"><select id="handler"
 				style="width: 100%;">
 					<option value="playerJson/webm">WEBM video</option>
 					<option value="playerJson/mov">MOV video</option>
@@ -89,7 +95,9 @@
 					<option value="playerJsonJackVader">JackVader Filter</option>
 					<option value="playerJsonEvents">ZBar Filter</option>
 			</select></td>
-			<td rowspan="8"><video id="remoteVideo" autoplay></video></td>
+			<td rowspan="8"><video id="remoteVideo" autoplay controls
+					width="640px" height="360px">
+				</video></td>
 		</tr>
 		<tr>
 			<td><label for="status">Status</label></td>
@@ -113,17 +121,17 @@
 	<script>
 		var remoteVideo = document.getElementById("remoteVideo");
 		var inputStatus = document.getElementById("status");
-		var selectUrl = document.getElementById("url");
 
 		// Adding listeners to video tag
-		remoteVideo.addEventListener('play', function(event) {
-			inputStatus.value = 'play';
-			console.log(status.value);
+		remoteVideo.addEventListener("play", function(event) {
+			if (!playing) {
+				play();
+			}
+			inputStatus.value = "play";
 		});
-		//remoteVideo.addEventListener('playing', function(event) {
-		//	inputStatus.value = 'playing';
-		//	console.log(status.value);
-		//});
+		remoteVideo.addEventListener("playing", function(event) {
+			inputStatus.value = "playing";
+		});
 	</script>
 </body>
 </html>

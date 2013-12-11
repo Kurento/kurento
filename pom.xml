@@ -19,7 +19,7 @@
 		<slf4j-api.version>1.7.5</slf4j-api.version>
 		<cors-filter.version>1.7.1</cors-filter.version>
 		<kmf-content-api.version>1.0.0</kmf-content-api.version>
-		<kws-content-api.version>1.0.0</kws-content-api.version>
+		<kws-content-api.version>1.0.1-SNAPSHOT</kws-content-api.version>
 
 		<!-- Plugins Versions -->
 		<maven-war-plugin.version>2.3</maven-war-plugin.version>
