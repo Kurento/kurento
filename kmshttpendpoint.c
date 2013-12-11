@@ -26,6 +26,7 @@
 #include "kmsrecordingprofile.h"
 #include "kms-enumtypes.h"
 #include "kmsutils.h"
+#include "kmsloop.h"
 
 #define PLUGIN_NAME "httpendpoint"
 
@@ -58,47 +59,6 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 )
 
 typedef void (*KmsActionFunc) (gpointer user_data);
-
-#define KMS_HTTP_END_POINT_GET_LOCK(obj) (               \
-  &KMS_HTTP_END_POINT (obj)->priv->tdata.thread_mutex    \
-)
-
-#define KMS_HTTP_END_POINT_GET_COND(obj) (               \
-  &KMS_HTTP_END_POINT (obj)->priv->tdata.thread_cond     \
-)
-
-#define KMS_HTTP_END_POINT_LOCK(obj) (                   \
-  g_mutex_lock (KMS_HTTP_END_POINT_GET_LOCK (obj))       \
-)
-
-#define KMS_HTTP_END_POINT_UNLOCK(obj) (                 \
-  g_mutex_unlock (KMS_HTTP_END_POINT_GET_LOCK (obj))     \
-)
-
-#define KMS_HTTP_END_POINT_WAIT(obj) (                   \
-  g_cond_wait (KMS_HTTP_END_POINT_GET_COND (obj),        \
-    KMS_HTTP_END_POINT_GET_LOCK (obj))                   \
-)
-
-#define KMS_HTTP_END_POINT_SIGNAL(obj) (                 \
-  g_cond_signal (KMS_HTTP_END_POINT_GET_COND (obj))      \
-)
-
-struct thread_data
-{
-  GQueue *actions;
-  gboolean finish_thread;
-  GThread *thread;
-  GCond thread_cond;
-  GMutex thread_mutex;
-};
-
-struct thread_cb_data
-{
-  KmsActionFunc function;
-  gpointer data;
-  GDestroyNotify notify;
-};
 
 typedef struct _GetData GetData;
 typedef struct _PostData PostData;
@@ -142,8 +102,8 @@ struct _KmsHttpEndPointPrivate
   KmsHttpEndPointMethod method;
   GstElement *pipeline;
   gboolean start;
+  KmsLoop *loop;
   KmsRecordingProfile profile;
-  struct thread_data tdata;
   union
   {
     GetData *get;
@@ -561,26 +521,6 @@ bus_message (GstBus * bus, GstMessage * msg, KmsHttpEndPoint * self)
 {
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS)
     g_signal_emit (G_OBJECT (self), http_ep_signals[SIGNAL_EOS], 0);
-}
-
-static void
-kms_http_end_point_add_action (KmsHttpEndPoint * self,
-    KmsActionFunc function, gpointer data, GDestroyNotify notify)
-{
-  struct thread_cb_data *th_data;
-
-  th_data = g_slice_new0 (struct thread_cb_data);
-
-  th_data->data = data;
-  th_data->function = function;
-  th_data->notify = notify;
-
-  KMS_HTTP_END_POINT_LOCK (self);
-
-  g_queue_push_tail (self->priv->tdata.actions, th_data);
-
-  KMS_HTTP_END_POINT_SIGNAL (self);
-  KMS_HTTP_END_POINT_UNLOCK (self);
 }
 
 static void
@@ -1107,7 +1047,7 @@ kms_http_end_point_reconfigure_pipeline (KmsHttpEndPoint * httpep)
   kms_http_end_point_free_config_data (httpep);
 }
 
-static void
+static gboolean
 kms_http_end_point_do_reconfiguration (gpointer user_data)
 {
   KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (user_data);
@@ -1119,6 +1059,8 @@ kms_http_end_point_do_reconfiguration (gpointer user_data)
   httpep->priv->get->has_data = FALSE;
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (httpep));
+
+  return G_SOURCE_REMOVE;
 }
 
 static GstPadProbeReturn
@@ -1140,7 +1082,7 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   /* remove the probe first */
   gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
 
-  kms_http_end_point_add_action (httpep,
+  kms_loop_idle_add_full (httpep->priv->loop, G_PRIORITY_HIGH_IDLE,
       kms_http_end_point_do_reconfiguration, g_object_ref (httpep),
       g_object_unref);
 
@@ -1521,19 +1463,8 @@ kms_http_end_point_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
-  if (self->priv->tdata.thread != NULL) {
-    /* clean up object here */
-    KMS_HTTP_END_POINT_LOCK (self);
-    self->priv->tdata.finish_thread = TRUE;
-    KMS_HTTP_END_POINT_SIGNAL (self);
-    KMS_HTTP_END_POINT_UNLOCK (self);
-
-    if (g_thread_self () != self->priv->tdata.thread)
-      g_thread_join (self->priv->tdata.thread);
-
-    g_thread_unref (self->priv->tdata.thread);
-    self->priv->tdata.thread = NULL;
-  }
+  if (self->priv->loop != NULL)
+    g_clear_object (&self->priv->loop);
 
   switch (self->priv->method) {
     case KMS_HTTP_END_POINT_METHOD_GET:
@@ -1552,27 +1483,11 @@ kms_http_end_point_dispose (GObject * object)
 }
 
 static void
-destroy_thread_cb_data (gpointer data)
-{
-  struct thread_cb_data *th_data = data;
-
-  if (th_data->notify)
-    th_data->notify (th_data->data);
-
-  g_slice_free (struct thread_cb_data, th_data);
-}
-
-static void
 kms_http_end_point_finalize (GObject * object)
 {
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
-
-  g_cond_clear (&self->priv->tdata.thread_cond);
-  g_mutex_clear (&self->priv->tdata.thread_mutex);
-
-  g_queue_free_full (self->priv->tdata.actions, destroy_thread_cb_data);
 
   switch (self->priv->method) {
     case KMS_HTTP_END_POINT_METHOD_GET:
@@ -1648,7 +1563,7 @@ kms_change_internal_pipeline_state (KmsHttpEndPoint * self, gboolean start)
   self->priv->start = start;
 }
 
-static void
+static gboolean
 change_state_cb (gpointer user_data)
 {
   struct cb_data *tmp_data = (struct cb_data *) user_data;
@@ -1659,6 +1574,8 @@ change_state_cb (gpointer user_data)
     kms_change_internal_pipeline_state (tmp_data->self, tmp_data->start);
 
   KMS_ELEMENT_UNLOCK (tmp_data->self);
+
+  return G_SOURCE_REMOVE;
 }
 
 static void
@@ -1678,8 +1595,8 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
         tmp_data->self = g_object_ref (self);
         tmp_data->start = g_value_get_boolean (value);
 
-        kms_http_end_point_add_action (self, change_state_cb, tmp_data,
-            destroy_cb_data);
+        kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+            change_state_cb, tmp_data, destroy_cb_data);
       }
       break;
     }
@@ -1715,50 +1632,6 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
       break;
   }
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
-}
-
-static void
-finish_thread (gpointer data, GObject * self)
-{
-  g_atomic_pointer_compare_and_exchange ((gpointer *) data, self, NULL);
-}
-
-static gpointer
-kms_http_end_point_thread (gpointer data)
-{
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (data);
-  struct thread_cb_data *th_data;
-
-  g_object_weak_ref (G_OBJECT (self), finish_thread, &self);
-
-  /* Main thread loop */
-  while (g_atomic_pointer_get (&self)) {
-    KMS_HTTP_END_POINT_LOCK (self);
-    while (!self->priv->tdata.finish_thread &&
-        g_queue_is_empty (self->priv->tdata.actions)) {
-      GST_DEBUG_OBJECT (self, "Waiting for elements to remove");
-      KMS_HTTP_END_POINT_WAIT (self);
-      GST_DEBUG_OBJECT (self, "Waked up");
-    }
-
-    if (self->priv->tdata.finish_thread) {
-      g_object_weak_unref (G_OBJECT (self), finish_thread, &self);
-      KMS_HTTP_END_POINT_UNLOCK (self);
-      break;
-    }
-
-    th_data = g_queue_pop_head (self->priv->tdata.actions);
-
-    KMS_HTTP_END_POINT_UNLOCK (self);
-
-    if (th_data->function)
-      th_data->function (th_data->data);
-
-    destroy_thread_cb_data (th_data);
-  }
-
-  GST_DEBUG_OBJECT (self, "Thread finished");
-  return NULL;
 }
 
 static void
@@ -1852,15 +1725,10 @@ kms_http_end_point_init (KmsHttpEndPoint * self)
 {
   self->priv = KMS_HTTP_END_POINT_GET_PRIVATE (self);
 
+  self->priv->loop = kms_loop_new ();
   self->priv->method = KMS_HTTP_END_POINT_METHOD_UNDEFINED;
   self->priv->pipeline = NULL;
   self->priv->start = FALSE;
-
-  self->priv->tdata.actions = g_queue_new ();
-  g_cond_init (&self->priv->tdata.thread_cond);
-  self->priv->tdata.finish_thread = FALSE;
-  self->priv->tdata.thread =
-      g_thread_new (GST_OBJECT_NAME (self), kms_http_end_point_thread, self);
 }
 
 gboolean
