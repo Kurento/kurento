@@ -2,7 +2,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>war</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-api-test</artifactId>
@@ -549,6 +549,6 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kmf-content-api-test-1.0.0</tag>
+		<tag>develop</tag>
 	</scm>
 </project>
