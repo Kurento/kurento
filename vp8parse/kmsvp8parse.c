@@ -134,6 +134,11 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
       self->priv->framerate_denom = denom;
       update_caps = TRUE;
     }
+
+    if (self->priv->framerate_denom != -1 && self->priv->framerate_num != -1) {
+      gst_base_parse_set_frame_rate (GST_BASE_PARSE (self),
+          self->priv->framerate_num, self->priv->framerate_denom, 0, 0);
+    }
   }
 
   g_value_reset (&value);
