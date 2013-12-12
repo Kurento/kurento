@@ -17,9 +17,10 @@
 #include <gst/gst.h>
 #include <glib.h>
 #include <gio/gio.h>
+#include <glib/gstdio.h>
 
 #define CERTTOOL_TEMPLATE "/tmp/certtool.tmpl"
-#define CERT_KEY_PEM_FILE "/tmp/certkey.pem"
+#define CERT_KEY_PEM_FILE "certkey.pem"
 
 #define CLIENT_RECEIVES_VIDEO "offerer_receives_video"
 #define SERVER_RECEIVES_VIDEO "answerer_receives_video"
@@ -107,28 +108,42 @@ get_socket_port (GSocket * socket)
   return port;
 }
 
-static void
-generate_certkey_pem_file ()
+static gchar *
+generate_certkey_pem_file_path ()
+{
+  gchar t[] = "/tmp/XXXXXX";
+  gchar *dir;
+
+  dir = mkdtemp (t);
+
+  return g_strdup_printf ("%s/%s", dir, CERT_KEY_PEM_FILE);
+}
+
+static gboolean
+generate_certkey_pem_file (const gchar * cert_key_pem_file)
 {
   gchar *cmd;
   int ret;
 
   cmd =
       g_strconcat ("/bin/sh -c \"certtool --generate-privkey --outfile ",
-      CERT_KEY_PEM_FILE, "\"", NULL);
+      cert_key_pem_file, "\"", NULL);
   ret = system (cmd);
   g_free (cmd);
-  fail_unless (ret != -1);
+
+  if (ret == -1)
+    return FALSE;
 
   cmd =
       g_strconcat
       ("/bin/sh -c \"echo 'organization = kurento' > ", CERTTOOL_TEMPLATE,
-      " && certtool --generate-self-signed --load-privkey ", CERT_KEY_PEM_FILE,
-      " --template ", CERTTOOL_TEMPLATE, " >> ", CERT_KEY_PEM_FILE,
+      " && certtool --generate-self-signed --load-privkey ", cert_key_pem_file,
+      " --template ", CERTTOOL_TEMPLATE, " >> ", cert_key_pem_file,
       " 2>/dev/null\"", NULL);
   ret = system (cmd);
   g_free (cmd);
-  fail_unless (ret != -1);
+
+  return (ret != -1);
 }
 
 static gboolean
@@ -181,6 +196,8 @@ fakesink_server_hand_off (GstElement * fakesink, GstBuffer * buf,
 
 GST_START_TEST (test_dtlssrtp)
 {
+  gchar *cert_key_pem_file;
+
   GMainLoop *loop = g_main_loop_new (NULL, TRUE);
   GstElement *pipeline = gst_pipeline_new (__FUNCTION__);
   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
@@ -211,7 +228,8 @@ GST_START_TEST (test_dtlssrtp)
   GstElement *udpsrc_server = gst_element_factory_make ("udpsrc", NULL);
   GstElement *fakesink_server = gst_element_factory_make ("fakesink", NULL);
 
-  generate_certkey_pem_file ();
+  cert_key_pem_file = generate_certkey_pem_file_path ();
+  generate_certkey_pem_file (cert_key_pem_file);
 
   g_object_set (G_OBJECT (pipeline), "async-handling", TRUE, NULL);
   gst_bus_add_signal_watch (bus);
@@ -232,7 +250,7 @@ GST_START_TEST (test_dtlssrtp)
   g_object_set (G_OBJECT (dtlssrtpdec_client), "channel-id", "client-id", NULL);
   g_object_set (G_OBJECT (dtlssrtpdec_client), "is-client", TRUE, NULL);
   g_object_set (G_OBJECT (dtlssrtpdec_client), "certificate-pem-file",
-      CERT_KEY_PEM_FILE, NULL);
+      cert_key_pem_file, NULL);
   g_object_set (G_OBJECT (udpsink_client), "socket", socket_client, NULL);
   g_object_set (G_OBJECT (udpsink_client), "sync", FALSE, NULL);
   g_object_set (G_OBJECT (udpsink_client), "port",
@@ -242,7 +260,7 @@ GST_START_TEST (test_dtlssrtp)
   g_object_set (G_OBJECT (dtlssrtpenc_server), "channel-id", "server-id", NULL);
   g_object_set (G_OBJECT (dtlssrtpdec_server), "channel-id", "server-id", NULL);
   g_object_set (G_OBJECT (dtlssrtpdec_server), "certificate-pem-file",
-      CERT_KEY_PEM_FILE, NULL);
+      cert_key_pem_file, NULL);
   g_object_set (G_OBJECT (udpsink_server), "socket", socket_server, NULL);
   g_object_set (G_OBJECT (udpsink_server), "sync", FALSE, NULL);
   g_object_set (G_OBJECT (udpsink_server), "port",
@@ -290,6 +308,9 @@ GST_START_TEST (test_dtlssrtp)
 
   finalize_socket (&socket_client);
   finalize_socket (&socket_server);
+
+  g_remove (cert_key_pem_file);
+  g_free (cert_key_pem_file);
 }
 
 GST_END_TEST
