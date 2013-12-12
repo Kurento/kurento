@@ -52,6 +52,15 @@ G_DEFINE_TYPE_WITH_CODE (KmsVp8Parse, kms_vp8_parse,
     GST_DEBUG_CATEGORY_INIT (kms_vp8_parse_debug_category, PLUGIN_NAME,
         0, "debug category for vp8parse element"));
 
+static gboolean
+kms_vp8_parse_start (GstBaseParse * parse)
+{
+  KmsVp8Parse *self = KMS_VP8_PARSE (parse);
+
+  self->priv->started = FALSE;
+  return TRUE;
+}
+
 static GstFlowReturn
 kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     gint * skipsize)
@@ -106,6 +115,7 @@ kms_vp8_parse_class_init (KmsVp8ParseClass * klass)
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_vp8_parse_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_vp8_parse_finalize);
 
+  base_parse_class->start = GST_DEBUG_FUNCPTR (kms_vp8_parse_start);
   base_parse_class->handle_frame =
       GST_DEBUG_FUNCPTR (kms_vp8_parse_handle_frame);
   /* Properties initialization */
