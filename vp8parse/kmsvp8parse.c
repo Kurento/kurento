@@ -65,7 +65,28 @@ static GstFlowReturn
 kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     gint * skipsize)
 {
-  return GST_FLOW_OK;
+  GstMapInfo minfo;
+  KmsVp8Parse *self = KMS_VP8_PARSE (parse);
+
+  if (!gst_buffer_map (frame->buffer, &minfo, GST_MAP_READ)) {
+    GST_ERROR_OBJECT (parse, "Failed to map input buffer");
+    return GST_FLOW_ERROR;
+  }
+
+  if (self->priv->started)
+    goto end;
+
+  gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse),
+      gst_pad_get_current_caps (GST_BASE_PARSE_SINK_PAD (parse)));
+
+  self->priv->started = TRUE;
+end:
+
+  frame->size = minfo.size;
+
+  gst_buffer_unmap (frame->buffer, &minfo);
+
+  return gst_base_parse_finish_frame (parse, frame, frame->size);
 }
 
 void
