@@ -27,6 +27,7 @@
 
 #include <vpx/vpx_decoder.h>
 #include <vpx/vp8dx.h>
+
 #define GST_CAT_DEFAULT kms_vp8_parse_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
@@ -44,6 +45,12 @@ struct _KmsVp8ParsePrivate
 
   gint width;
   gint height;
+
+  gint framerate_num;
+  gint framerate_denom;
+
+  GstClockTime last_pts;
+  GstClockTime last_dts;
 };
 
 /* pad templates */
@@ -68,14 +75,70 @@ kms_vp8_parse_start (GstBaseParse * parse)
 
   self->priv->height = -1;
   self->priv->width = -1;
+  self->priv->framerate_denom = -1;
+  self->priv->framerate_num = -1;
+
+  self->priv->last_dts = GST_CLOCK_TIME_NONE;
+  self->priv->last_pts = GST_CLOCK_TIME_NONE;
+
   return TRUE;
 }
 
 static gboolean
 kms_vp8_parse_check_caps_ready (KmsVp8Parse * self)
 {
-  return (self->priv->width != -1) && (self->priv->height != -1);
+  return (self->priv->framerate_denom != -1) &&
+      (self->priv->framerate_num != -1)
+      && (self->priv->width != -1) && (self->priv->height != -1);
+}
 
+static gboolean
+kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
+{
+  GValue value = G_VALUE_INIT;
+  GstClockTime duration;
+  gint num, denom;
+  gboolean update_caps = FALSE;
+
+  if (GST_CLOCK_TIME_IS_VALID (frame->buffer->duration)) {
+    GST_INFO_OBJECT (self, "Using buffer duration");
+    duration = frame->buffer->duration;
+  } else if (GST_CLOCK_TIME_IS_VALID (self->priv->last_pts) &&
+      GST_BUFFER_PTS_IS_VALID (frame->buffer)) {
+    duration = frame->buffer->pts - self->priv->last_pts;
+    GST_INFO_OBJECT (self, "Using pts difference");
+  } else if (GST_CLOCK_TIME_IS_VALID (self->priv->last_dts) &&
+      GST_BUFFER_PTS_IS_VALID (frame->buffer)) {
+    duration = frame->buffer->dts - self->priv->last_dts;
+    GST_INFO_OBJECT (self, "Using dts difference");
+  } else {
+    duration = GST_CLOCK_TIME_NONE;
+    GST_INFO_OBJECT (self, "No framerate calculation");
+  }
+
+  g_value_init (&value, GST_TYPE_FRACTION);
+  gst_value_set_fraction (&value, (GST_SECOND / duration) * 1000, 1000);
+
+  num = gst_value_get_fraction_numerator (&value);
+  denom = gst_value_get_fraction_denominator (&value);
+
+  if (num != 0) {
+    if (self->priv->framerate_num != num) {
+      GST_INFO_OBJECT (self, "Updading fps num: %d", num);
+      self->priv->framerate_num = num;
+      update_caps = TRUE;
+    }
+
+    if (self->priv->framerate_denom != num) {
+      GST_INFO_OBJECT (self, "Updading fps denom: %d", denom);
+      self->priv->framerate_denom = denom;
+      update_caps = TRUE;
+    }
+  }
+
+  g_value_reset (&value);
+
+  return update_caps;
 }
 
 static GstFlowReturn
@@ -116,12 +179,18 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     }
   }
 
+  update_caps = kms_vp8_parse_detect_framerate (self, frame);
+
   if (update_caps && kms_vp8_parse_check_caps_ready (self)) {
     GstCaps *caps;
 
     caps = gst_caps_new_simple ("video/x-vp8", "width", G_TYPE_INT,
         self->priv->width, "height", G_TYPE_INT, self->priv->height,
-        "framerate", GST_TYPE_FRACTION, 0, 1, NULL);
+        "framerate", GST_TYPE_FRACTION, self->priv->framerate_num,
+        self->priv->framerate_denom, NULL);
+
+    GST_DEBUG_OBJECT (parse, "Caps %" GST_PTR_FORMAT, caps);
+
     gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse), caps);
 
     self->priv->started = TRUE;
@@ -129,6 +198,9 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
 
   if (!self->priv->started)
     frame->flags |= GST_BASE_PARSE_FRAME_FLAG_QUEUE;
+
+  self->priv->last_dts = frame->buffer->dts;
+  self->priv->last_pts = frame->buffer->pts;
 
 end:
 
