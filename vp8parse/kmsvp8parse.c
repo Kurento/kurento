@@ -26,6 +26,19 @@
 #define GST_CAT_DEFAULT kms_vp8_parse_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
+#define KMS_VP8_PARSE_GET_PRIVATE(obj) (   \
+  G_TYPE_INSTANCE_GET_PRIVATE (                 \
+    (obj),                                      \
+    KMS_TYPE_VP8_PARSE,                         \
+    KmsVp8ParsePrivate                          \
+  )                                             \
+)
+
+struct _KmsVp8ParsePrivate
+{
+  gboolean started;
+};
+
 /* pad templates */
 
 #define VIDEO_SRC_CAPS "video/x-vp8"
@@ -63,6 +76,7 @@ kms_vp8_parse_finalize (GObject * object)
 static void
 kms_vp8_parse_init (KmsVp8Parse * vp8parse)
 {
+  vp8parse->priv = KMS_VP8_PARSE_GET_PRIVATE (vp8parse);
 }
 
 static void
@@ -95,6 +109,8 @@ kms_vp8_parse_class_init (KmsVp8ParseClass * klass)
   base_parse_class->handle_frame =
       GST_DEBUG_FUNCPTR (kms_vp8_parse_handle_frame);
   /* Properties initialization */
+
+  g_type_class_add_private (klass, sizeof (KmsVp8ParsePrivate));
 }
 
 gboolean

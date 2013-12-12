@@ -28,10 +28,12 @@ G_BEGIN_DECLS
 
 typedef struct _KmsVp8Parse KmsVp8Parse;
 typedef struct _KmsVp8ParseClass KmsVp8ParseClass;
+typedef struct _KmsVp8ParsePrivate KmsVp8ParsePrivate;
 
 struct _KmsVp8Parse
 {
   GstBaseParse base;
+  KmsVp8ParsePrivate *priv;
 };
 
 struct _KmsVp8ParseClass
