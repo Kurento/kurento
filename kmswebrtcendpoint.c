@@ -12,6 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
+#define _XOPEN_SOURCE 500
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -21,6 +23,9 @@
 #include <gio/gio.h>
 #include <stdlib.h>
 #include <glib/gstdio.h>
+#include <ftw.h>
+#include <string.h>
+#include <errno.h>
 
 #define PLUGIN_NAME "webrtcendpoint"
 
@@ -291,19 +296,22 @@ connect_rtcp_data_destroy (gpointer data)
 /* ConnectRtcpData */
 
 static int
+delete_file (const char *fpath, const struct stat *sb, int typeflag,
+    struct FTW *ftwbuf)
+{
+  int rv = g_remove (fpath);
+
+  if (rv) {
+    GST_WARNING ("Error deleting file: %s. %s", fpath, strerror (errno));
+  }
+
+  return rv;
+}
+
+static void
 remove_recursive (const gchar * path)
 {
-  int ret;
-  gchar *cmd;
-
-  if (path == NULL)
-    return FALSE;
-
-  cmd = g_strconcat ("/bin/sh -c \"rm -r ", path, "\"", NULL);
-  ret = system (cmd);
-  g_free (cmd);
-
-  return ret;
+  nftw (path, delete_file, 64, FTW_DEPTH | FTW_PHYS);
 }
 
 static gchar *
@@ -469,10 +477,10 @@ add_bundle_funnels (KmsWebrtcEndPoint * webrtc_end_point)
   gst_bin_add_many (GST_BIN (webrtc_end_point),
       webrtc_end_point->priv->bundle_rtp_funnel,
       webrtc_end_point->priv->bundle_rtcp_funnel, NULL);
-  gst_element_sync_state_with_parent (webrtc_end_point->
-      priv->bundle_rtp_funnel);
-  gst_element_sync_state_with_parent (webrtc_end_point->
-      priv->bundle_rtcp_funnel);
+  gst_element_sync_state_with_parent (webrtc_end_point->priv->
+      bundle_rtp_funnel);
+  gst_element_sync_state_with_parent (webrtc_end_point->priv->
+      bundle_rtcp_funnel);
 }
 
 static const gchar *
@@ -1238,18 +1246,14 @@ kms_webrtc_end_point_set_property (GObject * object, guint prop_id,
         g_free (self->priv->certificate_pem_file);
 
       self->priv->certificate_pem_file = g_value_dup_string (value);
-      g_object_set_property (G_OBJECT (self->priv->
-              audio_connection->rtp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->
-              audio_connection->rtcp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->
-              video_connection->rtp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
-      g_object_set_property (G_OBJECT (self->priv->
-              video_connection->rtcp_transport->dtlssrtpdec),
-          "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->audio_connection->
+              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->audio_connection->
+              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->video_connection->
+              rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
+      g_object_set_property (G_OBJECT (self->priv->video_connection->
+              rtcp_transport->dtlssrtpdec), "certificate-pem-file", value);
       break;
     case PROP_STUN_SERVER_IP:
       if (self->priv->agent == NULL) {
