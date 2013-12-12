@@ -2,7 +2,8 @@ SUBDIRS =				\
 	platedetector			\
 	jackvader			\
 	movementdetector		\
-	h264filter
+	h264filter			\
+	facedetector
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
