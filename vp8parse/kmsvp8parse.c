@@ -159,6 +159,11 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
   if (self->priv->started)
     goto end;
 
+  if (GST_CLOCK_TIME_IS_VALID (frame->buffer->duration) ||
+      GST_BUFFER_PTS_IS_VALID (frame->buffer) ||
+      GST_BUFFER_DTS_IS_VALID (frame->buffer))
+    gst_base_parse_set_has_timing_info (parse, TRUE);
+
   memset (&stream_info, 0, sizeof (stream_info));
   stream_info.sz = sizeof (stream_info);
 
