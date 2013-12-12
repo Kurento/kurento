@@ -18,11 +18,15 @@
 
 #include "kmsvp8parse.h"
 
+#include <string.h>
+
 #include <gst/gst.h>
 #include <gst/base/gstbaseparse.h>
 
 #define PLUGIN_NAME "vp8parse"
 
+#include <vpx/vpx_decoder.h>
+#include <vpx/vp8dx.h>
 #define GST_CAT_DEFAULT kms_vp8_parse_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
@@ -37,6 +41,9 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 struct _KmsVp8ParsePrivate
 {
   gboolean started;
+
+  gint width;
+  gint height;
 };
 
 /* pad templates */
@@ -58,14 +65,27 @@ kms_vp8_parse_start (GstBaseParse * parse)
   KmsVp8Parse *self = KMS_VP8_PARSE (parse);
 
   self->priv->started = FALSE;
+
+  self->priv->height = -1;
+  self->priv->width = -1;
   return TRUE;
+}
+
+static gboolean
+kms_vp8_parse_check_caps_ready (KmsVp8Parse * self)
+{
+  return (self->priv->width != -1) && (self->priv->height != -1);
+
 }
 
 static GstFlowReturn
 kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     gint * skipsize)
 {
+  vpx_codec_stream_info_t stream_info;
+  vpx_codec_err_t status;
   GstMapInfo minfo;
+  gboolean update_caps = FALSE;
   KmsVp8Parse *self = KMS_VP8_PARSE (parse);
 
   if (!gst_buffer_map (frame->buffer, &minfo, GST_MAP_READ)) {
@@ -76,10 +96,40 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
   if (self->priv->started)
     goto end;
 
-  gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse),
-      gst_pad_get_current_caps (GST_BASE_PARSE_SINK_PAD (parse)));
+  memset (&stream_info, 0, sizeof (stream_info));
+  stream_info.sz = sizeof (stream_info);
 
-  self->priv->started = TRUE;
+  status = vpx_codec_peek_stream_info (&vpx_codec_vp8_dx_algo,
+      minfo.data, minfo.size, &stream_info);
+
+  if (status == VPX_CODEC_OK) {
+    if (self->priv->height != stream_info.h) {
+      self->priv->height = stream_info.h;
+      GST_INFO_OBJECT (parse, "Updading height: %d", stream_info.h);
+      update_caps = TRUE;
+    }
+
+    if (self->priv->width != stream_info.w) {
+      self->priv->width = stream_info.w;
+      GST_INFO_OBJECT (parse, "Updading width: %d", stream_info.w);
+      update_caps = TRUE;
+    }
+  }
+
+  if (update_caps && kms_vp8_parse_check_caps_ready (self)) {
+    GstCaps *caps;
+
+    caps = gst_caps_new_simple ("video/x-vp8", "width", G_TYPE_INT,
+        self->priv->width, "height", G_TYPE_INT, self->priv->height,
+        "framerate", GST_TYPE_FRACTION, 0, 1, NULL);
+    gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse), caps);
+
+    self->priv->started = TRUE;
+  }
+
+  if (!self->priv->started)
+    frame->flags |= GST_BASE_PARSE_FRAME_FLAG_QUEUE;
+
 end:
 
   frame->size = minfo.size;
