@@ -279,6 +279,6 @@ kms_vp8_parse_class_init (KmsVp8ParseClass * klass)
 gboolean
 kms_vp8_parse_plugin_init (GstPlugin * plugin)
 {
-  return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
+  return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE + 1,
       KMS_TYPE_VP8_PARSE);
 }
