@@ -45,6 +45,16 @@ struct _KmsLoopPrivate
   GMutex mutex;
 };
 
+/* Object properties */
+enum
+{
+  PROP_0,
+  PROP_CONTEXT,
+  N_PROPERTIES
+};
+
+static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
 static gboolean
 quit_main_loop (GMainLoop * loop)
 {
@@ -81,6 +91,22 @@ end:
   g_main_loop_unref (self->priv->loop);
 
   return NULL;
+}
+
+static void
+kms_loop_get_property (GObject * object, guint property_id, GValue * value,
+    GParamSpec * pspec)
+{
+  KmsLoop *self = KMS_LOOP (object);
+
+  switch (property_id) {
+    case PROP_CONTEXT:
+      g_value_set_boxed (value, self->priv->context);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
 }
 
 static void
@@ -125,6 +151,15 @@ kms_loop_class_init (KmsLoopClass * klass)
 
   objclass->dispose = kms_loop_dispose;
   objclass->finalize = kms_loop_finalize;
+  objclass->get_property = kms_loop_get_property;
+
+  /* Install properties */
+  obj_properties[PROP_CONTEXT] = g_param_spec_boxed ("context",
+      "Main loop context",
+      "Main loop context",
+      G_TYPE_MAIN_CONTEXT, (GParamFlags) (G_PARAM_READABLE));
+
+  g_object_class_install_properties (objclass, N_PROPERTIES, obj_properties);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsLoopPrivate));
