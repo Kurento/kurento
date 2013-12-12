@@ -134,13 +134,13 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
   }
 
   gst_structure_get (imageoverlay->priv->image_to_overlay, "offsetXPercent",
-      G_TYPE_INT, &imageoverlay->priv->offsetXPercent, NULL);
+      G_TYPE_DOUBLE, &imageoverlay->priv->offsetXPercent, NULL);
   gst_structure_get (imageoverlay->priv->image_to_overlay, "offsetYPercent",
-      G_TYPE_INT, &imageoverlay->priv->offsetYPercent, NULL);
+      G_TYPE_DOUBLE, &imageoverlay->priv->offsetYPercent, NULL);
   gst_structure_get (imageoverlay->priv->image_to_overlay, "widthPercent",
-      G_TYPE_INT, &imageoverlay->priv->widthPercent, NULL);
+      G_TYPE_DOUBLE, &imageoverlay->priv->widthPercent, NULL);
   gst_structure_get (imageoverlay->priv->image_to_overlay, "heightPercent",
-      G_TYPE_INT, &imageoverlay->priv->heightPercent, NULL);
+      G_TYPE_DOUBLE, &imageoverlay->priv->heightPercent, NULL);
   gst_structure_get (imageoverlay->priv->image_to_overlay, "url", G_TYPE_STRING,
       &url, NULL);
 
@@ -253,10 +253,10 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
       continue;
     }
 
-    r->x = r->x - (r->width * (imageoverlay->priv->offsetXPercent / 100.0));
-    r->y = r->y - (r->height * (imageoverlay->priv->offsetXPercent / 100));
-    r->height = r->height * (imageoverlay->priv->heightPercent / 100);
-    r->width = r->width * (imageoverlay->priv->widthPercent / 100);
+    r->x = r->x - (r->width * (imageoverlay->priv->offsetXPercent));
+    r->y = r->y - (r->height * (imageoverlay->priv->offsetXPercent));
+    r->height = r->height * (imageoverlay->priv->heightPercent);
+    r->width = r->width * (imageoverlay->priv->widthPercent);
 
     costumeAux = cvCreateImage (cvSize (r->width, r->height),
         imageoverlay->priv->cvImage->depth, 4);
