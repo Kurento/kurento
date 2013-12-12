@@ -4,7 +4,8 @@ SUBDIRS =				\
 	movementdetector		\
 	h264filter			\
 	facedetector			\
-	imageoverlay
+	imageoverlay			\
+	faceoverlay
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
