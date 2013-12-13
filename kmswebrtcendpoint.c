@@ -1319,24 +1319,6 @@ kms_webrtc_end_point_dispose (GObject * object)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
 
-  if (self->priv->remote_audio_ssrc != NULL)
-    g_free (self->priv->remote_audio_ssrc);
-  if (self->priv->remote_video_ssrc != NULL)
-    g_free (self->priv->remote_video_ssrc);
-}
-
-static void
-kms_webrtc_end_point_finalize (GObject * object)
-{
-  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
-
-  if (self->priv->agent != NULL) {
-    kms_webrtc_connection_destroy (self->priv->audio_connection);
-    kms_webrtc_connection_destroy (self->priv->video_connection);
-    g_object_unref (self->priv->agent);
-    self->priv->agent = NULL;
-  }
-
   if (self->priv->loop != NULL) {
     GSource *source;
 
@@ -1358,6 +1340,19 @@ kms_webrtc_end_point_finalize (GObject * object)
     g_main_context_unref (self->priv->context);
     self->priv->context = NULL;
   }
+}
+
+static void
+kms_webrtc_end_point_finalize (GObject * object)
+{
+  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
+
+  if (self->priv->agent != NULL) {
+    kms_webrtc_connection_destroy (self->priv->audio_connection);
+    kms_webrtc_connection_destroy (self->priv->video_connection);
+    g_object_unref (self->priv->agent);
+    self->priv->agent = NULL;
+  }
 
   g_mutex_lock (&self->priv->gather_mutex);
   self->priv->finalized = TRUE;
@@ -1377,6 +1372,12 @@ kms_webrtc_end_point_finalize (GObject * object)
   if (self->priv->certificate_pem_file != NULL) {
     g_free (self->priv->certificate_pem_file);
   }
+
+  if (self->priv->remote_audio_ssrc != NULL)
+    g_free (self->priv->remote_audio_ssrc);
+
+  if (self->priv->remote_video_ssrc != NULL)
+    g_free (self->priv->remote_video_ssrc);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_end_point_parent_class)->finalize (object);
