@@ -33,6 +33,7 @@
 #include <libsoup/soup.h>
 
 #define TEMP_PATH "/tmp/XXXXXX"
+#define BLUE_COLOR (cvScalar (255, 0, 0, 0))
 
 #define PLUGIN_NAME "imageoverlay"
 
@@ -241,6 +242,15 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
     IplImage *costumeAux;
     int w, h;
     uchar *row, *image_row;
+
+    if (imageoverlay->priv->costume == NULL) {
+      gint radius = cvRound ((r->width + r->height) * 0.25);
+
+      cvCircle (imageoverlay->priv->cvImage,
+          cvPoint (r->x + (r->width / 2), r->y + (r->height / 2)),
+          radius, BLUE_COLOR, 4, 8, 0);
+      continue;
+    }
 
     r->x = r->x - (r->width * (imageoverlay->priv->offsetXPercent / 100.0));
     r->y = r->y - (r->height * (imageoverlay->priv->offsetXPercent / 100));
