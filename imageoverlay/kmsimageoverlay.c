@@ -83,13 +83,45 @@ G_DEFINE_TYPE_WITH_CODE (KmsImageOverlay, kms_image_overlay,
     GST_DEBUG_CATEGORY_INIT (kms_image_overlay_debug_category, PLUGIN_NAME,
         0, "debug category for imageoverlay element"));
 
-static void
-kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
+static gboolean
+kms_image_overlay_is_valid_uri (const gchar * url)
 {
-  gchar *url, *file_name;
+  gboolean ret;
+  GRegex *regex;
+
+  regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
+      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
+  ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
+  g_regex_unref (regex);
+
+  return ret;
+}
+
+static void
+load_from_url (gchar * file_name, gchar * url)
+{
   SoupSession *session;
   SoupMessage *msg;
   FILE *dst;
+
+  session = soup_session_sync_new ();
+  msg = soup_message_new ("GET", url);
+  soup_session_send_message (session, msg);
+
+  dst = fopen (file_name, "w+");
+
+  if (dst == NULL) {
+    GST_ERROR ("It is not possible to create the file");
+  }
+  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
+  fclose (dst);
+}
+
+static void
+kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
+{
+  gchar *url;
+  IplImage *costumeAux;
 
   if (!imageoverlay->priv->dir_created) {
     gchar d[] = TEMP_PATH;
@@ -110,27 +142,40 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
   gst_structure_get (imageoverlay->priv->image_to_overlay, "url", G_TYPE_STRING,
       &url, NULL);
 
-  session = soup_session_sync_new ();
-  msg = soup_message_new ("GET", url);
-  soup_session_send_message (session, msg);
-  file_name = g_strconcat (imageoverlay->priv->dir, "/image.png", NULL);
-  dst = fopen (file_name, "w+");
+  costumeAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
 
-  if (dst == NULL) {
-    GST_ERROR ("It is not possible to create the file");
+  if (costumeAux != NULL) {
+    GST_DEBUG ("Image loaded from file");
+    goto end;
   }
-  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
-  fclose (dst);
+
+  if (kms_image_overlay_is_valid_uri (url)) {
+    gchar *file_name =
+        g_strconcat (imageoverlay->priv->dir, "/image.png", NULL);
+    load_from_url (file_name, url);
+    costumeAux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+    g_free (file_name);
+  }
+
+  if (costumeAux == NULL) {
+    GST_DEBUG ("Image not loaded");
+  } else {
+    GST_DEBUG ("Image loaded from URL");
+  }
+
+end:
 
   GST_OBJECT_LOCK (imageoverlay);
+
   if (imageoverlay->priv->costume != NULL)
     cvReleaseImage (&imageoverlay->priv->costume);
 
-  imageoverlay->priv->costume =
-      cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+  if (costumeAux != NULL) {
+    imageoverlay->priv->costume = costumeAux;
+  }
+
   GST_OBJECT_UNLOCK (imageoverlay);
 
-  g_free (file_name);
   g_free (url);
 }
 
