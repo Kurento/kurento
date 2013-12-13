@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Map;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
@@ -221,6 +222,13 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	PlateDetectorFilterBuilder newPlateDetectorFilter();
+
+	/**
+	 * Obtains the builder for a {@link FaceOverlayFilter}.
+	 * 
+	 * @return The builder
+	 */
+	FaceOverlayFilterBuilder newFaceOverlayFilter();
 
 	/**
 	 * Creates a {@link MediaElement} associated to this pipeline.

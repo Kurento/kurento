@@ -23,12 +23,19 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.PointerDetectorFilter;
 import com.kurento.kmf.media.internal.ProvidesMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaPointerDetectorWindow;
 import com.kurento.kms.thrift.api.KmsMediaPointerDetectorWindowSet;
 
 /**
+ * Class used during the build of a {@link PointerDetectorFilter}. Users may add
+ * as many {@link PointerDetectorWindowMediaParam} as needed, in order to
+ * configure the areas in which the filter will throw events, when the pointer
+ * enters or exits each one of the configured windows.
+ * 
  * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 2.0.1
  * 
  */
 @ProvidesMediaParam(type = CONSTRUCTOR_PARAMS_DATA_TYPE)
@@ -37,11 +44,20 @@ public final class PointerDetectorConstructorParam extends
 
 	private final Set<KmsMediaPointerDetectorWindow> windows = new HashSet<KmsMediaPointerDetectorWindow>();
 
-	public void addDetectorWindow(final String id, final int height,
-			final int width, final int upperRightX, final int upperRightY) {
-		final KmsMediaPointerDetectorWindow window = new KmsMediaPointerDetectorWindow(
-				upperRightX, upperRightY, height, width, id);
-		windows.add(window);
+	/**
+	 * Adds a new detector window, represented by a simple square or rectangle
+	 * in the image.
+	 * 
+	 * @param id
+	 * @param height
+	 * @param width
+	 * @param upperRightX
+	 * @param upperRightY
+	 * 
+	 * @return an adder object to add created windows to the set of windows
+	 */
+	public void addDetectorWindow(PointerDetectorWindowMediaParam window) {
+
 	}
 
 	public PointerDetectorConstructorParam() {

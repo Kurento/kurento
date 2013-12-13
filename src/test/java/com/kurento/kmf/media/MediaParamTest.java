@@ -25,6 +25,8 @@ import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.STRING_DATA_T
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.VOID_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND_DATA_TYPE;
 
+import java.net.URISyntaxException;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,17 +41,20 @@ import com.kurento.kmf.media.params.internal.ByteMediaParam;
 import com.kurento.kmf.media.params.internal.DefaultMediaParam;
 import com.kurento.kmf.media.params.internal.DoubleMediaParam;
 import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
+import com.kurento.kmf.media.params.internal.FaceOverlayImageParam;
 import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
+import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
 import com.kurento.kmf.media.params.internal.RecorderEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.ShortMediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 import com.kurento.kmf.media.params.internal.UriEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.VoidMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
@@ -257,11 +262,11 @@ public class MediaParamTest {
 
 	@Test
 	public void testPointerDetectorWindowMediaParam() {
-		PointerDetectorWindowMediaParam in = new PointerDetectorWindowMediaParam(
-				"id", 1, 2, 3, 4);
+		PointerDetectorWindowMediaParam in = new PointerDetectorWindowMediaParamBuilder(
+				"id", 1, 2, 3, 4).build();
 
 		KmsMediaParam param = createKmsParam(
-				KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW_PARAM_WINDOW,
+				KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW_PARAM_WINDOW_TYPE,
 				in.getThriftParams().getData());
 
 		PointerDetectorWindowMediaParam out = instantiateAndCheck(
@@ -270,9 +275,26 @@ public class MediaParamTest {
 	}
 
 	@Test
+	public void testFaceOverlayImageParam() throws URISyntaxException {
+		FaceOverlayImageParam in = new FaceOverlayImageParam(
+				"folder/subfoler/file.txt", 0.4f, 0.5f, 0.6f, 0.7f);
+
+		KmsMediaParam param = createKmsParam(
+				KmsMediaFaceOverlayFilterTypeConstants.SET_IMAGE_OVERLAY_PARAM_IMAGE_TYPE,
+				in.getThriftParams().getData());
+
+		FaceOverlayImageParam out = instantiateAndCheck(
+				FaceOverlayImageParam.class, param);
+		Assert.assertEquals(in, out);
+	}
+
+	@Test
 	public void testPointerDetectorConstructorParam() {
+		PointerDetectorWindowMediaParam window = new PointerDetectorWindowMediaParamBuilder(
+				"id", 1, 2, 3, 4).build();
+
 		PointerDetectorConstructorParam in = new PointerDetectorConstructorParam();
-		in.addDetectorWindow("id", 1, 2, 3, 4);
+		in.addDetectorWindow(window);
 		KmsMediaParam param = createKmsParam(
 				KmsMediaPointerDetectorFilterTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				in.getThriftParams().getData());
@@ -282,6 +304,7 @@ public class MediaParamTest {
 		Assert.assertEquals(in, out);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T extends MediaParam> T instantiateAndCheck(
 			Class<T> expectedClass, KmsMediaParam kmsParam) {
 		final MediaParam param = (MediaParam) ctx.getBean("mediaParam",

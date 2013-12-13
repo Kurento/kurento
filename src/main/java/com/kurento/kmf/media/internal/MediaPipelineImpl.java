@@ -23,6 +23,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.MediaElement;
@@ -37,6 +38,7 @@ import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
 import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
+import com.kurento.kmf.media.internal.FaceOverlayFilterImpl.FaceOverlayFilterBuilderImpl;
 import com.kurento.kmf.media.internal.HttpEndpointImpl.HttpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlateDetectorFilterImpl.PlateDetectorFilterBuilderImpl;
@@ -452,6 +454,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public WebRtcEndpointBuilder newWebRtcEndpoint() {
 		return new WebRtcEndpointBuilderImpl(this);
+	}
+
+	@Override
+	public FaceOverlayFilterBuilder newFaceOverlayFilter() {
+		return new FaceOverlayFilterBuilderImpl(this);
 	}
 
 	@Override

@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.kurento.kmf.media.internal.FaceOverlayFilterImpl;
 import com.kurento.kmf.media.internal.HttpEndpointImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl;
 import com.kurento.kmf.media.internal.MainMixerImpl;
@@ -42,6 +43,7 @@ import com.kurento.kmf.media.internal.RtpEndpointImpl;
 import com.kurento.kmf.media.internal.WebRtcEndpointImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
@@ -69,7 +71,8 @@ public class MediaObjectTest {
 	private static final String RECORDER_EP_TYPE = KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
 	private static final String WEB_RTC_EP_TYPE = KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME;
 	private static final String RTP_EP_TYPE = KmsMediaRtpEndPointTypeConstants.TYPE_NAME;
-	private static final String OLATE_DETECTOR_FILTER_TYPE = KmsMediaPlateDetectorFilterTypeConstants.TYPE_NAME;
+	private static final String PLATE_DETECTOR_FILTER_TYPE = KmsMediaPlateDetectorFilterTypeConstants.TYPE_NAME;
+	private static final String FACE_OVERLAY_TYPE = KmsMediaFaceOverlayFilterTypeConstants.TYPE_NAME;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -144,8 +147,14 @@ public class MediaObjectTest {
 	}
 
 	@Test
+	public void testFaceOverlayFilterInstantiation() {
+		MediaObjectRef objRef = createMediaElementRef(FACE_OVERLAY_TYPE);
+		instantiateAndCheck(FaceOverlayFilterImpl.class, objRef);
+	}
+
+	@Test
 	public void testPlateDetectorFilterInstantiation() {
-		MediaObjectRef objRef = createMediaElementRef(OLATE_DETECTOR_FILTER_TYPE);
+		MediaObjectRef objRef = createMediaElementRef(PLATE_DETECTOR_FILTER_TYPE);
 		instantiateAndCheck(PlateDetectorFilterImpl.class, objRef);
 	}
 
