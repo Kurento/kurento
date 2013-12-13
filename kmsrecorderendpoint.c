@@ -497,8 +497,7 @@ kms_recorder_end_point_dispose (GObject * object)
 {
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
-  if (self->priv->loop != NULL)
-    g_clear_object (&self->priv->loop);
+  g_clear_object (&self->priv->loop);
 
   if (self->priv->pipeline != NULL) {
     if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {

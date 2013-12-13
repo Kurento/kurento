@@ -1463,8 +1463,7 @@ kms_http_end_point_dispose (GObject * object)
 
   GST_DEBUG_OBJECT (self, "dispose");
 
-  if (self->priv->loop != NULL)
-    g_clear_object (&self->priv->loop);
+  g_clear_object (&self->priv->loop);
 
   switch (self->priv->method) {
     case KMS_HTTP_END_POINT_METHOD_GET:

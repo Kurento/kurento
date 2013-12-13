@@ -76,8 +76,7 @@ kms_player_end_point_dispose (GObject * object)
 {
   KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
 
-  if (self->priv->loop)
-    g_clear_object (&self->priv->loop);
+  g_clear_object (&self->priv->loop);
 
   if (self->priv->pipeline != NULL) {
     GstBus *bus;
