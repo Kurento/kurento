@@ -3,7 +3,8 @@ SUBDIRS =				\
 	jackvader			\
 	movementdetector		\
 	h264filter			\
-	facedetector
+	facedetector			\
+	imageoverlay
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
