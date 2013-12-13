@@ -19,6 +19,8 @@
 #endif
 
 #include "kmswebrtcendpoint.h"
+#include "kmsloop.h"
+
 #include <nice/nice.h>
 #include <gio/gio.h>
 #include <stdlib.h>
@@ -109,9 +111,7 @@ struct _KmsWebrtcEndPointPrivate
 {
   gchar *tmp_dir;
 
-  GMainContext *context;
-  GMainLoop *loop;
-  GThread *thread;
+  KmsLoop *loop;
   gboolean finalized;
 
   NiceAgent *agent;
@@ -1105,32 +1105,6 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndPoint * self)
   g_mutex_unlock (&self->priv->gather_mutex);
 }
 
-static gpointer
-loop_thread (gpointer user_data)
-{
-  KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (user_data);
-
-  g_main_context_acquire (self->priv->context);
-  g_main_loop_run (self->priv->loop);
-  g_main_context_release (self->priv->context);
-
-  return NULL;
-}
-
-static gboolean
-quit_main_loop_idle (gpointer loop)
-{
-  g_main_loop_quit (loop);
-
-  return G_SOURCE_REMOVE;
-}
-
-static void
-destroy_main_loop (gpointer loop)
-{
-  g_main_loop_unref (loop);
-}
-
 static void
 add_webrtc_transport_sink (KmsWebrtcEndPoint * webrtc_end_point,
     KmsWebRTCTransport * tr, const gchar * src_pad_name,
@@ -1322,30 +1296,8 @@ kms_webrtc_end_point_dispose (GObject * object)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
 
-  if (self->priv->loop != NULL) {
-    GSource *source;
-
-    source = g_idle_source_new ();
-    g_source_set_callback (source, quit_main_loop_idle, self->priv->loop,
-        destroy_main_loop);
-    g_source_attach (source, self->priv->context);
-    g_source_unref (source);
-    self->priv->loop = NULL;
-  }
-
-  if (self->priv->thread != NULL) {
-    if (g_thread_self () != self->priv->thread)
-      g_thread_join (self->priv->thread);
-    g_thread_unref (self->priv->thread);
-  }
-
-  if (self->priv->context != NULL) {
-    g_main_context_unref (self->priv->context);
-    self->priv->context = NULL;
-  }
-
-  if (self->priv->agent != NULL)
-    g_clear_object (&self->priv->agent);
+  g_clear_object (&self->priv->agent);
+  g_clear_object (&self->priv->loop);
 }
 
 static void
@@ -1439,6 +1391,7 @@ static void
 kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
 {
   KmsBaseRtpEndPoint *base_rtp_end_point = KMS_BASE_RTP_END_POINT (self);
+  GMainContext *context;
   gchar t[] = TMP_DIR_TEMPLATE;
 
   self->priv = KMS_WEBRTC_END_POINT_GET_PRIVATE (self);
@@ -1449,23 +1402,11 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   g_cond_init (&self->priv->gather_cond);
   self->priv->finalized = FALSE;
 
-  self->priv->context = g_main_context_new ();
-  if (self->priv->context == NULL) {
-    GST_ERROR_OBJECT (self, "Cannot create context.");
-    return;
-  }
+  self->priv->loop = kms_loop_new ();
 
-  self->priv->loop = g_main_loop_new (self->priv->context, TRUE);
-  if (self->priv->loop == NULL) {
-    GST_ERROR_OBJECT (self, "Cannot create main loop.");
-    return;
-  }
+  g_object_get (self->priv->loop, "context", &context, NULL);
 
-  self->priv->thread =
-      g_thread_new (GST_ELEMENT_NAME (self), loop_thread, self);
-
-  self->priv->agent =
-      nice_agent_new (self->priv->context, NICE_COMPATIBILITY_RFC5245);
+  self->priv->agent = nice_agent_new (context, NICE_COMPATIBILITY_RFC5245);
   if (self->priv->agent == NULL) {
     GST_ERROR_OBJECT (self, "Cannot create nice agent.");
     return;
@@ -1476,7 +1417,7 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
       G_CALLBACK (gathering_done), self);
 
   self->priv->audio_connection =
-      kms_webrtc_connection_create (self->priv->agent, self->priv->context,
+      kms_webrtc_connection_create (self->priv->agent, context,
       AUDIO_STREAM_NAME);
   if (self->priv->audio_connection == NULL) {
     GST_ERROR_OBJECT (self, "Cannot create audio connection.");
@@ -1484,12 +1425,14 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   }
 
   self->priv->video_connection =
-      kms_webrtc_connection_create (self->priv->agent, self->priv->context,
+      kms_webrtc_connection_create (self->priv->agent, context,
       VIDEO_STREAM_NAME);
   if (self->priv->video_connection == NULL) {
     GST_ERROR_OBJECT (self, "Cannot create video connection.");
     return;
   }
+
+  g_main_context_unref (context);
 
   self->priv->bundle_rtp_funnel = gst_element_factory_make ("funnel", NULL);
   self->priv->bundle_rtcp_funnel = gst_element_factory_make ("funnel", NULL);
