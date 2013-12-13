@@ -230,7 +230,10 @@ kms_webrtc_connection_destroy (KmsWebRTCConnection * conn)
   kms_webrtc_transport_destroy (conn->rtp_transport);
   kms_webrtc_transport_destroy (conn->rtcp_transport);
 
-  nice_agent_remove_stream (conn->agent, conn->stream_id);
+  if (conn->agent != NULL) {
+    nice_agent_remove_stream (conn->agent, conn->stream_id);
+    g_clear_object (&conn->agent);
+  }
 
   g_slice_free (KmsWebRTCConnection, conn);
 }
@@ -243,7 +246,7 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
 
   conn = g_slice_new0 (KmsWebRTCConnection);
 
-  conn->agent = agent;
+  conn->agent = g_object_ref (agent);
   conn->stream_id = nice_agent_add_stream (agent, NICE_N_COMPONENTS);
   if (conn->stream_id == 0) {
     GST_ERROR ("Cannot add nice stream for %s.", name);
@@ -1340,6 +1343,9 @@ kms_webrtc_end_point_dispose (GObject * object)
     g_main_context_unref (self->priv->context);
     self->priv->context = NULL;
   }
+
+  if (self->priv->agent != NULL)
+    g_clear_object (&self->priv->agent);
 }
 
 static void
@@ -1347,12 +1353,8 @@ kms_webrtc_end_point_finalize (GObject * object)
 {
   KmsWebrtcEndPoint *self = KMS_WEBRTC_END_POINT (object);
 
-  if (self->priv->agent != NULL) {
-    kms_webrtc_connection_destroy (self->priv->audio_connection);
-    kms_webrtc_connection_destroy (self->priv->video_connection);
-    g_object_unref (self->priv->agent);
-    self->priv->agent = NULL;
-  }
+  kms_webrtc_connection_destroy (self->priv->audio_connection);
+  kms_webrtc_connection_destroy (self->priv->video_connection);
 
   g_mutex_lock (&self->priv->gather_mutex);
   self->priv->finalized = TRUE;
