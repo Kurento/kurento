@@ -20,7 +20,6 @@ import static com.kurento.kmf.media.Utils.createMediaPadRef;
 import static com.kurento.kmf.media.Utils.createMediaPipelineRef;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +35,7 @@ import com.kurento.kmf.media.internal.MediaMixerImpl;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
+import com.kurento.kmf.media.internal.PlateDetectorFilterImpl;
 import com.kurento.kmf.media.internal.PlayerEndpointImpl;
 import com.kurento.kmf.media.internal.RecorderEndpointImpl;
 import com.kurento.kmf.media.internal.RtpEndpointImpl;
@@ -45,6 +45,7 @@ import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
+import com.kurento.kms.thrift.api.KmsMediaPlateDetectorFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants;
@@ -68,6 +69,7 @@ public class MediaObjectTest {
 	private static final String RECORDER_EP_TYPE = KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
 	private static final String WEB_RTC_EP_TYPE = KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME;
 	private static final String RTP_EP_TYPE = KmsMediaRtpEndPointTypeConstants.TYPE_NAME;
+	private static final String OLATE_DETECTOR_FILTER_TYPE = KmsMediaPlateDetectorFilterTypeConstants.TYPE_NAME;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -90,15 +92,6 @@ public class MediaObjectTest {
 		MediaObjectRef objRef = createMediaPadRef(MediaType.AUDIO,
 				KmsMediaPadDirection.SRC, "media source");
 		instantiateAndCheck(MediaSourceImpl.class, objRef);
-	}
-
-	// TODO activate after correcting error found in the instantiation of
-	// MediaMixers
-	@Ignore
-	@Test
-	public void testMediaMixerInstantiation() {
-		MediaObjectRef objRef = createMediaMixerRef("BaseFilter");
-		instantiateAndCheck(MediaMixerImpl.class, objRef);
 	}
 
 	@Test
@@ -150,12 +143,21 @@ public class MediaObjectTest {
 		instantiateAndCheck(RecorderEndpointImpl.class, objRef);
 	}
 
-	// TODO activate after correcting error found in the instantiation of
-	// MediaMixers
-	@Ignore
+	@Test
+	public void testPlateDetectorFilterInstantiation() {
+		MediaObjectRef objRef = createMediaElementRef(OLATE_DETECTOR_FILTER_TYPE);
+		instantiateAndCheck(PlateDetectorFilterImpl.class, objRef);
+	}
+
 	@Test
 	public void testMainMixerInstantiation() {
 		MediaObjectRef objRef = createMediaMixerRef(MainMixerImpl.TYPE);
+		instantiateAndCheck(MainMixerImpl.class, objRef);
+	}
+
+	@Test
+	public void testMediaMixerInstantiation() {
+		MediaObjectRef objRef = createMediaMixerRef(MediaMixerImpl.TYPE);
 		instantiateAndCheck(MediaMixerImpl.class, objRef);
 	}
 

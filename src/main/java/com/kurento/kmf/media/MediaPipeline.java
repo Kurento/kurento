@@ -20,6 +20,7 @@ import java.util.Map;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
+import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
 import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
@@ -213,6 +214,13 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	PointerDetectorFilterBuilder newPointerDetectorFilter();
+
+	/**
+	 * Obtains the builder for a {@link PlateDetectorFilter}.
+	 * 
+	 * @return The builder
+	 */
+	PlateDetectorFilterBuilder newPlateDetectorFilter();
 
 	/**
 	 * Creates a {@link MediaElement} associated to this pipeline.

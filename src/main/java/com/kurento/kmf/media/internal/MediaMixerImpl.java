@@ -36,8 +36,12 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerE
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerEndPoint_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
+//TODO the type should be obtained from the thrift interface
+@ProvidesMediaElement(type = MediaMixerImpl.TYPE)
 public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 		MediaMixer {
+
+	public static final String TYPE = "MediaMixer";
 
 	/**
 	 * Constructor that configures, by default, the mixer as a non-collectable

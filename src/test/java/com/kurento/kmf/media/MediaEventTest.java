@@ -17,6 +17,7 @@ package com.kurento.kmf.media;
 import static com.kurento.kmf.media.Utils.createKmsEvent;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.STRING_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.VOID_DATA_TYPE;
+import static com.kurento.kms.thrift.api.KmsMediaPlateDetectorFilterTypeConstants.EVENT_PLATE_DETECTED;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.EVENT_WINDOW_IN;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.EVENT_WINDOW_OUT;
@@ -40,6 +41,7 @@ import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
 import com.kurento.kmf.media.events.internal.EndOfStreamEventImpl;
 import com.kurento.kmf.media.events.internal.MediaSessionStartedEventImpl;
 import com.kurento.kmf.media.events.internal.MediaSessionTerminatedEventImpl;
+import com.kurento.kmf.media.events.internal.PlateDetectedEventImpl;
 import com.kurento.kmf.media.events.internal.WindowInEventImpl;
 import com.kurento.kmf.media.events.internal.WindowOutEventImpl;
 import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
@@ -110,6 +112,13 @@ public class MediaEventTest {
 		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_WINDOW_IN,
 				STRING_DATA_TYPE, null);
 		instantiateAndCheck(WindowInEventImpl.class, kmsEvent);
+	}
+
+	@Test
+	public void testPlateDetectedEventInstantiation() {
+		KmsMediaEvent kmsEvent = createKmsEvent(EVENT_PLATE_DETECTED,
+				STRING_DATA_TYPE, null);
+		instantiateAndCheck(PlateDetectedEventImpl.class, kmsEvent);
 	}
 
 	private MediaEvent instantiateAndCheck(Class<?> expectedClass,

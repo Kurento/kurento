@@ -30,6 +30,7 @@ import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaType;
+import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
 import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
@@ -38,6 +39,7 @@ import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.internal.HttpEndpointImpl.HttpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
+import com.kurento.kmf.media.internal.PlateDetectorFilterImpl.PlateDetectorFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlayerEndpointImpl.PlayerEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.PointerDetectorFilterImpl.PointerDetectorFilterBuilderImpl;
 import com.kurento.kmf.media.internal.RecorderEndpointImpl.RecorderEndpointBuilderImpl;
@@ -454,16 +456,12 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public PlayerEndpointBuilder newPlayerEndpoint(String uriStr) {
-		URI uri;
-
 		try {
-			uri = new URI(uriStr);
+			return this.newPlayerEndpoint(new URI(uriStr));
 		} catch (URISyntaxException e) {
 			// TODO error-code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-
-		return this.newPlayerEndpoint(uri);
 	}
 
 	@Override
@@ -473,16 +471,12 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public RecorderEndpointBuilder newRecorderEndpoint(String uriStr) {
-		URI uri;
-
 		try {
-			uri = new URI(uriStr);
+			return this.newRecorderEndpoint(new URI(uriStr));
 		} catch (URISyntaxException e) {
 			// TODO error-code
 			throw new KurentoMediaFrameworkException("", 30000);
 		}
-
-		return this.newRecorderEndpoint(uri);
 	}
 
 	@Override
@@ -503,6 +497,11 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public PointerDetectorFilterBuilder newPointerDetectorFilter() {
 		return new PointerDetectorFilterBuilderImpl(this);
+	}
+
+	@Override
+	public PlateDetectorFilterBuilder newPlateDetectorFilter() {
+		return new PlateDetectorFilterBuilderImpl(this);
 	}
 
 }
