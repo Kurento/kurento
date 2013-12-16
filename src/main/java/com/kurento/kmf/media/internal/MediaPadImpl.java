@@ -18,8 +18,8 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPad;
+import com.kurento.kmf.media.MediaType;
 import com.kurento.kmf.media.internal.refs.MediaPadRef;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 public abstract class MediaPadImpl extends AbstractMediaObject implements
 		MediaPad {
@@ -34,13 +34,7 @@ public abstract class MediaPadImpl extends AbstractMediaObject implements
 	}
 
 	@Override
-	public void getMediaElement(final Continuation<MediaElement> cont)
-			throws KurentoMediaFrameworkException {
-		super.getParent(cont);
-	}
-
-	@Override
-	public KmsMediaType getMediaType() {
+	public MediaType getMediaType() {
 		return ((MediaPadRef) objectRef).getType();
 	}
 
@@ -49,4 +43,19 @@ public abstract class MediaPadImpl extends AbstractMediaObject implements
 		return ((MediaPadRef) objectRef).getMediaDescription();
 	}
 
+	@Override
+	public void getMediaElement(final Continuation<MediaElement> cont)
+			throws KurentoMediaFrameworkException {
+		super.getParent(cont);
+	}
+
+	@Override
+	public void getMediaType(Continuation<MediaType> cont) {
+		cont.onSuccess(this.getMediaType());
+	}
+
+	@Override
+	public void getMediaDescription(Continuation<String> cont) {
+		cont.onSuccess(this.getMediaDescription());
+	}
 }

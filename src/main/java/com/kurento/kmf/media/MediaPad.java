@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 /**
  * A {@code MediaPad} is an element´s interface with the outside world. Data
@@ -35,18 +34,11 @@ public interface MediaPad extends MediaObject {
 	MediaElement getMediaElement();
 
 	/**
-	 * Obtains the {@link MediaElement} that encloses this pad
-	 * 
-	 * @param cont
-	 */
-	void getMediaElement(Continuation<MediaElement> cont);
-
-	/**
 	 * Obtains the type of media that this pad accepts.
 	 * 
 	 * @return The type of media.
 	 */
-	KmsMediaType getMediaType();
+	MediaType getMediaType();
 
 	/**
 	 * Obtains the description for this pad.
@@ -54,4 +46,45 @@ public interface MediaPad extends MediaObject {
 	 * @return The description.
 	 */
 	String getMediaDescription();
+
+	/**
+	 * Obtains the {@link MediaElement} that encloses this pad
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked if the command executed
+	 *            correctly, receiving as parameter a the element that encloses
+	 *            the pad
+	 */
+	void getMediaElement(Continuation<MediaElement> cont);
+
+	/**
+	 * Obtains the type of media that this pad accepts.
+	 * <p>
+	 * This method does not make a request to the media server, and is included
+	 * to keep the simmetry with the rest of methods from the API.
+	 * </p>
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked if the command executed
+	 *            correctly, receiving as parameter type of pad
+	 */
+	void getMediaType(Continuation<MediaType> cont);
+
+	/**
+	 * Obtains the description for this pad.
+	 * <p>
+	 * This method does not make a request to the media server, and is included
+	 * to keep the simmetry with the rest of methods from the API.
+	 * </p>
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked if the command executed
+	 *            correctly, receiving as parameter a string with the
+	 *            description
+	 */
+	void getMediaDescription(Continuation<String> cont);
+
 }

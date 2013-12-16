@@ -29,6 +29,7 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.MediaType;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
 import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
@@ -54,7 +55,6 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaE
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaMixerWithParams_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaMixer_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		MediaPipeline {
@@ -75,13 +75,13 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType) {
+			MediaType mediaType) {
 		source.connect(sink, mediaType);
 	}
 
 	@Override
 	public void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType, String mediaDescription) {
+			MediaType mediaType, String mediaDescription) {
 		source.connect(sink, mediaType, mediaDescription);
 	}
 
@@ -93,13 +93,13 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 
 	@Override
 	public void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType, Continuation<Void> cont) {
+			MediaType mediaType, Continuation<Void> cont) {
 		source.connect(sink, mediaType, cont);
 	}
 
 	@Override
 	public void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType, String mediaDescription,
+			MediaType mediaType, String mediaDescription,
 			Continuation<Void> cont) {
 		source.connect(sink, mediaType, mediaDescription, cont);
 	}

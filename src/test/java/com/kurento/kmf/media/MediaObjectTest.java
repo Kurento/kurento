@@ -48,7 +48,6 @@ import com.kurento.kms.thrift.api.KmsMediaPadDirection;
 import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRtpEndPointTypeConstants;
-import com.kurento.kms.thrift.api.KmsMediaType;
 import com.kurento.kms.thrift.api.KmsMediaWebRtcEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants;
 
@@ -81,14 +80,14 @@ public class MediaObjectTest {
 
 	@Test
 	public void testMediaSinkInstantiation() {
-		MediaObjectRef objRef = createMediaPadRef(KmsMediaType.AUDIO,
+		MediaObjectRef objRef = createMediaPadRef(MediaType.AUDIO,
 				KmsMediaPadDirection.SINK, "media sink");
 		instantiateAndCheck(MediaSinkImpl.class, objRef);
 	}
 
 	@Test
 	public void testMediaSourceInstantiation() {
-		MediaObjectRef objRef = createMediaPadRef(KmsMediaType.AUDIO,
+		MediaObjectRef objRef = createMediaPadRef(MediaType.AUDIO,
 				KmsMediaPadDirection.SRC, "media source");
 		instantiateAndCheck(MediaSourceImpl.class, objRef);
 	}

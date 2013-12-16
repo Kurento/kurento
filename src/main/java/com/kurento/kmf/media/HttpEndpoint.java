@@ -15,8 +15,6 @@
 package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
-import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
@@ -45,20 +43,6 @@ public interface HttpEndpoint extends SessionEndpoint {
 	String getUrl();
 
 	/**
-	 * Adds a listener for {@link HttpEndpointEOSDetected} events.
-	 * </b><strong>NOTE</strong></br>This event is no longer raised by this kind
-	 * of endpoint.
-	 * 
-	 * @param listener
-	 *            The user-defined listener for the event
-	 * @return A {@link ListenerRegistration} to uniquely identify the listener
-	 *         throughout the system.
-	 */
-	@Deprecated
-	ListenerRegistration addEOSDetectedListener(
-			MediaEventListener<HttpEndpointEOSDetected> listener);
-
-	/**
 	 * Obtains the URL associated to this endpoint
 	 * 
 	 * @param cont
@@ -68,25 +52,6 @@ public interface HttpEndpoint extends SessionEndpoint {
 	 *            {@code String} representing the URL.
 	 */
 	void getUrl(Continuation<String> cont);
-
-	/**
-	 * Adds a listener for {@link HttpEndpointEOSDetected} events.
-	 * </b><strong>NOTE</strong></br>This event is no longer raised by this kind
-	 * of endpoint.
-	 * 
-	 * @param listener
-	 *            The user-defined listener for the event
-	 * @param cont
-	 *            An asynchronous callback handler. If the event was
-	 *            successfully added to the {@code HttpEndpoint}, the
-	 *            {@code onSuccess} method from the handler will receive a
-	 *            {@link ListenerRegistration} to uniquely identify the listener
-	 *            throughout the system.
-	 */
-	@Deprecated
-	void addEOSDetectedListener(
-			MediaEventListener<HttpEndpointEOSDetected> listener,
-			Continuation<ListenerRegistration> cont);
 
 	/**
 	 * Builder for the {@link HttpEndpoint}.

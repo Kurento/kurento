@@ -30,6 +30,7 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.MediaSource;
+import com.kurento.kmf.media.MediaType;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaPadRef;
 import com.kurento.kmf.media.params.MediaParam;
@@ -46,7 +47,6 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcs
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcsByMediaType_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.getMediaSrcs_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 public class MediaElementImpl extends AbstractCollectableMediaObject implements
 		MediaElement {
@@ -116,14 +116,14 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType) {
+	public Collection<MediaSource> getMediaSrcs(MediaType mediaType) {
 		Client client = clientPool.acquireSync();
 
 		List<KmsMediaObjectRef> srcRefs;
 
 		try {
 			srcRefs = client.getMediaSrcsByMediaType(
-					this.objectRef.getThriftRef(), mediaType);
+					this.objectRef.getThriftRef(), mediaType.asKmsType());
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -139,7 +139,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType,
+	public Collection<MediaSource> getMediaSrcs(MediaType mediaType,
 			String description) {
 
 		Client client = clientPool.acquireSync();
@@ -148,7 +148,8 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 
 		try {
 			srcRefs = client.getMediaSrcsByFullDescription(
-					this.objectRef.getThriftRef(), mediaType, description);
+					this.objectRef.getThriftRef(), mediaType.asKmsType(),
+					description);
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -187,14 +188,14 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public Collection<MediaSink> getMediaSinks(KmsMediaType mediaType) {
+	public Collection<MediaSink> getMediaSinks(MediaType mediaType) {
 		Client client = clientPool.acquireSync();
 
 		List<KmsMediaObjectRef> sinkRefs;
 
 		try {
 			sinkRefs = client.getMediaSinksByMediaType(
-					this.objectRef.getThriftRef(), mediaType);
+					this.objectRef.getThriftRef(), mediaType.asKmsType());
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -210,7 +211,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public Collection<MediaSink> getMediaSinks(KmsMediaType mediaType,
+	public Collection<MediaSink> getMediaSinks(MediaType mediaType,
 			String description) {
 
 		Client client = clientPool.acquireSync();
@@ -219,7 +220,8 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 
 		try {
 			sinkRefs = client.getMediaSinksByFullDescription(
-					this.objectRef.getThriftRef(), mediaType, description);
+					this.objectRef.getThriftRef(), mediaType.asKmsType(),
+					description);
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -235,7 +237,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void connect(MediaElement sink, KmsMediaType mediaType) {
+	public void connect(MediaElement sink, MediaType mediaType) {
 
 		Client client = clientPool.acquireSync();
 
@@ -243,7 +245,8 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 		KmsMediaObjectRef sinkRef = ((AbstractMediaObject) sink).getObjectRef()
 				.getThriftRef();
 		try {
-			client.connectElementsByMediaType(srcRef, sinkRef, mediaType);
+			client.connectElementsByMediaType(srcRef, sinkRef,
+					mediaType.asKmsType());
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -277,7 +280,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void connect(MediaElement sink, KmsMediaType mediaType,
+	public void connect(MediaElement sink, MediaType mediaType,
 			String mediaDescription) {
 
 		Client client = clientPool.acquireSync();
@@ -286,8 +289,8 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 		KmsMediaObjectRef sinkRef = ((AbstractMediaObject) sink).getObjectRef()
 				.getThriftRef();
 		try {
-			client.connectElementsByFullDescription(srcRef, sinkRef, mediaType,
-					mediaDescription);
+			client.connectElementsByFullDescription(srcRef, sinkRef,
+					mediaType.asKmsType(), mediaDescription);
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -341,13 +344,13 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void getMediaSrcs(KmsMediaType mediaType,
+	public void getMediaSrcs(MediaType mediaType,
 			final Continuation<Collection<MediaSource>> cont) {
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
 			client.getMediaSrcsByMediaType(this.objectRef.getThriftRef(),
-					mediaType,
+					mediaType.asKmsType(),
 					new AsyncMethodCallback<getMediaSrcsByMediaType_call>() {
 
 						@Override
@@ -386,13 +389,13 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void getMediaSrcs(KmsMediaType mediaType, String description,
+	public void getMediaSrcs(MediaType mediaType, String description,
 			final Continuation<Collection<MediaSource>> cont) {
 		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSrcsByFullDescription(
 					this.objectRef.getThriftRef(),
-					mediaType,
+					mediaType.asKmsType(),
 					description,
 					new AsyncMethodCallback<getMediaSrcsByFullDescription_call>() {
 
@@ -474,12 +477,12 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void getMediaSinks(KmsMediaType mediaType,
+	public void getMediaSinks(MediaType mediaType,
 			final Continuation<Collection<MediaSink>> cont) {
 		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSinksByMediaType(this.objectRef.getThriftRef(),
-					mediaType,
+					mediaType.asKmsType(),
 					new AsyncMethodCallback<getMediaSinksByMediaType_call>() {
 
 						@Override
@@ -518,13 +521,13 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void getMediaSinks(KmsMediaType mediaType, String description,
+	public void getMediaSinks(MediaType mediaType, String description,
 			final Continuation<Collection<MediaSink>> cont) {
 		final AsyncClient client = clientPool.acquireAsync();
 		try {
 			client.getMediaSinksByFullDescription(
 					this.objectRef.getThriftRef(),
-					mediaType,
+					mediaType.asKmsType(),
 					description,
 					new AsyncMethodCallback<getMediaSinksByFullDescription_call>() {
 
@@ -565,7 +568,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void connect(final MediaElement sink, final KmsMediaType mediaType,
+	public void connect(final MediaElement sink, final MediaType mediaType,
 			final Continuation<Void> cont) {
 		final AsyncClient client = clientPool.acquireAsync();
 
@@ -574,7 +577,8 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 				.getObjectRef().getThriftRef();
 
 		try {
-			client.connectElementsByMediaType(srcRef, sinkRef, mediaType,
+			client.connectElementsByMediaType(srcRef, sinkRef,
+					mediaType.asKmsType(),
 					new AsyncMethodCallback<connectElementsByMediaType_call>() {
 
 						@Override
@@ -669,7 +673,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void connect(final MediaElement sink, final KmsMediaType mediaType,
+	public void connect(final MediaElement sink, final MediaType mediaType,
 			final String mediaDescription, final Continuation<Void> cont) {
 		final AsyncClient client = clientPool.acquireAsync();
 
@@ -681,7 +685,7 @@ public class MediaElementImpl extends AbstractCollectableMediaObject implements
 			client.connectElementsByFullDescription(
 					srcRef,
 					sinkRef,
-					mediaType,
+					mediaType.asKmsType(),
 					mediaDescription,
 					new AsyncMethodCallback<connectElementsByFullDescription_call>() {
 

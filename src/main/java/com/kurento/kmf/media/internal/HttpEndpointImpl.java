@@ -15,7 +15,6 @@
 package com.kurento.kmf.media.internal;
 
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
-import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.EVENT_EOS_DETECTED;
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.GET_URL;
 import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.TYPE_NAME;
 
@@ -23,11 +22,8 @@ import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndpoint;
-import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaProfileSpecType;
-import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
-import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
@@ -57,12 +53,6 @@ public class HttpEndpointImpl extends AbstractSessionEndpoint implements
 		return result.getString();
 	}
 
-	@Override
-	public ListenerRegistration addEOSDetectedListener(
-			final MediaEventListener<HttpEndpointEOSDetected> listener) {
-		return addListener(EVENT_EOS_DETECTED, listener);
-	}
-
 	/* ASYNC */
 
 	@Override
@@ -70,18 +60,11 @@ public class HttpEndpointImpl extends AbstractSessionEndpoint implements
 		invoke(GET_URL, new StringContinuationWrapper(cont));
 	}
 
-	@Override
-	public void addEOSDetectedListener(
-			final MediaEventListener<HttpEndpointEOSDetected> listener,
-			final Continuation<ListenerRegistration> cont) {
-		addListener(EVENT_EOS_DETECTED, listener, cont);
-	}
-
 	static class HttpEndpointBuilderImpl<T extends HttpEndpointBuilderImpl<T>>
 			extends AbstractSessionEndpointBuilder<T, HttpEndpoint> implements
 			HttpEndpointBuilder {
 
-		// The param not stored in the map of params until some constructor
+		// The param is not stored in the map of params until some constructor
 		// param is set.
 		private final HttpEndpointConstructorParam param = new HttpEndpointConstructorParam();
 

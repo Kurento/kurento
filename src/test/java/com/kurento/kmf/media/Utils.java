@@ -33,7 +33,6 @@ import com.kurento.kms.thrift.api.KmsMediaPad;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
 import com.kurento.kms.thrift.api.KmsMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaPipeline;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -143,14 +142,15 @@ public class Utils {
 		return objRef;
 	}
 
-	public static MediaPadRef createMediaPadRef(KmsMediaType padType,
+	public static MediaPadRef createMediaPadRef(MediaType padType,
 			KmsMediaPadDirection direction, String description) {
 		return new MediaPadRef(createKmsPadRef(padType, direction, description));
 	}
 
-	private static KmsMediaObjectRef createKmsPadRef(KmsMediaType padType,
+	private static KmsMediaObjectRef createKmsPadRef(MediaType padType,
 			KmsMediaPadDirection direction, String description) {
-		KmsMediaPad pad = new KmsMediaPad(direction, padType, description);
+		KmsMediaPad pad = new KmsMediaPad(direction, padType.asKmsType(),
+				description);
 		KmsMediaObjectType type = new KmsMediaObjectType();
 		type.setPad(pad);
 		KmsMediaObjectRef objRef = new KmsMediaObjectRef(rnd.nextLong(), UUID

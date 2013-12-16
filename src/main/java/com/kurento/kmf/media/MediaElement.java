@@ -16,8 +16,6 @@ package com.kurento.kmf.media;
 
 import java.util.Collection;
 
-import com.kurento.kms.thrift.api.KmsMediaType;
-
 /**
  * Basic building blocks of the media server, that can be interconnected through
  * the API. A {@code MediaElement} is a module that encapsulates a specific
@@ -53,7 +51,7 @@ public interface MediaElement extends MediaObject {
 	 * @return A list of sources. The list will be empty if no sources are
 	 *         found.
 	 */
-	Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType);
+	Collection<MediaSource> getMediaSrcs(MediaType mediaType);
 
 	/**
 	 * Returns {@link MediaSource} of a certain type and description, associated
@@ -65,8 +63,7 @@ public interface MediaElement extends MediaObject {
 	 * @return A list of sources. The list will be empty if no sources are
 	 *         found.
 	 */
-	Collection<MediaSource> getMediaSrcs(KmsMediaType mediaType,
-			String description);
+	Collection<MediaSource> getMediaSrcs(MediaType mediaType, String description);
 
 	/**
 	 * @return A list of sinks. The list will be empty if no sinks are found.
@@ -80,7 +77,7 @@ public interface MediaElement extends MediaObject {
 	 *            The type of media from the sink
 	 * @return A list of sinks. The list will be empty if no sinks are found.
 	 */
-	Collection<MediaSink> getMediaSinks(KmsMediaType mediaType);
+	Collection<MediaSink> getMediaSinks(MediaType mediaType);
 
 	/**
 	 * Returns {@link MediaSink} of a certain type and description, associated
@@ -91,25 +88,24 @@ public interface MediaElement extends MediaObject {
 	 * @param description
 	 * @return A list of sinks. The list will be empty if no sinks are found.
 	 */
-	Collection<MediaSink> getMediaSinks(KmsMediaType mediaType,
-			String description);
+	Collection<MediaSink> getMediaSinks(MediaType mediaType, String description);
 
 	/**
 	 * Connects all {@link MediaSource} of this element belonging to the
-	 * specified {@link KmsMediaType} to the corresponding {@link MediaSink
-	 * } of
-	 * the target {@link MediaElement}.
+	 * specified {@link MediaType} to the corresponding {@link MediaSink
+	 * } of the
+	 * target {@link MediaElement}.
 	 * 
 	 * This method will throw an exception if any of the following occur: <br>
 	 * <ul>
-	 * <li>The number of sources for the specified {@link KmsMediaType} in this
+	 * <li>The number of sources for the specified {@link MediaType} in this
 	 * element is different than the number of sinks on the target element.
 	 * <li>There are duplicate mediaDescriptions on this' element sources for
-	 * the specified {@link KmsMediaType}.
+	 * the specified {@link MediaType}.
 	 * <li>There are duplicate mediaDescriptions on target's element sinks for
-	 * the specified {@link KmsMediaType}.
+	 * the specified {@link MediaType}.
 	 * <li>Target sinks' media descriptions are different form this sources'
-	 * media descriptions for the specified {@link KmsMediaType}
+	 * media descriptions for the specified {@link MediaType}
 	 * </ul>
 	 * 
 	 * This method is not transactional. In case of exception some of this
@@ -119,10 +115,10 @@ public interface MediaElement extends MediaObject {
 	 *            the target {@MediaElement} from which
 	 *            {@link MediaSink} will be obtained
 	 * @param mediaType
-	 *            the {@KmsMediaType} of the pads that will be
+	 *            the {@MediaType} of the pads that will be
 	 *            connected.
 	 */
-	void connect(MediaElement sink, KmsMediaType mediaType);
+	void connect(MediaElement sink, MediaType mediaType);
 
 	/**
 	 * TODO: invokes the method above for all available MediaTypes
@@ -142,8 +138,7 @@ public interface MediaElement extends MediaObject {
 	 * @param mediaType
 	 * @param mediaDescription
 	 */
-	void connect(MediaElement sink, KmsMediaType mediaType,
-			String mediaDescription);
+	void connect(MediaElement sink, MediaType mediaType, String mediaDescription);
 
 	/**
 	 * Returns all {@link MediaSource} from this element
@@ -163,7 +158,7 @@ public interface MediaElement extends MediaObject {
 	 *            A list of sources. The list will be empty if no sources are
 	 *            found.
 	 */
-	void getMediaSrcs(KmsMediaType mediaType,
+	void getMediaSrcs(MediaType mediaType,
 			Continuation<Collection<MediaSource>> cont);
 
 	/**
@@ -177,7 +172,7 @@ public interface MediaElement extends MediaObject {
 	 *            A list of sources. The list will be empty if no sources are
 	 *            found.
 	 */
-	void getMediaSrcs(KmsMediaType mediaType, String description,
+	void getMediaSrcs(MediaType mediaType, String description,
 			Continuation<Collection<MediaSource>> cont);
 
 	/**
@@ -195,7 +190,7 @@ public interface MediaElement extends MediaObject {
 	 * @param cont
 	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
-	void getMediaSinks(KmsMediaType mediaType,
+	void getMediaSinks(MediaType mediaType,
 			Continuation<Collection<MediaSink>> cont);
 
 	/**
@@ -208,25 +203,25 @@ public interface MediaElement extends MediaObject {
 	 * @param cont
 	 *            A list of sinks. The list will be empty if no sinks are found.
 	 */
-	void getMediaSinks(KmsMediaType mediaType, String description,
+	void getMediaSinks(MediaType mediaType, String description,
 			Continuation<Collection<MediaSink>> cont);
 
 	/**
 	 * Connects all {@link MediaSource} of this element belonging to the
-	 * specified {@link KmsMediaType} to the corresponding {@link MediaSink
-	 * } of
-	 * the target {@link MediaElement}.
+	 * specified {@link MediaType} to the corresponding {@link MediaSink
+	 * } of the
+	 * target {@link MediaElement}.
 	 * 
 	 * This method will throw an exception if any of the following occur: <br>
 	 * <ul>
-	 * <li>The number of sources for the specified {@link KmsMediaType} in this
+	 * <li>The number of sources for the specified {@link MediaType} in this
 	 * element is different than the number of sinks on the target element.
 	 * <li>There are duplicate mediaDescriptions on this' element sources for
-	 * the specified {@link KmsMediaType}.
+	 * the specified {@link MediaType}.
 	 * <li>There are duplicate mediaDescriptions on target's element sinks for
-	 * the specified {@link KmsMediaType}.
+	 * the specified {@link MediaType}.
 	 * <li>Target sinks' media descriptions are different form this sources'
-	 * media descriptions for the specified {@link KmsMediaType}
+	 * media descriptions for the specified {@link MediaType}
 	 * </ul>
 	 * 
 	 * This method is not transactional. In case of exception some of this
@@ -236,12 +231,11 @@ public interface MediaElement extends MediaObject {
 	 *            the target {@MediaElement} from which
 	 *            {@link MediaSink} will be obtained
 	 * @param mediaType
-	 *            the {@KmsMediaType} of the pads that will be
+	 *            the {@MediaType} of the pads that will be
 	 *            connected.
 	 * @param cont
 	 */
-	void connect(MediaElement sink, KmsMediaType mediaType,
-			Continuation<Void> cont);
+	void connect(MediaElement sink, MediaType mediaType, Continuation<Void> cont);
 
 	/**
 	 * TODO: invokes the method above for all available MediaTypes
@@ -263,7 +257,7 @@ public interface MediaElement extends MediaObject {
 	 * @param mediaDescription
 	 * @param cont
 	 */
-	void connect(MediaElement sink, KmsMediaType mediaType,
+	void connect(MediaElement sink, MediaType mediaType,
 			String mediaDescription, Continuation<Void> cont);
 
 }

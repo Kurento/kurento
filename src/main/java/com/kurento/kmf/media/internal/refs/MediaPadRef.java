@@ -14,10 +14,10 @@
  */
 package com.kurento.kmf.media.internal.refs;
 
+import com.kurento.kmf.media.MediaType;
 import com.kurento.kms.thrift.api.KmsMediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaObjectType;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 public class MediaPadRef extends MediaObjectRef {
 
@@ -35,9 +35,9 @@ public class MediaPadRef extends MediaObjectRef {
 		return new MediaPadRef(objectRef);
 	}
 
-	public KmsMediaType getType() {
+	public MediaType getType() {
 		KmsMediaObjectType objType = this.objectRef.getObjectType();
-		return objType.getPad().mediaType;
+		return MediaType.fromKmsType(objType.getPad().mediaType);
 	}
 
 	public KmsMediaPadDirection getPadDirection() {

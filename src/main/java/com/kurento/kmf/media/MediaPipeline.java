@@ -27,7 +27,6 @@ import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.params.MediaParam;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 /**
  * A pipeline is a container for a collection of {@link MediaElement} and
@@ -61,7 +60,7 @@ public interface MediaPipeline extends MediaObject {
 	 *            The sink
 	 * @param mediaType
 	 */
-	void connect(MediaElement source, MediaElement sink, KmsMediaType mediaType);
+	void connect(MediaElement source, MediaElement sink, MediaType mediaType);
 
 	/**
 	 * Connects two {@link MediaElement}
@@ -76,8 +75,8 @@ public interface MediaPipeline extends MediaObject {
 	 * @param mediaDescription
 	 *            A description text
 	 */
-	void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType, String mediaDescription);
+	void connect(MediaElement source, MediaElement sink, MediaType mediaType,
+			String mediaDescription);
 
 	/**
 	 * Connects two media {@link MediaElement}
@@ -108,8 +107,8 @@ public interface MediaPipeline extends MediaObject {
 	 *            from the handler will be invoked in case of correct
 	 *            connection, but no extra information will be provided.
 	 */
-	void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType, Continuation<Void> cont);
+	void connect(MediaElement source, MediaElement sink, MediaType mediaType,
+			Continuation<Void> cont);
 
 	/**
 	 * Connects two media {@link MediaElement}
@@ -128,9 +127,8 @@ public interface MediaPipeline extends MediaObject {
 	 *            from the handler will be invoked in case of correct
 	 *            connection, but no extra information will be provided.
 	 */
-	void connect(MediaElement source, MediaElement sink,
-			KmsMediaType mediaType, String mediaDescription,
-			Continuation<Void> cont);
+	void connect(MediaElement source, MediaElement sink, MediaType mediaType,
+			String mediaDescription, Continuation<Void> cont);
 
 	/**
 	 * Obtains the builder for an {@link HttpEndpoint}.
