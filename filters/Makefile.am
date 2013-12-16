@@ -27,7 +27,7 @@ libkmsfilters_la_SOURCES = kmsfilters.c \
 			$(OPENCV_FILTERS)
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libkmsfilters_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) -Werror
-libkmsfilters_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS)
+libkmsfilters_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) $(SOUP_CFLAGS) -Werror
+libkmsfilters_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS) $(SOUP_LIBS)
 libkmsfilters_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libkmsfilters_la_LIBTOOLFLAGS = --tag=disable-static

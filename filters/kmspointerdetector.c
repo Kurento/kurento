@@ -12,6 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
+#define _XOPEN_SOURCE 500
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -19,6 +21,12 @@
 #include <gst/gst.h>
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
+#include <glib/gstdio.h>
+#include <ftw.h>
+#include <string.h>
+#include <errno.h>
+#include <libsoup/soup.h>
+
 #include "kmspointerdetector.h"
 
 #define PLUGIN_NAME "pointerdetector"
@@ -32,6 +40,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector_debug_category);
 #define COMPARE_THRESH_2_RECT ((double) 0.82)
 #define GREEN CV_RGB (0, 255, 0)
 #define WHITE CV_RGB (255, 255, 255)
+
+#define TEMP_PATH "/tmp/XXXXXX"
 
 /* prototypes */
 
@@ -147,6 +157,10 @@ dispose_button_struct (gpointer data)
 
   if (aux->id != NULL)
     g_free (aux->id);
+
+  if (aux->icon != NULL)
+    cvReleaseImage (&aux->icon);
+
   g_free (aux);
 }
 
@@ -158,10 +172,51 @@ kms_pointer_detector_dispose_buttons_layout_list (KmsPointerDetector *
   pointerdetector->buttonsLayoutList = NULL;
 }
 
+static gboolean
+kms_pointer_detector_is_valid_uri (const gchar * url)
+{
+  gboolean ret;
+  GRegex *regex;
+
+  regex = g_regex_new ("^(?:((?:https?):)\\/\\/)([^:\\/\\s]+)(?::(\\d*))?(?:\\/"
+      "([^\\s?#]+)?([?][^?#]*)?(#.*)?)?$", 0, 0, NULL);
+  ret = g_regex_match (regex, url, G_REGEX_MATCH_ANCHORED, NULL);
+  g_regex_unref (regex);
+
+  return ret;
+}
+
+static void
+kms_pointer_detector_load_from_url (gchar * file_name, gchar * url)
+{
+  SoupSession *session;
+  SoupMessage *msg;
+  FILE *dst;
+
+  session = soup_session_sync_new ();
+  msg = soup_message_new ("GET", url);
+  soup_session_send_message (session, msg);
+
+  dst = fopen (file_name, "w+");
+
+  if (dst == NULL) {
+    GST_ERROR ("It is not possible to create the file");
+    goto end;
+  }
+  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
+  fclose (dst);
+
+end:
+  g_object_unref (msg);
+  g_object_unref (session);
+}
+
 static void
 kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
 {
   int aux, len;
+  gboolean have_icon, have_transparency;
+  gchar *uri;
 
   if (pointerdetector->buttonsLayoutList != NULL) {
     kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
@@ -181,6 +236,7 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
         GST_TYPE_STRUCTURE, &button, NULL);
     if (ret) {
       ButtonStruct *structAux = g_malloc0 (sizeof (ButtonStruct));
+      IplImage *aux = NULL;
 
       gst_structure_get (button, "upRightCornerX", G_TYPE_INT,
           &structAux->cvButtonLayout.x, NULL);
@@ -191,12 +247,53 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
       gst_structure_get (button, "height", G_TYPE_INT,
           &structAux->cvButtonLayout.height, NULL);
       gst_structure_get (button, "id", G_TYPE_STRING, &structAux->id, NULL);
+      have_icon = gst_structure_get (button, "uri", G_TYPE_STRING, &uri, NULL);
+      have_transparency =
+          gst_structure_get (button, "transparency", G_TYPE_DOUBLE,
+          &structAux->transparency, NULL);
+      if (have_icon) {
+        aux = cvLoadImage (uri, CV_LOAD_IMAGE_UNCHANGED);
+        if (aux == NULL) {
+          if (kms_pointer_detector_is_valid_uri (uri)) {
+            gchar *file_name;
+
+            file_name = g_strconcat (pointerdetector->images_dir, "/",
+                structAux->id, ".png", NULL);
+            kms_pointer_detector_load_from_url (file_name, uri);
+            aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+
+            g_free (file_name);
+          }
+        }
+
+        if (aux != NULL) {
+          structAux->icon =
+              cvCreateImage (cvSize (structAux->cvButtonLayout.width,
+                  structAux->cvButtonLayout.height), aux->depth,
+              aux->nChannels);
+          cvResize (aux, structAux->icon, CV_INTER_CUBIC);
+          cvReleaseImage (&aux);
+        } else {
+          structAux->icon = NULL;
+        }
+      }
+
+      if (have_transparency) {
+        structAux->transparency = 1.0 - structAux->transparency;
+      } else {
+        structAux->transparency = 1.0;
+      }
+
       GST_DEBUG ("check: %d %d %d %d", structAux->cvButtonLayout.x,
           structAux->cvButtonLayout.y, structAux->cvButtonLayout.width,
           structAux->cvButtonLayout.height);
       pointerdetector->buttonsLayoutList =
           g_slist_append (pointerdetector->buttonsLayoutList, structAux);
       gst_structure_free (button);
+
+      if (have_icon) {
+        g_free (uri);
+      }
     }
   }
 }
@@ -256,6 +353,11 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   pointerdetector->buttonsLayoutList = NULL;
   pointerdetector->putMessage = TRUE;
   pointerdetector->show_windows_layout = TRUE;
+
+  gchar d[] = TEMP_PATH;
+  gchar *aux = g_mkdtemp (d);
+
+  pointerdetector->images_dir = g_strdup (aux);
 }
 
 void
@@ -340,6 +442,25 @@ kms_pointer_detector_dispose (GObject * object)
   G_OBJECT_CLASS (kms_pointer_detector_parent_class)->dispose (object);
 }
 
+static int
+delete_file (const char *fpath, const struct stat *sb, int typeflag,
+    struct FTW *ftwbuf)
+{
+  int rv = g_remove (fpath);
+
+  if (rv) {
+    GST_WARNING ("Error deleting file: %s. %s", fpath, strerror (errno));
+  }
+
+  return rv;
+}
+
+static void
+remove_recursive (const gchar * path)
+{
+  nftw (path, delete_file, 64, FTW_DEPTH | FTW_PHYS);
+}
+
 void
 kms_pointer_detector_finalize (GObject * object)
 {
@@ -358,6 +479,9 @@ kms_pointer_detector_finalize (GObject * object)
   cvReleaseHist (&pointerdetector->histSetUp1);
   cvReleaseHist (&pointerdetector->histSetUp2);
   cvReleaseHist (&pointerdetector->histSetUpRef);
+
+  remove_recursive (pointerdetector->images_dir);
+  g_free (pointerdetector->images_dir);
 
   G_OBJECT_CLASS (kms_pointer_detector_parent_class)->finalize (object);
 }
@@ -469,6 +593,73 @@ kms_pointer_detector_check_pointer_into_button (CvPoint * pointer_position,
 }
 
 static void
+kms_pointer_detector_overlay_icon (IplImage * icon,
+    gint x, gint y,
+    gdouble transparency,
+    gboolean saturate, KmsPointerDetector * pointerdetector)
+{
+  int w, h;
+  uchar *row, *image_row;
+
+  row = (uchar *) icon->imageData;
+  image_row = (uchar *) pointerdetector->cvImage->imageData +
+      (y * pointerdetector->cvImage->widthStep);
+
+  for (h = 0; h < icon->height; h++) {
+
+    uchar *column = row;
+    uchar *image_column = image_row + (x * 3);
+
+    for (w = 0; w < icon->width; w++) {
+      /* Check if point is inside overlay boundaries */
+      if (((w + x) < pointerdetector->cvImage->width)
+          && ((w + x) >= 0)) {
+        if (((h + y) < pointerdetector->cvImage->height)
+            && ((h + y) >= 0)) {
+
+          if (icon->nChannels == 1) {
+            *(image_column) = (uchar) (*(column));
+            *(image_column + 1) = (uchar) (*(column));
+            *(image_column + 2) = (uchar) (*(column));
+          } else if (icon->nChannels == 3) {
+            *(image_column) = (uchar) (*(column));
+            *(image_column + 1) = (uchar) (*(column + 1));
+            *(image_column + 2) = (uchar) (*(column + 2));
+          } else if (icon->nChannels == 4) {
+            double proportion =
+                ((double) *(uchar *) (column + 3)) / (double) 255;
+            double overlay = transparency * proportion;
+            double original = 1 - overlay;
+
+            *image_column =
+                (uchar) ((*column * overlay) + (*image_column * original));
+
+            if (saturate) {
+              *(image_column + 1) =
+                  (uchar) ((255 * overlay) + (*(image_column + 1) * original));
+            } else {
+              *(image_column + 1) =
+                  (uchar) ((*(column + 1) * overlay) + (*(image_column +
+                          1) * original));
+            }
+
+            *(image_column + 2) =
+                (uchar) ((*(column + 2) * overlay) + (*(image_column +
+                        2) * original));
+          }
+        }
+      }
+
+      column += icon->nChannels;
+      image_column += pointerdetector->cvImage->nChannels;
+    }
+
+    row += icon->widthStep;
+    image_row += pointerdetector->cvImage->widthStep;
+  }
+}
+
+static void
 kms_pointer_detector_check_pointer_position (KmsPointerDetector *
     pointerdetector)
 {
@@ -481,6 +672,7 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
     CvPoint upRightCorner;
     CvPoint downLeftCorner;
     CvScalar color;
+    gboolean saturate;
 
     structAux = l->data;
     upRightCorner.x = structAux->cvButtonLayout.x;
@@ -490,19 +682,27 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
     downLeftCorner.y =
         structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
     color = WHITE;
+    saturate = FALSE;
 
     if (kms_pointer_detector_check_pointer_into_button
         (&pointerdetector->finalPointerPosition, structAux)) {
       buttonClickedCounter++;
 
       color = GREEN;
+      saturate = TRUE;
       actualButtonClickedId = structAux->id;
-      GST_DEBUG ("TODO: send event to the bus");
     }
 
     if (pointerdetector->show_windows_layout) {
-      cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
-          color, 1, 8, 0);
+      if (structAux->icon != NULL) {
+        kms_pointer_detector_overlay_icon (structAux->icon,
+            structAux->cvButtonLayout.x,
+            structAux->cvButtonLayout.y,
+            structAux->transparency, saturate, pointerdetector);
+      } else {
+        cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
+            color, 1, 8, 0);
+      }
     }
   }
 

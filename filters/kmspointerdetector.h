@@ -41,6 +41,8 @@ typedef enum
 typedef struct _ButtonStruct {
     CvRect cvButtonLayout;
     gchar *id;
+    IplImage* icon;
+    gdouble transparency;
 } ButtonStruct;
 
 struct _KmsPointerDetector {
@@ -64,6 +66,7 @@ struct _KmsPointerDetector {
   const gchar *previousButtonClickedId;
   gboolean putMessage;
   gboolean show_windows_layout;
+  gchar* images_dir;
 };
 
 struct _KmsPointerDetectorClass {
