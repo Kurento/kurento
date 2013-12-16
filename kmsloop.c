@@ -180,8 +180,7 @@ kms_loop_init (KmsLoop * self)
   g_mutex_init (&self->priv->mutex);
   g_mutex_lock (&self->priv->mutex);
 
-  self->priv->thread = g_thread_new (GST_OBJECT_NAME (self),
-      loop_thread_init, self);
+  self->priv->thread = g_thread_new ("KmsLoop", loop_thread_init, self);
 
   g_mutex_lock (&self->priv->mutex);
   g_mutex_unlock (&self->priv->mutex);
