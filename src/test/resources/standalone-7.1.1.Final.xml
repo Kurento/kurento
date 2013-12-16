@@ -80,6 +80,9 @@
 			<logger category="jacorb.config">
 				<level name="ERROR" />
 			</logger>
+			<logger category="com.kurento.kmf.media.internal">
+				<level name="ERROR" />
+			</logger>
 			<root-logger>
 				<level name="INFO" />
 				<handlers>

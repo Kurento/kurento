@@ -83,7 +83,6 @@ public class JMeterIT extends BaseArquillianTst {
 				jmeter.start(arguments);
 
 				// Waiting for JMeter ending
-				PrintStream out = System.out;
 				ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				System.setOut(new PrintStream(baos));
 				boolean running = true;
@@ -95,7 +94,6 @@ public class JMeterIT extends BaseArquillianTst {
 						running = !line.equals("... end of run");
 					}
 				} while (running);
-				System.setOut(out);
 
 				// Transform raw JTL to friendly HTML using XSL
 				String outputFileHtml = reports + fileNoExt + htmlExtension;

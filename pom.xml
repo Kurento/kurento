@@ -24,11 +24,11 @@
 		<kws-content-api.version>1.0.0</kws-content-api.version>
 
 		<!-- Test Dependencies Versions -->
-		<junit.version>4.8.1</junit.version>
-		<arquillian.version>1.1.1.Final</arquillian.version>
+		<junit.version>4.11</junit.version>
+		<arquillian.version>1.1.2.Final</arquillian.version>
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
-		<selenium-java.version>2.35.0</selenium-java.version>
+		<selenium-java.version>2.38.0</selenium-java.version>
 
 		<!-- JBoss -->
 		<jboss-as.version>7.1.1.Final</jboss-as.version>
@@ -37,7 +37,6 @@
 		<jboss-as.service.port>8180</jboss-as.service.port>
 		<jboss-as.management.port>10999</jboss-as.management.port>
 		<jboss-as.remoting.port>4470</jboss-as.remoting.port>
-		<jboss-javaee.version>1.0.0.Final</jboss-javaee.version>
 
 		<!-- Plugins Versions -->
 		<maven-war-plugin.version>2.4</maven-war-plugin.version>
@@ -143,13 +142,6 @@
 			<groupId>org.jboss.arquillian.junit</groupId>
 			<artifactId>arquillian-junit-container</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jboss.spec</groupId>
-			<artifactId>jboss-javaee-6.0</artifactId>
-			<version>${jboss-javaee.version}</version>
-			<type>pom</type>
-			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.as</groupId>
@@ -303,7 +295,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<version>${maven-failsafe-plugin.version}</version>
 				<configuration>
-					<argLine>-Xms128m -Xmx1024m -XX:MaxPermSize=512m</argLine>
+					<argLine>-Xms128m -Xmx512m -XX:MaxPermSize=512m</argLine>
 				</configuration>
 				<executions>
 					<execution>
