@@ -28,7 +28,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.internal.MainMixerImpl;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
@@ -66,39 +65,35 @@ public class SyncMediaServerTest {
 
 		rtpEndpoint.processOffer(requestSdp);
 		rtpEndpoint
-				.getMediaSrcs(KmsMediaType.VIDEO)
+				.getMediaSrcs(MediaType.VIDEO)
 				.iterator()
 				.next()
 				.connect(
-						rtpEndpoint.getMediaSinks(KmsMediaType.VIDEO)
-								.iterator().next());
+						rtpEndpoint.getMediaSinks(MediaType.VIDEO).iterator()
+								.next());
 
 		// Wait some time simulating the connection to the player app
 		Thread.sleep(1000);
 
 		HttpEndpoint httpEndpoint = pipeline.newHttpEndpoint().build();
 
-		rtpEndpoint.connect(httpEndpoint, KmsMediaType.VIDEO);
+		rtpEndpoint.connect(httpEndpoint, MediaType.VIDEO);
 	}
 
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException {
 		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
 
-		Collection<MediaSource> videoSrcsA = rtp
-				.getMediaSrcs(KmsMediaType.VIDEO);
+		Collection<MediaSource> videoSrcsA = rtp.getMediaSrcs(MediaType.VIDEO);
 		Assert.assertFalse(videoSrcsA.isEmpty());
 
-		Collection<MediaSink> videoSinksA = rtp
-				.getMediaSinks(KmsMediaType.VIDEO);
+		Collection<MediaSink> videoSinksA = rtp.getMediaSinks(MediaType.VIDEO);
 		Assert.assertFalse(videoSinksA.isEmpty());
 
-		Collection<MediaSource> audioSrcsA = rtp
-				.getMediaSrcs(KmsMediaType.AUDIO);
+		Collection<MediaSource> audioSrcsA = rtp.getMediaSrcs(MediaType.AUDIO);
 		Assert.assertFalse(audioSrcsA.isEmpty());
 
-		Collection<MediaSink> audioSinksA = rtp
-				.getMediaSinks(KmsMediaType.AUDIO);
+		Collection<MediaSink> audioSinksA = rtp.getMediaSinks(MediaType.AUDIO);
 		Assert.assertFalse(audioSinksA.isEmpty());
 
 		rtp.release();
@@ -121,8 +116,8 @@ public class SyncMediaServerTest {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 		HttpEndpoint http = pipeline.newHttpEndpoint().build();
 
-		player.connect(http, KmsMediaType.AUDIO);
-		player.connect(http, KmsMediaType.VIDEO);
+		player.connect(http, MediaType.AUDIO);
+		player.connect(http, MediaType.VIDEO);
 
 		player.play();
 		http.release();

@@ -23,8 +23,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kms.thrift.api.KmsMediaType;
-
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
  * @param <T>
@@ -163,7 +161,7 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 				+ "b=AS:384\r\n";
 
 		rtpEndpoint.processOffer(requestSdp);
-		player.connect(rtpEndpoint, KmsMediaType.VIDEO);
+		player.connect(rtpEndpoint, MediaType.VIDEO);
 		player.play();
 
 		// just a little bit of time before destroying

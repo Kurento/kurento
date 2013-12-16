@@ -14,9 +14,9 @@
  */
 package com.kurento.kmf.media;
 
+import static com.kurento.kmf.media.MediaType.AUDIO;
+import static com.kurento.kmf.media.MediaType.VIDEO;
 import static com.kurento.kmf.media.SyncMediaServerTest.URL_SMALL;
-import static com.kurento.kms.thrift.api.KmsMediaType.AUDIO;
-import static com.kurento.kms.thrift.api.KmsMediaType.VIDEO;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Collection;
@@ -30,7 +30,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kms.thrift.api.KmsMediaType;
 
 public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
@@ -198,7 +197,7 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
 		Assert.assertNotNull(srcEvent.poll(500, MILLISECONDS));
 
-		rtp.getMediaSinks(KmsMediaType.VIDEO,
+		rtp.getMediaSinks(MediaType.VIDEO,
 				new Continuation<Collection<MediaSink>>() {
 
 					@Override

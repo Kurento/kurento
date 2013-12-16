@@ -26,8 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kurento.kms.thrift.api.KmsMediaType;
-
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
  * @param <T>
@@ -126,7 +124,7 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
 
-		player.connect(sdp, KmsMediaType.VIDEO);
+		player.connect(sdp, MediaType.VIDEO);
 		sdp.processOffer(requestSdp);
 		player.play();
 
