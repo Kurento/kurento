@@ -69,26 +69,33 @@ static gpointer
 loop_thread_init (gpointer data)
 {
   KmsLoop *self = KMS_LOOP (data);
+  GMainLoop *loop;
+  GMainContext *context;
 
   self->priv->context = g_main_context_new ();
-  self->priv->loop = g_main_loop_new (self->priv->context, FALSE);
+  context = self->priv->context;
+  self->priv->loop = g_main_loop_new (context, FALSE);
+  loop = self->priv->loop;
 
   /* unlock main process because context is already initialized */
   g_mutex_unlock (&self->priv->mutex);
 
-  if (!g_main_context_acquire (self->priv->context)) {
+  if (!g_main_context_acquire (context)) {
     GST_ERROR ("Can not acquire context");
     goto end;
   }
 
   GST_DEBUG ("Running main loop");
-  g_main_loop_run (self->priv->loop);
+  g_main_loop_run (loop);
+
+  if (KMS_IS_LOOP (self))
+    self->priv->stopping = TRUE;
 
 end:
   GST_DEBUG ("Thread finished");
-  g_main_context_release (self->priv->context);
-  g_main_context_unref (self->priv->context);
-  g_main_loop_unref (self->priv->loop);
+  g_main_context_release (context);
+  g_main_context_unref (context);
+  g_main_loop_unref (loop);
 
   return NULL;
 }
@@ -210,6 +217,9 @@ kms_loop_idle_add_full (KmsLoop * self, gint priority, GSourceFunc function,
   GSource *source;
   guint id;
 
+  if (!KMS_IS_LOOP (self) || self->priv->stopping)
+    return 0;
+
   source = g_idle_source_new ();
   id = kms_loop_attach (self, source, priority, function, data, notify);
   g_source_unref (source);
@@ -230,6 +240,9 @@ kms_loop_timeout_add_full (KmsLoop * self, gint priority, guint interval,
 {
   GSource *source;
   guint id;
+
+  if (!KMS_IS_LOOP (self) || self->priv->stopping)
+    return 0;
 
   source = g_timeout_source_new (interval);
   id = kms_loop_attach (self, source, priority, function, data, notify);
