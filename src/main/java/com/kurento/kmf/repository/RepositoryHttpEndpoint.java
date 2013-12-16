@@ -1,30 +1,61 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+
 package com.kurento.kmf.repository;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import javax.servlet.http.HttpServletRequest;
+
+/**
+ * An object implementing this interface represents an http endpoint to play
+ * (download) or record (upload) the contents of a repository item.
+ * 
+ * This endpoints are created using the methods
+ * {@link RepositoryItem#createRepositoryHttpPlayer()} or
+ * {@link RepositoryItem#createRepositoryHttpRecorder()} within the repository
+ * item that want to be played or recorded.
+ * 
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ */
 public interface RepositoryHttpEndpoint {
 
 	/**
-	 * Returns the URL to download or upload content for the
+	 * Returns the URL to play (download) or record (upload) the content for the
 	 * {@link RepositoryItem}. When the first client connect to this URL, the
 	 * {@link HttpSessionStartedEvent} will be fired to registered listeners.
 	 * 
-	 * @return
+	 * @return the URL to play or record
 	 */
 	String getURL();
 
 	/**
-	 * Returns the URL to download or upload content for the
-	 * {@link RepositoryItem}. When the first client connect to this URL, the
-	 * {@link HttpSessionStartedEvent} will be fired to registered listeners.
+	 * Returns the part of the to play (download) or record (upload) the content
+	 * for the {@link RepositoryItem}. This URL is relative to the context URL
+	 * of this app. The URL can be used to dispatch a request with
+	 * {@link HttpServletRequest#getRequestDispatcher(String)}. When the first
+	 * client connect to this URL, the {@link HttpSessionStartedEvent} will be
+	 * fired to registered listeners.
 	 * 
-	 * @return
+	 * @return the relative URL to play or record
 	 */
 	String getDispatchURL();
 
 	/**
-	 * Adds the {@link RepoItemHttpEventListener<HttpSessionStartedEvent>} to
+	 * Adds the {@link RepositoryHttpEventListener<HttpSessionStartedEvent>} to
 	 * this {@link RepositoryHttpEndpoint}. When the media is requested, a
 	 * {@link HttpSessionStartedEvent} will be fired to all registered listeners
 	 * and the method
