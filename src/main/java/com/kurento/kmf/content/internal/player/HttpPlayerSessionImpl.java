@@ -33,8 +33,6 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.UriEndpoint;
-import com.kurento.kmf.media.events.HttpEndpointEOSDetected;
-import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -108,7 +106,7 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 			throw kmfe;
 		}
 	}
-	
+
 	@Override
 	public void start(RepositoryItem repositoryItem) {
 		try {
@@ -161,18 +159,6 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		}
 
 		HttpEndpoint httpEndpoint = builder.build();
-
-		// TODO: this listener is just for debugging purposes. Remove in the
-		// future
-		httpEndpoint
-				.addEOSDetectedListener(new MediaEventListener<HttpEndpointEOSDetected>() {
-					@Override
-					public void onEvent(HttpEndpointEOSDetected event) {
-						getLogger().info(
-								"Received OES on HttpPlayerSessionImpl with id "
-										+ getSessionId());
-					}
-				});
 
 		releaseOnTerminate(httpEndpoint);
 		mediaElement.connect(httpEndpoint);
