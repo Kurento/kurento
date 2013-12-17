@@ -296,24 +296,34 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
           if (((h + r->y) < imageoverlay->priv->cvImage->height)
               && ((h + r->y) >= 0)) {
 
-            double proportion =
-                ((double) *(uchar *) (column + 3)) / (double) 255;
-            double overlay = SRC_OVERLAY * proportion;
-            double original = 1 - overlay;
+            if (imageoverlay->priv->costume->nChannels == 1) {
+              *(image_column) = (uchar) (*(column));
+              *(image_column + 1) = (uchar) (*(column));
+              *(image_column + 2) = (uchar) (*(column));
+            } else if (imageoverlay->priv->costume->nChannels == 3) {
+              *(image_column) = (uchar) (*(column));
+              *(image_column + 1) = (uchar) (*(column + 1));
+              *(image_column + 2) = (uchar) (*(column + 2));
+            } else if (imageoverlay->priv->costume->nChannels == 4) {
+              double proportion =
+                  ((double) *(uchar *) (column + 3)) / (double) 255;
+              double overlay = SRC_OVERLAY * proportion;
+              double original = 1 - overlay;
 
-            *image_column =
-                (uchar) ((*column * overlay) + (*image_column * original));
-            *(image_column + 1) =
-                (uchar) ((*(column + 1) * overlay) + (*(image_column +
-                        1) * original));
-            *(image_column + 2) =
-                (uchar) ((*(column + 2) * overlay) + (*(image_column +
-                        2) * original));
+              *image_column =
+                  (uchar) ((*column * overlay) + (*image_column * original));
+              *(image_column + 1) =
+                  (uchar) ((*(column + 1) * overlay) + (*(image_column +
+                          1) * original));
+              *(image_column + 2) =
+                  (uchar) ((*(column + 2) * overlay) + (*(image_column +
+                          2) * original));
+            }
           }
         }
 
-        column += 4;
-        image_column += 3;
+        column += imageoverlay->priv->costume->nChannels;
+        image_column += imageoverlay->priv->cvImage->nChannels;
       }
 
       row += costumeAux->widthStep;
