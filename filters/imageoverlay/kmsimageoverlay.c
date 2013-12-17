@@ -114,9 +114,14 @@ load_from_url (gchar * file_name, gchar * url)
 
   if (dst == NULL) {
     GST_ERROR ("It is not possible to create the file");
+    goto end;
   }
   fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
   fclose (dst);
+
+end:
+  g_object_unref (msg);
+  g_object_unref (session);
 }
 
 static void
