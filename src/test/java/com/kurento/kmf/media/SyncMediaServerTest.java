@@ -36,6 +36,7 @@ public class SyncMediaServerTest {
 	public static final String URL_BARCODES = "https://ci.kurento.com/video/barcodes.webm";
 	public static final String URL_FIWARECUT = "https://ci.kurento.com/video/fiwarecut.webm";
 	public static final String URL_SMALL = "https://ci.kurento.com/video/small.webm";
+	public static final String URL_PLATES = "https://ci.kurento.com/video/plates.webm";
 
 	@Autowired
 	private MediaPipelineFactory pipelineFactory;
