@@ -376,9 +376,7 @@ kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
 
   GST_OBJECT_LOCK (imageoverlay);
   if (imageoverlay->priv->pts == frame->buffer->pts) {
-    if (imageoverlay->priv->costume != NULL) {
-      kms_image_overlay_display_detections_overlay_img (imageoverlay);
-    }
+    kms_image_overlay_display_detections_overlay_img (imageoverlay);
   }
   GST_OBJECT_UNLOCK (imageoverlay);
 
