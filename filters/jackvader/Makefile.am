@@ -8,8 +8,6 @@ BUILT_SOURCES = $(built_sources) $(built_headers)
 
 CLEANFILES = $(BUILT_SOURCES)
 
-if HAVE_OPENCV
-
 plugin_LTLIBRARIES = libjackvader.la
 
 # sources used to compile this plug-in
@@ -27,5 +25,3 @@ libjackvader_la_LIBTOOLFLAGS = --tag=disable-static
 
 libjackvader_ladir = $(datadir)/@PACKAGE@
 libjackvader_la_DATA = jack.png vader.png
-
-endif

@@ -8,8 +8,6 @@ BUILT_SOURCES = $(built_sources) $(built_headers)
 
 CLEANFILES = $(BUILT_SOURCES)
 
-if HAVE_OPENCV
-
 plugin_LTLIBRARIES = libimageoverlay.la
 
 # sources used to compile this plug-in
@@ -22,5 +20,3 @@ libimageoverlay_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) $(SOUP_CFLAGS) -Werro
 libimageoverlay_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS) $(SOUP_LIBS)
 libimageoverlay_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libimageoverlay_la_LIBTOOLFLAGS = --tag=disable-static
-
-endif
