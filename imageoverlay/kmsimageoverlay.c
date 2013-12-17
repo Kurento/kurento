@@ -68,6 +68,8 @@ struct _KmsImageOverlayPrivate
 
   CvMemStorage *pStorageFace;
   CvSeq *pFaceRectSeq;
+
+  GQueue *events_queue;
 };
 
 /* pad templates */
@@ -372,6 +374,45 @@ remove_recursive (const gchar * path)
   nftw (path, delete_file, 64, FTW_DEPTH | FTW_PHYS);
 }
 
+static void
+kms_image_overlay_get_faces (GstStructure * faces,
+    KmsImageOverlay * imageoverlay)
+{
+  gint len;
+
+  len = gst_structure_n_fields (faces);
+
+  if (len != 0) {
+    cvClearSeq (imageoverlay->priv->pFaceRectSeq);
+  }
+
+  for (gint aux = 0; aux < len; aux++) {
+    GstStructure *face;
+    gboolean ret;
+    guint x, y, width, height;
+
+    const gchar *name = gst_structure_nth_field_name (faces, aux);
+
+    ret = gst_structure_get (faces, name, GST_TYPE_STRUCTURE, &face, NULL);
+
+    if (ret) {
+      CvRect aux;
+
+      gst_structure_get (face, "x", G_TYPE_UINT, &x, NULL);
+      gst_structure_get (face, "y", G_TYPE_UINT, &y, NULL);
+      gst_structure_get (face, "width", G_TYPE_UINT, &width, NULL);
+      gst_structure_get (face, "height", G_TYPE_UINT, &height, NULL);
+      gst_structure_get (face, "dts", G_TYPE_UINT64,
+          &imageoverlay->priv->dts, NULL);
+      gst_structure_get (face, "pts", G_TYPE_UINT64,
+          &imageoverlay->priv->pts, NULL);
+      gst_structure_free (face);
+      aux = cvRect (x, y, width, height);
+      cvSeqPush (imageoverlay->priv->pFaceRectSeq, &aux);
+    }
+  }
+}
+
 static GstFlowReturn
 kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
@@ -385,14 +426,44 @@ kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
   imageoverlay->priv->cvImage->imageData = (char *) info.data;
 
   GST_OBJECT_LOCK (imageoverlay);
-  if (imageoverlay->priv->pts == frame->buffer->pts) {
-    kms_image_overlay_display_detections_overlay_img (imageoverlay);
+
+  GstStructure *faces;
+
+  faces = g_queue_pop_head (imageoverlay->priv->events_queue);
+
+  while (faces != NULL) {
+
+    kms_image_overlay_get_faces (faces, imageoverlay);
+    GST_DEBUG ("buffer pts %" G_GUINT64_FORMAT, frame->buffer->pts);
+    GST_DEBUG ("event pts %" G_GUINT64_FORMAT, imageoverlay->priv->pts);
+    GST_DEBUG ("queue length %d",
+        g_queue_get_length (imageoverlay->priv->events_queue));
+
+    if (imageoverlay->priv->pts == frame->buffer->pts) {
+      kms_image_overlay_display_detections_overlay_img (imageoverlay);
+      gst_structure_free (faces);
+      break;
+    } else if (imageoverlay->priv->pts < frame->buffer->pts) {
+      gst_structure_free (faces);
+    } else {
+      g_queue_push_head (imageoverlay->priv->events_queue, faces);
+      cvClearSeq (imageoverlay->priv->pFaceRectSeq);
+      break;
+    }
+    faces = g_queue_pop_head (imageoverlay->priv->events_queue);
   }
+
   GST_OBJECT_UNLOCK (imageoverlay);
 
   gst_buffer_unmap (frame->buffer, &info);
 
   return GST_FLOW_OK;
+}
+
+static void
+dispose_queue_element (gpointer data)
+{
+  gst_structure_free (data);
 }
 
 static void
@@ -429,6 +500,9 @@ kms_image_overlay_finalize (GObject * object)
 
   cvReleaseMemStorage (&imageoverlay->priv->pStorageFace);
 
+  g_queue_free_full (imageoverlay->priv->events_queue, dispose_queue_element);
+  imageoverlay->priv->events_queue = NULL;
+
   G_OBJECT_CLASS (kms_image_overlay_parent_class)->finalize (object);
 }
 
@@ -446,6 +520,7 @@ kms_image_overlay_init (KmsImageOverlay * imageoverlay)
   imageoverlay->priv->pFaceRectSeq =
       cvCreateSeq (0, sizeof (CvSeq), sizeof (CvRect),
       imageoverlay->priv->pStorageFace);
+  imageoverlay->priv->events_queue = g_queue_new ();
 }
 
 static gboolean
@@ -457,43 +532,12 @@ kms_image_overlay_sink_events (GstBaseTransform * trans, GstEvent * event)
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_CUSTOM_DOWNSTREAM:
     {
-      const GstStructure *faces;
-      gint len;
+      GstStructure *faces;
 
       GST_OBJECT_LOCK (imageoverlay);
 
-      faces = gst_event_get_structure (event);
-      len = gst_structure_n_fields (faces);
-
-      if (len != 0) {
-        cvClearSeq (imageoverlay->priv->pFaceRectSeq);
-      }
-
-      for (gint aux = 0; aux < len; aux++) {
-        GstStructure *face;
-        gboolean ret;
-        guint x, y, width, height;
-
-        const gchar *name = gst_structure_nth_field_name (faces, aux);
-
-        ret = gst_structure_get (faces, name, GST_TYPE_STRUCTURE, &face, NULL);
-
-        if (ret) {
-          CvRect aux;
-
-          gst_structure_get (face, "x", G_TYPE_UINT, &x, NULL);
-          gst_structure_get (face, "y", G_TYPE_UINT, &y, NULL);
-          gst_structure_get (face, "width", G_TYPE_UINT, &width, NULL);
-          gst_structure_get (face, "height", G_TYPE_UINT, &height, NULL);
-          gst_structure_get (face, "dts", G_TYPE_UINT64,
-              &imageoverlay->priv->dts, NULL);
-          gst_structure_get (face, "pts", G_TYPE_UINT64,
-              &imageoverlay->priv->pts, NULL);
-          gst_structure_free (face);
-          aux = cvRect (x, y, width, height);
-          cvSeqPush (imageoverlay->priv->pFaceRectSeq, &aux);
-        }
-      }
+      faces = gst_structure_copy (gst_event_get_structure (event));
+      g_queue_push_tail (imageoverlay->priv->events_queue, faces);
 
       GST_OBJECT_UNLOCK (imageoverlay);
       break;
