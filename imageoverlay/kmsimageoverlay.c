@@ -127,8 +127,9 @@ end:
 static void
 kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
 {
-  gchar *url;
-  IplImage *costumeAux;
+  gchar *url = NULL;
+  IplImage *costumeAux = NULL;
+  gboolean fields_ok = TRUE;
 
   if (!imageoverlay->priv->dir_created) {
     gchar d[] = TEMP_PATH;
@@ -138,16 +139,28 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
     imageoverlay->priv->dir_created = TRUE;
   }
 
-  gst_structure_get (imageoverlay->priv->image_to_overlay, "offsetXPercent",
-      G_TYPE_DOUBLE, &imageoverlay->priv->offsetXPercent, NULL);
-  gst_structure_get (imageoverlay->priv->image_to_overlay, "offsetYPercent",
-      G_TYPE_DOUBLE, &imageoverlay->priv->offsetYPercent, NULL);
-  gst_structure_get (imageoverlay->priv->image_to_overlay, "widthPercent",
-      G_TYPE_DOUBLE, &imageoverlay->priv->widthPercent, NULL);
-  gst_structure_get (imageoverlay->priv->image_to_overlay, "heightPercent",
-      G_TYPE_DOUBLE, &imageoverlay->priv->heightPercent, NULL);
-  gst_structure_get (imageoverlay->priv->image_to_overlay, "url", G_TYPE_STRING,
-      &url, NULL);
+  fields_ok = fields_ok
+      && gst_structure_get (imageoverlay->priv->image_to_overlay,
+      "offsetXPercent", G_TYPE_DOUBLE, &imageoverlay->priv->offsetXPercent,
+      NULL);
+  fields_ok = fields_ok
+      && gst_structure_get (imageoverlay->priv->image_to_overlay,
+      "offsetYPercent", G_TYPE_DOUBLE, &imageoverlay->priv->offsetYPercent,
+      NULL);
+  fields_ok = fields_ok
+      && gst_structure_get (imageoverlay->priv->image_to_overlay,
+      "widthPercent", G_TYPE_DOUBLE, &imageoverlay->priv->widthPercent, NULL);
+  fields_ok = fields_ok
+      && gst_structure_get (imageoverlay->priv->image_to_overlay,
+      "heightPercent", G_TYPE_DOUBLE, &imageoverlay->priv->heightPercent, NULL);
+  fields_ok &=
+      gst_structure_get (imageoverlay->priv->image_to_overlay, "url",
+      G_TYPE_STRING, &url, NULL);
+
+  if (!fields_ok || url == NULL) {
+    GST_WARNING_OBJECT (imageoverlay, "Invalid image structure received");
+    goto end;
+  }
 
   costumeAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
 
@@ -242,8 +255,8 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
 
   for (i = 0;
       i <
-      (imageoverlay->priv->pFaceRectSeq ? imageoverlay->priv->
-          pFaceRectSeq->total : 0); i++) {
+      (imageoverlay->priv->pFaceRectSeq ? imageoverlay->priv->pFaceRectSeq->
+          total : 0); i++) {
     CvRect *r = (CvRect *) cvGetSeqElem (imageoverlay->priv->pFaceRectSeq, i);
     IplImage *costumeAux;
     int w, h;
