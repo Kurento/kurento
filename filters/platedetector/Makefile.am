@@ -9,8 +9,6 @@ BUILT_SOURCES = $(built_sources) $(built_headers)
 
 CLEANFILES = $(BUILT_SOURCES)
 
-if HAVE_TESSERACT
-
 plugin_LTLIBRARIES = libplatedetector.la
 
 # sources used to compile this plug-in
@@ -25,5 +23,3 @@ libplatedetector_la_LIBTOOLFLAGS = --tag=disable-static
 
 libplatedetector_ladir = $(datadir)/@PACKAGE@/tessdata
 libplatedetector_la_DATA = tessdata/plateLanguage.traineddata
-
-endif
