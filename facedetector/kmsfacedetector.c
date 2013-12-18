@@ -172,8 +172,8 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
         "y", G_TYPE_UINT, r->y,
         "width", G_TYPE_UINT, r->width,
         "height", G_TYPE_UINT, r->height,
-        "dts", G_TYPE_UINT64, GST_BUFFER_PTS (frame->buffer),
-        "pts", G_TYPE_UINT64, GST_BUFFER_DTS (frame->buffer), NULL);
+        "pts", G_TYPE_UINT64, GST_BUFFER_PTS (frame->buffer),
+        "dts", G_TYPE_UINT64, GST_BUFFER_DTS (frame->buffer), NULL);
     gchar *id = NULL;
 
     id = g_strdup_printf ("%d", i);
