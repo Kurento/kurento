@@ -1,7 +1,6 @@
 SUBDIRS =				\
 	filters				\
-	vp8parse			\
-	rtcpdemux
+	vp8parse
 
 
 plugin_LTLIBRARIES = libgstkurento.la
