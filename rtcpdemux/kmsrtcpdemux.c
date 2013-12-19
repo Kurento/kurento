@@ -82,8 +82,26 @@ G_DEFINE_TYPE_WITH_CODE (KmsRtcpDemux, kms_rtcp_demux,
 static GstFlowReturn
 kms_rtcp_demux_chain (GstPad * chain, GstObject * parent, GstBuffer * buffer)
 {
-  // TODO: Implement demultiplexion here
-  gst_buffer_unref (buffer);
+  KmsRtcpDemux *self = KMS_RTCP_DEMUX (parent);
+  GstMapInfo map;
+  guint8 pt;
+
+  if (!gst_buffer_map (buffer, &map, GST_MAP_READ)) {
+    gst_buffer_unref (buffer);
+    GST_ERROR_OBJECT (parent, "Buffer cannot be mapped");
+    return GST_FLOW_ERROR;
+  }
+
+  pt = map.data[1];
+  gst_buffer_unmap (buffer, &map);
+
+  /* 200-204 is the range of valid values for a rtcp pt according to rfc3550 */
+  if (pt >= 200 && pt <= 204) {
+    GST_INFO ("Buffer is rtcp: %d", pt);
+    gst_pad_push (self->priv->rtcp_src, buffer);
+  } else {
+    gst_pad_push (self->priv->rtp_src, buffer);
+  }
 
   return GST_FLOW_OK;
 }
