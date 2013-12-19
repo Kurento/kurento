@@ -222,6 +222,7 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
   g_mutex_unlock (&facedetector->priv->mutex);
 
   cvClearSeq (facedetector->priv->pFaceRectSeq);
+  cvClearMemStorage (facedetector->priv->pStorageFace);
   if (facedetector->priv->haar_detector) {
     facedetector->priv->pFaceRectSeq =
         cvHaarDetectObjects (facedetector->priv->cvImage,
