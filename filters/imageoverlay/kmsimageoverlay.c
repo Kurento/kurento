@@ -257,8 +257,8 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
 
   for (i = 0;
       i <
-      (imageoverlay->priv->pFaceRectSeq ? imageoverlay->priv->pFaceRectSeq->
-          total : 0); i++) {
+      (imageoverlay->priv->pFaceRectSeq ? imageoverlay->priv->
+          pFaceRectSeq->total : 0); i++) {
     CvRect *r = (CvRect *) cvGetSeqElem (imageoverlay->priv->pFaceRectSeq, i);
     IplImage *costumeAux;
     int w, h;
@@ -393,6 +393,10 @@ kms_image_overlay_get_faces (GstStructure * faces,
 
     const gchar *name = gst_structure_nth_field_name (faces, aux);
 
+    if (g_strcmp0 (name, "timestamp") == 0) {
+      continue;
+    }
+
     ret = gst_structure_get (faces, name, GST_TYPE_STRUCTURE, &face, NULL);
 
     if (ret) {
@@ -402,15 +406,31 @@ kms_image_overlay_get_faces (GstStructure * faces,
       gst_structure_get (face, "y", G_TYPE_UINT, &y, NULL);
       gst_structure_get (face, "width", G_TYPE_UINT, &width, NULL);
       gst_structure_get (face, "height", G_TYPE_UINT, &height, NULL);
-      gst_structure_get (face, "dts", G_TYPE_UINT64,
-          &imageoverlay->priv->dts, NULL);
-      gst_structure_get (face, "pts", G_TYPE_UINT64,
-          &imageoverlay->priv->pts, NULL);
       gst_structure_free (face);
       aux = cvRect (x, y, width, height);
       cvSeqPush (imageoverlay->priv->pFaceRectSeq, &aux);
     }
   }
+}
+
+static void
+kms_image_overlay_get_timestamp (KmsImageOverlay * imageoverlay,
+    GstStructure * faces)
+{
+  GstStructure *timestamp;
+  gboolean ret;
+
+  ret =
+      gst_structure_get (faces, "timestamp", GST_TYPE_STRUCTURE, &timestamp,
+      NULL);
+  if (ret) {
+    gst_structure_get (timestamp, "dts", G_TYPE_UINT64,
+        &imageoverlay->priv->dts, NULL);
+    gst_structure_get (timestamp, "pts", G_TYPE_UINT64,
+        &imageoverlay->priv->pts, NULL);
+    gst_structure_free (timestamp);
+  }
+
 }
 
 static GstFlowReturn
@@ -433,13 +453,14 @@ kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
 
   while (faces != NULL) {
 
-    kms_image_overlay_get_faces (faces, imageoverlay);
+    kms_image_overlay_get_timestamp (imageoverlay, faces);
     GST_DEBUG ("buffer pts %" G_GUINT64_FORMAT, frame->buffer->pts);
     GST_DEBUG ("event pts %" G_GUINT64_FORMAT, imageoverlay->priv->pts);
     GST_DEBUG ("queue length %d",
         g_queue_get_length (imageoverlay->priv->events_queue));
 
     if (imageoverlay->priv->pts == frame->buffer->pts) {
+      kms_image_overlay_get_faces (faces, imageoverlay);
       kms_image_overlay_display_detections_overlay_img (imageoverlay);
       gst_structure_free (faces);
       break;
