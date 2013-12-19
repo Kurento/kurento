@@ -273,8 +273,13 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
       continue;
     }
 
+    if ((imageoverlay->priv->heightPercent == 0) ||
+        (imageoverlay->priv->widthPercent == 0)) {
+      continue;
+    }
+
     r->x = r->x - (r->width * (imageoverlay->priv->offsetXPercent));
-    r->y = r->y - (r->height * (imageoverlay->priv->offsetXPercent));
+    r->y = r->y - (r->height * (imageoverlay->priv->offsetYPercent));
     r->height = r->height * (imageoverlay->priv->heightPercent);
     r->width = r->width * (imageoverlay->priv->widthPercent);
 
