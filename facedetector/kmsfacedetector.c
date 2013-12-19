@@ -156,9 +156,17 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
     GstVideoFrame * frame)
 {
   GstStructure *faces;
+  GstStructure *timestamp;
   GstEvent *e;
 
   faces = gst_structure_new_empty ("faces");
+
+  timestamp = gst_structure_new ("time",
+      "pts", G_TYPE_UINT64, GST_BUFFER_PTS (frame->buffer),
+      "dts", G_TYPE_UINT64, GST_BUFFER_DTS (frame->buffer), NULL);
+  gst_structure_set (faces, "timestamp", GST_TYPE_STRUCTURE, timestamp, NULL);
+  gst_structure_free (timestamp);
+
   for (int i = 0;
       i <
       (facedetector->priv->pFaceRectSeq ? facedetector->priv->pFaceRectSeq->
@@ -170,10 +178,7 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
     face = gst_structure_new ("face",
         "x", G_TYPE_UINT, r->x,
         "y", G_TYPE_UINT, r->y,
-        "width", G_TYPE_UINT, r->width,
-        "height", G_TYPE_UINT, r->height,
-        "pts", G_TYPE_UINT64, GST_BUFFER_PTS (frame->buffer),
-        "dts", G_TYPE_UINT64, GST_BUFFER_DTS (frame->buffer), NULL);
+        "width", G_TYPE_UINT, r->width, "height", G_TYPE_UINT, r->height, NULL);
     gchar *id = NULL;
 
     id = g_strdup_printf ("%d", i);
