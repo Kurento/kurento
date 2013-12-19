@@ -57,6 +57,7 @@ struct _GstDtlsSrtpDec
 
   GstElement *funnel;
   GstElement *dtls_dec;
+  GstElement *rtcp_demux;
   GstElement *srtp_dec;
   GstElement *queue;
   GstElement *demux;

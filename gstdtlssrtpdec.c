@@ -154,6 +154,14 @@ gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
   }
   gst_bin_add (GST_BIN (self), self->srtp_dec);
 
+  self->rtcp_demux = gst_element_factory_make ("rtcpdemux", NULL);
+  if (!self->rtcp_demux) {
+    GST_ERROR_OBJECT (self, "Could not create required elements, "
+        "missing rtcpdemux plugins");
+    return;
+  }
+  gst_bin_add (GST_BIN (self), self->rtcp_demux);
+
   self->funnel = gst_element_factory_make ("funnel", NULL);
   if (!self->funnel) {
     GST_ERROR_OBJECT (self, "Could not create required elements, "
@@ -192,7 +200,10 @@ gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
 
   gst_element_link_pads (self->srtp_dec, "rtp_src", self->funnel, NULL);
   gst_element_link_pads (self->srtp_dec, "rtcp_src", self->funnel, NULL);
-  gst_element_link (self->queue, self->srtp_dec);
+  gst_element_link (self->queue, self->rtcp_demux);
+  gst_element_link_pads (self->rtcp_demux, "rtp_src", self->srtp_dec, "rtp_sink");
+  gst_element_link_pads (self->rtcp_demux, "rtcp_src", self->srtp_dec, "rtcp_sink");
+
   gst_element_link_pads (self->demux, "srtp_src", self->queue, "sink");
   gst_element_link (self->dtls_dec, self->funnel);
   gst_element_link_pads (self->demux, "dtls_src", self->dtls_dec, "sink");
