@@ -849,11 +849,13 @@ add_webrtc_bundle_connection_src (KmsWebrtcEndPoint * webrtc_end_point,
   KmsWebRTCTransport *tr =
       webrtc_end_point->priv->bundle_connection->rtp_transport;
   GstElement *ssrcdemux = gst_element_factory_make ("rtpssrcdemux", NULL);
+  GstElement *rtcpdemux = gst_element_factory_make ("rtcpdemux", NULL);
 
   g_signal_connect (ssrcdemux, "new-ssrc-pad",
       G_CALLBACK (rtp_ssrc_demux_new_ssrc_pad), webrtc_end_point);
-  gst_bin_add (GST_BIN (webrtc_end_point), ssrcdemux);
+  gst_bin_add_many (GST_BIN (webrtc_end_point), ssrcdemux, rtcpdemux, NULL);
   gst_element_sync_state_with_parent (ssrcdemux);
+  gst_element_sync_state_with_parent (rtcpdemux);
 
   g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", is_client, NULL);
   g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", is_client, NULL);
@@ -863,7 +865,9 @@ add_webrtc_bundle_connection_src (KmsWebrtcEndPoint * webrtc_end_point,
   gst_element_sync_state_with_parent (tr->nicesrc);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
 
-  gst_element_link_pads (tr->dtlssrtpdec, "src", ssrcdemux, "sink");
+  gst_element_link_pads (tr->dtlssrtpdec, "src", rtcpdemux, "sink");
+  gst_element_link_pads (rtcpdemux, "rtp_src", ssrcdemux, "sink");
+  gst_element_link_pads (rtcpdemux, "rtcp_src", ssrcdemux, "rtcp_sink");
   /* TODO: link rtcp_sink pad when dtlssrtpdec provides rtcp packets */
 }
 
