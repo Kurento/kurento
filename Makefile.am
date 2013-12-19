@@ -1,3 +1,5 @@
+SUBDIRS = 			\
+	rtcpdemux
 
 plugin_LTLIBRARIES = libkmsdtls.la
 
