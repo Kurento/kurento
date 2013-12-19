@@ -41,7 +41,8 @@ typedef enum
 typedef struct _ButtonStruct {
     CvRect cvButtonLayout;
     gchar *id;
-    IplImage* icon;
+    IplImage* inactive_icon;
+    IplImage* active_icon;
     gdouble transparency;
 } ButtonStruct;
 

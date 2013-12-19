@@ -42,6 +42,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector_debug_category);
 #define WHITE CV_RGB (255, 255, 255)
 
 #define TEMP_PATH "/tmp/XXXXXX"
+#define INACTIVE_IMAGE_VARIANT_NAME "i"
+#define ACTIVE_IMAGE_VARIANT_NAME "a"
 
 /* prototypes */
 
@@ -158,8 +160,11 @@ dispose_button_struct (gpointer data)
   if (aux->id != NULL)
     g_free (aux->id);
 
-  if (aux->icon != NULL)
-    cvReleaseImage (&aux->icon);
+  if (aux->inactive_icon != NULL)
+    cvReleaseImage (&aux->inactive_icon);
+
+  if (aux->active_icon != NULL)
+    cvReleaseImage (&aux->active_icon);
 
   g_free (aux);
 }
@@ -173,7 +178,7 @@ kms_pointer_detector_dispose_buttons_layout_list (KmsPointerDetector *
 }
 
 static gboolean
-kms_pointer_detector_is_valid_uri (const gchar * url)
+is_valid_uri (const gchar * url)
 {
   gboolean ret;
   GRegex *regex;
@@ -187,7 +192,7 @@ kms_pointer_detector_is_valid_uri (const gchar * url)
 }
 
 static void
-kms_pointer_detector_load_from_url (gchar * file_name, gchar * url)
+load_from_url (gchar * file_name, gchar * url)
 {
   SoupSession *session;
   SoupMessage *msg;
@@ -211,12 +216,35 @@ end:
   g_object_unref (session);
 }
 
+static IplImage *
+load_image (gchar * uri, gchar * dir, gchar * image_name,
+    const gchar * name_variant)
+{
+  IplImage *aux;
+
+  aux = cvLoadImage (uri, CV_LOAD_IMAGE_UNCHANGED);
+  if (aux == NULL) {
+    if (is_valid_uri (uri)) {
+      gchar *file_name;
+
+      file_name =
+          g_strconcat (dir, "/", image_name, name_variant, ".png", NULL);
+      load_from_url (file_name, uri);
+      aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+
+      g_free (file_name);
+    }
+  }
+
+  return aux;
+}
+
 static void
 kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
 {
   int aux, len;
-  gboolean have_icon, have_transparency;
-  gchar *uri;
+  gboolean have_inactive_icon, have_active_icon, have_transparency;
+  gchar *inactive_uri, *active_uri;
 
   if (pointerdetector->buttonsLayoutList != NULL) {
     kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
@@ -247,35 +275,52 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
       gst_structure_get (button, "height", G_TYPE_INT,
           &structAux->cvButtonLayout.height, NULL);
       gst_structure_get (button, "id", G_TYPE_STRING, &structAux->id, NULL);
-      have_icon = gst_structure_get (button, "uri", G_TYPE_STRING, &uri, NULL);
+      have_inactive_icon =
+          gst_structure_get (button, "inactive_uri", G_TYPE_STRING,
+          &inactive_uri, NULL);
       have_transparency =
           gst_structure_get (button, "transparency", G_TYPE_DOUBLE,
           &structAux->transparency, NULL);
-      if (have_icon) {
-        aux = cvLoadImage (uri, CV_LOAD_IMAGE_UNCHANGED);
-        if (aux == NULL) {
-          if (kms_pointer_detector_is_valid_uri (uri)) {
-            gchar *file_name;
+      have_active_icon =
+          gst_structure_get (button, "active_uri", G_TYPE_STRING, &active_uri,
+          NULL);
 
-            file_name = g_strconcat (pointerdetector->images_dir, "/",
-                structAux->id, ".png", NULL);
-            kms_pointer_detector_load_from_url (file_name, uri);
-            aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
-
-            g_free (file_name);
-          }
-        }
+      if (have_inactive_icon) {
+        aux =
+            load_image (inactive_uri, pointerdetector->images_dir,
+            structAux->id, INACTIVE_IMAGE_VARIANT_NAME);
 
         if (aux != NULL) {
-          structAux->icon =
+          structAux->inactive_icon =
               cvCreateImage (cvSize (structAux->cvButtonLayout.width,
                   structAux->cvButtonLayout.height), aux->depth,
               aux->nChannels);
-          cvResize (aux, structAux->icon, CV_INTER_CUBIC);
+          cvResize (aux, structAux->inactive_icon, CV_INTER_CUBIC);
           cvReleaseImage (&aux);
         } else {
-          structAux->icon = NULL;
+          structAux->inactive_icon = NULL;
         }
+      } else {
+        structAux->inactive_icon = NULL;
+      }
+
+      if (have_active_icon) {
+        aux =
+            load_image (active_uri, pointerdetector->images_dir, structAux->id,
+            ACTIVE_IMAGE_VARIANT_NAME);
+
+        if (aux != NULL) {
+          structAux->active_icon =
+              cvCreateImage (cvSize (structAux->cvButtonLayout.width,
+                  structAux->cvButtonLayout.height), aux->depth,
+              aux->nChannels);
+          cvResize (aux, structAux->active_icon, CV_INTER_CUBIC);
+          cvReleaseImage (&aux);
+        } else {
+          structAux->active_icon = NULL;
+        }
+      } else {
+        structAux->active_icon = NULL;
       }
 
       if (have_transparency) {
@@ -291,8 +336,11 @@ kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
           g_slist_append (pointerdetector->buttonsLayoutList, structAux);
       gst_structure_free (button);
 
-      if (have_icon) {
-        g_free (uri);
+      if (have_inactive_icon) {
+        g_free (inactive_uri);
+      }
+      if (have_active_icon) {
+        g_free (active_uri);
       }
     }
   }
@@ -672,7 +720,7 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
     CvPoint upRightCorner;
     CvPoint downLeftCorner;
     CvScalar color;
-    gboolean saturate;
+    gboolean is_active_window;
 
     structAux = l->data;
     upRightCorner.x = structAux->cvButtonLayout.x;
@@ -681,27 +729,45 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
         structAux->cvButtonLayout.x + structAux->cvButtonLayout.width;
     downLeftCorner.y =
         structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
-    color = WHITE;
-    saturate = FALSE;
 
     if (kms_pointer_detector_check_pointer_into_button
         (&pointerdetector->finalPointerPosition, structAux)) {
       buttonClickedCounter++;
 
       color = GREEN;
-      saturate = TRUE;
+      is_active_window = TRUE;
       actualButtonClickedId = structAux->id;
+    } else {
+      color = WHITE;
+      is_active_window = FALSE;;
     }
 
     if (pointerdetector->show_windows_layout) {
-      if (structAux->icon != NULL) {
-        kms_pointer_detector_overlay_icon (structAux->icon,
-            structAux->cvButtonLayout.x,
-            structAux->cvButtonLayout.y,
-            structAux->transparency, saturate, pointerdetector);
+      if (!is_active_window) {
+        if (structAux->inactive_icon != NULL) {
+          kms_pointer_detector_overlay_icon (structAux->inactive_icon,
+              structAux->cvButtonLayout.x,
+              structAux->cvButtonLayout.y,
+              structAux->transparency, FALSE, pointerdetector);
+        } else {
+          cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
+              color, 1, 8, 0);
+        }
       } else {
-        cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
-            color, 1, 8, 0);
+        if (structAux->active_icon != NULL) {
+          kms_pointer_detector_overlay_icon (structAux->active_icon,
+              structAux->cvButtonLayout.x,
+              structAux->cvButtonLayout.y,
+              structAux->transparency, FALSE, pointerdetector);
+        } else if (structAux->inactive_icon != NULL) {
+          kms_pointer_detector_overlay_icon (structAux->inactive_icon,
+              structAux->cvButtonLayout.x,
+              structAux->cvButtonLayout.y,
+              structAux->transparency, TRUE, pointerdetector);
+        } else {
+          cvRectangle (pointerdetector->cvImage, upRightCorner, downLeftCorner,
+              color, 1, 8, 0);
+        }
       }
     }
   }
