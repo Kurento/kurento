@@ -112,7 +112,6 @@ public class DistributedGarbageCollector {
 	 */
 	public boolean removeReference(final KmsMediaObjectRef objectRef) {
 		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
-
 		Long refId = Long.valueOf(objectRef.id);
 
 		AtomicInteger counter = refCounters.get(refId);
@@ -121,7 +120,8 @@ public class DistributedGarbageCollector {
 		} else if (counter.decrementAndGet() > 0) {
 			return true;
 		}
-
+		log.trace("Removing DGC reference for object: {}",
+				String.valueOf(objectRef.id));
 		refCounters.remove(refId);
 
 		handler.removeAllListeners(refId);
@@ -146,26 +146,32 @@ public class DistributedGarbageCollector {
 						@Override
 						public void onError(Exception e) {
 							clientPool.release(asyncClient);
-
-							if (e instanceof KmsMediaServerException
-									&& ((KmsMediaServerException) e)
-											.getErrorCode() == MEDIA_OBJECT_NOT_FOUND) {
-								DistributedGarbageCollector.this
-										.removeReference(KmsMediaObjectRef);
-							}
-
 							log.error(e.getMessage(), e);
 						}
 
 						@Override
 						public void onComplete(keepAlive_call response) {
-							clientPool.release(asyncClient);
+							try {
+								response.getResult();
+							} catch (KmsMediaServerException e) {
+								if (e.getErrorCode() == MEDIA_OBJECT_NOT_FOUND) {
+									DistributedGarbageCollector.this
+											.removeReference(KmsMediaObjectRef);
+								}
+								log.error(e.getMessage(), e);
+							} catch (TException e) {
+								log.error(e.getMessage(), e);
+							} finally {
+								clientPool.release(asyncClient);
+							}
 						}
 					});
 		} catch (TException e) {
 			log.error(e.getMessage(), e);
 			// TODO message and error code
-			throw new KurentoMediaFrameworkException(" ", e, 30000);
+			throw new KurentoMediaFrameworkException("Error sending keepalive",
+					e, 30000);
 		}
 	}
+
 }
