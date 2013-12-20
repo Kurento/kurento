@@ -140,13 +140,13 @@ kms_face_detector_initialize_images (KmsFaceDetector * facedetector,
 {
   if (facedetector->priv->cvImage == NULL) {
     facedetector->priv->cvImage =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
+        cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
   } else if ((facedetector->priv->cvImage->width != frame->info.width)
       || (facedetector->priv->cvImage->height != frame->info.height)) {
-    cvReleaseImage (&facedetector->priv->cvImage);
+    cvReleaseImageHeader (&facedetector->priv->cvImage);
     facedetector->priv->cvImage =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
+        cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
   }
 }
@@ -253,7 +253,7 @@ kms_face_detector_finalize (GObject * object)
 {
   KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (object);
 
-  cvReleaseImage (&facedetector->priv->cvImage);
+  cvReleaseImageHeader (&facedetector->priv->cvImage);
   if (facedetector->priv->pStorageFace != NULL)
     cvClearMemStorage (facedetector->priv->pStorageFace);
   if (facedetector->priv->pFaceRectSeq != NULL)
@@ -279,6 +279,7 @@ kms_face_detector_init (KmsFaceDetector * facedetector)
   facedetector->priv->qos_control = FALSE;
   facedetector->priv->throw_frames = 0;
   facedetector->priv->haar_detector = TRUE;
+  facedetector->priv->cvImage = NULL;
   g_mutex_init (&facedetector->priv->mutex);
 
   kms_face_detector_initialize_classifiers (facedetector);
