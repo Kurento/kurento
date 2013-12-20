@@ -38,6 +38,8 @@
 #define MIN_FPS 5
 #define MIN_TIME ((float)(1.0/7.0))
 
+#define MAX_WIDTH 320
+
 GST_DEBUG_CATEGORY_STATIC (kms_face_detector_debug_category);
 #define GST_CAT_DEFAULT kms_face_detector_debug_category
 
@@ -52,6 +54,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_face_detector_debug_category);
 struct _KmsFaceDetectorPrivate
 {
   IplImage *cvImage;
+  IplImage *cvResizedImage;
+  gdouble resize_factor;
 
   gboolean show_debug_info;
   const char *images_path;
@@ -139,14 +143,36 @@ kms_face_detector_initialize_images (KmsFaceDetector * facedetector,
     GstVideoFrame * frame)
 {
   if (facedetector->priv->cvImage == NULL) {
+    int target_width =
+        frame->info.width <= MAX_WIDTH ? frame->info.width : MAX_WIDTH;
+
+    facedetector->priv->resize_factor = frame->info.width / target_width;
+
     facedetector->priv->cvImage =
         cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
+
+    facedetector->priv->cvResizedImage =
+        cvCreateImage (cvSize (target_width,
+            frame->info.height / facedetector->priv->resize_factor),
+        IPL_DEPTH_8U, 3);
   } else if ((facedetector->priv->cvImage->width != frame->info.width)
       || (facedetector->priv->cvImage->height != frame->info.height)) {
+    int target_width =
+        frame->info.width <= MAX_WIDTH ? frame->info.width : MAX_WIDTH;
+
+    facedetector->priv->resize_factor = frame->info.width / target_width;
+
     cvReleaseImageHeader (&facedetector->priv->cvImage);
+    cvReleaseImage (&facedetector->priv->cvResizedImage);
+
     facedetector->priv->cvImage =
         cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
+        IPL_DEPTH_8U, 3);
+
+    facedetector->priv->cvResizedImage =
+        cvCreateImage (cvSize (target_width,
+            frame->info.height / facedetector->priv->resize_factor),
         IPL_DEPTH_8U, 3);
   }
 }
@@ -169,16 +195,19 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
 
   for (int i = 0;
       i <
-      (facedetector->priv->pFaceRectSeq ? facedetector->priv->pFaceRectSeq->
-          total : 0); i++) {
+      (facedetector->priv->pFaceRectSeq ? facedetector->priv->
+          pFaceRectSeq->total : 0); i++) {
     CvRect *r;
     GstStructure *face;
 
     r = (CvRect *) cvGetSeqElem (facedetector->priv->pFaceRectSeq, i);
     face = gst_structure_new ("face",
-        "x", G_TYPE_UINT, r->x,
-        "y", G_TYPE_UINT, r->y,
-        "width", G_TYPE_UINT, r->width, "height", G_TYPE_UINT, r->height, NULL);
+        "x", G_TYPE_UINT, (guint) (r->x * facedetector->priv->resize_factor),
+        "y", G_TYPE_UINT, (guint) (r->y * facedetector->priv->resize_factor),
+        "width", G_TYPE_UINT,
+        (guint) (r->width * facedetector->priv->resize_factor), "height",
+        G_TYPE_UINT, (guint) (r->height * facedetector->priv->resize_factor),
+        NULL);
     gchar *id = NULL;
 
     id = g_strdup_printf ("%d", i);
@@ -208,6 +237,8 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
 
   facedetector->priv->cvImage->imageData = (char *) info.data;
+  cvResize (facedetector->priv->cvImage, facedetector->priv->cvResizedImage,
+      CV_INTER_LINEAR);
 
   g_mutex_lock (&facedetector->priv->mutex);
 
@@ -225,16 +256,16 @@ kms_face_detector_transform_frame_ip (GstVideoFilter * filter,
   cvClearMemStorage (facedetector->priv->pStorageFace);
   if (facedetector->priv->haar_detector) {
     facedetector->priv->pFaceRectSeq =
-        cvHaarDetectObjects (facedetector->priv->cvImage,
+        cvHaarDetectObjects (facedetector->priv->cvResizedImage,
         facedetector->priv->pCascadeFace, facedetector->priv->pStorageFace, 1.2,
         3, CV_HAAR_DO_CANNY_PRUNING,
-        cvSize (facedetector->priv->cvImage->width / 20,
-            facedetector->priv->cvImage->height / 20),
-        cvSize (facedetector->priv->cvImage->width / 2,
-            facedetector->priv->cvImage->height / 2));
+        cvSize (facedetector->priv->cvResizedImage->width / 20,
+            facedetector->priv->cvResizedImage->height / 20),
+        cvSize (facedetector->priv->cvResizedImage->width / 2,
+            facedetector->priv->cvResizedImage->height / 2));
 
   } else {
-    classify_image (facedetector->priv->cvImage,
+    classify_image (facedetector->priv->cvResizedImage,
         facedetector->priv->pFaceRectSeq);
   }
 
@@ -254,6 +285,8 @@ kms_face_detector_finalize (GObject * object)
   KmsFaceDetector *facedetector = KMS_FACE_DETECTOR (object);
 
   cvReleaseImageHeader (&facedetector->priv->cvImage);
+  cvReleaseImage (&facedetector->priv->cvResizedImage);
+
   if (facedetector->priv->pStorageFace != NULL)
     cvClearMemStorage (facedetector->priv->pStorageFace);
   if (facedetector->priv->pFaceRectSeq != NULL)
@@ -270,7 +303,7 @@ kms_face_detector_init (KmsFaceDetector * facedetector)
 {
   facedetector->priv = KMS_FACE_DETECTOR_GET_PRIVATE (facedetector);
 
-  facedetector->priv->pCascadeFace = 0;
+  facedetector->priv->pCascadeFace = NULL;
   facedetector->priv->pStorageFace = cvCreateMemStorage (0);
   facedetector->priv->pFaceRectSeq =
       cvCreateSeq (0, sizeof (CvSeq), sizeof (CvRect),
@@ -280,6 +313,7 @@ kms_face_detector_init (KmsFaceDetector * facedetector)
   facedetector->priv->throw_frames = 0;
   facedetector->priv->haar_detector = TRUE;
   facedetector->priv->cvImage = NULL;
+  facedetector->priv->cvResizedImage = NULL;
   g_mutex_init (&facedetector->priv->mutex);
 
   kms_face_detector_initialize_classifiers (facedetector);
