@@ -12,28 +12,34 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.demo.campusparty;
+package com.kurento.demo.basic;
 
 import com.kurento.kmf.content.RtpContentHandler;
 import com.kurento.kmf.content.RtpContentService;
 import com.kurento.kmf.content.RtpContentSession;
-import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.PlayerEndpoint;
 
-@RtpContentService(name = "CpRtpWithFilter", path = "/cpRtpJack")
-public class CpRtcRtpJackHandler extends RtpContentHandler {
-
-	public static JackVaderFilter sharedFilterReference = null;
+@RtpContentService(name = "PlayingRtpMediaHandler", path = "/rtpPlayer")
+public class RtpWithPlayerMediaHandler extends RtpContentHandler {
 
 	@Override
 	public void onContentRequest(RtpContentSession session) throws Exception {
-		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
-		MediaPipeline mp = mpf.create();
-		session.releaseOnTerminate(mp);
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		session.start(filter);
-		sharedFilterReference = filter;
+		MediaPipeline mediaPipeline = null;
+		mediaPipeline = session.getMediaPipelineFactory().create();
+		session.releaseOnTerminate(mediaPipeline);
+
+		PlayerEndpoint player = mediaPipeline.newPlayerEndpoint(
+				"https://ci.kurento.com/video/barcodes.webm").build();
+		session.setAttribute("player", player);
+		session.start(null);
+	}
+
+	@Override
+	public void onContentStarted(RtpContentSession session) {
+		PlayerEndpoint PlayerEndpoint = (PlayerEndpoint) session
+				.getAttribute("player");
+		PlayerEndpoint.play();
 	}
 
 }

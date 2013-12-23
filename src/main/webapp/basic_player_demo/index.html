@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <link href="style.css" rel="stylesheet">
+
+    <script src="lib/jquery-2.0.3.min.js"></script>
+
+    <script src="../lib/adapter.js"></script>
+    <script src="../js/kws-content-api.min.js"></script>
+
+    <script src="../lib/Console.js"></script>
+
+    <script src="index.js"></script>
+  </head>
+  <body>
+    <input id="txtUri" value="../webRtcLoopback" size="50"/>
+    <br/>
+    <span>
+      <label for="chkUseWebRTC">Use WebRTC?</label>
+      <input id="chkUseWebRTC" type="checkbox" checked />
+    </span>
+    <br/>
+    <button id="btnConnect">Connect</button>
+    <button id="btnTerminate" disabled>Terminate</button>
+    <br/>
+    <video id="localVideo" autoplay></video>
+    <video id="remoteVideo" autoplay></video>
+    <br/>
+    <div id="console"></div>
+  </body>
+</html>
