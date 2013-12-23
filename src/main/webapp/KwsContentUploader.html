@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>KwsUploader</title>
+
+    <style>
+      #holder { border: 10px dashed #ccc; width: 300px; min-height: 300px; margin: 20px auto;}
+      #holder.hover { border: 10px dashed #0c0; }
+      #holder img { display: block; margin: 10px auto; }
+      #holder p { margin: 10px; font-size: 14px; }
+
+      progress { width: 100%; }
+      progress:after { content: '%'; }
+
+      .fail { background: #c00; padding: 2px; color: #fff; }
+      .hidden { display: none !important;}
+    </style>
+
+    <script src="./js/kws-content-api.js"></script>
+
+    <script src="config.js"></script>
+  </head>
+  <body>
+    <input id="inputFile" type="file"/>
+
+    <span>
+      <label for="url">Url</label>
+      <input id="url" name="url" />
+    </span>
+    <button id="run" onclick="run()">Run</button>
+    <span>
+      <label for="status">Status</label>
+      <input id="status" name="status" readonly />
+    </span>
+    <div id="holder"></div>
+    <textarea id="output" rows=10 style="width: 100%"></textarea>
+
+    <script>
+      var inputFile   = document.getElementById('inputFile');
+      var inputStatus = document.getElementById('status');
+
+      var inputUrl = document.getElementById('url');
+      inputUrl.value = "./recorderJsonRedirect";
+
+      inputFile.addEventListener('change', function(event)
+      {
+        inputStatus.value = this.value;
+        console.log(status.value);
+      });
+
+      holder.addEventListener('drop', function(event)
+      {
+        inputStatus.value = event.dataTransfer.files[0].name;
+        console.log(status.value);
+      });
+
+      function log(text)
+      {
+        var textNode = document.createTextNode(text+"\n");
+        document.getElementById('output').appendChild(textNode);
+      }
+    </script>
+
+    <script>
+      var KwsContentUploader = kwsContentApi.KwsContentUploader;
+      KwsContentUploader.initDragDrop("holder");
+
+      function run()
+      {
+        var endpoint = inputUrl.value;
+        var options =
+        {
+          inputTag: "inputFile",
+          dragdropTag: "holder",
+          useFormData: false
+        };
+
+        var uploader = new KwsContentUploader(endpoint, options);
+
+        uploader.on('start', function(event)
+        {
+          log("Connection created");
+        });
+
+        uploader.on('localfile', function(event)
+        {
+          log("File uploaded");
+        });
+
+        uploader.on('terminate', function(event)
+        {
+          log("Connection terminated");
+        });
+
+        uploader.on('error', function(error)
+        {
+          log("Error: "+error.message);
+        });
+      };
+    </script>
+  </body>
+</html>

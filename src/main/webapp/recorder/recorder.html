@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP Recorder</title>
+<script>
+	function upload() {
+		var form = document.getElementById("myForm");
+		form.action = document.getElementById("handler").value;
+		form.submit();
+	}
+</script>
+</head>
+<body>
+	<h1>HTTP Recorder</h1>
+	<form id="myForm" method="post" enctype="multipart/form-data">
+		<label for="handler">Handler</label> <select id="handler">
+			<option value="../recorderTunnel">Recorder with tunnel</option>
+			<option value="../recorderRedirect">Recorder with redirect</option>
+			<option value="../recorderRepository">Recorder to repository</option>
+		</select><br /> <input type="file" id="myfile" name="myfile" /><br /> <input
+			type="button" onclick="upload()" value="Record" />
+	</form>
+</body>
+</html>
