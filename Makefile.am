@@ -5,7 +5,8 @@ SUBDIRS =				\
 	h264filter			\
 	facedetector			\
 	imageoverlay			\
-	faceoverlay
+	faceoverlay			\
+	chroma
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
