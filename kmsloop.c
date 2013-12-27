@@ -58,7 +58,7 @@ static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 static gboolean
 quit_main_loop (GMainLoop * loop)
 {
-  GST_INFO ("Exiting main loop");
+  GST_DEBUG ("Exiting main loop");
 
   g_main_loop_quit (loop);
 
