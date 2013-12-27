@@ -27,9 +27,6 @@ import com.kurento.kmf.media.RtpEndpoint;
 public interface RtpContentSession extends SdpContentSession {
 	/**
 	 * TODO
-	 * 
-	 * @return
 	 */
-	@Override
-	RtpEndpoint getSessionEndpoint();
+	void start(RtpEndpoint endpoint);
 }

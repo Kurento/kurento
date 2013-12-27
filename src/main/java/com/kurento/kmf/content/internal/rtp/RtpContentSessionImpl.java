@@ -19,14 +19,12 @@ import javax.servlet.AsyncContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.RtpContentHandler;
 import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
-import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.internal.base.AbstractSdpContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RtpEndpoint;
 import com.kurento.kmf.media.SdpEndpoint;
@@ -38,8 +36,8 @@ import com.kurento.kmf.media.SdpEndpoint;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
-		implements RtpContentSession {
+public class RtpContentSessionImpl extends AbstractSdpContentSession implements
+		RtpContentSession {
 
 	/**
 	 * Logger.
@@ -59,13 +57,8 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
-	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
-			JsonRpcRequest message) {
-		Assert.notNull(
-				initialJsonRequest.getParams().getSdp(),
-				"SDP cannot be null on message with method "
-						+ message.getMethod(), 10024);
-		super.processStartJsonRpcRequest(asyncCtx, message);
+	public void start(RtpEndpoint rtpEndpoint) {
+		internalStart(rtpEndpoint);
 	}
 
 	/**
@@ -114,10 +107,5 @@ public class RtpContentSessionImpl extends AbstractSdpBasedMediaRequest
 	protected ContentCommandResult interalRawCallToOnContentCommand(
 			ContentCommand command) throws Exception {
 		return getHandler().onContentCommand(this, command);
-	}
-
-	@Override
-	public RtpEndpoint getSessionEndpoint() {
-		return (RtpEndpoint) super.getSessionEndpoint();
 	}
 }

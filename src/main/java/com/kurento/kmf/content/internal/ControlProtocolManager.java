@@ -175,11 +175,12 @@ public class ControlProtocolManager {
 						20017);
 			}
 
-			if (!asyncCtx.getRequest().isAsyncStarted()) {
-				return;
-			}
-
 			synchronized (asyncCtx) {
+				if (!asyncCtx.getRequest().isAsyncStarted()) {
+					throw new KurentoMediaFrameworkException(
+							"Cannot send message in completed asyncCtx", 1); // TODO
+				}
+
 				HttpServletResponse response = (HttpServletResponse) asyncCtx
 						.getResponse();
 				response.setContentType("application/json");

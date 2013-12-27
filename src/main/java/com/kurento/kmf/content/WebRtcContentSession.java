@@ -32,6 +32,5 @@ public interface WebRtcContentSession extends SdpContentSession {
 	 * 
 	 * @return
 	 */
-	@Override
-	WebRtcEndpoint getSessionEndpoint();
+	void start(WebRtcEndpoint endpoint);
 }

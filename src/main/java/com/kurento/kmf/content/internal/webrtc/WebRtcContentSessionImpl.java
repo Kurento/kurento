@@ -19,14 +19,12 @@ import javax.servlet.AsyncContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.common.exception.Assert;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
-import com.kurento.kmf.content.internal.base.AbstractSdpBasedMediaRequest;
-import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
+import com.kurento.kmf.content.internal.base.AbstractSdpContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.SdpEndpoint;
 import com.kurento.kmf.media.WebRtcEndpoint;
@@ -38,7 +36,7 @@ import com.kurento.kmf.media.WebRtcEndpoint;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
+public class WebRtcContentSessionImpl extends AbstractSdpContentSession
 		implements WebRtcContentSession {
 
 	private static final Logger log = LoggerFactory
@@ -51,6 +49,11 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	}
 
 	@Override
+	public void start(WebRtcEndpoint webRtcEndpoint) {
+		internalStart(webRtcEndpoint);
+	}
+
+	@Override
 	protected SdpEndpoint buildSdpEndpoint(MediaPipeline mediaPipeline) {
 		return mediaPipeline.newWebRtcEndpoint().build();
 	}
@@ -58,16 +61,6 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	@Override
 	protected Logger getLogger() {
 		return log;
-	}
-
-	@Override
-	protected void processStartJsonRpcRequest(AsyncContext asyncCtx,
-			JsonRpcRequest message) {
-		Assert.notNull(
-				initialJsonRequest.getParams().getSdp(),
-				"SDP cannot be null on message with method "
-						+ message.getMethod(), 10005);
-		super.processStartJsonRpcRequest(asyncCtx, message);
 	}
 
 	@Override
@@ -108,10 +101,5 @@ public class WebRtcContentSessionImpl extends AbstractSdpBasedMediaRequest
 	protected ContentCommandResult interalRawCallToOnContentCommand(
 			ContentCommand command) throws Exception {
 		return getHandler().onContentCommand(this, command);
-	}
-
-	@Override
-	public WebRtcEndpoint getSessionEndpoint() {
-		return (WebRtcEndpoint) super.getSessionEndpoint();
 	}
 }

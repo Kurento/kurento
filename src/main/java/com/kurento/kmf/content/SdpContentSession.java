@@ -15,8 +15,7 @@
 package com.kurento.kmf.content;
 
 import com.kurento.kmf.content.jsonrpc.Constraints;
-import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.SdpEndpoint;
+import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * TODO: write javadoc
@@ -40,25 +39,14 @@ public interface SdpContentSession extends ContentSession {
 	Constraints getAudioConstraints();
 
 	/**
-	 * Start the RTP session.
+	 * TODO
 	 * 
-	 * @param sinkElement
-	 *            In-going media element
-	 * @param sourceElement
-	 *            Out-going media element
-	 * @throws ContentException
-	 *             Exception in the RTP process
 	 */
-	void start(MediaElement sourceElement, MediaElement... sinkElements);
-
-	// TODO: javadoc
-	void start(MediaElement sourceElement, MediaElement sinkElement);
+	void start(RepositoryItem sourceRepositoryItem,
+			RepositoryItem sinkRepositoryItem);
 
 	/**
 	 * TODO
-	 * 
-	 * @return
 	 */
-	@Override
-	SdpEndpoint getSessionEndpoint();
+	void start(String sourceContentPath, String sinkContentPath);
 }

@@ -26,15 +26,10 @@ import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
-import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
+import com.kurento.kmf.content.internal.base.AbstractHttpContentSession;
 import com.kurento.kmf.media.HttpEndpoint;
-import com.kurento.kmf.media.HttpGetEndpoint.HttpGetEndpointBuilder;
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.UriEndpoint;
-import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -45,21 +40,17 @@ import com.kurento.kmf.repository.RepositoryItem;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
-		implements HttpPlayerSession {
+public class HttpPlayerSessionImpl extends AbstractHttpContentSession implements
+		HttpPlayerSession {
 
 	private static final Logger log = LoggerFactory
 			.getLogger(HttpPlayerSessionImpl.class);
 
-	private final boolean terminateOnEOS;
-
 	public HttpPlayerSessionImpl(HttpPlayerHandler handler,
 			ContentSessionManager manager, AsyncContext asyncContext,
-			String contentId, boolean redirect, boolean useControlProtocol,
-			boolean terminateOnEOS) {
+			String contentId, boolean redirect, boolean useControlProtocol) {
 		super(handler, manager, asyncContext, contentId, redirect,
 				useControlProtocol);
-		this.terminateOnEOS = terminateOnEOS;
 	}
 
 	@Override
@@ -72,7 +63,28 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		try {
 			Assert.notNull(contentPath, "Illegal null contentPath provided",
 					10027);
-			activateMedia(contentPath, (MediaElement[]) null);
+
+			goToState(
+					STATE.STARTING,
+					"Cannot start HttpPlayerSession in state "
+							+ getState()
+							+ ". This is probably due to an explicit session termination comming from another thread",
+					1); // TODO
+
+			getLogger().info(
+					"Activating media for " + this.getClass().getSimpleName()
+							+ " with contentPath " + contentPath);
+
+			final PlayerEndpoint playerEndPoint = buildUriEndpoint(contentPath);
+			HttpEndpoint httpEndpoint = buildAndConnectHttpEndpoint(playerEndPoint);
+
+			activateMedia(httpEndpoint, new Runnable() {
+				@Override
+				public void run() {
+					playerEndPoint.play();
+
+				}
+			});
 		} catch (KurentoMediaFrameworkException ke) {
 			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
 					null);
@@ -86,77 +98,7 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 		}
 	}
 
-	/**
-	 * Perform a play action using a MediaElement.
-	 */
-	@Override
-	public void start(MediaElement element) {
-		try {
-			Assert.notNull(element, "Illegal null source element provided",
-					10028);
-			activateMedia(null, new MediaElement[] { element });
-
-		} catch (KurentoMediaFrameworkException ke) {
-			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
-					null);
-			throw ke;
-		} catch (Throwable t) {
-			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20029);
-			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
-					null);
-			throw kmfe;
-		}
-	}
-
-	@Override
-	protected void activateMedia(RepositoryItem repositoryItem) {
-		super.activateMedia(repositoryItem);
-		addMediaSessionTerminatedListener();
-	}
-
-	@Override
-	protected void activateMedia(String contentPath,
-			MediaElement... mediaElements) {
-		super.activateMedia(contentPath, mediaElements);
-		addMediaSessionTerminatedListener();
-	}
-
-	private void addMediaSessionTerminatedListener() {
-		httpEndpoint
-				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
-					@Override
-					public void onEvent(MediaSessionTerminatedEvent event) {
-						getLogger().info(
-								"Received event with type " + event.getType());
-						internalTerminateWithoutError(null, 1,
-								"MediaServer MediaSessionTerminated", null); // TODO
-
-					}
-				});
-	}
-
-	@Override
-	public void start(RepositoryItem repositoryItem) {
-		try {
-			Assert.notNull(repositoryItem, "Illegal null repository provided",
-					10027);
-			activateMedia(repositoryItem);
-		} catch (KurentoMediaFrameworkException ke) {
-			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
-					null);
-			throw ke;
-		} catch (Throwable t) {
-			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20029);
-			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
-					null);
-			throw kmfe;
-		}
-	}
-
-	@Override
-	protected UriEndpoint buildUriEndpoint(String contentPath) {
+	protected PlayerEndpoint buildUriEndpoint(String contentPath) {
 		getLogger().info("Creating media pipeline ...");
 		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
 		releaseOnTerminate(mediaPipeline);
@@ -169,33 +111,17 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	/**
 	 * Creates a Media Element repository using a MediaElement.
 	 */
-	@Override
 	protected HttpEndpoint buildAndConnectHttpEndpoint(
-			MediaElement... mediaElements) {
+			PlayerEndpoint playerEndpoint) {
 
-		// In this case (player) we can connect to one media element
-		// (source) that must be the first in the array. This is not very
-		// beautiful but makes possible to have player and recorder on the
-		// same inheritance hierarchy
-		MediaElement mediaElement = mediaElements[0];
 		getLogger().info("Recovering media pipeline");
-		MediaPipeline mediaPiplePipeline = mediaElement.getMediaPipeline();
+		MediaPipeline mediaPiplePipeline = playerEndpoint.getMediaPipeline();
 		getLogger().info("Creating HttpEndpoint ...");
-		HttpGetEndpointBuilder builder = mediaPiplePipeline
-				.newHttpGetEndpoint();
 
-		if (terminateOnEOS) {
-			builder.terminateOnEOS();
-		}
-
-		HttpEndpoint httpEndpoint = builder.build();
-
+		HttpEndpoint httpEndpoint = mediaPiplePipeline.newHttpGetEndpoint()
+				.terminateOnEOS().build();
 		releaseOnTerminate(httpEndpoint);
-		mediaElement.connect(httpEndpoint);
-
-		getLogger().info(
-				"Adding PlayerEndpoint.play() into HttpEndpoint listener");
-
+		playerEndpoint.connect(httpEndpoint);
 		return httpEndpoint;
 	}
 
@@ -243,9 +169,5 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 	protected RepositoryHttpEndpoint createRepositoryHttpEndpoint(
 			RepositoryItem repositoryItem) {
 		return repositoryItem.createRepositoryHttpPlayer();
-		// TODO: who releases this?
-		// Should it be released in a per-session basis? In that case, we cannot
-		// re-use if useControlProtocol = false.
 	}
-
 }

@@ -103,9 +103,9 @@ public class ContentApplicationContextConfiguration {
 	@Scope("prototype")
 	HttpPlayerSessionImpl httpPlayerSessionImpl(HttpPlayerHandler playerHander,
 			ContentSessionManager manager, AsyncContext ctx, String contentId,
-			boolean redirect, boolean useControlProtocol, boolean terminateOnEOS) {
+			boolean redirect, boolean useControlProtocol) {
 		return new HttpPlayerSessionImpl(playerHander, manager, ctx, contentId,
-				redirect, useControlProtocol, terminateOnEOS);
+				redirect, useControlProtocol);
 	}
 
 	// RECORDER STUFF

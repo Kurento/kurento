@@ -29,21 +29,19 @@ import com.kurento.kmf.common.exception.internal.ExceptionUtils;
 import com.kurento.kmf.common.exception.internal.ServletUtils;
 import com.kurento.kmf.content.ContentHandler;
 import com.kurento.kmf.content.ContentSession;
+import com.kurento.kmf.content.HttpContentSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.StreamingProxy;
 import com.kurento.kmf.content.internal.StreamingProxyListener;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.HttpEndpoint;
-import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.RecorderEndpoint;
-import com.kurento.kmf.media.UriEndpoint;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.repository.HttpSessionErrorEvent;
 import com.kurento.kmf.repository.HttpSessionStartedEvent;
+import com.kurento.kmf.repository.HttpSessionTerminatedEvent;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryHttpEventListener;
 import com.kurento.kmf.repository.RepositoryItem;
@@ -55,8 +53,8 @@ import com.kurento.kmf.repository.RepositoryItem;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public abstract class AbstractHttpBasedContentSession extends
-		AbstractContentSession {
+public abstract class AbstractHttpContentSession extends AbstractContentSession
+		implements HttpContentSession {
 
 	@Autowired
 	private StreamingProxy proxy;
@@ -67,13 +65,9 @@ public abstract class AbstractHttpBasedContentSession extends
 
 	protected volatile Future<?> tunnellingProxyFuture;
 
-	private UriEndpoint uriEndpoint;
-
-	protected HttpEndpoint httpEndpoint;
-
 	private RepositoryHttpEndpoint repositoryHttpEndpoint;
 
-	public AbstractHttpBasedContentSession(
+	public AbstractHttpContentSession(
 			ContentHandler<? extends ContentSession> handler,
 			ContentSessionManager manager, AsyncContext asyncContext,
 			String contentId, boolean redirect, boolean useControlProtocol) {
@@ -81,101 +75,89 @@ public abstract class AbstractHttpBasedContentSession extends
 		this.useControlProtocol = useControlProtocol;
 		this.redirect = redirect;
 		if (!useControlProtocol) {
-			state = STATE.HANDLING;
+			goToState(STATE.HANDLING, "Cannot go to STATE.HANDLING from state "
+					+ getState() + ". This condition should never happen", 1); // TODO
 		}
 	}
 
-	/**
-	 * Build media element (such as player, recorder, and so on) in the media
-	 * server.
-	 * 
-	 * @param contentPath
-	 *            Content path in which build the media element
-	 * @return Created media element
-	 */
-	protected abstract UriEndpoint buildUriEndpoint(String contentPath);
-
-	/**
-	 * 
-	 * @param mediaElements
-	 *            must be non-null and non-empty
-	 * @return
-	 */
-	protected abstract HttpEndpoint buildAndConnectHttpEndpoint(
-			MediaElement... mediaElements);
-
 	protected abstract RepositoryHttpEndpoint createRepositoryHttpEndpoint(
 			RepositoryItem repositoryItem);
+
+	@Override
+	public void start(HttpEndpoint httpEndpoint) {
+		try {
+			releaseOnTerminate(httpEndpoint);
+			Assert.notNull(httpEndpoint, "Illegal null httpEndpoint provided",
+					10028);
+			goToState(
+					STATE.STARTING,
+					"Cannot start HttpEndpoint in state "
+							+ getState()
+							+ ". This is probably due to an explicit session termination comming from another thread",
+					1); // TODO
+
+			getLogger().info(
+					"Activating media for " + this.getClass().getSimpleName()
+							+ " with httpEndpoint provided ");
+
+			activateMedia(httpEndpoint, null);
+
+		} catch (KurentoMediaFrameworkException ke) {
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
+			throw ke;
+		} catch (Throwable t) {
+			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
+			throw kmfe;
+		}
+	}
+
+	@Override
+	public void start(RepositoryItem repositoryItem) {
+		try {
+			Assert.notNull(repositoryItem,
+					"Illegal null repositoryItem provided", 10027);
+
+			goToState(
+					STATE.STARTING,
+					"Cannot start HttpPlayerSession in state "
+							+ getState()
+							+ ". This is probably due to an explicit session termination comming from another thread",
+					1); // TODO
+
+			getLogger().info(
+					"Activating media for " + this.getClass().getSimpleName()
+							+ " with repositoryItemId "
+							+ repositoryItem.getId());
+			repositoryHttpEndpoint = createRepositoryHttpEndpoint(repositoryItem);
+
+			activateMedia(repositoryHttpEndpoint);
+		} catch (KurentoMediaFrameworkException ke) {
+			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
+					null);
+			throw ke;
+		} catch (Throwable t) {
+			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
+					t.getMessage(), t, 20029);
+			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
+					null);
+			throw kmfe;
+		}
+	}
 
 	/*
 	 * This is an utility method designed for minimizing code replication. For
 	 * it to work, one and only one of the two parameters must be null;
 	 */
-	protected void activateMedia(String contentPath,
-			MediaElement... mediaElements) {
-		synchronized (this) {
-			Assert.isTrue(
-					state == STATE.HANDLING,
-					"Cannot start media exchange in state "
-							+ state
-							+ ". This error means a violatiation in the content session lifecycle",
-					10001);
-			state = STATE.STARTING;
-		}
+	protected void activateMedia(HttpEndpoint httpEndpoint,
+			final Runnable runOnContentStart) {
 
-		final boolean mediaElementProvided = mediaElements != null
-				&& mediaElements.length > 0;
-		final boolean contentPathProvided = contentPath != null;
-
-		Assert.isTrue(
-				mediaElementProvided || contentPathProvided,
-				"Internal error. Cannot process request containing two null parameters",
-				10002);
-		Assert.isTrue(
-				!(mediaElementProvided && contentPathProvided),
-				"Internal error. Cannot process request containing two non null parameters",
-				10003);
-
-		getLogger().info(
-				"Activating media for " + this.getClass().getSimpleName()
-						+ " with contentPath " + contentPath);
-
-		if (contentPath != null) {
-			mediaElements = new MediaElement[1];
-			uriEndpoint = buildUriEndpoint(contentPath);
-			mediaElements[0] = uriEndpoint;
-		}
-
-		httpEndpoint = buildAndConnectHttpEndpoint(mediaElements);
-
-		// We need to assert that session was not rejected while we were
-		// creating media infrastructure
-		boolean terminate = false;
-		synchronized (this) {
-			if (state == STATE.TERMINATED) {
-				terminate = true;
-			} else if (state == STATE.STARTING) {
-				state = STATE.ACTIVE;
-			}
-		}
-
-		// If session was rejected, just terminate
-		if (terminate) {
-			getLogger()
-					.info("Exiting due to terminate ... this should only happen on client's explicit termination");
-			destroy(); // idempotent call. Just in case pipeline gets build
-						// after session executes termination
-			return;
-		}
-
-		// If session was not rejected (state=ACTIVE) we send an answer and
-		// the initialAsyncCtx becomes useless
-		String answerUrl = httpEndpoint.getUrl();
-		getLogger().info("HttpEndpoint.getUrl = " + answerUrl);
-
-		Assert.notNull(answerUrl, "Received null url from HttpEndpoint", 20012);
-		Assert.isTrue(answerUrl.length() > 0,
-				"Received invalid empty url from media server", 20012);
+		Assert.isTrue(httpEndpoint != null,
+				"Internal error. Cannot activate null HttpEndpoint reference",
+				1); // TODO
 
 		// Manage fatal errors occurring in the pipeline
 		httpEndpoint.getMediaPipeline().addErrorListener(
@@ -198,19 +180,27 @@ public abstract class AbstractHttpBasedContentSession extends
 						callOnContentStartedOnHanlder();
 						getLogger().info(
 								"Received event with type " + event.getType());
-						if (uriEndpoint != null
-								&& uriEndpoint instanceof PlayerEndpoint) {
-							((PlayerEndpoint) uriEndpoint).play();
-						} else if (uriEndpoint != null
-								&& uriEndpoint instanceof RecorderEndpoint) {
-							((RecorderEndpoint) uriEndpoint).record();
-							// TODO: ask Jose if this may produce losses in
-							// recorder
+						if (runOnContentStart != null) {
+							runOnContentStart.run();
 						}
 					}
 				});
 
 		// Generate appropriate actions when media session is terminated
+
+		String answerUrl = httpEndpoint.getUrl();
+		getLogger().info("HttpEndpoint.getUrl = " + answerUrl);
+
+		Assert.notNull(answerUrl, "Received null url from HttpEndpoint", 20012);
+		Assert.isTrue(answerUrl.length() > 0,
+				"Received invalid empty url from media server", 20012);
+
+		goToState(
+				STATE.ACTIVE,
+				"Cannot start session in sate "
+						+ getState()
+						+ ". This is probably due to an explicit termination of the session from a different threaad",
+				1);
 
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
@@ -221,53 +211,7 @@ public abstract class AbstractHttpBasedContentSession extends
 		}
 	}
 
-	protected void activateMedia(RepositoryItem repositoryItem) {
-		synchronized (this) {
-			Assert.isTrue(
-					state == STATE.HANDLING,
-					"Cannot start media exchange in state "
-							+ state
-							+ ". This error means a violatiation in the content session lifecycle",
-					10001);
-			state = STATE.STARTING;
-		}
-
-		getLogger().info(
-				"Activating media for " + this.getClass().getSimpleName()
-						+ " with repositoryItemId " + repositoryItem.getId());
-
-		// TODO: RepoItemHttpPlayer evil name, look for more reasonable name.
-		repositoryHttpEndpoint = createRepositoryHttpEndpoint(repositoryItem);
-
-		// We need to assert that session was not rejected while we were
-		// creating media infrastructure
-		boolean terminate = false;
-		synchronized (this) {
-			if (state == STATE.TERMINATED) {
-				terminate = true;
-			} else if (state == STATE.STARTING) {
-				state = STATE.ACTIVE;
-			}
-		}
-
-		// If session was rejected, just terminate
-		if (terminate) {
-			getLogger()
-					.info("Exiting due to terminate ... this should only happen on client's explicit termination");
-			destroy(); // idempotent call. Just in case pipeline gets build
-						// after session executes termination
-			return;
-		}
-
-		// If session was not rejected (state=ACTIVE) we send an answer and
-		// the initialAsyncCtx becomes useless
-		String answerUrl = repositoryHttpEndpoint.getURL();
-		getLogger().info("RepoItemHttpElement.getUrl = " + answerUrl);
-
-		Assert.notNull(answerUrl, "Received null url from RepoItemHttpElement",
-				20012);
-		Assert.isTrue(answerUrl.length() > 0,
-				"Received invalid empty url from RepoItemHttpElement", 20012);
+	protected void activateMedia(RepositoryHttpEndpoint repositoryHttpEndpoint) {
 
 		// Manage fatal errors occurring in the pipeline
 		repositoryHttpEndpoint
@@ -293,6 +237,34 @@ public abstract class AbstractHttpBasedContentSession extends
 										+ event.getClass().getSimpleName());
 					}
 				});
+
+		repositoryHttpEndpoint
+				.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
+
+					@Override
+					public void onEvent(HttpSessionTerminatedEvent event) {
+						getLogger().info(
+								"Received event with type "
+										+ event.getClass().getSimpleName());
+						internalTerminateWithoutError(null, 1,
+								"MediaServer MediaSessionTerminated", null); // TODO
+					}
+				});
+
+		String answerUrl = repositoryHttpEndpoint.getURL();
+		getLogger().info("RepoItemHttpElement.getUrl = " + answerUrl);
+
+		Assert.notNull(answerUrl, "Received null url from RepoItemHttpElement",
+				20012);
+		Assert.isTrue(answerUrl.length() > 0,
+				"Received invalid empty url from RepoItemHttpElement", 20012);
+
+		goToState(
+				STATE.ACTIVE,
+				"Cannot start session in sate "
+						+ getState()
+						+ ". This is probably due to an explicit termination of the session from a different threaad",
+				1);
 
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
@@ -446,11 +418,12 @@ public abstract class AbstractHttpBasedContentSession extends
 	 * Release Streaming proxy.
 	 */
 	@Override
-	protected void destroy() {
+	protected synchronized void destroy() {
 		super.destroy();
 
 		if (repositoryHttpEndpoint != null) {
 			repositoryHttpEndpoint.stop();
+			repositoryHttpEndpoint = null;
 		}
 
 		Future<?> localTunnelingProxyFuture = tunnellingProxyFuture;
@@ -459,15 +432,4 @@ public abstract class AbstractHttpBasedContentSession extends
 			tunnellingProxyFuture = null;
 		}
 	}
-
-	@Override
-	public HttpEndpoint getSessionEndpoint() {
-		if (httpEndpoint == null) {
-			throw new KurentoMediaFrameworkException(
-					"Cannot invoke getSessionEndpoint before invoking start ",
-					1); // TODO
-		}
-		return httpEndpoint;
-	}
-
 }

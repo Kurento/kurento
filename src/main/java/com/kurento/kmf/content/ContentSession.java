@@ -16,7 +16,6 @@ package com.kurento.kmf.content;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.repository.Repository;
@@ -129,12 +128,4 @@ public interface ContentSession {
 	 * @return
 	 */
 	Repository getRepository();
-	
-	/**
-	 * TODO
-	 * 
-	 * @return
-	 */
-	MediaElement getSessionEndpoint();
-
 }

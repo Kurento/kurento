@@ -68,9 +68,7 @@ public class PlayerHandlerServlet extends AbstractContentHandlerServlet {
 				"httpPlayerSessionImpl", handler, contentSessionManager,
 				asyncCtx, contentId,
 				handlerClass.getAnnotation(HttpPlayerService.class).redirect(),
-				useControlProtocol,
-				handlerClass.getAnnotation(HttpPlayerService.class)
-						.terminateOnEOS());
+				useControlProtocol);
 	}
 
 	/**

@@ -21,7 +21,9 @@ import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_TERMINATE;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -53,7 +55,6 @@ import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.content.jsonrpc.result.JsonRpcContentEvent;
 import com.kurento.kmf.content.jsonrpc.result.JsonRpcControlEvent;
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaObject;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.repository.Repository;
@@ -88,14 +89,14 @@ public abstract class AbstractContentSession implements ContentSession {
 
 	@Autowired
 	private Repository repository;
-	
+
 	private ContentHandler<? extends ContentSession> handler;
 
 	// List of Media Object to be cleaned-up (released) when this object
 	// terminates.
-	private List<MediaObject> cleanupList;
+	private Set<MediaObject> cleanupSet;
 
-	protected volatile STATE state;
+	private volatile STATE state;
 
 	private ContentSessionManager manager;
 
@@ -185,10 +186,27 @@ public abstract class AbstractContentSession implements ContentSession {
 	}
 
 	@Override
-	public void releaseOnTerminate(MediaObject mediaObject) {
-		if (cleanupList == null)
-			cleanupList = new ArrayList<MediaObject>();
-		cleanupList.add(mediaObject);
+	public synchronized void releaseOnTerminate(MediaObject mediaObject) {
+		if (state == STATE.TERMINATED) {
+			mediaObject.release(new Continuation<Void>() {
+
+				@Override
+				public void onSuccess(Void result) {
+
+				}
+
+				@Override
+				public void onError(Throwable cause) {
+
+				}
+			});
+			throw new KurentoMediaFrameworkException(
+					"Session is in TERMINATED state. Cannot invoke releaseOnTerminate any longer",
+					1);// TODO
+		}
+		if (cleanupSet == null)
+			cleanupSet = new HashSet<MediaObject>();
+		cleanupSet.add(mediaObject);
 	}
 
 	@Override
@@ -676,7 +694,7 @@ public abstract class AbstractContentSession implements ContentSession {
 						initialJsonRequest.getId()));
 	}
 
-	protected void destroy() {
+	protected synchronized void destroy() {
 		if (initialAsyncCtx != null) {
 			initialAsyncCtx.complete();
 			initialAsyncCtx = null;
@@ -696,11 +714,11 @@ public abstract class AbstractContentSession implements ContentSession {
 		}
 	}
 
-	private void releaseOwnMediaServerResources() {
-		if (cleanupList == null) {
+	private synchronized void releaseOwnMediaServerResources() {
+		if (cleanupSet == null) {
 			return;
 		}
-		for (MediaObject mediaObject : cleanupList) {
+		for (MediaObject mediaObject : cleanupSet) {
 			getLogger()
 					.info("Requesting release of MediaObject " + mediaObject);
 
@@ -723,23 +741,47 @@ public abstract class AbstractContentSession implements ContentSession {
 								+ ". Cause: " + t.getMessage(), t, 20022);
 			}
 		}
+		cleanupSet.clear();
+		cleanupSet = null;
 	}
 
-	protected void connect(MediaElement sourceElement,
-			MediaElement[] sinkElements) {
-		Assert.notNull(sourceElement, "Cannot connect null source element",
-				10014);
-		Assert.notNull(sinkElements, "Cannot connect to null sinkElements",
-				10015);
-		Assert.isTrue(sinkElements.length > 0,
-				"Cannot connect empty sinkElements", 10016);
+	public Repository getRepository() {
+		return repository;
+	}
 
-		for (MediaElement sinkElement : sinkElements) {
-			sourceElement.connect(sinkElement);
+	protected synchronized void goToState(STATE target, String errorMessage,
+			int errorCode) {
+		STATE initial = state;
+		try {
+			if (target == STATE.HANDLING) {
+				Assert.isTrue(initial == STATE.IDLE, errorMessage, errorCode);
+				state = STATE.HANDLING;
+			} else if (target == STATE.STARTING) {
+				Assert.isTrue(initial == STATE.HANDLING, errorMessage,
+						errorCode);
+				state = STATE.STARTING;
+			} else if (target == STATE.ACTIVE) {
+				Assert.isTrue(state == STATE.STARTING, errorMessage, errorCode);
+				state = STATE.ACTIVE;
+			} else if (target == STATE.TERMINATED) {
+				state = STATE.TERMINATED;
+			}
+		} finally {
+			/*
+			 * Whenever a thread wants to change the session state, if that
+			 * state is already terminated, that means that another thread
+			 * terminated the session. However, the thread calling this method
+			 * may have created media elements or other resources. For this
+			 * reason, we need to call destroy to guarantee that those resources
+			 * are collected.
+			 */
+			if (initial == STATE.TERMINATED) {
+				destroy();
+			}
 		}
 	}
-	
-	public Repository getRepository(){
-		return repository;
+
+	protected synchronized STATE getState() {
+		return state;
 	}
 }

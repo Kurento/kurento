@@ -26,15 +26,11 @@ import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
-import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
+import com.kurento.kmf.content.internal.base.AbstractHttpContentSession;
 import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.HttpPostEndpoint;
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RecorderEndpoint;
-import com.kurento.kmf.media.UriEndpoint;
-import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -45,7 +41,7 @@ import com.kurento.kmf.repository.RepositoryItem;
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
-public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
+public class HttpRecorderSessionImpl extends AbstractHttpContentSession
 		implements HttpRecorderSession {
 
 	private static final Logger log = LoggerFactory
@@ -66,9 +62,27 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	@Override
 	public void start(String contentPath) {
 		try {
-			Assert.notNull(contentPath, "Illegal null contentPath specified",
-					10016);
-			activateMedia(contentPath, (MediaElement[]) null);
+			Assert.notNull(contentPath, "Illegal null contentPath provided",
+					10027);
+
+			goToState(
+					STATE.STARTING,
+					"Cannot start HttpRecorderSession in state "
+							+ getState()
+							+ ". This is probably due to an explicit session termination comming from another thread",
+					1); // TODO
+
+			getLogger().info(
+					"Activating media for " + this.getClass().getSimpleName()
+							+ " with contentPath " + contentPath);
+
+			final RecorderEndpoint recorderEndpoint = buildUriEndpoint(contentPath);
+			HttpEndpoint httpEndpoint = buildAndConnectHttpEndpoint(recorderEndpoint);
+			recorderEndpoint.record(); // TODO. Ask Jose if this is the best
+										// place for this or it should be set as
+										// in the HttpPlayerSession
+			activateMedia(httpEndpoint, null);
+
 		} catch (KurentoMediaFrameworkException ke) {
 			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
 					null);
@@ -83,108 +97,11 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	}
 
 	/**
-	 * Perform a record action using a MediaElement.
-	 * 
-	 * @param elements
-	 *            Pluggable media components
-	 */
-	@Override
-	public void start(MediaElement... elements) {
-		try {
-			Assert.notNull(elements, "Illegal null sink elements specified",
-					10017);
-			Assert.isTrue(elements.length > 0,
-					"Illegal empty array of sink elements specified", 10018);
-			for (MediaElement e : elements) {
-				Assert.notNull(e,
-						"Illegal null sink element specified within array",
-						10019);
-			}
-			activateMedia(null, elements);
-		} catch (KurentoMediaFrameworkException ke) {
-			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
-					null);
-			throw ke;
-		} catch (Throwable t) {
-			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20029);
-			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
-					null);
-			throw kmfe;
-		}
-	}
-
-	@Override
-	protected void activateMedia(RepositoryItem repositoryItem) {
-		super.activateMedia(repositoryItem);
-		addEndOfStreamListener();
-	}
-
-	@Override
-	protected void activateMedia(String contentPath,
-			MediaElement... mediaElements) {
-		super.activateMedia(contentPath, mediaElements);
-		addEndOfStreamListener();
-	}
-
-	private void addEndOfStreamListener() {
-		((HttpPostEndpoint) httpEndpoint)
-				.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
-					@Override
-					public void onEvent(EndOfStreamEvent event) {
-						getLogger().info(
-								"Received event with type " + event.getType());
-						internalTerminateWithoutError(null, 1,
-								"MediaServer MediaSessionTerminated", null); // TODO
-					}
-				});
-	}
-
-	@Override
-	public void start(MediaElement sink) {
-		try {
-			Assert.notNull(sink, "Illegal null sink element specified", 10030);
-			start(new MediaElement[] { sink });
-		} catch (KurentoMediaFrameworkException ke) {
-			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
-					null);
-			throw ke;
-		} catch (Throwable t) {
-			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20029);
-			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
-					null);
-			throw kmfe;
-		}
-	}
-
-	@Override
-	public void start(RepositoryItem repositoryItem) {
-		try {
-			Assert.notNull(repositoryItem, "Illegal null repository provided",
-					10027);
-			activateMedia(repositoryItem);
-		} catch (KurentoMediaFrameworkException ke) {
-			internalTerminateWithError(null, ke.getCode(), ke.getMessage(),
-					null);
-			throw ke;
-		} catch (Throwable t) {
-			KurentoMediaFrameworkException kmfe = new KurentoMediaFrameworkException(
-					t.getMessage(), t, 20029);
-			internalTerminateWithError(null, kmfe.getCode(), kmfe.getMessage(),
-					null);
-			throw kmfe;
-		}
-	}
-
-	/**
 	 * Creates a Media Element repository using a ContentPath.
 	 * 
 	 */
-	@Override
-	protected UriEndpoint buildUriEndpoint(String contentPath) {
+	protected RecorderEndpoint buildUriEndpoint(String contentPath) {
 		getLogger().info("Creating media pipeline ...");
-
 		MediaPipeline mediaPipeline = mediaPipelineFactory.create();
 		releaseOnTerminate(mediaPipeline);
 		getLogger().info("Creating RecorderEndpoint ...");
@@ -196,16 +113,15 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	/**
 	 * Creates a Media Element repository using a MediaElement.
 	 */
-	@Override
 	protected HttpEndpoint buildAndConnectHttpEndpoint(
-			MediaElement... mediaElements) {
+			RecorderEndpoint recorderEndpoint) {
 
-		MediaPipeline mediaPiplePipeline = mediaElements[0].getMediaPipeline();
+		MediaPipeline mediaPiplePipeline = recorderEndpoint.getMediaPipeline();
 		getLogger().info("Creating HttpEndpoint ...");
 		HttpPostEndpoint httpEndpoint = mediaPiplePipeline
 				.newHttpPostEndpoint().build();
 		releaseOnTerminate(httpEndpoint);
-		connect(httpEndpoint, mediaElements);
+		httpEndpoint.connect(recorderEndpoint);
 		return httpEndpoint;
 
 	}

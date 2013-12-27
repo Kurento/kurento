@@ -14,10 +14,6 @@
  */
 package com.kurento.kmf.content;
 
-import com.kurento.kmf.media.HttpEndpoint;
-import com.kurento.kmf.media.MediaElement;
-import com.kurento.kmf.repository.RepositoryItem;
-
 /**
  * TODO: review & improve javadoc
  * 
@@ -29,39 +25,6 @@ import com.kurento.kmf.repository.RepositoryItem;
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
  */
-public interface HttpRecorderSession extends ContentSession {
+public interface HttpRecorderSession extends HttpContentSession {
 
-	/**
-	 * Performs a record action of media elements. TODO: review & improve
-	 * javadoc
-	 * 
-	 * @param element
-	 *            pluggable media component
-	 * @throws ContentException
-	 *             Exception in the record
-	 */
-	void start(String contentPath);
-
-	/**
-	 * Performs a record action of media elements. TODO: review & improve
-	 * javadoc
-	 * 
-	 * @param element
-	 *            pluggable media component
-	 * @throws ContentException
-	 *             Exception in the record
-	 */
-	void start(MediaElement... sinks);
-
-	void start(MediaElement sink);
-	
-	void start(RepositoryItem repositoryItem);
-
-	/**
-	 * TODO
-	 * 
-	 * @return
-	 */
-	@Override
-	HttpEndpoint getSessionEndpoint();
 }
