@@ -771,7 +771,7 @@ kms_agnostic_bin2_have_type (GstElement * typefind, guint prob, GstCaps * caps,
   }
 
   if (self->priv->input_caps != NULL)
-    g_object_unref (self->priv->input_caps);
+    gst_caps_unref (self->priv->input_caps);
 
   self->priv->input_caps = gst_caps_ref (caps);
 
@@ -901,6 +901,11 @@ kms_agnostic_bin2_dispose (GObject * object)
       g_thread_join (self->priv->thread);
     g_thread_unref (self->priv->thread);
     self->priv->thread = NULL;
+  }
+
+  if (self->priv->input_caps != NULL) {
+    gst_caps_unref (self->priv->input_caps);
+    self->priv->input_caps = NULL;
   }
 
   /* chain up */
