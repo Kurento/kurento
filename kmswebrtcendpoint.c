@@ -474,6 +474,12 @@ add_bundle_funnels (KmsWebrtcEndPoint * webrtc_end_point)
     GST_OBJECT_UNLOCK (webrtc_end_point);
     return;
   }
+
+  webrtc_end_point->priv->bundle_rtp_funnel =
+      gst_element_factory_make ("funnel", NULL);
+  webrtc_end_point->priv->bundle_rtcp_funnel =
+      gst_element_factory_make ("funnel", NULL);
+
   webrtc_end_point->priv->bundle_funnels_added = TRUE;
   GST_OBJECT_UNLOCK (webrtc_end_point);
 
@@ -1437,9 +1443,6 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
   }
 
   g_main_context_unref (context);
-
-  self->priv->bundle_rtp_funnel = gst_element_factory_make ("funnel", NULL);
-  self->priv->bundle_rtcp_funnel = gst_element_factory_make ("funnel", NULL);
 
   g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
       G_CALLBACK (rtpbin_pad_added), self);
