@@ -1308,6 +1308,9 @@ kms_webrtc_end_point_dispose (GObject * object)
 
   g_clear_object (&self->priv->agent);
   g_clear_object (&self->priv->loop);
+
+  /* chain up */
+  G_OBJECT_CLASS (kms_webrtc_end_point_parent_class)->dispose (object);
 }
 
 static void
