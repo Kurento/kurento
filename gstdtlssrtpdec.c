@@ -142,6 +142,7 @@ gst_dtls_srtp_dec_class_init (GstDtlsSrtpDecClass * klass)
 static void
 gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
 {
+  GstPadTemplate *tmpl;
   GstPad *pad;
 
   self->profiles = DEFAULT_SRTP_PROFILES;
@@ -187,14 +188,16 @@ gst_dtls_srtp_dec_init (GstDtlsSrtpDec * self)
   gst_bin_add (GST_BIN (self), self->demux);
 
   pad = gst_element_get_static_pad (self->funnel, "src");
-  self->srcpad = gst_ghost_pad_new_from_template ("src", pad,
-      gst_static_pad_template_get (&gst_dtls_srtp_dec_src_template));
+  tmpl = gst_static_pad_template_get (&gst_dtls_srtp_dec_src_template);
+  self->srcpad = gst_ghost_pad_new_from_template ("src", pad, tmpl);
+  g_object_unref (tmpl);
   gst_object_unref (pad);
   gst_element_add_pad (GST_ELEMENT (self), self->srcpad);
 
   pad = gst_element_get_static_pad (self->demux, "sink");
-  self->sinkpad = gst_ghost_pad_new_from_template ("sink", pad,
-      gst_static_pad_template_get (&gst_dtls_srtp_dec_sink_template));
+  tmpl = gst_static_pad_template_get (&gst_dtls_srtp_dec_sink_template);
+  self->sinkpad = gst_ghost_pad_new_from_template ("sink", pad, tmpl);
+  g_object_unref (tmpl);
   gst_object_unref (pad);
   gst_element_add_pad (GST_ELEMENT (self), self->sinkpad);
 
