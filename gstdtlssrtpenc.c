@@ -150,6 +150,7 @@ gst_dtls_srtp_enc_class_init (GstDtlsSrtpEncClass * klass)
 static void
 gst_dtls_srtp_enc_init (GstDtlsSrtpEnc * self)
 {
+  GstPadTemplate *tmpl;
   GstPad *srcpad;
 
   self->profiles = DEFAULT_SRTP_PROFILES;
@@ -168,17 +169,20 @@ gst_dtls_srtp_enc_init (GstDtlsSrtpEnc * self)
   gst_element_link_pads (self->dtls_enc, "src", self->out_funnel, "sink_1");
 
   srcpad = gst_element_get_static_pad (self->out_funnel, "src");
-  self->srcpad = gst_ghost_pad_new_from_template ("src",
-      srcpad, gst_static_pad_template_get (&gst_dtls_srtp_enc_src_template));
+  tmpl = gst_static_pad_template_get (&gst_dtls_srtp_enc_src_template);
+  self->srcpad = gst_ghost_pad_new_from_template ("src", srcpad, tmpl);
+  g_object_unref (tmpl);
   gst_object_unref (srcpad);
   gst_element_add_pad (GST_ELEMENT (self), self->srcpad);
 
-  self->rtp_sinkpad = gst_ghost_pad_new_no_target_from_template ("rtp_sink",
-      gst_static_pad_template_get (&gst_dtls_srtp_enc_rtp_sink_template));
+  tmpl = gst_static_pad_template_get (&gst_dtls_srtp_enc_rtp_sink_template);
+  self->rtp_sinkpad = gst_ghost_pad_new_no_target_from_template ("rtp_sink", tmpl);
+  g_object_unref (tmpl);
   gst_element_add_pad (GST_ELEMENT (self), self->rtp_sinkpad);
 
-  self->rtcp_sinkpad = gst_ghost_pad_new_no_target_from_template ("rtcp_sink",
-      gst_static_pad_template_get (&gst_dtls_srtp_enc_rtcp_sink_template));
+  tmpl = gst_static_pad_template_get (&gst_dtls_srtp_enc_rtcp_sink_template);
+  self->rtcp_sinkpad = gst_ghost_pad_new_no_target_from_template ("rtcp_sink", tmpl);
+  g_object_unref (tmpl);
   gst_element_add_pad (GST_ELEMENT (self), self->rtcp_sinkpad);
 }
 
