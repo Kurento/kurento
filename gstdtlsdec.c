@@ -177,6 +177,7 @@ gst_dtls_dec_loop (gpointer user_data)
         }
       }
       gst_query_unref (alloc_query);
+      gst_caps_unref (caps);
     }
   }
 
