@@ -202,6 +202,7 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     GST_DEBUG_OBJECT (parse, "Caps %" GST_PTR_FORMAT, caps);
 
     gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse), caps);
+    gst_caps_unref (caps);
 
     self->priv->started = TRUE;
   }
