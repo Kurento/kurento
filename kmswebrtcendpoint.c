@@ -146,25 +146,10 @@ kms_webrtc_transport_destroy (KmsWebRTCTransport * tr)
   if (tr == NULL)
     return;
 
-  if (tr->dtlssrtpenc != NULL) {
-    g_object_unref (tr->dtlssrtpenc);
-    tr->dtlssrtpenc = NULL;
-  }
-
-  if (tr->dtlssrtpdec != NULL) {
-    g_object_unref (tr->dtlssrtpdec);
-    tr->dtlssrtpdec = NULL;
-  }
-
-  if (tr->nicesink != NULL) {
-    g_object_unref (tr->nicesink);
-    tr->nicesink = NULL;
-  }
-
-  if (tr->nicesrc != NULL) {
-    g_object_unref (tr->nicesrc);
-    tr->nicesrc = NULL;
-  }
+  g_clear_object (&tr->dtlssrtpenc);
+  g_clear_object (&tr->dtlssrtpdec);
+  g_clear_object (&tr->nicesink);
+  g_clear_object (&tr->nicesrc);
 
   g_slice_free (KmsWebRTCTransport, tr);
 }
