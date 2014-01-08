@@ -258,15 +258,6 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
     int w, h;
     uchar *row, *image_row;
 
-    if (imageoverlay->priv->costume == NULL) {
-      gint radius = cvRound ((r->width + r->height) * 0.25);
-
-      cvCircle (imageoverlay->priv->cvImage,
-          cvPoint (r->x + (r->width / 2), r->y + (r->height / 2)),
-          radius, BLUE_COLOR, 4, 8, 0);
-      continue;
-    }
-
     if ((imageoverlay->priv->heightPercent == 0) ||
         (imageoverlay->priv->widthPercent == 0)) {
       continue;
@@ -460,9 +451,12 @@ kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
 
     if (imageoverlay->priv->pts == frame->buffer->pts) {
       faces_list = get_faces (faces);
+
       if (faces_list != NULL) {
-        kms_image_overlay_display_detections_overlay_img (imageoverlay,
-            faces_list);
+        if (imageoverlay->priv->costume == NULL) {
+          kms_image_overlay_display_detections_overlay_img (imageoverlay,
+              faces_list);
+        }
         g_slist_free_full (faces_list, cvrect_free);
       }
       gst_structure_free (faces);
