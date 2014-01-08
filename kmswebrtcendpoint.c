@@ -81,12 +81,12 @@ enum
 /* rtpbin pad names */
 #define AUDIO_RTPBIN_RECV_RTP_SINK "recv_rtp_sink_0"
 #define AUDIO_RTPBIN_RECV_RTCP_SINK "recv_rtcp_sink_0"
-#define AUDIO_RTPBIN_SEND_RTP_SINK "send_rtp_src_0"
-#define AUDIO_RTPBIN_SEND_RTCP_SINK "send_rtcp_src_0"
+#define AUDIO_RTPBIN_SEND_RTP_SRC "send_rtp_src_0"
+#define AUDIO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_0"
 #define VIDEO_RTPBIN_RECV_RTP_SINK "recv_rtp_sink_1"
 #define VIDEO_RTPBIN_RECV_RTCP_SINK "recv_rtcp_sink_1"
-#define VIDEO_RTPBIN_SEND_RTP_SINK "send_rtp_src_1"
-#define VIDEO_RTPBIN_SEND_RTCP_SINK "send_rtcp_src_1"
+#define VIDEO_RTPBIN_SEND_RTP_SRC "send_rtp_src_1"
+#define VIDEO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_1"
 
 typedef struct _KmsWebRTCTransport
 {
@@ -1150,15 +1150,15 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
   if (g_atomic_int_get (&webrtc_end_point->priv->is_bundle)) {
     add_bundle_funnels (webrtc_end_point);
 
-    if (g_strcmp0 (GST_OBJECT_NAME (pad), AUDIO_RTPBIN_SEND_RTP_SINK) == 0) {
-      gst_element_link_pads (rtpbin, AUDIO_RTPBIN_SEND_RTP_SINK,
+    if (g_strcmp0 (GST_OBJECT_NAME (pad), AUDIO_RTPBIN_SEND_RTP_SRC) == 0) {
+      gst_element_link_pads (rtpbin, AUDIO_RTPBIN_SEND_RTP_SRC,
           webrtc_end_point->priv->bundle_rtp_funnel, "sink_%u");
       g_idle_add_full (G_PRIORITY_DEFAULT,
           (GSourceFunc) (connect_bundle_rtcp_funnel),
           g_object_ref (webrtc_end_point), g_object_unref);
     } else if (g_strcmp0 (GST_OBJECT_NAME (pad),
-            VIDEO_RTPBIN_SEND_RTP_SINK) == 0) {
-      gst_element_link_pads (rtpbin, VIDEO_RTPBIN_SEND_RTP_SINK,
+            VIDEO_RTPBIN_SEND_RTP_SRC) == 0) {
+      gst_element_link_pads (rtpbin, VIDEO_RTPBIN_SEND_RTP_SRC,
           webrtc_end_point->priv->bundle_rtp_funnel, "sink_%u");
       g_idle_add_full (G_PRIORITY_DEFAULT,
           (GSourceFunc) (connect_bundle_rtcp_funnel),
@@ -1166,17 +1166,17 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     }
   } else {
     KmsWebRTCConnection *conn = NULL;
-    const gchar *rtp_sink_name, *rtcp_sink_name;
+    const gchar *rtp_src_pad_name, *rtcp_src_pad_name;
 
-    if (g_strcmp0 (GST_OBJECT_NAME (pad), AUDIO_RTPBIN_SEND_RTP_SINK) == 0) {
+    if (g_strcmp0 (GST_OBJECT_NAME (pad), AUDIO_RTPBIN_SEND_RTP_SRC) == 0) {
       conn = webrtc_end_point->priv->audio_connection;
-      rtp_sink_name = AUDIO_RTPBIN_SEND_RTP_SINK;
-      rtcp_sink_name = AUDIO_RTPBIN_SEND_RTCP_SINK;
+      rtp_src_pad_name = AUDIO_RTPBIN_SEND_RTP_SRC;
+      rtcp_src_pad_name = AUDIO_RTPBIN_SEND_RTCP_SRC;
     } else if (g_strcmp0 (GST_OBJECT_NAME (pad),
-            VIDEO_RTPBIN_SEND_RTP_SINK) == 0) {
+            VIDEO_RTPBIN_SEND_RTP_SRC) == 0) {
       conn = webrtc_end_point->priv->video_connection;
-      rtp_sink_name = VIDEO_RTPBIN_SEND_RTP_SINK;
-      rtcp_sink_name = VIDEO_RTPBIN_SEND_RTCP_SINK;
+      rtp_src_pad_name = VIDEO_RTPBIN_SEND_RTP_SRC;
+      rtcp_src_pad_name = VIDEO_RTPBIN_SEND_RTCP_SRC;
     }
 
     if (conn != NULL) {
@@ -1185,10 +1185,10 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
       data = g_slice_new0 (ConnectRtcpData);
       data->rtpbin = rtpbin;
       data->tr = conn->rtcp_transport;
-      data->src_pad_name = rtcp_sink_name;
+      data->src_pad_name = rtcp_src_pad_name;
 
       gst_element_link_pads (rtpbin,
-          rtp_sink_name, conn->rtp_transport->dtlssrtpenc, "rtp_sink");
+          rtp_src_pad_name, conn->rtp_transport->dtlssrtpenc, "rtp_sink");
       g_idle_add_full (G_PRIORITY_DEFAULT, (GSourceFunc) (connect_rtcp), data,
           connect_rtcp_data_destroy);
     }
