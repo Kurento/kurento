@@ -57,7 +57,10 @@ public final class PointerDetectorConstructorParam extends
 	 * @return an adder object to add created windows to the set of windows
 	 */
 	public void addDetectorWindow(PointerDetectorWindowMediaParam window) {
-
+		KmsMediaPointerDetectorWindow kmsWindow = new KmsMediaPointerDetectorWindow(
+				window.getUpperRightX(), window.getUpperRightY(),
+				window.getWidth(), window.getHeight(), window.getId());
+		windows.add(kmsWindow);
 	}
 
 	public PointerDetectorConstructorParam() {

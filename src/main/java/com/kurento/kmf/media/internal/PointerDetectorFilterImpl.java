@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW;
+import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW_PARAM_WINDOW;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.CLEAR_WINDOWS;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.EVENT_WINDOW_IN;
@@ -36,6 +38,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
+import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
@@ -96,12 +99,33 @@ public class PointerDetectorFilterImpl extends FilterImpl implements
 	}
 
 	@Override
+	public void addWindow(PointerDetectorWindowMediaParam window) {
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		PointerDetectorWindowMediaParam param = new PointerDetectorWindowMediaParamBuilder(
+				window.getId(), window.getHeight(), window.getWidth(),
+				window.getUpperRightX(), window.getUpperRightY()).build();
+		params.put(ADD_NEW_WINDOW_PARAM_WINDOW, param);
+		invoke(ADD_NEW_WINDOW, params);
+	}
+
+	@Override
+	public void addWindow(PointerDetectorWindowMediaParam window,
+			Continuation<Void> cont) {
+		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		PointerDetectorWindowMediaParam param = new PointerDetectorWindowMediaParamBuilder(
+				window.getId(), window.getHeight(), window.getWidth(),
+				window.getUpperRightX(), window.getUpperRightY()).build();
+		params.put(ADD_NEW_WINDOW_PARAM_WINDOW, param);
+		invoke(ADD_NEW_WINDOW, params, new VoidContinuationWrapper(cont));
+	}
+
+	@Override
 	public void removeWindow(String windowId, Continuation<Void> cont) {
 		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
 		StringMediaParam param = new StringMediaParam();
 		param.setString(windowId);
 		params.put(REMOVE_WINDOW_PARAM_WINDOW_ID, param);
-		invoke(REMOVE_WINDOW, params);
+		invoke(REMOVE_WINDOW, params, new VoidContinuationWrapper(cont));
 	}
 
 	@Override
@@ -121,6 +145,7 @@ public class PointerDetectorFilterImpl extends FilterImpl implements
 
 		@Override
 		public T withWindow(PointerDetectorWindowMediaParam window) {
+			initialiseMediaParam();
 			param.addDetectorWindow(window);
 			return self();
 		}
@@ -133,27 +158,6 @@ public class PointerDetectorFilterImpl extends FilterImpl implements
 			return param;
 		}
 
-	}
-
-	@Override
-	public void addWindow(PointerDetectorWindowMediaParam window) {
-		// Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
-		// PointerDetectorWindowMediaParam param = new
-		// PointerDetectorWindowMediaParam(
-		// id, height, width, upperRightX, upperRightY);
-		// params.put(ADD_NEW_WINDOW_PARAM_WINDOW, param);
-		// invoke(ADD_NEW_WINDOW, params);
-	}
-
-	@Override
-	public void addWindow(PointerDetectorWindowMediaParam window,
-			Continuation<Void> cont) {
-		// Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
-		// PointerDetectorWindowMediaParam param = new
-		// PointerDetectorWindowMediaParam(
-		// id, height, width, upperRightX, upperRightY);
-		// params.put(ADD_NEW_WINDOW_PARAM_WINDOW, param);
-		// invoke(ADD_NEW_WINDOW, params);
 	}
 
 }

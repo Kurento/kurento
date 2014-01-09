@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.kurento.kmf.media.internal.refs.MediaRefConverter.fromThrift;
 
 import java.util.HashMap;
@@ -795,10 +796,9 @@ public abstract class AbstractMediaObject implements MediaObject {
 
 	protected Map<String, KmsMediaParam> transformMediaParamsMap(
 			Map<String, MediaParam> params) {
-		// hashMap size taking into account load factor
-		int mapSize = 1 + (int) (params.size() / 0.75);
-		Map<String, KmsMediaParam> kmsParams = new HashMap<String, KmsMediaParam>(
-				mapSize);
+
+		Map<String, KmsMediaParam> kmsParams = newHashMapWithExpectedSize(params
+				.size());
 
 		for (Entry<String, MediaParam> entry : params.entrySet()) {
 			kmsParams.put(entry.getKey(),
