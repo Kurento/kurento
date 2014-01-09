@@ -44,14 +44,21 @@ progress:after {
 </style>
 <script src="../js/kws-content-api.js"></script>
 <script>
+	var KwsContentUploader = kwsContentApi.KwsContentUploader;
+
+	window.onload = function() {
+		KwsContentUploader.initDragDrop("holder");
+	}
+
 	function start() {
 	   	var inputStatus = document.getElementById("status");
 	    var inputFile = document.getElementById("inputFile")
 	    var endpoint = document.getElementById("handler").value;
 		var options = {
-			inputTag: "inputFile"
-			};
-		var KwsContentUploader = kwsContentApi.KwsContentUploader;
+			inputTag: "inputFile",
+			dragdropTag: "holder",
+			useFormData: false
+		};
 		var uploader = new KwsContentUploader(endpoint, options)
 
         inputFile.addEventListener("change", function(event) {
@@ -90,8 +97,10 @@ progress:after {
 						tunnel</option>
 					<option value="../recorderJsonRedirect">Recorder JSON with
 						redirect</option>
-					<option value="../recorderJsonRepository">Recorder JSON to
-						repository</option>
+					<option value="../recorderJsonTunnelRepository">Recorder
+						JSON to repository with tunnel</option>
+					<option value="../recorderJsonTunnelRepository">Recorder
+						JSON to repository with redirect</option>
 			</select></td>
 		</tr>
 		<tr>

@@ -94,6 +94,7 @@
 			log("onerror");
 			inputStatus.value = "end with error " + error.message;
 			document.getElementById("play").disabled = false;
+			stop();
 		});
 	}
 
@@ -129,7 +130,9 @@
 
 	function handlerChanged() {
 		var handler = document.getElementById("handler").value;
-		var disableVideo = new Array("../cpRtcPlayerJack");
+		var disableVideo = new Array("../cpRtcPlayerJack", "../playerJsonRepository/itemTunnel", 
+				"../playerJsonRepository/itemRedirect", "../playerJsonJackVaderRepository/itemTunnel", 
+				"../playerJsonJackVaderRepository/itemRedirect", "../playerJsonRepository/itemJackVader");
 		document.getElementById("contentId").disabled = (disableVideo.indexOf(handler) != -1);
 	}
 </script>
@@ -142,8 +145,26 @@
 			<td valign="top">Handler</td>
 			<td valign="top"><select id="handler" name="handler"
 				onchange="handlerChanged()">
-					<option value="../playerJsonTunnel">Player with tunnel</option>
-					<option value="../playerJsonRedirect">Player with redirect</option>
+					<option value="../playerJsonTunnel">HTTP Player with
+						tunnel</option>
+					<option value="../playerJsonRedirect">HTTP Player with
+						redirect</option>
+					<option value="../playerJsonRepository/">HTTP Player with
+						redirect</option>
+					<option value="../playerJsonRepository/itemTunnel">HTTP
+						Player of a recorded content (using tunnel strategy) in repository</option>
+					<option value="../playerJsonRepository/itemRedirect">HTTP
+						Player of a recorded content (using redirect strategy) in
+						repository</option>
+					<option value="../playerJsonJackVaderRepository/itemTunnel">HTTP
+						Player with JackVaderFilter of a recorded content (using tunnel
+						strategy) in repository</option>
+					<option value="../playerJsonJackVaderRepository/itemRedirect">HTTP
+						Player with JackVaderFilter of a recorded content (using redirect
+						strategy) in repository
+					<option value="../playerJsonRepository/itemJackVader">HTTP
+						Player of a recorded content previously filtered with
+						JackVaderFilter</option>
 					<option value="../cpRtcPlayerJack">RTP stream with JackVader Filter</option>
 			</select></td>
 		</tr>

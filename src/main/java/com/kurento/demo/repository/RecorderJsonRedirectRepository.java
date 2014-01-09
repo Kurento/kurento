@@ -14,27 +14,24 @@
  */
 package com.kurento.demo.repository;
 
-import com.kurento.kmf.content.HttpPlayerHandler;
-import com.kurento.kmf.content.HttpPlayerService;
-import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.content.HttpRecorderHandler;
+import com.kurento.kmf.content.HttpRecorderService;
+import com.kurento.kmf.content.HttpRecorderSession;
 
 /**
- * HTTP Player of previously recorded contents in Repository (contenId will be
- * the repository item Id); tunnel strategy (redirect=false, by default); not
- * using JSON-RPC control protocol (useControlProtocol=false).
+ * HTTP Recorder in Repository; tunnel strategy (redirect=true); using JSON-RPC
+ * control protocol (useControlProtocol=true, by default).
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.1
  */
-@HttpPlayerService(path = "/playerRecorderRepository/*", useControlProtocol = false)
-public class PlayerRecorderRepository extends HttpPlayerHandler {
+@HttpRecorderService(path = "/recorderJsonTunnelRepository", redirect = true)
+public class RecorderJsonRedirectRepository extends HttpRecorderHandler {
 
 	@Override
-	public void onContentRequest(HttpPlayerSession contentSession)
+	public void onContentRequest(HttpRecorderSession contentSession)
 			throws Exception {
-		String contentId = contentSession.getContentId();
-		contentSession.start(contentSession.getRepository()
-				.findRepositoryItemById(contentId));
+		GenericRepositoryRecorder.record(contentSession, "item3");
 	}
 
 }

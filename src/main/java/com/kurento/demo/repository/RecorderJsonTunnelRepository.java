@@ -17,7 +17,6 @@ package com.kurento.demo.repository;
 import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderService;
 import com.kurento.kmf.content.HttpRecorderSession;
-import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * HTTP Recorder in Repository; tunnel strategy (redirect=false, by default);
@@ -26,16 +25,13 @@ import com.kurento.kmf.repository.RepositoryItem;
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.1
  */
-@HttpRecorderService(path = "/recorderJsonRepository")
-public class RecorderJsonRepository extends HttpRecorderHandler {
+@HttpRecorderService(path = "/recorderJsonTunnelRepository")
+public class RecorderJsonTunnelRepository extends HttpRecorderHandler {
 
 	@Override
 	public void onContentRequest(HttpRecorderSession contentSession)
 			throws Exception {
-		// TODO delete if existing
-		RepositoryItem repositoryItem = contentSession.getRepository()
-				.createRepositoryItem("idRecorderJsonRepository");
-		contentSession.start(repositoryItem);
+		GenericRepositoryRecorder.record(contentSession, "item2");
 	}
 
 }
