@@ -453,7 +453,7 @@ kms_image_overlay_transform_frame_ip (GstVideoFilter * filter,
       faces_list = get_faces (faces);
 
       if (faces_list != NULL) {
-        if (imageoverlay->priv->costume == NULL) {
+        if (imageoverlay->priv->costume != NULL) {
           kms_image_overlay_display_detections_overlay_img (imageoverlay,
               faces_list);
         }
