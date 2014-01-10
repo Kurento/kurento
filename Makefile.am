@@ -32,6 +32,7 @@ EXTRA_DIST = kms-marshal.list
 libgstkurento_la_SOURCES = kmsplugin.c \
 			$(BUILT_SOURCES) \
                         kmsloop.c kmsloop.h \
+                        kmsconfcontroller.c kmsconfcontroller.h \
 			kmsrecordingprofile.h kmsrecordingprofile.c \
 			kmsutils.c kmsutils.h \
 			sdp_utils.c sdp_utils.h \
