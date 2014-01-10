@@ -281,6 +281,37 @@ connect_rtcp_data_destroy (gpointer data)
   g_slice_free (ConnectRtcpData, data);
 }
 
+typedef struct _ConnectRtcpBundleData
+{
+  KmsWebrtcEndPoint *webrtc_end_point;
+  const gchar *src_pad_name;
+} ConnectRtcpBundleData;
+
+static void
+connect_rtcp_bundle_data_destroy (gpointer data)
+{
+  ConnectRtcpBundleData *d;
+
+  if (data == NULL)
+    return;
+
+  d = (ConnectRtcpBundleData *) data;
+  g_object_unref (d->webrtc_end_point);
+  g_slice_free (ConnectRtcpBundleData, data);
+}
+
+static ConnectRtcpBundleData *
+create_connect_rtcp_bundle_data (KmsWebrtcEndPoint * webrtc_end_point,
+    const gchar * src_pad_name)
+{
+  ConnectRtcpBundleData *data = g_slice_new0 (ConnectRtcpBundleData);
+
+  data->webrtc_end_point = g_object_ref (webrtc_end_point);
+  data->src_pad_name = src_pad_name;
+
+  return data;
+}
+
 /* ConnectRtcpData */
 
 static int
@@ -1131,13 +1162,13 @@ connect_rtcp (ConnectRtcpData * data)
 }
 
 static gboolean
-connect_bundle_rtcp_funnel (KmsWebrtcEndPoint * webrtc_end_point)
+connect_bundle_rtcp_funnel (ConnectRtcpBundleData * data)
 {
   KmsBaseRtpEndPoint *base_rtp_end_point =
-      KMS_BASE_RTP_END_POINT (webrtc_end_point);
+      KMS_BASE_RTP_END_POINT (data->webrtc_end_point);
 
   gst_element_link_pads (base_rtp_end_point->rtpbin,
-      "send_rtcp_src_%u", webrtc_end_point->priv->bundle_rtcp_funnel,
+      data->src_pad_name, data->webrtc_end_point->priv->bundle_rtcp_funnel,
       "sink_%u");
 
   return FALSE;
@@ -1151,18 +1182,26 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     add_bundle_funnels (webrtc_end_point);
 
     if (g_strcmp0 (GST_OBJECT_NAME (pad), AUDIO_RTPBIN_SEND_RTP_SRC) == 0) {
+      ConnectRtcpBundleData *data =
+          create_connect_rtcp_bundle_data (webrtc_end_point,
+          AUDIO_RTPBIN_SEND_RTCP_SRC);
+
       gst_element_link_pads (rtpbin, AUDIO_RTPBIN_SEND_RTP_SRC,
           webrtc_end_point->priv->bundle_rtp_funnel, "sink_%u");
       g_idle_add_full (G_PRIORITY_DEFAULT,
-          (GSourceFunc) (connect_bundle_rtcp_funnel),
-          g_object_ref (webrtc_end_point), g_object_unref);
+          (GSourceFunc) (connect_bundle_rtcp_funnel), data,
+          connect_rtcp_bundle_data_destroy);
     } else if (g_strcmp0 (GST_OBJECT_NAME (pad),
             VIDEO_RTPBIN_SEND_RTP_SRC) == 0) {
+      ConnectRtcpBundleData *data =
+          create_connect_rtcp_bundle_data (webrtc_end_point,
+          VIDEO_RTPBIN_SEND_RTCP_SRC);
+
       gst_element_link_pads (rtpbin, VIDEO_RTPBIN_SEND_RTP_SRC,
           webrtc_end_point->priv->bundle_rtp_funnel, "sink_%u");
       g_idle_add_full (G_PRIORITY_DEFAULT,
-          (GSourceFunc) (connect_bundle_rtcp_funnel),
-          g_object_ref (webrtc_end_point), g_object_unref);
+          (GSourceFunc) (connect_bundle_rtcp_funnel), data,
+          connect_rtcp_bundle_data_destroy);
     }
   } else {
     KmsWebRTCConnection *conn = NULL;
