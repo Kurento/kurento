@@ -37,6 +37,7 @@
 
 #define KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
 #define KEY_PAD_PROBE_ID "kms-pad-key-probe-id"
+#define KEY_APP_SINK "kms-key_app_sink"
 
 #define BASE_TIME_DATA "base_time_data"
 
@@ -242,7 +243,8 @@ recv_sample (GstElement * appsink, gpointer user_data)
     else
       *base_time = GST_CLOCK_TIME_NONE;
 
-    GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
+    GST_DEBUG_OBJECT (appsrc, "Setting base time to: %" G_GUINT64_FORMAT,
+        *base_time);
   }
 
   if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
@@ -393,6 +395,9 @@ kms_recorder_end_point_connect_appsink_to_appsrc (KmsRecorderEndPoint * self,
 
   GST_DEBUG ("Connected %s to %s", GST_ELEMENT_NAME (appsink),
       GST_ELEMENT_NAME (appsrc));
+
+  g_object_set_data_full (G_OBJECT (appsrc), KEY_APP_SINK,
+      g_object_ref (appsink), g_object_unref);
 
   g_object_unref (appsink);
 }
@@ -929,6 +934,7 @@ kms_recorder_end_point_reconnect_pads (KmsRecorderEndPoint * self,
 
     GST_DEBUG ("Relinking pad %" GST_PTR_FORMAT " to %s", srcpad,
         GST_ELEMENT_NAME (self->priv->encodebin));
+
     if (!gst_element_link_pads (appsrc, "src", self->priv->encodebin, destpad)) {
       GST_ERROR ("Could not link srcpad %" GST_PTR_FORMAT " to %s", srcpad,
           GST_ELEMENT_NAME (self->priv->encodebin));
@@ -944,7 +950,12 @@ kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
   GSList *e;
 
   for (e = pads; e != NULL; e = e->next) {
+    GstStructure *s;
+    GstEvent *force_key_unit_event;
     GstPad *srcpad = e->data;
+    GstElement *appsrc = GST_ELEMENT (GST_OBJECT_PARENT (srcpad));
+    GstElement *appsink = g_object_get_data (G_OBJECT (appsrc), KEY_APP_SINK);
+    GstPad *sinkpad = gst_element_get_static_pad (appsink, "sink");
     gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
 
     if (probe_id != NULL) {
@@ -952,6 +963,13 @@ kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
       gst_pad_remove_probe (srcpad, *probe_id);
       g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
     }
+    // Request key frame
+    s = gst_structure_new ("GstForceKeyUnit", "all-headers", G_TYPE_BOOLEAN,
+        TRUE, NULL);
+    force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+    GST_DEBUG_OBJECT (sinkpad, "Request key frame.");
+    gst_pad_push_event (sinkpad, force_key_unit_event);
+    g_object_unref (sinkpad);
   }
 }
 
