@@ -965,6 +965,20 @@ kms_agnostic_bin2_class_init (KmsAgnosticBin2Class * klass)
   g_type_class_add_private (klass, sizeof (KmsAgnosticBin2Private));
 }
 
+static GstPadProbeReturn
+gap_detection_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (data);
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_GAP) {
+    GST_INFO_OBJECT (self, "Gap detected, request key frame");
+    send_force_key_unit_event (pad);
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
@@ -984,6 +998,8 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   target = gst_element_get_static_pad (typefind, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
   self->priv->sink = gst_ghost_pad_new_from_template ("sink", target, templ);
+  gst_pad_add_probe (self->priv->sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      gap_detection_probe, self, NULL);
   g_object_unref (templ);
   g_object_unref (target);
 
