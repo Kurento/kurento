@@ -132,11 +132,24 @@ kms_chroma_load_image_to_overlay (KmsChroma * chroma)
 {
   IplImage *image_aux = NULL;
 
-  if (!chroma->priv->dir_created) {
-    gchar d[] = TEMP_PATH;
-    gchar *aux = g_mkdtemp (d);
+  if (chroma->priv->background_uri == NULL) {
+    GST_DEBUG ("Unset the background image");
 
-    chroma->priv->dir = g_strdup (aux);
+    GST_OBJECT_LOCK (chroma);
+
+    if (chroma->priv->background_image != NULL) {
+      cvReleaseImage (&chroma->priv->background_image);
+      chroma->priv->background_image = NULL;
+    }
+
+    GST_OBJECT_UNLOCK (chroma);
+    return;
+  }
+
+  if (!chroma->priv->dir_created) {
+    gchar *d = g_strdup (TEMP_PATH);
+
+    chroma->priv->dir = g_mkdtemp (d);
     chroma->priv->dir_created = TRUE;
   }
 
@@ -511,6 +524,10 @@ kms_chroma_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
           chroma->priv->s_min, chroma->priv->s_max);
     }
 
+    goto end;
+  }
+
+  if (chroma->priv->background_image == NULL) {
     goto end;
   }
 
