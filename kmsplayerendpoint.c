@@ -225,8 +225,9 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
   else if (gst_caps_can_intersect (video_caps, src_caps))
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
   else {
-    GST_ELEMENT_ERROR (self, CORE, CAPS, ("No agnostic caps provided"),
-        GST_ERROR_SYSTEM);
+    GST_ELEMENT_WARNING (self, CORE, CAPS,
+        ("Unsupported media received: %" GST_PTR_FORMAT, src_caps),
+        ("Unsupported media received: %" GST_PTR_FORMAT, src_caps));
     goto end;
   }
 
