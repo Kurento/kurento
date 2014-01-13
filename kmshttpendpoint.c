@@ -275,9 +275,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
     g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
         release_gst_clock);
 
-    if (GST_BUFFER_DTS_IS_VALID (buffer))
-      *base_time = buffer->dts;
-    else if (GST_BUFFER_PTS_IS_VALID (buffer))
+    if (GST_BUFFER_PTS_IS_VALID (buffer))
       *base_time = buffer->pts;
     else
       *base_time = GST_CLOCK_TIME_NONE;
@@ -287,8 +285,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   }
 
   if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
-    if (GST_BUFFER_DTS_IS_VALID (buffer))
-      buffer->dts -= *base_time;
+    buffer->dts = GST_CLOCK_TIME_NONE;
     if (GST_BUFFER_PTS_IS_VALID (buffer))
       buffer->pts -= *base_time;
   }
