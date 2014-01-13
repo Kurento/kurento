@@ -152,8 +152,8 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
   fields_ok = fields_ok
       && gst_structure_get (imageoverlay->priv->image_to_overlay,
       "heightPercent", G_TYPE_DOUBLE, &imageoverlay->priv->heightPercent, NULL);
-  fields_ok &=
-      gst_structure_get (imageoverlay->priv->image_to_overlay, "url",
+  fields_ok = fields_ok
+      && gst_structure_get (imageoverlay->priv->image_to_overlay, "url",
       G_TYPE_STRING, &url, NULL);
 
   if (!fields_ok || url == NULL) {
