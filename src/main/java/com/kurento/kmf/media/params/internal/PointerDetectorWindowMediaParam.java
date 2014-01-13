@@ -191,8 +191,8 @@ public class PointerDetectorWindowMediaParam extends
 		public PointerDetectorWindowMediaParamBuilder(final String id,
 				final int height, final int width, final int upperRightX,
 				final int upperRightY) {
-			window = new KmsMediaPointerDetectorWindow(height, height, width,
-					height, id);
+			window = new KmsMediaPointerDetectorWindow(upperRightX,
+					upperRightY, width, height, id);
 		}
 
 		/**

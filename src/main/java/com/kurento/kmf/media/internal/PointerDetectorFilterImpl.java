@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.ADD_NEW_WINDOW_PARAM_WINDOW;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.CLEAR_WINDOWS;
@@ -24,7 +25,6 @@ import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConsta
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.REMOVE_WINDOW_PARAM_WINDOW_ID;
 import static com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants.TYPE_NAME;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
@@ -38,7 +38,6 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
@@ -86,7 +85,7 @@ public class PointerDetectorFilterImpl extends FilterImpl implements
 
 	@Override
 	public void removeWindow(String windowId) {
-		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		Map<String, MediaParam> params = newHashMapWithExpectedSize(1);
 		StringMediaParam param = new StringMediaParam();
 		param.setString(windowId);
 		params.put(REMOVE_WINDOW_PARAM_WINDOW_ID, param);
@@ -100,28 +99,22 @@ public class PointerDetectorFilterImpl extends FilterImpl implements
 
 	@Override
 	public void addWindow(PointerDetectorWindowMediaParam window) {
-		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
-		PointerDetectorWindowMediaParam param = new PointerDetectorWindowMediaParamBuilder(
-				window.getId(), window.getHeight(), window.getWidth(),
-				window.getUpperRightX(), window.getUpperRightY()).build();
-		params.put(ADD_NEW_WINDOW_PARAM_WINDOW, param);
+		Map<String, MediaParam> params = newHashMapWithExpectedSize(1);
+		params.put(ADD_NEW_WINDOW_PARAM_WINDOW, window);
 		invoke(ADD_NEW_WINDOW, params);
 	}
 
 	@Override
 	public void addWindow(PointerDetectorWindowMediaParam window,
 			Continuation<Void> cont) {
-		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
-		PointerDetectorWindowMediaParam param = new PointerDetectorWindowMediaParamBuilder(
-				window.getId(), window.getHeight(), window.getWidth(),
-				window.getUpperRightX(), window.getUpperRightY()).build();
-		params.put(ADD_NEW_WINDOW_PARAM_WINDOW, param);
+		Map<String, MediaParam> params = newHashMapWithExpectedSize(1);
+		params.put(ADD_NEW_WINDOW_PARAM_WINDOW, window);
 		invoke(ADD_NEW_WINDOW, params, new VoidContinuationWrapper(cont));
 	}
 
 	@Override
 	public void removeWindow(String windowId, Continuation<Void> cont) {
-		Map<String, MediaParam> params = new HashMap<String, MediaParam>(4);
+		Map<String, MediaParam> params = newHashMapWithExpectedSize(1);
 		StringMediaParam param = new StringMediaParam();
 		param.setString(windowId);
 		params.put(REMOVE_WINDOW_PARAM_WINDOW_ID, param);

@@ -60,6 +60,11 @@ public final class PointerDetectorConstructorParam extends
 		KmsMediaPointerDetectorWindow kmsWindow = new KmsMediaPointerDetectorWindow(
 				window.getUpperRightX(), window.getUpperRightY(),
 				window.getWidth(), window.getHeight(), window.getId());
+		kmsWindow.setActiveOverlayImageUri(window.getActiveImageUri()
+				.toString());
+		kmsWindow.setInactiveOverlayImageUri(window.getInactiveImageUri()
+				.toString());
+		kmsWindow.setOverlayTransparency(window.getImageTransparency());
 		windows.add(kmsWindow);
 	}
 
