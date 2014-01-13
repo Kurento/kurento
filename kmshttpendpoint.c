@@ -527,7 +527,6 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
 {
   GstElement *decodebin;
   GstBus *bus;
-  GstCaps *deco_caps;
 
   self->priv->method = KMS_HTTP_END_POINT_METHOD_POST;
   self->priv->post = g_slice_new0 (PostData);
@@ -536,9 +535,6 @@ kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
   self->priv->post->appsrc = gst_element_factory_make ("appsrc", NULL);
   decodebin = gst_element_factory_make ("decodebin", NULL);
 
-  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_CAPS_CAPS);
-  g_object_set (G_OBJECT (decodebin), "caps", deco_caps, NULL);
-  gst_caps_unref (deco_caps);
   /* configure appsrc */
   g_object_set (G_OBJECT (self->priv->post->appsrc), "is-live", TRUE,
       "do-timestamp", TRUE, "min-latency", G_GUINT64_CONSTANT (0),
