@@ -27,7 +27,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.kurento.kmf.media.internal.ChromaFilterImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl;
+import com.kurento.kmf.media.internal.GStreamerFilterImpl;
 import com.kurento.kmf.media.internal.HttpEndpointImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl;
 import com.kurento.kmf.media.internal.MainMixerImpl;
@@ -43,7 +45,9 @@ import com.kurento.kmf.media.internal.RtpEndpointImpl;
 import com.kurento.kmf.media.internal.WebRtcEndpointImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
+import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaGStreamerFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
@@ -73,6 +77,8 @@ public class MediaObjectTest {
 	private static final String RTP_EP_TYPE = KmsMediaRtpEndPointTypeConstants.TYPE_NAME;
 	private static final String PLATE_DETECTOR_FILTER_TYPE = KmsMediaPlateDetectorFilterTypeConstants.TYPE_NAME;
 	private static final String FACE_OVERLAY_TYPE = KmsMediaFaceOverlayFilterTypeConstants.TYPE_NAME;
+	private static final String CHROMA_FILTER_TYPE = KmsMediaChromaFilterTypeConstants.TYPE_NAME;
+	private static final String GSTREAMER_FILTER_TYPE = KmsMediaGStreamerFilterTypeConstants.TYPE_NAME;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -156,6 +162,18 @@ public class MediaObjectTest {
 	public void testPlateDetectorFilterInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(PLATE_DETECTOR_FILTER_TYPE);
 		instantiateAndCheck(PlateDetectorFilterImpl.class, objRef);
+	}
+
+	@Test
+	public void testChromaFilterInstantiation() {
+		MediaObjectRef objRef = createMediaElementRef(CHROMA_FILTER_TYPE);
+		instantiateAndCheck(ChromaFilterImpl.class, objRef);
+	}
+
+	@Test
+	public void testGStreamerFilterInstantiation() {
+		MediaObjectRef objRef = createMediaElementRef(GSTREAMER_FILTER_TYPE);
+		instantiateAndCheck(GStreamerFilterImpl.class, objRef);
 	}
 
 	@Test

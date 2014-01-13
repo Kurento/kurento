@@ -25,6 +25,7 @@ import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.STRING_DATA_T
 import static com.kurento.kms.thrift.api.KmsMediaDataTypeConstants.VOID_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants.EVENT_CODE_FOUND_DATA_TYPE;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Assert;
@@ -38,6 +39,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.BooleanMediaParam;
 import com.kurento.kmf.media.params.internal.ByteMediaParam;
+import com.kurento.kmf.media.params.internal.ChromaConstructorParam;
 import com.kurento.kmf.media.params.internal.DefaultMediaParam;
 import com.kurento.kmf.media.params.internal.DoubleMediaParam;
 import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
@@ -54,6 +56,8 @@ import com.kurento.kmf.media.params.internal.ShortMediaParam;
 import com.kurento.kmf.media.params.internal.StringMediaParam;
 import com.kurento.kmf.media.params.internal.UriEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.VoidMediaParam;
+import com.kurento.kmf.media.params.internal.WindowParam;
+import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
@@ -301,6 +305,22 @@ public class MediaParamTest {
 
 		PointerDetectorConstructorParam out = instantiateAndCheck(
 				PointerDetectorConstructorParam.class, param);
+		Assert.assertEquals(in, out);
+	}
+
+	@Test
+	public void testChromaConstructorParam() throws URISyntaxException {
+		WindowParam window = new WindowParam(1, 2, 3, 4);
+
+		ChromaConstructorParam in = new ChromaConstructorParam.Builder(window)
+				.withBackgoundImage(new URI("http://test.com")).build();
+
+		KmsMediaParam param = createKmsParam(
+				KmsMediaChromaFilterTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		ChromaConstructorParam out = instantiateAndCheck(
+				ChromaConstructorParam.class, param);
 		Assert.assertEquals(in, out);
 	}
 

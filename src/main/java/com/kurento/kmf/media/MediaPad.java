@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * A {@code MediaPad} is an element´s interface with the outside world. Data
  * streams from the {@link MediaSource} pad to another element's

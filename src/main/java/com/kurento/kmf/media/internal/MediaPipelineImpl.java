@@ -22,6 +22,7 @@ import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
@@ -39,6 +40,7 @@ import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
 import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
+import com.kurento.kmf.media.internal.ChromaFilterImpl.ChromaFilterBuilderImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl.FaceOverlayFilterBuilderImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl.GStreamerFilterBuilderImpl;
 import com.kurento.kmf.media.internal.HttpEndpointImpl.HttpEndpointBuilderImpl;
@@ -54,6 +56,7 @@ import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.WindowParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMediaElementWithParams_call;
@@ -518,4 +521,8 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 		return new PlateDetectorFilterBuilderImpl(this);
 	}
 
+	@Override
+	public ChromaFilterBuilder newChromaFilter(WindowParam window) {
+		return new ChromaFilterBuilderImpl(this, window);
+	}
 }

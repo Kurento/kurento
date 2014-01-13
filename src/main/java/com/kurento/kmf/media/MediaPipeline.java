@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Map;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
 import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
@@ -30,6 +31,7 @@ import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.WindowParam;
 
 /**
  * A pipeline is a container for a collection of {@link MediaElement} and
@@ -241,6 +243,16 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	GStreamerFilterBuilder newGStreamerFilter(String command);
+
+	/**
+	 * Obtains the builder for a {@link ChromaFilterBuilder}.
+	 * 
+	 * @param window
+	 *            window to configure the color of the chroma filter
+	 * 
+	 * @return The builder
+	 */
+	ChromaFilterBuilder newChromaFilter(WindowParam window);
 
 	/**
 	 * Creates a {@link MediaElement} associated to this pipeline.
