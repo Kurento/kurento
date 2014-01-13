@@ -166,10 +166,16 @@ send_eos (GstElement * appsrc)
   }
 }
 
-static void
-release_gst_clock (gpointer data)
+typedef struct _BaseTimeType
 {
-  g_slice_free (GstClockTime, data);
+  GstClockTime pts;
+  GstClockTime dts;
+} BaseTimeType;
+
+static void
+release_base_time_type (gpointer data)
+{
+  g_slice_free (BaseTimeType, data);
 }
 
 static GstFlowReturn
@@ -183,7 +189,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   GstSample *sample;
   GstBuffer *buffer;
   GstCaps *caps;
-  GstClockTime *base_time;
+  BaseTimeType *base_time;
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -231,24 +237,36 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
 
-  if (base_time == NULL || !GST_CLOCK_TIME_IS_VALID (*base_time)) {
-    base_time = g_slice_new0 (GstClockTime);
+  if (base_time == NULL) {
+    base_time = g_slice_new0 (BaseTimeType);
+    base_time->pts = GST_CLOCK_TIME_NONE;
+    base_time->dts = GST_CLOCK_TIME_NONE;
     g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
-        release_gst_clock);
-
-    if (GST_BUFFER_PTS_IS_VALID (buffer))
-      *base_time = buffer->pts;
-    else
-      *base_time = GST_CLOCK_TIME_NONE;
-
-    GST_DEBUG_OBJECT (appsrc, "Setting base time to: %" G_GUINT64_FORMAT,
-        *base_time);
+        release_base_time_type);
   }
 
-  if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
-    buffer->dts = GST_CLOCK_TIME_NONE;
-    if (GST_BUFFER_PTS_IS_VALID (buffer))
-      buffer->pts -= *base_time + self->priv->paused_time;
+  if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
+      && GST_BUFFER_PTS_IS_VALID (buffer)) {
+    base_time->pts = buffer->pts;
+    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
+        base_time->pts);
+  }
+
+  if (!GST_CLOCK_TIME_IS_VALID (base_time->dts)
+      && GST_BUFFER_DTS_IS_VALID (buffer)) {
+    base_time->dts = buffer->dts;
+    GST_DEBUG_OBJECT (appsrc, "Setting dts base time to: %" G_GUINT64_FORMAT,
+        base_time->dts);
+  }
+
+  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
+      && GST_BUFFER_PTS_IS_VALID (buffer)) {
+    buffer->pts -= base_time->pts + self->priv->paused_time;
+    buffer->dts = buffer->pts;
+  } else if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
+      && GST_BUFFER_DTS_IS_VALID (buffer)) {
+    buffer->dts -= base_time->dts + self->priv->paused_time;
+    buffer->pts = buffer->dts;
   }
 
   self->priv->has_data = TRUE;

@@ -214,6 +214,18 @@ new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
   return ret;
 }
 
+typedef struct _BaseTimeType
+{
+  GstClockTime pts;
+  GstClockTime dts;
+} BaseTimeType;
+
+static void
+release_base_time_type (gpointer data)
+{
+  g_slice_free (BaseTimeType, data);
+}
+
 static void
 release_gst_clock (gpointer data)
 {
@@ -228,7 +240,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   GstSample *sample = NULL;
   GstBuffer *buffer;
   GstCaps *caps;
-  GstClockTime *base_time;
+  BaseTimeType *base_time;
   KmsHttpEndPoint *self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (appsink));
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
@@ -270,24 +282,36 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
 
   base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
 
-  if (base_time == NULL || !GST_CLOCK_TIME_IS_VALID (*base_time)) {
-    base_time = g_slice_new0 (GstClockTime);
+  if (base_time == NULL) {
+    base_time = g_slice_new0 (BaseTimeType);
+    base_time->pts = GST_CLOCK_TIME_NONE;
+    base_time->dts = GST_CLOCK_TIME_NONE;
     g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
-        release_gst_clock);
-
-    if (GST_BUFFER_PTS_IS_VALID (buffer))
-      *base_time = buffer->pts;
-    else
-      *base_time = GST_CLOCK_TIME_NONE;
-
-    GST_DEBUG_OBJECT (appsrc, "Setting base time to: %" G_GUINT64_FORMAT,
-        *base_time);
+        release_base_time_type);
   }
 
-  if (GST_CLOCK_TIME_IS_VALID (*base_time)) {
-    buffer->dts = GST_CLOCK_TIME_NONE;
-    if (GST_BUFFER_PTS_IS_VALID (buffer))
-      buffer->pts -= *base_time;
+  if (!GST_CLOCK_TIME_IS_VALID (base_time->pts)
+      && GST_BUFFER_PTS_IS_VALID (buffer)) {
+    base_time->pts = buffer->pts;
+    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
+        base_time->pts);
+  }
+
+  if (!GST_CLOCK_TIME_IS_VALID (base_time->dts)
+      && GST_BUFFER_DTS_IS_VALID (buffer)) {
+    base_time->dts = buffer->dts;
+    GST_DEBUG_OBJECT (appsrc, "Setting dts base time to: %" G_GUINT64_FORMAT,
+        base_time->dts);
+  }
+
+  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
+      && GST_BUFFER_PTS_IS_VALID (buffer)) {
+    buffer->pts -= base_time->pts;
+    buffer->dts = buffer->pts;
+  } else if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
+      && GST_BUFFER_DTS_IS_VALID (buffer)) {
+    buffer->dts -= base_time->dts;
+    buffer->pts = buffer->dts;
   }
 
   self->priv->get->has_data = TRUE;
