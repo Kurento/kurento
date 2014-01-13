@@ -19,6 +19,7 @@ import java.util.Map;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
+import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
 import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
@@ -229,6 +230,17 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	FaceOverlayFilterBuilder newFaceOverlayFilter();
+
+	/**
+	 * Obtains the builder for a {@link GStreamerFilterBuilder}.
+	 * 
+	 * @param command
+	 *            command that would be used to instantiate the filter, as in
+	 *            gst-launch
+	 * 
+	 * @return The builder
+	 */
+	GStreamerFilterBuilder newGStreamerFilter(String command);
 
 	/**
 	 * Creates a {@link MediaElement} associated to this pipeline.
