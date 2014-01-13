@@ -130,14 +130,6 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
   IplImage *costumeAux = NULL;
   gboolean fields_ok = TRUE;
 
-  if (!imageoverlay->priv->dir_created) {
-    gchar d[] = TEMP_PATH;
-    gchar *aux = g_mkdtemp (d);
-
-    imageoverlay->priv->dir = g_strdup (aux);
-    imageoverlay->priv->dir_created = TRUE;
-  }
-
   fields_ok = fields_ok
       && gst_structure_get (imageoverlay->priv->image_to_overlay,
       "offsetXPercent", G_TYPE_DOUBLE, &imageoverlay->priv->offsetXPercent,
@@ -156,9 +148,21 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
       && gst_structure_get (imageoverlay->priv->image_to_overlay, "url",
       G_TYPE_STRING, &url, NULL);
 
-  if (!fields_ok || url == NULL) {
+  if (!fields_ok) {
     GST_WARNING_OBJECT (imageoverlay, "Invalid image structure received");
     goto end;
+  }
+
+  if (url == NULL) {
+    GST_DEBUG ("Unset the image overlay");
+    goto end;
+  }
+
+  if (!imageoverlay->priv->dir_created) {
+    gchar *d = g_strdup (TEMP_PATH);
+
+    imageoverlay->priv->dir = g_mkdtemp (d);
+    imageoverlay->priv->dir_created = TRUE;
   }
 
   costumeAux = cvLoadImage (url, CV_LOAD_IMAGE_UNCHANGED);
@@ -186,8 +190,10 @@ end:
 
   GST_OBJECT_LOCK (imageoverlay);
 
-  if (imageoverlay->priv->costume != NULL)
+  if (imageoverlay->priv->costume != NULL) {
     cvReleaseImage (&imageoverlay->priv->costume);
+    imageoverlay->priv->costume = NULL;
+  }
 
   if (costumeAux != NULL) {
     imageoverlay->priv->costume = costumeAux;
