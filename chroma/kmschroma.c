@@ -166,6 +166,7 @@ kms_chroma_load_image_to_overlay (KmsChroma * chroma)
 
     load_from_url (file_name, chroma->priv->background_uri);
     image_aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+    g_remove (file_name);
     g_free (file_name);
   }
 
