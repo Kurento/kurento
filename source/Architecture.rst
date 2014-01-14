@@ -95,7 +95,7 @@ blocks for application developers:
    :alt:    Media Element
    :figwidth: 600px
 
-   **Figure 1: Media Element**.
+   **Media Element**.
 
    *A media element is a functional unit providing a specific media capability,
    which is exposed to application developers as a "black box"*
@@ -113,7 +113,7 @@ blocks for application developers:
    :alt:    Media Pipeline Example
    :figwidth: 600px
 
-   **Figure 2**.
+   **Media Pipeline Example**.
 
    *Example of a Media Pipeline implementing an interactive multimedia application
    receiving media from a video source, injecting a love-heart animation in the video
@@ -158,7 +158,7 @@ to raw again) will lead to very poor performance of applications.
    :alt:    Media Adaptor
    :figwidth: 600px
 
-   **Figure 3:**.
+   **Media Adaptor**.
 
    *The agnostic media capability adapts formats between heterogeneous
    media elements making transparent for application developers all
@@ -180,7 +180,7 @@ following figure.
    :alt:    Stream-oriented GE Architecture
    :figwidth: 800px
 
-   **Figure 4**.
+   **Stream-oriented GE Architecture**.
 
    *The Stream Oriented GE architecture follows the traditional separation
    between signaling and media planes.*
@@ -226,7 +226,7 @@ levels. This scheme is shown in the picture below:
    :alt:   Onion like layered structure of the APIs
    :figwidth: 600px
 
-   **Figure 5**.
+   **Onion like layered structure of the APIs**.
 
    *The Stream Oriented Generic enabler has an onion-like architecture
    with APIs providing different abstraction levels.*
@@ -310,7 +310,7 @@ idea is represented in the following picture:
    :alt:    Creating client applications through the Stream Oriented GE APIs
    :figwidth: 600px
 
-   **Figure 6**.
+   **Creating client applications through the Stream Oriented GE APIs**.
 
    *Application developers can use any of the available layered APIs for
    creating their applications. Upper layers show higher abstraction and
@@ -366,7 +366,7 @@ Stream Oriented GE also respond to the same architecture:
    :alt:    Layered architecture of web and multimedia applications
    :figwidth: 600px
 
-   **Figure 7**.
+   **Layered architecture of web and multimedia applications**.
 
    *Applications created using the Stream Oriented GE (right) have an
    equivalent architecture to standard WWW applications (left). Both types
@@ -428,7 +428,7 @@ applications they can be reduced to the following conceptual scheme:
    :alt:    Main interactions between architectural modules
    :figwidth: 800px
 
-   **Figure 8**.
+   **Main interactions between architectural modules**.
 
    *Main interactions occur in two fases: negotiation and media exchange.
    Remark that the color of the different arrows and boxes is aligned with
@@ -524,7 +524,7 @@ session.
    :alt: Main interactions in a Stream Oriented GE session devoted to playing an HTTP media stream
    :figwidth: 800px
 
-   **Figure 9**.
+   **Main Interactions**.
 
    *Main interactions in a Stream Oriented GE session devoted to playing
    an HTTP media stream.*
@@ -547,7 +547,7 @@ can be done creating the server-side application logic.
    :alt:   Example of pipeline for an HTTP content player session
    :figwidth: 800px
 
-   **Figure 10**.
+   **Sample Player Pipeline**.
 
    *Example of pipeline for an HTTP content player session.* 
 
@@ -572,7 +572,7 @@ this type of session are shown in the figure below
    :alt:   Example of pipeline for an HTTP content recorder session
    :figwidth: 800px
 
-   **Figure 11**.
+   **Sample Recorder Pipeline**.
 
    *Example of pipeline for an HTTP content recorder session.*
 
@@ -602,7 +602,7 @@ are summarized in the following picture
    :alt:   Main interactions in a RTC session
    :figwidth: 800px
 
-   **Figure 12**.
+   **Main interactions in a RTC session**.
 
    *Interactions taking place in a Real Time Communications (RTC)
    session. During the negotiation phase, a Session Description Protocol
@@ -626,7 +626,7 @@ and adding the hat to it.
    :alt:   Example pipeline for a WebRTC session
    :figwidth: 800px
 
-   **Figure 13**.
+   **Example pipeline for a WebRTC session**.
 
    *During the negotiation phase, the application developer can create a
    pipeline providing the desired specific functionality. For example, this
