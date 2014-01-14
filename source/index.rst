@@ -10,6 +10,11 @@ Welcome to Kurento's documentation!
    :maxdepth: 2
 
 
+:doc:`Architecture <Architecture>`
+
+:doc:`Installation Guide   <Installation_Guide>`
+
+:doc:`Developer and Programmer Guide <Developer_and_Programmer_Guide>`
 
    kmf-media-api/packages.rst
    kmf-content-api/packages.rst
