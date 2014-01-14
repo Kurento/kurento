@@ -177,6 +177,7 @@ kms_image_overlay_load_image_to_overlay (KmsImageOverlay * imageoverlay)
         g_strconcat (imageoverlay->priv->dir, "/image.png", NULL);
     load_from_url (file_name, url);
     costumeAux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
+    g_remove (file_name);
     g_free (file_name);
   }
 
