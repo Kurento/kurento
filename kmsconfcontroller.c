@@ -169,6 +169,14 @@ kms_conf_controller_get_property (GObject * object, guint property_id,
 }
 
 static void
+kms_conf_controller_link_valve_impl (KmsConfController * self,
+    GstElement * valve, const gchar * sinkname,
+    const gchar * srcname, const gchar * destpadname)
+{
+  /*TODO: */
+}
+
+static void
 kms_conf_controller_dispose (GObject * obj)
 {
   KmsConfController *self = KMS_CONF_CONTROLLER (obj);
@@ -196,6 +204,9 @@ kms_conf_controller_class_init (KmsConfControllerClass * klass)
   objclass->get_property = kms_conf_controller_get_property;
   objclass->dispose = kms_conf_controller_dispose;
   objclass->finalize = kms_conf_controller_finalize;
+
+  /* Set public virtual methods */
+  klass->link_valve = kms_conf_controller_link_valve_impl;
 
   /* Install properties */
   obj_properties[PROP_ELEMENT] = g_param_spec_object ("kmselement",
@@ -231,4 +242,30 @@ static void
 kms_conf_controller_init (KmsConfController * self)
 {
   self->priv = KMS_CONF_CONTROLLER_GET_PRIVATE (self);
+}
+
+KmsConfController *
+kms_conf_controller_new (const char *optname1, ...)
+{
+  KmsConfController *obj;
+
+  va_list ap;
+
+  va_start (ap, optname1);
+  obj = KMS_CONF_CONTROLLER (g_object_new_valist (KMS_TYPE_CONF_CONTROLLER,
+          optname1, ap));
+  va_end (ap);
+
+  return obj;
+}
+
+void
+kms_conf_controller_link_valve (KmsConfController * self,
+    GstElement * valve, const gchar * sinkname,
+    const gchar * srcname, const gchar * destpadname)
+{
+  g_return_if_fail (KMS_IS_CONF_CONTROLLER (self));
+
+  KMS_CONF_CONTROLLER_GET_CLASS (self)->link_valve (self, valve, sinkname,
+      srcname, destpadname);
 }

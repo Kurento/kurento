@@ -46,6 +46,11 @@ G_BEGIN_DECLS
     KmsConfControllerClass                   \
   )                                          \
 )
+
+#define KMS_CONF_CONTROLLER_KMS_ELEMENT "kmselement"
+#define KMS_CONF_CONTROLLER_PIPELINE "pipeline"
+#define KMS_CONF_CONTROLLER_PROFILE "profile"
+
 typedef struct _KmsConfController KmsConfController;
 typedef struct _KmsConfControllerClass KmsConfControllerClass;
 typedef struct _KmsConfControllerPrivate KmsConfControllerPrivate;
@@ -61,9 +66,19 @@ struct _KmsConfController
 struct _KmsConfControllerClass
 {
   GObjectClass parent_class;
+
+ /* public virtual methods */
+  void (*link_valve) (KmsConfController * self,
+    GstElement * element, const gchar * sinkname,
+    const gchar * srcname, const gchar * destpadname);
 };
 
 GType kms_conf_controller_get_type (void);
+
+KmsConfController * kms_conf_controller_new (const char *optname1, ...);
+void kms_conf_controller_link_valve (KmsConfController * self,
+    GstElement * valve, const gchar * sinkname,
+    const gchar * srcname, const gchar * destpadname);
 
 G_END_DECLS
 #endif /* _KMS_CONF_CONTROLLER_H_ */
