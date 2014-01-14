@@ -71,6 +71,11 @@ struct _KmsConfControllerClass
   void (*link_valve) (KmsConfController * self,
     GstElement * element, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname);
+
+  /* signal callbacks */
+  void (*matched_elements) (KmsConfController * self, GstElement * appsink,
+      GstElement * appsrc);
+  void (*sink_required) (KmsConfController * self);
 };
 
 GType kms_conf_controller_get_type (void);

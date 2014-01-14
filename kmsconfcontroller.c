@@ -18,6 +18,8 @@
 #endif
 
 #include <gst/gst.h>
+
+#include "kms-marshal.h"
 #include "kmsconfcontroller.h"
 #include "kmselement.h"
 #include "kmsrecordingprofile.h"
@@ -66,6 +68,16 @@ enum
 };
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
+
+/* signals */
+enum
+{
+  MATCHED_ELEMENTS,
+  SINK_REQUIRED,
+  LAST_SIGNAL
+};
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
 
 static void
 kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
@@ -233,6 +245,21 @@ kms_conf_controller_class_init (KmsConfControllerClass * klass)
       "Sink element", "Sink element", GST_TYPE_ELEMENT, G_PARAM_WRITABLE);
 
   g_object_class_install_properties (objclass, N_PROPERTIES, obj_properties);
+
+  obj_signals[MATCHED_ELEMENTS] =
+      g_signal_new ("matched-elements",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsConfControllerClass, matched_elements),
+      NULL, NULL, __kms_marshal_VOID__OBJECT_OBJECT, G_TYPE_NONE, 2,
+      GST_TYPE_ELEMENT, GST_TYPE_ELEMENT);
+
+  obj_signals[SINK_REQUIRED] =
+      g_signal_new ("sink-required",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsConfControllerClass, sink_required),
+      NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsConfControllerPrivate));
