@@ -231,7 +231,7 @@ load_image (gchar * uri, gchar * dir, gchar * image_name,
           g_strconcat (dir, "/", image_name, name_variant, ".png", NULL);
       load_from_url (file_name, uri);
       aux = cvLoadImage (file_name, CV_LOAD_IMAGE_UNCHANGED);
-
+      g_remove (file_name);
       g_free (file_name);
     }
   }
