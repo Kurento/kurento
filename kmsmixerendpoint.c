@@ -82,6 +82,64 @@ G_DEFINE_TYPE_WITH_CODE (KmsMixerEndPoint, kms_mixer_end_point,
     GST_DEBUG_CATEGORY_INIT (kms_mixer_end_point_debug_category, PLUGIN_NAME,
         0, "debug category for mixerendpoint element"));
 
+static GstPad *
+kms_mixer_endpoint_generate_sink_pad (GstElement * element,
+    GstPadTemplate * templ, const gchar * name, const GstCaps * caps,
+    GstElement * agnosticbin)
+{
+  GstPad *agnostic_pad, *pad;
+
+  agnostic_pad = gst_element_get_static_pad (agnosticbin, "sink");
+  pad = gst_ghost_pad_new_from_template (name, agnostic_pad, templ);
+  g_object_unref (agnostic_pad);
+
+  if (gst_element_add_pad (element, pad))
+    return pad;
+
+  GST_ERROR_OBJECT (element, "Cannot add pad %" GST_PTR_FORMAT, pad);
+  g_object_unref (pad);
+
+  return NULL;
+}
+
+static GstPad *
+kms_mixer_endpoint_request_new_pad (GstElement * element,
+    GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
+{
+  GstElement *agnosticbin = NULL;
+
+  if (templ ==
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (element)), MIXER_AUDIO_SINK_PAD)) {
+
+    if (g_strcmp0 (name, MIXER_AUDIO_SINK_PAD) != 0) {
+      GST_ERROR_OBJECT (element,
+          "Invalid pad name %s for template %" GST_PTR_FORMAT, name, templ);
+      return NULL;
+    }
+
+    agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (element));
+  } else if (templ ==
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (element)), MIXER_VIDEO_SINK_PAD)) {
+    if (g_strcmp0 (name, MIXER_VIDEO_SINK_PAD) != 0) {
+      GST_ERROR_OBJECT (element,
+          "Invalid pad name %s for template %" GST_PTR_FORMAT, name, templ);
+      return NULL;
+    }
+
+    agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (element));
+  }
+
+  if (agnosticbin != NULL)
+    return kms_mixer_endpoint_generate_sink_pad (element, templ, name, caps,
+        agnosticbin);
+
+  return
+      GST_ELEMENT_CLASS (kms_mixer_end_point_parent_class)->request_new_pad
+      (element, templ, name, caps);
+}
+
 static void
 kms_mixer_end_point_internal_src_pad_linked (GstPad * pad, GstPad * peer,
     gpointer data)
@@ -201,6 +259,9 @@ kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
       GST_DEBUG_FUNCPTR (kms_mixer_endpoint_audio_valve_removed);
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_mixer_endpoint_video_valve_removed);
+
+  gstelement_class->request_new_pad =
+      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_request_new_pad);
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&mixer_audio_src_factory));
