@@ -24,6 +24,7 @@
 #include <kmsfilterelement.h>
 #include <kmsplayerendpoint.h>
 #include <kmshttpendpoint.h>
+#include <kmsmixerendpoint.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -53,6 +54,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_http_end_point_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_mixer_end_point_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
