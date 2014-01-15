@@ -50,6 +50,14 @@ struct _KmsPlayerEndPointPrivate
   GstElement *pipeline;
   GstElement *uridecodebin;
   KmsLoop *loop;
+  gboolean use_encoded_media;
+};
+
+enum
+{
+  PROP_0,
+  PROP_USE_ENCODED_MEDIA,
+  N_PROPERTIES
 };
 
 enum
@@ -70,6 +78,52 @@ G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndPoint, kms_player_end_point,
     KMS_TYPE_URI_END_POINT,
     GST_DEBUG_CATEGORY_INIT (kms_player_end_point_debug_category, PLUGIN_NAME,
         0, "debug category for playerendpoint element"));
+
+static void
+kms_player_end_point_set_caps (KmsPlayerEndPoint * self)
+{
+  GstCaps *deco_caps;
+
+  deco_caps = gst_caps_from_string (KMS_AGNOSTIC_CAPS_CAPS);
+  g_object_set (G_OBJECT (self->priv->uridecodebin), "caps", deco_caps, NULL);
+  gst_caps_unref (deco_caps);
+}
+
+void
+kms_player_end_point_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsPlayerEndPoint *playerendpoint = KMS_PLAYER_END_POINT (object);
+
+  switch (property_id) {
+    case PROP_USE_ENCODED_MEDIA:{
+      playerendpoint->priv->use_encoded_media = g_value_get_boolean (value);
+      if (playerendpoint->priv->use_encoded_media) {
+        kms_player_end_point_set_caps (playerendpoint);
+      }
+      break;
+    }
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
+
+void
+kms_player_end_point_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsPlayerEndPoint *playerendpoint = KMS_PLAYER_END_POINT (object);
+
+  switch (property_id) {
+    case PROP_USE_ENCODED_MEDIA:
+      g_value_set_boolean (value, playerendpoint->priv->use_encoded_media);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+}
 
 static void
 kms_player_end_point_dispose (GObject * object)
@@ -366,10 +420,18 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
       "Joaquin Mengual García <kini.mengual@gmail.com>");
 
   gobject_class->dispose = kms_player_end_point_dispose;
+  gobject_class->set_property = kms_player_end_point_set_property;
+  gobject_class->get_property = kms_player_end_point_get_property;
 
   urienpoint_class->stopped = kms_player_end_point_stopped;
   urienpoint_class->started = kms_player_end_point_started;
   urienpoint_class->paused = kms_player_end_point_paused;
+
+  g_object_class_install_property (gobject_class, PROP_USE_ENCODED_MEDIA,
+      g_param_spec_boolean ("use-encoded-media", "use encoded media",
+          "The element uses encoded media instead of raw media. This mode "
+          "could have an unexpected behaviour if key frames are lost",
+          FALSE, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
   kms_player_end_point_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
