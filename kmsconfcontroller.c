@@ -846,6 +846,88 @@ kms_conf_controller_add_appsrc_pads (KmsConfController * self)
   gst_iterator_free (it);
 }
 
+static gint
+compare_configuration_data (gconstpointer a, gconstpointer b)
+{
+  const GstElement *valve = GST_ELEMENT (b);
+  const struct config_valve *conf = a;
+
+  return (conf->valve == valve) ? 0 : -1;
+}
+
+static struct config_valve *
+kms_conf_controller_get_configuration_from_valve (KmsConfController * self,
+    GstElement * valve)
+{
+  GSList *l;
+
+  l = g_slist_find_custom (self->priv->confdata->pendingvalves, valve,
+      compare_configuration_data);
+
+  return l->data;
+}
+
+static GstPadProbeReturn
+pad_probe_blocked_cb (GstPad * srcpad, GstPadProbeInfo * info,
+    gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  struct config_valve *conf;
+  GstElement *valve;
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self->priv->element));
+
+  GST_DEBUG ("Blocked pending pad %" GST_PTR_FORMAT, srcpad);
+
+  self->priv->confdata->pendingpadsblocked++;
+
+  if (self->priv->state != WAIT_PENDING ||
+      self->priv->confdata->pendingpadsblocked !=
+      g_slist_length (self->priv->confdata->pendingvalves))
+    goto end;
+
+  GST_DEBUG ("Reconfiguring internal pipeline");
+
+  valve = gst_pad_get_parent_element (srcpad);
+  conf = kms_conf_controller_get_configuration_from_valve (self, valve);
+
+  if (conf == NULL) {
+    GST_ERROR ("No configuration found for valve %s",
+        GST_ELEMENT_NAME (conf->valve));
+    goto end;
+  }
+
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+      kms_conf_controller_do_reconfiguration, g_object_ref (self),
+      g_object_unref);
+
+end:
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self->priv->element));
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+kms_conf_controller_block_valve (KmsConfController * self,
+    struct config_valve *conf)
+{
+  gulong *probe_id;
+  GstPad *srcpad;
+
+  GST_DEBUG ("Blocking valve %s", GST_ELEMENT_NAME (conf->valve));
+  srcpad = gst_element_get_static_pad (conf->valve, "src");
+
+  probe_id = g_slice_new0 (gulong);
+  *probe_id = gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM,
+      pad_probe_blocked_cb, self, NULL);
+  g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
+      destroy_ulong);
+
+  self->priv->confdata->pendingvalves =
+      g_slist_prepend (self->priv->confdata->pendingvalves, conf);
+  g_object_unref (srcpad);
+}
+
 static void
 kms_conf_controller_link_valve_impl (KmsConfController * self,
     GstElement * valve, const gchar * sinkname,
@@ -896,7 +978,7 @@ kms_conf_controller_link_valve_impl (KmsConfController * self,
       }
     case CONFIGURING:
     case WAIT_PENDING:
-      /* TODO */
+      kms_conf_controller_block_valve (self, config);
       break;
   }
 }
