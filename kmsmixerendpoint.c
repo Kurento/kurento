@@ -17,8 +17,14 @@
 #endif
 
 #include "kmsmixerendpoint.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "mixerendpoint"
+
+#define MIXER_AUDIO_SINK_PAD "mixer_audio_sink"
+#define MIXER_VIDEO_SINK_PAD "mixer_video_sink"
+#define MIXER_AUDIO_SRC_PAD "mixer_audio_src"
+#define MIXER_VIDEO_SRC_PAD "mixer_video_src"
 
 GST_DEBUG_CATEGORY_STATIC (kms_mixer_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_mixer_end_point_debug_category
@@ -30,11 +36,41 @@ GST_DEBUG_CATEGORY_STATIC (kms_mixer_end_point_debug_category);
     KmsMixerEndPointPrivate                     \
   )                                             \
 )
+
 struct _KmsMixerEndPointPrivate
 {
   GstPad *audio_internal;
   GstPad *vieo_internal;
 };
+
+/* Pad templates */
+static GstStaticPadTemplate mixer_audio_sink_factory =
+GST_STATIC_PAD_TEMPLATE (MIXER_AUDIO_SINK_PAD,
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
+    );
+
+static GstStaticPadTemplate mixer_video_sink_factory =
+GST_STATIC_PAD_TEMPLATE (MIXER_VIDEO_SINK_PAD,
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
+    );
+
+static GstStaticPadTemplate mixer_audio_src_factory =
+GST_STATIC_PAD_TEMPLATE (MIXER_AUDIO_SRC_PAD,
+    GST_PAD_SRC,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
+    );
+
+static GstStaticPadTemplate mixer_video_src_factory =
+GST_STATIC_PAD_TEMPLATE (MIXER_VIDEO_SRC_PAD,
+    GST_PAD_SRC,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
+    );
 
 /* class initialization */
 
@@ -59,6 +95,7 @@ static void
 kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "MixerEndPoint", "Generic", "Kurento plugin for mixer connection",
@@ -66,6 +103,15 @@ kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
 
   gobject_class->dispose = kms_mixer_end_point_dispose;
   gobject_class->finalize = kms_mixer_end_point_finalize;
+
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&mixer_audio_src_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&mixer_video_src_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&mixer_audio_sink_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&mixer_video_sink_factory));
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsMixerEndPointPrivate));
