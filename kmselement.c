@@ -108,7 +108,7 @@ kms_element_get_audio_agnosticbin (KmsElement * self)
     goto end;
 
   self->priv->audio_agnosticbin =
-      gst_element_factory_make ("agnosticbin2", AUDIO_AGNOSTICBIN);
+      gst_element_factory_make ("agnosticbin", AUDIO_AGNOSTICBIN);
   gst_bin_add (GST_BIN (self), self->priv->audio_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->audio_agnosticbin);
 
@@ -129,7 +129,7 @@ kms_element_get_video_agnosticbin (KmsElement * self)
     goto end;
 
   self->priv->video_agnosticbin =
-      gst_element_factory_make ("agnosticbin2", VIDEO_AGNOSTICBIN);
+      gst_element_factory_make ("agnosticbin", VIDEO_AGNOSTICBIN);
   gst_bin_add (GST_BIN (self), self->priv->video_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->video_agnosticbin);
 

@@ -17,11 +17,11 @@
 #  include <config.h>
 #endif
 
-#include "kmsagnosticbin2.h"
+#include "kmsagnosticbin.h"
 #include "kmsagnosticcaps.h"
 #include "kmsutils.h"
 
-#define PLUGIN_NAME "agnosticbin2"
+#define PLUGIN_NAME "agnosticbin"
 
 static GstStaticCaps static_audio_caps =
 GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS);

@@ -15,7 +15,7 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include <kmsagnosticbin2.h>
+#include <kmsagnosticbin.h>
 #include <kmsrtpendpoint.h>
 #include <kmswebrtcendpoint.h>
 #include <kmsautomuxerbin.h>
