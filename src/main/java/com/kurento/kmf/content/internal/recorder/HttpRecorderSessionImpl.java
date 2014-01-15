@@ -28,6 +28,7 @@ import com.kurento.kmf.content.HttpRecorderSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpBasedContentSession;
 import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpPostEndpoint;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RecorderEndpoint;
@@ -82,8 +83,8 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 	/**
 	 * Perform a record action using a MediaElement.
 	 * 
-	 * @param element
-	 *            Pluggable media component
+	 * @param elements
+	 *            Pluggable media components
 	 */
 	@Override
 	public void start(MediaElement... elements) {
@@ -128,7 +129,7 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 			throw kmfe;
 		}
 	}
-	
+
 	@Override
 	public void start(RepositoryItem repositoryItem) {
 		try {
@@ -173,8 +174,8 @@ public class HttpRecorderSessionImpl extends AbstractHttpBasedContentSession
 
 		MediaPipeline mediaPiplePipeline = mediaElements[0].getMediaPipeline();
 		getLogger().info("Creating HttpEndpoint ...");
-		HttpEndpoint httpEndpoint = mediaPiplePipeline.newHttpEndpoint()
-				.build();
+		HttpPostEndpoint httpEndpoint = mediaPiplePipeline
+				.newHttpPostEndpoint().build();
 		releaseOnTerminate(httpEndpoint);
 		connect(httpEndpoint, mediaElements);
 		return httpEndpoint;
