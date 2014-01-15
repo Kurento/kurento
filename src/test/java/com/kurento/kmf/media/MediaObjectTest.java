@@ -31,6 +31,7 @@ import com.kurento.kmf.media.internal.ChromaFilterImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl;
 import com.kurento.kmf.media.internal.HttpGetEndpointImpl;
+import com.kurento.kmf.media.internal.HttpPostEndpointImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl;
 import com.kurento.kmf.media.internal.MainMixerImpl;
 import com.kurento.kmf.media.internal.MediaElementImpl;
@@ -49,6 +50,7 @@ import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaGStreamerFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPadDirection;
 import com.kurento.kms.thrift.api.KmsMediaPlateDetectorFilterTypeConstants;
@@ -71,6 +73,7 @@ public class MediaObjectTest {
 	private static final String JACK_VADER_FILTER_TYPE = KmsMediaJackVaderFilterTypeConstants.TYPE_NAME;
 	private static final String ZBAR_FILTER_TYPE = KmsMediaZBarFilterTypeConstants.TYPE_NAME;
 	private static final String HTTP_GET_EP_TYPE = KmsMediaHttpGetEndPointTypeConstants.TYPE_NAME;
+	private static final String HTTP_POST_EP_TYPE = KmsMediaHttpPostEndPointTypeConstants.TYPE_NAME;
 	private static final String PLAYER_EP_TYPE = KmsMediaPlayerEndPointTypeConstants.TYPE_NAME;
 	private static final String RECORDER_EP_TYPE = KmsMediaRecorderEndPointTypeConstants.TYPE_NAME;
 	private static final String WEB_RTC_EP_TYPE = KmsMediaWebRtcEndPointTypeConstants.TYPE_NAME;
@@ -125,6 +128,12 @@ public class MediaObjectTest {
 	public void testHttpGetEndpointInstantiation() {
 		MediaObjectRef objRef = createMediaElementRef(HTTP_GET_EP_TYPE);
 		instantiateAndCheck(HttpGetEndpointImpl.class, objRef);
+	}
+
+	@Test
+	public void testHttpPostEndpointInstantiation() {
+		MediaObjectRef objRef = createMediaElementRef(HTTP_POST_EP_TYPE);
+		instantiateAndCheck(HttpPostEndpointImpl.class, objRef);
 	}
 
 	@Test

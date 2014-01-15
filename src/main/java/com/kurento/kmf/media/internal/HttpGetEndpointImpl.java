@@ -35,13 +35,24 @@ import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
 public class HttpGetEndpointImpl extends AbstractHttpEndpoint implements
 		HttpGetEndpoint {
 
-	public HttpGetEndpointImpl(MediaElementRef endpointRef) {
-		super(endpointRef);
+	/**
+	 * Default constructor
+	 * 
+	 * @param objectRef
+	 *            Reference from KMS
+	 */
+	public HttpGetEndpointImpl(MediaElementRef objectRef) {
+		super(objectRef);
 	}
 
 	/**
+	 * Constructor that receives the params passed to the KMS, along with the
+	 * object to be sued to reference the element
+	 * 
 	 * @param objectRef
+	 *            Reference from KMS
 	 * @param params
+	 *            used in the construction
 	 */
 	public HttpGetEndpointImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
