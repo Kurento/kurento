@@ -24,6 +24,7 @@
 #include "kmselement.h"
 #include "kmsrecordingprofile.h"
 #include "kms-enumtypes.h"
+#include "kmsloop.h"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 #define DEFAULT_HAS_DATA_VALUE FALSE
@@ -32,6 +33,7 @@
 #define VIDEO_APPSINK "video_appsink"
 
 #define KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
+#define KEY_PAD_PROBE_ID "kms-pad-key-probe-id"
 #define KEY_APP_SINK "kms-key_app_sink"
 
 #define NAME "confcontroller"
@@ -60,8 +62,17 @@ typedef enum
   CONFIGURED
 } ControllerState;
 
+struct config_data
+{
+  guint padblocked;
+  guint pendingpadsblocked;
+  GSList *blockedpads;
+  GSList *pendingvalves;
+};
+
 struct _KmsConfControllerPrivate
 {
+  KmsLoop *loop;
   KmsElement *element;
   GstElement *encodebin;
   GstPipeline *pipeline;
@@ -69,6 +80,7 @@ struct _KmsConfControllerPrivate
   KmsRecordingProfile profile;
   ControllerState state;
   gboolean has_data;
+  struct config_data *confdata;
 };
 
 /* Object properties */
@@ -107,6 +119,12 @@ static void
 destroy_configuration_data (gpointer data)
 {
   g_slice_free (struct config_valve, data);
+}
+
+static void
+destroy_ulong (gpointer data)
+{
+  g_slice_free (gulong, data);
 }
 
 static struct config_valve *
@@ -396,6 +414,439 @@ kms_conf_controller_set_profile_to_encodebin (KmsConfController * self)
 }
 
 static void
+kms_conf_controller_free_config_data (KmsConfController * self)
+{
+  if (self->priv->confdata == NULL)
+    return;
+
+  g_slist_free (self->priv->confdata->blockedpads);
+  g_slist_free_full (self->priv->confdata->pendingvalves,
+      destroy_configuration_data);
+
+  g_slice_free (struct config_data, self->priv->confdata);
+
+  self->priv->confdata = NULL;
+}
+
+static void
+kms_conf_controller_init_config_data (KmsConfController * self)
+{
+  if (self->priv->confdata != NULL) {
+    GST_WARNING ("Configuration data is not empty.");
+    kms_conf_controller_free_config_data (self);
+  }
+
+  self->priv->confdata = g_slice_new0 (struct config_data);
+}
+
+static void
+add_pending_appsinks (gpointer data, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  struct config_valve *config = data;
+
+  kms_conf_controller_add_appsink (self, config);
+}
+
+static void
+connect_pending_valves_to_appsinks (gpointer data, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  struct config_valve *config = data;
+
+  kms_conf_controller_connect_valve_to_appsink (self, config);
+}
+
+static void
+connect_pending_appsinks_to_appsrcs (gpointer data, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  struct config_valve *config = data;
+
+  kms_conf_controller_connect_appsink_to_appsrc (self, config);
+}
+
+static void
+connect_pending_appsrcs_to_encodebin (gpointer data, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  struct config_valve *config = data;
+
+  kms_conf_controller_connect_appsrc_to_encodebin (self, config);
+}
+
+static void
+kms_conf_controller_reconnect_pads (KmsConfController * self, GSList * pads)
+{
+  GSList *e;
+
+  for (e = pads; e != NULL; e = e->next) {
+    GstPad *srcpad = e->data;
+    GstElement *appsrc = gst_pad_get_parent_element (srcpad);
+    gchar *destpad = g_object_get_data (G_OBJECT (appsrc),
+        KEY_DESTINATION_PAD_NAME);
+
+    GST_DEBUG ("Relinking pad %" GST_PTR_FORMAT " to %s", srcpad,
+        GST_ELEMENT_NAME (self->priv->encodebin));
+
+    if (!gst_element_link_pads (appsrc, "src", self->priv->encodebin, destpad)) {
+      GST_ERROR ("Could not link srcpad %" GST_PTR_FORMAT " to %s", srcpad,
+          GST_ELEMENT_NAME (self->priv->encodebin));
+    }
+
+    gst_object_unref (appsrc);
+  }
+}
+
+static void
+kms_conf_controller_unblock_pads (KmsConfController * self, GSList * pads)
+{
+  GSList *e;
+
+  for (e = pads; e != NULL; e = e->next) {
+    GstStructure *s;
+    GstEvent *force_key_unit_event;
+    GstPad *srcpad = e->data;
+    GstElement *appsrc = GST_ELEMENT (GST_OBJECT_PARENT (srcpad));
+    GstElement *appsink = g_object_get_data (G_OBJECT (appsrc), KEY_APP_SINK);
+    GstPad *sinkpad = gst_element_get_static_pad (appsink, "sink");
+    gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
+
+    if (probe_id != NULL) {
+      GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
+      gst_pad_remove_probe (srcpad, *probe_id);
+      g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
+    }
+
+    /* Request key frame */
+    s = gst_structure_new ("GstForceKeyUnit", "all-headers", G_TYPE_BOOLEAN,
+        TRUE, NULL);
+    force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+    GST_DEBUG_OBJECT (sinkpad, "Request key frame.");
+    gst_pad_push_event (sinkpad, force_key_unit_event);
+    g_object_unref (sinkpad);
+  }
+}
+
+static void
+unlock_pending_valves (gpointer data, gpointer user_data)
+{
+  struct config_valve *config = data;
+  gulong *probe_id;
+  GstPad *srcpad;
+
+  srcpad = gst_element_get_static_pad (config->valve, "src");
+  probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
+
+  if (probe_id != NULL) {
+    GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
+    gst_pad_remove_probe (srcpad, *probe_id);
+    g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
+  }
+
+  g_object_unref (srcpad);
+}
+
+static void
+kms_conf_controller_reconfigure_pipeline (KmsConfController * self)
+{
+  GstPad *srcpad, *sinkpad;
+  GstElement *sink;
+
+  /* Unlink encodebin from sinkapp */
+  srcpad = gst_element_get_static_pad (self->priv->encodebin, "src");
+  sinkpad = gst_pad_get_peer (srcpad);
+
+  if (!gst_pad_unlink (srcpad, sinkpad))
+    GST_ERROR ("Encodebin %s could not be removed",
+        GST_ELEMENT_NAME (self->priv->encodebin));
+
+  g_object_unref (srcpad);
+
+  /* Remove old encodebin and sink elements */
+  sink = gst_pad_get_parent_element (sinkpad);
+  g_object_unref (sinkpad);
+  gst_element_set_locked_state (sink, TRUE);
+  gst_element_set_state (sink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), sink);
+  g_object_unref (sink);
+
+  gst_element_set_locked_state (self->priv->encodebin, TRUE);
+  gst_element_set_state (self->priv->encodebin, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), self->priv->encodebin);
+
+  GST_DEBUG ("Adding New encodebin");
+  /* Add the new encodebin to the pipeline */
+  self->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
+  g_slist_foreach (self->priv->confdata->pendingvalves,
+      add_pending_appsinks, self);
+  kms_conf_controller_set_profile_to_encodebin (self);
+  g_slist_foreach (self->priv->confdata->pendingvalves,
+      connect_pending_valves_to_appsinks, self);
+  g_slist_foreach (self->priv->confdata->pendingvalves,
+      connect_pending_appsinks_to_appsrcs, self);
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->encodebin);
+
+  /* Add new sink linked to the new encodebin */
+  g_signal_emit (G_OBJECT (self), obj_signals[SINK_REQUIRED], 0);
+  gst_element_sync_state_with_parent (self->priv->encodebin);
+
+  /* Reconnect sources pads */
+  kms_conf_controller_reconnect_pads (self, self->priv->confdata->blockedpads);
+
+  /* Reconnect pending pads */
+  g_slist_foreach (self->priv->confdata->pendingvalves,
+      connect_pending_appsrcs_to_encodebin, self);
+
+  /* remove probes to unlock pads */
+  kms_conf_controller_unblock_pads (self, self->priv->confdata->blockedpads);
+  g_slist_foreach (self->priv->confdata->pendingvalves,
+      unlock_pending_valves, self);
+
+  kms_conf_controller_free_config_data (self);
+}
+
+static gboolean
+kms_conf_controller_do_reconfiguration (gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self->priv->element));
+
+  kms_conf_controller_reconfigure_pipeline (self);
+  self->priv->state = CONFIGURED;
+  self->priv->has_data = FALSE;
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self->priv->element));
+
+  return G_SOURCE_REMOVE;
+}
+
+static GstPadProbeReturn
+event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+
+  /*drop buffer during reconfiguration stage */
+  if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_BUFFER |
+          GST_PAD_PROBE_TYPE_BUFFER_LIST))
+    return GST_PAD_PROBE_DROP;
+
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
+    return GST_PAD_PROBE_OK;
+
+  /* remove the probe first */
+  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self->priv->element));
+
+  /* Old encodebin has been flushed out. It's time to remove it */
+  GST_DEBUG ("Element %s flushed out",
+      GST_ELEMENT_NAME (self->priv->encodebin));
+
+  if (self->priv->confdata->pendingpadsblocked ==
+      g_slist_length (self->priv->confdata->pendingvalves)) {
+    GST_DEBUG ("No pad in blocking state");
+    /* No more pending valves in blocking state */
+    /* so we can remove probes to unlock pads */
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
+        kms_conf_controller_do_reconfiguration, g_object_ref (self),
+        g_object_unref);
+  } else {
+    GST_DEBUG ("Waiting for pads to block");
+    self->priv->state = WAIT_PENDING;
+  }
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self->priv->element));
+
+  /* Do not pass the EOS event downstream */
+  return GST_PAD_PROBE_DROP;
+}
+
+static void
+send_eos_to_sink_pads (GstElement * element)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_sink_pads (element);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad;
+
+        sinkpad = g_value_get_object (&val);
+        GST_DEBUG ("Sending event to %" GST_PTR_FORMAT, sinkpad);
+
+        if (!gst_pad_send_event (sinkpad, gst_event_new_eos ()))
+          GST_WARNING ("EOS event could not be sent");
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (element));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static GstPadProbeReturn
+pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  GstPad *sinkpad;
+
+  GST_DEBUG ("Pad blocked %" GST_PTR_FORMAT, srcpad);
+  sinkpad = gst_pad_get_peer (srcpad);
+
+  if (sinkpad == NULL) {
+    GST_ERROR ("TODO: This situation should not happen");
+    return GST_PAD_PROBE_DROP;
+  }
+
+  gst_pad_unlink (srcpad, sinkpad);
+  g_object_unref (sinkpad);
+
+  KMS_ELEMENT_LOCK (KMS_ELEMENT (self->priv->element));
+
+  self->priv->confdata->blockedpads =
+      g_slist_prepend (self->priv->confdata->blockedpads, srcpad);
+  if (g_slist_length (self->priv->confdata->blockedpads) ==
+      self->priv->confdata->padblocked) {
+    GstPad *pad, *peer;
+    gulong *probe_id;
+
+    GST_DEBUG ("Encodebin source pads blocked");
+    /* install new probe for EOS */
+    pad = gst_element_get_static_pad (self->priv->encodebin, "src");
+    peer = gst_pad_get_peer (pad);
+
+    probe_id = g_object_get_data (G_OBJECT (peer), KEY_PAD_PROBE_ID);
+    if (probe_id != NULL) {
+      gst_pad_remove_probe (peer, *probe_id);
+      g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, NULL, NULL);
+    }
+
+    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        event_probe_cb, self, NULL);
+    g_object_unref (pad);
+    g_object_unref (peer);
+
+    /* Flush out encodebin data by sending an EOS in all its sinkpads */
+    send_eos_to_sink_pads (self->priv->encodebin);
+  }
+
+  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self->priv->element));
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+kms_conf_controller_remove_encodebin (KmsConfController * self)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  GST_DEBUG ("Blocking encodebin %" GST_PTR_FORMAT, self->priv->encodebin);
+  self->priv->confdata->padblocked = 0;
+
+  it = gst_element_iterate_sink_pads (self->priv->encodebin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *srcpad;
+
+        sinkpad = g_value_get_object (&val);
+        srcpad = gst_pad_get_peer (sinkpad);
+
+        if (srcpad != NULL) {
+          gulong *probe_id;
+
+          probe_id = g_slice_new0 (gulong);
+          *probe_id = gst_pad_add_probe (srcpad,
+              GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, pad_probe_cb, self, NULL);
+          g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
+              destroy_ulong);
+          self->priv->confdata->padblocked++;
+          g_object_unref (srcpad);
+        }
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (self->priv->encodebin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
+kms_conf_controller_add_appsrc_pads (KmsConfController * self)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_sink_pads (self->priv->encodebin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *srcpad;
+
+        sinkpad = g_value_get_object (&val);
+        srcpad = gst_pad_get_peer (sinkpad);
+
+        if (srcpad != NULL) {
+          self->priv->confdata->blockedpads =
+              g_slist_prepend (self->priv->confdata->blockedpads, srcpad);
+          g_object_unref (srcpad);
+        }
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink pads",
+            GST_ELEMENT_NAME (self->priv->encodebin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
 kms_conf_controller_link_valve_impl (KmsConfController * self,
     GstElement * valve, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname)
@@ -427,6 +878,22 @@ kms_conf_controller_link_valve_impl (KmsConfController * self,
       self->priv->has_data = FALSE;
       break;
     case CONFIGURED:
+      kms_conf_controller_init_config_data (self);
+
+      if (self->priv->has_data
+          && (GST_STATE (self->priv->encodebin) >= GST_STATE_PAUSED
+              || GST_STATE_PENDING (self->priv->encodebin) >= GST_STATE_PAUSED
+              || GST_STATE_TARGET (self->priv->encodebin) >=
+              GST_STATE_PAUSED)) {
+        kms_conf_controller_remove_encodebin (self);
+        self->priv->state = CONFIGURING;
+      } else {
+        kms_conf_controller_add_appsrc_pads (self);
+        self->priv->confdata->pendingvalves =
+            g_slist_prepend (self->priv->confdata->pendingvalves, config);
+        kms_conf_controller_reconfigure_pipeline (self);
+        break;
+      }
     case CONFIGURING:
     case WAIT_PENDING:
       /* TODO */
@@ -441,6 +908,7 @@ kms_conf_controller_dispose (GObject * obj)
 
   GST_DEBUG_OBJECT (self, "Dispose");
 
+  g_clear_object (&self->priv->loop);
   g_clear_object (&self->priv->sink);
   g_clear_object (&self->priv->pipeline);
 
@@ -515,6 +983,7 @@ static void
 kms_conf_controller_init (KmsConfController * self)
 {
   self->priv = KMS_CONF_CONTROLLER_GET_PRIVATE (self);
+  self->priv->loop = kms_loop_new ();
 }
 
 KmsConfController *
