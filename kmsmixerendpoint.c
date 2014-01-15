@@ -18,8 +18,11 @@
 
 #include "kmsmixerendpoint.h"
 #include "kmsagnosticcaps.h"
+#include "kmsutils.h"
 
 #define PLUGIN_NAME "mixerendpoint"
+
+#define KEY_VALVE_DATA "kms-mixer-valve-data"
 
 #define MIXER_AUDIO_SINK_PAD "mixer_audio_sink"
 #define MIXER_VIDEO_SINK_PAD "mixer_video_sink"
@@ -80,6 +83,89 @@ G_DEFINE_TYPE_WITH_CODE (KmsMixerEndPoint, kms_mixer_end_point,
         0, "debug category for mixerendpoint element"));
 
 static void
+kms_mixer_end_point_internal_src_pad_linked (GstPad * pad, GstPad * peer,
+    gpointer data)
+{
+  GstElement *valve = g_object_get_data (G_OBJECT (pad), KEY_VALVE_DATA);
+
+  kms_utils_set_valve_drop (valve, FALSE);
+}
+
+static void
+kms_mixer_end_point_internal_src_pad_unlinked (GstPad * pad, GstObject * parent)
+{
+  GstElement *valve = g_object_get_data (G_OBJECT (pad), KEY_VALVE_DATA);
+
+  kms_utils_set_valve_drop (valve, TRUE);
+}
+
+static void
+kms_mixer_endpoint_valve_added (KmsElement * self, GstElement * valve,
+    GstPadTemplate * templ, const gchar * pad_name)
+{
+  GstPad *src = gst_element_get_static_pad (valve, "src");
+  GstPad *internal_src = gst_ghost_pad_new_from_template (pad_name, src, templ);
+
+  g_object_set_data_full (G_OBJECT (internal_src), KEY_VALVE_DATA,
+      g_object_ref (valve), g_object_unref);
+
+  g_signal_connect (internal_src, "linked",
+      G_CALLBACK (kms_mixer_end_point_internal_src_pad_linked), NULL);
+  internal_src->unlinkfunc =
+      GST_DEBUG_FUNCPTR (kms_mixer_end_point_internal_src_pad_unlinked);
+
+  gst_element_add_pad (GST_ELEMENT (self), internal_src);
+  g_object_unref (src);
+}
+
+static void
+kms_mixer_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
+{
+  GstPadTemplate *templ =
+      gst_static_pad_template_get (&mixer_audio_src_factory);
+
+  kms_mixer_endpoint_valve_added (self, valve, templ, MIXER_AUDIO_SRC_PAD);
+  g_object_unref (templ);
+}
+
+static void
+kms_mixer_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
+{
+  GstPadTemplate *templ =
+      gst_static_pad_template_get (&mixer_video_src_factory);
+
+  kms_mixer_endpoint_valve_added (self, valve, templ, MIXER_VIDEO_SRC_PAD);
+  g_object_unref (templ);
+}
+
+static void
+kms_mixer_endpoint_valve_removed (KmsElement * self, GstElement * valve,
+    const gchar * pad_name)
+{
+  GstPad *src = gst_element_get_static_pad (GST_ELEMENT (self), pad_name);
+  GstPad *peer = gst_pad_get_peer (src);
+
+  if (peer != NULL) {
+    gst_pad_unlink (src, peer);
+    g_object_unref (peer);
+  }
+
+  gst_element_remove_pad (GST_ELEMENT (self), src);
+}
+
+static void
+kms_mixer_endpoint_audio_valve_removed (KmsElement * self, GstElement * valve)
+{
+  kms_mixer_endpoint_valve_removed (self, valve, MIXER_AUDIO_SRC_PAD);
+}
+
+static void
+kms_mixer_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
+{
+  kms_mixer_endpoint_valve_removed (self, valve, MIXER_VIDEO_SRC_PAD);
+}
+
+static void
 kms_mixer_end_point_dispose (GObject * object)
 {
   G_OBJECT_CLASS (kms_mixer_end_point_parent_class)->dispose (object);
@@ -96,6 +182,7 @@ kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
+  KmsElementClass *kms_element_class;
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "MixerEndPoint", "Generic", "Kurento plugin for mixer connection",
@@ -103,6 +190,17 @@ kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
 
   gobject_class->dispose = kms_mixer_end_point_dispose;
   gobject_class->finalize = kms_mixer_end_point_finalize;
+
+  kms_element_class = KMS_ELEMENT_CLASS (klass);
+
+  kms_element_class->audio_valve_added =
+      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_audio_valve_added);
+  kms_element_class->video_valve_added =
+      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_video_valve_added);
+  kms_element_class->audio_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_audio_valve_removed);
+  kms_element_class->video_valve_removed =
+      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_video_valve_removed);
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&mixer_audio_src_factory));
