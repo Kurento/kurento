@@ -27,6 +27,7 @@
 #include "kmsloop.h"
 #include "kmsrecordingprofile.h"
 #include "kms-enumtypes.h"
+#include "kmsconfcontroller.h"
 
 #define PLUGIN_NAME "recorderendpoint"
 
@@ -35,9 +36,7 @@
 #define VIDEO_APPSINK "video_appsink"
 #define VIDEO_APPSRC "video_appsrc"
 
-#define KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
-#define KEY_PAD_PROBE_ID "kms-pad-key-probe-id"
-#define KEY_APP_SINK "kms-key_app_sink"
+#define KEY_RECORDER_PAD_PROBE_ID "kms-recorder-pad-key-probe-id"
 
 #define BASE_TIME_DATA "base_time_data"
 
@@ -59,16 +58,6 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
   )                                               \
 )
 
-typedef void (*KmsActionFunc) (gpointer user_data);
-
-typedef enum
-{
-  UNCONFIGURED,
-  CONFIGURING,
-  WAIT_PENDING,
-  CONFIGURED
-} RecorderState;
-
 enum
 {
   PROP_0,
@@ -77,22 +66,6 @@ enum
 };
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
-
-struct config_valve
-{
-  GstElement *valve;
-  const gchar *sinkname;
-  const gchar *srcname;
-  const gchar *destpadname;
-};
-
-struct config_data
-{
-  guint padblocked;
-  guint pendingpadsblocked;
-  GSList *blockedpads;
-  GSList *pendingvalves;
-};
 
 struct state_controller
 {
@@ -105,15 +78,11 @@ struct state_controller
 struct _KmsRecorderEndPointPrivate
 {
   GstElement *pipeline;
-  GstElement *encodebin;
-  KmsRecordingProfile profile;
-  RecorderState state;
   GstClockTime paused_time;
   GstClockTime paused_start;
-  struct config_data *confdata;
   struct state_controller state_manager;
-  gboolean has_data;
   KmsLoop *loop;
+  KmsConfController *controller;
 };
 
 /* class initialization */
@@ -122,28 +91,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndPoint, kms_recorder_end_point,
     KMS_TYPE_URI_END_POINT,
     GST_DEBUG_CATEGORY_INIT (kms_recorder_end_point_debug_category, PLUGIN_NAME,
         0, "debug category for recorderendpoint element"));
-
-static void
-destroy_valve_configuration (gpointer data)
-{
-  g_slice_free (struct config_valve, data);
-}
-
-static struct config_valve *
-generate_valve_configuration (GstElement * valve, const gchar * sinkname,
-    const gchar * srcname, const gchar * destpadname)
-{
-  struct config_valve *conf;
-
-  conf = g_slice_new0 (struct config_valve);
-
-  conf->valve = valve;
-  conf->sinkname = sinkname;
-  conf->srcname = srcname;
-  conf->destpadname = destpadname;
-
-  return conf;
-}
 
 static void
 destroy_ulong (gpointer data)
@@ -269,7 +216,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
     buffer->pts = buffer->dts;
   }
 
-  self->priv->has_data = TRUE;
+  g_object_set (self->priv->controller, "has_data", TRUE, NULL);
 
   KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsink));
 
@@ -341,107 +288,6 @@ kms_recorder_end_point_state_changed (KmsRecorderEndPoint * self,
 }
 
 static void
-kms_recorder_end_point_add_appsink (KmsRecorderEndPoint * self,
-    struct config_valve *conf)
-{
-  GstElement *appsink;
-
-  GST_DEBUG ("Adding appsink %s", conf->sinkname);
-
-  appsink = gst_element_factory_make ("appsink", conf->sinkname);
-
-  g_object_set (appsink, "emit-signals", TRUE, NULL);
-  g_object_set (appsink, "async", FALSE, NULL);
-  g_object_set (appsink, "sync", FALSE, NULL);
-  g_object_set (appsink, "qos", TRUE, NULL);
-
-  gst_bin_add (GST_BIN (self), appsink);
-  gst_element_sync_state_with_parent (appsink);
-}
-
-static void
-kms_recorder_end_point_connect_valve_to_appsink (KmsRecorderEndPoint * self,
-    struct config_valve *conf)
-{
-  GstElement *appsink;
-
-  appsink = gst_bin_get_by_name (GST_BIN (self), conf->sinkname);
-  if (appsink == NULL) {
-    GST_ERROR ("No appsink %s found", conf->sinkname);
-    return;
-  }
-
-  GST_DEBUG ("Connecting %s to %s", GST_ELEMENT_NAME (conf->valve),
-      GST_ELEMENT_NAME (appsink));
-
-  if (!gst_element_link (conf->valve, appsink)) {
-    GST_ERROR ("Could not link %s to %s", GST_ELEMENT_NAME (conf->valve),
-        GST_ELEMENT_NAME (appsink));
-  }
-
-  g_object_unref (appsink);
-}
-
-static void
-kms_recorder_end_point_connect_appsink_to_appsrc (KmsRecorderEndPoint * self,
-    struct config_valve *conf)
-{
-  GstElement *appsink, *appsrc;
-
-  appsink = gst_bin_get_by_name (GST_BIN (self), conf->sinkname);
-  if (appsink == NULL) {
-    GST_ERROR ("No appsink %s found", conf->sinkname);
-    return;
-  }
-
-  appsrc = gst_element_factory_make ("appsrc", conf->srcname);
-  g_object_set_data (G_OBJECT (appsrc), KEY_DESTINATION_PAD_NAME,
-      (gpointer) conf->destpadname);
-
-  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
-      "min-latency", G_GUINT64_CONSTANT (0), "max-latency",
-      G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME, NULL);
-
-  gst_bin_add (GST_BIN (KMS_RECORDER_END_POINT (self)->priv->pipeline), appsrc);
-  gst_element_sync_state_with_parent (appsrc);
-
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
-  g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
-
-  GST_DEBUG ("Connected %s to %s", GST_ELEMENT_NAME (appsink),
-      GST_ELEMENT_NAME (appsrc));
-
-  g_object_set_data_full (G_OBJECT (appsrc), KEY_APP_SINK,
-      g_object_ref (appsink), g_object_unref);
-
-  g_object_unref (appsink);
-}
-
-static void
-kms_recorder_end_point_connect_appsrc_to_encodebin (KmsRecorderEndPoint * self,
-    struct config_valve *conf)
-{
-  GstElement *appsrc;
-
-  appsrc = gst_bin_get_by_name (GST_BIN (self->priv->pipeline), conf->srcname);
-  if (appsrc == NULL) {
-    GST_ERROR ("No appsrc %s found", conf->srcname);
-    return;
-  }
-
-  GST_DEBUG ("Connecting %s to %s (%s)", GST_ELEMENT_NAME (appsrc),
-      GST_ELEMENT_NAME (self->priv->encodebin), conf->destpadname);
-
-  if (!gst_element_link_pads (appsrc, "src", self->priv->encodebin,
-          conf->destpadname)) {
-    GST_DEBUG ("Connecting %s to %s (%s)", GST_ELEMENT_NAME (appsrc),
-        GST_ELEMENT_NAME (self->priv->encodebin), conf->destpadname);
-  }
-
-  g_object_unref (appsrc);
-}
-
-static void
 kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
 {
   GstElement *audiosrc =
@@ -458,32 +304,6 @@ kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
     send_eos (videosrc);
     g_object_unref (videosrc);
   }
-}
-
-static void
-kms_recorder_end_point_free_config_data (KmsRecorderEndPoint * self)
-{
-  if (self->priv->confdata == NULL)
-    return;
-
-  g_slist_free (self->priv->confdata->blockedpads);
-  g_slist_free_full (self->priv->confdata->pendingvalves,
-      destroy_valve_configuration);
-
-  g_slice_free (struct config_data, self->priv->confdata);
-
-  self->priv->confdata = NULL;
-}
-
-static void
-kms_recorder_end_point_init_config_data (KmsRecorderEndPoint * self)
-{
-  if (self->priv->confdata != NULL) {
-    GST_WARNING ("Configuration data is not empty.");
-    kms_recorder_end_point_free_config_data (self);
-  }
-
-  self->priv->confdata = g_slice_new0 (struct config_data);
 }
 
 static gboolean
@@ -518,6 +338,7 @@ kms_recorder_end_point_dispose (GObject * object)
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
   g_clear_object (&self->priv->loop);
+  g_clear_object (&self->priv->controller);
 
   if (self->priv->pipeline != NULL) {
     if (GST_STATE (self->priv->pipeline) != GST_STATE_NULL) {
@@ -559,8 +380,6 @@ kms_recorder_end_point_finalize (GObject * object)
   KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
 
   kms_recorder_end_point_release_pending_requests (self);
-
-  kms_recorder_end_point_free_config_data (self);
 
   G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->finalize (object);
 }
@@ -697,39 +516,6 @@ stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
       set_to_null_state_on_EOS, g_object_ref (recorder), g_object_unref);
 
   return GST_PAD_PROBE_OK;
-}
-
-static void
-kms_recorder_end_point_add_sink (KmsRecorderEndPoint * self)
-{
-  gulong *probe_id;
-  GstElement *sink;
-  GstPad *sinkpad;
-
-  sink = kms_recorder_end_point_get_sink (self);
-
-  if (sink == NULL) {
-    sink = gst_element_factory_make ("fakesink", NULL);
-    GST_ELEMENT_ERROR (self, STREAM, WRONG_TYPE, ("No available sink"), (NULL));
-  }
-
-  gst_bin_add (GST_BIN (self->priv->pipeline), sink);
-  gst_element_sync_state_with_parent (sink);
-
-  GST_DEBUG ("Added sink %s", GST_ELEMENT_NAME (sink));
-
-  if (!gst_element_link (self->priv->encodebin, sink)) {
-    GST_ERROR ("Could not link %s to %s",
-        GST_ELEMENT_NAME (self->priv->encodebin), GST_ELEMENT_NAME (sink));
-  }
-
-  sinkpad = gst_element_get_static_pad (sink, "sink");
-  probe_id = g_slice_new0 (gulong);
-  *probe_id = gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      stop_notification_cb, self, NULL);
-  g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, probe_id,
-      destroy_ulong);
-  g_object_unref (sinkpad);
 }
 
 static void
@@ -870,604 +656,14 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 }
 
 static void
-kms_recorder_end_point_set_profile_to_encodebin (KmsRecorderEndPoint * self)
-{
-  gboolean has_audio, has_video;
-  GstEncodingContainerProfile *cprof;
-  const GList *profiles, *l;
-
-  has_video = kms_element_get_video_valve (KMS_ELEMENT (self)) != NULL;
-  has_audio = kms_element_get_audio_valve (KMS_ELEMENT (self)) != NULL;
-
-  cprof =
-      kms_recording_profile_create_profile (self->priv->profile, has_audio,
-      has_video);
-
-  profiles = gst_encoding_container_profile_get_profiles (cprof);
-
-  for (l = profiles; l != NULL; l = l->next) {
-    GstEncodingProfile *prof = l->data;
-    GstCaps *caps;
-    const gchar *appsink_name;
-    GstElement *appsink;
-
-    if (GST_IS_ENCODING_AUDIO_PROFILE (prof))
-      appsink_name = AUDIO_APPSINK;
-    else if (GST_IS_ENCODING_VIDEO_PROFILE (prof))
-      appsink_name = VIDEO_APPSINK;
-    else
-      continue;
-
-    appsink = gst_bin_get_by_name (GST_BIN (self), appsink_name);
-
-    if (appsink == NULL)
-      continue;
-
-    caps = gst_encoding_profile_get_input_caps (prof);
-
-    g_object_set (G_OBJECT (appsink), "caps", caps, NULL);
-
-    g_object_unref (appsink);
-
-    gst_caps_unref (caps);
-  }
-
-  g_object_set (G_OBJECT (self->priv->encodebin), "profile", cprof,
-      "audio-jitter-tolerance", 100 * GST_MSECOND,
-      "avoid-reencoding", TRUE, NULL);
-  gst_encoding_profile_unref (cprof);
-
-  if (self->priv->profile == KMS_RECORDING_PROFILE_MP4) {
-    GstElement *mux =
-        gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
-
-    g_object_set (G_OBJECT (mux), "fragment-duration", 2000, "streamable", TRUE,
-        NULL);
-
-    g_object_unref (mux);
-  } else if (self->priv->profile == KMS_RECORDING_PROFILE_WEBM) {
-    GstElement *mux =
-        gst_bin_get_by_name (GST_BIN (self->priv->encodebin), "muxer");
-
-    g_object_set (G_OBJECT (mux), "streamable", TRUE, NULL);
-
-    g_object_unref (mux);
-  }
-}
-
-static void
-kms_recorder_end_point_reconnect_pads (KmsRecorderEndPoint * self,
-    GSList * pads)
-{
-  GSList *e;
-
-  for (e = pads; e != NULL; e = e->next) {
-    GstPad *srcpad = e->data;
-    GstElement *appsrc = gst_pad_get_parent_element (srcpad);
-    gchar *destpad = g_object_get_data (G_OBJECT (appsrc),
-        KEY_DESTINATION_PAD_NAME);
-
-    GST_DEBUG ("Relinking pad %" GST_PTR_FORMAT " to %s", srcpad,
-        GST_ELEMENT_NAME (self->priv->encodebin));
-
-    if (!gst_element_link_pads (appsrc, "src", self->priv->encodebin, destpad)) {
-      GST_ERROR ("Could not link srcpad %" GST_PTR_FORMAT " to %s", srcpad,
-          GST_ELEMENT_NAME (self->priv->encodebin));
-    }
-
-    gst_object_unref (appsrc);
-  }
-}
-
-static void
-kms_recorder_end_point_unblock_pads (KmsRecorderEndPoint * self, GSList * pads)
-{
-  GSList *e;
-
-  for (e = pads; e != NULL; e = e->next) {
-    GstStructure *s;
-    GstEvent *force_key_unit_event;
-    GstPad *srcpad = e->data;
-    GstElement *appsrc = GST_ELEMENT (GST_OBJECT_PARENT (srcpad));
-    GstElement *appsink = g_object_get_data (G_OBJECT (appsrc), KEY_APP_SINK);
-    GstPad *sinkpad = gst_element_get_static_pad (appsink, "sink");
-    gulong *probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
-
-    if (probe_id != NULL) {
-      GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
-      gst_pad_remove_probe (srcpad, *probe_id);
-      g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
-    }
-    // Request key frame
-    s = gst_structure_new ("GstForceKeyUnit", "all-headers", G_TYPE_BOOLEAN,
-        TRUE, NULL);
-    force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
-    GST_DEBUG_OBJECT (sinkpad, "Request key frame.");
-    gst_pad_push_event (sinkpad, force_key_unit_event);
-    g_object_unref (sinkpad);
-  }
-}
-
-static void
-unlock_pending_valves (gpointer data, gpointer user_data)
-{
-  struct config_valve *config = data;
-  gulong *probe_id;
-  GstPad *srcpad;
-
-  srcpad = gst_element_get_static_pad (config->valve, "src");
-  probe_id = g_object_get_data (G_OBJECT (srcpad), KEY_PAD_PROBE_ID);
-
-  if (probe_id != NULL) {
-    GST_DEBUG ("Remove probe in pad %" GST_PTR_FORMAT, srcpad);
-    gst_pad_remove_probe (srcpad, *probe_id);
-    g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, NULL, NULL);
-  }
-
-  g_object_unref (srcpad);
-}
-
-static void
-add_pending_appsinks (gpointer data, gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-  struct config_valve *config = data;
-
-  kms_recorder_end_point_add_appsink (recorder, config);
-}
-
-static void
-connect_pending_valves_to_appsinks (gpointer data, gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-  struct config_valve *config = data;
-
-  kms_recorder_end_point_connect_valve_to_appsink (recorder, config);
-}
-
-static void
-connect_pending_appsinks_to_appsrcs (gpointer data, gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-  struct config_valve *config = data;
-
-  kms_recorder_end_point_connect_appsink_to_appsrc (recorder, config);
-}
-
-static void
-connect_pending_appsrcs_to_encodebin (gpointer data, gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-  struct config_valve *config = data;
-
-  kms_recorder_end_point_connect_appsrc_to_encodebin (recorder, config);
-}
-
-static void
-kms_recorder_end_point_reconfigure_pipeline (KmsRecorderEndPoint * recorder)
-{
-  GstPad *srcpad, *sinkpad;
-  GstElement *sink;
-
-  /* Unlink encodebin from sinkapp */
-  srcpad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
-  sinkpad = gst_pad_get_peer (srcpad);
-
-  if (!gst_pad_unlink (srcpad, sinkpad))
-    GST_ERROR ("Encodebin %s could not be removed",
-        GST_ELEMENT_NAME (recorder->priv->encodebin));
-
-  g_object_unref (srcpad);
-
-  /* Remove old encodebin and sink elements */
-  sink = gst_pad_get_parent_element (sinkpad);
-  g_object_unref (sinkpad);
-  gst_element_set_locked_state (sink, TRUE);
-  gst_element_set_state (sink, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (recorder->priv->pipeline), sink);
-  g_object_unref (sink);
-
-  gst_element_set_locked_state (recorder->priv->encodebin, TRUE);
-  gst_element_set_state (recorder->priv->encodebin, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (recorder->priv->pipeline),
-      recorder->priv->encodebin);
-
-  /* Add the new encodebin to the pipeline */
-  recorder->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
-  g_slist_foreach (recorder->priv->confdata->pendingvalves,
-      add_pending_appsinks, recorder);
-  kms_recorder_end_point_set_profile_to_encodebin (recorder);
-  g_slist_foreach (recorder->priv->confdata->pendingvalves,
-      connect_pending_valves_to_appsinks, recorder);
-  g_slist_foreach (recorder->priv->confdata->pendingvalves,
-      connect_pending_appsinks_to_appsrcs, recorder);
-  gst_bin_add (GST_BIN (recorder->priv->pipeline), recorder->priv->encodebin);
-
-  /* Add new sink linked to the new encodebin */
-  kms_recorder_end_point_add_sink (recorder);
-  gst_element_sync_state_with_parent (recorder->priv->encodebin);
-
-  /* Reconnect sources pads */
-  kms_recorder_end_point_reconnect_pads (recorder,
-      recorder->priv->confdata->blockedpads);
-  /* Reconnect pending pads */
-  g_slist_foreach (recorder->priv->confdata->pendingvalves,
-      connect_pending_appsrcs_to_encodebin, recorder);
-
-  /* remove probes to unlock pads */
-  kms_recorder_end_point_unblock_pads (recorder,
-      recorder->priv->confdata->blockedpads);
-  g_slist_foreach (recorder->priv->confdata->pendingvalves,
-      unlock_pending_valves, recorder);
-
-  kms_recorder_end_point_free_config_data (recorder);
-}
-
-static gboolean
-kms_recorder_end_point_do_reconfiguration (gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
-
-  kms_recorder_end_point_reconfigure_pipeline (recorder);
-  recorder->priv->state = CONFIGURED;
-  recorder->priv->has_data = FALSE;
-
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-
-  return G_SOURCE_REMOVE;
-}
-
-static GstPadProbeReturn
-event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
-    return GST_PAD_PROBE_OK;
-
-  /* remove the probe first */
-  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
-
-  /* Old encodebin has been flushed out. It's time to remove it */
-  GST_DEBUG ("Element %s flushed out",
-      GST_ELEMENT_NAME (recorder->priv->encodebin));
-
-  if (recorder->priv->confdata->pendingpadsblocked ==
-      g_slist_length (recorder->priv->confdata->pendingvalves)) {
-    GST_DEBUG ("No pad in blocking state");
-    /* No more pending valves in blocking state */
-    /* so we can remove probes to unlock pads */
-    kms_loop_idle_add_full (recorder->priv->loop, G_PRIORITY_HIGH_IDLE,
-        kms_recorder_end_point_do_reconfiguration, g_object_ref (recorder),
-        g_object_unref);
-  } else {
-    GST_DEBUG ("Waiting for pads to block");
-    recorder->priv->state = WAIT_PENDING;
-  }
-
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-  /* Do not pass the EOS event downstream */
-  return GST_PAD_PROBE_DROP;
-}
-
-static void
-send_eos_to_sink_pads (GstElement * element)
-{
-  GstIterator *it;
-  GValue val = G_VALUE_INIT;
-  gboolean done = FALSE;
-
-  it = gst_element_iterate_sink_pads (element);
-  do {
-    switch (gst_iterator_next (it, &val)) {
-      case GST_ITERATOR_OK:
-      {
-        GstPad *sinkpad;
-
-        sinkpad = g_value_get_object (&val);
-        GST_DEBUG ("Sending event to %" GST_PTR_FORMAT, sinkpad);
-
-        if (!gst_pad_send_event (sinkpad, gst_event_new_eos ()))
-          GST_WARNING ("EOS event could not be sent");
-
-        g_value_reset (&val);
-        break;
-      }
-      case GST_ITERATOR_RESYNC:
-        gst_iterator_resync (it);
-        break;
-      case GST_ITERATOR_ERROR:
-        GST_ERROR ("Error iterating over %s's sink pads",
-            GST_ELEMENT_NAME (element));
-      case GST_ITERATOR_DONE:
-        g_value_unset (&val);
-        done = TRUE;
-        break;
-    }
-  } while (!done);
-
-  gst_iterator_free (it);
-}
-
-static GstPadProbeReturn
-pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-  GstPad *sinkpad;
-
-  GST_DEBUG ("Pad blocked %" GST_PTR_FORMAT, srcpad);
-  sinkpad = gst_pad_get_peer (srcpad);
-
-  if (sinkpad == NULL) {
-    GST_ERROR ("TODO: This situation should not happen");
-    return GST_PAD_PROBE_DROP;
-  }
-
-  gst_pad_unlink (srcpad, sinkpad);
-  g_object_unref (sinkpad);
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
-
-  recorder->priv->confdata->blockedpads =
-      g_slist_prepend (recorder->priv->confdata->blockedpads, srcpad);
-  if (g_slist_length (recorder->priv->confdata->blockedpads) ==
-      recorder->priv->confdata->padblocked) {
-    GstPad *pad, *peer;
-    gulong *probe_id;
-
-    GST_DEBUG ("Encodebin source pads blocked");
-    /* install new probe for EOS */
-    pad = gst_element_get_static_pad (recorder->priv->encodebin, "src");
-    peer = gst_pad_get_peer (pad);
-
-    probe_id = g_object_get_data (G_OBJECT (peer), KEY_PAD_PROBE_ID);
-    if (probe_id != NULL) {
-      gst_pad_remove_probe (peer, *probe_id);
-      g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, NULL, NULL);
-    }
-
-    gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-        event_probe_cb, recorder, NULL);
-    g_object_unref (pad);
-    g_object_unref (peer);
-
-    /* Flush out encodebin data by sending an EOS in all its sinkpads */
-    send_eos_to_sink_pads (recorder->priv->encodebin);
-  }
-
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-
-  return GST_PAD_PROBE_OK;
-}
-
-static void
-kms_recorder_end_point_remove_encodebin (KmsRecorderEndPoint * self)
-{
-  GstIterator *it;
-  GValue val = G_VALUE_INIT;
-  gboolean done = FALSE;
-
-  GST_DEBUG ("Blocking encodebin %" GST_PTR_FORMAT, self->priv->encodebin);
-  self->priv->confdata->padblocked = 0;
-
-  it = gst_element_iterate_sink_pads (self->priv->encodebin);
-  do {
-    switch (gst_iterator_next (it, &val)) {
-      case GST_ITERATOR_OK:
-      {
-        GstPad *sinkpad, *srcpad;
-
-        sinkpad = g_value_get_object (&val);
-        srcpad = gst_pad_get_peer (sinkpad);
-
-        if (srcpad != NULL) {
-          gulong *probe_id;
-
-          probe_id = g_slice_new0 (gulong);
-          *probe_id = gst_pad_add_probe (srcpad,
-              GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, pad_probe_cb, self, NULL);
-          g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
-              destroy_ulong);
-          self->priv->confdata->padblocked++;
-          g_object_unref (srcpad);
-        }
-
-        g_value_reset (&val);
-        break;
-      }
-      case GST_ITERATOR_RESYNC:
-        gst_iterator_resync (it);
-        break;
-      case GST_ITERATOR_ERROR:
-        GST_ERROR ("Error iterating over %s's sink pads",
-            GST_ELEMENT_NAME (self->priv->encodebin));
-      case GST_ITERATOR_DONE:
-        g_value_unset (&val);
-        done = TRUE;
-        break;
-    }
-  } while (!done);
-
-  gst_iterator_free (it);
-}
-
-static gint
-compare_configuration_data (gconstpointer a, gconstpointer b)
-{
-  const GstElement *valve = GST_ELEMENT (b);
-  const struct config_valve *conf = a;
-
-  return (conf->valve == valve) ? 0 : -1;
-}
-
-static struct config_valve *
-kms_recorder_end_point_get_configuration_from_valve (KmsRecorderEndPoint * self,
-    GstElement * valve)
-{
-  GSList *l;
-
-  l = g_slist_find_custom (self->priv->confdata->pendingvalves, valve,
-      compare_configuration_data);
-  return l->data;
-}
-
-static GstPadProbeReturn
-pad_probe_blocked_cb (GstPad * srcpad, GstPadProbeInfo * info,
-    gpointer user_data)
-{
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
-  struct config_valve *conf;
-  GstElement *valve;
-
-  KMS_ELEMENT_LOCK (KMS_ELEMENT (recorder));
-
-  GST_DEBUG ("Blocked pending pad %" GST_PTR_FORMAT, srcpad);
-
-  recorder->priv->confdata->pendingpadsblocked++;
-
-  if (recorder->priv->state != WAIT_PENDING ||
-      recorder->priv->confdata->pendingpadsblocked !=
-      g_slist_length (recorder->priv->confdata->pendingvalves))
-    goto end;
-
-  GST_DEBUG ("Reconfiguring internal pipeline");
-
-  valve = gst_pad_get_parent_element (srcpad);
-  conf = kms_recorder_end_point_get_configuration_from_valve (recorder, valve);
-
-  if (conf == NULL) {
-    GST_ERROR ("No configuration found for valve %s",
-        GST_ELEMENT_NAME (conf->valve));
-    goto end;
-  }
-
-  kms_loop_idle_add_full (recorder->priv->loop, G_PRIORITY_HIGH_IDLE,
-      kms_recorder_end_point_do_reconfiguration, g_object_ref (recorder),
-      g_object_unref);
-
-end:
-  KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
-  return GST_PAD_PROBE_OK;
-}
-
-static void
-kms_recorder_end_point_block_valve (KmsRecorderEndPoint * self,
-    struct config_valve *conf)
-{
-  gulong *probe_id;
-  GstPad *srcpad;
-
-  GST_DEBUG ("Blocking valve %s", GST_ELEMENT_NAME (conf->valve));
-  srcpad = gst_element_get_static_pad (conf->valve, "src");
-
-  probe_id = g_slice_new0 (gulong);
-  *probe_id = gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM,
-      pad_probe_blocked_cb, self, NULL);
-  g_object_set_data_full (G_OBJECT (srcpad), KEY_PAD_PROBE_ID, probe_id,
-      destroy_ulong);
-
-  self->priv->confdata->pendingvalves =
-      g_slist_prepend (self->priv->confdata->pendingvalves, conf);
-  g_object_unref (srcpad);
-}
-
-static void
-kms_recorder_end_point_add_appsrc_pads (KmsRecorderEndPoint * self)
-{
-  GstIterator *it;
-  GValue val = G_VALUE_INIT;
-  gboolean done = FALSE;
-
-  it = gst_element_iterate_sink_pads (self->priv->encodebin);
-  do {
-    switch (gst_iterator_next (it, &val)) {
-      case GST_ITERATOR_OK:
-      {
-        GstPad *sinkpad, *srcpad;
-
-        sinkpad = g_value_get_object (&val);
-        srcpad = gst_pad_get_peer (sinkpad);
-
-        if (srcpad != NULL) {
-          self->priv->confdata->blockedpads =
-              g_slist_prepend (self->priv->confdata->blockedpads, srcpad);
-          g_object_unref (srcpad);
-        }
-
-        g_value_reset (&val);
-        break;
-      }
-      case GST_ITERATOR_RESYNC:
-        gst_iterator_resync (it);
-        break;
-      case GST_ITERATOR_ERROR:
-        GST_ERROR ("Error iterating over %s's sink pads",
-            GST_ELEMENT_NAME (self->priv->encodebin));
-      case GST_ITERATOR_DONE:
-        g_value_unset (&val);
-        done = TRUE;
-        break;
-    }
-  } while (!done);
-
-  gst_iterator_free (it);
-}
-
-static void
-kms_recorder_end_point_add_appsrc (KmsRecorderEndPoint * self,
+kms_recorder_end_point_valve_added (KmsRecorderEndPoint * self,
     GstElement * valve, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname)
 {
-  struct config_valve *config;
   KmsUriEndPointState state;
 
-  config = generate_valve_configuration (valve, sinkname, srcname, destpadname);
-
-  GST_DEBUG ("Connecting %s", GST_ELEMENT_NAME (valve));
-
-  switch (self->priv->state) {
-    case UNCONFIGURED:
-      self->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
-      kms_recorder_end_point_add_appsink (self, config);
-      kms_recorder_end_point_set_profile_to_encodebin (self);
-      kms_recorder_end_point_connect_valve_to_appsink (self, config);
-      kms_recorder_end_point_connect_appsink_to_appsrc (self, config);
-
-      gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->encodebin);
-
-      kms_recorder_end_point_add_sink (self);
-      gst_element_sync_state_with_parent (self->priv->encodebin);
-      kms_recorder_end_point_connect_appsrc_to_encodebin (self, config);
-      destroy_valve_configuration (config);
-      self->priv->state = CONFIGURED;
-      self->priv->has_data = FALSE;
-      break;
-    case CONFIGURED:
-      kms_recorder_end_point_init_config_data (self);
-
-      if (self->priv->has_data
-          && (GST_STATE (self->priv->encodebin) >= GST_STATE_PAUSED
-              || GST_STATE_PENDING (self->priv->encodebin) >= GST_STATE_PAUSED
-              || GST_STATE_TARGET (self->priv->encodebin) >=
-              GST_STATE_PAUSED)) {
-        kms_recorder_end_point_remove_encodebin (self);
-        self->priv->state = CONFIGURING;
-      } else {
-        kms_recorder_end_point_add_appsrc_pads (self);
-        self->priv->confdata->pendingvalves =
-            g_slist_prepend (self->priv->confdata->pendingvalves, config);
-        kms_recorder_end_point_reconfigure_pipeline (self);
-        break;
-      }
-    case CONFIGURING:
-    case WAIT_PENDING:
-      kms_recorder_end_point_block_valve (self, config);
-      break;
-  }
+  kms_conf_controller_link_valve (self->priv->controller, valve, sinkname,
+      srcname, destpadname);
 
   g_object_get (self, "state", &state, NULL);
   if (state == KMS_URI_END_POINT_STATE_START) {
@@ -1480,7 +676,7 @@ static void
 kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   // TODO: This caps should be set using the profile data
-  kms_recorder_end_point_add_appsrc (KMS_RECORDER_END_POINT (self), valve,
+  kms_recorder_end_point_valve_added (KMS_RECORDER_END_POINT (self), valve,
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 }
 
@@ -1494,9 +690,11 @@ kms_recorder_end_point_audio_valve_removed (KmsElement * self,
 static void
 kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
 {
+  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (self);
+
   // TODO: This caps should be set using the profile data
-  kms_recorder_end_point_add_appsrc (KMS_RECORDER_END_POINT (self), valve,
-      VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
+  kms_recorder_end_point_valve_added (recorder, valve, VIDEO_APPSINK,
+      VIDEO_APPSRC, "video_%u");
 }
 
 static void
@@ -1514,9 +712,14 @@ kms_recorder_end_point_set_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
-    case PROP_PROFILE:
-      self->priv->profile = g_value_get_enum (value);
+    case PROP_PROFILE:{
+      KmsRecordingProfile profile;
+
+      profile = g_value_get_enum (value);
+      g_object_set (G_OBJECT (self->priv->controller), "profile", profile,
+          NULL);
       break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1532,9 +735,14 @@ kms_recorder_end_point_get_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
-    case PROP_PROFILE:
-      g_value_set_enum (value, self->priv->profile);
+    case PROP_PROFILE:{
+      KmsRecordingProfile profile;
+
+      g_object_get (G_OBJECT (self->priv->controller), "profile", &profile,
+          NULL);
+      g_value_set_enum (value, profile);
       break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -1623,6 +831,70 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 static void
+matched_elements_cb (KmsConfController * controller, GstElement * appsink,
+    GstElement * appsrc, gpointer recorder)
+{
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (recv_sample), appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (recv_eos), appsrc);
+}
+
+static void
+sink_required_cb (KmsConfController * controller, gpointer recorder)
+{
+  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (recorder);
+  gulong *probe_id;
+  GstElement *sink;
+  GstPad *sinkpad;
+
+  sink = kms_recorder_end_point_get_sink (self);
+
+  if (sink == NULL) {
+    sink = gst_element_factory_make ("fakesink", NULL);
+    GST_ELEMENT_ERROR (self, STREAM, WRONG_TYPE, ("No available sink"), (NULL));
+    return;
+  }
+
+  g_object_set (self->priv->controller, "sink", sink, NULL);
+
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  if (sinkpad == NULL) {
+    GST_WARNING ("No sink pad available for element %" GST_PTR_FORMAT, sink);
+    return;
+  }
+
+  probe_id = g_slice_new0 (gulong);
+  *probe_id = gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      stop_notification_cb, self, NULL);
+  g_object_set_data_full (G_OBJECT (sinkpad), KEY_RECORDER_PAD_PROBE_ID,
+      probe_id, destroy_ulong);
+  g_object_unref (sinkpad);
+}
+
+static void
+sink_unrequired_cb (KmsConfController * controller, GstElement * sink,
+    gpointer recorder)
+{
+  gulong *probe_id;
+  GstPad *sinkpad;
+
+  sinkpad = gst_element_get_static_pad (sink, "sink");
+  if (sinkpad == NULL) {
+    GST_WARNING ("No recording settings were found in element %" GST_PTR_FORMAT,
+        sink);
+    return;
+  }
+
+  probe_id = g_object_get_data (G_OBJECT (sinkpad), KEY_RECORDER_PAD_PROBE_ID);
+  if (probe_id != NULL) {
+    gst_pad_remove_probe (sinkpad, *probe_id);
+    g_object_set_data_full (G_OBJECT (sinkpad), KEY_RECORDER_PAD_PROBE_ID, NULL,
+        NULL);
+  }
+
+  g_object_unref (sinkpad);
+}
+
+static void
 kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 {
   GstBus *bus;
@@ -1637,14 +909,21 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
   /* Create internal pipeline */
   self->priv->pipeline = gst_pipeline_new ("recorder-pipeline");
   g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
-  self->priv->encodebin = NULL;
-  self->priv->state = UNCONFIGURED;
-  self->priv->has_data = FALSE;
   g_cond_init (&self->priv->state_manager.cond);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
   gst_bus_set_sync_handler (bus, bus_sync_signal_handler, self, NULL);
   g_object_unref (bus);
+
+  self->priv->controller =
+      kms_conf_controller_new (KMS_CONF_CONTROLLER_KMS_ELEMENT, self,
+      KMS_CONF_CONTROLLER_PIPELINE, self->priv->pipeline, NULL);
+  g_signal_connect (self->priv->controller, "matched-elements",
+      G_CALLBACK (matched_elements_cb), self);
+  g_signal_connect (self->priv->controller, "sink-required",
+      G_CALLBACK (sink_required_cb), self);
+  g_signal_connect (self->priv->controller, "sink-unrequired",
+      G_CALLBACK (sink_unrequired_cb), self);
 }
 
 gboolean
