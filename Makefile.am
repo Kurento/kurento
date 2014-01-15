@@ -36,7 +36,6 @@ libgstkurento_la_SOURCES = kmsplugin.c \
 			kmsrecordingprofile.h kmsrecordingprofile.c \
 			kmsutils.c kmsutils.h \
 			sdp_utils.c sdp_utils.h \
-			kmsagnosticbin.c kmsagnosticbin.h \
 			kmsagnosticbin2.c kmsagnosticbin2.h \
 			kmselement.c kmselement.h \
 			kmsbasesdpendpoint.c kmsbasesdpendpoint.h \
@@ -57,4 +56,4 @@ libgstkurento_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libgstkurento_la_LIBTOOLFLAGS = --tag=disable-static
 
 # headers we need but don't want installed
-noinst_HEADERS = kmsagnosticbin.h
+noinst_HEADERS =

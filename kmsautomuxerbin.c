@@ -17,7 +17,7 @@
 #endif
 
 #include <gst/gst.h>
-#include "kmsagnosticbin.h"
+#include "kmsagnosticcaps.h"
 #include "kmsautomuxerbin.h"
 #include "kmsagnosticcaps.h"
 #include "kmsutils.h"

@@ -19,7 +19,7 @@
 #include <gst/gst.h>
 
 #include "kmsbasesdpendpoint.h"
-#include "kmsagnosticbin.h"
+#include "kmsagnosticcaps.h"
 #include "kms-marshal.h"
 #include "sdp_utils.h"
 

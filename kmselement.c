@@ -19,7 +19,6 @@
 #include <gst/gst.h>
 
 #include "kmselement.h"
-#include "kmsagnosticbin.h"
 #include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "kmselement"
