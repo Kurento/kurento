@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media.params.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
+import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
@@ -22,36 +22,52 @@ import org.apache.thrift.protocol.TProtocol;
 import com.google.common.base.Objects;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.internal.ProvidesMediaParam;
-import com.kurento.kms.thrift.api.KmsMediaHttpEndPointConstructorParams;
+import com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointConstructorParams;
+import com.kurento.kms.thrift.api.KmsMediaMuxer;
+import com.kurento.kms.thrift.api.KmsMediaProfile;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 3.0.1
  * 
  */
 @ProvidesMediaParam(type = CONSTRUCTOR_PARAMS_DATA_TYPE)
-public class HttpEndpointConstructorParam extends
+public class HttpGetEndpointConstructorParam extends
 		AbstractThriftSerializedMediaParam {
 
-	private Integer disconnectionTimeout;
+	private Boolean terminateOnEOS;
+	private KmsMediaMuxer mediaMuxer;
 
-	public Integer getDisconnectionTimeout() {
-		return disconnectionTimeout;
+	public Boolean getTerminateOnEOS() {
+		return terminateOnEOS;
 	}
 
-	public void setDisconnectionTimeout(Integer disconnectTimeout) {
-		this.disconnectionTimeout = disconnectTimeout;
+	public void setTerminateOnEOS(Boolean terminateOnEOS) {
+		this.terminateOnEOS = terminateOnEOS;
 	}
 
-	public HttpEndpointConstructorParam() {
+	public KmsMediaMuxer getMediaMuxer() {
+		return this.mediaMuxer;
+	}
+
+	public void setMediaMuxer(KmsMediaMuxer mediaMuxer) {
+		this.mediaMuxer = mediaMuxer;
+	}
+
+	public HttpGetEndpointConstructorParam() {
 		super(CONSTRUCTOR_PARAMS_DATA_TYPE);
 	}
 
 	@Override
 	protected TProtocol serializeDataToThrift(TProtocol pr) {
-		KmsMediaHttpEndPointConstructorParams kmsParams = new KmsMediaHttpEndPointConstructorParams();
+		KmsMediaHttpGetEndPointConstructorParams kmsParams = new KmsMediaHttpGetEndPointConstructorParams();
 
-		if (this.disconnectionTimeout != null) {
-			kmsParams.setDisconnectionTimeout(disconnectionTimeout.intValue());
+		if (this.terminateOnEOS != null) {
+			kmsParams.setTerminateOnEOS(terminateOnEOS.booleanValue());
+		}
+
+		if (this.mediaMuxer != null) {
+			kmsParams.profileType = new KmsMediaProfile(mediaMuxer);
 		}
 
 		try {
@@ -65,7 +81,8 @@ public class HttpEndpointConstructorParam extends
 
 	@Override
 	protected void deserializeFromTProtocol(TProtocol pr) {
-		KmsMediaHttpEndPointConstructorParams kmsParams = new KmsMediaHttpEndPointConstructorParams();
+		KmsMediaHttpGetEndPointConstructorParams kmsParams = new KmsMediaHttpGetEndPointConstructorParams();
+
 		try {
 			kmsParams.read(pr);
 		} catch (TException e) {
@@ -73,11 +90,13 @@ public class HttpEndpointConstructorParam extends
 			throw new KurentoMediaFrameworkException(e.getMessage(), 30000);
 		}
 
-		if (kmsParams.isSetDisconnectionTimeout()) {
-			this.disconnectionTimeout = Integer.valueOf(kmsParams
-					.getDisconnectionTimeout());
+		if (kmsParams.isSetTerminateOnEOS()) {
+			this.terminateOnEOS = Boolean.valueOf(kmsParams.isTerminateOnEOS());
 		}
 
+		if (kmsParams.isSetProfileType()) {
+			this.mediaMuxer = kmsParams.profileType.getMediaMuxer();
+		}
 	}
 
 	@Override
@@ -95,14 +114,13 @@ public class HttpEndpointConstructorParam extends
 			return false;
 		}
 
-		HttpEndpointConstructorParam param = (HttpEndpointConstructorParam) obj;
-		return Objects.equal(this.disconnectionTimeout,
-				param.disconnectionTimeout);
+		HttpGetEndpointConstructorParam param = (HttpGetEndpointConstructorParam) obj;
+		return Objects.equal(this.mediaMuxer, param.mediaMuxer);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(disconnectionTimeout);
+		return Objects.hashCode(this.mediaMuxer, this.terminateOnEOS);
 	}
 
 }

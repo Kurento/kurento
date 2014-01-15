@@ -45,6 +45,7 @@ import com.kurento.kmf.media.params.internal.DoubleMediaParam;
 import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
 import com.kurento.kmf.media.params.internal.FaceOverlayImageParam;
 import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
+import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
@@ -60,6 +61,7 @@ import com.kurento.kmf.media.params.internal.WindowParam;
 import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
@@ -236,19 +238,27 @@ public class MediaParamTest {
 	public void testHttpEndpointConstructor() {
 		HttpEndpointConstructorParam in = new HttpEndpointConstructorParam();
 		in.setDisconnectionTimeout(Integer.valueOf(200));
-		in.setMediaMuxer(KmsMediaMuxer.MP4);
-		in.setTerminateOnEOS(Boolean.FALSE);
 		KmsMediaParam param = createKmsParam(
 				KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
 				in.getThriftParams().getData());
 
 		HttpEndpointConstructorParam out = instantiateAndCheck(
 				HttpEndpointConstructorParam.class, param);
-		Assert.assertTrue(in.getDisconnectionTimeout().equals(
-				out.getDisconnectionTimeout()));
-		Assert.assertTrue(in.getMediaMuxer().equals(out.getMediaMuxer()));
-		Assert.assertTrue(in.getTerminateOnEOS()
-				.equals(out.getTerminateOnEOS()));
+		Assert.assertEquals(in, out);
+	}
+
+	@Test
+	public void testHttpGetEndpointConstructor() {
+		HttpGetEndpointConstructorParam in = new HttpGetEndpointConstructorParam();
+		in.setMediaMuxer(KmsMediaMuxer.MP4);
+		in.setTerminateOnEOS(Boolean.FALSE);
+		KmsMediaParam param = createKmsParam(
+				KmsMediaHttpGetEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		HttpGetEndpointConstructorParam out = instantiateAndCheck(
+				HttpGetEndpointConstructorParam.class, param);
+		Assert.assertEquals(in, out);
 	}
 
 	@Test

@@ -14,20 +14,9 @@
  */
 package com.kurento.kmf.media;
 
-import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
-
 /**
  * Endpoint that enables Kurento to work as an HTTP server, allowing peer HTTP
- * clients to access media. An {@code HttpEndpoint} contains both SINK and
- * SOURCE pads for AUDIO and VIDEO. SINK elements provide access to an HTTP file
- * upload function while SOURCE delivers media using HTML5 pseudostreaming
- * mechanism.
- * <p>
- * This type of endpoint provide bidirectional communications. Its
- * {@link MediaSink} are associated with the HTTP GET method, while
- * {@link MediaSource} are related to HTTP POST method.
- * </p>
+ * clients to access media.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -53,42 +42,4 @@ public interface HttpEndpoint extends SessionEndpoint {
 	 */
 	void getUrl(Continuation<String> cont);
 
-	/**
-	 * Builder for the {@link HttpEndpoint}.
-	 * 
-	 * @author Ivan Gracia (igracia@gsyc.es)
-	 * @since 2.0.0
-	 */
-	public interface HttpEndpointBuilder extends
-			MediaObjectBuilder<HttpEndpointBuilder, HttpEndpoint> {
-
-		/**
-		 * This method configures the endpoint to raise a
-		 * {@link MediaSessionTerminatedEvent} when the associated player raises
-		 * a {@link EndOfStreamEvent}
-		 * 
-		 * @return The builder
-		 */
-		HttpEndpointBuilder terminateOnEOS();
-
-		/**
-		 * Sets the disconnection timeout. This is the time that an http
-		 * endpoint will wait for a reconnection, in case an HTTP connection is
-		 * lost.
-		 * 
-		 * @param disconnectionTimeout
-		 *            Time (in seconds)
-		 * @return The builder
-		 */
-		HttpEndpointBuilder withDisconnectionTimeout(int disconnectionTimeout);
-
-		/**
-		 * Configures the media profile type (WEBM, MP4...) for the endpoint.
-		 * 
-		 * @param type
-		 *            The media profile tpye.
-		 * @return The builder
-		 */
-		HttpEndpointBuilder withMediaProfile(MediaProfileSpecType type);
-	}
 }

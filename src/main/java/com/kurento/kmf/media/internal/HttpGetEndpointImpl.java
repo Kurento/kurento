@@ -14,26 +14,28 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
-import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.GET_URL;
-import static com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
+import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.EVENT_EOS_DETECTED;
+import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.TYPE_NAME;
 
 import java.util.Map;
 
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaProfileSpecType;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
-import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
-import com.kurento.kmf.media.params.internal.StringMediaParam;
+import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
-public class HttpEndpointImpl extends AbstractSessionEndpoint implements
-		HttpEndpoint {
+public class HttpGetEndpointImpl extends AbstractHttpEndpoint implements
+		HttpGetEndpoint {
 
-	public HttpEndpointImpl(MediaElementRef endpointRef) {
+	public HttpGetEndpointImpl(MediaElementRef endpointRef) {
 		super(endpointRef);
 	}
 
@@ -41,42 +43,36 @@ public class HttpEndpointImpl extends AbstractSessionEndpoint implements
 	 * @param objectRef
 	 * @param params
 	 */
-	public HttpEndpointImpl(MediaElementRef objectRef,
+	public HttpGetEndpointImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
 	}
 
 	/* SYNC */
 	@Override
-	public String getUrl() {
-		StringMediaParam result = (StringMediaParam) invoke(GET_URL);
-		return result.getString();
+	public ListenerRegistration addEndOfStreamListener(
+			MediaEventListener<EndOfStreamEvent> listener) {
+		return addListener(EVENT_EOS_DETECTED, listener);
 	}
 
 	/* ASYNC */
-
 	@Override
-	public void getUrl(final Continuation<String> cont) {
-		invoke(GET_URL, new StringContinuationWrapper(cont));
+	public void addEndOfStreamListener(
+			MediaEventListener<EndOfStreamEvent> listener,
+			Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_EOS_DETECTED, listener, cont);
 	}
 
-	static class HttpEndpointBuilderImpl<T extends HttpEndpointBuilderImpl<T>>
-			extends AbstractSessionEndpointBuilder<T, HttpEndpoint> implements
-			HttpEndpointBuilder {
+	static class HttpGetEndpointBuilderImpl<T extends HttpGetEndpointBuilderImpl<T>>
+			extends AbstractHttpEndpointBuilderImpl<T, HttpGetEndpoint>
+			implements HttpGetEndpointBuilder {
 
 		// The param is not stored in the map of params until some constructor
 		// param is set.
-		private final HttpEndpointConstructorParam param = new HttpEndpointConstructorParam();
+		private final HttpGetEndpointConstructorParam param = new HttpGetEndpointConstructorParam();
 
-		public HttpEndpointBuilderImpl(final MediaPipeline pipeline) {
+		public HttpGetEndpointBuilderImpl(final MediaPipeline pipeline) {
 			super(TYPE_NAME, pipeline);
-		}
-
-		@Override
-		public T withDisconnectionTimeout(int disconnectionTimeout) {
-			param.setDisconnectionTimeout(Integer.valueOf(disconnectionTimeout));
-			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
-			return self();
 		}
 
 		@Override

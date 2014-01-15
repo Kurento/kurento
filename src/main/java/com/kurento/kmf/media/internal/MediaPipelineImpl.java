@@ -26,7 +26,7 @@ import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
-import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
+import com.kurento.kmf.media.HttpGetEndpoint.HttpGetEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
@@ -43,7 +43,7 @@ import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.internal.ChromaFilterImpl.ChromaFilterBuilderImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl.FaceOverlayFilterBuilderImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl.GStreamerFilterBuilderImpl;
-import com.kurento.kmf.media.internal.HttpEndpointImpl.HttpEndpointBuilderImpl;
+import com.kurento.kmf.media.internal.HttpGetEndpointImpl.HttpGetEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlateDetectorFilterImpl.PlateDetectorFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlayerEndpointImpl.PlayerEndpointBuilderImpl;
@@ -447,8 +447,8 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public HttpEndpointBuilder newHttpEndpoint() {
-		return new HttpEndpointBuilderImpl(this);
+	public HttpGetEndpointBuilder newHttpGetEndpoint() {
+		return new HttpGetEndpointBuilderImpl(this);
 	}
 
 	@Override

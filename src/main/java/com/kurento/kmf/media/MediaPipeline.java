@@ -21,7 +21,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
-import com.kurento.kmf.media.HttpEndpoint.HttpEndpointBuilder;
+import com.kurento.kmf.media.HttpGetEndpoint.HttpGetEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
@@ -140,7 +140,7 @@ public interface MediaPipeline extends MediaObject {
 	 * 
 	 * @return The builder
 	 */
-	HttpEndpointBuilder newHttpEndpoint();
+	HttpGetEndpointBuilder newHttpGetEndpoint();
 
 	/**
 	 * Obtains the builder for an {@link RtpEndpoint}.
