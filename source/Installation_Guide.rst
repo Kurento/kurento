@@ -528,37 +528,39 @@ different scenarios:
 Under the above circumstances, the "top" command showed the following
 results in the hardware described below:
 
-| 
-| {\| style="background:#cccc99;color:black;width:50%;" border="1"
-cellpadding="3" cellspacing="0" align="center" \|+ Machine Info ! !! KAS
-!! KMS \|- style="background:white; color:black" align="center" !
-Machine Type \| Virtual Machine \| Physical Machine \|-
-style="background:white; color:black" align="center" ! CPU \| 1 Intel
-Core 2 Duo @ 2,4Ghz \| Intel(R) Xeon(R) CPU E5-2620 0 @ 2GHz \|-
-style="background:white; color:black" align="center" ! RAM \| 4GB \| 4GB
-\|- style="background:white; color:black" align="center" ! HDD \| 250GB
-\| 10GB \|- style="background:white; color:black" align="center" !
-Operating System \| Mac OS X 10.6.8 \| Ubuntu 13.10 \|}
 
-| 
-|  KAS showed the following results:
-| {\| style="background:#cccc99;color:black;width:50%;" border="1"
-cellpadding="3" cellspacing="0" align="center" \|+ KAS ! !! Low Usage !!
-Heavy Usage \|- style="background:white; color:black" align="center" !
-RAM \| 96MB \| 200,6MB \|- style="background:white; color:black"
-align="center" ! CPU \| 0.2% \| 44.9% \|- style="background:white;
-color:black" align="center" ! I/O HDD \| 1.44GB \| 1.69GB \|}
+==================== =========================== ============
+Machine Info         KAS                         KMS
+==================== =========================== ============
+    Machine Type     Virtual Machine             Physical Machine
+-------------------- --------------------------- ------------
+        CPU          1 Intel Core 2 Duo @ 2,4Ghz Intel(R) Xeon(R) CPU E5-2620 0 @ 2GHz
+        RAM          4GB                         4GB
+        HDD          250GB                       10GB
+  Operating System   Mac OS X 10.6.8             Ubuntu 13.10
+==================== =========================== ============
 
-| 
-|  KMS gave the following result:
-| {\| style="background:#cccc99;color:black;width:50%;" border="1"
-cellpadding="3" cellspacing="0" align="center" \|+ KMS ! !! Low Usage !!
-Heavy Usage \|- style="background:white; color:black" align="center" !
-RAM \| 122.88MB \| 1.56GB \|- style="background:white; color:black"
-align="center" ! CPU \| 0.3% \| 34.6% \|- style="background:white;
-color:black" align="center" ! I/O HDD \| 1.18GB \| 2.47GB \|}
+KAS showed the following results:
 
-| 
+======== ============ ============
+KAS      Low Usage    Heavy Usage
+======== ============ ============
+RAM      96MB         200,6MB
+-------- ------------ ------------
+CPU      0.2%         44.9%
+I/O HDD	 1.44GB       1.69GB
+======== ============ ============
+
+KMS gave the following result:
+
+======== ============ ============
+KMS      Low Usage    Heavy Usage
+======== ============ ============
+RAM      122.88MB     1.56GB
+-------- ------------ ------------
+CPU      0.3%         34.6%
+I/O HDD	 1.18GB	      2.47GB
+======== ============ ============
 
 I/O flows
 ---------

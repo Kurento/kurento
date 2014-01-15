@@ -8,7 +8,7 @@ Introduction
 The *Stream Oriented GE Kurento* is a multimedia platform helping
 developers to add multimedia capabilities to their applications. The
 core element is *Kurento Media Server* (*KMS*) a
-`*Gstreamer* <http://gstreamer.freedesktop.org/>`__ based multimedia
+`Gstreamer <http://gstreamer.freedesktop.org/>`__ based multimedia
 engine that provides following features:
 
 -  Networked streaming protocols, including *HTTP* working as client and
@@ -20,8 +20,8 @@ engine that provides following features:
 -  Media storage supporting writing operations for *WebM* and *MP4* and
    reading operations for any of *Gstreamer's* muxers.
 
-`*Java* <http://www.java.com/>`__ and
-`*Javascript* <http://www.w3.org/standards/webdesign/script>`__ SDKs are
+`Java <http://www.java.com/>`__ and
+`Javascript <http://www.w3.org/standards/webdesign/script>`__ SDKs are
 available for developers to incorporate above features to applications.
 
 About this guide
@@ -44,21 +44,21 @@ Programmer Guide
 Things you need to know before start programing
 -----------------------------------------------
 
--  The *Stream Oriented GE Kurento* software is released under `*LGPL*
+-  The *Stream Oriented GE Kurento* software is released under `LGPL
    version 2.1 <http://www.gnu.org/licenses/lgpl-2.1.html>`__ license.
    This is quite a convenient license for programmers, but it is still
    recommended you check if actually fits your application needs.
 
--  `*Maven* <http://maven.apache.org/>`__ is used as dependency
+-  `Maven <http://maven.apache.org/>`__ is used as dependency
    management tool for *Java* SDKs. Most likely
-   `*Gradle* <http://www.gradle.org/>`__ can also be used, but we still
+   `Gradle <http://www.gradle.org/>`__ can also be used, but we still
    haven't tested. If you don't use any dependency management you can
-   still download the `*KMF API
-   Bundle* <https://forge.fi-ware.eu/frs/download.php/819/kmf-api.jar>`__
+   still download the `KMF API
+   Bundle <https://forge.fi-ware.eu/frs/download.php/819/kmf-api.jar>`__
    and incorporate manually all dependencies to your application, but
    this is not recommended.
 
--  `*Spring framework* <http://spring.io/>`__ is extensively used for
+-  `Spring framework <http://spring.io/>`__ is extensively used for
    lifecycle management of *Java* components. Developers are not
    required to develop ''Spring '' applications when using the *Stream
    Oriented GE Kurento* in *JEE* environments, but they'll have to in
@@ -83,8 +83,8 @@ Basic Setup
    *Kurento* will be provided. This server will also be called *Kurento
    Application Server* (*KAS*) through the document.
 
-`*Kurento's* administration
-guide <StreamOriented_-_Installation_and_Administration_Guide>`__
+The  :doc:`Kurento Installation and Administration
+Guide <Installation_Guide>`
 provides detailed information on installation and setup of above
 components.
 
