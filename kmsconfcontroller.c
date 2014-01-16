@@ -551,11 +551,10 @@ static void
 kms_conf_controller_reconfigure_pipeline (KmsConfController * self)
 {
   GstPad *srcpad, *sinkpad;
-  GstElement *sink;
 
   /* Unlink encodebin from sinkapp */
   srcpad = gst_element_get_static_pad (self->priv->encodebin, "src");
-  sinkpad = gst_pad_get_peer (srcpad);
+  sinkpad = gst_element_get_static_pad (self->priv->sink, "sink");
 
   if (!gst_pad_unlink (srcpad, sinkpad))
     GST_ERROR ("Encodebin %s could not be removed",
@@ -564,12 +563,11 @@ kms_conf_controller_reconfigure_pipeline (KmsConfController * self)
   g_object_unref (srcpad);
 
   /* Remove old encodebin and sink elements */
-  sink = gst_pad_get_parent_element (sinkpad);
   g_object_unref (sinkpad);
-  gst_element_set_locked_state (sink, TRUE);
-  gst_element_set_state (sink, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self->priv->pipeline), sink);
-  g_object_unref (sink);
+  gst_element_set_locked_state (self->priv->sink, TRUE);
+  gst_element_set_state (self->priv->sink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), self->priv->sink);
+  g_clear_object (&self->priv->sink);
 
   gst_element_set_locked_state (self->priv->encodebin, TRUE);
   gst_element_set_state (self->priv->encodebin, GST_STATE_NULL);
@@ -729,6 +727,7 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
     gulong *probe_id;
 
     GST_DEBUG ("Encodebin source pads blocked");
+
     /* install new probe for EOS */
     pad = gst_element_get_static_pad (self->priv->encodebin, "src");
     peer = gst_pad_get_peer (pad);
@@ -736,7 +735,7 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
     probe_id = g_object_get_data (G_OBJECT (peer), KEY_PAD_PROBE_ID);
     if (probe_id != NULL) {
       gst_pad_remove_probe (peer, *probe_id);
-      g_object_set_data_full (G_OBJECT (sinkpad), KEY_PAD_PROBE_ID, NULL, NULL);
+      g_object_set_data_full (G_OBJECT (peer), KEY_PAD_PROBE_ID, NULL, NULL);
     }
 
     gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
