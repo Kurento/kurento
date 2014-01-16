@@ -144,9 +144,39 @@ create_configuration_data (GstElement * valve, const gchar * sinkname,
   return conf;
 }
 
+static GstPadProbeReturn
+fake_seek_support (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_SEEK) {
+    GST_INFO ("Seek event received, dropping: %" GST_PTR_FORMAT, event);
+    return GST_PAD_PROBE_DROP;
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
+static gboolean
+fake_query_func (GstPad * pad, GstObject * parent, GstQuery * query)
+{
+  if (GST_QUERY_TYPE (query) == GST_QUERY_SEEKING) {
+    gst_query_set_seeking (query, GST_FORMAT_BYTES, TRUE,
+        G_GUINT64_CONSTANT (0), GST_CLOCK_TIME_NONE);
+
+    return TRUE;
+  } else if (GST_QUERY_TYPE (query) | GST_QUERY_TYPE_UPSTREAM) {
+    return gst_pad_peer_query (pad, query);
+  } else {
+    return FALSE;
+  }
+}
+
 static void
 kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
 {
+  GstPad *pad;
+
   if (self->priv->pipeline == NULL) {
     GST_ERROR_OBJECT (self, "Not internal pipeline provided");
     return;
@@ -163,6 +193,20 @@ kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
   }
 
   self->priv->sink = gst_object_ref (sink);
+
+  if (self->priv->profile != KMS_RECORDING_PROFILE_MP4)
+    return;
+
+  /* As mp4mux do not work unless the sink supports seeks, as is configured */
+  /* for fragment output it won't really need to seek */
+  pad = gst_element_get_static_pad (sink, "sink");
+
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      fake_seek_support, NULL, NULL);
+
+  pad->queryfunc = fake_query_func;
+
+  g_object_unref (pad);
 }
 
 static void
