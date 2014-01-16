@@ -999,6 +999,10 @@ kms_conf_controller_dispose (GObject * obj)
 static void
 kms_conf_controller_finalize (GObject * obj)
 {
+  KmsConfController *self = KMS_CONF_CONTROLLER (obj);
+
+  kms_conf_controller_free_config_data (self);
+
   G_OBJECT_CLASS (kms_conf_controller_parent_class)->finalize (obj);
 }
 
