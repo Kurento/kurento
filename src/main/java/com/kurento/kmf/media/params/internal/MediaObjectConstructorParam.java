@@ -35,6 +35,10 @@ public class MediaObjectConstructorParam extends
 
 	private int garbageCollectorPeriod;
 
+	// TODO for now, this value is not exposed to simplify the API. Default
+	// behaviour is accepted.
+	private Boolean collectOnUnreferenced;
+
 	public void setGarbageCollectorPeriod(int secs) {
 		this.garbageCollectorPeriod = secs;
 	}
@@ -51,10 +55,13 @@ public class MediaObjectConstructorParam extends
 	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaObjectConstructorParams kmsParams = new KmsMediaObjectConstructorParams();
 
-		kmsParams.setExcludeFromGC(garbageCollectorPeriod <= 0);
+		if (this.collectOnUnreferenced != null) {
+			kmsParams.setCollectOnUnreferenced(this.collectOnUnreferenced
+					.booleanValue());
+		}
 
-		if (garbageCollectorPeriod > 0) {
-			kmsParams.setGarbageCollectorPeriod(garbageCollectorPeriod);
+		if (this.garbageCollectorPeriod > 0) {
+			kmsParams.setGarbageCollectorPeriod(this.garbageCollectorPeriod);
 		}
 
 		try {
@@ -77,9 +84,12 @@ public class MediaObjectConstructorParam extends
 			throw new KurentoMediaFrameworkException(e.getMessage(), 30000);
 		}
 
-		if (kmsParams.isSetExcludeFromGC() && kmsParams.excludeFromGC) {
-			this.garbageCollectorPeriod = 0;
-		} else if (kmsParams.isSetGarbageCollectorPeriod()) {
+		if (kmsParams.isSetCollectOnUnreferenced()) {
+			this.collectOnUnreferenced = Boolean
+					.valueOf(kmsParams.collectOnUnreferenced);
+		}
+
+		if (kmsParams.isSetGarbageCollectorPeriod()) {
 			this.garbageCollectorPeriod = kmsParams.garbageCollectorPeriod;
 		}
 
