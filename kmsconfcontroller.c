@@ -102,6 +102,7 @@ enum
 {
   MATCHED_ELEMENTS,
   SINK_REQUIRED,
+  SINK_UNREQUIRED,
   LAST_SIGNAL
 };
 
@@ -728,6 +729,10 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
 
     GST_DEBUG ("Encodebin source pads blocked");
 
+    /* Tell objects to reset their settings over this object */
+    g_signal_emit (G_OBJECT (self), obj_signals[SINK_UNREQUIRED], 0,
+        self->priv->sink);
+
     /* install new probe for EOS */
     pad = gst_element_get_static_pad (self->priv->encodebin, "src");
     peer = gst_pad_get_peer (pad);
@@ -1059,6 +1064,14 @@ kms_conf_controller_class_init (KmsConfControllerClass * klass)
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsConfControllerClass, sink_required),
       NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+
+  obj_signals[SINK_UNREQUIRED] =
+      g_signal_new ("sink-unrequired",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsConfControllerClass, sink_unrequired),
+      NULL, NULL, g_cclosure_marshal_VOID__OBJECT, G_TYPE_NONE, 1,
+      GST_TYPE_ELEMENT);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsConfControllerPrivate));

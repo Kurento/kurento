@@ -76,6 +76,7 @@ struct _KmsConfControllerClass
   void (*matched_elements) (KmsConfController * self, GstElement * appsink,
       GstElement * appsrc);
   void (*sink_required) (KmsConfController * self);
+  void (*sink_unrequired) (KmsConfController * self, GstElement * sink);
 };
 
 GType kms_conf_controller_get_type (void);
