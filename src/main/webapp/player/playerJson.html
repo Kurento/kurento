@@ -129,8 +129,8 @@
 
 	function handlerChanged() {
 		var handler = document.getElementById("handler").value;
-		var disableVideo = new Array("../playerJsonSwitch");
-		selectUrl.disabled = (disableVideo.indexOf(handler) != -1);
+		var disableVideo = new Array("../cpRtcPlayerJack");
+		document.getElementById("contentId").disabled = (disableVideo.indexOf(handler) != -1);
 	}
 </script>
 </head>
@@ -144,12 +144,11 @@
 				onchange="handlerChanged()">
 					<option value="../playerJsonTunnel">Player with tunnel</option>
 					<option value="../playerJsonRedirect">Player with redirect</option>
-					<option value="../playerJsonSwitch">Player switching two
-						URLs</option>
+					<option value="../cpRtcPlayerJack">RTP stream with JackVader Filter</option>
 			</select></td>
 		</tr>
 		<tr>
-			<td><label for="url">Video</label></td>
+			<td><label for="url">ContentId</label></td>
 			<td style="width: 300px;"><select id="contentId"
 				name="contentId">
 					<option value="webm">WEBM video</option>
