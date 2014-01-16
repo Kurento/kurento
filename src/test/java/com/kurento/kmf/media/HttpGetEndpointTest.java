@@ -42,19 +42,20 @@ import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
- * {@link HttpEndpoint} test suite.
+ * {@link HttpGetEndpoint} test suite.
  * 
  * <p>
  * Methods tested:
  * <ul>
- * <li>{@link HttpEndpoint#getUrl()}
+ * <li>{@link HttpGetEndpoint#getUrl()}
  * </ul>
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndpoint#addMediaSessionStartedListener(MediaEventListener)}
  * <li>
- * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpGetEndpoint#addMediaSessionStartedListener(MediaEventListener)}
+ * <li>
+ * {@link HttpGetEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
  * 
  * 
@@ -64,7 +65,7 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
-public class HttpEndpointTest {
+public class HttpGetEndpointTest {
 
 	@Autowired
 	private MediaPipelineFactory pipelineFactory;
@@ -86,7 +87,7 @@ public class HttpEndpointTest {
 	 */
 	@Test
 	public void testMethodGetUrl() {
-		HttpEndpoint httpEP = pipeline.newHttpEndpoint().build();
+		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
 		Assert.assertTrue(!httpEP.getUrl().isEmpty());
 	}
 
@@ -99,7 +100,7 @@ public class HttpEndpointTest {
 	public void testEventMediaSessionStarted() throws InterruptedException {
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
-		HttpEndpoint httpEP = pipeline.newHttpEndpoint().build();
+		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
 		player.connect(httpEP);
 
 		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<EndOfStreamEvent>(
@@ -145,7 +146,7 @@ public class HttpEndpointTest {
 	@Ignore
 	@Test
 	public void testEventMediaSessionTerminated() throws InterruptedException {
-		// HttpEndpoint httpEP = pipeline.createHttpEndpoint(1, 1);
+		// HttpGetEndpoint httpEP = pipeline.createHttpGetEndpoint(1, 1);
 		//
 		// final Semaphore sem = new Semaphore(0);
 		//

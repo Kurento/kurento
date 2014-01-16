@@ -60,17 +60,17 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  * @version 1.0.0
  * 
  */
-public class HttpEndpointAsyncTest extends AbstractAsyncBaseTest {
+public class HttpPostEndpointAsyncTest extends AbstractAsyncBaseTest {
 
-	private HttpEndpoint httpEp;
+	private HttpPostEndpoint httpEp;
 
 	@Before
 	public void setup() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		pipeline.newHttpEndpoint().buildAsync(new Continuation<HttpEndpoint>() {
+		pipeline.newHttpPostEndpoint().buildAsync(new Continuation<HttpPostEndpoint>() {
 
 			@Override
-			public void onSuccess(HttpEndpoint result) {
+			public void onSuccess(HttpPostEndpoint result) {
 				httpEp = result;
 				sem.release();
 			}

@@ -76,7 +76,7 @@ public class SyncMediaServerTest {
 		// Wait some time simulating the connection to the player app
 		Thread.sleep(1000);
 
-		HttpEndpoint httpEndpoint = pipeline.newHttpEndpoint().build();
+		HttpEndpoint httpEndpoint = pipeline.newHttpGetEndpoint().build();
 
 		rtpEndpoint.connect(httpEndpoint, MediaType.VIDEO);
 	}
@@ -103,7 +103,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testConnect() throws KurentoMediaFrameworkException {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpEndpoint().build();
+		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
 		player.connect(http);
 
@@ -115,7 +115,7 @@ public class SyncMediaServerTest {
 	@Test
 	public void testConnectByType() throws KurentoMediaFrameworkException {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpEndpoint().build();
+		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
 		player.connect(http, MediaType.AUDIO);
 		player.connect(http, MediaType.VIDEO);

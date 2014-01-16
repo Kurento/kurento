@@ -67,7 +67,7 @@ public class DistributedGarbageColectorTest {
 
 		// Pipeline should now be deleted in KMS, so this should throw an
 		// exception
-		pipeline.newHttpEndpoint().build();
+		pipeline.newHttpGetEndpoint().build();
 	}
 
 }

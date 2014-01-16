@@ -246,7 +246,7 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 	@Test
 	public void testConnect() throws InterruptedException {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpEndpoint().build();
+		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		player.connect(http, new Continuation<Void>() {
@@ -272,7 +272,7 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 	@Test
 	public void testConnectByType() throws InterruptedException {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpEndpoint().build();
+		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
 		final CountDownLatch audioLatch = new CountDownLatch(1);
 		player.connect(http, AUDIO, new Continuation<Void>() {
