@@ -276,7 +276,8 @@ kms_image_overlay_display_detections_overlay_img (KmsImageOverlay *
     r->width = r->width * (imageoverlay->priv->widthPercent);
 
     costumeAux = cvCreateImage (cvSize (r->width, r->height),
-        imageoverlay->priv->cvImage->depth, 4);
+                                imageoverlay->priv->costume->depth,
+                                imageoverlay->priv->costume->nChannels);
     cvResize (imageoverlay->priv->costume, costumeAux, CV_INTER_LINEAR);
 
     row = (uchar *) costumeAux->imageData;
