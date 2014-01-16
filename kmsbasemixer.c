@@ -17,6 +17,7 @@
 #endif
 
 #include "kmsbasemixer.h"
+#include "kmsagnosticcaps.h"
 
 #define PLUGIN_NAME "basemixer"
 
@@ -30,6 +31,40 @@ GST_DEBUG_CATEGORY_STATIC (kms_base_mixer_debug_category);
     KmsBaseMixerPrivate                         \
   )                                             \
 )
+
+#define AUDIO_SINK_PAD_NAME "audio_sink_%u"
+#define VIDEO_SINK_PAD_NAME "video_sink_%u"
+#define AUDIO_SRC_PAD_NAME "audio_src_%u"
+#define VIDEO_SRC_PAD_NAME "video_src_%u"
+
+static GstStaticPadTemplate audio_sink_factory =
+GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD_NAME,
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
+    );
+
+static GstStaticPadTemplate video_sink_factory =
+GST_STATIC_PAD_TEMPLATE (VIDEO_SINK_PAD_NAME,
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
+    );
+
+static GstStaticPadTemplate audio_src_factory =
+GST_STATIC_PAD_TEMPLATE (AUDIO_SRC_PAD_NAME,
+    GST_PAD_SRC,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
+    );
+
+static GstStaticPadTemplate video_src_factory =
+GST_STATIC_PAD_TEMPLATE (VIDEO_SRC_PAD_NAME,
+    GST_PAD_SRC,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
+    );
+
 struct _KmsBaseMixerPrivate
 {
   GHashTable *ports;
@@ -58,6 +93,7 @@ static void
 kms_base_mixer_class_init (KmsBaseMixerClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "BaseMixer", "Generic", "Kurento plugin for mixer connection",
@@ -65,6 +101,15 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
 
   gobject_class->dispose = kms_base_mixer_dispose;
   gobject_class->finalize = kms_base_mixer_finalize;
+
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&audio_src_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&video_src_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&audio_sink_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&video_sink_factory));
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsBaseMixerPrivate));
