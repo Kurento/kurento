@@ -158,7 +158,9 @@ public class DistributedGarbageCollector {
 									DistributedGarbageCollector.this
 											.removeReference(KmsMediaObjectRef);
 								}
-								log.error(e.getMessage(), e);
+								log.warn(
+										"Removed reference for object {} from DGC. Reason: MediaObjectNotFound exception in KMS",
+										KmsMediaObjectRef.id);
 							} catch (TException e) {
 								log.error(e.getMessage(), e);
 							} finally {
