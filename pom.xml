@@ -22,6 +22,12 @@
 		<kmf-content-api.version>1.0.1-SNAPSHOT</kmf-content-api.version>
 		<kws-content-api.version>1.0.1-SNAPSHOT</kws-content-api.version>
 
+		<project.youtube.version>v3-rev73-1.13.2-beta</project.youtube.version>
+		<project.http.version>1.13.1-beta</project.http.version>
+		<project.oauth.version>1.13.1-beta</project.oauth.version>
+		<!-- <project.youtube.version>v3-rev92-1.17.0-rc</project.youtube.version> 
+			<project.http.version>1.17.0-rc</project.http.version> <project.oauth.version>1.17.0-rc</project.oauth.version> -->
+
 		<!-- Plugins Versions -->
 		<maven-war-plugin.version>2.3</maven-war-plugin.version>
 		<maven-release-plugin.version>2.4.2</maven-release-plugin.version>
@@ -99,6 +105,23 @@
 			<groupId>com.thetransactioncompany</groupId>
 			<artifactId>cors-filter</artifactId>
 			<version>${cors-filter.version}</version>
+		</dependency>
+		<!-- <dependency> <groupId>com.google.gdata</groupId> <artifactId>core</artifactId> 
+			<version>1.47.1</version> </dependency> -->
+		<dependency>
+			<groupId>com.google.apis</groupId>
+			<artifactId>google-api-services-youtube</artifactId>
+			<version>${project.youtube.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-jackson2</artifactId>
+			<version>${project.http.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.oauth-client</groupId>
+			<artifactId>google-oauth-client-jetty</artifactId>
+			<version>${project.oauth.version}</version>
 		</dependency>
 	</dependencies>
 

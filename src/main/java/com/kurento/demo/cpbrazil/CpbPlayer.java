@@ -12,12 +12,27 @@
  * Lesser General Public License for more details.
  *
  */
+package com.kurento.demo.cpbrazil;
+
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
 
 /**
- * Demo handlers for Campus Party 2014 Brasil. 
+ * HTTP Player of previously recorded WebRTC content; tunnel strategy
+ * (redirect=false, by default); not using JSON-RPC control protocol
+ * (useControlProtocol=false).
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.1
  */
-package com.kurento.demo.cpbrasil;
+@HttpPlayerService(path = "/cpbPlayer/*", useControlProtocol = false)
+public class CpbPlayer extends HttpPlayerHandler {
 
+	@Override
+	public void onContentRequest(HttpPlayerSession session) throws Exception {
+		String contentId = session.getContentId();
+		session.start("file:///tmp/" + contentId);
+	}
+
+}
