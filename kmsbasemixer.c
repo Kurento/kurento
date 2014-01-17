@@ -83,7 +83,7 @@ struct _KmsBaseMixerPrivate
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
-    KMS_TYPE_ELEMENT,
+    GST_TYPE_BIN,
     GST_DEBUG_CATEGORY_INIT (kms_base_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for basemixer element"));
 

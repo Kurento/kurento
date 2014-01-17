@@ -49,7 +49,7 @@ typedef struct _KmsBaseMixerPrivate KmsBaseMixerPrivate;
 
 struct _KmsBaseMixer
 {
-  KmsElement parent;
+  GstBin parent;
 
   /*< private > */
   KmsBaseMixerPrivate *priv;
@@ -57,7 +57,7 @@ struct _KmsBaseMixer
 
 struct _KmsBaseMixerClass
 {
-  KmsElementClass parent_class;
+  GstBinClass parent_class;
 
   /* Actions */
   gboolean (*handle_port) (KmsBaseMixer *self, GstElement *mixer_end_point);
