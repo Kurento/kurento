@@ -14,11 +14,11 @@
  */
 
 /**
- * Demo basic handlers (HTTP Player, RTP). 
+ * Demo handlers for Campus Party 2013 London. 
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
  */
-package com.kurento.demo.basic;
+package com.kurento.demo.cplondon;
 

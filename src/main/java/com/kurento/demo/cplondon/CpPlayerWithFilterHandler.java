@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.demo.basic;
+package com.kurento.demo.cplondon;
 
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
@@ -22,27 +22,28 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
 
-@HttpPlayerService(name = "PlayerJsonJackVader", path = "/playerJsonJackVader", redirect = true, useControlProtocol = true)
-public class PlayerJsonJackVader extends HttpPlayerHandler {
+@HttpPlayerService(name = "CpPlayerWithJackVaderFilter", path = "/cpPlayerJack", redirect = true, useControlProtocol = true)
+public class CpPlayerWithFilterHandler extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		PlayerEndpoint PlayerEndpoint = mp.newPlayerEndpoint(
+
+		PlayerEndpoint playerEndPoint = mp.newPlayerEndpoint(
 				"https://ci.kurento.com/video/fiwarecut.webm").build();
+
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		PlayerEndpoint.connect(filter);
-		session.setAttribute("player", PlayerEndpoint);
+		playerEndPoint.connect(filter);
+		session.setAttribute("player", playerEndPoint);
 		session.start(filter);
 	}
 
 	@Override
 	public void onContentStarted(HttpPlayerSession session) {
-		PlayerEndpoint PlayerEndpoint = (PlayerEndpoint) session
+		PlayerEndpoint playerendPoint = (PlayerEndpoint) session
 				.getAttribute("player");
-		PlayerEndpoint.play();
+		playerendPoint.play();
 	}
-
 }

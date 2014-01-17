@@ -1,3 +1,17 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 package com.kurento.demo.cpbrazil;
 
 import java.io.BufferedInputStream;
@@ -58,7 +72,6 @@ public class UploadVideoYouTube {
 	 *            list of scopes needed to run youtube upload.
 	 */
 	private Credential authorize(List<String> scopes) throws Exception {
-
 		// Load client secrets.
 		GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
 				JSON_FACTORY, UploadVideoYouTube.class
@@ -100,7 +113,6 @@ public class UploadVideoYouTube {
 	}
 
 	public void uploadVideo(String url) {
-
 		// Scope required to upload to YouTube.
 		List<String> scopes = Lists
 				.newArrayList("https://www.googleapis.com/auth/youtube.upload");
@@ -255,9 +267,4 @@ public class UploadVideoYouTube {
 			t.printStackTrace();
 		}
 	}
-
-	// public static void main(String[] args) {
-	// UploadVideoYouTube youTube = new UploadVideoYouTube();
-	// youTube.uploadVideo("http://193.147.51.29/campus-party-1389874842998");
-	// }
 }

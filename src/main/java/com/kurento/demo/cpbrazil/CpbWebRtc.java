@@ -1,3 +1,17 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 package com.kurento.demo.cpbrazil;
 
 import java.net.URISyntaxException;
@@ -8,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
+import com.kurento.kmf.media.ChromaFilter;
 import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
@@ -18,9 +33,11 @@ import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
-import com.kurento.kmf.repository.Repository;
+import com.kurento.kmf.media.params.internal.WindowParam;
+import com.kurento.kmf.repository.RepositoryHttpRecorder;
+import com.kurento.kmf.repository.RepositoryItem;
 
-@WebRtcContentService(path = "/cpbWebRtc")
+@WebRtcContentService(path = "/cpbWebRtc/*")
 public class CpbWebRtc extends WebRtcContentHandler {
 
 	// Identifier of windows
@@ -37,14 +54,14 @@ public class CpbWebRtc extends WebRtcContentHandler {
 	public GStreamerFilter mirrorFilter;
 	public PointerDetectorFilter pointerDetectorFilter;
 	public FaceOverlayFilter faceOverlayFilter;
+	public ChromaFilter chromaFilter;
 	public RecorderEndpoint recorderEndpoint;
-	public Repository repository;
 
-	// Demo elements
+	// Global demo elements
 	public String itemId;
 	public String activeWindow;
-	public UploadVideoYouTube videoYouTube;
-	public String handlerUrl;
+	private String handlerUrl;
+	private String recorderUrl;
 
 	@Autowired
 	private MediaApiConfiguration config;
@@ -52,27 +69,30 @@ public class CpbWebRtc extends WebRtcContentHandler {
 	@Override
 	public void onContentRequest(final WebRtcContentSession contentSession)
 			throws Exception {
-		handlerUrl = contentSession.getHttpServletRequest().getScheme() + "://"
-				+ config.getHandlerAddress() + ":"
-				+ contentSession.getHttpServletRequest().getServerPort()
-				+ contentSession.getHttpServletRequest().getContextPath();
+		String contentId = contentSession.getContentId();
 
-		videoYouTube = new UploadVideoYouTube();
+		final UploadVideoYouTube videoYouTube = new UploadVideoYouTube();
+		final boolean recordOnRepository = contentId != null
+				&& contentId.equalsIgnoreCase("repositoryRecorder");
+		recorderUrl = contentSession.getHttpServletRequest().getScheme()
+				+ "://" + config.getHandlerAddress() + ":"
+				+ contentSession.getHttpServletRequest().getServerPort();
+		handlerUrl = recorderUrl
+				+ contentSession.getHttpServletRequest().getContextPath();
+		getLogger().info("handlerUrl " + handlerUrl);
 
 		mediaPipeline = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mediaPipeline);
 
-		repository = contentSession.getRepository();
-
 		mirrorFilter = mediaPipeline.newGStreamerFilter("videoflip method=4")
 				.build();
-
+		chromaFilter = mediaPipeline.newChromaFilter(
+				new WindowParam(100, 10, 20, 20)).build();
 		pointerDetectorFilter = mediaPipeline.newPointerDetectorFilter()
 				.withWindow(createStartWindow()).build();
-
 		faceOverlayFilter = mediaPipeline.newFaceOverlayFilter().build();
-
-		mirrorFilter.connect(faceOverlayFilter);
+		mirrorFilter.connect(chromaFilter);
+		chromaFilter.connect(faceOverlayFilter);
 		faceOverlayFilter.connect(pointerDetectorFilter);
 
 		pointerDetectorFilter
@@ -82,6 +102,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 						try {
 							String windowId = event.getWindowId();
 							if (windowId.equals(START)) {
+								// chromaFilter.setBackground(handlerUrl
+								// + "/img/transparent-1px.png");
 								pointerDetectorFilter.clearWindows();
 								pointerDetectorFilter
 										.addWindow(createMarioWindow());
@@ -91,7 +113,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 										.addWindow(createSFWindow());
 								pointerDetectorFilter
 										.addWindow(createSonicWindow());
-								addRecorder(contentSession);
+								addRecorder(contentSession, recordOnRepository);
 								recorderEndpoint.record();
 
 							} else if (windowId.equals(SF)
@@ -99,6 +121,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 								faceOverlayFilter.setOverlayedImage(handlerUrl
 										+ "/img/masks/sf.png", -0.5F, -0.5F,
 										1.6F, 1.6F);
+								chromaFilter.setBackground(handlerUrl
+										+ "/img/background/sf.jpg");
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -109,6 +133,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 								faceOverlayFilter.setOverlayedImage(handlerUrl
 										+ "/img/masks/mario.png", -0.3F, -0.5F,
 										1.6F, 1.6F);
+								chromaFilter.setBackground(handlerUrl
+										+ "/img/background/mario.jpg");
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -119,6 +145,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 								faceOverlayFilter.setOverlayedImage(handlerUrl
 										+ "/img/masks/dk.png", -0.5F, -0.5F,
 										1.6F, 1.6F);
+								chromaFilter.setBackground(handlerUrl
+										+ "/img/background/dk.jpg");
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -129,6 +157,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 								faceOverlayFilter.setOverlayedImage(handlerUrl
 										+ "/img/masks/sonic.png", -0.5F, -0.5F,
 										1.7F, 1.7F);
+								chromaFilter.setBackground(handlerUrl
+										+ "/img/background/sonic.jpg");
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -138,15 +168,18 @@ public class CpbWebRtc extends WebRtcContentHandler {
 									|| windowId.equals(TRASH)) {
 								pointerDetectorFilter.clearWindows();
 								faceOverlayFilter.setOverlayedImage(handlerUrl
-										+ "masks/1px_trans.png", 0.0F, 0.0F,
-										0.0F, 0.0F);
+										+ "/img/transparent-1px.png", 0.0F,
+										0.0F, 0.0F, 0.0F);
 								pointerDetectorFilter
 										.addWindow(createStartWindow());
 								recorderEndpoint.stop();
 								recorderEndpoint.release();
 								if (windowId.equals(YOUTUBE)) {
-									videoYouTube.uploadVideo(handlerUrl
-											+ "/cpbPlayer/" + itemId);
+									String recordUrl = handlerUrl
+											+ (recordOnRepository ? "/playerRepository/"
+													: "/cpbPlayer/") + itemId;
+									getLogger().info("recordUrl " + recordUrl);
+									videoYouTube.uploadVideo(recordUrl);
 								}
 							}
 
@@ -165,10 +198,25 @@ public class CpbWebRtc extends WebRtcContentHandler {
 		super.onContentStarted(contentSession);
 	}
 
-	private void addRecorder(WebRtcContentSession contentSession) {
+	private void addRecorder(WebRtcContentSession contentSession,
+			boolean repositoryRecorder) {
 		itemId = "campus-party-" + Calendar.getInstance().getTimeInMillis();
-		recorderEndpoint = mediaPipeline.newRecorderEndpoint(
-				"file:///tmp/" + itemId).build();
+
+		if (repositoryRecorder) {
+			RepositoryItem repositoryItem = contentSession.getRepository()
+					.createRepositoryItem(itemId);
+			RepositoryHttpRecorder recorder = repositoryItem
+					.createRepositoryHttpRecorder();
+			getLogger().info(
+					"repositoryRecorderUrl + recorder.getURL()" + recorderUrl
+							+ recorder.getURL());
+			recorderEndpoint = mediaPipeline.newRecorderEndpoint(
+					recorderUrl + recorder.getURL()).build();
+		} else {
+			recorderEndpoint = mediaPipeline.newRecorderEndpoint(
+					"file:///tmp/" + itemId).build();
+		}
+
 		pointerDetectorFilter.connect(recorderEndpoint);
 	}
 

@@ -12,26 +12,21 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.demo.basic;
+package com.kurento.demo.cplondon;
 
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 
-@HttpPlayerService(name = "SimplePlayerHandler", path = "/playerHttp/*", redirect = true, useControlProtocol = false)
-public class PlayerHttpHandler extends HttpPlayerHandler {
+@HttpPlayerService(name = "CpRtcPlayerHandler", path = "/cpRtcPlayerJack", redirect = true, useControlProtocol = true)
+public class CpRtcPlayerJackHandler extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		if (session.getContentId() != null
-				&& session.getContentId().toLowerCase().startsWith("bar")) {
-			session.start("https://ci.kurento.com/video/barcodes.webm");
-		} else if (session.getContentId() != null
-				&& session.getContentId().toLowerCase()
-						.endsWith("fiwarecut.webm")) {
-			session.start("https://ci.kurento.com/video/fiwarecut.webm");
+		if (CpRtcRtpJackHandler.sharedFilterReference == null) {
+			session.terminate(500, "Rtp session has not been established");
 		} else {
-			session.start("http://media.w3.org/2010/05/sintel/trailer.webm");
+			session.start(CpRtcRtpJackHandler.sharedFilterReference);
 		}
 	}
 
