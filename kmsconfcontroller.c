@@ -26,6 +26,8 @@
 #include "kms-enumtypes.h"
 #include "kmsloop.h"
 
+#define KMS_TEMP_TEMPLATE "/tmp/kurento-XXXXXX"
+
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 #define DEFAULT_HAS_DATA_VALUE FALSE
 
@@ -75,6 +77,7 @@ struct _KmsConfControllerPrivate
   KmsLoop *loop;
   KmsElement *element;
   GstElement *encodebin;
+  GstElement *queue;
   GstPipeline *pipeline;
   GstElement *sink;
   KmsRecordingProfile profile;
@@ -182,14 +185,26 @@ kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
     return;
   }
 
+  self->priv->queue = gst_element_factory_make ("queue2", NULL);
+  g_object_set (self->priv->queue, "temp-template", KMS_TEMP_TEMPLATE,
+      "max-size-buffers", 0, "max-size-bytes", 0, "max-size-time",
+      G_GUINT64_CONSTANT (0), NULL);
+  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->queue);
+  gst_element_sync_state_with_parent (self->priv->queue);
+
+  GST_DEBUG ("Added queue %s", GST_ELEMENT_NAME (self->priv->queue));
+
   gst_bin_add (GST_BIN (self->priv->pipeline), sink);
   gst_element_sync_state_with_parent (sink);
 
   GST_DEBUG ("Added sink %s", GST_ELEMENT_NAME (sink));
 
-  if (!gst_element_link (self->priv->encodebin, sink)) {
-    GST_ERROR ("Could not link %s to %s",
-        GST_ELEMENT_NAME (self->priv->encodebin), GST_ELEMENT_NAME (sink));
+  if (!gst_element_link_many (self->priv->encodebin, self->priv->queue, sink,
+          NULL)) {
+    GST_ERROR ("Could not link elements: %s, %s, %s",
+        GST_ELEMENT_NAME (self->priv->encodebin),
+        GST_ELEMENT_NAME (self->priv->queue), GST_ELEMENT_NAME (sink));
+    return;
   }
 
   self->priv->sink = gst_object_ref (sink);
@@ -595,20 +610,14 @@ unlock_pending_valves (gpointer data, gpointer user_data)
 static void
 kms_conf_controller_reconfigure_pipeline (KmsConfController * self)
 {
-  GstPad *srcpad, *sinkpad;
-
-  /* Unlink encodebin from sinkapp */
-  srcpad = gst_element_get_static_pad (self->priv->encodebin, "src");
-  sinkpad = gst_element_get_static_pad (self->priv->sink, "sink");
-
-  if (!gst_pad_unlink (srcpad, sinkpad))
-    GST_ERROR ("Encodebin %s could not be removed",
-        GST_ELEMENT_NAME (self->priv->encodebin));
-
-  g_object_unref (srcpad);
+  gst_element_unlink_many (self->priv->encodebin, self->priv->queue,
+      self->priv->sink, NULL);
 
   /* Remove old encodebin and sink elements */
-  g_object_unref (sinkpad);
+  gst_element_set_locked_state (self->priv->queue, TRUE);
+  gst_element_set_state (self->priv->queue, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), self->priv->queue);
+
   gst_element_set_locked_state (self->priv->sink, TRUE);
   gst_element_set_state (self->priv->sink, GST_STATE_NULL);
   gst_bin_remove (GST_BIN (self->priv->pipeline), self->priv->sink);
@@ -778,7 +787,7 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
         self->priv->sink);
 
     /* install new probe for EOS */
-    pad = gst_element_get_static_pad (self->priv->encodebin, "src");
+    pad = gst_element_get_static_pad (self->priv->queue, "src");
     peer = gst_pad_get_peer (pad);
 
     probe_id = g_object_get_data (G_OBJECT (peer), KEY_PAD_PROBE_ID);
