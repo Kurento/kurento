@@ -1036,8 +1036,6 @@ kms_conf_controller_dispose (GObject * obj)
 {
   KmsConfController *self = KMS_CONF_CONTROLLER (obj);
 
-  GST_DEBUG_OBJECT (self, "Dispose");
-
   g_clear_object (&self->priv->loop);
   g_clear_object (&self->priv->sink);
   g_clear_object (&self->priv->pipeline);
