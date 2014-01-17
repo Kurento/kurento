@@ -58,6 +58,9 @@ struct _KmsBaseMixer
 struct _KmsBaseMixerClass
 {
   KmsElementClass parent_class;
+
+  /* Actions */
+  gboolean (*handle_port) (KmsBaseMixer *self, GstElement *mixer_end_point);
 };
 
 GType kms_base_mixer_get_type (void);

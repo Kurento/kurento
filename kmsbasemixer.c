@@ -18,6 +18,8 @@
 
 #include "kmsbasemixer.h"
 #include "kmsagnosticcaps.h"
+#include "kms-marshal.h"
+#include "kmsmixerendpoint.h"
 
 #define PLUGIN_NAME "basemixer"
 
@@ -65,6 +67,14 @@ GST_STATIC_PAD_TEMPLATE (VIDEO_SRC_PAD_NAME,
     GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
+enum
+{
+  SIGNAL_HANDLE_PORT,
+  LAST_SIGNAL
+};
+
+static guint kms_base_mixer_signals[LAST_SIGNAL] = { 0 };
+
 struct _KmsBaseMixerPrivate
 {
   GHashTable *ports;
@@ -76,6 +86,21 @@ G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
     KMS_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (kms_base_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for basemixer element"));
+
+static gboolean
+kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
+{
+  if (!KMS_IS_MIXER_END_POINT (mixer_end_point)) {
+    GST_INFO_OBJECT (mixer, "Invalid MixerEndPoint: %" GST_PTR_FORMAT,
+        mixer_end_point);
+    return FALSE;
+  }
+
+  GST_DEBUG_OBJECT (mixer, "Handle handle port: %" GST_PTR_FORMAT,
+      mixer_end_point);
+
+  return TRUE;
+}
 
 static void
 kms_base_mixer_dispose (GObject * object)
@@ -99,8 +124,10 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
       "BaseMixer", "Generic", "Kurento plugin for mixer connection",
       "Jose Antonio Santos Cadenas <santoscadenas@gmail.com>");
 
-  gobject_class->dispose = kms_base_mixer_dispose;
-  gobject_class->finalize = kms_base_mixer_finalize;
+  klass->handle_port = GST_DEBUG_FUNCPTR (kms_base_mixer_handle_port);
+
+  gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_base_mixer_dispose);
+  gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_base_mixer_finalize);
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&audio_src_factory));
@@ -110,6 +137,14 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
       gst_static_pad_template_get (&audio_sink_factory));
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&video_sink_factory));
+
+  /* Signals initialization */
+  kms_base_mixer_signals[SIGNAL_HANDLE_PORT] =
+      g_signal_new ("handle-port",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsBaseMixerClass, handle_port), NULL, NULL,
+      __kms_marshal_BOOL__OBJECT, G_TYPE_BOOLEAN, 1, GST_TYPE_ELEMENT);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsBaseMixerPrivate));
