@@ -212,8 +212,8 @@ kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
   if (self->priv->profile != KMS_RECORDING_PROFILE_MP4)
     return;
 
-  /* As mp4mux do not work unless the sink supports seeks, as is configured */
-  /* for fragment output it won't really need to seek */
+  /* As mp4mux does not work unless the sink supports seeks, as it */
+  /* is configured for fragment output it won't really need to seek */
   pad = gst_element_get_static_pad (sink, "sink");
 
   gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
