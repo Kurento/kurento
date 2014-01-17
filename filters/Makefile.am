@@ -6,7 +6,8 @@ SUBDIRS =				\
 	facedetector			\
 	imageoverlay			\
 	faceoverlay			\
-	chroma
+	chroma				\
+	crowddetector
 
 plugin_LTLIBRARIES = libkmsfilters.la
 
