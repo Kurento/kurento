@@ -36,15 +36,15 @@
 #define MAX_DIF_PLATE_RECTANGLES_AREA ((float) 0.5)
 #define CHARACTER_IDEAL_PROPORTION ((float) 1.3)
 #define MAX_DIF_CHARACTER_PROPORTIONS ((float) 0.5)
-#define RESIZE_FACTOR_1 ((float) 1.5)
-#define RESIZE_FACTOR_2 ((float) 1.8)
-#define RESIZE_FACTOR_3 ((float) 2.2)
+#define RESIZE_FACTOR_1 ((float) 0.3)
+#define RESIZE_FACTOR_2 ((float) 1)
+#define RESIZE_FACTOR_3 ((float) 2)
 #define EDGE_MARGIN ((int) 40)
 #define MIN_NUMBER_CHARACTERS ((int) 6)
 #define PLATE_WIDTH_EXPAND_RATE ((float) 0.2)
 #define PLATE_HEIGHT_EXPAND_RATE ((float) 0.4)
-#define RESIZE_HIGH_THRES ((int) 19)
-#define RESIZE_LOW_THRES ((int) 13)
+#define RESIZE_HIGH_THRES ((int) 100)
+#define RESIZE_LOW_THRES ((int) 30)
 #define MIN_OCR_CONFIDENCE_RATE ((int) 70)
 #define NUM_ACCUMULATED_PLATES ((int) 4)
 #define MAX_NUM_DIF_CHARACTERS ((int) 0)
@@ -628,10 +628,11 @@ kms_plate_detector_calc_rotation_angle (GSList * plateStore)
   if (length > 0) {
     float *angle = g_slist_nth_data (angleStore,
         (length) / 2);
+    float angleAux = *angle;
 
     g_slist_free_full (angleStore, kms_plate_detector_float_free);
 
-    return *angle;
+    return angleAux;
   }
 
   g_slist_free_full (angleStore, kms_plate_detector_float_free);
@@ -759,10 +760,10 @@ kms_plate_detector_check_is_plate (KmsPlateDetector * platedetector,
   if (counter > 0) {
     medHeight = medHeight / counter;
   } else {
-    medHeight = 1000;
+    medHeight = 0;
   }
 
-  return (counter > 5) && (medHeight > 7 * platedetector->priv->resizeFactor);
+  return numOfCharacters > 6;
 }
 
 static void
@@ -1252,12 +1253,6 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       cvResetImageROI (imAux2);
     }
 
-    if (platedetector->priv->resizeFactor == RESIZE_FACTOR_3) {
-      cvDilate (imAux2, imAux2, 0, 1);
-      cvSmooth (imAux2, imAux2, CV_MEDIAN, 3, 0, 0, 0);
-      cvSmooth (imAux2, imAux2, CV_MEDIAN, 3, 0, 0, 0);
-    }
-
     kms_plate_detector_clean_character (imAux, imAux2);
     cvCvtColor (imAux2, imAuxRGB2, CV_GRAY2BGR);
 
@@ -1443,23 +1438,24 @@ compare_height (gconstpointer data1, gconstpointer data2)
 static void
 kms_plate_detector_extract_potential_characters (KmsPlateDetector *
     platedetector, CvSeq * contoursCharacters, IplImage * plateInterpolatedAux1,
-    IplImage * plateInterAux1Color, GSList ** plateStore, int *numContours)
+    IplImage * plateInterAux1Color, GSList ** plateStore, int *numContours,
+    int plateHeight)
 {
 
   for (; contoursCharacters != 0;
       contoursCharacters = contoursCharacters->h_next) {
     CvRect rect = cvBoundingRect (contoursCharacters, 0);
-    float rectangleArea;
     float proporcionPatronCharac = CHARACTER_IDEAL_PROPORTION;
     float proporcion1 = DEFAULT_CHARACTER_PROPORTION;
 
-    rectangleArea = rect.width * rect.height;
     if ((rect.width != 0)) {
       proporcion1 = (float) rect.height / (float) rect.width;
     }
+    float plateCharProportion = (float) plateHeight *
+        platedetector->priv->resizeFactor / (float) rect.height;
 
     if ((fabsf (proporcionPatronCharac - proporcion1) < 0.25)
-        && (rectangleArea > 100)) {
+        && (plateCharProportion > 1) && (plateCharProportion < 4.0)) {
       CharacterData *contourData = g_slice_new0 (CharacterData);
 
       contourData->x = rect.x;
@@ -1620,7 +1616,7 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
   CharacterData *mostSimContPosData;
 
   if (platedetector->priv->handle == NULL)
-    return GST_FLOW_OK;;
+    return GST_FLOW_OK;
 
   memPlates = cvCreateMemStorage (0);
 
@@ -1713,7 +1709,7 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
 
     kms_plate_detector_extract_potential_characters (platedetector,
         contoursCharacters, plateInterpolatedAux1, plateInterAux1Color,
-        &plateStore, &numContours);
+        &plateStore, &numContours, rect.height);
     cvClearMemStorage (memCharacters);
     cvReleaseMemStorage (&memCharacters);
 
