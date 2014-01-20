@@ -60,7 +60,7 @@ struct _KmsBaseMixerClass
   GstBinClass parent_class;
 
   /* Actions */
-  gboolean (*handle_port) (KmsBaseMixer *self, GstElement *mixer_end_point);
+  gint (*handle_port) (KmsBaseMixer *self, GstElement *mixer_end_point);
 };
 
 GType kms_base_mixer_get_type (void);

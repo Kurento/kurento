@@ -114,7 +114,7 @@ kms_base_mixer_generate_port_id (KmsBaseMixer * mixer)
   return id;
 }
 
-static gboolean
+static gint
 kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 {
   gint *id;
@@ -122,14 +122,14 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
   if (!KMS_IS_MIXER_END_POINT (mixer_end_point)) {
     GST_INFO_OBJECT (mixer, "Invalid MixerEndPoint: %" GST_PTR_FORMAT,
         mixer_end_point);
-    return FALSE;
+    return -1;
   }
 
   if (GST_OBJECT_PARENT (mixer) == NULL ||
       GST_OBJECT_PARENT (mixer) != GST_OBJECT_PARENT (mixer_end_point)) {
     GST_ERROR_OBJECT (mixer,
         "Mixer and MixerEndPoint do not have the same parent");
-    return FALSE;
+    return -1;
   }
 
   GST_DEBUG_OBJECT (mixer, "Handle handle port: %" GST_PTR_FORMAT,
@@ -141,7 +141,7 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 
   g_hash_table_insert (mixer->priv->ports, id, g_object_ref (mixer_end_point));
 
-  return TRUE;
+  return *id;
 }
 
 static void
@@ -197,7 +197,7 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsBaseMixerClass, handle_port), NULL, NULL,
-      __kms_marshal_BOOL__OBJECT, G_TYPE_BOOLEAN, 1, GST_TYPE_ELEMENT);
+      __kms_marshal_INT__OBJECT, G_TYPE_INT, 1, GST_TYPE_ELEMENT);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsBaseMixerPrivate));
