@@ -28,6 +28,7 @@ import com.kurento.kmf.media.MediaPipeline;
  */
 @WebRtcContentService(path = "/webRtcJackVaderLoopback")
 public class WebRtcJackVaderLoopback extends WebRtcContentHandler {
+	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
 			throws Exception {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();

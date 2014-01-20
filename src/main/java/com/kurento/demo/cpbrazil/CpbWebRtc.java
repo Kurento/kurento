@@ -14,11 +14,14 @@
  */
 package com.kurento.demo.cpbrazil;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.net.URISyntaxException;
 import java.util.Calendar;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.kurento.demo.cpbrazil.youtube.Videos;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
@@ -71,7 +74,6 @@ public class CpbWebRtc extends WebRtcContentHandler {
 			throws Exception {
 		String contentId = contentSession.getContentId();
 
-		final UploadVideoYouTube videoYouTube = new UploadVideoYouTube();
 		final boolean recordOnRepository = contentId != null
 				&& contentId.equalsIgnoreCase("repositoryRecorder");
 		recorderUrl = contentSession.getHttpServletRequest().getScheme()
@@ -179,7 +181,17 @@ public class CpbWebRtc extends WebRtcContentHandler {
 											+ (recordOnRepository ? "/playerRepository/"
 													: "/cpbPlayer/") + itemId;
 									getLogger().info("recordUrl " + recordUrl);
-									videoYouTube.uploadVideo(recordUrl);
+									Videos.upload(
+											recordUrl,
+											newArrayList("FI-WARE", "Kurento",
+													"FUN-LAB", "GSyC", "URJC",
+													"Campus Party", "WebRTC",
+													"Software Engineering",
+													"Augmented Reality",
+													"Computer Vision",
+													"Super Mario", "Sonic",
+													"Street Fighter",
+													"Donkey Kong"));
 								}
 							}
 
