@@ -46,6 +46,7 @@
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 
 #define HTTP_TIMEOUT 10
+#define MEGA_BYTES(n) ((n) * 1000000)
 
 GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_recorder_end_point_debug_category
@@ -397,9 +398,9 @@ kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
     SoupSession *ss;
 
     if (kms_is_valid_uri (KMS_URI_END_POINT (self)->uri)) {
-      //valid url
       /* We use souphttpclientsink */
       sink = gst_element_factory_make ("souphttpclientsink", NULL);
+      g_object_set (sink, "blocksize", MEGA_BYTES (1), NULL);
       ss = soup_session_new_with_options ("timeout", HTTP_TIMEOUT,
           "ssl-strict", FALSE, NULL);
       g_object_set (G_OBJECT (sink), "session", ss, NULL);
