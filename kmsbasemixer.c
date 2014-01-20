@@ -23,6 +23,12 @@
 
 #define PLUGIN_NAME "basemixer"
 
+#define KMS_BASE_MIXER_LOCK(mixer) \
+  (g_rec_mutex_lock (&(mixer)->priv->mutex))
+
+#define KMS_BASE_MIXER_UNLOCK(mixer) \
+  (g_rec_mutex_unlock (&(mixer)->priv->mutex))
+
 GST_DEBUG_CATEGORY_STATIC (kms_base_mixer_debug_category);
 #define GST_CAT_DEFAULT kms_base_mixer_debug_category
 
@@ -78,6 +84,8 @@ static guint kms_base_mixer_signals[LAST_SIGNAL] = { 0 };
 struct _KmsBaseMixerPrivate
 {
   GHashTable *ports;
+  GRecMutex mutex;
+  gint port_count;
 };
 
 /* class initialization */
@@ -87,17 +95,51 @@ G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
     GST_DEBUG_CATEGORY_INIT (kms_base_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for basemixer element"));
 
+static void
+release_gint (gpointer data)
+{
+  g_slice_free (gint, data);
+}
+
+static gint *
+kms_base_mixer_generate_port_id (KmsBaseMixer * mixer)
+{
+  gint *id;
+
+  KMS_BASE_MIXER_LOCK (mixer);
+  id = g_slice_new (gint);
+  *id = mixer->priv->port_count++;
+  KMS_BASE_MIXER_UNLOCK (mixer);
+
+  return id;
+}
+
 static gboolean
 kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 {
+  gint *id;
+
   if (!KMS_IS_MIXER_END_POINT (mixer_end_point)) {
     GST_INFO_OBJECT (mixer, "Invalid MixerEndPoint: %" GST_PTR_FORMAT,
         mixer_end_point);
     return FALSE;
   }
 
+  if (GST_OBJECT_PARENT (mixer) == NULL ||
+      GST_OBJECT_PARENT (mixer) != GST_OBJECT_PARENT (mixer_end_point)) {
+    GST_ERROR_OBJECT (mixer,
+        "Mixer and MixerEndPoint do not have the same parent");
+    return FALSE;
+  }
+
   GST_DEBUG_OBJECT (mixer, "Handle handle port: %" GST_PTR_FORMAT,
       mixer_end_point);
+
+  id = kms_base_mixer_generate_port_id (mixer);
+
+  GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
+
+  g_hash_table_insert (mixer->priv->ports, id, g_object_ref (mixer_end_point));
 
   return TRUE;
 }
@@ -105,12 +147,23 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 static void
 kms_base_mixer_dispose (GObject * object)
 {
+  KmsBaseMixer *self = KMS_BASE_MIXER (object);
+
+  if (self->priv->ports != NULL) {
+    g_hash_table_unref (self->priv->ports);
+    self->priv->ports = NULL;
+  }
+
   G_OBJECT_CLASS (kms_base_mixer_parent_class)->dispose (object);
 }
 
 static void
 kms_base_mixer_finalize (GObject * object)
 {
+  KmsBaseMixer *self = KMS_BASE_MIXER (object);
+
+  g_rec_mutex_clear (&self->priv->mutex);
+
   G_OBJECT_CLASS (kms_base_mixer_parent_class)->finalize (object);
 }
 
@@ -154,4 +207,10 @@ static void
 kms_base_mixer_init (KmsBaseMixer * self)
 {
   self->priv = KMS_BASE_MIXER_GET_PRIVATE (self);
+
+  g_rec_mutex_init (&self->priv->mutex);
+
+  self->priv->port_count = 0;
+  self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
+      release_gint, g_object_unref);
 }
