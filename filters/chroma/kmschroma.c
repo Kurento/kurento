@@ -39,6 +39,8 @@
 #define S_VALUES 256
 #define H_MAX 180
 #define S_MAX 255
+#define V_MIN 30
+#define V_MAX 256
 
 #define PLUGIN_NAME "chroma"
 
@@ -364,6 +366,8 @@ get_mask (IplImage * img, gint h_min, gint h_max, gint s_min, gint s_max)
 {
   int w, h;
   uchar *image_row, *image_row_mask;
+  IplConvKernel *kernel1;
+  IplConvKernel *kernel2;
 
   IplImage *mask = cvCreateImage (cvGetSize (img), img->depth, 1);
 
@@ -378,7 +382,9 @@ get_mask (IplImage * img, gint h_min, gint h_max, gint s_min, gint s_max)
       if ((((uchar) * (image_column) >= h_min)
               && ((uchar) * (image_column) <= h_max))
           && (((uchar) * (image_column + 1) >= s_min)
-              && ((uchar) * (image_column + 1) <= s_max))) {
+              && ((uchar) * (image_column + 1) <= s_max))
+          && (((uchar) * (image_column + 2) >= V_MIN)
+              && ((uchar) * (image_column + 2) <= V_MAX))) {
 
         *(image_column_mask) = 255;
       } else {
@@ -392,8 +398,12 @@ get_mask (IplImage * img, gint h_min, gint h_max, gint s_min, gint s_max)
     image_row_mask += mask->widthStep;
   }
 
-  cvDilate (mask, mask, 0, 1);
-  cvErode (mask, mask, 0, 2);
+  kernel1 = cvCreateStructuringElementEx (3, 3, 1, 1, CV_SHAPE_RECT, NULL);
+  kernel2 = cvCreateStructuringElementEx (3, 3, 1, 1, CV_SHAPE_RECT, NULL);
+  cvMorphologyEx (mask, mask, NULL, kernel1, CV_MOP_CLOSE, 1);
+  cvMorphologyEx (mask, mask, NULL, kernel2, CV_MOP_OPEN, 1);
+  cvReleaseStructuringElement (&kernel1);
+  cvReleaseStructuringElement (&kernel2);
 
   return mask;
 }
