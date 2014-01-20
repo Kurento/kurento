@@ -468,6 +468,12 @@ kms_chroma_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
     return GST_FLOW_OK;
   }
 
+  if (chroma->priv->configure_frames > LIMIT_FRAMES &&
+      chroma->priv->background_image == NULL) {
+    GST_TRACE ("No background image, skipping");
+    return GST_FLOW_OK;
+  }
+
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
 
   kms_chroma_initialize_images (chroma, frame);
@@ -528,16 +534,13 @@ kms_chroma_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
     goto end;
   }
 
-  if (chroma->priv->background_image == NULL) {
-    goto end;
-  }
-
   mask = get_mask (hsv, chroma->priv->h_min, chroma->priv->h_max,
       chroma->priv->s_min, chroma->priv->s_max);
 
   kms_chroma_display_background (chroma, mask);
 
   cvReleaseImage (&mask);
+
 end:
   cvReleaseImage (&hsv);
   gst_buffer_unmap (frame->buffer, &info);
