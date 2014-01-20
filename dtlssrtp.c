@@ -19,6 +19,10 @@
 #include <gio/gio.h>
 #include <glib/gstdio.h>
 
+#define FILE_PERMISIONS (S_IRWXU | S_IRWXG | S_IRWXO)
+#define ROOT_TMP_DIR "/tmp/kms_dtlssrtp_tests"
+#define TMP_DIR_TEMPLATE ROOT_TMP_DIR "/XXXXXX"
+
 #define CERTTOOL_TEMPLATE "/tmp/certtool.tmpl"
 #define CERT_KEY_PEM_FILE "certkey.pem"
 
@@ -111,9 +115,10 @@ get_socket_port (GSocket * socket)
 static gchar *
 generate_certkey_pem_file_path ()
 {
-  gchar t[] = "/tmp/XXXXXX";
+  gchar t[] = TMP_DIR_TEMPLATE;
   gchar *dir;
 
+  g_mkdir_with_parents (ROOT_TMP_DIR, FILE_PERMISIONS);
   dir = mkdtemp (t);
 
   return g_strdup_printf ("%s/%s", dir, CERT_KEY_PEM_FILE);
