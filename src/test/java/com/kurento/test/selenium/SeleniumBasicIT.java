@@ -26,7 +26,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
  * (HTTP Player with JSON-RPC signaling protocol).
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @RunWith(Arquillian.class)
 public class SeleniumBasicIT extends BaseSeleniumTst {

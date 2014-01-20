@@ -24,7 +24,7 @@ import com.kurento.kmf.spring.KurentoApplicationContextUtils;
  * Servlet which initializes Kurento Application Context.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @WebServlet(loadOnStartup = 1, urlPatterns = { "/testit" })
 public class KurentoApplicationContextStartupServlet extends HttpServlet {

@@ -17,7 +17,7 @@
  * Foundation classes for JUnit/Arquillian test cases.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 package com.kurento.test.base;
 

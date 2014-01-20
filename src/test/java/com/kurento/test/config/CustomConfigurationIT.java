@@ -30,7 +30,7 @@ import com.kurento.test.base.BaseArquillianTst;
  * spring bean.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @RunWith(Arquillian.class)
 public class CustomConfigurationIT extends BaseArquillianTst {

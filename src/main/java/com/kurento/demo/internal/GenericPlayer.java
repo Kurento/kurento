@@ -26,7 +26,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -38,7 +38,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * , {@link PlayerJsonRedirect} and {@link PlayerJsonTunnel}.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 public class GenericPlayer {
 
@@ -62,17 +62,17 @@ public class GenericPlayer {
 				MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 				MediaPipeline mp = mpf.create();
 				session.releaseOnTerminate(mp);
-				PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(url)
+				PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(url)
 						.build();
 				JackVaderFilter filter = mp.newJackVaderFilter().build();
-				playerEndPoint.connect(filter);
-				session.setAttribute("player", playerEndPoint);
+				playerEndpoint.connect(filter);
+				session.setAttribute("player", playerEndpoint);
 				session.start(filter);
 			} else if (contentId != null && contentId.equalsIgnoreCase("zbar")) {
 				// ZBar Filter
 				MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 				MediaPipeline mp = mpf.create();
-				PlayerEndPoint player = mp.newPlayerEndPoint(url).build();
+				PlayerEndpoint player = mp.newPlayerEndpoint(url).build();
 				session.setAttribute("player", player);
 				ZBarFilter zBarFilter = mp.newZBarFilter().build();
 				player.connect(zBarFilter);

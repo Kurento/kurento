@@ -17,7 +17,7 @@
  * Test handlers for validation of HTTP Players.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 package com.kurento.demo.player;
 

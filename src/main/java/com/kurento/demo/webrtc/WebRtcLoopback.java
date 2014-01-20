@@ -12,23 +12,28 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.test.config;
+package com.kurento.demo.webrtc;
 
-import org.springframework.stereotype.Component;
-
-import com.kurento.kmf.content.ContentApiConfiguration;
+import com.kurento.kmf.content.WebRtcContentHandler;
+import com.kurento.kmf.content.WebRtcContentService;
+import com.kurento.kmf.content.WebRtcContentSession;
+import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.MediaPipeline;
 
 /**
- * Spring bean with custom configuration for KMF (Kurento Media Framework).
+ * WebRtc Handler in loopback.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @since 1.0.0
+ * @since 1.0.1
  */
-@Component
-public class CustomConfiguration extends ContentApiConfiguration {
+@WebRtcContentService(path = "/webRtcLoopback")
+public class WebRtcLoopback extends WebRtcContentHandler {
 
 	@Override
-	public int getProxyMaxConnectionsPerRoute() {
-		return 200;
+	public void onContentRequest(WebRtcContentSession session) throws Exception {
+		MediaPipeline mp = session.getMediaPipelineFactory().create();
+		session.releaseOnTerminate(mp);
+		session.start(null, (MediaElement) null);
 	}
+
 }

@@ -35,7 +35,7 @@ import com.kurento.demo.internal.EventListener;
  * Kurento Application Server (KAS).
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see <a href="http://hc.apache.org/">Apache HTTP Components</a>
  */
 public class PlayerTst implements Runnable {

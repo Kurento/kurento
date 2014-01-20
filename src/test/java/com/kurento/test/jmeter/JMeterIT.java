@@ -46,7 +46,7 @@ import com.kurento.test.base.BaseArquillianTst;
  * <code>target/jmeter-reports</code> folder.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see <a href="http://jmeter.apache.org/">Apache JMeter</a>
  */
 @RunWith(Arquillian.class)

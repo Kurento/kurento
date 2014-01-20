@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * which will be used for testing purposes.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 public class EventListener {
 

@@ -14,10 +14,10 @@
  */
 
 /**
- * Web tests using Selenium.
+ * Demo handlers for WebRTC. 
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @since 1.0.0
+ * @since 1.0.1
  */
-package com.kurento.test.selenium;
+package com.kurento.demo.webrtc;
 

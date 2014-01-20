@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>war</packaging>
@@ -20,8 +21,8 @@
 		<commons-lang.version>2.6</commons-lang.version>
 
 		<!-- Kurento Dependencies Versions -->
-		<kmf-content-api.version>1.0.0</kmf-content-api.version>
-		<kws-content-api.version>1.0.0</kws-content-api.version>
+		<kmf-content-api.version>1.0.1-SNAPSHOT</kmf-content-api.version>
+		<kws-content-api.version>1.0.1-SNAPSHOT</kws-content-api.version>
 
 		<!-- Test Dependencies Versions -->
 		<junit.version>4.11</junit.version>
@@ -104,6 +105,11 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-content-api</artifactId>
 			<version>${kmf-content-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kws</groupId>
+			<artifactId>kws-content-api</artifactId>
+			<version>${kws-content-api.version}</version>
 		</dependency>
 
 		<!-- Other Dependencies -->
@@ -265,26 +271,6 @@
 									<type>zip</type>
 									<overWrite>false</overWrite>
 									<outputDirectory>${basedir}/target</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<execution>
-						<id>copy-js-deps</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>com.kurento.kws</groupId>
-									<artifactId>kws-content-api</artifactId>
-									<version>${kws-content-api.version}</version>
-									<type>jar</type>
-									<overWrite>true</overWrite>
-									<outputDirectory>${basedir}/target/${project.artifactId}-${project.version}</outputDirectory>
-									<includes>**/*.*</includes>
 								</artifactItem>
 							</artifactItems>
 						</configuration>

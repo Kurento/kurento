@@ -18,7 +18,7 @@
  * These handlers will be used for the assessment of correct flow order.
  *  
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 package com.kurento.demo.playerjson;
 

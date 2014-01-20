@@ -37,7 +37,7 @@ import com.kurento.test.base.BaseArquillianTst;
  * (KAS).
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see <a href="http://hc.apache.org/">Apache HTTP Components</a>
  */
 

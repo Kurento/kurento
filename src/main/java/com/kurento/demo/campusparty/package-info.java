@@ -18,7 +18,7 @@
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 package com.kurento.demo.campusparty;
 

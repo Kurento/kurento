@@ -22,14 +22,14 @@ import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 
 /**
  * HTTP Player Handler; tunnel strategy; JSON control protocol; plays a
  * non-existing Media Element.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @HttpPlayerService(path = "/playerFlowBadMediaElement", redirect = false, useControlProtocol = true)
 public class PlayerJsonBadMediaElement extends HttpPlayerHandler {
@@ -43,9 +43,9 @@ public class PlayerJsonBadMediaElement extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		contentSession.releaseOnTerminate(mp);
-		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint("").build();
-		contentSession.setAttribute("player", playerEndPoint);
-		contentSession.start(playerEndPoint);
+		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint("").build();
+		contentSession.setAttribute("player", playerEndpoint);
+		contentSession.start(playerEndpoint);
 
 	}
 
@@ -53,9 +53,9 @@ public class PlayerJsonBadMediaElement extends HttpPlayerHandler {
 	public void onContentStarted(HttpPlayerSession contentSession)
 			throws Exception {
 		EventListener.addEvent();
-		PlayerEndPoint playerEndPoint = (PlayerEndPoint) contentSession
+		PlayerEndpoint playerEndpoint = (PlayerEndpoint) contentSession
 				.getAttribute("player");
-		playerEndPoint.play();
+		playerEndpoint.play();
 	}
 
 	@Override

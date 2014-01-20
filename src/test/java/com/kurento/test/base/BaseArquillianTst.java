@@ -36,7 +36,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * port accessor, and so on).
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see <a href="http://arquillian.org/">Arquillian</a>
  */
 public class BaseArquillianTst {

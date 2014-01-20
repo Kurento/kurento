@@ -20,7 +20,7 @@ import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -33,7 +33,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @HttpPlayerService(name = "PlayerJsonEvents", path = "/playerJsonEvents", redirect = true, useControlProtocol = true)
 public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
@@ -45,7 +45,7 @@ public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 
-		PlayerEndPoint player = mp.newPlayerEndPoint(
+		PlayerEndpoint player = mp.newPlayerEndpoint(
 				"https://ci.kurento.com/video/barcodes.webm").build();
 		session.setAttribute("player", player);
 
@@ -72,9 +72,9 @@ public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
 
 	@Override
 	public void onContentStarted(HttpPlayerSession session) {
-		PlayerEndPoint playerEndPoint = (PlayerEndPoint) session
+		PlayerEndpoint playerEndpoint = (PlayerEndpoint) session
 				.getAttribute("player");
-		playerEndPoint.play();
+		playerEndpoint.play();
 	}
 
 }

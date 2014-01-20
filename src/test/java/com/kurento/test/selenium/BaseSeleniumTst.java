@@ -42,7 +42,7 @@ import com.kurento.test.base.BaseArquillianTst;
  * sides), and startup/release for Selenium Webdriver.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see <a href="http://www.seleniumhq.org/">Selenium</a>
  */
 public class BaseSeleniumTst extends BaseArquillianTst {
@@ -166,7 +166,6 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
-			// options.addArguments("user-data-dir=./target");
 			driver = new ChromeDriver(options);
 		}
 	}

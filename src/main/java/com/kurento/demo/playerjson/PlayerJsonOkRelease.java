@@ -23,7 +23,7 @@ import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 
 /**
  * HTTP Player Handler; tunnel strategy; JSON control protocol; it creates a
@@ -31,7 +31,7 @@ import com.kurento.kmf.media.PlayerEndPoint;
  * it is released after 5 seconds.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @HttpPlayerService(path = "/playerFlowOkRelease", redirect = false, useControlProtocol = true)
 public class PlayerJsonOkRelease extends HttpPlayerHandler {
@@ -45,10 +45,10 @@ public class PlayerJsonOkRelease extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		contentSession.releaseOnTerminate(mp);
-		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				VideoURLs.map.get("webm")).build();
-		contentSession.setAttribute("player", playerEndPoint);
-		contentSession.start(playerEndPoint);
+		contentSession.setAttribute("player", playerEndpoint);
+		contentSession.start(playerEndpoint);
 	}
 
 	@Override
@@ -56,12 +56,12 @@ public class PlayerJsonOkRelease extends HttpPlayerHandler {
 			throws Exception {
 		EventListener.addEvent();
 
-		PlayerEndPoint playerendPoint = (PlayerEndPoint) contentSession
+		PlayerEndpoint playerEndpoint = (PlayerEndpoint) contentSession
 				.getAttribute("player");
-		playerendPoint.play();
+		playerEndpoint.play();
 
 		Thread.sleep(5000);
-		playerendPoint.release();
+		playerEndpoint.release();
 	}
 
 	@Override

@@ -28,7 +28,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
  * this exception is handled and a MP4 video media is started.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @HttpPlayerService(path = "/playerFlowOkWithExcp", redirect = false, useControlProtocol = true)
 public class PlayerJsonOkWithException extends HttpPlayerHandler {
