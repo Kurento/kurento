@@ -61,6 +61,7 @@ struct _KmsBaseMixerClass
 
   /* Actions */
   gint (*handle_port) (KmsBaseMixer *self, GstElement *mixer_end_point);
+  void (*unhandle_port) (KmsBaseMixer *self, gint port_id);
 };
 
 GType kms_base_mixer_get_type (void);

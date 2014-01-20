@@ -76,6 +76,7 @@ GST_STATIC_PAD_TEMPLATE (VIDEO_SRC_PAD_NAME,
 enum
 {
   SIGNAL_HANDLE_PORT,
+  SIGNAL_UNHANDLE_PORT,
   LAST_SIGNAL
 };
 
@@ -99,6 +100,26 @@ static void
 release_gint (gpointer data)
 {
   g_slice_free (gint, data);
+}
+
+static void
+kms_base_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
+{
+  KmsMixerEndPoint *end_point;
+
+  GST_DEBUG_OBJECT (mixer, "Unhandle port %" G_GINT32_FORMAT, id);
+
+  end_point =
+      KMS_MIXER_END_POINT (g_hash_table_lookup (mixer->priv->ports, &id));
+  GST_DEBUG ("Removind element: %" GST_PTR_FORMAT, end_point);
+
+  if (end_point == NULL)
+    return;
+
+  KMS_BASE_MIXER_LOCK (mixer);
+  // TODO: Unlink end_point from mixer
+  g_hash_table_remove (mixer->priv->ports, &id);
+  KMS_BASE_MIXER_UNLOCK (mixer);
 }
 
 static gint *
@@ -139,7 +160,9 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 
   GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
 
+  KMS_BASE_MIXER_LOCK (mixer);
   g_hash_table_insert (mixer->priv->ports, id, g_object_ref (mixer_end_point));
+  KMS_BASE_MIXER_UNLOCK (mixer);
 
   return *id;
 }
@@ -178,6 +201,7 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
       "Jose Antonio Santos Cadenas <santoscadenas@gmail.com>");
 
   klass->handle_port = GST_DEBUG_FUNCPTR (kms_base_mixer_handle_port);
+  klass->unhandle_port = GST_DEBUG_FUNCPTR (kms_base_mixer_unhandle_port);
 
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_base_mixer_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_base_mixer_finalize);
@@ -198,6 +222,13 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsBaseMixerClass, handle_port), NULL, NULL,
       __kms_marshal_INT__OBJECT, G_TYPE_INT, 1, GST_TYPE_ELEMENT);
+
+  kms_base_mixer_signals[SIGNAL_UNHANDLE_PORT] =
+      g_signal_new ("unhandle-port",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsBaseMixerClass, unhandle_port), NULL, NULL,
+      __kms_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsBaseMixerPrivate));
