@@ -17,6 +17,7 @@ package com.kurento.kmf.media.internal;
 import static com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants.SET_IMAGE_OVERLAY;
 import static com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants.SET_IMAGE_OVERLAY_PARAM_IMAGE;
 import static com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants.UNSET_IMAGE_OVERLAY;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -102,6 +103,16 @@ public class FaceOverlayFilterImpl extends FilterImpl implements
 					"The string received as uri does not have the correct syntax",
 					e, 30000);
 		}
+	}
+
+	@Override
+	public void unsetOverlayedImage() {
+		this.invoke(UNSET_IMAGE_OVERLAY);
+	}
+
+	@Override
+	public void unsetOverlayedImage(Continuation<Void> cont) {
+		this.invoke(UNSET_IMAGE_OVERLAY, new VoidContinuationWrapper(cont));
 	}
 
 	@Override

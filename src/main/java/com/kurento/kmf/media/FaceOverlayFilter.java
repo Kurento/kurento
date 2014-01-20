@@ -105,6 +105,21 @@ public interface FaceOverlayFilter extends Filter {
 			float offsetYPercent, float widthPercent, float heightPercent);
 
 	/**
+	 * Unsets the image to be shown over each detected face
+	 */
+	void unsetOverlayedImage();
+
+	/**
+	 * Unsets the image to be shown over each detected face
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked if the command executed
+	 *            correctly
+	 */
+	void unsetOverlayedImage(Continuation<Void> cont);
+
+	/**
 	 * Sets the image to use as overlay on the detected faces.
 	 * 
 	 * @param uri
