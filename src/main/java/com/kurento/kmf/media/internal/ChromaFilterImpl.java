@@ -19,6 +19,7 @@ import static com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants.CONST
 import static com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants.SET_BACKGROUND;
 import static com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants.SET_BACKGROUND_PARAM_BACKGROUND_IMAGE;
 import static com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants.TYPE_NAME;
+import static com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants.UNSET_BACKGROUND;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -89,6 +90,16 @@ public class ChromaFilterImpl extends FilterImpl implements ChromaFilter {
 		param.setImageUri(uri);
 		params.put(SET_BACKGROUND_PARAM_BACKGROUND_IMAGE, param);
 		this.invoke(SET_BACKGROUND, params);
+	}
+
+	@Override
+	public void unsetBackground() {
+		this.invoke(UNSET_BACKGROUND);
+	}
+
+	@Override
+	public void unsetBackground(Continuation<Void> cont) {
+		this.invoke(UNSET_BACKGROUND, new VoidContinuationWrapper(cont));
 	}
 
 	@Override

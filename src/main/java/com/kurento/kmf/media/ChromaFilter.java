@@ -43,6 +43,21 @@ public interface ChromaFilter extends Filter {
 	void setBackground(URI uri);
 
 	/**
+	 * Clears the image used to be shown behind the chroma surface
+	 */
+	void unsetBackground();
+
+	/**
+	 * Clears the image used to be shown behind the chroma surface
+	 * 
+	 * @param cont
+	 *            An asynchronous callback handler. The {@code onSuccess} method
+	 *            from the handler will be invoked if the command executed
+	 *            correctly
+	 */
+	void unsetBackground(Continuation<Void> cont);
+
+	/**
 	 * Sets the image to show on the detected chroma surface.
 	 * 
 	 * @param uri
