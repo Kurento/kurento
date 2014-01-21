@@ -93,12 +93,42 @@ struct _KmsBaseMixerPrivate
   gint port_count;
 };
 
+typedef struct _KmsBaseMixerPortData KmsBaseMixerPortData;
+
+struct _KmsBaseMixerPortData
+{
+  GstElement *port;
+  gint id;
+  GstPad *audio_sink_target;
+  GstPad *video_sink_target;
+};
+
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
     GST_TYPE_BIN,
     GST_DEBUG_CATEGORY_INIT (kms_base_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for basemixer element"));
+
+static KmsBaseMixerPortData *
+kms_base_mixer_port_data_create (GstElement * port, gint id)
+{
+  KmsBaseMixerPortData *data = g_slice_new0 (KmsBaseMixerPortData);
+
+  data->port = g_object_ref (port);
+  data->id = id;
+
+  return data;
+}
+
+static void
+kms_base_mixer_port_data_destroy (gpointer data)
+{
+  KmsBaseMixerPortData *port_data = (KmsBaseMixerPortData *) data;
+
+  g_clear_object (&port_data->port);
+  g_slice_free (KmsBaseMixerPortData, data);
+}
 
 gboolean
 kms_base_mixer_link_video_src (KmsBaseMixer * mixer, gint id,
@@ -205,16 +235,17 @@ kms_base_mixer_link_video_src_default (KmsBaseMixer * mixer, gint id,
 static void
 kms_base_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 {
-  KmsMixerEndPoint *end_point;
+  KmsBaseMixerPortData *port_data;
 
   GST_DEBUG_OBJECT (mixer, "Unhandle port %" G_GINT32_FORMAT, id);
 
-  end_point =
-      KMS_MIXER_END_POINT (g_hash_table_lookup (mixer->priv->ports, &id));
-  GST_DEBUG ("Removind element: %" GST_PTR_FORMAT, end_point);
+  port_data = (KmsBaseMixerPortData *) g_hash_table_lookup (mixer->priv->ports,
+      &id);
 
-  if (end_point == NULL)
+  if (port_data == NULL)
     return;
+
+  GST_DEBUG ("Removing element: %" GST_PTR_FORMAT, port_data->port);
 
   KMS_BASE_MIXER_LOCK (mixer);
   // TODO: Unlink end_point from mixer
@@ -238,6 +269,7 @@ kms_base_mixer_generate_port_id (KmsBaseMixer * mixer)
 static gint
 kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 {
+  KmsBaseMixerPortData *port_data;
   gint *id;
 
   if (!KMS_IS_MIXER_END_POINT (mixer_end_point)) {
@@ -259,9 +291,10 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
   id = kms_base_mixer_generate_port_id (mixer);
 
   GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
+  port_data = kms_base_mixer_port_data_create (mixer_end_point, *id);
 
   KMS_BASE_MIXER_LOCK (mixer);
-  g_hash_table_insert (mixer->priv->ports, id, g_object_ref (mixer_end_point));
+  g_hash_table_insert (mixer->priv->ports, id, port_data);
   KMS_BASE_MIXER_UNLOCK (mixer);
 
   return *id;
@@ -348,5 +381,5 @@ kms_base_mixer_init (KmsBaseMixer * self)
 
   self->priv->port_count = 0;
   self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
-      release_gint, g_object_unref);
+      release_gint, kms_base_mixer_port_data_destroy);
 }
