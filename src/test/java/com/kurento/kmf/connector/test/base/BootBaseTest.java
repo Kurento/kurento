@@ -20,7 +20,6 @@ public class BootBaseTest {
 
 		Properties properties = new Properties();
 		properties.put("server.port", getPort());
-
 		SpringApplication application = new SpringApplication(
 				BootApplication.class);
 
@@ -46,7 +45,7 @@ public class BootBaseTest {
 		}
 		return port;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 		start();
 	}

@@ -16,20 +16,18 @@ public class Main {
 		}
 		return port;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
-		
+
 		Properties properties = new Properties();
 		properties.put("server.port", getPort());
-		properties.put("debug", "");
-				
+
 		SpringApplication application = new SpringApplication(
 				BootApplication.class);
-		
+
 		application.setDefaultProperties(properties);
-		
+
 		context = application.run();
-		
 	}
-	
+
 }
