@@ -483,7 +483,7 @@ gst_dtls_srtp_enc_change_state (GstElement * element, GstStateChange transition)
       gst_buffer_replace (&self->key_and_salt, NULL);
       self->srtp_profile = G_TLS_SRTP_PROFILE_NONE;
       break;
-    case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
+    case GST_STATE_CHANGE_READY_TO_PAUSED:
       g_object_get (self->dtls_enc, "is-client", &is_client, NULL);
       if (is_client)
         g_tls_connection_handshake_async (self->conn, G_PRIORITY_DEFAULT, NULL,
