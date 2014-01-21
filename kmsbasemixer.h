@@ -60,9 +60,20 @@ struct _KmsBaseMixerClass
   GstBinClass parent_class;
 
   /* Actions */
-  gint (*handle_port) (KmsBaseMixer *self, GstElement *mixer_end_point);
-  void (*unhandle_port) (KmsBaseMixer *self, gint port_id);
+  gint (*handle_port) (KmsBaseMixer * self, GstElement * mixer_end_point);
+  void (*unhandle_port) (KmsBaseMixer * self, gint port_id);
+
+  /* Virtual methods */
+  gboolean (*link_video_src) (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
+  gboolean (*link_audio_src) (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
 };
+
+gboolean kms_base_mixer_link_video_src (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
+gboolean kms_base_mixer_link_audio_src (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
 
 GType kms_base_mixer_get_type (void);
 

@@ -40,10 +40,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_base_mixer_debug_category);
   )                                             \
 )
 
-#define AUDIO_SINK_PAD_NAME "audio_sink_%u"
-#define VIDEO_SINK_PAD_NAME "video_sink_%u"
-#define AUDIO_SRC_PAD_NAME "audio_src_%u"
-#define VIDEO_SRC_PAD_NAME "video_src_%u"
+#define AUDIO_SINK_PAD_PREFIX "audio_sink_"
+#define VIDEO_SINK_PAD_PREFIX "video_sink_"
+#define AUDIO_SRC_PAD_PREFIX "audio_src_"
+#define VIDEO_SRC_PAD_PREFIX "video_src_"
+#define AUDIO_SINK_PAD_NAME AUDIO_SINK_PAD_PREFIX "%u"
+#define VIDEO_SINK_PAD_NAME VIDEO_SINK_PAD_PREFIX "%u"
+#define AUDIO_SRC_PAD_NAME AUDIO_SRC_PAD_PREFIX "%u"
+#define VIDEO_SRC_PAD_NAME VIDEO_SRC_PAD_PREFIX "%u"
 
 static GstStaticPadTemplate audio_sink_factory =
 GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD_NAME,
@@ -96,10 +100,106 @@ G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
     GST_DEBUG_CATEGORY_INIT (kms_base_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for basemixer element"));
 
+gboolean
+kms_base_mixer_link_video_src (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
+
+  return
+      KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_video_src (mixer,
+      id, internal_element, pad_name);
+}
+
+gboolean
+kms_base_mixer_link_audio_src (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
+
+  return
+      KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_audio_src (mixer,
+      id, internal_element, pad_name);
+}
+
 static void
 release_gint (gpointer data)
 {
   g_slice_free (gint, data);
+}
+
+static gboolean
+kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
+    const gchar * template_name, GstElement * internal_element,
+    const gchar * pad_name)
+{
+  GstPad *gp, *target;
+  gboolean ret;
+
+  if (GST_OBJECT_PARENT (internal_element) != GST_OBJECT (mixer)) {
+    GST_ERROR_OBJECT (mixer, "Cannot link %" GST_PTR_FORMAT " wrong hierarchy",
+        internal_element);
+    return FALSE;
+  }
+
+  target = gst_element_get_static_pad (internal_element, pad_name);
+  if (target == NULL) {
+    target = gst_element_get_request_pad (internal_element, pad_name);
+  }
+
+  if (target == NULL) {
+    GST_ERROR_OBJECT (mixer, "Cannot get target pad");
+    return FALSE;
+  }
+
+  gp = gst_element_get_static_pad (GST_ELEMENT (mixer), gp_name);
+
+  if (gp == NULL) {
+    GstPadTemplate *templ;
+
+    templ =
+        gst_element_class_get_pad_template (GST_ELEMENT_CLASS
+        (G_OBJECT_GET_CLASS (mixer)), template_name);
+    gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
+    ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
+  } else {
+    ret = gst_ghost_pad_set_target (GST_GHOST_PAD (gp), target);
+    g_object_unref (gp);
+  }
+
+  g_object_unref (target);
+
+  return ret;
+}
+
+static gboolean
+kms_base_mixer_link_audio_src_default (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  gchar *gp_name = g_strdup_printf (AUDIO_SRC_PAD_PREFIX "%d", id);
+  gboolean ret;
+
+  ret =
+      kms_base_mixer_link_src_pad (mixer, gp_name, AUDIO_SRC_PAD_NAME,
+      internal_element, pad_name);
+  g_free (gp_name);
+
+  return ret;
+}
+
+static gboolean
+kms_base_mixer_link_video_src_default (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  gchar *gp_name = g_strdup_printf (VIDEO_SRC_PAD_PREFIX "%d", id);
+  gboolean ret;
+
+  ret =
+      kms_base_mixer_link_src_pad (mixer, gp_name, VIDEO_SRC_PAD_NAME,
+      internal_element, pad_name);
+  g_free (gp_name);
+
+  return ret;
 }
 
 static void
@@ -202,6 +302,11 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
 
   klass->handle_port = GST_DEBUG_FUNCPTR (kms_base_mixer_handle_port);
   klass->unhandle_port = GST_DEBUG_FUNCPTR (kms_base_mixer_unhandle_port);
+
+  klass->link_video_src =
+      GST_DEBUG_FUNCPTR (kms_base_mixer_link_video_src_default);
+  klass->link_audio_src =
+      GST_DEBUG_FUNCPTR (kms_base_mixer_link_audio_src_default);
 
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_base_mixer_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_base_mixer_finalize);
