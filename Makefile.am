@@ -72,9 +72,7 @@ noinst_HEADERS = 	\
 	ext/gio/kmsgtlsserverconnection.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libkmsdtls_la_CFLAGS = $(GST_PLUGINS_BASE_CFLAGS) \
-        $(GNUTLS_CFLAGS) $(GST_BASE_CFLAGS) $(GST_CFLAGS) $(GIO_CFLAGS) -I/usr/include -Werror
-libkmsdtls_la_LIBADD = $(GST_PLUGINS_BASE_LIBS) \
-        $(GNUTLS_LIBS) $(GST_BASE_LIBS) $(GST_LIBS) $(GIO_LIBS)
+libkmsdtls_la_CFLAGS = $(GNUTLS_CFLAGS) $(GST_CFLAGS) $(GIO_CFLAGS) -I/usr/include -Werror
+libkmsdtls_la_LIBADD = $(GNUTLS_LIBS) $(GST_LIBS) $(GIO_LIBS)
 libkmsdtls_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libkmsdtls_la_LIBTOOLFLAGS = --tag=disable-static
