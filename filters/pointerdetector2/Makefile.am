@@ -16,7 +16,7 @@ libpointerdetector2_la_SOURCES = pointerdetector2.c \
 			kmspointerdetector2.c kmspointerdetector2.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
-libpointerdetector2_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) $(SOUP_CFLAGS) -Werror
+libpointerdetector2_la_CFLAGS = $(GST_CFLAGS) $(OPENCV_CFLAGS) $(SOUP_CFLAGS) -Werror -I../..
 libpointerdetector2_la_LIBADD = $(GST_LIBS) $(OPENCV_LIBS) $(SOUP_LIBS)
 libpointerdetector2_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
 libpointerdetector2_la_LIBTOOLFLAGS = --tag=disable-static
