@@ -59,8 +59,6 @@ struct _KmsRecorderEndPoint
 struct _KmsRecorderEndPointClass
 {
   KmsUriEndPointClass parent_class;
-
-  void (*stopped_signal) (KmsRecorderEndPoint * self);
 };
 
 GType kms_recorder_end_point_get_type (void);
