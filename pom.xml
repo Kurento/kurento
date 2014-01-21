@@ -1,0 +1,188 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.0.0.RC3</version>
+	</parent>
+
+	<groupId>com.kurento.kmf</groupId>
+	<artifactId>kmf-media-connector-test</artifactId>
+	<version>3.0.7-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>kmf-media-connector</name>
+	<url>http://www.kurento.com</url>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.com</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>igracia</id>
+			<name>Ivan Gracia Martinez</name>
+		</developer>
+	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>Kurento</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+	</mailingLists>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-media-connector</artifactId>
+			<version>3.0.7-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<profiles>
+		<!-- Default values for testing -->
+		<profile>
+			<id>serverAddress</id>
+			<activation>
+				<property>
+					<name>!kurento.serverAddress</name>
+				</property>
+			</activation>
+			<properties>
+				<kurento.serverAddress>localhost</kurento.serverAddress>
+			</properties>
+		</profile>
+		<profile>
+			<id>serverPort</id>
+			<activation>
+				<property>
+					<name>!kurento.serverPort</name>
+				</property>
+			</activation>
+			<properties>
+				<kurento.serverPort>9090</kurento.serverPort>
+			</properties>
+		</profile>
+		<profile>
+			<id>handlerAddress</id>
+			<activation>
+				<property>
+					<name>!kurento.handlerAddress</name>
+				</property>
+			</activation>
+			<properties>
+				<kurento.handlerAddress>localhost</kurento.handlerAddress>
+			</properties>
+		</profile>
+		<profile>
+			<id>handlerPort</id>
+			<activation>
+				<property>
+					<name>!kurento.handlerPort</name>
+				</property>
+			</activation>
+			<properties>
+				<kurento.handlerPort>9191</kurento.handlerPort>
+			</properties>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.kurento.kmf.connector.Main</mainClass>
+					<layout>ZIP</layout>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+
+		</plugins>
+
+		
+
+
+
+	</build>
+
+	<distributionManagement>
+		<site>
+			<id>maven-site</id>
+			<url>scp://repository.kurento.com/var/www/kurento/site/${project.name}/${project.version}</url>
+		</site>
+		<repository>
+			<id>releases</id>
+			<name>Kurento releases repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Kurento snapshots repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>http://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-snapshots</id>
+			<url>http://repo.spring.io/libs-snapshot</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>
