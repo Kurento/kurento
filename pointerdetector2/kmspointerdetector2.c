@@ -28,6 +28,7 @@
 #include <libsoup/soup.h>
 
 #include "kmspointerdetector2.h"
+#include "kms-marshal.h"
 
 #define PLUGIN_NAME "pointerdetector2"
 
@@ -52,6 +53,11 @@ GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector2_debug_category);
 #define ACTIVE_IMAGE_VARIANT_NAME "a"
 #define V_MIN 30
 #define V_MAX 256
+#define H_VALUES 181
+#define S_VALUES 256
+#define H_MAX 180
+#define S_MAX 255
+#define HIST_THRESHOLD 2
 
 enum
 {
@@ -60,8 +66,16 @@ enum
   PROP_WINDOWS_LAYOUT,
   PROP_MESSAGE,
   PROP_SHOW_WINDOWS_LAYOUT,
-  PROP_COLOR_TARGET
+  PROP_CALIBRATION_AREA
 };
+
+enum
+{
+  SIGNAL_CALIBRATE_COLOR,
+  LAST_SIGNAL
+};
+
+static guint kms_pointer_detector2_signals[LAST_SIGNAL] = { 0 };
 
 struct _KmsPointerDetector2Private
 {
@@ -76,6 +90,7 @@ struct _KmsPointerDetector2Private
   gboolean putMessage;
   gboolean show_windows_layout;
   gchar *images_dir;
+  gint x_calibration, y_calibration, width_calibration, height_calibration;
   gint h_min, h_max, s_min, s_max;
   IplConvKernel *kernel1;
   IplConvKernel *kernel2;
@@ -310,6 +325,11 @@ kms_pointer_detector2_init (KmsPointerDetector2 * pointerdetector)
   pointerdetector->priv->s_min = 0;
   pointerdetector->priv->s_max = 0;
 
+  pointerdetector->priv->x_calibration = 0;
+  pointerdetector->priv->y_calibration = 0;
+  pointerdetector->priv->width_calibration = 0;
+  pointerdetector->priv->height_calibration = 0;
+
   gchar d[] = TEMP_PATH;
   gchar *aux = g_mkdtemp (d);
 
@@ -320,13 +340,86 @@ kms_pointer_detector2_init (KmsPointerDetector2 * pointerdetector)
       cvCreateStructuringElementEx (11, 11, 5, 5, CV_SHAPE_RECT, NULL);
 }
 
+static void
+kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
+{
+  gint h_values[H_VALUES];
+  gint s_values[S_VALUES];
+  IplImage *h_channel, *s_channel;
+  IplImage *calibration_area;
+
+  if (pointerdetector->priv->cvImage == NULL) {
+    return;
+  }
+
+  memset (h_values, 0, H_VALUES * sizeof (gint));
+  memset (s_values, 0, S_VALUES * sizeof (gint));
+  calibration_area =
+      cvCreateImage (cvSize (pointerdetector->priv->width_calibration,
+          pointerdetector->priv->height_calibration), IPL_DEPTH_8U, 3);
+  h_channel = cvCreateImage (cvGetSize (calibration_area), 8, 1);
+  s_channel = cvCreateImage (cvGetSize (calibration_area), 8, 1);
+
+  GST_OBJECT_LOCK (pointerdetector);
+  cvSetImageROI (pointerdetector->priv->cvImage,
+      cvRect (pointerdetector->priv->x_calibration,
+          pointerdetector->priv->y_calibration,
+          pointerdetector->priv->width_calibration,
+          pointerdetector->priv->height_calibration));
+  cvCopy (pointerdetector->priv->cvImage, calibration_area, 0);
+  cvResetImageROI (pointerdetector->priv->cvImage);
+
+  cvCvtColor (calibration_area, calibration_area, CV_BGR2HSV);
+  cvSplit (calibration_area, h_channel, s_channel, NULL, NULL);
+
+  for (int i = 0; i < calibration_area->width; i++) {
+    for (int j = 0; j < calibration_area->height; j++) {
+      h_values[(*(uchar *) (h_channel->imageData +
+                  (j) * h_channel->widthStep + i))]++;
+      s_values[(*(uchar *) (s_channel->imageData +
+                  (j) * s_channel->widthStep + i))]++;
+    }
+  }
+
+  for (int i = 0; i < H_MAX; i++) {
+    if (h_values[i] >= HIST_THRESHOLD) {
+      pointerdetector->priv->h_min = i;
+      break;
+    }
+  }
+  for (int i = H_MAX; i >= 0; i--) {
+    if (h_values[i] >= HIST_THRESHOLD) {
+      pointerdetector->priv->h_max = i;
+      break;
+    }
+  }
+  for (int i = 0; i < S_MAX; i++) {
+    if (s_values[i] >= HIST_THRESHOLD) {
+      pointerdetector->priv->s_min = i;
+      break;
+    }
+  }
+  for (int i = S_MAX; i >= 0; i--) {
+    if (s_values[i] >= HIST_THRESHOLD) {
+      pointerdetector->priv->s_max = i;
+      break;
+    }
+  }
+  GST_OBJECT_UNLOCK (pointerdetector);
+  GST_DEBUG ("COLOR TO TRACK h_min %d h_max %d s_min %d s_max %d",
+      pointerdetector->priv->h_min, pointerdetector->priv->h_max,
+      pointerdetector->priv->s_min, pointerdetector->priv->s_max);
+
+  cvReleaseImage (&h_channel);
+  cvReleaseImage (&s_channel);
+  cvReleaseImage (&calibration_area);
+}
+
 void
 kms_pointer_detector2_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
   KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
-
-  GST_DEBUG_OBJECT (pointerdetector, "set_property");
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -345,18 +438,18 @@ kms_pointer_detector2_set_property (GObject * object, guint property_id,
     case PROP_SHOW_WINDOWS_LAYOUT:
       pointerdetector->priv->show_windows_layout = g_value_get_boolean (value);
       break;
-    case PROP_COLOR_TARGET:{
+    case PROP_CALIBRATION_AREA:{
       GstStructure *aux;
 
       aux = g_value_dup_boxed (value);
-      gst_structure_get (aux, "h_min", G_TYPE_INT,
-          &pointerdetector->priv->h_min, NULL);
-      gst_structure_get (aux, "h_max", G_TYPE_INT,
-          &pointerdetector->priv->h_max, NULL);
-      gst_structure_get (aux, "s_min", G_TYPE_INT,
-          &pointerdetector->priv->s_min, NULL);
-      gst_structure_get (aux, "s_max", G_TYPE_INT,
-          &pointerdetector->priv->s_max, NULL);
+      gst_structure_get (aux, "x", G_TYPE_INT,
+          &pointerdetector->priv->x_calibration, NULL);
+      gst_structure_get (aux, "y", G_TYPE_INT,
+          &pointerdetector->priv->y_calibration, NULL);
+      gst_structure_get (aux, "width", G_TYPE_INT,
+          &pointerdetector->priv->width_calibration, NULL);
+      gst_structure_get (aux, "height", G_TYPE_INT,
+          &pointerdetector->priv->height_calibration, NULL);
       gst_structure_free (aux);
       break;
     }
@@ -371,8 +464,6 @@ kms_pointer_detector2_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
   KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
-
-  GST_DEBUG_OBJECT (pointerdetector, "get_property");
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -391,14 +482,15 @@ kms_pointer_detector2_get_property (GObject * object, guint property_id,
     case PROP_SHOW_WINDOWS_LAYOUT:
       g_value_set_boolean (value, pointerdetector->priv->show_windows_layout);
       break;
-    case PROP_COLOR_TARGET:{
+    case PROP_CALIBRATION_AREA:{
       GstStructure *aux;
 
-      aux = gst_structure_new ("color_target",
-          "h_min", G_TYPE_INT, pointerdetector->priv->h_min,
-          "h_max", G_TYPE_INT, pointerdetector->priv->h_max,
-          "s_min", G_TYPE_INT, pointerdetector->priv->s_min,
-          "s_max", G_TYPE_INT, pointerdetector->priv->s_max, NULL);
+      aux = gst_structure_new ("calibration_area",
+          "x", G_TYPE_INT, pointerdetector->priv->x_calibration,
+          "y", G_TYPE_INT, pointerdetector->priv->y_calibration,
+          "width", G_TYPE_INT, pointerdetector->priv->width_calibration,
+          "height", G_TYPE_INT, pointerdetector->priv->height_calibration,
+          NULL);
       g_value_set_boxed (value, aux);
       gst_structure_free (aux);
       break;
@@ -407,18 +499,6 @@ kms_pointer_detector2_get_property (GObject * object, guint property_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
-}
-
-void
-kms_pointer_detector2_dispose (GObject * object)
-{
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
-
-  GST_DEBUG_OBJECT (pointerdetector, "dispose");
-
-  /* clean up as possible.  may be called multiple times */
-
-  G_OBJECT_CLASS (kms_pointer_detector2_parent_class)->dispose (object);
 }
 
 static int
@@ -444,12 +524,6 @@ void
 kms_pointer_detector2_finalize (GObject * object)
 {
   KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
-
-  GST_DEBUG_OBJECT (pointerdetector, "finalize");
-
-  /* clean up object here */
-
-  // TODO: Release window structure and window list
 
   cvReleaseImageHeader (&pointerdetector->priv->cvImage);
 
@@ -710,9 +784,18 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
   int distance;
   int best_candidate;
 
+  if ((pointerdetector->priv->x_calibration == 0)
+      && (pointerdetector->priv->y_calibration == 0)
+      && (pointerdetector->priv->width_calibration == 0)
+      && (pointerdetector->priv->height_calibration == 0)) {
+    GST_DEBUG ("Calibration area not defined");
+    return GST_FLOW_OK;
+  }
+
   if ((pointerdetector->priv->h_min == 0) && (pointerdetector->priv->h_max == 0)
       && (pointerdetector->priv->s_min == 0)
       && (pointerdetector->priv->s_max == 0)) {
+    GST_DEBUG ("Color to track not calibrated");
     return GST_FLOW_OK;
   }
 
@@ -728,11 +811,12 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
   cvCvtColor (pointerdetector->priv->cvImage, hsv_image, CV_BGR2HSV);
   color_filter = cvCreateImage (cvGetSize (pointerdetector->priv->cvImage),
       pointerdetector->priv->cvImage->depth, 1);
+  GST_OBJECT_LOCK (pointerdetector);
   cvInRangeS (hsv_image,
       cvScalar (pointerdetector->priv->h_min, pointerdetector->priv->s_min,
           V_MIN, 0), cvScalar (pointerdetector->priv->h_max,
           pointerdetector->priv->s_max, V_MAX, 0), color_filter);
-
+  GST_OBJECT_UNLOCK (pointerdetector);
   cvMorphologyEx (color_filter, color_filter, NULL,
       pointerdetector->priv->kernel1, CV_MOP_CLOSE, 1);
   cvMorphologyEx (color_filter, color_filter, NULL,
@@ -794,9 +878,11 @@ checkPoint:
 
   kms_pointer_detector2_check_pointer_position (pointerdetector);
 
+  GST_OBJECT_LOCK (pointerdetector);
   cvCircle (pointerdetector->priv->cvImage,
       pointerdetector->priv->finalPointerPosition, 10.0, cvScalar (0, 0, 255,
           0), -1, 8, 0);
+  GST_OBJECT_UNLOCK (pointerdetector);
 
   pointerdetector->priv->iteration++;
   if (hsv_image != NULL) {
@@ -834,9 +920,11 @@ kms_pointer_detector2_class_init (KmsPointerDetector2Class * klass)
       "Detects pointer an raises events with its position",
       "Francisco Rivero <fj.riverog@gmail.com>");
 
+  klass->calibrate_color =
+      GST_DEBUG_FUNCPTR (kms_pointer_detector2_calibrate_color);
+
   gobject_class->set_property = kms_pointer_detector2_set_property;
   gobject_class->get_property = kms_pointer_detector2_get_property;
-  gobject_class->dispose = kms_pointer_detector2_dispose;
   gobject_class->finalize = kms_pointer_detector2_finalize;
   base_transform_class->start = GST_DEBUG_FUNCPTR (kms_pointer_detector2_start);
   base_transform_class->stop = GST_DEBUG_FUNCPTR (kms_pointer_detector2_stop);
@@ -864,10 +952,17 @@ kms_pointer_detector2_class_init (KmsPointerDetector2Class * klass)
       g_param_spec_boolean ("show-windows-layout", "show windows layout",
           "show windows layout over the image", TRUE, G_PARAM_READWRITE));
 
-  g_object_class_install_property (gobject_class, PROP_COLOR_TARGET,
-      g_param_spec_boxed ("color-target", "color target",
-          "define the h and s value ranges of the pointer color",
+  g_object_class_install_property (gobject_class, PROP_CALIBRATION_AREA,
+      g_param_spec_boxed ("calibration-area", "calibration area",
+          "define the window used to calibrate the color to track",
           GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  kms_pointer_detector2_signals[SIGNAL_CALIBRATE_COLOR] =
+      g_signal_new ("calibrate-color",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsPointerDetector2Class, calibrate_color), NULL, NULL,
+      __kms_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   g_type_class_add_private (klass, sizeof (KmsPointerDetector2Private));
 }

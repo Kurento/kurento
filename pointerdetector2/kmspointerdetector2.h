@@ -41,11 +41,15 @@ typedef struct _ButtonStruct {
 
 struct _KmsPointerDetector2 {
   GstVideoFilter base_pointerdetector2;
+
   KmsPointerDetector2Private *priv;
 };
 
 struct _KmsPointerDetector2Class {
   GstVideoFilterClass base_pointerdetector2_class;
+
+  /* Actions */
+  void (*calibrate_color) (KmsPointerDetector2 *pointerdetector);
 };
 
 GType kms_pointer_detector2_get_type (void);
