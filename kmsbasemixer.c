@@ -192,6 +192,9 @@ kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
         (G_OBJECT_GET_CLASS (mixer)), template_name);
     gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
     ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
+    if (!ret) {
+      g_object_unref (gp);
+    }
   } else {
     ret = gst_ghost_pad_set_target (GST_GHOST_PAD (gp), target);
     g_object_unref (gp);
