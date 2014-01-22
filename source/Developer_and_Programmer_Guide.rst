@@ -1,3 +1,7 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ Developer and Programmer Guide
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 Introduction
 ============
 
@@ -297,8 +301,7 @@ Stream Oriented GE Kurento API architecture
 
 The *Stream Oriented GE Kurento* is a multimedia platform that provides
 streaming capabilities in a very flexible way. As described in the
-`Architecture
-Description <FIWARE.ArchitectureDescription.Data.StreamOriented>`__,
+:doc:`Architecture Description <Architecture>`,
 *Kurento* is a modular system where a set of basic functional blocks,
 called *MediaElements*, that live in containers, called *MediaPipeline*,
 are connected together to build multimedia services. There are two main

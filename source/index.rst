@@ -9,12 +9,9 @@ Welcome to Kurento's documentation!
 .. toctree::
    :maxdepth: 2
 
-
-:doc:`Architecture <Architecture>`
-
-:doc:`Installation Guide   <Installation_Guide>`
-
-:doc:`Developer and Programmer Guide <Developer_and_Programmer_Guide>`
+   Architecture.rst
+   Developer_and_Programmer_Guide.rst
+   Installation_Guide.rst
 
    kmf-media-api/packages.rst
    kmf-content-api/packages.rst

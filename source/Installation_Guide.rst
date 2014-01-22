@@ -1,5 +1,9 @@
-Kurento Installation
-====================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ Kurento Installation Guide
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Introduction
+============
 
 This guide describes how to install the Stream-Oriented GE - Kurento.
 Kurento is composed of two nodes, the Kurento Application Server (a.k.a.
