@@ -97,6 +97,7 @@ typedef struct _KmsBaseMixerPortData KmsBaseMixerPortData;
 
 struct _KmsBaseMixerPortData
 {
+  KmsBaseMixer *mixer;
   GstElement *port;
   gint id;
   GstPad *audio_sink_target;
@@ -111,10 +112,12 @@ G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
         0, "debug category for basemixer element"));
 
 static KmsBaseMixerPortData *
-kms_base_mixer_port_data_create (GstElement * port, gint id)
+kms_base_mixer_port_data_create (KmsBaseMixer * mixer, GstElement * port,
+    gint id)
 {
   KmsBaseMixerPortData *data = g_slice_new0 (KmsBaseMixerPortData);
 
+  data->mixer = mixer;
   data->port = g_object_ref (port);
   data->id = id;
 
@@ -258,6 +261,30 @@ kms_base_mixer_link_video_src_default (KmsBaseMixer * mixer, gint id,
 }
 
 static gboolean
+kms_base_mixer_create_and_link_ghost_pad (KmsBaseMixer * mixer,
+    GstPad * src_pad, const gchar * gp_name, const gchar * gp_template_name,
+    GstPad * target)
+{
+  GstPadTemplate *templ;
+  GstPad *gp;
+  gboolean ret;
+
+  templ =
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS
+      (G_OBJECT_GET_CLASS (mixer)), gp_template_name);
+  gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
+  ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
+
+  if (ret) {
+    gst_pad_link (src_pad, gp);
+  } else {
+    g_object_unref (gp);
+  }
+
+  return ret;
+}
+
+static gboolean
 kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
     const gchar * gp_name, const gchar * gp_template_name,
     GstElement * internal_element, const gchar * pad_name,
@@ -305,20 +332,8 @@ kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
         port_src_pad_name);
 
     if (src_pad != NULL) {
-      GstPadTemplate *templ;
-
-      templ =
-          gst_element_class_get_pad_template (GST_ELEMENT_CLASS
-          (G_OBJECT_GET_CLASS (mixer)), gp_template_name);
-      gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
-      ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
-
-      if (ret) {
-        gst_pad_link (src_pad, gp);
-      } else {
-        g_object_unref (gp);
-      }
-
+      ret = kms_base_mixer_create_and_link_ghost_pad (mixer, src_pad,
+          gp_name, gp_template_name, target);
       g_object_unref (src_pad);
     } else {
       ret = TRUE;
@@ -403,6 +418,46 @@ kms_base_mixer_generate_port_id (KmsBaseMixer * mixer)
   return id;
 }
 
+static void
+end_point_pad_added (GstElement * end_point, GstPad * pad,
+    KmsBaseMixerPortData * port_data)
+{
+  if (gst_pad_get_direction (pad) == GST_PAD_SRC &&
+      g_str_has_prefix (GST_OBJECT_NAME (pad), "mixer")) {
+
+    KMS_BASE_MIXER_LOCK (port_data->mixer);
+
+    if (port_data->video_sink_target != NULL
+        && g_strstr_len (GST_OBJECT_NAME (pad), -1, "video")) {
+      gchar *gp_name = g_strdup_printf (VIDEO_SINK_PAD_PREFIX "%d",
+          port_data->id);
+
+      GST_DEBUG_OBJECT (port_data->mixer,
+          "Connect %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, pad,
+          port_data->video_sink_target);
+
+      kms_base_mixer_create_and_link_ghost_pad (port_data->mixer, pad, gp_name,
+          VIDEO_SINK_PAD_NAME, port_data->video_sink_target);
+      g_free (gp_name);
+    } else if (port_data->video_sink_target != NULL
+        && g_strstr_len (GST_OBJECT_NAME (pad), -1, "audio")) {
+      gchar *gp_name = g_strdup_printf (AUDIO_SINK_PAD_PREFIX "%d",
+          port_data->id);
+
+      GST_DEBUG_OBJECT (port_data->mixer,
+          "Connect %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, pad,
+          port_data->audio_sink_target);
+
+      kms_base_mixer_create_and_link_ghost_pad (port_data->mixer, pad, gp_name,
+          AUDIO_SINK_PAD_NAME, port_data->audio_sink_target);
+      g_free (gp_name);
+    }
+
+    KMS_BASE_MIXER_UNLOCK (port_data->mixer);
+  }
+
+}
+
 static gint
 kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 {
@@ -422,13 +477,15 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
     return -1;
   }
 
-  GST_DEBUG_OBJECT (mixer, "Handle handle port: %" GST_PTR_FORMAT,
-      mixer_end_point);
+  GST_DEBUG_OBJECT (mixer, "Handle port: %" GST_PTR_FORMAT, mixer_end_point);
 
   id = kms_base_mixer_generate_port_id (mixer);
 
   GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
-  port_data = kms_base_mixer_port_data_create (mixer_end_point, *id);
+  port_data = kms_base_mixer_port_data_create (mixer, mixer_end_point, *id);
+
+  g_signal_connect (G_OBJECT (mixer_end_point), "pad-added",
+      G_CALLBACK (end_point_pad_added), port_data);
 
   KMS_BASE_MIXER_LOCK (mixer);
   g_hash_table_insert (mixer->priv->ports, id, port_data);
