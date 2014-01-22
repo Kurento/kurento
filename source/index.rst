@@ -12,6 +12,7 @@ Welcome to Kurento's documentation!
    Architecture.rst
    Developer_and_Programmer_Guide.rst
    Installation_Guide.rst
+   Open_API_Specification.rst
 
    kmf-media-api/packages.rst
    kmf-content-api/packages.rst

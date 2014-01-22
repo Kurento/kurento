@@ -700,8 +700,7 @@ method ``getAttribute()`` or deleted with method ``removeAttribute()``.
 One important feature of the *content session* is its capability to
 share real time information with clients through a bidirectional
 channel. In order to interchange messages with a browser an
-[http://forge.fi-ware.eu/plugins/mediawiki/wiki/fiware/index.php/StreamOriented_Open_API_Specification_(PRELIMINARY)\ *Open
-API*] client, like the one implemented by the HTML5 SDK, has to be used.
+:doc:`Open API <Open_API_Specification>` client, like the one implemented by the HTML5 SDK, has to be used.
 Messages can be interchanged between the *service handler* and the
 client while the *content session* is active. Method ``publisEvent()``
 is used for this purpose. This capability is quite useful combined with
@@ -736,8 +735,7 @@ method ``onContentCommand()``
     }
 
 See the
-[http://forge.fi-ware.eu/plugins/mediawiki/wiki/fiware/index.php/StreamOriented_Open_API_Specification_(PRELIMINARY)\ *Open
-API*] specification for a detailed reference of available commands and
+:doc:`Open API <Open_API_Specification>` specification for a detailed reference of available commands and
 events that can be exchange between *service handlers* and HTML5 SDK
 clients.
 
@@ -759,7 +757,7 @@ The *content session* provides method ``getContentId()`` that returns
 the path info of requested URL’s, assuming the content ID is placed
 there, as shown below:
 
-Content URL : http://myserver/myApp/myServicePath/{contentId}
+Content URL : `http://myserver/myApp/myServicePath/{contentId}`
     *myserver*: IP address or name of *Kurento Application Server*
     *myApp*: Application name. Normally is the WAR archive name
     *myServicePath*: Value assigned to ``path`` attribute of service
