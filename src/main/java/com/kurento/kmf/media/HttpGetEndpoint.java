@@ -15,7 +15,6 @@
 package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.HasEndOfStreamListener;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 
 /**
@@ -29,7 +28,7 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 3.0.1
  */
-public interface HttpGetEndpoint extends HttpEndpoint, HasEndOfStreamListener {
+public interface HttpGetEndpoint extends HttpEndpoint {
 
 	/**
 	 * Builder for the {@link HttpGetEndpoint}.

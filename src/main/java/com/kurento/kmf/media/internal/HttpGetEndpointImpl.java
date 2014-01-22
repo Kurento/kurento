@@ -15,18 +15,13 @@
 package com.kurento.kmf.media.internal;
 
 import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
-import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.EVENT_EOS_DETECTED;
 import static com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants.TYPE_NAME;
 
 import java.util.Map;
 
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaProfileSpecType;
-import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
@@ -57,21 +52,6 @@ public class HttpGetEndpointImpl extends AbstractHttpEndpoint implements
 	public HttpGetEndpointImpl(MediaElementRef objectRef,
 			Map<String, MediaParam> params) {
 		super(objectRef, params);
-	}
-
-	/* SYNC */
-	@Override
-	public ListenerRegistration addEndOfStreamListener(
-			MediaEventListener<EndOfStreamEvent> listener) {
-		return addListener(EVENT_EOS_DETECTED, listener);
-	}
-
-	/* ASYNC */
-	@Override
-	public void addEndOfStreamListener(
-			MediaEventListener<EndOfStreamEvent> listener,
-			Continuation<ListenerRegistration> cont) {
-		addListener(EVENT_EOS_DETECTED, listener, cont);
 	}
 
 	static class HttpGetEndpointBuilderImpl<T extends HttpGetEndpointBuilderImpl<T>>

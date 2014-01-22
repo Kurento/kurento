@@ -49,6 +49,7 @@ import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
+import com.kurento.kmf.media.params.internal.PointerDetectorAdvConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
@@ -66,6 +67,7 @@ import com.kurento.kms.thrift.api.KmsMediaMuxer;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaPointerDetector2FilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaUriEndPointTypeConstants;
 
@@ -307,6 +309,8 @@ public class MediaParamTest {
 		PointerDetectorWindowMediaParam window = new PointerDetectorWindowMediaParamBuilder(
 				"id", 1, 2, 3, 4).build();
 
+		WindowParam calibrationRegion = new WindowParam(100, 90, 50, 45);
+
 		PointerDetectorConstructorParam in = new PointerDetectorConstructorParam();
 		in.addDetectorWindow(window);
 		KmsMediaParam param = createKmsParam(
@@ -315,6 +319,25 @@ public class MediaParamTest {
 
 		PointerDetectorConstructorParam out = instantiateAndCheck(
 				PointerDetectorConstructorParam.class, param);
+		Assert.assertEquals(in, out);
+	}
+
+	@Test
+	public void testPointerDetectorAdvConstructorParam() {
+		PointerDetectorWindowMediaParam window = new PointerDetectorWindowMediaParamBuilder(
+				"id", 1, 2, 3, 4).build();
+
+		WindowParam calibrationRegion = new WindowParam(100, 90, 50, 45);
+
+		PointerDetectorAdvConstructorParam in = new PointerDetectorAdvConstructorParam(
+				calibrationRegion);
+		in.addDetectorWindow(window);
+		KmsMediaParam param = createKmsParam(
+				KmsMediaPointerDetector2FilterTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		PointerDetectorAdvConstructorParam out = instantiateAndCheck(
+				PointerDetectorAdvConstructorParam.class, param);
 		Assert.assertEquals(in, out);
 	}
 

@@ -36,6 +36,7 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaType;
 import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
+import com.kurento.kmf.media.PointerDetectorAdvFilter.PointerDetectorAdvFilterBuilder;
 import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
 import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
@@ -54,6 +55,7 @@ import com.kurento.kmf.media.internal.RecorderEndpointImpl.RecorderEndpointBuild
 import com.kurento.kmf.media.internal.RtpEndpointImpl.RtpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.WebRtcEndpointImpl.WebRtcEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl.ZBarFilterBuilderImpl;
+import com.kurento.kmf.media.internal.PointerDetectorAdvFilterImpl.PointerDetectorAdvFilterBuilderImpl;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
@@ -521,6 +523,12 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public PointerDetectorFilterBuilder newPointerDetectorFilter() {
 		return new PointerDetectorFilterBuilderImpl(this);
+	}
+
+	@Override
+	public PointerDetectorAdvFilterBuilder newPointerDetectorAdvFilter(
+			WindowParam calibrationRegion) {
+		return new PointerDetectorAdvFilterBuilderImpl(this, calibrationRegion);
 	}
 
 	@Override

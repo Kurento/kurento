@@ -26,6 +26,7 @@ import com.kurento.kmf.media.HttpPostEndpoint.HttpPostEndpointBuilder;
 import com.kurento.kmf.media.JackVaderFilter.JackVaderFilterBuilder;
 import com.kurento.kmf.media.PlateDetectorFilter.PlateDetectorFilterBuilder;
 import com.kurento.kmf.media.PlayerEndpoint.PlayerEndpointBuilder;
+import com.kurento.kmf.media.PointerDetectorAdvFilter.PointerDetectorAdvFilterBuilder;
 import com.kurento.kmf.media.PointerDetectorFilter.PointerDetectorFilterBuilder;
 import com.kurento.kmf.media.RecorderEndpoint.RecorderEndpointBuilder;
 import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
@@ -226,6 +227,18 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	PointerDetectorFilterBuilder newPointerDetectorFilter();
+
+	/**
+	 * Obtains the builder for a {@link PointerDetectorAdvFilter}.
+	 * 
+	 * @param calibrationRegion
+	 *            Region that will be used to calibrate the colour of the
+	 *            pointer
+	 * 
+	 * @return The builder
+	 */
+	PointerDetectorAdvFilterBuilder newPointerDetectorAdvFilter(
+			WindowParam calibrationRegion);
 
 	/**
 	 * Obtains the builder for a {@link PlateDetectorFilter}.
