@@ -391,6 +391,32 @@ kms_base_mixer_link_audio_sink_default (KmsBaseMixer * mixer, gint id,
 }
 
 static void
+kms_base_mixer_remove_port_pad (KmsBaseMixer * mixer, gint id,
+    const gchar * pad_prefix)
+{
+  gchar *pad_name = g_strdup_printf ("%s%d", pad_prefix, id);
+  GstPad *pad = gst_element_get_static_pad (GST_ELEMENT (mixer), pad_name);
+
+  GST_DEBUG_OBJECT (mixer, "Trying to remove pad: %s -> %" GST_PTR_FORMAT,
+      pad_name, pad);
+
+  if (pad != NULL) {
+    gst_element_remove_pad (GST_ELEMENT (mixer), pad);
+    g_object_unref (pad);
+  }
+  g_free (pad_name);
+}
+
+static void
+kms_base_mixer_remove_port_pads (KmsBaseMixer * mixer, gint id)
+{
+  kms_base_mixer_remove_port_pad (mixer, id, AUDIO_SRC_PAD_PREFIX);
+  kms_base_mixer_remove_port_pad (mixer, id, AUDIO_SINK_PAD_PREFIX);
+  kms_base_mixer_remove_port_pad (mixer, id, VIDEO_SRC_PAD_PREFIX);
+  kms_base_mixer_remove_port_pad (mixer, id, VIDEO_SINK_PAD_PREFIX);
+}
+
+static void
 kms_base_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 {
   KmsBaseMixerPortData *port_data;
@@ -406,7 +432,9 @@ kms_base_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
   GST_DEBUG ("Removing element: %" GST_PTR_FORMAT, port_data->port);
 
   KMS_BASE_MIXER_LOCK (mixer);
-  // TODO: Unlink end_point from mixer
+
+  kms_base_mixer_remove_port_pads (mixer, id);
+
   g_hash_table_remove (mixer->priv->ports, &id);
   KMS_BASE_MIXER_UNLOCK (mixer);
 }
