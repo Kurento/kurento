@@ -24,11 +24,6 @@
 
 #define KEY_VALVE_DATA "kms-mixer-valve-data"
 
-#define MIXER_AUDIO_SINK_PAD "mixer_audio_sink"
-#define MIXER_VIDEO_SINK_PAD "mixer_video_sink"
-#define MIXER_AUDIO_SRC_PAD "mixer_audio_src"
-#define MIXER_VIDEO_SRC_PAD "mixer_video_src"
-
 GST_DEBUG_CATEGORY_STATIC (kms_mixer_end_point_debug_category);
 #define GST_CAT_DEFAULT kms_mixer_end_point_debug_category
 

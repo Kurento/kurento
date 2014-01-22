@@ -68,11 +68,19 @@ struct _KmsBaseMixerClass
       GstElement * internal_element, const gchar * pad_name);
   gboolean (*link_audio_src) (KmsBaseMixer * mixer, gint id,
       GstElement * internal_element, const gchar * pad_name);
+  gboolean (*link_video_sink) (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
+  gboolean (*link_audio_sink) (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
 };
 
 gboolean kms_base_mixer_link_video_src (KmsBaseMixer * mixer, gint id,
       GstElement * internal_element, const gchar * pad_name);
 gboolean kms_base_mixer_link_audio_src (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
+gboolean kms_base_mixer_link_video_sink (KmsBaseMixer * mixer, gint id,
+      GstElement * internal_element, const gchar * pad_name);
+gboolean kms_base_mixer_link_audio_sink (KmsBaseMixer * mixer, gint id,
       GstElement * internal_element, const gchar * pad_name);
 
 GType kms_base_mixer_get_type (void);

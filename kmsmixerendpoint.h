@@ -17,6 +17,11 @@
 
 #include "kmselement.h"
 
+#define MIXER_AUDIO_SINK_PAD "mixer_audio_sink"
+#define MIXER_VIDEO_SINK_PAD "mixer_video_sink"
+#define MIXER_AUDIO_SRC_PAD "mixer_audio_src"
+#define MIXER_VIDEO_SRC_PAD "mixer_video_src"
+
 G_BEGIN_DECLS
 #define KMS_TYPE_MIXER_END_POINT kms_mixer_end_point_get_type()
 #define KMS_MIXER_END_POINT(obj) (              \

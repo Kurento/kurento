@@ -52,14 +52,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_base_mixer_debug_category);
 static GstStaticPadTemplate audio_sink_factory =
 GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD_NAME,
     GST_PAD_SINK,
-    GST_PAD_REQUEST,
+    GST_PAD_SOMETIMES,
     GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS)
     );
 
 static GstStaticPadTemplate video_sink_factory =
 GST_STATIC_PAD_TEMPLATE (VIDEO_SINK_PAD_NAME,
     GST_PAD_SINK,
-    GST_PAD_REQUEST,
+    GST_PAD_SOMETIMES,
     GST_STATIC_CAPS (KMS_AGNOSTIC_VIDEO_CAPS)
     );
 
@@ -152,6 +152,28 @@ kms_base_mixer_link_audio_src (KmsBaseMixer * mixer, gint id,
       id, internal_element, pad_name);
 }
 
+gboolean
+kms_base_mixer_link_video_sink (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
+
+  return
+      KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_video_sink (mixer,
+      id, internal_element, pad_name);
+}
+
+gboolean
+kms_base_mixer_link_audio_sink (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
+
+  return
+      KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_audio_sink (mixer,
+      id, internal_element, pad_name);
+}
+
 static void
 release_gint (gpointer data)
 {
@@ -232,6 +254,118 @@ kms_base_mixer_link_video_src_default (KmsBaseMixer * mixer, gint id,
       internal_element, pad_name);
   g_free (gp_name);
 
+  return ret;
+}
+
+static gboolean
+kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
+    const gchar * gp_name, const gchar * gp_template_name,
+    GstElement * internal_element, const gchar * pad_name,
+    const gchar * port_src_pad_name, gulong target_offset)
+{
+  KmsBaseMixerPortData *port_data;
+  gboolean ret;
+  GstPad *gp, *target;
+  GstPad **port_data_target;
+
+  if (GST_OBJECT_PARENT (internal_element) != GST_OBJECT (mixer)) {
+    GST_ERROR_OBJECT (mixer, "Cannot link %" GST_PTR_FORMAT " wrong hierarchy",
+        internal_element);
+    return FALSE;
+  }
+
+  target = gst_element_get_static_pad (internal_element, pad_name);
+  if (target == NULL) {
+    target = gst_element_get_request_pad (internal_element, pad_name);
+  }
+
+  if (target == NULL) {
+    GST_ERROR_OBJECT (mixer, "Cannot get target pad");
+    return FALSE;
+  }
+
+  KMS_BASE_MIXER_LOCK (mixer);
+
+  port_data = g_hash_table_lookup (mixer->priv->ports, &id);
+
+  if (port_data == NULL) {
+    ret = FALSE;
+    goto end;
+  }
+
+  port_data_target = G_STRUCT_MEMBER_P (port_data, target_offset);
+  *port_data_target = g_object_ref (target);
+
+  gp = gst_element_get_static_pad (GST_ELEMENT (mixer), gp_name);
+  if (gp != NULL) {
+    ret = gst_ghost_pad_set_target (GST_GHOST_PAD (gp), target);
+    g_object_unref (gp);
+  } else {
+    GstPad *src_pad = gst_element_get_static_pad (port_data->port,
+        port_src_pad_name);
+
+    if (src_pad != NULL) {
+      GstPadTemplate *templ;
+
+      templ =
+          gst_element_class_get_pad_template (GST_ELEMENT_CLASS
+          (G_OBJECT_GET_CLASS (mixer)), gp_template_name);
+      gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
+      ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
+
+      if (ret) {
+        gst_pad_link (src_pad, gp);
+      } else {
+        g_object_unref (gp);
+      }
+
+      g_object_unref (src_pad);
+    } else {
+      ret = TRUE;
+    }
+  }
+
+  GST_DEBUG_OBJECT (mixer, "Audio target pad for port %d: %" GST_PTR_FORMAT,
+      port_data->id, port_data->audio_sink_target);
+  GST_DEBUG_OBJECT (mixer, "Video target pad for port %d: %" GST_PTR_FORMAT,
+      port_data->id, port_data->video_sink_target);
+
+end:
+
+  KMS_BASE_MIXER_UNLOCK (mixer);
+
+  g_object_unref (target);
+
+  return ret;
+}
+
+static gboolean
+kms_base_mixer_link_video_sink_default (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  gboolean ret;
+  gchar *gp_name = g_strdup_printf (VIDEO_SINK_PAD_PREFIX "%d", id);
+
+  ret = kms_base_mixer_link_sink_pad (mixer, id, gp_name, VIDEO_SINK_PAD_NAME,
+      internal_element, pad_name, MIXER_VIDEO_SRC_PAD,
+      G_STRUCT_OFFSET (KmsBaseMixerPortData, video_sink_target));
+
+  g_free (gp_name);
+  return ret;
+}
+
+static gboolean
+kms_base_mixer_link_audio_sink_default (KmsBaseMixer * mixer, gint id,
+    GstElement * internal_element, const gchar * pad_name)
+{
+  gboolean ret;
+  gchar *gp_name = g_strdup_printf (AUDIO_SINK_PAD_PREFIX "%d", id);
+
+  ret = kms_base_mixer_link_sink_pad (mixer, id, gp_name, AUDIO_SINK_PAD_NAME,
+      internal_element, pad_name, MIXER_AUDIO_SRC_PAD,
+      G_STRUCT_OFFSET (KmsBaseMixerPortData, audio_sink_target));
+
+  g_free (gp_name);
   return ret;
 }
 
@@ -343,6 +477,10 @@ kms_base_mixer_class_init (KmsBaseMixerClass * klass)
       GST_DEBUG_FUNCPTR (kms_base_mixer_link_video_src_default);
   klass->link_audio_src =
       GST_DEBUG_FUNCPTR (kms_base_mixer_link_audio_src_default);
+  klass->link_video_sink =
+      GST_DEBUG_FUNCPTR (kms_base_mixer_link_video_sink_default);
+  klass->link_audio_sink =
+      GST_DEBUG_FUNCPTR (kms_base_mixer_link_audio_sink_default);
 
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_base_mixer_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_base_mixer_finalize);
