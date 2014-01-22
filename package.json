@@ -52,6 +52,8 @@
     "grunt-curl": "latest",
     "grunt-jsdoc": "latest",
     "nock": "latest",
-    "nodeunit": "latest"
+    "nodeunit": "latest",
+    "qunit": "~0.5.18",
+    "wock": "latest"
   }
 }

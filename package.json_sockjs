@@ -54,6 +54,6 @@
     "nodeunit": "latest"
   },
   "browser": {
-    "ws": "./shims/sockjs-0.3.js"
+    "ws": "./shims/ws-sockjs-shim.js"
   }
 }
