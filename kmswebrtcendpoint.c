@@ -921,9 +921,9 @@ add_webrtc_bundle_connection_sink (KmsWebrtcEndPoint * webrtc_end_point)
 
   gst_bin_add_many (GST_BIN (webrtc_end_point),
       g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
-  gst_element_sync_state_with_parent (tr->dtlssrtpenc);
-  gst_element_sync_state_with_parent (tr->nicesink);
   gst_element_link (tr->dtlssrtpenc, tr->nicesink);
+  gst_element_sync_state_with_parent (tr->nicesink);
+  gst_element_sync_state_with_parent (tr->dtlssrtpenc);
 
   add_bundle_funnels (webrtc_end_point);
 
