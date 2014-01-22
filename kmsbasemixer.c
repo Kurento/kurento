@@ -99,6 +99,7 @@ struct _KmsBaseMixerPortData
 {
   KmsBaseMixer *mixer;
   GstElement *port;
+  gulong signal_id;
   gint id;
   GstPad *audio_sink_target;
   GstPad *video_sink_target;
@@ -128,6 +129,11 @@ static void
 kms_base_mixer_port_data_destroy (gpointer data)
 {
   KmsBaseMixerPortData *port_data = (KmsBaseMixerPortData *) data;
+
+  if (port_data->signal_id != 0) {
+    g_signal_handler_disconnect (port_data->port, port_data->signal_id);
+    port_data->signal_id = 0;
+  }
 
   g_clear_object (&port_data->port);
   g_slice_free (KmsBaseMixerPortData, data);
@@ -484,8 +490,8 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
   GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
   port_data = kms_base_mixer_port_data_create (mixer, mixer_end_point, *id);
 
-  g_signal_connect (G_OBJECT (mixer_end_point), "pad-added",
-      G_CALLBACK (end_point_pad_added), port_data);
+  port_data->signal_id = g_signal_connect (G_OBJECT (mixer_end_point),
+      "pad-added", G_CALLBACK (end_point_pad_added), port_data);
 
   KMS_BASE_MIXER_LOCK (mixer);
   g_hash_table_insert (mixer->priv->ports, id, port_data);
