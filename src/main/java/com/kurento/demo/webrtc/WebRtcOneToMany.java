@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -14,10 +14,6 @@
  */
 package com.kurento.demo.webrtc;
 
-import java.util.concurrent.ConcurrentMap;
-
-import com.kurento.kmf.content.ContentCommand;
-import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
@@ -26,80 +22,41 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
- * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * This handler implements a one to many video conference using WebRtcEnpoints;
+ * the first session acts as "master", and the rest of concurrent sessions will
+ * watch the "master" session in his remote stream; master's remote is a
+ * loopback at the beginning, and it is changing with the stream of the each
+ * participant in the conference.
+ * 
+ * @author Boni Garcia (bgarcia@gsyc.es)
+ * @since 1.0.1
  */
-@WebRtcContentService(path = "/chat/*")
+@WebRtcContentService(path = "/webRtcOneToMany")
 public class WebRtcOneToMany extends WebRtcContentHandler {
+
+	private WebRtcEndpoint firstWebRtcEndpoint;
 
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
 			throws Exception {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
-		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
-		contentSession.setAttribute("webRtcEndpoint", webRtcEndpoint);
-
-		String nick = contentSession.getContentId();
-		ConcurrentMap<String, WebRtcContentSession> chatRoom = ChatRoom
-				.getSingleton().getSharedMap();
-
-		getLogger().info("chatRoom size {}", chatRoom.size());
-
-		if (chatRoom.isEmpty()) {
+		if (firstWebRtcEndpoint == null) {
 			contentSession.start(null, (MediaElement) null);
+			firstWebRtcEndpoint = contentSession.getSessionEndpoint();
 		} else {
-			WebRtcContentSession remote = chatRoom.get(chatRoom.keySet()
-					.toArray()[0]);
-			contentSession.start(null, remote.getSessionEndpoint());
+			contentSession.start(firstWebRtcEndpoint, firstWebRtcEndpoint);
 		}
-
-		chatRoom.put(nick, contentSession);
-	}
-
-	@Override
-	public void onContentStarted(WebRtcContentSession contentSession)
-			throws Exception {
-		super.onContentStarted(contentSession);
 	}
 
 	@Override
 	public void onSessionTerminated(WebRtcContentSession contentSession,
 			int code, String reason) throws Exception {
+		if (contentSession.getSessionEndpoint().equals(firstWebRtcEndpoint)) {
+			getLogger().info("Terminating first WebRTC session");
+			firstWebRtcEndpoint = null;
+		}
 		super.onSessionTerminated(contentSession, code, reason);
-	}
-
-	@Override
-	public ContentCommandResult onContentCommand(
-			WebRtcContentSession contentSession, ContentCommand contentCommand)
-			throws Exception {
-		// getLogger().info("onContentCommand");
-		//
-		// WebRtcEndpoint webRtcEndpoint = (WebRtcEndpoint) contentSession
-		// .getAttribute("webRtcEndpoint");
-		//
-		// ConcurrentMap<String, WebRtcEndpoint> chatRoom = ChatRoom
-		// .getSingleton().getSharedMap();
-		// MediaElement sink = null;
-		// for (WebRtcEndpoint w : chatRoom.values()) {
-		// if (!w.equals(webRtcEndpoint)) {
-		// sink = w;
-		// }
-		// }
-		// contentSession.start(webRtcEndpoint, sink);
-		return super.onContentCommand(contentSession, contentCommand);
-	}
-
-	@Override
-	public void onSessionError(WebRtcContentSession contentSession, int code,
-			String description) throws Exception {
-		super.onSessionError(contentSession, code, description);
-	}
-
-	@Override
-	public void onUncaughtException(WebRtcContentSession contentSession,
-			Throwable exception) throws Exception {
-		super.onUncaughtException(contentSession, exception);
 	}
 
 }
