@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -35,7 +35,10 @@ import com.google.common.collect.Lists;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
 /**
+ * Logic for handling YouTube playlists.
+ * 
  * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 1.0.1
  * 
  */
 public class Playlists {

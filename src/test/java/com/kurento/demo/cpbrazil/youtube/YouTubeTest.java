@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.api.services.youtube.model.Video;
@@ -32,33 +33,26 @@ public class YouTubeTest {
 
 	private static final String PLAYLIST_TOKEN = "PL58tWS2XjtialwG-eWDYoFwQpHTd5vDEE";
 
-	// private static final Logger log = LoggerFactory
-	// .getLogger(YouTubeTest.class);
-
+	@Ignore
 	@Test
 	public void testInsertToPlaylist() throws IOException {
 
 		String playlistItemId = Playlists.insertItem(PLAYLIST_TOKEN,
 				"JooP-i1sJHs");
-
 		Assert.assertNotNull(playlistItemId);
-
 		Playlists.removeItem(playlistItemId);
-
 	}
 
+	@Ignore
 	@Test
 	public void testUpload() throws IOException {
 		List<String> tags = newArrayList("FI-WARE", "Kurento", "FUN-LAB",
 				"GSyC", "URJC", "Campus Party", "WebRTC",
 				"Software Engineering", "Augmented Reality", "Computer Vision",
 				"Super Mario", "Sonic", "Street Fighter", "Donkey Kong");
-
 		Video video = Videos.upload(
 				"http://193.147.51.29/campus-party-1389874842998", tags);
-
 		Assert.assertNotNull(video);
-
 		Videos.delete(video);
 	}
 }

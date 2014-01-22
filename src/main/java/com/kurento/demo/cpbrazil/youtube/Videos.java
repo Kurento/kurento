@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -44,12 +44,20 @@ import com.google.api.services.youtube.model.VideoSnippet;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
 /**
+ * Class with static methods implementing the upload to of a given URL to
+ * YouTube.
+ * 
+ * @author Boni García (bgarcia@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
+ * @since 1.0.1
+ * @see https://code.google.com/p/youtube-api-samples
  * 
  */
 public class Videos {
 
 	private static final Logger log = LoggerFactory.getLogger(Videos.class);
+
+	private static final String PLAYLIST_TOKEN = "PL58tWS2XjtialwG-eWDYoFwQpHTd5vDEE";
 
 	/** Global instance of Youtube object to make all API requests. */
 	private static YouTube youtube;
@@ -74,8 +82,6 @@ public class Videos {
 	}
 
 	public static Video upload(String url, List<String> tags) {
-
-		log.debug("*************** " + url);
 		Video uploadedVideo;
 
 		try {
@@ -142,15 +148,18 @@ public class Videos {
 			uploader.setProgressListener(progressListener);
 
 			uploadedVideo = videoInsert.execute();
+			String playListItemId = Playlists.insertItem(PLAYLIST_TOKEN,
+					uploadedVideo.getId());
 
 			// Print out returned results.
-			log.debug("\n================== Returned Video ==================\n");
-			log.debug(" -Id: " + uploadedVideo.getId());
-			log.debug(" -Title: " + uploadedVideo.getSnippet().getTitle());
-			log.debug(" -Tags: " + uploadedVideo.getSnippet().getTags());
-			log.debug(" -Privacy Status: "
+			log.info("\n================== Returned Video ==================\n");
+			log.info(" -Id: " + uploadedVideo.getId());
+			log.info(" -PlayList Item Id: " + playListItemId);
+			log.info(" -Title: " + uploadedVideo.getSnippet().getTitle());
+			log.info(" -Tags: " + uploadedVideo.getSnippet().getTags());
+			log.info(" -Privacy Status: "
 					+ uploadedVideo.getStatus().getPrivacyStatus());
-			log.debug(" -Video Count: "
+			log.info(" -Video Count: "
 					+ uploadedVideo.getStatistics().getViewCount());
 
 		} catch (GoogleJsonResponseException e) {

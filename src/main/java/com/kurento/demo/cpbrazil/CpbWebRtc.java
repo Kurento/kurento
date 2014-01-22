@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -40,6 +40,15 @@ import com.kurento.kmf.media.params.internal.WindowParam;
 import com.kurento.kmf.repository.RepositoryHttpRecorder;
 import com.kurento.kmf.repository.RepositoryItem;
 
+/**
+ * Campus Party Brazil 2014 Kurento demo. This demo has the following pipeline:
+ * 
+ * WebRTC -> MirrorFilter -> PointerDetectorFilter -> ChromaFilter ->
+ * FaceOverlayFilter -> Recorder
+ * 
+ * @author Boni García (bgarcia@gsyc.es)
+ * @since 1.0.1
+ */
 @WebRtcContentService(path = "/cpbWebRtc/*")
 public class CpbWebRtc extends WebRtcContentHandler {
 
@@ -88,14 +97,18 @@ public class CpbWebRtc extends WebRtcContentHandler {
 
 		mirrorFilter = mediaPipeline.newGStreamerFilter("videoflip method=4")
 				.build();
+		// Max: 640x480
+		// chromaFilter = mediaPipeline.newChromaFilter(
+		// new WindowParam(5, 5, 630, 470)).build();
 		chromaFilter = mediaPipeline.newChromaFilter(
-				new WindowParam(100, 10, 20, 20)).build();
+				new WindowParam(100, 10, 500, 400)).build();
 		pointerDetectorFilter = mediaPipeline.newPointerDetectorFilter()
 				.withWindow(createStartWindow()).build();
 		faceOverlayFilter = mediaPipeline.newFaceOverlayFilter().build();
-		mirrorFilter.connect(chromaFilter);
+
+		mirrorFilter.connect(pointerDetectorFilter);
+		pointerDetectorFilter.connect(chromaFilter);
 		chromaFilter.connect(faceOverlayFilter);
-		faceOverlayFilter.connect(pointerDetectorFilter);
 
 		pointerDetectorFilter
 				.addWindowInListener(new MediaEventListener<WindowInEvent>() {
@@ -104,8 +117,6 @@ public class CpbWebRtc extends WebRtcContentHandler {
 						try {
 							String windowId = event.getWindowId();
 							if (windowId.equals(START)) {
-								// chromaFilter.setBackground(handlerUrl
-								// + "/img/transparent-1px.png");
 								pointerDetectorFilter.clearWindows();
 								pointerDetectorFilter
 										.addWindow(createMarioWindow());
@@ -164,14 +175,13 @@ public class CpbWebRtc extends WebRtcContentHandler {
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
-								activeWindow = DK;
+								activeWindow = SONIC;
 
 							} else if (windowId.equals(YOUTUBE)
 									|| windowId.equals(TRASH)) {
+								chromaFilter.unsetBackground();
 								pointerDetectorFilter.clearWindows();
-								faceOverlayFilter.setOverlayedImage(handlerUrl
-										+ "/img/transparent-1px.png", 0.0F,
-										0.0F, 0.0F, 0.0F);
+								faceOverlayFilter.unsetOverlayedImage();
 								pointerDetectorFilter
 										.addWindow(createStartWindow());
 								recorderEndpoint.stop();
@@ -201,7 +211,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 						}
 					}
 				});
-		contentSession.start(pointerDetectorFilter, mirrorFilter);
+		contentSession.start(faceOverlayFilter, mirrorFilter);
 	}
 
 	@Override
@@ -229,7 +239,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 					"file:///tmp/" + itemId).build();
 		}
 
-		pointerDetectorFilter.connect(recorderEndpoint);
+		faceOverlayFilter.connect(recorderEndpoint);
 	}
 
 	private PointerDetectorWindowMediaParam createStartWindow()

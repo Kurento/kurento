@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -17,7 +17,7 @@
  * Demo handlers for Campus Party 2014 Brasil. 
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.1
+ * @since 1.0.1
  */
 package com.kurento.demo.cpbrazil;
 
