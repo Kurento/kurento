@@ -20,6 +20,7 @@
 
 #include "kmswebrtcendpoint.h"
 #include "kmsloop.h"
+#include "kmsutils.h"
 
 #include <nice/nice.h>
 #include <gio/gio.h>
@@ -502,9 +503,9 @@ add_bundle_funnels (KmsWebrtcEndPoint * webrtc_end_point)
   gst_bin_add_many (GST_BIN (webrtc_end_point),
       webrtc_end_point->priv->bundle_rtp_funnel,
       webrtc_end_point->priv->bundle_rtcp_funnel, NULL);
-  gst_element_sync_state_with_parent (webrtc_end_point->priv->
+  gst_element_sync_state_with_parent_target_state (webrtc_end_point->priv->
       bundle_rtp_funnel);
-  gst_element_sync_state_with_parent (webrtc_end_point->priv->
+  gst_element_sync_state_with_parent_target_state (webrtc_end_point->priv->
       bundle_rtcp_funnel);
 }
 
@@ -810,8 +811,8 @@ add_webrtc_transport_src (KmsWebrtcEndPoint * webrtc_end_point,
   gst_element_link_pads (tr->dtlssrtpdec, "src",
       base_rtp_end_point->rtpbin, sink_pad_name);
 
-  gst_element_sync_state_with_parent (tr->dtlssrtpdec);
-  gst_element_sync_state_with_parent (tr->nicesrc);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
+  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
 }
 
 static void
@@ -872,8 +873,8 @@ add_webrtc_transport_sink (KmsWebrtcEndPoint * webrtc_end_point,
       g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
 
   gst_element_link (tr->dtlssrtpenc, tr->nicesink);
-  gst_element_sync_state_with_parent (tr->dtlssrtpenc);
-  gst_element_sync_state_with_parent (tr->nicesink);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
+  gst_element_sync_state_with_parent_target_state (tr->nicesink);
 }
 
 static void
@@ -896,15 +897,15 @@ add_webrtc_bundle_connection_src (KmsWebrtcEndPoint * webrtc_end_point,
   g_signal_connect (ssrcdemux, "new-ssrc-pad",
       G_CALLBACK (rtp_ssrc_demux_new_ssrc_pad), webrtc_end_point);
   gst_bin_add_many (GST_BIN (webrtc_end_point), ssrcdemux, rtcpdemux, NULL);
-  gst_element_sync_state_with_parent (ssrcdemux);
-  gst_element_sync_state_with_parent (rtcpdemux);
+  gst_element_sync_state_with_parent_target_state (ssrcdemux);
+  gst_element_sync_state_with_parent_target_state (rtcpdemux);
 
   g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", is_client, NULL);
   g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", is_client, NULL);
   gst_bin_add_many (GST_BIN (webrtc_end_point),
       g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
-  gst_element_sync_state_with_parent (tr->dtlssrtpdec);
-  gst_element_sync_state_with_parent (tr->nicesrc);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
+  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
 
   gst_element_link_pads (tr->dtlssrtpdec, "src", rtcpdemux, "sink");
@@ -922,8 +923,8 @@ add_webrtc_bundle_connection_sink (KmsWebrtcEndPoint * webrtc_end_point)
   gst_bin_add_many (GST_BIN (webrtc_end_point),
       g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
   gst_element_link (tr->dtlssrtpenc, tr->nicesink);
-  gst_element_sync_state_with_parent (tr->nicesink);
-  gst_element_sync_state_with_parent (tr->dtlssrtpenc);
+  gst_element_sync_state_with_parent_target_state (tr->nicesink);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
 
   add_bundle_funnels (webrtc_end_point);
 
