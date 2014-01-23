@@ -873,8 +873,8 @@ add_webrtc_transport_sink (KmsWebrtcEndPoint * webrtc_end_point,
       g_object_ref (tr->dtlssrtpenc), g_object_ref (tr->nicesink), NULL);
 
   gst_element_link (tr->dtlssrtpenc, tr->nicesink);
-  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
   gst_element_sync_state_with_parent_target_state (tr->nicesink);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpenc);
 }
 
 static void
@@ -897,21 +897,22 @@ add_webrtc_bundle_connection_src (KmsWebrtcEndPoint * webrtc_end_point,
   g_signal_connect (ssrcdemux, "new-ssrc-pad",
       G_CALLBACK (rtp_ssrc_demux_new_ssrc_pad), webrtc_end_point);
   gst_bin_add_many (GST_BIN (webrtc_end_point), ssrcdemux, rtcpdemux, NULL);
-  gst_element_sync_state_with_parent_target_state (ssrcdemux);
-  gst_element_sync_state_with_parent_target_state (rtcpdemux);
 
   g_object_set (G_OBJECT (tr->dtlssrtpenc), "is-client", is_client, NULL);
   g_object_set (G_OBJECT (tr->dtlssrtpdec), "is-client", is_client, NULL);
   gst_bin_add_many (GST_BIN (webrtc_end_point),
       g_object_ref (tr->nicesrc), g_object_ref (tr->dtlssrtpdec), NULL);
-  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
-  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
 
   gst_element_link_pads (tr->dtlssrtpdec, "src", rtcpdemux, "sink");
   gst_element_link_pads (rtcpdemux, "rtp_src", ssrcdemux, "sink");
   gst_element_link_pads (rtcpdemux, "rtcp_src", ssrcdemux, "rtcp_sink");
   /* TODO: link rtcp_sink pad when dtlssrtpdec provides rtcp packets */
+
+  gst_element_sync_state_with_parent_target_state (ssrcdemux);
+  gst_element_sync_state_with_parent_target_state (rtcpdemux);
+  gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
+  gst_element_sync_state_with_parent_target_state (tr->nicesrc);
 }
 
 static void
