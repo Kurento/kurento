@@ -372,6 +372,7 @@ kms_base_mixer_link_video_sink_default (KmsBaseMixer * mixer, gint id,
       G_STRUCT_OFFSET (KmsBaseMixerPortData, video_sink_target));
 
   g_free (gp_name);
+
   return ret;
 }
 
@@ -387,6 +388,7 @@ kms_base_mixer_link_audio_sink_default (KmsBaseMixer * mixer, gint id,
       G_STRUCT_OFFSET (KmsBaseMixerPortData, audio_sink_target));
 
   g_free (gp_name);
+
   return ret;
 }
 
@@ -489,7 +491,6 @@ end_point_pad_added (GstElement * end_point, GstPad * pad,
 
     KMS_BASE_MIXER_UNLOCK (port_data->mixer);
   }
-
 }
 
 static gint
@@ -501,6 +502,7 @@ kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
   if (!KMS_IS_MIXER_END_POINT (mixer_end_point)) {
     GST_INFO_OBJECT (mixer, "Invalid MixerEndPoint: %" GST_PTR_FORMAT,
         mixer_end_point);
+
     return -1;
   }
 
