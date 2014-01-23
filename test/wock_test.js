@@ -6,7 +6,7 @@ var KwsMedia = require('../lib/index');
 
 var objects = {};
 
-var WebSocket = wock(function(data)
+function proxy(data)
 {
   console.log('< '+data);
 
@@ -22,14 +22,13 @@ var WebSocket = wock(function(data)
   {
     case 'createMediaPipeline':
       objects[id] = 'MediaPipeline';
-      console.log(objects);
       result = {id: id, token: 0};
       break;
 
     case 'createMediaElement':
     {
       var params = message.params;
-      var pipeline_id = params.object.id;
+      var pipeline_id = params.pipeline.id;
 
       var pipeline = objects[pipeline_id];
       if(pipeline)
@@ -63,7 +62,10 @@ var WebSocket = wock(function(data)
   console.log('> '+data);
 
   this.emit('message', data, {});
-});
+};
+
+var WebSocket = wock(proxy);
+//var WebSocket = require('ws');
 
 
 KwsMedia(new WebSocket('ws://localhost:8001'), function(kwsMedia)
