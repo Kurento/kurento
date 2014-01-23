@@ -160,6 +160,15 @@ public interface MediaObject {
 	 */
 	interface MediaObjectBuilder<T, E> {
 
+		/**
+		 * This sets the time lapse between keepalives sent to the server. If a
+		 * value of 0 is set, the object will not be collected even if the
+		 * reference is lost. Be aware that objects may have different default
+		 * behaviour, depending on their type.
+		 * 
+		 * @param period
+		 * @return The builder
+		 */
 		T withGarbagePeriod(int period);
 
 		E build();

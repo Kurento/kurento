@@ -27,7 +27,6 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
-import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaServerConstants;
 
 /**
@@ -83,7 +82,7 @@ public abstract class AbstractCollectableMediaObject extends
 			Map<String, MediaParam> params) {
 		super(ref, params);
 		MediaObjectConstructorParam objConstructorParam = (MediaObjectConstructorParam) params
-				.get(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE);
+				.get(CONSTRUCTOR_PARAMS_DATA_TYPE);
 		if (objConstructorParam != null) {
 			this.garbagePeriod = objConstructorParam
 					.getGarbageCollectorPeriod();
@@ -160,8 +159,7 @@ public abstract class AbstractCollectableMediaObject extends
 
 		private void setGarbagePeriod(int period) {
 			param.setGarbageCollectorPeriod(period);
-			params.put(KmsMediaObjectConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
-					param);
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
 		}
 
 	}
