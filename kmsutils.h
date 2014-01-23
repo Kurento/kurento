@@ -21,4 +21,6 @@ void kms_utils_set_valve_drop (GstElement * valve, gboolean drop);
 void kms_utils_debug_graph_delay (GstBin * bin, guint interval);
 gboolean kms_is_valid_uri (const gchar * url);
 
+gboolean gst_element_sync_state_with_parent_target_state (GstElement * element);
+
 #endif /* __KMS_UTILS_H__ */

@@ -53,3 +53,41 @@ kms_is_valid_uri (const gchar * url)
 
   return ret;
 }
+
+gboolean
+gst_element_sync_state_with_parent_target_state (GstElement * element)
+{
+  GstElement *parent;
+  GstState target;
+  GstStateChangeReturn ret;
+
+  g_return_val_if_fail (GST_IS_ELEMENT (element), FALSE);
+
+  parent = GST_ELEMENT_CAST (gst_element_get_parent (element));
+
+  if (element == NULL) {
+    GST_DEBUG_OBJECT (element, "element has no parent");
+    return FALSE;
+  }
+
+  GST_OBJECT_LOCK (parent);
+  target = GST_STATE_TARGET (parent);
+  GST_OBJECT_UNLOCK (parent);
+
+  GST_DEBUG_OBJECT (element,
+      "setting parent (%s) target state %s",
+      GST_ELEMENT_NAME (parent), gst_element_state_get_name (target));
+
+  gst_object_unref (parent);
+
+  ret = gst_element_set_state (element, target);
+  if (ret == GST_STATE_CHANGE_FAILURE) {
+    GST_DEBUG_OBJECT (element,
+        "setting target state failed (%s)",
+        gst_element_state_change_return_get_name (ret));
+
+    return FALSE;
+  }
+
+  return TRUE;
+}
