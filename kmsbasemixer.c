@@ -458,39 +458,40 @@ static void
 end_point_pad_added (GstElement * end_point, GstPad * pad,
     KmsBaseMixerPortData * port_data)
 {
-  if (gst_pad_get_direction (pad) == GST_PAD_SRC &&
-      g_str_has_prefix (GST_OBJECT_NAME (pad), "mixer")) {
-
-    KMS_BASE_MIXER_LOCK (port_data->mixer);
-
-    if (port_data->video_sink_target != NULL
-        && g_strstr_len (GST_OBJECT_NAME (pad), -1, "video")) {
-      gchar *gp_name = g_strdup_printf (VIDEO_SINK_PAD_PREFIX "%d",
-          port_data->id);
-
-      GST_DEBUG_OBJECT (port_data->mixer,
-          "Connect %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, pad,
-          port_data->video_sink_target);
-
-      kms_base_mixer_create_and_link_ghost_pad (port_data->mixer, pad, gp_name,
-          VIDEO_SINK_PAD_NAME, port_data->video_sink_target);
-      g_free (gp_name);
-    } else if (port_data->video_sink_target != NULL
-        && g_strstr_len (GST_OBJECT_NAME (pad), -1, "audio")) {
-      gchar *gp_name = g_strdup_printf (AUDIO_SINK_PAD_PREFIX "%d",
-          port_data->id);
-
-      GST_DEBUG_OBJECT (port_data->mixer,
-          "Connect %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, pad,
-          port_data->audio_sink_target);
-
-      kms_base_mixer_create_and_link_ghost_pad (port_data->mixer, pad, gp_name,
-          AUDIO_SINK_PAD_NAME, port_data->audio_sink_target);
-      g_free (gp_name);
-    }
-
-    KMS_BASE_MIXER_UNLOCK (port_data->mixer);
+  if (gst_pad_get_direction (pad) != GST_PAD_SRC ||
+      !g_str_has_prefix (GST_OBJECT_NAME (pad), "mixer")) {
+    return;
   }
+
+  KMS_BASE_MIXER_LOCK (port_data->mixer);
+
+  if (port_data->video_sink_target != NULL
+      && g_strstr_len (GST_OBJECT_NAME (pad), -1, "video")) {
+    gchar *gp_name = g_strdup_printf (VIDEO_SINK_PAD_PREFIX "%d",
+        port_data->id);
+
+    GST_DEBUG_OBJECT (port_data->mixer,
+        "Connect %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, pad,
+        port_data->video_sink_target);
+
+    kms_base_mixer_create_and_link_ghost_pad (port_data->mixer, pad, gp_name,
+        VIDEO_SINK_PAD_NAME, port_data->video_sink_target);
+    g_free (gp_name);
+  } else if (port_data->video_sink_target != NULL
+      && g_strstr_len (GST_OBJECT_NAME (pad), -1, "audio")) {
+    gchar *gp_name = g_strdup_printf (AUDIO_SINK_PAD_PREFIX "%d",
+        port_data->id);
+
+    GST_DEBUG_OBJECT (port_data->mixer,
+        "Connect %" GST_PTR_FORMAT " to %" GST_PTR_FORMAT, pad,
+        port_data->audio_sink_target);
+
+    kms_base_mixer_create_and_link_ghost_pad (port_data->mixer, pad, gp_name,
+        AUDIO_SINK_PAD_NAME, port_data->audio_sink_target);
+    g_free (gp_name);
+  }
+
+  KMS_BASE_MIXER_UNLOCK (port_data->mixer);
 }
 
 static gint
