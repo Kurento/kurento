@@ -57,7 +57,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector2_debug_category);
 #define S_VALUES 256
 #define H_MAX 180
 #define S_MAX 255
-#define HIST_THRESHOLD 2
+#define HIST_THRESHOLD 20
 
 enum
 {
@@ -360,6 +360,12 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
   h_channel = cvCreateImage (cvGetSize (calibration_area), 8, 1);
   s_channel = cvCreateImage (cvGetSize (calibration_area), 8, 1);
 
+  GST_DEBUG ("REGION x %d y %d  width %d height %d\n",
+      pointerdetector->priv->x_calibration,
+      pointerdetector->priv->y_calibration,
+      pointerdetector->priv->width_calibration,
+      pointerdetector->priv->height_calibration);
+
   GST_OBJECT_LOCK (pointerdetector);
   cvSetImageROI (pointerdetector->priv->cvImage,
       cvRect (pointerdetector->priv->x_calibration,
@@ -381,7 +387,7 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
     }
   }
 
-  for (int i = 0; i < H_MAX; i++) {
+  for (int i = 1; i < H_MAX; i++) {
     if (h_values[i] >= HIST_THRESHOLD) {
       pointerdetector->priv->h_min = i;
       break;
@@ -393,7 +399,7 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
       break;
     }
   }
-  for (int i = 0; i < S_MAX; i++) {
+  for (int i = 1; i < S_MAX; i++) {
     if (s_values[i] >= HIST_THRESHOLD) {
       pointerdetector->priv->s_min = i;
       break;
@@ -792,19 +798,25 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
     return GST_FLOW_OK;
   }
 
-  if ((pointerdetector->priv->h_min == 0) && (pointerdetector->priv->h_max == 0)
-      && (pointerdetector->priv->s_min == 0)
-      && (pointerdetector->priv->s_max == 0)) {
-    GST_DEBUG ("Color to track not calibrated");
-    return GST_FLOW_OK;
-  }
-
   pointerdetector->priv->frameSize =
       cvSize (frame->info.width, frame->info.height);
   kms_pointer_detector2_initialize_images (pointerdetector, frame);
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
   pointerdetector->priv->cvImage->imageData = (char *) info.data;
 
+  cvRectangle (pointerdetector->priv->cvImage,
+      cvPoint (pointerdetector->priv->x_calibration,
+          pointerdetector->priv->x_calibration),
+      cvPoint (pointerdetector->priv->x_calibration
+          + pointerdetector->priv->width_calibration,
+          pointerdetector->priv->x_calibration
+          + pointerdetector->priv->height_calibration), WHITE, 1, 8, 0);
+
+  if ((pointerdetector->priv->h_min == 0) && (pointerdetector->priv->h_max == 0)
+      && (pointerdetector->priv->s_min == 0)
+      && (pointerdetector->priv->s_max == 0)) {
+    goto end;
+  }
   //detect the coordenates of the pointer
   hsv_image = cvCreateImage (cvGetSize (pointerdetector->priv->cvImage),
       pointerdetector->priv->cvImage->depth, 3);
@@ -894,6 +906,8 @@ checkPoint:
   if (hough_image != NULL) {
     cvReleaseImage (&hough_image);
   }
+
+end:
   gst_buffer_unmap (frame->buffer, &info);
   return GST_FLOW_OK;
 }
