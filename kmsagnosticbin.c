@@ -63,8 +63,6 @@ G_DEFINE_TYPE (KmsAgnosticBin2, kms_agnostic_bin2, GST_TYPE_BIN);
   g_mutex_unlock (KMS_AGNOSTIC_BIN2_GET_LOCK (obj))     \
 )
 
-static gboolean kms_agnostic_bin2_process_pad_loop (gpointer data);
-
 struct _KmsAgnosticBin2Private
 {
   GHashTable *tees;
@@ -272,29 +270,6 @@ remove_target_pad (GstPad * pad)
     g_object_unref (target);
     gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
   }
-}
-
-static void
-kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
-{
-  KMS_AGNOSTIC_BIN2_LOCK (self);
-  if (!self->priv->started)
-    goto end;
-
-  if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
-    GST_DEBUG_OBJECT (pad, "Adding pad to queue");
-    kms_agnostic_bin2_set_block_probe (self);
-
-    remove_target_pad (pad);
-    g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
-    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
-        kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
-        g_object_unref);
-  }
-
-end:
-
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 }
 
 static void
@@ -691,6 +666,29 @@ kms_agnostic_bin2_process_pad_loop (gpointer data)
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   return FALSE;
+}
+
+static void
+kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
+{
+  KMS_AGNOSTIC_BIN2_LOCK (self);
+  if (!self->priv->started)
+    goto end;
+
+  if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
+    GST_DEBUG_OBJECT (pad, "Adding pad to queue");
+    kms_agnostic_bin2_set_block_probe (self);
+
+    remove_target_pad (pad);
+    g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
+        kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
+        g_object_unref);
+  }
+
+end:
+
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 }
 
 static void
