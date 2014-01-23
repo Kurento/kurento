@@ -112,10 +112,10 @@ public interface MediaElement extends MediaObject {
 	 * element sources may be connected with target sinks.
 	 * 
 	 * @param sink
-	 *            the target {@MediaElement} from which
+	 *            the target {@link MediaElement} from which
 	 *            {@link MediaSink} will be obtained
 	 * @param mediaType
-	 *            the {@MediaType} of the pads that will be
+	 *            the {@link MediaType} of the pads that will be
 	 *            connected.
 	 */
 	void connect(MediaElement sink, MediaType mediaType);
@@ -228,10 +228,10 @@ public interface MediaElement extends MediaObject {
 	 * element sources may be connected with target sinks.
 	 * 
 	 * @param sink
-	 *            the target {@MediaElement} from which
+	 *            the target {@link MediaElement} from which
 	 *            {@link MediaSink} will be obtained
 	 * @param mediaType
-	 *            the {@MediaType} of the pads that will be
+	 *            the {@link MediaType} of the pads that will be
 	 *            connected.
 	 * @param cont
 	 */
