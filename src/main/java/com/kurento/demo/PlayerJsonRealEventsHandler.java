@@ -6,7 +6,7 @@ import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -18,7 +18,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @HttpPlayerService(name = "PlayerJsonRealEventsHandler", path = "/playerJsonEvents", redirect = true, useControlProtocol = true)
 public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
@@ -32,10 +32,10 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 
-		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				VideoURLs.map.get("zbar")).build();
 		ZBarFilter filter = mp.newZBarFilter().build();
-		playerEndPoint.connect(filter);
+		playerEndpoint.connect(filter);
 
 		filter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
 
@@ -52,15 +52,15 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 				}
 			}
 		});
-		session.setAttribute("player", playerEndPoint);
+		session.setAttribute("player", playerEndpoint);
 		session.start(filter);
 	}
 
 	@Override
 	public void onContentStarted(HttpPlayerSession session) {
-		PlayerEndPoint playerendPoint = (PlayerEndPoint) session
+		PlayerEndpoint playerEndpoint = (PlayerEndpoint) session
 				.getAttribute("player");
-		playerendPoint.play();
+		playerEndpoint.play();
 	}
 
 }

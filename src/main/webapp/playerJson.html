@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>HTTP Player with JSON protocol</title>
+<title>HTTP Player with JSON-RPC protocol</title>
 <script src="./js/kws-content-api.js"></script>
 <script>
 	var conn;
@@ -80,7 +80,7 @@
 </head>
 
 <body>
-	<h1>HTTP Player with JSON protocol</h1>
+	<h1>HTTP Player with JSON-RPC protocol</h1>
 	<table style="border-spacing: 10px;">
 		<tr>
 			<td><label for="url">Video type</label></td>
@@ -94,6 +94,8 @@
 					<option value="playerJson/mp4">MP4 video</option>
 					<option value="playerJsonJackVader">JackVader Filter</option>
 					<option value="playerJsonEvents">ZBar Filter</option>
+					<!--<option value="playerRtpJack">RTP stream with JackVader
+						Filter</option>-->
 			</select></td>
 			<td rowspan="8"><video id="remoteVideo" autoplay controls
 					width="640px" height="360px">

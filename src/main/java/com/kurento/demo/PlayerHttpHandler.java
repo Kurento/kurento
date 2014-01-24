@@ -25,7 +25,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see VideoURLs
  */
 @HttpPlayerService(name = "PlayerHttpHandler", path = "/playerHttp/*", redirect = true, useControlProtocol = false)

@@ -27,7 +27,7 @@ import com.kurento.kmf.media.MediaPipelineFactory;
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  * @see PlayerConsumingRtpJackVaderFilter
  */
 @RtpContentService(name = "RtpProducingJackVaderFilter", path = "/rtpJack")
@@ -41,7 +41,7 @@ public class RtpProducingJackVaderFilter extends RtpContentHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		session.start(filter);
+		session.start(null, filter);
 		sharedJackVaderReference = filter;
 	}
 

@@ -20,7 +20,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.PlayerEndPoint;
+import com.kurento.kmf.media.PlayerEndpoint;
 
 /**
  * HTTP Player Handler which plays a media pipeline composed by a
@@ -29,7 +29,7 @@ import com.kurento.kmf.media.PlayerEndPoint;
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @HttpPlayerService(name = "PlayerJonJackVaderHandler", path = "/playerJsonJackVader", useControlProtocol = true)
 public class PlayerJsonJackVaderHandler extends HttpPlayerHandler {
@@ -39,19 +39,19 @@ public class PlayerJsonJackVaderHandler extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				VideoURLs.map.get("jack")).build();
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		playerEndPoint.connect(filter);
-		session.setAttribute("player", playerEndPoint);
+		playerEndpoint.connect(filter);
+		session.setAttribute("player", playerEndpoint);
 		session.start(filter);
 	}
 
 	@Override
 	public void onContentStarted(HttpPlayerSession session) {
-		PlayerEndPoint playerendPoint = (PlayerEndPoint) session
+		PlayerEndpoint playerEndpoint = (PlayerEndpoint) session
 				.getAttribute("player");
-		playerendPoint.play();
+		playerEndpoint.play();
 	}
 
 }
