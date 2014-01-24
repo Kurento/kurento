@@ -187,7 +187,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 								faceOverlayFilter.unsetOverlayedImage();
 								pointerDetectorAdvFilter
 										.addWindow(createStartWindow());
-								recorderEndpoint.stop();
+								// recorderEndpoint.stop();
 								recorderEndpoint.release();
 								if (windowId.equals(YOUTUBE)) {
 									String recordUrl = handlerUrl
