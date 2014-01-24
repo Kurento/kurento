@@ -59,6 +59,10 @@
 		// Enable connect button
 		document.getElementById("start").disabled = false;
 	}
+	
+	function sendCommands() {
+		conn.execute("calibrate", "calibrate");
+	}
 </script>
 </head>
 <body>
@@ -69,6 +73,7 @@
 	</select>
 	<button id="start" onclick="start();">Start</button>
 	<button id="terminate" disabled onclick="terminate();">Terminate</button>
+	<button id="calibrate" onclick="sendCommands();">Calibrate</button>
 	<br />
 	<video id="remoteVideo" autoplay controls width="480px" height="360px"></video>
 </body>

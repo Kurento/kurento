@@ -22,6 +22,8 @@ import java.util.Calendar;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.demo.cpbrazil.youtube.Videos;
+import com.kurento.kmf.content.ContentCommand;
+import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
@@ -30,7 +32,7 @@ import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PointerDetectorFilter;
+import com.kurento.kmf.media.PointerDetectorAdvFilter;
 import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
@@ -64,7 +66,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 	// MediaPipeline and MediaElements
 	public MediaPipeline mediaPipeline;
 	public GStreamerFilter mirrorFilter;
-	public PointerDetectorFilter pointerDetectorFilter;
+	public GStreamerFilter rateLimiter;
+	public PointerDetectorAdvFilter pointerDetectorAdvFilter;
 	public FaceOverlayFilter faceOverlayFilter;
 	public ChromaFilter chromaFilter;
 	public RecorderEndpoint recorderEndpoint;
@@ -95,36 +98,36 @@ public class CpbWebRtc extends WebRtcContentHandler {
 		mediaPipeline = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mediaPipeline);
 
+		rateLimiter = mediaPipeline.newGStreamerFilter(
+				"videorate max-rate=15 average-period=200000000").build();
 		mirrorFilter = mediaPipeline.newGStreamerFilter("videoflip method=4")
 				.build();
-		// Max: 640x480
-		// chromaFilter = mediaPipeline.newChromaFilter(
-		// new WindowParam(5, 5, 630, 470)).build();
 		chromaFilter = mediaPipeline.newChromaFilter(
 				new WindowParam(100, 10, 500, 400)).build();
-		pointerDetectorFilter = mediaPipeline.newPointerDetectorFilter()
+		pointerDetectorAdvFilter = mediaPipeline
+				.newPointerDetectorAdvFilter(new WindowParam(5, 5, 50, 50))
 				.withWindow(createStartWindow()).build();
 		faceOverlayFilter = mediaPipeline.newFaceOverlayFilter().build();
-
-		mirrorFilter.connect(pointerDetectorFilter);
-		pointerDetectorFilter.connect(chromaFilter);
+		rateLimiter.connect(mirrorFilter);
+		mirrorFilter.connect(pointerDetectorAdvFilter);
+		pointerDetectorAdvFilter.connect(chromaFilter);
 		chromaFilter.connect(faceOverlayFilter);
 
-		pointerDetectorFilter
+		pointerDetectorAdvFilter
 				.addWindowInListener(new MediaEventListener<WindowInEvent>() {
 					@Override
 					public void onEvent(WindowInEvent event) {
 						try {
 							String windowId = event.getWindowId();
 							if (windowId.equals(START)) {
-								pointerDetectorFilter.clearWindows();
-								pointerDetectorFilter
+								pointerDetectorAdvFilter.clearWindows();
+								pointerDetectorAdvFilter
 										.addWindow(createMarioWindow());
-								pointerDetectorFilter
+								pointerDetectorAdvFilter
 										.addWindow(createDKWindow());
-								pointerDetectorFilter
+								pointerDetectorAdvFilter
 										.addWindow(createSFWindow());
-								pointerDetectorFilter
+								pointerDetectorAdvFilter
 										.addWindow(createSonicWindow());
 								addRecorder(contentSession, recordOnRepository);
 								recorderEndpoint.record();
@@ -180,9 +183,9 @@ public class CpbWebRtc extends WebRtcContentHandler {
 							} else if (windowId.equals(YOUTUBE)
 									|| windowId.equals(TRASH)) {
 								chromaFilter.unsetBackground();
-								pointerDetectorFilter.clearWindows();
+								pointerDetectorAdvFilter.clearWindows();
 								faceOverlayFilter.unsetOverlayedImage();
-								pointerDetectorFilter
+								pointerDetectorAdvFilter
 										.addWindow(createStartWindow());
 								recorderEndpoint.stop();
 								recorderEndpoint.release();
@@ -211,7 +214,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 						}
 					}
 				});
-		contentSession.start(faceOverlayFilter, mirrorFilter);
+		contentSession.start(faceOverlayFilter, rateLimiter);
 	}
 
 	@Override
@@ -298,8 +301,19 @@ public class CpbWebRtc extends WebRtcContentHandler {
 	}
 
 	private void createTrashAndYouTubeWindow() throws URISyntaxException {
-		pointerDetectorFilter.addWindow(createTrashWindow());
-		pointerDetectorFilter.addWindow(createYouTubeWindow());
+		pointerDetectorAdvFilter.addWindow(createTrashWindow());
+		pointerDetectorAdvFilter.addWindow(createYouTubeWindow());
+	}
+
+	@Override
+	public ContentCommandResult onContentCommand(
+			WebRtcContentSession contentSession, ContentCommand contentCommand)
+			throws Exception {
+
+		if (contentCommand.getType().equalsIgnoreCase("calibrate")) {
+			pointerDetectorAdvFilter.trackcolourFromCalibrationRegion();
+		}
+		return new ContentCommandResult(contentCommand.getData());
 	}
 
 }
