@@ -531,6 +531,10 @@ kms_pointer_detector_finalize (GObject * object)
   remove_recursive (pointerdetector->images_dir);
   g_free (pointerdetector->images_dir);
 
+  if (pointerdetector->previousButtonClickedId != NULL) {
+    g_free (pointerdetector->previousButtonClickedId);
+  }
+
   G_OBJECT_CLASS (kms_pointer_detector_parent_class)->finalize (object);
 }
 
@@ -714,7 +718,7 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
   ButtonStruct *structAux;
   GSList *l;
   int buttonClickedCounter = 0;
-  const gchar *actualButtonClickedId;
+  gchar *actualButtonClickedId;
 
   for (l = pointerdetector->buttonsLayoutList; l != NULL; l = l->next) {
     CvPoint upRightCorner;
@@ -786,10 +790,12 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
         m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
         gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       }
+      g_free (pointerdetector->previousButtonClickedId);
       pointerdetector->previousButtonClickedId = NULL;
     }
   } else {
-    if (pointerdetector->previousButtonClickedId != actualButtonClickedId) {
+    if (g_strcmp0 (pointerdetector->previousButtonClickedId,
+            actualButtonClickedId) != 0) {
       GstStructure *s;
       GstMessage *m;
 
@@ -801,7 +807,8 @@ kms_pointer_detector_check_pointer_position (KmsPointerDetector *
         m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
         gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       }
-      pointerdetector->previousButtonClickedId = actualButtonClickedId;
+      pointerdetector->previousButtonClickedId =
+          g_strdup (actualButtonClickedId);
     }
   }
 

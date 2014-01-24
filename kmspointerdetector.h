@@ -64,7 +64,7 @@ struct _KmsPointerDetector {
   gboolean show_debug_info;
   GstStructure *buttonsLayout;
   GSList *buttonsLayoutList;
-  const gchar *previousButtonClickedId;
+  gchar *previousButtonClickedId;
   gboolean putMessage;
   gboolean show_windows_layout;
   gchar* images_dir;
