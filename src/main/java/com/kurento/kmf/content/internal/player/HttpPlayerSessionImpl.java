@@ -33,6 +33,8 @@ import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.UriEndpoint;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -105,6 +107,33 @@ public class HttpPlayerSessionImpl extends AbstractHttpBasedContentSession
 					null);
 			throw kmfe;
 		}
+	}
+
+	@Override
+	protected void activateMedia(RepositoryItem repositoryItem) {
+		super.activateMedia(repositoryItem);
+		addMediaSessionTerminatedListener();
+	}
+
+	@Override
+	protected void activateMedia(String contentPath,
+			MediaElement... mediaElements) {
+		super.activateMedia(contentPath, mediaElements);
+		addMediaSessionTerminatedListener();
+	}
+
+	private void addMediaSessionTerminatedListener() {
+		httpEndpoint
+				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+					@Override
+					public void onEvent(MediaSessionTerminatedEvent event) {
+						getLogger().info(
+								"Received event with type " + event.getType());
+						internalTerminateWithoutError(null, 1,
+								"MediaServer MediaSessionTerminated", null); // TODO
+
+					}
+				});
 	}
 
 	@Override

@@ -42,10 +42,8 @@ import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
-import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.repository.HttpSessionErrorEvent;
 import com.kurento.kmf.repository.HttpSessionStartedEvent;
-import com.kurento.kmf.repository.HttpSessionTerminatedEvent;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
 import com.kurento.kmf.repository.RepositoryHttpEventListener;
 import com.kurento.kmf.repository.RepositoryItem;
@@ -71,7 +69,7 @@ public abstract class AbstractHttpBasedContentSession extends
 
 	private UriEndpoint uriEndpoint;
 
-	private HttpEndpoint httpEndpoint;
+	protected HttpEndpoint httpEndpoint;
 
 	private RepositoryHttpEndpoint repositoryHttpEndpoint;
 
@@ -213,17 +211,6 @@ public abstract class AbstractHttpBasedContentSession extends
 				});
 
 		// Generate appropriate actions when media session is terminated
-		httpEndpoint
-				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
-					@Override
-					public void onEvent(MediaSessionTerminatedEvent event) {
-						getLogger().info(
-								"Received event with type " + event.getType());
-						internalTerminateWithoutError(null, 1,
-								"MediaServer MediaSessionTerminated", null); // TODO
-
-					}
-				});
 
 		if (useControlProtocol) {
 			answerActivateMediaRequest4JsonControlProtocolConfiguration(answerUrl);
@@ -304,19 +291,6 @@ public abstract class AbstractHttpBasedContentSession extends
 						getLogger().info(
 								"Received event with type "
 										+ event.getClass().getSimpleName());
-					}
-				});
-
-		repositoryHttpEndpoint
-				.addSessionTerminatedListener(new RepositoryHttpEventListener<HttpSessionTerminatedEvent>() {
-
-					@Override
-					public void onEvent(HttpSessionTerminatedEvent event) {
-						getLogger().info(
-								"Received event with type "
-										+ event.getClass().getSimpleName());
-						internalTerminateWithoutError(null, 1,
-								"MediaServer MediaSessionTerminated", null); // TODO
 					}
 				});
 
