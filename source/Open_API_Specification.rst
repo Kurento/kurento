@@ -3,7 +3,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%
 
 Introduction
-------------
+============
 
 The Stream Oriented API is a RESTful resource-oriented API accessed via
 HTTP/HTTPS that uses JSON-RPC V2.0 based representations for information
