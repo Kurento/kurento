@@ -389,25 +389,25 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
 
   for (int i = 1; i < H_MAX; i++) {
     if (h_values[i] >= HIST_THRESHOLD) {
-      pointerdetector->priv->h_min = i;
+      pointerdetector->priv->h_min = i - 5;
       break;
     }
   }
   for (int i = H_MAX; i >= 0; i--) {
     if (h_values[i] >= HIST_THRESHOLD) {
-      pointerdetector->priv->h_max = i;
+      pointerdetector->priv->h_max = i + 5;
       break;
     }
   }
   for (int i = 1; i < S_MAX; i++) {
     if (s_values[i] >= HIST_THRESHOLD) {
-      pointerdetector->priv->s_min = i;
+      pointerdetector->priv->s_min = i - 5;
       break;
     }
   }
   for (int i = S_MAX; i >= 0; i--) {
     if (s_values[i] >= HIST_THRESHOLD) {
-      pointerdetector->priv->s_max = i;
+      pointerdetector->priv->s_max = i + 5;
       break;
     }
   }
