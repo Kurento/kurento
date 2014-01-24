@@ -17,7 +17,7 @@
 
 		<!-- Kurento Versions -->
 		<kmf-content-api.version>1.0.1-SNAPSHOT</kmf-content-api.version>
-		<kws-content-api.version>1.0.1-SNAPSHOT</kws-content-api.version>
+		<kws-content-api.version>1.0.2-SNAPSHOT</kws-content-api.version>
 
 		<!-- Dependencies Versions -->
 		<junit.version>4.11</junit.version>
