@@ -9,11 +9,13 @@ The Stream Oriented GE provides a framework devoted to simplify the
 development of complex interactive multimedia applications through a
 rich family of APIs and toolboxes, which include:
 
--  **Content API**: an API bringing all the power of Java EE
+-  **Content API**: The :doc:`KMF Content API <kmf-content-api/packages>`
+   is a Java API bringing all the power of Java EE
    technologies to the multimedia arena. This API will be particularly
    natural and intuitive for developers familiar with the Servlet API.
 
--  **Media API**: a Java API exposing a toolbox of Media Elements that
+-  **Media API**: The :doc:`KMF Media API <kmf-media-api/packages>`:
+   is a Java API exposing a toolbox of Media Elements that
    can be chained for creating complex multimedia processing pipelines.
    The abstraction and modularity of the Media API makes possible for
    non-expert developers to create complex and interoperable multimedia
