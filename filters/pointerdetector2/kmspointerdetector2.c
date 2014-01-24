@@ -86,7 +86,7 @@ struct _KmsPointerDetector2Private
   gboolean show_debug_info;
   GstStructure *buttonsLayout;
   GSList *buttonsLayoutList;
-  const gchar *previousButtonClickedId;
+  gchar *previousButtonClickedId;
   gboolean putMessage;
   gboolean show_windows_layout;
   gchar *images_dir;
@@ -539,6 +539,10 @@ kms_pointer_detector2_finalize (GObject * object)
   remove_recursive (pointerdetector->priv->images_dir);
   g_free (pointerdetector->priv->images_dir);
 
+  if (pointerdetector->priv->previousButtonClickedId != NULL) {
+    g_free (pointerdetector->priv->previousButtonClickedId);
+  }
+
   G_OBJECT_CLASS (kms_pointer_detector2_parent_class)->finalize (object);
 }
 
@@ -682,7 +686,7 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
   ButtonStruct *structAux;
   GSList *l;
   int buttonClickedCounter = 0;
-  const gchar *actualButtonClickedId;
+  gchar *actualButtonClickedId;
 
   for (l = pointerdetector->priv->buttonsLayoutList; l != NULL; l = l->next) {
     CvPoint upRightCorner;
@@ -755,10 +759,12 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
         m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
         gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       }
+      g_free (pointerdetector->priv->previousButtonClickedId);
       pointerdetector->priv->previousButtonClickedId = NULL;
     }
   } else {
-    if (pointerdetector->priv->previousButtonClickedId != actualButtonClickedId) {
+    if (g_strcmp0 (pointerdetector->priv->previousButtonClickedId,
+            actualButtonClickedId) != 0) {
       GstStructure *s;
       GstMessage *m;
 
@@ -770,10 +776,10 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
         m = gst_message_new_element (GST_OBJECT (pointerdetector), s);
         gst_element_post_message (GST_ELEMENT (pointerdetector), m);
       }
-      pointerdetector->priv->previousButtonClickedId = actualButtonClickedId;
+      pointerdetector->priv->previousButtonClickedId =
+          g_strdup (actualButtonClickedId);
     }
   }
-
 }
 
 static GstFlowReturn
