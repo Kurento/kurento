@@ -75,6 +75,13 @@ public class RecorderEndpointImpl extends AbstractUriEndpoint implements
 			return self();
 		}
 
+		@Override
+		public RecorderEndpointBuilder stopOnEndOfStream() {
+			param.setStopOnEos(true);
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
+			return self();
+		}
+
 	}
 
 }

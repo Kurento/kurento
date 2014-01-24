@@ -35,12 +35,22 @@ public class RecorderEndpointConstructorParam extends
 
 	private KmsMediaMuxer mediaMuxer;
 
+	private boolean stopOnEos;
+
 	public KmsMediaMuxer getMediaMuxer() {
 		return this.mediaMuxer;
 	}
 
 	public void setMediaMuxer(KmsMediaMuxer mediaMuxer) {
 		this.mediaMuxer = mediaMuxer;
+	}
+
+	public boolean isStopOnEos() {
+		return stopOnEos;
+	}
+
+	public void setStopOnEos(boolean stopOnEos) {
+		this.stopOnEos = stopOnEos;
 	}
 
 	public RecorderEndpointConstructorParam() {
@@ -50,6 +60,8 @@ public class RecorderEndpointConstructorParam extends
 	@Override
 	protected TProtocol serializeDataToThrift(TProtocol pr) {
 		KmsMediaRecoderEndPointConstructorParams kmsParams = new KmsMediaRecoderEndPointConstructorParams();
+
+		kmsParams.stopOnEOS = stopOnEos;
 
 		if (this.mediaMuxer != null) {
 			kmsParams.profileType = new KmsMediaProfile(mediaMuxer);
@@ -76,6 +88,10 @@ public class RecorderEndpointConstructorParam extends
 
 		if (kmsParams.isSetProfileType()) {
 			this.mediaMuxer = kmsParams.profileType.getMediaMuxer();
+		}
+
+		if (kmsParams.isSetStopOnEOS()) {
+			this.stopOnEos = kmsParams.stopOnEOS;
 		}
 	}
 }

@@ -50,6 +50,14 @@ public interface RecorderEndpoint extends UriEndpoint {
 
 		RecorderEndpointBuilder withMediaProfile(MediaProfileSpecType type);
 
+		/**
+		 * Forces the recorder end point to finish processing data when an EOS
+		 * is detected in the stream.
+		 * 
+		 * @return The builder
+		 */
+		RecorderEndpointBuilder stopOnEndOfStream();
+
 	}
 
 }

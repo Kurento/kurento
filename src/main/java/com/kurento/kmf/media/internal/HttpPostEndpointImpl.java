@@ -14,12 +14,17 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants.EVENT_EOS;
 import static com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants.TYPE_NAME;
 
 import java.util.Map;
 
+import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpPostEndpoint;
+import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
 
@@ -35,6 +40,21 @@ public class HttpPostEndpointImpl extends AbstractHttpEndpoint implements
 	 */
 	public HttpPostEndpointImpl(MediaElementRef objectRef) {
 		super(objectRef);
+	}
+
+	/* SYNC */
+	@Override
+	public ListenerRegistration addEndOfStreamListener(
+			MediaEventListener<EndOfStreamEvent> listener) {
+		return addListener(EVENT_EOS, listener);
+	}
+
+	/* ASYNC */
+	@Override
+	public void addEndOfStreamListener(
+			MediaEventListener<EndOfStreamEvent> listener,
+			Continuation<ListenerRegistration> cont) {
+		addListener(EVENT_EOS, listener, cont);
 	}
 
 	/**

@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media;
 
+import com.kurento.kmf.media.events.HasEndOfStreamListener;
+
 /**
  * An {@code HttpPostEndpoint} contains SINK pads for AUDIO and VIDEO, which
  * provide access to an HTTP file upload function
@@ -25,7 +27,7 @@ package com.kurento.kmf.media;
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 3.0.1
  */
-public interface HttpPostEndpoint extends HttpEndpoint {
+public interface HttpPostEndpoint extends HttpEndpoint, HasEndOfStreamListener {
 
 	/**
 	 * Builder for the {@link HttpPostEndpoint}.
