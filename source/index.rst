@@ -6,12 +6,13 @@
 Welcome to Kurento's documentation!
 ===================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
 
+
+   kmf-media-api/packages.rst
+   kmf-content-api/packages.rst
 
 Indices and tables
 ==================

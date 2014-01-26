@@ -25,7 +25,7 @@ import sys, os
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = []
+extensions = ['javasphinx',]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -283,3 +283,11 @@ epub_copyright = u'2014, kurento'
 
 # Allow duplicate toc entries.
 #epub_tocdup = True
+
+# For javasphinx search
+javadoc_url_map = {
+    'javax.servlet': ('http://tomcat.apache.org/tomcat-7.0-doc/servletapi', 'javadoc'),
+    'javax.servlet.http': ('http://tomcat.apache.org/tomcat-7.0-doc/servletapi', 'javadoc'),
+#    'com.kurento.kmf.media': ('kmf-media', 'javadoc'),
+#    'com.kurento.kmf.content':('kmf-content', 'javadoc'),
+}
