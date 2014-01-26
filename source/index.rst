@@ -14,13 +14,19 @@ Welcome to Kurento's documentation!
    Installation_Guide.rst
    Open_API_Specification.rst
 
-   kmf-media-api/packages.rst
+API Documentation
+=================
+
+.. toctree::
+   :maxdepth: 2
+
    kmf-content-api/packages.rst
+   kmf-media-api/packages.rst
+   kms-interface/packages.rst
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
 
