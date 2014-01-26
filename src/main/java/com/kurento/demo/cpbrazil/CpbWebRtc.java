@@ -45,8 +45,8 @@ import com.kurento.kmf.repository.RepositoryItem;
 /**
  * Campus Party Brazil 2014 Kurento demo. This demo has the following pipeline:
  * 
- * WebRTC -> MirrorFilter -> PointerDetectorFilter -> ChromaFilter ->
- * FaceOverlayFilter -> Recorder
+ * WebRTC -> RateLimiter -> MirrorFilter -> PointerDetectorFilter ->
+ * ChromaFilter -> FaceOverlayFilter -> Recorder
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @since 1.0.1
@@ -77,6 +77,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 	public String activeWindow;
 	private String handlerUrl;
 	private String recorderUrl;
+	private int mario;
+	private int count;
 
 	@Autowired
 	private MediaApiConfiguration config;
@@ -84,6 +86,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 	@Override
 	public void onContentRequest(final WebRtcContentSession contentSession)
 			throws Exception {
+		mario = 1;
+		count = 1;
 		String contentId = contentSession.getContentId();
 
 		final boolean recordOnRepository = contentId != null
@@ -113,6 +117,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 		pointerDetectorAdvFilter.connect(chromaFilter);
 		chromaFilter.connect(faceOverlayFilter);
 
+		pointerDetectorAdvFilter.addWindow(createFiwareWindow());
 		pointerDetectorAdvFilter
 				.addWindowInListener(new MediaEventListener<WindowInEvent>() {
 					@Override
@@ -121,6 +126,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 							String windowId = event.getWindowId();
 							if (windowId.equals(START)) {
 								pointerDetectorAdvFilter.clearWindows();
+								pointerDetectorAdvFilter
+										.addWindow(createFiwareWindow());
 								pointerDetectorAdvFilter
 										.addWindow(createMarioWindow());
 								pointerDetectorAdvFilter
@@ -134,11 +141,18 @@ public class CpbWebRtc extends WebRtcContentHandler {
 
 							} else if (windowId.equals(SF)
 									&& !activeWindow.equals(SF)) {
-								faceOverlayFilter.setOverlayedImage(handlerUrl
-										+ "/img/masks/sf.png", -0.5F, -0.5F,
-										1.6F, 1.6F);
-								chromaFilter.setBackground(handlerUrl
-										+ "/img/background/sf.jpg");
+								if (count % 20 == 0) {
+									setStarWars();
+								} else if (count % 10 == 0) {
+									setPirates();
+								} else {
+									faceOverlayFilter.setOverlayedImage(
+											handlerUrl + "/img/masks/sf.png",
+											-0.35F, -0.5F, 1.6F, 1.6F);
+									chromaFilter.setBackground(handlerUrl
+											+ "/img/background/sf.jpg");
+								}
+								count++;
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -146,11 +160,31 @@ public class CpbWebRtc extends WebRtcContentHandler {
 
 							} else if (windowId.equals(MARIO)
 									&& !activeWindow.equals(MARIO)) {
-								faceOverlayFilter.setOverlayedImage(handlerUrl
-										+ "/img/masks/mario.png", -0.3F, -0.5F,
-										1.6F, 1.6F);
-								chromaFilter.setBackground(handlerUrl
-										+ "/img/background/mario.jpg");
+								if (count % 20 == 0) {
+									setStarWars();
+								} else if (count % 10 == 0) {
+									setPirates();
+								} else {
+									chromaFilter.setBackground(handlerUrl
+											+ "/img/background/mario.jpg");
+									if (mario % 2 == 0) {
+										faceOverlayFilter
+												.setOverlayedImage(
+														handlerUrl
+																+ "/img/masks/mario-wings.png",
+														-0.35F, -1.2F, 1.6F,
+														1.6F);
+									} else {
+										faceOverlayFilter
+												.setOverlayedImage(
+														handlerUrl
+																+ "/img/masks/mario.png",
+														-0.3F, -0.6F, 1.6F,
+														1.6F);
+									}
+								}
+								count++;
+								mario++;
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -158,23 +192,38 @@ public class CpbWebRtc extends WebRtcContentHandler {
 
 							} else if (windowId.equals(DK)
 									&& !activeWindow.equals(DK)) {
-								faceOverlayFilter.setOverlayedImage(handlerUrl
-										+ "/img/masks/dk.png", -0.5F, -0.5F,
-										1.6F, 1.6F);
-								chromaFilter.setBackground(handlerUrl
-										+ "/img/background/dk.jpg");
+								if (count % 20 == 0) {
+									setStarWars();
+								} else if (count % 10 == 0) {
+									setPirates();
+								} else {
+									faceOverlayFilter.setOverlayedImage(
+											handlerUrl + "/img/masks/dk.png",
+											-0.35F, -0.5F, 1.6F, 1.6F);
+									chromaFilter.setBackground(handlerUrl
+											+ "/img/background/dk.jpg");
+								}
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
+								count++;
 								activeWindow = DK;
 
 							} else if (windowId.equals(SONIC)
 									&& !activeWindow.equals(SONIC)) {
-								faceOverlayFilter.setOverlayedImage(handlerUrl
-										+ "/img/masks/sonic.png", -0.5F, -0.5F,
-										1.7F, 1.7F);
-								chromaFilter.setBackground(handlerUrl
-										+ "/img/background/sonic.jpg");
+								if (count % 20 == 0) {
+									setStarWars();
+								} else if (count % 10 == 0) {
+									setPirates();
+								} else {
+									faceOverlayFilter
+											.setOverlayedImage(handlerUrl
+													+ "/img/masks/sonic.png",
+													-0.5F, -0.5F, 1.7F, 1.7F);
+									chromaFilter.setBackground(handlerUrl
+											+ "/img/background/sonic.jpg");
+								}
+								count++;
 								if (activeWindow.equals(START)) {
 									createTrashAndYouTubeWindow();
 								}
@@ -184,6 +233,8 @@ public class CpbWebRtc extends WebRtcContentHandler {
 									|| windowId.equals(TRASH)) {
 								chromaFilter.unsetBackground();
 								pointerDetectorAdvFilter.clearWindows();
+								pointerDetectorAdvFilter
+										.addWindow(createFiwareWindow());
 								faceOverlayFilter.unsetOverlayedImage();
 								pointerDetectorAdvFilter
 										.addWindow(createStartWindow());
@@ -249,54 +300,49 @@ public class CpbWebRtc extends WebRtcContentHandler {
 			throws URISyntaxException {
 		activeWindow = START;
 		return new PointerDetectorWindowMediaParamBuilder(START, 100, 100, 280,
-				380).withActiveImage(handlerUrl + "/img/buttons/start.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/start.png")
-				.build();
+				380).withImage(handlerUrl + "/img/buttons/start.png").build();
 	}
 
 	private PointerDetectorWindowMediaParam createMarioWindow()
 			throws URISyntaxException {
 		return new PointerDetectorWindowMediaParamBuilder(MARIO, 100, 100, 540,
-				0).withActiveImage(handlerUrl + "/img/buttons/mario.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/mario.png")
-				.build();
+				0).withImage(handlerUrl + "/img/buttons/mario.png").build();
 	}
 
 	private PointerDetectorWindowMediaParam createDKWindow()
 			throws URISyntaxException {
 		return new PointerDetectorWindowMediaParamBuilder(DK, 100, 100, 540,
-				126).withActiveImage(handlerUrl + "/img/buttons/dk.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/dk.png").build();
+				126).withImage(handlerUrl + "/img/buttons/dk.png").build();
 	}
 
 	private PointerDetectorWindowMediaParam createSFWindow()
 			throws URISyntaxException {
 		return new PointerDetectorWindowMediaParamBuilder(SF, 100, 100, 540,
-				252).withActiveImage(handlerUrl + "/img/buttons/sf.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/sf.png").build();
+				252).withImage(handlerUrl + "/img/buttons/sf.png").build();
 	}
 
 	private PointerDetectorWindowMediaParam createSonicWindow()
 			throws URISyntaxException {
 		return new PointerDetectorWindowMediaParamBuilder(SONIC, 100, 100, 540,
-				380).withActiveImage(handlerUrl + "/img/buttons/sonic.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/sonic.png")
-				.build();
+				380).withImage(handlerUrl + "/img/buttons/sonic.png").build();
 	}
 
 	private PointerDetectorWindowMediaParam createYouTubeWindow()
 			throws URISyntaxException {
 		return new PointerDetectorWindowMediaParamBuilder(YOUTUBE, 100, 100, 0,
-				380).withActiveImage(handlerUrl + "/img/buttons/youtube.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/youtube.png")
-				.build();
+				380).withImage(handlerUrl + "/img/buttons/youtube.png").build();
 	}
 
 	private PointerDetectorWindowMediaParam createTrashWindow()
 			throws URISyntaxException {
 		return new PointerDetectorWindowMediaParamBuilder(TRASH, 100, 100, 0,
-				190).withActiveImage(handlerUrl + "/img/buttons/trash.png")
-				.withInactiveImage(handlerUrl + "/img/buttons/trash.png")
+				190).withImage(handlerUrl + "/img/buttons/trash.png").build();
+	}
+
+	private PointerDetectorWindowMediaParam createFiwareWindow()
+			throws URISyntaxException {
+		return new PointerDetectorWindowMediaParamBuilder("fiware", 40, 180,
+				230, 0).withImage(handlerUrl + "/img/buttons/fiware2.png")
 				.build();
 	}
 
@@ -314,6 +360,19 @@ public class CpbWebRtc extends WebRtcContentHandler {
 			pointerDetectorAdvFilter.trackcolourFromCalibrationRegion();
 		}
 		return new ContentCommandResult(contentCommand.getData());
+	}
+
+	private void setStarWars() {
+		faceOverlayFilter.setOverlayedImage(handlerUrl
+				+ "/img/masks/darthvader.png", -0.5F, -0.5F, 1.7F, 1.7F);
+		chromaFilter
+				.setBackground(handlerUrl + "/img/background/deathstar.jpg");
+	}
+
+	private void setPirates() {
+		faceOverlayFilter.setOverlayedImage(handlerUrl + "/img/masks/jack.png",
+				-0.4F, -0.4F, 1.7F, 1.7F);
+		chromaFilter.setBackground(handlerUrl + "/img/background/pirates.jpg");
 	}
 
 }
