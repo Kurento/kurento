@@ -812,10 +812,10 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
 
   cvRectangle (pointerdetector->priv->cvImage,
       cvPoint (pointerdetector->priv->x_calibration,
-          pointerdetector->priv->x_calibration),
+          pointerdetector->priv->y_calibration),
       cvPoint (pointerdetector->priv->x_calibration
           + pointerdetector->priv->width_calibration,
-          pointerdetector->priv->x_calibration
+          pointerdetector->priv->y_calibration
           + pointerdetector->priv->height_calibration), WHITE, 1, 8, 0);
 
   if ((pointerdetector->priv->h_min == 0) && (pointerdetector->priv->h_max == 0)
