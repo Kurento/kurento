@@ -343,8 +343,12 @@ kms_element_release_pad (GstElement * element, GstPad * pad)
 
   target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
 
-  if (target != NULL && agnosticbin != NULL)
-    gst_element_release_request_pad (agnosticbin, target);
+  if (target != NULL) {
+    if (agnosticbin != NULL) {
+      gst_element_release_request_pad (agnosticbin, target);
+    }
+    g_object_unref (target);
+  }
 
   if (GST_STATE (element) >= GST_STATE_PAUSED
       || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
