@@ -3,7 +3,8 @@ var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection;
 
 window.addEventListener('load', function()
 {
-  KwsMedia('ws://localhost:8001', function(kwsMedia)
+  KwsMedia('ws://192.168.0.115:7788/thrift/ws/websocket',
+  function(kwsMedia)
   {
     // Create pipeline
     kwsMedia.createMediaPipeline(function(error, pipeline)
@@ -56,7 +57,7 @@ window.addEventListener('load', function()
                 {
                   if(error) return console.error(error);
 
-                  var stream = peerConnection.getLocalStreams()[0];
+                  var stream = peerConnection.getRemoteStreams()[0];
 
                   // Set the stream on the video tag
                   var videoOutput = document.getElementById("videoOutput");
