@@ -14,8 +14,6 @@
  */
 package com.kurento.kmf.media.internal;
 
-import static com.kurento.kms.thrift.api.KmsMediaJackVaderFilterTypeConstants.TYPE_NAME;
-
 import java.util.Map;
 
 import org.apache.thrift.TException;
@@ -23,25 +21,21 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaMixer;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.MixerPort;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerEndPointWithParams_call;
-import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerEndPoint_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerPortWithParams_call;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.createMixerPort_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
-//TODO the type should be obtained from the thrift interface
-@ProvidesMediaElement(type = MediaMixerImpl.TYPE)
 public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 		MediaMixer {
-
-	public static final String TYPE = "MediaMixer";
 
 	/**
 	 * Constructor that configures, by default, the mixer as a non-collectable
@@ -82,14 +76,14 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public MediaElement createEndpoint() {
+	public MixerPort createMixerPort() {
 
 		Client client = clientPool.acquireSync();
 
 		MediaElementRef endPointRef;
 		try {
-			endPointRef = new MediaElementRef(
-					client.createMixerEndPoint(objectRef.getThriftRef()));
+			endPointRef = new MediaElementRef(client.createMixerPort(objectRef
+					.getThriftRef()));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -100,23 +94,22 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 			clientPool.release(client);
 		}
 
-		MediaElementImpl endPoint = (MediaElementImpl) ctx.getBean(
-				"mediaObject", endPointRef);
+		MixerPortImpl endPoint = (MixerPortImpl) ctx.getBean("mediaObject",
+				endPointRef);
 		return endPoint;
 	}
 
 	@Override
-	public MediaElement createEndpoint(Map<String, MediaParam> params)
+	public MixerPort createMixerPort(Map<String, MediaParam> params)
 			throws KurentoMediaFrameworkException {
 		Client client = clientPool.acquireSync();
 
 		MediaElementRef endPointRef;
 
 		try {
-			endPointRef = new MediaElementRef(
-					client.createMixerEndPointWithParams(
-							this.objectRef.getThriftRef(),
-							transformMediaParamsMap(params)));
+			endPointRef = new MediaElementRef(client.createMixerPortWithParams(
+					this.objectRef.getThriftRef(),
+					transformMediaParamsMap(params)));
 		} catch (KmsMediaServerException e) {
 			throw new KurentoMediaFrameworkException(e.getMessage(), e,
 					e.getErrorCode());
@@ -127,20 +120,20 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 			clientPool.release(client);
 		}
 
-		MediaElementImpl endPoint = (MediaElementImpl) ctx.getBean(
+		MixerPortImpl endPoint = (MixerPortImpl) ctx.getBean(
 				"mediaObjectWithParams", endPointRef, params);
 		return endPoint;
 	}
 
 	@Override
-	public void createEndpoint(final Continuation<MediaElement> cont)
+	public void createMixerPort(final Continuation<MixerPort> cont)
 			throws KurentoMediaFrameworkException {
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
 
-			client.createMixerEndPoint(objectRef.getThriftRef(),
-					new AsyncMethodCallback<createMixerEndPoint_call>() {
+			client.createMixerPort(objectRef.getThriftRef(),
+					new AsyncMethodCallback<createMixerPort_call>() {
 
 						@Override
 						public void onError(Exception exception) {
@@ -149,7 +142,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 						}
 
 						@Override
-						public void onComplete(createMixerEndPoint_call response) {
+						public void onComplete(createMixerPort_call response) {
 							MediaElementRef endPointRef;
 							try {
 								endPointRef = new MediaElementRef(response
@@ -164,7 +157,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 							} finally {
 								clientPool.release(client);
 							}
-							MediaElementImpl endPoint = (MediaElementImpl) ctx
+							MixerPortImpl endPoint = (MixerPortImpl) ctx
 									.getBean("mediaObject", endPointRef);
 							cont.onSuccess(endPoint);
 						}
@@ -178,17 +171,16 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 	}
 
 	@Override
-	public void createEndpoint(final Map<String, MediaParam> params,
-			final Continuation<MediaElement> cont)
+	public void createMixerPort(final Map<String, MediaParam> params,
+			final Continuation<MixerPort> cont)
 			throws KurentoMediaFrameworkException {
 
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
-			client.createMixerEndPointWithParams(
-					objectRef.getThriftRef(),
+			client.createMixerPortWithParams(objectRef.getThriftRef(),
 					transformMediaParamsMap(params),
-					new AsyncMethodCallback<createMixerEndPointWithParams_call>() {
+					new AsyncMethodCallback<createMixerPortWithParams_call>() {
 
 						@Override
 						public void onError(Exception exception) {
@@ -198,7 +190,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 
 						@Override
 						public void onComplete(
-								createMixerEndPointWithParams_call response) {
+								createMixerPortWithParams_call response) {
 							MediaElementRef endPointRef;
 							try {
 								endPointRef = new MediaElementRef(response
@@ -213,7 +205,7 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 							} finally {
 								clientPool.release(client);
 							}
-							MediaElementImpl endPoint = (MediaElementImpl) ctx
+							MixerPortImpl endPoint = (MixerPortImpl) ctx
 									.getBean("mediaObjectWithParams",
 											endPointRef, params);
 							cont.onSuccess(endPoint);
@@ -226,19 +218,15 @@ public class MediaMixerImpl extends AbstractCollectableMediaObject implements
 		}
 	}
 
-	static class MediaMixerBuilderImpl<T extends MediaMixerBuilderImpl<T, E>, E extends MediaMixer>
+	protected static abstract class AbstractMediaMixerBuilderImpl<T extends AbstractMediaMixerBuilderImpl<T, E>, E extends MediaMixer>
 			extends AbstractCollectableMediaObjectBuilder<T, E> {
 
 		/**
 		 * @param elementType
 		 */
-		protected MediaMixerBuilderImpl(final String elementType,
+		protected AbstractMediaMixerBuilderImpl(final String elementType,
 				final MediaPipeline pipeline) {
 			super(elementType, pipeline, 0);
-		}
-
-		public MediaMixerBuilderImpl(final MediaPipeline pipeline) {
-			this(TYPE_NAME, pipeline);
 		}
 
 		@SuppressWarnings("unchecked")

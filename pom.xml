@@ -48,7 +48,9 @@
 		<junit.version>4.10</junit.version>
 		<slf4j.version>1.6.4</slf4j.version>
 		<cglib.version>2.2.2</cglib.version>
-		<spring.version>4.0.0.RELEASE</spring.version>
+		<spring.version>3.1.4.RELEASE</spring.version>
+		<commons-pool.version>2.0</commons-pool.version>
+		<kmf-commons.version>3.0.5</kmf-commons.version>
 	</properties>
 
 	<dependencies>
@@ -56,6 +58,11 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-thrift-interface</artifactId>
 			<version>${kmf-thrift-interface.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons</artifactId>
+			<version>${kmf-commons.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -89,6 +96,11 @@
 			<artifactId>spring-test</artifactId>
 			<version>${spring.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-pool2</artifactId>
+			<version>${commons-pool.version}</version>
 		</dependency>
 	</dependencies>
 

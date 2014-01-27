@@ -24,6 +24,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
 import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.DispatcherMixer.DispatcherMixerBuilder;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
 import com.kurento.kmf.media.HttpGetEndpoint.HttpGetEndpointBuilder;
@@ -43,6 +44,7 @@ import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.internal.ChromaFilterImpl.ChromaFilterBuilderImpl;
+import com.kurento.kmf.media.internal.DispatcherMixerImpl.DispatcherMixerBuilderImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl.FaceOverlayFilterBuilderImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl.GStreamerFilterBuilderImpl;
 import com.kurento.kmf.media.internal.HttpGetEndpointImpl.HttpGetEndpointBuilderImpl;
@@ -50,12 +52,12 @@ import com.kurento.kmf.media.internal.HttpPostEndpointImpl.HttpPostEndpointBuild
 import com.kurento.kmf.media.internal.JackVaderFilterImpl.JackVaderFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlateDetectorFilterImpl.PlateDetectorFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PlayerEndpointImpl.PlayerEndpointBuilderImpl;
+import com.kurento.kmf.media.internal.PointerDetectorAdvFilterImpl.PointerDetectorAdvFilterBuilderImpl;
 import com.kurento.kmf.media.internal.PointerDetectorFilterImpl.PointerDetectorFilterBuilderImpl;
 import com.kurento.kmf.media.internal.RecorderEndpointImpl.RecorderEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.RtpEndpointImpl.RtpEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.WebRtcEndpointImpl.WebRtcEndpointBuilderImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl.ZBarFilterBuilderImpl;
-import com.kurento.kmf.media.internal.PointerDetectorAdvFilterImpl.PointerDetectorAdvFilterBuilderImpl;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
@@ -539,5 +541,10 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public ChromaFilterBuilder newChromaFilter(WindowParam window) {
 		return new ChromaFilterBuilderImpl(this, window);
+	}
+
+	@Override
+	public DispatcherMixerBuilder newDispatcherMixer() {
+		return new DispatcherMixerBuilderImpl(this);
 	}
 }

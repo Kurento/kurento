@@ -20,7 +20,6 @@ import static com.kurento.kmf.media.Utils.createMediaPadRef;
 import static com.kurento.kmf.media.Utils.createMediaPipelineRef;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +28,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.media.internal.ChromaFilterImpl;
+import com.kurento.kmf.media.internal.DispatcherMixerImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl;
 import com.kurento.kmf.media.internal.HttpGetEndpointImpl;
 import com.kurento.kmf.media.internal.HttpPostEndpointImpl;
 import com.kurento.kmf.media.internal.JackVaderFilterImpl;
-import com.kurento.kmf.media.internal.MainMixerImpl;
 import com.kurento.kmf.media.internal.MediaElementImpl;
-import com.kurento.kmf.media.internal.MediaMixerImpl;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
@@ -48,6 +46,7 @@ import com.kurento.kmf.media.internal.WebRtcEndpointImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaDispatcherMixerTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaGStreamerFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants;
@@ -64,7 +63,7 @@ import com.kurento.kms.thrift.api.KmsMediaZBarFilterTypeConstants;
 /**
  * This test class checks the correct creation of MediaObjects
  * 
- * @author Ivan Gracia (izanmail@gmail.com)
+ * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -83,6 +82,7 @@ public class MediaObjectTest {
 	private static final String FACE_OVERLAY_TYPE = KmsMediaFaceOverlayFilterTypeConstants.TYPE_NAME;
 	private static final String CHROMA_FILTER_TYPE = KmsMediaChromaFilterTypeConstants.TYPE_NAME;
 	private static final String GSTREAMER_FILTER_TYPE = KmsMediaGStreamerFilterTypeConstants.TYPE_NAME;
+	private static final String DISPATCHER_MIXER_TYPE = KmsMediaDispatcherMixerTypeConstants.TYPE_NAME;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -93,8 +93,6 @@ public class MediaObjectTest {
 		instantiateAndCheck(MediaElementImpl.class, objRef);
 	}
 
-	// TODO the tests won´t run because it can´t inject one dependency. Fix this
-	@Ignore
 	@Test
 	public void testMediaSinkInstantiation() {
 		MediaObjectRef objRef = createMediaPadRef(MediaType.AUDIO,
@@ -102,8 +100,6 @@ public class MediaObjectTest {
 		instantiateAndCheck(MediaSinkImpl.class, objRef);
 	}
 
-	// TODO the tests won´t run because it can´t inject one dependency. Fix this
-	@Ignore
 	@Test
 	public void testMediaSourceInstantiation() {
 		MediaObjectRef objRef = createMediaPadRef(MediaType.AUDIO,
@@ -191,15 +187,9 @@ public class MediaObjectTest {
 	}
 
 	@Test
-	public void testMainMixerInstantiation() {
-		MediaObjectRef objRef = createMediaMixerRef(MainMixerImpl.TYPE);
-		instantiateAndCheck(MainMixerImpl.class, objRef);
-	}
-
-	@Test
-	public void testMediaMixerInstantiation() {
-		MediaObjectRef objRef = createMediaMixerRef(MediaMixerImpl.TYPE);
-		instantiateAndCheck(MediaMixerImpl.class, objRef);
+	public void testDispatcherMixerInstantiation() {
+		MediaObjectRef objRef = createMediaMixerRef(DISPATCHER_MIXER_TYPE);
+		instantiateAndCheck(DispatcherMixerImpl.class, objRef);
 	}
 
 	private void instantiateAndCheck(Class<?> expectedClass,

@@ -34,7 +34,7 @@ public interface MediaMixer extends MediaObject {
 	 * 
 	 * @return The endpoint created
 	 */
-	MediaElement createEndpoint();
+	MixerPort createMixerPort();
 
 	/**
 	 * Creates and endpoint in the mixer.
@@ -43,14 +43,14 @@ public interface MediaMixer extends MediaObject {
 	 *            Parameters to be used by the server when building the endpoint
 	 * @return The endpoint created
 	 */
-	MediaElement createEndpoint(Map<String, MediaParam> params);
+	MixerPort createMixerPort(Map<String, MediaParam> params);
 
 	/**
 	 * Creates and endpoint in the mixer.
 	 * 
 	 * @param cont
 	 */
-	void createEndpoint(final Continuation<MediaElement> cont);
+	void createMixerPort(final Continuation<MixerPort> cont);
 
 	/**
 	 * Creates and endpoint in the mixer.
@@ -59,8 +59,8 @@ public interface MediaMixer extends MediaObject {
 	 *            Parameters to be used by the server when building the endpoint
 	 * @param cont
 	 */
-	void createEndpoint(Map<String, MediaParam> params,
-			final Continuation<MediaElement> cont);
+	void createMixerPort(Map<String, MediaParam> params,
+			final Continuation<MixerPort> cont);
 
 	/**
 	 * Builder for the {@link MediaMixer}.

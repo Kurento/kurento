@@ -19,6 +19,7 @@ import java.util.Map;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
+import com.kurento.kmf.media.DispatcherMixer.DispatcherMixerBuilder;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
 import com.kurento.kmf.media.GStreamerFilter.GStreamerFilterBuilder;
 import com.kurento.kmf.media.HttpGetEndpoint.HttpGetEndpointBuilder;
@@ -274,6 +275,13 @@ public interface MediaPipeline extends MediaObject {
 	 * @return The builder
 	 */
 	ChromaFilterBuilder newChromaFilter(WindowParam window);
+
+	/**
+	 * Obtains the builder for a {@link DispatcherMixerBuilder}.
+	 * 
+	 * @return The builder
+	 */
+	DispatcherMixerBuilder newDispatcherMixer();
 
 	/**
 	 * Creates a {@link MediaElement} associated to this pipeline.
