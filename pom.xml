@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-spring</artifactId>
-	<version>1.0.2-SNAPSHOT</version>
+	<version>3.0.5</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -113,7 +113,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
+		<tag>kmf-spring-3.0.5</tag>
 	</scm>
 
 </project>
