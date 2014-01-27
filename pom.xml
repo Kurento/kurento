@@ -44,25 +44,18 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies version -->
-		<kms-interface.version>3.0.6-SNAPSHOT</kms-interface.version>
+		<kmf-thrift-interface.version>1.0.0-SNAPSHOT</kmf-thrift-interface.version>
 		<junit.version>4.10</junit.version>
 		<slf4j.version>1.6.4</slf4j.version>
 		<cglib.version>2.2.2</cglib.version>
-		<spring.version>3.1.4.RELEASE</spring.version>
-		<commons-pool.version>2.0</commons-pool.version>
-		<kmf-commons.version>3.0.5</kmf-commons.version>
+		<spring.version>4.0.0.RELEASE</spring.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.kurento.kms</groupId>
-			<artifactId>kms-interface</artifactId>
-			<version>${kms-interface.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-commons</artifactId>
-			<version>${kmf-commons.version}</version>
+			<artifactId>kmf-thrift-interface</artifactId>
+			<version>${kmf-thrift-interface.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -96,11 +89,6 @@
 			<artifactId>spring-test</artifactId>
 			<version>${spring.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-pool2</artifactId>
-			<version>${commons-pool.version}</version>
 		</dependency>
 	</dependencies>
 

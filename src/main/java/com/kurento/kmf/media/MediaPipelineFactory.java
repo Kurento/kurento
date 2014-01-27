@@ -14,22 +14,37 @@
  */
 package com.kurento.kmf.media;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.media.events.MediaError;
+import com.kurento.kmf.media.events.MediaEvent;
+import com.kurento.kmf.media.internal.ErrorListenerRegistration;
+import com.kurento.kmf.media.internal.EventListenerRegistration;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
-import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
+import com.kurento.kmf.media.internal.MediaServerCallbackHandler;
 import com.kurento.kmf.media.internal.refs.MediaPipelineRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.AbstractMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
+import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
+import com.kurento.kms.thrift.api.KmsMediaError;
+import com.kurento.kms.thrift.api.KmsMediaEvent;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
 import com.kurento.kms.thrift.api.KmsMediaServerException;
@@ -47,11 +62,72 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
  */
 public class MediaPipelineFactory {
 
+	private static final Logger log = LoggerFactory
+			.getLogger(MediaPipelineFactory.class.getName());
+
+	private final Processor<KmsMediaHandlerService.Iface> processor = new Processor<Iface>(
+			new Iface() {
+
+				@Override
+				public void onError(String callbackToken, KmsMediaError error)
+						throws TException {
+					log.trace("KMS error {} received on object {}",
+							Integer.toString(error.errorCode),
+							Long.toString(error.getSource().getId()));
+					MediaError mediaError = (MediaError) ctx.getBean(
+							"mediaError", error);
+					ErrorListenerRegistration registration = new ErrorListenerRegistration(
+							callbackToken);
+					handler.onError(registration,
+							Long.valueOf(error.getSource().id), mediaError);
+				}
+
+				@Override
+				public void onEvent(String callbackToken, KmsMediaEvent event)
+						throws TException {
+					log.trace("KMS event {} received on object {}", event.type,
+							Long.toString(event.getSource().getId()));
+					MediaEvent mediaEvent = (MediaEvent) ctx.getBean(
+							"mediaEvent", event);
+
+					EventListenerRegistration registration = new EventListenerRegistration(
+							callbackToken);
+					handler.onEvent(registration,
+							Long.valueOf(event.getSource().id), mediaEvent);
+				}
+			});
+
 	@Autowired
 	private MediaServerClientPoolService clientPool;
 
+	/**
+	 * Autowired configuration.
+	 */
+	@Autowired
+	private MediaApiConfiguration config;
+
+	/**
+	 * Autowired context.
+	 */
 	@Autowired
 	private ApplicationContext ctx;
+
+	/**
+	 * Callback handler to be invoked when receiving error and event
+	 * notifications from the KMS
+	 */
+	@Autowired
+	private MediaServerCallbackHandler handler;
+
+	@PostConstruct
+	private void init() {
+		// TODO stop this handlerServer if the application stops
+		ctx.getBean(
+				"mediaHandlerServer",
+				this.processor,
+				new InetSocketAddress(config.getHandlerAddress(), config
+						.getHandlerPort()));
+	}
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server

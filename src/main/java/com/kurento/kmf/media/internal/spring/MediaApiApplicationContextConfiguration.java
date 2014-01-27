@@ -30,19 +30,11 @@ import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaEvent;
 import com.kurento.kmf.media.events.internal.DefaultMediaEventImpl;
-import com.kurento.kmf.media.internal.DistributedGarbageCollector;
-import com.kurento.kmf.media.internal.MediaApiExecutorService;
 import com.kurento.kmf.media.internal.MediaElementImpl;
-import com.kurento.kmf.media.internal.MediaHandlerServer;
 import com.kurento.kmf.media.internal.MediaPipelineImpl;
 import com.kurento.kmf.media.internal.MediaServerCallbackHandler;
 import com.kurento.kmf.media.internal.MediaSinkImpl;
 import com.kurento.kmf.media.internal.MediaSourceImpl;
-import com.kurento.kmf.media.internal.pool.MediaServerAsyncClientFactory;
-import com.kurento.kmf.media.internal.pool.MediaServerAsyncClientPool;
-import com.kurento.kmf.media.internal.pool.MediaServerClientPoolService;
-import com.kurento.kmf.media.internal.pool.MediaServerSyncClientFactory;
-import com.kurento.kmf.media.internal.pool.MediaServerSyncClientPool;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.internal.refs.MediaMixerRef;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
@@ -58,41 +50,6 @@ import com.kurento.kms.thrift.api.KmsMediaParam;
 
 @Configuration
 public class MediaApiApplicationContextConfiguration {
-
-	@Bean
-	MediaApiExecutorService executorServcie() {
-		return new MediaApiExecutorService();
-	}
-
-	@Bean
-	MediaServerAsyncClientFactory mediaServerAsyncClientFactory() {
-		return new MediaServerAsyncClientFactory();
-	}
-
-	@Bean
-	MediaServerSyncClientFactory mediaServerSyncClientFactory() {
-		return new MediaServerSyncClientFactory();
-	}
-
-	@Bean
-	MediaServerClientPoolService mediaServerClientPoolService() {
-		return new MediaServerClientPoolService();
-	}
-
-	@Bean
-	MediaServerSyncClientPool mediaServerSyncClientPool() {
-		return new MediaServerSyncClientPool();
-	}
-
-	@Bean
-	MediaServerAsyncClientPool mediaServerAsyncClientPool() {
-		return new MediaServerAsyncClientPool();
-	}
-
-	@Bean
-	MediaHandlerServer mediaHandlerServer() {
-		return new MediaHandlerServer();
-	}
 
 	@Bean
 	MediaPipelineFactory mediaPipelineFactory() {
@@ -122,11 +79,6 @@ public class MediaApiApplicationContextConfiguration {
 	@Bean
 	MediaParamClassStore mediaParamClassStore() {
 		return new MediaParamClassStore();
-	}
-
-	@Bean
-	DistributedGarbageCollector distributedGarbageCollector() {
-		return new DistributedGarbageCollector();
 	}
 
 	@Bean
