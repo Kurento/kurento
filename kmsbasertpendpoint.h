@@ -17,6 +17,7 @@
 
 #include <gst/gst.h>
 #include <kmsbasesdpendpoint.h>
+#include "kmsmediatype.h"
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -57,6 +58,11 @@ struct _KmsBaseRtpEndPoint
 struct _KmsBaseRtpEndPointClass
 {
   KmsBaseSdpEndPointClass parent_class;
+
+  void (*media_start) (KmsBaseRtpEndPoint * self, KmsMediaType type,
+    gboolean local);
+  void (*media_stop) (KmsBaseRtpEndPoint * self, KmsMediaType type,
+    gboolean local);
 };
 
 GType kms_base_rtp_end_point_get_type (void);

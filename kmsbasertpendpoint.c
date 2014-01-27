@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <gst/gst.h>
 
+#include "kms-enumtypes.h"
+#include "kms-marshal.h"
 #include "kmsbasertpendpoint.h"
 #include "sdp_utils.h"
 
@@ -36,8 +38,12 @@ G_DEFINE_TYPE (KmsBaseRtpEndPoint, kms_base_rtp_end_point,
 /* Signals and args */
 enum
 {
+  MEDIA_START,
+  MEDIA_STOP,
   LAST_SIGNAL
 };
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
 
 enum
 {
@@ -471,6 +477,23 @@ kms_base_rtp_end_point_class_init (KmsBaseRtpEndPointClass * klass)
       GST_DEBUG_FUNCPTR (kms_base_rtp_end_point_audio_valve_removed);
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_base_rtp_end_point_video_valve_removed);
+
+  /* set signals */
+  obj_signals[MEDIA_START] =
+      g_signal_new ("media-start",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsBaseRtpEndPointClass, media_start), NULL, NULL,
+      __kms_marshal_VOID__ENUM_BOOLEAN, G_TYPE_NONE, 2, GST_TYPE_MEDIA_TYPE,
+      G_TYPE_BOOLEAN);
+
+  obj_signals[MEDIA_STOP] =
+      g_signal_new ("media-stop",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsBaseRtpEndPointClass, media_stop), NULL, NULL,
+      __kms_marshal_VOID__ENUM_BOOLEAN, G_TYPE_NONE, 2, GST_TYPE_MEDIA_TYPE,
+      G_TYPE_BOOLEAN);
 }
 
 static void
