@@ -65,7 +65,7 @@ gst_element_sync_state_with_parent_target_state (GstElement * element)
 
   parent = GST_ELEMENT_CAST (gst_element_get_parent (element));
 
-  if (element == NULL) {
+  if (parent == NULL) {
     GST_DEBUG_OBJECT (element, "element has no parent");
     return FALSE;
   }
