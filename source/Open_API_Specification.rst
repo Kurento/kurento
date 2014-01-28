@@ -2,6 +2,8 @@
  Open API Specification
 %%%%%%%%%%%%%%%%%%%%%%%
 
+.. highlight:: json
+
 Introduction
 ============
 
@@ -186,9 +188,7 @@ Requests the retrieval of the content. The parameter *constraints*
 indicates the kind of media (audio or/and video) to be received. In the
 case of *HttpPlayer*, the values for these constraints for audio and
 video should be *recvonly*. The following example shows a *Request
-object* requesting to receive audio and video:
-
-::
+object* requesting to receive audio and video::
 
     {
       "jsonrpc": "2.0",
@@ -205,19 +205,18 @@ object* requesting to receive audio and video:
     }
 
 The *Response object* contains a *sessionId* to identify the session and
-the actual URL to retrieve the content from:
-
-::
+the actual URL to retrieve the content from::
 
     {
       "jsonrpc": "2.0",
       "result": 
       {
-        sessionId": 1234, 
+        "sessionId": 1234, 
         "url": "http://mediaserver/a13e9469-fec1-4eee-b40c-8cd90d5fc155"
       },
       "id": 1
     }
+
 
 poll
 ^^^^
@@ -235,9 +234,7 @@ the server pushes that information to the client and then the client
 re-issues a new poll request to restart the process.
 
 The *params* includes an object with only a *sessionId* attribute
-containing the ID for this session.
-
-::
+containing the ID for this session::
 
     {
       "jsonrpc": "2.0",
@@ -254,9 +251,7 @@ array with the latest MediaEvents, and a *controlEvents* attribute
 containing an array with the latest control events for this session, or
 an empty object if none was generated. Each control event can has an
 optional data attribute containing an object with a *code* and a
-*message* attributes.
-
-::
+*message* attributes::
 
     {
       "jsonrpc": "2.0",
@@ -265,7 +260,7 @@ optional data attribute containing an object with a *code* and a
         "contentEvents":
         [
           {"type": "typeOfEvent1",
-           "data": "dataOfEvent1},
+           "data": "dataOfEvent1"},
           {"type": "typeOfEvent2",
            "data": "dataOfEvent2"}
         ],
@@ -482,9 +477,7 @@ parameter *constraints* indicates the media (audio or/and video) to be
 received, sent, or sent and received by setting their values to
 *recvonly*, *sendonly*, *sendrecv* or *inactive*. The following example
 shows a *Request object* requesting bidirectional audio and video (i.e.
-*sendrecv* for both audio and video):
-
-::
+*sendrecv* for both audio and video)::
 
     {
       "jsonrpc": "2.0",
@@ -503,9 +496,7 @@ shows a *Request object* requesting bidirectional audio and video (i.e.
 
 The *Response object* contains the Media Server SDP answer, that is, a
 description of the desired session from the callee's perspective, and a
-*sessionId* to identify the session:
-
-::
+*sessionId* to identify the session::
 
     {
       "jsonrpc": "2.0",
