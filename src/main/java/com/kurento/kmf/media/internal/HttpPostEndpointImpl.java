@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants.EVENT_EOS;
 import static com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants.TYPE_NAME;
 
@@ -27,6 +28,8 @@ import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
+import com.kurento.kmf.media.params.internal.HttpPostEndpointConstructorParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class HttpPostEndpointImpl extends AbstractHttpEndpoint implements
@@ -34,7 +37,7 @@ public class HttpPostEndpointImpl extends AbstractHttpEndpoint implements
 
 	/**
 	 * Default constructor
-	 * 
+	 *
 	 * @param objectRef
 	 *            Reference from KMS
 	 */
@@ -75,8 +78,20 @@ public class HttpPostEndpointImpl extends AbstractHttpEndpoint implements
 			extends AbstractHttpEndpointBuilderImpl<T, HttpPostEndpoint>
 			implements HttpPostEndpointBuilder {
 
+		// The param is not stored in the map of params until some constructor
+		// param is set.
+		private final HttpPostEndpointConstructorParam param =
+				new HttpPostEndpointConstructorParam();
+
 		public HttpPostEndpointBuilderImpl(final MediaPipeline pipeline) {
 			super(TYPE_NAME, pipeline);
+		}
+
+		@Override
+		public T useEncodedMedia() {
+			param.setUseEncodedMedia(Boolean.TRUE);
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
+			return self();
 		}
 
 	}

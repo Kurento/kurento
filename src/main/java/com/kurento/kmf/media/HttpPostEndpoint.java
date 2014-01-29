@@ -31,7 +31,7 @@ public interface HttpPostEndpoint extends HttpEndpoint, HasEndOfStreamListener {
 
 	/**
 	 * Builder for the {@link HttpPostEndpoint}.
-	 * 
+	 *
 	 * @author Ivan Gracia (igracia@gsyc.es)
 	 * @since 3.0.1
 	 */
@@ -39,10 +39,25 @@ public interface HttpPostEndpoint extends HttpEndpoint, HasEndOfStreamListener {
 			MediaObjectBuilder<HttpPostEndpointBuilder, HttpPostEndpoint> {
 
 		/**
+		 * This method configures the endpoint to use encoded
+		 * media instead of raw media. If the parameter is not set then
+		 * the element uses raw media. Changing this parameter could affect in
+		 * a severe way to stability because key frames lost will not be
+		 * generated. Changing the media type does not affect to the
+		 * result except in the performance (just in the case where original
+		 * media and target media are the same) and in the problem with the
+		 * key frames. We strongly recommended not to use this parameter
+		 * because correct behaviour is not guarantied.
+		 *
+		 * @return The builder
+		 */
+		HttpPostEndpointBuilder useEncodedMedia();
+
+		/**
 		 * Sets the disconnection timeout. This is the time that an http
 		 * endpoint will wait for a reconnection, in case an HTTP connection is
 		 * lost.
-		 * 
+		 *
 		 * @param disconnectionTimeout
 		 *            Time (in seconds)
 		 * @return The builder

@@ -46,6 +46,7 @@ import com.kurento.kmf.media.params.internal.EventCodeFoundParam;
 import com.kurento.kmf.media.params.internal.FaceOverlayImageParam;
 import com.kurento.kmf.media.params.internal.HttpEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
+import com.kurento.kmf.media.params.internal.HttpPostEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
@@ -64,6 +65,7 @@ import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaHttpPostEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
@@ -356,6 +358,19 @@ public class MediaParamTest {
 
 		ChromaConstructorParam out = instantiateAndCheck(
 				ChromaConstructorParam.class, param);
+		Assert.assertEquals(in, out);
+	}
+
+	@Test
+	public void testHttpPostEndpointConstructor() {
+		HttpPostEndpointConstructorParam in = new HttpPostEndpointConstructorParam();
+		in.setUseEncodedMedia(Boolean.TRUE);
+		KmsMediaParam param = createKmsParam(
+				KmsMediaHttpPostEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		HttpPostEndpointConstructorParam out = instantiateAndCheck(
+				HttpPostEndpointConstructorParam.class, param);
 		Assert.assertEquals(in, out);
 	}
 
