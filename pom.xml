@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-protocol</artifactId>
-	<version>3.0.5</version>
+	<version>3.0.6-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
@@ -103,7 +103,7 @@
 		<url>https://github.com/Kurento/kmf-content-protocol</url>
 		<connection>scm:git:https://github.com/Kurento/kmf-content-protocol.git</connection>
 		<developerConnection>scm:git:ssh://repository.kurento.com:12345/kmf-content-protocol</developerConnection>
-		<tag>kmf-content-protocol-3.0.5</tag>
+		<tag>develop</tag>
 	</scm>
 
 </project>
