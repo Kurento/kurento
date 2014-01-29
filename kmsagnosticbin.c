@@ -73,9 +73,11 @@ struct _KmsAgnosticBin2Private
 
   GMutex thread_mutex;
 
-  GstElement *input_tee;
-  GstCaps *input_caps;
+  GstElement *main_tee;
+  GstElement *current_tee;
   GstPad *sink;
+  GstCaps *current_caps;
+  GstCaps *last_caps;
   guint pad_count;
   gboolean started;
 
@@ -307,7 +309,7 @@ kms_agnostic_bin2_find_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
   GstElement *tee = NULL;
 
   if (gst_caps_is_any (caps)) {
-    return self->priv->input_tee;
+    return self->priv->current_tee;
   }
 
   tees = g_hash_table_get_values (self->priv->tees);
@@ -408,6 +410,10 @@ create_parser_for_caps (GstCaps * caps)
 
   if (parser_factory != NULL) {
     parser = gst_element_factory_create (parser_factory, NULL);
+  } else {
+    parser = gst_element_factory_make ("identity", NULL);
+
+    g_object_set (G_OBJECT (parser), "signal-handoffs", FALSE, NULL);
   }
 
   gst_plugin_feature_list_free (filtered_list);
@@ -419,7 +425,7 @@ create_parser_for_caps (GstCaps * caps)
 static GstElement *
 kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
 {
-  GstCaps *current_caps = gst_caps_ref (self->priv->input_caps);
+  GstCaps *current_caps = self->priv->current_caps;
 
   if (current_caps == NULL)
     return NULL;
@@ -429,7 +435,6 @@ kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
   decoder = create_decoder_for_caps (current_caps, raw_caps);
 
   if (decoder == NULL) {
-    gst_caps_unref (current_caps);
     GST_DEBUG ("Invalid decoder");
     return NULL;
   }
@@ -441,6 +446,8 @@ kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
   fakequeue = gst_element_factory_make ("queue", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
 
+  g_object_set (G_OBJECT (fakesink), "async", FALSE, NULL);
+
   gst_bin_add_many (GST_BIN (self), queue, decoder, tee, fakequeue, fakesink,
       NULL);
   gst_element_sync_state_with_parent (queue);
@@ -450,9 +457,7 @@ kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
   gst_element_sync_state_with_parent (fakesink);
   gst_element_link_many (queue, decoder, tee, fakequeue, fakesink, NULL);
 
-  link_queue_to_tee (self->priv->input_tee, queue);
-
-  gst_caps_unref (current_caps);
+  link_queue_to_tee (self->priv->current_tee, queue);
 
   return tee;
 }
@@ -552,6 +557,8 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
   fakequeue = gst_element_factory_make ("queue", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
 
+  g_object_set (G_OBJECT (fakesink), "async", FALSE, NULL);
+
   gst_bin_add_many (GST_BIN (self), queue, convert, encoder, tee, fakequeue,
       fakesink, NULL);
 
@@ -627,7 +634,7 @@ kms_agnostic_bin2_unlink_pad (KmsAgnosticBin2 * self, GstPad * pad)
 
 /**
  * Process a pad for connecting or disconnecting, it should be always called
- * from the connect_thread.
+ * from the loop.
  *
  * @self: The #KmsAgnosticBin2 owner of the pad
  * @pad: (transfer full): The pad to be processed
@@ -720,53 +727,159 @@ iterate_src_pads (KmsAgnosticBin2 * self)
 }
 
 static void
-kms_agnostic_bin2_have_type (GstElement * typefind, guint prob, GstCaps * caps,
-    KmsAgnosticBin2 * self)
+kms_agnostic_bin2_disconnect_previous_input_tee (KmsAgnosticBin2 * self)
 {
-  GstElement *parser, *tee, *queue, *fakesink;
+  GstElement *queue = NULL, *parser = NULL;
+  GstPad *tee_sink = NULL, *parser_src = NULL, *parser_sink = NULL,
+      *queue_src = NULL, *queue_sink = NULL, *tee_src = NULL;
 
-  GST_INFO_OBJECT (self, "Have type: %d -> %" GST_PTR_FORMAT, prob, caps);
+  if (self->priv->current_tee == NULL)
+    return;
+
+  tee_sink = gst_element_get_static_pad (self->priv->current_tee, "sink");
+  parser_src = gst_pad_get_peer (tee_sink);
+  parser = gst_pad_get_parent_element (parser_src);
+  parser_sink = gst_element_get_static_pad (parser, "sink");
+  queue_src = gst_pad_get_peer (parser_sink);
+  queue = gst_pad_get_parent_element (queue_src);
+  queue_sink = gst_element_get_static_pad (queue, "sink");
+  tee_src = gst_pad_get_peer (queue_sink);
+
+  gst_pad_unlink (tee_src, queue_sink);
+  gst_element_release_request_pad (GST_ELEMENT (GST_OBJECT_PARENT (tee_src)),
+      tee_src);
+
+  g_object_unref (tee_src);
+  g_object_unref (queue_sink);
+  g_object_unref (queue_src);
+  g_object_unref (queue);
+  g_object_unref (parser_sink);
+  g_object_unref (parser_src);
+  g_object_unref (parser);
+  g_object_unref (tee_sink);
+}
+
+static GstPadProbeReturn
+set_input_caps (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
+{
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (tee));
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+  GstCaps *current_caps;
+
+  GST_ERROR_OBJECT (self, "Event in parser pad: %" GST_PTR_FORMAT, event);
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
+    return GST_PAD_PROBE_OK;
+
+  self->priv->started = TRUE;
+  if (self->priv->current_caps != NULL)
+    gst_caps_unref (self->priv->current_caps);
+
+  gst_event_parse_caps (event, &current_caps);
+  self->priv->current_caps = gst_caps_copy (current_caps);
+  g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
+      g_object_ref (tee));
+
+  GST_INFO_OBJECT (self, "Setting current caps to: %" GST_PTR_FORMAT,
+      current_caps);
+
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
+  iterate_src_pads (self);
+
+  return GST_PAD_PROBE_REMOVE;
+}
+
+static void
+kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
+{
+  GstElement *input_queue, *parser, *tee, *queue, *fakesink;
+  GstPad *parser_src;
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
+  kms_agnostic_bin2_disconnect_previous_input_tee (self);
 
-  if (self->priv->started) {
-    GST_WARNING_OBJECT (self,
-        "Input reconfiguration is not currently supported");
-    KMS_AGNOSTIC_BIN2_UNLOCK (self);
-    return;
-  }
-
-  if (self->priv->input_caps != NULL)
-    gst_caps_unref (self->priv->input_caps);
-
-  self->priv->input_caps = gst_caps_ref (caps);
-
+  input_queue = gst_element_factory_make ("queue", NULL);
+  parser = create_parser_for_caps (caps);
   tee = gst_element_factory_make ("tee", NULL);
-  self->priv->input_tee = tee;
+  self->priv->current_tee = tee;
   queue = gst_element_factory_make ("queue", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
 
-  gst_bin_add_many (GST_BIN (self), tee, queue, fakesink, NULL);
+  g_object_set (G_OBJECT (fakesink), "async", FALSE, NULL);
+
+  gst_bin_add_many (GST_BIN (self), input_queue, parser, tee, queue, fakesink,
+      NULL);
+
+  g_hash_table_remove_all (self->priv->tees);
+
+  parser_src = gst_element_get_static_pad (parser, "src");
+  GST_INFO_OBJECT (self, "Adding probe to %" GST_PTR_FORMAT, parser_src);
+  gst_pad_add_probe (parser_src, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      set_input_caps, g_object_ref (tee), g_object_unref);
+  g_object_unref (parser_src);
+
+  gst_element_sync_state_with_parent (input_queue);
+  gst_element_sync_state_with_parent (parser);
   gst_element_sync_state_with_parent (tee);
   gst_element_sync_state_with_parent (queue);
   gst_element_sync_state_with_parent (fakesink);
 
-  parser = create_parser_for_caps (caps);
+  gst_element_link_many (self->priv->main_tee, input_queue, parser, tee, queue,
+      fakesink, NULL);
 
-  if (parser != NULL) {
-    gst_bin_add (GST_BIN (self), parser);
-    gst_element_sync_state_with_parent (parser);
-    gst_element_link_many (typefind, parser, tee, queue, fakesink, NULL);
-  } else {
-    gst_element_link_many (typefind, tee, queue, fakesink, NULL);
+  self->priv->started = FALSE;
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
+}
+
+static GstPadProbeReturn
+kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
+    gpointer user_data)
+{
+  KmsAgnosticBin2 *self;
+  GstCaps *current_caps;
+  GstCaps *new_caps = NULL;
+  GstEvent *event = gst_pad_probe_info_get_event (info);
+
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
   }
 
-  g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
-      g_object_ref (tee));
+  GST_DEBUG_OBJECT (pad, "Event: %" GST_PTR_FORMAT, event);
 
-  self->priv->started = TRUE;
+  self = KMS_AGNOSTIC_BIN2 (user_data);
+
+  gst_event_parse_caps (event, &new_caps);
+
+  if (new_caps == NULL) {
+    GST_ERROR_OBJECT (self, "Unexpected NULL caps");
+    return GST_PAD_PROBE_PASS;
+  }
+
+  KMS_AGNOSTIC_BIN2_LOCK (self);
+  current_caps = self->priv->last_caps;
+  self->priv->last_caps = gst_caps_copy (new_caps);
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
-  iterate_src_pads (self);
+
+  GST_DEBUG_OBJECT (user_data, "New caps event: %" GST_PTR_FORMAT, event);
+
+  if (current_caps != NULL) {
+    GST_DEBUG_OBJECT (user_data, "Current caps: %" GST_PTR_FORMAT,
+        current_caps);
+
+    if (!gst_caps_can_intersect (new_caps, current_caps) &&
+        !is_raw_caps (current_caps) && !is_raw_caps (new_caps)) {
+      GST_DEBUG_OBJECT (user_data, "Caps differ caps: %" GST_PTR_FORMAT,
+          new_caps);
+      kms_agnostic_bin2_configure_input_tee (self, new_caps);
+    }
+
+    gst_caps_unref (current_caps);
+  } else {
+    GST_DEBUG_OBJECT (user_data, "No previous caps, starting");
+    kms_agnostic_bin2_configure_input_tee (self, new_caps);
+  }
+
+  return GST_PAD_PROBE_OK;
 }
 
 static GstPadProbeReturn
@@ -859,12 +972,18 @@ kms_agnostic_bin2_dispose (GObject * object)
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
   g_clear_object (&self->priv->loop);
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
-  if (self->priv->input_caps != NULL) {
-    gst_caps_unref (self->priv->input_caps);
-    self->priv->input_caps = NULL;
+  if (self->priv->current_caps) {
+    gst_caps_unref (self->priv->current_caps);
+    self->priv->current_caps = NULL;
   }
+
+  if (self->priv->last_caps) {
+    gst_caps_unref (self->priv->last_caps);
+    self->priv->last_caps = NULL;
+  }
+
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin2_parent_class)->dispose (object);
@@ -940,25 +1059,36 @@ static void
 kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
   GstPadTemplate *templ;
-  GstElement *typefind;
+  GstElement *tee, *queue, *fakesink;
   GstPad *target;
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
   self->priv->pad_count = 0;
 
-  typefind = gst_element_factory_make ("typefind", NULL);
-  gst_bin_add (GST_BIN (self), typefind);
+  self->priv->current_tee = NULL;
 
-  g_signal_connect (typefind, "have-type",
-      G_CALLBACK (kms_agnostic_bin2_have_type), self);
+  tee = gst_element_factory_make ("tee", NULL);
+  self->priv->main_tee = tee;
+  queue = gst_element_factory_make ("queue", NULL);
+  fakesink = gst_element_factory_make ("fakesink", NULL);
 
-  target = gst_element_get_static_pad (typefind, "sink");
+  g_object_set (G_OBJECT (fakesink), "async", FALSE, NULL);
+
+  gst_bin_add_many (GST_BIN (self), tee, queue, fakesink, NULL);
+  gst_element_link_many (tee, queue, fakesink, NULL);
+
+  target = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
   self->priv->sink = gst_ghost_pad_new_from_template ("sink", target, templ);
+  self->priv->current_caps = NULL;
+  self->priv->last_caps = NULL;
   gst_pad_add_probe (self->priv->sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       gap_detection_probe, self, NULL);
   g_object_unref (templ);
   g_object_unref (target);
+
+  gst_pad_add_probe (self->priv->sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      kms_agnostic_bin2_sink_caps_probe, self, NULL);
 
   gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
