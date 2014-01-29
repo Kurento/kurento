@@ -627,7 +627,7 @@ kms_agnostic_bin2_unlink_pad (KmsAgnosticBin2 * self, GstPad * pad)
 
 /**
  * Process a pad for connecting or disconnecting, it should be always called
- * from the loop.
+ * from the connect_thread.
  *
  * @self: The #KmsAgnosticBin2 owner of the pad
  * @pad: (transfer full): The pad to be processed
