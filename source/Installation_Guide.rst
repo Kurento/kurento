@@ -2,6 +2,8 @@
  Kurento Installation Guide
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+.. highlight:: bash
+
 Introduction
 ============
 
@@ -284,14 +286,16 @@ Download the test video with the following commands:
 ::
 
     $ sudo wget https://ci.kurento.com/video/video.tar.gz --no-check-certificate 
-    $ sudo tar xfvz video.tar.gz && sudo mv video/ /opt/video && sudo chown -R jboss:jboss /opt/video
+    $ sudo tar xfvz video.tar.gz && sudo mv video/ /opt/video &&\
+    > sudo chown -R jboss:jboss /opt/video
 
 And downlad the fi-lab-demo.war file using the following command:
 
 ::
 
     $ sudo wget https://ci.kurento.com/apps/fi-lab-demo.war --no-check-certificate 
-    $ sudo mv fi-lab-demo.war /opt/jboss/standalone/deployments && sudo chown -R jboss:jboss /opt/jboss/standalone/deployments/fi-lab-demo.war
+    $ sudo mv fi-lab-demo.war /opt/jboss/standalone/deployments &&\
+    > sudo chown -R jboss:jboss /opt/jboss/standalone/deployments/fi-lab-demo.war
 
 Verifying and starting the servers
 ----------------------------------
@@ -425,8 +429,17 @@ The output should be similar to:
 
 ::
 
-    jboss     4115     1  0 15:16 ?        00:00:00 /bin/sh /opt/jboss/bin/standalone.sh -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0
-    jboss     4159  4115 30 15:16 ?        00:00:08 java -D[Standalone] -server -XX:+UseCompressedOops -XX:+TieredCompilation -Xms64m -Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Djboss.server.default.config=standalone.xml -Dorg.jboss.boot.log.file=/opt/jboss/standalone/log/boot.log -Dlogging.configuration=file:/opt/jboss/standalone/configuration/logging.properties -jar /opt/jboss/jboss-modules.jar -mp /opt/jboss/modules -jaxpmodule javax.xml.jaxp-provider org.jboss.as.standalone -Djboss.home.dir=/opt/jboss -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0
+    jboss     4115     1  0 15:16 ?        00:00:00 /bin/sh /opt/jboss/bin/standalone.sh -Djboss.bi
+    nd.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0
+    jboss     4159  4115 30 15:16 ?        00:00:08 java -D[Standalone] -server -XX:+UseCompressedO
+    ops -XX:+TieredCompilation -Xms64m -Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=tru
+    e -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.serve
+    r.gcInterval=3600000 -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Dj
+    boss.server.default.config=standalone.xml -Dorg.jboss.boot.log.file=/opt/jboss/standalone/log/b
+    oot.log -Dlogging.configuration=file:/opt/jboss/standalone/configuration/logging.properties -ja
+    r /opt/jboss/jboss-modules.jar -mp /opt/jboss/modules -jaxpmodule javax.xml.jaxp-provider org.j
+    boss.as.standalone -Djboss.home.dir=/opt/jboss -Djboss.bind.address=0.0.0.0 -Djboss.bind.addres
+    s.management=0.0.0.0
     kuser     4256  2371  0 15:16 pts/0    00:00:00 grep --color=auto jboss
 
 To verify that KMS is up and running use the command:
