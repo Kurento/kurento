@@ -159,14 +159,30 @@ kms_base_sdp_end_point_start_transport_send (KmsBaseSdpEndPoint *
     base_sdp_end_point, const GstSDPMessage * offer,
     const GstSDPMessage * answer, gboolean local_offer)
 {
+  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
+      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+
   /* Defalut function, do nothing */
+  if (base_sdp_end_point_class->start_transport_send ==
+      kms_base_sdp_end_point_start_transport_send) {
+    g_warning ("%s does not reimplement \"start_transport_send\"",
+        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
+  }
 }
 
 static void
 kms_base_sdp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
     base_sdp_end_point, const GstSDPMessage * answer)
 {
+  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
+      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+
   /* Defalut function, do nothing */
+  if (base_sdp_end_point_class->connect_input_elements ==
+      kms_base_sdp_end_point_connect_input_elements) {
+    g_warning ("%s does not reimplement \"connect_input_elements\"",
+        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
+  }
 }
 
 static void
@@ -179,20 +195,8 @@ kms_base_sdp_end_point_start_media (KmsBaseSdpEndPoint * base_sdp_end_point,
   KmsBaseSdpEndPointClass *base_sdp_end_point_class =
       KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
 
-  if (base_sdp_end_point_class->start_transport_send ==
-      kms_base_sdp_end_point_start_transport_send) {
-    g_warning ("%s does not reimplement \"start_transport_send\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
-  }
-
   base_sdp_end_point_class->start_transport_send (base_sdp_end_point, offer,
       answer, local_offer);
-
-  if (base_sdp_end_point_class->connect_input_elements ==
-      kms_base_sdp_end_point_connect_input_elements) {
-    g_warning ("%s does not reimplement \"connect_input_elements\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
-  }
 
   base_sdp_end_point_class->connect_input_elements (base_sdp_end_point, answer);
 }
@@ -201,6 +205,15 @@ static gboolean
 kms_base_sdp_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
     base_sdp_end_point, GstSDPMessage * msg)
 {
+  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
+      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+
+  if (base_sdp_end_point_class->set_transport_to_sdp ==
+      kms_base_sdp_end_point_set_transport_to_sdp) {
+    g_warning ("%s does not reimplement \"set_transport_to_sdp\"",
+        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
+  }
+
   /* Defalut function, do nothing */
   return TRUE;
 }
@@ -222,12 +235,6 @@ kms_base_sdp_end_point_generate_offer (KmsBaseSdpEndPoint * base_sdp_end_point)
 
   if (offer == NULL)
     return NULL;
-
-  if (base_sdp_end_point_class->set_transport_to_sdp ==
-      kms_base_sdp_end_point_set_transport_to_sdp) {
-    g_warning ("%s does not reimplement \"set_transport_to_sdp\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
-  }
 
   if (!base_sdp_end_point_class->set_transport_to_sdp (base_sdp_end_point,
           offer)) {
@@ -259,12 +266,6 @@ kms_base_sdp_end_point_process_offer (KmsBaseSdpEndPoint * base_sdp_end_point,
 
   if (answer == NULL)
     return NULL;
-
-  if (base_sdp_end_point_class->set_transport_to_sdp ==
-      kms_base_sdp_end_point_set_transport_to_sdp) {
-    g_warning ("%s does not reimplement \"set_transport_to_sdp\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
-  }
 
   if (!base_sdp_end_point_class->set_transport_to_sdp (base_sdp_end_point,
           answer)) {
