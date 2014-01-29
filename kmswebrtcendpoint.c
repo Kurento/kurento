@@ -1113,6 +1113,7 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
       self->priv->remote_video_ssrc = ssrc;
     } else {
       GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
+      g_free (ssrc);
       continue;
     }
 
