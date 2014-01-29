@@ -49,6 +49,7 @@ import com.kurento.kmf.media.params.internal.HttpGetEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.IntegerMediaParam;
 import com.kurento.kmf.media.params.internal.LongMediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
+import com.kurento.kmf.media.params.internal.PlayerEndpointConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorAdvConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorConstructorParam;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
@@ -66,6 +67,7 @@ import com.kurento.kms.thrift.api.KmsMediaHttpGetEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaMuxer;
 import com.kurento.kms.thrift.api.KmsMediaObjectConstants;
 import com.kurento.kms.thrift.api.KmsMediaParam;
+import com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPointerDetectorFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaPointerDetector2FilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaRecorderEndPointTypeConstants;
@@ -354,6 +356,19 @@ public class MediaParamTest {
 
 		ChromaConstructorParam out = instantiateAndCheck(
 				ChromaConstructorParam.class, param);
+		Assert.assertEquals(in, out);
+	}
+
+	@Test
+	public void testPlayerEndpointConstructor() {
+		PlayerEndpointConstructorParam in = new PlayerEndpointConstructorParam();
+		in.setUseEncodedMedia(Boolean.TRUE);
+		KmsMediaParam param = createKmsParam(
+				KmsMediaPlayerEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE,
+				in.getThriftParams().getData());
+
+		PlayerEndpointConstructorParam out = instantiateAndCheck(
+				PlayerEndpointConstructorParam.class, param);
 		Assert.assertEquals(in, out);
 	}
 

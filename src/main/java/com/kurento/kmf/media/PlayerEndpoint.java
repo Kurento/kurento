@@ -44,12 +44,27 @@ public interface PlayerEndpoint extends UriEndpoint, HasEndOfStreamListener {
 
 	/**
 	 * Builder for the {@link PlayerEndpoint}.
-	 * 
+	 *
 	 * @author Ivan Gracia (igracia@gsyc.es)
 	 * @since 2.0.0
 	 */
 	public interface PlayerEndpointBuilder extends
 			MediaObjectBuilder<PlayerEndpointBuilder, PlayerEndpoint> {
+
+		/**
+		 * This method configures the endpoint to use encoded
+		 * media instead of raw media. If the parameter is not set then
+		 * the element uses raw media. Changing this parameter could affect in
+		 * a severe way to stability because key frames lost will not be
+		 * generated. Changing the media type does not affect to the
+		 * result except in the performance (just in the case where original 
+		 * media and target media are the same) and in the problem with the
+		 * key frames. We strongly recommended not to use this parameter
+		 * because correct behaviour is not guarantied.
+		 *
+		 * @return The builder
+		 */
+		PlayerEndpointBuilder useEncodedMedia();
 
 	}
 

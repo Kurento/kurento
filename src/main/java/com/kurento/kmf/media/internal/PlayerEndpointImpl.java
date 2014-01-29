@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.media.internal;
 
+import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.CONSTRUCTOR_PARAMS_DATA_TYPE;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.EVENT_EOS;
 import static com.kurento.kms.thrift.api.KmsMediaPlayerEndPointTypeConstants.TYPE_NAME;
 
@@ -28,6 +29,7 @@ import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.internal.refs.MediaElementRef;
 import com.kurento.kmf.media.params.MediaParam;
+import com.kurento.kmf.media.params.internal.PlayerEndpointConstructorParam;
 
 @ProvidesMediaElement(type = TYPE_NAME)
 public class PlayerEndpointImpl extends AbstractUriEndpoint implements
@@ -75,9 +77,21 @@ public class PlayerEndpointImpl extends AbstractUriEndpoint implements
 			extends AbstractUriEndpointBuilder<T, PlayerEndpoint> implements
 			PlayerEndpointBuilder {
 
+		// The param is not stored in the map of params until some constructor
+		// param is set.
+		private final PlayerEndpointConstructorParam param =
+				new PlayerEndpointConstructorParam();
+
 		public PlayerEndpointBuilderImpl(final URI uri,
 				final MediaPipeline pipeline) {
 			super(uri, TYPE_NAME, pipeline);
+		}
+
+		@Override
+		public T useEncodedMedia() {
+			param.setUseEncodedMedia(Boolean.TRUE);
+			params.put(CONSTRUCTOR_PARAMS_DATA_TYPE, param);
+			return self();
 		}
 
 	}
