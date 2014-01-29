@@ -320,21 +320,21 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
         rtp_end_point->audio_rtp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtp_sink");
         g_object_set (rtp_end_point->audio_rtp_udpsink, "socket",
-            rtp_end_point->audio_rtp_socket, "qos", TRUE, NULL);
+            rtp_end_point->audio_rtp_socket, "qos", TRUE, "async", FALSE, NULL);
 
         rtp_end_point->audio_rtcp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtcp_sink");
         g_object_set (rtp_end_point->audio_rtcp_udpsink, "socket",
-            rtp_end_point->audio_rtcp_socket, NULL);
+            rtp_end_point->audio_rtcp_socket, "async", FALSE, NULL);
 
         gst_bin_add_many (GST_BIN (rtp_end_point),
             rtp_end_point->audio_rtp_udpsink, rtp_end_point->audio_rtcp_udpsink,
             NULL);
 
         g_object_set (rtp_end_point->audio_rtp_udpsink, "host", con->address,
-            "port", media->port, NULL);
+            "port", media->port, "async", FALSE, NULL);
         g_object_set (rtp_end_point->audio_rtcp_udpsink, "host", con->address,
-            "port", media->port + 1, NULL);
+            "port", media->port + 1, "async", FALSE, NULL);
 
         gst_element_sync_state_with_parent (rtp_end_point->audio_rtp_udpsink);
         gst_element_sync_state_with_parent (rtp_end_point->audio_rtcp_udpsink);
@@ -350,12 +350,12 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
         rtp_end_point->video_rtp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtp_sink");
         g_object_set (rtp_end_point->video_rtp_udpsink, "socket",
-            rtp_end_point->video_rtp_socket, "qos", TRUE, NULL);
+            rtp_end_point->video_rtp_socket, "qos", TRUE, "async", FALSE, NULL);
 
         rtp_end_point->video_rtcp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtcp_sink");
         g_object_set (rtp_end_point->video_rtcp_udpsink, "socket",
-            rtp_end_point->video_rtcp_socket, NULL);
+            rtp_end_point->video_rtcp_socket, "async", FALSE, NULL);
 
         gst_bin_add_many (GST_BIN (rtp_end_point),
             rtp_end_point->video_rtp_udpsink, rtp_end_point->video_rtcp_udpsink,
