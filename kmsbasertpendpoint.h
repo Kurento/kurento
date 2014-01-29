@@ -52,6 +52,9 @@ struct _KmsBaseRtpEndPoint
   GstElement *audio_payloader;
   GstElement *video_payloader;
 
+  guint audio_ssrc;
+  guint video_ssrc;
+
   gboolean negotiated;
 };
 

@@ -35,6 +35,9 @@ G_DEFINE_TYPE (KmsBaseRtpEndPoint, kms_base_rtp_end_point,
 
 #define RTPBIN "rtpbin"
 
+#define AUDIO_SESSION 0
+#define VIDEO_SESSION 1
+
 /* Signals and args */
 enum
 {
@@ -348,16 +351,22 @@ kms_base_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     KmsBaseRtpEndPoint * rtp_end_point)
 {
   GstElement *agnostic, *depayloader;
+  gboolean added = TRUE;
+  KmsMediaType media;
   GstCaps *caps;
 
   GST_PAD_STREAM_LOCK (pad);
 
-  if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_"))
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_0_")) {
     agnostic = kms_element_get_audio_agnosticbin (KMS_ELEMENT (rtp_end_point));
-  else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_"))
+    media = KMS_MEDIA_TYPE_AUDIO;
+  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), "recv_rtp_src_1_")) {
     agnostic = kms_element_get_video_agnosticbin (KMS_ELEMENT (rtp_end_point));
-  else
+    media = KMS_MEDIA_TYPE_VIDEO;
+  } else {
+    added = FALSE;
     goto end;
+  }
 
   caps = gst_pad_query_caps (pad, NULL);
   GST_DEBUG ("New pad: %" GST_PTR_FORMAT " for linking to %" GST_PTR_FORMAT
@@ -384,6 +393,10 @@ kms_base_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 
 end:
   GST_PAD_STREAM_UNLOCK (pad);
+
+  if (added)
+    g_signal_emit (G_OBJECT (rtp_end_point), obj_signals[MEDIA_START], 0, media,
+        TRUE);
 }
 
 static void
@@ -497,6 +510,60 @@ kms_base_rtp_end_point_class_init (KmsBaseRtpEndPointClass * klass)
 }
 
 static void
+kms_base_rtp_end_point_rtpbin_on_new_ssrc (GstElement * rtpbin, guint session,
+    guint ssrc, gpointer user_data)
+{
+  KmsBaseRtpEndPoint *self = KMS_BASE_RTP_END_POINT (user_data);
+
+  KMS_ELEMENT_LOCK (self);
+
+  switch (session) {
+    case AUDIO_SESSION:
+      self->audio_ssrc = ssrc;
+      break;
+    case VIDEO_SESSION:
+      self->video_ssrc = ssrc;
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "No media supported for session %u", session);
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_base_rtp_end_point_rtpbin_on_ssrc_sdes (GstElement * rtpbin, guint session,
+    guint ssrc, gpointer user_data)
+{
+  KmsBaseRtpEndPoint *self = KMS_BASE_RTP_END_POINT (user_data);
+  KmsMediaType media;
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (ssrc != self->audio_ssrc && ssrc != self->video_ssrc) {
+    GST_WARNING_OBJECT (self, "SSRC %u not valid", ssrc);
+    KMS_ELEMENT_UNLOCK (self);
+    return;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  switch (session) {
+    case AUDIO_SESSION:
+      media = KMS_MEDIA_TYPE_AUDIO;
+      break;
+    case VIDEO_SESSION:
+      media = KMS_MEDIA_TYPE_VIDEO;
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "No media supported for session %u", session);
+      return;
+  }
+
+  g_signal_emit (G_OBJECT (self), obj_signals[MEDIA_START], 0, media, FALSE);
+}
+
+static void
 kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
 {
   base_rtp_end_point->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
@@ -506,6 +573,13 @@ kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
 
   g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_pad_added), base_rtp_end_point);
+
+  g_signal_connect (base_rtp_end_point->rtpbin, "on-new-ssrc",
+      G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_new_ssrc),
+      base_rtp_end_point);
+  g_signal_connect (base_rtp_end_point->rtpbin, "on-ssrc-sdes",
+      G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_ssrc_sdes),
+      base_rtp_end_point);
 
   g_object_set (base_rtp_end_point->rtpbin, "do-lost", TRUE, NULL);
   g_object_set (base_rtp_end_point, "accept-eos", FALSE, NULL);
