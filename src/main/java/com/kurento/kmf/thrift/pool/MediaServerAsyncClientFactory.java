@@ -63,7 +63,7 @@ public class MediaServerAsyncClientFactory extends
 
 	@Override
 	public void destroyObject(PooledObject<AsyncClient> obj) {
-		// TODO add impl if needed
+		// TODO close the transport
 	}
 
 	private AsyncClient createAsyncClient() {

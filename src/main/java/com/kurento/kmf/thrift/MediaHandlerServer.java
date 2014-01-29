@@ -76,7 +76,7 @@ public class MediaHandlerServer {
 			transport = new TNonblockingServerSocket(addr);
 		} catch (TTransportException e) {
 			throw new KurentoMediaFrameworkException(
-					"Could not start media handler server. Address already in use",
+					"Could not start media handler server. " + e.getMessage(),
 					e, 30003);
 		}
 
