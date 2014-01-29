@@ -107,8 +107,10 @@ create a *Kurento* based application:
 
 
        <?xml version="1.0" encoding="UTF-8"?>
-       <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+       <project xmlns="http://maven.apache.org/POM/4.0.0"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                                    http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
            <modelVersion>4.0.0</modelVersion>
            <groupId>my.organization</groupId>
@@ -172,12 +174,13 @@ create a *Kurento* based application:
        @HttpPlayerService(name = "myService", path = "/playerService", useControlProtocol=false)
        public class MyService extends HttpPlayerHandler{
 
-           @Override
-           public void onContentRequest(HttpPlayerSession session) throws Exception {
-               
-               session.start("file:///path/to/myvideo.webm ");
-           }
-       }
+            @Override
+            public void onContentRequest(HttpPlayerSession session) throws Exception {
+
+                session.start("file:///path/to/myvideo.webm ");
+            }
+        }
+
 
 #. Place a *WebM* video so that the KMS process can reach it at whatever
    path you specified in ``/path/to/myvideo.webm``. This video will be
@@ -415,9 +418,7 @@ handler* found. A *service entry point* is basically an *HTTP servlet*
 mapped to a *service URL* where clients can send HTTP request with
 control commands. Developers do not have to care about servlet
 configuration or initialization, as the "Content API" takes care of this
-operations. The *service URL* has format below:
-
-::
+operations. The *service URL* has format below::
 
     http://myserver/myApp/myServiceName
 
@@ -471,7 +472,7 @@ any format supported by *Gstreamer*.
 *HTML5* browsers can access the content by adding the *service URL* as
 source of the tag ``<video>``.
 
-::
+.. sourcecode:: html
 
     <video>
         <source src="http://myServer/myApp/myPlayerService" type ="video/webm"/>
@@ -532,7 +533,7 @@ Browsers can access this service through HTML forms, addressed to the
 *service URL*, that include inputs of type file. If more than one file
 is present the request will accept only first one found.
 
-::
+.. sourcecode:: html
 
     <form action=”http://myServer/myApp/myRecorderService”>
         File: <input type="file" name="data" >
@@ -589,7 +590,6 @@ Played file can take any format supported by *Gstreamer* and will be
 translated to format negotiated with remote peer. Stored file will be
 converted to format *WebM* or *MP4* from format negotiated with remote
 peer.
-
 ::
 
     @Override
@@ -598,13 +598,12 @@ peer.
         Constraints videoConstraints = contentSession.getVideoConstraints();
         Constraints audioConstraints = contentSession.getAudioConstraints();
             
-        if ( videoConstraints.equals(Constraints.SENDONLY) && audioConstraints.equals(Constraints.SENDONLY)) {
-            contentSession.start(sourceMediaElement, null);
+        if ( videoConstraints.equals(Constraints.SENDONLY) &&
+             audioConstraints.equals(Constraints.SENDONLY) ) {
+                contentSession.start(sourceMediaElement, null);
         } else {
-            contentSession.start(sourceMediaElement, sinkMediaElement);
-
+                contentSession.start(sourceMediaElement, sinkMediaElement);
         }   
-            
     }
 
 Content Session & Media lifecycle
@@ -620,7 +619,6 @@ The *content session* is created when a request is received in the
 *service handler*, so the application can accept or reject requests.
 Rejected requests must provide the message and the *HTTP* error code
 that will be returned to browser.
-
 ::
 
     @Override
@@ -631,7 +629,6 @@ that will be returned to browser.
 When the *service handler* wants to accept a request it must provide the
 source and sink media resources that will be connected to the
 *Endpoint*. Method ``start()`` is called for this purpose.
-
 ::
 
     @Override
@@ -642,7 +639,6 @@ source and sink media resources that will be connected to the
 
 The *Endpoint* informs applications when media transfer starts by
 calling the optional method ``onContentStart()``.
-
 ::
 
     @Override
@@ -653,7 +649,6 @@ calling the optional method ``onContentStart()``.
 Optional method ``onSessionTerminate()`` is called when *Endpoint*
 completes media transfer. The *content session* termination code is
 provided in this call.
-
 ::
 
     @Override
@@ -666,7 +661,6 @@ experiences an unrecoverable error not caused by a direct application
 command. Events like client disconnection, file system access fail, etc.
 are the main error cause . Method ``onSessionError()`` is called with
 the error code.
-
 ::
 
     @Override
@@ -680,7 +674,6 @@ The *content session* is able to store and manage application attributes
 through its lifecycle, in a similar way as ``HttpSession`` does. Method
 ``setAttribute()`` stores an object that can later be retrieved with
 method ``getAttribute()`` or deleted with method ``removeAttribute()``.
-
 ::
 
     @Override
@@ -709,7 +702,6 @@ is used for this purpose. This capability is quite useful combined with
 computer vision filter, as it allows sending events to clients coming
 from video content analysis (e.g. plate recognized, QR code detected,
 face detected, etc.)
-
 ::
 
     @Override
@@ -723,7 +715,6 @@ face detected, etc.)
 Clients can also send messages to the *content session* through this
 channel. Client messages are called commands and are received on handler
 method ``onContentCommand()``
-
 ::
 
     @Override
@@ -759,7 +750,7 @@ The *content session* provides method ``getContentId()`` that returns
 the path info of requested URL’s, assuming the content ID is placed
 there, as shown below:
 
-Content URL : `http://myserver/myApp/myServicePath/{contentId}`
+Content URL: `http://myserver/myApp/myServicePath/{contentId}`
     *myserver*: IP address or name of *Kurento Application Server*
     *myApp*: Application name. Normally is the WAR archive name
     *myServicePath*: Value assigned to ``path`` attribute of service
@@ -778,7 +769,6 @@ Content URL : `http://myserver/myApp/myServicePath/{contentId}`
 If a different content ID strategy, based in a query string parameter or
 the like, is used, the application can directly access requested URL
 through method ``getHttpServletRequest()``
-
 ::
 
     @Override
@@ -815,7 +805,6 @@ so the application must care about how and when resources are released.
 In order to facilitate resource management, the *content session*
 provides a mechanism to attach *MediaElements* to the session lifecycle.
 Method ``releaseOnTerminate()`` can be used for this purpose.
-
 ::
 
     MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
@@ -828,7 +817,6 @@ Method ``releaseOnTerminate()`` can be used for this purpose.
 
 Single elements can be attached to a session lifecycle, but also the
 whole *MediaPipeline*, depending on application needs.
-
 ::
 
     MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
@@ -837,7 +825,6 @@ whole *MediaPipeline*, depending on application needs.
 
 *MediaElements* not attached to the *content session* will remain active
 until an explicit release is performed.
-
 ::
 
     @Override
@@ -852,7 +839,8 @@ until an explicit release is performed.
     }
         
     @Override
-    public void onSessionTerminated(WebRtcContentSession contentSession, int code, String reason) throws Exception {
+    public void onSessionTerminated(WebRtcContentSession contentSession, int code, String reason)
+                    throws Exception {
         player.release();
     }
 
@@ -883,7 +871,6 @@ Following dependency has to be added to ``pom.xml`` in order to use
 The ``MediaPipelineFactory`` is the API entry point. It can be obtained
 from the *content session* when used in conjunction with the ''Content
 API ''.
-
 ::
 
        @Override
@@ -893,7 +880,6 @@ API ''.
 
 In order to use the *Media API* in stand-alone mode the application must
 setup a `Spring framework <http://spring.io/>`__ context.
-
 ::
 
     public static void main(String[] args) {
@@ -931,7 +917,6 @@ configurations.
 
 The ``MediaPipelineFactory`` can now be injected with any of the
 mechanism provided by Spring.
-
 ::
 
     public class MyApplication {
@@ -945,7 +930,6 @@ mechanism provided by Spring.
 A ``MediaPipeline`` object is required to build media services. Method
 ``create()`` can be used in the ``MediaPipelineFactory`` for this
 purpose.
-
 ::
 
     public void init() {
@@ -958,7 +942,6 @@ purpose.
 *MediaElements* within a pipeline can be connected to build services,
 but they are isolated from the rest of the system. This has to be taken
 into account when programming applications.
-
 ::
 
     public void createMediaElements() {
@@ -991,7 +974,6 @@ builder constructor, like the URL in the ``PlayerEndpoint``. Optional
 parameters are set to defaults unless the application overrides their
 values. *MediaElements* can be connected with method ``connect()`` of
 owner ``MediaPipeline``.
-
 ::
 
     public void connectElements() {
@@ -1010,7 +992,6 @@ Method ``connect()`` creates a directional connection between elements
 *source* and *sink* provided as parameters. All output streams of the
 *source* element are connected to the input streams of the *sink*
 element.
-
 ::
 
     public void connectElements() {
@@ -1027,7 +1008,6 @@ element.
 
 In order to create bidirectional connections the application must
 perform a connect operation in both directions.
-
 ::
 
     public void back2back () {
@@ -1049,7 +1029,6 @@ The *Media API* provides an asynchronous interface for those
 applications that cannot afford to block their calls until *KMS*
 responds. The asynchronous interface improves performance at a cost of
 increase in complexity.
-
 ::
 
     private MediaPipeline mp;
@@ -1147,7 +1126,6 @@ application needs and add it to your application project.
 In order to use the *Stream Oriented GE HTML5* SDK the *Content API*
 must activate the control protocol at handler level. Boolean attribute
 ``useControlProtocol`` is used for this purpose.
-
 ::
 
     @HttpPlayerService(path = "/myPlayerService" , useControlProtocol=true)
@@ -1285,9 +1263,7 @@ This handler is deployed in the KAS at the path
 an URL to locate a media stream
 (https://ci.kurento.com/video/fiwarecut.webm) and then *JackVaderFilter*
 puts a pirate hat in the faces of this video.
-
 ::
-
 
     //This annotation configures the platform to deploy a handler on the specified path
     @HttpPlayerService(path = "/playerJsonJackVader")
@@ -1407,7 +1383,6 @@ deployed in the KAS at the path
 URL to locate a media stream
 (https://ci.kurento.com/video/barcodes.webm) and then *ZBarFilter*
 generates media events with the detected codes within the video.
-
 ::
 
     @HttpPlayerService(path = "/playerJsonZBar")
@@ -1465,8 +1440,10 @@ including these libraries located in the ``js`` folder on the web root
 
 .. sourcecode:: xml
 
-    <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <project xmlns="http://maven.apache.org/POM/4.0.0"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                                 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
        <modelVersion>4.0.0</modelVersion>
        <groupId>com.kurento.kmf</groupId>
@@ -1523,7 +1500,9 @@ including these libraries located in the ``js`` folder on the web root
                                <version>${kws-content-api.version}</version>
                                <type>jar</type>
                                <overWrite>true</overWrite>
-                               <outputDirectory>${basedir}/target/${project.artifactId}-${project.version}</outputDirectory>
+                               <outputDirectory>
+                                 ${basedir}/target/${project.artifactId}-${project.version}
+                               </outputDirectory>
                                <includes>**/*.*</includes>
                             </artifactItem>
                          </artifactItems>
