@@ -136,7 +136,8 @@ create a *Kurento* based application:
 
 #. Create a properties file named ``kurento.properties`` including
    following configuration keys:
-   ::
+
+   .. sourcecode:: properties
 
        # Put here the IP address where the KMS process is executing
        # If you launched KMS in the same hosts where you are executing KAS, let it as 127.0.0.1
