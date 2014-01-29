@@ -313,7 +313,7 @@ called *MediaElements*, that live in containers, called *MediaPipeline*,
 are connected together to build multimedia services. There are two main
 *MediaElements* families:
 
--  ***Endpoints***: Endpoints provide transfer capabilities, allowing
+-  **Endpoints**: Endpoints provide transfer capabilities, allowing
    bidirectional communication channels with external systems. Supported
    protocols include muxers, like *WebM* or *MP4* for file operations
    and following streaming protocols: *HTTP*, *RTP* and *WebRTC*.
@@ -325,11 +325,11 @@ The *Stream Oriented GE Kurento* consists of two main software
 components: *Kurento Media Server* (*KMS*) and *Kurento Media Framework*
 (*KMF*)
 
--  ***KMS***: *Kurento Media Server* is a stand-alone server responsible
+-  **KMS**: *Kurento Media Server* is a stand-alone server responsible
    of the media process and delivery. It is the component that hosts
    *Endpoints* and *Filters*.
 
--  ***KMF***: *Kurento Media Framework* is the SDK that enables
+-  **KMF**: *Kurento Media Framework* is the SDK that enables
    applications to control *KMS* features and publish multimedia
    services. *KMF* can be incorporated to web applications hosted by
    *Kurento Application Server* (*KAS*) and provides the following APIs:
@@ -349,11 +349,11 @@ multimedia connections between *KMS* and web applications. Built on top
 of the *JEE Servlet* API, implements a *REST* like interface that
 controls following multimedia services:
 
--  ***HTTP services***: Enables download and upload of multimedia
+-  **HTTP services**: Enables download and upload of multimedia
    contents.
--  ***RTP services***: Allows the setup of bidirectional RTP
+-  **RTP services**: Allows the setup of bidirectional RTP
    connections.
--  ***WebRTC services***: Controls *WebRTC* connections with browsers
+-  **WebRTC services**: Controls *WebRTC* connections with browsers
    and mobile devices implementing the *WebRTC* stack.
 
 It is important to notice that the *Content API* is just a *KMS* control
