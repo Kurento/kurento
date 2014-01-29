@@ -438,6 +438,44 @@ kms_base_rtp_end_point_video_valve_removed (KmsElement * self,
 }
 
 static void
+kms_base_rtp_end_point_stop_signal (KmsBaseRtpEndPoint * self, guint session,
+    guint ssrc)
+{
+  gboolean local = TRUE;
+  KmsMediaType media;
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (ssrc == self->audio_ssrc || ssrc == self->video_ssrc) {
+    local = FALSE;
+
+    if (self->audio_ssrc == ssrc)
+      self->audio_ssrc = 0;
+    else if (self->video_ssrc == ssrc)
+      self->video_ssrc = 0;
+
+    /* TODO: Emit end of session when all srrcs have been closed */
+    self->ssrcs--;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  switch (session) {
+    case AUDIO_SESSION:
+      media = KMS_MEDIA_TYPE_AUDIO;
+      break;
+    case VIDEO_SESSION:
+      media = KMS_MEDIA_TYPE_VIDEO;
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "No media supported for session %u", session);
+      return;
+  }
+
+  g_signal_emit (G_OBJECT (self), obj_signals[MEDIA_STOP], 0, media, local);
+}
+
+static void
 kms_base_rtp_end_point_dispose (GObject * gobject)
 {
   KmsBaseRtpEndPoint *self = KMS_BASE_RTP_END_POINT (gobject);
@@ -450,6 +488,18 @@ kms_base_rtp_end_point_dispose (GObject * gobject)
   if (self->video_payloader != NULL) {
     g_object_unref (self->video_payloader);
     self->video_payloader = NULL;
+  }
+
+  if (self->audio_ssrc != 0) {
+    kms_base_rtp_end_point_stop_signal (self, AUDIO_SESSION, self->audio_ssrc);
+    g_signal_emit (G_OBJECT (self), obj_signals[MEDIA_STOP], 0,
+        KMS_MEDIA_TYPE_AUDIO, TRUE);
+  }
+
+  if (self->video_ssrc != 0) {
+    kms_base_rtp_end_point_stop_signal (self, VIDEO_SESSION, self->video_ssrc);
+    g_signal_emit (G_OBJECT (self), obj_signals[MEDIA_STOP], 0,
+        KMS_MEDIA_TYPE_VIDEO, TRUE);
   }
 
   G_OBJECT_CLASS (kms_base_rtp_end_point_parent_class)->dispose (gobject);
@@ -519,16 +569,40 @@ kms_base_rtp_end_point_rtpbin_on_new_ssrc (GstElement * rtpbin, guint session,
 
   switch (session) {
     case AUDIO_SESSION:
+      if (self->audio_ssrc != 0)
+        break;
+
       self->audio_ssrc = ssrc;
+      self->ssrcs++;
       break;
     case VIDEO_SESSION:
+      if (self->video_ssrc != 0)
+        break;
+
       self->video_ssrc = ssrc;
+      self->ssrcs++;
       break;
     default:
       GST_WARNING_OBJECT (self, "No media supported for session %u", session);
   }
 
   KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
+kms_base_rtp_end_point_rtpbin_on_bye_ssrc (GstElement * rtpbin, guint session,
+    guint ssrc, gpointer user_data)
+{
+  kms_base_rtp_end_point_stop_signal (KMS_BASE_RTP_END_POINT (user_data),
+      session, ssrc);
+}
+
+static void
+kms_base_rtp_end_point_rtpbin_on_bye_timeout (GstElement * rtpbin,
+    guint session, guint ssrc, gpointer user_data)
+{
+  kms_base_rtp_end_point_stop_signal (KMS_BASE_RTP_END_POINT (user_data),
+      session, ssrc);
 }
 
 static void
@@ -564,6 +638,14 @@ kms_base_rtp_end_point_rtpbin_on_ssrc_sdes (GstElement * rtpbin, guint session,
 }
 
 static void
+kms_base_rtp_end_point_rtpbin_on_sender_timeout (GstElement * rtpbin,
+    guint session, guint ssrc, gpointer user_data)
+{
+  kms_base_rtp_end_point_stop_signal (KMS_BASE_RTP_END_POINT (user_data),
+      session, ssrc);
+}
+
+static void
 kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
 {
   base_rtp_end_point->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
@@ -579,6 +661,15 @@ kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
       base_rtp_end_point);
   g_signal_connect (base_rtp_end_point->rtpbin, "on-ssrc-sdes",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_ssrc_sdes),
+      base_rtp_end_point);
+  g_signal_connect (base_rtp_end_point->rtpbin, "on-bye-ssrc",
+      G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_bye_ssrc),
+      base_rtp_end_point);
+  g_signal_connect (base_rtp_end_point->rtpbin, "on-bye-timeout",
+      G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_bye_timeout),
+      base_rtp_end_point);
+  g_signal_connect (base_rtp_end_point->rtpbin, "on-sender-timeout",
+      G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_sender_timeout),
       base_rtp_end_point);
 
   g_object_set (base_rtp_end_point->rtpbin, "do-lost", TRUE, NULL);
