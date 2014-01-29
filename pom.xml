@@ -13,8 +13,8 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies Versions -->
-		<kmf-commons.version>0.0.1-SNAPSHOT</kmf-commons.version>
-		<kmf-spring.version>1.0.2-SNAPSHOT</kmf-spring.version>
+		<kmf-commons.version>3.0.5</kmf-commons.version>
+		<kmf-spring.version>3.0.5</kmf-spring.version>
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<httpclient.version>4.2.5</httpclient.version>
 		<gson.version>2.2.4</gson.version>
@@ -113,6 +113,21 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.4.2</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-provider-gitexe</artifactId>
+						<version>1.8.1</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<pushChanges>false</pushChanges>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>${maven-javadoc-plugin.version}</version>
 				<configuration>
@@ -129,62 +144,11 @@
 		</extensions>
 	</build>
 
-	<repositories>
-
-		<!-- Boot support -->
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>http://repo.spring.io/libs-milestone</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>http://repo.spring.io/libs-snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<!-- __________ -->
-
-		<repository>
-			<id>kurento-snapshots</id>
-			<name>Kurento Snapshot Repository</name>
-			<url>http://repository.kurento.com/archiva/repository/snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>kurento-releases</id>
-			<name>Kurento Repository</name>
-			<url>http://repository.kurento.com/archiva/repository/internal/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<distributionManagement>
-		<repository>
-			<id>releases</id>
-			<name>Kurento releases repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Kurento snapshots repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
+	<scm>
+		<url>https://github.com/Kurento/${project.artifactId}</url>
+		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<tag>develop</tag>
+	</scm>
 
 </project>
