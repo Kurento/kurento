@@ -75,7 +75,7 @@ htmlhelp:
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
 javadoc:
-	- mkdir $(BUILDDIR)/javadoc &&\
+	- mkdir -p $(BUILDDIR)/javadoc &&\
 	  for p in $(APIS); do \
 	      ( cd  $(BUILDDIR)/javadoc && git clone https://github.com/Kurento/$${p}.git && cd $${p} && git checkout develop );\
 	      done
