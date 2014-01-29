@@ -2,6 +2,8 @@
  Developer and Programmer Guide
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+.. highlight:: java
+
 Introduction
 ============
 
@@ -100,7 +102,9 @@ create a *Kurento* based application:
 
 #. Create a *Maven* web project with your favourite IDE. You can use
    following ``pom.xml`` template
-   ::
+
+   .. sourcecode:: xml
+
 
        <?xml version="1.0" encoding="UTF-8"?>
        <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -115,7 +119,8 @@ create a *Kurento* based application:
        </project>
 
 #. Make sure you add *KMF* dependencies to the ``pom.xml`` file
-   ::
+
+   .. sourcecode:: xml
 
        <dependencies>
            ...
@@ -158,8 +163,7 @@ create a *Kurento* based application:
 
 #. Create a *Java* Class that extends ``HttpPlayerHandler`` and add
    annotation ``@PlayerService``. You'll have to implement method
-   ``onContentRequest()`` to set the media resource to be played.
-   ::
+   ``onContentRequest()`` to set the media resource to be played::
 
        import com.kurento.kmf.content.HttpPlayerHandler;
        import com.kurento.kmf.content.HttpPlayerService;
@@ -182,12 +186,10 @@ create a *Kurento* based application:
    ``http://media.w3.org/2010/05/sintel/trailer.webm``
 #. Deploy your project into *JBoss 7* server installed during the basic
    setup and launch it.
-   ::
+
+   .. sourcecode:: bash
 
        sudo cp mykurento.war $JBOSS_HOME/standalone/deployments
-
-   ::
-
        $JBOSS_HOME/bin/standalone.sh
 
 Client side of your first application
@@ -199,7 +201,7 @@ The *Stream Oriented GE Kurento* is designed to work with an old plain
 example, create an HTML file in your local machine containing the code
 shown below and open it with your browser.
 
-::
+.. sourcecode:: html
 
     <video>
         <source src="http://myServer/myApp/playerService" type ="video/webm"/>
@@ -794,7 +796,7 @@ through method ``getHttpServletRequest()``
 Notice you'll have to add the Servlet API dependency to the ``pom.xml``
 before being able to import ``HttpServletRequest`` in your code.
 
-::
+.. sourcecode:: xml
 
     <dependency>
         <groupId>javax.servlet</groupId>
@@ -866,7 +868,7 @@ Application Server*.
 Following dependency has to be added to ``pom.xml`` in order to use
 *Kurento Media API*
 
-::
+.. sourcecode:: xml
 
     <dependencies>
     …
@@ -906,7 +908,7 @@ above) must contain directive
 ``com.kurento.kmf.media.MediaApiConfiguration`` can be added with custom
 configurations.
 
-::
+.. sourcecode:: xml
 
     <beans xmlns=http://www.springframework.org/schema/beans 
                 xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance 
@@ -1109,7 +1111,7 @@ been included into the *Node Package Modules* (*NPM*). For that reason
 it is required the *NPM* dependency management infrastructure to be
 installed.
 
-::
+.. sourcecode:: bash
 
     sudo apt-get install npm
 
@@ -1119,7 +1121,7 @@ code <https://github.com/Kurento/kws-content-api>`__. A `bundle
 file <https://forge.fi-ware.eu/frs/download.php/818/kws-content-api.min.js>`__
 is also available at FI-WARE download page.
 
-::
+.. sourcecode:: bash
 
     git clone https://github.com/Kurento/kws-content-api.git
     cd kws-content-api/src/main/resources
@@ -1131,7 +1133,7 @@ is also available at FI-WARE download page.
 bundles adapted to browser usage. Take the one that better suits to your
 application needs and add it to your application project.
 
-::
+.. sourcecode:: html
 
     <html>
          <head>
@@ -1169,7 +1171,7 @@ The *Stream Oriented GE HTML5* SDK provides the following set of
 Clients above are intended to connect one *Content API service*. The
 constructor must provide the URL of the *service entry point*.
 
-::
+.. sourcecode:: html
 
     <script>
     function play(){
@@ -1200,7 +1202,7 @@ The same *content session* events received in the *service handler* are
 also available on the client side. Listeners are provided for this
 purpose.
 
-::
+.. sourcecode:: html
 
     <html>
         <script>
@@ -1335,7 +1337,7 @@ HTML page must be included in the same WAR than the handler. Thus, in
 order to locate the handler path the JavaScript object ``document.URL``
 is used:
 
-::
+.. sourcecode:: html
 
     <!DOCTYPE html>
     <html>
@@ -1461,7 +1463,7 @@ the JavaScript API is available for web components (e.g. HTML pages) by
 including these libraries located in the ``js`` folder on the web root
 (e.g. ``<script src="./js/kws-content-api.js"></script>``).
 
-.. code:: xml
+.. sourcecode:: xml
 
     <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
