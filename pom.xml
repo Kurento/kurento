@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-media-api</artifactId>
-	<version>2.0.1-1-SNAPSHOT</version>
+	<version>3.0.5</version>
 	<packaging>jar</packaging>
 
 	<name>kmf-media-api</name>
@@ -157,6 +157,6 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
+		<tag>kmf-media-api-3.0.5</tag>
 	</scm>
 </project>
