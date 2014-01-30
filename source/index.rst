@@ -22,7 +22,6 @@ API Documentation
 
    kmf-content-api/packages.rst
    kmf-media-api/packages.rst
-   kms-interface/packages.rst
 
 Indices and tables
 ==================

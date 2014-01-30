@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-APIS          = kmf-media-api kmf-content-api kms-interface
+APIS          = kmf-media-api kmf-content-api
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -81,10 +81,9 @@ javadoc:
 	      done
 	  for p in $(APIS); do \
 	      ( cd $(BUILDDIR)/javadoc/$${p} &&\
-	        echo "Pulling repo $${p}..."; git pull &&\
-	        if [ "$${p}" = "kms-interface" ]; then echo "Generating java for $${p}..."; mvn generate-sources; fi ) &&\
+	        echo "Pulling repo $${p}..."; git pull ) &&\
 	      javasphinx-apidoc -u -T -o source/$${p}\
-	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/${src,target$}/${main,generated-sources$}/${java,thrift$}" \
+	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/src/main/java" \
 	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p} -name internal -print 2>/dev/null);\
 	      done
 
