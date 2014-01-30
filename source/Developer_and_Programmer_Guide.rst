@@ -211,26 +211,23 @@ shown below and open it with your browser.
         <source src="http://myServer/myApp/playerService" type ="video/webm"/>
     </video>
 
-You can read also section `#Programming with the Stream Oriented GE
-HTML5 SDK <#Programming_with_the_Stream_Oriented_GE_HTML5_SDK>`__ to
+You can read also section :ref:`programming-with-kws` to
 find out more sophisticated ways to access media resources.
 
 Next steps
 ~~~~~~~~~~
 
--  Read `#Basic streaming concepts <#Basic_streaming_concepts>`__ in
+-  Read section :ref:`basic-streaming-concepts` in
    order to understand how *Stream Oriented GE Kurento* features can
    help you to build multimedia applications.
--  Review `#Programming with the Stream Oriented GE Java EE Content
-   API <#Programming_with_the_Stream_Oriented_GE_Java_EE_Content_API>`__
-   for a detailed reference on content services.
--  Go to `#Programming with the Stream Oriented GE Java Media
-   API <#Programming_with_the_Stream_Oriented_GE_Java_Media_API>`__ for
-   a detailed explanation about how to achieve full control of *Kurento
-   Media Server*.
--  Review `#Programming with the Stream Oriented GE HTML5
-   SDK <#Programming_with_the_Stream_Oriented_GE_HTML5_SDK>`__ for a
+-  Review :ref:`programming-with-kmf-content-api` for a detailed
+   reference on content services.
+-  Go to :ref:`programming-with-kmf-media-api` for a detailed explanation
+   about how to achieve full control of *Kurento Media Server*.
+-  Review :ref:`programming-with-kws` for a
    detailed reference of capabilities available in browsers.
+
+.. _basic-streaming-concepts:
 
 Basic streaming concepts
 ------------------------
@@ -340,6 +337,8 @@ components: *Kurento Media Server* (*KMS*) and *Kurento Media Framework*
       elements. It is normally used in conjunction with *Content API*.
    -  *HTML5 SDK*: Javascript SDK intended to provide better control of
       media reproduction in web applications.
+
+.. _programming-with-kmf-content-api:
 
 Programming with the Stream Oriented GE Java EE Content API
 -----------------------------------------------------------
@@ -845,6 +844,8 @@ until an explicit release is performed.
         player.release();
     }
 
+.. _programming-with-kmf-media-api:
+
 Programming with the Stream Oriented GE Java Media API
 ------------------------------------------------------
 
@@ -1080,6 +1081,8 @@ increase in complexity.
             mp.connect(player, http);
         }
     }
+
+.. _programming-with-kws:
 
 Programming with the Stream Oriented GE HTML5 SDK
 -------------------------------------------------
