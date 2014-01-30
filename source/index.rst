@@ -1,7 +1,6 @@
 .. Kurento documentation master file, created by
    sphinx-quickstart on Tue Jan 14 14:48:49 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+   We use this index to generate html and epub docs.
 
 Welcome to Kurento's documentation!
 ===================================
@@ -21,6 +20,7 @@ API Documentation
    :maxdepth: 2
 
    kmf-content-api/packages.rst
+   kmf-repository-api/packages.rst
    kmf-media-api/packages.rst
 
 Indices and tables

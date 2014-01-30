@@ -1,5 +1,3 @@
 *~
 build
-source/kmf-media-api/com
-source/kmf-content-api/com
-source/kms-interface/com
+source/*/com

@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-APIS          = kmf-media-api kmf-content-api
+APIS          = kmf-media-api kmf-content-api kmf-repository-api
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4

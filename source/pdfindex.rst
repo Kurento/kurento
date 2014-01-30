@@ -20,4 +20,5 @@ API Documentation
    :maxdepth: 2
 
    kmf-content-api/packages.rst
+   kmf-repository-api/packages.rst
    kmf-media-api/packages.rst
