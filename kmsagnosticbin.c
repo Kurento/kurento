@@ -230,9 +230,9 @@ sink_block (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
     g_mutex_lock (&self->priv->probe_mutex);
 
     while (self->priv->block_probe) {
-      GST_INFO_OBJECT (pad, "Holding a buffer");
+      GST_DEBUG_OBJECT (pad, "Holding a buffer");
       g_cond_wait (&self->priv->probe_cond, &self->priv->probe_mutex);
-      GST_INFO_OBJECT (pad, "Released");
+      GST_DEBUG_OBJECT (pad, "Released");
     }
 
     g_mutex_unlock (&self->priv->probe_mutex);
@@ -617,7 +617,7 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
   GstCaps *caps;
   GstElement *tee;
 
-  GST_DEBUG_OBJECT (self, "Linking: %" GST_PTR_FORMAT, pad);
+  GST_INFO_OBJECT (self, "Linking: %" GST_PTR_FORMAT, pad);
 
   caps = gst_pad_query_caps (peer, NULL);
 
@@ -791,7 +791,7 @@ set_input_caps (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
   GstEvent *event = gst_pad_probe_info_get_event (info);
   GstCaps *current_caps;
 
-  GST_ERROR_OBJECT (self, "Event in parser pad: %" GST_PTR_FORMAT, event);
+  GST_TRACE_OBJECT (self, "Event in parser pad: %" GST_PTR_FORMAT, event);
 
   if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
     return GST_PAD_PROBE_OK;
@@ -838,7 +838,6 @@ kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
   g_hash_table_remove_all (self->priv->tees);
 
   parser_src = gst_element_get_static_pad (parser, "src");
-  GST_INFO_OBJECT (self, "Adding probe to %" GST_PTR_FORMAT, parser_src);
   gst_pad_add_probe (parser_src, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       set_input_caps, g_object_ref (tee), g_object_unref);
   g_object_unref (parser_src);
@@ -921,7 +920,7 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
   if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
     KmsAgnosticBin2 *self = user_data;
 
-    GST_INFO_OBJECT (pad, "Received reconfigure event");
+    GST_DEBUG_OBJECT (pad, "Received reconfigure event");
     kms_agnostic_bin2_add_pad_to_queue (self, pad);
     return GST_PAD_PROBE_DROP;
   }
