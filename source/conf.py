@@ -293,6 +293,6 @@ epub_copyright = u'2014, kurento'
 # For javasphinx search
 javadoc_url_map = {
     'javax.servlet': ('http://tomcat.apache.org/tomcat-7.0-doc/servletapi', 'javadoc'),
-#    'com.kurento.kmf.media': ('kmf-media', 'javadoc'),
-#    'com.kurento.kmf.content':('kmf-content', 'javadoc'),
+    'com.kurento.kmf.media': ('kmf-media-api', 'sphinx'),
+    'com.kurento.kmf.content':('kmf-content-api', 'sphinx'),
 }
