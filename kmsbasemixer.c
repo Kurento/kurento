@@ -310,6 +310,8 @@ kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
   target = gst_element_get_static_pad (internal_element, pad_name);
   if (target == NULL) {
     target = gst_element_get_request_pad (internal_element, pad_name);
+    // TODO: In this case we should remove the pad when it is unlinked (ie, the
+    // targed is changed)
   }
 
   if (target == NULL) {
@@ -536,10 +538,9 @@ kms_base_mixer_dispose (GObject * object)
 {
   KmsBaseMixer *self = KMS_BASE_MIXER (object);
 
-  if (self->priv->ports != NULL) {
-    g_hash_table_unref (self->priv->ports);
-    self->priv->ports = NULL;
-  }
+  KMS_BASE_MIXER_LOCK (self);
+  g_hash_table_remove_all (self->priv->ports);
+  KMS_BASE_MIXER_UNLOCK (self);
 
   G_OBJECT_CLASS (kms_base_mixer_parent_class)->dispose (object);
 }
@@ -550,6 +551,11 @@ kms_base_mixer_finalize (GObject * object)
   KmsBaseMixer *self = KMS_BASE_MIXER (object);
 
   g_rec_mutex_clear (&self->priv->mutex);
+
+  if (self->priv->ports != NULL) {
+    g_hash_table_unref (self->priv->ports);
+    self->priv->ports = NULL;
+  }
 
   G_OBJECT_CLASS (kms_base_mixer_parent_class)->finalize (object);
 }
