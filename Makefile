@@ -77,15 +77,17 @@ htmlhelp:
 javadoc:
 	- mkdir -p $(BUILDDIR)/javadoc &&\
 	  for p in $(APIS); do \
-	      ( cd  $(BUILDDIR)/javadoc && git clone https://github.com/Kurento/$${p}.git && cd $${p} && git checkout develop );\
+	      ( cd  $(BUILDDIR)/javadoc && git clone https://github.com/Kurento/$${p}.git );\
 	      done
-	  for p in $(APIS); do \
+	  for p in $(APIS); do {\
+	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
+	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
 	      ( cd $(BUILDDIR)/javadoc/$${p} &&\
-	        echo "Pulling repo $${p}..."; git pull ) &&\
+	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" ) &&\
 	      javasphinx-apidoc -u -T -o source/$${p}\
 	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/src/main/java" \
 	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p} -name internal -print 2>/dev/null);\
-	      done
+	      } done
 
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
