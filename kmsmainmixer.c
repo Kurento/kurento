@@ -45,8 +45,19 @@ GST_DEBUG_CATEGORY_STATIC (kms_main_mixer_debug_category);
 struct _KmsMainMixerPrivate
 {
   GRecMutex mutex;
+  GHashTable *ports;
 
   gint main_port;
+};
+
+typedef struct _KmsMainMixerPortData KmsMainMixerPortData;
+
+struct _KmsMainMixerPortData
+{
+  KmsMainMixer *mixer;
+  gint id;
+  GstElement *audio_agnostic;
+  GstElement *video_agnostic;
 };
 
 enum
@@ -62,9 +73,72 @@ G_DEFINE_TYPE_WITH_CODE (KmsMainMixer, kms_main_mixer,
     GST_DEBUG_CATEGORY_INIT (kms_main_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for mainmixer element"));
 
+static KmsMainMixerPortData *
+kms_main_mixer_port_data_create (KmsMainMixer * mixer, gint id)
+{
+  KmsMainMixerPortData *data = g_slice_new0 (KmsMainMixerPortData);
+
+  data->mixer = mixer;
+  data->audio_agnostic = gst_element_factory_make ("agnosticbin", NULL);
+  data->video_agnostic = gst_element_factory_make ("agnosticbin", NULL);
+  data->id = id;
+
+  gst_bin_add_many (GST_BIN (mixer), g_object_ref (data->audio_agnostic),
+      g_object_ref (data->video_agnostic), NULL);
+  gst_element_sync_state_with_parent (data->audio_agnostic);
+  gst_element_sync_state_with_parent (data->video_agnostic);
+
+  kms_base_mixer_link_video_sink (KMS_BASE_MIXER (mixer), id,
+      data->video_agnostic, "sink");
+  kms_base_mixer_link_audio_sink (KMS_BASE_MIXER (mixer), id,
+      data->audio_agnostic, "src");
+
+  return data;
+}
+
+static void
+kms_main_mixer_port_data_destroy (gpointer data)
+{
+  KmsMainMixerPortData *port_data = (KmsMainMixerPortData *) data;
+  KmsMainMixer *self = port_data->mixer;
+
+  KMS_MAIN_MIXER_LOCK (self);
+  gst_bin_remove_many (GST_BIN (self), port_data->audio_agnostic,
+      port_data->video_agnostic, NULL);
+  KMS_MAIN_MIXER_UNLOCK (self);
+
+  g_clear_object (&port_data->audio_agnostic);
+  g_clear_object (&port_data->video_agnostic);
+
+  g_slice_free (KmsMainMixerPortData, data);
+}
+
+static void
+release_gint (gpointer data)
+{
+  g_slice_free (gint, data);
+}
+
+static gint *
+create_gint (gint value)
+{
+  gint *p = g_slice_new (gint);
+
+  *p = value;
+  return p;
+}
+
 static void
 kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 {
+  KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
+
+  // TODO: Unlink port and check if it main
+
+  KMS_MAIN_MIXER_LOCK (self);
+  g_hash_table_remove (self->priv->ports, &id);
+  KMS_MAIN_MIXER_UNLOCK (self);
+
   KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
       (kms_main_mixer_parent_class))->unhandle_port (mixer, id);
 }
@@ -72,9 +146,26 @@ kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 static gint
 kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 {
-  return
-      KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
+  KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
+  KmsMainMixerPortData *port_data;
+  gint port_id;
+
+  port_id = KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
       (kms_main_mixer_parent_class))->handle_port (mixer, mixer_end_point);
+
+  if (port_id < 0)
+    return port_id;
+
+  port_data = kms_main_mixer_port_data_create (self, port_id);
+
+  KMS_MAIN_MIXER_LOCK (self);
+  g_hash_table_insert (self->priv->ports, create_gint (port_id), port_data);
+
+  KMS_MAIN_MIXER_UNLOCK (self);
+
+  // TODO: Link port with main
+
+  return port_id;
 }
 
 static void
@@ -118,6 +209,12 @@ kms_main_mixer_get_property (GObject * object, guint property_id,
 static void
 kms_main_mixer_dispose (GObject * object)
 {
+  KmsMainMixer *self = KMS_MAIN_MIXER (object);
+
+  KMS_MAIN_MIXER_LOCK (self);
+  g_hash_table_remove_all (self->priv->ports);
+  KMS_MAIN_MIXER_UNLOCK (self);
+
   G_OBJECT_CLASS (kms_main_mixer_parent_class)->dispose (object);
 }
 
@@ -127,6 +224,11 @@ kms_main_mixer_finalize (GObject * object)
   KmsMainMixer *self = KMS_MAIN_MIXER (object);
 
   g_rec_mutex_clear (&self->priv->mutex);
+
+  if (self->priv->ports != NULL) {
+    g_hash_table_unref (self->priv->ports);
+    self->priv->ports = NULL;
+  }
 
   G_OBJECT_CLASS (kms_main_mixer_parent_class)->finalize (object);
 }
@@ -167,6 +269,8 @@ kms_main_mixer_init (KmsMainMixer * self)
   self->priv = KMS_MAIN_MIXER_GET_PRIVATE (self);
 
   g_rec_mutex_init (&self->priv->mutex);
+  self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
+      release_gint, kms_main_mixer_port_data_destroy);
 
   self->priv->main_port = -1;
 }
