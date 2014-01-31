@@ -40,11 +40,19 @@ GST_DEBUG_CATEGORY_STATIC (kms_main_mixer_debug_category);
   )                                             \
 )
 
+#define MAIN_PORT_DEFAULT (-1)
+
 struct _KmsMainMixerPrivate
 {
   GRecMutex mutex;
 
   gint main_port;
+};
+
+enum
+{
+  PROP_0,
+  PROP_MAIN_PORT
 };
 
 /* class initialization */
@@ -67,6 +75,44 @@ kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
   return
       KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
       (kms_main_mixer_parent_class))->handle_port (mixer, mixer_end_point);
+}
+
+static void
+kms_main_mixer_set_property (GObject * object, guint property_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  KmsMainMixer *self = KMS_MAIN_MIXER (object);
+
+  KMS_MAIN_MIXER_LOCK (self);
+  switch (property_id) {
+    case PROP_MAIN_PORT:
+      self->priv->main_port = g_value_get_int (value);
+      // TODO: Change internal connections
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_MAIN_MIXER_UNLOCK (self);
+}
+
+static void
+kms_main_mixer_get_property (GObject * object, guint property_id,
+    GValue * value, GParamSpec * pspec)
+{
+  KmsMainMixer *self = KMS_MAIN_MIXER (object);
+
+  KMS_MAIN_MIXER_LOCK (self);
+  switch (property_id) {
+    case PROP_MAIN_PORT:
+      g_value_set_int (value, self->priv->main_port);
+      // TODO: Change internal connections
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
+  KMS_MAIN_MIXER_UNLOCK (self);
 }
 
 static void
@@ -97,11 +143,19 @@ kms_main_mixer_class_init (KmsMainMixerClass * klass)
 
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_main_mixer_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_main_mixer_finalize);
+  gobject_class->get_property = GST_DEBUG_FUNCPTR (kms_main_mixer_get_property);
+  gobject_class->set_property = GST_DEBUG_FUNCPTR (kms_main_mixer_set_property);
 
   base_mixer_class->handle_port =
       GST_DEBUG_FUNCPTR (kms_main_mixer_handle_port);
   base_mixer_class->unhandle_port =
       GST_DEBUG_FUNCPTR (kms_main_mixer_unhandle_port);
+
+  g_object_class_install_property (gobject_class, PROP_MAIN_PORT,
+      g_param_spec_int ("main",
+          "Selected main port",
+          "The selected main port, -1 indicates none.", -1, G_MAXINT,
+          MAIN_PORT_DEFAULT, G_PARAM_READWRITE));
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsMainMixerPrivate));
