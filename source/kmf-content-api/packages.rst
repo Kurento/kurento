@@ -1,8 +1,8 @@
 Kurento Content API Documentation
 =================================
 
-The Kurento Content Api is a Java EE layer which consumes the
-:doc:`Kurento Media API  </kmf-media-api/packages>` and exposes its capabilities
+The Kurento Content API (`javadoc <../_static/index.html?com/kurento/kmf/content/package-summary.html>`__)
+is a Java EE layer which consumes the :doc:`Kurento Media API  </kmf-media-api/packages>` and exposes its capabilities
 through a simple modularity based on two types of objects: :java:type:`ContentHandlers <ContentHandler>`
 and :java:type:`ContentSessions <ContentSession>`.
 
@@ -17,6 +17,14 @@ to react to signaling messages received from the client and to execute the appro
 application logic (e.g. authenticate, connect to a database, execute a web service, use
 the :doc:`Media API </kmf-media-api/packages>`, etc.) at the appropriate instants.
 Content API developers require a Java EE compatible Application Server.
+
+Javadoc
+-------
+
+`Javadoc of the Kurento Content API <../_static/index.html?com/kurento/kmf/content/package-summary.html>`__ classes.
+
+API Classes
+-----------
 
 .. toctree::
    :maxdepth: 2

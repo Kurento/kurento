@@ -1,7 +1,7 @@
 Kurento Media API Documentation
 ===============================
 
-The :doc:`KMF Media API </kmf-media-api/packages>`
+The :doc:`KMF Media API </kmf-media-api/packages>` (`javadoc <../_static/index.html?com/kurento/kmf/media/package-summary.html>`__)
 is a Java API exposing a toolbox of Media Elements that
 can be chained for creating complex multimedia processing pipelines.
 The abstraction and modularity of the Media API makes possible for
@@ -34,6 +34,13 @@ The main java objects in the API are:
 The different capabilities of the Kurento Media Server are exposed typically as `Filters` or `EndPoints`
 in the Media API.
 
+Javadoc
+-------
+
+`Javadoc of the Kurento Media API  <../_static/index.html?com/kurento/kmf/repository/package-summary.html>`__ classes.
+
+API Classes
+-----------
 
 .. toctree::
    :maxdepth: 2

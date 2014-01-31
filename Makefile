@@ -42,6 +42,7 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)/*
 	for p in $(APIS); do rm -rf source/$$p/com; done
+	-rm -rf source/javadoc
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -88,6 +89,7 @@ javadoc:
 	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/src/main/java" \
 	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p} -name internal -print 2>/dev/null);\
 	      } done
+		  javadoc -d source/javadoc -sourcepath $$(echo $(BUILDDIR)/javadoc/k*/src/main/java | sed -e "s@ @:@g") com.kurento.kmf.media com.kurento.kmf.media.events com.kurento.kmf.media.params com.kurento.kmf.content com.kurento.kmf.repository
 
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
