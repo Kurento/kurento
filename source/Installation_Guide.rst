@@ -542,38 +542,42 @@ Under the above circumstances, the "top" command showed the following
 results in the hardware described below:
 
 
-==================== =========================== ============
-Machine Info         KAS                         KMS
-==================== =========================== ============
-    Machine Type     Virtual Machine             Physical Machine
--------------------- --------------------------- ------------
-        CPU          1 Intel Core 2 Duo @ 2,4Ghz Intel(R) Xeon(R) CPU E5-2620 0 @ 2GHz
-        RAM          4GB                         4GB
-        HDD          250GB                       10GB
-  Operating System   Mac OS X 10.6.8             Ubuntu 13.10
-==================== =========================== ============
+.. table:: Machines used for performance testing
 
-KAS showed the following results:
+    ==================== =========================== ============
+    Machine Info         KAS                         KMS
+    ==================== =========================== ============
+        Machine Type     Virtual Machine             Physical Machine
+    -------------------- --------------------------- ------------
+            CPU          1 Intel Core 2 Duo @ 2,4Ghz Intel(R) Xeon(R) CPU E5-2620 0 @ 2GHz
+            RAM          4GB                         4GB
+            HDD          250GB                       10GB
+      Operating System   Mac OS X 10.6.8             Ubuntu 13.10
+    ==================== =========================== ============
 
-======== ============ ============
-KAS      Low Usage    Heavy Usage
-======== ============ ============
-RAM      96MB         200,6MB
--------- ------------ ------------
-CPU      0.2%         44.9%
-I/O HDD	 1.44GB       1.69GB
-======== ============ ============
 
-KMS gave the following result:
+.. table:: Resource usage of Kurento Application Server
 
-======== ============ ============
-KMS      Low Usage    Heavy Usage
-======== ============ ============
-RAM      122.88MB     1.56GB
--------- ------------ ------------
-CPU      0.3%         34.6%
-I/O HDD	 1.18GB	      2.47GB
-======== ============ ============
+    ======== ============ ============
+    KAS      Low Usage    Heavy Usage
+    ======== ============ ============
+    RAM      96MB         200,6MB
+    -------- ------------ ------------
+    CPU      0.2%         44.9%
+    I/O HDD	 1.44GB       1.69GB
+    ======== ============ ============
+
+
+.. table:: Resource usage of Kurento Media Server
+
+    ======== ============ ============
+    KMS      Low Usage    Heavy Usage
+    ======== ============ ============
+    RAM      122.88MB     1.56GB
+    -------- ------------ ------------
+    CPU      0.3%         34.6%
+    I/O HDD	 1.18GB	      2.47GB
+    ======== ============ ============
 
 I/O flows
 ---------

@@ -18,6 +18,10 @@ table {
   border-spacing: 0px;
 }
 
+caption {
+  margin-top: 2em;
+}
+
 body {
   font-family: {{ theme_bodyfont }};
   line-height: 1.2em;
