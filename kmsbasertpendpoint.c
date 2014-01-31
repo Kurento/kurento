@@ -453,9 +453,6 @@ kms_base_rtp_end_point_stop_signal (KmsBaseRtpEndPoint * self, guint session,
       self->audio_ssrc = 0;
     else if (self->video_ssrc == ssrc)
       self->video_ssrc = 0;
-
-    /* TODO: Emit end of session when all srrcs have been closed */
-    self->ssrcs--;
   }
 
   KMS_ELEMENT_UNLOCK (self);
@@ -573,14 +570,12 @@ kms_base_rtp_end_point_rtpbin_on_new_ssrc (GstElement * rtpbin, guint session,
         break;
 
       self->audio_ssrc = ssrc;
-      self->ssrcs++;
       break;
     case VIDEO_SESSION:
       if (self->video_ssrc != 0)
         break;
 
       self->video_ssrc = ssrc;
-      self->ssrcs++;
       break;
     default:
       GST_WARNING_OBJECT (self, "No media supported for session %u", session);

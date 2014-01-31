@@ -54,7 +54,6 @@ struct _KmsBaseRtpEndPoint
 
   guint audio_ssrc;
   guint video_ssrc;
-  guint ssrcs;
 
   gboolean negotiated;
 };
