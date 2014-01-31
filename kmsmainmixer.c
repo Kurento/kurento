@@ -40,7 +40,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_main_mixer_debug_category);
   )                                             \
 )
 
-#define MAIN_PORT_DEFAULT (-1)
+#define MAIN_PORT_NONE (-1)
 
 struct _KmsMainMixerPrivate
 {
@@ -133,9 +133,12 @@ kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 {
   KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
 
-  // TODO: Unlink port and check if it main
-
   KMS_MAIN_MIXER_LOCK (self);
+
+  if (self->priv->main_port == id) {
+    self->priv->main_port = MAIN_PORT_NONE;
+  }
+
   g_hash_table_remove (self->priv->ports, &id);
   KMS_MAIN_MIXER_UNLOCK (self);
 
@@ -277,7 +280,7 @@ kms_main_mixer_class_init (KmsMainMixerClass * klass)
       g_param_spec_int ("main",
           "Selected main port",
           "The selected main port, -1 indicates none.", -1, G_MAXINT,
-          MAIN_PORT_DEFAULT, G_PARAM_READWRITE));
+          MAIN_PORT_NONE, G_PARAM_READWRITE));
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsMainMixerPrivate));
