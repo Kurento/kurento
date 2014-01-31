@@ -143,6 +143,26 @@ kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
       (kms_main_mixer_parent_class))->unhandle_port (mixer, id);
 }
 
+static void
+kms_main_mixer_link_port (KmsMainMixer * self, gint to)
+{
+  KmsMainMixerPortData *port_data;
+
+  KMS_MAIN_MIXER_LOCK (self);
+  if (self->priv->main_port >= 0)
+    goto end;
+
+  port_data = g_hash_table_lookup (self->priv->ports, &self->priv->main_port);
+  kms_base_mixer_link_audio_src (KMS_BASE_MIXER (self), to,
+      port_data->audio_agnostic, "src_%u");
+  kms_base_mixer_link_video_src (KMS_BASE_MIXER (self), to,
+      port_data->video_agnostic, "src_%u");
+
+end:
+
+  KMS_MAIN_MIXER_UNLOCK (self);
+}
+
 static gint
 kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 {
@@ -161,9 +181,9 @@ kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
   KMS_MAIN_MIXER_LOCK (self);
   g_hash_table_insert (self->priv->ports, create_gint (port_id), port_data);
 
-  KMS_MAIN_MIXER_UNLOCK (self);
+  kms_main_mixer_link_port (self, port_id);
 
-  // TODO: Link port with main
+  KMS_MAIN_MIXER_UNLOCK (self);
 
   return port_id;
 }
