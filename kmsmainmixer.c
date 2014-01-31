@@ -192,6 +192,31 @@ kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
 }
 
 static void
+kms_main_mixer_change_main_port_it (gpointer key, gpointer value, gpointer data)
+{
+  KmsMainMixerPortData *port_data = value;
+
+  kms_main_mixer_link_port (port_data->mixer, port_data->id);
+}
+
+static void
+kms_main_mixer_change_main_port (KmsMainMixer * self)
+{
+  KMS_MAIN_MIXER_LOCK (self);
+
+  if (self->priv->main_port <= -1) {
+    // TODO: Unlink all ports
+    goto end;
+  }
+
+  g_hash_table_foreach (self->priv->ports,
+      kms_main_mixer_change_main_port_it, NULL);
+
+end:
+  KMS_MAIN_MIXER_UNLOCK (self);
+}
+
+static void
 kms_main_mixer_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -201,7 +226,8 @@ kms_main_mixer_set_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_MAIN_PORT:
       self->priv->main_port = g_value_get_int (value);
-      // TODO: Change internal connections
+      kms_main_mixer_change_main_port (self);
+
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -220,7 +246,6 @@ kms_main_mixer_get_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_MAIN_PORT:
       g_value_set_int (value, self->priv->main_port);
-      // TODO: Change internal connections
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
