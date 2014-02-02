@@ -166,211 +166,221 @@ The Content API is exposed in the form of four services: *HttpPlayer*,
 *HttpRecorder*, *RtpContent* and *WebRtcContent* described in the
 following subsections.
 
-HttpPlayer
-~~~~~~~~~~
+HttpPlayer Service
+~~~~~~~~~~~~~~~~~~
 
 This service allows requesting a content to be retrieved from a Media
 Server using HTTP pseudostreaming.
 
-+------------+----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **Verb**   | **URI**                                            | **Description**                                                                                                                                                                                    |
-+============+====================================================+====================================================================================================================================================================================================+
-| **POST**   | */{CONTEXT-ROOT}/{APP\_LOGIC\_PATH}/{ContentID}*   | Performs an RPC call regarding *{ContentID}*. The *Request object* is processed by the *HttpPlayer* application handler tied to *{APP\_LOGIC\_PATH}* in the *{CONTEXT-ROOT}* of the application.   |
-+------------+----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+.. table:: HttpPlayer service
 
-The *Request object* (body of the HTTP request) can contain one of these
-four methods: *start*, *poll*, *execute*, and *terminate*.
+    =============== ==================================================
+    **Verb**        POST
+    =============== ==================================================
+    **URI**         ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    --------------- --------------------------------------------------
+    **Description** Performs an RPC call regarding ``{ContentID}``.
+                    The *Request object* is processed by the
+                    *HttpPlayer* application handler tied to
+                    ``{APP_LOGIC_PATH}`` in the ``{CONTEXT-ROOT}``
+                    of the application.  The *Request object* (body
+                    of the HTTP request) can contain one of these
+                    four methods: ``start``, ``poll``,
+                    ``execute``, and ``terminate``.
+    =============== ==================================================
 
-start
-^^^^^
+Methods of the HttpPlayer service
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Requests the retrieval of the content. The parameter *constraints*
-indicates the kind of media (audio or/and video) to be received. In the
-case of *HttpPlayer*, the values for these constraints for audio and
-video should be *recvonly*. The following example shows a *Request
-object* requesting to receive audio and video::
+    ``start(constraints)``
+        Requests the retrieval of the content. The parameter *constraints*
+        indicates the kind of media (audio or/and video) to be received. In the
+        case of *HttpPlayer*, the values for these constraints for audio and
+        video should be *recvonly*. The following example shows a *Request
+        object* requesting to receive audio and video::
 
-    {
-      "jsonrpc": "2.0",
-      "method": "start",
-      "params": 
-      {
-        "constraints": 
-        {
-          "audio": "recvonly", 
-          "video": "recvonly"
-        }
-      },
-      "id": 1
-    }
-
-The *Response object* contains a *sessionId* to identify the session and
-the actual URL to retrieve the content from::
-
-    {
-      "jsonrpc": "2.0",
-      "result": 
-      {
-        "sessionId": 1234, 
-        "url": "http://mediaserver/a13e9469-fec1-4eee-b40c-8cd90d5fc155"
-      },
-      "id": 1
-    }
-
-
-poll
-^^^^
-
-This method allows emulating *push events* coming from the server by
-using a technique kown as *long polling*. With long polling, the client
-requests information from the server in a way similar to a normal
-polling; however, if the server does not have any information available
-for the client, instead of sending an empty response, it holds the
-request and waits for information to become available until a timeout is
-expired. If the timeout is expired before any information has become
-available the server sends an empty response and the client re-issues a
-new poll request. If, on the contrary, some information is available,
-the server pushes that information to the client and then the client
-re-issues a new poll request to restart the process.
-
-The *params* includes an object with only a *sessionId* attribute
-containing the ID for this session::
-
-    {
-      "jsonrpc": "2.0",
-      "method": "poll",
-      "params":
-      {
-        "sessionId": 1234
-      },
-      "id": 1
-    }
-
-The *Response object* has a *contentEvents* attribute containing an
-array with the latest MediaEvents, and a *controlEvents* attribute
-containing an array with the latest control events for this session, or
-an empty object if none was generated. Each control event can has an
-optional data attribute containing an object with a *code* and a
-*message* attributes::
-
-    {
-      "jsonrpc": "2.0",
-      "result":
-      {
-        "contentEvents":
-        [
-          {"type": "typeOfEvent1",
-           "data": "dataOfEvent1"},
-          {"type": "typeOfEvent2",
-           "data": "dataOfEvent2"}
-        ],
-        "controlEvents":
-        [
-          {
-            "type": "typeOfEvent1",
-            "data":
             {
-              "code": 1,
-              "message": "license plate" 
+              "jsonrpc": "2.0",
+              "method": "start",
+              "params": 
+              {
+                "constraints": 
+                {
+                  "audio": "recvonly", 
+                  "video": "recvonly"
+                }
+              },
+              "id": 1
             }
-          }
-        ]
-      },
-      "id": 1
-    }
 
-execute
-^^^^^^^
+        The *Response object* contains a *sessionId* to identify the session and
+        the actual URL to retrieve the content from::
 
-Exec a command on the server. The *param* object has a *sessionId*
-attribute containing the ID for this session, and a *command* object
-with a *type* string attribute for the command type and a *data*
-attribute for the command specific parameters.
+            {
+              "jsonrpc": "2.0",
+              "result": 
+              {
+                "sessionId": 1234, 
+                "url": "http://mediaserver/a13e9469-fec1-4eee-b40c-8cd90d5fc155"
+              },
+              "id": 1
+            }
+    ``poll(sessionId)``
+        This method allows emulating *push events* coming from the server by
+        using a technique kown as *long polling*. With long polling, the client
+        requests information from the server in a way similar to a normal
+        polling; however, if the server does not have any information available
+        for the client, instead of sending an empty response, it holds the
+        request and waits for information to become available until a timeout is
+        expired. If the timeout is expired before any information has become
+        available the server sends an empty response and the client re-issues a
+        new poll request. If, on the contrary, some information is available,
+        the server pushes that information to the client and then the client
+        re-issues a new poll request to restart the process.
 
-::
+        The *params* includes an object with only a *sessionId* attribute
+        containing the ID for this session::
 
-    {
-      "jsonrpc": "2.0",
-      "method": "execute",
-      "params":
-      {
-        "sessionId": 1234,
-        "command":
-        {
-          "type": "commandType",
-          "data": ["the", "user", "defined", "command", "parameters"]
-        }
-      },
-      "id": 1
-    }
+            {
+              "jsonrpc": "2.0",
+              "method": "poll",
+              "params":
+              {
+                "sessionId": 1234
+              },
+              "id": 1
+            }
 
-The *Response object* is an object with only a *commandResult* attribute
-containing a string with the command results.
+        The *Response object* has a *contentEvents* attribute containing an
+        array with the latest MediaEvents, and a *controlEvents* attribute
+        containing an array with the latest control events for this session, or
+        an empty object if none was generated. Each control event can has an
+        optional data attribute containing an object with a *code* and a
+        *message* attributes::
 
-::
+            {
+              "jsonrpc": "2.0",
+              "result":
+              {
+                "contentEvents":
+                [
+                  {"type": "typeOfEvent1",
+                   "data": "dataOfEvent1"},
+                  {"type": "typeOfEvent2",
+                   "data": "dataOfEvent2"}
+                ],
+                "controlEvents":
+                [
+                  {
+                    "type": "typeOfEvent1",
+                    "data":
+                    {
+                      "code": 1,
+                      "message": "license plate" 
+                    }
+                  }
+                ]
+              },
+              "id": 1
+            }
+    ``execute(sessionId)``
+        Exec a command on the server. The *param* object has a *sessionId*
+        attribute containing the ID for this session, and a *command* object
+        with a *type* string attribute for the command type and a *data*
+        attribute for the command specific parameters.
 
-    {
-      "jsonrpc": "2.0",
-      "result":
-      {
-        "commandResult": "Everything has gone allright" 
-      },
-      "id": 1
-    }
+        ::
 
-terminate
-^^^^^^^^^
+            {
+              "jsonrpc": "2.0",
+              "method": "execute",
+              "params":
+              {
+                "sessionId": 1234,
+                "command":
+                {
+                  "type": "commandType",
+                  "data": ["the", "user", "defined", "command", "parameters"]
+                }
+              },
+              "id": 1
+            }
 
-Requests the termination of the session identified by *sessionId* so the
-server can release the resources assigned to it:
+        The *Response object* is an object with only a *commandResult* attribute
+        containing a string with the command results.
 
-::
+        ::
 
-    {
-      "jsonrpc": "2.0",
-      "method": "terminate",
-      "params":
-      {
-        "sessionId": 1234,
-        "reason":
-        {
-          "code": 1,
-          "message": "User ended session" 
-        }
-      }
-    }
+            {
+              "jsonrpc": "2.0",
+              "result":
+              {
+                "commandResult": "Everything has gone allright" 
+              },
+              "id": 1
+            }
+    ``terminate(sessionId)``
+        Requests the termination of the session identified by *sessionId* so the
+        server can release the resources assigned to it:
 
-The *Response object* is an empty object:
+        ::
 
-::
+            {
+              "jsonrpc": "2.0",
+              "method": "terminate",
+              "params":
+              {
+                "sessionId": 1234,
+                "reason":
+                {
+                  "code": 1,
+                  "message": "User ended session" 
+                }
+              }
+            }
 
-    {
-      "jsonrpc": "2.0",
-      "result": {},
-      "id": 2
-    }
+        The *Response object* is an empty object:
+
+        ::
+
+            {
+              "jsonrpc": "2.0",
+              "result": {},
+              "id": 2
+            }
 
 Simplified alternative approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The *HttpPlayer* service just described is consistent with the rest of
 APIs defined in the Stream Oriented GE. However, it is recommended to
-also expose a simpler API as described here not requiring the use of
+also expose an extra, simpler API, not requiring the use of
 JSON.
 
-+------------+----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
-| **Verb**   | **URI**                                            | **Description**                                                                                                                                    |
-+============+====================================================+====================================================================================================================================================+
-| **GET**    | */{CONTEXT-ROOT}/{APP\_LOGIC\_PATH}/{ContentID}*   | Requests *{ContentID}* to be served according to the application handler tied to *{APP\_LOGIC\_PATH}* in the *{CONTEXT-ROOT}* of the application   |
-+------------+----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------+
+.. table:: **Simplified HttpPlayer GET request**
 
-Successful Response Codes: 200 OK, 307 Temporary Redirect (to the actual
-content).
+    ============================= ====================================================
+    **Verb**                      GET
+    ============================= ====================================================
+    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    ----------------------------- ----------------------------------------------------
+    **Description**               Requests ``{ContentID}`` to be served according to
+                                  the application handler tied to ``{APP_LOGIC_PATH}``
+                                  in the ``{CONTEXT-ROOT}`` of the application
+    ----------------------------- ----------------------------------------------------
+    **Successful Reponse codes**  ``200 OK``
 
-Error Response Codes: 404 Not Found, 500 Internal Server Error.
+                                  ``307 Temporary Redirect`` (to actual content)
+    ----------------------------- ----------------------------------------------------
+    **Error Reponse codes**       ``404 Not Found``
 
-HttpRecorder
-~~~~~~~~~~~~
+                                  ``500 Internal Server Error``
+    ============================= ====================================================
+
+
+
+HttpRecorder Service
+~~~~~~~~~~~~~~~~~~~~
 
 This service allows the upload of a content through HTTP to be stored in
 a Media Server.
