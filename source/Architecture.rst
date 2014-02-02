@@ -46,16 +46,20 @@ Signaling and media planes
 --------------------------
 
 The Stream Oriented GE, as most multimedia communication technologies
-out threre, is built upon two concepts that are key to all interactive
+out there, is built upon two concepts that are key to all interactive
 communication systems:
 
--  **Signaling Plane**. Module in charge of the management of
-   communications, that is, it provides functions for media negotiation,
-   QoS parametrization, call establishment, user registration, user
-   presence, etc.
--  **Media Plane**. Module in charge of the media itself. So,
-   functionalities such as media transport, media encoding/decoding and
-   media processing are part of it.
+    **Signalling Plane**
+        The parts of the system in charge of the management of communications,
+        that is, the modules provides functions for media negotiation, QoS
+        parametrization, call establishment, user registration, user presence,
+        etc. are conceived as forming part of the :term:`Signalling Plane`.
+    **Media Plane**
+        Functionalities such as media transport, media encoding/decoding and
+        media processing make the :term:`Media Plane`, which takes care of the
+        handling of media. The distinction comes from the telephony differentiation
+        between the handling of voice and the handling of meta-information such
+        as tone, billing, etc.
 
 Media elements and media pipelines
 ----------------------------------
