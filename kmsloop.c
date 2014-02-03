@@ -43,7 +43,6 @@ struct _KmsLoopPrivate
   GRecMutex rmutex;
   GMainLoop *loop;
   GMainContext *context;
-  gboolean stopping;
   GMutex mutex;
 };
 
@@ -135,20 +134,21 @@ kms_loop_dispose (GObject * obj)
 
   KMS_LOOP_LOCK (self);
 
-  if (!self->priv->stopping) {
+  if (self->priv->thread != NULL) {
     if (g_thread_self () != self->priv->thread) {
+      GThread *aux = self->priv->thread;
+
       kms_loop_idle_add (self, (GSourceFunc) quit_main_loop, self->priv->loop);
+      self->priv->thread = NULL;
       KMS_LOOP_UNLOCK (self);
-      g_thread_join (self->priv->thread);
+      g_thread_join (aux);
       KMS_LOOP_LOCK (self);
     } else {
       /* self thread does not need to wait for itself */
       quit_main_loop (self->priv->loop);
       g_thread_unref (self->priv->thread);
+      self->priv->thread = NULL;
     }
-
-    self->priv->stopping = TRUE;
-    self->priv->thread = NULL;
   }
 
   KMS_LOOP_UNLOCK (self);
@@ -222,7 +222,7 @@ kms_loop_attach (KmsLoop * self, GSource * source, gint priority,
 
   KMS_LOOP_LOCK (self);
 
-  if (self->priv->stopping) {
+  if (self->priv->thread == NULL) {
     KMS_LOOP_UNLOCK (self);
     return 0;
   }
