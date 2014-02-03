@@ -142,17 +142,20 @@ kms_loop_dispose (GObject * obj)
   KMS_LOOP_LOCK (self);
 
   if (!self->priv->stopping) {
-    kms_loop_idle_add (self, (GSourceFunc) quit_main_loop, self->priv->loop);
+    if (g_thread_self () != self->priv->thread) {
+      kms_loop_idle_add (self, (GSourceFunc) quit_main_loop, self->priv->loop);
+      KMS_LOOP_UNLOCK (self);
+      g_thread_join (self->priv->thread);
+      KMS_LOOP_LOCK (self);
+    } else {
+      /* self thread does not need to wait for itself */
+      quit_main_loop (self->priv->loop);
+    }
+
     self->priv->stopping = TRUE;
   }
 
   if (self->priv->thread != NULL) {
-    if (g_thread_self () != self->priv->thread) {
-      KMS_LOOP_UNLOCK (self);
-      g_thread_join (self->priv->thread);
-      KMS_LOOP_LOCK (self);
-    }
-
     g_thread_unref (self->priv->thread);
     self->priv->thread = NULL;
   }
