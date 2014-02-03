@@ -150,13 +150,10 @@ kms_loop_dispose (GObject * obj)
     } else {
       /* self thread does not need to wait for itself */
       quit_main_loop (self->priv->loop);
+      g_thread_unref (self->priv->thread);
     }
 
     self->priv->stopping = TRUE;
-  }
-
-  if (self->priv->thread != NULL) {
-    g_thread_unref (self->priv->thread);
     self->priv->thread = NULL;
   }
 
