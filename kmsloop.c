@@ -97,12 +97,6 @@ loop_thread_init (gpointer data)
   GST_DEBUG ("Running main loop");
   g_main_loop_run (loop);
 
-  if (KMS_IS_LOOP (self)) {
-    KMS_LOOP_LOCK (self);
-    self->priv->stopping = TRUE;
-    KMS_LOOP_UNLOCK (self);
-  }
-
 end:
   GST_DEBUG ("Thread finished");
   g_main_context_release (context);
