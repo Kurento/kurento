@@ -89,9 +89,9 @@ kms_main_mixer_port_data_create (KmsMainMixer * mixer, gint id)
   gst_element_sync_state_with_parent (data->video_agnostic);
 
   kms_base_mixer_link_video_sink (KMS_BASE_MIXER (mixer), id,
-      data->video_agnostic, "sink");
+      data->video_agnostic, "sink", FALSE);
   kms_base_mixer_link_audio_sink (KMS_BASE_MIXER (mixer), id,
-      data->audio_agnostic, "src");
+      data->audio_agnostic, "sink", FALSE);
 
   return data;
 }
@@ -140,9 +140,9 @@ kms_main_mixer_link_port (KmsMainMixer * self, gint to)
   } else {
     port_data = g_hash_table_lookup (self->priv->ports, &self->priv->main_port);
     kms_base_mixer_link_audio_src (KMS_BASE_MIXER (self), to,
-        port_data->audio_agnostic, "src_%u");
+        port_data->audio_agnostic, "src_%u", TRUE);
     kms_base_mixer_link_video_src (KMS_BASE_MIXER (self), to,
-        port_data->video_agnostic, "src_%u");
+        port_data->video_agnostic, "src_%u", TRUE);
   }
 
   KMS_MAIN_MIXER_UNLOCK (self);

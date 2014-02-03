@@ -65,13 +65,17 @@ struct _KmsBaseMixerClass
 
   /* Virtual methods */
   gboolean (*link_video_src) (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+      GstElement * internal_element, const gchar * pad_name,
+      gboolean remove_on_unlink);
   gboolean (*link_audio_src) (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+      GstElement * internal_element, const gchar * pad_name,
+      gboolean remove_on_unlink);
   gboolean (*link_video_sink) (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+      GstElement * internal_element, const gchar * pad_name,
+      gboolean remove_on_unlink);
   gboolean (*link_audio_sink) (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+      GstElement * internal_element, const gchar * pad_name,
+      gboolean remove_on_unlink);
 
   gboolean (*unlink_video_src) (KmsBaseMixer * mixer, gint id);
   gboolean (*unlink_audio_src) (KmsBaseMixer * mixer, gint id);
@@ -80,13 +84,17 @@ struct _KmsBaseMixerClass
 };
 
 gboolean kms_base_mixer_link_video_src (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink);
 gboolean kms_base_mixer_link_audio_src (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink);
 gboolean kms_base_mixer_link_video_sink (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink);
 gboolean kms_base_mixer_link_audio_sink (KmsBaseMixer * mixer, gint id,
-      GstElement * internal_element, const gchar * pad_name);
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink);
 
 gboolean kms_base_mixer_unlink_video_src (KmsBaseMixer * mixer, gint id);
 gboolean kms_base_mixer_unlink_audio_src (KmsBaseMixer * mixer, gint id);

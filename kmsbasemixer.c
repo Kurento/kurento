@@ -141,46 +141,50 @@ kms_base_mixer_port_data_destroy (gpointer data)
 
 gboolean
 kms_base_mixer_link_video_src (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
 
   return
       KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_video_src (mixer,
-      id, internal_element, pad_name);
+      id, internal_element, pad_name, remove_on_unlink);
 }
 
 gboolean
 kms_base_mixer_link_audio_src (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
 
   return
       KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_audio_src (mixer,
-      id, internal_element, pad_name);
+      id, internal_element, pad_name, remove_on_unlink);
 }
 
 gboolean
 kms_base_mixer_link_video_sink (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
 
   return
       KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_video_sink (mixer,
-      id, internal_element, pad_name);
+      id, internal_element, pad_name, remove_on_unlink);
 }
 
 gboolean
 kms_base_mixer_link_audio_sink (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   g_return_val_if_fail (KMS_IS_BASE_MIXER (mixer), FALSE);
 
   return
       KMS_BASE_MIXER_CLASS (G_OBJECT_GET_CLASS (mixer))->link_audio_sink (mixer,
-      id, internal_element, pad_name);
+      id, internal_element, pad_name, remove_on_unlink);
 }
 
 gboolean
@@ -291,10 +295,25 @@ kms_base_mixer_unlink_audio_sink_default (KmsBaseMixer * mixer, gint id)
   return ret;
 }
 
+static void
+remove_unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  GstElement *parent = gst_pad_get_parent_element (pad);
+
+  if (parent == NULL)
+    return;
+
+  GST_DEBUG_OBJECT (GST_OBJECT_PARENT (parent), "Removing pad %" GST_PTR_FORMAT,
+      pad);
+  gst_element_remove_pad (parent, pad);
+
+  g_object_unref (parent);
+}
+
 static gboolean
 kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
     const gchar * template_name, GstElement * internal_element,
-    const gchar * pad_name)
+    const gchar * pad_name, gboolean remove_on_unlink)
 {
   GstPad *gp, *target;
   gboolean ret;
@@ -308,6 +327,11 @@ kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
   target = gst_element_get_static_pad (internal_element, pad_name);
   if (target == NULL) {
     target = gst_element_get_request_pad (internal_element, pad_name);
+
+    if (target != NULL && remove_on_unlink) {
+      g_signal_connect (G_OBJECT (target), "unlinked",
+          G_CALLBACK (remove_unlinked_pad), NULL);
+    }
   }
 
   if (target == NULL) {
@@ -340,14 +364,15 @@ kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
 
 static gboolean
 kms_base_mixer_link_audio_src_default (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   gchar *gp_name = g_strdup_printf (AUDIO_SRC_PAD_PREFIX "%d", id);
   gboolean ret;
 
   ret =
       kms_base_mixer_link_src_pad (mixer, gp_name, AUDIO_SRC_PAD_NAME,
-      internal_element, pad_name);
+      internal_element, pad_name, remove_on_unlink);
   g_free (gp_name);
 
   return ret;
@@ -355,14 +380,15 @@ kms_base_mixer_link_audio_src_default (KmsBaseMixer * mixer, gint id,
 
 static gboolean
 kms_base_mixer_link_video_src_default (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   gchar *gp_name = g_strdup_printf (VIDEO_SRC_PAD_PREFIX "%d", id);
   gboolean ret;
 
   ret =
       kms_base_mixer_link_src_pad (mixer, gp_name, VIDEO_SRC_PAD_NAME,
-      internal_element, pad_name);
+      internal_element, pad_name, remove_on_unlink);
   g_free (gp_name);
 
   return ret;
@@ -396,7 +422,8 @@ static gboolean
 kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
     const gchar * gp_name, const gchar * gp_template_name,
     GstElement * internal_element, const gchar * pad_name,
-    const gchar * port_src_pad_name, gulong target_offset)
+    const gchar * port_src_pad_name, gulong target_offset,
+    gboolean remove_on_unlink)
 {
   KmsBaseMixerPortData *port_data;
   gboolean ret;
@@ -412,8 +439,11 @@ kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
   target = gst_element_get_static_pad (internal_element, pad_name);
   if (target == NULL) {
     target = gst_element_get_request_pad (internal_element, pad_name);
-    // TODO: In this case we should remove the pad when it is unlinked (ie, the
-    // targed is changed)
+
+    if (target != NULL && remove_on_unlink) {
+      g_signal_connect (G_OBJECT (target), "unlinked",
+          G_CALLBACK (remove_unlinked_pad), NULL);
+    }
   }
 
   if (target == NULL) {
@@ -466,14 +496,16 @@ end:
 
 static gboolean
 kms_base_mixer_link_video_sink_default (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   gboolean ret;
   gchar *gp_name = g_strdup_printf (VIDEO_SINK_PAD_PREFIX "%d", id);
 
   ret = kms_base_mixer_link_sink_pad (mixer, id, gp_name, VIDEO_SINK_PAD_NAME,
       internal_element, pad_name, MIXER_VIDEO_SRC_PAD,
-      G_STRUCT_OFFSET (KmsBaseMixerPortData, video_sink_target));
+      G_STRUCT_OFFSET (KmsBaseMixerPortData, video_sink_target),
+      remove_on_unlink);
 
   g_free (gp_name);
 
@@ -482,14 +514,16 @@ kms_base_mixer_link_video_sink_default (KmsBaseMixer * mixer, gint id,
 
 static gboolean
 kms_base_mixer_link_audio_sink_default (KmsBaseMixer * mixer, gint id,
-    GstElement * internal_element, const gchar * pad_name)
+    GstElement * internal_element, const gchar * pad_name,
+    gboolean remove_on_unlink)
 {
   gboolean ret;
   gchar *gp_name = g_strdup_printf (AUDIO_SINK_PAD_PREFIX "%d", id);
 
   ret = kms_base_mixer_link_sink_pad (mixer, id, gp_name, AUDIO_SINK_PAD_NAME,
       internal_element, pad_name, MIXER_AUDIO_SRC_PAD,
-      G_STRUCT_OFFSET (KmsBaseMixerPortData, audio_sink_target));
+      G_STRUCT_OFFSET (KmsBaseMixerPortData, audio_sink_target),
+      remove_on_unlink);
 
   g_free (gp_name);
 
