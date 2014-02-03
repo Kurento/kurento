@@ -36,14 +36,21 @@ G_DEFINE_TYPE_WITH_CODE (KmsLoop, kms_loop,
     KmsLoopPrivate                  \
   )                                 \
 )
+
 struct _KmsLoopPrivate
 {
   GThread *thread;
+  GRecMutex rmutex;
   GMainLoop *loop;
   GMainContext *context;
   gboolean stopping;
   GMutex mutex;
 };
+
+#define KMS_LOOP_LOCK(elem) \
+  (g_rec_mutex_lock (&KMS_LOOP ((elem))->priv->rmutex))
+#define KMS_LOOP_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&KMS_LOOP ((elem))->priv->rmutex))
 
 /* Object properties */
 enum
@@ -72,10 +79,12 @@ loop_thread_init (gpointer data)
   GMainLoop *loop;
   GMainContext *context;
 
+  KMS_LOOP_LOCK (self);
   self->priv->context = g_main_context_new ();
   context = self->priv->context;
   self->priv->loop = g_main_loop_new (context, FALSE);
   loop = self->priv->loop;
+  KMS_LOOP_UNLOCK (self);
 
   /* unlock main process because context is already initialized */
   g_mutex_unlock (&self->priv->mutex);
@@ -88,8 +97,11 @@ loop_thread_init (gpointer data)
   GST_DEBUG ("Running main loop");
   g_main_loop_run (loop);
 
-  if (KMS_IS_LOOP (self))
+  if (KMS_IS_LOOP (self)) {
+    KMS_LOOP_LOCK (self);
     self->priv->stopping = TRUE;
+    KMS_LOOP_UNLOCK (self);
+  }
 
 end:
   GST_DEBUG ("Thread finished");
@@ -106,6 +118,8 @@ kms_loop_get_property (GObject * object, guint property_id, GValue * value,
 {
   KmsLoop *self = KMS_LOOP (object);
 
+  KMS_LOOP_LOCK (self);
+
   switch (property_id) {
     case PROP_CONTEXT:
       g_value_set_boxed (value, self->priv->context);
@@ -114,6 +128,8 @@ kms_loop_get_property (GObject * object, guint property_id, GValue * value,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
+
+  KMS_LOOP_UNLOCK (self);
 }
 
 static void
@@ -123,18 +139,25 @@ kms_loop_dispose (GObject * obj)
 
   GST_DEBUG_OBJECT (obj, "Dispose");
 
+  KMS_LOOP_LOCK (self);
+
   if (!self->priv->stopping) {
     kms_loop_idle_add (self, (GSourceFunc) quit_main_loop, self->priv->loop);
     self->priv->stopping = TRUE;
   }
 
   if (self->priv->thread != NULL) {
-    if (g_thread_self () != self->priv->thread)
+    if (g_thread_self () != self->priv->thread) {
+      KMS_LOOP_UNLOCK (self);
       g_thread_join (self->priv->thread);
+      KMS_LOOP_LOCK (self);
+    }
 
     g_thread_unref (self->priv->thread);
     self->priv->thread = NULL;
   }
+
+  KMS_LOOP_UNLOCK (self);
 
   G_OBJECT_CLASS (kms_loop_parent_class)->dispose (obj);
 }
@@ -176,8 +199,9 @@ static void
 kms_loop_init (KmsLoop * self)
 {
   self->priv = KMS_LOOP_GET_PRIVATE (self);
-
+  g_rec_mutex_init (&self->priv->rmutex);
   g_mutex_init (&self->priv->mutex);
+
   g_mutex_lock (&self->priv->mutex);
 
   self->priv->thread = g_thread_new ("KmsLoop", loop_thread_init, self);
@@ -202,9 +226,18 @@ kms_loop_attach (KmsLoop * self, GSource * source, gint priority,
 {
   guint id;
 
+  KMS_LOOP_LOCK (self);
+
+  if (self->priv->stopping) {
+    KMS_LOOP_UNLOCK (self);
+    return 0;
+  }
+
   g_source_set_priority (source, priority);
   g_source_set_callback (source, function, data, notify);
   id = g_source_attach (source, self->priv->context);
+
+  KMS_LOOP_UNLOCK (self);
 
   return id;
 }
@@ -216,7 +249,7 @@ kms_loop_idle_add_full (KmsLoop * self, gint priority, GSourceFunc function,
   GSource *source;
   guint id;
 
-  if (!KMS_IS_LOOP (self) || self->priv->stopping)
+  if (!KMS_IS_LOOP (self))
     return 0;
 
   source = g_idle_source_new ();
@@ -240,7 +273,7 @@ kms_loop_timeout_add_full (KmsLoop * self, gint priority, guint interval,
   GSource *source;
   guint id;
 
-  if (!KMS_IS_LOOP (self) || self->priv->stopping)
+  if (!KMS_IS_LOOP (self))
     return 0;
 
   source = g_timeout_source_new (interval);
