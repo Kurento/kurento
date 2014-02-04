@@ -520,8 +520,12 @@ kms_pointer_detector_finalize (GObject * object)
 
   // TODO: Release window structure and window list
 
-  cvReleaseImageHeader (&pointerdetector->cvImage);
-  cvReleaseImageHeader (&pointerdetector->cvImageAux1);
+  if (pointerdetector->cvImage != NULL) {
+    cvReleaseImageHeader (&pointerdetector->cvImage);
+  }
+  if (pointerdetector->cvImageAux1 != NULL) {
+    cvReleaseImage (&pointerdetector->cvImageAux1);
+  }
   cvReleaseHist (&pointerdetector->histCompare);
   cvReleaseHist (&pointerdetector->histModel);
   cvReleaseHist (&pointerdetector->histSetUp1);
@@ -608,17 +612,17 @@ kms_pointer_detector_initialize_images (KmsPointerDetector * pointerdetector,
 {
   if (pointerdetector->cvImage == NULL) {
     pointerdetector->cvImage =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
+        cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
     pointerdetector->cvImageAux1 =
         cvCreateImage (cvSize (pointerdetector->trackinRectSize.width,
             pointerdetector->trackinRectSize.height), IPL_DEPTH_8U, 3);
   } else if ((pointerdetector->cvImage->width != frame->info.width)
       || (pointerdetector->cvImage->height != frame->info.height)) {
-    cvReleaseImage (&pointerdetector->cvImage);
+    cvReleaseImageHeader (&pointerdetector->cvImage);
     cvReleaseImage (&pointerdetector->cvImageAux1);
     pointerdetector->cvImage =
-        cvCreateImage (cvSize (frame->info.width, frame->info.height),
+        cvCreateImageHeader (cvSize (frame->info.width, frame->info.height),
         IPL_DEPTH_8U, 3);
     pointerdetector->cvImageAux1 =
         cvCreateImage (cvSize (pointerdetector->trackinRectSize.width,
