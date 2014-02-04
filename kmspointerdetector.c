@@ -518,7 +518,12 @@ kms_pointer_detector_finalize (GObject * object)
 
   /* clean up object here */
 
-  // TODO: Release window structure and window list
+  if (pointerdetector->buttonsLayoutList != NULL) {
+    kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
+  }
+  if (pointerdetector->buttonsLayout != NULL) {
+    gst_structure_free (pointerdetector->buttonsLayout);
+  }
 
   if (pointerdetector->cvImage != NULL) {
     cvReleaseImageHeader (&pointerdetector->cvImage);
