@@ -1,7 +1,7 @@
 var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection;
 
 
-getUserMedia({'audio': true, 'video': true}, function(stream)
+navigator.webkitGetUserMedia({'audio': true, 'video': true}, function(stream)
 {
   var videoInput  = document.getElementById("videoInput");
   var videoOutput = document.getElementById("videoOutput");
@@ -22,6 +22,8 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
       function(error, webRtcEndPoint)
       {
         if(error) return console.error(error);
+
+        pipeline.connect(webRtcEndPoint, webRtcEndPoint);  // loopback
 
         // Create a PeerConnection client in the browser
         var peerConnection = new RTCPeerConnection
