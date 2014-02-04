@@ -123,11 +123,11 @@ struct _KmsWebrtcEndPointPrivate
   GstElement *bundle_rtcp_funnel;
   gboolean bundle_funnels_added;
 
-  gchar *remote_audio_ssrc;
+  guint remote_audio_ssrc;
   KmsWebRTCConnection *audio_connection;
   gboolean audio_ice_gathering_done;
 
-  gchar *remote_video_ssrc;
+  guint remote_video_ssrc;
   KmsWebRTCConnection *video_connection;
   gboolean video_ice_gathering_done;
 
@@ -857,14 +857,12 @@ rtp_ssrc_demux_new_ssrc_pad (GstElement * ssrcdemux, guint ssrc, GstPad * pad,
 
   KMS_ELEMENT_LOCK (base_rtp_end_point);
 
-  if (g_str_has_suffix (GST_OBJECT_NAME (pad),
-          webrtc_end_point->priv->remote_audio_ssrc)) {
+  if (webrtc_end_point->priv->remote_audio_ssrc == ssrc) {
     gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad),
         base_rtp_end_point->rtpbin, AUDIO_RTPBIN_RECV_RTP_SINK);
     gst_element_link_pads (ssrcdemux, rtcp_pad_name,
         base_rtp_end_point->rtpbin, AUDIO_RTPBIN_RECV_RTCP_SINK);
-  } else if (g_str_has_suffix (GST_OBJECT_NAME (pad),
-          webrtc_end_point->priv->remote_video_ssrc)) {
+  } else if (webrtc_end_point->priv->remote_video_ssrc == ssrc) {
     gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad),
         base_rtp_end_point->rtpbin, VIDEO_RTPBIN_RECV_RTP_SINK);
     gst_element_link_pads (ssrcdemux, rtcp_pad_name,
@@ -1113,10 +1111,22 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
     const GstSDPMedia *media = gst_sdp_message_get_media (sdp, i);
     const gchar *media_str;
     KmsWebRTCConnection *conn;
-    gchar *ssrc;
+    gchar *ssrc_str;
+    guint ssrc = 0;
 
-    ssrc = sdp_media_get_ssrc (media);
+    ssrc_str = sdp_media_get_ssrc (media);
+    if (ssrc_str != NULL) {
+      gint64 val = g_ascii_strtoll (ssrc_str, NULL, 10);
+
+      if (val > G_MAXUINT32)
+        GST_ERROR ("SSRC %" G_GINT64_FORMAT " not valid", val);
+      else
+        ssrc = val;
+      g_free (ssrc_str);
+    }
+
     media_str = gst_sdp_media_get_media (media);
+
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
       conn = self->priv->audio_connection;
       self->priv->remote_audio_ssrc = ssrc;
@@ -1125,7 +1135,6 @@ kms_webrtc_end_point_start_transport_send (KmsBaseSdpEndPoint *
       self->priv->remote_video_ssrc = ssrc;
     } else {
       GST_WARNING_OBJECT (self, "Media \"%s\" not supported", media_str);
-      g_free (ssrc);
       continue;
     }
 
@@ -1396,12 +1405,6 @@ kms_webrtc_end_point_finalize (GObject * object)
   if (self->priv->certificate_pem_file != NULL) {
     g_free (self->priv->certificate_pem_file);
   }
-
-  if (self->priv->remote_audio_ssrc != NULL)
-    g_free (self->priv->remote_audio_ssrc);
-
-  if (self->priv->remote_video_ssrc != NULL)
-    g_free (self->priv->remote_video_ssrc);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_end_point_parent_class)->finalize (object);
