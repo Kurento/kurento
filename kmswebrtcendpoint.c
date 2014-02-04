@@ -108,12 +108,21 @@ typedef struct _KmsWebRTCConnection
   KmsWebRTCTransport *rtcp_transport;
 } KmsWebRTCConnection;
 
+typedef struct _GatherContext
+{
+  GMutex gather_mutex;
+  GCond gather_cond;
+  gboolean wait_gathering;
+  gboolean ice_gathering_done;
+  gboolean finalized;
+} GatherContext;
+
 struct _KmsWebrtcEndPointPrivate
 {
+  GatherContext ctx;
   gchar *tmp_dir;
 
   KmsLoop *loop;
-  gboolean finalized;
 
   NiceAgent *agent;
   gint is_bundle;               /* Implies rtcp-mux */
@@ -130,11 +139,6 @@ struct _KmsWebrtcEndPointPrivate
   guint remote_video_ssrc;
   KmsWebRTCConnection *video_connection;
   gboolean video_ice_gathering_done;
-
-  GMutex gather_mutex;
-  GCond gather_cond;
-  gboolean wait_gathering;
-  gboolean ice_gathering_done;
 
   gchar *certificate_pem_file;
 };
@@ -741,20 +745,20 @@ kms_webrtc_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
   KMS_ELEMENT_UNLOCK (self);
 
   /* Wait for ICE candidates */
-  g_mutex_lock (&self->priv->gather_mutex);
-  self->priv->wait_gathering = TRUE;
-  while (!self->priv->finalized && !self->priv->ice_gathering_done)
-    g_cond_wait (&self->priv->gather_cond, &self->priv->gather_mutex);
-  self->priv->wait_gathering = FALSE;
-  g_cond_signal (&self->priv->gather_cond);
+  g_mutex_lock (&self->priv->ctx.gather_mutex);
+  self->priv->ctx.wait_gathering = TRUE;
+  while (!self->priv->ctx.finalized && !self->priv->ctx.ice_gathering_done)
+    g_cond_wait (&self->priv->ctx.gather_cond, &self->priv->ctx.gather_mutex);
+  self->priv->ctx.wait_gathering = FALSE;
+  g_cond_signal (&self->priv->ctx.gather_cond);
 
-  if (self->priv->finalized) {
+  if (self->priv->ctx.finalized) {
     GST_ERROR_OBJECT (self, "WebrtcEndPoint has finalized.");
-    g_mutex_unlock (&self->priv->gather_mutex);
+    g_mutex_unlock (&self->priv->ctx.gather_mutex);
     return FALSE;
   }
 
-  g_mutex_unlock (&self->priv->gather_mutex);
+  g_mutex_unlock (&self->priv->ctx.gather_mutex);
 
   KMS_ELEMENT_LOCK (self);
   self->priv->is_bundle =
@@ -1179,12 +1183,12 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndPoint * self)
 
   KMS_ELEMENT_UNLOCK (self);
 
-  g_mutex_lock (&self->priv->gather_mutex);
+  g_mutex_lock (&self->priv->ctx.gather_mutex);
 
-  self->priv->ice_gathering_done = done;
+  self->priv->ctx.ice_gathering_done = done;
 
-  g_cond_signal (&self->priv->gather_cond);
-  g_mutex_unlock (&self->priv->gather_mutex);
+  g_cond_signal (&self->priv->ctx.gather_cond);
+  g_mutex_unlock (&self->priv->ctx.gather_mutex);
 }
 
 static gboolean
@@ -1387,15 +1391,15 @@ kms_webrtc_end_point_finalize (GObject * object)
   kms_webrtc_connection_destroy (self->priv->audio_connection);
   kms_webrtc_connection_destroy (self->priv->video_connection);
 
-  g_mutex_lock (&self->priv->gather_mutex);
-  self->priv->finalized = TRUE;
-  g_cond_signal (&self->priv->gather_cond);
-  while (self->priv->wait_gathering)
-    g_cond_wait (&self->priv->gather_cond, &self->priv->gather_mutex);
-  g_mutex_unlock (&self->priv->gather_mutex);
+  g_mutex_lock (&self->priv->ctx.gather_mutex);
+  self->priv->ctx.finalized = TRUE;
+  g_cond_signal (&self->priv->ctx.gather_cond);
+  while (self->priv->ctx.wait_gathering)
+    g_cond_wait (&self->priv->ctx.gather_cond, &self->priv->ctx.gather_mutex);
+  g_mutex_unlock (&self->priv->ctx.gather_mutex);
 
-  g_cond_clear (&self->priv->gather_cond);
-  g_mutex_clear (&self->priv->gather_mutex);
+  g_cond_clear (&self->priv->ctx.gather_cond);
+  g_mutex_clear (&self->priv->ctx.gather_mutex);
 
   if (self->priv->tmp_dir != NULL) {
     remove_recursive (self->priv->tmp_dir);
@@ -1471,9 +1475,9 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
 
   self->priv->tmp_dir = g_strdup (g_mkdtemp_full (t, FILE_PERMISIONS));
 
-  g_mutex_init (&self->priv->gather_mutex);
-  g_cond_init (&self->priv->gather_cond);
-  self->priv->finalized = FALSE;
+  g_mutex_init (&self->priv->ctx.gather_mutex);
+  g_cond_init (&self->priv->ctx.gather_cond);
+  self->priv->ctx.finalized = FALSE;
 
   self->priv->loop = kms_loop_new ();
 
