@@ -223,7 +223,7 @@ Next steps
 -  Review :ref:`programming-with-kmf-content-api` for a detailed
    reference on content services.
 -  Go to :ref:`programming-with-kmf-media-api` for a detailed explanation
-   about how to achieve full control of *Kurento Media Server*.
+   about how to achieve full control of :term:`Kurento Media Server`.
 -  Review :ref:`programming-with-kws` for a
    detailed reference of capabilities available in browsers.
 
@@ -319,7 +319,7 @@ are connected together to build multimedia services. There are two main
    transcodification, computer vision, augmented reality, etc.
 
 The *Stream Oriented GE Kurento* consists of two main software
-components: *Kurento Media Server* (*KMS*) and *Kurento Media Framework*
+components: :term:`Kurento Media Server` (*KMS*) and :term:`Kurento Media Framework`
 (*KMF*)
 
 -  **KMS**: *Kurento Media Server* is a stand-alone server responsible

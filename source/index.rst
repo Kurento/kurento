@@ -12,6 +12,7 @@ Welcome to Kurento's documentation!
    Developer_and_Programmer_Guide.rst
    Installation_Guide.rst
    Open_API_Specification.rst
+   glossary.rst 
 
 API Documentation
 =================

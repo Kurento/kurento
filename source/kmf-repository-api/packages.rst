@@ -3,7 +3,7 @@ Kurento Repository API Documentation
 
 The :java:package:`com.kurento.kmf.repository` package 
 (`javadoc <../_static/index.html?com/kurento/kmf/repository/package-summary.html>`__)
-includes the media repository offered by the Kurento Media Framework.
+includes the media repository offered by the :term:`Kurento Media Framework`.
 
 The API includes a :java:type:`Repository` interface, intended to
 store media files. It has methods to :java:meth:`create <createRepositoryItem>`,
