@@ -427,6 +427,7 @@ kms_pointer_detector2_set_property (GObject * object, guint property_id,
 {
   KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
 
+  GST_OBJECT_LOCK (pointerdetector);
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
       pointerdetector->priv->show_debug_info = g_value_get_boolean (value);
@@ -463,6 +464,7 @@ kms_pointer_detector2_set_property (GObject * object, guint property_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
+  GST_OBJECT_UNLOCK (pointerdetector);
 }
 
 void
@@ -688,6 +690,7 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
   int buttonClickedCounter = 0;
   gchar *actualButtonClickedId;
 
+  GST_OBJECT_LOCK (pointerdetector);
   for (l = pointerdetector->priv->buttonsLayoutList; l != NULL; l = l->next) {
     CvPoint upRightCorner;
     CvPoint downLeftCorner;
@@ -743,6 +746,7 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
       }
     }
   }
+  GST_OBJECT_UNLOCK (pointerdetector);
 
   if (buttonClickedCounter == 0) {
     if (pointerdetector->priv->previousButtonClickedId != NULL) {
