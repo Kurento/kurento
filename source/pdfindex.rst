@@ -11,7 +11,6 @@ Welcome to Kurento's documentation!
    Architecture.rst
    Developer_and_Programmer_Guide.rst
    Installation_Guide.rst
-   Open_API_Specification.rst
    glossary.rst 
 
 API Documentation
@@ -20,6 +19,7 @@ API Documentation
 .. toctree::
    :maxdepth: 2
 
+   Open_API_Specification.rst
    kmf-content-api/packages.rst
    kmf-repository-api/packages.rst
    kmf-media-api/packages.rst
