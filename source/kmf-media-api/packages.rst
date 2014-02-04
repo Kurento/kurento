@@ -1,5 +1,9 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Kurento Media API Documentation
-===============================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Introduction
+============
 
 The :doc:`KMF Media API </kmf-media-api/packages>` (`javadoc <../_static/index.html?com/kurento/kmf/media/package-summary.html>`__)
 is a Java API exposing a toolbox of Media Elements that
@@ -34,14 +38,14 @@ The main java objects in the API are:
 The different capabilities of the Kurento Media Server are exposed typically as `Filters` or `EndPoints`
 in the Media API.
 
-Javadoc
--------
+API Javadoc
+===========
 
 This is the standard `javadoc of the Kurento Media API  <../_static/index.html?com/kurento/kmf/media/package-summary.html>`__
 classes.
 
 API Classes
------------
+===========
 
 .. toctree::
    :maxdepth: 2

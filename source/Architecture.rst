@@ -21,9 +21,9 @@ rich family of APIs and toolboxes, which include:
    non-expert developers to create complex and interoperable multimedia
    applications.
 
--  **Open API**: a REST-like API based on JSON RPC 2.0 opening the
-   Stream Oriented GE capabilities through a standard HTTP network
-   connection.
+-  **Open API**: The :doc:`Open_API_Specification` is a REST-like API
+   based on JSON RPC 2.0 opening Kurento capabilities through a standard
+   HTTP network connection.
 
 -  **Open Thrift API**: a network API exposing the Stream Oriented GE
    capabilities through Thrift RPCs. This API makes simple the creation
