@@ -545,6 +545,14 @@ kms_pointer_detector2_finalize (GObject * object)
     g_free (pointerdetector->priv->previousButtonClickedId);
   }
 
+  if (pointerdetector->priv->buttonsLayoutList != NULL) {
+    kms_pointer_detector2_dispose_buttons_layout_list (pointerdetector);
+  }
+
+  if (pointerdetector->priv->buttonsLayout != NULL) {
+    gst_structure_free (pointerdetector->priv->buttonsLayout);
+  }
+
   G_OBJECT_CLASS (kms_pointer_detector2_parent_class)->finalize (object);
 }
 
