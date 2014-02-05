@@ -34,6 +34,7 @@ G_BEGIN_DECLS
 #define KMS_BASE_RTP_END_POINT_CAST(obj) ((KmsBaseRtpEndPoint*)(obj))
 typedef struct _KmsBaseRtpEndPoint KmsBaseRtpEndPoint;
 typedef struct _KmsBaseRtpEndPointClass KmsBaseRtpEndPointClass;
+typedef struct _KmsBaseRtpEndPointPrivate KmsBaseRtpEndPointPrivate;
 
 #define KMS_BASE_RTP_END_POINT_LOCK(elem) \
   (g_rec_mutex_lock (&KMS_BASE_RTP_END_POINT_CAST ((elem))->media_mutex))
@@ -47,15 +48,8 @@ struct _KmsBaseRtpEndPoint
 {
   KmsBaseSdpEndPoint parent;
 
-  // TODO: Move this properties to private structure
   GstElement *rtpbin;
-  GstElement *audio_payloader;
-  GstElement *video_payloader;
-
-  guint audio_ssrc;
-  guint video_ssrc;
-
-  gboolean negotiated;
+  KmsBaseRtpEndPointPrivate *priv;
 };
 
 struct _KmsBaseRtpEndPointClass
