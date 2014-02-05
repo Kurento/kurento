@@ -1,12 +1,14 @@
-var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection;
+var RTCPeerConnection = mozRTCPeerConnection || RTCPeerConnection || webkitRTCPeerConnection;
+
+
+var WebRtcEndPoint           = KwsMedia.endpoints.WebRtcEndPoint;
+var PointerDetector2EndPoint = KwsMedia.filters.PointerDetector2FilterEndPoint;
 
 
 getUserMedia({'audio': true, 'video': true}, function(stream)
 {
   var videoInput  = document.getElementById("videoInput");
-  var videoOutput = document.getElementById("videoOutput");
-
-  videoInput.src = URL.createObjectURL(stream);
+      videoInput.src = URL.createObjectURL(stream);
 
 
   KwsMedia('ws://192.168.0.110:7788/thrift/ws/websocket',
@@ -18,18 +20,16 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
       if(error) return console.error(error);
 
       // Create pipeline media elements (endpoints & filters)
-      pipeline.createMediaElement('WebRtcEndPoint',
-      function(error, webRtcEndPoint)
+      WebRtcEndPoint.create(pipeline, function(error, webRtc)
       {
         if(error) return console.error(error);
 
-        pipeline.createMediaElement('PointerDetector2',
-        function(error, pointerDetector2)
+        PointerDetector2EndPoint.create(pipeline, function(error, pointerDetector2)
         {
           if(error) return console.error(error);
 
-          pipeline.connect(webRtcEndPoint, pointerDetector2);
-          pipeline.connect(pointerDetector2, webRtcEndPoint);  // loopback
+          pipeline.connect(webRtc, pointerDetector2);
+          pipeline.connect(pointerDetector2, webRtc);  // loopback
 
           // Create a PeerConnection client in the browser
           var peerConnection = new RTCPeerConnection
@@ -41,25 +41,28 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
           peerConnection.addStream(stream);
 
           // Connect the pipeline to the PeerConnection client
-          webRtcEndPoint.generateSdpOffer(function(error, offer)
+          webRtc.generateSdpOffer(function(error, offer)
           {
             if(error) return console.error(error);
 
-            peerConnection.setRemoteDescription(offer, function()
+            peerConnection.setRemoteDescription(
+            new RTCSessionDescription({sdp: offer, type: 'offer'}),
+            function()
             {
               peerConnection.createAnswer(function(answer)
               {
                 peerConnection.setLocalDescription(answer, function()
                 {
 
-                  webRtcEndPoint.processSdpAnswer(answer, function(error)
+                  webRtc.processSdpAnswer(answer, function(error)
                   {
                     if(error) return console.error(error);
 
                     var stream = peerConnection.getRemoteStreams()[0];
 
                     // Set the stream on the video tag
-                    videoOutput.src = URL.createObjectURL(stream);
+                    var videoOutput = document.getElementById("videoOutput");
+                        videoOutput.src = URL.createObjectURL(stream);
 
 //                    // Start player
 //                    pipeline.start();

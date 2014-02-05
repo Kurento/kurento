@@ -1,4 +1,7 @@
-var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection;
+var RTCPeerConnection = mozRTCPeerConnection || RTCPeerConnection || webkitRTCPeerConnection;
+
+
+var WebRtcEndPoint = KwsMedia.endpoints.WebRtcEndPoint;
 
 
 navigator.webkitGetUserMedia({'audio': true, 'video': true}, function(stream)
@@ -18,12 +21,11 @@ navigator.webkitGetUserMedia({'audio': true, 'video': true}, function(stream)
       if(error) return console.error(error);
 
       // Create pipeline media elements (endpoints & filters)
-      pipeline.createMediaElement('WebRtcEndPoint',
-      function(error, webRtcEndPoint)
+      WebRtcEndPoint.create(pipeline, function(error, webRtc)
       {
         if(error) return console.error(error);
 
-        pipeline.connect(webRtcEndPoint, webRtcEndPoint);  // loopback
+        pipeline.connect(webRtc, webRtc);  // loopback
 
         // Create a PeerConnection client in the browser
         var peerConnection = new RTCPeerConnection
@@ -35,18 +37,20 @@ navigator.webkitGetUserMedia({'audio': true, 'video': true}, function(stream)
         peerConnection.addStream(stream);
 
         // Connect the pipeline to the PeerConnection client
-        webRtcEndPoint.generateSdpOffer(function(error, offer)
+        webRtc.generateSdpOffer(function(error, offer)
         {
           if(error) return console.error(error);
 
-          peerConnection.setRemoteDescription(offer, function()
+          peerConnection.setRemoteDescription(
+          new RTCSessionDescription({sdp: offer, type: 'offer'}),
+          function()
           {
             peerConnection.createAnswer(function(answer)
             {
               peerConnection.setLocalDescription(answer, function()
               {
 
-                webRtcEndPoint.processSdpAnswer(answer, function(error)
+                webRtc.processSdpAnswer(answer, function(error)
                 {
                   if(error) return console.error(error);
 

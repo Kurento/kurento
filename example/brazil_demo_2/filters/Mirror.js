@@ -13,25 +13,26 @@
  *
  */
 
-/**
- * Media API for the Kurento Web SDK
- *
- * @module KwsMedia/endpoints
- *
- * @copyright 2014 Kurento (http://kurento.org/)
- * @license LGPL
- */
-
-var HttpGet  = require('./HttpGet');
-var HttpPost = require('./HttpPost');
-var Player   = require('./Player');
-var Recorder = require('./Recorder');
-var WebRtc   = require('./WebRtc');
+var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
 
 
-exports.HttpGetEndPoint  = HttpGet;
-exports.HttpPostEndPoint = HttpPost;
-exports.PlayerEndPoint   = Player;
-exports.RecorderEndPoint = Recorder;
-exports.RtpEndPoint      = Rtp;
-exports.WebRtcEndPoint   = WebRtc;
+function MirrorFilter(id, parent, pipeline, params)
+{
+  GStreamerFilter.call(this, id, parent, pipeline, params);
+};
+MirrorFilter.prototype.__proto__   = GStreamerFilter.prototype;
+MirrorFilter.prototype.constructor = MirrorFilter;
+
+
+MirrorFilter.paramsScheme = GStreamerFilter.paramsScheme;
+
+
+MirrorFilter.create = function(pipeline, callback)
+{
+  var params =
+  {
+    command: 'videoflip method=4'
+  };
+
+  GStreamerFilter.create.call(this, pipeline, params, callback);
+};

@@ -1,9 +1,14 @@
-var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection;
+var RTCPeerConnection = mozRTCPeerConnection || RTCPeerConnection || webkitRTCPeerConnection;
+
+
+var PlayerEndPoint    = KwsMedia.endpoints.PlayerEndPoint;
+var JackVaderFilter = KwsMedia.filters.JackVaderFilter;
+var WebRtcEndPoint    = KwsMedia.endpoints.WebRtcEndPoint;
 
 
 window.addEventListener('load', function()
 {
-  KwsMedia('ws://192.168.0.115:7788/thrift/ws/websocket',
+  KwsMedia('ws://192.168.0.110:7788/thrift/ws/websocket',
   function(kwsMedia)
   {
     // Create pipeline
@@ -12,70 +17,75 @@ window.addEventListener('load', function()
       if(error) return console.error(error);
 
       // Create pipeline media elements (endpoints & filters)
-      var type = ['PlayerEndPoint', 'JackVaderFilter', 'WebRtcEndPoint'];
-      var params = [{uri: "http://localhost:8000/video.avi"}, null, null];
-
-      pipeline.createMediaElement(type, params,
-      function(error, mediaElements)
+      Player.createMediaElement(pipeline, {uri: "http://localhost:8000/video.avi"},
+      function(error, player)
       {
         if(error) return console.error(error);
 
-        var playerEndPoint  = mediaElements[0];
-        var jackVaderFilter = mediaElements[1];
-        var webRtcEndPoint  = mediaElements[2];
-
-        // Connect media element between them
-        pipeline.connect(playerEndPoint, jackVaderFilter, webRtcEndPoint);
-
-        // Subscribe to PlayerEndPoint EOS event
-        playerEndPoint.on('EOS', function()
-        {
-          console.log("EOS");
-        });
-
-        // Create a PeerConnection client in the browser
-        var peerConnection = new RTCPeerConnection
-        (
-          {iceServers: [{url: 'stun:stun.l.google.com:19302'}]},
-          {optional:   [{DtlsSrtpKeyAgreement: true}]}
-        );
-
-        // Connect the pipeline to the PeerConnection client
-        webRtcEndPoint.invoke("generateSdpOffer", function(error, offer)
+        JackVader.createMediaElement(pipeline, function(error, jackVader)
         {
           if(error) return console.error(error);
 
-          peerConnection.setRemoteDescription(offer, function()
+          WebRtc.createMediaElement(pipeline, function(error, webRtc)
           {
-            peerConnection.createAnswer(function(answer)
+            if(error) return console.error(error);
+
+            // Connect media element between them
+            pipeline.connect(player, jackVader, webRtc);
+
+            // Subscribe to PlayerEndPoint EOS event
+            player.on('EOS', function()
             {
-              peerConnection.setLocalDescription(answer, function()
+              console.log("EOS");
+            });
+
+            // Create a PeerConnection client in the browser
+            var peerConnection = new RTCPeerConnection
+            (
+              {iceServers: [{url: 'stun:stun.l.google.com:19302'}]},
+              {optional:   [{DtlsSrtpKeyAgreement: true}]}
+            );
+
+            // Connect the pipeline to the PeerConnection client
+            webRtc.generateSdpOffer(function(error, offer)
+            {
+              if(error) return console.error(error);
+
+              peerConnection.setRemoteDescription(
+              new RTCSessionDescription({sdp: offer, type: 'offer'}),
+              function()
               {
-
-                webRtcEndPoint.invoke("processSdpAnswer", {answer: answer},
-                function(error)
+                peerConnection.createAnswer(function(answer)
                 {
-                  if(error) return console.error(error);
+                  peerConnection.setLocalDescription(answer, function()
+                  {
 
-                  var stream = peerConnection.getRemoteStreams()[0];
+                    webRtc.processSdpAnswer(answer, function(error)
+                    {
+                      if(error) return console.error(error);
 
-                  // Set the stream on the video tag
-                  var videoOutput = document.getElementById("videoOutput");
-                      videoOutput.src = URL.createObjectURL(stream);
+                      var stream = peerConnection.getRemoteStreams()[0];
 
-                  // Start player
-                  playerEndPoint.start();
-                });
+                      // Set the stream on the video tag
+                      var videoOutput = document.getElementById("videoOutput");
+                          videoOutput.src = URL.createObjectURL(stream);
 
+                      // Start player
+                      player.start();
+                    });
+
+                  },
+                  console.error);
+                },
+                console.error);
               },
               console.error);
-            },
-            console.error);
-          },
-          console.error);
 
+            });
+          });
         });
       });
+
     });
   });
 });

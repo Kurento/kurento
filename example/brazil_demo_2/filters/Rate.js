@@ -13,25 +13,26 @@
  *
  */
 
-/**
- * Media API for the Kurento Web SDK
- *
- * @module KwsMedia/endpoints
- *
- * @copyright 2014 Kurento (http://kurento.org/)
- * @license LGPL
- */
-
-var HttpGet  = require('./HttpGet');
-var HttpPost = require('./HttpPost');
-var Player   = require('./Player');
-var Recorder = require('./Recorder');
-var WebRtc   = require('./WebRtc');
+var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
 
 
-exports.HttpGetEndPoint  = HttpGet;
-exports.HttpPostEndPoint = HttpPost;
-exports.PlayerEndPoint   = Player;
-exports.RecorderEndPoint = Recorder;
-exports.RtpEndPoint      = Rtp;
-exports.WebRtcEndPoint   = WebRtc;
+function RateFilter(id, parent, pipeline, params)
+{
+  GStreamerFilter.call(this, id, parent, pipeline, params);
+};
+RateFilter.prototype.__proto__   = GStreamerFilter.prototype;
+RateFilter.prototype.constructor = RateFilter;
+
+
+RateFilter.paramsScheme = GStreamerFilter.paramsScheme;
+
+
+RateFilter.create = function(pipeline, callback)
+{
+  var params =
+  {
+    command: 'videorate max-rate=15 average-period=200000000'
+  };
+
+  GStreamerFilter.create.call(this, pipeline, params, callback);
+};

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -24,42 +24,41 @@ var MEDIA_DOMAIN = 'http://media.example.com';
 var MEDIA_PATH   = '/endpoint';
 
 
-exports['Kws Media API'] =
+function setUp()
 {
-  setUp: function(callback)
+  var mediaServer = nock(MEDIA_DOMAIN)
+//  .filteringRequestBody(/.*/, '*')
+//  .post(MEDIA_PATH, '*')
+//  .post(MEDIA_PATH)
+  .get(MEDIA_PATH)
+  .reply(201, function(uri, requestBody)
   {
-    this._mediaServer = nock(MEDIA_DOMAIN)
-//        .filteringRequestBody(/.*/, '*')
-//        .post(MEDIA_PATH, '*')
-        .post(MEDIA_PATH)
-        .reply(201, function(uri, requestBody)
-        {
-          console.log('uri='+uri);
-          console.log('requestBody='+requestBody);
+    console.log('uri='+uri);
+    console.log('requestBody='+requestBody);
 
-          this._mediaServer.done();
+    start();
 
-          return requestBody;
-        });
-
-    callback();
-  },
-
-  tearDown: function(callback)
-  {
-    callback();
-  },
+    mediaServer.done();
+    return requestBody;
+  });
+}
 
 
-  'calculate': function(test)
-  {
-    test.expect(2);
+QUnit.module('Kws Media API');
 
-    var uri = MEDIA_DOMAIN + MEDIA_PATH;
 
-    var kwsMedia = new KwsMedia(uri);
+test('calculate', function()
+{
+  stop();
 
-    test.equal(2+2, 4);
-    test.done();
-  }
-};
+  setUp();
+
+//  expect(2);
+
+  var uri = MEDIA_DOMAIN + MEDIA_PATH;
+
+  var kwsMedia = new KwsMedia(uri);
+
+//  test.equal(2+2, 4);
+//  test.done();
+});
