@@ -191,10 +191,13 @@ gst_udp_set_connection (KmsBaseSdpEndPoint * base_sdp_end_point,
       {
         gchar *name;
 
+        KMS_ELEMENT_LOCK (base_sdp_end_point);
         if (is_ipv6 != base_sdp_end_point->use_ipv6) {
           GST_DEBUG ("No valid address type: %d", is_ipv6);
+          KMS_ELEMENT_UNLOCK (base_sdp_end_point);
           break;
         }
+        KMS_ELEMENT_UNLOCK (base_sdp_end_point);
 
         name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
 
