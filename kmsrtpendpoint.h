@@ -34,6 +34,7 @@ G_BEGIN_DECLS
 #define KMS_RTP_END_POINT_CAST(obj) ((KmsRtpEndPoint*)(obj))
 typedef struct _KmsRtpEndPoint KmsRtpEndPoint;
 typedef struct _KmsRtpEndPointClass KmsRtpEndPointClass;
+typedef struct _KmsRtpEndPointPrivate KmsRtpEndPointPrivate;
 
 #define KMS_RTP_END_POINT_LOCK(elem) \
   (g_rec_mutex_lock (&KMS_RTP_END_POINT_CAST ((elem))->media_mutex))
@@ -44,17 +45,7 @@ struct _KmsRtpEndPoint
 {
   KmsBaseRtpEndPoint parent;
 
-  GSocket *audio_rtp_socket;
-  GSocket *audio_rtcp_socket;
-
-  GSocket *video_rtp_socket;
-  GSocket *video_rtcp_socket;
-
-  GstElement *audio_rtp_udpsink;
-  GstElement *audio_rtcp_udpsink;
-
-  GstElement *video_rtp_udpsink;
-  GstElement *video_rtcp_udpsink;
+  KmsRtpEndPointPrivate *priv;
 };
 
 struct _KmsRtpEndPointClass

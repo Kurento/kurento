@@ -32,6 +32,29 @@ G_DEFINE_TYPE (KmsRtpEndPoint, kms_rtp_end_point, KMS_TYPE_BASE_RTP_END_POINT);
 
 #define MAX_RETRIES 4
 
+#define KMS_RTP_END_POINT_GET_PRIVATE(obj) ( \
+  G_TYPE_INSTANCE_GET_PRIVATE (              \
+    (obj),                                   \
+    KMS_TYPE_RTP_END_POINT,                  \
+    KmsRtpEndPointPrivate                    \
+  )                                          \
+)
+
+struct _KmsRtpEndPointPrivate
+{
+  GSocket *audio_rtp_socket;
+  GSocket *audio_rtcp_socket;
+
+  GSocket *video_rtp_socket;
+  GSocket *video_rtcp_socket;
+
+  GstElement *audio_rtp_udpsink;
+  GstElement *audio_rtcp_udpsink;
+
+  GstElement *video_rtp_udpsink;
+  GstElement *video_rtcp_udpsink;
+};
+
 /* Signals and args */
 enum
 {
@@ -239,10 +262,12 @@ kms_rtp_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint * base_sdp_endpoint,
 
     if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0)
       ((GstSDPMedia *) media)->port =
-          kms_rtp_end_point_get_socket_port (rtp_end_point->audio_rtp_socket);
+          kms_rtp_end_point_get_socket_port (rtp_end_point->priv->
+          audio_rtp_socket);
     else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0)
       ((GstSDPMedia *) media)->port =
-          kms_rtp_end_point_get_socket_port (rtp_end_point->video_rtp_socket);
+          kms_rtp_end_point_get_socket_port (rtp_end_point->priv->
+          video_rtp_socket);
   }
 
   return TRUE;
@@ -317,27 +342,30 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
       // TODO: create a function to reduce code replication
       if (direction == SENDRECV || direction == RECVONLY) {
         KMS_ELEMENT_LOCK (rtp_end_point);
-        rtp_end_point->audio_rtp_udpsink =
+        rtp_end_point->priv->audio_rtp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtp_sink");
-        g_object_set (rtp_end_point->audio_rtp_udpsink, "socket",
-            rtp_end_point->audio_rtp_socket, "qos", TRUE, "async", FALSE, NULL);
-
-        rtp_end_point->audio_rtcp_udpsink =
-            gst_element_factory_make ("udpsink", "audio_rtcp_sink");
-        g_object_set (rtp_end_point->audio_rtcp_udpsink, "socket",
-            rtp_end_point->audio_rtcp_socket, "async", FALSE, NULL);
-
-        gst_bin_add_many (GST_BIN (rtp_end_point),
-            rtp_end_point->audio_rtp_udpsink, rtp_end_point->audio_rtcp_udpsink,
+        g_object_set (rtp_end_point->priv->audio_rtp_udpsink, "socket",
+            rtp_end_point->priv->audio_rtp_socket, "qos", TRUE, "async", FALSE,
             NULL);
 
-        g_object_set (rtp_end_point->audio_rtp_udpsink, "host", con->address,
-            "port", media->port, "async", FALSE, NULL);
-        g_object_set (rtp_end_point->audio_rtcp_udpsink, "host", con->address,
-            "port", media->port + 1, "async", FALSE, NULL);
+        rtp_end_point->priv->audio_rtcp_udpsink =
+            gst_element_factory_make ("udpsink", "audio_rtcp_sink");
+        g_object_set (rtp_end_point->priv->audio_rtcp_udpsink, "socket",
+            rtp_end_point->priv->audio_rtcp_socket, "async", FALSE, NULL);
 
-        gst_element_sync_state_with_parent (rtp_end_point->audio_rtp_udpsink);
-        gst_element_sync_state_with_parent (rtp_end_point->audio_rtcp_udpsink);
+        gst_bin_add_many (GST_BIN (rtp_end_point),
+            rtp_end_point->priv->audio_rtp_udpsink,
+            rtp_end_point->priv->audio_rtcp_udpsink, NULL);
+
+        g_object_set (rtp_end_point->priv->audio_rtp_udpsink, "host",
+            con->address, "port", media->port, "async", FALSE, NULL);
+        g_object_set (rtp_end_point->priv->audio_rtcp_udpsink, "host",
+            con->address, "port", media->port + 1, "async", FALSE, NULL);
+
+        gst_element_sync_state_with_parent (rtp_end_point->priv->
+            audio_rtp_udpsink);
+        gst_element_sync_state_with_parent (rtp_end_point->priv->
+            audio_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_end_point);
 
         GST_DEBUG ("Audio sent to: %s:%d", con->address, media->port);
@@ -347,27 +375,30 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
 
       if (direction == SENDRECV || direction == RECVONLY) {
         KMS_ELEMENT_LOCK (rtp_end_point);
-        rtp_end_point->video_rtp_udpsink =
+        rtp_end_point->priv->video_rtp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtp_sink");
-        g_object_set (rtp_end_point->video_rtp_udpsink, "socket",
-            rtp_end_point->video_rtp_socket, "qos", TRUE, "async", FALSE, NULL);
-
-        rtp_end_point->video_rtcp_udpsink =
-            gst_element_factory_make ("udpsink", "video_rtcp_sink");
-        g_object_set (rtp_end_point->video_rtcp_udpsink, "socket",
-            rtp_end_point->video_rtcp_socket, "async", FALSE, NULL);
-
-        gst_bin_add_many (GST_BIN (rtp_end_point),
-            rtp_end_point->video_rtp_udpsink, rtp_end_point->video_rtcp_udpsink,
+        g_object_set (rtp_end_point->priv->video_rtp_udpsink, "socket",
+            rtp_end_point->priv->video_rtp_socket, "qos", TRUE, "async", FALSE,
             NULL);
 
-        g_object_set (rtp_end_point->video_rtp_udpsink, "host", con->address,
-            "port", gst_sdp_media_get_port (media), NULL);
-        g_object_set (rtp_end_point->video_rtcp_udpsink, "host", con->address,
-            "port", gst_sdp_media_get_port (media) + 1, NULL);
+        rtp_end_point->priv->video_rtcp_udpsink =
+            gst_element_factory_make ("udpsink", "video_rtcp_sink");
+        g_object_set (rtp_end_point->priv->video_rtcp_udpsink, "socket",
+            rtp_end_point->priv->video_rtcp_socket, "async", FALSE, NULL);
 
-        gst_element_sync_state_with_parent (rtp_end_point->video_rtp_udpsink);
-        gst_element_sync_state_with_parent (rtp_end_point->video_rtcp_udpsink);
+        gst_bin_add_many (GST_BIN (rtp_end_point),
+            rtp_end_point->priv->video_rtp_udpsink,
+            rtp_end_point->priv->video_rtcp_udpsink, NULL);
+
+        g_object_set (rtp_end_point->priv->video_rtp_udpsink, "host",
+            con->address, "port", gst_sdp_media_get_port (media), NULL);
+        g_object_set (rtp_end_point->priv->video_rtcp_udpsink, "host",
+            con->address, "port", gst_sdp_media_get_port (media) + 1, NULL);
+
+        gst_element_sync_state_with_parent (rtp_end_point->priv->
+            video_rtp_udpsink);
+        gst_element_sync_state_with_parent (rtp_end_point->priv->
+            video_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_end_point);
 
         GST_DEBUG ("Video sent to: %s:%d", con->address, media->port);
@@ -381,10 +412,10 @@ kms_rtp_end_point_finalize (GObject * object)
 {
   KmsRtpEndPoint *rtp_end_point = KMS_RTP_END_POINT (object);
 
-  finalize_socket (&rtp_end_point->audio_rtp_socket);
-  finalize_socket (&rtp_end_point->audio_rtcp_socket);
-  finalize_socket (&rtp_end_point->video_rtp_socket);
-  finalize_socket (&rtp_end_point->video_rtcp_socket);
+  finalize_socket (&rtp_end_point->priv->audio_rtp_socket);
+  finalize_socket (&rtp_end_point->priv->audio_rtcp_socket);
+  finalize_socket (&rtp_end_point->priv->video_rtp_socket);
+  finalize_socket (&rtp_end_point->priv->video_rtcp_socket);
 
   G_OBJECT_CLASS (kms_rtp_end_point_parent_class)->finalize (object);
 }
@@ -413,6 +444,8 @@ kms_rtp_end_point_class_init (KmsRtpEndPointClass * klass)
       kms_rtp_end_point_set_transport_to_sdp;
   base_sdp_end_point_class->start_transport_send =
       kms_rtp_end_point_start_transport_send;
+
+  g_type_class_add_private (klass, sizeof (KmsRtpEndPointPrivate));
 }
 
 static gboolean
@@ -420,7 +453,7 @@ kms_rtp_end_point_connect_video_rtcp (KmsRtpEndPoint * rtp_end_point)
 {
   GST_DEBUG ("connect_video_rtcp");
   gst_element_link_pads (KMS_BASE_RTP_END_POINT (rtp_end_point)->rtpbin,
-      "send_rtcp_src_1", rtp_end_point->video_rtcp_udpsink, "sink");
+      "send_rtcp_src_1", rtp_end_point->priv->video_rtcp_udpsink, "sink");
   return FALSE;
 }
 
@@ -429,7 +462,7 @@ kms_rtp_end_point_connect_audio_rtcp (KmsRtpEndPoint * rtp_end_point)
 {
   GST_DEBUG ("connect_audio_rtcp");
   gst_element_link_pads (KMS_BASE_RTP_END_POINT (rtp_end_point)->rtpbin,
-      "send_rtcp_src_0", rtp_end_point->audio_rtcp_udpsink, "sink");
+      "send_rtcp_src_0", rtp_end_point->priv->audio_rtcp_udpsink, "sink");
   return FALSE;
 }
 
@@ -439,7 +472,7 @@ kms_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 {
   if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_0") == 0) {
     KMS_ELEMENT_LOCK (rtp_end_point);
-    if (rtp_end_point->audio_rtp_udpsink == NULL) {
+    if (rtp_end_point->priv->audio_rtp_udpsink == NULL) {
       GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
 
       GST_WARNING ("RtpEndPoint not configured to send audio");
@@ -451,8 +484,8 @@ kms_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
       return;
     }
 
-    gst_element_link_pads (rtpbin,
-        "send_rtp_src_0", rtp_end_point->audio_rtp_udpsink, "sink");
+    gst_element_link_pads (rtpbin, "send_rtp_src_0",
+        rtp_end_point->priv->audio_rtp_udpsink, "sink");
 
     g_idle_add_full (G_PRIORITY_DEFAULT,
         (GSourceFunc) (kms_rtp_end_point_connect_audio_rtcp),
@@ -460,7 +493,7 @@ kms_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     KMS_ELEMENT_UNLOCK (rtp_end_point);
   } else if (g_strcmp0 (GST_OBJECT_NAME (pad), "send_rtp_src_1") == 0) {
     KMS_ELEMENT_LOCK (rtp_end_point);
-    if (rtp_end_point->video_rtp_udpsink == NULL) {
+    if (rtp_end_point->priv->video_rtp_udpsink == NULL) {
       GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
 
       GST_WARNING ("RtpEndPoint not configured to send video");
@@ -473,7 +506,7 @@ kms_rtp_end_point_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     }
 
     gst_element_link_pads (rtpbin, "send_rtp_src_1",
-        rtp_end_point->video_rtp_udpsink, "sink");
+        rtp_end_point->priv->video_rtp_udpsink, "sink");
 
     g_idle_add_full (G_PRIORITY_DEFAULT,
         (GSourceFunc) kms_rtp_end_point_connect_video_rtcp,
@@ -490,43 +523,51 @@ kms_rtp_end_point_init (KmsRtpEndPoint * rtp_end_point)
   GstElement *audio_rtp_src, *audio_rtcp_src, *video_rtp_src, *video_rtcp_src;
   gint retries = 0;
 
-  rtp_end_point->audio_rtp_socket = NULL;
-  rtp_end_point->audio_rtcp_socket = NULL;
+  rtp_end_point->priv = KMS_RTP_END_POINT_GET_PRIVATE (rtp_end_point);
 
-  rtp_end_point->video_rtp_socket = NULL;
-  rtp_end_point->video_rtcp_socket = NULL;
+  rtp_end_point->priv->audio_rtp_socket = NULL;
+  rtp_end_point->priv->audio_rtcp_socket = NULL;
+
+  rtp_end_point->priv->video_rtp_socket = NULL;
+  rtp_end_point->priv->video_rtcp_socket = NULL;
 
   while (!kms_rtp_end_point_get_rtp_rtcp_sockets
-      (&rtp_end_point->audio_rtp_socket, &rtp_end_point->audio_rtcp_socket)
+      (&rtp_end_point->priv->audio_rtp_socket,
+          &rtp_end_point->priv->audio_rtcp_socket)
       && retries++ < MAX_RETRIES) {
     GST_DEBUG ("Getting ports for audio failed, retring");
   }
 
-  if (rtp_end_point->audio_rtp_socket == NULL)
+  if (rtp_end_point->priv->audio_rtp_socket == NULL)
     return;
 
   retries = 0;
   while (!kms_rtp_end_point_get_rtp_rtcp_sockets
-      (&rtp_end_point->video_rtp_socket, &rtp_end_point->video_rtcp_socket)
+      (&rtp_end_point->priv->video_rtp_socket,
+          &rtp_end_point->priv->video_rtcp_socket)
       && retries++ < MAX_RETRIES) {
     GST_DEBUG ("Getting ports for video failed, retring");
   }
 
-  if (rtp_end_point->video_rtp_socket == NULL) {
-    finalize_socket (&rtp_end_point->audio_rtp_socket);
-    finalize_socket (&rtp_end_point->audio_rtcp_socket);
+  if (rtp_end_point->priv->video_rtp_socket == NULL) {
+    finalize_socket (&rtp_end_point->priv->audio_rtp_socket);
+    finalize_socket (&rtp_end_point->priv->audio_rtcp_socket);
     return;
   }
 
   GST_DEBUG ("Audio Rtp Port: %d",
-      kms_rtp_end_point_get_socket_port (rtp_end_point->audio_rtp_socket));
+      kms_rtp_end_point_get_socket_port (rtp_end_point->priv->
+          audio_rtp_socket));
   GST_DEBUG ("Audio Rtcp Port: %d",
-      kms_rtp_end_point_get_socket_port (rtp_end_point->audio_rtcp_socket));
+      kms_rtp_end_point_get_socket_port (rtp_end_point->priv->
+          audio_rtcp_socket));
 
   GST_DEBUG ("Video Rtp Port: %d",
-      kms_rtp_end_point_get_socket_port (rtp_end_point->video_rtp_socket));
+      kms_rtp_end_point_get_socket_port (rtp_end_point->priv->
+          video_rtp_socket));
   GST_DEBUG ("Video Rtcp Port: %d",
-      kms_rtp_end_point_get_socket_port (rtp_end_point->video_rtcp_socket));
+      kms_rtp_end_point_get_socket_port (rtp_end_point->priv->
+          video_rtcp_socket));
 
   audio_rtp_src = gst_element_factory_make ("udpsrc", "audio_rtp_src");
   audio_rtcp_src = gst_element_factory_make ("udpsrc", "audio_rtcp_src");
@@ -534,13 +575,15 @@ kms_rtp_end_point_init (KmsRtpEndPoint * rtp_end_point)
   video_rtp_src = gst_element_factory_make ("udpsrc", "video_rtp_src");
   video_rtcp_src = gst_element_factory_make ("udpsrc", "video_rtcp_src");
 
-  g_object_set (audio_rtp_src, "socket", rtp_end_point->audio_rtp_socket, NULL);
-  g_object_set (audio_rtcp_src, "socket", rtp_end_point->audio_rtcp_socket,
+  g_object_set (audio_rtp_src, "socket", rtp_end_point->priv->audio_rtp_socket,
       NULL);
+  g_object_set (audio_rtcp_src, "socket",
+      rtp_end_point->priv->audio_rtcp_socket, NULL);
 
-  g_object_set (video_rtp_src, "socket", rtp_end_point->video_rtp_socket, NULL);
-  g_object_set (video_rtcp_src, "socket", rtp_end_point->video_rtcp_socket,
+  g_object_set (video_rtp_src, "socket", rtp_end_point->priv->video_rtp_socket,
       NULL);
+  g_object_set (video_rtcp_src, "socket",
+      rtp_end_point->priv->video_rtcp_socket, NULL);
 
   gst_bin_add_many (GST_BIN (rtp_end_point), audio_rtp_src, audio_rtcp_src,
       video_rtp_src, video_rtcp_src, NULL);
