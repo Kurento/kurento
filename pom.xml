@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-api</artifactId>
-	<version>3.0.6</version>
+	<version>3.0.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -194,7 +194,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kmf-content-api-3.0.6</tag>
+		<tag>develop</tag>
 	</scm>
 
 </project>
