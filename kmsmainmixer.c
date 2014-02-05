@@ -107,6 +107,9 @@ kms_main_mixer_port_data_destroy (gpointer data)
       port_data->video_agnostic, NULL);
   KMS_MAIN_MIXER_UNLOCK (self);
 
+  gst_element_set_state (port_data->audio_agnostic, GST_STATE_NULL);
+  gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
+
   g_clear_object (&port_data->audio_agnostic);
   g_clear_object (&port_data->video_agnostic);
 
