@@ -240,6 +240,10 @@ kms_base_mixer_unlink_pad (KmsBaseMixer * mixer, const gchar * gp_name)
 
   gp = gst_element_get_static_pad (GST_ELEMENT (mixer), gp_name);
 
+  if (gp == NULL) {
+    return TRUE;
+  }
+
   return gst_ghost_pad_set_target (GST_GHOST_PAD (gp), NULL);
 }
 
