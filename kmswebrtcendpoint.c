@@ -655,13 +655,14 @@ update_sdp_media (KmsWebrtcEndPoint * webrtc_end_point, GstSDPMedia * media,
   g_slist_free_full (candidates, (GDestroyNotify) nice_candidate_free);
 
   if (rtpbin_pad_name != NULL) {
-    guint ssrc = rtpbin_get_ssrc (base_rtp_end_point->rtpbin, rtpbin_pad_name);
+    GstElement *rtpbin = kms_base_rtp_end_point_get_rtpbin (base_rtp_end_point);
+    guint ssrc = rtpbin_get_ssrc (rtpbin, rtpbin_pad_name);
 
     if (ssrc != 0) {
       gchar *value;
       GstStructure *sdes;
 
-      g_object_get (base_rtp_end_point->rtpbin, "sdes", &sdes, NULL);
+      g_object_get (rtpbin, "sdes", &sdes, NULL);
       value =
           g_strdup_printf ("%" G_GUINT32_FORMAT " cname:%s", ssrc,
           gst_structure_get_string (sdes, "cname"));
@@ -820,7 +821,7 @@ add_webrtc_transport_src (KmsWebrtcEndPoint * webrtc_end_point,
 
   gst_element_link (tr->nicesrc, tr->dtlssrtpdec);
   gst_element_link_pads (tr->dtlssrtpdec, "src",
-      base_rtp_end_point->rtpbin, sink_pad_name);
+      kms_base_rtp_end_point_get_rtpbin (base_rtp_end_point), sink_pad_name);
 
   gst_element_sync_state_with_parent_target_state (tr->dtlssrtpdec);
   gst_element_sync_state_with_parent_target_state (tr->nicesrc);
@@ -855,22 +856,23 @@ rtp_ssrc_demux_new_ssrc_pad (GstElement * ssrcdemux, guint ssrc, GstPad * pad,
   KmsBaseRtpEndPoint *base_rtp_end_point =
       KMS_BASE_RTP_END_POINT (webrtc_end_point);
   gchar *rtcp_pad_name;
+  GstElement *rtpbin;
 
   GST_DEBUG ("pad: %" GST_PTR_FORMAT " ssrc: %" G_GUINT32_FORMAT, pad, ssrc);
   rtcp_pad_name = g_strconcat ("rtcp_", GST_OBJECT_NAME (pad), NULL);
 
   KMS_ELEMENT_LOCK (base_rtp_end_point);
-
+  rtpbin = kms_base_rtp_end_point_get_rtpbin (base_rtp_end_point);
   if (webrtc_end_point->priv->remote_audio_ssrc == ssrc) {
-    gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad),
-        base_rtp_end_point->rtpbin, AUDIO_RTPBIN_RECV_RTP_SINK);
-    gst_element_link_pads (ssrcdemux, rtcp_pad_name,
-        base_rtp_end_point->rtpbin, AUDIO_RTPBIN_RECV_RTCP_SINK);
+    gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad), rtpbin,
+        AUDIO_RTPBIN_RECV_RTP_SINK);
+    gst_element_link_pads (ssrcdemux, rtcp_pad_name, rtpbin,
+        AUDIO_RTPBIN_RECV_RTCP_SINK);
   } else if (webrtc_end_point->priv->remote_video_ssrc == ssrc) {
-    gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad),
-        base_rtp_end_point->rtpbin, VIDEO_RTPBIN_RECV_RTP_SINK);
-    gst_element_link_pads (ssrcdemux, rtcp_pad_name,
-        base_rtp_end_point->rtpbin, VIDEO_RTPBIN_RECV_RTCP_SINK);
+    gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad), rtpbin,
+        VIDEO_RTPBIN_RECV_RTP_SINK);
+    gst_element_link_pads (ssrcdemux, rtcp_pad_name, rtpbin,
+        VIDEO_RTPBIN_RECV_RTCP_SINK);
   }
 
   KMS_ELEMENT_UNLOCK (base_rtp_end_point);
@@ -1208,7 +1210,7 @@ connect_bundle_rtcp_funnel (ConnectRtcpBundleData * data)
 
   KMS_ELEMENT_LOCK (base_rtp_end_point);
 
-  gst_element_link_pads (base_rtp_end_point->rtpbin,
+  gst_element_link_pads (kms_base_rtp_end_point_get_rtpbin (base_rtp_end_point),
       data->src_pad_name, data->webrtc_end_point->priv->bundle_rtcp_funnel,
       "sink_%u");
 
@@ -1511,8 +1513,8 @@ kms_webrtc_end_point_init (KmsWebrtcEndPoint * self)
 
   g_main_context_unref (context);
 
-  g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
-      G_CALLBACK (rtpbin_pad_added), self);
+  g_signal_connect (kms_base_rtp_end_point_get_rtpbin (base_rtp_end_point),
+      "pad-added", G_CALLBACK (rtpbin_pad_added), self);
 }
 
 gboolean

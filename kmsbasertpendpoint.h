@@ -48,7 +48,6 @@ struct _KmsBaseRtpEndPoint
 {
   KmsBaseSdpEndPoint parent;
 
-  GstElement *rtpbin;
   KmsBaseRtpEndPointPrivate *priv;
 };
 
@@ -63,6 +62,8 @@ struct _KmsBaseRtpEndPointClass
 };
 
 GType kms_base_rtp_end_point_get_type (void);
+
+GstElement *kms_base_rtp_end_point_get_rtpbin (KmsBaseRtpEndPoint * self);
 
 G_END_DECLS
 #endif /* __KMS_BASE_RTP_END_POINT_H__ */

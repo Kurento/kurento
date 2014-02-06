@@ -455,8 +455,9 @@ static gboolean
 kms_rtp_end_point_connect_video_rtcp (KmsRtpEndPoint * rtp_end_point)
 {
   GST_DEBUG ("connect_video_rtcp");
-  gst_element_link_pads (KMS_BASE_RTP_END_POINT (rtp_end_point)->rtpbin,
-      "send_rtcp_src_1", rtp_end_point->priv->video_rtcp_udpsink, "sink");
+  gst_element_link_pads (kms_base_rtp_end_point_get_rtpbin
+      (KMS_BASE_RTP_END_POINT (rtp_end_point)), "send_rtcp_src_1",
+      rtp_end_point->priv->video_rtcp_udpsink, "sink");
   return FALSE;
 }
 
@@ -464,8 +465,9 @@ static gboolean
 kms_rtp_end_point_connect_audio_rtcp (KmsRtpEndPoint * rtp_end_point)
 {
   GST_DEBUG ("connect_audio_rtcp");
-  gst_element_link_pads (KMS_BASE_RTP_END_POINT (rtp_end_point)->rtpbin,
-      "send_rtcp_src_0", rtp_end_point->priv->audio_rtcp_udpsink, "sink");
+  gst_element_link_pads (kms_base_rtp_end_point_get_rtpbin
+      (KMS_BASE_RTP_END_POINT (rtp_end_point)), "send_rtcp_src_0",
+      rtp_end_point->priv->audio_rtcp_udpsink, "sink");
   return FALSE;
 }
 
@@ -523,7 +525,8 @@ kms_rtp_end_point_init (KmsRtpEndPoint * rtp_end_point)
 {
   KmsBaseRtpEndPoint *base_rtp_end_point =
       KMS_BASE_RTP_END_POINT (rtp_end_point);
-  GstElement *audio_rtp_src, *audio_rtcp_src, *video_rtp_src, *video_rtcp_src;
+  GstElement *audio_rtp_src, *audio_rtcp_src, *video_rtp_src, *video_rtcp_src,
+      *rtpbin;
   gint retries = 0;
 
   rtp_end_point->priv = KMS_RTP_END_POINT_GET_PRIVATE (rtp_end_point);
@@ -591,17 +594,13 @@ kms_rtp_end_point_init (KmsRtpEndPoint * rtp_end_point)
   gst_bin_add_many (GST_BIN (rtp_end_point), audio_rtp_src, audio_rtcp_src,
       video_rtp_src, video_rtcp_src, NULL);
 
-  gst_element_link_pads (audio_rtp_src, "src", base_rtp_end_point->rtpbin,
-      "recv_rtp_sink_%u");
-  gst_element_link_pads (audio_rtcp_src, "src", base_rtp_end_point->rtpbin,
-      "recv_rtcp_sink_%u");
+  rtpbin = kms_base_rtp_end_point_get_rtpbin (base_rtp_end_point);
+  gst_element_link_pads (audio_rtp_src, "src", rtpbin, "recv_rtp_sink_%u");
+  gst_element_link_pads (audio_rtcp_src, "src", rtpbin, "recv_rtcp_sink_%u");
+  gst_element_link_pads (video_rtp_src, "src", rtpbin, "recv_rtp_sink_%u");
+  gst_element_link_pads (video_rtcp_src, "src", rtpbin, "recv_rtcp_sink_%u");
 
-  gst_element_link_pads (video_rtp_src, "src", base_rtp_end_point->rtpbin,
-      "recv_rtp_sink_%u");
-  gst_element_link_pads (video_rtcp_src, "src", base_rtp_end_point->rtpbin,
-      "recv_rtcp_sink_%u");
-
-  g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
+  g_signal_connect (rtpbin, "pad-added",
       G_CALLBACK (kms_rtp_end_point_rtpbin_pad_added), rtp_end_point);
 }
 

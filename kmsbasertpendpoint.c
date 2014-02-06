@@ -48,6 +48,8 @@ G_DEFINE_TYPE (KmsBaseRtpEndPoint, kms_base_rtp_end_point,
 
 struct _KmsBaseRtpEndPointPrivate
 {
+  GstElement *rtpbin;
+
   GstElement *audio_payloader;
   GstElement *video_payloader;
 
@@ -200,7 +202,7 @@ kms_base_rtp_end_point_connect_valve_to_payloader (KmsBaseRtpEndPoint * ep,
   gst_element_sync_state_with_parent (payloader);
 
   gst_element_link (valve, payloader);
-  gst_element_link_pads (payloader, "src", ep->rtpbin, rtpbin_pad_name);
+  gst_element_link_pads (payloader, "src", ep->priv->rtpbin, rtpbin_pad_name);
 
   g_object_set (valve, "drop", FALSE, NULL);
 }
@@ -670,36 +672,45 @@ kms_base_rtp_end_point_init (KmsBaseRtpEndPoint * base_rtp_end_point)
 {
   base_rtp_end_point->priv =
       KMS_BASE_RTP_END_POINT_GET_PRIVATE (base_rtp_end_point);
-  base_rtp_end_point->rtpbin = gst_element_factory_make ("rtpbin", RTPBIN);
+  base_rtp_end_point->priv->rtpbin =
+      gst_element_factory_make ("rtpbin", RTPBIN);
 
-  g_signal_connect (base_rtp_end_point->rtpbin, "request-pt-map",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "request-pt-map",
       G_CALLBACK (kms_base_rtp_end_point_request_pt_map), base_rtp_end_point);
 
-  g_signal_connect (base_rtp_end_point->rtpbin, "pad-added",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "pad-added",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_pad_added), base_rtp_end_point);
 
-  g_signal_connect (base_rtp_end_point->rtpbin, "on-new-ssrc",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "on-new-ssrc",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_new_ssrc),
       base_rtp_end_point);
-  g_signal_connect (base_rtp_end_point->rtpbin, "on-ssrc-sdes",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "on-ssrc-sdes",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_ssrc_sdes),
       base_rtp_end_point);
-  g_signal_connect (base_rtp_end_point->rtpbin, "on-bye-ssrc",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "on-bye-ssrc",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_bye_ssrc),
       base_rtp_end_point);
-  g_signal_connect (base_rtp_end_point->rtpbin, "on-bye-timeout",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "on-bye-timeout",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_bye_timeout),
       base_rtp_end_point);
-  g_signal_connect (base_rtp_end_point->rtpbin, "on-sender-timeout",
+  g_signal_connect (base_rtp_end_point->priv->rtpbin, "on-sender-timeout",
       G_CALLBACK (kms_base_rtp_end_point_rtpbin_on_sender_timeout),
       base_rtp_end_point);
 
-  g_object_set (base_rtp_end_point->rtpbin, "do-lost", TRUE, NULL);
+  g_object_set (base_rtp_end_point->priv->rtpbin, "do-lost", TRUE, NULL);
   g_object_set (base_rtp_end_point, "accept-eos", FALSE, NULL);
 
-  gst_bin_add (GST_BIN (base_rtp_end_point), base_rtp_end_point->rtpbin);
+  gst_bin_add (GST_BIN (base_rtp_end_point), base_rtp_end_point->priv->rtpbin);
 
   base_rtp_end_point->priv->audio_payloader = NULL;
   base_rtp_end_point->priv->video_payloader = NULL;
   base_rtp_end_point->priv->negotiated = FALSE;
+}
+
+GstElement *
+kms_base_rtp_end_point_get_rtpbin (KmsBaseRtpEndPoint * self)
+{
+  g_return_val_if_fail (KMS_IS_BASE_RTP_END_POINT (self), NULL);
+
+  return self->priv->rtpbin;
 }
