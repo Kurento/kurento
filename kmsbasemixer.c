@@ -352,6 +352,13 @@ kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
         gst_element_class_get_pad_template (GST_ELEMENT_CLASS
         (G_OBJECT_GET_CLASS (mixer)), template_name);
     gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
+
+    if (GST_STATE (mixer) >= GST_STATE_PAUSED
+        || GST_STATE_PENDING (mixer) >= GST_STATE_PAUSED
+        || GST_STATE_TARGET (mixer) >= GST_STATE_PAUSED) {
+      gst_pad_set_active (gp, TRUE);
+    }
+
     ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
     if (!ret) {
       g_object_unref (gp);
@@ -411,6 +418,13 @@ kms_base_mixer_create_and_link_ghost_pad (KmsBaseMixer * mixer,
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS
       (G_OBJECT_GET_CLASS (mixer)), gp_template_name);
   gp = gst_ghost_pad_new_from_template (gp_name, target, templ);
+
+  if (GST_STATE (mixer) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (mixer) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (mixer) >= GST_STATE_PAUSED) {
+    gst_pad_set_active (gp, TRUE);
+  }
+
   ret = gst_element_add_pad (GST_ELEMENT (mixer), gp);
 
   if (ret) {
