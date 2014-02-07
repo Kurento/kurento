@@ -37,7 +37,8 @@ in the Media API.
 Javadoc
 -------
 
-`Javadoc of the Kurento Media API  <../_static/index.html?com/kurento/kmf/repository/package-summary.html>`__ classes.
+This is the standard `javadoc of the Kurento Media API  <../_static/index.html?com/kurento/kmf/media/package-summary.html>`__
+classes.
 
 API Classes
 -----------
