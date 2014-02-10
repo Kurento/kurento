@@ -1177,12 +1177,10 @@ public class RepositoryHttpServlet extends HttpServlet {
 	 * stream, and ensure that both streams are closed before returning (even in
 	 * the face of an exception).
 	 * 
-	 * @param resource
+	 * @param repoItemHttpElem
 	 *            The cache entry for the source resource
-	 * @param is
-	 *            The input stream to read the source resource from
-	 * @param ostream
-	 *            The output stream to write to
+	 * @param response
+	 *            The HttpResponse where the resource will be copied
 	 * 
 	 * @exception IOException
 	 *                if an input/output error occurs
@@ -1199,10 +1197,10 @@ public class RepositoryHttpServlet extends HttpServlet {
 	 * 
 	 * @param repoItemHttpElem
 	 *            The cache entry for the source resource
-	 * @param ostream
-	 *            The output stream to write to
+	 * @param response
+	 *            The response we are writing to
 	 * @param range
-	 *            Range the client wanted to retrieve
+	 *            Range asked by the client
 	 * @exception IOException
 	 *                if an input/output error occurs
 	 */
@@ -1243,8 +1241,8 @@ public class RepositoryHttpServlet extends HttpServlet {
 	 * 
 	 * @param repoItemHttpElem
 	 *            The cache entry for the source resource
-	 * @param ostream
-	 *            The output stream to write to
+	 * @param response
+	 *            The response we are writing to
 	 * @param ranges
 	 *            Enumeration of the ranges the client wanted to retrieve
 	 * @param contentType
@@ -1350,10 +1348,9 @@ public class RepositoryHttpServlet extends HttpServlet {
 	 *            The input stream to read from
 	 * @param ostream
 	 *            The output stream to write to
-	 * @param start
-	 *            Start of the range which will be copied
-	 * @param end
-	 *            End of the range which will be copied
+	 * @param range
+	 *            Range we are copying
+	 *
 	 * @return Exception which occurred during processing
 	 */
 	protected IOException copyStreamsRange(InputStream istream,
