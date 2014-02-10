@@ -14,10 +14,13 @@
  */
 package com.kurento.demo.webrtc;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.FaceOverlayFilter;
+import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
 
 /**
@@ -29,14 +32,32 @@ import com.kurento.kmf.media.MediaPipeline;
 @WebRtcContentService(path = "/webRtcFaceOverlayLoopback")
 public class WebRtcFaceOverlayLoopback extends WebRtcContentHandler {
 
+	@Autowired
+	private MediaApiConfiguration config;
+
+	public static FaceOverlayFilter filter = null;
+
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
 			throws Exception {
-		String imageUri = "/opt/img/fireman.png";
+
+		String imageUrl = contentSession.getHttpServletRequest().getScheme()
+				+ "://" + config.getHandlerAddress() + ":"
+				+ contentSession.getHttpServletRequest().getServerPort()
+				+ contentSession.getHttpServletRequest().getContextPath()
+				+ "/img/masks/mario-wings.png";
+
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
-		FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
-		filter.setOverlayedImage(imageUri, 0.0F, 0.6F, 1.2F, 0.8F);
+		filter = mp.newFaceOverlayFilter().build();
+		filter.setOverlayedImage(imageUrl, -0.35F, -1.2F, 1.6F, 1.6F);
 		contentSession.start(filter, filter);
+	}
+
+	@Override
+	public void onSessionTerminated(WebRtcContentSession contentSession,
+			int code, String reason) throws Exception {
+		super.onSessionTerminated(contentSession, code, reason);
+		filter = null;
 	}
 }

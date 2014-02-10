@@ -57,8 +57,6 @@ public class Videos {
 
 	private static final Logger log = LoggerFactory.getLogger(Videos.class);
 
-	private static final String PLAYLIST_TOKEN = "PL58tWS2XjtialwG-eWDYoFwQpHTd5vDEE";
-
 	/** Global instance of Youtube object to make all API requests. */
 	private static YouTube youtube;
 
@@ -81,7 +79,8 @@ public class Videos {
 		}
 	}
 
-	public static Video upload(String url, List<String> tags) {
+	public static Video upload(String url, String playListToken,
+			List<String> tags) {
 		Video uploadedVideo;
 
 		try {
@@ -148,7 +147,7 @@ public class Videos {
 			uploader.setProgressListener(progressListener);
 
 			uploadedVideo = videoInsert.execute();
-			String playListItemId = Playlists.insertItem(PLAYLIST_TOKEN,
+			String playListItemId = Playlists.insertItem(playListToken,
 					uploadedVideo.getId());
 
 			// Print out returned results.

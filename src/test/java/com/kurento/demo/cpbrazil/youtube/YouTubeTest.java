@@ -51,7 +51,8 @@ public class YouTubeTest {
 				"Software Engineering", "Augmented Reality", "Computer Vision",
 				"Super Mario", "Sonic", "Street Fighter", "Donkey Kong");
 		Video video = Videos.upload(
-				"http://193.147.51.29/campus-party-1389874842998", tags);
+				"http://193.147.51.29/campus-party-1389874842998",
+				PLAYLIST_TOKEN, tags);
 		Assert.assertNotNull(video);
 		Videos.delete(video);
 	}

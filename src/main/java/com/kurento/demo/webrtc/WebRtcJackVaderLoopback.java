@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -24,16 +24,27 @@ import com.kurento.kmf.media.MediaPipeline;
  * WebRTC handler with JackVaderFilter, in loopback.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.1
+ * @since 1.0.1
  */
 @WebRtcContentService(path = "/webRtcJackVaderLoopback")
 public class WebRtcJackVaderLoopback extends WebRtcContentHandler {
+
+	public static JackVaderFilter filter = null;
+
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
 			throws Exception {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
+		filter = mp.newJackVaderFilter().build();
 		contentSession.start(filter, filter);
 	}
+
+	@Override
+	public void onSessionTerminated(WebRtcContentSession contentSession,
+			int code, String reason) throws Exception {
+		super.onSessionTerminated(contentSession, code, reason);
+		filter = null;
+	}
+
 }

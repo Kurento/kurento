@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -19,21 +19,32 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * WebRtc Handler in loopback.
  * 
  * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 @WebRtcContentService(path = "/webRtcLoopback")
 public class WebRtcLoopback extends WebRtcContentHandler {
+
+	public static WebRtcEndpoint webRtcEndpoint = null;
 
 	@Override
 	public void onContentRequest(WebRtcContentSession session) throws Exception {
 		MediaPipeline mp = session.getMediaPipelineFactory().create();
 		session.releaseOnTerminate(mp);
 		session.start(null, (MediaElement) null);
+		webRtcEndpoint = session.getSessionEndpoint();
+	}
+
+	@Override
+	public void onSessionTerminated(WebRtcContentSession contentSession,
+			int code, String reason) throws Exception {
+		super.onSessionTerminated(contentSession, code, reason);
+		webRtcEndpoint = null;
 	}
 
 }
