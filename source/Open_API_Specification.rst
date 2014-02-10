@@ -7,8 +7,8 @@
 Introduction
 ============
 
-The Stream Oriented API is a RESTful resource-oriented API accessed via
-HTTP/HTTPS that uses JSON-RPC V2.0 based representations for information
+The Stream Oriented API is a :term:`REST`\ful resource-oriented API accessed via
+HTTP/HTTPS that uses :term:`JSON-RPC` V2.0 based representations for information
 exchange. This document describes the API exposed by the Application
 Server as defined in the :doc:`Kurento Architecture Description <Architecture>`.
 
@@ -17,7 +17,7 @@ Intended Audience
 
 This specification is intended for both software developers and
 implementors of this GE. For developers, this document details the
-RESTful API to build interactive multimedia applications compliant with
+:term:`REST`\ful API to build interactive multimedia applications compliant with
 the :doc:`Kurento Architecture Description <Architecture>`.
 Implementors can build their GEi APIs based on the information contained
 in this specification.
@@ -27,7 +27,7 @@ Before reading this document it is recommended to read first the
 the :doc:`Programmers Guide <Developer_and_Programmer_Guide>`.
 Moreover, the reader should be also familiar with:
 
--  RESTful web services
+-  :term:`REST` and RESTful web services
 -  `HTTP/1.1 (RFC2616) <http://www.ietf.org/rfc/rfc2616.txt>`__
 -  `JSON <http://www.ietf.org/rfc/rfc4627.txt?number=4627>`__ data
    serialization format.

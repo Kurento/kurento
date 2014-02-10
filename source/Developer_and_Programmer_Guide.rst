@@ -63,7 +63,7 @@ Things you need to know before start programing
 -  `Spring framework <http://spring.io/>`__ is extensively used for
    lifecycle management of *Java* components. Developers are not
    required to develop ''Spring '' applications when using the *Stream
-   Oriented GE Kurento* in *JEE* environments, but they'll have to in
+   Oriented GE Kurento* in :term:`Java EE` environments, but they'll have to in
    stand-alone *Java* applications.
 
 Quick start
@@ -80,10 +80,10 @@ Basic Setup
    engine providing media processing and delivery.
 
 -  ***Install and configure JBoss 7 Application Server***: This is a
-   *JEE* container that hosts the server side of applications. Other
+   :term:`Java EE` container that hosts the server side of applications. Other
    *Java* enterprise servers can be used, although no support from
    *Kurento* will be provided. This server will also be called *Kurento
-   Application Server* (*KAS*) through the document.
+   Application Server* (:term:`KAS`) through the document.
 
 The  :doc:`Kurento Installation and Administration
 Guide <Installation_Guide>`

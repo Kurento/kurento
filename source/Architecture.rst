@@ -10,7 +10,7 @@ development of complex interactive multimedia applications through a
 rich family of APIs and toolboxes, which include:
 
 -  **Content API**: The :doc:`KMF Content API <kmf-content-api/packages>`
-   is a Java API bringing all the power of Java EE
+   is a Java API bringing all the power of :term:`Java EE`
    technologies to the multimedia arena. This API will be particularly
    natural and intuitive for developers familiar with the Servlet API.
 
@@ -21,8 +21,8 @@ rich family of APIs and toolboxes, which include:
    non-expert developers to create complex and interoperable multimedia
    applications.
 
--  **Open API**: The :doc:`Open_API_Specification` is a REST-like API
-   based on JSON RPC 2.0 opening Kurento capabilities through a standard
+-  **Open API**: The :doc:`Open_API_Specification` is a `REST`:term:-like API
+   based on JSON-RPC 2.0 opening Kurento capabilities through a standard
    HTTP network connection.
 
 -  **Open Thrift API**: a network API exposing the Stream Oriented GE
@@ -193,9 +193,9 @@ The right side of the picture shows the Application Server, which is
 in charge of the signaling plane and contains the business logic and
 connectors of the particular multimedia application being deployed. It
 is based on Java EE and includes well known and mature technologies such
-as HTTP and SIP Servlets, Web Services, database connectors, messaging
+as `HTTP`:term: and `SIP`:term: Servlets, Web Services, database connectors, messaging
 services, etc. Thanks to this, this plane provides access to the
-multimedia signaling protocols commonly used by end-clients such as SIP,
+multimedia signaling protocols commonly used by end-clients such as `SIP`:term:,
 RESTful and raw HTTP based formats, SOAP, RMI, CORBA or JMS. These
 signaling protocols are used by client applications to command the
 creation of media sessions and to negotiate their desired
@@ -281,7 +281,7 @@ Following this, the role of the different APIs can be summarized in the followin
    Content API developers require a Java EE compatible Application
    Server.
 -  **Open API**: is a network API exposing the capabilities of the
-   Content API through a REST-like protocol based on the JSON RPC
+   Content API through a `REST`:term:-like protocol based on the `JSON-RPC`:term:
    standard. To some extent, the Open API is the signaling protocol
    associated to the Content API. In addition, the Open API provides a
    mechanism for accessing and managing Media API capabilities directly.
@@ -447,7 +447,7 @@ applications they can be reduced to the following conceptual scheme:
 As it can be observed, at a first stage, a client (a browser in a
 computer, a mobile application, etc.) issues a message requesting some
 kind of capability from the Stream Oriented GE. This message is based on
-a JSON RPC V2.0 representation and fulfills the Open API specification.
+a JSON-RPC V2.0 representation and fulfills the Open API specification.
 It can be generated directly from the client application or, in case of
 web applications, indirectly consuming the abstract HTML5 SDK. For
 instance, that request could ask for the visualization of a given video
@@ -645,58 +645,71 @@ and adding the hat to it.
 Basic Design Principles
 =======================
 
-The Stream-oriented GE is designed based on the following main
-principles:
+Kurento is designed based on the following main principles:
 
--  Signaling and Media are two separate planes and the GE is designed
-   according to that split.
+    **Separate Media and Signalling Planes**
+        :term:`Signalling <signalling plane>` and :term:`Media <media plane>`
+        are two separate planes and Kurento is designed so that applications
+        can handle separately those facets of multimedia processing.
 
--  Media and Application servers can be collocated or distributed among
-   different machines.
+    **Distribution of Media and Application Services**
+        Media (:term:`KMS`) and Application (:term:`KAS`) servers can
+        be collocated, scalated or distributed among different machines.
 
--  A single Application Server can invoke the services of more than one
-   Media Server. The opposite also applies, that is, a Media Server can
-   attend the requests of more than one Application Server.
+        A single Application Server can invoke the services of more than one
+        Media Server. The opposite also applies, that is, a Media Server can
+        attend the requests of more than one Application Server.
 
--  The GE is suitable to be integrated into cloud environments to act as
-   a PaaS (Platform as a Service).
+    **Suitable for the Cloud**
+        Kurento is suitable to be integrated into cloud environments to act
+        as a PaaS (Platform as a Service) component.
 
--  Chaining Media Elements in the way of Media Pipelines is an intuitive
-   approach to challenge the complexities of multimedia communications.
+    **Media Pipelines**
+        Chaining :term:`Media Elements <element, media>` via :term:`Media
+        Pipelines <pipeline, media>` is an intuitive approach to challenge
+        the complexity of Multimedia processing.
 
--  In a Media Pipeline there exists a global clock suitable for the
-   synchronization of different media elements
+        In a Media Pipeline there exists a global clock suitable for the
+        synchronization of different media elements
 
--  Developers do not need to be aware of internal Media Server
-   complexities, all the applications are deployed in the JEE
-   Application Server.
+    **Application development**
+        Developers do not need to be aware of internal Media Server
+        complexities, all the applications are deployed in the :term:`Java EE`
+        Application Server.
 
--  Client-side SDKs are provided to simplify the application development
-   on smartphones and WWW desktop environments.
+        Client-side SDKs are provided to simplify the application development
+        for smartphones and Web browsers.
 
--  The GE provides end-to-end communication capabilities so developers
-   do not need to deal with the complexity of transporting,
-   encoding/decoding and rendering media on client devices.
+    **End-to-end Communication Capability**
+        Kurento provides end-to-end communication capabilities so developers
+        do not need to deal with the complexity of transporting,
+        encoding/decoding and rendering media on client devices.
 
--  The GE enables not only interactive interpersonal communications
-   (e.g. Skype-like with conversational call push/reception
-   capabilities), but also human- to-machine (e.g. Video on Demand
-   through real-time streaming) and machine-to-machine (e.g. remote
-   video recording, multisensory data exchange) communications.
+    **Fully Processable Media Streams**
+       Kurento enables not only interactive interpersonal communications
+       (e.g. Skype-like with conversational call push/reception
+       capabilities), but also human-to-machine (e.g. Video on Demand
+       through real-time streaming) and machine-to-machine (e.g. remote
+       video recording, multisensory data exchange) communications.
 
--  Modularization achieved through media elements and pipelines allows
-   defining the media processing functionality of an application through
-   a “graph-oriented” language, where the application developer is able
-   to create the desired logic just by chaining the appropriate
-   functionalities.
+    **Modular Processing of Media**
+       Modularization achieved through :term:`media elements <element, media>`
+       and :term:`pipelines <pipeline, media>` allows defining the media
+       processing functionality of an application through a “graph-oriented”
+       language, where the application developer is able to create the
+       desired logic by chaining the appropriate functionalities.
 
--  The GE is able to generate rich and detailed information for QoS
-   monitoring, billing and auditing.
+    **Auditable Processing**
+        Kurento is able to generate rich and detailed information for QoS
+        monitoring, billing and auditing.
 
--  The GE supports seamless IMS integration.
+    **Seamless IMS integration**
+        Kurento is designed to support seamless integration into the
+        :term:`IMS` infrastructure of Telephony Carriers.
 
--  The GE provides a transparent media adaptation layer to make the
-   convergence among different devices having different requirements in
-   terms of screen size, power consumption, transmission rate, etc.
-   possible.
+    **Transparent Media Adaptation Layer**
+        Kurento provides a transparent media adaptation layer to make the
+        convergence among different devices having different requirements in
+        terms of screen size, power consumption, transmission rate, etc.
+        possible.
 
