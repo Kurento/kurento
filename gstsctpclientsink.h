@@ -55,6 +55,7 @@ struct _GstSCTPClientSinkClass
 };
 
 GType gst_sctp_client_sink_get_type (void);
+gboolean gst_sctp_client_sink_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
 #endif /* __GST_SCTP_CLIENT_SINK_H__ */

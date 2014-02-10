@@ -152,3 +152,10 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
 }
+
+gboolean
+gst_sctp_client_sink_plugin_init (GstPlugin * plugin)
+{
+  return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
+      GST_TYPE_SCTP_CLIENT_SINK);
+}
