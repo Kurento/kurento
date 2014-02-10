@@ -100,6 +100,7 @@ html_theme = 'kurento'
 html_theme_options = {
   'headerlinkcolor':  '#5ea654',
   'linkcolor':        '#5ea654',
+  'activelinkcolor':  '#005580',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.

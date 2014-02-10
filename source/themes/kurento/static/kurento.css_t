@@ -49,12 +49,12 @@ a {
   color: {{ theme_linkcolor }};
 }
 
-a em.std-term {
-  color: black;
+div.bodywrapper a, div.footer a {
+  text-decoration: none;
 }
 
-div.bodywrapper a, div.footer a {
-  text-decoration: underline;
+div.bodywrapper a:hover {
+  color: {{ theme_activelinkcolor }};
 }
 
 .clearer {
@@ -228,7 +228,7 @@ div.document p {
 }
 
 div.document li.toctree-l1 {
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
 }
 
 div.document .descname {
@@ -253,6 +253,32 @@ div.document ol {
   margin: 1.5em;
 }
 
+/* Javasphinx docs */
+
+dl.type, dl.method {
+  width: 90%;
+  text-align: left;
+}
+
+dl.method dd {
+  border: 1px solid black;
+  padding: 2px;
+}
+
+/* Glossary */
+
+a em.std-term {
+  color: black;
+}
+
+div.bodywrapper a em.std-term {
+  color: black;
+  border-bottom: 2px dotted;
+}
+
+dl.glossary dd {
+  background: antiquewhite;
+}
 
 /* Sidebar */
 
