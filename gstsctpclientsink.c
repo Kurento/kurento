@@ -21,6 +21,10 @@
 
 #define PLUGIN_NAME "sctpclientsink"
 
+#define SCTP_HIGHEST_PORT G_MAXUINT16
+#define SCTP_DEFAULT_HOST "localhost"
+#define SCTP_DEFAULT_PORT 8000
+
 GST_DEBUG_CATEGORY_STATIC (gst_sctp_client_sink_debug_category);
 #define GST_CAT_DEFAULT gst_sctp_client_sink_debug_category
 
@@ -35,12 +39,98 @@ G_DEFINE_TYPE_WITH_CODE (GstSCTPClientSink, gst_sctp_client_sink,
 struct _GstSCTPClientSinkPrivate
 {
   gint sockfd;
+
+  /* server information */
+  gint port;
+  gchar *host;
 };
+
+enum
+{
+  PROP_0,
+  PROP_HOST,
+  PROP_PORT
+};
+
+static void
+gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  GstSCTPClientSink *stcpclientsink;
+
+  g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
+  stcpclientsink = GST_SCTP_CLIENT_SINK (object);
+
+  switch (prop_id) {
+    case PROP_HOST:
+      if (g_value_get_string (value) == NULL) {
+        GST_WARNING ("host property cannot be NULL");
+        break;
+      }
+      g_free (stcpclientsink->priv->host);
+      stcpclientsink->priv->host = g_strdup (g_value_get_string (value));
+      break;
+    case PROP_PORT:
+      stcpclientsink->priv->port = g_value_get_int (value);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  GstSCTPClientSink *stcpclientsink;
+
+  g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
+  stcpclientsink = GST_SCTP_CLIENT_SINK (object);
+
+  switch (prop_id) {
+    case PROP_HOST:
+      g_value_set_string (value, stcpclientsink->priv->host);
+      break;
+    case PROP_PORT:
+      g_value_set_int (value, stcpclientsink->priv->port);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+gst_sctp_client_sink_finalize (GObject * gobject)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
+
+  g_free (self->priv->host);
+  self->priv->host = NULL;
+
+  G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->finalize (gobject);
+}
 
 static void
 gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 {
   GstElementClass *gstelement_class;
+  GObjectClass *gobject_class;
+
+  gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->set_property = gst_sctp_client_sink_set_property;
+  gobject_class->get_property = gst_sctp_client_sink_get_property;
+  gobject_class->finalize = gst_sctp_client_sink_finalize;
+
+  g_object_class_install_property (gobject_class, PROP_HOST,
+      g_param_spec_string ("host", "Host", "The host/IP to send the packets to",
+          SCTP_DEFAULT_HOST, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_PORT,
+      g_param_spec_int ("port", "Port", "The port to send the packets to",
+          0, SCTP_HIGHEST_PORT, SCTP_DEFAULT_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
 
@@ -57,6 +147,8 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
 {
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
   self->priv->sockfd = -1;
+  self->priv->host = g_strdup (SCTP_DEFAULT_HOST);
+  self->priv->port = SCTP_DEFAULT_PORT;
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
 }
