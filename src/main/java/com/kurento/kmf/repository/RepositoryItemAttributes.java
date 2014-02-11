@@ -151,8 +151,8 @@ public class RepositoryItemAttributes {
 	/**
 	 * Creation date mutator.
 	 * 
-	 * @param creationDate
-	 *            New creation date
+	 * @param creation
+	 *            New creation date as a long
 	 */
 	public void setCreation(long creation) {
 		this.creation = creation;

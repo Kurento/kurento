@@ -43,24 +43,24 @@ public interface RepositoryHttpEndpoint {
 	String getURL();
 
 	/**
-	 * Returns the part of the to play (download) or record (upload) the content
+	 * Returns the URL to play (download) or record (upload) the content
 	 * for the {@link RepositoryItem}. This URL is relative to the context URL
 	 * of this app. The URL can be used to dispatch a request with
-	 * {@link HttpServletRequest#getRequestDispatcher(String)}. When the first
-	 * client connect to this URL, the {@link HttpSessionStartedEvent} will be
-	 * fired to registered listeners.
+	 * {@link javax.servlet.ServletRequest#getRequestDispatcher(java.lang.String)
+	 * getRequestDispatcher}. When the first client connect to this URL, the
+	 * {@link HttpSessionStartedEvent} will be fired to registered listeners.
 	 * 
 	 * @return the relative URL to play or record
 	 */
 	String getDispatchURL();
 
 	/**
-	 * Adds the {@link RepositoryHttpEventListener<HttpSessionStartedEvent>} to
-	 * this {@link RepositoryHttpEndpoint}. When the media is requested, a
-	 * {@link HttpSessionStartedEvent} will be fired to all registered listeners
-	 * and the method
-	 * {@link RepositoryHttpEventListener#onEvent(RepoItemHttpSessionEvent)}
-	 * will be invoked.
+	 * Adds the {@link RepositoryHttpEventListener}&lt;{@link
+	 * HttpSessionStartedEvent}> to this {@link RepositoryHttpEndpoint}.
+	 * When the media is requested, a {@link HttpSessionStartedEvent} will
+	 * be fired to all registered listenersand the method {@link
+	 * RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent)
+	 * onEvent} will be invoked.
 	 * 
 	 * @param listener
 	 */
@@ -68,14 +68,14 @@ public interface RepositoryHttpEndpoint {
 			final RepositoryHttpEventListener<HttpSessionStartedEvent> listener);
 
 	/**
-	 * Adds the {@link RepoItemHttpEventListener<HttpSessionTerminatedEvent>} to
-	 * this {@link RepositoryHttpEndpoint}. When the
-	 * {@link RepositoryHttpEndpoint#stop()} method is invoked or a configurable
-	 * inactivity time is reached (configurable using
-	 * {@link #setAutoTerminationTimeout(long)}) a
-	 * {@link HttpSessionTerminatedEventEvent} will be fired to all registered
-	 * listeners and the method
-	 * {@link RepositoryHttpEventListener#onEvent(RepoItemHttpSessionEvent)}
+	 * Adds the {@link RepositoryHttpEventListener}&lt;{@link
+	 * HttpSessionTerminatedEvent}> to this {@link RepositoryHttpEndpoint}.
+	 * When the {@link RepositoryHttpEndpoint#stop()} method is invoked
+	 * or a configurable inactivity time is reached (configurable using
+	 * {@link #setAutoTerminationTimeout(long)}) a {@link
+	 * HttpSessionTerminatedEvent} will be fired to all registered listeners
+	 * and the method {@link
+	 * RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent) onEvent}
 	 * will be invoked.
 	 * 
 	 * @param listener
@@ -84,11 +84,11 @@ public interface RepositoryHttpEndpoint {
 			final RepositoryHttpEventListener<HttpSessionTerminatedEvent> listener);
 
 	/**
-	 * Adds the {@link RepoItemHttpEventListener<HttpSessionErrorEvent>} to this
-	 * {@link RepositoryHttpEndpoint}. When an error is produced reading or
+	 * Adds the {@link RepositoryHttpEventListener}&lt;{@link HttpSessionErrorEvent}>
+	 * to this {@link RepositoryHttpEndpoint}. When an error is produced reading or
 	 * writing the media from/to repository a {@link HttpSessionErrorEvent} will
-	 * be fired to all registered listeners and the method
-	 * {@link RepositoryHttpEventListener#onEvent(RepoItemHttpSessionEvent)}
+	 * be fired to all registered listeners and the method {@link
+	 * RepositoryHttpEventListener#onEvent(RepositoryHttpSessionEvent) onEvent}
 	 * will be invoked.
 	 * 
 	 * @param listener
@@ -107,7 +107,7 @@ public interface RepositoryHttpEndpoint {
 	 * Returns the associated repository item of this
 	 * {@link RepositoryHttpEndpoint}
 	 * 
-	 * @return
+	 * @return The repository item associated to the endpoint
 	 */
 	RepositoryItem getRepositoryItem();
 
@@ -117,7 +117,7 @@ public interface RepositoryHttpEndpoint {
 	 * {@link InputStream} fully supports skip. The receiver of the
 	 * {@link InputStream} is responsible for closing it after its use.
 	 * 
-	 * @return
+	 * @return An input stream to read item content
 	 */
 	InputStream createRepoItemInputStream();
 
@@ -130,7 +130,7 @@ public interface RepositoryHttpEndpoint {
 	 * {@link RepositoryHttpEndpoint#stop()} is invoked or the timeout
 	 * {@link RepositoryHttpEndpoint#getAutoTerminationTimeout()} is reached.
 	 * 
-	 * @return
+	 * @return An output stream to write item content
 	 */
 	OutputStream getRepoItemOutputStream();
 

@@ -1,4 +1,4 @@
-/*
+        /*
  * (C) Copyright 2013 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
@@ -42,30 +42,32 @@ public interface RepositoryItem {
 	State getState();
 
 	/**
-	 * Creates an InputStream to read for the contents of the file. This
-	 * operation is only valid when the item is in STORED state.
+	 * Creates an InputStream to read for the contents of the item. This
+	 * operation is only valid when the item is in
+	 * {@link RepositoryItem.State#STORED STORED} state.
 	 * 
-	 * @return
+	 * @return An input stream to read item content
 	 */
 	InputStream createInputStreamToRead();
 
 	/**
 	 * Creates an OutputStream to write the binary content of the file. This
 	 * operation is only valid when the item is in NEW state and change the
-	 * item's state to STORING. When the {@link OutputStream#close()} method is
-	 * invoked, the item's state is changed to STORED. This method can be called
+	 * item's state to {@link RepositoryItem.State#STORING}. When the {@link
+	 * OutputStream#close()} method is invoked, the item's state is changed
+	 * to {@link RepositoryItem.State#STORED STORED}. This method can be called
 	 * only once because only one {@link OutputStream} can be created.
 	 * 
-	 * @return
+	 * @return An output stream to write item content
 	 */
 	OutputStream createOutputStreamToWrite();
 
 	/**
 	 * Returns the {@link RepositoryHttpPlayer} to download the contents of the
 	 * item using http protocol. This operation is only valid when the item is
-	 * in STORED state.
+	 * in {@link RepositoryItem.State#STORED STORED} state.
 	 * 
-	 * @return
+	 * @return A player to download the item via HTTP
 	 */
 	RepositoryHttpPlayer createRepositoryHttpPlayer();
 
@@ -73,23 +75,23 @@ public interface RepositoryItem {
 	 * Returns the {@link RepositoryHttpRecorder} to upload the contents of the
 	 * item using http protocol. This operation is only valid when the item is
 	 * in NEW state. When the element is used using the provided URL, the state
-	 * of the item is changed to STORING.
+	 * of the item is changed to {@link RepositoryItem.State#STORING STORING}.
 	 * 
-	 * @return
+	 * @return A recorder to upload to the item via HTTP
 	 */
 	RepositoryHttpRecorder createRepositoryHttpRecorder();
 
 	/**
 	 * Returns the {@link RepositoryHttpPlayer} to download the contents of the
 	 * item using http protocol. This operation is only valid when the item is
-	 * in STORED state. The parameter {@code sessionIdInURL} allows to specify
-	 * the sessionId of this player used to construct the URL. The complete URL
-	 * of the player can be obtained using the
-	 * {@link RepositoryHttpPlayer#getURL()} in the returned object.
+	 * in {@link RepositoryItem.State#STORED STORED} state. The parameter {@code
+	 * sessionIdInURL} allows to specify the sessionId of this player used to
+	 * construct the URL. The complete URL of the player can be obtained using
+	 * the {@link RepositoryHttpPlayer#getURL()} in the returned object.
 	 * 
 	 * @param sessionIdInURL
 	 *            The sessionId of this player used to construct the URL.
-	 * @return
+	 * @return A player to download the recorder via HTTP
 	 */
 	RepositoryHttpPlayer createRepositoryHttpPlayer(String sessionIdInURL);
 
@@ -97,14 +99,15 @@ public interface RepositoryItem {
 	 * Returns the {@link RepositoryHttpRecorder} to upload the contents of the
 	 * item using http protocol. This operation is only valid when the item is
 	 * in NEW state. When the element is used using the provided URL, the state
-	 * of the item is changed to STORING. The parameter {@code sessionIdInURL}
-	 * allows to specify the sessionId of this recorder used to construct the
-	 * URL. The complete URL of the recorder can be obtained using the
+	 * of the item is changed to {@link RepositoryItem.State#STORING STORING}.
+	 * The parameter {@code sessionIdInURL} allows to specify the sessionId
+	 * of this recorder used to construct the URL. The complete URL of the
+	 * recorder can be obtained using the
 	 * {@link RepositoryHttpRecorder#getURL()} in the returned object.
 	 * 
 	 * @param sessionIdInURL
 	 *            The sessionId of this player used to construct the URL.
-	 * @return
+	 * @return A recorder to upload to the item via HTTP
 	 */
 	RepositoryHttpRecorder createRepositoryHttpRecorder(String sessionIdInURL);
 
@@ -113,7 +116,7 @@ public interface RepositoryItem {
 	 * attributes are used mainly when serving this item by means of http
 	 * endpoint.
 	 * 
-	 * @return
+	 * @return The metainformation attributes of the item
 	 */
 	RepositoryItemAttributes getAttributes();
 
