@@ -57,6 +57,28 @@ static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink_%u",
     GST_PAD_REQUEST,
     GST_STATIC_CAPS_ANY);
 
+static gchar *
+get_stream_id_from_padname (const gchar * name)
+{
+  GMatchInfo *match_info = NULL;
+  GRegex *regex;
+  gchar *id = NULL;
+
+  if (name == NULL)
+    return NULL;
+
+  regex = g_regex_new ("^sink_(?<id>\\d+)", 0, 0, NULL);
+  g_regex_match (regex, name, 0, &match_info);
+
+  if (g_match_info_matches (match_info))
+    id = g_match_info_fetch_named (match_info, "id");
+
+  g_match_info_free (match_info);
+  g_regex_unref (regex);
+
+  return id;
+}
+
 static void
 gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
@@ -122,9 +144,57 @@ static GstPad *
 gst_sctp_client_sink_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
-  GST_DEBUG ("TODO: Add  SCTPBaseSink element");
+  GstPad *sinkpad, *ghostpad;
+  GstElement *sctpbasesink;
+  gchar *padname;
+  gchar *pad_id;
+  gint64 val;
+  guint16 id;
 
-  return NULL;
+  pad_id = get_stream_id_from_padname (name);
+  if (pad_id == NULL) {
+    GST_WARNING
+        ("Link of elements without using pad names is not yet supported");
+    return NULL;
+  }
+
+  val = g_ascii_strtoll (pad_id, NULL, 10);
+  g_free (pad_id);
+
+  if (val > G_MAXUINT32) {
+    GST_ERROR ("SCTP stream id %" G_GINT64_FORMAT " is not valid", val);
+    return NULL;
+  }
+
+  id = val;
+
+  sctpbasesink = gst_element_factory_make ("sctpbasesink", NULL);
+  sinkpad = gst_element_get_static_pad (sctpbasesink, "sink");
+  if (sinkpad == NULL) {
+    GST_ERROR_OBJECT (sctpbasesink, "Can not get sink pad");
+    gst_object_unref (sctpbasesink);
+    return NULL;
+  }
+
+  g_object_set (sctpbasesink, "stream-id", id, NULL);
+
+  gst_bin_add (GST_BIN (element), sctpbasesink);
+  gst_element_sync_state_with_parent (sctpbasesink);
+
+  padname = g_strdup_printf ("sink_%u", id);
+  ghostpad = gst_ghost_pad_new_from_template (padname, sinkpad, templ);
+
+  g_object_unref (sinkpad);
+  g_free (padname);
+
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED)
+    gst_pad_set_active (ghostpad, TRUE);
+
+  gst_element_add_pad (element, ghostpad);
+
+  return ghostpad;
 }
 
 static void
