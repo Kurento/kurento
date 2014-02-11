@@ -52,6 +52,11 @@ enum
   PROP_PORT
 };
 
+static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink_%u",
+    GST_PAD_SINK,
+    GST_PAD_REQUEST,
+    GST_STATIC_CAPS_ANY);
+
 static void
 gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
@@ -113,6 +118,21 @@ gst_sctp_client_sink_finalize (GObject * gobject)
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->finalize (gobject);
 }
 
+static GstPad *
+gst_sctp_client_sink_request_new_pad (GstElement * element,
+    GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
+{
+  GST_DEBUG ("TODO: Add  SCTPBaseSink element");
+
+  return NULL;
+}
+
+static void
+gst_sctp_client_sink_release_pad (GstElement * element, GstPad * pad)
+{
+  GST_DEBUG ("TODO: Remove SCTPBaseSink element");
+}
+
 static void
 gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 {
@@ -138,6 +158,13 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
       "SCTP client sink", "Sink/Network",
       "Send data as a client over the network via SCTP",
       "Santiago Carot-Nemesio <sancane at gmail dot com>");
+
+  gstelement_class->request_new_pad =
+      GST_DEBUG_FUNCPTR (gst_sctp_client_sink_request_new_pad);
+  gstelement_class->release_pad =
+      GST_DEBUG_FUNCPTR (gst_sctp_client_sink_release_pad);
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&sink_factory));
 
   g_type_class_add_private (klass, sizeof (GstSCTPClientSinkPrivate));
 }
