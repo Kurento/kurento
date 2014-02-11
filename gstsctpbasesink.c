@@ -37,6 +37,11 @@ struct _GstSCTPBaseSinkPrivate
   guint streamid;
 };
 
+static GstStaticPadTemplate sinktemplate = GST_STATIC_PAD_TEMPLATE ("sink",
+    GST_PAD_SINK,
+    GST_PAD_ALWAYS,
+    GST_STATIC_CAPS_ANY);
+
 static void
 gst_sctp_base_sink_class_init (GstSCTPBaseSinkClass * klass)
 {
@@ -48,6 +53,9 @@ gst_sctp_base_sink_class_init (GstSCTPBaseSinkClass * klass)
       "SCTP base sink", "Sink/Network",
       "Provides data associated to a stream id to be sent over the network via SCTP",
       "Santiago Carot-Nemesio <sancane at gmail dot com>");
+
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&sinktemplate));
 
   g_type_class_add_private (klass, sizeof (GstSCTPBaseSinkPrivate));
 }
