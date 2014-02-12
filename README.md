@@ -48,4 +48,3 @@ Follow us on Twitter @[kurentoms].
 [GitHub Kurento Group]: https://github.com/kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
-
