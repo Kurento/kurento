@@ -27,6 +27,7 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kmf.media.params.MediaParam;
 import com.kurento.kmf.media.params.internal.MediaObjectConstructorParam;
+import com.kurento.kmf.thrift.internal.DistributedGarbageCollector;
 import com.kurento.kms.thrift.api.KmsMediaServerConstants;
 
 /**
