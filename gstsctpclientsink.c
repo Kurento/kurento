@@ -21,7 +21,6 @@
 
 #define PLUGIN_NAME "sctpclientsink"
 
-#define SCTP_HIGHEST_PORT G_MAXUINT16
 #define SCTP_DEFAULT_HOST "localhost"
 #define SCTP_DEFAULT_PORT 8000
 
@@ -39,6 +38,8 @@ G_DEFINE_TYPE_WITH_CODE (GstSCTPClientSink, gst_sctp_client_sink,
 struct _GstSCTPClientSinkPrivate
 {
   gint sockfd;
+  guint16 num_ostreams;
+  guint16 max_istreams;
 
   /* server information */
   gint port;
@@ -49,7 +50,9 @@ enum
 {
   PROP_0,
   PROP_HOST,
-  PROP_PORT
+  PROP_PORT,
+  PROP_NUM_OSTREAMS,
+  PROP_MAX_INSTREAMS
 };
 
 static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink_%u",
@@ -100,7 +103,12 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
     case PROP_PORT:
       stcpclientsink->priv->port = g_value_get_int (value);
       break;
-
+    case PROP_NUM_OSTREAMS:
+      stcpclientsink->priv->num_ostreams = g_value_get_int (value);
+      break;
+    case PROP_MAX_INSTREAMS:
+      stcpclientsink->priv->max_istreams = g_value_get_int (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -122,6 +130,12 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
       break;
     case PROP_PORT:
       g_value_set_int (value, stcpclientsink->priv->port);
+      break;
+    case PROP_NUM_OSTREAMS:
+      g_value_set_int (value, stcpclientsink->priv->num_ostreams);
+      break;
+    case PROP_MAX_INSTREAMS:
+      g_value_set_int (value, stcpclientsink->priv->max_istreams);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -223,7 +237,17 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
           SCTP_DEFAULT_HOST, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_PORT,
       g_param_spec_int ("port", "Port", "The port to send the packets to",
-          0, SCTP_HIGHEST_PORT, SCTP_DEFAULT_PORT,
+          0, G_MAXUINT16, SCTP_DEFAULT_PORT,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_NUM_OSTREAMS,
+      g_param_spec_int ("num-ostreams", "Output streams",
+          "This is the number of streams that the application wishes to be "
+          "able to send to", 0, G_MAXUINT16, 1,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_MAX_INSTREAMS,
+      g_param_spec_int ("max-instreams", "Inputput streams",
+          "This value represents the maximum number of inbound streams the "
+          "application is prepared to support", 0, G_MAXUINT16, 0,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
