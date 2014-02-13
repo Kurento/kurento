@@ -23,9 +23,9 @@ import freemarker.template.Version;
 
 public class CodeGen {
 
-	private File templatesFolder;
-	private File outputFolder;
-	private Configuration cfg;
+	private final File templatesFolder;
+	private final File outputFolder;
+	private final Configuration cfg;
 
 	public CodeGen(File templatesFolder, File outputFolder) throws IOException {
 
@@ -66,6 +66,7 @@ public class CodeGen {
 	public void generateCode(Model model) throws IOException, TemplateException {
 
 		File[] files = templatesFolder.listFiles(new FilenameFilter() {
+			@Override
 			public boolean accept(File dir, String name) {
 				return name.endsWith(".ftl");
 			}
@@ -104,12 +105,13 @@ public class CodeGen {
 
 		Map<String, Object> root = new HashMap<String, Object>();
 		root.put("getJavaObjectType", new JavaObjectType());
+		root.put("getCppObjectType", new CppObjectType());
 
 		if (types == null) {
 
 			root.put("model", model);
 			generateFile(temp, root);
-			
+
 		} else {
 
 			for (Type type : types) {
