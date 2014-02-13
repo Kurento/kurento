@@ -342,7 +342,24 @@ gst_sctp_client_sink_create_socket (GstSCTPClientSink * self)
   if (self->priv->socket == NULL)
     goto no_socket;
 
-  /* TODO: Configure sctp socket */
+#if defined (SCTP_INITMSG)
+  {
+    struct sctp_initmsg initmsg;
+
+    memset (&initmsg, 0, sizeof (initmsg));
+    initmsg.sinit_num_ostreams = self->priv->num_ostreams;
+    initmsg.sinit_max_instreams = self->priv->max_istreams;
+
+    if (setsockopt (g_socket_get_fd (self->priv->socket), IPPROTO_SCTP,
+            SCTP_INITMSG, &initmsg, sizeof (initmsg)) < 0)
+      GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
+          ("Could not configure SCTP socket: %s (%d)", g_strerror (errno),
+              errno));
+  }
+#else
+  GST_WARNING_OBJECT (self, "don't know how to configure the SCTP initiation "
+      "parameters on this OS.");
+#endif
 
   GST_DEBUG_OBJECT (self, "opened sending client socket");
 
