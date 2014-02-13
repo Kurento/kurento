@@ -17,6 +17,14 @@
 #  include <config.h>
 #endif
 
+#include <gio/gio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netinet/sctp.h>
+#include <arpa/inet.h>
+
 #include "gstsctpclientsink.h"
 
 #define PLUGIN_NAME "sctpclientsink"
@@ -41,6 +49,10 @@ struct _GstSCTPClientSinkPrivate
   guint16 num_ostreams;
   guint16 max_istreams;
 
+  /* socket */
+  GSocket *socket;
+  GCancellable *cancellable;
+
   /* server information */
   gint port;
   gchar *host;
@@ -59,6 +71,12 @@ static GstStaticPadTemplate sink_factory = GST_STATIC_PAD_TEMPLATE ("sink_%u",
     GST_PAD_SINK,
     GST_PAD_REQUEST,
     GST_STATIC_CAPS_ANY);
+
+typedef enum
+{
+  GST_SCTP_CLIENT_SINK_OPEN = (GST_ELEMENT_FLAG_LAST << 0),
+  GST_SCTP_CLIENT_SINK_FLAG_LAST = (GST_ELEMENT_FLAG_LAST << 2),
+} GstSCTPClientSinkFlags;
 
 static gchar *
 get_stream_id_from_padname (const gchar * name)
@@ -222,6 +240,176 @@ gst_sctp_client_sink_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
+gst_sctp_client_sink_destroy_socket (GstSCTPClientSink * self)
+{
+  GError *err = NULL;
+
+  if (!GST_OBJECT_FLAG_IS_SET (self, GST_SCTP_CLIENT_SINK_OPEN))
+    return;
+
+  if (self->priv->socket != NULL) {
+    GST_DEBUG_OBJECT (self, "closing socket");
+
+    if (!g_socket_close (self->priv->socket, &err)) {
+      GST_ERROR_OBJECT (self, "Failed to close socket: %s", err->message);
+      g_clear_error (&err);
+    }
+    g_clear_object (&self->priv->socket);
+  }
+
+  GST_OBJECT_FLAG_UNSET (self, GST_SCTP_CLIENT_SINK_OPEN);
+}
+
+/* create a socket for sending to remote machine */
+static void
+gst_sctp_client_sink_create_socket (GstSCTPClientSink * self)
+{
+  GSocketAddress *saddr;
+  GResolver *resolver;
+  GInetAddress *addr;
+  GError *err = NULL;
+
+  if (GST_OBJECT_FLAG_IS_SET (self, GST_SCTP_CLIENT_SINK_OPEN))
+    return;
+
+  /* look up name if we need to */
+  addr = g_inet_address_new_from_string (self->priv->host);
+  if (addr == NULL) {
+    GList *results;
+
+    resolver = g_resolver_get_default ();
+    results = g_resolver_lookup_by_name (resolver, self->priv->host,
+        self->priv->cancellable, &err);
+
+    if (results == NULL)
+      goto name_resolve;
+
+    addr = G_INET_ADDRESS (g_object_ref (results->data));
+
+    g_resolver_free_addresses (results);
+    g_object_unref (resolver);
+  }
+
+  if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
+    gchar *ip = g_inet_address_to_string (addr);
+
+    GST_DEBUG_OBJECT (self, "IP address for host %s is %s", self->priv->host,
+        ip);
+    g_free (ip);
+  }
+
+  saddr = g_inet_socket_address_new (addr, self->priv->port);
+  g_object_unref (addr);
+
+  /* create sending client socket */
+  GST_DEBUG_OBJECT (self, "opening sending client socket to %s:%d",
+      self->priv->host, self->priv->port);
+
+  self->priv->socket = g_socket_new (g_socket_address_get_family (saddr),
+      G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_SCTP, &err);
+  if (self->priv->socket == NULL)
+    goto no_socket;
+
+  /* TODO: Configure sctp socket */
+
+  GST_DEBUG_OBJECT (self, "opened sending client socket");
+
+  /* connect to server */
+  if (!g_socket_connect (self->priv->socket, saddr, self->priv->cancellable,
+          &err))
+    goto connect_failed;
+
+  g_object_unref (saddr);
+
+  GST_OBJECT_FLAG_SET (self, GST_SCTP_CLIENT_SINK_OPEN);
+  GST_DEBUG ("Created sctp socket");
+
+  return;
+
+no_socket:
+  {
+    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+        ("Failed to create socket: %s", err->message));
+    g_clear_error (&err);
+    g_object_unref (saddr);
+    return;
+  }
+name_resolve:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled name resolval");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to resolve host '%s': %s", self->priv->host, err->message));
+    }
+    g_clear_error (&err);
+    g_object_unref (resolver);
+    return;
+  }
+connect_failed:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled connecting");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to connect to host '%s:%d': %s", self->priv->host,
+              self->priv->port, err->message));
+    }
+    g_clear_error (&err);
+    g_object_unref (saddr);
+    /* pretend we opened ok for proper cleanup to happen */
+    GST_OBJECT_FLAG_SET (self, GST_SCTP_CLIENT_SINK_OPEN);
+    gst_sctp_client_sink_destroy_socket (self);
+    return;
+  }
+}
+
+static GstStateChangeReturn
+gst_sctp_client_sink_change_state (GstElement * element,
+    GstStateChange transition)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (element);
+  GstStateChangeReturn ret;
+
+  if (transition == GST_STATE_CHANGE_NULL_TO_READY) {
+    gst_sctp_client_sink_create_socket (self);
+    g_return_val_if_fail (GST_OBJECT_FLAG_IS_SET (self,
+            GST_SCTP_CLIENT_SINK_OPEN), GST_STATE_CHANGE_FAILURE);
+  }
+
+  /* Let parent class manage the state transition. Parent will initialize  */
+  /* children when transitioning from NULL state onward or it will release */
+  /* children's resources when transitioning from PLAYING state backwards  */
+  ret =
+      GST_ELEMENT_CLASS (gst_sctp_client_sink_parent_class)->change_state
+      (element, transition);
+
+  if (transition == GST_STATE_CHANGE_READY_TO_NULL) {
+    gst_sctp_client_sink_destroy_socket (self);
+    g_return_val_if_fail (!GST_OBJECT_FLAG_IS_SET (self,
+            GST_SCTP_CLIENT_SINK_OPEN), GST_STATE_CHANGE_FAILURE);
+  }
+
+  return ret;
+}
+
+static void
+gst_sctp_client_sink_dispose (GObject * gobject)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
+
+  if (self->priv->cancellable != NULL) {
+    g_cancellable_cancel (self->priv->cancellable);
+    g_clear_object (&self->priv->cancellable);
+  }
+
+  if (self->priv->socket != NULL)
+    gst_sctp_client_sink_destroy_socket (self);
+
+  G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->dispose (gobject);
+}
+
+static void
 gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 {
   GstElementClass *gstelement_class;
@@ -231,6 +419,7 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
   gobject_class->set_property = gst_sctp_client_sink_set_property;
   gobject_class->get_property = gst_sctp_client_sink_get_property;
   gobject_class->finalize = gst_sctp_client_sink_finalize;
+  gobject_class->dispose = gst_sctp_client_sink_dispose;
 
   g_object_class_install_property (gobject_class, PROP_HOST,
       g_param_spec_string ("host", "Host", "The host/IP to send the packets to",
@@ -257,6 +446,8 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
       "Send data as a client over the network via SCTP",
       "Santiago Carot-Nemesio <sancane at gmail dot com>");
 
+  gstelement_class->change_state =
+      GST_DEBUG_FUNCPTR (gst_sctp_client_sink_change_state);
   gstelement_class->request_new_pad =
       GST_DEBUG_FUNCPTR (gst_sctp_client_sink_request_new_pad);
   gstelement_class->release_pad =
@@ -274,8 +465,10 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
   self->priv->sockfd = -1;
   self->priv->host = g_strdup (SCTP_DEFAULT_HOST);
   self->priv->port = SCTP_DEFAULT_PORT;
+  self->priv->cancellable = g_cancellable_new ();
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
+  GST_OBJECT_FLAG_UNSET (self, GST_SCTP_CLIENT_SINK_OPEN);
 }
 
 gboolean
