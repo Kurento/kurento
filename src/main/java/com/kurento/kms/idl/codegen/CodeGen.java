@@ -107,11 +107,10 @@ public class CodeGen {
 		root.put("getJavaObjectType", new JavaObjectType());
 		root.put("getCppObjectType", new CppObjectType());
 
+		root.put("model", model);
+
 		if (types == null) {
-
-			root.put("model", model);
 			generateFile(temp, root);
-
 		} else {
 
 			for (Type type : types) {
