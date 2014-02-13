@@ -54,6 +54,7 @@ struct _GstSCTPClientSinkPrivate
   /* socket */
   GSocket *socket;
   GCancellable *cancellable;
+  guint streams;
 
   /* server information */
   gint port;
@@ -193,6 +194,7 @@ static GstPad *
 gst_sctp_client_sink_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (element);
   GstPad *sinkpad, *ghostpad;
   GstElement *sctpbasesink;
   gchar *padname;
@@ -200,8 +202,16 @@ gst_sctp_client_sink_request_new_pad (GstElement * element,
   gint64 val;
   guint16 id;
 
+  GST_SCTP_CLIENT_SINK_LOCK (self);
+  if (self->priv->num_ostreams < self->priv->streams) {
+    GST_SCTP_CLIENT_SINK_UNLOCK (self);
+    GST_WARNING ("No more available streams");
+    return NULL;
+  }
+
   pad_id = get_stream_id_from_padname (name);
   if (pad_id == NULL) {
+    GST_SCTP_CLIENT_SINK_UNLOCK (self);
     GST_WARNING
         ("Link of elements without using pad names is not yet supported");
     return NULL;
@@ -211,6 +221,7 @@ gst_sctp_client_sink_request_new_pad (GstElement * element,
   g_free (pad_id);
 
   if (val > G_MAXUINT32) {
+    GST_SCTP_CLIENT_SINK_UNLOCK (self);
     GST_ERROR ("SCTP stream id %" G_GINT64_FORMAT " is not valid", val);
     return NULL;
   }
@@ -220,6 +231,7 @@ gst_sctp_client_sink_request_new_pad (GstElement * element,
   sctpbasesink = gst_element_factory_make ("sctpbasesink", NULL);
   sinkpad = gst_element_get_static_pad (sctpbasesink, "sink");
   if (sinkpad == NULL) {
+    GST_SCTP_CLIENT_SINK_UNLOCK (self);
     GST_ERROR_OBJECT (sctpbasesink, "Can not get sink pad");
     gst_object_unref (sctpbasesink);
     return NULL;
@@ -242,6 +254,9 @@ gst_sctp_client_sink_request_new_pad (GstElement * element,
     gst_pad_set_active (ghostpad, TRUE);
 
   gst_element_add_pad (element, ghostpad);
+
+  self->priv->streams++;
+  GST_SCTP_CLIENT_SINK_UNLOCK (self);
 
   return ghostpad;
 }
