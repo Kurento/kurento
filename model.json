@@ -1,0 +1,1035 @@
+{
+  "remoteClasses": [
+    {
+      "name": "PlayerEndpoint",
+      "extends": "UriEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "uri",
+              "type": "String"
+            },
+            {
+              "name": "useEncodedMedia",
+              "type": "boolean",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "play",
+          "params": []
+        }
+      ],
+      "events": [
+        "EndOfStream"
+      ]
+    },
+    {
+      "name": "MediaObject",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "getMediaPipeline",
+          "params": [],
+          "return": {
+            "type": "MediaPipeline"
+          }
+        },
+        {
+          "name": "getParent",
+          "params": [],
+          "return": {
+            "type": "MediaObject"
+          }
+        },
+        {
+          "name": "release",
+          "params": []
+        }
+      ],
+      "events": [
+        "Error"
+      ]
+    },
+    {
+      "name": "HttpGetEndpoint",
+      "extends": "HttpEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "terminateOnEOS",
+              "type": "boolean",
+              "optional": true
+            },
+            {
+              "name": "mediaProfile",
+              "type": "MediaProfileSpecType",
+              "optional": true
+            },
+            {
+              "name": "disconnectionTimeout",
+              "type": "int",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WebRtcEndpoint",
+      "extends": "SdpEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SessionEndpoint",
+      "abstract": true,
+      "extends": "Endpoint",
+      "events": [
+        "MediaSessionTerminated",
+        "MediaSessionStarted"
+      ]
+    },
+    {
+      "name": "MediaMixer",
+      "extends": "MediaObject",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ZBarFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "events": [
+        "CodeFoundData"
+      ]
+    },
+    {
+      "name": "Filter",
+      "abstract": true,
+      "extends": "MediaElement"
+    },
+    {
+      "name": "Endpoint",
+      "abstract": true,
+      "extends": "MediaElement"
+    },
+    {
+      "name": "PointerDetectorAdvFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "calibrationRegion",
+              "type": "WindowParam"
+            },
+            {
+              "name": "window",
+              "type": "PointerDetectorWindowMediaParam",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "addWindow",
+          "params": [
+            {
+              "name": "window",
+              "type": "PointerDetectorWindowMediaParam"
+            }
+          ]
+        },
+        {
+          "name": "clearWindows",
+          "params": []
+        },
+        {
+          "name": "trackcolourFromCalibrationRegion",
+          "params": []
+        },
+        {
+          "name": "removeWindow",
+          "params": [
+            {
+              "name": "windowId",
+              "type": "String"
+            }
+          ]
+        }
+      ],
+      "events": [
+        "WindowIn",
+        "WindowOut"
+      ]
+    },
+    {
+      "name": "UriEndpoint",
+      "abstract": true,
+      "extends": "Endpoint",
+      "methods": [
+        {
+          "name": "getUri",
+          "params": [],
+          "return": {
+            "type": "String"
+          }
+        },
+        {
+          "name": "pause",
+          "params": []
+        },
+        {
+          "name": "stop",
+          "params": []
+        }
+      ]
+    },
+    {
+      "name": "HttpPostEndpoint",
+      "extends": "HttpEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "disconnectionTimeout",
+              "type": "int",
+              "optional": true
+            },
+            {
+              "name": "useEncodedMedia",
+              "type": "boolean",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "events": [
+        "EndOfStream"
+      ]
+    },
+    {
+      "name": "RtpEndpoint",
+      "extends": "SdpEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MediaPad",
+      "abstract": true,
+      "extends": "MediaObject",
+      "methods": [
+        {
+          "name": "getMediaElement",
+          "params": [],
+          "return": {
+            "type": "MediaElement"
+          }
+        },
+        {
+          "name": "getMediaType",
+          "params": [],
+          "return": {
+            "type": "MediaType"
+          }
+        },
+        {
+          "name": "getMediaDescription",
+          "params": [],
+          "return": {
+            "type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PointerDetectorFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "window",
+              "type": "PointerDetectorWindowMediaParam",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "addWindow",
+          "params": [
+            {
+              "name": "window",
+              "type": "PointerDetectorWindowMediaParam"
+            }
+          ]
+        },
+        {
+          "name": "clearWindows",
+          "params": []
+        },
+        {
+          "name": "removeWindow",
+          "params": [
+            {
+              "name": "windowId",
+              "type": "String"
+            }
+          ]
+        }
+      ],
+      "events": [
+        "WindowIn",
+        "WindowOut"
+      ]
+    },
+    {
+      "name": "MediaSource",
+      "abstract": true,
+      "extends": "MediaPad",
+      "methods": [
+        {
+          "name": "getConnectedSinks",
+          "params": [],
+          "return": {
+            "type": "MediaSink[]"
+          }
+        },
+        {
+          "name": "connect",
+          "params": [
+            {
+              "name": "sink",
+              "type": "MediaSink"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ChromaFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "window",
+              "type": "WindowParam"
+            },
+            {
+              "name": "backgroundImage",
+              "type": "String",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "setBackground",
+          "params": [
+            {
+              "name": "uri",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "unsetBackground",
+          "params": []
+        }
+      ]
+    },
+    {
+      "name": "MediaPipeline",
+      "abstract": true,
+      "extends": "MediaObject",
+      "methods": [
+        {
+          "name": "getParent",
+          "params": [],
+          "return": {
+            "type": "MediaObject"
+          }
+        }        
+      ]
+    },
+    {
+      "name": "MediaSink",
+      "abstract": true,
+      "extends": "MediaPad",
+      "methods": [
+        {
+          "name": "disconnect",
+          "params": [
+            {
+              "name": "src",
+              "type": "MediaSource"
+            }
+          ]
+        },
+        {
+          "name": "getConnectedSrc",
+          "params": [],
+          "return": {
+            "type": "MediaSource"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MainMixer",
+      "extends": "MediaMixer",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "JackVaderFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HttpEndpoint",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "methods": [
+        {
+          "name": "getUrl",
+          "params": [],
+          "return": {
+            "type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SdpEndpoint",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "methods": [
+        {
+          "name": "generateOffer",
+          "params": [],
+          "return": {
+            "type": "String"
+          }
+        },
+        {
+          "name": "processOffer",
+          "params": [
+            {
+              "name": "offer",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "type": "String"
+          }
+        },
+        {
+          "name": "processAnswer",
+          "params": [
+            {
+              "name": "answer",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "type": "String"
+          }
+        },
+        {
+          "name": "getLocalSessionDescriptor",
+          "params": [],
+          "return": {
+            "type": "String"
+          }
+        },
+        {
+          "name": "getRemoteSessionDescriptor",
+          "params": [],
+          "return": {
+            "type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "name": "FaceOverlayFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "unsetOverlayedImage",
+          "params": []
+        },
+        {
+          "name": "setOverlayedImage",
+          "params": [
+            {
+              "name": "uri",
+              "type": "String"
+            },
+            {
+              "name": "offsetXPercent",
+              "type": "float"
+            },
+            {
+              "name": "offsetYPercent",
+              "type": "float"
+            },
+            {
+              "name": "widthPercent",
+              "type": "float"
+            },
+            {
+              "name": "heightPercent",
+              "type": "float"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PlateDetectorFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "events": [
+        "PlateDetected"
+      ]
+    },
+    {
+      "name": "RecorderEndpoint",
+      "extends": "UriEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "uri",
+              "type": "String"
+            },
+            {
+              "name": "mediaProfile",
+              "type": "MediaProfileSpecType",
+              "optional": true
+            },
+            {
+              "name": "stopOnEndOfStream",
+              "type": "boolean",
+              "optional": true
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ],
+      "methods": [
+        {
+          "name": "record",
+          "params": []
+        }
+      ]
+    },
+    {
+      "name": "MediaElement",
+      "abstract": true,
+      "extends": "MediaObject",
+      "methods": [
+        {
+          "name": "getMediaSrcs",
+          "params": [],
+          "return": {
+            "type": "MediaSource[]"
+          }
+        },
+        {
+          "name": "getMediaSrcs",
+          "params": [
+            {
+              "name": "mediaType",
+              "type": "MediaType"
+            },
+            {
+              "name": "description",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "type": "MediaSource[]"
+          }
+        },
+        {
+          "name": "getMediaSrcs",
+          "params": [
+            {
+              "name": "mediaType",
+              "type": "MediaType"
+            }
+          ],
+          "return": {
+            "type": "MediaSource[]"
+          }
+        },
+        {
+          "name": "getMediaSinks",
+          "params": [],
+          "return": {
+            "type": "MediaSink[]"
+          }
+        },
+        {
+          "name": "getMediaSinks",
+          "params": [
+            {
+              "name": "mediaType",
+              "type": "MediaType"
+            }
+          ],
+          "return": {
+            "type": "MediaSink[]"
+          }
+        },
+        {
+          "name": "getMediaSinks",
+          "params": [
+            {
+              "name": "mediaType",
+              "type": "MediaType"
+            },
+            {
+              "name": "description",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "type": "MediaSink[]"
+          }
+        },
+        {
+          "name": "connect",
+          "params": [
+            {
+              "name": "sink",
+              "type": "MediaElement"
+            },
+            {
+              "name": "mediaType",
+              "type": "MediaType"
+            },
+            {
+              "name": "mediaDescription",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "connect",
+          "params": [
+            {
+              "name": "sink",
+              "type": "MediaElement"
+            },
+            {
+              "name": "mediaType",
+              "type": "MediaType"
+            }
+          ]
+        },
+        {
+          "name": "connect",
+          "params": [
+            {
+              "name": "sink",
+              "type": "MediaElement"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GStreamerFilter",
+      "extends": "Filter",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "command",
+              "type": "String"
+            },
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "WEBM",
+        "MP4"
+      ],
+      "name": "MediaProfileSpecType"
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "AUDIO",
+        "DATA",
+        "VIDEO"
+      ],
+      "name": "MediaType"
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "id",
+          "type": "String"
+        },
+        {
+          "name": "height",
+          "type": "int"
+        },
+        {
+          "name": "width",
+          "type": "int"
+        },
+        {
+          "name": "upperRightX",
+          "type": "int"
+        },
+        {
+          "name": "upperRightY",
+          "type": "int"
+        },
+        {
+          "name": "activeImage",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "imageTransparency",
+          "type": "double",
+          "optional": true
+        },
+        {
+          "name": "image",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "inactiveImage",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "name": "PointerDetectorWindowMediaParam"
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "topRightCornerX",
+          "type": "int"
+        },
+        {
+          "name": "topRightCornerY",
+          "type": "int"
+        },
+        {
+          "name": "width",
+          "type": "int"
+        },
+        {
+          "name": "height",
+          "type": "int"
+        }
+      ],
+      "name": "WindowParam"
+    }
+  ],
+  "events": [
+    {
+      "properties": [
+        {
+          "name": "plate",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "PlateDetected"
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "EndOfStream"
+    },
+    {
+      "properties": [
+        {
+          "name": "codeType",
+          "type": "String"
+        },
+        {
+          "name": "value",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "CodeFoundData"
+    },
+    {
+      "properties": [
+        {
+          "name": "objectRef",
+          "type": "MediaObject"
+        },
+        {
+          "name": "description",
+          "type": "String"
+        },
+        {
+          "name": "errorCode",
+          "type": "int"
+        },
+        {
+          "name": "type",
+          "type": "String"
+        }
+      ],
+      "name": "Error"
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "MediaSessionTerminated"
+    },
+    {
+      "properties": [
+        {
+          "name": "windowId",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "WindowIn"
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "MediaSessionStarted"
+    },
+    {
+      "properties": [
+        {
+          "name": "windowId",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "WindowOut"
+    },
+    {
+      "properties": [
+        {
+          "name": "source",
+          "type": "MediaObject"
+        },
+        {
+          "name": "type",
+          "type": "String"
+        }
+      ],
+      "name": "Media"
+    }
+  ]
+}
