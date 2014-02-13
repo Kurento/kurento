@@ -45,6 +45,8 @@ G_DEFINE_TYPE_WITH_CODE (GstSCTPClientSink, gst_sctp_client_sink,
 
 struct _GstSCTPClientSinkPrivate
 {
+  GRecMutex mutex;
+
   gint sockfd;
   guint16 num_ostreams;
   guint16 max_istreams;
@@ -57,6 +59,11 @@ struct _GstSCTPClientSinkPrivate
   gint port;
   gchar *host;
 };
+
+#define GST_SCTP_CLIENT_SINK_LOCK(elem) \
+  (g_rec_mutex_lock (&GST_SCTP_CLIENT_SINK ((elem))->priv->mutex))
+#define GST_SCTP_CLIENT_SINK_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&GST_SCTP_CLIENT_SINK ((elem))->priv->mutex))
 
 enum
 {
@@ -109,6 +116,8 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
   g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
   stcpclientsink = GST_SCTP_CLIENT_SINK (object);
 
+  GST_SCTP_CLIENT_SINK_LOCK (stcpclientsink);
+
   switch (prop_id) {
     case PROP_HOST:
       if (g_value_get_string (value) == NULL) {
@@ -131,6 +140,8 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+
+  GST_SCTP_CLIENT_SINK_UNLOCK (stcpclientsink);
 }
 
 static void
@@ -141,6 +152,8 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
 
   g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
   stcpclientsink = GST_SCTP_CLIENT_SINK (object);
+
+  GST_SCTP_CLIENT_SINK_LOCK (stcpclientsink);
 
   switch (prop_id) {
     case PROP_HOST:
@@ -159,6 +172,8 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+
+  GST_SCTP_CLIENT_SINK_UNLOCK (stcpclientsink);
 }
 
 static void
@@ -168,6 +183,8 @@ gst_sctp_client_sink_finalize (GObject * gobject)
 
   g_free (self->priv->host);
   self->priv->host = NULL;
+
+  g_rec_mutex_clear (&self->priv->mutex);
 
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->finalize (gobject);
 }
@@ -372,9 +389,13 @@ gst_sctp_client_sink_change_state (GstElement * element,
   GstStateChangeReturn ret;
 
   if (transition == GST_STATE_CHANGE_NULL_TO_READY) {
+    GST_SCTP_CLIENT_SINK_LOCK (self);
     gst_sctp_client_sink_create_socket (self);
-    g_return_val_if_fail (GST_OBJECT_FLAG_IS_SET (self,
-            GST_SCTP_CLIENT_SINK_OPEN), GST_STATE_CHANGE_FAILURE);
+    if (!GST_OBJECT_FLAG_IS_SET (self, GST_SCTP_CLIENT_SINK_OPEN)) {
+      GST_SCTP_CLIENT_SINK_UNLOCK (self);
+      return GST_STATE_CHANGE_FAILURE;
+    }
+    GST_SCTP_CLIENT_SINK_UNLOCK (self);
   }
 
   /* Let parent class manage the state transition. Parent will initialize  */
@@ -385,9 +406,13 @@ gst_sctp_client_sink_change_state (GstElement * element,
       (element, transition);
 
   if (transition == GST_STATE_CHANGE_READY_TO_NULL) {
+    GST_SCTP_CLIENT_SINK_LOCK (self);
     gst_sctp_client_sink_destroy_socket (self);
-    g_return_val_if_fail (!GST_OBJECT_FLAG_IS_SET (self,
-            GST_SCTP_CLIENT_SINK_OPEN), GST_STATE_CHANGE_FAILURE);
+    if (GST_OBJECT_FLAG_IS_SET (self, GST_SCTP_CLIENT_SINK_OPEN)) {
+      GST_SCTP_CLIENT_SINK_UNLOCK (self);
+      return GST_STATE_CHANGE_FAILURE;
+    }
+    GST_SCTP_CLIENT_SINK_UNLOCK (self);
   }
 
   return ret;
@@ -398,6 +423,8 @@ gst_sctp_client_sink_dispose (GObject * gobject)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
 
+  GST_SCTP_CLIENT_SINK_LOCK (self);
+
   if (self->priv->cancellable != NULL) {
     g_cancellable_cancel (self->priv->cancellable);
     g_clear_object (&self->priv->cancellable);
@@ -405,6 +432,8 @@ gst_sctp_client_sink_dispose (GObject * gobject)
 
   if (self->priv->socket != NULL)
     gst_sctp_client_sink_destroy_socket (self);
+
+  GST_SCTP_CLIENT_SINK_UNLOCK (self);
 
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->dispose (gobject);
 }
@@ -466,6 +495,8 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
   self->priv->host = g_strdup (SCTP_DEFAULT_HOST);
   self->priv->port = SCTP_DEFAULT_PORT;
   self->priv->cancellable = g_cancellable_new ();
+
+  g_rec_mutex_init (&self->priv->mutex);
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
   GST_OBJECT_FLAG_UNSET (self, GST_SCTP_CLIENT_SINK_OPEN);
