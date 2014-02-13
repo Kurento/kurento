@@ -1,0 +1,6 @@
+.classpath
+.project
+.settings/
+codegen
+target/
+.freemarker-ide.xml
