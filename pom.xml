@@ -1,24 +1,18 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	
 	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>3.0.6-SNAPSHOT</version>
+	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-commons</artifactId>
 	<version>3.0.6-SNAPSHOT</version>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-
-		<!-- Dependencies Versions -->
-		<servlet-api.version>3.0.1</servlet-api.version>
-		<slf4j-api.version>1.7.5</slf4j-api.version>
-		<reflections.version>0.9.9-RC1</reflections.version>
-
-		<!-- Extensions Versions -->
-		<wagon-ssh.version>2.0</wagon-ssh.version>
-	</properties>
+	<packaging>jar</packaging>
 
 	<name>Kurento Media Framework - Common utils</name>
 	<description>
@@ -26,8 +20,9 @@
 
 			The kmf-commons project contains common util classes for the Kurento Media Framework.
 	</description>
+
 	<url>https://github.com/Kurento/kmf-commons</url>
-	<packaging>jar</packaging>
+
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
@@ -48,66 +43,20 @@
 		</developer>
 	</developers>
 
-	<mailingLists>
-		<mailingList>
-			<name>Kurento</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
-		</mailingList>
-	</mailingLists>
-
 	<dependencies>
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>${servlet-api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.reflections</groupId>
 			<artifactId>reflections</artifactId>
-			<version>${reflections.version}</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.4.2</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.apache.maven.scm</groupId>
-						<artifactId>maven-scm-provider-gitexe</artifactId>
-						<version>1.8.1</version>
-					</dependency>
-				</dependencies>
-				<configuration>
-					<pushChanges>false</pushChanges>
-				</configuration>
-			</plugin>
-		</plugins>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${wagon-ssh.version}</version>
-			</extension>
-		</extensions>
-	</build>
-
-	<scm>
-		<url>https://github.com/Kurento/kmf-commons</url>
-		<connection>scm:git:https://github.com/Kurento/kmf-commons.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:Kurento/kmf-commons.git</developerConnection>
-		<tag>develop</tag>
-	</scm>
-
+	
 </project>
