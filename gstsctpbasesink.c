@@ -25,12 +25,10 @@
 #include <netinet/sctp.h>
 #include <arpa/inet.h>
 
+#include "gstsctp.h"
 #include "gstsctpbasesink.h"
 
 #define PLUGIN_NAME "sctpbasesink"
-
-#define SCTP_DEFAULT_HOST "localhost"
-#define SCTP_DEFAULT_PORT 8000
 
 GST_DEBUG_CATEGORY_STATIC (gst_sctp_base_sink_debug_category);
 #define GST_CAT_DEFAULT gst_sctp_base_sink_debug_category
