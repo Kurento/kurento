@@ -135,7 +135,7 @@
 		<version.source.plugin>2.2.1</version.source.plugin>
 		<version.surefire.plugin>2.16</version.surefire.plugin>
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
-		<version.taglist.plugin>2.4</version.taglist.plugin>
+		<version.thrift.plugin>0.1.11</version.thrift.plugin>
 		<version.wagon.plugin>2.0</version.wagon.plugin>
 		<version.war.plugin>2.3</version.war.plugin>
 
@@ -602,6 +602,27 @@
 							<java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
 						</systemProperties>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.thrift.tools</groupId>
+					<artifactId>maven-thrift-plugin</artifactId>
+					<version>${version.thrift.plugin}</version>
+					<executions>
+						<execution>
+							<id>thrift-sources</id>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>compile</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>thrift-test-sources</id>
+							<phase>generate-test-sources</phase>
+							<goals>
+								<goal>testCompile</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
