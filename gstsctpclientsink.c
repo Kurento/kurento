@@ -40,6 +40,7 @@ struct _GstSCTPClientSinkPrivate
   /* socket */
   GSocket *socket;
   guint streamid;
+  gboolean owner;
   gboolean close_socket;
   GCancellable *cancellable;
 
@@ -69,13 +70,13 @@ gst_sctp_client_sink_destroy_socket (GstSCTPClientSink * self)
   if (self->priv->socket == NULL)
     return;
 
-  if (g_socket_is_closed (self->priv->socket)) {
-    GST_DEBUG_OBJECT (self, "Socket is already closed");
-    goto end;
-  }
-
-  if (self->priv->close_socket) {
+  if (self->priv->owner || self->priv->close_socket) {
     GError *err = NULL;
+
+    if (g_socket_is_closed (self->priv->socket)) {
+      GST_DEBUG_OBJECT (self, "Socket is already closed");
+      goto end;
+    }
 
     GST_DEBUG_OBJECT (self, "Closing socket");
 
@@ -88,6 +89,104 @@ gst_sctp_client_sink_destroy_socket (GstSCTPClientSink * self)
 
 end:
   g_clear_object (&self->priv->socket);
+}
+
+static void
+gst_sctp_base_sink_create_socket (GstSCTPClientSink * self)
+{
+  GSocketAddress *saddr;
+  GResolver *resolver;
+  GInetAddress *addr;
+  GError *err = NULL;
+
+  /* look up name if we need to */
+  addr = g_inet_address_new_from_string (self->priv->host);
+  if (addr == NULL) {
+    GList *results;
+
+    resolver = g_resolver_get_default ();
+    results = g_resolver_lookup_by_name (resolver, self->priv->host,
+        self->priv->cancellable, &err);
+
+    if (results == NULL)
+      goto name_resolve;
+
+    addr = G_INET_ADDRESS (g_object_ref (results->data));
+
+    g_resolver_free_addresses (results);
+    g_object_unref (resolver);
+  }
+
+  if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
+    gchar *ip = g_inet_address_to_string (addr);
+
+    GST_DEBUG_OBJECT (self, "IP address for host %s is %s", self->priv->host,
+        ip);
+    g_free (ip);
+  }
+
+  saddr = g_inet_socket_address_new (addr, self->priv->port);
+  g_object_unref (addr);
+
+  /* create sending client socket */
+  GST_DEBUG_OBJECT (self, "opening sending client socket to %s:%d",
+      self->priv->host, self->priv->port);
+
+  self->priv->socket = g_socket_new (g_socket_address_get_family (saddr),
+      G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_SCTP, &err);
+  if (self->priv->socket == NULL)
+    goto no_socket;
+
+  GST_DEBUG_OBJECT (self, "opened sending client socket");
+
+  /* connect to server */
+  if (!g_socket_connect (self->priv->socket, saddr, self->priv->cancellable,
+          &err))
+    goto connect_failed;
+
+  g_object_unref (saddr);
+
+  GST_DEBUG ("Created sctp socket");
+
+  return;
+
+no_socket:
+  {
+    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+        ("Failed to create socket: %s", err->message));
+    g_clear_error (&err);
+    g_object_unref (saddr);
+
+    return;
+  }
+name_resolve:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled name resolval");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to resolve host '%s': %s", self->priv->host, err->message));
+    }
+    g_clear_error (&err);
+    g_object_unref (resolver);
+
+    return;
+  }
+connect_failed:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled connecting");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to connect to host '%s:%d': %s", self->priv->host,
+              self->priv->port, err->message));
+    }
+    g_clear_error (&err);
+    g_object_unref (saddr);
+    gst_sctp_client_sink_destroy_socket (self);
+
+    return;
+  }
 }
 
 static void
@@ -176,9 +275,61 @@ gst_sctp_base_sink_finalize (GObject * gobject)
   g_free (self->priv->host);
 }
 
+static gboolean
+gst_sctp_client_sink_start (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  if (self->priv->socket == NULL) {
+    gst_sctp_base_sink_create_socket (self);
+    g_return_val_if_fail (self->priv->socket != NULL, FALSE);
+    self->priv->owner = TRUE;
+  }
+
+  return g_socket_is_connected (self->priv->socket);
+}
+
+static gboolean
+gst_sctp_client_sink_stop (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  gst_sctp_client_sink_destroy_socket (self);
+  return TRUE;
+}
+
+/* will be called only between calls to start() and stop() */
+static gboolean
+gst_sctp_client_sink_unlock (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  GST_DEBUG_OBJECT (self, "set to flushing");
+  g_cancellable_cancel (self->priv->cancellable);
+  return TRUE;
+}
+
+static gboolean
+gst_sctp_client_sink_unlock_stop (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  GST_DEBUG_OBJECT (self, "unset flushing");
+  g_cancellable_reset (self->priv->cancellable);
+  return TRUE;
+}
+
+static GstFlowReturn
+gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
+{
+  GST_DEBUG_OBJECT (bsink, "TODO: Send buffer");
+  return GST_FLOW_OK;
+}
+
 static void
 gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 {
+  GstBaseSinkClass *gstbasesink_class;
   GstElementClass *gstelement_class;
   GObjectClass *gobject_class;
 
@@ -215,6 +366,14 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&sinktemplate));
 
+  gstbasesink_class = GST_BASE_SINK_CLASS (klass);
+
+  gstbasesink_class->start = gst_sctp_client_sink_start;
+  gstbasesink_class->stop = gst_sctp_client_sink_stop;
+  gstbasesink_class->render = gst_sctp_client_sink_render;
+  gstbasesink_class->unlock = gst_sctp_client_sink_unlock;
+  gstbasesink_class->unlock_stop = gst_sctp_client_sink_unlock_stop;
+
   g_type_class_add_private (klass, sizeof (GstSCTPClientSinkPrivate));
 }
 
@@ -223,7 +382,10 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
 {
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
+  self->priv->host = g_strdup (SCTP_DEFAULT_HOST);
+  self->priv->port = SCTP_DEFAULT_PORT;
   self->priv->close_socket = TRUE;
+  self->priv->owner = FALSE;
 }
 
 gboolean
