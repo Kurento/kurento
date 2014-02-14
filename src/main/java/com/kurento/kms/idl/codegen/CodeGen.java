@@ -106,6 +106,7 @@ public class CodeGen {
 		Map<String, Object> root = new HashMap<String, Object>();
 		root.put("getJavaObjectType", new JavaObjectType());
 		root.put("getCppObjectType", new CppObjectType());
+		root.put("camelToUnderscore", new CamelToUnderscore());
 
 		root.put("model", model);
 
