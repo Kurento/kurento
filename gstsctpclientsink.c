@@ -322,8 +322,52 @@ gst_sctp_client_sink_unlock_stop (GstBaseSink * bsink)
 static GstFlowReturn
 gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 {
-  GST_DEBUG_OBJECT (bsink, "TODO: Send buffer");
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+  GstMapInfo map;
+  gsize written = 0;
+  gssize rret;
+  GError *err = NULL;
+
+  g_return_val_if_fail (g_socket_is_connected (self->priv->socket),
+      GST_FLOW_FLUSHING);
+
+  gst_buffer_map (buf, &map, GST_MAP_READ);
+  GST_LOG_OBJECT (self, "writing %" G_GSIZE_FORMAT " bytes for buffer data",
+      map.size);
+
+  /* write buffer data */
+  while (written < map.size) {
+    /* TODO: Change send function to use the one defined by sctp library */
+    rret =
+        g_socket_send (self->priv->socket, (gchar *) map.data + written,
+        map.size - written, self->priv->cancellable, &err);
+    if (rret < 0)
+      goto write_error;
+    written += rret;
+  }
+  gst_buffer_unmap (buf, &map);
+
   return GST_FLOW_OK;
+
+  /* ERRORS */
+write_error:
+  {
+    GstFlowReturn ret;
+
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      ret = GST_FLOW_FLUSHING;
+      GST_DEBUG_OBJECT (self, "Cancelled reading from socket");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, WRITE,
+          (("Error while sending data to \"%s:%d\"."), self->priv->host,
+              self->priv->port), ("Only %" G_GSIZE_FORMAT " of %" G_GSIZE_FORMAT
+              " bytes written: %s", written, map.size, err->message));
+      ret = GST_FLOW_ERROR;
+    }
+    gst_buffer_unmap (buf, &map);
+    g_clear_error (&err);
+    return ret;
+  }
 }
 
 static void
