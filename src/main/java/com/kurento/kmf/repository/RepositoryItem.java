@@ -91,7 +91,7 @@ public interface RepositoryItem {
 	 * 
 	 * @param sessionIdInURL
 	 *            The sessionId of this player used to construct the URL.
-	 * @return A player to download the recorder via HTTP
+	 * @return A player to download the item via HTTP
 	 */
 	RepositoryHttpPlayer createRepositoryHttpPlayer(String sessionIdInURL);
 
