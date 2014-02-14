@@ -234,7 +234,8 @@ gst_sctp_base_sink_request_new_pad (GstElement * element,
     return NULL;
   }
 
-  g_object_set (sctpclientsink, "stream-id", id, NULL);
+  g_object_set (sctpclientsink, "stream-id", id, "socket", self->priv->socket,
+      NULL);
 
   gst_bin_add (GST_BIN (element), sctpclientsink);
   gst_element_sync_state_with_parent (sctpclientsink);
@@ -410,6 +411,42 @@ connect_failed:
   }
 }
 
+static void
+gst_sctp_base_sink_configure_sinks (GstSCTPBaseSink * self)
+{
+  GstIterator *it;
+  GValue val = G_VALUE_INIT;
+  gboolean done = FALSE;
+
+  it = gst_bin_iterate_sinks (GST_BIN (self));
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstElement *sctpclientsink;
+
+        sctpclientsink = g_value_get_object (&val);
+        g_object_set (sctpclientsink, "socket", self->priv->socket, NULL);
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's sink elements",
+            GST_ELEMENT_NAME (self));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
 static GstStateChangeReturn
 gst_sctp_base_sink_change_state (GstElement * element,
     GstStateChange transition)
@@ -424,6 +461,7 @@ gst_sctp_base_sink_change_state (GstElement * element,
       GST_SCTP_BASE_SINK_UNLOCK (self);
       return GST_STATE_CHANGE_FAILURE;
     }
+    gst_sctp_base_sink_configure_sinks (self);
     GST_SCTP_BASE_SINK_UNLOCK (self);
   }
 
