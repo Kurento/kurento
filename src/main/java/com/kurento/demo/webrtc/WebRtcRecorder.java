@@ -20,6 +20,7 @@ import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaProfileSpecType;
 import com.kurento.kmf.media.RecorderEndpoint;
+import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * WebRtc Handler in loopback connected to a RecorderEndpoint.
@@ -48,7 +49,10 @@ public class WebRtcRecorder extends WebRtcContentHandler {
 		}
 		recorderEndPoint = mp.newRecorderEndpoint(target)
 				.withMediaProfile(mediaProfileSpecType).build();
-		contentSession.start(null, recorderEndPoint);
+		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+
+		webRtcEndpoint.connect(recorderEndPoint);
+		contentSession.start(webRtcEndpoint);
 	}
 
 	@Override

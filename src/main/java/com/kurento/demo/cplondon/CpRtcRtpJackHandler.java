@@ -20,11 +20,12 @@ import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.RtpEndpoint;
 
 @RtpContentService(name = "CpRtpWithFilter", path = "/cpRtpJack")
 public class CpRtcRtpJackHandler extends RtpContentHandler {
 
-	public static JackVaderFilter sharedFilterReference = null;
+	public static JackVaderFilter sharedFilterReference;
 
 	@Override
 	public void onContentRequest(RtpContentSession session) throws Exception {
@@ -32,7 +33,9 @@ public class CpRtcRtpJackHandler extends RtpContentHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		session.start(null, filter);
+		RtpEndpoint rtpEndpoint = mp.newRtpEndpoint().build();
+		filter.connect(rtpEndpoint);
+		session.start(rtpEndpoint);
 		sharedFilterReference = filter;
 	}
 

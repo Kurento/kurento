@@ -19,6 +19,7 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PointerDetectorFilter;
+import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.events.WindowOutEvent;
@@ -56,6 +57,10 @@ public class WebRtcPointerDetectorLoopback extends WebRtcContentHandler {
 			}
 		});
 
-		session.start(filter, filter);
+		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+
+		webRtcEndpoint.connect(filter);
+		filter.connect(webRtcEndpoint);
+		session.start(webRtcEndpoint);
 	}
 }

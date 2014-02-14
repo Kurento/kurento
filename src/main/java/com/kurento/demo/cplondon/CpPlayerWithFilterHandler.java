@@ -17,6 +17,7 @@ package com.kurento.demo.cplondon;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
@@ -37,7 +38,10 @@ public class CpPlayerWithFilterHandler extends HttpPlayerHandler {
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
-		session.start(filter);
+		HttpEndpoint httpEndpoint = session.getMediaPipelineFactory().create()
+				.newHttpGetEndpoint().terminateOnEOS().build();
+		filter.connect(httpEndpoint);
+		session.start(httpEndpoint);
 	}
 
 	@Override

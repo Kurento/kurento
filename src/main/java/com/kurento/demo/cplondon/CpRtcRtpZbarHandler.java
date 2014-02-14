@@ -19,12 +19,13 @@ import com.kurento.kmf.content.RtpContentService;
 import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.RtpEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
 
 @RtpContentService(name = "CpRtcRtpZbarHandler", path = "/cpRtpZbar")
 public class CpRtcRtpZbarHandler extends RtpContentHandler {
 
-	public static ZBarFilter sharedFilterReference = null;
+	public static ZBarFilter sharedFilterReference;
 
 	@Override
 	public void onContentRequest(RtpContentSession session) throws Exception {
@@ -32,7 +33,9 @@ public class CpRtcRtpZbarHandler extends RtpContentHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 		ZBarFilter filter = mp.newZBarFilter().build();
-		session.start(filter);
+		RtpEndpoint rtpEndpoint = mp.newRtpEndpoint().build();
+		filter.connect(rtpEndpoint);
+		session.start(rtpEndpoint);
 		sharedFilterReference = filter;
 	}
 

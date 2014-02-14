@@ -22,6 +22,7 @@ import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * WebRTC handler with FaceOverlayFilter, in loopback.
@@ -35,7 +36,7 @@ public class WebRtcFaceOverlayLoopback extends WebRtcContentHandler {
 	@Autowired
 	private MediaApiConfiguration config;
 
-	public static FaceOverlayFilter filter = null;
+	public static FaceOverlayFilter filter;
 
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
@@ -51,7 +52,10 @@ public class WebRtcFaceOverlayLoopback extends WebRtcContentHandler {
 		contentSession.releaseOnTerminate(mp);
 		filter = mp.newFaceOverlayFilter().build();
 		filter.setOverlayedImage(imageUrl, -0.35F, -1.2F, 1.6F, 1.6F);
-		contentSession.start(filter, filter);
+		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+		webRtcEndpoint.connect(filter);
+		filter.connect(webRtcEndpoint);
+		contentSession.start(webRtcEndpoint);
 	}
 
 	@Override

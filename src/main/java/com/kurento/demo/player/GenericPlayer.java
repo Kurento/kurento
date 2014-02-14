@@ -19,6 +19,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
@@ -62,8 +63,11 @@ public class GenericPlayer {
 						.build();
 				JackVaderFilter filter = mp.newJackVaderFilter().build();
 				playerEndPoint.connect(filter);
+				HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+						.terminateOnEOS().build();
+				filter.connect(httpEndpoint);
 				session.setAttribute("player", playerEndPoint);
-				session.start(filter);
+				session.start(httpEndpoint);
 			} else if (contentId != null && contentId.equalsIgnoreCase("zbar")) {
 				// ZBar Filter
 				MediaPipelineFactory mpf = session.getMediaPipelineFactory();
@@ -72,7 +76,10 @@ public class GenericPlayer {
 				session.setAttribute("player", player);
 				ZBarFilter zBarFilter = mp.newZBarFilter().build();
 				player.connect(zBarFilter);
-				session.start(zBarFilter);
+				HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+						.terminateOnEOS().build();
+				zBarFilter.connect(httpEndpoint);
+				session.start(httpEndpoint);
 				session.setAttribute("eventValue", "");
 				zBarFilter
 						.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {

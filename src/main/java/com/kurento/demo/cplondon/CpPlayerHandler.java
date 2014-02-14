@@ -17,6 +17,7 @@ package com.kurento.demo.cplondon;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -29,10 +30,13 @@ public class CpPlayerHandler extends HttpPlayerHandler {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		PlayerEndpoint PlayerEndpoint = mp.newPlayerEndpoint(
+		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				"https://ci.kurento.com/video/fiwarecut.webm").build();
-		session.setAttribute("player", PlayerEndpoint);
-		session.start(PlayerEndpoint);
+		session.setAttribute("player", playerEndpoint);
+		HttpEndpoint httpEndpoint = session.getMediaPipelineFactory().create()
+				.newHttpGetEndpoint().terminateOnEOS().build();
+		playerEndpoint.connect(httpEndpoint);
+		session.start(httpEndpoint);
 	}
 
 	@Override

@@ -17,6 +17,7 @@ package com.kurento.demo.webrtc;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaElement;
 
 /**
@@ -32,7 +33,8 @@ public class PlayerLiveWebRtc extends HttpPlayerHandler {
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
 		String contentId = session.getContentId();
 		MediaElement mediaElement = null;
-
+		HttpEndpoint httpEndpoint = session.getMediaPipelineFactory().create()
+				.newHttpGetEndpoint().terminateOnEOS().build();
 		if (contentId.equals("faceoverlay")) {
 			mediaElement = WebRtcFaceOverlayLoopback.filter;
 		} else if (contentId.equals("jackvader")) {
@@ -44,7 +46,8 @@ public class PlayerLiveWebRtc extends HttpPlayerHandler {
 		if (mediaElement == null) {
 			session.terminate(400, "WebRTC source is not running");
 		} else {
-			session.start(mediaElement);
+			mediaElement.connect(httpEndpoint);
+			session.start(httpEndpoint);
 		}
 	}
 }

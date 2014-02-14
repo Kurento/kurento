@@ -17,7 +17,6 @@ package com.kurento.demo.webrtc;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 
@@ -41,22 +40,18 @@ public class WebRtcOneToMany extends WebRtcContentHandler {
 			throws Exception {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
-		if (firstWebRtcEndpoint == null) {
-			contentSession.start(null, (MediaElement) null);
-			firstWebRtcEndpoint = contentSession.getSessionEndpoint();
-		} else {
-			contentSession.start(firstWebRtcEndpoint, firstWebRtcEndpoint);
-		}
-	}
 
-	@Override
-	public void onSessionTerminated(WebRtcContentSession contentSession,
-			int code, String reason) throws Exception {
-		if (contentSession.getSessionEndpoint().equals(firstWebRtcEndpoint)) {
-			getLogger().info("Terminating first WebRTC session");
-			firstWebRtcEndpoint = null;
+		if (firstWebRtcEndpoint == null) {
+			firstWebRtcEndpoint = mp.newWebRtcEndpoint().build();
+			firstWebRtcEndpoint.connect(firstWebRtcEndpoint);
+			contentSession.releaseOnTerminate(firstWebRtcEndpoint);
+		} else {
+			WebRtcEndpoint newWebRtcEndpoint = mp.newWebRtcEndpoint().build();
+			contentSession.releaseOnTerminate(newWebRtcEndpoint);
+			firstWebRtcEndpoint.connect(newWebRtcEndpoint);
 		}
-		super.onSessionTerminated(contentSession, code, reason);
+
+		contentSession.start(firstWebRtcEndpoint);
 	}
 
 }

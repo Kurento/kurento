@@ -17,6 +17,7 @@ package com.kurento.demo.cplondon;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 
 @HttpPlayerService(name = "CpRtcPlayerHandler", path = "/cpRtcPlayerJack", redirect = true, useControlProtocol = true)
 public class CpRtcPlayerJackHandler extends HttpPlayerHandler {
@@ -26,7 +27,10 @@ public class CpRtcPlayerJackHandler extends HttpPlayerHandler {
 		if (CpRtcRtpJackHandler.sharedFilterReference == null) {
 			session.terminate(500, "Rtp session has not been established");
 		} else {
-			session.start(CpRtcRtpJackHandler.sharedFilterReference);
+			HttpEndpoint httpEndpoint = session.getMediaPipelineFactory()
+					.create().newHttpGetEndpoint().terminateOnEOS().build();
+			CpRtcRtpJackHandler.sharedFilterReference.connect(httpEndpoint);
+			session.start(httpEndpoint);
 		}
 	}
 

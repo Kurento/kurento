@@ -30,7 +30,6 @@ public class PlayerRecorder extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		// TODO inform about incoherent to Media Server people
 		session.start("file:///tmp/" + session.getContentId());
 	}
 

@@ -19,6 +19,7 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * WebRTC handler with JackVaderFilter, in loopback.
@@ -29,7 +30,7 @@ import com.kurento.kmf.media.MediaPipeline;
 @WebRtcContentService(path = "/webRtcJackVaderLoopback")
 public class WebRtcJackVaderLoopback extends WebRtcContentHandler {
 
-	public static JackVaderFilter filter = null;
+	public static JackVaderFilter filter;
 
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
@@ -37,7 +38,10 @@ public class WebRtcJackVaderLoopback extends WebRtcContentHandler {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
 		filter = mp.newJackVaderFilter().build();
-		contentSession.start(filter, filter);
+		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+		webRtcEndpoint.connect(filter);
+		filter.connect(webRtcEndpoint);
+		contentSession.start(webRtcEndpoint);
 	}
 
 	@Override

@@ -17,7 +17,6 @@ package com.kurento.demo.webrtc;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
-import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 
@@ -30,14 +29,15 @@ import com.kurento.kmf.media.WebRtcEndpoint;
 @WebRtcContentService(path = "/webRtcLoopback")
 public class WebRtcLoopback extends WebRtcContentHandler {
 
-	public static WebRtcEndpoint webRtcEndpoint = null;
+	public static WebRtcEndpoint webRtcEndpoint;
 
 	@Override
 	public void onContentRequest(WebRtcContentSession session) throws Exception {
 		MediaPipeline mp = session.getMediaPipelineFactory().create();
 		session.releaseOnTerminate(mp);
-		session.start(null, (MediaElement) null);
-		webRtcEndpoint = session.getSessionEndpoint();
+		webRtcEndpoint = mp.newWebRtcEndpoint().build();
+		webRtcEndpoint.connect(webRtcEndpoint);
+		session.start(webRtcEndpoint);
 	}
 
 	@Override

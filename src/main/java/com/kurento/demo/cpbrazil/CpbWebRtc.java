@@ -35,6 +35,7 @@ import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PointerDetectorAdvFilter;
 import com.kurento.kmf.media.RecorderEndpoint;
+import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
@@ -152,7 +153,11 @@ public class CpbWebRtc extends WebRtcContentHandler {
 						}
 					}
 				});
-		contentSession.start(faceOverlayFilter, rateLimiter);
+		WebRtcEndpoint webRtcEndpoint = mediaPipeline.newWebRtcEndpoint()
+				.build();
+		webRtcEndpoint.connect(rateLimiter);
+		faceOverlayFilter.connect(webRtcEndpoint);
+		contentSession.start(webRtcEndpoint);
 	}
 
 	@Override

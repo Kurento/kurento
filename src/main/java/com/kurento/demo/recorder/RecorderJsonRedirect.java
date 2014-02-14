@@ -14,11 +14,7 @@
  */
 package com.kurento.demo.recorder;
 
-import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderService;
-import com.kurento.kmf.content.HttpRecorderSession;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.RecorderEndpoint;
 
 /**
  * HTTP Recorder Handler; tunnel strategy (redirect=true); using JSON-RPC
@@ -28,32 +24,10 @@ import com.kurento.kmf.media.RecorderEndpoint;
  * @version 1.0.1
  */
 @HttpRecorderService(path = "/recorderJsonRedirect", redirect = true)
-public class RecorderJsonRedirect extends HttpRecorderHandler {
+public class RecorderJsonRedirect extends AbstractBaseRecorder {
 
 	@Override
-	public void onContentRequest(HttpRecorderSession contentSession)
-			throws Exception {
-		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
-		contentSession.releaseOnTerminate(mp);
-		RecorderEndpoint recorderEndPoint = mp.newRecorderEndpoint(
-				"file:///tmp/recorderJsonRedirect").build();
-		contentSession.setAttribute("recorder", recorderEndPoint);
-		contentSession.start(recorderEndPoint);
-	}
-
-	@Override
-	public void onContentStarted(HttpRecorderSession contentSession) {
-		RecorderEndpoint recorderEndPoint = (RecorderEndpoint) contentSession
-				.getAttribute("recorder");
-		recorderEndPoint.record();
-	}
-
-	@Override
-	public void onSessionTerminated(HttpRecorderSession contentSession,
-			int code, String reason) throws Exception {
-		RecorderEndpoint recorderEndPoint = (RecorderEndpoint) contentSession
-				.getAttribute("recorder");
-		recorderEndPoint.stop();
-		super.onSessionTerminated(contentSession, code, reason);
+	protected String getUri() {
+		return "file:///tmp/recorderJsonRedirect";
 	}
 }

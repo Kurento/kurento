@@ -17,6 +17,7 @@ package com.kurento.demo.player;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -42,8 +43,11 @@ public class PlayerJsonSwitch extends HttpPlayerHandler {
 		contentSession.releaseOnTerminate(mp);
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				"http://ci.kurento.com/video/sintel.webm").build();
+		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS()
+				.build();
+		playerEndpoint.connect(httpEndpoint);
 		contentSession.setAttribute("player", playerEndpoint);
-		contentSession.start(playerEndpoint);
+		contentSession.start(httpEndpoint);
 
 		playerEndpoint
 				.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
