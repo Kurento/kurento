@@ -341,6 +341,11 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
 
+  g_object_class_install_property (gobject_class, PROP_CLOSE_SOCKET,
+      g_param_spec_boolean ("close-socket", "Close socket",
+          "Close socket if passed as property on state change",
+          SCTP_DEFAULT_CLOSE_SOCKET,
+          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_HOST,
       g_param_spec_string ("host", "Host", "The host/IP to send the packets to",
           SCTP_DEFAULT_HOST, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
@@ -384,7 +389,7 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
   self->priv->cancellable = g_cancellable_new ();
   self->priv->host = g_strdup (SCTP_DEFAULT_HOST);
   self->priv->port = SCTP_DEFAULT_PORT;
-  self->priv->close_socket = TRUE;
+  self->priv->close_socket = SCTP_DEFAULT_CLOSE_SOCKET;
   self->priv->owner = FALSE;
 }
 

@@ -21,5 +21,6 @@
 
 #define SCTP_DEFAULT_PORT 8000
 #define SCTP_DEFAULT_HOST "localhost"
+#define SCTP_DEFAULT_CLOSE_SOCKET FALSE
 
 #endif /* __GST_SCTP_BASE_SINK_H__ */
