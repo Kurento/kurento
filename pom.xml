@@ -95,7 +95,9 @@
 		<project.youtube.version>v3-rev73-1.13.2-beta</project.youtube.version>
 		<project.http.version>1.13.1-beta</project.http.version>
 		<project.oauth.version>1.13.1-beta</project.oauth.version>
-
+		<spring-boot-starter-web.version>1.0.0.RC3</spring-boot-starter-web.version>
+		<spring-websocket.version>4.0.0.RELEASE</spring-websocket.version>
+		<fluent-hc.version>4.3.2</fluent-hc.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -286,6 +288,22 @@
 				<groupId>com.google.oauth-client</groupId>
 				<artifactId>google-oauth-client-jetty</artifactId>
 				<version>${project.oauth.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-web</artifactId>
+				<version>${spring-boot-starter-web.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-websocket</artifactId>
+				<version>${spring-websocket.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>fluent-hc</artifactId>
+				<version>${fluent-hc.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
