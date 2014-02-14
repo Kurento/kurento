@@ -45,7 +45,8 @@
             {
               "name": "garbagePeriod",
               "type": "int",
-              "optional": true
+              "optional": true,
+              "defaultValue": 120
             }
           ]
         }
@@ -131,6 +132,18 @@
       "name": "SessionEndpoint",
       "abstract": true,
       "extends": "Endpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ],
       "events": [
         "MediaSessionTerminated",
         "MediaSessionStarted"
@@ -176,12 +189,36 @@
     {
       "name": "Filter",
       "abstract": true,
-      "extends": "MediaElement"
+      "extends": "MediaElement",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Endpoint",
       "abstract": true,
-      "extends": "MediaElement"
+      "extends": "MediaElement",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "PointerDetectorAdvFilter",
@@ -247,6 +284,18 @@
       "name": "UriEndpoint",
       "abstract": true,
       "extends": "Endpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ],
       "methods": [
         {
           "name": "getUri",
@@ -464,8 +513,19 @@
     },
     {
       "name": "MediaPipeline",
-      "abstract": true,
       "extends": "MediaObject",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ],
       "methods": [
         {
           "name": "getParent",
@@ -537,6 +597,18 @@
       "name": "HttpEndpoint",
       "abstract": true,
       "extends": "SessionEndpoint",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ],
       "methods": [
         {
           "name": "getUrl",
@@ -714,6 +786,18 @@
       "name": "MediaElement",
       "abstract": true,
       "extends": "MediaObject",
+      "constructors": [
+        {
+          "params": [
+            {
+              "name": "garbagePeriod",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 120
+            }
+          ]
+        }
+      ],
       "methods": [
         {
           "name": "getMediaSrcs",
