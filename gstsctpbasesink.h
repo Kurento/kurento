@@ -15,7 +15,7 @@
 #ifndef __GST_SCTP_BASE_SINK_H__
 #define __GST_SCTP_BASE_SINK_H__
 
-#include <gst/base/gstbasesink.h>
+#include <gst/gst.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -43,7 +43,7 @@ typedef struct _GstSCTPBaseSinkPrivate GstSCTPBaseSinkPrivate;
 
 struct _GstSCTPBaseSink
 {
-  GstBaseSink parent;
+  GstBin parent;
 
   /*< private > */
   GstSCTPBaseSinkPrivate *priv;
@@ -51,7 +51,7 @@ struct _GstSCTPBaseSink
 
 struct _GstSCTPBaseSinkClass
 {
-  GstBaseSinkClass parent_class;
+  GstBinClass parent_class;
 };
 
 GType gst_sctp_base_sink_get_type (void);

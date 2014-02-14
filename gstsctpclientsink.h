@@ -15,7 +15,7 @@
 #ifndef __GST_SCTP_CLIENT_SINK_H__
 #define __GST_SCTP_CLIENT_SINK_H__
 
-#include <gst/gst.h>
+#include <gst/base/gstbasesink.h>
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
@@ -43,7 +43,7 @@ typedef struct _GstSCTPClientSinkPrivate GstSCTPClientSinkPrivate;
 
 struct _GstSCTPClientSink
 {
-  GstBin parent;
+  GstBaseSink parent;
 
   /*< private > */
   GstSCTPClientSinkPrivate *priv;
@@ -51,7 +51,7 @@ struct _GstSCTPClientSink
 
 struct _GstSCTPClientSinkClass
 {
-  GstBinClass parent_class;
+  GstBaseSinkClass parent_class;
 };
 
 GType gst_sctp_client_sink_get_type (void);
