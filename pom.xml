@@ -1,6 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>3.0.6-SNAPSHOT</version>
+	</parent>
+
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-thrift-interface</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
@@ -12,7 +18,9 @@
 
 			Thrift interface consumer/server for  the Kurento Media Framework.
 	</description>
+	
 	<url>https://github.com/Kurento/kmf-thrift-interface</url>
+
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
@@ -33,23 +41,6 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-
-		<!-- Dependencies version -->
-		<kms-interface.version>3.0.6-2-SNAPSHOT</kms-interface.version>
-		<kmf-commons.version>3.0.5</kmf-commons.version>
-		
-		<junit.version>4.10</junit.version>
-		<slf4j.version>1.6.4</slf4j.version>
-		<cglib.version>2.2.2</cglib.version>
-		<spring.version>4.0.0.RELEASE</spring.version>
-		<commons-pool.version>2.0</commons-pool.version>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kms</groupId>
@@ -64,89 +55,35 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
-			<version>${cglib.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
-			<version>${commons-pool.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.1</version>
-				<executions>
-					<execution>
-						<id>bundle-sources</id>
-						<phase>package</phase>
-						<goals>
-							<!-- produce source artifact for main project sources -->
-							<goal>jar-no-fork</goal>
-
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.4.2</version>
-				<configuration>
-					<pushChanges>false</pushChanges>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.12</version>
-			</plugin>
-		</plugins>
-
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>2.0</version>
-			</extension>
-		</extensions>
-
-	</build>
-
-	<scm>
-		<url>https://github.com/Kurento/${project.artifactId}</url>
-		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
-	</scm>
 </project>
+
