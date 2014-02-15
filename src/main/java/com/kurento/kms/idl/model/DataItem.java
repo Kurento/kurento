@@ -4,15 +4,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.gson.JsonElement;
+
 public class DataItem extends NamedElement {
 
 	private TypeRef type;
 	private boolean optional;
+	private JsonElement defaultValue;
 
-	public DataItem(String name, Doc doc, TypeRef type, boolean optional) {
+	public DataItem(String name, Doc doc, TypeRef type) {
 		super(name, doc);
 		this.type = type;
-		this.optional = optional;
+		this.optional = false;
+	}
+
+	public DataItem(String name, Doc doc, TypeRef type, JsonElement defaultValue) {
+		super(name, doc);
+		this.type = type;
+		this.optional = true;
+		this.defaultValue = defaultValue;
 	}
 
 	public TypeRef getType() {
@@ -29,6 +39,10 @@ public class DataItem extends NamedElement {
 
 	public void setType(TypeRef type) {
 		this.type = type;
+	}
+
+	public JsonElement getDefaultValue() {
+		return defaultValue;
 	}
 
 	@Override
@@ -63,5 +77,5 @@ public class DataItem extends NamedElement {
 	public List<ModelElement> getChildren() {
 		return new ArrayList<ModelElement>(Arrays.asList(type));
 	}
-	
+
 }
