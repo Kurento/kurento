@@ -166,7 +166,7 @@
               "name": "garbagePeriod",
               "type": "int",
               "optional": true,
-              "defaultValue": 2
+              "defaultValue": 120
             }
           ]
         }
@@ -186,7 +186,7 @@
               "name": "garbagePeriod",
               "type": "int",
               "optional": true,
-              "defaultValue": 2
+              "defaultValue": 120
             }
           ]
         }
