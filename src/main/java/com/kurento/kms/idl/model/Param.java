@@ -16,13 +16,17 @@ public class Param extends DataItem {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("Param [type()=" + getType() + ", required()=" + isOptional()
-				+ ", doc()=" + getDoc());
+		sb.append("Param [type()=");
+		sb.append(getType());
+		sb.append(", required()=");
+		sb.append(isOptional());
+		sb.append(", doc()=");
+		sb.append(getDoc());
 		if (isOptional()) {
-			sb.append(", defaultValue()=" + getDefaultValue() + "]");
-		} else {
-			sb.append("]");
+			sb.append(", defaultValue()=");
+			sb.append(getDefaultValue());
 		}
+		sb.append("]");
 
 		return sb.toString();
 	}

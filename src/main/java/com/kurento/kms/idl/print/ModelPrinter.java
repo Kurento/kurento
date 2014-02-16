@@ -86,9 +86,11 @@ public class ModelPrinter {
 			sb.append("abstract ");
 		}
 		
-		sb.append("class " + remoteClass.getName());
+		sb.append("class ");
+		sb.append(remoteClass.getName());
 		if (remoteClass.getExtends() != null) {
-			sb.append(" extends " + remoteClass.getExtends().getName());
+			sb.append(" extends ");
+			sb.append(remoteClass.getExtends().getName());
 		}
 		sb.append("\n");
 		sb.append("\n");
