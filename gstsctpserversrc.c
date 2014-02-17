@@ -47,15 +47,105 @@ struct _GstSCTPServerSrcPrivate
   gchar *host;
 };
 
+enum
+{
+  PROP_0,
+  PROP_HOST,
+  PROP_PORT,
+  PROP_CURRENT_PORT
+};
+
 static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
     GST_PAD_SRC,
     GST_PAD_ALWAYS,
     GST_STATIC_CAPS_ANY);
 
 static void
+gst_sctp_server_src_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
+{
+  GstSCTPServerSrc *self;
+
+  g_return_if_fail (GST_IS_SCTP_SERVER_SRC (object));
+  self = GST_SCTP_SERVER_SRC (object);
+
+  switch (prop_id) {
+    case PROP_HOST:
+      if (!g_value_get_string (value)) {
+        GST_WARNING ("host property cannot be NULL");
+        break;
+      }
+      g_free (self->priv->host);
+      self->priv->host = g_strdup (g_value_get_string (value));
+      break;
+    case PROP_PORT:
+      self->priv->server_port = g_value_get_int (value);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+gst_sctp_server_src_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  GstSCTPServerSrc *self;
+
+  g_return_if_fail (GST_IS_SCTP_SERVER_SRC (object));
+  self = GST_SCTP_SERVER_SRC (object);
+
+  switch (prop_id) {
+    case PROP_HOST:
+      g_value_set_string (value, self->priv->host);
+      break;
+    case PROP_PORT:
+      g_value_set_int (value, self->priv->server_port);
+      break;
+    case PROP_CURRENT_PORT:
+      g_value_set_int (value, g_atomic_int_get (&self->priv->current_port));
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+gst_sctp_server_src_finalize (GObject * gobject)
+{
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (gobject);
+
+  g_free (self->priv->host);
+}
+
+static void
 gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 {
   GstElementClass *gstelement_class;
+  GObjectClass *gobject_class;
+
+  gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->set_property = gst_sctp_server_src_set_property;
+  gobject_class->get_property = gst_sctp_server_src_get_property;
+  gobject_class->finalize = gst_sctp_server_src_finalize;
+
+  g_object_class_install_property (gobject_class, PROP_HOST,
+      g_param_spec_string ("bind-address", "Bind Address",
+          "The address to bind the socket to",
+          SCTP_DEFAULT_HOST,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_PORT,
+      g_param_spec_int ("port", "Port",
+          "The port to listen to (0=random available port)",
+          0, G_MAXUINT16, SCTP_DEFAULT_PORT,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_CURRENT_PORT,
+      g_param_spec_int ("current-port", "current-port",
+          "The port number the socket is currently bound to", 0,
+          G_MAXUINT16, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
 
