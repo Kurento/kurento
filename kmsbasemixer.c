@@ -48,6 +48,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_base_mixer_debug_category);
 #define VIDEO_SINK_PAD_NAME VIDEO_SINK_PAD_PREFIX "%u"
 #define AUDIO_SRC_PAD_NAME AUDIO_SRC_PAD_PREFIX "%u"
 #define VIDEO_SRC_PAD_NAME VIDEO_SRC_PAD_PREFIX "%u"
+#define LENGTH_VIDEO_SRC_PAD_PREFIX 10  //sizeof("video_src_")
+#define LENGTH_AUDIO_SRC_PAD_PREFIX 10  //sizeof("audio_src_")
 
 static GstStaticPadTemplate audio_sink_factory =
 GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD_NAME,
@@ -91,6 +93,7 @@ struct _KmsBaseMixerPrivate
   GHashTable *ports;
   GRecMutex mutex;
   gint port_count;
+  gint pad_added_id;
 };
 
 typedef struct _KmsBaseMixerPortData KmsBaseMixerPortData;
@@ -637,6 +640,42 @@ kms_base_mixer_generate_port_id (KmsBaseMixer * mixer)
 }
 
 static void
+mixer_pad_added (KmsBaseMixer * mixer, GstPad * pad, gpointer data)
+{
+  if (gst_pad_get_direction (pad) != GST_PAD_SRC) {
+    return;
+  }
+
+  KMS_BASE_MIXER_LOCK (mixer);
+
+  if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_SRC_PAD_PREFIX)) {
+    KmsBaseMixerPortData *port;
+    gint id;
+    const gchar *pad_name;
+
+    pad_name = GST_OBJECT_NAME (pad);
+    id = g_ascii_strtoll (pad_name + LENGTH_VIDEO_SRC_PAD_PREFIX, NULL, 10);
+    port = g_hash_table_lookup (mixer->priv->ports, &id);
+
+    gst_element_link_pads (GST_ELEMENT (mixer), GST_OBJECT_NAME (pad),
+        port->port, "mixer_video_sink");
+  } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), AUDIO_SRC_PAD_PREFIX)) {
+    KmsBaseMixerPortData *port;
+    gint id;
+    const gchar *pad_name;
+
+    pad_name = GST_OBJECT_NAME (pad);
+    id = g_ascii_strtoll (pad_name + LENGTH_AUDIO_SRC_PAD_PREFIX, NULL, 10);
+    port = g_hash_table_lookup (mixer->priv->ports, &id);
+
+    gst_element_link_pads (GST_ELEMENT (mixer), GST_OBJECT_NAME (pad),
+        port->port, "mixer_audio_sink");
+  }
+
+  KMS_BASE_MIXER_UNLOCK (mixer);
+}
+
+static void
 end_point_pad_added (GstElement * end_point, GstPad * pad,
     KmsBaseMixerPortData * port_data)
 {
@@ -812,4 +851,7 @@ kms_base_mixer_init (KmsBaseMixer * self)
   self->priv->port_count = 0;
   self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
       release_gint, kms_base_mixer_port_data_destroy);
+
+  self->priv->pad_added_id = g_signal_connect (G_OBJECT (self),
+      "pad-added", G_CALLBACK (mixer_pad_added), NULL);
 }
