@@ -112,6 +112,32 @@ G_DEFINE_TYPE_WITH_CODE (KmsBaseMixer, kms_base_mixer,
     GST_DEBUG_CATEGORY_INIT (kms_base_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for basemixer element"));
 
+static gboolean
+set_target (GstPad * gp, GstPad * target)
+{
+  GstPad *old_target;
+  GstPad *peer;
+
+  old_target = gst_ghost_pad_get_target (GST_GHOST_PAD (gp));
+  if (old_target == NULL) {
+    goto end;
+  }
+  peer = gst_pad_get_peer (old_target);
+
+  if (peer != NULL) {
+    if (peer->direction == GST_PAD_SINK) {
+      gst_pad_unlink (old_target, peer);
+    } else {
+      gst_pad_unlink (peer, old_target);
+    }
+    g_object_unref (peer);
+  }
+  g_object_unref (old_target);
+
+end:
+  return gst_ghost_pad_set_target (GST_GHOST_PAD (gp), target);
+}
+
 static KmsBaseMixerPortData *
 kms_base_mixer_port_data_create (KmsBaseMixer * mixer, GstElement * port,
     gint id)
@@ -244,7 +270,7 @@ kms_base_mixer_unlink_pad (KmsBaseMixer * mixer, const gchar * gp_name)
     return TRUE;
   }
 
-  return gst_ghost_pad_set_target (GST_GHOST_PAD (gp), NULL);
+  return set_target (gp, NULL);
 }
 
 static gboolean
@@ -364,7 +390,7 @@ kms_base_mixer_link_src_pad (KmsBaseMixer * mixer, const gchar * gp_name,
       g_object_unref (gp);
     }
   } else {
-    ret = gst_ghost_pad_set_target (GST_GHOST_PAD (gp), target);
+    ret = set_target (gp, target);
     g_object_unref (gp);
   }
 
@@ -483,7 +509,7 @@ kms_base_mixer_link_sink_pad (KmsBaseMixer * mixer, gint id,
 
   gp = gst_element_get_static_pad (GST_ELEMENT (mixer), gp_name);
   if (gp != NULL) {
-    ret = gst_ghost_pad_set_target (GST_GHOST_PAD (gp), target);
+    ret = set_target (gp, target);
     g_object_unref (gp);
   } else {
     GstPad *src_pad = gst_element_get_static_pad (port_data->port,
