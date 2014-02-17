@@ -97,7 +97,7 @@ kms_rtcp_demux_chain (GstPad * chain, GstObject * parent, GstBuffer * buffer)
 
   /* 200-204 is the range of valid values for a rtcp pt according to rfc3550 */
   if (pt >= 200 && pt <= 204) {
-    GST_INFO ("Buffer is rtcp: %d", pt);
+    GST_TRACE ("Buffer is rtcp: %d", pt);
     gst_pad_push (self->priv->rtcp_src, buffer);
   } else {
     gst_pad_push (self->priv->rtp_src, buffer);
