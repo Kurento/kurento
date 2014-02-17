@@ -29,6 +29,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.media.internal.ChromaFilterImpl;
+import com.kurento.kmf.media.internal.CompositeMixerImpl;
 import com.kurento.kmf.media.internal.DispatcherMixerImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl;
@@ -47,6 +48,7 @@ import com.kurento.kmf.media.internal.WebRtcEndpointImpl;
 import com.kurento.kmf.media.internal.ZBarFilterImpl;
 import com.kurento.kmf.media.internal.refs.MediaObjectRef;
 import com.kurento.kms.thrift.api.KmsMediaChromaFilterTypeConstants;
+import com.kurento.kms.thrift.api.KmsMediaCompositeMixerTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaDispatcherMixerTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaFaceOverlayFilterTypeConstants;
 import com.kurento.kms.thrift.api.KmsMediaGStreamerFilterTypeConstants;
@@ -84,6 +86,7 @@ public class MediaObjectTest {
 	private static final String CHROMA_FILTER_TYPE = KmsMediaChromaFilterTypeConstants.TYPE_NAME;
 	private static final String GSTREAMER_FILTER_TYPE = KmsMediaGStreamerFilterTypeConstants.TYPE_NAME;
 	private static final String DISPATCHER_MIXER_TYPE = KmsMediaDispatcherMixerTypeConstants.TYPE_NAME;
+	private static final String COMPOSITE_MIXER_TYPE = KmsMediaCompositeMixerTypeConstants.TYPE_NAME;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -195,6 +198,12 @@ public class MediaObjectTest {
 	public void testDispatcherMixerInstantiation() {
 		MediaObjectRef objRef = createMediaMixerRef(DISPATCHER_MIXER_TYPE);
 		instantiateAndCheck(DispatcherMixerImpl.class, objRef);
+	}
+
+	@Test
+	public void testCompositeMixerInstantiation() {
+		MediaObjectRef objRef = createMediaMixerRef(COMPOSITE_MIXER_TYPE);
+		instantiateAndCheck(CompositeMixerImpl.class, objRef);
 	}
 
 	private void instantiateAndCheck(Class<?> expectedClass,

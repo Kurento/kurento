@@ -23,6 +23,7 @@ import org.apache.thrift.async.AsyncMethodCallback;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.ChromaFilter.ChromaFilterBuilder;
+import com.kurento.kmf.media.CompositeMixer.CompositeMixerBuilder;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.DispatcherMixer.DispatcherMixerBuilder;
 import com.kurento.kmf.media.FaceOverlayFilter.FaceOverlayFilterBuilder;
@@ -44,6 +45,7 @@ import com.kurento.kmf.media.RtpEndpoint.RtpEndpointBuilder;
 import com.kurento.kmf.media.WebRtcEndpoint.WebRtcEndpointBuilder;
 import com.kurento.kmf.media.ZBarFilter.ZBarFilterBuilder;
 import com.kurento.kmf.media.internal.ChromaFilterImpl.ChromaFilterBuilderImpl;
+import com.kurento.kmf.media.internal.CompositeMixerImpl.CompositeMixerBuilderImpl;
 import com.kurento.kmf.media.internal.DispatcherMixerImpl.DispatcherMixerBuilderImpl;
 import com.kurento.kmf.media.internal.FaceOverlayFilterImpl.FaceOverlayFilterBuilderImpl;
 import com.kurento.kmf.media.internal.GStreamerFilterImpl.GStreamerFilterBuilderImpl;
@@ -546,5 +548,10 @@ public class MediaPipelineImpl extends AbstractCollectableMediaObject implements
 	@Override
 	public DispatcherMixerBuilder newDispatcherMixer() {
 		return new DispatcherMixerBuilderImpl(this);
+	}
+
+	@Override
+	public CompositeMixerBuilder newCompositeMixer() {
+		return new CompositeMixerBuilderImpl(this);
 	}
 }
