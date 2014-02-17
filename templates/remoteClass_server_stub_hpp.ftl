@@ -37,8 +37,8 @@ public:
   <#if method_index = 0 >
 
   </#if>
-  ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
-      <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>);
+  virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
+      <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) = 0;
   </#list>
 
   <#if (remoteClass.constructors)??>
