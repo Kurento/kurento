@@ -88,6 +88,12 @@ kms_mixer_endpoint_generate_sink_pad (GstElement * element,
   pad = gst_ghost_pad_new_from_template (name, agnostic_pad, templ);
   g_object_unref (agnostic_pad);
 
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED) {
+    gst_pad_set_active (pad, TRUE);
+  }
+
   if (gst_element_add_pad (element, pad))
     return pad;
 
@@ -166,6 +172,12 @@ kms_mixer_endpoint_valve_added (KmsElement * self, GstElement * valve,
       G_CALLBACK (kms_mixer_end_point_internal_src_pad_linked), NULL);
   internal_src->unlinkfunc =
       GST_DEBUG_FUNCPTR (kms_mixer_end_point_internal_src_pad_unlinked);
+
+  if (GST_STATE (self) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (self) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (self) >= GST_STATE_PAUSED) {
+    gst_pad_set_active (internal_src, TRUE);
+  }
 
   gst_element_add_pad (GST_ELEMENT (self), internal_src);
   g_object_unref (src);
