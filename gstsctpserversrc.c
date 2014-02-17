@@ -134,8 +134,35 @@ gst_sctp_server_src_finalize (GObject * gobject)
 static gboolean
 gst_sctp_server_src_stop (GstBaseSrc * bsrc)
 {
-  /* TODO */
-  return FALSE;
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
+  GError *err = NULL;
+
+  if (self->priv->client_socket != NULL) {
+    GST_DEBUG_OBJECT (self, "closing client socket");
+
+    if (!g_socket_close (self->priv->client_socket, &err)) {
+      GST_ERROR_OBJECT (self, "Failed to close socket: %s", err->message);
+      g_clear_error (&err);
+    }
+    g_object_unref (self->priv->client_socket);
+    self->priv->client_socket = NULL;
+  }
+
+  if (self->priv->server_socket != NULL) {
+    GST_DEBUG_OBJECT (self, "closing server socket");
+
+    if (!g_socket_close (self->priv->server_socket, &err)) {
+      GST_ERROR_OBJECT (self, "Failed to close socket: %s", err->message);
+      g_clear_error (&err);
+    }
+    g_object_unref (self->priv->server_socket);
+    self->priv->server_socket = NULL;
+
+    g_atomic_int_set (&self->priv->current_port, 0);
+    g_object_notify (G_OBJECT (self), "current-port");
+  }
+
+  return TRUE;
 }
 
 /* set up server */
