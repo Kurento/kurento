@@ -114,6 +114,14 @@ gst_sctp_server_src_get_property (GObject * object, guint prop_id,
 }
 
 static void
+gst_sctp_server_src_dispose (GObject * gobject)
+{
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (gobject);
+
+  g_clear_object (&self->priv->cancellable);
+}
+
+static void
 gst_sctp_server_src_finalize (GObject * gobject)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (gobject);
@@ -140,15 +148,21 @@ gst_sctp_server_src_stop (GstBaseSrc * bsrc)
 static gboolean
 gst_sctp_server_src_unlock (GstBaseSrc * bsrc)
 {
-  /* TODO */
-  return FALSE;
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
+
+  g_cancellable_cancel (self->priv->cancellable);
+
+  return TRUE;
 }
 
 static gboolean
 gst_sctp_server_src_unlock_stop (GstBaseSrc * bsrc)
 {
-  /* TODO */
-  return FALSE;
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
+
+  g_cancellable_reset (self->priv->cancellable);
+
+  return TRUE;
 }
 
 static GstFlowReturn
@@ -170,6 +184,7 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
   gobject_class->set_property = gst_sctp_server_src_set_property;
   gobject_class->get_property = gst_sctp_server_src_get_property;
   gobject_class->finalize = gst_sctp_server_src_finalize;
+  gobject_class->dispose = gst_sctp_server_src_dispose;
 
   g_object_class_install_property (gobject_class, PROP_HOST,
       g_param_spec_string ("bind-address", "Bind Address",
@@ -212,6 +227,7 @@ static void
 gst_sctp_server_src_init (GstSCTPServerSrc * self)
 {
   self->priv = GST_SCTP_SERVER_SRC_GET_PRIVATE (self);
+  self->priv->cancellable = g_cancellable_new ();
 }
 
 gboolean
