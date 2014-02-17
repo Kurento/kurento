@@ -107,6 +107,7 @@ public class CodeGen {
 		root.put("getJavaObjectType", new JavaObjectType());
 		root.put("getCppObjectType", new CppObjectType());
 		root.put("camelToUnderscore", new CamelToUnderscore());
+		root.put("remoteClassDependencies", new RemoteClassDependencies());
 
 		root.put("model", model);
 

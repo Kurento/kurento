@@ -56,21 +56,44 @@ private:
   </#if>
   </#list>
 <#elseif complexType.typeFormat == "ENUM">
+public:
   typedef enum {
   <#list complexType.values as value>
     ${value}<#if value_has_next>,</#if>
   </#list>
   } type;
 
-  static type getFromString (const std::string &type) {
+  ${complexType.name} (const std::string &type) {
 
     <#list complexType.values as value>
     if (type ==  "${value}") {
-      return ${value};
+      enumValue = ${value};
     }
 
     </#list>     
   };
+
+  ${complexType.name} (type value) {
+    this->enumValue = value;
+  }
+
+  type getValue () {
+    return enumValue;
+  };
+
+  std::string getString () {
+
+    <#list complexType.values as value>
+    if (enumValue ==  ${value}) {
+      return "${value}";
+    }
+
+    </#list>
+  }
+
+private:
+
+  type enumValue;
 
 <#else>
 // TODO: Type format ${complexType.typeFormat} not supported
