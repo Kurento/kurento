@@ -337,14 +337,17 @@ gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 
   /* write buffer data */
   while (written < map.size) {
-    /* TODO: Change send function to use the one defined by sctp library */
     rret =
-        g_socket_send (self->priv->socket, (gchar *) map.data + written,
-        map.size - written, self->priv->cancellable, &err);
+        sctp_socket_send (self->priv->socket, self->priv->streamid,
+        (gchar *) map.data + written, map.size - written,
+        self->priv->cancellable, &err);
+
     if (rret < 0)
       goto write_error;
+
     written += rret;
   }
+
   gst_buffer_unmap (buf, &map);
 
   return GST_FLOW_OK;

@@ -52,7 +52,7 @@ libgstkurento_la_SOURCES = kmsplugin.c \
                         kmsmixerendpoint.c kmsmixerendpoint.h \
                         kmsbasemixer.c kmsbasemixer.h \
                         kmsmainmixer.c kmsmainmixer.h \
-                        gstsctp.h \
+                        gstsctp.c gstsctp.h  \
                         gstsctpbasesink.c gstsctpbasesink.h \
                         gstsctpclientsink.c gstsctpclientsink.h
 

@@ -23,4 +23,8 @@
 #define SCTP_DEFAULT_HOST "localhost"
 #define SCTP_DEFAULT_CLOSE_SOCKET FALSE
 
+gssize
+sctp_socket_send (GSocket *socket, guint streamid, const gchar *buffer,
+  gsize size, GCancellable *cancellable, GError **error);
+
 #endif /* __GST_SCTP_BASE_SINK_H__ */
