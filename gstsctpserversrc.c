@@ -47,6 +47,11 @@ struct _GstSCTPServerSrcPrivate
   gchar *host;
 };
 
+static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
+    GST_PAD_SRC,
+    GST_PAD_ALWAYS,
+    GST_STATIC_CAPS_ANY);
+
 static void
 gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 {
@@ -58,6 +63,9 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
       "SCTP server source", "Source/Network",
       "Receive data as a server over the network via SCTP",
       "Santiago Carot-Nemesio <sancane at gmail dot com>");
+
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&srctemplate));
 
   g_type_class_add_private (klass, sizeof (GstSCTPServerSrcPrivate));
 }
