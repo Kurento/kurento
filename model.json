@@ -41,6 +41,7 @@
     },
     {
       "name": "MediaObject",
+      "abstract": true,
       "constructors": [
         {
           "params": [
