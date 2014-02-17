@@ -21,7 +21,7 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
   <#list remoteClass.constructors[0].params as param>
   <#assign json_method = "">
   <#assign type_description = "">
-  if (!params.isMember ("${param.name}") ) {
+  if (!params.isMember ("${param.name}")) {
     <#if (param.defaultValue)??>
     /* param '${param.name}' not present, using default */
     <#if param.type.name = "String" || param.type.name = "int" || param.type.name = "boolean">
@@ -57,6 +57,9 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
     <#elseif param.type.name = "boolean">
 	  <#assign json_method = "Bool">
 	  <#assign type_description = "boolean">
+	<#elseif param.type.name = "double">
+	  <#assign json_method = "Double">
+	  <#assign type_description = "double">
 	<#elseif model.complexTypes?seq_contains(param.type.type) >
 	  <#assign json_method = "String">
 	  <#assign type_description = "string">
@@ -72,7 +75,7 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
 
       <#if model.complexTypes?seq_contains(param.type.type) >
         <#if param.type.type.typeFormat == "REGISTER">
-    // TODO, deserialize param value for type '${param.type}'
+    ${param.name} = std::shared_ptr<${param.type.name}> (new ${param.type.name} (aux));
         <#elseif param.type.type.typeFormat == "ENUM">
     ${param.name} = std::shared_ptr<${param.type.name}> (new ${param.type.name} (aux.as${json_method} ()));
         <#else>

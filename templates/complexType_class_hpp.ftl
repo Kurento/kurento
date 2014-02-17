@@ -28,6 +28,8 @@ public:
       </#if><#rt>
     <#lt></#list>
   };
+
+  ${complexType.name} (const Json::Value &value) throw (JsonRpc::CallException);
   
   <#list complexType.properties as property>
   void set${property.name?cap_first} (${getCppObjectType(property.type.name, false)} ${property.name}) {
