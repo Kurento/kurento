@@ -121,10 +121,49 @@ gst_sctp_server_src_finalize (GObject * gobject)
   g_free (self->priv->host);
 }
 
+/* set up server */
+static gboolean
+gst_sctp_server_src_start (GstBaseSrc * bsrc)
+{
+  /* TODO */
+  return FALSE;
+}
+
+static gboolean
+gst_sctp_server_src_stop (GstBaseSrc * bsrc)
+{
+  /* TODO */
+  return FALSE;
+}
+
+/* will be called only between calls to start() and stop() */
+static gboolean
+gst_sctp_server_src_unlock (GstBaseSrc * bsrc)
+{
+  /* TODO */
+  return FALSE;
+}
+
+static gboolean
+gst_sctp_server_src_unlock_stop (GstBaseSrc * bsrc)
+{
+  /* TODO */
+  return FALSE;
+}
+
+static GstFlowReturn
+gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
+{
+  /* TODO */
+  return GST_FLOW_ERROR;
+}
+
 static void
 gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 {
+  GstPushSrcClass *gstpush_src_class;
   GstElementClass *gstelement_class;
+  GstBaseSrcClass *gstbasesrc_class;
   GObjectClass *gobject_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
@@ -156,6 +195,15 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&srctemplate));
+
+  gstbasesrc_class = GST_BASE_SRC_CLASS (klass);
+  gstbasesrc_class->start = gst_sctp_server_src_start;
+  gstbasesrc_class->stop = gst_sctp_server_src_stop;
+  gstbasesrc_class->unlock = gst_sctp_server_src_unlock;
+  gstbasesrc_class->unlock_stop = gst_sctp_server_src_unlock_stop;
+
+  gstpush_src_class = GST_PUSH_SRC_CLASS (klass);
+  gstpush_src_class->create = gst_sctp_server_src_create;
 
   g_type_class_add_private (klass, sizeof (GstSCTPServerSrcPrivate));
 }
