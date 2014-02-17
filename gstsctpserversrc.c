@@ -21,6 +21,8 @@
 #include "gstsctp.h"
 #include "gstsctpserversrc.h"
 
+#define SCTP_BACKLOG 1          /* client connection queue */
+
 #define PLUGIN_NAME "sctpserversrc"
 
 GST_DEBUG_CATEGORY_STATIC (gst_sctp_server_src_debug_category);
@@ -129,19 +131,145 @@ gst_sctp_server_src_finalize (GObject * gobject)
   g_free (self->priv->host);
 }
 
-/* set up server */
-static gboolean
-gst_sctp_server_src_start (GstBaseSrc * bsrc)
-{
-  /* TODO */
-  return FALSE;
-}
-
 static gboolean
 gst_sctp_server_src_stop (GstBaseSrc * bsrc)
 {
   /* TODO */
   return FALSE;
+}
+
+/* set up server */
+static gboolean
+gst_sctp_server_src_start (GstBaseSrc * bsrc)
+{
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
+  GError *err = NULL;
+  GInetAddress *addr;
+  GSocketAddress *saddr;
+  GResolver *resolver;
+  gint bound_port = 0;
+
+  /* look up name if we need to */
+  addr = g_inet_address_new_from_string (self->priv->host);
+  if (!addr) {
+    GList *results;
+
+    resolver = g_resolver_get_default ();
+
+    results =
+        g_resolver_lookup_by_name (resolver, self->priv->host,
+        self->priv->cancellable, &err);
+
+    if (!results)
+      goto name_resolve;
+
+    addr = G_INET_ADDRESS (g_object_ref (results->data));
+
+    g_resolver_free_addresses (results);
+    g_object_unref (resolver);
+  }
+
+  if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
+    gchar *ip = g_inet_address_to_string (addr);
+
+    GST_DEBUG_OBJECT (self, "IP address for host %s is %s", self->priv->host,
+        ip);
+    g_free (ip);
+  }
+
+  saddr = g_inet_socket_address_new (addr, self->priv->server_port);
+  g_object_unref (addr);
+
+  /* create the server listener socket */
+  self->priv->server_socket =
+      g_socket_new (g_socket_address_get_family (saddr), G_SOCKET_TYPE_STREAM,
+      G_SOCKET_PROTOCOL_SCTP, &err);
+
+  if (!self->priv->server_socket)
+    goto no_socket;
+
+  GST_DEBUG_OBJECT (self, "opened receiving server socket");
+
+  /* TODO: Set SCTP options */
+
+  /* bind it */
+  GST_DEBUG_OBJECT (self, "binding server socket to address");
+
+  if (!g_socket_bind (self->priv->server_socket, saddr, TRUE, &err))
+    goto bind_failed;
+
+  g_object_unref (saddr);
+
+  GST_DEBUG_OBJECT (self, "listening on server socket");
+
+  g_socket_set_listen_backlog (self->priv->server_socket, SCTP_BACKLOG);
+
+  if (!g_socket_listen (self->priv->server_socket, &err))
+    goto listen_failed;
+
+  if (self->priv->server_port == 0) {
+    saddr = g_socket_get_local_address (self->priv->server_socket, NULL);
+    bound_port = g_inet_socket_address_get_port ((GInetSocketAddress *) saddr);
+    g_object_unref (saddr);
+  } else {
+    bound_port = self->priv->server_port;
+  }
+
+  GST_DEBUG_OBJECT (self, "listening on port %d", bound_port);
+
+  g_atomic_int_set (&self->priv->current_port, bound_port);
+  g_object_notify (G_OBJECT (self), "current-port");
+
+  return TRUE;
+
+  /* ERRORS */
+no_socket:
+  {
+    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+        ("Failed to create socket: %s", err->message));
+    g_clear_error (&err);
+    g_object_unref (saddr);
+    return FALSE;
+  }
+name_resolve:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled name resolval");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to resolve host '%s': %s", self->priv->host, err->message));
+    }
+    g_clear_error (&err);
+    g_object_unref (resolver);
+    return FALSE;
+  }
+bind_failed:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled binding");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to bind on host '%s:%d': %s", self->priv->host,
+              self->priv->server_port, err->message));
+    }
+    g_clear_error (&err);
+    g_object_unref (saddr);
+    gst_sctp_server_src_stop (GST_BASE_SRC (self));
+    return FALSE;
+  }
+listen_failed:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled listening");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to listen on host '%s:%d': %s", self->priv->host,
+              self->priv->server_port, err->message));
+    }
+    g_clear_error (&err);
+    gst_sctp_server_src_stop (GST_BASE_SRC (self));
+    return FALSE;
+  };
 }
 
 /* will be called only between calls to start() and stop() */
