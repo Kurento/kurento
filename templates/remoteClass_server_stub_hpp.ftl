@@ -7,6 +7,7 @@ cpp/${remoteClass.name}.hpp
 #include <jsoncpp/json/json.h>
 #include <JsonRpcException.hpp>
 #include <memory>
+#include <vector>
 
 <#if (remoteClass.extends)??>
 #include "${remoteClass.extends.name}.hpp"
@@ -18,54 +19,45 @@ namespace kurento {
 class ${dependency.name};
 </#list>
 
-class ${remoteClass.name}<#if remoteClass.extends??> : public ${remoteClass.extends.name}</#if>
+class ${remoteClass.name}<#if remoteClass.extends??> : public virtual ${remoteClass.extends.name}</#if>
 {
 
 public:
 
-  <#if (remoteClass.constructors)??><#rt>
-  <#lt><#list remoteClass.constructors as constructor><#rt>
-  ${remoteClass.name} (<#rt>
-     <#lt><#list constructor.params as param><#rt>
-        <#lt>${getCppObjectType(param.type.name)} ${param.name}<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
-     <#lt></#list>);
-  </#list><#rt>
-  <#lt></#if>
-  virtual ~${remoteClass.name} ();
+  ${remoteClass.name} () {};
+  virtual ~${remoteClass.name} () {};
   <#list remoteClass.methods as method><#rt>
   <#if method_index = 0 >
 
   </#if>
   virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
-      <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) = 0;
+      <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
   </#list>
 
-  <#if (remoteClass.constructors)??>
-  class Factory
+  <#if (!remoteClass.abstract || remoteClass.name == "MediaObject") && (remoteClass.constructors)??>
+  class Factory<#if remoteClass.name != "MediaObject"> : public MediaObject::Factory</#if>
   {
   public:
-    static Factory getFactory() {
-      return Factory::factory;
-    };
+    Factory () {};
 
     virtual std::shared_ptr<MediaObject> createObject (const Json::Value
-        &params) throw (JsonRpc::CallException);
+        &params) throw (JsonRpc::CallException)<#if remoteClass.name == "MediaObject"> = 0</#if>;
 
     virtual std::string getName () {
       return "${remoteClass.name}";
     };
 
   private:
+
+    <#if !remoteClass.abstract>
     <#list remoteClass.constructors as constructor><#rt>
-    virtual std::shared_ptr<MediaObject> createObject (<#rt>
+    std::shared_ptr<MediaObject> createObject (<#rt>
      <#lt><#list constructor.params as param><#rt>
         <#lt>${getCppObjectType(param.type.name)} ${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>);
    </#list>
-
-    static Factory factory;
+   </#if>
   };
 
   </#if>

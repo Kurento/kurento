@@ -10,7 +10,7 @@ cpp/${remoteClass.name}.cpp
 
 namespace kurento {
 
-<#if (remoteClass.constructors[0])??>
+<#if (!remoteClass.abstract) && (remoteClass.constructors[0])??>
 std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const Json::Value &params) throw (JsonRpc::CallException)
 {
   Json::Value aux;
@@ -90,7 +90,6 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
   }
 
   </#list>
-
   return createObject (<#rt>
      <#lt><#list remoteClass.constructors[0].params as param><#rt>
         <#lt>${param.name}<#rt>
