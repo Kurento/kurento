@@ -18,6 +18,9 @@
 #endif
 
 #include <gio/gio.h>
+#include <string.h>
+#include <netinet/sctp.h>
+
 #include "gstsctp.h"
 #include "gstsctpserversrc.h"
 
@@ -47,6 +50,8 @@ struct _GstSCTPServerSrcPrivate
   int current_port;             /* currently bound-to port, or 0 *//* ATOMIC */
   int server_port;              /* port property */
   gchar *host;
+  guint16 num_ostreams;
+  guint16 max_istreams;
 };
 
 enum
@@ -54,7 +59,9 @@ enum
   PROP_0,
   PROP_HOST,
   PROP_PORT,
-  PROP_CURRENT_PORT
+  PROP_CURRENT_PORT,
+  PROP_NUM_OSTREAMS,
+  PROP_MAX_INSTREAMS
 };
 
 static GstStaticPadTemplate srctemplate = GST_STATIC_PAD_TEMPLATE ("src",
@@ -83,7 +90,12 @@ gst_sctp_server_src_set_property (GObject * object, guint prop_id,
     case PROP_PORT:
       self->priv->server_port = g_value_get_int (value);
       break;
-
+    case PROP_NUM_OSTREAMS:
+      self->priv->num_ostreams = g_value_get_int (value);
+      break;
+    case PROP_MAX_INSTREAMS:
+      self->priv->max_istreams = g_value_get_int (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -108,6 +120,12 @@ gst_sctp_server_src_get_property (GObject * object, guint prop_id,
       break;
     case PROP_CURRENT_PORT:
       g_value_set_int (value, g_atomic_int_get (&self->priv->current_port));
+      break;
+    case PROP_NUM_OSTREAMS:
+      g_value_set_int (value, self->priv->num_ostreams);
+      break;
+    case PROP_MAX_INSTREAMS:
+      g_value_set_int (value, self->priv->max_istreams);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -215,9 +233,28 @@ gst_sctp_server_src_start (GstBaseSrc * bsrc)
   if (!self->priv->server_socket)
     goto no_socket;
 
-  GST_DEBUG_OBJECT (self, "opened receiving server socket");
+  /* TODO: Add support for SCTP Multi-Homing */
 
-  /* TODO: Set SCTP options */
+#if defined (SCTP_INITMSG)
+  {
+    struct sctp_initmsg initmsg;
+
+    memset (&initmsg, 0, sizeof (initmsg));
+    initmsg.sinit_num_ostreams = self->priv->num_ostreams;
+    initmsg.sinit_max_instreams = self->priv->max_istreams;
+
+    if (setsockopt (g_socket_get_fd (self->priv->server_socket), IPPROTO_SCTP,
+            SCTP_INITMSG, &initmsg, sizeof (initmsg)) < 0)
+      GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
+          ("Could not configure SCTP socket: %s (%d)", g_strerror (errno),
+              errno));
+  }
+#else
+  GST_WARNING_OBJECT (self, "don't know how to configure the SCTP initiation "
+      "parameters on this OS.");
+#endif
+
+  GST_DEBUG_OBJECT (self, "opened receiving server socket");
 
   /* bind it */
   GST_DEBUG_OBJECT (self, "binding server socket to address");
@@ -355,6 +392,16 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
       g_param_spec_int ("current-port", "current-port",
           "The port number the socket is currently bound to", 0,
           G_MAXUINT16, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_NUM_OSTREAMS,
+      g_param_spec_int ("num-ostreams", "Output streams",
+          "This is the number of streams that the application wishes to be "
+          "able to send to", 0, G_MAXUINT16, 1,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_MAX_INSTREAMS,
+      g_param_spec_int ("max-instreams", "Inputput streams",
+          "This value represents the maximum number of inbound streams the "
+          "application is prepared to support", 0, G_MAXUINT16, 1,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
 
