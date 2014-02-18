@@ -71,3 +71,60 @@ sctp_socket_send (GSocket * socket, guint streamid, const gchar * buffer,
   return sctp_socket_send_with_blocking (socket, streamid, buffer, size,
       g_socket_get_blocking (socket), cancellable, error);
 }
+
+static gssize
+sctp_socket_receive_with_blocking (GSocket * socket, gchar * buffer, gsize size,
+    gboolean blocking, GCancellable * cancellable, guint * streamid,
+    GError ** error)
+{
+  gssize ret;
+
+  if (g_socket_is_closed (socket)) {
+    g_set_error_literal (error, G_IO_ERROR, G_IO_ERROR_CLOSED,
+        "Socket is already closed");
+    return -1;
+  }
+
+  if (g_cancellable_set_error_if_cancelled (cancellable, error))
+    return -1;
+
+  while (TRUE) {
+    struct sctp_sndrcvinfo sndrcvinfo;
+    int flags;
+
+    if (blocking &&
+        !g_socket_condition_wait (socket, G_IO_IN, cancellable, error))
+      return -1;
+
+    if ((ret = sctp_recvmsg (g_socket_get_fd (socket), buffer, size, NULL, 0,
+                &sndrcvinfo, &flags)) < 0) {
+      if (errno == EINTR)
+        continue;
+
+      if (blocking) {
+        if (errno == EWOULDBLOCK || errno == EAGAIN)
+          continue;
+      }
+
+      g_set_error (error, G_IO_ERROR, errno, "Error receiving data: %s",
+          strerror (errno));
+
+      return -1;
+    }
+
+    *streamid = sndrcvinfo.sinfo_stream;
+    break;
+  }
+
+  return ret;
+}
+
+gssize
+sctp_socket_receive (GSocket * socket, gchar * buffer, gsize size,
+    GCancellable * cancellable, guint * streamid, GError ** error)
+{
+  g_return_val_if_fail (G_IS_SOCKET (socket) && buffer != NULL, -1);
+
+  return sctp_socket_receive_with_blocking (socket, buffer, size,
+      g_socket_get_blocking (socket), cancellable, streamid, error);
+}

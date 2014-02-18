@@ -18,8 +18,6 @@
 #endif
 
 #include <gio/gio.h>
-#include <string.h>
-#include <netinet/sctp.h>
 
 #include "gstsctp.h"
 #include "gstsctpserversrc.h"
@@ -365,6 +363,7 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
   GIOCondition condition;
   GstSCTPServerSrc *self;
   GError *err = NULL;
+  guint streamid;
   GstMapInfo map;
   gssize rret;
 
@@ -380,6 +379,19 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
         &err);
     if (self->priv->client_socket == NULL)
       goto accept_error;
+#if defined (SCTP_EVENTS)
+    {
+      struct sctp_event_subscribe events;
+
+      memset (&events, 0, sizeof (events));
+      events.sctp_data_io_event = 1;
+      setsockopt (g_socket_get_fd (self->priv->client_socket), SOL_SCTP,
+          SCTP_EVENTS, &events, sizeof (events));
+    }
+#else
+    GST_WARNING_OBJECT (self, "don't know how to configure SCTP events "
+        "on this OS.");
+#endif
     /* now read from the socket. */
   }
 
@@ -409,10 +421,8 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
   *outbuf = gst_buffer_new_and_alloc (MAX_READ_SIZE);
   gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
 
-  /* TODO: Use sctp receive function */
-  rret =
-      g_socket_receive (self->priv->client_socket, (gchar *) map.data,
-      MAX_READ_SIZE, self->priv->cancellable, &err);
+  rret = sctp_socket_receive (self->priv->client_socket, (gchar *) map.data,
+      MAX_READ_SIZE, self->priv->cancellable, &streamid, &err);
 
   if (rret == 0) {
     GST_DEBUG_OBJECT (self, "Connection closed");
@@ -439,14 +449,8 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
     gst_buffer_unmap (*outbuf, &map);
     gst_buffer_resize (*outbuf, 0, rret);
 
-    GST_LOG_OBJECT (self,
-        "Returning buffer from _get of size %" G_GSIZE_FORMAT ", ts %"
-        GST_TIME_FORMAT ", dur %" GST_TIME_FORMAT
-        ", offset %" G_GINT64_FORMAT ", offset_end %" G_GINT64_FORMAT,
-        gst_buffer_get_size (*outbuf),
-        GST_TIME_ARGS (GST_BUFFER_TIMESTAMP (*outbuf)),
-        GST_TIME_ARGS (GST_BUFFER_DURATION (*outbuf)),
-        GST_BUFFER_OFFSET (*outbuf), GST_BUFFER_OFFSET_END (*outbuf));
+    GST_DEBUG_OBJECT (self, "Got buffer %" GST_PTR_FORMAT
+        " on stream %u", *outbuf, streamid);
   }
   g_clear_error (&err);
 
