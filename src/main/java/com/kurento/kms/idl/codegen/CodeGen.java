@@ -27,8 +27,12 @@ public class CodeGen {
 	private final File outputFolder;
 	private final Configuration cfg;
 
-	public CodeGen(File templatesFolder, File outputFolder) throws IOException {
+	private final boolean verbose;
 
+	public CodeGen(File templatesFolder, File outputFolder, boolean verbose)
+			throws IOException {
+
+		this.verbose = verbose;
 		this.templatesFolder = templatesFolder;
 		this.outputFolder = outputFolder;
 
@@ -154,10 +158,12 @@ public class CodeGen {
 		writer.write(sourceCode);
 		writer.close();
 
-		System.out.println("File: " + fileName);
-		System.out.println();
-		System.out.println(sourceCode);
-		System.out.println("---------------------------------------");
+		if (verbose) {
+			System.out.println("File: " + fileName);
+			System.out.println();
+			System.out.println(sourceCode);
+			System.out.println("---------------------------------------");
+		}
 	}
 
 }
