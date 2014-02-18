@@ -25,6 +25,7 @@
 #include "gstsctpserversrc.h"
 
 #define SCTP_BACKLOG 1          /* client connection queue */
+#define MAX_READ_SIZE (4 * 1024)
 
 #define PLUGIN_NAME "sctpserversrc"
 
@@ -360,8 +361,121 @@ gst_sctp_server_src_unlock_stop (GstBaseSrc * bsrc)
 static GstFlowReturn
 gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
 {
-  /* TODO */
-  return GST_FLOW_ERROR;
+  GstFlowReturn ret = GST_FLOW_OK;
+  GIOCondition condition;
+  GstSCTPServerSrc *self;
+  GError *err = NULL;
+  GstMapInfo map;
+  gssize rret;
+
+  self = GST_SCTP_SERVER_SRC (psrc);
+
+  if (self->priv->server_socket == NULL)
+    goto wrong_state;
+
+  if (self->priv->client_socket == NULL) {
+    /* wait on server socket for connections */
+    self->priv->client_socket =
+        g_socket_accept (self->priv->server_socket, self->priv->cancellable,
+        &err);
+    if (self->priv->client_socket == NULL)
+      goto accept_error;
+    /* now read from the socket. */
+  }
+
+  /* if we have a client, wait for reading */
+  GST_LOG_OBJECT (self, "asked for a buffer");
+
+  if (!g_socket_condition_wait (self->priv->client_socket,
+          G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP, self->priv->cancellable,
+          &err))
+    goto select_error;
+
+  condition = g_socket_condition_check (self->priv->client_socket,
+      G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP);
+
+  if ((condition & G_IO_ERR)) {
+    GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL), ("Socket in error state"));
+    *outbuf = NULL;
+    ret = GST_FLOW_ERROR;
+    goto done;
+  } else if ((condition & G_IO_HUP)) {
+    GST_DEBUG_OBJECT (self, "Connection closed");
+    *outbuf = NULL;
+    ret = GST_FLOW_EOS;
+    goto done;
+  }
+
+  *outbuf = gst_buffer_new_and_alloc (MAX_READ_SIZE);
+  gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
+
+  /* TODO: Use sctp receive function */
+  rret =
+      g_socket_receive (self->priv->client_socket, (gchar *) map.data,
+      MAX_READ_SIZE, self->priv->cancellable, &err);
+
+  if (rret == 0) {
+    GST_DEBUG_OBJECT (self, "Connection closed");
+    ret = GST_FLOW_EOS;
+    if (*outbuf != NULL) {
+      gst_buffer_unmap (*outbuf, &map);
+      gst_buffer_unref (*outbuf);
+    }
+    *outbuf = NULL;
+  } else if (rret < 0) {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      ret = GST_FLOW_FLUSHING;
+      GST_DEBUG_OBJECT (self, "Cancelled reading from socket");
+    } else {
+      ret = GST_FLOW_ERROR;
+      GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
+          ("Failed to read from socket: %s", err->message));
+    }
+    gst_buffer_unmap (*outbuf, &map);
+    gst_buffer_unref (*outbuf);
+    *outbuf = NULL;
+  } else {
+    ret = GST_FLOW_OK;
+    gst_buffer_unmap (*outbuf, &map);
+    gst_buffer_resize (*outbuf, 0, rret);
+
+    GST_LOG_OBJECT (self,
+        "Returning buffer from _get of size %" G_GSIZE_FORMAT ", ts %"
+        GST_TIME_FORMAT ", dur %" GST_TIME_FORMAT
+        ", offset %" G_GINT64_FORMAT ", offset_end %" G_GINT64_FORMAT,
+        gst_buffer_get_size (*outbuf),
+        GST_TIME_ARGS (GST_BUFFER_TIMESTAMP (*outbuf)),
+        GST_TIME_ARGS (GST_BUFFER_DURATION (*outbuf)),
+        GST_BUFFER_OFFSET (*outbuf), GST_BUFFER_OFFSET_END (*outbuf));
+  }
+  g_clear_error (&err);
+
+done:
+  return ret;
+
+wrong_state:
+  {
+    GST_DEBUG_OBJECT (self, "connection to closed, cannot read data");
+    return GST_FLOW_FLUSHING;
+  }
+accept_error:
+  {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled accepting of client");
+    } else {
+      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+          ("Failed to accept client: %s", err->message));
+    }
+    g_clear_error (&err);
+    return GST_FLOW_ERROR;
+  }
+select_error:
+  {
+    GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
+        ("Select failed: %s", err->message));
+    g_clear_error (&err);
+    return GST_FLOW_ERROR;
+  }
 }
 
 static void
