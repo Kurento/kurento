@@ -160,9 +160,14 @@
     {
       "name": "MediaMixer",
       "extends": "MediaObject",
+      "abstract": true,
       "constructors": [
         {
           "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
             {
               "name": "garbagePeriod",
               "type": "int",
@@ -298,6 +303,10 @@
       "constructors": [
         {
           "params": [
+            {
+              "name": "uri",
+              "type": "String"
+            },
             {
               "name": "garbagePeriod",
               "type": "int",
@@ -542,15 +551,6 @@
             }
           ]
         }
-      ],
-      "methods": [
-        {
-          "name": "getParent",
-          "params": [],
-          "return": {
-            "type": "MediaObject"
-          }
-        }        
       ]
     },
     {
@@ -577,11 +577,15 @@
       ]
     },
     {
-      "name": "MainMixer",
+      "name": "DispatcherMixer",
       "extends": "MediaMixer",
       "constructors": [
         {
           "params": [
+            {
+              "name": "mediaPipeline",
+              "type": "MediaPipeline"
+            },
             {
               "name": "garbagePeriod",
               "type": "int",
