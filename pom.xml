@@ -1,56 +1,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
+	
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>3.0.7-SNAPSHOT</version>
+	</parent>
+	
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-media-connector</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>kmf-media-connector</name>
-	<url>http://www.kurento.com</url>
-
-	<organization>
-		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
-	</organization>
-
-	<developers>
-		<developer>
-			<id>igracia</id>
-			<name>Ivan Gracia Martinez</name>
-		</developer>
-	</developers>
-
-	<mailingLists>
-		<mailingList>
-			<name>Kurento</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
-		</mailingList>
-	</mailingLists>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-
-		<!-- Dependencies version -->
-		<junit.version>4.11</junit.version>
-		<kmf-jsonrpcconnector.version>0.5.0-SNAPSHOT</kmf-jsonrpcconnector.version>
-		<kmf-media-api.version>3.0.6-SNAPSHOT</kmf-media-api.version>
-		<!-- Extensions Versions -->
-		<wagon-ssh.version>2.0</wagon-ssh.version>
-		<maven-war-plugin.version>2.3</maven-war-plugin.version>
-		<maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
-
-		<!-- Plugin Versions -->
-		<maven-javadoc-plugin.version>2.9.1</maven-javadoc-plugin.version>
-		<maven-surefire-plugin.version>2.12</maven-surefire-plugin.version>
-		<wagon-ssh.version>2.0</wagon-ssh.version>
-	</properties>
 
 	<dependencies>
 		<dependency>
@@ -66,81 +28,8 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>${maven-javadoc-plugin.version}</version>
-				<configuration>
-					<stylesheetfile>src/main/javadoc/stylesheet.css</stylesheetfile>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${maven-surefire-plugin.version}</version>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>${maven-war-plugin.version}</version>
-			</plugin>
-		</plugins>
-
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${wagon-ssh.version}</version>
-			</extension>
-		</extensions>
-	</build>
-
-	<distributionManagement>
-		<site>
-			<id>maven-site</id>
-			<url>scp://repository.kurento.com/var/www/kurento/site/${project.name}/${project.version}</url>
-		</site>
-		<repository>
-			<id>releases</id>
-			<name>Kurento releases repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Kurento snapshots repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-	<repositories>
-		<repository>
-			<id>kurento-snapshots</id>
-			<name>Kurento Snapshot Repository</name>
-			<url>http://repository.kurento.com/archiva/repository/snapshots/</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>kurento-releases</id>
-			<name>Kurento Repository</name>
-			<url>http://repository.kurento.com/archiva/repository/internal/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 </project>
