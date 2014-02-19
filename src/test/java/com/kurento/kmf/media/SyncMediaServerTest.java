@@ -27,7 +27,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.internal.MainMixerImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
@@ -82,6 +81,7 @@ public class SyncMediaServerTest {
 		rtpEndpoint.connect(httpEndpoint, MediaType.VIDEO);
 	}
 
+	@Ignore
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException {
 		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
@@ -124,15 +124,6 @@ public class SyncMediaServerTest {
 		player.play();
 		http.release();
 		player.release();
-	}
-
-	// TODO: Enable this test when mixer is implemented
-	@Ignore
-	@Test
-	public void testMixer() throws KurentoMediaFrameworkException {
-		MainMixer mixer = (MainMixer) pipeline
-				.createMediaMixer(MainMixerImpl.TYPE);
-		mixer.release();
 	}
 
 }

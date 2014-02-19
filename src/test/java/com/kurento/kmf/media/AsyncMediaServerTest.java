@@ -33,7 +33,6 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
 public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
-	// TODO reinstate once commands are implemented
 	@Ignore
 	@Test
 	public void testStream() throws InterruptedException {
@@ -173,6 +172,7 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 		Assert.assertTrue(sem.tryAcquire(50000, MILLISECONDS));
 	}
 
+	@Ignore
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException,
 			InterruptedException {

@@ -67,7 +67,9 @@ public abstract class AbstractAsyncBaseTest {
 
 	@After
 	public void abstractTeardown() throws InterruptedException {
-		releaseMediaObject(pipeline);
+		if (pipeline != null) {
+			releaseMediaObject(pipeline);
+		}
 	}
 
 	protected static void releaseMediaObject(final MediaObject mo)
