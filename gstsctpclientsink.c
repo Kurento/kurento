@@ -65,12 +65,74 @@ static GstStaticPadTemplate sinktemplate = GST_STATIC_PAD_TEMPLATE ("sink",
     GST_STATIC_CAPS_ANY);
 
 static void
-gst_sctp_client_sink_destroy_socket (GstSCTPClientSink * self)
+gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
+    const GValue * value, GParamSpec * pspec)
 {
+  GstSCTPClientSink *self;
+
+  g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
+  self = GST_SCTP_CLIENT_SINK (object);
+
+  switch (prop_id) {
+    case PROP_HOST:
+      if (g_value_get_string (value) == NULL) {
+        GST_WARNING ("host property cannot be NULL");
+        break;
+      }
+      g_free (self->priv->host);
+      self->priv->host = g_strdup (g_value_get_string (value));
+      break;
+    case PROP_PORT:
+      self->priv->port = g_value_get_int (value);
+      break;
+    case PROP_NUM_OSTREAMS:
+      self->priv->num_ostreams = g_value_get_int (value);
+      break;
+    case PROP_MAX_INSTREAMS:
+      self->priv->max_istreams = g_value_get_int (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static void
+gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
+    GValue * value, GParamSpec * pspec)
+{
+  GstSCTPClientSink *self;
+
+  g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
+  self = GST_SCTP_CLIENT_SINK (object);
+
+  switch (prop_id) {
+    case PROP_HOST:
+      g_value_set_string (value, self->priv->host);
+      break;
+    case PROP_PORT:
+      g_value_set_int (value, self->priv->port);
+      break;
+    case PROP_NUM_OSTREAMS:
+      g_value_set_int (value, self->priv->num_ostreams);
+      break;
+    case PROP_MAX_INSTREAMS:
+      g_value_set_int (value, self->priv->max_istreams);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+  }
+}
+
+static gboolean
+gst_sctp_client_sink_stop (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
   GError *err = NULL;
 
   if (self->priv->socket == NULL)
-    return;
+    return TRUE;
 
   if (g_socket_is_closed (self->priv->socket)) {
     GST_DEBUG_OBJECT (self, "Socket is already closed");
@@ -87,15 +149,21 @@ gst_sctp_client_sink_destroy_socket (GstSCTPClientSink * self)
 
 end:
   g_clear_object (&self->priv->socket);
+
+  return TRUE;
 }
 
-static void
-gst_sctp_base_sink_create_socket (GstSCTPClientSink * self)
+static gboolean
+gst_sctp_client_sink_start (GstBaseSink * bsink)
 {
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
   GSocketAddress *saddr;
   GResolver *resolver;
   GInetAddress *addr;
   GError *err = NULL;
+
+  if (self->priv->socket != NULL)
+    return TRUE;
 
   /* look up name if we need to */
   addr = g_inet_address_new_from_string (self->priv->host);
@@ -186,7 +254,7 @@ gst_sctp_base_sink_create_socket (GstSCTPClientSink * self)
 
   GST_DEBUG ("Created sctp socket");
 
-  return;
+  return TRUE;
 
 no_socket:
   {
@@ -195,7 +263,7 @@ no_socket:
     g_clear_error (&err);
     g_object_unref (saddr);
 
-    return;
+    return FALSE;
   }
 name_resolve:
   {
@@ -208,7 +276,7 @@ name_resolve:
     g_clear_error (&err);
     g_object_unref (resolver);
 
-    return;
+    return FALSE;
   }
 connect_failed:
   {
@@ -221,110 +289,10 @@ connect_failed:
     }
     g_clear_error (&err);
     g_object_unref (saddr);
-    gst_sctp_client_sink_destroy_socket (self);
+    gst_sctp_client_sink_stop (bsink);
 
-    return;
+    return FALSE;
   }
-}
-
-static void
-gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec)
-{
-  GstSCTPClientSink *self;
-
-  g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
-  self = GST_SCTP_CLIENT_SINK (object);
-
-  switch (prop_id) {
-    case PROP_HOST:
-      if (g_value_get_string (value) == NULL) {
-        GST_WARNING ("host property cannot be NULL");
-        break;
-      }
-      g_free (self->priv->host);
-      self->priv->host = g_strdup (g_value_get_string (value));
-      break;
-    case PROP_PORT:
-      self->priv->port = g_value_get_int (value);
-      break;
-    case PROP_NUM_OSTREAMS:
-      self->priv->num_ostreams = g_value_get_int (value);
-      break;
-    case PROP_MAX_INSTREAMS:
-      self->priv->max_istreams = g_value_get_int (value);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
-  }
-}
-
-static void
-gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec)
-{
-  GstSCTPClientSink *self;
-
-  g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
-  self = GST_SCTP_CLIENT_SINK (object);
-
-  switch (prop_id) {
-    case PROP_HOST:
-      g_value_set_string (value, self->priv->host);
-      break;
-    case PROP_PORT:
-      g_value_set_int (value, self->priv->port);
-      break;
-    case PROP_NUM_OSTREAMS:
-      g_value_set_int (value, self->priv->num_ostreams);
-      break;
-    case PROP_MAX_INSTREAMS:
-      g_value_set_int (value, self->priv->max_istreams);
-      break;
-    default:
-      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
-      break;
-  }
-}
-
-static void
-gst_sctp_base_sink_dispose (GObject * gobject)
-{
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
-
-  g_clear_object (&self->priv->cancellable);
-  gst_sctp_client_sink_destroy_socket (self);
-}
-
-static void
-gst_sctp_base_sink_finalize (GObject * gobject)
-{
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
-
-  g_free (self->priv->host);
-}
-
-static gboolean
-gst_sctp_client_sink_start (GstBaseSink * bsink)
-{
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
-
-  if (self->priv->socket == NULL) {
-    gst_sctp_base_sink_create_socket (self);
-    g_return_val_if_fail (self->priv->socket != NULL, FALSE);
-  }
-
-  return g_socket_is_connected (self->priv->socket);
-}
-
-static gboolean
-gst_sctp_client_sink_stop (GstBaseSink * bsink)
-{
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
-
-  gst_sctp_client_sink_destroy_socket (self);
-  return TRUE;
 }
 
 /* will be called only between calls to start() and stop() */
@@ -400,6 +368,23 @@ write_error:
     g_clear_error (&err);
     return ret;
   }
+}
+
+static void
+gst_sctp_base_sink_dispose (GObject * gobject)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
+
+  g_clear_object (&self->priv->cancellable);
+  gst_sctp_client_sink_stop (GST_BASE_SINK (self));
+}
+
+static void
+gst_sctp_base_sink_finalize (GObject * gobject)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
+
+  g_free (self->priv->host);
 }
 
 static void
