@@ -2,11 +2,12 @@
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
-kmf-media-api
-==========
-Kurento Media Manager API
+kmf-media-connector
+===================
+Kurento Media Connector
 
-The Kurento kmf-media-api project allows server applications to control media server resources.
+The Kurento kmf-media-connector project is a Webserver frontend for
+the Thrift API of the Kurento Meida Server.
 
 What is Kurento
 -----
@@ -44,7 +45,7 @@ Follow us on Twitter @[kurentoms].
 
 [KurentoImage]: https://0.gravatar.com/avatar/b8fffabbe3831731cb4c4c9667bfa439?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/kurento/kmf-media-api
+[GitHub Repository]: https://github.com/kurento/kmf-media-connector
 [GitHub Kurento Group]: https://github.com/kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
