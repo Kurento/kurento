@@ -4,12 +4,11 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>3.0.6-SNAPSHOT</version>
+		<version>3.0.7-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-repository-api</artifactId>
-	<version>3.0.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Media Framework - Repository Management</name>
@@ -20,53 +19,12 @@
 			The Kurento kmf-repository-api project is an API allowing access to Kurento Repository.
 	</description>
 
-	<url>https://github.com/Kurento/kmf-repository-api</url>
-
-	<licenses>
-		<license>
-			<name>GNU Lesser General Public License</name>
-			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<organization>
-		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
-	</organization>
-
-	<developers>
-		<developer>
-			<id>llopez</id>
-			<name>Luis López Fernández</name>
-		</developer>
-		<developer>
-			<id>mgallego</id>
-			<name>Micael Gallego</name>
-		</developer>
-		<developer>
-			<id>bgarcia</id>
-			<name>Boni García Gutiérrez</name>
-		</developer>
-	</developers>
-
-	<mailingLists>
-		<mailingList>
-			<name>Kurento</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
-		</mailingList>
-	</mailingLists>
-
 	<dependencies>
-
 		<!-- Boot support -->
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-mongodb</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
@@ -99,7 +57,6 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
-
 	</dependencies>
 
 </project>
