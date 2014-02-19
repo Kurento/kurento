@@ -5,12 +5,11 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>3.0.6-SNAPSHOT</version>
+		<version>3.0.7-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-api</artifactId>
-	<version>3.0.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Media Framework - Content Management</name>
@@ -20,45 +19,6 @@
 		The kmf-content-api project contains the implementation
 		of the Kurento server side Content Management API.
 	</description>
-
-	<url>https://github.com/Kurento/kmf-content-api</url>
-
-	<licenses>
-		<license>
-			<name>GNU Lesser General Public License</name>
-			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
-
-	<organization>
-		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
-	</organization>
-
-	<developers>
-		<developer>
-			<id>llopez</id>
-			<name>Luis López Fernández</name>
-		</developer>
-		<developer>
-			<id>mparis</id>
-			<name>Miguel París Díaz</name>
-		</developer>
-		<developer>
-			<id>bgarcia</id>
-			<name>Boni García Gutiérrez</name>
-		</developer>
-	</developers>
-
-	<mailingLists>
-		<mailingList>
-			<name>Kurento</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
-		</mailingList>
-	</mailingLists>
 
 	<dependencies>
 		<dependency>
@@ -105,35 +65,5 @@
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>bundle</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-shade-plugin</artifactId>
-						<configuration>
-							<finalName>kmf-api</finalName>
-							<artifactSet>
-								<includes>
-									<include>com.kurento.*:*</include>
-								</includes>
-							</artifactSet>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>package</phase>
-								<goals>
-									<goal>shade</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 </project>
