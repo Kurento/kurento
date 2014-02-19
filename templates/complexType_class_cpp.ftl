@@ -14,6 +14,10 @@ ${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonR
   <#assign json_method = "">
   <#assign type_description = "">
   if (value.isMember ("${property.name}")) {
+    <#if model.remoteClasses?seq_contains(property.type.type) >
+    std::shared_ptr<MediaObject> obj;
+
+    </#if>
     aux = value["${property.name}"];
     <#if property.type.name = "String">
 	  <#assign json_method = "String">
@@ -28,6 +32,9 @@ ${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonR
 	  <#assign json_method = "Double">
 	  <#assign type_description = "double">
 	<#elseif model.complexTypes?seq_contains(property.type.type) >
+	  <#assign json_method = "String">
+	  <#assign type_description = "string">
+	<#elseif model.remoteClasses?seq_contains(property.type.type) >
 	  <#assign json_method = "String">
 	  <#assign type_description = "string">
     </#if>
@@ -48,6 +55,19 @@ ${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonR
         <#else>
     // TODO, deserialize param value for type '${property.type}' not expected
         </#if>
+      <#elseif model.remoteClasses?seq_contains(property.type.type) >
+    try {
+      obj = ${param.type.name}::Factory::getObject (aux.as${json_method} ());
+    } catch (JsonRpc::CallException &e) {
+    }
+
+    ${param.name} = std::dynamic_pointer_cast<${param.type.name}> (obj);
+
+    if (!${param.name}) {
+      JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
+                              "'${param.name}' object not found");
+      throw e;
+    }
       <#else>
     ${property.name} = aux.as${json_method} ();
       </#if>
