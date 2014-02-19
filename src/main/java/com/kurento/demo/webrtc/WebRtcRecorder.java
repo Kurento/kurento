@@ -28,7 +28,7 @@ import com.kurento.kmf.media.WebRtcEndpoint;
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
  */
-@WebRtcContentService(path = "/webRtcRecorder/*")
+@WebRtcContentService(path = "/webRtcRecorderLoopback/*")
 public class WebRtcRecorder extends WebRtcContentHandler {
 
 	public static final String TARGET = "file:///tmp/webrtc";
@@ -51,6 +51,7 @@ public class WebRtcRecorder extends WebRtcContentHandler {
 				.withMediaProfile(mediaProfileSpecType).build();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 
+		webRtcEndpoint.connect(webRtcEndpoint);
 		webRtcEndpoint.connect(recorderEndPoint);
 		contentSession.start(webRtcEndpoint);
 	}

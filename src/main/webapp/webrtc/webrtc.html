@@ -93,7 +93,7 @@
 
 	function handlerChanged() {
 		var handler = document.getElementById("handler").value;
-		var enableHandlerArray = new Array("../webRtcRecorder");
+		var enableHandlerArray = new Array("../webRtcRecorderLoopback");
 		document.getElementById("contentId").disabled = (enableHandlerArray.indexOf(handler) == -1);
 	}
 </script>
@@ -107,7 +107,7 @@
 			loopback with PointerDetector Filter</option>
 		<option value="../webRtcJackVaderLoopback">WebRTC in loopback
 			with JackVader Filter</option>
-		<option value="../webRtcRecorder">WebRTC in loopback with
+		<option value="../webRtcRecorderLoopback">WebRTC in loopback with
 			recorder</option>
 		<option value="../webRtcFaceOverlayLoopback">WebRTC in
 			loopback with FaceOverlay Filter</option>
