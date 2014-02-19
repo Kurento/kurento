@@ -35,7 +35,6 @@ public:
       <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
   </#list>
 
-  <#if !remoteClass.abstract && (remoteClass.constructors)??>
   class Factory : public virtual kurento::Factory
   {
   public:
@@ -68,7 +67,22 @@ public:
 
   };
 
-  </#if>
+  class Invoker<#if remoteClass.extends??> : public virtual ${remoteClass.extends.name}::Invoker</#if>
+  {
+  public:
+    Invoker() {};
+    virtual void invoke (std::shared_ptr<MediaObject> obj,
+        const std::string &methodName, const Json::Value &params,
+        Json::Value &response) throw (JsonRpc::CallException);
+  };
+
+  virtual <#if remoteClass.extends??>MediaObject::</#if>Invoker &getInvoker() {
+    return invoker;
+  }
+
+  private:
+    Invoker invoker;
+
 };
 
 } /* kurento */
