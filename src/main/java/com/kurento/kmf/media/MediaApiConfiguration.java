@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * Configuration parameters for Media API. This class is intended to be created
  * as a bean inside an Spring context, and is needed by the Media API to work
@@ -36,35 +35,6 @@ public class MediaApiConfiguration {
 	 * Port where the local thrift server will be listening.
 	 */
 	private int handlerPort = 9292;
-
-	/**
-	 * Minimal size of the thread pool serving requests from the thrift server.
-	 * These threads will be kept in the pool, even if they are idle.
-	 */
-	private final int poolCoreSize = 10;
-
-	/**
-	 * Maximum number of threads to allow in the thread pool.
-	 */
-	private final int poolMaxSize = 100;
-
-	/**
-	 * Timeout (in milliseconds) that a Hanlder callback thread will wait before
-	 * cancelling the request and throwing and exception.
-	 */
-	private final long poolExecutionTimeout = 50000L;
-
-	/**
-	 * Size of the queue used for holding tasks before they are executed in the
-	 * thread pool.
-	 */
-	private final int poolMaxQueueSize = 100;
-
-	/**
-	 * Size of the pool of thrift clients. Each pool created by the abstract
-	 * pool will be instantiated with this number of clients.
-	 */
-	private final int clientPoolSize = 5;
 
 	/**
 	 * Gets the address of the local thrift server, which will be used to
