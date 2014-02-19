@@ -361,11 +361,12 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 
   g_object_class_install_property (gobject_class, PROP_HOST,
       g_param_spec_string ("host", "Host", "The host/IP to send the packets to",
-          SCTP_DEFAULT_HOST, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          SCTP_DEFAULT_HOST,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_PORT,
       g_param_spec_int ("port", "Port", "The port to send the packets to",
           0, G_MAXUINT16, SCTP_DEFAULT_PORT,
-          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_set_static_metadata (gstelement_class,
       "SCTP client sink", "Sink/Network",
@@ -391,8 +392,6 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
 {
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
-  self->priv->host = g_strdup (SCTP_DEFAULT_HOST);
-  self->priv->port = SCTP_DEFAULT_PORT;
 }
 
 gboolean
