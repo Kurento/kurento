@@ -9,7 +9,7 @@ cpp/${complexType.name}.hpp
 
 namespace kurento {
 
-class ${complexType.name} 
+class ${complexType.name}
 {
 
 <#if complexType.typeFormat == "REGISTER">
@@ -30,7 +30,7 @@ public:
   };
 
   ${complexType.name} (const Json::Value &value) throw (JsonRpc::CallException);
-  
+
   <#list complexType.properties as property>
   void set${property.name?cap_first} (${getCppObjectType(property.type.name, false)} ${property.name}) {
     this->${property.name} = ${property.name};
@@ -38,14 +38,14 @@ public:
     _isSet${property.name?cap_first} = true;
     </#if>
   };
-  
+
   ${getCppObjectType(property.type.name)} get${property.name?cap_first} () {
     return ${property.name};
   };
 
   <#if property.optional>
   bool isSet${property.name?cap_first} () {
-    return _isSet${property.name?cap_first};  
+    return _isSet${property.name?cap_first};
   };
 
   </#if>
@@ -54,7 +54,7 @@ private:
   <#list complexType.properties as property>
   ${getCppObjectType(property.type.name, false)} ${property.name};
   <#if property.optional>
-  bool _isSet${property.name?cap_first} = false; 
+  bool _isSet${property.name?cap_first} = false;
   </#if>
   </#list>
 <#elseif complexType.typeFormat == "ENUM">
@@ -72,7 +72,7 @@ public:
       enumValue = ${value};
     }
 
-    </#list>     
+    </#list>
   };
 
   ${complexType.name} (type value) {
@@ -99,7 +99,7 @@ private:
 
 <#else>
 // TODO: Type format ${complexType.typeFormat} not supported
-</#if> 
+</#if>
 };
 
 } /* kurento */

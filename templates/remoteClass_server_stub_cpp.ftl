@@ -53,23 +53,23 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
     </#if>
     aux = params["${param.name}"];
     <#if param.type.name = "String">
-	  <#assign json_method = "String">
-	  <#assign type_description = "string">
+      <#assign json_method = "String">
+      <#assign type_description = "string">
     <#elseif param.type.name = "int">
-	  <#assign json_method = "Int">
-	  <#assign type_description = "integer">
+      <#assign json_method = "Int">
+      <#assign type_description = "integer">
     <#elseif param.type.name = "boolean">
-	  <#assign json_method = "Bool">
-	  <#assign type_description = "boolean">
-	<#elseif param.type.name = "double">
-	  <#assign json_method = "Double">
-	  <#assign type_description = "double">
-	<#elseif model.complexTypes?seq_contains(param.type.type) >
-	  <#assign json_method = "String">
-	  <#assign type_description = "string">
-	<#elseif model.remoteClasses?seq_contains(param.type.type) >
-	  <#assign json_method = "String">
-	  <#assign type_description = "string">
+      <#assign json_method = "Bool">
+      <#assign type_description = "boolean">
+    <#elseif param.type.name = "double" || param.type.name = "float">
+      <#assign json_method = "Double">
+      <#assign type_description = "double">
+    <#elseif model.complexTypes?seq_contains(param.type.type) >
+      <#assign json_method = "String">
+      <#assign type_description = "string">
+    <#elseif model.remoteClasses?seq_contains(param.type.type) >
+      <#assign json_method = "String">
+      <#assign type_description = "string">
     </#if>
     <#if json_method != "" && type_description != "">
 

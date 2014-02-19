@@ -20,23 +20,23 @@ ${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonR
     </#if>
     aux = value["${property.name}"];
     <#if property.type.name = "String">
-	  <#assign json_method = "String">
-	  <#assign type_description = "string">
+      <#assign json_method = "String">
+      <#assign type_description = "string">
     <#elseif property.type.name = "int">
-	  <#assign json_method = "Int">
-	  <#assign type_description = "integer">
+      <#assign json_method = "Int">
+      <#assign type_description = "integer">
     <#elseif property.type.name = "boolean">
-	  <#assign json_method = "Bool">
-	  <#assign type_description = "boolean">
-	<#elseif property.type.name = "double">
-	  <#assign json_method = "Double">
-	  <#assign type_description = "double">
-	<#elseif model.complexTypes?seq_contains(property.type.type) >
-	  <#assign json_method = "String">
-	  <#assign type_description = "string">
-	<#elseif model.remoteClasses?seq_contains(property.type.type) >
-	  <#assign json_method = "String">
-	  <#assign type_description = "string">
+      <#assign json_method = "Bool">
+      <#assign type_description = "boolean">
+    <#elseif property.type.name = "double" || param.type.name = "float">
+      <#assign json_method = "Double">
+      <#assign type_description = "double">
+    <#elseif model.complexTypes?seq_contains(property.type.type) >
+      <#assign json_method = "String">
+      <#assign type_description = "string">
+    <#elseif model.remoteClasses?seq_contains(property.type.type) >
+      <#assign json_method = "String">
+      <#assign type_description = "string">
     </#if>
     <#if json_method != "" && type_description != "">
 
