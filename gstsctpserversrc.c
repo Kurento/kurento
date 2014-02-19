@@ -18,6 +18,8 @@
 #endif
 
 #include <gio/gio.h>
+#include <string.h>
+#include <netinet/sctp.h>
 
 #include "gstsctp.h"
 #include "gstsctpserversrc.h"
@@ -392,6 +394,26 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
     GST_WARNING_OBJECT (self, "don't know how to configure SCTP events "
         "on this OS.");
 #endif
+
+    if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
+#if defined (SCTP_INITMSG)
+      struct sctp_initmsg initmsg;
+      socklen_t optlen;
+
+      if (getsockopt (g_socket_get_fd (self->priv->client_socket), IPPROTO_SCTP,
+              SCTP_INITMSG, &initmsg, &optlen) < 0)
+        GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
+            ("Could not get SCTP configuration: %s (%d)", g_strerror (errno),
+                errno));
+      else
+        GST_DEBUG_OBJECT (self, "SCTP client socket: ostreams %u, instreams %u",
+            initmsg.sinit_num_ostreams, initmsg.sinit_num_ostreams);
+#else
+      GST_WARNING_OBJECT (self,
+          "don't know how to get the configuration of the "
+          "SCTP initiation structure on this OS.");
+#endif
+    }
     /* now read from the socket. */
   }
 
@@ -449,7 +471,7 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
     gst_buffer_unmap (*outbuf, &map);
     gst_buffer_resize (*outbuf, 0, rret);
 
-    GST_DEBUG_OBJECT (self, "Got buffer %" GST_PTR_FORMAT
+    GST_LOG_OBJECT (self, "Got buffer %" GST_PTR_FORMAT
         " on stream %u", *outbuf, streamid);
   }
   g_clear_error (&err);
