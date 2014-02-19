@@ -21,7 +21,7 @@
 
 #define SCTP_DEFAULT_PORT 8000
 #define SCTP_DEFAULT_HOST "localhost"
-#define SCTP_DEFAULT_CLOSE_SOCKET FALSE
+#define SCTP_DEFAULT_STREAM 0
 
 gssize
 sctp_socket_send (GSocket *socket, guint streamid, const gchar *buffer,

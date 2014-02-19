@@ -309,7 +309,7 @@ gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
   /* write buffer data */
   while (written < map.size) {
     rret =
-        sctp_socket_send (self->priv->socket, 0,
+        sctp_socket_send (self->priv->socket, SCTP_DEFAULT_STREAM,
         (gchar *) map.data + written, map.size - written,
         self->priv->cancellable, &err);
 
