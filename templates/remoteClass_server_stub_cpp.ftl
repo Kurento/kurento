@@ -96,6 +96,17 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
         <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>);
 }
+
+${remoteClass.name}::Factory::StaticConstructor ${remoteClass.name}::Factory::staticConstructor;
+
+${remoteClass.name}::Factory::StaticConstructor::StaticConstructor()
+{
+  if (objectRegistrar) {
+    std::shared_ptr <Factory> factory (new ${remoteClass.name}::Factory());
+
+    objectRegistrar->registerFactory(factory);
+  }
+}
 </#if>
 
 } /* kurento */

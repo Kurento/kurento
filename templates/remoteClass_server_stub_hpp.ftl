@@ -6,6 +6,7 @@ cpp/${remoteClass.name}.hpp
 
 #include <jsoncpp/json/json.h>
 #include <JsonRpcException.hpp>
+#include <ObjectRegistrar.hpp>
 #include <memory>
 #include <vector>
 
@@ -34,14 +35,14 @@ public:
       <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
   </#list>
 
-  <#if (!remoteClass.abstract || remoteClass.name == "MediaObject") && (remoteClass.constructors)??>
-  class Factory<#if remoteClass.name != "MediaObject"> : public MediaObject::Factory</#if>
+  <#if !remoteClass.abstract && (remoteClass.constructors)??>
+  class Factory : public virtual kurento::Factory
   {
   public:
     Factory () {};
 
     virtual std::shared_ptr<MediaObject> createObject (const Json::Value
-        &params) throw (JsonRpc::CallException)<#if remoteClass.name == "MediaObject"> = 0</#if>;
+        &params) throw (JsonRpc::CallException);
 
     virtual std::string getName () {
       return "${remoteClass.name}";
@@ -49,15 +50,22 @@ public:
 
   private:
 
-    <#if !remoteClass.abstract>
     <#list remoteClass.constructors as constructor><#rt>
     std::shared_ptr<MediaObject> createObject (<#rt>
      <#lt><#list constructor.params as param><#rt>
         <#lt>${getCppObjectType(param.type.name)} ${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>);
-   </#list>
-   </#if>
+    </#list>
+
+    class StaticConstructor
+    {
+    public:
+      StaticConstructor();
+    };
+
+    static StaticConstructor staticConstructor;
+
   };
 
   </#if>
