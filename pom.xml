@@ -188,6 +188,11 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-jsonrpc-api</artifactId>
+				<version>${kmf-jsonrpcconnector.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
 				<version>${commons-pool.version}</version>
