@@ -31,7 +31,7 @@ import com.kurento.kmf.media.WebRtcEndpoint;
 @WebRtcContentService(path = "/webRtcRecorder/*")
 public class WebRtcRecorder extends WebRtcContentHandler {
 
-	public static String target = "file:///tmp/webrtc";
+	public static final String TARGET = "file:///tmp/webrtc";
 
 	private RecorderEndpoint recorderEndPoint;
 
@@ -47,7 +47,7 @@ public class WebRtcRecorder extends WebRtcContentHandler {
 		if (contentId != null && contentId.equalsIgnoreCase("mp4")) {
 			mediaProfileSpecType = MediaProfileSpecType.MP4;
 		}
-		recorderEndPoint = mp.newRecorderEndpoint(target)
+		recorderEndPoint = mp.newRecorderEndpoint(TARGET)
 				.withMediaProfile(mediaProfileSpecType).build();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 

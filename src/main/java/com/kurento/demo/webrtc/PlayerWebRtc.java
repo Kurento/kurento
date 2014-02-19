@@ -31,7 +31,7 @@ public class PlayerWebRtc extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		session.start(WebRtcRecorder.target);
+		session.start(WebRtcRecorder.TARGET);
 	}
 
 }
