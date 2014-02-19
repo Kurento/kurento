@@ -48,6 +48,7 @@ struct _GstSCTPClientSinkPrivate
   gchar *host;
   guint16 num_ostreams;
   guint16 max_istreams;
+  guint32 timetolive;
 };
 
 enum
@@ -56,7 +57,8 @@ enum
   PROP_HOST,
   PROP_PORT,
   PROP_NUM_OSTREAMS,
-  PROP_MAX_INSTREAMS
+  PROP_MAX_INSTREAMS,
+  PROP_TIMETOLIVE
 };
 
 static GstStaticPadTemplate sinktemplate = GST_STATIC_PAD_TEMPLATE ("sink",
@@ -91,6 +93,9 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
     case PROP_MAX_INSTREAMS:
       self->priv->max_istreams = g_value_get_int (value);
       break;
+    case PROP_TIMETOLIVE:
+      self->priv->timetolive = g_value_get_uint (value);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -118,6 +123,9 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
       break;
     case PROP_MAX_INSTREAMS:
       g_value_set_int (value, self->priv->max_istreams);
+      break;
+    case PROP_TIMETOLIVE:
+      g_value_set_uint (value, self->priv->timetolive);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -334,10 +342,9 @@ gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 
   /* write buffer data */
   while (written < map.size) {
-    rret =
-        sctp_socket_send (self->priv->socket, SCTP_DEFAULT_STREAM,
-        (gchar *) map.data + written, map.size - written,
-        self->priv->cancellable, &err);
+    rret = sctp_socket_send (self->priv->socket, SCTP_DEFAULT_STREAM,
+        self->priv->timetolive, (gchar *) map.data + written,
+        map.size - written, self->priv->cancellable, &err);
 
     if (rret < 0)
       goto write_error;
@@ -419,6 +426,11 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
       g_param_spec_int ("max-instreams", "Inputput streams",
           "This value represents the maximum number of inbound streams the "
           "application is prepared to support", 0, G_MAXUINT16, 1,
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_TIMETOLIVE,
+      g_param_spec_uint ("timetolive", "Time to live",
+          "The message time to live in milliseconds (0 = no timeout)", 0,
+          G_MAXUINT32, 0,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   gst_element_class_set_static_metadata (gstelement_class,

@@ -23,7 +23,7 @@
 
 static gssize
 sctp_socket_send_with_blocking (GSocket * socket, guint streamid,
-    const gchar * buffer, gsize size, gboolean blocking,
+    guint32 timetolive, const gchar * buffer, gsize size, gboolean blocking,
     GCancellable * cancellable, GError ** error)
 {
   gssize ret;
@@ -43,7 +43,7 @@ sctp_socket_send_with_blocking (GSocket * socket, guint streamid,
       return -1;
 
     if ((ret = sctp_sendmsg (g_socket_get_fd (socket), buffer, size, NULL, 0,
-                0, 0, streamid, 0, 0)) < 0) {
+                0, 0, streamid, timetolive, 0)) < 0) {
       if (errno == EINTR)
         continue;
 
@@ -63,13 +63,14 @@ sctp_socket_send_with_blocking (GSocket * socket, guint streamid,
 }
 
 gssize
-sctp_socket_send (GSocket * socket, guint streamid, const gchar * buffer,
-    gsize size, GCancellable * cancellable, GError ** error)
+sctp_socket_send (GSocket * socket, guint streamid, guint32 timetolive,
+    const gchar * buffer, gsize size, GCancellable * cancellable,
+    GError ** error)
 {
   g_return_val_if_fail (G_IS_SOCKET (socket) && buffer != NULL, -1);
 
-  return sctp_socket_send_with_blocking (socket, streamid, buffer, size,
-      g_socket_get_blocking (socket), cancellable, error);
+  return sctp_socket_send_with_blocking (socket, streamid, timetolive, buffer,
+      size, g_socket_get_blocking (socket), cancellable, error);
 }
 
 static gssize

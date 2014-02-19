@@ -24,8 +24,8 @@
 #define SCTP_DEFAULT_STREAM 0
 
 gssize
-sctp_socket_send (GSocket *socket, guint streamid, const gchar *buffer,
-  gsize size, GCancellable *cancellable, GError **error);
+sctp_socket_send (GSocket *socket, guint streamid, guint32 timetolive,
+  const gchar *buffer, gsize size, GCancellable *cancellable, GError **error);
 
 gssize
 sctp_socket_receive (GSocket *socket, gchar *buffer, gsize size,
