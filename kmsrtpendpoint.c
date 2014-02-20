@@ -361,9 +361,9 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
             rtp_end_point->priv->audio_rtcp_udpsink, NULL);
 
         g_object_set (rtp_end_point->priv->audio_rtp_udpsink, "host",
-            con->address, "port", media->port, "async", FALSE, NULL);
+            media_con->address, "port", media->port, "async", FALSE, NULL);
         g_object_set (rtp_end_point->priv->audio_rtcp_udpsink, "host",
-            con->address, "port", media->port + 1, "async", FALSE, NULL);
+            media_con->address, "port", media->port + 1, "async", FALSE, NULL);
 
         gst_element_sync_state_with_parent (rtp_end_point->priv->
             audio_rtp_udpsink);
@@ -371,7 +371,7 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
             audio_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_end_point);
 
-        GST_DEBUG ("Audio sent to: %s:%d", con->address, media->port);
+        GST_DEBUG ("Audio sent to: %s:%d", media_con->address, media->port);
       }
     } else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0) {
       GstSDPDirection direction = sdp_utils_media_get_direction (media);
@@ -394,9 +394,10 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
             rtp_end_point->priv->video_rtcp_udpsink, NULL);
 
         g_object_set (rtp_end_point->priv->video_rtp_udpsink, "host",
-            con->address, "port", gst_sdp_media_get_port (media), NULL);
+            media_con->address, "port", gst_sdp_media_get_port (media), NULL);
         g_object_set (rtp_end_point->priv->video_rtcp_udpsink, "host",
-            con->address, "port", gst_sdp_media_get_port (media) + 1, NULL);
+            media_con->address, "port", gst_sdp_media_get_port (media) + 1,
+            NULL);
 
         gst_element_sync_state_with_parent (rtp_end_point->priv->
             video_rtp_udpsink);
@@ -404,7 +405,7 @@ kms_rtp_end_point_start_transport_send (KmsBaseSdpEndPoint * base_rtp_end_point,
             video_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_end_point);
 
-        GST_DEBUG ("Video sent to: %s:%d", con->address, media->port);
+        GST_DEBUG ("Video sent to: %s:%d", media_con->address, media->port);
       }
     }
   }
