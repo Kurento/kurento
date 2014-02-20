@@ -7,13 +7,17 @@ cpp/${complexType.name}.hpp
 #include <jsoncpp/json/json.h>
 #include <JsonRpcException.hpp>
 
+class JsonSerializer;
+
 namespace kurento {
 
 class ${complexType.name}
 {
 
-<#if complexType.typeFormat == "REGISTER">
 public:
+  virtual void Serialize(JsonSerializer& s);
+
+<#if complexType.typeFormat == "REGISTER">
   ${complexType.name} (<#rt>
     <#lt><#list complexType.properties as property><#rt>
       <#lt><#if !property.optional><#rt>
@@ -58,7 +62,6 @@ private:
   </#if>
   </#list>
 <#elseif complexType.typeFormat == "ENUM">
-public:
   typedef enum {
   <#list complexType.values as value>
     ${value}<#if value_has_next>,</#if>
@@ -91,6 +94,7 @@ public:
     }
 
     </#list>
+    return "";
   }
 
 private:

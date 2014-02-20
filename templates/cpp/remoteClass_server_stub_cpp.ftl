@@ -7,6 +7,7 @@ cpp/${remoteClass.name}.cpp
 #include "${dependency.name}.hpp"
 </#list>
 #include "${remoteClass.name}.hpp"
+#include <JsonSerializer.hpp>
 
 namespace kurento {
 
@@ -140,6 +141,10 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
 <#list remoteClass.methods as method><#rt>
   if (methodName == "${method.name}" && params.size() == ${method.params?size}) {
     Json::Value aux;
+    <#if method.return??>
+    ${getCppObjectType(method.return.type, false)} ret;
+    JsonSerializer serializer(true);
+    </#if>
     <#list method.params as param>
     ${getCppObjectType(param.type.name, false)} ${param.name};
     </#list>
@@ -243,11 +248,20 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
     std::shared_ptr<${remoteClass.name}> finalObj;
     finalObj = std::dynamic_pointer_cast<${remoteClass.name}> (obj);
     if (!finalObj) {
-          // TODO: throw exception
+      JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
+                                "Object not found or has incorrect type");
+      throw e;
     }
 
-    finalObj->${method.name} (<#list method.params as param>${param.name}<#if param_has_next>, </#if></#list>);
-      return;
+    <#if method.return??>
+    ret =<#rt>
+    <#else><#rt>
+    </#if>finalObj->${method.name} (<#list method.params as param>${param.name}<#if param_has_next>, </#if></#list>);
+    <#if method.return??>
+    serializer.SerializeNVP (ret);
+    response = serializer.JsonValue["ret"];
+    </#if>
+    return;
   }
 
 </#list>
