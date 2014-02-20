@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento</groupId>
-	<version>3.0.6</version>
+	<version>3.0.7-SNAPSHOT</version>
 	<artifactId>kmf-parent-pom</artifactId>
 	<packaging>pom</packaging>
 
@@ -19,7 +19,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kmf-parent-pom-3.0.6</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
