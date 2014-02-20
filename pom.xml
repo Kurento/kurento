@@ -100,6 +100,7 @@
 		<spring-boot-starter-web.version>1.0.0.RC3</spring-boot-starter-web.version>
 		<spring-websocket.version>4.0.0.RELEASE</spring-websocket.version>
 		<fluent-hc.version>4.3.2</fluent-hc.version>
+		<commons-lang.version>2.6</commons-lang.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -276,6 +277,11 @@
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
 				<version>${io.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>${commons-lang.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.thetransactioncompany</groupId>
