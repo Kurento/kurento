@@ -6,24 +6,6 @@ cpp/${complexType.name}.cpp
 
 namespace kurento {
 
-void
-${complexType.name}::Serialize(JsonSerializer& s)
-{
-<#if complexType.typeFormat == "REGISTER">
-  <#list complexType.properties as property>
-  s.SerializeNVP(${property.name});
-  </#list>
-<#else>
-  if (s.IsWriter) {
-    Json::Value v (getString());
-
-    s.JsonValue = v;
-  } else {
-    // TODO: Investigate how to deserialize
-  }
-</#if>
-}
-
 <#if complexType.typeFormat == "REGISTER">
 
 ${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonRpc::CallException) {
@@ -108,3 +90,28 @@ ${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonR
 </#if>
 
 } /* kurento */
+
+void
+Serialize(std::shared_ptr<kurento::${complexType.name}>& object, JsonSerializer& s)
+{
+<#if complexType.typeFormat == "REGISTER">
+  if (!s.IsWriter && !object) {
+    object.reset(new kurento::${complexType.name}());
+  }
+
+  if (object) {
+  <#list complexType.properties as property>
+    s.Serialize("${property.name}", object->${property.name});
+  </#list>
+  }
+
+<#else>
+  if (s.IsWriter && object) {
+    Json::Value v (object->getString() );
+
+    s.JsonValue = v;
+  } else {
+    object.reset (new kurento::${complexType.name}(s.JsonValue.asString()));
+  }
+</#if>
+}

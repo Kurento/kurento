@@ -275,3 +275,14 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
 }
 
 } /* kurento */
+
+<#if (remoteClass.extends)??>
+void
+Serialize(std::shared_ptr<kurento::${remoteClass.name}> &object, JsonSerializer &serializer)
+{
+  std::shared_ptr<kurento::${remoteClass.extends.name}> aux = std::dynamic_pointer_cast<kurento::${remoteClass.extends.name}> (object);
+
+  void Serialize(std::shared_ptr<kurento::${remoteClass.extends.name}> &object, JsonSerializer &serializer);
+  Serialize(aux, serializer);
+}
+</#if>

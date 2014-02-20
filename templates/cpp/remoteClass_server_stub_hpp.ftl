@@ -35,11 +35,6 @@ public:
   virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
       <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
   </#list>
-  <#if !remoteClass.extends??>
-  virtual std::string getRemoteId() = 0;
-  // TODO: this should be remove from model
-  virtual void Serialize(JsonSerializer& s) = 0;
-  </#if>
 
   class Factory : public virtual kurento::Factory
   {

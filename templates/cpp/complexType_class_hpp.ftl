@@ -6,8 +6,15 @@ cpp/${complexType.name}.hpp
 
 #include <jsoncpp/json/json.h>
 #include <JsonRpcException.hpp>
+#include <memory>
 
 class JsonSerializer;
+
+namespace kurento {
+class ${complexType.name};
+} /*kurento */
+
+void Serialize(std::shared_ptr<kurento::${complexType.name}>& object, JsonSerializer& s);
 
 namespace kurento {
 
@@ -15,7 +22,6 @@ class ${complexType.name}
 {
 
 public:
-  virtual void Serialize(JsonSerializer& s);
 
 <#if complexType.typeFormat == "REGISTER">
   ${complexType.name} (<#rt>
@@ -104,6 +110,10 @@ private:
 <#else>
 // TODO: Type format ${complexType.typeFormat} not supported
 </#if>
+
+  ${complexType.name}() {};
+
+  friend void ::Serialize(std::shared_ptr<${complexType.name}>& object, JsonSerializer& s);
 };
 
 } /* kurento */
