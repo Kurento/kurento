@@ -1,0 +1,5 @@
+kms-interface-idl (3.0.6-dev) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Santiago Gala <sgala@apache.org>  Fri, 14 Feb 2014 16:38:11 +0100

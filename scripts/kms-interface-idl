@@ -1,0 +1,10 @@
+#!/bin/sh
+
+JAVA_CMD="/usr/bin/java"
+JAVA_OPTS=""
+DEPS="slf4j-api slf4j-simple gson freemarker commons-cli"
+CP="$(for dep in $DEPS; do echo -n "/usr/share/java/$dep.jar:"; done)"
+JAVA_JAR="/usr/share/java/kms-interface-idl.jar"
+
+$JAVA_CMD $JAVA_OPTS -classpath "$CP:$JAVA_JAR"  com.kurento.kms.idl.codegen.Main "$@"
+

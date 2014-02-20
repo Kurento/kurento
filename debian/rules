@@ -1,0 +1,30 @@
+#!/usr/bin/make -f
+
+SRC =src/main/java
+DEST=target
+DEPS=freemarker gson slf4j-api slf4j-simple commons-cli
+
+%:
+	dh $@
+
+override_dh_clean:
+	#mvn clean -Duser.home=$$HOME
+	rm -rf target
+	dh_clean
+
+override_dh_auto_configure:
+	export FINAL_INSTALL_DIR=/usr
+	dh_auto_configure -- -DSYSCONF_INSTALL_DIR=/etc -DDISABLE_NETWORK_TESTS=1
+
+override_dh_auto_build:
+	mkdir -p "$(DEST)/classes" &&\
+	export DST="$$(pwd)/$(DEST)/classes" &&\
+	export CLASSPATH=$$(for dep in $(DEPS); do echo -n /usr/share/java/$$dep.jar:; done) &&\
+	echo $$DST $$CLASSPATH &&\
+	(cd "$(SRC)" &&\
+	 find . -name *.java -print | xargs javac -source 6 -target 6 -cp $$CLASSPATH:. -d $$DST ) &&\
+	cd "$$DST" && jar cfem ../kms-interface-idl.jar com/kurento/kms/idl/codegen/Main ../../scripts/Manifest.txt $$(find . -name "*.class" -print)
+	#mvn verify -Duser.home=$$HOME
+	dh_auto_build
+
+
