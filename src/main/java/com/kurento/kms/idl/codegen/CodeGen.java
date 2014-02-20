@@ -11,6 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import com.kurento.kms.idl.codegen.function.CamelToUnderscore;
+import com.kurento.kms.idl.codegen.function.CppObjectType;
+import com.kurento.kms.idl.codegen.function.IsFirstConstructorParam;
+import com.kurento.kms.idl.codegen.function.JavaObjectType;
+import com.kurento.kms.idl.codegen.function.RemoteClassDependencies;
 import com.kurento.kms.idl.model.Model;
 import com.kurento.kms.idl.model.Type;
 
@@ -19,8 +24,6 @@ import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
-
-//import freemarker.template.Version;
 
 public class CodeGen {
 
@@ -63,8 +66,8 @@ public class CodeGen {
 		// 100% backward compatible too (these are very low-risk changes as far
 		// as the
 		// 1st and 2nd version number remains):
-		// cfg.setIncompatibleImprovements(new Version(2, 3, 20)); // FreeMarker
-		// 2.3.20
+		// cfg.setIncompatibleImprovements(new Version(2, 3, 19)); // FreeMarker
+		// 2.3.19
 
 	}
 
@@ -113,6 +116,7 @@ public class CodeGen {
 		root.put("getCppObjectType", new CppObjectType());
 		root.put("camelToUnderscore", new CamelToUnderscore());
 		root.put("remoteClassDependencies", new RemoteClassDependencies());
+		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
 
 		root.put("model", model);
 

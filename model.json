@@ -68,10 +68,6 @@
           "return": {
             "type": "MediaObject"
           }
-        },
-        {
-          "name": "release",
-          "params": []
         }
       ],
       "events": [
@@ -198,7 +194,7 @@
         }
       ],
       "events": [
-        "CodeFoundData"
+        "CodeFound"
       ]
     },
     {
@@ -1011,7 +1007,7 @@
         },
         {
           "name": "imageTransparency",
-          "type": "double",
+          "type": "float",
           "optional": true
         },
         {
@@ -1078,12 +1074,12 @@
         }
       ],
       "extends": "Media",
-      "name": "CodeFoundData"
+      "name": "CodeFound"
     },
     {
       "properties": [
         {
-          "name": "objectRef",
+          "name": "object",
           "type": "MediaObject"
         },
         {

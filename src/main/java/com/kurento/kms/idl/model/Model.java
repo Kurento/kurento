@@ -163,9 +163,6 @@ public class Model {
 				}
 
 			} else {
-				if (modelElement == null) {
-					System.out.println("WTF!");
-				}
 				resolveTypeRefs(modelElement.getChildren(), baseTypes);
 			}
 		}

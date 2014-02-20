@@ -1,4 +1,4 @@
-package com.kurento.kms.idl.codegen;
+package com.kurento.kms.idl.codegen.function;
 
 import java.util.List;
 

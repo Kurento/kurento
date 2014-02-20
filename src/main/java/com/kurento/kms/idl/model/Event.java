@@ -12,6 +12,8 @@ public class Event extends Type {
 	@SerializedName("extends")
 	private TypeRef extendsProp;
 
+	private List<Property> parentProperties;
+
 	public Event(String name, Doc doc, List<Property> properties) {
 		super(name, doc);
 		this.properties = properties;
@@ -32,6 +34,14 @@ public class Event extends Type {
 	public void setProperties(List<Property> properties) {
 		this.properties = properties;
 	}
+
+	public List<Property> getParentProperties() {
+		if (parentProperties == null) {
+			resolveParentProperties();
+		}
+		return parentProperties;
+	}
+
 
 	@Override
 	public int hashCode() {
@@ -75,7 +85,20 @@ public class Event extends Type {
 
 	@Override
 	public List<ModelElement> getChildren() {
-		return new ArrayList<ModelElement>(properties);
+		List<ModelElement> elements = new ArrayList<ModelElement>(properties);
+		if (extendsProp != null) {
+			elements.add(extendsProp);
+		}
+		return elements;
+	}
+
+	private void resolveParentProperties() {
+		this.parentProperties = new ArrayList<Property>();
+		if (this.extendsProp != null) {
+			Event event = (Event) extendsProp.getType();
+			this.parentProperties.addAll(event.getParentProperties());
+			this.parentProperties.addAll(event.getProperties());
+		}
 	}
 
 }

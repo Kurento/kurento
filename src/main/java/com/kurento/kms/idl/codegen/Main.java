@@ -1,6 +1,7 @@
 package com.kurento.kms.idl.codegen;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.apache.commons.cli.CommandLine;
@@ -23,6 +24,7 @@ public class Main {
 	private static final String ROM = "r";
 	private static final String TEMPLATES = "t";
 	private static final String CODEGEN = "c";
+	private static final String DELETE = "d";
 
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws IOException,
@@ -33,8 +35,8 @@ public class Main {
 		// create the Options
 		Options options = new Options();
 		options.addOption(VERBOSE, "verbose", false,
-				"prints source code while being generated.");
-		options.addOption(HELP, "help", false, "prints this message.");
+				"Prints source code while being generated.");
+		options.addOption(HELP, "help", false, "Prints this message.");
 		options.addOption(OptionBuilder.withLongOpt("rom")
 				.withDescription("Remote object model description file.")
 				.hasArg().withArgName("ROM_FILE").isRequired().create(ROM));
@@ -46,6 +48,8 @@ public class Main {
 				.withDescription("Destination directory for generated files.")
 				.hasArg().withArgName("CODEGEN_DIR").isRequired()
 				.create(CODEGEN));
+		options.addOption(DELETE, "delete", false,
+				"Delete destination directory before generating files.");
 
 		CommandLine line = null;
 
@@ -98,6 +102,10 @@ public class Main {
 			}
 		}
 
+		if (line.hasOption(DELETE) && codegenDir.exists()) {
+			delete(codegenDir);
+		}
+
 		Model model = new JsonModel().loadFromFile(romFile);
 
 		CodeGen codeGen = new CodeGen(templatesDir, codegenDir,
@@ -107,6 +115,17 @@ public class Main {
 
 		System.out.println("Generation complete");
 
+	}
+
+	public static void delete(File f) throws IOException {
+		if (f.isDirectory()) {
+			for (File c : f.listFiles()) {
+				delete(c);
+			}
+		}
+		if (!f.delete()) {
+			throw new FileNotFoundException("Failed to delete file: " + f);
+		}
 	}
 
 	public static void printHelp(Options options) {

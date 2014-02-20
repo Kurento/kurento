@@ -4,3 +4,4 @@
 target/
 .freemarker-ide.xml
 *~
+/codegen

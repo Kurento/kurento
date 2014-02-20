@@ -1,7 +1,6 @@
-package com.kurento.kms.idl.codegen;
+package com.kurento.kms.idl.codegen.function;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -56,9 +55,7 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 	private Set<Type> getMethodTypes(Method method) {
 		Set<Type> types = new HashSet<Type>();
 
-		for (Iterator<Param> paramIt = method.getParams().iterator(); paramIt
-				.hasNext();) {
-			Param p = paramIt.next();
+		for (Param p : method.getParams()) {
 
 			if (p.getType().getType() instanceof RemoteClass
 					|| p.getType().getType() instanceof ComplexType) {
