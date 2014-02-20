@@ -140,6 +140,8 @@ gst_sctp_server_src_dispose (GObject * gobject)
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (gobject);
 
   g_clear_object (&self->priv->cancellable);
+
+  G_OBJECT_CLASS (gst_sctp_server_src_parent_class)->dispose (gobject);
 }
 
 static void
@@ -148,6 +150,8 @@ gst_sctp_server_src_finalize (GObject * gobject)
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (gobject);
 
   g_free (self->priv->host);
+
+  G_OBJECT_CLASS (gst_sctp_server_src_parent_class)->finalize (gobject);
 }
 
 static gboolean
