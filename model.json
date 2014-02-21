@@ -575,6 +575,7 @@
     {
       "name": "DispatcherMixer",
       "extends": "MediaMixer",
+      "abstract": true,
       "constructors": [
         {
           "params": [
