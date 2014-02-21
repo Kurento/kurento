@@ -17,6 +17,7 @@ package com.kurento.demo;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
@@ -24,7 +25,7 @@ import com.kurento.kmf.media.PlayerEndpoint;
 
 /**
  * HTTP Player Handler which plays a media pipeline composed by a
- * <code>PlayerEndPoint</code> with a <code>JackVaderFilter</code>; using
+ * <code>PlayerEndpoint</code> with a <code>JackVaderFilter</code>; using
  * redirect strategy; without JSON signalling protocol.
  * 
  * @author Luis López (llopez@gsyc.es)
@@ -44,7 +45,9 @@ public class PlayerJackVaderHandler extends HttpPlayerHandler {
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndpoint.connect(filter);
 		session.setAttribute("player", playerEndpoint);
-		session.start(filter);
+		HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS().build();
+		filter.connect(httpEP);
+		session.start(httpEP);
 	}
 
 	@Override

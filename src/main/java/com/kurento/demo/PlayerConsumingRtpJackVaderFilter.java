@@ -17,6 +17,7 @@ package com.kurento.demo;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 
 /**
  * HTTP Player Handler which plays a RTP stream previously produced in
@@ -38,7 +39,11 @@ public class PlayerConsumingRtpJackVaderFilter extends HttpPlayerHandler {
 		if (RtpProducingJackVaderFilter.sharedJackVaderReference != null) {
 			getLogger()
 					.info("Found sharedJackVaderReference ... invoking play");
-			session.start(RtpProducingJackVaderFilter.sharedJackVaderReference);
+			HttpEndpoint httpEP = session.getMediaPipelineFactory().create()
+					.newHttpGetEndpoint().terminateOnEOS().build();
+			RtpProducingJackVaderFilter.sharedJackVaderReference
+					.connect(httpEP);
+			session.start(httpEP);
 		} else {
 			getLogger()
 					.info("Cannot find sharedJackVaderReference instance ... rejecting request");
@@ -46,5 +51,4 @@ public class PlayerConsumingRtpJackVaderFilter extends HttpPlayerHandler {
 					"Cannot find sharedJackVaderReference instance ... rejecting request");
 		}
 	}
-
 }

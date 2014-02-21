@@ -20,6 +20,7 @@ import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.RtpEndpoint;
 
 /**
  * RTP Content Handler which produces a media pipeline composed by a
@@ -41,7 +42,9 @@ public class RtpProducingJackVaderFilter extends RtpContentHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		session.start(null, filter);
+		RtpEndpoint rtpEP = mp.newRtpEndpoint().build();
+		filter.connect(rtpEP);
+		session.start(rtpEP);
 		sharedJackVaderReference = filter;
 	}
 
