@@ -24,7 +24,7 @@ import com.kurento.kmf.media.events.MediaEvent;
  * certain {@link MediaEvent} raised by a {@link MediaElement} generates a
  * {@code ListenerRegistration}, that can be used by the client to unregister
  * this listener.
- * 
+ *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
@@ -33,7 +33,7 @@ public interface ListenerRegistration {
 
 	/**
 	 * Returns the registration id for this listener
-	 * 
+	 *
 	 * @return The id
 	 */
 	String getRegistrationId();

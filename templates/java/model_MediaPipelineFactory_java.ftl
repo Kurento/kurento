@@ -8,13 +8,13 @@ public class MediaPipelineFactory {
 	}
 
 	public MediaPipeline create(int garbagePeriod) {
-		return null;	
+		return null;
 	}
 
 	public void create(final Continuation<MediaPipeline> cont) {
 	}
 
-	public void create(int garbagePeriod, final Continuation<MediaPipeline> cont) {		
+	public void create(int garbagePeriod, final Continuation<MediaPipeline> cont) {
 	}
 
 }

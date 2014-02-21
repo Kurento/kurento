@@ -7,6 +7,6 @@ public interface ${event.name}Event extends <#if event.extends??>${event.extends
 
     <#list event.properties as property>
     public ${property.type.name} get${property.name?cap_first}();
-    
+
     </#list>
 }

@@ -17,11 +17,11 @@ package com.kurento.kmf.media;
 
 /**
  * This interface is to be used in asynchronous calls to the media server.
- * 
+ *
  * @param <F>
  *            The data type of the callback´s response in case of successful
  *            outcome.
- * 
+ *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
@@ -30,14 +30,14 @@ public interface Continuation<F> {
 
 	/**
 	 * This method is called when the operation succeeds
-	 * 
+	 *
 	 * @param result
 	 */
 	void onSuccess(F result);
 
 	/**
 	 * This method gets called when the operation fails
-	 * 
+	 *
 	 * @param cause
 	 *            The cause of the failure
 	 */

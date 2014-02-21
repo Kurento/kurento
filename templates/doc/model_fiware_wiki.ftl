@@ -11,16 +11,16 @@ MediaAPI.html
             <font face="Courier New, monospace"><b id="${remoteClass.name}">${remoteClass.name}</b></font>
         </td>
     </tr>
-    
+
     <#if remoteClass.extends??>
     <tr>
         <td>Parent Class</td>
         <td><font face="Courier New, monospace"><a href="#${remoteClass.extends.name}">${remoteClass.extends.name}</a></font></td>
     </tr>
     </#if>
-    
+
     <#if !remoteClass.abstract>
-    <tr>        
+    <tr>
         <td>Constructor Parameters</td>
         <td><ul><#list remoteClass.constructors[0].params as param>
                 <li><font face="Courier New, monospace"><a href="#${param.type.name}">${param.type.name}</a>
@@ -28,16 +28,16 @@ MediaAPI.html
                 ${param.name}<#if param.optional>?</#if></font></li>
                 </#list>
             </ul>
-        </td>        
+        </td>
     </tr>
     </#if>
-    
+
     <tr>
         <td>Declared Methods</td>
         <td><ul><#list remoteClass.methods as method>
                 <li><font face="Courier New, monospace">
-                
-                <#if method.return??><a href="#${method.return.type.name}">${method.return.type.name}</a><#if method.return.type.list>[]</#if></#if> ${method.name}<#rt>                
+
+                <#if method.return??><a href="#${method.return.type.name}">${method.return.type.name}</a><#if method.return.type.list>[]</#if></#if> ${method.name}<#rt>
                 <#lt>(<#list method.params as param><#rt>
                 <#lt><a href="#${param.type.name}">${param.type.name}</a><#if param.type.list>[]</#if> ${param.name}<#if param_has_next>, </#if><#rt>
                 <#lt></#list>)
@@ -46,7 +46,7 @@ MediaAPI.html
             </ul>
         </td>
     </tr>
-        
+
     <tr>
         <td>Declared Events</td>
         <td><ul><#list remoteClass.events as event>
@@ -55,7 +55,7 @@ MediaAPI.html
             </ul>
         </td>
     </tr>
-    
+
 </table>
 
 <br>
@@ -72,14 +72,14 @@ MediaAPI.html
             <font face="Courier New, monospace"><b id="event-${event.name}">${event.name}</b></font>
         </td>
     </tr>
-    
+
     <#if event.extends??>
     <tr>
         <td>Parent Class</td>
         <td><font face="Courier New, monospace"><a href="#event-${event.extends.name}">${event.extends.name}</a></font></td>
     </tr>
     </#if>
-    
+
     <tr>
         <td>Properties</td>
         <td><ul>
@@ -91,7 +91,7 @@ MediaAPI.html
             </ul>
         </td>
     </tr>
-    
+
 </table>
 
 <br>
@@ -107,7 +107,7 @@ MediaAPI.html
             <font face="Courier New, monospace"><b id="${type.name}">${type.name}</b></font>
         </td>
     </tr>
-    
+
     <#if type.typeFormat == "REGISTER">
     <tr>
         <td>Properties</td>
@@ -131,9 +131,9 @@ MediaAPI.html
             </#list>
             </ul>
         </td>
-    </tr>    
+    </tr>
     </#if>
-    
+
 </table>
 
 <br>
