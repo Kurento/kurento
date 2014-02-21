@@ -27,7 +27,7 @@ public class ContentApiConfiguration {
 
 	/**
 	 * Minimal size of the thread pool executing callbacks on content Handlers
-	 * (e.g. PlayerHander, RecorderHandler, and so on). These threads will be
+	 * (e.g. {@link HttpPlayerHander}, {@HttpRecorderHandler}, and so on). These threads will be
 	 * kept in the pool, even if they are idle.
 	 */
 	private int poolCoreSize = 10;
@@ -84,7 +84,7 @@ public class ContentApiConfiguration {
 	 * 
 	 * @param poolCoreSize
 	 *            Minimal size of the Thread pool executing callbacks on content
-	 *            Handlers (e.g. PlayerHander, RecorderHandler, etc.) Default:
+	 *            Handlers. Default:
 	 *            10
 	 */
 	public void setPoolCoreSize(int poolCoreSize) {
@@ -108,7 +108,7 @@ public class ContentApiConfiguration {
 	 * 
 	 * @param poolMaxSize
 	 *            Maximum size of the of the Thread pool executing callbacks on
-	 *            content Handlers (e.g. PlayerHander, RecorderHandler, etc.)
+	 *            content Handlers.
 	 *            Default: 100
 	 */
 	public void setPoolMaxSize(int poolMaxSize) {
@@ -149,7 +149,7 @@ public class ContentApiConfiguration {
 	/**
 	 * Getter (accessor) for poolExecutionTimeout field.
 	 * 
-	 * @return Timeout (in milliseconds) that a Hanlder callback thread will
+	 * @return Timeout (in milliseconds) that a Handler callback thread will
 	 *         wait
 	 */
 	public long getPoolExecutionTimeout() {

@@ -20,34 +20,35 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * TODO: review & improve javadoc Annotation for the implementation of a
- * RtpMediaHandler; it should be used in conjunction within the implementation
- * of the {@link RtpContentHandler} interface. The following snippet shows an
+ * TODO: review & improve javadoc
+ * Anotation for the implementation of a RtpContentHandler; it should be used
+ * in conjunction within the implementation of the {@link RtpContentHandler}
+ * interface. The following snippet shows an
  * skeleton with the implementation of a RTP Handler:
  * 
- * <pre>
- * &#064;RtpMediaService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
- * public class MyRtpMediaHandler implements RtpMediaHandler {
+ * <pre><code>
+ * &#064;RtpContentService(name = &quot;MyHandler&quot;, path = &quot;/my-webrtc-media&quot;)
+ * public class MyHandler implements WebRtcContentHandler {
  * 
  * 	&#064;Override
- * 	public void onMediaRequest(RtpMediaRequest request) throws ContentException {
+ * 	public void onContentRequest(WebRtcContentSession session) throws ContentException {
  * 		// My implementation
  * 	}
  * 
  * 	&#064;Override
- * 	public void onMediaTerminated(String requestId) {
+ * 	public void onSessionTerminated(WebRtcContentSession session, int code, String reason) {
  * 		// My implementation
  * 	}
  * 
  * 	&#064;Override
- * 	public onMediaError(String requestId, ContentException exception) {
+ * 	public onSessionError(WebRContentSession session, int code, String description) {
  * 		// My implementation
  * 	}
  * 
  * }
- * </pre>
+ * </code></pre>
  * 
- * @see RtpContentHandler
+ * @see WebRtcContentHandler
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */

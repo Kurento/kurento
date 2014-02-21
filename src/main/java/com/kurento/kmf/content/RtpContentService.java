@@ -21,32 +21,32 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * Annotation for the implementation of a RtpMediaHandler; it should be used in
+ * Annotation for the implementation of a RtpContentHandler; it should be used in
  * conjunction within the implementation of the {@link RtpContentHandler}
  * interface. The following snippet shows an skeleton with the implementation of
  * a RTP Handler:
  * 
- * <pre>
+ * <pre><code>
  * &#064;RtpMediaService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
- * public class MyRtpMediaHandler implements RtpMediaHandler {
+ * public class MyHandler implements RtpContentHandler {
  * 
  * 	&#064;Override
- * 	public void onMediaRequest(RtpMediaRequest request) throws ContentException {
+ * 	public void onContentRequest(RtpContentSession session) throws ContentException {
  * 		// My implementation
  * 	}
  * 
  * 	&#064;Override
- * 	public void onMediaTerminated(String requestId) {
+ * 	public void onSessionTerminated(RtpContentSession session, int code, String reason) {
  * 		// My implementation
  * 	}
  * 
  * 	&#064;Override
- * 	public onMediaError(String requestId, ContentException exception) {
+ * 	public onSessionError(RtpContentSession session, int code, String reason) {
  * 		// My implementation
  * 	}
  * 
  * }
- * </pre>
+ * </code></pre>
  * 
  * @see RtpContentHandler
  * @author Luis López (llopez@gsyc.es)

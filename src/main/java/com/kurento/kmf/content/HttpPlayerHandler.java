@@ -17,14 +17,14 @@ package com.kurento.kmf.content;
 /**
  * 
  * Defines the events associated to the HTTP play operation (
- * {@link #onContentRequest(HttpPlayerSession)},
- * {@link #onSessionTerminated(HttpPlaySession)}, and
- * {@link #onContentError(PlayRequest, ContentException)}); the implementation
+ * {@link #onContentRequest(ContentSession)},
+ * {@link #onSessionTerminated(ContentSession,int,String)}, and
+ * {@link #onSessionError(ContentSession,int,String)}); the implementation
  * of the PlayerHandler should be used in conjunction with
  * {@link HttpPlayerService} annotation. The following snippet shows an skeleton
  * with the implementation of a Player:
  * 
- * <pre>
+ * <pre><code>
  * &#064;PlayerService(name = &quot;MyPlayerHandlerName&quot;, path = &quot;/my-player&quot;, redirect = &quot;true&quot;, useControlProtocol = &quot;false&quot;)
  * public class MyPlayerHandler implements PlayerHandler {
  * 
@@ -45,7 +45,7 @@ package com.kurento.kmf.content;
  * 	}
  * 
  * }
- * </pre>
+ * </code></pre>
  * 
  * @see HttpPlayerService
  * @author Luis López (llopez@gsyc.es)

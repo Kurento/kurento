@@ -17,34 +17,37 @@ package com.kurento.kmf.content;
 /**
  * 
  * Defines the events associated to the WebRTC operation (
- * {@link #onMediaRequest(WebRtcMediaRequest)},
- * {@link #onMediaTerminated(String)}, and
- * {@link #onMediaError(String, ContentException)}); the implementation of the
- * RtpMediaHandler should be used in conjunction with
- * {@link WebRtcContentService} annotation. The following snippet shows an
+ * {@link #onContentRequest(ContentSession)},
+ * {@link #onContentStarted(ContentSession)},
+ * {@link #onContentCommand(ContentSession,ContentCommand)},
+ * {@link #onUncaughtException(ContentSession,java.lang.Throwable)},
+ * {@link #onSessionTerminated(ContentSession,int,java.lang.String)}, and
+ * {@link #onSessionError(ContentSession,int,java.lang.String)});
+ * the implementation of the RtpMediaHandler should be used in conjunction with
+ * the {@link WebRtcContentService} annotation. The following snippet shows an
  * skeleton with the implementation of a WebRTC Handler:
  * 
- * <pre>
- * &#064;RtpMediaService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
+ * <pre><code>
+ * &#064;WebRtcContentService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
  * public class MyRtpMediaHandler implements RtpMediaHandler {
  * 
  * 	&#064;Override
- * 	public void onMediaRequest(RtpMediaRequest request) throws ContentException {
+ * 	public void onContentRequest(WebRtcContentSession session) throws ContentException {
  * 		// My implementation
  * 	}
  * 
  * 	&#064;Override
- * 	public void onMediaTerminated(String requestId) {
+ * 	public void onSessionTerminated(WebRtcContentSession session, int code, String reason) {
  * 		// My implementation
  * 	}
  * 
  * 	&#064;Override
- * 	public onMediaError(String requestId, ContentException exception) {
+ * 	public onSessionError(WebRtcContentSession session, int code, String reason) {
  * 		// My implementation
  * 	}
  * 
  * }
- * </pre>
+ * </code></pre>
  * 
  * @see WebRtcContentService
  * @author Luis López (llopez@gsyc.es)

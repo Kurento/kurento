@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * interface. The following snippet shows an skeleton with the implementation of
  * a Player:
  * 
- * <pre>
+ * <pre><code>
  * &#064;PlayerService(name = &quot;MyPlayerHandlerName&quot;, path = &quot;/my-player&quot;, redirect = &quot;true&quot;, useControlProtocol = &quot;false&quot;)
  * public class MyPlayerHandler implements PlayerHandler {
  * 
@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * 	}
  * 
  * }
- * </pre>
+ * </code></pre>
  * 
  * @see HttpPlayerHandler
  * @author Luis López (llopez@gsyc.es)

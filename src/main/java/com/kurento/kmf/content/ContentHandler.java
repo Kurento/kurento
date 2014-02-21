@@ -105,8 +105,10 @@ public abstract class ContentHandler<T extends ContentSession> {
 	 * 
 	 * @param contentSession
 	 *            The ContentSession receiving the error
-	 * @param exception
-	 *            the exception, if any, the caused the error.
+	 * @param code
+	 *            The return code coming from the Media Server
+	 * @param description
+	 *            A description of the error.
 	 * @throws Exception
 	 */
 	public void onSessionError(T contentSession, int code, String description)

@@ -23,15 +23,20 @@ public interface HttpContentSession extends ContentSession {
 	void start(String contentPath);
 
 	/**
-	 * TODO
+	 * Start a Http Player content using a {@link com.kurento.kmf.repository.RepositoryItem}
 	 * 
-	 * @param repositoryItem
+	 * @param repositoryItem The item to be played
 	 */
 	void start(RepositoryItem repositoryItem);
 
 	/**
-	 * TODO
+	 * Starts the content exchange on a given media element. TODO: Explain what
+	 * playing a media element means TODO: Explain what starts mean
 	 * 
+	 * @param endpoint
+	 *            pluggable media component
+	 * @throws ContentException
+	 *             Exception in the play
 	 */
 	void start(HttpEndpoint endpoint);
 

@@ -17,12 +17,15 @@ package com.kurento.kmf.content;
 import com.kurento.kmf.media.RtpEndpoint;
 
 /**
- * TODO: review & improve javadoc s Defines the operations performed by the
- * RtpMediaRequest object, which is in charge of the requesting to a content to
- * be retrieved by RPT from a Media Server.
+ * A Media Session where the content is transmitted using RTP.
+ *
+ * This interface defines a media session where the content is transmitted
+ * using the RTP protocol.
+ * It inherits from {@link SdpContentSession}.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
+ * @see <a href="http://en.wikipedia.org/wiki/Real-time_Transport_Protocol">RTP Protocol</a>
  */
 public interface RtpContentSession extends SdpContentSession {
 	/**

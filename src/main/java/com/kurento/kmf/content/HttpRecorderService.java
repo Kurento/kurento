@@ -26,8 +26,11 @@ import java.lang.annotation.Target;
  * interface. The following snippet shows an skeleton with the implementation of
  * a Recorder:
  * 
- * <pre>
- * &#064;RecorderService(name = &quot;MyRecorderHandlerName&quot;, path = &quot;/my-recorder&quot;, redirect = &quot;true&quot;, useControlProtocol = &quot;false&quot;)
+ * <pre><code>
+ * &#064;RecorderService(name = &quot;MyRecorderHandlerName&quot;,
+ *                       path = &quot;/my-recorder&quot;,
+ *                       redirect = &quot;true&quot;,
+ *                       useControlProtocol = &quot;false&quot;)
  * public class MyRecorderHandlerRecord implements RecorderHandler {
  * 
  * 	&#064;Override
@@ -46,7 +49,7 @@ import java.lang.annotation.Target;
  * 		// My implementation
  * 	}
  * }
- * </pre>
+ * </code></pre>
  * 
  * @see HttpRecorderHandler
  * @author Luis López (llopez@gsyc.es)

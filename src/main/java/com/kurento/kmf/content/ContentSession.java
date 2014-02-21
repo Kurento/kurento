@@ -22,7 +22,13 @@ import com.kurento.kmf.repository.Repository;
 
 /**
  * 
- * Defines the operations performed by a request to the Media Server.
+ * Defines the operations performed by a media request to the Media Server.
+ *
+ * A ContentSession handles a session for media exchange between
+ * a client and a Media Server. Its typical lifetime encompasses
+ * a number of transport protocol requests (for request-response
+ * protocols such as HTTP) and the exchange of a number of commands
+ * and events.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Miguel París (mparisdiaz@gsyc.es)
@@ -109,7 +115,7 @@ public interface ContentSession {
 	 * the useControlProtocol flag is set to true in the annotation service of
 	 * the Handler
 	 * 
-	 * @param event
+	 * @param contentEvent
 	 *            the event to be published
 	 */
 	void publishEvent(ContentEvent contentEvent);
@@ -123,9 +129,11 @@ public interface ContentSession {
 	void releaseOnTerminate(MediaObject mediaObject);
 
 	/**
-	 * TODO
+	 * Gets the {@link com.kurento.kmf.repository.Repository} associated with
+	 * this ContentSession.
 	 * 
-	 * @return
+	 * @return a Media Repository
 	 */
 	Repository getRepository();
+
 }

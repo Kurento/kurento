@@ -18,15 +18,18 @@ package com.kurento.kmf.content;
  * TODO: review & improve javadoc
  * 
  * Defines the events associated to the record operation (
- * {@link #onRecordRequest(RecordRequest)}, {@link #onContentRecorded(String)},
- * and {@link #onContentError(String, ContentException)}); the implementation of
- * the RecorderHandler should be used in conjunction with
+ * {@link #onContentRequest(ContentSession)}, {@link #onSessionTerminated(ContentSession,int,String)},
+ * and {@link #onSessionError(ContentSession,int,String)}); the implementation of
+ * the HttpRecorderHandler should be used in conjunction with
  * {@link HttpRecorderService} annotation. The following snippet shows an
  * skeleton with the implementation of a Recorder:
  * 
- * <pre>
- * &#064;RecorderService(name = &quot;MyRecorderHandlerName&quot;, path = &quot;/my-recorder&quot;, redirect = &quot;true&quot;, useControlProtocol = &quot;false&quot;)
- * public class MyRecorderHandlerRecord implements RecorderHandler {
+ * <pre><code>
+ * &#064;RecorderService(name = &quot;MyHandlerName&quot;,
+ *                       path = &quot;/my-recorder&quot;,
+ *                       redirect = &quot;true&quot;,
+ *                       useControlProtocol = &quot;false&quot;)
+ * public class MyRecorderHandlerRecord implements ContentHandler<> {
  * 
  * 	&#064;Override
  * 	public void onRecordRequest(RecordRequest recordRequest)
@@ -44,7 +47,7 @@ package com.kurento.kmf.content;
  * 		// My implementation
  * 	}
  * }
- * </pre>
+ * </code></pre>
  * 
  * @see HttpRecorderService
  * @author Miguel París (mparisdiaz@gsyc.es)
