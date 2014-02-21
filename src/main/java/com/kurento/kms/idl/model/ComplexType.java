@@ -13,7 +13,7 @@ public class ComplexType extends Type {
 
 	@SerializedName("extends")
 	private TypeRef extendsProp;
-	
+
 	private TypeFormat typeFormat;
 	private List<Property> properties;
 	private List<String> values;
@@ -23,19 +23,20 @@ public class ComplexType extends Type {
 		super(name, doc);
 		this.properties = properties;
 		this.values = values;
-		if(properties != null) {
-			typeFormat = TypeFormat.REGISTER; 
-		} else if(values != null) {
+		if (properties != null) {
+			typeFormat = TypeFormat.REGISTER;
+		} else if (values != null) {
 			typeFormat = TypeFormat.ENUM;
 		} else {
-			new AssertionError("Properties or values have to have a non null value");
+			new AssertionError(
+					"Properties or values have to have a non null value");
 		}
 	}
-	
+
 	public TypeRef getExtends() {
 		return extendsProp;
 	}
-	
+
 	public void setExtends(TypeRef extendsProp) {
 		this.extendsProp = extendsProp;
 	}
@@ -59,15 +60,15 @@ public class ComplexType extends Type {
 	public void setValues(List<String> values) {
 		this.values = values;
 	}
-	
+
 	@Override
 	public List<ModelElement> getChildren() {
 		List<ModelElement> children = new ArrayList<ModelElement>();
-		if(extendsProp != null) {
+		if (extendsProp != null) {
 			children.add(extendsProp);
-		}		
-		
-		if(properties != null) {
+		}
+
+		if (properties != null) {
 			children.addAll(properties);
 		}
 		return children;
@@ -116,8 +117,4 @@ public class ComplexType extends Type {
 		return true;
 	}
 
-
-
-	
-	
 }

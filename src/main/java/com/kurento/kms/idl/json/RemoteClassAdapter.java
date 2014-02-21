@@ -30,7 +30,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		if (src.getName() != null) {
 			object.addProperty("name", src.getName());
 		}
-		
+
 		if (src.getDoc() != null) {
 			object.addProperty("doc", src.getDoc().getDoc());
 		}
@@ -75,7 +75,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		if (object.get("name") != null) {
 			name = object.get("name").getAsString();
 		}
-		
+
 		if (object.get("doc") != null) {
 			doc = new Doc(object.get("doc").getAsString());
 		}
@@ -107,7 +107,8 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 					}.getType());
 		}
 
-		RemoteClass remoteClass = new RemoteClass(name, doc, extendsValue, constructors, methods, events);
+		RemoteClass remoteClass = new RemoteClass(name, doc, extendsValue,
+				constructors, methods, events);
 		remoteClass.setAbstract(abstractValue);
 		return remoteClass;
 	}

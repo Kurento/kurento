@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
 public class Method extends NamedElement {
 
 	private List<Param> params;
-	
+
 	@SerializedName("return")
 	private Return returnProp;
 
@@ -36,8 +36,8 @@ public class Method extends NamedElement {
 
 	@Override
 	public String toString() {
-		return "Method [params=" + params + ", return=" + returnProp
-				+ ", doc=" + getDoc() + ", name=" + getName() + "]";
+		return "Method [params=" + params + ", return=" + returnProp + ", doc="
+				+ getDoc() + ", name=" + getName() + "]";
 	}
 
 	@Override
@@ -71,14 +71,14 @@ public class Method extends NamedElement {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public List<ModelElement> getChildren() {
 		List<ModelElement> children = new ArrayList<ModelElement>(params);
-		if(returnProp != null) {
+		if (returnProp != null) {
 			children.add(returnProp);
 		}
 		return children;
 	}
-	
+
 }

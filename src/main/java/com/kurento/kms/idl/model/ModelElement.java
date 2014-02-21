@@ -7,6 +7,6 @@ public class ModelElement {
 
 	public List<ModelElement> getChildren() {
 		return Collections.emptyList();
-	}	
-	
+	}
+
 }

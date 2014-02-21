@@ -21,7 +21,7 @@ public class JavaObjectType implements TemplateMethodModelEx {
 		if (type instanceof StringModel) {
 			type = ((StringModel) type).getWrappedObject();
 			if (type instanceof Return) {
-				type = ((Return)type).getType();
+				type = ((Return) type).getType();
 			}
 		}
 

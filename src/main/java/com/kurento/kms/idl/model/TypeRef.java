@@ -1,6 +1,5 @@
 package com.kurento.kms.idl.model;
 
-
 public class TypeRef extends ModelElement {
 
 	private String name;
@@ -9,25 +8,25 @@ public class TypeRef extends ModelElement {
 
 	public TypeRef(String name) {
 		super();
-		if(!name.endsWith("[]")) {
+		if (!name.endsWith("[]")) {
 			this.name = name;
 			this.isList = false;
 		} else {
-			this.name = name.substring(0,name.length()-2);
+			this.name = name.substring(0, name.length() - 2);
 			this.isList = true;
 		}
 	}
-	
+
 	public TypeRef(String name, boolean isList) {
 		super();
 		this.name = name;
 		this.isList = isList;
 	}
-	
+
 	public void setType(Type type) {
 		this.type = type;
 	}
-	
+
 	public Type getType() {
 		return type;
 	}

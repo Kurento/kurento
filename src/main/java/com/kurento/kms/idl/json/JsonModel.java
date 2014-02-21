@@ -33,13 +33,14 @@ public class JsonModel {
 		gson = gsonBuilder.create();
 	}
 
-	public Model loadFromFile(File file) throws FileNotFoundException, IOException {
+	public Model loadFromFile(File file) throws FileNotFoundException,
+			IOException {
 		return loadFromInputStream(new FileInputStream(file));
 	}
 
 	public Model loadFromClasspath(String resourceName) throws IOException {
-		return loadFromInputStream(this.getClass()
-				.getResourceAsStream(resourceName));		
+		return loadFromInputStream(this.getClass().getResourceAsStream(
+				resourceName));
 	}
 
 	private Model loadFromInputStream(InputStream is) throws IOException {

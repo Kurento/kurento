@@ -1,7 +1,7 @@
 package com.kurento.kms.idl.model;
 
 public class Doc extends ModelElement {
-	
+
 	private String doc;
 
 	public Doc(String doc) {
@@ -46,5 +46,5 @@ public class Doc extends ModelElement {
 	public String toString() {
 		return doc;
 	}
-	
+
 }

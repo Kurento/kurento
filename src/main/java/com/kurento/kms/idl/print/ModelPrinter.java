@@ -68,12 +68,12 @@ public class ModelPrinter {
 
 	public static void printEvent(StringBuilder sb, Event event) {
 		sb.append(event.getName()).append(" ");
-		if(event.getExtends() != null) {
+		if (event.getExtends() != null) {
 			sb.append("extends ");
 			printTypeRef(sb, event.getExtends());
 			sb.append(" ");
 		}
-		
+
 		sb.append("{ ");
 		printDataItems(sb, event.getProperties());
 		sb.append(" }");
@@ -82,10 +82,10 @@ public class ModelPrinter {
 	public static void printRemoteClass(StringBuilder sb,
 			RemoteClass remoteClass) {
 
-		if(remoteClass.isAbstract()) {
+		if (remoteClass.isAbstract()) {
 			sb.append("abstract ");
 		}
-		
+
 		sb.append("class ");
 		sb.append(remoteClass.getName());
 		if (remoteClass.getExtends() != null) {
@@ -99,7 +99,7 @@ public class ModelPrinter {
 			sb.append("   Declared Constructors: \n");
 			for (Method method : remoteClass.getConstructors()) {
 				sb.append("       ");
-				printMethod(sb, method,true);
+				printMethod(sb, method, true);
 			}
 			sb.append("\n");
 		}
@@ -108,14 +108,14 @@ public class ModelPrinter {
 			sb.append("   Declared Methods: \n");
 			for (Method method : remoteClass.getMethods()) {
 				sb.append("       ");
-				printMethod(sb, method,false);
+				printMethod(sb, method, false);
 			}
 			sb.append("\n");
 		}
 
 		if (!remoteClass.getEvents().isEmpty()) {
 			sb.append("   Declared Events: \n");
-			for(TypeRef event : remoteClass.getEvents()) {
+			for (TypeRef event : remoteClass.getEvents()) {
 				sb.append("       ");
 				sb.append(event.getName());
 				sb.append("\n");
@@ -124,7 +124,8 @@ public class ModelPrinter {
 		}
 	}
 
-	public static void printMethod(StringBuilder sb, Method method, boolean constructor) {
+	public static void printMethod(StringBuilder sb, Method method,
+			boolean constructor) {
 
 		Return methodReturn = method.getReturn();
 
@@ -132,15 +133,15 @@ public class ModelPrinter {
 			printTypeRef(sb, methodReturn.getType());
 			sb.append(" ");
 		} else {
-			if(!constructor) {
+			if (!constructor) {
 				sb.append("void ");
 			}
 		}
 
-		if(method.getName() != null) {
+		if (method.getName() != null) {
 			sb.append(method.getName());
 		}
-		
+
 		sb.append("(");
 
 		printDataItems(sb, method.getParams());
@@ -154,7 +155,7 @@ public class ModelPrinter {
 			printTypeRef(sb, item.getType());
 			sb.append(" ");
 			sb.append(item.getName());
-			if(item.isOptional()) {
+			if (item.isOptional()) {
 				sb.append("?");
 			}
 			sb.append(", ");

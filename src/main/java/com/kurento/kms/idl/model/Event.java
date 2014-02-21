@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
 public class Event extends Type {
 
 	private List<Property> properties;
-	
+
 	@SerializedName("extends")
 	private TypeRef extendsProp;
 
@@ -16,24 +16,22 @@ public class Event extends Type {
 		super(name, doc);
 		this.properties = properties;
 	}
-	
+
 	public void setExtends(TypeRef extendsProp) {
 		this.extendsProp = extendsProp;
 	}
-	
+
 	public TypeRef getExtends() {
 		return extendsProp;
 	}
-	
+
 	public List<Property> getProperties() {
 		return properties;
 	}
-	
+
 	public void setProperties(List<Property> properties) {
 		this.properties = properties;
 	}
-
-
 
 	@Override
 	public int hashCode() {
@@ -79,5 +77,5 @@ public class Event extends Type {
 	public List<ModelElement> getChildren() {
 		return new ArrayList<ModelElement>(properties);
 	}
-			
+
 }

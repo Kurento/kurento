@@ -61,6 +61,5 @@ public class NamedElement extends ModelElement {
 			return false;
 		return true;
 	}
-	
-	
+
 }

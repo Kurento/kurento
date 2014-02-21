@@ -11,13 +11,14 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.kurento.kms.idl.model.TypeRef;
 
-public class TypeRefAdapter implements JsonSerializer<TypeRef>, JsonDeserializer<TypeRef> {
+public class TypeRefAdapter implements JsonSerializer<TypeRef>,
+		JsonDeserializer<TypeRef> {
 
 	@Override
 	public JsonElement serialize(TypeRef src, Type typeOfSrc,
 			JsonSerializationContext context) {
 		String name = src.getName();
-		if(src.isList()) {
+		if (src.isList()) {
 			name += "[]";
 		}
 		return new JsonPrimitive(name);
@@ -26,15 +27,16 @@ public class TypeRefAdapter implements JsonSerializer<TypeRef>, JsonDeserializer
 	@Override
 	public TypeRef deserialize(JsonElement json, Type typeOfT,
 			JsonDeserializationContext context) throws JsonParseException {
-		
+
 		String typeRefString = json.getAsString();
 		boolean list = false;
-		if(typeRefString.endsWith("[]")) {
-			typeRefString = typeRefString.substring(0,typeRefString.length()-2);
+		if (typeRefString.endsWith("[]")) {
+			typeRefString = typeRefString.substring(0,
+					typeRefString.length() - 2);
 			list = true;
 		}
-		
-		return new TypeRef(typeRefString,list);
+
+		return new TypeRef(typeRefString, list);
 	}
 
 }

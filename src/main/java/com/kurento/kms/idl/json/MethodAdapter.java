@@ -8,7 +8,6 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.kurento.kms.idl.model.Method;
 
-
 public class MethodAdapter implements JsonSerializer<Method> {
 
 	@Override
@@ -24,7 +23,7 @@ public class MethodAdapter implements JsonSerializer<Method> {
 		if (src.getParams() != null) {
 			object.add("params", context.serialize(src.getParams()));
 		}
-		
+
 		if (src.getReturn() != null) {
 			object.add("return", context.serialize(src.getReturn()));
 		}

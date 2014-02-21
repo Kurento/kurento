@@ -9,14 +9,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Model {
-	
+
 	private static Logger LOG = LoggerFactory.getLogger(Model.class);
-	
+
 	public static final PrimitiveType STRING = new PrimitiveType("String");
 	public static final PrimitiveType BOOLEAN = new PrimitiveType("boolean");
 	public static final PrimitiveType INT = new PrimitiveType("int");
 	public static final PrimitiveType FLOAT = new PrimitiveType("float");
-	
+
 	private List<RemoteClass> remoteClasses;
 	private List<ComplexType> complexTypes;
 	private List<Event> events;
@@ -24,7 +24,7 @@ public class Model {
 	private transient Map<String, RemoteClass> remoteClassesMap;
 	private transient Map<String, Event> eventsMap;
 	private transient Map<String, ComplexType> complexTypesMap;
-	
+
 	private transient Map<String, Type> types;
 
 	public Model() {
@@ -89,7 +89,8 @@ public class Model {
 		result = prime * result + ((events == null) ? 0 : events.hashCode());
 		result = prime * result
 				+ ((remoteClasses == null) ? 0 : remoteClasses.hashCode());
-		result = prime * result + ((complexTypes == null) ? 0 : complexTypes.hashCode());
+		result = prime * result
+				+ ((complexTypes == null) ? 0 : complexTypes.hashCode());
 		return result;
 	}
 
@@ -119,16 +120,16 @@ public class Model {
 
 	@Override
 	public String toString() {
-		return "Model [remoteClasses=" + remoteClasses + ", types=" + complexTypes
-				+ ", events=" + events + "]";
+		return "Model [remoteClasses=" + remoteClasses + ", types="
+				+ complexTypes + ", events=" + events + "]";
 	}
 
 	public void populateModel() {
-		
+
 		remoteClassesMap = populateNamedElements(this.remoteClasses);
 		eventsMap = populateNamedElements(this.events);
 		complexTypesMap = populateNamedElements(this.complexTypes);
-		
+
 		types = new HashMap<String, Type>();
 		types.putAll(remoteClassesMap);
 		types.putAll(eventsMap);
@@ -137,30 +138,32 @@ public class Model {
 		put(types, STRING);
 		put(types, INT);
 		put(types, FLOAT);
-		
+
 		resolveTypeRefs(remoteClasses, types);
 		resolveTypeRefs(events, types);
 		resolveTypeRefs(complexTypes, types);
 	}
 
 	private void put(Map<String, ? super Type> types, Type t) {
-		types.put(t.getName(), t);		
+		types.put(t.getName(), t);
 	}
 
-	private void resolveTypeRefs(List<? extends ModelElement> modelElements, Map<String, Type> baseTypes) {
-		for(ModelElement modelElement : modelElements) {
-			if(modelElement instanceof TypeRef) {
-				//TODO
+	private void resolveTypeRefs(List<? extends ModelElement> modelElements,
+			Map<String, Type> baseTypes) {
+		for (ModelElement modelElement : modelElements) {
+			if (modelElement instanceof TypeRef) {
+				// TODO
 				TypeRef typeRef = (TypeRef) modelElement;
 				Type baseType = baseTypes.get(typeRef.getName());
-				if(baseType == null) {
-					LOG.warn("The type '"+typeRef.getName()+"' is not defined");
+				if (baseType == null) {
+					LOG.warn("The type '" + typeRef.getName()
+							+ "' is not defined");
 				} else {
 					typeRef.setType(baseType);
 				}
-				
+
 			} else {
-				if(modelElement == null) {
+				if (modelElement == null) {
 					System.out.println("WTF!");
 				}
 				resolveTypeRefs(modelElement.getChildren(), baseTypes);
@@ -169,10 +172,11 @@ public class Model {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends NamedElement> Map<String, T> populateNamedElements(List<? extends T> elements) {
+	private <T extends NamedElement> Map<String, T> populateNamedElements(
+			List<? extends T> elements) {
 		Map<String, T> elementsMap = new HashMap<String, T>();
-		for(NamedElement element: elements) {
-			elementsMap.put(element.getName(), (T)element);
+		for (NamedElement element : elements) {
+			elementsMap.put(element.getName(), (T) element);
 		}
 		return elementsMap;
 	}
@@ -180,12 +184,12 @@ public class Model {
 	public RemoteClass getRemoteClass(String remoteClassName) {
 		return remoteClassesMap.get(remoteClassName);
 	}
-	
-	public ComplexType getType(String typeName){
+
+	public ComplexType getType(String typeName) {
 		return complexTypesMap.get(typeName);
 	}
-	
-	public Event getEvent(String eventName){
+
+	public Event getEvent(String eventName) {
 		return eventsMap.get(eventName);
 	}
 

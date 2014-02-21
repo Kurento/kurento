@@ -81,21 +81,22 @@ public class RemoteClass extends Type {
 	}
 
 	public boolean isAssignableTo(String remoteClassName) {
-		if(this.getName().equals(remoteClassName)) {
+		if (this.getName().equals(remoteClassName)) {
 			return true;
 		} else {
-			if(getExtends() != null) {
-				return ((RemoteClass)getExtends().getType()).isAssignableTo(remoteClassName);
+			if (getExtends() != null) {
+				return ((RemoteClass) getExtends().getType())
+						.isAssignableTo(remoteClassName);
 			} else {
 				return false;
 			}
 		}
 	}
-	
+
 	@Override
 	public List<ModelElement> getChildren() {
 		List<ModelElement> children = new ArrayList<ModelElement>();
-		if(extendsProp != null) {
+		if (extendsProp != null) {
 			children.add(extendsProp);
 		}
 		children.addAll(constructors);
@@ -103,7 +104,7 @@ public class RemoteClass extends Type {
 		children.addAll(events);
 		return children;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "RemoteClass [extends=" + extendsProp + ", constructors="
@@ -158,5 +159,5 @@ public class RemoteClass extends Type {
 			return false;
 		return true;
 	}
-	
+
 }
