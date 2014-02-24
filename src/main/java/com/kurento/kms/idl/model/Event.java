@@ -42,6 +42,9 @@ public class Event extends Type {
 		return parentProperties;
 	}
 
+	public void setParentProperties(List<Property> parentProperties) {
+		this.parentProperties = parentProperties;
+	}
 
 	@Override
 	public int hashCode() {
