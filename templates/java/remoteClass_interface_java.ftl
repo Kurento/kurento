@@ -1,10 +1,9 @@
-com/kurento/kmf/media/${remoteClass.name}.java
-package com.kurento.kmf.media;
+${config.subfolder}/${remoteClass.name}.java
+package ${config.packageName};
 
-import com.kurento.tool.rom.client.RemoteObjectBuilder;
 import com.kurento.tool.rom.server.Param;
 import java.util.List;
-import com.kurento.kmf.media.events.*;
+import ${config.packageName}.events.*;
 
 public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remoteClass.extends.name}</#if> {
 

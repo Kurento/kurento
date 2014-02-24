@@ -1,4 +1,4 @@
-com/kurento/kmf/media/ListenerRegistration.java
+${config.subfolder}/ListenerRegistration.java
 /*
  * (C) Copyright 2013 Kurento (http://kurento.org/)
  *
@@ -13,9 +13,7 @@ com/kurento/kmf/media/ListenerRegistration.java
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media;
-
-import com.kurento.kmf.media.events.MediaEvent;
+package ${config.packageName};
 
 /**
  * Interface to be implemented by objects that represent the registration of a

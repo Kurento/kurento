@@ -1,5 +1,5 @@
-com/kurento/kmf/media/MediaPipelineFactory.java
-package com.kurento.kmf.media;
+${config.subfolder}/MediaPipelineFactory.java
+package ${config.packageName};
 
 public class MediaPipelineFactory {
 

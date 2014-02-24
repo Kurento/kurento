@@ -1,4 +1,4 @@
-com/kurento/kmf/media/Continuation.java
+${config.subfolder}/Continuation.java
 /*
  * (C) Copyright 2013 Kurento (http://kurento.org/)
  *
@@ -13,7 +13,7 @@ com/kurento/kmf/media/Continuation.java
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.media;
+package ${config.packageName};
 
 /**
  * This interface is to be used in asynchronous calls to the media server.

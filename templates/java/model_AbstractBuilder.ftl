@@ -1,5 +1,5 @@
-com/kurento/kmf/media/AbstractBuilder.java
-package com.kurento.kmf.media;
+${config.subfolder}/AbstractBuilder.java
+package ${config.packageName};
 
 public interface AbstractBuilder<T> {
 

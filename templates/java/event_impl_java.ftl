@@ -1,8 +1,7 @@
-com/kurento/kmf/media/events/internal/${event.name}EventImpl.java
-package com.kurento.kmf.media.events.internal;
+${config.subfolder}/events/${event.name}Event.java
+package ${config.packageName}.events;
 
-import com.kurento.kmf.media.events.*;
-import com.kurento.kmf.media.*;
+import ${config.packageName}.*;
 
 public class ${event.name}EventImpl <#if event.extends??>extends ${event.extends.name}EventImpl</#if> implements ${event.name}Event {
 

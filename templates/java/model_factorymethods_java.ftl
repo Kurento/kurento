@@ -1,5 +1,5 @@
-com/kurento/kmf/media/MediaServerFactory.java
-package com.kurento.kmf.media;
+${config.subfolder}/MediaServerFactory.java
+package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
 

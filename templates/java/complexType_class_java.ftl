@@ -1,5 +1,5 @@
-com/kurento/kmf/media/${complexType.name}.java
-package com.kurento.kmf.media;
+${config.subfolder}/${complexType.name}.java
+package ${config.packageName};
 
 <#if complexType.typeFormat == "REGISTER">
 public class ${complexType.name} {

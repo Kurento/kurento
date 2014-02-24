@@ -1,7 +1,5 @@
-com/kurento/kmf/media/events/Event.java
-package com.kurento.kmf.media.events;
-
-import com.kurento.kmf.media.*;
+${config.subfolder}/events/Event.java
+package ${config.packageName}.events;
 
 public interface Event {
 

@@ -1,5 +1,5 @@
-com/kurento/kmf/media/events/MediaEventListener.java
-package com.kurento.kmf.media.events;
+${config.subfolder}/events/MediaEventListener.java
+package ${config.packageName}.events;
 
 public interface MediaEventListener<T extends Event> {
 
