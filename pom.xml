@@ -2,23 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.kurento.kmf</groupId>
-	<artifactId>kmf-repository-api-test</artifactId>
-	<version>0.5.0-SNAPSHOT</version>
-
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>0.5.0.BUILD-SNAPSHOT</version>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>3.0.7-SNAPSHOT</version>
 	</parent>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-	</properties>
+	<groupId>com.kurento.kmf</groupId>
+	<artifactId>kmf-repository-api-test</artifactId>
 
 	<dependencies>
 		<dependency>
@@ -35,30 +26,20 @@
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-repository-api</artifactId>
-			<version>0.5.0-SNAPSHOT</version>
+			<version>${kmf-repository-api.version}</version>
 		</dependency>
 
 	</dependencies>
 
 	<repositories>
-
 		<repository>
 			<id>spring-milestones</id>
 			<name>Spring Milestones</name>
-			<url>http://repo.spring.io/libs-milestone</url>
+			<url>http://repo.spring.io/milestone</url>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>http://repo.spring.io/libs-snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-
 	</repositories>
 
 </project>
