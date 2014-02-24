@@ -9,9 +9,9 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
 
    <#list remoteClass.methods as method>
     ${getJavaObjectType(method.return,false)} ${method.name}(<#rt>
-       <#lt><#list method.params as param>${param.type.name} ${param.name}<#if param_has_next>, </#if></#list>);
+		<#lt><#list method.params as param>@Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}<#if param_has_next>, </#if></#list>);
     void ${method.name}(<#rt>
-       <#lt><#list method.params as param>${param.type.name} ${param.name}, </#list>Continuation<${getJavaObjectType(method.return)}> cont);
+		<#lt><#list method.params as param>@Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}, </#list>Continuation<${getJavaObjectType(method.return)}> cont);
 
     </#list>
 	<#list remoteClass.events as event>
