@@ -43,8 +43,8 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 
 			@Override
 			public void onEvent(CodeFoundEvent event) {
-				getLogger().info(
-						"Event " + event.getType() + "-->" + event.getValue());
+				getLogger().info("Event {}-->{}", event.getType(),
+						event.getValue());
 				if (url.equals(event.getValue())) {
 					return;
 				}

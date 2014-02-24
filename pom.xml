@@ -48,12 +48,10 @@
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-content-api</artifactId>
-			<version>${kmf-content-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kws</groupId>
 			<artifactId>kws-content-api</artifactId>
-			<version>${kws-content-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
