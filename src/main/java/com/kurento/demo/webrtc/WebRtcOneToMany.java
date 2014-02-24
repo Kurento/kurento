@@ -35,23 +35,39 @@ public class WebRtcOneToMany extends WebRtcContentHandler {
 
 	private WebRtcEndpoint firstWebRtcEndpoint;
 
+	private String sessionId;
+
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
 			throws Exception {
-		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
-		contentSession.releaseOnTerminate(mp);
-
 		if (firstWebRtcEndpoint == null) {
+			MediaPipeline mp = contentSession.getMediaPipelineFactory()
+					.create();
+			contentSession.releaseOnTerminate(mp);
+
 			firstWebRtcEndpoint = mp.newWebRtcEndpoint().build();
-			firstWebRtcEndpoint.connect(firstWebRtcEndpoint);
+			sessionId = contentSession.getSessionId();
 			contentSession.releaseOnTerminate(firstWebRtcEndpoint);
+			firstWebRtcEndpoint.connect(firstWebRtcEndpoint);
+			contentSession.start(firstWebRtcEndpoint);
 		} else {
+			MediaPipeline mp = firstWebRtcEndpoint.getMediaPipeline();
+
 			WebRtcEndpoint newWebRtcEndpoint = mp.newWebRtcEndpoint().build();
 			contentSession.releaseOnTerminate(newWebRtcEndpoint);
+			newWebRtcEndpoint.connect(firstWebRtcEndpoint);
 			firstWebRtcEndpoint.connect(newWebRtcEndpoint);
+			contentSession.start(newWebRtcEndpoint);
 		}
-
-		contentSession.start(firstWebRtcEndpoint);
 	}
 
+	@Override
+	public void onSessionTerminated(WebRtcContentSession contentSession,
+			int code, String reason) throws Exception {
+		if (contentSession.getSessionId().equals(sessionId)) {
+			getLogger().info("Terminating first WebRTC session");
+			firstWebRtcEndpoint = null;
+		}
+		super.onSessionTerminated(contentSession, code, reason);
+	}
 }
