@@ -2,6 +2,7 @@ package com.kurento.kms.idl.codegen;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 
 import org.apache.commons.cli.CommandLine;
@@ -12,6 +13,11 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.kurento.kms.idl.json.JsonModel;
 import com.kurento.kms.idl.model.Model;
 
@@ -25,6 +31,7 @@ public class Main {
 	private static final String TEMPLATES = "t";
 	private static final String CODEGEN = "c";
 	private static final String DELETE = "d";
+	private static final String CONFIG = "cf";
 
 	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws IOException,
@@ -50,6 +57,9 @@ public class Main {
 				.create(CODEGEN));
 		options.addOption(DELETE, "delete", false,
 				"Delete destination directory before generating files.");
+		options.addOption(OptionBuilder.withLongOpt("config")
+				.withDescription("Configuration file.").hasArg()
+				.withArgName("CONFIGURATION_FILE").create(CONFIG));
 
 		CommandLine line = null;
 
@@ -67,13 +77,59 @@ public class Main {
 			System.exit(1);
 		}
 
-		File romFile = new File(line.getOptionValue(ROM));
-		if (!romFile.exists() || !romFile.canRead()) {
-			System.err.println("Rom file description '" + romFile
-					+ "' does not exist or is not readable");
-			System.exit(1);
+		File romFile = getRomFile(line);
+		File templatesDir = getTemplatesDir(line);
+		File codegenDir = getCodegenDir(line);
+		JsonObject configContent = getConfigContent(line, romFile);
+
+		if (line.hasOption(DELETE) && codegenDir.exists()) {
+			delete(codegenDir);
 		}
 
+		Model model = new JsonModel().loadFromFile(romFile);
+
+		CodeGen codeGen = new CodeGen(templatesDir, codegenDir,
+				line.hasOption(VERBOSE), configContent);
+
+		codeGen.generateCode(model);
+
+		System.out.println("Generation complete");
+
+	}
+
+	private static JsonObject getConfigContent(CommandLine line, File romFile)
+			throws FileNotFoundException {
+		JsonObject configContents = null;
+		String configValue = line.getOptionValue(CONFIG);
+		if (configValue != null) {
+			File configFile = new File(configValue);
+			if (!configFile.exists() || !configFile.canRead()) {
+				System.err.println("Config file '" + romFile
+						+ "' does not exist or is not readable");
+				System.exit(1);
+			}
+			configContents = loadConfigFile(configFile);
+		}
+		return configContents;
+	}
+
+	private static File getCodegenDir(CommandLine line) {
+		File codegenDir = new File(line.getOptionValue(CODEGEN));
+		if (codegenDir.exists()) {
+			if (!codegenDir.canWrite()) {
+				System.err.println("Codegen '" + codegenDir
+						+ "' is not writable");
+				System.exit(1);
+			} else if (!codegenDir.isDirectory()) {
+				System.err.println("Codegen '" + codegenDir
+						+ "' is not a directory");
+				System.exit(1);
+			}
+		}
+		return codegenDir;
+	}
+
+	private static File getTemplatesDir(CommandLine line) {
 		File templatesDir = new File(line.getOptionValue(TEMPLATES));
 
 		if (templatesDir.exists()) {
@@ -87,34 +143,32 @@ public class Main {
 				System.exit(1);
 			}
 		}
+		return templatesDir;
+	}
 
-		File codegenDir = new File(line.getOptionValue(CODEGEN));
-
-		if (codegenDir.exists()) {
-			if (!codegenDir.canWrite()) {
-				System.err.println("Codegen '" + codegenDir
-						+ "' is not writable");
-				System.exit(1);
-			} else if (!codegenDir.isDirectory()) {
-				System.err.println("Codegen '" + codegenDir
-						+ "' is not a directory");
-				System.exit(1);
-			}
+	private static File getRomFile(CommandLine line) {
+		File romFile = new File(line.getOptionValue(ROM));
+		if (!romFile.exists() || !romFile.canRead()) {
+			System.err.println("Rom file description '" + romFile
+					+ "' does not exist or is not readable");
+			System.exit(1);
 		}
+		return romFile;
+	}
 
-		if (line.hasOption(DELETE) && codegenDir.exists()) {
-			delete(codegenDir);
+	private static JsonObject loadConfigFile(File configFile)
+			throws JsonIOException, FileNotFoundException {
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		Gson gson = gsonBuilder.create();
+		try {
+			return gson.fromJson(new FileReader(configFile), JsonObject.class);
+		} catch (JsonSyntaxException e) {
+			System.err.println("Config file '" + configFile
+					+ "' has the following formatting error:");
+			System.err.println(e.getLocalizedMessage());
+			System.exit(1);
+			return null;
 		}
-
-		Model model = new JsonModel().loadFromFile(romFile);
-
-		CodeGen codeGen = new CodeGen(templatesDir, codegenDir,
-				line.hasOption(VERBOSE));
-
-		codeGen.generateCode(model);
-
-		System.out.println("Generation complete");
-
 	}
 
 	public static void delete(File f) throws IOException {

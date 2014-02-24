@@ -6,11 +6,13 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import com.google.gson.JsonObject;
 import com.kurento.kms.idl.codegen.function.CamelToUnderscore;
 import com.kurento.kms.idl.codegen.function.CppObjectType;
 import com.kurento.kms.idl.codegen.function.IsFirstConstructorParam;
@@ -32,13 +34,15 @@ public class CodeGen {
 	private final Configuration cfg;
 
 	private final boolean verbose;
+	private JsonObject config;
 
-	public CodeGen(File templatesFolder, File outputFolder, boolean verbose)
-			throws IOException {
+	public CodeGen(File templatesFolder, File outputFolder, boolean verbose,
+			JsonObject config) throws IOException {
 
 		this.verbose = verbose;
 		this.templatesFolder = templatesFolder;
 		this.outputFolder = outputFolder;
+		this.config = config;
 
 		cfg = new Configuration();
 
@@ -119,6 +123,14 @@ public class CodeGen {
 		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
 
 		root.put("model", model);
+		if (this.config != null) {
+
+			JsonObjectAsMap mapper = new JsonObjectAsMap();
+
+			root.put("config", mapper.getAsObject(config));
+		} else {
+			root.put("config", Collections.emptyMap());
+		}
 
 		if (types == null) {
 			generateFile(temp, root);
