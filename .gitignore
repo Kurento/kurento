@@ -1,1 +1,6 @@
 *~
+.project
+.gitignore
+.classpath
+.settings
+/target
