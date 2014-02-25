@@ -9,6 +9,18 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
 
 .. glossary::
 
+    Agnostic, Media
+        One of the big problems of media is that the number of variants
+        of video and audio codecs, formats and variants quickly creates
+        high complexity in heterogeneous applications. So kurento developed
+        the concept of an automatic converter of media formats that enables
+        development of *agnostic* elements. Whenever a media element’s
+        source is connected to another media element’s sink, the kurento
+        framework verifies if media adaption and transcoding is necessary
+        and, if needed, it transparently incorporates the appropriate
+        transformations making possible the chaining of the two elements
+        into the resulting :term:`Pipeline <pipeline, media>`.
+
     CORS
         `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`__
         is a mechanism that allows JavaScript code on a web page to make
@@ -133,10 +145,61 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
 
         .. seealso:: :term:`Signalling Plane`
 
+    MP4
+        MPEG-4 Part 14 or MP4 is a digital multimedia format most commonly
+        used to store video and audio, but can also be used to store other
+        data such as subtitles and still images.
+
+        .. seealso:: Wikipedia definition of `MP4
+           <http://en.wikipedia.org/wiki/MPEG-4_Part_14>`__.
+
+    Multimedia
+        Multimedia is concerned with the computer controlled integration
+        of text, graphics, video, animation, audio, and any other media where
+        information can be represented, stored, transmitted and processed
+        digitally.
+
+        There is a temporal relationship between many forms of media, 
+        for instance audio, video and animations. There 2 are forms of problems
+        involved in 
+
+            * Sequencing within the media, i.e. playing frames in correct
+              order or time frame.
+            * Synchronisation, i.e. inter-media scheduling. For example, 
+              keeping video and audio synchronized or displaying captions
+              or subtitles in the required intervals.
+
+        .. seealso:: Wikipedia definition of `multimedia
+            <http://en.wikipedia.org/wiki/Multimedia>`__
+
+    Multimedia container format
+        Container or wrapper formats are metafile formats whose
+        specification describes how different data elements and metadata
+        coexist in a computer file.
+
+        Simpler multimedia container formats can contain different types
+        of audio formats, while more advanced container formats can
+        support multiple audio and video streams, subtitles,
+        chapter-information, and meta-data, along with the synchronization
+        information needed to play back the various streams together.
+        In most cases, the file header, most of the  metadata and the
+        synchro chunks are specified by the container format.
+
+        .. seealso:: Wikipedia definition of `multimedia containter formats
+           <http://en.wikipedia.org/wiki/Container_format_(digital)#Multimedia_container_formats>`__
+
     Pad, Media
         A :index:`Media Pad <single: Media; Pad>` is is an element´s
         interface with the outside world. Data streams from the MediaSource
         pad to another element’s MediaSink pad.
+
+        .. seealso::
+
+            GStreamer `Pad <http://hackage.haskell.org/package/gstreamer-0.12.1.1/docs/Media-Streaming-GStreamer-Core-Pad.html>`__
+                Definition of the Pad structure in GStreamer
+
+            Kurento :java:type:`MediaPad`
+                Kurennto Media API Java interface for the MediaPad
 
     Pipeline, Media
         A :index:`Media Pipeline <single: Media; Pipeline>` is a chain of media elements, where the output
@@ -178,8 +241,11 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         streaming.
 
         .. seealso::
-            :rfc:`4566`,
+
+            :rfc:`4566`
+                Definition of Session Description Protocol
             :rfc:`4568`
+                Security Descriptions for Media Streams in SDP
 
     Signalling Plane
         It is the layer of a media system in charge of the information exchanges
@@ -237,7 +303,9 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         `Transport Layer Security <http://en.wikipedia.org/wiki/Transport_Layer_Security>`__
         and its prececessor Secure Socket Layer (SSL) 
 
-        .. seealso:: :rfc:`5246`
+        .. seealso::
+            :rfc:`5246`
+                Version 1.2 of the Transport Layer Security protocol
 
     WebM
         `WebM <http://www.webmproject.org/>`__ is an open media file format 

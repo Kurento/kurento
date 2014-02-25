@@ -9,11 +9,11 @@ Introduction
 
 This guide describes how to install the Stream-Oriented GE - Kurento.
 Kurento is composed of two nodes, the Kurento Application Server (a.k.a.
-KAS) and the Kurento Media Server (a.k.a KMS). These two nodes can be
-co-located or installed on separate machines. This guide focuses on the
-installation on a single machine, but comments are done where
-appropriate explaining how to modify the configuration files for a dual
-installation.
+:term:`KAS`) and the Kurento Media Server (a.k.a :term:`KMS`). These two
+nodes can be co-located or installed on separate machines. This guide
+focuses on the installation on a single machine, but comments are done
+where appropriate explaining how to modify the configuration files for a
+dual installation.
 
 Prerequisites
 -------------
@@ -372,10 +372,10 @@ HTTP Player with JSON protocol
 
 This link will load another web page in your browser where you can see
 the same videos using JSON-based representations for information
-exchange.The JSON protocol enhances a HTTP Player by implementing a
-signaling communication between the client (JavaScript API) and the
-Kurento Application Server (KAS). Using this protocol the client will be
-able to negotiate the transfer of media using SDP (Session Description
+exchange.The JSON protocol enhances a HTTP Player by implementing
+signaling communications between the client (:term:`JavaScript API <KWS>`) and the
+Kurento Application Server (:term:`KAS`). Using this protocol the client will be
+able to negotiate the transfer of media using :term:`SDP` (Session Description
 Protocol), and also it will be notified with media and flow execution
 events.
 

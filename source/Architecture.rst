@@ -5,9 +5,9 @@
 Overview
 ========
 
-The Stream Oriented GE provides a framework devoted to simplify the
-development of complex interactive multimedia applications through a
-rich family of APIs and toolboxes, which include:
+Kurento provides a framework devoted to simplify the development of
+complex interactive :term:`multimedia` applications through a rich
+family of APIs and toolboxes, which include:
 
 -  **Content API**: The :doc:`KMF Content API <kmf-content-api/packages>`
    is a Java API bringing all the power of :term:`Java EE`
@@ -127,7 +127,7 @@ blocks for application developers:
 Agnostic media adaptor
 ----------------------
 
-Using the Stream Oriented GE APIs, developers are able to compose the
+Using the :term:`KMF` or :term:`KWS` APIs, developers are able to compose the
 available media elements, getting the desired pipeline. There is a
 challenge in this scheme, as different media elements might require
 different input media formats than the output produced by their

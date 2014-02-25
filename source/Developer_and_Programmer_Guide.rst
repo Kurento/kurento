@@ -7,23 +7,23 @@
 Introduction
 ============
 
-The *Stream Oriented GE Kurento* is a multimedia platform helping
+*Kurento* is a :term:`multimedia` platform helping
 developers to add multimedia capabilities to their applications. The
-core element is *Kurento Media Server* (*KMS*) a
+core element is *Kurento Media Server* (:term:`KMS`) a
 `Gstreamer <http://gstreamer.freedesktop.org/>`__ based multimedia
 engine that provides following features:
 
--  Networked streaming protocols, including *HTTP* working as client and
-   server, *RTP* and *WebRTC*.
+-  Networked streaming protocols, including :term:`HTTP` working as client and
+   server, :term:`RTP` and :term:`WebRTC`.
 -  Media transcodification between any of the codecs currently supported
    by Gstreamer.
 -  Generic support for computational vision and augmented reality
    filters.
--  Media storage supporting writing operations for *WebM* and *MP4* and
-   reading operations for any of *Gstreamer's* muxers.
+-  Media storage supporting writing operations for :term:`WebM` and
+   :term:`MP4` and reading operations for any of *Gstreamer's* muxers.
 
-`Java <http://www.java.com/>`__ and
-`Javascript <http://www.w3.org/standards/webdesign/script>`__ SDKs are
+`Java <http://www.java.com/>`__ and `Javascript
+<http://www.w3.org/standards/webdesign/script>`__ SDKs are
 available for developers to incorporate above features to applications.
 
 About this guide
