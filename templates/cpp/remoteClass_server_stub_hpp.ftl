@@ -12,8 +12,13 @@ ${remoteClass.name}.hpp
 <#if (remoteClass.extends)??>
 #include "${remoteClass.extends.name}.hpp"
 </#if>
-
-class JsonSerializer;
+<#if remoteClass.events[0] ?? >
+<#list remoteClass.events as event>
+#include "${event.name}.hpp"
+</#list>
+#include <sigc++/sigc++.h>
+#include <EventHandler.hpp>
+</#if>
 
 namespace kurento {
 
@@ -21,8 +26,7 @@ namespace kurento {
 class ${dependency.name};
 </#list>
 
-class ${remoteClass.name}<#if remoteClass.extends??> : public virtual ${remoteClass.extends.name}</#if>
-{
+class ${remoteClass.name}<#if remoteClass.extends??> : public virtual ${remoteClass.extends.name}</#if> {
 
 public:
 
@@ -34,6 +38,14 @@ public:
   </#if>
   virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
       <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
+  </#list>
+
+  virtual std::string connect(const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  <#list remoteClass.events as event>
+    <#if event_index = 0 >
+
+    </#if>
+  sigc::signal<void, ${event.name}> signal${event.name};
   </#list>
 
   class Factory : public virtual kurento::Factory

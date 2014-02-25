@@ -274,6 +274,33 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
 </#if>
 }
 
+std::string
+${remoteClass.name}::connect(const std::string &eventType, std::shared_ptr<EventHandler> handler)
+{
+  std::cout << "${remoteClass.name}" << std::endl;
+<#list remoteClass.events as event>
+  if ("${event.name}" == eventType) {
+    sigc::connection conn = signal${event.name}.connect ([=] (${event.name} event) {
+      JsonSerializer s (false);
+      Json::Reader jsonReader;
+
+      s.Serialize ("data", event);
+      s.JsonValue["type"] = "${event.name}";
+      s.JsonValue["subscription"] = handler->getId();
+      handler->sendEvent(s.JsonValue);
+    });
+    handler->setConnection (conn);
+    std::cout << "found event!!" << std::endl;
+    return handler->getId();
+  }
+</#list>
+<#if (remoteClass.extends)??>
+  return ${remoteClass.extends.name}::connect (eventType, handler);
+<#else>
+  return "";
+</#if>
+}
+
 } /* kurento */
 
 <#if (remoteClass.extends)??>

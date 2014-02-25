@@ -23,9 +23,9 @@ class ${event.name};
 class ${property.type.name};
 </#if>
 </#list>
-} /*kurento */
+} /* kurento */
 
-void Serialize(std::shared_ptr<kurento::${event.name}>& object, JsonSerializer& s);
+void Serialize(kurento::${event.name}& event, JsonSerializer& s);
 
 namespace kurento {
 
@@ -87,6 +87,10 @@ public:
 
   </#if>
   </#list>
+  static std::string getName() {
+    return "${event.name}";
+  }
+
 protected:
 
   ${event.name}() {};
@@ -99,7 +103,7 @@ private:
   </#if>
   </#list>
 
-  friend void ::Serialize(std::shared_ptr<${event.name}>& object, JsonSerializer& s);
+  friend void ::Serialize(${event.name}& event, JsonSerializer& s);
 };
 
 } /* kurento */

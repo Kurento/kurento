@@ -12,27 +12,18 @@ ${event.name}.cpp
 </#list>
 
 void
-Serialize(std::shared_ptr<kurento::${event.name}>& object, JsonSerializer& s)
+Serialize(kurento::${event.name}& event, JsonSerializer& s)
 {
-  if (!s.IsWriter && !object) {
-    object.reset(new kurento::${event.name}());
+<#list event.properties as property>
+  s.Serialize("${property.name}", event.${property.name});
+</#list>
+<#if event.extends??>
+  try {
+    kurento::${event.extends.name} &parent = dynamic_cast<kurento::${event.extends.name}&> (event);
+
+    Serialize(parent, s);
+  } catch (std::bad_cast) {
+
   }
-
-  if (object) {
-  <#if event.extends??><#rt><#lt>
-    std::shared_ptr<kurento::${event.extends.name}> parent;
-
-  </#if>
-  <#list event.properties as property>
-    s.Serialize("${property.name}", object->${property.name});
-  </#list>
-  <#if event.extends??>
-    parent = std::dynamic_pointer_cast<kurento::${event.extends.name}> (object);
-
-    if (parent) {
-      Serialize(parent, s);
-    }
-
-  </#if>
-  }
+</#if>
 }
