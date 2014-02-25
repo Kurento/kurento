@@ -1,121 +1,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>3.0.7-SNAPSHOT</version>
+	</parent>
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-jsonrpcconnector-test</artifactId>
-	<version>3.0.7-SNAPSHOT</version>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-
-		<!-- Dependencies Versions -->
-		<gson.version>2.2.4</gson.version>
-		<junit.version>4.11</junit.version>
-
-		<!-- Extensions Versions -->
-		<wagon-ssh.version>2.0</wagon-ssh.version>
-
-		<servlet-api.version>3.0.1</servlet-api.version>
-		<kmf-commons.version>3.0.7-SNAPSHOT</kmf-commons.version>
-		<kmf-spring.version>3.0.7-SNAPSHOT</kmf-spring.version>
-	</properties>
-
-	<name>Kurento Media Framework - Content Protocol</name>
-	<description>
-			Protocol based on JSON-RPC to manage Kurento Content API
-
-			The kmf-content-protocol is a JSON-RPC protocol to manage Kurento Content API.
-	</description>
-	<url>https://github.com/Kurento/kmf-content-protocol</url>
 	<packaging>jar</packaging>
-	<licenses>
-		<license>
-			<name>GNU Lesser General Public License</name>
-			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
 
-	<organization>
-		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
-	</organization>
-
-	<developers>
-		<developer>
-			<id>mparis</id>
-			<name>Miguel París Díaz</name>
-		</developer>
-	</developers>
-
-	<mailingLists>
-		<mailingList>
-			<name>Kurento</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
-		</mailingList>
-	</mailingLists>
-
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>0.5.0.BUILD-SNAPSHOT</version>
-	</parent>
+	<name>Kurento Media Framework - JsonRpc Connector</name>
+	<description>
+			Tests of a protocol based on JSON-RPC to manage Kurento Content and Media API
+	</description>
 
 	<dependencies>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector</artifactId>
-			<version>3.0.7-SNAPSHOT</version>
+			<version>${kmf-jsonrpcconnector.version}</version>
 		</dependency>
-
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.4.2</version>
-				<configuration>
-					<pushChanges>false</pushChanges>
-				</configuration>
-			</plugin>
-		</plugins>
-
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${wagon-ssh.version}</version>
-			</extension>
-		</extensions>
-	</build>
-
-	<scm>
-		<url>https://github.com/Kurento/kmf-content-protocol</url>
-		<connection>scm:git:https://github.com/Kurento/kmf-content-protocol.git</connection>
-		<developerConnection>scm:git:ssh://repository.kurento.com:12345/kmf-content-protocol</developerConnection>
-		<tag>develop</tag>
-	</scm>
-
 	<repositories>
 		<repository>
 			<id>spring-milestones</id>
@@ -134,5 +49,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-
 </project>
