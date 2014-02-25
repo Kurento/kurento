@@ -85,7 +85,7 @@ javadoc:
 	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
 	      ( cd $(BUILDDIR)/javadoc/$${p} &&\
 	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop ) &&\
-	      javasphinx-apidoc -c /tmp -u -T -o source/$${p}\
+	      javasphinx-apidoc -c /tmp -u -T --no-member-headers -o source/$${p}\
 	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/src/main/java" \
 	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p} -name internal -print 2>/dev/null);\
 	      } done
