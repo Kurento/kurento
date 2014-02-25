@@ -6,6 +6,56 @@ function RpcBuilder()
   var responses = {};
 
 
+  function pack(message)
+  {
+    var result =
+    {
+      jsonrpc: "2.0"
+    };
+
+    if(message.method)
+    {
+      result.method = message.method;
+
+      if(message.params)
+        result.params = message.params;
+    };
+
+    var id = message.id;
+    if(id)
+    {
+      result.id = id;
+
+      if(message.error)
+        result.error = message.error;
+      else if(message.value)
+        result.value = message.value;
+    };
+
+    return JSON.stringify(result);
+  };
+
+  function unpack(message)
+  {
+    if(typeof message == 'string')
+      message = JSON.parse(message);
+
+    function throwException(text)
+    {
+      var error = new TypeError(text);
+          error.data = message;
+
+      throw error;
+    };
+
+    var version = message.jsonrpc;
+    if(version != "2.0")
+      throwException("Invalid JsonRPC version: "+version);
+
+    return message;
+  };
+
+
   function RpcNotification(method, params)
   {
     Object.defineProperty(this, 'method', {value: method});
@@ -36,20 +86,16 @@ function RpcBuilder()
       if(previousResponse)
         return previousResponse;
 
-      var message =
+      var message = pack(
       {
-        jsonrpc: "2.0",
-        id: id
-      };
-
-      if(error)
-        message.error = error;
-      else
-        message.value = value;
+        id:    id,
+        error: error,
+        value: value
+      });
 
       responses[id] = message;
 
-      return JSON.stringify(message);
+      return message;
     };
   };
   RpcRequest.prototype.__proto__   = RpcNotification.prototype;
@@ -76,26 +122,21 @@ function RpcBuilder()
 
     var message =
     {
-      jsonrpc: "2.0",
-      method: method
+      method: method,
+      params: params
     };
-
-    if(params)
-      message.params = params;
 
     if(callback)
     {
       var id = requestID++;
       message.id = id;
 
-      requests[id] =
-      {
-        message: message,
-        callback: callback
-      };
+      requests[id] = callback;
     };
 
-    return JSON.stringify(message);
+    var message = pack(message);
+
+    return message;
   };
 
   /**
@@ -109,20 +150,10 @@ function RpcBuilder()
    */
   this.decodeJSON = function(message)
   {
-    if(typeof message == 'string')
-       message = JSON.parse(message);
+    if(!message)
+      throwException("No message is defined");
 
-    function throwException(text)
-    {
-      var error = new TypeError(text);
-          error.data = message;
-
-      throw error;
-    };
-
-    var version = message.jsonrpc;
-    if(version != "2.0")
-      throwException("Invalid JsonRPC version: "+version);
+    message = unpack(message);
 
     var id     = message.id;
     var method = message.method;
@@ -145,12 +176,14 @@ function RpcBuilder()
         {
           delete requests[id];
 
-          request.callback(error, result);
+          request(error, result);
           return;
         };
 
-        // Both result and error are (or aren't) defined
-        throwException("Invalid response message");
+        // Invalid response message
+        if(result && error)
+          throwException("Both result and error are defined");
+        throwException("No result or error is defined");
       };
 
       // Request not found for this response
