@@ -14,6 +14,9 @@
  */
 package com.kurento.kmf.jsonrpcconnector.internal.message;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 public class ResponseError {
 
 	/**
@@ -33,7 +36,12 @@ public class ResponseError {
 
 	// TODO Improve the way errors are created from Exceptions
 	public static ResponseError newFromException(Exception e) {
-		return new ResponseError(1, e.getMessage(), null);
+
+		StringWriter writer = new StringWriter();
+		e.printStackTrace(new PrintWriter(writer));
+
+		return new ResponseError(1, e.getClass().getSimpleName() + ":"
+				+ e.getMessage(), writer.toString());
 	}
 
 	/**

@@ -26,16 +26,23 @@ import static com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants.SESSION
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.internal.$Gson$Types;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
@@ -66,12 +73,12 @@ public class JsonUtils {
 	 * @return Serialized JSON message (as String)
 	 */
 	public static String toJson(Object obj) {
-		return JsonUtils.getGson().toJson(obj);
+		return getGson().toJson(obj);
 	}
 
 	public static JsonObject toJsonObject(Object obj) {
 		// TODO Optimize this implementation if possible
-		return fromJson(JsonUtils.getGson().toJson(obj), JsonObject.class);
+		return fromJson(getGson().toJson(obj), JsonObject.class);
 	}
 
 	public static <T> Request<T> fromJsonRequest(String json,
@@ -85,7 +92,7 @@ public class JsonUtils {
 
 		} else {
 
-			return JsonUtils.getGson().fromJson(
+			return getGson().fromJson(
 					json,
 					$Gson$Types.newParameterizedTypeWithOwner(null,
 							Request.class, paramsClass));
@@ -102,7 +109,7 @@ public class JsonUtils {
 					resultClass);
 
 		} else {
-			return JsonUtils.getGson().fromJson(
+			return getGson().fromJson(
 					json,
 					$Gson$Types.newParameterizedTypeWithOwner(null,
 							Response.class, resultClass));
@@ -119,7 +126,7 @@ public class JsonUtils {
 
 		} else {
 
-			return JsonUtils.getGson().fromJson(
+			return getGson().fromJson(
 					json,
 					$Gson$Types.newParameterizedTypeWithOwner(null,
 							Request.class, paramsClass));
@@ -135,7 +142,7 @@ public class JsonUtils {
 			return fromJsonResponseInject(json, resultClass);
 		} else {
 
-			return JsonUtils.getGson().fromJson(
+			return getGson().fromJson(
 					json,
 					$Gson$Types.newParameterizedTypeWithOwner(null,
 							Response.class, resultClass));
@@ -147,7 +154,7 @@ public class JsonUtils {
 
 		String sessionId = extractSessionId(jsonObject, RESULT_PROPERTY);
 
-		Response<T> response = JsonUtils.getGson().fromJson(
+		Response<T> response = getGson().fromJson(
 				jsonObject,
 				$Gson$Types.newParameterizedTypeWithOwner(null, Response.class,
 						resultClass));
@@ -161,7 +168,7 @@ public class JsonUtils {
 
 		String sessionId = extractSessionId(jsonObject, PARAMS_PROPERTY);
 
-		Request<T> request = JsonUtils.getGson().fromJson(
+		Request<T> request = getGson().fromJson(
 				jsonObject,
 				$Gson$Types.newParameterizedTypeWithOwner(null, Request.class,
 						paramsClass));
@@ -173,10 +180,14 @@ public class JsonUtils {
 	private static String extractSessionId(JsonObject jsonObject,
 			String memberName) {
 		JsonElement responseJson = jsonObject.get(memberName);
+
 		if (responseJson != null && responseJson.isJsonObject()) {
+
 			JsonObject responseJsonObject = (JsonObject) responseJson;
+
 			JsonElement sessionIdJson = responseJsonObject
 					.remove(SESSION_ID_PROPERTY);
+
 			if (sessionIdJson != null && !(sessionIdJson instanceof JsonNull)) {
 				return sessionIdJson.getAsString();
 			}
@@ -185,37 +196,37 @@ public class JsonUtils {
 	}
 
 	public static String toJson(Object obj, Type type) {
-		return JsonUtils.getGson().toJson(obj, type);
+		return getGson().toJson(obj, type);
 	}
 
 	public static <T> String toJsonRequest(Request<T> request) {
-		return JsonUtils.getGson().toJson(
+		return getGson().toJson(
 				request,
 				$Gson$Types.newParameterizedTypeWithOwner(null, Request.class,
 						getClassOrNull(request.getParams())));
 	}
 
 	public static <T> String toJsonResponse(Response<T> request) {
-		return JsonUtils.getGson().toJson(
+		return getGson().toJson(
 				request,
 				$Gson$Types.newParameterizedTypeWithOwner(null, Response.class,
 						getClassOrNull(request.getResult())));
 	}
 
 	public static <T> T fromJson(String json, Class<T> clazz) {
-		return JsonUtils.getGson().fromJson(json, clazz);
+		return getGson().fromJson(json, clazz);
 	}
 
 	public static <T> T fromJson(JsonElement json, Class<T> clazz) {
-		return JsonUtils.getGson().fromJson(json, clazz);
+		return getGson().fromJson(json, clazz);
 	}
 
 	public static <T> T fromJson(String json, Type type) {
-		return JsonUtils.getGson().fromJson(json, type);
+		return getGson().fromJson(json, type);
 	}
 
 	public static <T> T fromJson(JsonElement json, Type type) {
-		return JsonUtils.getGson().fromJson(json, type);
+		return getGson().fromJson(json, type);
 	}
 
 	private static Class<?> getClassOrNull(Object object) {
@@ -242,6 +253,8 @@ public class JsonUtils {
 
 		builder.registerTypeAdapter(Response.class,
 				new JsonRpcResponseDeserializer());
+
+		builder.registerTypeAdapter(Props.class, new JsonPropsAdapter());
 
 		gson = builder.create();
 
@@ -322,6 +335,10 @@ public class JsonUtils {
 		}
 
 		return paramsAsObject;
+	}
+
+	public static JsonElement toJsonElement(Object object) {
+		return getGson().toJsonTree(object);
 	}
 }
 
@@ -419,4 +436,83 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 
 	}
 
+}
+
+class JsonPropsAdapter implements JsonDeserializer<Props>,
+		JsonSerializer<Props> {
+
+	@Override
+	public Props deserialize(JsonElement json, Type typeOfT,
+			JsonDeserializationContext context) throws JsonParseException {
+
+		if (!(json instanceof JsonObject)) {
+			throw new JsonParseException("Cannot convert " + json
+					+ " to Props object");
+		}
+
+		JsonObject jObject = (JsonObject) json;
+
+		Props props = new Props();
+		for (Map.Entry<String, JsonElement> e : jObject.entrySet()) {
+			Object value = deserialize(e.getValue(), context);
+			props.add(e.getKey(), value);
+		}
+		return props;
+	}
+
+	private Object deserialize(JsonElement value,
+			JsonDeserializationContext context) {
+
+		if (value instanceof JsonObject) {
+			return deserialize((JsonObject) value, null, context);
+
+		} else if (value instanceof JsonPrimitive) {
+			return toPrimitiveObject((JsonPrimitive) value);
+
+		} else if (value instanceof JsonArray) {
+
+			JsonArray array = (JsonArray) value;
+			List<Object> result = new ArrayList<Object>();
+			for (JsonElement element : array) {
+				result.add(deserialize(element, context));
+			}
+			return result;
+
+		} else {
+			throw new RuntimeException("Unrecognized Json element: " + value);
+		}
+	}
+
+	public Object toPrimitiveObject(JsonElement element) {
+
+		JsonPrimitive primitive = (JsonPrimitive) element;
+		if (primitive.isBoolean()) {
+			return primitive.getAsBoolean();
+		} else if (primitive.isNumber()) {
+			Number number = primitive.getAsNumber();
+			double value = number.doubleValue();
+			if (((int) value == value)) {
+				return (int) value;
+			} else {
+				return (float) value;
+			}
+		} else if (primitive.isString()) {
+			return primitive.getAsString();
+		} else {
+			throw new RuntimeException("Unrecognized JsonPrimitive: "
+					+ primitive);
+		}
+	}
+
+	@Override
+	public JsonElement serialize(Props props, Type typeOfSrc,
+			JsonSerializationContext context) {
+
+		JsonObject jsonObject = new JsonObject();
+		for (Prop prop : props) {
+			jsonObject.add(prop.getName(), context.serialize(prop.getValue()));
+		}
+
+		return jsonObject;
+	}
 }

@@ -9,7 +9,7 @@
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>kmf-jsonrpc-api</artifactId>
+	<artifactId>kmf-jsonrpcconnector</artifactId>
 
 	<name>Kurento Media Framework - JSON-RPC Protocol</name>
 	<description>
@@ -63,6 +63,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
+		<!--  <dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-thrift-interface</artifactId>
+			<version>3.0.7-SNAPSHOT</version>
+		</dependency>-->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>

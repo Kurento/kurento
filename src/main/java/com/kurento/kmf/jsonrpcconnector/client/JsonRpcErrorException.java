@@ -9,8 +9,14 @@ public class JsonRpcErrorException extends RuntimeException {
 	private ResponseError error;
 
 	public JsonRpcErrorException(ResponseError error) {
-		super(error.getMessage());
+		super(createExceptionMessage(error));
 		this.error = error;
+	}
+
+	private static String createExceptionMessage(ResponseError error) {
+		return error.getMessage()
+				+ ((error.getData() != null) ? (". Data: " + error.getData())
+						: "");
 	}
 
 	public ResponseError getError() {

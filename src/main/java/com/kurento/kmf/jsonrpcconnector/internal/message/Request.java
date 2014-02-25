@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.jsonrpcconnector.internal.message;
 
-
 /**
  * 
  * Java representation for JSON RPC request. This class holds the information
