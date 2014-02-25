@@ -1,3 +1,5 @@
+.. _kmf-media-api:
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Kurento Media API Documentation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

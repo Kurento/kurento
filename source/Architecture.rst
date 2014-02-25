@@ -1,3 +1,5 @@
+.. _architecture:
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  Architecture Description
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -298,7 +300,7 @@ Following this, the role of the different APIs can be summarized in the followin
    application.
 
 Details and examples on how to use these APIs can be found at the
-corresponding Stream Oriented GE Developer's Guides. From an
+corresponding Kurento :ref:`devguide`. From an
 architectural perspective, the only relevant aspect is that application
 developers can use any of these APIs for creating their multimedia
 enabled applications. This opens a wide spectrum of potential usage
@@ -414,10 +416,11 @@ involves interactions among three main modules:
 -  **Client Application**: which involves the native multimedia
    capabilities of the client platform plus the specific client-side
    application logic consuming the client-side Stream Oriented GE APIs
-   (i.e. HTML5 SDK, Open API, etc.)
+   (i.e. :term:`HTML5 SDK<KWS>`, :ref:`Open API<openapi>`, etc.)
 -  **Application Server**: which involves a Java EE application server
    and the server-side application logic consuming the server-side
-   Stream Oriented GE APIs (i.e. Content API and Media API)
+   Kurento APIs (i.e. :ref:`Content API<kmf-content-api>` and
+   :ref:`Media API<kmf-media-api>`)
 -  **Media Server**: which receives commands for creating specific
    multimedia capabilities (i.e. specific pipelines adapted to the needs
    of specific applications)

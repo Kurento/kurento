@@ -1,3 +1,5 @@
+.. _kmf-content-api:
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Kurento Content API Documentation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

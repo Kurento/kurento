@@ -1,3 +1,6 @@
+.. _devguide:
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  Developer and Programmer Guide
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -304,7 +307,7 @@ Stream Oriented GE Kurento API architecture
 
 The *Stream Oriented GE Kurento* is a multimedia platform that provides
 streaming capabilities in a very flexible way. As described in the
-:doc:`Architecture Description <Architecture>`,
+:ref:`Architecture Description <architecture>`,
 *Kurento* is a modular system where a set of basic functional blocks,
 called *MediaElements*, that live in containers, called *MediaPipeline*,
 are connected together to build multimedia services. There are two main
@@ -331,10 +334,11 @@ components: :term:`Kurento Media Server` (*KMS*) and :term:`Kurento Media Framew
    services. *KMF* can be incorporated to web applications hosted by
    *Kurento Application Server* (*KAS*) and provides the following APIs:
 
-   -  *Content API*: High-level middleware layer of services intended to
-      simplify input/output operations.
-   -  *Media API*: Low-level API that provides full control of *KMS*
-      elements. It is normally used in conjunction with *Content API*.
+   -  :ref:`Content API<kmf-content-api>`: High-level middleware layer
+      of services intended to simplify input/output operations.
+   -  :ref:`Media API<kmf-media-api>`: Low-level API that provides
+      full control of :term:`KMS` elements. It is normally used in
+      conjunction with *Content API*.
    -  *HTML5 SDK*: Javascript SDK intended to provide better control of
       media reproduction in web applications.
 

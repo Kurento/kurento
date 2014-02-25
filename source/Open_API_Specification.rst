@@ -1,3 +1,5 @@
+.. _openapi:
+
 %%%%%%%%%%%%%%%%%%%%%%%
  Open API Specification
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -10,7 +12,7 @@ Introduction
 The Stream Oriented API is a :term:`REST`\ful resource-oriented API accessed via
 HTTP/HTTPS that uses :term:`JSON-RPC` V2.0 based representations for information
 exchange. This document describes the API exposed by the Application
-Server as defined in the :doc:`Kurento Architecture Description <Architecture>`.
+Server as defined in the :ref:`Kurento Architecture Description <architecture>`.
 
 Intended Audience
 -----------------
