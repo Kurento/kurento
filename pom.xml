@@ -1,28 +1,30 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>3.0.7-SNAPSHOT</version>
 	</parent>
-
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-thrift-interface</artifactId>
 	<packaging>jar</packaging>
-
 	<name>kmf-thrift-interface</name>
 	<description>
 			Kurento Thrift Interface
 
 			Thrift interface consumer/server for  the Kurento Media Framework.
 	</description>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kms</groupId>
 			<artifactId>kms-interface</artifactId>
 			<version>${kms-interface.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-jsonrpcconnector</artifactId>
+			<version>${kmf-jsonrpcconnector.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
@@ -61,6 +63,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 </project>
-

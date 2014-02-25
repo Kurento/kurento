@@ -36,7 +36,7 @@ public class ThriftInterfaceConfiguration {
 	/**
 	 * Port of the Kurento Media Server thrift server.
 	 */
-	private int serverPort = 9090;
+	private int serverPort = 9494;
 
 	/**
 	 * Address of the local thrift server, which will be used to receive events
@@ -47,7 +47,7 @@ public class ThriftInterfaceConfiguration {
 	/**
 	 * Port where the local thrift server will be listening.
 	 */
-	private int handlerPort = 9191;
+	private int handlerPort = 9292;
 
 	/**
 	 * Minimal size of the thread pool serving requests from the thrift server.
