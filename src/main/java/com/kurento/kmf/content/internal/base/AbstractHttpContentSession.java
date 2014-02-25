@@ -39,6 +39,7 @@ import com.kurento.kmf.media.events.MediaError;
 import com.kurento.kmf.media.events.MediaErrorListener;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.repository.HttpSessionErrorEvent;
 import com.kurento.kmf.repository.HttpSessionStartedEvent;
 import com.kurento.kmf.repository.HttpSessionTerminatedEvent;
@@ -183,6 +184,17 @@ public abstract class AbstractHttpContentSession extends AbstractContentSession
 						if (runOnContentStart != null) {
 							runOnContentStart.run();
 						}
+					}
+				});
+
+		// Manage end of media session
+		httpEndpoint
+				.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+
+					@Override
+					public void onEvent(MediaSessionTerminatedEvent event) {
+						internalTerminateWithoutError(null, 1, "TODO", null);// TODO
+
 					}
 				});
 
