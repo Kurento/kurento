@@ -9,7 +9,7 @@
 Introduction
 ============
 
-The Stream Oriented API is a :term:`REST`\ful resource-oriented API accessed via
+Kurento Open API is a :term:`REST`\ful resource-oriented API accessed via
 HTTP/HTTPS that uses :term:`JSON-RPC` V2.0 based representations for information
 exchange. This document describes the API exposed by the Application
 Server as defined in the :ref:`Kurento Architecture Description <architecture>`.
@@ -70,7 +70,7 @@ server may use as many HTTP headers as they consider necessary.
 Representation Format
 ---------------------
 
-Stream Oriented RESTful APIs support JSON as representation format for
+Kurento RESTful APIs support JSON as representation format for
 request and response parameters following the recommendations in the
 proposal `JSON-RPC over
 HTTP <http://www.simple-is-better.org/json-rpc/jsonrpc20-over-http.html>`__.
@@ -144,8 +144,7 @@ Limits
 
 Media processing is very CPU intensive and therefore the developer
 should be aware that the creation of multiple simultaneous sessions can
-exhaust server resources. Thus, limits are not specified for 1.0.0
-version of the Stream Oriented GE.
+exhaust server resources.
 
 Extensions
 ----------
@@ -355,7 +354,7 @@ Simplified alternative approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The *HttpPlayer* service just described is consistent with the rest of
-APIs defined in the Stream Oriented GE. However, it is recommended to
+APIs defined in Kurento. However, it is recommended to
 also expose an extra, simpler API, not requiring the use of
 JSON.
 
@@ -447,7 +446,7 @@ Simplified alternative approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The *HttpRecorder* service just described is consistent with the rest of
-APIs defined in the Stream Oriented GE. However, it is recommended to
+APIs defined in Kurento. However, it is recommended to
 also expose a simpler API as described here not requiring the use of
 JSON.
 

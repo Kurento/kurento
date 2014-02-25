@@ -32,16 +32,10 @@ available for developers to incorporate above features to applications.
 About this guide
 ----------------
 
-This guide, as the *Stream Oriented GE Kurento* itself, is under very
+This guide, as *Kurento* itself, is under very
 active development. Many features are constantly evolving and are not
 completely documented yet. You can contribute to complete this guide and
 also to Kurento effort by joining its community.
-
-User Guide
-==========
-
-The *Stream Oriented GE Kurento* offers APIs devoted to programmers, not
-to final users, so this section does not apply.
 
 Programmer Guide
 ================
@@ -49,7 +43,7 @@ Programmer Guide
 Things you need to know before start programing
 -----------------------------------------------
 
--  The *Stream Oriented GE Kurento* software is released under `LGPL
+-  *GE Kurento* software is released under `LGPL
    version 2.1 <http://www.gnu.org/licenses/lgpl-2.1.html>`__ license.
    This is quite a convenient license for programmers, but it is still
    recommended you check if actually fits your application needs.
@@ -73,8 +67,7 @@ Quick start
 -----------
 
 This section is intended to provide the very basic steps required to
-integrate the *Stream Oriented GE Kurento's* framework into
-applications.
+integrate the *Kurento* framework into applications.
 
 Basic Setup
 ~~~~~~~~~~~
@@ -99,8 +92,8 @@ Create your first application
 Server side of your first application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The *Stream Oriented GE Kurento* server SDK is a *Java* library known as
-*Kurento Media Framework* (*KMF*). Following steps are required to
+The *Kurento* server SDK is a *Java* library known as
+*Kurento Media Framework* (:term:`KMF`). Following steps are required to
 create a *Kurento* based application:
 
 #. Create a *Maven* web project with your favourite IDE. You can use
@@ -202,10 +195,10 @@ create a *Kurento* based application:
 Client side of your first application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The *Stream Oriented GE Kurento* is designed to work with an old plain
-*HTML5* code. For testing your application, you just have to include a
-``<video>`` tag linked to the *service URL* defined above. To do it, for
-example, create an HTML file in your local machine containing the code
+*Kurento* is designed to work with plain *HTML5* code. For testing
+your application, you just have to include a ``<video>`` tag linked
+to the *service URL* defined above. To do it, for example, create an
+HTML file in your local machine containing the code
 shown below and open it with your browser.
 
 .. sourcecode:: html
@@ -221,7 +214,7 @@ Next steps
 ~~~~~~~~~~
 
 -  Read section :ref:`basic-streaming-concepts` in
-   order to understand how *Stream Oriented GE Kurento* features can
+   order to understand how *Kurento* features can
    help you to build multimedia applications.
 -  Review :ref:`programming-with-kmf-content-api` for a detailed
    reference on content services.
@@ -284,9 +277,9 @@ GET request with the appropriate ``Range`` header. But this is only
 available if the server provided the resource size in advance in the
 first request (the one that initiated the stream). If resource size is
 not available at start time, the video component does not show any kind
-of progress bar, switching into *live* mode. *Stream Oriented GE
-Kurento* is currently supporting only *live* mode, independently whether
-the media resource is or not available in advance.
+of progress bar, switching into *live* mode. *Kurento* is currently
+supporting only *live* mode, independently whether the media resource
+is or not available in advance.
 
 When designing streaming services it is also very important to determine
 the type of service that is being offered. There are two main
@@ -298,14 +291,14 @@ time scale is shared among all connected clients. In *VoD* service a new
 time scale is build for each client. The client not only selects
 resource, but also the time origin. When many *VoD* clients access the
 same resource, each one has its own time scale, and this time scale is
-reset if the client breaks the connection. *Stream Oriented GE Kurento*
+reset if the client breaks the connection. *Kurento*
 is currently supporting Broadcast services, but in future versions it
 will also support true *VoD* mode.
 
-Stream Oriented GE Kurento API architecture
--------------------------------------------
+Kurento API architecture
+------------------------
 
-The *Stream Oriented GE Kurento* is a multimedia platform that provides
+*Kurento* is a multimedia platform that provides
 streaming capabilities in a very flexible way. As described in the
 :ref:`Architecture Description <architecture>`,
 *Kurento* is a modular system where a set of basic functional blocks,
@@ -321,9 +314,9 @@ are connected together to build multimedia services. There are two main
 -  **Filters**: Filters are responsible of media processing, including
    transcodification, computer vision, augmented reality, etc.
 
-The *Stream Oriented GE Kurento* consists of two main software
-components: :term:`Kurento Media Server` (*KMS*) and :term:`Kurento Media Framework`
-(*KMF*)
+*Kurento* consists of two main software components: Kurento Media
+Server (:term:`KMS`) and Kurento Media Framework
+(:term:`KMF`)
 
 -  **KMS**: *Kurento Media Server* is a stand-alone server responsible
    of the media process and delivery. It is the component that hosts
@@ -332,7 +325,7 @@ components: :term:`Kurento Media Server` (*KMS*) and :term:`Kurento Media Framew
 -  **KMF**: *Kurento Media Framework* is the SDK that enables
    applications to control *KMS* features and publish multimedia
    services. *KMF* can be incorporated to web applications hosted by
-   *Kurento Application Server* (*KAS*) and provides the following APIs:
+   *Kurento Application Server* (:term:`KAS`) and provides the following APIs:
 
    -  :ref:`Content API<kmf-content-api>`: High-level middleware layer
       of services intended to simplify input/output operations.
@@ -344,7 +337,7 @@ components: :term:`Kurento Media Server` (*KMS*) and :term:`Kurento Media Framew
 
 .. _programming-with-kmf-content-api:
 
-Programming with the Stream Oriented GE Java EE Content API
+Programming with the Kurento Java EE Content API
 -----------------------------------------------------------
 
 The *Content API* SDK is intended to simplify setup and management of
@@ -850,7 +843,7 @@ until an explicit release is performed.
 
 .. _programming-with-kmf-media-api:
 
-Programming with the Stream Oriented GE Java Media API
+Programming with the Kurento Java Media API
 ------------------------------------------------------
 
 *Kurento Media API* is a low level *Java* SDK providing full control of
@@ -1088,10 +1081,10 @@ increase in complexity.
 
 .. _programming-with-kws:
 
-Programming with the Stream Oriented GE HTML5 SDK
+Programming with the Kurento HTML5 SDK
 -------------------------------------------------
 
-The *Stream Oriented GE HTML5* SDK is a *Javascript* library
+The *Kurento HTML5* SDK is a *Javascript* library
 implementing a *Content APi* client. It has been designed to be
 compatible with *node.js* infrastructure and all its dependencies have
 been included into the *Node Package Modules* (*NPM*). For that reason
@@ -1131,7 +1124,7 @@ application needs and add it to your application project.
          </body>
     </html>
 
-In order to use the *Stream Oriented GE HTML5* SDK the *Content API*
+In order to use the *Kurento HTML5* SDK the *Content API*
 must activate the control protocol at handler level. Boolean attribute
 ``useControlProtocol`` is used for this purpose.
 ::
@@ -1144,7 +1137,7 @@ must activate the control protocol at handler level. Boolean attribute
             // Handler actions
         }
 
-The *Stream Oriented GE HTML5* SDK provides the following set of
+The *Kurento HTML5* SDK provides the following set of
 *Content API* clients:
 
 -  ***KwsContentPlayer***: Allows connection with Kurento's *HTTP player
@@ -1243,7 +1236,7 @@ purpose.
 Examples
 --------
 
-This section provides two examples of the *Stream Oriented GE Kurento*
+This section provides two examples of the *Kurento*
 platform. Both examples implement a *MediaPipeline* composed by a
 *PlayerEndPoint* connected to a *Filter* and generating a media flow
 through an *HttpEndpoint*. The main difference between these two example
@@ -1327,7 +1320,7 @@ is used:
     <html>
     <head>
     <meta charset="utf-8">
-    <title>Stream Oriented GE Kurento</title>
+    <title>Kurento</title>
     <script src="./js/kws-content-api.js"></script>
     <script>
         function start() {
@@ -1352,7 +1345,7 @@ is used:
     </head>
 
     <body>
-        <h1>Stream Oriented GE Kurento Examples</h1>
+        <h1>Kurento Examples</h1>
 
         <label for="selectFilter">Handler</label>
         <select id="handler">

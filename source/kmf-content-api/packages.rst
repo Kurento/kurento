@@ -15,13 +15,13 @@ a simple modularity based on two types of objects:
 
 A :java:type:`ContentHandler` is an abstraction extending the :term:`Java EE`
 Servlet API. It enables the development of :term:`multimedia` applications
-by managing the reaction to signaling events that happen during a session
+by managing the reaction to signalling events that happen during a session
 (e.g. :java:meth:`onContentRequest`, :java:meth:`onContentTerminated`, etc.).
 
 A :java:type:`ContentSession` represents a specific client application
 accessing to the infrastructure and has an associated state. The
-Content API is a :term:`signaling plane` API, which makes possible 
-to react to signaling messages received from the client and to execute
+Content API is a :term:`signalling plane` API, which makes possible
+to react to signalling messages received from the client and to execute
 the appropriate application logic (e.g. authenticate, connect to a database,
 execute a web service, use the :doc:`Media API  </kmf-media-api/packages>`,
 etc.) at the appropriate instants. Content API developers require a

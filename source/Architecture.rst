@@ -27,29 +27,31 @@ family of APIs and toolboxes, which include:
    based on JSON-RPC 2.0 opening Kurento capabilities through a standard
    HTTP network connection.
 
--  **Open Thrift API**: a network API exposing the Stream Oriented GE
+-  **Open Thrift API**: a network API exposing the kurento capabilities
    capabilities through Thrift RPCs. This API makes simple the creation
    of applications on any of the languages and frameworks supported by
    Thrift including Python, PHP, Node JS, Ruby, etc.
 
 -  **HTML5 SDK**: a toolbox of JavaScript libraries providing access to
-   the Stream Oriented GE capabilities through any HTML5 compatible
+   the kurento capabilities through any HTML5 compatible
    browser.
 
-Thanks to these, the Stream Oriented GE provides developers with a set
-of robust end-to-end interoperable multimedia communication capabilities
-to deal with the complexity of transport, encoding/decoding, processing
-and rendering tasks in an easy and efficient way.
+Thanks to these, kurento provides developers with a set of robust end-to-end
+interoperable multimedia communication capabilities to deal with the
+complexity of transport, encoding/decoding, processing and rendering tasks
+in an easy and efficient way.
 
 Basic Concepts
 ==============
 
-Signaling and media planes
---------------------------
+.. index:: Signalling Plane, Media Plane
 
-The Stream Oriented GE, as most multimedia communication technologies
-out there, is built upon two concepts that are key to all interactive
-communication systems:
+Signalling and media planes
+---------------------------
+
+Kurento, as most multimedia communication technologies
+out there, is built using two layers (called *planes*) to abstract key functions
+in all interactive communication systems:
 
     **Signalling Plane**
         The parts of the system in charge of the management of communications,
@@ -63,20 +65,23 @@ communication systems:
         between the handling of voice and the handling of meta-information such
         as tone, billing, etc.
 
+.. index::
+    single: Media; Element
+    Pipeline: single; Media
+
 Media elements and media pipelines
 ----------------------------------
 
-The Stream Oriented GE is based on two concepts that act as building
+Kurento is based on two concepts that act as building
 blocks for application developers:
 
--  **Media Element**. A Media element is a functional unit performing a
+-  **Media Elements**. A Media element is a functional unit performing a
    specific action on a media stream. Media elements are a way of
-   modularizing the capabilities of the Stream Oriented GE, so that
    every capability is represented as a self-contained “black box” (the
    media element) to the application developer, who does not need to
    understand the low-level details of the element for using it. Media
-   elements are capable of receiving media from other elements (through
-   media sinks) and of sending media to other elements (through media
+   elements are capable of *receiving* media from other elements (through
+   media sinks) and of *sending* media to other elements (through media
    sources). Depending on their function, media elements can be split
    into different groups:
 
@@ -140,15 +145,15 @@ transcoding is necessary.
 
 Developers, specially during the initial phases of application
 development, might want to simplify development and abstract this
-heterogeneneity, the Stream Oriented GE provides an automatic converter
-of media formats called the ‘‘agnostic media adaptor’’. Whenever a media
-element’s source is connected to another media element’s sink, our
+heterogeneneity, so kurento provides an automatic converter
+of media formats called the :term:`agnostic media adaptor <agnostic, media>`.
+Whenever a media element’s source is connected to another media element’s sink, our
 framework verifies if media adaption and transcoding is necessary and,
 in case it is, it transparently incorporates the appropriate
 transformations making possible the chaining of the two elements into
 the resulting pipeline.
 
-Hence, this ‘’agnostic media adaptor’’ capability fully abstracts all
+Hence, this *agnostic media adaptor* capability fully abstracts all
 the complexities of media codecs and formats. This may significantly
 accelerate the development process, specially when developers are not
 multimedia technology experts. However, there is a price to pay.
@@ -170,14 +175,14 @@ to raw again) will lead to very poor performance of applications.
    media elements making transparent for application developers all
    complexities of media representation and encoding.*
 
-Stream-oriented GE Architecture
-===============================
+Kurento Architecture
+====================
 
 High level architecture
 -----------------------
 
-The conceptual representation of the GE architecture is shown in the
-following figure.
+The following figure shows a conceptual representation of the high
+level architecture of kurento.
 
 .. figure:: images/Stream-oriented_GE.png
    :height: 600px
@@ -186,20 +191,20 @@ following figure.
    :alt:    Stream-oriented GE Architecture
    :figwidth: 800px
 
-   **Stream-oriented GE Architecture**.
+   **Kurento Architecture**.
 
-   *The Stream Oriented GE architecture follows the traditional separation
-   between signaling and media planes.*
+   *Kurento architecture follows the traditional separation
+   between signalling and media planes.*
 
 The right side of the picture shows the Application Server, which is 
-in charge of the signaling plane and contains the business logic and
+in charge of the signalling plane and contains the business logic and
 connectors of the particular multimedia application being deployed. It
 is based on Java EE and includes well known and mature technologies such
 as `HTTP`:term: and `SIP`:term: Servlets, Web Services, database connectors, messaging
 services, etc. Thanks to this, this plane provides access to the
-multimedia signaling protocols commonly used by end-clients such as `SIP`:term:,
+multimedia signalling protocols commonly used by end-clients such as `SIP`:term:,
 RESTful and raw HTTP based formats, SOAP, RMI, CORBA or JMS. These
-signaling protocols are used by client applications to command the
+signalling protocols are used by client applications to command the
 creation of media sessions and to negotiate their desired
 characteristics on their behalf. Hence, this is the part of the
 architecture, which is in contact with application developers and, for
@@ -217,7 +222,7 @@ hand, must be optimized for efficiency.
 APIs and interfaces exposed by the architecture
 -----------------------------------------------
 
-The capabilities of the media plane (Media Server) and signaling plane
+The capabilities of the media plane (Media Server) and signalling plane
 (Application Server) are exposed through a number of APIs, which provide
 increasing abstraction levels. These APIs are nested in an onion-like
 layered architecture, where each level uses the services exposed by its
@@ -234,7 +239,7 @@ levels. This scheme is shown in the picture below:
 
    **Onion like layered structure of the APIs**.
 
-   *The Stream Oriented Generic enabler has an onion-like architecture
+   *Kurento has an onion-like architecture
    with APIs providing different abstraction levels.*
  
 Following this, the role of the different APIs can be summarized in the following way:
@@ -265,18 +270,18 @@ Following this, the role of the different APIs can be summarized in the followin
    languages supported by Thrift such as Python, C/C++, PHP, etc. It is
    important to remark that the Media API is a media-plane control API.
    In other words, its objective is to expose the capability of managing
-   media objects, but it does not provide any signaling plane
+   media objects, but it does not provide any signalling plane
    capabilities.
 -  **Content API**: Is a Java EE layer, which consumes the Media API and
    exposes its capabilities through a simple modularity based on two
    types of objects: *ContentHandlers* and *ContentSessions*.
    ContentHandlers are abstractions extending the Java EE Servlet API
    making possible the creation of multimedia applications just by
-   managing signaling events happening into a session (e.g.
+   managing signalling events happening into a session (e.g.
    *onContentRequest*, *onContentTerminated*, etc.) *ContentSessions*
    represent specific client applications accessing to the
    infrastructure and have an associated state. The Content API is a
-   signaling plane API, which makes possible to react to signaling
+   signalling plane API, which makes possible to react to signalling
    messages received from the client and to execute the appropriate
    application logic (e.g. authenticate, connect to a database, execute
    a web service, use the Media API, etc.) at the appropriate instants.
@@ -284,7 +289,7 @@ Following this, the role of the different APIs can be summarized in the followin
    Server.
 -  **Open API**: is a network API exposing the capabilities of the
    Content API through a `REST`:term:-like protocol based on the `JSON-RPC`:term:
-   standard. To some extent, the Open API is the signaling protocol
+   standard. To some extent, the Open API is the signalling protocol
    associated to the Content API. In addition, the Open API provides a
    mechanism for accessing and managing Media API capabilities directly.
 -  **HTML5 SDK**: is an SDK consuming the Open API and exposing all the
@@ -313,22 +318,22 @@ idea is represented in the following picture:
    :height: 398px
    :width:  500px
    :align:  center
-   :alt:    Creating client applications through the Stream Oriented GE APIs
+   :alt:    Creating client applications through Kurento APIs
    :figwidth: 600px
 
-   **Creating client applications through the Stream Oriented GE APIs**.
+   **Creating client applications through Kurento APIs**.
 
    *Application developers can use any of the available layered APIs for
    creating their applications. Upper layers show higher abstraction and
    require lower the associated development effort. The arrows in the
    figure refer to method calls.*
 
-Creating applications on top of the Stream Oriented GE Architecture
--------------------------------------------------------------------
+Creating applications with Kurento
+----------------------------------
 
-The Stream Oriented GE Architecture has been specifically designed
-following the architectural principles of the WWW. For this reason,
-creating a multimedia applications basing on it is a similar experience
+kurento Architecture has been specifically designed following the
+architectural principles of the WWW. For this reason, creating a
+multimedia applications basing on it is a similar experience
 to creating a web application using any of the popular web development
 frameworks.
 
@@ -344,8 +349,8 @@ comprised of three different layers:
 -  **Service layer**: This layer provides capabilities used by the
    application logic such as databases, communications, security, etc.
 
-Following this parallelism, multimedia applications created using the
-Stream Oriented GE also respond to the same architecture:
+Following this parallelism, multimedia applications created using
+Kurento also respond to the same architecture:
 
 -  **Presentation layer**: Is in charge of multimedia representation and
    multimedia capture. It is usually based on specific build-in
@@ -361,8 +366,9 @@ Stream Oriented GE also respond to the same architecture:
    traverse.
 -  **Service layer**: This layer provides the multimedia services that
    support the application logic such as media recording, media
-   ciphering, etc. The Media Server (i.e. the specific media elements)
-   is the part of the Stream Oriented GE architecture in charge of this
+   ciphering, etc. The Media Server (i.e. the specific :term:`pipeline
+   <pipeline, media>` of :term:`media elements<element, media>`)
+   is the part of the Kurento architecture in charge of this
    layer.
 
 .. figure:: images/Applications_Layered_Architecture.png
@@ -374,19 +380,19 @@ Stream Oriented GE also respond to the same architecture:
 
    **Layered architecture of web and multimedia applications**.
 
-   *Applications created using the Stream Oriented GE (right) have an
+   *Applications created using Kurento (right) have an
    equivalent architecture to standard WWW applications (left). Both types
    of applications may choose to place the application logic at the client
    or at the server code.*
 
 The interesting aspect of this discussion is that, as happens with
-WWW development, Stream Oriented GE applications always place the
+WWW development, Kurento applications always place the
 Presentation layer at the client side and the Service layer at the
 server side. However, the Application Logic layer, in both cases, can be
 located at either of the sides or even distributed between them. This
 idea is represented in the following picture:
 
-This means that Stream Oriented GE developers can choose to include the
+This means that Kurento developers can choose to include the
 code creating the specific media pipeline required by their applications
 at the client side (directly through the Thrift or Open network APIs or
 in a more abstract manner through the HTML5 SDK) or can place it at the
@@ -397,9 +403,9 @@ styles. Having said this, it is important to note that in the WWW
 developers usually tend to maintain client side code as simple as
 possible, bringing most of their application logic to the server.
 Reproducing this kind of development experience, the most common (and
-recommended) way of using the Stream Oriented GE is by locating the
+recommended) way of using Kurento is by locating the
 multimedia application logic at the server side, so that the specific
-media pipelines are created using the Java Media API upon signaling
+media pipelines are created using the Java Media API upon signalling
 events managed by the Content API. In the rest of this document, we
 assume that this is the standard way in which developers use the Stream
 Oriented APIs.
@@ -410,12 +416,12 @@ Main Interactions
 Interactions from a generic perspective
 ---------------------------------------
 
-As can be observed in Figure 4 above, a Stream Oriented GE application
+As can be observed in Figure 4 above, a Kurento application
 involves interactions among three main modules:
 
 -  **Client Application**: which involves the native multimedia
    capabilities of the client platform plus the specific client-side
-   application logic consuming the client-side Stream Oriented GE APIs
+   application logic consuming the client-side Kurento APIs
    (i.e. :term:`HTML5 SDK<KWS>`, :ref:`Open API<openapi>`, etc.)
 -  **Application Server**: which involves a Java EE application server
    and the server-side application logic consuming the server-side
@@ -449,7 +455,7 @@ applications they can be reduced to the following conceptual scheme:
 
 As it can be observed, at a first stage, a client (a browser in a
 computer, a mobile application, etc.) issues a message requesting some
-kind of capability from the Stream Oriented GE. This message is based on
+kind of capability from kurento. This message is based on
 a JSON-RPC V2.0 representation and fulfills the Open API specification.
 It can be generated directly from the client application or, in case of
 web applications, indirectly consuming the abstract HTML5 SDK. For
@@ -472,7 +478,7 @@ and where the media service can be reached.
 During the above mentioned steps no media data is really exchanged. All
 the interactions have the objective of negotiating the whats, hows,
 wheres and whens of the media exchange. For this reason, we call it the
-negotiation phase. Clearly, during this phase only signaling protocols
+negotiation phase. Clearly, during this phase only signalling protocols
 are involved.
 
 2. Media exchange phase
@@ -490,8 +496,8 @@ Following the discussion with that simple example, one may wonder why
 such a complex scheme for just playing a video, when in most usual
 scenarios clients just send the request to the appropriate URL of the
 video without requiring any negotiation. The answer is straightforward.
-The Stream Oriented GE is designed for media applications involving
-complex media processing. For this reason, we need to establish a
+Kurento is designed for media applications involving complex
+media processing. For this reason, we need to establish a
 two-phase mechanism enabling a negotiation before the media exchange.
 The price to pay is that simple applications, such as one just
 downloading a video, also need to get through these phases. However, the
@@ -512,7 +518,7 @@ respond to one of the following three main categories:
 HTTP content player sessions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This type of session emerges when clients use the Stream Oriented GE to
+This type of session emerges when clients use kurento to
 receive media through an HTTP response. The client sends a JSON request
 identifying the desired content and, as a result, it receives an URL
 where the content can be found. This URL is associated to a pipeline
@@ -528,12 +534,12 @@ session.
 .. figure:: images/Player_session.png
    :width: 720px
    :align: center
-   :alt: Main interactions in a Stream Oriented GE session devoted to playing an HTTP media stream
+   :alt: Main interactions in a kurento session devoted to playing an HTTP media stream
    :figwidth: 800px
 
    **Main Interactions**.
 
-   *Main interactions in a Stream Oriented GE session devoted to playing
+   *Main interactions in a kurento session devoted to playing
    an HTTP media stream.*
 
 Clearly, the specific media stream that the client receives depends
@@ -586,11 +592,11 @@ this type of session are shown in the figure below
 Content sessions for real time communications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Stream Oriented GE allows the establishment of real time multimedia
+Kurento allows the establishment of real time multimedia
 session between a peer client and the Media Server directly through the
 use of RTP/RTCP or through WebRTC. In addition, the Media Server can be
 used to act as media proxy for making possible the communication among
-different peer clients, which are mediated by the Stream Oriented GE
+different peer clients, which are mediated by the kurento
 infrastructure. Hence, the GE can act as a conference bridge (Multipoing
 Control Unit), as a machine-to-machine communication system, as a video
 call recording system, etc. As shown in the picture, the client exposes
