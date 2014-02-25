@@ -265,6 +265,10 @@ dl.method dd {
   padding: 2px;
 }
 
+div.legend {
+  margin-bottom: 1em;
+}
+
 /* Glossary */
 
 a em.std-term {
