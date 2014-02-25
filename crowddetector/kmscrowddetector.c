@@ -47,12 +47,17 @@ struct _KmsCrowdDetectorPrivate
   IplImage *actualImage, *previousLbp, *frame_previous_gray, *background,
       *acumulated_edges, *acumulated_lbp;
   gboolean show_debug_info;
+  int num_rois;
+  CvPoint **curves;
+  int *n_points;
+  GstStructure *rois;
 };
 
 enum
 {
   PROP_0,
   PROP_SHOW_DEBUG_INFO,
+  PROP_ROIS,
   N_PROPERTIES
 };
 
@@ -72,6 +77,71 @@ G_DEFINE_TYPE_WITH_CODE (KmsCrowdDetector, kms_crowd_detector,
         0, "debug category for crowddetector element"));
 
 static void
+kms_crowd_detector_release_data (KmsCrowdDetector * crowddetector)
+{
+  int it;
+
+  if (crowddetector->priv->curves != NULL) {
+    for (it = 0; it < crowddetector->priv->num_rois; it++) {
+      g_free (crowddetector->priv->curves[it]);
+    }
+    g_free (crowddetector->priv->curves);
+    crowddetector->priv->curves = NULL;
+  }
+  if (crowddetector->priv->rois != NULL) {
+    gst_structure_free (crowddetector->priv->rois);
+    crowddetector->priv->rois = NULL;
+  }
+  if (crowddetector->priv->n_points != NULL) {
+    g_free (crowddetector->priv->n_points);
+    crowddetector->priv->n_points = NULL;
+  }
+}
+
+static void
+kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
+{
+  int it, it2;
+
+  self->priv->num_rois = gst_structure_n_fields (self->priv->rois);
+  self->priv->curves = g_malloc (sizeof (CvPoint *) * self->priv->num_rois);
+  self->priv->n_points = g_malloc (sizeof (int) * self->priv->num_rois);
+
+  for (it = 0; it < self->priv->num_rois; it++) {
+    int len;
+    GstStructure *roi;
+    gboolean ret2;
+    const gchar *nameRoi = gst_structure_nth_field_name (self->priv->rois, it);
+
+    ret2 = gst_structure_get (self->priv->rois, nameRoi,
+        GST_TYPE_STRUCTURE, &roi, NULL);
+    if (!ret2) {
+      continue;
+    }
+    len = gst_structure_n_fields (roi);
+    self->priv->n_points[it] = len;
+    self->priv->curves[it] = g_malloc (sizeof (CvPoint) * len);
+
+    for (it2 = 0; it2 < len; it2++) {
+      const gchar *name = gst_structure_nth_field_name (roi, it2);
+      GstStructure *point;
+      gboolean ret;
+
+      ret = gst_structure_get (roi, name, GST_TYPE_STRUCTURE, &point, NULL);
+
+      if (ret) {
+        gst_structure_get (point, "x", G_TYPE_INT,
+            &self->priv->curves[it][it2].x, NULL);
+        gst_structure_get (point, "y", G_TYPE_INT,
+            &self->priv->curves[it][it2].y, NULL);
+      }
+      gst_structure_free (point);
+    }
+    gst_structure_free (roi);
+  }
+}
+
+static void
 kms_crowd_detector_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -82,6 +152,11 @@ kms_crowd_detector_set_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
       crowddetector->priv->show_debug_info = g_value_get_boolean (value);
+      break;
+    case PROP_ROIS:
+      kms_crowd_detector_release_data (crowddetector);
+      crowddetector->priv->rois = g_value_get_boxed (value);
+      kms_crowd_detector_extract_rois (crowddetector);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -100,6 +175,12 @@ kms_crowd_detector_get_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
       g_value_set_boolean (value, crowddetector->priv->show_debug_info);
+      break;
+    case PROP_ROIS:
+      if (crowddetector->priv->rois == NULL) {
+        crowddetector->priv->rois = gst_structure_new_empty ("rois");
+      }
+      g_value_set_boxed (value, crowddetector->priv->rois);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -138,6 +219,7 @@ kms_crowd_detector_finalize (GObject * object)
   GST_DEBUG_OBJECT (crowddetector, "finalize");
 
   kms_crowd_detector_release_images (crowddetector);
+  kms_crowd_detector_release_data (crowddetector);
 
   G_OBJECT_CLASS (kms_crowd_detector_parent_class)->finalize (object);
 }
@@ -409,19 +491,9 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
 
   int w, h;
 
-  CvPoint curve1[] = { {450 + 250, 200 + 250}, {550 + 300, 220 + 250},
-  {550 + 300 + 150, 420 + 250}, {450 + 250 + 100, 400 + 250}
-  };
-  CvPoint curve2[] = { {220 + 250, 80 + 150}, {450 + 350, 120 + 150},
-  {450 + 350, 275 + 150}, {320 + 250, 250 + 150}, {220 + 250, 250 + 150}
-  };
-
-  CvPoint *curveArr[2] = { curve1, curve2 };
-  int nCurvePts[2] = { 4, 5 };
-  int nCurves = 2;
-
   cvZero (actualImage_masked);
-  cvFillPoly (actualImage_masked, curveArr, nCurvePts, nCurves,
+  cvFillPoly (actualImage_masked, crowddetector->priv->curves,
+      crowddetector->priv->n_points, crowddetector->priv->num_rois,
       cvScalar (255, 255, 255, 0), CV_AA, 0);
   cvCvtColor (crowddetector->priv->actualImage, frame_actual_Gray, CV_BGR2GRAY);
   kms_crowd_detector_mask_image (frame_actual_Gray, actualImage_masked, 0);
@@ -510,7 +582,8 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   cvAddWeighted (actual_motion, IMAGE_FUSION_ADD_RATIO,
       crowddetector->priv->actualImage, 1 - IMAGE_FUSION_ADD_RATIO, 0,
       crowddetector->priv->actualImage);
-  cvPolyLine (crowddetector->priv->actualImage, curveArr, nCurvePts, nCurves, 1,
+  cvPolyLine (crowddetector->priv->actualImage, crowddetector->priv->curves,
+      crowddetector->priv->n_points, crowddetector->priv->num_rois, 1,
       cvScalar (255, 255, 255, 0), 1, 8, 0);
 
   cvReleaseImage (&frame_actual_Gray);
@@ -566,6 +639,11 @@ kms_crowd_detector_class_init (KmsCrowdDetectorClass * klass)
       g_param_spec_boolean ("show-debug-info", "show debug info",
           "show debug info", FALSE, G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class, PROP_ROIS,
+      g_param_spec_boxed ("rois", "rois",
+          "set regions of interest to analize",
+          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsCrowdDetectorPrivate));
 }
@@ -577,6 +655,10 @@ kms_crowd_detector_init (KmsCrowdDetector * crowddetector)
   crowddetector->priv->actualImage = NULL;
   crowddetector->priv->previousLbp = NULL;
   crowddetector->priv->frame_previous_gray = NULL;
+  crowddetector->priv->num_rois = 0;
+  crowddetector->priv->curves = NULL;
+  crowddetector->priv->n_points = NULL;
+  crowddetector->priv->rois = NULL;
 }
 
 gboolean
