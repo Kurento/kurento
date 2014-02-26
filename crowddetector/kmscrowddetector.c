@@ -49,7 +49,7 @@ struct _KmsCrowdDetectorPrivate
   gboolean show_debug_info;
   int num_rois;
   CvPoint **curves;
-  int *n_points;
+  int *n_points, *n_pixels_rois;
   GstStructure *rois;
 };
 
@@ -98,6 +98,30 @@ kms_crowd_detector_release_data (KmsCrowdDetector * crowddetector)
     g_free (crowddetector->priv->n_points);
     crowddetector->priv->n_points = NULL;
   }
+
+  if (crowddetector->priv->n_pixels_rois != NULL) {
+    g_free (crowddetector->priv->n_pixels_rois);
+    crowddetector->priv->n_pixels_rois = NULL;
+  }
+}
+
+static void
+kms_crowd_detector_count_num_pixels_rois (KmsCrowdDetector * self)
+{
+  int curve;
+
+  self->priv->n_pixels_rois = g_malloc (sizeof (int) * self->priv->num_rois);
+  IplImage *src = cvCreateImage (cvSize (self->priv->actualImage->width,
+          self->priv->actualImage->height),
+      IPL_DEPTH_8U, 1);
+
+  for (curve = 0; curve < self->priv->num_rois; curve++) {
+    cvFillConvexPoly (src, self->priv->curves[curve],
+        self->priv->n_points[curve], cvScalar (255, 255, 255, 0), 8, 0);
+    self->priv->n_pixels_rois[curve] = cvCountNonZero (src);
+    cvSetZero ((src));
+  }
+  cvReleaseImage (&src);
 }
 
 static void
@@ -442,6 +466,51 @@ kms_crowd_detector_process_edges_image (KmsCrowdDetector * crowddetector,
   }
 }
 
+static void
+kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
+    IplImage * low_speed_map, IplImage * high_speed_map)
+{
+  int curve, point;
+
+  for (curve = 0; curve < crowddetector->priv->num_rois; curve++) {
+    int w1, w2, h1, h2;
+    int high_speed_points = 0;
+    int low_speed_points = 0;
+    CvRect container;
+
+    w1 = crowddetector->priv->actualImage->width;
+    h1 = crowddetector->priv->actualImage->height;
+    w2 = 0;
+    h2 = 0;
+
+    for (point = 0; point < crowddetector->priv->n_points[curve]; point++) {
+      if (crowddetector->priv->curves[curve][point].x < w1)
+        w1 = crowddetector->priv->curves[curve][point].x;
+      if (crowddetector->priv->curves[curve][point].x > w2)
+        w2 = crowddetector->priv->curves[curve][point].x;
+      if (crowddetector->priv->curves[curve][point].y < h1)
+        h1 = crowddetector->priv->curves[curve][point].y;
+      if (crowddetector->priv->curves[curve][point].y > h2)
+        h2 = crowddetector->priv->curves[curve][point].y;
+    }
+
+    container.x = w1;
+    container.y = h1;
+    container.width = abs (w2 - w1);
+    container.height = abs (h2 - h1);
+    cvSetImageROI (low_speed_map, container);
+    cvSetImageROI (high_speed_map, container);
+    low_speed_points = cvCountNonZero (low_speed_map);
+    high_speed_points = cvCountNonZero (high_speed_map);
+    cvResetImageROI (low_speed_map);
+    cvResetImageROI (high_speed_map);
+    GST_DEBUG ("ROI:%d HighS:%d LowS:%d TotalRoiPoints:%d", curve,
+        high_speed_points, low_speed_points,
+        crowddetector->priv->n_pixels_rois[curve]);
+    // TODO: send events with info about rois
+  }
+}
+
 static GstFlowReturn
 kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
@@ -450,6 +519,9 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   GstMapInfo info;
 
   kms_crowd_detector_initialize_images (crowddetector, frame);
+  if (crowddetector->priv->n_pixels_rois == NULL) {
+    kms_crowd_detector_count_num_pixels_rois (crowddetector);
+  }
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
   crowddetector->priv->actualImage->imageData = (char *) info.data;
 
@@ -592,6 +664,10 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     highSpeedPointer += high_speed_map->widthStep;
     actualMotionPointer += actual_motion->widthStep;
   }
+
+  cvNot (high_speed_map, high_speed_map);
+  kms_crowd_detector_roi_analysis (crowddetector, low_speed_map,
+      high_speed_map);
 
   {
     uint8_t *orig_row_pointer =
