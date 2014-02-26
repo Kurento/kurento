@@ -39,7 +39,7 @@ public:
     <#lt></#list>
   };
 
-  ${complexType.name} (const Json::Value &value) throw (JsonRpc::CallException);
+  ${complexType.name} (const Json::Value &value);
 
   <#list complexType.properties as property>
   void set${property.name?cap_first} (${getCppObjectType(property.type.name, false)} ${property.name}) {

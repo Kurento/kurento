@@ -12,7 +12,7 @@ ${remoteClass.name}.cpp
 namespace kurento {
 
 <#if (!remoteClass.abstract) && (remoteClass.constructors[0])??>
-std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const Json::Value &params) throw (JsonRpc::CallException)
+std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const Json::Value &params)
 {
   Json::Value aux;
   <#list remoteClass.constructors[0].params as param>
@@ -136,7 +136,7 @@ ${remoteClass.name}::Factory::StaticConstructor::StaticConstructor()
 void
 ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
     const std::string &methodName, const Json::Value &params,
-    Json::Value &response) throw (JsonRpc::CallException)
+    Json::Value &response)
 {
 <#list remoteClass.methods as method><#rt>
   if (methodName == "${method.name}" && params.size() == ${method.params?size}) {

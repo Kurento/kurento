@@ -8,7 +8,7 @@ namespace kurento {
 
 <#if complexType.typeFormat == "REGISTER">
 
-${complexType.name}::${complexType.name} (const Json::Value &value) throw (JsonRpc::CallException) {
+${complexType.name}::${complexType.name} (const Json::Value &value) {
   Json::Value aux;
 
   <#list complexType.properties as property>

@@ -54,7 +54,7 @@ public:
     Factory () {};
 
     virtual std::shared_ptr<MediaObject> createObject (const Json::Value
-        &params) throw (JsonRpc::CallException);
+        &params);
 
     virtual std::string getName () {
       return "${remoteClass.name}";
@@ -86,7 +86,7 @@ public:
     Invoker() {};
     virtual void invoke (std::shared_ptr<MediaObject> obj,
         const std::string &methodName, const Json::Value &params,
-        Json::Value &response) throw (JsonRpc::CallException);
+        Json::Value &response);
   };
 
   virtual <#if remoteClass.extends??>MediaObject::</#if>Invoker &getInvoker() {

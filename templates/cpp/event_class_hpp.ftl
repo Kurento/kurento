@@ -66,7 +66,7 @@ public:
     <#lt></#list>
   };
 
-  ${event.name} (const Json::Value &value) throw (JsonRpc::CallException);
+  ${event.name} (const Json::Value &value);
 
   <#list event.properties as property>
   virtual void set${property.name?cap_first} (${getCppObjectType(property.type.name, false)} ${property.name}) {
