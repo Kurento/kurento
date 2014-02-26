@@ -1,6 +1,7 @@
 package com.kurento.kms.idl.codegen;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -169,9 +170,21 @@ public class CodeGen {
 			outputFile.getParentFile().mkdirs();
 		}
 
-		Writer writer = new FileWriter(outputFile);
 		String sourceCode = tempOutput.substring(fileName.length() + 1,
 				tempOutput.length());
+
+		if (outputFile.exists()) {
+			String oldContent = readFile(outputFile);
+
+			if (oldContent.equals(sourceCode)) {
+				if (verbose) {
+					System.out.println(fileName + " unchanged");
+				}
+				return;
+			}
+		}
+
+		Writer writer = new FileWriter(outputFile);
 		writer.write(sourceCode);
 		writer.close();
 
@@ -183,4 +196,18 @@ public class CodeGen {
 		}
 	}
 
+	public static String readFile(File file) throws IOException {
+		int len;
+		char[] chr = new char[1024];
+		final StringBuffer buffer = new StringBuffer();
+		final FileReader reader = new FileReader(file);
+		try {
+			while ((len = reader.read(chr)) > 0) {
+				buffer.append(chr, 0, len);
+			}
+		} finally {
+			reader.close();
+		}
+		return buffer.toString();
+	}
 }
