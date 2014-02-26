@@ -269,6 +269,12 @@ div.legend {
   margin-bottom: 1em;
 }
 
+/* Javadoc */
+
+dl.type th {
+  padding-right: 0.5em;
+}
+
 /* Glossary */
 
 a em.std-term {
