@@ -1,3 +1,64 @@
+//
+// JsonRPC 2.0 pack & unpack
+//
+
+function pack(message)
+{
+  var result =
+  {
+    jsonrpc: "2.0"
+  };
+
+  if(message.method)
+  {
+    result.method = message.method;
+
+    if(message.params)
+      result.params = message.params;
+  };
+
+  var id = message.id;
+  if(id != undefined)
+  {
+    result.id = id;
+
+    if(message.error)
+      result.error = message.error;
+    else if(message.value)
+      result.value = message.value;
+  };
+
+  return JSON.stringify(result);
+};
+
+function unpack(message)
+{
+  if(typeof message == 'string')
+    message = JSON.parse(message);
+
+  var version = message.jsonrpc;
+  if(version != "2.0")
+    throw new TypeError("Invalid JsonRPC version: "+version);
+
+  return message;
+};
+
+
+//
+// RPC message classes
+//
+
+function RpcNotification(method, params)
+{
+  Object.defineProperty(this, 'method', {value: method});
+  Object.defineProperty(this, 'params', {value: params});
+};
+
+
+//
+// RPC-Builder
+//
+
 function RpcBuilder()
 {
   var requestID = 0;
@@ -5,62 +66,6 @@ function RpcBuilder()
   var requests  = {};
   var responses = {};
 
-
-  function pack(message)
-  {
-    var result =
-    {
-      jsonrpc: "2.0"
-    };
-
-    if(message.method)
-    {
-      result.method = message.method;
-
-      if(message.params)
-        result.params = message.params;
-    };
-
-    var id = message.id;
-    if(id)
-    {
-      result.id = id;
-
-      if(message.error)
-        result.error = message.error;
-      else if(message.value)
-        result.value = message.value;
-    };
-
-    return JSON.stringify(result);
-  };
-
-  function unpack(message)
-  {
-    if(typeof message == 'string')
-      message = JSON.parse(message);
-
-    function throwException(text)
-    {
-      var error = new TypeError(text);
-          error.data = message;
-
-      throw error;
-    };
-
-    var version = message.jsonrpc;
-    if(version != "2.0")
-      throwException("Invalid JsonRPC version: "+version);
-
-    return message;
-  };
-
-
-  function RpcNotification(method, params)
-  {
-    Object.defineProperty(this, 'method', {value: method});
-    Object.defineProperty(this, 'params', {value: params});
-  };
 
   function RpcRequest(method, params, id)
   {
@@ -102,7 +107,9 @@ function RpcBuilder()
   RpcRequest.prototype.constructor = RpcRequest;
 
 
+  //
   // JsonRPC 2.0
+  //
 
   /**
    *
@@ -134,9 +141,7 @@ function RpcBuilder()
       requests[id] = callback;
     };
 
-    var message = pack(message);
-
-    return message;
+    return pack(message);
   };
 
   /**
@@ -151,7 +156,7 @@ function RpcBuilder()
   this.decodeJSON = function(message)
   {
     if(!message)
-      throwException("No message is defined");
+      throw new TypeError("No message is defined");
 
     message = unpack(message);
 
@@ -182,23 +187,25 @@ function RpcBuilder()
 
         // Invalid response message
         if(result && error)
-          throwException("Both result and error are defined");
-        throwException("No result or error is defined");
+          throw new TypeError("Both result and error are defined");
+        throw new TypeError("No result or error is defined");
       };
 
       // Request not found for this response
-      throwException("No callback was defined for this message");
+      throw new TypeError("No callback was defined for this message");
     };
 
     // Notification
     if(method)
       return new RpcNotification(method, params);
 
-    throwException("Invalid message type");
+    throw new TypeError("Invalid message");
   };
 
 
+  //
   // XML-RPC
+  //
 
   this.encodeXML = function(method, params, callback)
   {
@@ -210,6 +217,9 @@ function RpcBuilder()
     throw new TypeError("Not yet implemented");
   };
 };
+
+
+RpcBuilder.RpcNotification = RpcNotification;
 
 
 module.exports = RpcBuilder;

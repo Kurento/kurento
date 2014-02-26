@@ -1,6 +1,6 @@
 {
   "name": "rpc-builder",
-  "version": "0.0.4",
+  "version": "0.0.5-3",
   "description": "Transport and format agnostic RPC library for browser and Node.js",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:piranna/RPC-Builder.git"
+    "url": "piranna/RPC-Builder"
   },
   "keywords": [
     "RPC",
