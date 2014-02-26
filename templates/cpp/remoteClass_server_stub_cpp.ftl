@@ -277,20 +277,18 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
 std::string
 ${remoteClass.name}::connect(const std::string &eventType, std::shared_ptr<EventHandler> handler)
 {
-  std::cout << "${remoteClass.name}" << std::endl;
 <#list remoteClass.events as event>
   if ("${event.name}" == eventType) {
-    sigc::connection conn = signal${event.name}.connect ([=] (${event.name} event) {
-      JsonSerializer s (false);
-      Json::Reader jsonReader;
+    sigc::connection conn = signal${event.name}.connect ([&, handler] (${event.name} event) {
+      JsonSerializer s (true);
 
       s.Serialize ("data", event);
+      s.Serialize ("object", this);
       s.JsonValue["type"] = "${event.name}";
       s.JsonValue["subscription"] = handler->getId();
       handler->sendEvent(s.JsonValue);
     });
     handler->setConnection (conn);
-    std::cout << "found event!!" << std::endl;
     return handler->getId();
   }
 </#list>
@@ -311,5 +309,15 @@ Serialize(std::shared_ptr<kurento::${remoteClass.name}> &object, JsonSerializer 
 
   void Serialize(std::shared_ptr<kurento::${remoteClass.extends.name}> &object, JsonSerializer &serializer);
   Serialize(aux, serializer);
+}
+
+void
+Serialize(kurento::${remoteClass.name} &object, JsonSerializer &serializer)
+{
+  void Serialize(kurento::${remoteClass.extends.name} &object, JsonSerializer &serializer);
+  try {
+    Serialize(dynamic_cast<kurento::${remoteClass.extends.name} &> (object), serializer);
+  } catch (std::bad_cast) {
+  }
 }
 </#if>
