@@ -1,8 +1,7 @@
 package com.kurento.kms.idl.codegen.function;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import com.kurento.kms.idl.model.ComplexType;
 import com.kurento.kms.idl.model.Method;
@@ -30,7 +29,7 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 			}
 		}
 
-		Set<Type> types = new HashSet<Type>();
+		List<Type> types = new LinkedList<Type>();
 
 		if (type instanceof RemoteClass) {
 			RemoteClass remoteClass = (RemoteClass) type;
@@ -52,8 +51,8 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 		return types;
 	}
 
-	private Set<Type> getMethodTypes(Method method) {
-		Set<Type> types = new HashSet<Type>();
+	private List<Type> getMethodTypes(Method method) {
+		List<Type> types = new LinkedList<Type>();
 
 		for (Param p : method.getParams()) {
 
