@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "piranna/RPC-Builder"
+    "url": "kurento/kws-rpc-builder"
   },
   "keywords": [
     "RPC",
