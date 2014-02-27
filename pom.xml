@@ -193,6 +193,66 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-thrift-interface</artifactId>
+				<version>${kmf-thrift-interface.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-media-api</artifactId>
+				<version>${kmf-media-api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-media-connector</artifactId>
+				<version>${kmf-media-connector.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-jsonrpcconnector</artifactId>
+				<version>${kmf-jsonrpcconnector.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-content-api</artifactId>
+				<version>${kmf-content-api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kms</groupId>
+				<artifactId>kms-interface</artifactId>
+				<version>${kms-interface.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-commons</artifactId>
+				<version>${kmf-commons.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-thrift-interface</artifactId>
+				<version>${kmf-thrift-interface.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-spring</artifactId>
+				<version>${kmf-spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-content-protocol</artifactId>
+				<version>${kmf-content-protocol.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-repository-api</artifactId>
+				<version>${kmf-repository-api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kws</groupId>
+				<artifactId>kws-content-api</artifactId>
+				<version>${kws-content-api.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
 				<version>${commons-pool.version}</version>
