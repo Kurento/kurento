@@ -44,7 +44,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_crowd_detector_debug_category);
 
 struct _KmsCrowdDetectorPrivate
 {
-  IplImage *actualImage, *previousLbp, *frame_previous_gray, *background,
+  IplImage *actual_image, *previous_lbp, *frame_previous_gray, *background,
       *acumulated_edges, *acumulated_lbp;
   gboolean show_debug_info;
   int num_rois;
@@ -111,8 +111,8 @@ kms_crowd_detector_count_num_pixels_rois (KmsCrowdDetector * self)
   int curve;
 
   self->priv->n_pixels_rois = g_malloc (sizeof (int) * self->priv->num_rois);
-  IplImage *src = cvCreateImage (cvSize (self->priv->actualImage->width,
-          self->priv->actualImage->height),
+  IplImage *src = cvCreateImage (cvSize (self->priv->actual_image->width,
+          self->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
 
   for (curve = 0; curve < self->priv->num_rois; curve++) {
@@ -238,8 +238,8 @@ kms_crowd_detector_dispose (GObject * object)
 static void
 kms_crowd_detector_release_images (KmsCrowdDetector * crowddetector)
 {
-  cvReleaseImage (&crowddetector->priv->actualImage);
-  cvReleaseImage (&crowddetector->priv->previousLbp);
+  cvReleaseImage (&crowddetector->priv->actual_image);
+  cvReleaseImage (&crowddetector->priv->previous_lbp);
   cvReleaseImage (&crowddetector->priv->frame_previous_gray);
   cvReleaseImage (&crowddetector->priv->background);
   cvReleaseImage (&crowddetector->priv->acumulated_edges);
@@ -294,10 +294,10 @@ static void
 kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
     GstVideoFrame * frame)
 {
-  crowddetector->priv->actualImage =
+  crowddetector->priv->actual_image =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 3);
-  crowddetector->priv->previousLbp =
+  crowddetector->priv->previous_lbp =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
   crowddetector->priv->frame_previous_gray =
@@ -318,10 +318,10 @@ static void
 kms_crowd_detector_initialize_images (KmsCrowdDetector * crowddetector,
     GstVideoFrame * frame)
 {
-  if (crowddetector->priv->actualImage == NULL) {
+  if (crowddetector->priv->actual_image == NULL) {
     kms_crowd_detector_create_images (crowddetector, frame);
-  } else if ((crowddetector->priv->actualImage->width != frame->info.width)
-      || (crowddetector->priv->actualImage->height != frame->info.height)) {
+  } else if ((crowddetector->priv->actual_image->width != frame->info.width)
+      || (crowddetector->priv->actual_image->height != frame->info.height)) {
 
     kms_crowd_detector_release_images (crowddetector);
     kms_crowd_detector_create_images (crowddetector, frame);
@@ -329,140 +329,141 @@ kms_crowd_detector_initialize_images (KmsCrowdDetector * crowddetector,
 }
 
 static void
-kms_crowd_detector_compute_temporal_lbp (IplImage * frameGray,
-    IplImage * frameResult, IplImage * previousFrameGray, gboolean temporal)
+kms_crowd_detector_compute_temporal_lbp (IplImage * frame_gray,
+    IplImage * frame_result, IplImage * previous_frame_gray, gboolean temporal)
 {
   int w, h;
-  uint8_t *imagePointer;
-  uint8_t *dataAux;
+  uint8_t *image_pointer;
+  uint8_t *image_pointer_aux;
   int refValue = 0;
 
   if (temporal == TRUE)
-    imagePointer = (uint8_t *) previousFrameGray->imageData;
+    image_pointer = (uint8_t *) previous_frame_gray->imageData;
   else
-    imagePointer = (uint8_t *) frameGray->imageData;
+    image_pointer = (uint8_t *) frame_gray->imageData;
 
-  for (h = 1; h < frameGray->height - 1; h++) {
-    dataAux = imagePointer;
-    for (w = 1; w < frameGray->width - 1; w++) {
-      refValue = *dataAux;
-      dataAux++;
+  for (h = 1; h < frame_gray->height - 1; h++) {
+    image_pointer_aux = image_pointer;
+    for (w = 1; w < frame_gray->width - 1; w++) {
+      refValue = *image_pointer_aux;
+      image_pointer_aux++;
       unsigned int code = 0;
 
-      code |= (*(uchar *) (frameGray->imageData + (h - 1) *
-              frameGray->widthStep + (w - 1) * 1) > refValue) << 7;
-      code |= (*(uchar *) (frameGray->imageData + (h) *
-              frameGray->widthStep + (w - 1) * 1) > refValue) << 6;
-      code |= (*(uchar *) (frameGray->imageData + (h + 1) *
-              frameGray->widthStep + (w - 1) * 1) > refValue) << 5;
-      code |= (*(uchar *) (frameGray->imageData + (h) *
-              frameGray->widthStep + (w) * 1) > refValue) << 4;
-      code |= (*(uchar *) (frameGray->imageData + (h + 1) *
-              frameGray->widthStep + (w + 1) * 1) > refValue) << 3;
-      code |= (*(uchar *) (frameGray->imageData + (h) *
-              frameGray->widthStep + (w + 1) * 1) > refValue) << 2;
-      code |= (*(uchar *) (frameGray->imageData + (h - 1) *
-              frameGray->widthStep + (w + 1) * 1) > refValue) << 1;
-      code |= (*(uchar *) (frameGray->imageData + (h) *
-              frameGray->widthStep + (w + 1) * 1) > refValue) << 0;
+      code |= (*(uchar *) (frame_gray->imageData + (h - 1) *
+              frame_gray->widthStep + (w - 1) * 1) > refValue) << 7;
+      code |= (*(uchar *) (frame_gray->imageData + (h) *
+              frame_gray->widthStep + (w - 1) * 1) > refValue) << 6;
+      code |= (*(uchar *) (frame_gray->imageData + (h + 1) *
+              frame_gray->widthStep + (w - 1) * 1) > refValue) << 5;
+      code |= (*(uchar *) (frame_gray->imageData + (h) *
+              frame_gray->widthStep + (w) * 1) > refValue) << 4;
+      code |= (*(uchar *) (frame_gray->imageData + (h + 1) *
+              frame_gray->widthStep + (w + 1) * 1) > refValue) << 3;
+      code |= (*(uchar *) (frame_gray->imageData + (h) *
+              frame_gray->widthStep + (w + 1) * 1) > refValue) << 2;
+      code |= (*(uchar *) (frame_gray->imageData + (h - 1) *
+              frame_gray->widthStep + (w + 1) * 1) > refValue) << 1;
+      code |= (*(uchar *) (frame_gray->imageData + (h) *
+              frame_gray->widthStep + (w + 1) * 1) > refValue) << 0;
 
-      *(uchar *) (frameResult->imageData + h *
-          frameResult->widthStep + w * 1) = code;
+      *(uchar *) (frame_result->imageData + h *
+          frame_result->widthStep + w * 1) = code;
     }
-    imagePointer += previousFrameGray->widthStep;
+    image_pointer += previous_frame_gray->widthStep;
   }
 }
 
 static void
 kms_crowd_detector_mask_image (IplImage * src, IplImage * mask,
-    int thresholdValue)
+    int threshold_value)
 {
   int w, h;
-  uint8_t *maskPointerAux;
-  uint8_t *maskPointer = (uint8_t *) mask->imageData;
-  uint8_t *srcPointerAux;
-  uint8_t *srcPointer = (uint8_t *) src->imageData;
+  uint8_t *mask_pointer_aux;
+  uint8_t *mask_pointer = (uint8_t *) mask->imageData;
+  uint8_t *src_pointer_aux;
+  uint8_t *src_pointer = (uint8_t *) src->imageData;
 
   for (h = 0; h < mask->height; h++) {
-    maskPointerAux = maskPointer;
-    srcPointerAux = srcPointer;
+    mask_pointer_aux = mask_pointer;
+    src_pointer_aux = src_pointer;
     for (w = 0; w < mask->width; w++) {
-      if (*maskPointerAux == thresholdValue)
-        *srcPointerAux = 0;
-      maskPointerAux++;
-      srcPointerAux++;
+      if (*mask_pointer_aux == threshold_value)
+        *src_pointer_aux = 0;
+      mask_pointer_aux++;
+      src_pointer_aux++;
     }
-    maskPointer += mask->widthStep;
-    srcPointer += src->widthStep;
+    mask_pointer += mask->widthStep;
+    src_pointer += src->widthStep;
   }
 }
 
 static void
 kms_crowd_detector_substract_background (IplImage * frame,
-    IplImage * background, IplImage * actualImage)
+    IplImage * background, IplImage * actual_image)
 {
   int w, h;
-  uint8_t *framePointerAux;
-  uint8_t *framePointer = (uint8_t *) frame->imageData;
-  uint8_t *backgroundPointerAux;
-  uint8_t *backgroundPointer = (uint8_t *) background->imageData;
-  uint8_t *actualImagePointerAux;
-  uint8_t *actualImagePointer = (uint8_t *) actualImage->imageData;
+  uint8_t *frame_pointer_aux;
+  uint8_t *frame_pointer = (uint8_t *) frame->imageData;
+  uint8_t *background_pointer_aux;
+  uint8_t *background_pointer = (uint8_t *) background->imageData;
+  uint8_t *actual_image_pointer_aux;
+  uint8_t *actual_image_pointer = (uint8_t *) actual_image->imageData;
 
   for (h = 0; h < frame->height; h++) {
-    framePointerAux = framePointer;
-    backgroundPointerAux = backgroundPointer;
-    actualImagePointerAux = actualImagePointer;
+    frame_pointer_aux = frame_pointer;
+    background_pointer_aux = background_pointer;
+    actual_image_pointer_aux = actual_image_pointer;
     for (w = 0; w < frame->width; w++) {
-      if (abs (*framePointerAux - *backgroundPointerAux) < GRAY_THRESHOLD_VALUE)
-        *actualImagePointerAux = 255;
+      if (abs (*frame_pointer_aux - *background_pointer_aux) <
+          GRAY_THRESHOLD_VALUE)
+        *actual_image_pointer_aux = 255;
       else
-        *actualImagePointerAux = *framePointerAux;
-      framePointerAux++;
-      backgroundPointerAux++;
-      actualImagePointerAux++;
+        *actual_image_pointer_aux = *frame_pointer_aux;
+      frame_pointer_aux++;
+      background_pointer_aux++;
+      actual_image_pointer_aux++;
     }
-    framePointer += frame->widthStep;
-    backgroundPointer += background->widthStep;
-    actualImagePointer += actualImage->widthStep;
+    frame_pointer += frame->widthStep;
+    background_pointer += background->widthStep;
+    actual_image_pointer += actual_image->widthStep;
   }
 }
 
 static void
 kms_crowd_detector_process_edges_image (KmsCrowdDetector * crowddetector,
-    IplImage * speed_map, int windowMargin)
+    IplImage * speed_map, int window_margin)
 {
   int w, h, w2, h2;
-  uint8_t *speedMapPointerAux;
-  uint8_t *speedMapPointer = (uint8_t *) speed_map->imageData;
+  uint8_t *speed_map_pointer_aux;
+  uint8_t *speed_map_pointer = (uint8_t *) speed_map->imageData;
 
-  for (h2 = windowMargin;
-      h2 < crowddetector->priv->acumulated_edges->height - windowMargin - 1;
+  for (h2 = window_margin;
+      h2 < crowddetector->priv->acumulated_edges->height - window_margin - 1;
       h2++) {
-    speedMapPointerAux = speedMapPointer;
-    for (w2 = windowMargin;
-        w2 < crowddetector->priv->acumulated_edges->width - windowMargin - 1;
+    speed_map_pointer_aux = speed_map_pointer;
+    for (w2 = window_margin;
+        w2 < crowddetector->priv->acumulated_edges->width - window_margin - 1;
         w2++) {
-      int pixelCounter = 0;
+      int pixel_counter = 0;
 
-      for (h = -windowMargin; h < windowMargin + 1; h++) {
-        for (w = -windowMargin; w < windowMargin + 1; w++) {
+      for (h = -window_margin; h < window_margin + 1; h++) {
+        for (w = -window_margin; w < window_margin + 1; w++) {
           if (h != 0 || w != 0) {
             if (*(uchar *) (crowddetector->priv->acumulated_edges->imageData +
                     (h2 +
                         h) * crowddetector->priv->acumulated_edges->widthStep +
                     (w2 + w)) > EDGE_THRESHOLD)
-              pixelCounter++;
+              pixel_counter++;
           }
         }
       }
-      if (pixelCounter > pow (windowMargin, 2)) {
-        *speedMapPointerAux = 255;
+      if (pixel_counter > pow (window_margin, 2)) {
+        *speed_map_pointer_aux = 255;
       } else
-        *speedMapPointerAux = 0;
-      speedMapPointerAux++;
+        *speed_map_pointer_aux = 0;
+      speed_map_pointer_aux++;
     }
-    speedMapPointer += speed_map->widthStep;
+    speed_map_pointer += speed_map->widthStep;
   }
 }
 
@@ -478,8 +479,8 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
     int low_speed_points = 0;
     CvRect container;
 
-    w1 = crowddetector->priv->actualImage->width;
-    h1 = crowddetector->priv->actualImage->height;
+    w1 = crowddetector->priv->actual_image->width;
+    h1 = crowddetector->priv->actual_image->height;
     w2 = 0;
     h2 = 0;
 
@@ -523,90 +524,90 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     kms_crowd_detector_count_num_pixels_rois (crowddetector);
   }
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-  crowddetector->priv->actualImage->imageData = (char *) info.data;
+  crowddetector->priv->actual_image->imageData = (char *) info.data;
 
-  IplImage *frame_actual_Gray =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+  IplImage *frame_actual_gray =
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *actual_lbp =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *lbp_temporal_result =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *add_lbps_result =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *lbps_alpha_result_rgb =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 3);
-  IplImage *actualImage_masked =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height), IPL_DEPTH_8U, 1);
+  IplImage *actual_image_masked =
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height), IPL_DEPTH_8U, 1);
   IplImage *substract_background_to_actual =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *low_speed_map =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *high_speed_map =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
   IplImage *actual_motion =
-      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
-          crowddetector->priv->actualImage->height),
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 3);
 
-  uint8_t *lowSpeedPointer;
-  uint8_t *lowSpeedPointerAux;
-  uint8_t *highSpeedPointer;
-  uint8_t *highSpeedPointerAux;
-  uint8_t *actualMotionPointer;
-  uint8_t *actualMotionPointerAux;
+  uint8_t *low_speed_pointer;
+  uint8_t *low_speed_pointer_aux;
+  uint8_t *high_speed_pointer;
+  uint8_t *high_speed_pointer_aux;
+  uint8_t *actual_motion_pointer;
+  uint8_t *actual_motion_pointer_aux;
 
   int w, h;
 
   cvSet (actual_motion, CV_RGB (0, 0, 0), 0);
-  cvZero (actualImage_masked);
+  cvZero (actual_image_masked);
   if (crowddetector->priv->num_rois != 0) {
-    cvFillPoly (actualImage_masked, crowddetector->priv->curves,
+    cvFillPoly (actual_image_masked, crowddetector->priv->curves,
         crowddetector->priv->n_points, crowddetector->priv->num_rois,
         cvScalar (255, 255, 255, 0), CV_AA, 0);
   }
-  cvCvtColor (crowddetector->priv->actualImage, frame_actual_Gray, CV_BGR2GRAY);
-  kms_crowd_detector_mask_image (frame_actual_Gray, actualImage_masked, 0);
+  cvCvtColor (crowddetector->priv->actual_image, frame_actual_gray, CV_BGR2GRAY);
+  kms_crowd_detector_mask_image (frame_actual_gray, actual_image_masked, 0);
 
   if (crowddetector->priv->background == NULL) {
-    cvCopy (frame_actual_Gray, crowddetector->priv->background, 0);
+    cvCopy (frame_actual_gray, crowddetector->priv->background, 0);
   } else {
     cvAddWeighted (crowddetector->priv->background, BACKGROUND_ADD_RATIO,
-        frame_actual_Gray, 1 - BACKGROUND_ADD_RATIO, 0,
+        frame_actual_gray, 1 - BACKGROUND_ADD_RATIO, 0,
         crowddetector->priv->background);
   }
 
-  kms_crowd_detector_compute_temporal_lbp (frame_actual_Gray, actual_lbp,
+  kms_crowd_detector_compute_temporal_lbp (frame_actual_gray, actual_lbp,
       actual_lbp, FALSE);
-  kms_crowd_detector_compute_temporal_lbp (frame_actual_Gray,
+  kms_crowd_detector_compute_temporal_lbp (frame_actual_gray,
       lbp_temporal_result, crowddetector->priv->frame_previous_gray, TRUE);
-  cvAddWeighted (crowddetector->priv->previousLbp, LBPS_ADD_RATIO, actual_lbp,
+  cvAddWeighted (crowddetector->priv->previous_lbp, LBPS_ADD_RATIO, actual_lbp,
       (1 - LBPS_ADD_RATIO), 0, add_lbps_result);
-  cvSub (crowddetector->priv->previousLbp, actual_lbp, add_lbps_result, 0);
+  cvSub (crowddetector->priv->previous_lbp, actual_lbp, add_lbps_result, 0);
   cvThreshold (add_lbps_result, add_lbps_result, 70, 255, CV_THRESH_OTSU);
   cvNot (add_lbps_result, add_lbps_result);
   cvErode (add_lbps_result, add_lbps_result, 0, 4);
   cvDilate (add_lbps_result, add_lbps_result, 0, 11);
   cvErode (add_lbps_result, add_lbps_result, 0, 3);
   cvCvtColor (add_lbps_result, lbps_alpha_result_rgb, CV_GRAY2BGR);
-  cvCopy (actual_lbp, crowddetector->priv->previousLbp, 0);
-  cvCopy (frame_actual_Gray, crowddetector->priv->frame_previous_gray, 0);
+  cvCopy (actual_lbp, crowddetector->priv->previous_lbp, 0);
+  cvCopy (frame_actual_gray, crowddetector->priv->frame_previous_gray, 0);
 
   if (crowddetector->priv->acumulated_lbp == NULL) {
     cvCopy (add_lbps_result, crowddetector->priv->acumulated_lbp, 0);
@@ -619,7 +620,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   cvThreshold (crowddetector->priv->acumulated_lbp, high_speed_map, 150, 255,
       CV_THRESH_BINARY);
   cvSmooth (high_speed_map, high_speed_map, CV_MEDIAN, 3, 0, 0, 0);
-  kms_crowd_detector_substract_background (frame_actual_Gray,
+  kms_crowd_detector_substract_background (frame_actual_gray,
       crowddetector->priv->background, substract_background_to_actual);
   cvThreshold (substract_background_to_actual, substract_background_to_actual,
       70, 255, CV_THRESH_OTSU);
@@ -640,29 +641,29 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   kms_crowd_detector_process_edges_image (crowddetector, low_speed_map, 3);
   cvErode (low_speed_map, low_speed_map, 0, 1);
 
-  lowSpeedPointer = (uint8_t *) low_speed_map->imageData;
-  highSpeedPointer = (uint8_t *) high_speed_map->imageData;
-  actualMotionPointer = (uint8_t *) actual_motion->imageData;
+  low_speed_pointer = (uint8_t *) low_speed_map->imageData;
+  high_speed_pointer = (uint8_t *) high_speed_map->imageData;
+  actual_motion_pointer = (uint8_t *) actual_motion->imageData;
 
   for (h = 0; h < low_speed_map->height; h++) {
-    lowSpeedPointerAux = lowSpeedPointer;
-    highSpeedPointerAux = highSpeedPointer;
-    actualMotionPointerAux = actualMotionPointer;
+    low_speed_pointer_aux = low_speed_pointer;
+    high_speed_pointer_aux = high_speed_pointer;
+    actual_motion_pointer_aux = actual_motion_pointer;
     for (w = 0; w < low_speed_map->width; w++) {
-      if (*highSpeedPointerAux == 0) {
-        actualMotionPointerAux[0] = 255;
+      if (*high_speed_pointer_aux == 0) {
+        actual_motion_pointer_aux[0] = 255;
       }
-      if (*lowSpeedPointerAux == 255) {
-        *actualMotionPointerAux = 0;
-        actualMotionPointerAux[2] = 255;
+      if (*low_speed_pointer_aux == 255) {
+        *actual_motion_pointer_aux = 0;
+        actual_motion_pointer_aux[2] = 255;
       }
-      lowSpeedPointerAux++;
-      highSpeedPointerAux++;
-      actualMotionPointerAux = actualMotionPointerAux + 3;
+      low_speed_pointer_aux++;
+      high_speed_pointer_aux++;
+      actual_motion_pointer_aux = actual_motion_pointer_aux + 3;
     }
-    lowSpeedPointer += low_speed_map->widthStep;
-    highSpeedPointer += high_speed_map->widthStep;
-    actualMotionPointer += actual_motion->widthStep;
+    low_speed_pointer += low_speed_map->widthStep;
+    high_speed_pointer += high_speed_map->widthStep;
+    actual_motion_pointer += actual_motion->widthStep;
   }
 
   cvNot (high_speed_map, high_speed_map);
@@ -671,42 +672,42 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
 
   {
     uint8_t *orig_row_pointer =
-        (uint8_t *) crowddetector->priv->actualImage->imageData;
+        (uint8_t *) crowddetector->priv->actual_image->imageData;
     uint8_t *overlay_row_pointer = (uint8_t *) actual_motion->imageData;
 
-    for (h = 0; h < crowddetector->priv->actualImage->height; h++) {
+    for (h = 0; h < crowddetector->priv->actual_image->height; h++) {
       uint8_t *orig_column_pointer = orig_row_pointer;
       uint8_t *overlay_column_pointer = overlay_row_pointer;
 
-      for (w = 0; w < crowddetector->priv->actualImage->width; w++) {
+      for (w = 0; w < crowddetector->priv->actual_image->width; w++) {
         int c;
 
-        for (c = 0; c < crowddetector->priv->actualImage->nChannels; c++) {
+        for (c = 0; c < crowddetector->priv->actual_image->nChannels; c++) {
           if (overlay_column_pointer[c] != 0) {
             orig_column_pointer[c] = overlay_column_pointer[c];
           }
         }
 
-        orig_column_pointer += crowddetector->priv->actualImage->nChannels;
+        orig_column_pointer += crowddetector->priv->actual_image->nChannels;
         overlay_column_pointer += actual_motion->nChannels;
       }
-      orig_row_pointer += crowddetector->priv->actualImage->widthStep;
+      orig_row_pointer += crowddetector->priv->actual_image->widthStep;
       overlay_row_pointer += actual_motion->widthStep;
     }
   }
 
   if (crowddetector->priv->num_rois != 0) {
-    cvPolyLine (crowddetector->priv->actualImage, crowddetector->priv->curves,
+    cvPolyLine (crowddetector->priv->actual_image, crowddetector->priv->curves,
         crowddetector->priv->n_points, crowddetector->priv->num_rois, 1,
         cvScalar (255, 255, 255, 0), 1, 8, 0);
   }
 
-  cvReleaseImage (&frame_actual_Gray);
+  cvReleaseImage (&frame_actual_gray);
   cvReleaseImage (&actual_lbp);
   cvReleaseImage (&lbp_temporal_result);
   cvReleaseImage (&add_lbps_result);
   cvReleaseImage (&lbps_alpha_result_rgb);
-  cvReleaseImage (&actualImage_masked);
+  cvReleaseImage (&actual_image_masked);
   cvReleaseImage (&substract_background_to_actual);
   cvReleaseImage (&low_speed_map);
   cvReleaseImage (&high_speed_map);
@@ -767,8 +768,8 @@ static void
 kms_crowd_detector_init (KmsCrowdDetector * crowddetector)
 {
   crowddetector->priv = KMS_CROWD_DETECTOR_GET_PRIVATE (crowddetector);
-  crowddetector->priv->actualImage = NULL;
-  crowddetector->priv->previousLbp = NULL;
+  crowddetector->priv->actual_image = NULL;
+  crowddetector->priv->previous_lbp = NULL;
   crowddetector->priv->frame_previous_gray = NULL;
   crowddetector->priv->num_rois = 0;
   crowddetector->priv->curves = NULL;
