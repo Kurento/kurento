@@ -18,22 +18,15 @@ public class BootBaseTest {
 	@BeforeClass
 	public static void start() throws Exception {
 
-		System.out.println("sssssssssssssssssssssssssssssssssssssssssxx");
-		
 		Properties properties = new Properties();
 		properties.put("server.port", getPort());
-		properties.put("debug", "");
 
 		SpringApplication application = new SpringApplication(
 				BootApplication.class);
 
 		application.setDefaultProperties(properties);
 
-		System.out.println("s------------------------------------------");
-		
 		context = application.run();
-		
-		System.out.println("XxxXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXxxxx");
 	}
 
 	@AfterClass
