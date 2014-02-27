@@ -25,7 +25,7 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
 
     <#--Factory methods for other elements -->
     <#list model.remoteClasses as otherRemoteClass>
-    <#if isFirstConstructorParam(remoteClass, otherRemoteClass)>
+    <#if isFirstConstructorParam(remoteClass, otherRemoteClass) && !otherRemoteClass.abstract>
     public abstract ${otherRemoteClass.name}.Builder new${otherRemoteClass.name}(<#rt>
         <#assign num=0>
         <#lt><#list otherRemoteClass.constructors[0].params as param>
