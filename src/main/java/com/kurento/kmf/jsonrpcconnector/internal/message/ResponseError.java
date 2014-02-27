@@ -40,7 +40,7 @@ public class ResponseError {
 		StringWriter writer = new StringWriter();
 		e.printStackTrace(new PrintWriter(writer));
 
-		return new ResponseError(1, e.getClass().getSimpleName() + ":"
+		return new ResponseError(-1, e.getClass().getSimpleName() + ":"
 				+ e.getMessage(), writer.toString());
 	}
 
