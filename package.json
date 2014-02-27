@@ -1,7 +1,7 @@
 {
-  "name": "rpc-builder",
-  "version": "0.0.6",
-  "description": "Transport and format agnostic RPC library for browser and Node.js",
+  "name": "kws-rpc-builder",
+  "version": "3.0.7-1-SNAPSHOT",
+  "description": "RPC library for browser and Node.js",
   "main": "index.js",
   "scripts": {
     "test": "nodeunit test.js"
@@ -18,11 +18,11 @@
     "WebSocket",
     "Kurento"
   ],
-  "author": "Kurento <info@kurento.org> (http://www.kurento.org/)",
+  "author": "Kurento <info@kurento.org> (http://kurento.org)",
   "contributors": [
     "Jesús Leganés Combarro \"piranna\" <piranna@gmail.com>"
   ],
-  "license": "LGPL",
+  "license": "LGPL 2.1",
   "devDependencies": {
     "nodeunit": "~0.8.6"
   }
