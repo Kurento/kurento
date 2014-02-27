@@ -30,13 +30,7 @@ public class IsFirstConstructorParam implements TemplateMethodModelEx {
 			if (params.isEmpty()) {
 				return false;
 			} else {
-				boolean firstConstructor = params.get(0).getType().getType() == thisRemoteClass;
-				if (firstConstructor) {
-					System.out.println("ThisRemoteClass: "
-							+ thisRemoteClass.getName() + " OtherRemoteClass:"
-							+ otherRemoteClass.getName());
-				}
-				return firstConstructor;
+				return params.get(0).getType().getType() == thisRemoteClass;
 			}
 
 		} else {
