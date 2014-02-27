@@ -220,7 +220,7 @@ ${remoteClass.name}::connect(const std::string &eventType, std::shared_ptr<Event
 {
 <#list remoteClass.events as event>
   if ("${event.name}" == eventType) {
-    sigc::connection conn = signal${event.name}.connect ([&, handler] (${event.name} event) {
+    sigc::connection conn = signal${event.name}.connect ([&] (${event.name} event) {
       JsonSerializer s (true);
 
       s.Serialize ("data", event);
