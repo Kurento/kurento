@@ -48,10 +48,9 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		String messageJson = message.getPayload();
 
-		log.info("[Server] Message Received: " + messageJson);
+		log.info("[Server] Message received: " + messageJson);
 
 		// TODO Ensure only one register message per websocket session.
-
 		ServerSessionFactory factory = new ServerSessionFactory() {
 			public ServerSession createSession(String sessionId,
 					Object registerInfo, SessionsManager sessionsManager) {

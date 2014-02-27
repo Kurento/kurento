@@ -3,6 +3,9 @@ package com.kurento.kmf.jsonrpcconnector.internal;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonElement;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
@@ -11,6 +14,9 @@ import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfigurat
 
 public abstract class JsonRpcRequestSenderHelper implements
 		JsonRpcRequestSender {
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(JsonRpcRequestSenderHelper.class);
 
 	protected AtomicInteger id = new AtomicInteger();
 	protected String sessionId;
@@ -51,7 +57,11 @@ public abstract class JsonRpcRequestSenderHelper implements
 	public <P, R> R sendRequest(Request<P> request, Class<R> resultClass)
 			throws JsonRpcErrorException, IOException {
 
+		LOG.info("[Server] Message sent: " + request);
+
 		Response<R> response = internalSendRequest(request, resultClass);
+
+		LOG.info("[Server] Message received: " + response);
 
 		if (response == null) {
 			return null;
