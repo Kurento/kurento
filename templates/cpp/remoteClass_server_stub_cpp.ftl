@@ -16,7 +16,7 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
 {
   Json::Value aux;
   <#list remoteClass.constructors[0].params as param>
-  ${getCppObjectType(param.type.name, false)} ${param.name};
+  ${getCppObjectType(param.type, false)} ${param.name};
   </#list>
 
   <#list remoteClass.constructors[0].params as param>
@@ -146,7 +146,7 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
     JsonSerializer serializer(true);
     </#if>
     <#list method.params as param>
-    ${getCppObjectType(param.type.name, false)} ${param.name};
+    ${getCppObjectType(param.type, false)} ${param.name};
     </#list>
 
     <#list method.params as param>

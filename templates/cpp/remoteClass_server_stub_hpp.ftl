@@ -37,7 +37,7 @@ public:
 
   </#if>
   virtual ${getCppObjectType(method.return,false)} ${method.name} (<#rt>
-      <#lt><#list method.params as param>${getCppObjectType(param.type.name)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
+      <#lt><#list method.params as param>${getCppObjectType(param.type)} ${param.name}<#if param_has_next>, </#if></#list>) {throw "Not implemented";};
   </#list>
 
   virtual std::string connect(const std::string &eventType, std::shared_ptr<EventHandler> handler);
@@ -65,7 +65,7 @@ public:
     <#list remoteClass.constructors as constructor><#rt>
     std::shared_ptr<MediaObject> createObject (<#rt>
      <#lt><#list constructor.params as param><#rt>
-        <#lt>${getCppObjectType(param.type.name)} ${param.name}<#rt>
+        <#lt>${getCppObjectType(param.type, true)} ${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>);
     </#list>
