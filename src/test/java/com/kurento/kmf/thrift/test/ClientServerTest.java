@@ -35,7 +35,7 @@ public class ClientServerTest {
 			
 			ThriftInterfaceConfiguration configuration = new ThriftInterfaceConfiguration();
 			configuration.setServerAddress("127.0.0.1");
-			configuration.setServerPort(9090);
+			configuration.setServerPort(9191);
 			return configuration;
 		}
 	}
@@ -69,7 +69,7 @@ public class ClientServerTest {
 				"127.0.0.1", 7979)).start();
 		
 		new ThriftServer(serverProcessor, executorService, new InetSocketAddress(
-				"127.0.0.1", 9090)).start();
+				"127.0.0.1", 9191)).start();
 
 		Client client = clientPool.acquireSync();
 
