@@ -21,6 +21,8 @@ import javax.annotation.PostConstruct;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -47,6 +49,9 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRp
 public final class ThriftConnectorJsonRpcHandler extends
 		DefaultJsonRpcHandler<JsonObject> {
 
+	private final Logger LOG = LoggerFactory
+			.getLogger(ThriftConnectorJsonRpcHandler.class);
+
 	/**
 	 * Processor of KMS calls.
 	 */
@@ -56,12 +61,21 @@ public final class ThriftConnectorJsonRpcHandler extends
 				public void eventJsonRpc(String request) throws TException {
 					try {
 
-						Request<JsonObject> response = JsonUtils.fromJsonRequest(request,
-								JsonObject.class);
+						Request<JsonObject> requestObj = JsonUtils
+								.fromJsonRequest(request, JsonObject.class);
 
-						session.sendRequest("onEvent", response.getParams());
-					} catch (IOException e) {
-						throw new KurentoMediaFrameworkException("Exception while sending event",e);
+						try {
+
+							session.sendNotification("onEvent",
+									requestObj.getParams());
+
+						} catch (Exception e) {
+							LOG.error("Exception while sending event", e);
+						}
+
+					} catch (Exception e) {
+						throw new KurentoMediaFrameworkException(
+								"Exception processing server event", e);
 					}
 				}
 
@@ -104,7 +118,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 		transaction.startAsync();
 
-		if(request.getMethod().equals("subscribe")) {
+		if (request.getMethod().equals("subscribe")) {
 			request.getParams().addProperty("ip", config.getHandlerAddress());
 			request.getParams().addProperty("port", config.getHandlerPort());
 		}
