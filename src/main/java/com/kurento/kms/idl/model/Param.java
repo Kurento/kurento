@@ -4,8 +4,8 @@ import com.google.gson.JsonElement;
 
 public class Param extends DataItem {
 
-	public Param(String name, Doc doc, TypeRef type) {
-		super(name, doc, type);
+	public Param(String name, Doc doc, TypeRef type, boolean optional) {
+		super(name, doc, type, optional);
 	}
 
 	public Param(String name, Doc doc, TypeRef type, JsonElement defaultValue) {

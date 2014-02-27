@@ -4,8 +4,8 @@ import com.google.gson.JsonElement;
 
 public class Property extends DataItem {
 
-	public Property(String name, Doc doc, TypeRef type) {
-		super(name, doc, type);
+	public Property(String name, Doc doc, TypeRef type, boolean optional) {
+		super(name, doc, type, optional);
 	}
 
 	public Property(String name, Doc doc, TypeRef type, JsonElement defaultValue) {

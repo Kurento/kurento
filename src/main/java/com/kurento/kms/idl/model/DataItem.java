@@ -9,13 +9,13 @@ import com.google.gson.JsonElement;
 public class DataItem extends NamedElement {
 
 	private TypeRef type;
-	private boolean optional;
+	private boolean optional = false;
 	private JsonElement defaultValue;
 
-	public DataItem(String name, Doc doc, TypeRef type) {
+	public DataItem(String name, Doc doc, TypeRef type, boolean optional) {
 		super(name, doc);
 		this.type = type;
-		this.optional = false;
+		this.optional = optional;
 	}
 
 	public DataItem(String name, Doc doc, TypeRef type, JsonElement defaultValue) {
