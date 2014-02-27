@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.async.AsyncMethodCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,10 +22,6 @@ import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService;
-import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
-import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
-import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
-import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRpc_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class JsonRpcClientThrift extends JsonRpcClient {
@@ -55,7 +50,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			InetSocketAddress localHandlerAddress) {
 
 		this.clientPool = clientPool;
-		
+
 		this.localHandlerAddress = localHandlerAddress;
 
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
@@ -68,8 +63,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		final KmsMediaHandlerService.Processor<KmsMediaHandlerService.Iface> clientProcessor = new KmsMediaHandlerService.Processor<KmsMediaHandlerService.Iface>(
 				new KmsMediaHandlerService.Iface() {
-					public void eventJsonRpc(String request)
-							throws TException {
+					@Override
+					public void eventJsonRpc(String request) throws TException {
 
 						try {
 
@@ -109,14 +104,14 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 			LOG.info("[Client] Request sent: " + request);
 
-			//TODO Remove this hack -----------------------
-			if(request.getMethod().equals("subscription")) {
+			// TODO Remove this hack -----------------------
+			if (request.getMethod().equals("subscription")) {
 				JsonObject params = (JsonObject) request.getParams();
 				params.addProperty("ip", localHandlerAddress.getHostName());
 				params.addProperty("port", localHandlerAddress.getPort());
 			}
-			//---------------------------------------------
-			
+			// ---------------------------------------------
+
 			String response = client.invokeJsonRpc(request.toString());
 
 			LOG.info("[Client] Response received: " + response);

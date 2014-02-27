@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.thrift;
 
-
 import java.net.InetSocketAddress;
 
 import org.apache.thrift.TProcessor;

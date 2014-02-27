@@ -62,13 +62,13 @@ public class JsonRpcConnectorClientServerTest {
 
 	private static class EchoJsonRpcHandler extends
 			DefaultJsonRpcHandler<Params> {
-		
+
 		@Override
 		public void handleRequest(Transaction transaction,
 				Request<Params> request) throws Exception {
-			
+
 			transaction.sendResponse(request.getParams());
-		}		
+		}
 	}
 
 	@Test
@@ -86,13 +86,14 @@ public class JsonRpcConnectorClientServerTest {
 		JsonRpcClient client = new JsonRpcClientThrift(clientPool,
 				executorService, new InetSocketAddress("127.0.0.1", 7979));
 
-//		client.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
-//			@Override
-//			public void handleRequest(Transaction transaction,
-//					Request<JsonObject> request) throws Exception {				
-//				
-//			}
-//		});
+		// client.setServerRequestHandler(new
+		// DefaultJsonRpcHandler<JsonObject>() {
+		// @Override
+		// public void handleRequest(Transaction transaction,
+		// Request<JsonObject> request) throws Exception {
+		//
+		// }
+		// });
 
 		Params params = new Params();
 		params.param1 = "Value1";
@@ -108,9 +109,9 @@ public class JsonRpcConnectorClientServerTest {
 		client.close();
 
 		LOG.info("Client finished");
-		
+
 		server.destroy();
-		
+
 		LOG.info("Server finished");
 
 	}

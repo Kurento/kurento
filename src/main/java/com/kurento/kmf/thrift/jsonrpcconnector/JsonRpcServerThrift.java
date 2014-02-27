@@ -12,8 +12,6 @@ import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
-import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
-import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
@@ -43,13 +41,13 @@ public class JsonRpcServerThrift {
 			InetSocketAddress inetSocketAddress) {
 
 		this.handler = jsonRpcHandler;
-		this.paramsClass = (Class<?>) JsonRpcHandlerManager
+		this.paramsClass = JsonRpcHandlerManager
 				.getParamsType(handler);
 
-		KmsMediaServerService.Processor<KmsMediaServerService.Iface> serverProcessor 
-			= new KmsMediaServerService.Processor<KmsMediaServerService.Iface>(
+		KmsMediaServerService.Processor<KmsMediaServerService.Iface> serverProcessor = new KmsMediaServerService.Processor<KmsMediaServerService.Iface>(
 				new KmsMediaServerService.Iface() {
 
+					@Override
 					public String invokeJsonRpc(final String requestStr)
 							throws TException {
 
@@ -57,7 +55,7 @@ public class JsonRpcServerThrift {
 								requestStr, paramsClass);
 
 						Response<JsonObject> response = processRequest(request);
-						
+
 						return response.toString();
 					}
 				});
@@ -89,8 +87,8 @@ public class JsonRpcServerThrift {
 				});
 
 		try {
-			
-			JsonRpcHandler genericHandler = handler;			
+
+			JsonRpcHandler genericHandler = handler;
 			genericHandler.handleRequest(t, request);
 
 		} catch (Exception e) {
