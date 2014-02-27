@@ -169,6 +169,14 @@ public class BasicPipelineTest extends BootBaseTest {
 		
 		System.out.println("URL: "+url);		
 		
+		try {
+			Thread.sleep(100000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		System.out.println("Finish-----------------------------");
+		
 	}
 	
 }
