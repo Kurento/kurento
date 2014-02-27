@@ -63,9 +63,7 @@ public class ErrorServerTest extends JsonRpcConnectorBaseTest {
 
 		} catch (JsonRpcErrorException e) {
 
-			Assert.assertEquals("Exception message. Data: Data", e.getMessage());
-			Assert.assertEquals("Data", e.getData());
-			Assert.assertEquals(-1, e.getCode());
+			checkException(e, "Exception message", "Data");
 		}
 
 		try {
@@ -76,9 +74,7 @@ public class ErrorServerTest extends JsonRpcConnectorBaseTest {
 
 		} catch (JsonRpcErrorException e) {
 
-			Assert.assertEquals("Exception message. Data: Data", e.getMessage());
-			Assert.assertEquals("Data", e.getData());
-			Assert.assertEquals(-1, e.getCode());
+			checkException(e, "Exception message", "Data");
 		}
 
 		try {
@@ -87,14 +83,30 @@ public class ErrorServerTest extends JsonRpcConnectorBaseTest {
 
 			Assert.fail("An exception should be thrown");
 
-		} catch (RuntimeException e) {
+		} catch (JsonRpcErrorException e) {
 
-			String expected = "RuntimeException:Exception message. Data: java.lang.RuntimeException: Exception message";
-			Assert.assertEquals(expected, e.getMessage().substring(0,expected.length()));
+			checkException(e, "RuntimeException:Exception message.",
+					"java.lang.RuntimeException:");
 		}
 
 		client.close();
+	}
 
+	private void checkException(JsonRpcErrorException e, String message,
+			String data) {
+
+		boolean expectedStartMessage = e.getMessage().startsWith(message);
+		Assert.assertTrue("Exception should be an error starting with: '"
+				+ message + "' but it is '" + e.getMessage() + "'",
+				expectedStartMessage);
+
+		boolean expectedStartData = e.getData().toString().startsWith(data);
+		Assert.assertTrue(
+				"Exception should have an error with data starting with: '"
+						+ data + "' but it is '" + e.getData() + "'",
+				expectedStartData);
+
+		Assert.assertEquals(-1, e.getCode());
 	}
 
 }
