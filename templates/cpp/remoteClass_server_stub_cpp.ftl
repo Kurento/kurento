@@ -15,7 +15,11 @@ namespace kurento {
 std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const Json::Value &params)
 {
   <#list remoteClass.constructors[0].params as param>
-  ${getCppObjectType(param.type, false)} ${param.name};
+  ${getCppObjectType(param.type, false)} ${param.name}<#rt>
+    <#lt><#if param.type.name = "int"> = 0<#rt>
+    <#lt><#elseif param.type.name = "boolean"> = false<#rt>
+    <#lt><#elseif param.type.name = "float"> = 0.0<#rt>
+    <#lt></#if>;
   </#list>
 
   <#list remoteClass.constructors[0].params as param>
