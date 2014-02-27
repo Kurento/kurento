@@ -30,9 +30,11 @@ public class DataItemAdapter implements JsonSerializer<DataItem> {
 
 		if (src.isOptional()) {
 			object.addProperty("optional", src.isOptional());
+			if (src.getDefaultValue() != null) {
+				object.add("defaultValue", src.getDefaultValue());
+			}
 		}
 
 		return object;
 	}
-
 }
