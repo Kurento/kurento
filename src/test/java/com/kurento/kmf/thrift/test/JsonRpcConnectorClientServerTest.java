@@ -40,7 +40,7 @@ public class JsonRpcConnectorClientServerTest {
 
 			ThriftInterfaceConfiguration configuration = new ThriftInterfaceConfiguration();
 			configuration.setServerAddress("127.0.0.1");
-			configuration.setServerPort(9191);
+			configuration.setServerPort(9292);
 			return configuration;
 		}
 
@@ -77,7 +77,7 @@ public class JsonRpcConnectorClientServerTest {
 		LOG.info("Starting server");
 		JsonRpcServerThrift server = new JsonRpcServerThrift(
 				new EchoJsonRpcHandler(), executorService,
-				new InetSocketAddress("127.0.0.1", 9191));
+				new InetSocketAddress("127.0.0.1", 9292));
 		server.start();
 		LOG.info("Server started");
 
@@ -108,6 +108,10 @@ public class JsonRpcConnectorClientServerTest {
 		client.close();
 
 		LOG.info("Client finished");
+		
+		server.destroy();
+		
+		LOG.info("Server finished");
 
 	}
 }

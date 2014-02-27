@@ -65,11 +65,13 @@ public class ClientServerTest {
 	@Test
 	public void test() throws TException {
 
-		new ThriftServer(clientProcessor, executorService, new InetSocketAddress(
-				"127.0.0.1", 7979)).start();
+		ThriftServer clientServer = new ThriftServer(clientProcessor, executorService, new InetSocketAddress(
+				"127.0.0.1", 7979));
+		clientServer.start();
 		
-		new ThriftServer(serverProcessor, executorService, new InetSocketAddress(
-				"127.0.0.1", 9191)).start();
+		ThriftServer server = new ThriftServer(serverProcessor, executorService, new InetSocketAddress(
+				"127.0.0.1", 9191));
+		server.start();
 
 		Client client = clientPool.acquireSync();
 
@@ -79,6 +81,8 @@ public class ClientServerTest {
 
 		Assert.assertEquals(message, result);
 
+		clientServer.destroy();
+		server.destroy();		
 	}
 
 }
