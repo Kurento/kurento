@@ -17,7 +17,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
+import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
@@ -40,7 +42,7 @@ public class JsonRpcConnectorClientServerTest {
 
 			ThriftInterfaceConfiguration configuration = new ThriftInterfaceConfiguration();
 			configuration.setServerAddress("127.0.0.1");
-			configuration.setServerPort(9292);
+			configuration.setServerPort(9090);
 			return configuration;
 		}
 
@@ -77,7 +79,7 @@ public class JsonRpcConnectorClientServerTest {
 		LOG.info("Starting server");
 		JsonRpcServerThrift server = new JsonRpcServerThrift(
 				new EchoJsonRpcHandler(), executorService,
-				new InetSocketAddress("127.0.0.1", 9292));
+				new InetSocketAddress("127.0.0.1", 9090));
 		server.start();
 		LOG.info("Server started");
 
@@ -108,10 +110,6 @@ public class JsonRpcConnectorClientServerTest {
 		client.close();
 
 		LOG.info("Client finished");
-		
-		server.destroy();
-		
-		LOG.info("Server finished");
 
 	}
 }
