@@ -246,8 +246,8 @@
               "type": "WindowParam"
             },
             {
-              "name": "window",
-              "type": "PointerDetectorWindowMediaParam",
+              "name": "windows",
+              "type": "PointerDetectorWindowMediaParam[]",
               "optional": true
             },
             {
@@ -424,8 +424,8 @@
               "type": "MediaPipeline"
             },
             {
-              "name": "window",
-              "type": "PointerDetectorWindowMediaParam",
+              "name": "windows",
+              "type": "PointerDetectorWindowMediaParam[]",
               "optional": true
             },
             {
