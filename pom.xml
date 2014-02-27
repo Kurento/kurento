@@ -28,12 +28,10 @@
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
-			<version>${kmf-commons.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-spring</artifactId>
-			<version>${kmf-spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
