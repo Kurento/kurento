@@ -52,11 +52,10 @@ public class CppObjectType implements TemplateMethodModelEx {
 			if (typeRef.isList()) {
 				if (isParam)
 					return "const std::vector<"
-							+ getTypeAsString(typeRef.getName(), isParam)
-							+ ">&";
+							+ getTypeAsString(typeRef.getName(), false) + ">&";
 				else
 					return "std::vector<"
-							+ getTypeAsString(typeRef.getName(), isParam) + ">";
+							+ getTypeAsString(typeRef.getName(), false) + ">";
 			} else {
 				return getTypeAsString(typeRef.getName(), isParam);
 			}
