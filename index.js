@@ -92,8 +92,8 @@ function unpack(message)
  */
 function RpcNotification(method, params)
 {
-  Object.defineProperty(this, 'method', {value: method});
-  Object.defineProperty(this, 'params', {value: params});
+  Object.defineProperty(this, 'method', {value: method, enumerable: true});
+  Object.defineProperty(this, 'params', {value: params, enumerable: true});
 };
 
 
@@ -243,7 +243,11 @@ function RpcBuilder()
         var result = message.result;
         var error  = message.error;
 
-        if(!result ^ !error)
+        var result_undefined = result === undefined;
+        var error_undefined  = error  === undefined;
+
+        // Process request if only result or error is defined, not both or none
+        if(result_undefined ^ error_undefined)
         {
           delete requests[id];
 
@@ -252,9 +256,9 @@ function RpcBuilder()
         };
 
         // Invalid response message
-        if(result && error)
-          throw new TypeError("Both result and error are defined");
-        throw new TypeError("No result or error is defined");
+        if(result_undefined && error_undefined)
+          throw new TypeError("No result or error is defined");
+        throw new TypeError("Both result and error are defined");
       };
 
       // Request not found for this response
