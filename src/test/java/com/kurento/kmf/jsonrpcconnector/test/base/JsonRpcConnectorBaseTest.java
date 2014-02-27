@@ -39,7 +39,9 @@ public class JsonRpcConnectorBaseTest {
 		// .closeAllKurentoApplicationContexts(((WebApplicationContext) context)
 		// .getServletContext());
 
-		context.close();
+		if (context != null) {
+			context.close();
+		}
 	}
 
 	protected static String getPort() {
