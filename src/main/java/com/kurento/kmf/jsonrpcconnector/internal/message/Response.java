@@ -96,17 +96,4 @@ public class Response<R> extends Message {
 	public boolean isError() {
 		return error != null;
 	}
-
-	@Override
-	public String toString() {
-		// TODO Very bad way to include "result" in response when its value is
-		// null.
-		// There is no easy way to do this:
-		// https://groups.google.com/forum/#!topic/google-gson/FuGn-Hnt96I
-		// https://groups.google.com/forum/?fromgroups=#!topic/google-gson/Y-NoyrqEpgo
-		if (result == null && !isError()) {
-			result = (R) new Object();
-		}
-		return super.toString();
-	}
 }

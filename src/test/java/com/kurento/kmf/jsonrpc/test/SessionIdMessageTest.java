@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
@@ -74,9 +76,11 @@ public class SessionIdMessageTest {
 		response.setSessionId("xxxxxxx");
 
 		String responseJson = response.toString();
-		Assert.assertEquals(
-				"{\"id\":1,\"result\":{\"sessionId\":\"xxxxxxx\"},\"jsonrpc\":\"2.0\"}",
-				responseJson);
+		JsonParser parser = new JsonParser();
+		JsonObject expected = (JsonObject) parser
+				.parse("{\"id\":1,\"result\":{\"sessionId\":\"xxxxxxx\"},\"jsonrpc\":\"2.0\"}");
+		JsonObject result = (JsonObject) parser.parse(responseJson);
+		Assert.assertEquals(expected, result);
 
 		log.info(responseJson);
 

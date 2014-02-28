@@ -304,7 +304,7 @@ public class JsonUtils {
 			} else {
 
 				Response<?> response = (Response<?>) message;
-				if (response.getResult() != null) {
+				if (response.getError() == null) {
 
 					objectToInjectSessionId = convertToObject(jsonObject,
 							RESULT_PROPERTY);
