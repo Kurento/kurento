@@ -33,7 +33,7 @@ import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
 
 /**
  * Factory to create {@link MediaPipeline} in the media server.
- * 
+ *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
@@ -62,7 +62,7 @@ public class MediaPipelineFactory {
 		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
 				new RomClientJsonRpcClient(client)));
 	}
-	
+
 	@PreDestroy
 	private void destroy() {
 		factory.destroy();
@@ -70,7 +70,7 @@ public class MediaPipelineFactory {
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server
-	 * 
+	 *
 	 * @return The media pipeline
 	 */
 	public MediaPipeline create() {
@@ -79,7 +79,7 @@ public class MediaPipelineFactory {
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server
-	 * 
+	 *
 	 * @param garbagePeriod
 	 * @return The media pipeline
 	 */
@@ -90,14 +90,14 @@ public class MediaPipelineFactory {
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server
-	 * 
+	 *
 	 * @param cont
 	 *            An asynchronous callback handler. If the element was
 	 *            successfully created, the {@code onSuccess} method from the
 	 *            handler will receive a {@link MediaPipeline} stub from the
 	 *            media server.
 	 * @throws KurentoMediaFrameworkException
-	 * 
+	 *
 	 */
 	public void create(final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
@@ -108,7 +108,7 @@ public class MediaPipelineFactory {
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server
-	 * 
+	 *
 	 * @param garbagePeriod
 	 * @param cont
 	 *            An asynchronous callback handler. If the element was
@@ -116,7 +116,7 @@ public class MediaPipelineFactory {
 	 *            handler will receive a {@link MediaPipeline} stub from the
 	 *            media server.
 	 * @throws KurentoMediaFrameworkException
-	 * 
+	 *
 	 */
 	public void create(int garbagePeriod, final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {

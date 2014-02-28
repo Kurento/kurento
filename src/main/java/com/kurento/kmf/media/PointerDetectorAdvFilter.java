@@ -35,7 +35,7 @@ public interface PointerDetectorAdvFilter extends Filter {
 
     public interface Builder extends AbstractBuilder<PointerDetectorAdvFilter> {
 
-        public Builder withWindow(PointerDetectorWindowMediaParam window);
+        public Builder withWindows(List<PointerDetectorWindowMediaParam> windows);
         public Builder withGarbagePeriod(int garbagePeriod);
     }
 }
