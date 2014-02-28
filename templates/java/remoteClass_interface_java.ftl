@@ -2,6 +2,7 @@ ${config.subfolder}/${remoteClass.name}.java
 package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
+import com.kurento.tool.rom.server.FactoryMethod;
 import java.util.List;
 import ${config.packageName}.events.*;
 
@@ -26,7 +27,7 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
     <#--Factory methods for other elements -->
     <#list model.remoteClasses as otherRemoteClass>
     <#if isFirstConstructorParam(remoteClass, otherRemoteClass) && !otherRemoteClass.abstract>
-    public abstract ${otherRemoteClass.name}.Builder new${otherRemoteClass.name}(<#rt>
+    @FactoryMethod public abstract ${otherRemoteClass.name}.Builder new${otherRemoteClass.name}(<#rt>
         <#assign num=0>
         <#lt><#list otherRemoteClass.constructors[0].params as param>
         <#if !param.optional>

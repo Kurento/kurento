@@ -15,6 +15,8 @@ ${config.subfolder}/MediaApiConfiguration.java
  */
 package ${config.packageName};
 
+import org.springframework.stereotype.Component;
+
 /**
  * Configuration parameters for Media API. This class is intended to be created
  * as a bean inside an Spring context, and is needed by the Media API to work
@@ -24,6 +26,7 @@ package ${config.packageName};
  * @author Iván Gracia (igracia@gsyc.es)
  * @version 2.0.0
  */
+@Component
 public class MediaApiConfiguration {
 
 	/**

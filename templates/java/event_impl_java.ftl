@@ -1,6 +1,7 @@
 ${config.subfolder}/events/${event.name}Event.java
 package ${config.packageName}.events;
 
+import com.kurento.tool.rom.server.Param;
 import ${config.packageName}.*;
 
 public class ${event.name}Event <#if event.extends??>extends ${event.extends.name}Event<#else>implements Event</#if> {
@@ -11,8 +12,8 @@ public class ${event.name}Event <#if event.extends??>extends ${event.extends.nam
 
     public ${event.name}Event(<#rt>
      <#assign first=true>
-     <#lt><#list event.parentProperties as property><#if first><#assign first=false><#else>, </#if>${getJavaObjectType(property.type,false)} ${property.name}</#list><#rt>
-     <#lt><#list event.properties as property><#if first><#assign first=false><#else>, </#if>${getJavaObjectType(property.type,false)} ${property.name}</#list>){
+     <#lt><#list event.parentProperties as property><#if first><#assign first=false><#else>, </#if>@Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}</#list><#rt>
+     <#lt><#list event.properties as property><#if first><#assign first=false><#else>, </#if>@Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}</#list>){
         super(<#list event.parentProperties as property>${property.name}<#if property_has_next>, </#if></#list>);
      <#list event.properties as property>
         this.${property.name} = ${property.name};

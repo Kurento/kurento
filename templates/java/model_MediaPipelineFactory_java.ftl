@@ -18,24 +18,16 @@ package ${config.packageName};
 import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
-import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
-import com.google.gson.JsonObject;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.jsonrpcconnector.JsonUtils;
-import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientThrift;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.media.Continuation;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.thrift.MediaServerCallbackHandler;
+import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
+import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
+import com.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
-import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
-import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.client.RemoteObjectTypedFactory;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
@@ -47,70 +39,34 @@ import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
  */
+@Component
 public class MediaPipelineFactory {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(MediaPipelineFactory.class.getName());
-
-	/**
-	 * Processor of KMS calls.
-	 */
-	private final Processor<Iface> processor = new Processor<Iface>(
-			new Iface() {
-				@Override
-				public String eventJsonRpc(String request) throws TException {
-
-					Request<JsonObject> response = JsonUtils.fromJsonRequest(
-							request, JsonObject.class);
-
-					fireEvent("onEvent", response.getParams());
-
-					return null;
-				}
-			});
+	@Autowired
+	private MediaApiConfiguration config;
 
 	@Autowired
 	private MediaServerClientPoolService clientPool;
 
-	/**
-	 * Autowired configuration.
-	 */
 	@Autowired
-	private MediaApiConfiguration config;
-
-	/**
-	 * Autowired context.
-	 */
-	@Autowired
-	private ApplicationContext ctx;
-
-	/**
-	 * Callback handler to be invoked when receiving error and event
-	 * notifications from the KMS
-	 */
-	@Autowired
-	private MediaServerCallbackHandler handler;
+	private ThriftInterfaceExecutorService executorService;
 
 	private RemoteObjectTypedFactory factory;
 
 	@PostConstruct
 	private void init() {
-		// TODO stop this handlerServer if the application stops
-		ctx.getBean(
-				"mediaHandlerServer",
-				this.processor,
-				new InetSocketAddress(config.getHandlerAddress(), config
-						.getHandlerPort()));
 
-		factory = new RemoteObjectTypedFactory(
-				new RemoteObjectFactory(new RomClientJsonRpcClient(
-						new JsonRpcClientThrift(clientPool))));
+		JsonRpcClient client = new JsonRpcClientThrift(clientPool,
+				executorService, new InetSocketAddress(
+						config.getHandlerAddress(), config.getHandlerPort()));
 
+		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
+				new RomClientJsonRpcClient(client)));
 	}
 
-	protected void fireEvent(String string, JsonObject params) {
-		// TODO Auto-generated method stub
-
+	@PreDestroy
+	private void destroy() {
+		factory.destroy();
 	}
 
 	/**
@@ -119,8 +75,7 @@ public class MediaPipelineFactory {
 	 * @return The media pipeline
 	 */
 	public MediaPipeline create() {
-		return factory.getFactory(MediaPipeline.Factory.class)
-				.create().build();
+		return factory.getFactory(MediaPipeline.Factory.class).create().build();
 	}
 
 	/**
@@ -130,8 +85,8 @@ public class MediaPipelineFactory {
 	 * @return The media pipeline
 	 */
 	public MediaPipeline create(int garbagePeriod) {
-		return factory.getFactory(MediaPipeline.Factory.class)
-				.create().withGarbagePeriod(garbagePeriod).build();
+		return factory.getFactory(MediaPipeline.Factory.class).create()
+				.withGarbagePeriod(garbagePeriod).build();
 	}
 
 	/**
@@ -148,8 +103,8 @@ public class MediaPipelineFactory {
 	public void create(final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
 
-		factory.getFactory(MediaPipeline.Factory.class)
-				.create().buildAsync(cont);
+		factory.getFactory(MediaPipeline.Factory.class).create()
+				.buildAsync(cont);
 	}
 
 	/**
@@ -166,10 +121,8 @@ public class MediaPipelineFactory {
 	 */
 	public void create(int garbagePeriod, final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
-		factory.getFactory(MediaPipeline.Factory.class)
-				.create().withGarbagePeriod(garbagePeriod).buildAsync(cont);
+		factory.getFactory(MediaPipeline.Factory.class).create()
+				.withGarbagePeriod(garbagePeriod).buildAsync(cont);
 	}
 
 }
-
-
