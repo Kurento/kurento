@@ -20,6 +20,7 @@ import static com.kurento.kmf.media.SyncMediaServerTest.URL_SMALL;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -182,10 +183,10 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 				1);
 		final BlockingQueue<Collection<MediaSource>> srcEvent = new ArrayBlockingQueue<Collection<MediaSource>>(
 				1);
-		rtp.getMediaSrcs(VIDEO, new Continuation<Collection<MediaSource>>() {
+		rtp.getMediaSrcs(VIDEO, new Continuation<List<MediaSource>>() {
 
 			@Override
-			public void onSuccess(Collection<MediaSource> result) {
+			public void onSuccess(List<MediaSource> result) {
 				srcEvent.add(result);
 			}
 
@@ -197,25 +198,24 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
 		Assert.assertNotNull(srcEvent.poll(500, MILLISECONDS));
 
-		rtp.getMediaSinks(MediaType.VIDEO,
-				new Continuation<Collection<MediaSink>>() {
+		rtp.getMediaSinks(MediaType.VIDEO, new Continuation<List<MediaSink>>() {
 
-					@Override
-					public void onSuccess(Collection<MediaSink> result) {
-						sinkEvent.add(result);
-					}
+			@Override
+			public void onSuccess(List<MediaSink> result) {
+				sinkEvent.add(result);
+			}
 
-					@Override
-					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
-					}
-				});
+			@Override
+			public void onError(Throwable cause) {
+				throw new KurentoMediaFrameworkException(cause);
+			}
+		});
 		Assert.assertNotNull(sinkEvent.poll(500, MILLISECONDS));
 
-		rtp.getMediaSrcs(AUDIO, new Continuation<Collection<MediaSource>>() {
+		rtp.getMediaSrcs(AUDIO, new Continuation<List<MediaSource>>() {
 
 			@Override
-			public void onSuccess(Collection<MediaSource> result) {
+			public void onSuccess(List<MediaSource> result) {
 				srcEvent.add(result);
 			}
 
@@ -226,10 +226,10 @@ public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 		});
 		Assert.assertNotNull(srcEvent.poll(500, MILLISECONDS));
 
-		rtp.getMediaSinks(AUDIO, new Continuation<Collection<MediaSink>>() {
+		rtp.getMediaSinks(AUDIO, new Continuation<List<MediaSink>>() {
 
 			@Override
-			public void onSuccess(Collection<MediaSink> result) {
+			public void onSuccess(List<MediaSink> result) {
 				sinkEvent.add(result);
 			}
 

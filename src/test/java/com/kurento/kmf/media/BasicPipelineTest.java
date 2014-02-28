@@ -14,35 +14,34 @@
  */
 package com.kurento.kmf.media;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-
-/**
- * {@link WebRtcEndpoint} test suite.
- * 
- * 
- * 
- * @author Ivan Gracia (igracia@gsyc.es)
- * @version 1.0.0
- * 
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/kmf-api-test-context.xml")
-public class WebRtcEndpointTest extends AbstractSdpBaseTest<WebRtcEndpoint> {
+public class BasicPipelineTest {
 
-	@Before
-	public void setup() throws KurentoMediaFrameworkException {
-		sdp = pipeline.newWebRtcEndpoint().build();
-	}
+	@Autowired
+	private MediaPipelineFactory pipelineFactory;
 
-	@After
-	public void teardown() {
-		sdp.release();
+	@Test
+	public void basicPipelineTest() {
+
+		MediaPipeline pipeline = pipelineFactory.create();
+		
+		PlayerEndpoint player = pipeline.newPlayerEndpoint("https://ci.kurento.com/video/small.webm").build();
+		
+		HttpGetEndpoint httpGetEndpoint = pipeline.newHttpGetEndpoint().build();
+		
+		player.connect(httpGetEndpoint);
+		
+		String url = httpGetEndpoint.getUrl(); 
+		
+		System.out.println("URL: "+url);
+
 	}
 
 }

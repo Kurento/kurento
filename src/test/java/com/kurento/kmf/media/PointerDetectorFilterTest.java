@@ -21,7 +21,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.After;
 import org.junit.Before;
@@ -36,8 +36,6 @@ import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.events.WindowOutEvent;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
 
 /**
  * {@link PointerDetectorFilter} test suite.
@@ -109,10 +107,13 @@ public class PointerDetectorFilterTest {
 	 */
 	@Test
 	public void testWindowEvents() throws InterruptedException {
-		PointerDetectorWindowMediaParam window0 = new PointerDetectorWindowMediaParamBuilder(
-				"window0", 50, 50, 200, 50).build();
-		PointerDetectorWindowMediaParam window1 = new PointerDetectorWindowMediaParamBuilder(
-				"window1", 50, 50, 200, 150).build();
+
+		PointerDetectorWindowMediaParam window0 = new PointerDetectorWindowMediaParam(
+				"window0", 50, 50, 200, 50);
+
+		PointerDetectorWindowMediaParam window1 = new PointerDetectorWindowMediaParam(
+				"window1", 50, 50, 200, 150);
+
 		filter.addWindow(window0);
 		filter.addWindow(window1);
 
@@ -153,8 +154,8 @@ public class PointerDetectorFilterTest {
 	@Test
 	public void testWindowOverlay() throws InterruptedException {
 
-		PointerDetectorWindowMediaParam window0 = new PointerDetectorWindowMediaParamBuilder(
-				"window0", 50, 50, 200, 50).build();
+		PointerDetectorWindowMediaParam window0 = new PointerDetectorWindowMediaParam(
+				"window0", 50, 50, 200, 50);
 		filter.addWindow(window0);
 
 		final BlockingQueue<WindowInEvent> eventsIn = new ArrayBlockingQueue<WindowInEvent>(

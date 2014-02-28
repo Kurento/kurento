@@ -67,19 +67,20 @@ public class HttpPostEndpointAsyncTest extends AbstractAsyncBaseTest {
 	@Before
 	public void setup() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);
-		pipeline.newHttpPostEndpoint().buildAsync(new Continuation<HttpPostEndpoint>() {
+		pipeline.newHttpPostEndpoint().buildAsync(
+				new Continuation<HttpPostEndpoint>() {
 
-			@Override
-			public void onSuccess(HttpPostEndpoint result) {
-				httpEp = result;
-				sem.release();
-			}
+					@Override
+					public void onSuccess(HttpPostEndpoint result) {
+						httpEp = result;
+						sem.release();
+					}
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
-			}
-		});
+					@Override
+					public void onError(Throwable cause) {
+						throw new KurentoMediaFrameworkException(cause);
+					}
+				});
 		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
 	}
 

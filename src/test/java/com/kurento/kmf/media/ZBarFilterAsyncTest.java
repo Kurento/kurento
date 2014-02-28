@@ -92,7 +92,7 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 
 		final BlockingQueue<CodeFoundEvent> events = new ArrayBlockingQueue<CodeFoundEvent>(
 				1);
-		zbar.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+		zbar.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
 
 			@Override
 			public void onEvent(CodeFoundEvent event) {
