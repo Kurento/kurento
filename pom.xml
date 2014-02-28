@@ -229,11 +229,6 @@
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
-				<artifactId>kmf-thrift-interface</artifactId>
-				<version>${kmf-thrift-interface.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-spring</artifactId>
 				<version>${kmf-spring.version}</version>
 			</dependency>
