@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media;
 
+import org.springframework.stereotype.Component;
+
 /**
  * Configuration parameters for Media API. This class is intended to be created
  * as a bean inside an Spring context, and is needed by the Media API to work
@@ -23,6 +25,7 @@ package com.kurento.kmf.media;
  * @author Iván Gracia (igracia@gsyc.es)
  * @version 2.0.0
  */
+@Component
 public class MediaApiConfiguration {
 
 	/**

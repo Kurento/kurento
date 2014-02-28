@@ -1,35 +1,23 @@
-/*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl-2.1.html
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- */
 package com.kurento.kmf.media.events;
 
-import com.kurento.kmf.media.PlateDetectorFilter;
+import com.kurento.tool.rom.server.Param;
+import com.kurento.kmf.media.*;
 
-/**
- * Event raised by a {@link PlateDetectorFilter} when a plate is found in the
- * data streamed.
- * 
- * @author Ivan Gracia (igracia@gsyc.es)
- * @since 2.0.1
- */
-public interface PlateDetectedEvent extends MediaEvent {
+public class PlateDetectedEvent extends MediaEvent {
 
-	/**
-	 * Gets the plate detected.
-	 * 
-	 * @return the plate
-	 */
-	String getPlate();
+    private String plate;
+
+    public PlateDetectedEvent(@Param("source") MediaObject source, @Param("type") String type, @Param("plate") String plate){
+        super(source, type);
+        this.plate = plate;
+    }
+
+    public String getPlate(){
+    	return plate;
+    }
+
+    public void setPlate(String plate){
+    	this.plate = plate;
+    }
 
 }

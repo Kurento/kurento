@@ -1,42 +1,33 @@
-/*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl-2.1.html
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- */
 package com.kurento.kmf.media.events;
 
-import com.kurento.kmf.media.MediaObject;
+import com.kurento.tool.rom.server.Param;
+import com.kurento.kmf.media.*;
 
-/**
- * Base interface for all events raised by elements in the media server.
- * 
- * @author Luis López (llopez@gsyc.es)
- * @author Ivan Gracia (igracia@gsyc.es)
- * @since 2.0.0
- */
-public interface MediaEvent {
+public class MediaEvent implements Event {
 
-	/**
-	 * Object that raised the event
-	 * 
-	 * @return The object
-	 */
-	MediaObject getSource();
+    private MediaObject source;
+    private String type;
 
-	/**
-	 * Type of event
-	 * 
-	 * @return The type
-	 */
-	String getType();
+    public MediaEvent(@Param("source") MediaObject source, @Param("type") String type){
+        super();
+        this.source = source;
+        this.type = type;
+    }
+
+    public MediaObject getSource(){
+    	return source;
+    }
+
+    public void setSource(MediaObject source){
+    	this.source = source;
+    }
+
+    public String getType(){
+    	return type;
+    }
+
+    public void setType(String type){
+    	this.type = type;
+    }
 
 }
