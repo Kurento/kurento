@@ -6,12 +6,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
@@ -22,6 +24,9 @@ import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService;
+import com.kurento.kms.thrift.api.KmsMediaServerService;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRpc_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class JsonRpcClientThrift extends JsonRpcClient {
@@ -31,7 +36,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 	private MediaServerClientPoolService clientPool;
 
-	private ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
+	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
 		public void sendResponse(Message message) throws IOException {
 			LOG.warn("The thrift client is trying to send "
@@ -58,6 +63,13 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			public <P, R> Response<R> internalSendRequest(Request<P> request,
 					Class<R> resultClass) throws IOException {
 				return internalSendRequestThrift(request, resultClass);
+			}
+
+			@Override
+			protected void internalSendRequest(Request<Object> request,
+					Class<JsonElement> resultClass,
+					Continuation<Response<JsonElement>> continuation) {
+				internalSendRequestThrift(request, resultClass, continuation);
 			}
 		};
 
@@ -105,7 +117,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			LOG.info("[Client] Request sent: " + request);
 
 			// TODO Remove this hack -----------------------
-			if (request.getMethod().equals("subscription")) {
+			if (request.getMethod().equals("subscribe")) {
 				JsonObject params = (JsonObject) request.getParams();
 				params.addProperty("ip", localHandlerAddress.getHostName());
 				params.addProperty("port", localHandlerAddress.getPort());
@@ -121,7 +133,62 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		} catch (TException e) {
 			throw new RuntimeException(
 					"Exception while invoking request to server", e);
+		} finally {
+			clientPool.release(client);
 		}
+	}
+
+	protected void internalSendRequestThrift(Request<Object> request,
+			final Class<JsonElement> resultClass,
+			final Continuation<Response<JsonElement>> continuation) {
+
+		final AsyncClient client = clientPool.acquireAsync();
+
+		LOG.info("[Client] Request sent: " + request);
+
+		// TODO Remove this hack -----------------------
+		if (request.getMethod().equals("subscribe")) {
+			JsonObject params = (JsonObject) request.getParams();
+			params.addProperty("ip", localHandlerAddress.getHostName());
+			params.addProperty("port", localHandlerAddress.getPort());
+		}
+		// ---------------------------------------------
+
+		try {
+			client.invokeJsonRpc(
+					request.toString(),
+					new AsyncMethodCallback<KmsMediaServerService.AsyncClient.invokeJsonRpc_call>() {
+
+						@Override
+						public void onError(Exception exception) {
+							// TODO Auto-generated method stub
+							continuation.onError(exception);
+							clientPool.release(client);
+						}
+
+						@Override
+						public void onComplete(invokeJsonRpc_call thriftResponse) {
+
+							try {
+								String response = thriftResponse.getResult();
+								LOG.info("[Client] Response received: "
+										+ response);
+
+								continuation.onSuccess(JsonUtils
+										.fromJsonResponse(response, resultClass));
+
+							} catch (TException e) {
+								continuation.onError(e);
+							}
+
+							clientPool.release(client);
+						}
+
+					});
+		} catch (TException e) {
+			continuation.onError(e);
+		}
+
 	}
 
 	@Override
