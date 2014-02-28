@@ -20,8 +20,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(RemoteObjectInvocationHandler.class);
 
-	private RemoteObject remoteObject;
-	private RemoteObjectFactory factory;
+	private final RemoteObject remoteObject;
+	private final RemoteObjectFactory factory;
 
 	public RemoteObjectInvocationHandler(RemoteObject remoteObject,
 			RemoteObjectFactory factory) {
@@ -30,29 +30,30 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	}
 
 	@Override
-	public Object internalInvoke(final Object proxy, Method method, Object[] args)
-			throws Throwable {
+	public Object internalInvoke(final Object proxy, Method method,
+			Object[] args) throws Throwable {
 
 		Continuation<?> cont = null;
-		if(args != null && args[args.length-1] instanceof Continuation) {
-			cont = (Continuation<?>) args[args.length-1];
-			args = Arrays.copyOf(args, args.length-1);
-		} 
-		
+		if (args != null && args[args.length - 1] instanceof Continuation) {
+			cont = (Continuation<?>) args[args.length - 1];
+			args = Arrays.copyOf(args, args.length - 1);
+		}
+
 		String methodName = method.getName();
 
 		if (method.getAnnotation(FactoryMethod.class) != null) {
 
 			Props props = ParamAnnotationUtils.extractProps(
 					method.getParameterAnnotations(), args);
-			
+
 			return createBuilderObject(proxy, method, methodName, props);
 
 		} else if (methodName.equals("release")) {
 
-			//TODO Remove this comment when release is implemented in MediaServer. 
-			//TODO Implement release async
-			//remoteObject.release();
+			// TODO Remove this comment when release is implemented in
+			// MediaServer.
+			// TODO Implement release async
+			remoteObject.release();
 			return null;
 
 		} else if (methodName.startsWith("add")
@@ -61,10 +62,10 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			return subscribeEventListener(proxy, args, methodName, cont);
 
 		} else {
-			
+
 			Props props = ParamAnnotationUtils.extractProps(
 					method.getParameterAnnotations(), args);
-			
+
 			return remoteObject.invoke(method.getName(), props,
 					method.getGenericReturnType(), cont);
 		}
@@ -90,7 +91,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	private Object createBuilderObject(final Object proxy, Method method,
 			String methodName, Props props) throws ClassNotFoundException {
 
-		if(props == null) {
+		if (props == null) {
 			props = new Props();
 		}
 
@@ -102,7 +103,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		return Proxy.newProxyInstance(this.getClass().getClassLoader(),
 				new Class[] { method.getReturnType() },
-				new BuilderInvocationHandler(builderClass.getEnclosingClass(), props, factory));
+				new BuilderInvocationHandler(builderClass.getEnclosingClass(),
+						props, factory));
 
 	}
 
@@ -110,8 +112,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	protected void propagateEventTo(Object object, String eventType,
 			Props data, MediaEventListener<?> listener) {
 
-		//TODO Optimize this to create only one event for all listeners
-		
+		// TODO Optimize this to create only one event for all listeners
+
 		try {
 
 			Class<?> eventClass = Class.forName("com.kurento.kmf.media.events."
@@ -140,6 +142,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 	@Override
 	public String toString() {
-		return "[RemoteObject: type="+this.remoteObject.getType()+" remoteRef="+remoteObject.getObjectRef()+"";
+		return "[RemoteObject: type=" + this.remoteObject.getType()
+				+ " remoteRef=" + remoteObject.getObjectRef() + "";
 	}
 }
