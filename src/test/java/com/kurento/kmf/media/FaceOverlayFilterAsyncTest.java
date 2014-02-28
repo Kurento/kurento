@@ -23,6 +23,7 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -36,6 +37,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * @since 2.0.1
  * 
  */
+@Ignore
 public class FaceOverlayFilterAsyncTest extends AbstractAsyncBaseTest {
 
 	private PlayerEndpoint player;

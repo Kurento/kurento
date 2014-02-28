@@ -22,6 +22,7 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -51,6 +52,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * @version 1.0.0
  * 
  */
+@Ignore
 public class RtpEndpointAsyncTest extends AbstractSdpAsyncBaseTest<RtpEndpoint> {
 
 	@Before

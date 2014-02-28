@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -53,6 +54,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * @version 1.0.0
  * 
  */
+@Ignore
 public class PlayerEndpointAsyncTest extends AbstractAsyncBaseTest {
 
 	private PlayerEndpoint player;

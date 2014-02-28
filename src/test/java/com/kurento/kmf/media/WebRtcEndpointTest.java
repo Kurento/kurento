@@ -16,9 +16,6 @@ package com.kurento.kmf.media;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
@@ -31,8 +28,6 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
  * @version 1.0.0
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
 public class WebRtcEndpointTest extends AbstractSdpBaseTest<WebRtcEndpoint> {
 
 	@Before

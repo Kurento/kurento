@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
+@Ignore
 public class AsyncMediaServerTest extends AbstractAsyncBaseTest {
 
 	@Ignore

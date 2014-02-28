@@ -45,6 +45,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
  * @version 1.0.0
  * 
  */
+@Ignore
 public class RecorderEndpointAsyncTest extends AbstractAsyncBaseTest {
 
 	private RecorderEndpoint recorder;

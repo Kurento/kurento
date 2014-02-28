@@ -61,6 +61,7 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  * @version 1.0.0
  * 
  */
+@Ignore
 public class HttpGetEndpointAsyncTest extends AbstractAsyncBaseTest {
 
 	private HttpGetEndpoint httpEp;
