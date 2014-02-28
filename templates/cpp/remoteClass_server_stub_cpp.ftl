@@ -41,12 +41,13 @@ std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const J
     </#if>
     <#else>
     <#if (param.optional)>
-    // Warning, optional constructor parameter '${param.name}' but not default value provided
-    </#if>
+    // Warning, optional constructor parameter '${param.name}' but no default value provided
+    <#else>
     /* param '${param.name}' not present, raise exception */
     JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
                               "'${param.name}' parameter is requiered");
     throw e;
+    </#if>
     </#if>
   } else {
     JsonSerializer s(false);
@@ -111,7 +112,7 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
       </#if>
       <#else>
       <#if (param.optional)>
-      // Warning, optional constructor parameter '${param.name}' but not default value provided
+      // Warning, optional constructor parameter '${param.name}' but no default value provided
       </#if>
       /* param '${param.name}' not present, raise exception */
       JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
@@ -124,7 +125,10 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
 
       </#if>
       aux = params["${param.name}"];
-      <#if param.type.name = "String">
+      <#if param.type.isList()>
+        <#assign json_method = "List">
+        <#assign type_description = "list">
+      <#elseif param.type.name = "String">
         <#assign json_method = "String">
         <#assign type_description = "string">
       <#elseif param.type.name = "int">
@@ -137,8 +141,13 @@ ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
         <#assign json_method = "Double">
         <#assign type_description = "double">
       <#elseif model.complexTypes?seq_contains(param.type.type) >
-        <#assign json_method = "String">
-        <#assign type_description = "string">
+        <#if param.type.type.typeFormat == "ENUM">
+          <#assign json_method = "String">
+          <#assign type_description = "string">
+        <#else>
+          <#assign json_method = "Object">
+          <#assign type_description = "object">
+        </#if>
       <#elseif model.remoteClasses?seq_contains(param.type.type) >
         <#assign json_method = "String">
         <#assign type_description = "string">
@@ -220,7 +229,7 @@ ${remoteClass.name}::connect(const std::string &eventType, std::shared_ptr<Event
 {
 <#list remoteClass.events as event>
   if ("${event.name}" == eventType) {
-    sigc::connection conn = signal${event.name}.connect ([&] (${event.name} event) {
+    sigc::connection conn = signal${event.name}.connect ([&, handler] (${event.name} event) {
       JsonSerializer s (true);
 
       s.Serialize ("data", event);
