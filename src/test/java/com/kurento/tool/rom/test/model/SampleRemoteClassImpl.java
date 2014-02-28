@@ -6,11 +6,12 @@ import java.util.List;
 import com.kurento.tool.rom.server.Param;
 
 public class SampleRemoteClassImpl implements SampleRemoteClass {
-	
+
+	@Override
 	public void methodReturnVoid() {
-		System.out.println("Hola caracola");
 	}
-	
+
+	@Override
 	public String methodReturnsString() {
 		return "XXXX";
 	}
@@ -52,22 +53,22 @@ public class SampleRemoteClassImpl implements SampleRemoteClass {
 
 	@Override
 	public String methodParamString(@Param("param") String param) {
-		return param;		
+		return param;
 	}
 
 	@Override
 	public boolean methodParamBoolean(@Param("param") boolean param) {
-		return param;		
+		return param;
 	}
 
 	@Override
 	public float methodParamFloat(@Param("param") float param) {
-		return param;		
+		return param;
 	}
 
 	@Override
 	public int methodParamInt(@Param("param") int param) {
-		return param;		
+		return param;
 	}
 
 }
