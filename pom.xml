@@ -23,7 +23,6 @@
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-thrift-interface</artifactId>
-			<version>${kmf-thrift-interface.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -52,23 +51,13 @@
 			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-thrift-interface</artifactId>
-			<version>${kmf-thrift-interface.version}</version>
-		</dependency>
-
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>16.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector</artifactId>
-			<version>${kmf-jsonrpcconnector.version}</version>
 		</dependency>
 
 	</dependencies>
