@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.web.HttpRequestHandler;
 
 import com.google.gson.JsonElement;
+import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
@@ -40,6 +41,14 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 					// cliente
 					// cuando haga pooling
 					return new Response<R>();
+				}
+
+				@Override
+				protected void internalSendRequest(Request<Object> request,
+						Class<JsonElement> class1,
+						Continuation<Response<JsonElement>> continuation) {
+					throw new UnsupportedOperationException(
+							"Async client is unavailable");
 				}
 			});
 		}

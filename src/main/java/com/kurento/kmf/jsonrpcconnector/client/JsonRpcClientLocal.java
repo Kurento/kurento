@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
@@ -79,6 +80,14 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 				} else {
 					return new Response<R>(request.getId());
 				}
+			}
+
+			@Override
+			protected void internalSendRequest(Request<Object> request,
+					Class<JsonElement> class1,
+					Continuation<Response<JsonElement>> continuation) {
+				throw new UnsupportedOperationException(
+						"Async client int local is unavailable");
 			}
 		};
 	}

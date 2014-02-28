@@ -43,6 +43,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.$Gson$Types;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
@@ -109,10 +110,18 @@ public class JsonUtils {
 					resultClass);
 
 		} else {
-			return getGson().fromJson(
-					json,
-					$Gson$Types.newParameterizedTypeWithOwner(null,
-							Response.class, resultClass));
+			try {
+
+				return getGson().fromJson(
+						json,
+						$Gson$Types.newParameterizedTypeWithOwner(null,
+								Response.class, resultClass));
+
+			} catch (JsonSyntaxException e) {
+				throw new RuntimeException("Exception converting Json '" + json
+						+ "' to a JSON-RPC response with params as class "
+						+ resultClass.getName());
+			}
 		}
 	}
 
@@ -152,15 +161,24 @@ public class JsonUtils {
 	private static <T> Response<T> fromJsonResponseInject(
 			JsonObject jsonObject, Class<T> resultClass) {
 
-		String sessionId = extractSessionId(jsonObject, RESULT_PROPERTY);
+		try {
 
-		Response<T> response = getGson().fromJson(
-				jsonObject,
-				$Gson$Types.newParameterizedTypeWithOwner(null, Response.class,
-						resultClass));
+			String sessionId = extractSessionId(jsonObject, RESULT_PROPERTY);
 
-		response.setSessionId(sessionId);
-		return response;
+			Response<T> response = getGson().fromJson(
+					jsonObject,
+					$Gson$Types.newParameterizedTypeWithOwner(null,
+							Response.class, resultClass));
+
+			response.setSessionId(sessionId);
+			return response;
+
+		} catch (JsonSyntaxException e) {
+			throw new RuntimeException("Exception converting Json '"
+					+ jsonObject
+					+ "' to a JSON-RPC response with params as class "
+					+ resultClass.getName(), e);
+		}
 	}
 
 	private static <T> Request<T> fromJsonRequestInject(JsonObject jsonObject,
@@ -464,10 +482,10 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 			JsonDeserializationContext context) {
 
 		if (value instanceof JsonObject) {
-			return deserialize((JsonObject) value, null, context);
+			return deserialize(value, null, context);
 
 		} else if (value instanceof JsonPrimitive) {
-			return toPrimitiveObject((JsonPrimitive) value);
+			return toPrimitiveObject(value);
 
 		} else if (value instanceof JsonArray) {
 

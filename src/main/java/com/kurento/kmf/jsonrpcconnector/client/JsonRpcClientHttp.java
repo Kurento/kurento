@@ -41,6 +41,14 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 					Class<R> resultClass) throws IOException {
 				return internalSendRequestHttp(request, resultClass);
 			}
+
+			@Override
+			protected void internalSendRequest(Request<Object> request,
+					Class<JsonElement> class1,
+					Continuation<Response<JsonElement>> continuation) {
+				throw new UnsupportedOperationException(
+						"Async client int local is unavailable");
+			}
 		};
 	}
 
@@ -61,6 +69,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
 	private void startPooling() {
 		this.longPoolingThread = new Thread() {
+			@Override
 			public void run() {
 				longPooling();
 			}

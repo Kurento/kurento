@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
@@ -36,11 +38,13 @@ public abstract class JsonRpcRequestSenderHelper implements
 		this.sessionId = sessionId;
 	}
 
+	@Override
 	public <R> R sendRequest(String method, Class<R> resultClass)
 			throws IOException {
 		return sendRequest(method, null, resultClass);
 	}
 
+	@Override
 	public <R> R sendRequest(String method, Object params, Class<R> resultClass)
 			throws IOException {
 
@@ -78,13 +82,58 @@ public abstract class JsonRpcRequestSenderHelper implements
 		}
 	}
 
+	@Override
 	public JsonElement sendRequest(String method) throws IOException {
 		return sendRequest(method, JsonElement.class);
 	}
 
+	@Override
 	public JsonElement sendRequest(String method, Object params)
 			throws IOException {
 		return sendRequest(method, params, JsonElement.class);
+	}
+
+	public void sendRequest(String method, JsonObject params,
+			final Continuation<JsonElement> continuation) {
+
+		Request<Object> request = new Request<Object>(id.incrementAndGet(),
+				method, params);
+
+		if (JsonRpcConfiguration.INJECT_SESSION_ID) {
+			request.setSessionId(sessionId);
+		}
+
+		LOG.info("[Server] Message sent: " + request);
+
+		internalSendRequest(request, JsonElement.class,
+				new Continuation<Response<JsonElement>>() {
+
+					@Override
+					public void onSuccess(Response<JsonElement> response) {
+						LOG.info("[Server] Message received: " + response);
+
+						if (response == null) {
+							continuation.onSuccess(null);
+						}
+
+						if (response.getSessionId() != null) {
+							sessionId = response.getSessionId();
+						}
+
+						if (response.getError() != null) {
+							continuation.onError(new JsonRpcErrorException(
+									response.getError()));
+						} else {
+							continuation.onSuccess(response.getResult());
+						}
+					}
+
+					@Override
+					public void onError(Throwable cause) {
+						continuation.onError(cause);
+					}
+				});
+
 	}
 
 	@Override
@@ -107,5 +156,9 @@ public abstract class JsonRpcRequestSenderHelper implements
 
 	protected abstract <P, R> Response<R> internalSendRequest(
 			Request<P> request, Class<R> resultClass) throws IOException;
+
+	protected abstract void internalSendRequest(Request<Object> request,
+			Class<JsonElement> class1,
+			Continuation<Response<JsonElement>> continuation);
 
 }

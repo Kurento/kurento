@@ -53,6 +53,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 				return sendRequestForHelper(request, resultClass);
 			}
+
+			@Override
+			protected void internalSendRequest(Request<Object> request,
+					Class<JsonElement> class1,
+					Continuation<Response<JsonElement>> continuation) {
+				throw new UnsupportedOperationException(
+						"Async client with WebSockets is unavailable");
+			}
 		};
 	}
 

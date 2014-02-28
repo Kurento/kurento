@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
@@ -46,6 +47,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		this.handlerManager.setJsonRpcHandler(handler);
 	}
 
+	@Override
 	public abstract void close() throws IOException;
 
 	@Override
@@ -58,6 +60,12 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public <R> R sendRequest(String method, Object params, Class<R> resultClass)
 			throws IOException {
 		return rsHelper.sendRequest(method, params, resultClass);
+	}
+
+	public void sendRequest(String method, JsonObject params,
+			Continuation<JsonElement> continuation) {
+
+		rsHelper.sendRequest(method, params, continuation);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonElement;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.message.MessageUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
@@ -33,6 +34,14 @@ public class WebSocketServerSession extends ServerSession {
 			public <P, R> Response<R> internalSendRequest(Request<P> request,
 					Class<R> resultClass) throws IOException {
 				return sendRequestWebSocket(request, resultClass);
+			}
+
+			@Override
+			protected void internalSendRequest(Request<Object> request,
+					Class<JsonElement> class1,
+					Continuation<Response<JsonElement>> continuation) {
+				throw new UnsupportedOperationException(
+						"Async client is unavailable");
 			}
 		});
 	}
@@ -67,10 +76,12 @@ public class WebSocketServerSession extends ServerSession {
 		return MessageUtils.convertResponse(responseJsonObject, resultClass);
 	}
 
+	@Override
 	public void handleResponse(Response<JsonElement> response) {
 		pendingRequests.handleResponse(response);
 	}
 
+	@Override
 	public void close() throws IOException {
 		try {
 			wsSession.close();
