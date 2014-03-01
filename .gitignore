@@ -4,3 +4,4 @@
 .classpath
 .settings
 /target
+/bin
