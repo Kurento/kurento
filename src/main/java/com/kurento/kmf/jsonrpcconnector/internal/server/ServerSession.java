@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
@@ -65,6 +67,18 @@ public abstract class ServerSession extends AbstractSession {
 	public JsonElement sendRequest(String method, Object params)
 			throws IOException {
 		return rsHelper.sendRequest(method, params);
+	}
+
+	@Override
+	public void sendRequest(String method, JsonObject params,
+			Continuation<JsonElement> continuation) {
+		rsHelper.sendRequest(method, params, continuation);
+	}
+
+	@Override
+	public void sendNotification(String method, Object params,
+			Continuation<JsonElement> continuation) throws IOException {
+		rsHelper.sendNotification(method, params, continuation);
 	}
 
 	@Override

@@ -154,6 +154,13 @@ public abstract class JsonRpcRequestSenderHelper implements
 		sendRequest(request, Void.class);
 	}
 
+	@Override
+	public void sendNotification(String method, Object params,
+			final Continuation<JsonElement> continuation) throws IOException {
+
+		throw new UnsupportedOperationException();
+	}
+
 	protected abstract <P, R> Response<R> internalSendRequest(
 			Request<P> request, Class<R> resultClass) throws IOException;
 

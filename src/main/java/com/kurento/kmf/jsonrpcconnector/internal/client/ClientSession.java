@@ -3,6 +3,8 @@ package com.kurento.kmf.jsonrpcconnector.internal.client;
 import java.io.IOException;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.server.AbstractSession;
 
@@ -56,7 +58,21 @@ public class ClientSession extends AbstractSession {
 	}
 
 	@Override
+	public void sendRequest(String method, JsonObject params,
+			Continuation<JsonElement> continuation) {
+		client.sendRequest(method, params, continuation);
+	}
+
+	@Override
+	public void sendNotification(String method, Object params,
+			Continuation<JsonElement> continuation) throws IOException {
+		client.sendNotification(method, params, continuation);
+	}
+
+	@Override
 	public void setReconnectionTimeout(long millis) {
+		new RuntimeException("In client session has no sense configure"
+				+ "reconnection timeout (at least for now)");
 	}
 
 }

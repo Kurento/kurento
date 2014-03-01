@@ -62,12 +62,6 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		return rsHelper.sendRequest(method, params, resultClass);
 	}
 
-	public void sendRequest(String method, JsonObject params,
-			Continuation<JsonElement> continuation) {
-
-		rsHelper.sendRequest(method, params, continuation);
-	}
-
 	@Override
 	public JsonElement sendRequest(String method) throws IOException {
 		return rsHelper.sendRequest(method);
@@ -80,8 +74,20 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	}
 
 	@Override
+	public void sendRequest(String method, JsonObject params,
+			Continuation<JsonElement> continuation) {
+		rsHelper.sendRequest(method, params, continuation);
+	}
+
+	@Override
 	public void sendNotification(String method) throws IOException {
 		rsHelper.sendNotification(method);
+	}
+
+	@Override
+	public void sendNotification(String method, Object params,
+			Continuation<JsonElement> continuation) throws IOException {
+		rsHelper.sendNotification(method, params, continuation);
 	}
 
 	@Override
