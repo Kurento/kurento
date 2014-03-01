@@ -41,8 +41,7 @@ public class JsonRpcServerThrift {
 			InetSocketAddress inetSocketAddress) {
 
 		this.handler = jsonRpcHandler;
-		this.paramsClass = JsonRpcHandlerManager
-				.getParamsType(handler);
+		this.paramsClass = JsonRpcHandlerManager.getParamsType(handler);
 
 		KmsMediaServerService.Processor<KmsMediaServerService.Iface> serverProcessor = new KmsMediaServerService.Processor<KmsMediaServerService.Iface>(
 				new KmsMediaServerService.Iface() {
