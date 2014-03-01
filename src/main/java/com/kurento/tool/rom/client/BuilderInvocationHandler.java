@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
+import com.kurento.kmf.media.Continuation;
 
 public class BuilderInvocationHandler extends DefaultInvocationHandler {
 
@@ -27,9 +28,30 @@ public class BuilderInvocationHandler extends DefaultInvocationHandler {
 
 			RemoteObject remoteObject = factory.create(clazz.getSimpleName(),
 					props);
+
 			return Proxy.newProxyInstance(clazz.getClassLoader(),
 					new Class[] { clazz }, new RemoteObjectInvocationHandler(
 							remoteObject, factory));
+
+		} else if (name.equals("buildAsync")) {
+
+			@SuppressWarnings("rawtypes")
+			final Continuation cont = (Continuation) args[args.length - 1];
+
+			factory.create(clazz.getSimpleName(), props,
+					new DefaultContinuation<RemoteObject>(cont) {
+						@SuppressWarnings("unchecked")
+						@Override
+						public void onSuccess(RemoteObject remoteObject) {
+							Object obj = Proxy.newProxyInstance(clazz
+									.getClassLoader(), new Class[] { clazz },
+									new RemoteObjectInvocationHandler(
+											remoteObject, factory));
+							cont.onSuccess(obj);
+						}
+					});
+
+			return null;
 
 		} else {
 

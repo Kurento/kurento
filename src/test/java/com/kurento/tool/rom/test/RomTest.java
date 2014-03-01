@@ -10,8 +10,8 @@ import com.kurento.tool.rom.client.RemoteObject;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.server.Param;
 import com.kurento.tool.rom.server.RomException;
-import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
+import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 
 public class RomTest {
 
@@ -80,8 +80,8 @@ public class RomTest {
 		RemoteObject obj = factory.create("RomTest$RemoteClassConstTest",
 				new Props("param", paramValue));
 
-		String result = (String) obj.invoke("getAtt",
-				new Props("param", paramValue), String.class);
+		String result = (String) obj.invoke("getAtt", new Props("param",
+				paramValue), String.class);
 
 		Assert.assertEquals(paramValue, result);
 

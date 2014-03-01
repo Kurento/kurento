@@ -1,21 +1,25 @@
 package com.kurento.kmf.media;
 
-import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.server.FactoryMethod;
-import java.util.List;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.events.ErrorEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 
-public interface MediaObject  {
+public interface MediaObject {
 
-    MediaPipeline getMediaPipeline();
-    void getMediaPipeline(Continuation<MediaPipeline> cont);
+	MediaPipeline getMediaPipeline();
 
-    MediaObject getParent();
-    void getParent(Continuation<MediaObject> cont);
+	void getMediaPipeline(Continuation<MediaPipeline> cont);
 
-    ListenerRegistration addErrorListener(MediaEventListener<ErrorEvent> listener);
-    void addErrorListener(MediaEventListener<ErrorEvent> listener, Continuation<ListenerRegistration> cont);
+	MediaObject getParent();
+
+	void getParent(Continuation<MediaObject> cont);
+
+	ListenerRegistration addErrorListener(
+			MediaEventListener<ErrorEvent> listener);
+
+	void addErrorListener(MediaEventListener<ErrorEvent> listener,
+			Continuation<ListenerRegistration> cont);
 
 	void release();
+
 	void release(Continuation<Void> continuation);
 }

@@ -20,12 +20,12 @@ public class FactoryInvocationHandler extends DefaultInvocationHandler {
 	@Override
 	public Object internalInvoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
-		
+
 		Props props = ParamAnnotationUtils.extractProps(
 				method.getParameterAnnotations(), args);
 
-		return Proxy.newProxyInstance(proxy.getClass()
-				.getClassLoader(), new Class[] { method.getReturnType() },
+		return Proxy.newProxyInstance(proxy.getClass().getClassLoader(),
+				new Class[] { method.getReturnType() },
 				new BuilderInvocationHandler(clazz, props, factory));
 	}
 }

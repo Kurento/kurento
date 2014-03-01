@@ -27,9 +27,10 @@ import com.kurento.tool.rom.server.RomServer;
 
 public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
-	private static Logger LOG = LoggerFactory.getLogger(RomServerJsonRpcHandler.class);
-	
-	private RomServer server;	
+	private static Logger LOG = LoggerFactory
+			.getLogger(RomServerJsonRpcHandler.class);
+
+	private RomServer server;
 
 	public RomServerJsonRpcHandler(String packageName, String classSuffix) {
 		server = new RomServer(packageName, classSuffix);
@@ -66,8 +67,9 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			} else if (method.equals(CREATE_METHOD)) {
 
-				String type = getAsString(params, CREATE_TYPE, "RemoteClass of the object to be created");
-				
+				String type = getAsString(params, CREATE_TYPE,
+						"RemoteClass of the object to be created");
+
 				handleCreateCommand(transaction, type,
 						params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
 			}
@@ -86,10 +88,10 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private String getAsString(JsonObject jsonObject, String propName,
 			String propertyDescription) {
 
-		if(jsonObject == null) {
+		if (jsonObject == null) {
 			throw new RomException("There are no params in the request");
 		}
-		
+
 		JsonElement element = jsonObject.get(propName);
 		if (element == null) {
 			throw new RomException("It is necessary a property '" + propName
@@ -104,7 +106,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		Object result = server.create(type,
 				JsonUtils.fromJson(constructorParams, Props.class));
-		
+
 		transaction.sendResponse(result);
 	}
 
@@ -118,7 +120,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		Object result = server.invoke(objectRef, operationName,
 				JsonUtils.fromJson(operationParams, Props.class), Object.class);
-		
+
 		transaction.sendResponse(result);
 	}
 

@@ -1,22 +1,18 @@
 package com.kurento.kmf.media;
 
-import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.server.FactoryMethod;
-import java.util.List;
-import com.kurento.kmf.media.events.*;
 
 public interface UriEndpoint extends Endpoint {
 
-    String getUri();
-    void getUri(Continuation<String> cont);
+	String getUri();
 
-    void pause();
-    void pause(Continuation<Void> cont);
+	void getUri(Continuation<String> cont);
 
-    void stop();
-    void stop(Continuation<Void> cont);
+	void pause();
 
+	void pause(Continuation<Void> cont);
 
-	
-	
+	void stop();
+
+	void stop(Continuation<Void> cont);
+
 }

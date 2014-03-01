@@ -3,52 +3,72 @@ package com.kurento.tool.rom.test.model.client;
 import java.util.List;
 
 import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.test.model.client.events.*;
+import com.kurento.tool.rom.test.model.client.events.MediaEventListener;
+import com.kurento.tool.rom.test.model.client.events.SampleEvent;
 
-public interface SampleClass  {
+public interface SampleClass {
 
-    String getAtt1();
-    void getAtt1(Continuation<String> cont);
+	String getAtt1();
 
-    boolean getAtt2();
-    void getAtt2(Continuation<Boolean> cont);
+	void getAtt1(Continuation<String> cont);
 
-    float getAtt3();
-    void getAtt3(Continuation<Float> cont);
+	boolean getAtt2();
 
-    int getAtt4();
-    void getAtt4(Continuation<Integer> cont);
+	void getAtt2(Continuation<Boolean> cont);
 
-    void startTestEvents(@Param("numEvents") int numEvents);
-    void startTestEvents(@Param("numEvents") int numEvents, Continuation<Void> cont);
+	float getAtt3();
 
-    SampleEnum echoEnum(@Param("param") SampleEnum param);
-    void echoEnum(@Param("param") SampleEnum param, Continuation<SampleEnum> cont);
+	void getAtt3(Continuation<Float> cont);
 
-    ComplexParam echoRegister(@Param("param") ComplexParam param);
-    void echoRegister(@Param("param") ComplexParam param, Continuation<ComplexParam> cont);
+	int getAtt4();
 
-    List<SampleEnum> echoListEnum(@Param("param") List<SampleEnum> param);
-    void echoListEnum(@Param("param") List<SampleEnum> param, Continuation<List<SampleEnum>> cont);
+	void getAtt4(Continuation<Integer> cont);
 
-    List<ComplexParam> echoListRegister(@Param("param") List<ComplexParam> param);
-    void echoListRegister(@Param("param") List<ComplexParam> param, Continuation<List<ComplexParam>> cont);
+	void startTestEvents(@Param("numEvents") int numEvents);
 
-    ListenerRegistration addSampleListener(MediaEventListener<SampleEvent> listener);
-    void addSampleListener(MediaEventListener<SampleEvent> listener, Continuation<ListenerRegistration> cont);
+	void startTestEvents(@Param("numEvents") int numEvents,
+			Continuation<Void> cont);
+
+	SampleEnum echoEnum(@Param("param") SampleEnum param);
+
+	void echoEnum(@Param("param") SampleEnum param,
+			Continuation<SampleEnum> cont);
+
+	ComplexParam echoRegister(@Param("param") ComplexParam param);
+
+	void echoRegister(@Param("param") ComplexParam param,
+			Continuation<ComplexParam> cont);
+
+	List<SampleEnum> echoListEnum(@Param("param") List<SampleEnum> param);
+
+	void echoListEnum(@Param("param") List<SampleEnum> param,
+			Continuation<List<SampleEnum>> cont);
+
+	List<ComplexParam> echoListRegister(@Param("param") List<ComplexParam> param);
+
+	void echoListRegister(@Param("param") List<ComplexParam> param,
+			Continuation<List<ComplexParam>> cont);
+
+	ListenerRegistration addSampleListener(
+			MediaEventListener<SampleEvent> listener);
+
+	void addSampleListener(MediaEventListener<SampleEvent> listener,
+			Continuation<ListenerRegistration> cont);
 
 	void release();
+
 	void release(Continuation<Void> continuation);
 
+	public interface Factory {
 
-    public interface Factory {
+		public Builder create(@Param("att1") String att1,
+				@Param("att2") boolean att2);
+	}
 
-        public Builder create(@Param("att1") String att1, @Param("att2") boolean att2);
-    }
+	public interface Builder extends AbstractBuilder<SampleClass> {
 
-    public interface Builder extends AbstractBuilder<SampleClass> {
+		public Builder withAtt3(float att3);
 
-        public Builder withAtt3(float att3);
-        public Builder withAtt4(int att4);
-    }
+		public Builder withAtt4(int att4);
+	}
 }

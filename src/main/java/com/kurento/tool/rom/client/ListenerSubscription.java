@@ -15,7 +15,7 @@ public class ListenerSubscription implements ListenerRegistration {
 		this.type = type;
 		this.listener = listener;
 	}
-	
+
 	public String getSubscription() {
 		return subscription;
 	}

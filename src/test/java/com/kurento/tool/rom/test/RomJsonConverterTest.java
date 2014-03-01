@@ -1,19 +1,19 @@
 package com.kurento.tool.rom.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.reflect.TypeToken;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.tool.rom.test.model.client.ComplexParam;
-
-import static org.junit.Assert.*;
 
 public class RomJsonConverterTest {
 

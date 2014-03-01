@@ -53,9 +53,9 @@ public class RomServer {
 	@SuppressWarnings("unchecked")
 	public <E> E invoke(String objectRef, String methodName, Props params,
 			Class<E> clazz) throws RomException {
-		return (E) invoke(objectRef, methodName, params, (Type)clazz);
+		return (E) invoke(objectRef, methodName, params, (Type) clazz);
 	}
-	
+
 	public Object invoke(String objectRef, String methodName, Props params,
 			Type type) throws RomException {
 
@@ -147,11 +147,11 @@ public class RomServer {
 
 			ParameterizedType pType = (ParameterizedType) type;
 			if (((Class<?>) pType.getRawType()).isAssignableFrom(List.class)) {
-				return unflattenList(paramName,(List<?>) value,
+				return unflattenList(paramName, (List<?>) value,
 						pType.getActualTypeArguments()[0]);
 			}
 		}
-		
+
 		// TODO Improve exception reporting
 		throw new RuntimeException("Type '" + type + "' is not supported");
 	}
@@ -184,16 +184,17 @@ public class RomServer {
 		} catch (Exception e) {
 			throw new RuntimeException(
 					"Exception while creating an object for the class '"
-							+ clazz.getSimpleName() + "'",e);
+							+ clazz.getSimpleName() + "'", e);
 		}
 	}
-	
+
 	private Object unflattenList(String paramName, List<?> value, Type type) {
-		
+
 		List<Object> list = new ArrayList<Object>();
 		int counter = 0;
-		for(Object object : value) {
-			list.add(unflattenValue(paramName+"["+counter+"]", type, object));
+		for (Object object : value) {
+			list.add(unflattenValue(paramName + "[" + counter + "]", type,
+					object));
 			counter++;
 		}
 		return list;

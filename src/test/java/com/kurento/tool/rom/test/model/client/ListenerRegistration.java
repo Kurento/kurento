@@ -14,6 +14,9 @@
  */
 package com.kurento.tool.rom.test.model.client;
 
+import com.kurento.kmf.media.MediaElement;
+import com.kurento.kmf.media.events.MediaEvent;
+
 /**
  * Interface to be implemented by objects that represent the registration of a
  * listener in the system. Implementers of this interface may be used by the

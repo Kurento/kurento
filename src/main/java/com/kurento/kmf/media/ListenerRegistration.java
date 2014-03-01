@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media;
 
+import com.kurento.kmf.media.events.MediaEvent;
+
 /**
  * Interface to be implemented by objects that represent the registration of a
  * listener in the system. Implementers of this interface may be used by the

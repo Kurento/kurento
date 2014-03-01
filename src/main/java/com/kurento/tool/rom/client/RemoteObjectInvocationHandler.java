@@ -2,7 +2,9 @@ package com.kurento.tool.rom.client;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
@@ -50,11 +52,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		} else if (methodName.equals("release")) {
 
-			// TODO Remove this comment when release is implemented in
-			// MediaServer.
-			// TODO Implement release async
-			remoteObject.release();
-			return null;
+			return release(cont);
 
 		} else if (methodName.startsWith("add")
 				&& methodName.endsWith("Listener")) {
@@ -63,29 +61,60 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		} else {
 
-			Props props = ParamAnnotationUtils.extractProps(
-					method.getParameterAnnotations(), args);
-
-			return remoteObject.invoke(method.getName(), props,
-					method.getGenericReturnType(), cont);
+			return invoke(method, args, cont);
 		}
 	}
 
+	private Object invoke(Method method, Object[] args, Continuation<?> cont) {
+		Props props = ParamAnnotationUtils.extractProps(
+				method.getParameterAnnotations(), args);
+
+		if (cont != null) {
+
+			Type[] paramTypes = method.getGenericParameterTypes();
+			ParameterizedType contType = (ParameterizedType) paramTypes[paramTypes.length - 1];
+			Type returnType = contType.getActualTypeArguments()[0];
+
+			remoteObject.invoke(method.getName(), props, returnType, cont);
+			return null;
+		} else {
+			return remoteObject.invoke(method.getName(), props,
+					method.getGenericReturnType());
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Object release(Continuation<?> cont) {
+		if (cont != null) {
+			remoteObject.release((Continuation<Void>) cont);
+		} else {
+			remoteObject.release();
+		}
+		return null;
+	}
+
+	@SuppressWarnings("unchecked")
 	private Object subscribeEventListener(final Object proxy,
 			final Object[] args, String methodName, Continuation<?> cont) {
+
 		String event = methodName.substring(3,
 				methodName.length() - "Listener".length());
 
-		ListenerSubscription subscription = remoteObject.addEventListener(
-				event, cont, new RemoteObject.EventListener() {
-					@Override
-					public void onEvent(String eventType, Props data) {
-						propagateEventTo(proxy, eventType, data,
-								(MediaEventListener<?>) args[0]);
-					}
-				});
+		RemoteObject.EventListener listener = new RemoteObject.EventListener() {
+			@Override
+			public void onEvent(String eventType, Props data) {
+				propagateEventTo(proxy, eventType, data,
+						(MediaEventListener<?>) args[0]);
+			}
+		};
 
-		return subscription;
+		if (cont != null) {
+			remoteObject.addEventListener(event,
+					(Continuation<ListenerSubscription>) cont, listener);
+			return null;
+		} else {
+			return remoteObject.addEventListener(event, listener);
+		}
 	}
 
 	private Object createBuilderObject(final Object proxy, Method method,

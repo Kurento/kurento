@@ -1,38 +1,50 @@
 package com.kurento.kmf.media;
 
-import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.server.FactoryMethod;
 import java.util.List;
-import com.kurento.kmf.media.events.*;
+
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.WindowInEvent;
+import com.kurento.kmf.media.events.WindowOutEvent;
+import com.kurento.tool.rom.server.Param;
 
 public interface PointerDetectorFilter extends Filter {
 
-    void addWindow(@Param("window") PointerDetectorWindowMediaParam window);
-    void addWindow(@Param("window") PointerDetectorWindowMediaParam window, Continuation<Void> cont);
+	void addWindow(@Param("window") PointerDetectorWindowMediaParam window);
 
-    void clearWindows();
-    void clearWindows(Continuation<Void> cont);
+	void addWindow(@Param("window") PointerDetectorWindowMediaParam window,
+			Continuation<Void> cont);
 
-    void removeWindow(@Param("windowId") String windowId);
-    void removeWindow(@Param("windowId") String windowId, Continuation<Void> cont);
+	void clearWindows();
 
-    ListenerRegistration addWindowInListener(MediaEventListener<WindowInEvent> listener);
-    void addWindowInListener(MediaEventListener<WindowInEvent> listener, Continuation<ListenerRegistration> cont);
-    ListenerRegistration addWindowOutListener(MediaEventListener<WindowOutEvent> listener);
-    void addWindowOutListener(MediaEventListener<WindowOutEvent> listener, Continuation<ListenerRegistration> cont);
+	void clearWindows(Continuation<Void> cont);
 
-	
-	
+	void removeWindow(@Param("windowId") String windowId);
 
+	void removeWindow(@Param("windowId") String windowId,
+			Continuation<Void> cont);
 
-    public interface Factory {
+	ListenerRegistration addWindowInListener(
+			MediaEventListener<WindowInEvent> listener);
 
-        public Builder create(@Param("mediaPipeline") MediaPipeline mediaPipeline);
-    }
+	void addWindowInListener(MediaEventListener<WindowInEvent> listener,
+			Continuation<ListenerRegistration> cont);
 
-    public interface Builder extends AbstractBuilder<PointerDetectorFilter> {
+	ListenerRegistration addWindowOutListener(
+			MediaEventListener<WindowOutEvent> listener);
 
-        public Builder withWindows(List<PointerDetectorWindowMediaParam> windows);
-        public Builder withGarbagePeriod(int garbagePeriod);
-    }
+	void addWindowOutListener(MediaEventListener<WindowOutEvent> listener,
+			Continuation<ListenerRegistration> cont);
+
+	public interface Factory {
+
+		public Builder create(
+				@Param("mediaPipeline") MediaPipeline mediaPipeline);
+	}
+
+	public interface Builder extends AbstractBuilder<PointerDetectorFilter> {
+
+		public Builder withWindows(List<PointerDetectorWindowMediaParam> windows);
+
+		public Builder withGarbagePeriod(int garbagePeriod);
+	}
 }

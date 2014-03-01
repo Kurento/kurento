@@ -15,7 +15,7 @@ import com.kurento.tool.rom.server.RomException;
 public class RemoteObject {
 
 	private static Logger LOG = LoggerFactory.getLogger(RemoteObject.class);
-	
+
 	public interface EventListener {
 		public void onEvent(String eventType, Props data);
 	}
@@ -24,9 +24,10 @@ public class RemoteObject {
 	private RomClient client;
 	private RomClientObjectManager manager;
 	private String type;
-	
+
 	private Multimap<String, EventListener> listeners = Multimaps
-			.synchronizedMultimap(ArrayListMultimap.<String, EventListener>create());	
+			.synchronizedMultimap(ArrayListMultimap
+					.<String, EventListener> create());
 
 	public RemoteObject(String objectRef, String type, RomClient client,
 			RomClientObjectManager manager) {
@@ -44,11 +45,11 @@ public class RemoteObject {
 
 		return (E) invoke(method, params, (Type) clazz);
 	}
-	
-	public Object invoke(String method, Props params, Type type,
+
+	public void invoke(String method, Props params, Type type,
 			Continuation<?> cont) throws RomException {
-		
-		return client.invoke(objectRef, method, params, type, cont);
+
+		client.invoke(objectRef, method, params, type, cont);
 	}
 
 	public Object invoke(String method, Props params, Type type)
@@ -59,26 +60,43 @@ public class RemoteObject {
 
 	public void release() throws RomException {
 		client.release(objectRef);
-
 		this.manager.releaseObject(objectRef);
+	}
+
+	public void release(final Continuation<Void> cont) throws RomException {
+		client.release(objectRef, new DefaultContinuation<Void>(cont) {
+			@Override
+			public void onSuccess(Void result) {
+				manager.releaseObject(objectRef);
+				cont.onSuccess(null);
+			}
+		});
 	}
 
 	public ListenerSubscription addEventListener(String eventType,
 			EventListener listener) {
 
-		return addEventListener(eventType, null, listener);
-	}
-	
-	public ListenerSubscription addEventListener(String eventType,
-			Continuation<?> cont, EventListener listener) {
-		
-		String subscription = client.subscribe(objectRef, eventType, cont);
+		String subscription = client.subscribe(objectRef, eventType);
 
 		listeners.put(eventType, listener);
 
 		return new ListenerSubscription(subscription, eventType, listener);
 	}
 
+	public void addEventListener(final String eventType,
+			final Continuation<ListenerSubscription> cont,
+			final EventListener listener) {
+
+		client.subscribe(objectRef, eventType, new DefaultContinuation<String>(
+				cont) {
+			@Override
+			public void onSuccess(String subscription) {
+				listeners.put(eventType, listener);
+				cont.onSuccess(new ListenerSubscription(subscription,
+						eventType, listener));
+			}
+		});
+	}
 
 	public String getObjectRef() {
 		return objectRef;
@@ -89,7 +107,7 @@ public class RemoteObject {
 			try {
 				eventListener.onEvent(type, data);
 			} catch (Exception e) {
-				LOG.error("Exception executing event listener",e);
+				LOG.error("Exception executing event listener", e);
 			}
 		}
 	}

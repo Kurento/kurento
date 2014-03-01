@@ -10,19 +10,20 @@ import com.kurento.kmf.media.events.Event;
 public class EventManager {
 
 	private Session session;
-	
+
 	public EventManager(Session session) {
 		this.session = session;
 	}
-	
+
 	public void fireEvent(Event sampleEventImpl) throws IOException {
-		
+
 		JsonObject eventAsJsonObject = JsonUtils.toJsonObject(sampleEventImpl);
 		JsonObject params = new JsonObject();
-		params.addProperty("eventType", sampleEventImpl.getClass().getSimpleName());
+		params.addProperty("eventType", sampleEventImpl.getClass()
+				.getSimpleName());
 		params.add("eventData", eventAsJsonObject);
-		
-		session.sendNotification("onEvent", params);		
+
+		session.sendNotification("onEvent", params);
 	}
 
 }

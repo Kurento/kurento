@@ -1,5 +1,7 @@
 package com.kurento.tool.rom.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,10 +17,8 @@ import com.kurento.tool.rom.server.RomException;
 import com.kurento.tool.rom.test.model.client.ComplexParam;
 import com.kurento.tool.rom.test.model.client.SampleClass;
 import com.kurento.tool.rom.test.model.client.SampleEnum;
-import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
-
-import static org.junit.Assert.*;
+import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 
 public class SyncConstMethodsTest {
 
@@ -67,9 +67,9 @@ public class SyncConstMethodsTest {
 	@Test
 	public void echoEnumListTest() throws RomException {
 
-		List<SampleEnum> result = obj.echoListEnum(Arrays.asList(SampleEnum.CONSTANT_1,
-				SampleEnum.CONSTANT_2));
-		
+		List<SampleEnum> result = obj.echoListEnum(Arrays.asList(
+				SampleEnum.CONSTANT_1, SampleEnum.CONSTANT_2));
+
 		assertEquals(SampleEnum.CONSTANT_1, result.get(0));
 		assertEquals(SampleEnum.CONSTANT_2, result.get(1));
 	}
@@ -93,5 +93,4 @@ public class SyncConstMethodsTest {
 		assertEquals(value2.getProp2(), 44);
 	}
 
-	
 }

@@ -1,6 +1,5 @@
 package com.kurento.tool.rom.test.model.server;
 
-import java.io.IOException;
 import java.util.List;
 
 import com.kurento.tool.rom.server.EventManager;
@@ -8,13 +7,12 @@ import com.kurento.tool.rom.server.InjectEventManager;
 import com.kurento.tool.rom.server.Param;
 import com.kurento.tool.rom.test.model.client.ComplexParam;
 import com.kurento.tool.rom.test.model.client.SampleEnum;
-import com.kurento.tool.rom.test.model.client.events.SampleEvent;
 
 public class SampleClassImpl {
 
 	@InjectEventManager
 	private EventManager eventManager;
-	
+
 	private String att1;
 	private boolean att2;
 	private float att3;
@@ -57,30 +55,31 @@ public class SampleClassImpl {
 		return param;
 	}
 
-	public List<ComplexParam> echoListRegister(@Param("param") List<ComplexParam> param) {
+	public List<ComplexParam> echoListRegister(
+			@Param("param") List<ComplexParam> param) {
 		return param;
 	}
-	
-//	public void startTestEvents(@Param("numEvents") final int numEvents) {
-//		
-//		new Thread() {
-//			public void run() {				
-//				for(int i = 0; i<numEvents; i++) {
-//					try {
-//						Thread.sleep(1000);
-//					} catch (InterruptedException e) {}
-//					try {
-//						eventManager.fireEvent(new SampleEvent("prop1", "prop2"));
-//					} catch (IOException e) {
-//						e.printStackTrace();
-//					}					
-//				}				
-//			}
-//		}.start();		
-//	}
+
+	// public void startTestEvents(@Param("numEvents") final int numEvents) {
+	//
+	// new Thread() {
+	// public void run() {
+	// for(int i = 0; i<numEvents; i++) {
+	// try {
+	// Thread.sleep(1000);
+	// } catch (InterruptedException e) {}
+	// try {
+	// eventManager.fireEvent(new SampleEvent("prop1", "prop2"));
+	// } catch (IOException e) {
+	// e.printStackTrace();
+	// }
+	// }
+	// }
+	// }.start();
+	// }
 
 	public void release() {
-		
+
 	}
 
 }
