@@ -31,16 +31,17 @@ public class BasicPipelineTest {
 	public void basicPipelineTest() {
 
 		MediaPipeline pipeline = pipelineFactory.create();
-		
-		PlayerEndpoint player = pipeline.newPlayerEndpoint("https://ci.kurento.com/video/small.webm").build();
-		
+
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(
+				"https://ci.kurento.com/video/small.webm").build();
+
 		HttpGetEndpoint httpGetEndpoint = pipeline.newHttpGetEndpoint().build();
-		
+
 		player.connect(httpGetEndpoint);
-		
-		String url = httpGetEndpoint.getUrl(); 
-		
-		System.out.println("URL: "+url);
+
+		String url = httpGetEndpoint.getUrl();
+
+		System.out.println("URL: " + url);
 
 	}
 

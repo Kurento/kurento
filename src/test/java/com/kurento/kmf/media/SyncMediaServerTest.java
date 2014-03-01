@@ -81,7 +81,6 @@ public class SyncMediaServerTest {
 		rtpEndpoint.connect(httpEndpoint, MediaType.VIDEO);
 	}
 
-	@Ignore
 	@Test
 	public void testSourceSinks() throws KurentoMediaFrameworkException {
 		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
