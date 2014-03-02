@@ -32,64 +32,71 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		session = new ClientSession("XXX", null, this);
 
 		rsHelper = new JsonRpcRequestSenderHelper() {
-			@SuppressWarnings("unchecked")
 			@Override
 			public <P, R> Response<R> internalSendRequest(Request<P> request,
 					Class<R> resultClass) throws IOException {
-
-				// Simulate sending json string for net
-				String jsonRequest = request.toString();
-
-				LOG.debug("> " + jsonRequest);
-
-				Request<JsonObject> newRequest = JsonUtils.fromJsonRequest(
-						jsonRequest, JsonObject.class);
-
-				final Response<JsonObject>[] response = new Response[1];
-
-				TransactionImpl t = new TransactionImpl(session, newRequest,
-						new ResponseSender() {
-							@Override
-							public void sendResponse(Message message)
-									throws IOException {
-								response[0] = (Response<JsonObject>) message;
-							}
-						});
-
-				try {
-					handler.handleRequest(t, (Request<JsonObject>) request);
-				} catch (Exception e) {
-
-					ResponseError error = ResponseError.newFromException(e);
-					return new Response<R>(request.getId(), error);
-				}
-
-				if (response[0] != null) {
-					// Simulate receiving json string from net
-					String jsonResponse = response[0].toString();
-
-					LOG.debug("< " + jsonResponse);
-
-					Response<R> newResponse = JsonUtils.fromJsonResponse(
-							jsonResponse, resultClass);
-
-					newResponse.setId(request.getId());
-
-					return newResponse;
-
-				} else {
-					return new Response<R>(request.getId());
-				}
+				return localSendRequest(request, resultClass);
 			}
 
 			@Override
 			protected void internalSendRequest(Request<Object> request,
-					Class<JsonElement> class1,
+					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
-				throw new UnsupportedOperationException(
-						"Async client int local is unavailable");
+				Response<JsonElement> result = localSendRequest(request,
+						resultClass);
+				continuation.onSuccess(result);
 			}
 		};
+	}
+
+	@SuppressWarnings("unchecked")
+	private <R, P> Response<R> localSendRequest(Request<P> request,
+			Class<R> resultClass) {
+		// Simulate sending json string for net
+		String jsonRequest = request.toString();
+
+		LOG.debug("> " + jsonRequest);
+
+		Request<JsonObject> newRequest = JsonUtils.fromJsonRequest(jsonRequest,
+				JsonObject.class);
+
+		@SuppressWarnings("unchecked")
+		final Response<JsonObject>[] response = new Response[1];
+
+		TransactionImpl t = new TransactionImpl(session, newRequest,
+				new ResponseSender() {
+
+					@Override
+					public void sendResponse(Message message)
+							throws IOException {
+						response[0] = (Response<JsonObject>) message;
+					}
+				});
+
+		try {
+			handler.handleRequest(t, (Request<JsonObject>) request);
+		} catch (Exception e) {
+
+			ResponseError error = ResponseError.newFromException(e);
+			return new Response<R>(request.getId(), error);
+		}
+
+		if (response[0] != null) {
+			// Simulate receiving json string from net
+			String jsonResponse = response[0].toString();
+
+			LOG.debug("< " + jsonResponse);
+
+			Response<R> newResponse = JsonUtils.fromJsonResponse(jsonResponse,
+					resultClass);
+
+			newResponse.setId(request.getId());
+
+			return newResponse;
+
+		} else {
+			return new Response<R>(request.getId());
+		}
 	}
 
 	@Override
