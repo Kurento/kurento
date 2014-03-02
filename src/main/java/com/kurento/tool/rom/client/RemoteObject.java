@@ -11,10 +11,13 @@ import com.google.common.collect.Multimaps;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.tool.rom.server.RomException;
+import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RemoteObject {
 
 	private static Logger LOG = LoggerFactory.getLogger(RemoteObject.class);
+
+	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
 	public interface EventListener {
 		public void onEvent(String eventType, Props data);
@@ -24,6 +27,12 @@ public class RemoteObject {
 	private RomClient client;
 	private RomClientObjectManager manager;
 	private String type;
+
+	// This object is used in the process of unflatten. It is common that
+	// RemoteObject is used with a Typed wrapper (with reflexion, with code
+	// generation or by hand). In this cases, the object reference is unflatten
+	// to this value instead of RemoteObject itself.
+	private Object wrapperForUnflatten;
 
 	private Multimap<String, EventListener> listeners = Multimaps
 			.synchronizedMultimap(ArrayListMultimap
@@ -39,23 +48,50 @@ public class RemoteObject {
 		this.manager.registerObject(objectRef, this);
 	}
 
+	public Object getWrapperForUnflatten() {
+		return wrapperForUnflatten;
+	}
+
+	public void setWrapperForUnflatten(Object wrapperForUnflatten) {
+		this.wrapperForUnflatten = wrapperForUnflatten;
+	}
+
 	@SuppressWarnings("unchecked")
 	public <E> E invoke(String method, Props params, Class<E> clazz)
 			throws RomException {
 
-		return (E) invoke(method, params, (Type) clazz);
-	}
+		Type flattenType = FLATTENER.calculateFlattenType(clazz);
 
-	public void invoke(String method, Props params, Type type,
-			Continuation<?> cont) throws RomException {
+		Object obj = invoke(method, params, flattenType);
 
-		client.invoke(objectRef, method, params, type, cont);
+		return (E) FLATTENER.unflattenValue("return", clazz, obj, manager);
 	}
 
 	public Object invoke(String method, Props params, Type type)
 			throws RomException {
 
-		return client.invoke(objectRef, method, params, type);
+		Type flattenType = FLATTENER.calculateFlattenType(type);
+
+		Object obj = client.invoke(objectRef, method, params, flattenType);
+
+		return FLATTENER.unflattenValue("return", type, obj, manager);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public void invoke(String method, Props params, final Type type,
+			final Continuation cont) throws RomException {
+
+		Type flattenType = FLATTENER.calculateFlattenType(type);
+
+		client.invoke(objectRef, method, params, flattenType,
+				new DefaultContinuation<Object>(cont) {
+					@SuppressWarnings("unchecked")
+					@Override
+					public void onSuccess(Object result) {
+						cont.onSuccess(FLATTENER.unflattenValue("return", type,
+								result, manager));
+					}
+				});
 	}
 
 	public void release() throws RomException {
@@ -71,6 +107,12 @@ public class RemoteObject {
 				cont.onSuccess(null);
 			}
 		});
+	}
+
+	@Override
+	protected void finalize() {
+		release(new ErrorLogContinuation<Void>(
+				"Exception while releasing object " + objectRef));
 	}
 
 	public ListenerSubscription addEventListener(String eventType,

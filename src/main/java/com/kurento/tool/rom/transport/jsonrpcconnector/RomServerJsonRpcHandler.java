@@ -7,6 +7,8 @@ import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstant
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OPERATION_NAME;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OPERATION_PARAMS;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.KEEPALIVE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.KEEPALIVE_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.RELEASE_METHOD;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.RELEASE_OBJECT;
 
@@ -72,6 +74,11 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 				handleCreateCommand(transaction, type,
 						params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
+			} else if (method.equals(KEEPALIVE_METHOD)) {
+				LOG.info("Received a keepAlive request for object "
+						+ params.get(KEEPALIVE_OBJECT));
+			} else {
+				LOG.warn("Unknown request method '" + method + "'");
 			}
 
 		} catch (RomException e) {

@@ -5,7 +5,7 @@
             { "name": "att1", "type": "String" },
             { "name": "att2", "type": "boolean" },
             { "name": "att3", "type": "float", "optional": true, "defaultValue": 5.5 },
-            { "name": "att4", "type": "int", "optional": true, "defaultValue": 120 }
+            { "name": "att4", "type": "int", "optional": true, "defaultValue": 120 }            
          ]}],
       "methods": [
             { "name": "getAtt1", "params": [], "return": { "type": "String" }},
@@ -16,7 +16,9 @@
             { "name": "echoEnum", "params": [{ "name": "param", "type": "SampleEnum" }], "return": { "type": "SampleEnum" }},
             { "name": "echoRegister", "params": [{ "name": "param", "type": "ComplexParam" }], "return": { "type": "ComplexParam" }},
             { "name": "echoListEnum", "params": [{ "name": "param", "type": "SampleEnum[]" }], "return": { "type": "SampleEnum[]" }},
-            { "name": "echoListRegister", "params": [{ "name": "param", "type": "ComplexParam[]" }], "return": { "type": "ComplexParam[]" }}
+            { "name": "echoListRegister", "params": [{ "name": "param", "type": "ComplexParam[]" }], "return": { "type": "ComplexParam[]" }},
+            { "name": "echoObjectRef", "params": [{ "name": "param", "type": "SampleClass" }], "return": { "type": "SampleClass" }},
+            { "name": "echoObjectRefList", "params": [{ "name": "param", "type": "SampleClass[]" }], "return": { "type": "SampleClass[]" }}
          ],
       "events": [ "Sample" ]   
     }],

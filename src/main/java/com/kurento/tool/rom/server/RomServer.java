@@ -1,19 +1,18 @@
 package com.kurento.tool.rom.server;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
-import com.kurento.tool.rom.ParamAnnotationUtils;
+import com.kurento.tool.rom.RemoteClass;
+import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RomServer {
 
 	private RemoteObjectManager manager = new RemoteObjectManager();
+
+	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
 	private String packageName;
 	private String classSuffix;
@@ -31,11 +30,17 @@ public class RomServer {
 			Class<?> clazz = Class.forName(packageName + "." + remoteClassType
 					+ classSuffix);
 
+			if (clazz.getAnnotation(RemoteClass.class) == null) {
+				throw new RomException(
+						"Remote classes must be annotated with @RemoteClass");
+			}
+
 			Constructor<?> constructor = clazz.getConstructors()[0];
 
-			Object[] unflattenedConstParams = unflattenParams(
+			Object[] unflattenedConstParams = FLATTENER.unflattenParams(
 					constructor.getParameterAnnotations(),
-					constructor.getGenericParameterTypes(), constructorParams);
+					constructor.getGenericParameterTypes(), constructorParams,
+					manager);
 
 			Object object = constructor.newInstance(unflattenedConstParams);
 
@@ -71,11 +76,13 @@ public class RomServer {
 
 			Method method = getMethod(remoteObjClass, methodName);
 
-			Object[] unflattenedParams = unflattenParams(
+			Object[] unflattenParams = FLATTENER.unflattenParams(
 					method.getParameterAnnotations(),
-					method.getGenericParameterTypes(), params);
+					method.getGenericParameterTypes(), params, manager);
 
-			return method.invoke(remoteObject, unflattenedParams);
+			Object result = method.invoke(remoteObject, unflattenParams);
+
+			return FLATTENER.flattenResult(result, manager);
 
 		} catch (Exception e) {
 			// TODO Improve exception reporting
@@ -95,133 +102,6 @@ public class RomServer {
 		throw new RuntimeException("Method '" + methodName
 				+ "' not found in class '"
 				+ remoteObjClass.getClass().getSimpleName() + "'");
-	}
-
-	private Object[] unflattenParams(Annotation[][] paramAnnotations,
-			Type[] paramTypes, Props params) {
-
-		if (params == null) {
-			return null;
-		}
-
-		Object[] returnParams = new Object[paramTypes.length];
-
-		for (int i = 0; i < paramTypes.length; i++) {
-
-			String paramName = ParamAnnotationUtils.getParamAnnotation(
-					paramAnnotations[i]).value();
-			Object value = params.getProp(paramName);
-			returnParams[i] = unflattenValue(paramName, paramTypes[i], value);
-		}
-
-		return returnParams;
-	}
-
-	private Object unflattenValue(String paramName, Type type, Object value) {
-
-		if (type instanceof Class) {
-
-			Class<?> clazz = (Class<?>) type;
-
-			if (isPrimitiveClass(clazz)) {
-				return value;
-			} else if (clazz.isEnum()) {
-				return unflattenEnumConstant(type, value, clazz);
-			} else {
-
-				if (value instanceof String) {
-					return unflattenRemoteObject((String) value);
-
-				} else if (value instanceof Props) {
-					return unflattedComplexType(clazz, (Props) value);
-
-				} else {
-					// TODO Improve exception reporting
-					throw new RuntimeException(
-							"A objectRef coded with a String or a Props is expected for param type '"
-									+ type + "'");
-				}
-			}
-
-		} else if (type instanceof ParameterizedType) {
-
-			ParameterizedType pType = (ParameterizedType) type;
-			if (((Class<?>) pType.getRawType()).isAssignableFrom(List.class)) {
-				return unflattenList(paramName, (List<?>) value,
-						pType.getActualTypeArguments()[0]);
-			}
-		}
-
-		// TODO Improve exception reporting
-		throw new RuntimeException("Type '" + type + "' is not supported");
-	}
-
-	private boolean isPrimitiveClass(Class<?> clazz) {
-		return clazz == String.class || clazz == Boolean.class
-				|| clazz == Float.class || clazz == Integer.class
-				|| clazz == boolean.class || clazz == float.class
-				|| clazz == int.class;
-	}
-
-	private Object unflattedComplexType(Class<?> clazz, Props props) {
-
-		Constructor<?> constructor = clazz.getConstructors()[0];
-
-		Object[] constParams = new Object[constructor.getParameterTypes().length];
-
-		List<String> paramNames = ParamAnnotationUtils
-				.getParamNames(constructor);
-		Class<?>[] constClasses = constructor.getParameterTypes();
-
-		for (int i = 0; i < constParams.length; i++) {
-			String paramName = paramNames.get(i);
-			constParams[i] = unflattenValue(paramName, constClasses[i],
-					props.getProp(paramName));
-		}
-
-		try {
-			return constructor.newInstance(constParams);
-		} catch (Exception e) {
-			throw new RuntimeException(
-					"Exception while creating an object for the class '"
-							+ clazz.getSimpleName() + "'", e);
-		}
-	}
-
-	private Object unflattenList(String paramName, List<?> value, Type type) {
-
-		List<Object> list = new ArrayList<Object>();
-		int counter = 0;
-		for (Object object : value) {
-			list.add(unflattenValue(paramName + "[" + counter + "]", type,
-					object));
-			counter++;
-		}
-		return list;
-	}
-
-	private Object unflattenRemoteObject(String value) {
-
-		Object remoteObject = manager.getObject(value);
-		if (remoteObject == null) {
-			// TODO Improve exception reporting
-			throw new RuntimeException("Remote object with objectRef '" + value
-					+ "' is not found");
-		} else {
-			return remoteObject;
-		}
-	}
-
-	private Object unflattenEnumConstant(Type type, Object value, Class<?> clazz) {
-		Object[] enumConsts = clazz.getEnumConstants();
-		for (Object enumConst : enumConsts) {
-			if (enumConst.toString().equals(value)) {
-				return enumConst;
-			}
-		}
-		// TODO Improve exception reporting
-		throw new RuntimeException("Enum '" + value
-				+ "' not found in enumType '" + type.toString() + "'");
 	}
 
 	public void release(String objectRef) {

@@ -1,7 +1,9 @@
 package com.kurento.tool.rom.test.model;
 
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 
+@RemoteClass
 public class Sample2Impl implements Sample2 {
 
 	private String att1;

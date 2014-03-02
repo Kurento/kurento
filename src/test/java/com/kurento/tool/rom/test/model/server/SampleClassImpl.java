@@ -2,12 +2,14 @@ package com.kurento.tool.rom.test.model.server;
 
 import java.util.List;
 
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.EventManager;
 import com.kurento.tool.rom.server.InjectEventManager;
 import com.kurento.tool.rom.server.Param;
 import com.kurento.tool.rom.test.model.client.ComplexParam;
 import com.kurento.tool.rom.test.model.client.SampleEnum;
 
+@RemoteClass
 public class SampleClassImpl {
 
 	@InjectEventManager
@@ -57,6 +59,15 @@ public class SampleClassImpl {
 
 	public List<ComplexParam> echoListRegister(
 			@Param("param") List<ComplexParam> param) {
+		return param;
+	}
+
+	public SampleClassImpl echoObjectRef(@Param("param") SampleClassImpl param) {
+		return param;
+	}
+
+	public List<SampleClassImpl> echoObjectRefList(
+			@Param("param") List<SampleClassImpl> param) {
 		return param;
 	}
 

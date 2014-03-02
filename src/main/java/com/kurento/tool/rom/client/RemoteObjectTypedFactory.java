@@ -10,13 +10,10 @@ public class RemoteObjectTypedFactory {
 		this.factory = factory;
 	}
 
-	@SuppressWarnings("unchecked")
 	public <E> E create(Class<E> clazz) {
-
 		RemoteObject remoteObject = factory.create(clazz.getSimpleName());
-		return (E) Proxy.newProxyInstance(clazz.getClassLoader(),
-				new Class[] { clazz }, new RemoteObjectInvocationHandler(
-						remoteObject, factory));
+		return RemoteObjectInvocationHandler.newProxy(remoteObject, factory,
+				clazz);
 	}
 
 	@SuppressWarnings("unchecked")

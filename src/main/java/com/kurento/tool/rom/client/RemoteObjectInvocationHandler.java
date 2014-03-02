@@ -25,7 +25,23 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	private final RemoteObject remoteObject;
 	private final RemoteObjectFactory factory;
 
-	public RemoteObjectInvocationHandler(RemoteObject remoteObject,
+	@SuppressWarnings("unchecked")
+	public static <E> E newProxy(RemoteObject remoteObject,
+			RemoteObjectFactory factory, Class<E> clazz) {
+
+		RemoteObjectInvocationHandler handler = new RemoteObjectInvocationHandler(
+				remoteObject, factory);
+		Object proxy = Proxy.newProxyInstance(clazz.getClassLoader(),
+				new Class[] { clazz }, handler);
+
+		// This automatically unflatten this remote object with the wrapper
+		// instead of with the remote object itself
+		remoteObject.setWrapperForUnflatten(proxy);
+
+		return (E) proxy;
+	}
+
+	private RemoteObjectInvocationHandler(RemoteObject remoteObject,
 			RemoteObjectFactory factory) {
 		this.remoteObject = remoteObject;
 		this.factory = factory;
@@ -66,6 +82,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	}
 
 	private Object invoke(Method method, Object[] args, Continuation<?> cont) {
+
 		Props props = ParamAnnotationUtils.extractProps(
 				method.getParameterAnnotations(), args);
 

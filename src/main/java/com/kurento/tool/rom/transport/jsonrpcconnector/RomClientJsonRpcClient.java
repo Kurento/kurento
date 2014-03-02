@@ -7,11 +7,14 @@ import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstant
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OPERATION_NAME;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OPERATION_PARAMS;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.KEEPALIVE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.KEEPALIVE_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_DATA;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_SUBSCRIPTION;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_TYPE;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.RELEASE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.RELEASE_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.SUBSCRIBE_METHOD;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.SUBSCRIBE_OBJECT;
 import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.SUBSCRIBE_TYPE;
@@ -122,7 +125,7 @@ public class RomClientJsonRpcClient extends RomClient {
 	public void release(String objectRef, Continuation<Void> cont)
 			throws RomException {
 
-		JsonObject params = JsonUtils.toJsonObject(new Props("object",
+		JsonObject params = JsonUtils.toJsonObject(new Props(RELEASE_OBJECT,
 				objectRef));
 
 		sendRequest(RELEASE_METHOD, Void.class, params, null, cont);
@@ -162,6 +165,20 @@ public class RomClientJsonRpcClient extends RomClient {
 
 		return sendRequest(SUBSCRIBE_METHOD, JsonElement.class, params,
 				processor, cont);
+	}
+
+	@Override
+	public void keepAlive(String objectRef) {
+		keepAlive(objectRef, null);
+	}
+
+	@Override
+	public void keepAlive(String objectRef, Continuation<Void> cont) {
+
+		JsonObject params = JsonUtils.toJsonObject(new Props(KEEPALIVE_OBJECT,
+				objectRef));
+
+		sendRequest(KEEPALIVE_METHOD, Void.class, params, null, cont);
 	}
 
 	@Override
@@ -271,7 +288,7 @@ public class RomClientJsonRpcClient extends RomClient {
 			return null;
 		}
 
-		if (isList(type) || isPrimitiveClass(type) || isEnum(type)) {
+		if (isPrimitiveClass(type) || isEnum(type)) {
 
 			if (result instanceof JsonPrimitive) {
 				return result;
@@ -281,24 +298,38 @@ public class RomClientJsonRpcClient extends RomClient {
 						+ " cannot be converted to " + getTypeName(type));
 
 			} else if (result instanceof JsonObject) {
-
-				JsonObject respObject = (JsonObject) result;
-
-				if (!respObject.has("value")) {
-					throw new RomException("Json object " + result
-							+ " cannot be converted to " + getTypeName(type)
-							+ " without a 'value' property");
-				}
-
-				return respObject.get("value");
+				return extractSimpleValueFromJsonObject((JsonObject) result,
+						type);
 
 			} else {
 				throw new RomException("Unrecognized json element: " + result);
 			}
 
+		} else if (isList(type)) {
+
+			if (result instanceof JsonArray) {
+				return result;
+
+			} else {
+				return extractSimpleValueFromJsonObject((JsonObject) result,
+						type);
+			}
+
 		} else {
 			return result;
 		}
+	}
+
+	private JsonElement extractSimpleValueFromJsonObject(JsonObject result,
+			Type type) {
+
+		if (!result.has("value")) {
+			throw new RomException("Json object " + result
+					+ " cannot be converted to " + getTypeName(type)
+					+ " without a 'value' property");
+		}
+
+		return result.get("value");
 	}
 
 	private boolean isEnum(Type type) {

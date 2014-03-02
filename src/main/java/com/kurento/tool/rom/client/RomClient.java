@@ -23,6 +23,8 @@ public abstract class RomClient {
 
 	public abstract String subscribe(String objectRef, String eventType);
 
+	public abstract void keepAlive(String objectRef);
+
 	// Async methods --------------------------------------
 
 	public abstract String create(String remoteClassName,
@@ -37,6 +39,9 @@ public abstract class RomClient {
 
 	public abstract String subscribe(String objectRef, String type,
 			Continuation<String> cont);
+
+	public abstract void keepAlive(String objectRef,
+			Continuation<Void> continuation);
 
 	// Other methods --------------------------------------
 

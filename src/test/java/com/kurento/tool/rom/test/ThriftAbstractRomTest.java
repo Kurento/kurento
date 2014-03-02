@@ -45,11 +45,11 @@ public class ThriftAbstractRomTest {
 	public static class KmfThriftTestConfiguration {
 
 		@Bean
-		public ThriftInterfaceConfiguration configuration() {
+		public ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
 
 			ThriftInterfaceConfiguration configuration = new ThriftInterfaceConfiguration();
 			configuration.setServerAddress("127.0.0.1");
-			configuration.setServerPort(9090);
+			configuration.setServerPort(6464);
 			return configuration;
 		}
 	}
@@ -75,7 +75,7 @@ public class ThriftAbstractRomTest {
 		LOG.info("Starting server");
 		server = new JsonRpcServerThrift(new RomServerJsonRpcHandler(
 				"com.kurento.tool.rom.test.model.server", "Impl"),
-				executorService, new InetSocketAddress("127.0.0.1", 9090));
+				executorService, new InetSocketAddress("127.0.0.1", 6464));
 
 		server.start();
 		LOG.info("Server started");

@@ -6,12 +6,12 @@ import com.kurento.tool.rom.server.RomException;
 
 public class RemoteObjectFactory {
 
-	private RomClientObjectManager manager = new RomClientObjectManager();
-
+	private RomClientObjectManager manager;
 	private RomClient client;
 
 	public RemoteObjectFactory(RomClient client) {
 		this.client = client;
+		this.manager = new RomClientObjectManager(client);
 		this.client.addRomEventHandler(manager);
 	}
 

@@ -2,8 +2,10 @@ package com.kurento.tool.rom.test.model;
 
 import java.util.List;
 
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 
+@RemoteClass
 public interface SampleRemoteClass {
 
 	public void methodReturnVoid();

@@ -1,11 +1,12 @@
 package com.kurento.tool.rom.test.model.client.events;
 
+import com.kurento.tool.rom.server.Param;
 
 public class BaseEvent implements Event {
 
 	private String prop2;
 
-	public BaseEvent(String prop2) {
+	public BaseEvent(@Param("prop2") String prop2) {
 		super();
 		this.prop2 = prop2;
 	}

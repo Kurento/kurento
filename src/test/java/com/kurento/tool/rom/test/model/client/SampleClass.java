@@ -2,10 +2,13 @@ package com.kurento.tool.rom.test.model.client;
 
 import java.util.List;
 
+import com.kurento.kmf.media.Continuation;
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 import com.kurento.tool.rom.test.model.client.events.MediaEventListener;
 import com.kurento.tool.rom.test.model.client.events.SampleEvent;
 
+@RemoteClass
 public interface SampleClass {
 
 	String getAtt1();
@@ -48,6 +51,16 @@ public interface SampleClass {
 
 	void echoListRegister(@Param("param") List<ComplexParam> param,
 			Continuation<List<ComplexParam>> cont);
+
+	SampleClass echoObjectRef(@Param("param") SampleClass param);
+
+	void echoObjectRef(@Param("param") SampleClass param,
+			Continuation<SampleClass> cont);
+
+	List<SampleClass> echoObjectRefList(@Param("param") List<SampleClass> param);
+
+	void echoObjectRefList(@Param("param") List<SampleClass> param,
+			Continuation<List<SampleClass>> cont);
 
 	ListenerRegistration addSampleListener(
 			MediaEventListener<SampleEvent> listener);

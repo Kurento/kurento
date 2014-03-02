@@ -7,13 +7,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
+import com.kurento.tool.rom.transport.serialization.ObjectRefsManager;
 
-public class RomClientObjectManager implements RomEventHandler {
+public class RomClientObjectManager implements RomEventHandler,
+		ObjectRefsManager {
 
 	private static final Logger LOG = LoggerFactory
 			.getLogger(RomClientObjectManager.class);
 
+	private DistributedGarbageCollector dgc;
+
 	private ConcurrentMap<String, RemoteObject> objects = new ConcurrentHashMap<>();
+
+	private RomClient client;
+
+	public RomClientObjectManager(RomClient client) {
+		this.client = client;
+		this.dgc = new DistributedGarbageCollector(client);
+	}
+
+	public RomClient getClient() {
+		return client;
+	}
 
 	@Override
 	public void processEvent(String objectRef, String subscription,
@@ -31,10 +46,19 @@ public class RomClientObjectManager implements RomEventHandler {
 
 	public void registerObject(String objectRef, RemoteObject remoteObject) {
 		this.objects.put(objectRef, remoteObject);
+		//TODO Enable when MediaServer works with keepAlive requests
+		//this.dgc.registerReference(objectRef);
 	}
 
 	public void releaseObject(String objectRef) {
 		this.objects.remove(objectRef);
+		//TODO Enable when MediaServer works with keepAlive requests
+		//this.dgc.removeReference(objectRef);
+	}
+
+	@Override
+	public Object getObject(String objectRef) {
+		return this.objects.get(objectRef);
 	}
 
 }

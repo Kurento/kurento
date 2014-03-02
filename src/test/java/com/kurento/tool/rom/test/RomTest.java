@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientLocal;
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.client.RemoteObject;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.server.Param;
@@ -15,6 +16,7 @@ import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 
 public class RomTest {
 
+	@RemoteClass
 	static public class RemoteClassTest {
 		public String testMethod(@Param("param") String param) {
 			return param;
@@ -59,6 +61,7 @@ public class RomTest {
 		}
 	}
 
+	@RemoteClass
 	static public class RemoteClassConstTest {
 
 		private String att;
