@@ -5,8 +5,10 @@ import java.util.List;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.events.WindowOutEvent;
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 
+@RemoteClass
 public interface PointerDetectorAdvFilter extends Filter {
 
 	void addWindow(@Param("window") PointerDetectorWindowMediaParam window);

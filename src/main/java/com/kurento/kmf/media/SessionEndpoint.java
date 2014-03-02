@@ -3,7 +3,9 @@ package com.kurento.kmf.media;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
+import com.kurento.tool.rom.RemoteClass;
 
+@RemoteClass
 public interface SessionEndpoint extends Endpoint {
 
 	ListenerRegistration addMediaSessionTerminatedListener(

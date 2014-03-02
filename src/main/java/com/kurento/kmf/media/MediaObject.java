@@ -2,7 +2,9 @@ package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.events.ErrorEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.tool.rom.RemoteClass;
 
+@RemoteClass
 public interface MediaObject {
 
 	MediaPipeline getMediaPipeline();

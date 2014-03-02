@@ -2,8 +2,10 @@ package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 
+@RemoteClass
 public interface PlayerEndpoint extends UriEndpoint {
 
 	void play();

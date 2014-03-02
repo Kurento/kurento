@@ -1,8 +1,10 @@
 package com.kurento.kmf.media;
 
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.FactoryMethod;
 import com.kurento.tool.rom.server.Param;
 
+@RemoteClass
 public interface MediaPipeline extends MediaObject {
 
 	@FactoryMethod

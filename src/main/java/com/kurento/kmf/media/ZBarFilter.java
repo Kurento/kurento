@@ -2,8 +2,10 @@ package com.kurento.kmf.media;
 
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 
+@RemoteClass
 public interface ZBarFilter extends Filter {
 
 	ListenerRegistration addCodeFoundListener(
