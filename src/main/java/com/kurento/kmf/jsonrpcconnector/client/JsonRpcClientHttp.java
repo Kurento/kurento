@@ -138,7 +138,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
 		if (resultJson == null || resultJson.trim().isEmpty()) {
 			return new Response<R>(request.getId(), new ResponseError(3,
-					"The server send an empty response", null));
+					"The server send an empty response"));
 		}
 
 		Response<R> response = fromJsonResponse(resultJson, resultClass);

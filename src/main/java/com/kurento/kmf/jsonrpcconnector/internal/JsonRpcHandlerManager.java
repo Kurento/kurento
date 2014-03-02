@@ -97,7 +97,7 @@ public class JsonRpcHandlerManager {
 
 				if (request.getId() != null) {
 					rs.sendResponse(new Response<Object>(null,
-							new ResponseError(0, message, null)));
+							new ResponseError(0, message)));
 				}
 				return;
 			}

@@ -17,6 +17,9 @@ package com.kurento.kmf.jsonrpcconnector.internal.message;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+
 public class ResponseError {
 
 	/**
@@ -32,7 +35,7 @@ public class ResponseError {
 	/**
 	 * Error data.
 	 */
-	private String data;
+	private JsonElement data;
 
 	// TODO Improve the way errors are created from Exceptions
 	public static ResponseError newFromException(Exception e) {
@@ -63,7 +66,18 @@ public class ResponseError {
 	public ResponseError(int code, String message, String data) {
 		this.code = code;
 		this.message = message;
+		this.data = new JsonPrimitive(data);
+	}
+
+	public ResponseError(int code, String message, JsonElement data) {
+		this.code = code;
+		this.message = message;
 		this.data = data;
+	}
+
+	public ResponseError(int code, String message) {
+		this.code = code;
+		this.message = message;
 	}
 
 	/**
@@ -110,7 +124,13 @@ public class ResponseError {
 	 * @return Error data
 	 */
 	public String getData() {
-		return data;
+		if (data instanceof JsonPrimitive) {
+			return ((JsonPrimitive) data).getAsString();
+		} else if (data != null) {
+			return data.toString();
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -120,7 +140,7 @@ public class ResponseError {
 	 *            Error data
 	 */
 	void setData(String data) {
-		this.data = data;
+		this.data = new JsonPrimitive(data);
 	}
 
 }

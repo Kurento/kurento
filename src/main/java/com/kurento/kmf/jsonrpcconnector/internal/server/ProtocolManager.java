@@ -162,10 +162,11 @@ public class ProtocolManager {
 
 		if (sessionId == null) {
 
-			responseSender.sendResponse(new Response<Object>(request.getId(),
-					new ResponseError(99999,
-							"SessionId is mandatory in a reconnection request",
-							null)));
+			responseSender
+					.sendResponse(new Response<Object>(
+							request.getId(),
+							new ResponseError(99999,
+									"SessionId is mandatory in a reconnection request")));
 		} else {
 
 			ServerSession session = sessionsManager.get(sessionId);
@@ -182,7 +183,7 @@ public class ProtocolManager {
 
 				responseSender.sendResponse(new Response<Object>(request
 						.getId(), new ResponseError(99999,
-						JsonRpcConstants.RECONNECTION_ERROR, null)));
+						JsonRpcConstants.RECONNECTION_ERROR)));
 			}
 		}
 	}
