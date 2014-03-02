@@ -35,8 +35,7 @@ import com.kurento.kmf.content.internal.StreamingProxy;
 import com.kurento.kmf.content.internal.StreamingProxyListener;
 import com.kurento.kmf.content.jsonrpc.JsonRpcResponse;
 import com.kurento.kmf.media.HttpEndpoint;
-import com.kurento.kmf.media.events.MediaError;
-import com.kurento.kmf.media.events.MediaErrorListener;
+import com.kurento.kmf.media.events.ErrorEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
@@ -162,9 +161,9 @@ public abstract class AbstractHttpContentSession extends AbstractContentSession
 
 		// Manage fatal errors occurring in the pipeline
 		httpEndpoint.getMediaPipeline().addErrorListener(
-				new MediaErrorListener() {
+				new MediaEventListener<ErrorEvent>() {
 					@Override
-					public void onError(MediaError error) {
+					public void onEvent(ErrorEvent error) {
 						getLogger().error(error.getDescription()); // TODO:
 																	// improve
 																	// message

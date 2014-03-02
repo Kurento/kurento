@@ -29,8 +29,7 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.media.SdpEndpoint;
-import com.kurento.kmf.media.events.MediaError;
-import com.kurento.kmf.media.events.MediaErrorListener;
+import com.kurento.kmf.media.events.ErrorEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
@@ -263,10 +262,10 @@ public abstract class AbstractSdpContentSession extends AbstractContentSession
 
 		// Manage fatal errors in pipeline
 		sdpEndpoint.getMediaPipeline().addErrorListener(
-				new MediaErrorListener() {
+				new MediaEventListener<ErrorEvent>() {
 
 					@Override
-					public void onError(MediaError error) {
+					public void onEvent(ErrorEvent error) {
 						getLogger().error(error.getDescription()); // TODO
 						internalTerminateWithError(null, error.getErrorCode(),
 								error.getDescription(), null);
