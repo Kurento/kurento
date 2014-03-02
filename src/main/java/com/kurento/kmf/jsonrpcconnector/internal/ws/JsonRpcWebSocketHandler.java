@@ -1,3 +1,17 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 package com.kurento.kmf.jsonrpcconnector.internal.ws;
 
 import org.slf4j.Logger;
@@ -16,7 +30,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcWebSocketHandler.class);
 
-	private ProtocolManager protocolManager;
+	private final ProtocolManager protocolManager;
 
 	public JsonRpcWebSocketHandler(ProtocolManager protocolManager) {
 		this.protocolManager = protocolManager;
@@ -30,6 +44,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 		// session is established, not when websocket session is established
 	}
 
+	@Override
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 		protocolManager.closeSessionIfTimeout(wsSession.getId(),
@@ -52,6 +67,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		// TODO Ensure only one register message per websocket session.
 		ServerSessionFactory factory = new ServerSessionFactory() {
+			@Override
 			public ServerSession createSession(String sessionId,
 					Object registerInfo, SessionsManager sessionsManager) {
 				return new WebSocketServerSession(sessionId, registerInfo,

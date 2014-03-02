@@ -1,3 +1,17 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 package com.kurento.kmf.jsonrpcconnector.client;
 
 import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonResponse;
@@ -10,6 +24,7 @@ import java.util.List;
 import org.apache.http.entity.ContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
@@ -24,7 +39,7 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 
 public class JsonRpcClientHttp extends JsonRpcClient {
 
-	private Logger log = LoggerFactory.getLogger(JsonRpcClient.class);
+	private final Logger log = LoggerFactory.getLogger(JsonRpcClient.class);
 
 	private Thread longPoolingThread;
 	private String url;
@@ -32,7 +47,13 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 	private Session session;
 	private HttpResponseSender rs;
 
+	private final HttpHeaders headers = new HttpHeaders();
+
 	public JsonRpcClientHttp(String url) {
+		this(url, new HttpHeaders());
+	}
+
+	public JsonRpcClientHttp(String url, HttpHeaders headers) {
 		this.url = url;
 		this.rs = new HttpResponseSender();
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
@@ -50,6 +71,8 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 						"Async client int local is unavailable");
 			}
 		};
+
+		this.headers.putAll(headers);
 	}
 
 	private void updateSession(Response<?> response) {

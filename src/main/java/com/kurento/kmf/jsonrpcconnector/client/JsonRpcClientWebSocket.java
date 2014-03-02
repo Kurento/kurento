@@ -1,3 +1,17 @@
+/*
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 package com.kurento.kmf.jsonrpcconnector.client;
 
 import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJson;
@@ -11,6 +25,7 @@ import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
@@ -32,15 +47,20 @@ import com.kurento.kmf.jsonrpcconnector.internal.ws.WebSocketResponseSender;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
-	private Logger log = LoggerFactory.getLogger(JsonRpcClient.class);
+	private final Logger log = LoggerFactory.getLogger(JsonRpcClient.class);
 
 	private String url;
 	private volatile WebSocketSession wsSession;
-	private PendingRequests pendingRequests = new PendingRequests();
+	private final PendingRequests pendingRequests = new PendingRequests();
+	private final HttpHeaders headers = new HttpHeaders();
 
 	private ResponseSender rs;
 
 	public JsonRpcClientWebSocket(String url) {
+		this(url, new HttpHeaders());
+	}
+
+	public JsonRpcClientWebSocket(String url, HttpHeaders headers) {
 
 		// Append /ws to avoid collisions with http
 		// Append /websockets to point to websocket interface in SockJS
@@ -62,6 +82,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 						"Async client with WebSockets is unavailable");
 			}
 		};
+
+		this.headers.putAll(headers);
 	}
 
 	private synchronized void connectIfNecessary() throws IOException {
@@ -106,6 +128,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			WebSocketConnectionManager connectionManager = new WebSocketConnectionManager(
 					new StandardWebSocketClient(), webSocketHandler, url);
 
+			connectionManager.setHeaders(headers);
 			connectionManager.start();
 
 			try {

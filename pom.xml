@@ -53,6 +53,10 @@
 			<artifactId>fluent-hc</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.scribe</groupId>
+			<artifactId>scribe</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
