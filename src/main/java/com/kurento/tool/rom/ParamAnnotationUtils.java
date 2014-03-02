@@ -77,9 +77,7 @@ public class ParamAnnotationUtils {
 
 		for (int i = 0; i < names.size(); i++) {
 			String name = names.get(i);
-			if (name.equals("object")) {
-				params[i] = data.getProp(name);
-			}
+			params[i] = data.getProp(name);
 		}
 
 		return params;
