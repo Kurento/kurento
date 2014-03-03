@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.ktool</groupId>
 	<artifactId>ktool-rom-processor</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>ktool-rom-processor</name>
@@ -99,4 +99,4 @@
 		</dependency>
 
 	</dependencies>
-<scm><tag>ktool-rom-processor-1.0.0</tag></scm></project>
+</project>
