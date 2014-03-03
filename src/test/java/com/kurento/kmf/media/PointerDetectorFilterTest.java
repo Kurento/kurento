@@ -139,13 +139,11 @@ public class PointerDetectorFilterTest {
 		});
 
 		player.play();
-		// Assert.assertTrue("window0".equals(eventsIn.poll(20, SECONDS)
-		// .getWindowId()));
-		// Assert.assertTrue("window0".equals(eventsOut.poll(5, SECONDS)
-		// .getWindowId()));
-		// TODO: Fix event deserialization
-		Assert.assertTrue(eventsIn.poll(20, SECONDS) != null);
-		Assert.assertTrue(eventsOut.poll(5, SECONDS) != null);
+		Assert.assertTrue("window0".equals(eventsIn.poll(20, SECONDS)
+				.getWindowId()));
+		Assert.assertTrue("window0".equals(eventsOut.poll(5, SECONDS)
+				.getWindowId()));
+
 		player.stop();
 	}
 
