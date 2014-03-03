@@ -22,11 +22,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
+		
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-repository-api</artifactId>
-			<version>${kmf-repository-api.version}</version>
 		</dependency>
 
 	</dependencies>
