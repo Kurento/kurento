@@ -82,7 +82,7 @@ public class GenericPlayer {
 				session.start(httpEndpoint);
 				session.setAttribute("eventValue", "");
 				zBarFilter
-						.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+						.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
 							@Override
 							public void onEvent(CodeFoundEvent event) {
 								log.info("Code Found " + event.getValue());

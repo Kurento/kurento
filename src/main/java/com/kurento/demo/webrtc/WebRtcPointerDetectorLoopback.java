@@ -19,12 +19,11 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PointerDetectorFilter;
+import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.events.WindowOutEvent;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
 
 /**
  * WebRtc Handler with PointerDetectorFilter in loopback.
@@ -41,8 +40,8 @@ public class WebRtcPointerDetectorLoopback extends WebRtcContentHandler {
 		session.releaseOnTerminate(mp);
 
 		PointerDetectorFilter filter = mp.newPointerDetectorFilter().build();
-		PointerDetectorWindowMediaParam window1 = new PointerDetectorWindowMediaParamBuilder(
-				"window1", 50, 50, 50, 50).build();
+		PointerDetectorWindowMediaParam window1 = new PointerDetectorWindowMediaParam(
+				"window1", 50, 50, 50, 50);
 		filter.addWindow(window1);
 		filter.addWindowInListener(new MediaEventListener<WindowInEvent>() {
 			@Override

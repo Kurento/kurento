@@ -33,7 +33,7 @@ public class CpRtcPlayerZbarHandler extends HttpPlayerHandler {
 			return;
 		}
 		CpRtcRtpZbarHandler.sharedFilterReference
-				.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+				.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
 
 					@Override
 					public void onEvent(CodeFoundEvent event) {

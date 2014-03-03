@@ -34,13 +34,12 @@ import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PointerDetectorAdvFilter;
+import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.kmf.media.WindowParam;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam;
-import com.kurento.kmf.media.params.internal.PointerDetectorWindowMediaParam.PointerDetectorWindowMediaParamBuilder;
-import com.kurento.kmf.media.params.internal.WindowParam;
 import com.kurento.kmf.repository.RepositoryHttpRecorder;
 import com.kurento.kmf.repository.RepositoryItem;
 
@@ -104,9 +103,9 @@ public class CpbWebRtc extends WebRtcContentHandler {
 
 		chromaFilter = mediaPipeline.newChromaFilter(
 				new WindowParam(100, 10, 500, 400)).build();
-		pointerDetectorAdvFilter = mediaPipeline
-				.newPointerDetectorAdvFilter(new WindowParam(5, 5, 50, 50))
-				.withWindow(cpbWindows.start).build();
+		pointerDetectorAdvFilter = mediaPipeline.newPointerDetectorAdvFilter(
+				new WindowParam(5, 5, 50, 50)).build();
+		pointerDetectorAdvFilter.addWindow(cpbWindows.start);
 		activeWindow = Windows.START;
 		faceOverlayFilter = mediaPipeline.newFaceOverlayFilter().build();
 		rateLimiter.connect(mirrorFilter);
@@ -332,30 +331,37 @@ class CpbWindows {
 	public PointerDetectorWindowMediaParam fiware;
 
 	public CpbWindows(String handlerUrl) throws URISyntaxException {
-		start = new PointerDetectorWindowMediaParamBuilder(
-				Windows.START.toString(), 100, 100, 280, 380).withImage(
-				handlerUrl + "/img/buttons/start.png").build();
-		mario = new PointerDetectorWindowMediaParamBuilder(
-				Windows.MARIO.toString(), 100, 100, 540, 0).withImage(
-				handlerUrl + "/img/buttons/mario.png").build();
-		dk = new PointerDetectorWindowMediaParamBuilder(Windows.DK.toString(),
-				100, 100, 540, 126).withImage(
-				handlerUrl + "/img/buttons/dk.png").build();
-		sf = new PointerDetectorWindowMediaParamBuilder(Windows.SF.toString(),
-				100, 100, 540, 252).withImage(
-				handlerUrl + "/img/buttons/sf.png").build();
-		sonic = new PointerDetectorWindowMediaParamBuilder(
-				Windows.SONIC.toString(), 100, 100, 540, 380).withImage(
-				handlerUrl + "/img/buttons/sonic.png").build();
-		youtube = new PointerDetectorWindowMediaParamBuilder(
-				Windows.YOUTUBE.toString(), 100, 100, 0, 380).withImage(
-				handlerUrl + "/img/buttons/youtube.png").build();
-		trash = new PointerDetectorWindowMediaParamBuilder(
-				Windows.TRASH.toString(), 100, 100, 0, 190).withImage(
-				handlerUrl + "/img/buttons/trash.png").build();
-		fiware = new PointerDetectorWindowMediaParamBuilder(
-				Windows.FIWARE.toString(), 40, 180, 230, 0).withImage(
-				handlerUrl + "/img/buttons/fiware2.png").build();
-	}
+		start = new PointerDetectorWindowMediaParam(Windows.START.toString(),
+				100, 100, 280, 380);
+		start.setImage(handlerUrl + "/img/buttons/start.png");
 
+		mario = new PointerDetectorWindowMediaParam(Windows.MARIO.toString(),
+				100, 100, 540, 0);
+		mario.setImage(handlerUrl + "/img/buttons/mario.png");
+
+		dk = new PointerDetectorWindowMediaParam(Windows.DK.toString(), 100,
+				100, 540, 126);
+		dk.setImage(handlerUrl + "/img/buttons/dk.png");
+
+		sf = new PointerDetectorWindowMediaParam(Windows.SF.toString(), 100,
+				100, 540, 252);
+		sf.setImage(handlerUrl + "/img/buttons/sf.png");
+
+		sonic = new PointerDetectorWindowMediaParam(Windows.SONIC.toString(),
+				100, 100, 540, 380);
+		sonic.setImage(handlerUrl
+				+ "/img/buttons/PointerDetectorWindowMediaParam.png");
+
+		youtube = new PointerDetectorWindowMediaParam(
+				Windows.YOUTUBE.toString(), 100, 100, 0, 380);
+		youtube.setImage(handlerUrl + "/img/buttons/youtube.png");
+
+		trash = new PointerDetectorWindowMediaParam(Windows.TRASH.toString(),
+				100, 100, 0, 190);
+		trash.setImage(handlerUrl + "/img/buttons/trash.png");
+
+		fiware = new PointerDetectorWindowMediaParam(Windows.FIWARE.toString(),
+				40, 180, 230, 0);
+		fiware.setImage(handlerUrl + "/img/buttons/fiware2.png");
+	}
 }
