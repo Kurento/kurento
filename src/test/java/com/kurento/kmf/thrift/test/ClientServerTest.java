@@ -31,7 +31,7 @@ public class ClientServerTest {
 	public static class KmfThriftTestConfiguration {
 
 		@Bean
-		public ThriftInterfaceConfiguration configuration() {
+		public ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
 
 			ThriftInterfaceConfiguration configuration = new ThriftInterfaceConfiguration();
 			configuration.setServerAddress("127.0.0.1");

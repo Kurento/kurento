@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.pool.MediaServerAsyncClientFactory;
 import com.kurento.kmf.thrift.pool.MediaServerAsyncClientPool;
@@ -61,10 +62,10 @@ public class ThriftConnectorApplicationContextConfiguration {
 		return new MediaServerAsyncClientPool();
 	}
 
-	// @Bean
-	// ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
-	// return new ThriftInterfaceConfiguration();
-	// }
+	@Bean
+	ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
+		return new ThriftInterfaceConfiguration();
+	}
 
 	// @Bean
 	// DistributedGarbageCollector distributedGarbageCollector() {
