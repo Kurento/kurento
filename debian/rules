@@ -23,7 +23,7 @@ override_dh_auto_build:
 	echo $$DST $$CLASSPATH &&\
 	(cd "$(SRC)" &&\
 	 find . -name *.java -print | xargs javac -source 6 -target 6 -cp $$CLASSPATH:. -d $$DST ) &&\
-	cd "$$DST" && jar cfem ../ktool-rom-processor.jar com/kurento/kms/idl/codegen/Main ../../scripts/Manifest.txt $$(find . -name "*.class" -print)
+	cd "$$DST" && jar cfem ../ktool-rom-processor.jar com/kurento/ktool/rom/processor/codegen/Main ../../scripts/Manifest.txt $$(find . -name "*.class" -print)
 	#mvn verify -Duser.home=$$HOME
 	dh_auto_build
 

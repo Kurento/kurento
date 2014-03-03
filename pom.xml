@@ -44,7 +44,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifestEntries>
-							<Main-Class>com.kurento.kms.idl.codegen.Main</Main-Class>
+							<Main-Class>com.kurento.ktool.rom.processor.codegen.Main</Main-Class>
 						</manifestEntries>
 					</archive>
 				</configuration>
