@@ -15,27 +15,29 @@
 package com.kurento.kmf.connector;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
 
 import org.apache.thrift.TException;
+import org.apache.thrift.async.AsyncMethodCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.google.gson.JsonObject;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
-import com.kurento.kms.thrift.api.KmsMediaError;
-import com.kurento.kms.thrift.api.KmsMediaEvent;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
+import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRpc_call;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -50,30 +52,19 @@ public final class ThriftConnectorJsonRpcHandler extends
 	 */
 	private final Processor<Iface> processor = new Processor<Iface>(
 			new Iface() {
-
 				@Override
-				public void onError(final String callbackToken,
-						final KmsMediaError error) throws TException {
-					// TODO convert error to protocol message
+				public void eventJsonRpc(String request) throws TException {
 					try {
-						session.sendRequest("onError", error);
+
+						Request<JsonObject> response = JsonUtils.fromJsonRequest(request,
+								JsonObject.class);
+
+						session.sendRequest("onEvent", response.getParams());
 					} catch (IOException e) {
-						// TODO log and change exception type
-						throw new KurentoMediaFrameworkException("");
+						throw new KurentoMediaFrameworkException("Exception while sending event",e);
 					}
 				}
 
-				@Override
-				public void onEvent(final String callbackToken,
-						final KmsMediaEvent event) throws TException {
-					// TODO convert event to protocol message
-					try {
-						session.sendRequest("onEvent", event);
-					} catch (IOException e) {
-						// TODO log and change exception type
-						throw new KurentoMediaFrameworkException("");
-					}
-				}
 			});
 
 	private Session session;
@@ -86,9 +77,6 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 	@Autowired
 	private ThriftConnectorConfiguration config;
-
-	@Autowired
-	private MethodResolver methodResolver;
 
 	@Autowired
 	private ApplicationContext ctx;
@@ -112,28 +100,74 @@ public final class ThriftConnectorJsonRpcHandler extends
 	public void handleRequest(final Transaction transaction,
 			final Request<JsonObject> request) throws Exception {
 
-		ThriftMethod method = methodResolver.lookup(request.getMethod(),
-				request.getParams());
-
 		AsyncClient client = clientPool.acquireAsync();
 
+		transaction.startAsync();
+
+		if(request.getMethod().equals("subscribe")) {
+			request.getParams().addProperty("ip", config.getHandlerAddress());
+			request.getParams().addProperty("port", config.getHandlerPort());
+		}
+
+		client.invokeJsonRpc(request.toString(),
+				new AsyncMethodCallback<invokeJsonRpc_call>() {
+
+					@Override
+					public void onComplete(invokeJsonRpc_call response) {
+						requestOnComplete(response, transaction);
+					}
+
+					@Override
+					public void onError(Exception exception) {
+						requestOnError(exception, transaction);
+					}
+				});
+	}
+
+	protected void requestOnError(Exception exception, Transaction transaction) {
 		try {
-
-			transaction.startAsync();
-			method.invoke(client, request.getParams(), transaction);
-
-		} catch (InvocationTargetException e) {
-
-			clientPool.release(client);
-			// TODO add error code
+			transaction.sendError(exception);
+		} catch (IOException e) {
+			// TODO Error code
 			throw new KurentoMediaFrameworkException(
-					"An exception occurred in the Media Server invoking the method "
-							+ request.getMethod());
-
-		} catch (Throwable e) {
-			clientPool.release(client);
-			throw new KurentoMediaFrameworkException(e.getMessage(), e);
+					"Exception while sending response to client");
 		}
 	}
 
+	protected void requestOnComplete(invokeJsonRpc_call mediaServerResponse,
+			Transaction transaction) {
+
+		try {
+
+			String result = mediaServerResponse.getResult();
+
+			Response<JsonObject> response = JsonUtils.fromJsonResponse(result,
+					JsonObject.class);
+
+			if (response.isError()) {
+				ResponseError error = response.getError();
+				transaction.sendError(error.getCode(), error.getMessage(),
+						error.getData());
+			} else {
+				transaction.sendResponse(response.getResult());
+			}
+
+		} catch (TException e) {
+
+			try {
+
+				transaction.sendError(e);
+
+			} catch (IOException e1) {
+				// TODO Error code
+				throw new KurentoMediaFrameworkException(
+						"Exception while sending response to client");
+			}
+
+		} catch (IOException e) {
+			// TODO Error code
+			throw new KurentoMediaFrameworkException(
+					"Exception while sending response to client");
+		}
+	}
 }
