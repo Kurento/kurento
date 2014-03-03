@@ -114,7 +114,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 	public void handleRequest(final Transaction transaction,
 			final Request<JsonObject> request) throws Exception {
 
-		AsyncClient client = clientPool.acquireAsync();
+		final AsyncClient client = clientPool.acquireAsync();
 
 		transaction.startAsync();
 
@@ -128,11 +128,13 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 					@Override
 					public void onComplete(invokeJsonRpc_call response) {
+						clientPool.release(client);
 						requestOnComplete(response, transaction);
 					}
 
 					@Override
 					public void onError(Exception exception) {
+						clientPool.release(client);
 						requestOnError(exception, transaction);
 					}
 				});
