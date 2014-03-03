@@ -25,6 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -82,6 +83,7 @@ public class PlateDetectorFilterAsyncTest extends AbstractAsyncBaseTest {
 		releaseMediaObject(detector);
 	}
 
+	@Ignore
 	@Test
 	public void testEventPlateDetected() throws InterruptedException {
 
