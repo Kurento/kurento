@@ -18,6 +18,7 @@ import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
@@ -28,9 +29,9 @@ import com.kurento.kmf.media.WebRtcEndpoint;
  * participant in the conference.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 1.0.1
+ * @since 3.0.7
  */
-@WebRtcContentService(path = "/webRtcOneToMany")
+@WebRtcContentService(path = "/webRtcOneToMany/*")
 public class WebRtcOneToMany extends WebRtcContentHandler {
 
 	private WebRtcEndpoint firstWebRtcEndpoint;
@@ -38,8 +39,9 @@ public class WebRtcOneToMany extends WebRtcContentHandler {
 	private String sessionId;
 
 	@Override
-	public void onContentRequest(WebRtcContentSession contentSession)
-			throws Exception {
+	public synchronized void onContentRequest(
+			WebRtcContentSession contentSession) throws Exception {
+		String contentId = contentSession.getContentId();
 		if (firstWebRtcEndpoint == null) {
 			MediaPipeline mp = contentSession.getMediaPipelineFactory()
 					.create();
@@ -49,6 +51,14 @@ public class WebRtcOneToMany extends WebRtcContentHandler {
 			sessionId = contentSession.getSessionId();
 			contentSession.releaseOnTerminate(firstWebRtcEndpoint);
 			firstWebRtcEndpoint.connect(firstWebRtcEndpoint);
+
+			if (contentId != null && contentId.equalsIgnoreCase("record")) {
+				RecorderEndpoint recorderEndPoint = mp.newRecorderEndpoint(
+						"file:///tmp/master").build();
+				contentSession.setAttribute("recorder", recorderEndPoint);
+				firstWebRtcEndpoint.connect(recorderEndPoint);
+			}
+
 			contentSession.start(firstWebRtcEndpoint);
 		} else {
 			MediaPipeline mp = firstWebRtcEndpoint.getMediaPipeline();
@@ -57,7 +67,24 @@ public class WebRtcOneToMany extends WebRtcContentHandler {
 			contentSession.releaseOnTerminate(newWebRtcEndpoint);
 			newWebRtcEndpoint.connect(firstWebRtcEndpoint);
 			firstWebRtcEndpoint.connect(newWebRtcEndpoint);
+
+			if (contentId != null && contentId.equalsIgnoreCase("record")) {
+				RecorderEndpoint recorderEndPoint = mp.newRecorderEndpoint(
+						"file:///tmp/peer").build();
+				contentSession.setAttribute("recorder", recorderEndPoint);
+				newWebRtcEndpoint.connect(recorderEndPoint);
+			}
+
 			contentSession.start(newWebRtcEndpoint);
+		}
+	}
+
+	@Override
+	public void onContentStarted(WebRtcContentSession contentSession) {
+		RecorderEndpoint recorderEndPoint = (RecorderEndpoint) contentSession
+				.getAttribute("recorder");
+		if (recorderEndPoint != null) {
+			recorderEndPoint.record();
 		}
 	}
 

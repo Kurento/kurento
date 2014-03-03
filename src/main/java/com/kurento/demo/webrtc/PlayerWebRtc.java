@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -21,17 +21,22 @@ import com.kurento.kmf.content.HttpPlayerSession;
 /**
  * HTTP Player of previously recorded WebRTC content; tunnel strategy
  * (redirect=false, by default); not using JSON-RPC control protocol
- * (useControlProtocol=false).
+ * (useControlProtocol=true).
  * 
- * @author Boni García (bgarcia@gsyc.es)
- * @version 1.0.1
+ * @author Boni Garcia (bgarcia@gsyc.es)
+ * @since 3.0.7
  */
-@HttpPlayerService(path = "/playerWebRtc", useControlProtocol = false)
+@HttpPlayerService(path = "/playerWebRtc/*", useControlProtocol = true)
 public class PlayerWebRtc extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		session.start(WebRtcRecorder.TARGET);
+		// If the contentId is present, then it determines the name of the file
+		// to be played, stored in the Media Server at /tmp folder
+		final String contentId = session.getContentId();
+		final String url = contentId != null ? "file:///tmp/" + contentId
+				: WebRtcRecorder.TARGET;
+		session.start(url);
 	}
 
 }

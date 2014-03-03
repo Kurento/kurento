@@ -124,18 +124,13 @@
 	}
 
 	function sendCommands() {
-		//conn.execute("typeOK", "dataOK");
 		conn.execute("typeKO", "dataKO");
 	}
 
 	function handlerChanged() {
-		var handler = document.getElementById("handler").value;
-		var disableVideo = new Array("../cpRtcPlayerJack", "../playerJsonRepository/itemTunnel", 
-				"../playerJsonRepository/itemRedirect", "../playerJsonJackVaderRepository/itemTunnel", 
-				"../playerJsonJackVaderRepository/itemRedirect", "../playerJsonRepository/itemJackVader",
-				"../playerJackVaderWebRtc", "../playerLiveWebRtc/faceoverlay", "../playerLiveWebRtc/jackvader", 
-				"../playerLiveWebRtc/loopback");
-		document.getElementById("contentId").disabled = (disableVideo.indexOf(handler) != -1);
+		var handler = document.getElementById("handler");
+		var showContentId = handler[handler.selectedIndex].getAttribute("data-show-contentId");
+		document.getElementById("contentId").disabled = (showContentId == "false");
 	}
 </script>
 </head>
@@ -147,32 +142,39 @@
 			<td valign="top">Handler</td>
 			<td valign="top"><select id="handler" name="handler"
 				onchange="handlerChanged()">
-					<option value="../playerJsonTunnel">HTTP Player with
-						tunnel</option>
-					<option value="../playerJsonRedirect">HTTP Player with
-						redirect</option>
-					<option value="../playerJsonRepository/itemTunnel">HTTP
-						Player of a recorded content (using tunnel strategy) in repository</option>
-					<option value="../playerJsonRepository/itemRedirect">HTTP
-						Player of a recorded content (using redirect strategy) in
+					<option value="../playerJsonTunnel" data-show-contentId="true">HTTP
+						Player with tunnel</option>
+					<option value="../playerJsonRedirect" data-show-contentId="true">HTTP
+						Player with redirect</option>
+					<option value="../playerJsonRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using tunnel strategy) in repository</option>
+					<option value="../playerJsonRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using redirect strategy) in repository</option>
+					<option value="../playerJsonJackVaderRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using tunnel strategy) in
 						repository</option>
-					<option value="../playerJsonJackVaderRepository/itemTunnel">HTTP
-						Player with JackVaderFilter of a recorded content (using tunnel
-						strategy) in repository</option>
-					<option value="../playerJsonJackVaderRepository/itemRedirect">HTTP
-						Player with JackVaderFilter of a recorded content (using redirect
-						strategy) in repository
-					<option value="../playerJsonRepository/itemJackVader">HTTP
-						Player of a recorded content previously filtered with
-						JackVaderFilter</option>
-					<option value="../cpRtcPlayerJack">RTP stream with
-						JackVader Filter</option>
-					<option value="../playerLiveWebRtc/faceoverlay">WebRTC
-						stream with FaceOverlay Filter</option>
-					<option value="../playerLiveWebRtc/jackvader">WebRTC
+					<option value="../playerJsonJackVaderRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using redirect strategy) in
+						repository
+					<option value="../playerJsonRepository/itemJackVader"
+						data-show-contentId="false">HTTP Player of a recorded
+						content previously filtered with JackVaderFilter</option>
+					<option value="../cpRtcPlayerJack" data-show-contentId="false">RTP
 						stream with JackVader Filter</option>
-					<option value="../playerLiveWebRtc/loopback">WebRTC stream
-						in loopback</option>
+					<option value="../playerWebRtc" data-show-contentId="false">HTTP
+						Player of a WebRTC recorded content</option>
+					<option value="../playerLiveWebRtc/faceoverlay"
+						data-show-contentId="false">WebRTC stream with
+						FaceOverlay Filter</option>
+					<option value="../playerLiveWebRtc/jackvader"
+						data-show-contentId="false">WebRTC stream with JackVader
+						Filter</option>
+					<option value="../playerLiveWebRtc/loopback"
+						data-show-contentId="false">WebRTC stream in loopback</option>
 			</select></td>
 		</tr>
 		<tr>

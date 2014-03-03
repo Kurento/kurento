@@ -40,9 +40,9 @@
 	    }
 
 		function handlerChanged() {
-			var handler = document.getElementById("handler").value;
-			var enableHandlerArray = new Array("../playerTunnel", "../playerRedirect");
-			document.getElementById("contentId").disabled = (enableHandlerArray.indexOf(handler) == -1);
+			var handler = document.getElementById("handler");
+			var showContentId = handler[handler.selectedIndex].getAttribute("data-show-contentId");
+			document.getElementById("contentId").disabled = (showContentId == "false");
 		}
 	</script>
 </head>
@@ -54,33 +54,39 @@
 			<td valign="top">Handler</td>
 			<td valign="top"><select id="handler"
 				onchange="handlerChanged()">
-					<option value="../playerTunnel">HTTP Player with tunnel</option>
-					<option value="../playerRedirect">HTTP Player with
-						redirect</option>
-					<option value="../playerRecorder/recorderTunnel">HTTP
-						Player of a recorded content (tunnel)</option>
-					<option value="../playerRecorder/recorderRedirect">HTTP
-						Player of a recorded content (redirect)</option>
-					<option value="../playerRecorder/recorderJsonTunnel">HTTP
-						Player of a recorded content (JSON and tunnel)</option>
-					<option value="../playerRecorder/recorderJsonRedirect">HTTP
-						Player of a recorded content (JSON and redirect)</option>
-					<option value="../playerWebRtc">HTTP Player of a WebRTC
-						recorded content</option>
-					<option value="../playerRepository/itemTunnel">HTTP Player
-						of a recorded content (using tunnel strategy) in repository</option>
-					<option value="../playerRepository/itemRedirect">HTTP
-						Player of a recorded content (using redirect strategy) in
+					<option value="../playerTunnel" data-show-contentId="true">HTTP
+						Player with tunnel</option>
+					<option value="../playerRedirect" data-show-contentId="true">HTTP
+						Player with redirect</option>
+					<option value="../playerRecorder/recorderTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (tunnel)</option>
+					<option value="../playerRecorder/recorderRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (redirect)</option>
+					<option value="../playerRecorder/recorderJsonTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (JSON and tunnel)</option>
+					<option value="../playerRecorder/recorderJsonRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (JSON and redirect)</option>
+					<option value="../playerRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using tunnel strategy) in repository</option>
+					<option value="../playerRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using redirect strategy) in repository</option>
+					<option value="../playerJackVaderRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using tunnel strategy) in
 						repository</option>
-					<option value="../playerJackVaderRepository/itemTunnel">HTTP
-						Player with JackVaderFilter of a recorded content (using tunnel
-						strategy) in repository</option>
-					<option value="../playerJackVaderRepository/itemRedirect">HTTP
-						Player with JackVaderFilter of a recorded content (using redirect
-						strategy) in repository</option>
-					<option value="../playerRepository/itemJackVader">HTTP
-						Player of a recorded content previously filtered with
-						JackVaderFilter</option>
+					<option value="../playerJackVaderRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using redirect strategy) in
+						repository</option>
+					<option value="../playerRepository/itemJackVader"
+						data-show-contentId="false">HTTP Player of a recorded
+						content previously filtered with JackVaderFilter</option>
 			</select></td>
 		</tr>
 		<tr>
