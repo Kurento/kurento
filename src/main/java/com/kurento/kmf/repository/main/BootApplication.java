@@ -37,8 +37,10 @@ public class BootApplication {
 
 	@Bean
 	public ServletRegistrationBean repositoryServletRegistrationBean() {
-		return new ServletRegistrationBean(new RepositoryHttpServlet(),
+		ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(new RepositoryHttpServlet(),
 				"/repository_servlet/*");
+		servletRegistrationBean.setLoadOnStartup(1);
+		return servletRegistrationBean;
 	}
 
 	@Bean
