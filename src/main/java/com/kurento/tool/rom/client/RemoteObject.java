@@ -158,4 +158,30 @@ public class RemoteObject {
 		return type;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((objectRef == null) ? 0 : objectRef.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RemoteObject other = (RemoteObject) obj;
+		if (objectRef == null) {
+			if (other.objectRef != null)
+				return false;
+		} else if (!objectRef.equals(other.objectRef))
+			return false;
+		return true;
+	}
+
 }

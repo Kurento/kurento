@@ -9,7 +9,8 @@ import com.google.common.collect.ImmutableSet;
 public abstract class DefaultInvocationHandler implements InvocationHandler {
 
 	private static final Set<String> DEFAULT_METHODS = ImmutableSet.of(
-			"toString", "notify", "notifyAll", "wait", "getClass", "clone");
+			"toString", "notify", "notifyAll", "wait", "getClass", "clone",
+			"equals", "hashCode");
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args)

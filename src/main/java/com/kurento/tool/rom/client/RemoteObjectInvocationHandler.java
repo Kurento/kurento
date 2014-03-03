@@ -191,4 +191,31 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 		return "[RemoteObject: type=" + this.remoteObject.getType()
 				+ " remoteRef=" + remoteObject.getObjectRef() + "";
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((remoteObject == null) ? 0 : remoteObject.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RemoteObjectInvocationHandler other = (RemoteObjectInvocationHandler) obj;
+		if (remoteObject == null) {
+			if (other.remoteObject != null)
+				return false;
+		} else if (!remoteObject.equals(other.remoteObject))
+			return false;
+		return true;
+	}
+
 }
