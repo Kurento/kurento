@@ -35,7 +35,7 @@
   ],
   "dependencies": {
     "async": "~0.2.9",
-    "rpc-builder": "~0.0.3",
+    "kws-rpc-builder": "~3.0.7",
     "ws": "~0.4.31",
     "xmlhttprequest": "piranna/node-XMLHttpRequest"
   },
