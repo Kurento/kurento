@@ -2,10 +2,12 @@ ${config.subfolder}/${remoteClass.name}.java
 package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
+import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.FactoryMethod;
 import java.util.List;
 import ${config.packageName}.events.*;
 
+@RemoteClass
 public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remoteClass.extends.name}</#if> {
 
    <#list remoteClass.methods as method>
