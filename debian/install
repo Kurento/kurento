@@ -1,2 +1,2 @@
-target/kms-interface-idl.jar /usr/share/java
-scripts/kms-interface-idl /usr/bin
+target/ktool-rom-processor.jar /usr/share/java
+scripts/ktool-rom-processor /usr/bin

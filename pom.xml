@@ -2,12 +2,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.kurento.kms</groupId>
-	<artifactId>kms-interface-idl</artifactId>
+	<groupId>com.kurento.ktool</groupId>
+	<artifactId>ktool-rom-processor</artifactId>
 	<version>3.0.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>org.kurento.kms.idl</name>
+	<name>ktool-rom-processor</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
