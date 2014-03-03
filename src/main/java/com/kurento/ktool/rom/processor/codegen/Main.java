@@ -15,6 +15,7 @@ import org.apache.commons.cli.PosixParser;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
@@ -161,7 +162,9 @@ public class Main {
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		Gson gson = gsonBuilder.create();
 		try {
-			return gson.fromJson(new FileReader(configFile), JsonObject.class);
+			JsonElement element = gson.fromJson(new FileReader(configFile),
+					JsonElement.class);
+			return element.getAsJsonObject();
 		} catch (JsonSyntaxException e) {
 			System.err.println("Config file '" + configFile
 					+ "' has the following formatting error:");
