@@ -7,13 +7,12 @@
 Introduction
 ============
 
-This guide describes how to install the Stream-Oriented GE - Kurento.
-Kurento is composed of two nodes, the Kurento Application Server (a.k.a.
-:term:`KAS`) and the Kurento Media Server (a.k.a :term:`KMS`). These two
-nodes can be co-located or installed on separate machines. This guide
-focuses on the installation on a single machine, but comments are done
-where appropriate explaining how to modify the configuration files for a
-dual installation.
+This guide describes how to install Kurento. Kurento is composed of two nodes,
+the Kurento Application Server (a.k.a.  :term:`KAS`) and the Kurento Media
+Server (a.k.a :term:`KMS`). These two nodes can be co-located or installed
+on separate machines. This guide focuses on the installation on a single
+machine, but comments are done where appropriate explaining how to modify
+the configuration files for a dual installation.
 
 Prerequisites
 -------------
