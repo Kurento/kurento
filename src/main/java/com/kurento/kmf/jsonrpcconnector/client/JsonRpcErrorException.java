@@ -37,11 +37,11 @@ public class JsonRpcErrorException extends RuntimeException {
 		return error;
 	}
 
-	public Object getData() {
+	public String getData() {
 		return error.getData();
 	}
 
-	public Object getCode() {
+	public int getCode() {
 		return error.getCode();
 	}
 
