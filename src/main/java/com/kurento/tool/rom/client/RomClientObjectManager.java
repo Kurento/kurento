@@ -46,14 +46,12 @@ public class RomClientObjectManager implements RomEventHandler,
 
 	public void registerObject(String objectRef, RemoteObject remoteObject) {
 		this.objects.put(objectRef, remoteObject);
-		//TODO Enable when MediaServer works with keepAlive requests
-		//this.dgc.registerReference(objectRef);
+		this.dgc.registerReference(objectRef);
 	}
 
 	public void releaseObject(String objectRef) {
 		this.objects.remove(objectRef);
-		//TODO Enable when MediaServer works with keepAlive requests
-		//this.dgc.removeReference(objectRef);
+		this.dgc.removeReference(objectRef);
 	}
 
 	@Override
