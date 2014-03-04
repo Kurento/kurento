@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
+import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaObject;
 
@@ -39,7 +40,7 @@ public class DistributedGarbageCollector {
 	// TODO Let spring manage this timers with a TimerTaskExecutor
 	private final ConcurrentMap<String, Timer> timers = new ConcurrentHashMap<>();
 
-	private RomClient client;
+	private final RomClient client;
 
 	public DistributedGarbageCollector(RomClient client) {
 		this.client = client;
@@ -129,12 +130,21 @@ public class DistributedGarbageCollector {
 		client.keepAlive(objectRef, new Continuation<Void>() {
 			@Override
 			public void onError(Throwable e) {
+
+				if (e instanceof JsonRpcErrorException) {
+					int errorCode = ((JsonRpcErrorException) e).getCode();
+					// TODO this should be obtained form a common place
+					if (errorCode == -32000) {
+						removeReference(objectRef);
+					}
+				}
+
 				log.error(e.getMessage(), e);
 			}
 
 			@Override
 			public void onSuccess(Void response) {
-
+				log.trace("Keepalive sent for object: " + objectRef);
 			}
 		});
 	}
