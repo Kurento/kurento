@@ -17,6 +17,7 @@
 
 	var Event = {
 		ON_JOINED : "onJoined",
+		ON_UNJOINED : "onUnjoined",
 	}
 
 	function addParticipant(participant) {
@@ -27,9 +28,23 @@
 		participants.appendChild(opt);
 	}
 
+	function removeParticipant(participant) {
+		var participants = document.getElementById('participants');
+		for (i = 0; i < participants.length; i++) {
+			if (participants.options[i].text == participant) {
+				participants.remove(i);
+				break;
+			}
+		}
+	}
+
 	/* Events */
 	function onJoined(participant) {
 		addParticipant(participant);
+	}
+
+	function onUnjoined(participant) {
+		removeParticipant(participant);
 	}
 
 	/* Commands */
@@ -96,6 +111,8 @@
 
 			if (Event.ON_JOINED == event.type) {
 				onJoined(event.data);
+			} else if (Event.ON_UNJOINED == event.type) {
+				onUnjoined(event.data);
 			}
 		});
 
