@@ -135,6 +135,9 @@ public class DistributedGarbageCollector {
 					int errorCode = ((JsonRpcErrorException) e).getCode();
 					// TODO this should be obtained form a common place
 					if (errorCode == -32000) {
+						log.trace(
+								"Object {} not found in KMS. Will remove reference",
+								objectRef);
 						removeReference(objectRef);
 					}
 				}
@@ -144,7 +147,7 @@ public class DistributedGarbageCollector {
 
 			@Override
 			public void onSuccess(Void response) {
-				log.trace("Keepalive sent for object: " + objectRef);
+				log.trace("Keepalive sent for object: {}", objectRef);
 			}
 		});
 	}
