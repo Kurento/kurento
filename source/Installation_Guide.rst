@@ -18,7 +18,7 @@ dual installation.
 Prerequisites
 -------------
 
-Hardware minimal recommneded requirements:
+Hardware minimal recommended requirements:
 
 -  8GB RAM
 -  16GB HDD (this figure is not taking into account that multimedia
