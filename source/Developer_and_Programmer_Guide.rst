@@ -140,7 +140,7 @@ create a *Kurento* based application:
        mediaApiConfiguration.serverAddress=127.0.0.1
 
        # Put here the port where KMS management daemon is bound
-       # If you did not movify KMS default configuation, let it as 9090
+       # If you did not modify KMS default configuration, let it as 9090
        mediaApiConfiguration.serverPort=9090
 
        # Put here the IP address where KAS management handler must listen
@@ -168,8 +168,8 @@ create a *Kurento* based application:
        import com.kurento.kmf.content.HttpPlayerService;
        import com.kurento.kmf.content.HttpPlayerSession;
 
-       @HttpPlayerService(name = "myService", path = "/playerService", useControlProtocol=false)
-       public class MyService extends HttpPlayerHandler{
+       @HttpPlayerService(path = "/playerService", useControlProtocol=false)
+       public class MyService extends HttpPlayerHandler {
 
             @Override
             public void onContentRequest(HttpPlayerSession session) throws Exception {
@@ -190,7 +190,7 @@ create a *Kurento* based application:
    .. sourcecode:: bash
 
        sudo cp mykurento.war $JBOSS_HOME/standalone/deployments
-       $JBOSS_HOME/bin/standalone.sh
+       sudo /etc/init.d/jboss7 start
 
 Client side of your first application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -505,7 +505,7 @@ HTTP Recorder Service
 request received in the *service entry point*. The receiver *HTTP
 Endpoint* will search for the first *content part* with a supported
 multimedia format and will feed the media resource specified by the
-handler (``file://myfile``). *Recorder service* accepts from client any
+handler (``file:///myfile``). *Recorder service* accepts from client any
 multimedia format supported by *Gstreamer*, but transforms content to
 *WebM* or *MP4* before writing to file.
 
@@ -515,14 +515,14 @@ multimedia format supported by *Gstreamer*, but transforms content to
     import com.kurento.kmf.content.HttpRecorderService;
     import com.kurento.kmf.content.HttpRecorderSession;
 
-    @HttpRecorderService(name = "myRecorder", path = "/myRecorderService")
-    public class MyRecorderService extends HttpRecorderHandler{
+    @HttpRecorderService(path = "/myRecorderService")
+    public class MyRecorderService extends HttpRecorderHandler {
 
         @Override
         public void onContentRequest(HttpRecorderSession contentSession)
                 throws Exception {
             
-            contentSession.start("file://myfile.webm");
+            contentSession.start("file:///myfile.webm");
         }
     }
 
@@ -554,8 +554,8 @@ by the *service entry point*.
     import com.kurento.kmf.content.WebRtcContentSession;
     import com.kurento.kmf.media.MediaPipeline;
     import com.kurento.kmf.media.MediaPipelineFactory;
-    import com.kurento.kmf.media.PlayerEndPoint;
-    import com.kurento.kmf.media.RecorderEndPoint;
+    import com.kurento.kmf.media.PlayerEndpoint;
+    import com.kurento.kmf.media.RecorderEndpoint;
 
     @WebRtcContentService(path = "/myWebRtcService")
     public class MyWebRtpService extends WebRtcContentHandler{
@@ -649,28 +649,40 @@ provided in this call.
 ::
 
     @Override
-    public void onSessionTerminated(WebRtcContentSession contentSession, int code, String reason) throws Exception {
+    public void onSessionTerminated(WebRtcContentSession contentSession, int code, String reason)
+                            throws Exception {
         // Execute specific application logic when content session terminates
     }
 
 The *content session* is terminated automatically if the *Endpoint*
 experiences an unrecoverable error not caused by a direct application
 command. Events like client disconnection, file system access fail, etc.
-are the main error cause . Method ``onSessionError()`` is called with
-the error code.
+are the main error cause . Any of these exception can be handled on
+:java:meth:`onUncaughtException()`.
+::
+
+    @Override
+    public void onUncaughtException(HttpPlayerSession contentSession, Throwable exception) throws Exception {
+        // Execute specific application logic if there is an unrecoverable
+        // error on the media infrastructure. Session is destroyed after 
+        // executing this code
+    }
+
+If exceptions are not handled, there will be propagated and method
+:java:meth:`onSessionError()` will be called with the error code and description.
 ::
 
     @Override
     public void onSessionError(WebRtcContentSession contentSession, int code, String description) throws Exception {
         // Execute specific application logic if there is an unrecoverable
-            // error on the media infrastructure. Session is destroyed after 
-            // executing this code
+        // error on the media infrastructure. Session is destroyed after 
+        // executing this code
     }
 
 The *content session* is able to store and manage application attributes
 through its lifecycle, in a similar way as ``HttpSession`` does. Method
-``setAttribute()`` stores an object that can later be retrieved with
-method ``getAttribute()`` or deleted with method ``removeAttribute()``.
+:java:meth`setAttribute()` stores an object that can later be retrieved with
+method :java:meth:`getAttribute()` or deleted with method :java:meth:`removeAttribute()`.
 ::
 
     @Override
@@ -693,6 +705,7 @@ One important feature of the *content session* is its capability to
 share real time information with clients through a bidirectional
 channel. In order to interchange messages with a browser an
 :doc:`Open API <Open_API_Specification>` client, like the one implemented by the HTML5 SDK, has to be used.
+These messages follows a signaling protocol based on '''''JSON-RPC'''''.
 Messages can be interchanged between the *service handler* and the
 client while the *content session* is active. Method ``publisEvent()``
 is used for this purpose. This capability is quite useful combined with
@@ -807,7 +820,7 @@ Method ``releaseOnTerminate()`` can be used for this purpose.
     MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
     MediaPipeline mp = mpf.create();
             
-    PlayerEndPoint player = mp.createPlayerEndPoint("file:///path/to/myplayed.avi");
+    PlayerEndpoint player = mp.createPlayerEndpoint("file:///path/to/myplayed.avi");
     contentSession.releaseOnTerminate(player);
 
     contentSession.start(player);
@@ -830,7 +843,7 @@ until an explicit release is performed.
         MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
         MediaPipeline mp = mpf.create();
         
-        PlayerEndPoint player = mp.newPlayerEndPoint("file:///d").build();
+        PlayerEndpoint player = mp.newPlayerEndpoint("file:///d").build();
 
         contentSession.start(player);
     }
@@ -866,6 +879,9 @@ Following dependency has to be added to ``pom.xml`` in order to use
         </dependency>
     …
     </dependencies>
+
+MediaPipeline
+~~~~~~~~~~~~~
 
 The ``MediaPipelineFactory`` is the API entry point. It can be obtained
 from the *content session* when used in conjunction with the ''Content
@@ -941,25 +957,38 @@ purpose.
 *MediaElements* within a pipeline can be connected to build services,
 but they are isolated from the rest of the system. This has to be taken
 into account when programming applications.
+
+As introduced before, currently there are two kinds of `MediaElements`,
+namely `EndPoints` and `Filters`
+
+EndPoints
+~~~~~~~~~
+
+:term:`KMS` :java:type:`MediaElements <MediaElement>` are created through
+specific builders, allowing a
+flexible initialization. Mandatory parameters must be provided in the
+builder constructor, like the URL in the :java:type:`PlayerEndpoint`.
+Optional parameters are set to defaults unless the application overrides
+their values.
 ::
 
     public void createMediaElements() {
         MediaPipeline mp = mpf.create();
-        HttpEndPoint httpEndPoint = mp.newHttpEndPoint()
+        HttpEndpoint httpEndpoint = mp.newHttpEndpoint()
             .withDisconnectionTimeout(1000).withGarbagePeriod(100)
             .withMediaProfile(MediaProfileSpecType.WEBM).build();
 
-        PlayerEndPoint player = mp.newPlayerEndPoint("file:///myfile.avi")
+        PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
 
-        RecorderEndPoint recorder = mp.newRecorderEndPoint("file:///myfile.mp4")
+        RecorderEndpoint recorder = mp.newRecorderEndpoint("file:///myfile.mp4")
             .withMediaProfile(MediaProfileSpecType.MP4)
             .build();
             
-        RtpEndPoint rtp = mp.newRtpEndPoint()
+        RtpEndpoint rtp = mp.newRtpEndpoint()
             .build();
             
-        WebRtcEndPoint webrtc = mp.newWebRtcEndPoint()
+        WebRtcEndpoint webrtc = mp.newWebRtcEndpoint()
             .build();
             
         ZBarFilter zbar = mp.newZBarFilter().build();
@@ -967,23 +996,19 @@ into account when programming applications.
         // Do something with media elements
     }
 
-*KMS MediaElements* are created through specific builders, allowing a
-flexible initialization. Mandatory parameters must be provided in the
-builder constructor, like the URL in the ``PlayerEndpoint``. Optional
-parameters are set to defaults unless the application overrides their
-values. *MediaElements* can be connected with method ``connect()`` of
+*MediaElements* can be connected with method ``connect()`` of
 owner ``MediaPipeline``.
 ::
 
     public void connectElements() {
         MediaPipeline mp = mpf.create();
 
-        HttpEndPoint httpEndPoint = mp.newHttpEndPoint()
+        HttpEndpoint httpEndpoint = mp.newHttpEndpoint()
             .build();
-        PlayerEndPoint player = mp.newPlayerEndPoint("file:///myfile.avi")
+        PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
             
-        mp.connect(player, httpEndPoint);
+        mp.connect(player, httpEndpoint);
             
     }
 
@@ -996,13 +1021,13 @@ element.
     public void connectElements() {
         MediaPipeline mp = mpf.create();
 
-        HttpEndPoint httpEndPoint = mp.newHttpEndPoint()
+        HttpEndpoint httpEndpoint = mp.newHttpEndpoint()
             .build();
 
-        PlayerEndPoint player = mp.newPlayerEndPoint("file:///myfile.avi")
+        PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
             
-        mp.connect(player, httpEndPoint);
+        mp.connect(player, httpEndpoint);
     }
 
 In order to create bidirectional connections the application must
@@ -1012,8 +1037,8 @@ perform a connect operation in both directions.
     public void back2back () {
         MediaPipeline mp = mpf.create();
         
-        RtpEndPoint rtpA = mp.newRtpEndPoint().build();
-        RtpEndPoint rtpB = mp.newRtpEndPoint().build();
+        RtpEndpoint rtpA = mp.newRtpEndpoint().build();
+        RtpEndpoint rtpB = mp.newRtpEndpoint().build();
             
         mp.connect(rtpA, rtpB);
         mp.connect(rtpB, rtpA);
@@ -1036,10 +1061,10 @@ increase in complexity.
             
         mp = mpf.create();
                     
-        mp.newHttpEndPoint().buildAsync( new Continuation<HttpEndPoint>() {
+        mp.newHttpEndpoint().buildAsync( new Continuation<HttpEndpoint>() {
 
             @Override
-            public void onSuccess(HttpEndPoint result) {
+            public void onSuccess(HttpEndpoint result) {
                 connectAsync (null, result);
             }
             @Override
@@ -1049,11 +1074,11 @@ increase in complexity.
                 
         });
             
-        mp.newPlayerEndPoint("file:///myfile.webm").buildAsync( new
-            Continuation<PlayerEndPoint>() {
+        mp.newPlayerEndpoint("file:///myfile.webm").buildAsync( new
+            Continuation<PlayerEndpoint>() {
 
             @Override
-            public void onSuccess(PlayerEndPoint result) {
+            public void onSuccess(PlayerEndpoint result) {
                 connectAsync (result, null);
             }
             @Override
@@ -1064,10 +1089,10 @@ increase in complexity.
         });
     }
         
-    private HttpEndPoint http;
-    private PlayerEndPoint player;
+    private HttpEndpoint http;
+    private PlayerEndpoint player;
 
-    public void connectAsync(PlayerEndPoint player, HttpEndPoint http) {
+    public void connectAsync(PlayerEndpoint player, HttpEndpoint http) {
         if (player != null) {
             this.player = player;
         }
@@ -1079,10 +1104,95 @@ increase in complexity.
         }
     }
 
+Filters
+~~~~~~~
+
+Filters perform media processing, computer vision, augmented reality,
+and so on.
+
+JackVaderFilter
+^^^^^^^^^^^^^^^
+
+JackVaderFilter detects faces in a video feed. Those on the right half
+of the feed are overlaid with a pirate hat, and those on the left half
+are covered by a Darth Vader helmet. This is an example filter, intended
+to demonstrate how to integrate computer vision capabilities into the KMS
+multimedia infrastructure.
+
+.. sourcecode:: java
+
+        JackVaderFilter filter = mediaPipeline.newJackVaderFilter().build();
+
+ZBarFilter
+^^^^^^^^^^
+
+This filter detects QR and bar codes in a video feed. When a code is found,
+the filter raises a :java:type:`CodeFoundEvent`. Clients can add a listener
+to this event using the method:
+
+.. sourcecode:: java
+
+    ZBarFilter zBarFilter = mediaPipeline.newZBarFilter().build();
+    zBarFilter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+    @Override
+    public void onEvent(CodeFoundEvent event) {
+        log.info("Code Found " + event.getValue());
+        // ...
+        });
+    }
+
+FaceOverlayFilter
+^^^^^^^^^^^^^^^^^
+
+This type of filter detects faces in a video feed. The face is then overlaid with an image.
+
+.. sourcecode:: java
+
+    MediaPipeline mp = session.getMediaPipelineFactory().create();
+    FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter().build();
+    // xoffset%, y offset%, width%, height%
+    faceOverlayFilter.setOverlayedImage("/img/masks/mario-wings.png", -0.35F, -1.2F, 1.6F, 1.6F);
+
+PointerDetectorFilter and PointerDetectorAdvFilter
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+These type of filters detects pointers in a video feed. The difference is
+in the way of calibration of such pointers.
+
+.. sourcecode:: java
+
+    PointerDetectorWindowMediaParam start = new PointerDetectorWindowMediaParamBuilder(
+        "start", 100, 100, 280, 380).withImage("/img/buttons/start.png").build();
+    PointerDetectorAdvFilter pointerDetectorAdvFilter = mediaPipeline
+                .newPointerDetectorAdvFilter(new WindowParam(5, 5, 50, 50))
+                .withWindow(start).build();
+
+GStreamerFilter
+^^^^^^^^^^^^^^^
+
+This is a generic filter interface, that creates GStreamer filters in the media server.
+
+.. sourcecode:: java
+
+    GStreamerFilter mirrorFilter = mediaPipeline.newGStreamerFilter("videoflip method=4")
+                .build();
+
+ChromaFilter
+^^^^^^^^^^^^
+
+This type of filter makes transparent a colour range in the top layer,
+revealing another image behind.
+
+.. sourcecode:: java
+
+    ChromaFilter chromaFilter = mediaPipeline.newChromaFilter(
+                new WindowParam(100, 10, 500, 400)).build();
+
+
 .. _programming-with-kws:
 
 Programming with the Kurento HTML5 SDK
--------------------------------------------------
+--------------------------------------
 
 The *Kurento HTML5* SDK is a *Javascript* library
 implementing a *Content APi* client. It has been designed to be
@@ -1110,18 +1220,36 @@ is also available at FI-WARE download page.
     node_modules/.bin/grunt
 
 *Grunt* will place into directory ``dist`` four different *Javascript*
-bundles adapted to browser usage. Take the one that better suits to your
-application needs and add it to your application project.
+bundles adapted to browser usage.
+
+If you are developing your application with maven, simply add the Kurento
+Content Management API for Web SDK library (``kws-content-api.js``) as a
+regular dependency:
+
+.. sourcecode:: xml
+
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>com.kurento.kmf</groupId>
+            <artifactId>kws-content-api</artifactId>
+            <version>|version|</version>
+        </dependency>
+        ...
+    </dependencies>
+
+This way, `kws-content-api.js` will be available in your web application root, as follows:
+
 
 .. sourcecode:: html
 
     <html>
-         <head>
-        <script src=”js/kws-content-api.js”/>
-         </head>
-         <body>
-        …
-         </body>
+      <head>
+        <script src=”./kws-content-api.js”/>
+      </head>
+      <body>
+      …
+      </body>
     </html>
 
 In order to use the *Kurento HTML5* SDK the *Content API*
@@ -1238,7 +1366,7 @@ Examples
 
 This section provides two examples of the *Kurento*
 platform. Both examples implement a *MediaPipeline* composed by a
-*PlayerEndPoint* connected to a *Filter* and generating a media flow
+*PlayerEndpoint* connected to a *Filter* and generating a media flow
 through an *HttpEndpoint*. The main difference between these two example
 is the filter. The first example uses the *JackVaderFilter*. This filter
 is an example of augmented reality element, since it recognizes faces in
@@ -1278,20 +1406,20 @@ puts a pirate hat in the faces of this video.
             //This makes the pipeline (and all its elements) to be released when the session terminates
             session.releaseOnTerminate(mp);
 
-            //Create a PlayerEndPoint for injecting a video into the platform
-            PlayerEndPoint playerEndPoint = mp.newPlayerEndPoint(
+            //Create a PlayerEndpoint for injecting a video into the platform
+            PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
                     "https://ci.kurento.com/video/fiwarecut.webm").build();
 
             //Create a filter for augmenting the video stream in real time.
             JackVaderFilter filter = mp.newJackVaderFilter().build();
 
             //Connect both elements
-            playerEndPoint.connect(filter);
+            playerEndpoint.connect(filter);
 
             //Store a player reference for later use
-            session.setAttribute("player", playerEndPoint);
+            session.setAttribute("player", playerEndpoint);
 
-            //Calling "start" creates the HttpEndPoint and connects it to the filter
+            //Calling "start" creates the HttpEndpoint and connects it to the filter
             session.start(filter);
         }
 
@@ -1299,7 +1427,7 @@ puts a pirate hat in the faces of this video.
         public void onContentStarted(HttpPlayerSession session) {
             //Content starts when the client connects to the HttpEndpoin
             //At that instant, the player must start reproducing the file
-            PlayerEndPoint playerendPoint = (PlayerEndPoint) session
+            PlayerEndpoint playerendPoint = (PlayerEndpoint) session
                     .getAttribute("player");
             playerendPoint.play();
         }
@@ -1321,25 +1449,33 @@ is used:
     <head>
     <meta charset="utf-8">
     <title>Kurento</title>
-    <script src="./js/kws-content-api.js"></script>
-    <script>
-        function start() {
-            // Handlers are deployed in the localhost. The path for these handlers 
-            // is determined by the value of the HTML Select field "handler" 
-            var path = document.URL.substring(0, document.URL.lastIndexOf("/") + 1);
-            var handlerUrl = path + document.getElementById("handler").value;
+    <script src="./kws-content-api.js"></script>
 
-            // KwsContentPlayer instantiation
-            var KwsContentPlayer = kwsContentApi.KwsContentPlayer;
+    <script>
+        var conn;
+
+        function start() {
+            // Handler
+            var handler = document.getElementById("handler").value;
+
+
+            // Options
             var options = {
                 remoteVideoTag: "remoteVideo"
             };
-            var conn = new KwsContentPlayer(handlerUrl, options);
+
+            // KwsContentPlayer instantiation
+            var KwsContentPlayer = kwsContentApi.KwsContentPlayer;
+            conn = new KwsContentPlayer(handler, options);
 
             // Media events log
             conn.on("mediaevent", function(data) {
                 document.getElementById("events").value += JSON.stringify(data) + "\n";
             });
+        }
+
+        function stop() {
+		    conn.terminate();
         }
     </script>
     </head>
@@ -1349,8 +1485,9 @@ is used:
 
         <label for="selectFilter">Handler</label>
         <select id="handler">
-            <option value="playerJsonJackVader">JackVaderFilter</option>
-            <option value="playerJsonZBar">ZBarFilter</option>
+            <option value="./playerJsonJackVader">JackVaderFilter</option>
+            <option value="./playerJsonZBar">ZBarFilter</option>
+
         </select>
         <br />
 
@@ -1359,6 +1496,8 @@ is used:
         <br />
 
         <button id="start" onclick="start()">Start</button>
+        <button id="stop" onclick="stop()">Stop</button>
+
         <br />
 
         <video id="remoteVideo" autoplay></video>
@@ -1380,7 +1519,7 @@ ZBarFilter
 
 The handler code (Java) for this example is shown below. This handler is
 deployed in the KAS at the path
-``http://myserver/myApp/playerJsonZBar``. The *PlayerEndPoint* uses an
+``http://myserver/myApp/playerJsonZBar``. The *PlayerEndpoint* uses an
 URL to locate a media stream
 (https://ci.kurento.com/video/barcodes.webm) and then *ZBarFilter*
 generates media events with the detected codes within the video.
@@ -1394,7 +1533,7 @@ generates media events with the detected codes within the video.
                 throws Exception {
             MediaPipelineFactory mpf = session.getMediaPipelineFactory();
             MediaPipeline mp = mpf.create();
-            PlayerEndPoint player = mp.newPlayerEndPoint(
+            PlayerEndpoint player = mp.newPlayerEndpoint(
                     "https://ci.kurento.com/video/barcodes.webm").build();
             session.setAttribute("player", player);
             ZBarFilter zBarFilter = mp.newZBarFilter().build();
@@ -1413,7 +1552,7 @@ generates media events with the detected codes within the video.
 
         @Override
         public void onContentStarted(HttpPlayerSession session) {
-            PlayerEndPoint playerendPoint = (PlayerEndPoint) session
+            PlayerEndpoint playerendPoint = (PlayerEndpoint) session
                     .getAttribute("player");
             playerendPoint.play();
         }
@@ -1429,15 +1568,7 @@ the filter are written in the HTML textarea with id *events*.
 
 Both *JackVaderFilter* and *ZBarFilter* examples can be developed as a
 Maven project, and the resulting WAR is deployed in the KAS. An example
-of ``pom.xml`` for this Maven project in shown below. As can be seen,
-there are two dependencies of KMF: ``kmf-content-api`` (Java API) and
-``kws-content-api`` (JavaScript API). The version for both dependencies
-is 1.0.0. On one hand, ``kmf-content-api`` is used as a regular Maven
-dependency. On the other hand, the JavaScript libraries contained in
-``kws-content-api`` are unpacked in the root of the resulting WAR. Thus,
-the JavaScript API is available for web components (e.g. HTML pages) by
-including these libraries located in the ``js`` folder on the web root
-(e.g. ``<script src="./js/kws-content-api.js"></script>``).
+of ``pom.xml`` for this Maven project in shown below.
 
 .. sourcecode:: xml
 
@@ -1464,7 +1595,6 @@ including these libraries located in the ``js`` folder on the web root
 
           <!-- Plugins Versions -->
           <maven-war-plugin.version>2.3</maven-war-plugin.version>
-          <maven-dependency-plugin.version>2.8</maven-dependency-plugin.version>
        </properties>
 
        <dependencies>
@@ -1473,6 +1603,12 @@ including these libraries located in the ``js`` folder on the web root
              <artifactId>kmf-content-api</artifactId>
              <version>${kmf-content-api.version}</version>
           </dependency>
+        <dependency>
+         <groupId>com.kurento.kmf</groupId>
+         <artifactId>kws-content-api</artifactId>
+         <version>${kws-content-api.version}</version>
+      </dependency>
+
        </dependencies>
 
        <build>
@@ -1482,37 +1618,27 @@ including these libraries located in the ``js`` folder on the web root
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven-war-plugin.version}</version>
              </plugin>
-             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-dependency-plugin.version}</version>
-                <executions>
-                   <execution>
-                      <id>copy-js-deps</id>
-                      <phase>generate-sources</phase>
-                      <goals>
-                         <goal>unpack</goal>
-                      </goals>
-                      <configuration>
-                         <artifactItems>
-                            <artifactItem>
-                               <groupId>com.kurento.kws</groupId>
-                               <artifactId>kws-content-api</artifactId>
-                               <version>${kws-content-api.version}</version>
-                               <type>jar</type>
-                               <overWrite>true</overWrite>
-                               <outputDirectory>
-                                 ${basedir}/target/${project.artifactId}-${project.version}
-                               </outputDirectory>
-                               <includes>**/*.*</includes>
-                            </artifactItem>
-                         </artifactItems>
-                      </configuration>
-                   </execution>
-                </executions>
-             </plugin>
           </plugins>
        </build>
 
     </project>
+
+kmf-content-demo
+~~~~~~~~~~~~~~~~
+
+These examples and many others are available on `GitHub <https://github.com/Kurento/kmf-content-demo>`_:
+
+.. sourcecode:: bash
+
+    git clone https://github.com/Kurento/kmf-content-demo.git
+
+The list of examples within `kmf-content-demo` is as follows:
+
+    * HTTP Player
+    * HTTP Player with JSON-RPC protocol
+    * HTTP Recorder
+    * HTTP Recorder with JSON-RPC protocol
+    * WebRTC: Loopback, loopback with filters, one to many WebRTC
+    * Campus Party 2013 London demo (HTTP Player and RTP examples)
+    * Campus Party 2014 Brazil demo (computer vision example using WebRTC and different filters)
 
