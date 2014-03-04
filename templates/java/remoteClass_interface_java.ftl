@@ -24,12 +24,12 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
 
 	<#if !remoteClass.extends??>void release();</#if>
 	<#if !remoteClass.extends??>void release(Continuation<Void> continuation);</#if>
-	<#if !remoteClass.abstract>
 
     <#--Factory methods for other elements -->
     <#list model.remoteClasses as otherRemoteClass>
     <#if isFirstConstructorParam(remoteClass, otherRemoteClass) && !otherRemoteClass.abstract>
-    @FactoryMethod public abstract ${otherRemoteClass.name}.Builder new${otherRemoteClass.name}(<#rt>
+    @FactoryMethod("${otherRemoteClass.constructors[0].params[0].name}")
+    public abstract ${otherRemoteClass.name}.Builder new${otherRemoteClass.name}(<#rt>
         <#assign num=0>
         <#lt><#list otherRemoteClass.constructors[0].params as param>
         <#if !param.optional>
@@ -44,6 +44,7 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
     </#if>
     </#list>
 
+    <#if !remoteClass.abstract>
     public interface Factory {
 
         public Builder create(<#rt>
