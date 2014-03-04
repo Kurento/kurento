@@ -50,6 +50,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	/* Events */
 	public static final String EVENT_ON_JOINED = "onJoined";
+	public static final String EVENT_ON_UNJOINED = "onUnjoined";
 
 	private MediaPipeline mp;
 	public final Map<WebRtcContentSession, Participant> sessions = new ConcurrentHashMap<WebRtcContentSession, Participant>();
@@ -82,6 +83,16 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 		for (WebRtcContentSession session : sessions.keySet()) {
 			session.publishEvent(new ContentEvent(EVENT_ON_JOINED,
+					participant.id));
+		}
+	}
+
+	private void notifyUnjoined(Participant participant) {
+		String part = participant.id + " - " + participant.name;
+		log.debug("Participant unjoined: " + part);
+
+		for (WebRtcContentSession session : sessions.keySet()) {
+			session.publishEvent(new ContentEvent(EVENT_ON_UNJOINED,
 					participant.id));
 		}
 	}
@@ -130,6 +141,11 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	@Override
 	public synchronized void onSessionTerminated(WebRtcContentSession session,
 			int code, String reason) throws Exception {
+		Participant participant = sessions.get(session);
+		sessions.remove(session);
+		participants.remove(participant.id);
+		notifyUnjoined(participant);
+
 		super.onSessionTerminated(session, code, reason);
 	}
 
