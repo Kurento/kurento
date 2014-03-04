@@ -103,6 +103,23 @@
 		}
 	}
 
+	function getParticipants() {
+		conn.execute(Command.GET_PARTICIPANTS, "", function(error, result) {
+			console.log("error: " + error + ", result: " + result);
+
+			var participants = document.getElementById('participants');
+			while (participants.options.length > 0) {
+				participants.remove(0);
+			}
+
+			participantsList = JSON.parse(result);
+			console.log("participantsList: " + participantsList);
+			participantsList.forEach(function(item) {
+				addParticipant(item);
+			});
+		});
+	}
+
 	function secect() {
 		var partSelected = document.getElementById("participants").value;
 		console.log("Participant selected: " + partSelected);
@@ -124,6 +141,8 @@
 	<br /> Participants:
 	<br />
 	<select id="participants"></select>
+	<button id="getParticipants" onclick="getParticipants();">Get
+		participants</button>
 	<br />
 	<button id="secect" onclick="secect();">Select</button>
 
