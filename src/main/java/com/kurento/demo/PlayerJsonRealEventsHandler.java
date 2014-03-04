@@ -39,7 +39,7 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 		ZBarFilter filter = mp.newZBarFilter().build();
 		playerEndpoint.connect(filter);
 
-		filter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+		filter.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
 
 			@Override
 			public void onEvent(CodeFoundEvent event) {
