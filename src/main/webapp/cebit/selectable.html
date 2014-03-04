@@ -19,13 +19,17 @@
 		ON_JOINED : "onJoined",
 	}
 
-	/* Events */
 	function addParticipant(participant) {
 		var participants = document.getElementById('participants');
 		var opt = document.createElement('option');
 		opt.innerHTML = participant;
 		opt.value = participant;
 		participants.appendChild(opt);
+	}
+
+	/* Events */
+	function onJoined(participant) {
+		addParticipant(participant);
 	}
 
 	/* Commands */
@@ -91,7 +95,7 @@
 							+ ")");
 
 			if (Event.ON_JOINED == event.type) {
-				addParticipant(event.data);
+				onJoined(event.data);
 			}
 		});
 
