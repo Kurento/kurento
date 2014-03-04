@@ -3,45 +3,21 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.0.0.RC3</version>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>3.0.7-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-media-connector-test</artifactId>
-	<version>3.0.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>kmf-media-connector</name>
-	<url>http://www.kurento.com</url>
-
-	<organization>
-		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
-	</organization>
-
-	<developers>
-		<developer>
-			<id>igracia</id>
-			<name>Ivan Gracia Martinez</name>
-		</developer>
-	</developers>
-
-	<mailingLists>
-		<mailingList>
-			<name>Kurento</name>
-			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
-			<post>http://groups.google.com/group/kurento/post</post>
-			<archive>http://groups.google.com/group/kurento/about</archive>
-		</mailingList>
-	</mailingLists>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-connector</artifactId>
-			<version>3.0.7-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -137,32 +113,8 @@
 					</execution>
 				</executions>
 			</plugin>
-
-
 		</plugins>
-
-		
-
-
-
 	</build>
-
-	<distributionManagement>
-		<site>
-			<id>maven-site</id>
-			<url>scp://repository.kurento.com/var/www/kurento/site/${project.name}/${project.version}</url>
-		</site>
-		<repository>
-			<id>releases</id>
-			<name>Kurento releases repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Kurento snapshots repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 
 	<repositories>
 		<repository>
