@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.0.0</version>
+		<version>4.0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-jsonrpcconnector-test</artifactId>
@@ -47,4 +47,4 @@
 			</snapshots>
 		</repository>
 	</repositories>
-<scm><tag>kmf-jsonrpcconnector-test-4.0.0</tag></scm></project>
+</project>
