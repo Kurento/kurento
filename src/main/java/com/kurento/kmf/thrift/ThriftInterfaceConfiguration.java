@@ -39,17 +39,6 @@ public class ThriftInterfaceConfiguration {
 	private int serverPort = 9494;
 
 	/**
-	 * Address of the local thrift server, which will be used to receive events
-	 * and error notifications sent by the Kurento Media Server.
-	 */
-	private String handlerAddress = "localhost";
-
-	/**
-	 * Port where the local thrift server will be listening.
-	 */
-	private int handlerPort = 9292;
-
-	/**
 	 * Minimal size of the thread pool serving requests from the thrift server.
 	 * These threads will be kept in the pool, even if they are idle.
 	 */
@@ -120,50 +109,7 @@ public class ThriftInterfaceConfiguration {
 	}
 
 	/**
-	 * Gets the address of the local thrift server, which will be used to
-	 * receive events and error notifications sent by the Kurento Media Server.
-	 * 
-	 * @return The handler address.
-	 */
-	public String getHandlerAddress() {
-		return handlerAddress;
-	}
-
-	/**
-	 * Sets the address of the local thrift server, which will be used to
-	 * receive events and error notifications sent by the Kurento Media Server.
-	 * 
-	 * @param handlerAddress
-	 *            The address.
-	 */
-	public void setHandlerAddress(String handlerAddress) {
-		this.handlerAddress = handlerAddress;
-	}
-
-	/**
-	 * Gets the port of the local thrift server, which will be used to receive
-	 * events and error notifications sent by the Kurento Media Server.
-	 * 
-	 * @return The local thrift server port.
-	 */
-	public int getHandlerPort() {
-		return handlerPort;
-	}
-
-	/**
-	 * Sets the port of the local thrift server, which will be used to receive
-	 * events and error notifications sent by the Kurento Media Server.
-	 * 
-	 * @param handlerPort
-	 *            The local thrift server port.
-	 */
-	public void setHandlerPort(int handlerPort) {
-		this.handlerPort = handlerPort;
-	}
-
-	/**
 	 * Gets the minimal size of the Thread pool executing callbacks on listeners
-	 * of the type {@link MediaEventListener} and {@link MediaErrorListener}
 	 * Default: 10
 	 * 
 	 * @return The configured pool size.
@@ -174,7 +120,6 @@ public class ThriftInterfaceConfiguration {
 
 	/**
 	 * Sets the minimal size of the Thread pool executing callbacks on listeners
-	 * of the type {@link MediaEventListener} and {@link MediaErrorListener}
 	 * Default: 10
 	 * 
 	 * @param poolCoreSize
