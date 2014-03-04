@@ -17,6 +17,9 @@ public abstract class MediaServerFactory {
 	public abstract ZBarFilter.Builder createZBarFilter(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline);
 
+	public abstract MixerPort.Builder createMixerPort(
+			@Param("mediaMixer") MediaMixer mediaMixer);
+
 	public abstract PointerDetectorAdvFilter.Builder createPointerDetectorAdvFilter(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline,
 			@Param("calibrationRegion") WindowParam calibrationRegion);
