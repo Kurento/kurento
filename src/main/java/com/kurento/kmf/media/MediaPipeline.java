@@ -7,50 +7,50 @@ import com.kurento.tool.rom.server.Param;
 @RemoteClass
 public interface MediaPipeline extends MediaObject {
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract PlayerEndpoint.Builder newPlayerEndpoint(
 			@Param("uri") String uri);
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract HttpGetEndpoint.Builder newHttpGetEndpoint();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract WebRtcEndpoint.Builder newWebRtcEndpoint();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract ZBarFilter.Builder newZBarFilter();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract PointerDetectorAdvFilter.Builder newPointerDetectorAdvFilter(
 			@Param("calibrationRegion") WindowParam calibrationRegion);
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract HttpPostEndpoint.Builder newHttpPostEndpoint();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract RtpEndpoint.Builder newRtpEndpoint();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract PointerDetectorFilter.Builder newPointerDetectorFilter();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract ChromaFilter.Builder newChromaFilter(
 			@Param("window") WindowParam window);
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract JackVaderFilter.Builder newJackVaderFilter();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract FaceOverlayFilter.Builder newFaceOverlayFilter();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract PlateDetectorFilter.Builder newPlateDetectorFilter();
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract RecorderEndpoint.Builder newRecorderEndpoint(
 			@Param("uri") String uri);
 
-	@FactoryMethod
+	@FactoryMethod("mediaPipeline")
 	public abstract GStreamerFilter.Builder newGStreamerFilter(
 			@Param("command") String command);
 

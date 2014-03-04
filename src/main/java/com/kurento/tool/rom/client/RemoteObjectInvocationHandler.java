@@ -141,9 +141,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			props = new Props();
 		}
 
-		// TODO Make this paramName generic based on model. Now is coupled to
-		// "mediaPipeline"
-		props.add("mediaPipeline", remoteObject.getObjectRef());
+		FactoryMethod annotation = method.getAnnotation(FactoryMethod.class);
+		props.add(annotation.value(), remoteObject.getObjectRef());
 
 		Class<?> builderClass = method.getReturnType();
 
