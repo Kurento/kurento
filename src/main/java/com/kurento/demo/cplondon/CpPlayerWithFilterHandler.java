@@ -38,10 +38,11 @@ public class CpPlayerWithFilterHandler extends HttpPlayerHandler {
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);
 		session.setAttribute("player", playerEndPoint);
-		HttpEndpoint httpEndpoint = session.getMediaPipelineFactory().create()
-				.newHttpGetEndpoint().terminateOnEOS().build();
+		HttpEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS()
+				.build();
 		filter.connect(httpEndpoint);
 		session.start(httpEndpoint);
+
 	}
 
 	@Override

@@ -41,8 +41,10 @@ public class CpRtcPlayerZbarHandler extends HttpPlayerHandler {
 								event.getValue()));
 					}
 				});
-		HttpEndpoint httpEndpoint = session.getMediaPipelineFactory().create()
-				.newHttpGetEndpoint().terminateOnEOS().build();
+
+		HttpEndpoint httpEndpoint = CpRtcRtpZbarHandler.sharedFilterReference
+				.getMediaPipeline().newHttpGetEndpoint().terminateOnEOS()
+				.build();
 		CpRtcRtpZbarHandler.sharedFilterReference.connect(httpEndpoint);
 		session.start(httpEndpoint);
 	}

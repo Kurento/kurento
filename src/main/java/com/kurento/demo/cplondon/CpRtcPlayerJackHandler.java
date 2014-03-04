@@ -27,8 +27,9 @@ public class CpRtcPlayerJackHandler extends HttpPlayerHandler {
 		if (CpRtcRtpJackHandler.sharedFilterReference == null) {
 			session.terminate(500, "Rtp session has not been established");
 		} else {
-			HttpEndpoint httpEndpoint = session.getMediaPipelineFactory()
-					.create().newHttpGetEndpoint().terminateOnEOS().build();
+			HttpEndpoint httpEndpoint = CpRtcRtpJackHandler.sharedFilterReference
+					.getMediaPipeline().newHttpGetEndpoint().terminateOnEOS()
+					.build();
 			CpRtcRtpJackHandler.sharedFilterReference.connect(httpEndpoint);
 			session.start(httpEndpoint);
 		}

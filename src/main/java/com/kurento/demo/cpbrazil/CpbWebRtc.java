@@ -349,8 +349,7 @@ class CpbWindows {
 
 		sonic = new PointerDetectorWindowMediaParam(Windows.SONIC.toString(),
 				100, 100, 540, 380);
-		sonic.setImage(handlerUrl
-				+ "/img/buttons/PointerDetectorWindowMediaParam.png");
+		sonic.setImage(handlerUrl + "/img/buttons/sonic.png");
 
 		youtube = new PointerDetectorWindowMediaParam(
 				Windows.YOUTUBE.toString(), 100, 100, 0, 380);
