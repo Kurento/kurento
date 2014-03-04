@@ -704,10 +704,11 @@ method :java:meth:`getAttribute()` or deleted with method :java:meth:`removeAttr
 One important feature of the *content session* is its capability to
 share real time information with clients through a bidirectional
 channel. In order to interchange messages with a browser an
-:doc:`Open API <Open_API_Specification>` client, like the one implemented by the HTML5 SDK, has to be used.
-These messages follows a signaling protocol based on '''''JSON-RPC'''''.
-Messages can be interchanged between the *service handler* and the
-client while the *content session* is active. Method ``publishEvent()``
+:doc:`Open API <Open_API_Specification>` client, like the one
+implemented by the HTML5 SDK, has to be used. These messages follows
+a signaling protocol based on :term:`JSON-RPC`. Messages can be
+interchanged between the *service handler* and the client while the
+*content session* is active. Method :java:meth:``publishEvent()``
 is used for this purpose. This capability is quite useful combined with
 computer vision filter, as it allows sending events to clients coming
 from video content analysis (e.g. plate recognized, QR code detected,
