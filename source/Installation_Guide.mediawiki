@@ -4,7 +4,7 @@ This guide describes how to install the Stream-Oriented GE - Kurento. Kurento is
 
 == Prerequisites ==
 
-Hardware minimal recommneded requirements:
+Hardware minimal recommended requirements:
 * 8GB RAM
 * 16GB HDD (this figure is not taking into account that multimedia streams could be stored in the same machine. If so, HDD size must be increased accordingly)
 
