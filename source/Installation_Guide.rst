@@ -38,14 +38,14 @@ Kurento Application Server (KAS)
 
 First, install *Open JDK 7*:
 
-::
+.. sourcecode:: sh
 
     $ sudo apt-get install openjdk-7-jdk
 
 Download *JBoss*, uncompress it and move it to */opt/jboss* by
 executing:
 
-::
+.. sourcecode:: sh
 
     $ sudo wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
     $ sudo tar xfvz jboss-as-7.1.1.Final.tar.gz && sudo mv jboss-as-7.1.1.Final /opt/jboss
@@ -53,7 +53,7 @@ executing:
 To avoid running JBoss as root create the user *jboss*, the group
 *jboss* and make that user the owner of JBoss files and folders:
 
-::
+.. sourcecode:: sh
 
     $ sudo adduser --system jboss && sudo addgroup jboss
     $ sudo chown -R jboss:jboss /opt/jboss/
@@ -61,7 +61,7 @@ To avoid running JBoss as root create the user *jboss*, the group
 Create the startup/stop script by copying the following content to a new
 file called */etc/init.d/jboss7*:
 
-::
+.. sourcecode:: sh
 
     #! /bin/sh
     ### BEGIN INIT INFO
@@ -173,14 +173,14 @@ file called */etc/init.d/jboss7*:
 
 Grant *jboss* user *execution* rights to run the startup/stop script:
 
-::
+.. sourcecode:: sh
 
     $ sudo chmod 755 /etc/init.d/jboss7
 
 Create the file */etc/default/jboss7* with the following content (this
 file is used by the startup/stop script):
 
-::
+.. sourcecode:: sh
 
     # Defaults for JBoss7 initscript
     # sourced by /etc/init.d/jboss7
@@ -202,7 +202,7 @@ file is used by the startup/stop script):
 
 Finally, configure the server to run JBoss when booted:
 
-::
+.. sourcecode:: sh
 
     $ sudo update-rc.d jboss7 defaults
 
@@ -212,7 +212,7 @@ Kurento Media Server (KMS)
 In order to add Personal Package Archive or PPA's repositories, the
 python-software-properties package must be installed:
 
-::
+.. sourcecode:: sh
 
     $ sudo apt-get install python-software-properties
 
@@ -220,7 +220,7 @@ Install KMS by typing the following commands, one at a time and in the
 same order as listed here. When asked for any kind of confirmation,
 reply afirmatively:
 
-::
+.. sourcecode:: sh
 
     $ sudo add-apt-repository ppa:kurento/kurento
     $ sudo apt-get update
