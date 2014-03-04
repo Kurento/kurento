@@ -209,19 +209,6 @@ Finally, configure the server to run JBoss when booted:
 Kurento Media Server (KMS)
 --------------------------
 
-First, create the following file */etc/apt/sources.list.d/kurento.list*:
-
-::
-
-    $ sudo touch /etc/apt/sources.list.d/kurento.list 
-
-To use the *Kurento* repository add the line below to the recently
-created file:
-
-::
-
-    deb http://jmaster01-64.kurento.com/ stable/
-
 In order to add Personal Package Archive or PPA's repositories, the
 python-software-properties package must be installed:
 
@@ -240,9 +227,21 @@ reply afirmatively:
     $ sudo apt-get upgrade
     $ sudo apt-get install libevent-dev kurento
 
+Finally, configure the server to run KMS when booted:
+
+.. sourcecode:: sh
+
+    $ sudo update-rc.d kurento defaults
+
+Kurento Network Configuration
+-----------------------------
+
+Running Kurento Without NAT configuration
+=========================================
+
 KMS can receive requests from the Kurento Application Server (KAS) and
 from final users. The IP addresses and ports to receive these requests
-are configured in the configuration file */etc/kurento/kurento.conf*.
+are configured in the configuration file ``/etc/kurento/kurento.conf``.
 After a fresh install that file looks like this:
 
 ::
@@ -263,15 +262,57 @@ After a fresh install that file looks like this:
     serverPort=9091
 
 That configuration implies that only requests from the localhost are
-accepted. The section *[Server]* allows to configure the IP address and
-port where KMS will listen to KAS requests. The section *[HttpEPServer]*
+accepted. The section ``[Server]`` allows to configure the IP address and
+port where KMS will listen to KAS requests. The section ``[HttpEPServer]``
 controls the IP address and port to listen to the final users.
 
-Finally, configure the server to run KMS when booted:
+Running Kurento With NAT configuration
+======================================
 
-::
 
-    $ sudo update-rc.d kurento defaults
+.. figure:: images/Kurento_nat_deployment.png
+   :align:   center
+   :alt:     Network with NAT
+
+   Kurento deployment in a configuration with NAT
+
+This network diagram depicts a scenario where a :term:`NAT` device is
+present. In this case, the client will access the public IP 130.206.82.56,
+which will connect him with the external intertface of the NAT device.
+KMS serves media on a specific address which, by default, is the IP of
+the server where the service is running. This would have the server
+announcing that the media served by an Http Endpoint can be consumed in
+the private IP 172.30.1.122. Since this address is not accessible by
+external clients, the administrator of the system will have to confgure
+KMS to announce, as connection addres for clients, the public IP of the
+NAT device. This is acheived by changing the value of announcedAddress
+in the file /etc/kurento/kurento.conf with the appropriate value.
+The following lines would be the contents of this configuration file for
+the present scenario.
+
+.. sourcecode:: properties
+
+    [Server]
+    serverAddress=localhost
+    serverPort=9090
+    sdpPattern=pattern.sdp
+
+    [HttpEPServer]
+    #serverAddress=localhost
+
+    # Announced IP Address may be helpful under situations such as the server needs
+    # to provide URLs to clients whose host name is different from the one the
+    # server is listening in. If this option is not provided, http server will try
+    # to look for any available address in your system.
+    announcedAddress=130.206.82.56
+
+    serverPort=9091
+
+    [WebRtcEndPoint]
+    #stunServerAddress = xxx.xxx.xxx.xxx
+    #stunServerPort = xx
+    #pemCertificate = file
+
 
 Sample application and videos
 -----------------------------
