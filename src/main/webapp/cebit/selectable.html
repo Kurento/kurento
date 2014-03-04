@@ -73,9 +73,14 @@
 		});
 	}
 
-	var conn;
+	var conn = null;
 
 	function terminate() {
+		if (conn == null) {
+			console.log("Conn is not created");
+			return;
+		}
+
 		document.getElementById("terminate").disabled = true;
 
 		conn.terminate();
@@ -148,6 +153,11 @@
 			document.getElementById("start").disabled = false;
 			console.error(error.message);
 		}
+	}
+
+	window.onbeforeunload = function() {
+		terminate();
+		return "";
 	}
 </script>
 </head>
