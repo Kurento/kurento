@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.0.0</version>
+		<version>4.0.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
@@ -57,4 +57,4 @@
 		</dependency>
 	</dependencies>
 
-<scm><tag>kmf-repository-api-4.0.0</tag></scm></project>
+</project>
