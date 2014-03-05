@@ -376,7 +376,7 @@ they are annotated as follows:
 
        @HttpPlayerService(path = "/myPlayerService")
        public class MyService extends HttpPlayerHandler{
-           …
+           //…
        }
 
 #. ``@HttpRecorderService``: Allows the application to publish a
@@ -387,7 +387,7 @@ they are annotated as follows:
 
        @HttpRecorderService(path = "/myRecorderService")
        public class MyService extends HttpRecorderHandler{
-           …
+           //…
        }
 
 #. ``@RtpContentService``: Defines a bidirectional *RTP* connection. The
@@ -396,7 +396,7 @@ they are annotated as follows:
 
        @RtpContentService(path = "/myRtpService")
        public class MyService extends RtpContentHandler{
-           …
+           //…
        }
 
 #. ``@WebRtcContentService``: Intended for bidirectional WebRTC
@@ -406,7 +406,7 @@ they are annotated as follows:
 
        @WebRtcContentService(path = "/myWebRtcService")
        public class MyService extends WebRtcContentHandler{
-           …
+           //…
        }
 
 At runtime the *Content API* engine searches *content service*
@@ -872,13 +872,13 @@ Following dependency has to be added to ``pom.xml`` in order to use
 .. sourcecode:: xml
 
     <dependencies>
-    …
+    <!-- … -->
         <dependency>
             <groupId>com.kurento.kmf</groupId>
             <artifactId>kmf-media-api</artifactId>
             <version>1.0.0</version>
         </dependency>
-    …
+    <!-- … -->
     </dependencies>
 
 MediaPipeline
@@ -1230,13 +1230,13 @@ regular dependency:
 .. sourcecode:: xml
 
     <dependencies>
-        ...
+        <!-- … -->
         <dependency>
             <groupId>com.kurento.kmf</groupId>
             <artifactId>kws-content-api</artifactId>
             <version>|version|</version>
         </dependency>
-        ...
+        <!-- … -->
     </dependencies>
 
 This way, `kws-content-api.js` will be available in your web application root, as follows:
@@ -1249,7 +1249,7 @@ This way, `kws-content-api.js` will be available in your web application root, a
         <script src=”./kws-content-api.js”/>
       </head>
       <body>
-      …
+        <!-- … -->
       </body>
     </html>
 
@@ -1263,7 +1263,7 @@ must activate the control protocol at handler level. Boolean attribute
 
         @Override
         public void onContentRequest(HttpPlayerSession contentSession) throws Exception {
-            // Handler actions
+            // … Handler actions
         }
 
 The *Kurento HTML5* SDK provides the following set of
