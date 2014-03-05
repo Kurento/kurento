@@ -12,7 +12,6 @@ public class PointerDetectorWindowMediaParam {
 	private String activeImage;
 	private float imageTransparency;
 	private String image;
-	private String inactiveImage;
 
 	public PointerDetectorWindowMediaParam(@Param("id") String id,
 			@Param("height") int height, @Param("width") int width,
@@ -87,14 +86,6 @@ public class PointerDetectorWindowMediaParam {
 
 	public void setImage(String image) {
 		this.image = image;
-	}
-
-	public String getInactiveImage() {
-		return inactiveImage;
-	}
-
-	public void setInactiveImage(String inactiveImage) {
-		this.inactiveImage = inactiveImage;
 	}
 
 }
