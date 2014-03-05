@@ -72,6 +72,9 @@ ${complexType.name}::${complexType.name} (const Json::Value &value) {
       <#else>
     ${property.name} = aux.as${json_method} ();
       </#if>
+      <#if property.optional>
+    _isSet${property.name?cap_first} = true;
+      </#if>
     <#else>
     // TODO, deserialize param type '${property.type}'
     </#if>
@@ -103,6 +106,18 @@ Serialize(std::shared_ptr<kurento::${complexType.name}>& object, JsonSerializer&
   <#list complexType.properties as property>
     s.Serialize("${property.name}", object->${property.name});
   </#list>
+  }
+
+  if (!s.IsWriter) {
+  <#list complexType.properties as property>
+    <#if property.optional>
+
+    if (s.JsonValue.isMember("${property.name}")) {
+      object->_isSet${property.name?cap_first} = true;
+    }
+    </#if>
+  </#list>
+
   }
 
 <#else>
