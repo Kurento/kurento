@@ -20,18 +20,23 @@
 		ON_UNJOINED : "onUnjoined",
 	}
 
+	function Participant() {
+		this.id = null;
+		this.name = null;
+	}
+
 	function addParticipant(participant) {
 		var participants = document.getElementById('participants');
 		var opt = document.createElement('option');
-		opt.innerHTML = participant;
-		opt.value = participant;
+		opt.innerHTML = participant.id + " - " + participant.name;
+		opt.value = participant.id;
 		participants.appendChild(opt);
 	}
 
 	function removeParticipant(participant) {
 		var participants = document.getElementById('participants');
 		for (i = 0; i < participants.length; i++) {
-			if (participants.options[i].text == participant) {
+			if (participants.options[i].value == participant.id) {
 				participants.remove(i);
 				break;
 			}
@@ -115,9 +120,11 @@
 							+ ")");
 
 			if (Event.ON_JOINED == event.type) {
-				onJoined(event.data);
+				var part = JSON.parse(event.data);
+				onJoined(part);
 			} else if (Event.ON_UNJOINED == event.type) {
-				onUnjoined(event.data);
+				var part = JSON.parse(event.data);
+				onUnjoined(part);
 			}
 		});
 
