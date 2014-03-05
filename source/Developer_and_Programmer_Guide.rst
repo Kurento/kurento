@@ -457,7 +457,7 @@ the *service entry point* receives a GET request from browser.
         @Override
         public void onContentRequest(HttpPlayerSession session) throws Exception {
             
-            session.start("/path/to/myvideo ");
+            session.start("/path/to/myvideo");
         }
     }
 
@@ -562,8 +562,8 @@ by the *service entry point*.
 
         @Override
         public void onContentRequest(WebRtcContentSession contentSession)throws Exception {
-            
-        contentSession.start(sourceMediaElement, sinkMediaElement);
+
+                   contentSession.start(webRtcEndpoint);
         }
     }
 
@@ -587,21 +587,7 @@ Played file can take any format supported by *Gstreamer* and will be
 translated to format negotiated with remote peer. Stored file will be
 converted to format *WebM* or *MP4* from format negotiated with remote
 peer.
-::
 
-    @Override
-    public void onContentRequest(WebRtcContentSession contentSession)throws Exception {
-
-        Constraints videoConstraints = contentSession.getVideoConstraints();
-        Constraints audioConstraints = contentSession.getAudioConstraints();
-            
-        if ( videoConstraints.equals(Constraints.SENDONLY) &&
-             audioConstraints.equals(Constraints.SENDONLY) ) {
-                contentSession.start(sourceMediaElement, null);
-        } else {
-                contentSession.start(sourceMediaElement, sinkMediaElement);
-        }   
-    }
 
 Content Session & Media lifecycle
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -631,7 +617,7 @@ source and sink media resources that will be connected to the
     @Override
     public void onContentRequest(WebRtcContentSession contentSession) throws Exception {
         //Create appropriate MediaElements using Media API
-        contentSession.start(sourceMediaElement, sinkMediaElement);
+        contentSession.start(WebRtcEndpoint);
     } 
 
 The *Endpoint* informs applications when media transfer starts by
@@ -824,7 +810,10 @@ Method ``releaseOnTerminate()`` can be used for this purpose.
     PlayerEndpoint player = mp.createPlayerEndpoint("file:///path/to/myplayed.avi");
     contentSession.releaseOnTerminate(player);
 
-    contentSession.start(player);
+    HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS().build();
+    player.connect(httpEndpoint);
+    contentSession.start(httpEndpoint)
+
 
 Single elements can be attached to a session lifecycle, but also the
 whole *MediaPipeline*, depending on application needs.
@@ -1422,6 +1411,14 @@ puts a pirate hat in the faces of this video.
 
             //Calling "start" creates the HttpEndpoint and connects it to the filter
             session.start(filter);
+            //Create a HttpEndpoint and connects it to the filter
+            HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+                            .terminateOnEOS().build();
+            filter.connect(httpEndpoint);
+
+            //Start session
+            session.start(httpEndpoint);
+
         }
 
         @Override
@@ -1539,7 +1536,11 @@ generates media events with the detected codes within the video.
             session.setAttribute("player", player);
             ZBarFilter zBarFilter = mp.newZBarFilter().build();
             player.connect(zBarFilter);
-            session.start(zBarFilter);
+            HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+                            .terminateOnEOS().build();
+            zBarFilter.connect(httpEndpoint);
+            session.start(httpEndpoint);
+
             zBarFilter
                     .addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
                         @Override
