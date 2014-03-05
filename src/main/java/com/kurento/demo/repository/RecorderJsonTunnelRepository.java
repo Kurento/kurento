@@ -31,7 +31,7 @@ public class RecorderJsonTunnelRepository extends HttpRecorderHandler {
 	@Override
 	public void onContentRequest(HttpRecorderSession contentSession)
 			throws Exception {
-		GenericRepositoryRecorder.record(contentSession, "item2");
+		GenericRepositoryRecorder.record(contentSession, "itemJsonTunnel");
 	}
 
 }

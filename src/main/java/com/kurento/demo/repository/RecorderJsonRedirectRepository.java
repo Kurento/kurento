@@ -25,13 +25,13 @@ import com.kurento.kmf.content.HttpRecorderSession;
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.1
  */
-@HttpRecorderService(path = "/recorderJsonTunnelRepository", redirect = true)
+@HttpRecorderService(path = "/recorderJsonRedirectRepository", redirect = true)
 public class RecorderJsonRedirectRepository extends HttpRecorderHandler {
 
 	@Override
 	public void onContentRequest(HttpRecorderSession contentSession)
 			throws Exception {
-		GenericRepositoryRecorder.record(contentSession, "item3");
+		GenericRepositoryRecorder.record(contentSession, "itemJsonRedirect");
 	}
 
 }
