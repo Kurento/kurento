@@ -58,7 +58,7 @@ The ''Stream Oriented GE Kurento'' server SDK is a ''Java'' library known as ''K
     <dependency>
         <groupId>com.kurento.kmf</groupId>
         <artifactId>kmf-content-api</artifactId>
-        <version>3.0.5</version>
+        <version>3.0.7</version>
     </dependency>
     ...
 </dependencies>
@@ -102,7 +102,7 @@ public class MyService extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		session.start("file:///path/to/myvideo.webm ");
+		session.start("file:///path/to/myvideo.webm");
 	}
 }
 </pre>
@@ -242,8 +242,7 @@ public class MyService extends HttpPlayerHandler{
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
-		
-		session.start("/path/to/myvideo ");
+		session.start("/path/to/myvideo");
 	}
 }
 </pre>
@@ -305,7 +304,7 @@ public class MyWebRtpService extends WebRtcContentHandler{
 
     @Override
     public void onContentRequest(WebRtcContentSession contentSession)throws Exception {
-	contentSession.start(sourceMediaElement, sinkMediaElement);
+		contentSession.start(webRtcEndpoint);
     }
 }
 </pre>
@@ -318,22 +317,6 @@ public class MyWebRtpService extends WebRtcContentHandler{
 * '''''INACTIVE''''': There is no media transfer in any direction, independently of any player or recorded connected.
 
 Played file can take any format supported by ''Gstreamer'' and will be translated to format negotiated with remote peer. Stored file will be converted to format ''WebM'' or ''MP4'' from format negotiated with remote peer.
-<pre>
-@Override
-public void onContentRequest(WebRtcContentSession contentSession)throws Exception {
-
-	Constraints videoConstraints = contentSession.getVideoConstraints();
-	Constraints audioConstraints = contentSession.getAudioConstraints();
-		
-	if ( videoConstraints.equals(Constraints.SENDONLY) && audioConstraints.equals(Constraints.SENDONLY)) {
-		contentSession.start(sourceMediaElement, null);
-	} else {
-		contentSession.start(sourceMediaElement, sinkMediaElement);
-
-	}	
-		
-}
-</pre>
 
 === Content Session & Media lifecycle ===
 
@@ -352,7 +335,7 @@ When the ''service handler'' wants to accept a request it must provide the sourc
 @Override
 public void onContentRequest(WebRtcContentSession contentSession) throws Exception {
 	//Create appropriate MediaElements using Media API
-	contentSession.start(sourceMediaElement, sinkMediaElement);
+	contentSession.start(webRtcEndpoint);
 } 
 </pre>
 
@@ -502,7 +485,9 @@ MediaPipeline mp = mpf.create();
 PlayerEndpoint player = mp.createPlayerEndpoint("file:///path/to/myplayed.avi");
 contentSession.releaseOnTerminate(player);
 
-contentSession.start(player);
+HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS().build();
+player.connect(httpEndpoint);
+contentSession.start(httpEndpoint)
 </pre>
 
 Single elements can be attached to a session lifecycle, but also the whole ''MediaPipeline'', depending on application needs.
@@ -545,7 +530,7 @@ Following dependency has to be added to <code>pom.xml</code> in order to use ''K
     <dependency>
         <groupId>com.kurento.kmf</groupId>
         <artifactId>kmf-media-api</artifactId>
-        <version>3.0.5</version>
+        <version>3.0.7</version>
     </dependency>
 …
 </dependencies>
@@ -848,7 +833,7 @@ If you are developing your application with maven, simply add the Kurento Conten
     <dependency>
         <groupId>com.kurento.kmf</groupId>
         <artifactId>kws-content-api</artifactId>
-        <version>3.0.5</version>
+        <version>3.0.7</version>
     </dependency>
     ...
 </dependencies>
@@ -1001,8 +986,13 @@ public class PlayerJsonJackVaderFilter extends HttpPlayerHandler {
 		//Store a player reference for later use
 		session.setAttribute("player", playerEndpoint);
 
-		//Calling "start" creates the HttpEndpoint and connects it to the filter
-		session.start(filter);
+		//Create a HttpEndpoint and connects it to the filter
+		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+				.terminateOnEOS().build();
+		filter.connect(httpEndpoint);
+		
+		//Start session
+		session.start(httpEndpoint);
 	}
 
 	@Override
@@ -1097,7 +1087,10 @@ public class PlayerJsonZBarFilter extends HttpPlayerHandler {
 		session.setAttribute("player", player);
 		ZBarFilter zBarFilter = mp.newZBarFilter().build();
 		player.connect(zBarFilter);
-		session.start(zBarFilter);
+		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+				.terminateOnEOS().build();
+		zBarFilter.connect(httpEndpoint);
+		session.start(httpEndpoint);
 		zBarFilter
 				.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
 					@Override
@@ -1140,8 +1133,8 @@ Both ''JackVaderFilter'' and ''ZBarFilter'' examples can be developed as a Maven
       <maven.compiler.target>1.6</maven.compiler.target>
 
       <!-- Kurento Dependencies Versions -->
-      <kmf-content-api.version>3.0.5</kmf-content-api.version>
-      <kws-content-api.version>3.0.5</kws-content-api.version>
+      <kmf-content-api.version>3.0.7</kmf-content-api.version>
+      <kws-content-api.version>3.0.7</kws-content-api.version>
 
       <!-- Plugins Versions -->
       <maven-war-plugin.version>2.3</maven-war-plugin.version>
@@ -1192,4 +1185,3 @@ The list of examples within <code>kmf-content-demo</code> is as follows:
 <li>Campus Party 2013 London demo (HTTP Player and RTP examples)</li>
 <li>Campus Party 2014 Brazil demo (computer vision example using WebRTC and different filters)</li>
 </ul>
-
