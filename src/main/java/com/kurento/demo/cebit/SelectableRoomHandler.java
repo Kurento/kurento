@@ -14,6 +14,8 @@
  */
 package com.kurento.demo.cebit;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.ContentEvent;
@@ -48,6 +51,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	/* Commands */
 	public static final String COMMAND_GET_PARTICIPANTS = "getParticipants";
 	public static final String COMMAND_SELECT = "selectParticipant";
+	public static final String COMMAND_CONNECT = "connectParticipant";
 
 	/* Events */
 	public static final String EVENT_ON_JOINED = "onJoined";
@@ -74,6 +78,24 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		}
 
 		partSelected.endpoint.connect(sessions.get(session).endpoint);
+
+		return true;
+	}
+
+	private boolean connectParticipant(String origId, String destId) {
+		Participant orig = participants.get(origId);
+		if (orig == null) {
+			log.error("Participant " + origId + " does not exist");
+			return false;
+		}
+
+		Participant dest = participants.get(destId);
+		if (dest == null) {
+			log.error("Participant " + destId + " does not exist");
+			return false;
+		}
+
+		orig.endpoint.connect(dest.endpoint);
 
 		return true;
 	}
@@ -135,6 +157,18 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		} else if (COMMAND_SELECT.equalsIgnoreCase(cmdType)) {
 			return new ContentCommandResult(Boolean.toString(selectParticipant(
 					session, cmdData)));
+		} else if (COMMAND_CONNECT.equalsIgnoreCase(cmdType)) {
+			Type listType = new TypeToken<List<String>>() {
+			}.getType();
+			List<String> idList = gson.fromJson(cmdData, listType);
+
+			if (idList.size() != 2) {
+				return new ContentCommandResult(Boolean.toString(false));
+			}
+
+			return new ContentCommandResult(
+					Boolean.toString(connectParticipant(idList.get(0),
+							idList.get(1))));
 		}
 
 		return super.onContentCommand(session, command);
