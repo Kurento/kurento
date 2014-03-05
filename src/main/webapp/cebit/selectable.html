@@ -53,15 +53,24 @@
 
 	/* Events */
 	function onJoined(participant) {
-		addParticipant(participant, 'participants');
 		addParticipant(participant, 'orig');
 		addParticipant(participant, 'dest');
+
+		var element = document.createElement('button');
+		element.setAttribute('id', participant.id);
+		element.setAttribute('onClick', "selectParticipant(this.id);");
+		element.innerHTML = participant.id + " - " + participant.name;
+
+		var parent = document.getElementById('participantButtons');
+		parent.appendChild(element);
 	}
 
 	function onUnjoined(participant) {
-		removeParticipant(participant, 'participants');
 		removeParticipant(participant, 'orig');
 		removeParticipant(participant, 'dest');
+
+		var e = document.getElementById(participant.id);
+		e.parentElement.removeChild(e);
 	}
 
 	/* Commands */
@@ -69,26 +78,30 @@
 		conn.execute(Command.GET_PARTICIPANTS, "", function(error, result) {
 			console.log("error: " + error + ", result: " + result);
 
-			removeAllParticipants('participants');
 			removeAllParticipants('orig');
 			removeAllParticipants('dest');
+
+			//TODO: remove all buttons and add new ones
 
 			participantsList = JSON.parse(result);
 			console.log("participantsList: " + participantsList);
 			participantsList.forEach(function(item) {
-				addParticipant(item, 'participants');
 				addParticipant(item, 'orig');
 				addParticipant(item, 'dest');
 			});
 		});
 	}
 
-	function secect() {
-		var partSelected = document.getElementById("participants").value;
-		console.log("Participant selected: " + partSelected);
-		conn.execute(Command.SELECT, partSelected, function(error, result) {
+	function selectParticipant(partId) {
+		console.log("Participant selected: " + partId);
+		conn.execute(Command.SELECT, partId, function(error, result) {
 			console.log("error: " + error + ", result: " + result);
 		});
+	}
+
+	function secect() {
+		var partSelected = document.getElementById("participants").value;
+		selectParticipant(partSelected);
 	}
 
 	function connectParticipants() {
@@ -203,11 +216,6 @@
 	<button id="getParticipants" onclick="getParticipants();">Get
 		participants</button>
 
-	<br /> Participants:
-	<br />
-	<select id="participants"></select>
-	<button id="secect" onclick="secect();">Select</button>
-
 	<br /> orig:
 	<select id="orig"></select> " dest:"
 	<select id="dest"></select>
@@ -217,5 +225,8 @@
 	<br />
 	<video id="localVideo" autoplay controls width="480px" height="360px"></video>
 	<video id="remoteVideo" autoplay controls width="480px" height="360px"></video>
+
+	<br />
+	<span id="participantButtons">&nbsp;</span>
 </body>
 </html>
