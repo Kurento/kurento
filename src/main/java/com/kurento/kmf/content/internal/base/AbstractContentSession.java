@@ -730,9 +730,9 @@ public abstract class AbstractContentSession implements ContentSession {
 
 					@Override
 					public void onError(Throwable cause) {
-						getLogger().error(
+						getLogger().warn(
 								"Error releasing MediaObject: "
-										+ cause.getMessage(), cause);
+										+ cause.getMessage());
 					}
 				});
 			} catch (Throwable t) {
