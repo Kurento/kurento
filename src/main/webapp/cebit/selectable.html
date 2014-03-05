@@ -13,6 +13,7 @@
 	var Command = {
 		GET_PARTICIPANTS : "getParticipants",
 		SELECT : "selectParticipant",
+		CONNECT : "connectParticipant",
 	}
 
 	var Event = {
@@ -25,16 +26,16 @@
 		this.name = null;
 	}
 
-	function addParticipant(participant) {
-		var participants = document.getElementById('participants');
+	function addParticipant(participant, selectName) {
+		var participants = document.getElementById(selectName);
 		var opt = document.createElement('option');
 		opt.innerHTML = participant.id + " - " + participant.name;
 		opt.value = participant.id;
 		participants.appendChild(opt);
 	}
 
-	function removeParticipant(participant) {
-		var participants = document.getElementById('participants');
+	function removeParticipant(participant, selectName) {
+		var participants = document.getElementById(selectName);
 		for (i = 0; i < participants.length; i++) {
 			if (participants.options[i].value == participant.id) {
 				participants.remove(i);
@@ -43,13 +44,24 @@
 		}
 	}
 
+	function removeAllParticipants(selectName) {
+		var participants = document.getElementById(selectName);
+		while (participants.options.length > 0) {
+			participants.remove(0);
+		}
+	}
+
 	/* Events */
 	function onJoined(participant) {
-		addParticipant(participant);
+		addParticipant(participant, 'participants');
+		addParticipant(participant, 'orig');
+		addParticipant(participant, 'dest');
 	}
 
 	function onUnjoined(participant) {
-		removeParticipant(participant);
+		removeParticipant(participant, 'participants');
+		removeParticipant(participant, 'orig');
+		removeParticipant(participant, 'dest');
 	}
 
 	/* Commands */
@@ -57,15 +69,16 @@
 		conn.execute(Command.GET_PARTICIPANTS, "", function(error, result) {
 			console.log("error: " + error + ", result: " + result);
 
-			var participants = document.getElementById('participants');
-			while (participants.options.length > 0) {
-				participants.remove(0);
-			}
+			removeAllParticipants('participants');
+			removeAllParticipants('orig');
+			removeAllParticipants('dest');
 
 			participantsList = JSON.parse(result);
 			console.log("participantsList: " + participantsList);
 			participantsList.forEach(function(item) {
-				addParticipant(item);
+				addParticipant(item, 'participants');
+				addParticipant(item, 'orig');
+				addParticipant(item, 'dest');
 			});
 		});
 	}
@@ -74,6 +87,16 @@
 		var partSelected = document.getElementById("participants").value;
 		console.log("Participant selected: " + partSelected);
 		conn.execute(Command.SELECT, partSelected, function(error, result) {
+			console.log("error: " + error + ", result: " + result);
+		});
+	}
+
+	function connectParticipants() {
+		var origId = document.getElementById("orig").value;
+		var destId = document.getElementById("dest").value;
+		var list = [ origId, destId ];
+		conn.execute(Command.CONNECT, JSON.stringify(list), function(error,
+				result) {
 			console.log("error: " + error + ", result: " + result);
 		});
 	}
@@ -177,13 +200,19 @@
 	<button id="start" onclick="start();">Start</button>
 	<button id="terminate" disabled onclick="terminate();">Terminate</button>
 
+	<button id="getParticipants" onclick="getParticipants();">Get
+		participants</button>
+
 	<br /> Participants:
 	<br />
 	<select id="participants"></select>
-	<button id="getParticipants" onclick="getParticipants();">Get
-		participants</button>
-	<br />
 	<button id="secect" onclick="secect();">Select</button>
+
+	<br /> orig:
+	<select id="orig"></select> " dest:"
+	<select id="dest"></select>
+	<button id="connect" onclick="connectParticipants();">Connect
+		participants</button>
 
 	<br />
 	<video id="localVideo" autoplay controls width="480px" height="360px"></video>
