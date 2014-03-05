@@ -129,7 +129,9 @@ public final class ThriftConnectorJsonRpcHandler extends
 					@Override
 					public void onComplete(invokeJsonRpc_call response) {
 						clientPool.release(client);
-						requestOnComplete(response, transaction);
+
+						if (request.getId() != null)
+							requestOnComplete(response, transaction);
 					}
 
 					@Override
