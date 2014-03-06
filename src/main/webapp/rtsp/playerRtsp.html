@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Player Rtsp</title>
+<script src="../js/kws-content-api.js"></script>
+<script src="../lib/adapter.js"></script>
+<script>
+	var conn;
+
+	function start() {
+		/// Disable start button
+		document.getElementById("play").disabled = true;
+		document.getElementById("pause").disabled = true;
+		document.getElementById("stop").disabled = true;
+
+		// Show spinners
+		var remoteVideo = document.getElementById("remoteVideo");
+		remoteVideo.poster = "../img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+
+		// Adding listeners to video tag
+		remoteVideo.addEventListener("play", function(event) {
+			if (!playing) {
+				play();
+			}
+		});
+
+		// Create a new connection
+		var handler = "../playerRtsp";
+		var endpoint = handler;
+
+		// Options
+		var options = {
+			remoteVideoTag: "remoteVideo",
+			audio: 'recvonly',
+			video: 'recvonly'
+		};
+
+		// Show spinner
+		remoteVideo.poster = "../img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+
+		// Kws-Content-API instantiation
+		conn = new kwsContentApi.KwsWebRtcContent(endpoint, options);
+		playing = true;
+
+ 		// Start and terminate events
+		conn.on("start", function() {
+			document.getElementById("play").disabled = true;
+		});
+		conn.on("terminate", function() {
+			inputStatus.value = "end ok";
+			document.getElementById("play").disabled = false;
+		});
+
+		// LocalStream and remoteStream events
+		conn.on("localstream", function() {
+		});
+		conn.on("remotestream", function() {
+		});
+	}
+
+	function terminate() {
+		// Disable terminate button
+		document.getElementById("stop").disabled = true;
+
+		// Terminate the connection
+		conn.terminate();
+		remoteVideo.style.background = "";
+
+		// Enable connect button
+		document.getElementById("play").disabled = true;
+		document.getElementById("pause").disabled = true;
+		document.getElementById("stop").disabled = true;
+	}
+
+	function pause() {
+		document.getElementById("play").disabled = false;
+		document.getElementById("pause").disabled = true;
+		document.getElementById("stop").disabled = false;
+
+		conn.execute("pause", "pause");
+	}
+	function play() {
+		document.getElementById("play").disabled = true;
+		document.getElementById("pause").disabled = false;
+		document.getElementById("stop").disabled = false;
+
+		conn.execute("play", "play");
+	}
+
+	function addRtsp() {
+		if(document.getElementById("uri").value!="") {
+			document.getElementById("play").disabled = true;
+			document.getElementById("pause").disabled = false;
+			document.getElementById("stop").disabled = false;
+			conn.execute("addRtsp", document.getElementById("uri").value);
+		} else {
+			alert ("Rtsp address empty");
+		}
+	}
+
+</script>
+</head>
+
+<body onload="start()">
+	<h1>Player Rtsp</h1>
+	<table style="border-spacing: 10px;">
+		<tr>
+		<td><input id="uri" type="text"> RTSP address <br>
+			 <button id="addRtsp" onclick="addRtsp()">Add Rtsp</button></td>
+		</tr>
+		<tr>
+			<td rowspan="10"><video id="remoteVideo" autoplay controls
+					width="640px" height="360px">
+				</video></td>
+		</tr>
+		<tr>
+			<td><button id="play" onclick="play()">Play</button>
+				<button id="pause" onclick="pause()">Pause</button>
+				<button id="stop" onclick="terminate()">Stop</button>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
