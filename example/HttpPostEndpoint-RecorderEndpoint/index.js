@@ -1,5 +1,5 @@
-var HttpPostEndPoint = KwsMedia.endpoints.HttpPostEndPoint;
-var RecorderEndPoint = KwsMedia.endpoints.RecorderEndPoint;
+var HttpPostEndpoint = KwsMedia.endpoints.HttpPostEndpoint;
+var RecorderEndpoint = KwsMedia.endpoints.RecorderEndpoint;
 
 
 getUserMedia({'audio': true, 'video': true}, function(stream)
@@ -9,7 +9,6 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
 
   KwsMedia('ws://192.168.0.110:7788/thrift/ws/websocket',
-//  KwsMedia('ws://179.111.137.126:7788/thrift/ws/websocket',
   function(kwsMedia)
   {
     // Create pipeline
@@ -18,11 +17,11 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
       if(error) return console.error(error);
 
       // Create pipeline media elements (endpoints & filters)
-      HttpPostEndPoint.create(pipeline, function(httpPos)
+      HttpPostEndpoint.create(pipeline, function(httpPos)
       {
         if(error) return console.error(error);
 
-        RecorderEndPoint.create(pipeline, function(error, recorder)
+        RecorderEndpoint.create(pipeline, function(error, recorder)
         {
           if(error) return console.error(error);
 

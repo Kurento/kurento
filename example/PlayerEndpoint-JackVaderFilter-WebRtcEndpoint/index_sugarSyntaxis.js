@@ -40,7 +40,7 @@ window.addEventListener('load', function()
         );
 
         // Connect the pipeline to the PeerConnection client
-        webRtcEndPoint.invoke("generateSdpOffer", function(error, offer)
+        webRtcEndPoint.invoke("generateOffer", function(error, offer)
         {
           if(error) return console.error(error);
 
@@ -51,7 +51,7 @@ window.addEventListener('load', function()
               peerConnection.setLocalDescription(answer, function()
               {
 
-                webRtcEndPoint.invoke("processSdpAnswer", {answer: answer},
+                webRtcEndPoint.invoke("processAnswer", {answer: answer},
                 function(error)
                 {
                   if(error) return console.error(error);

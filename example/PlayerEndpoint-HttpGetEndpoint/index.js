@@ -4,7 +4,9 @@ var HttpGetEndpoint = KwsMedia.endpoints.HttpGetEndpoint;
 
 window.addEventListener('load', function()
 {
-  KwsMedia('ws://192.168.0.110:7788/thrift/ws/websocket',
+  var videoOutput = document.getElementById("videoOutput");
+
+  KwsMedia('ws://192.168.0.102:7788/thrift/ws/websocket',
   function(kwsMedia)
   {
     // Create pipeline
@@ -43,8 +45,7 @@ window.addEventListener('load', function()
             {
               if(error) return console.error(error);
 
-              var videoOutput = document.getElementById("videoOutput");
-                  videoOutput.src = url;
+              videoOutput.src = url;
 
               console.log(url);
 

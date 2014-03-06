@@ -29,7 +29,10 @@ window.addEventListener('load', function()
 
   function terminate()
   {
+    cpbWebRtc.terminate();
+
     remoteVideo.classList.remove("playing");
+    remoteVideo.src = null;
 
     // Enable connect button
     buttonStart.disabled = false;
@@ -141,7 +144,6 @@ window.addEventListener('load', function()
     buttonTerminate.disabled = true;
 
     // Terminate the connection
-    cpbWebRtc.terminate();
     terminate();
   });
 
