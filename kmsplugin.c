@@ -25,7 +25,7 @@
 #include <kmsplayerendpoint.h>
 #include <kmshttpendpoint.h>
 #include <kmsmixerport.h>
-#include <kmsmainmixer.h>
+#include <kmsdispatcheronetomany.h>
 #include <gstsctpbasesink.h>
 #include <gstsctpclientsink.h>
 #include <gstsctpserversrc.h>
@@ -64,7 +64,7 @@ kurento_init (GstPlugin * kurento)
   if (!kms_mixer_port_plugin_init (kurento))
     return FALSE;
 
-  if (!kms_main_mixer_plugin_init (kurento))
+  if (!kms_dispatcher_one_to_many_plugin_init (kurento))
     return FALSE;
 
   if (!gst_sctp_base_sink_plugin_init (kurento))
