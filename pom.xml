@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.0.0</version>
+		<version>4.0.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
@@ -132,4 +132,4 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-<scm><tag>kmf-media-connector-test-4.0.0</tag></scm></project>
+</project>
