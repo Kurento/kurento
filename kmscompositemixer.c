@@ -19,7 +19,7 @@
 #include "kmscompositemixer.h"
 #include "kmsagnosticcaps.h"
 #include "kms-marshal.h"
-#include "kmsmixerendpoint.h"
+#include "kmsmixerport.h"
 
 #define PLUGIN_NAME "compositemixer"
 

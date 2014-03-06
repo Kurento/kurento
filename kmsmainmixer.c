@@ -19,7 +19,7 @@
 #include "kmsmainmixer.h"
 #include "kmsagnosticcaps.h"
 #include "kms-marshal.h"
-#include "kmsmixerendpoint.h"
+#include "kmsmixerport.h"
 
 #define PLUGIN_NAME "mainmixer"
 
@@ -191,14 +191,14 @@ kms_main_mixer_unhandle_port (KmsBaseHub * mixer, gint id)
 }
 
 static gint
-kms_main_mixer_handle_port (KmsBaseHub * mixer, GstElement * mixer_endpoint)
+kms_main_mixer_handle_port (KmsBaseHub * mixer, GstElement * mixer_port)
 {
   KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
   KmsMainMixerPortData *port_data;
   gint port_id;
 
   port_id = KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
-      (kms_main_mixer_parent_class))->handle_port (mixer, mixer_endpoint);
+      (kms_main_mixer_parent_class))->handle_port (mixer, mixer_port);
 
   if (port_id < 0)
     return port_id;

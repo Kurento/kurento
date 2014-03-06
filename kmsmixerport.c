@@ -16,26 +16,26 @@
 #include "config.h"
 #endif
 
-#include "kmsmixerendpoint.h"
+#include "kmsmixerport.h"
 #include "kmsagnosticcaps.h"
 #include "kmsutils.h"
 
-#define PLUGIN_NAME "mixerendpoint"
+#define PLUGIN_NAME "mixerport"
 
 #define KEY_VALVE_DATA "kms-mixer-valve-data"
 
-GST_DEBUG_CATEGORY_STATIC (kms_mixer_endpoint_debug_category);
-#define GST_CAT_DEFAULT kms_mixer_endpoint_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_mixer_port_debug_category);
+#define GST_CAT_DEFAULT kms_mixer_port_debug_category
 
-#define KMS_MIXER_ENDPOINT_GET_PRIVATE(obj) (   \
+#define KMS_MIXER_PORT_GET_PRIVATE(obj) (       \
   G_TYPE_INSTANCE_GET_PRIVATE (                 \
     (obj),                                      \
-    KMS_TYPE_MIXER_ENDPOINT,                    \
-    KmsMixerEndpointPrivate                     \
+    KMS_TYPE_MIXER_PORT,                        \
+    KmsMixerPortPrivate                         \
   )                                             \
 )
 
-struct _KmsMixerEndpointPrivate
+struct _KmsMixerPortPrivate
 {
   GstPad *audio_internal;
   GstPad *vieo_internal;
@@ -72,13 +72,13 @@ GST_STATIC_PAD_TEMPLATE (MIXER_VIDEO_SRC_PAD,
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsMixerEndpoint, kms_mixer_endpoint,
+G_DEFINE_TYPE_WITH_CODE (KmsMixerPort, kms_mixer_port,
     KMS_TYPE_ELEMENT,
-    GST_DEBUG_CATEGORY_INIT (kms_mixer_endpoint_debug_category, PLUGIN_NAME,
-        0, "debug category for mixerendpoint element"));
+    GST_DEBUG_CATEGORY_INIT (kms_mixer_port_debug_category, PLUGIN_NAME,
+        0, "debug category for mixerport element"));
 
 static GstPad *
-kms_mixer_endpoint_generate_sink_pad (GstElement * element,
+kms_mixer_port_generate_sink_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps,
     GstElement * agnosticbin)
 {
@@ -104,7 +104,7 @@ kms_mixer_endpoint_generate_sink_pad (GstElement * element,
 }
 
 static GstPad *
-kms_mixer_endpoint_request_new_pad (GstElement * element,
+kms_mixer_port_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
   GstElement *agnosticbin = NULL;
@@ -133,16 +133,16 @@ kms_mixer_endpoint_request_new_pad (GstElement * element,
   }
 
   if (agnosticbin != NULL)
-    return kms_mixer_endpoint_generate_sink_pad (element, templ, name, caps,
+    return kms_mixer_port_generate_sink_pad (element, templ, name, caps,
         agnosticbin);
 
   return
-      GST_ELEMENT_CLASS (kms_mixer_endpoint_parent_class)->request_new_pad
+      GST_ELEMENT_CLASS (kms_mixer_port_parent_class)->request_new_pad
       (element, templ, name, caps);
 }
 
 static void
-kms_mixer_endpoint_internal_src_pad_linked (GstPad * pad, GstPad * peer,
+kms_mixer_port_internal_src_pad_linked (GstPad * pad, GstPad * peer,
     gpointer data)
 {
   GstElement *valve = g_object_get_data (G_OBJECT (pad), KEY_VALVE_DATA);
@@ -151,7 +151,7 @@ kms_mixer_endpoint_internal_src_pad_linked (GstPad * pad, GstPad * peer,
 }
 
 static void
-kms_mixer_endpoint_internal_src_pad_unlinked (GstPad * pad, GstObject * parent)
+kms_mixer_port_internal_src_pad_unlinked (GstPad * pad, GstObject * parent)
 {
   GstElement *valve = g_object_get_data (G_OBJECT (pad), KEY_VALVE_DATA);
 
@@ -159,7 +159,7 @@ kms_mixer_endpoint_internal_src_pad_unlinked (GstPad * pad, GstObject * parent)
 }
 
 static void
-kms_mixer_endpoint_valve_added (KmsElement * self, GstElement * valve,
+kms_mixer_port_valve_added (KmsElement * self, GstElement * valve,
     GstPadTemplate * templ, const gchar * pad_name)
 {
   GstPad *src = gst_element_get_static_pad (valve, "src");
@@ -169,9 +169,9 @@ kms_mixer_endpoint_valve_added (KmsElement * self, GstElement * valve,
       g_object_ref (valve), g_object_unref);
 
   g_signal_connect (internal_src, "linked",
-      G_CALLBACK (kms_mixer_endpoint_internal_src_pad_linked), NULL);
+      G_CALLBACK (kms_mixer_port_internal_src_pad_linked), NULL);
   internal_src->unlinkfunc =
-      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_internal_src_pad_unlinked);
+      GST_DEBUG_FUNCPTR (kms_mixer_port_internal_src_pad_unlinked);
 
   if (GST_STATE (self) >= GST_STATE_PAUSED
       || GST_STATE_PENDING (self) >= GST_STATE_PAUSED
@@ -184,27 +184,27 @@ kms_mixer_endpoint_valve_added (KmsElement * self, GstElement * valve,
 }
 
 static void
-kms_mixer_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
+kms_mixer_port_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   GstPadTemplate *templ =
       gst_static_pad_template_get (&mixer_audio_src_factory);
 
-  kms_mixer_endpoint_valve_added (self, valve, templ, MIXER_AUDIO_SRC_PAD);
+  kms_mixer_port_valve_added (self, valve, templ, MIXER_AUDIO_SRC_PAD);
   g_object_unref (templ);
 }
 
 static void
-kms_mixer_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
+kms_mixer_port_video_valve_added (KmsElement * self, GstElement * valve)
 {
   GstPadTemplate *templ =
       gst_static_pad_template_get (&mixer_video_src_factory);
 
-  kms_mixer_endpoint_valve_added (self, valve, templ, MIXER_VIDEO_SRC_PAD);
+  kms_mixer_port_valve_added (self, valve, templ, MIXER_VIDEO_SRC_PAD);
   g_object_unref (templ);
 }
 
 static void
-kms_mixer_endpoint_valve_removed (KmsElement * self, GstElement * valve,
+kms_mixer_port_valve_removed (KmsElement * self, GstElement * valve,
     const gchar * pad_name)
 {
   GstPad *src = gst_element_get_static_pad (GST_ELEMENT (self), pad_name);
@@ -219,56 +219,56 @@ kms_mixer_endpoint_valve_removed (KmsElement * self, GstElement * valve,
 }
 
 static void
-kms_mixer_endpoint_audio_valve_removed (KmsElement * self, GstElement * valve)
+kms_mixer_port_audio_valve_removed (KmsElement * self, GstElement * valve)
 {
-  kms_mixer_endpoint_valve_removed (self, valve, MIXER_AUDIO_SRC_PAD);
+  kms_mixer_port_valve_removed (self, valve, MIXER_AUDIO_SRC_PAD);
 }
 
 static void
-kms_mixer_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
+kms_mixer_port_video_valve_removed (KmsElement * self, GstElement * valve)
 {
-  kms_mixer_endpoint_valve_removed (self, valve, MIXER_VIDEO_SRC_PAD);
+  kms_mixer_port_valve_removed (self, valve, MIXER_VIDEO_SRC_PAD);
 }
 
 static void
-kms_mixer_endpoint_dispose (GObject * object)
+kms_mixer_port_dispose (GObject * object)
 {
-  G_OBJECT_CLASS (kms_mixer_endpoint_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_mixer_port_parent_class)->dispose (object);
 }
 
 static void
-kms_mixer_endpoint_finalize (GObject * object)
+kms_mixer_port_finalize (GObject * object)
 {
-  G_OBJECT_CLASS (kms_mixer_endpoint_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_mixer_port_parent_class)->finalize (object);
 }
 
 static void
-kms_mixer_endpoint_class_init (KmsMixerEndpointClass * klass)
+kms_mixer_port_class_init (KmsMixerPortClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
   KmsElementClass *kms_element_class;
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "MixerEndpoint", "Generic", "Kurento plugin for mixer connection",
+      "MixerPort", "Generic", "Kurento plugin for mixer connection",
       "Jose Antonio Santos Cadenas <santoscadenas@gmail.com>");
 
-  gobject_class->dispose = kms_mixer_endpoint_dispose;
-  gobject_class->finalize = kms_mixer_endpoint_finalize;
+  gobject_class->dispose = kms_mixer_port_dispose;
+  gobject_class->finalize = kms_mixer_port_finalize;
 
   kms_element_class = KMS_ELEMENT_CLASS (klass);
 
   kms_element_class->audio_valve_added =
-      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_audio_valve_added);
+      GST_DEBUG_FUNCPTR (kms_mixer_port_audio_valve_added);
   kms_element_class->video_valve_added =
-      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_video_valve_added);
+      GST_DEBUG_FUNCPTR (kms_mixer_port_video_valve_added);
   kms_element_class->audio_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_audio_valve_removed);
+      GST_DEBUG_FUNCPTR (kms_mixer_port_audio_valve_removed);
   kms_element_class->video_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_video_valve_removed);
+      GST_DEBUG_FUNCPTR (kms_mixer_port_video_valve_removed);
 
   gstelement_class->request_new_pad =
-      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_request_new_pad);
+      GST_DEBUG_FUNCPTR (kms_mixer_port_request_new_pad);
 
   gst_element_class_add_pad_template (gstelement_class,
       gst_static_pad_template_get (&mixer_audio_src_factory));
@@ -280,18 +280,18 @@ kms_mixer_endpoint_class_init (KmsMixerEndpointClass * klass)
       gst_static_pad_template_get (&mixer_video_sink_factory));
 
   /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (KmsMixerEndpointPrivate));
+  g_type_class_add_private (klass, sizeof (KmsMixerPortPrivate));
 }
 
 static void
-kms_mixer_endpoint_init (KmsMixerEndpoint * self)
+kms_mixer_port_init (KmsMixerPort * self)
 {
-  self->priv = KMS_MIXER_ENDPOINT_GET_PRIVATE (self);
+  self->priv = KMS_MIXER_PORT_GET_PRIVATE (self);
 }
 
 gboolean
-kms_mixer_endpoint_plugin_init (GstPlugin * plugin)
+kms_mixer_port_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_MIXER_ENDPOINT);
+      KMS_TYPE_MIXER_PORT);
 }

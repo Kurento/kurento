@@ -19,7 +19,7 @@
 #include "kmsbasehub.h"
 #include "kmsagnosticcaps.h"
 #include "kms-marshal.h"
-#include "kmsmixerendpoint.h"
+#include "kmsmixerport.h"
 
 #define PLUGIN_NAME "basehub"
 
@@ -721,33 +721,31 @@ endpoint_pad_added (GstElement * endpoint, GstPad * pad,
 }
 
 static gint
-kms_base_hub_handle_port (KmsBaseHub * mixer, GstElement * mixer_endpoint)
+kms_base_hub_handle_port (KmsBaseHub * mixer, GstElement * mixer_port)
 {
   KmsBaseHubPortData *port_data;
   gint *id;
 
-  if (!KMS_IS_MIXER_ENDPOINT (mixer_endpoint)) {
-    GST_INFO_OBJECT (mixer, "Invalid MixerEndpoint: %" GST_PTR_FORMAT,
-        mixer_endpoint);
+  if (!KMS_IS_MIXER_PORT (mixer_port)) {
+    GST_INFO_OBJECT (mixer, "Invalid MixerPort: %" GST_PTR_FORMAT, mixer_port);
 
     return -1;
   }
 
   if (GST_OBJECT_PARENT (mixer) == NULL ||
-      GST_OBJECT_PARENT (mixer) != GST_OBJECT_PARENT (mixer_endpoint)) {
-    GST_ERROR_OBJECT (mixer,
-        "Mixer and MixerEndpoint do not have the same parent");
+      GST_OBJECT_PARENT (mixer) != GST_OBJECT_PARENT (mixer_port)) {
+    GST_ERROR_OBJECT (mixer, "Mixer and MixerPort do not have the same parent");
     return -1;
   }
 
-  GST_DEBUG_OBJECT (mixer, "Handle port: %" GST_PTR_FORMAT, mixer_endpoint);
+  GST_DEBUG_OBJECT (mixer, "Handle port: %" GST_PTR_FORMAT, mixer_port);
 
   id = kms_base_hub_generate_port_id (mixer);
 
   GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
-  port_data = kms_base_hub_port_data_create (mixer, mixer_endpoint, *id);
+  port_data = kms_base_hub_port_data_create (mixer, mixer_port, *id);
 
-  port_data->signal_id = g_signal_connect (G_OBJECT (mixer_endpoint),
+  port_data->signal_id = g_signal_connect (G_OBJECT (mixer_port),
       "pad-added", G_CALLBACK (endpoint_pad_added), port_data);
 
   KMS_BASE_HUB_LOCK (mixer);

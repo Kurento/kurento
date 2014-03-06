@@ -60,7 +60,7 @@ struct _KmsBaseHubClass
   GstBinClass parent_class;
 
   /* Actions */
-  gint (*handle_port) (KmsBaseHub * self, GstElement * mixer_endpoint);
+  gint (*handle_port) (KmsBaseHub * self, GstElement * mixer_port);
   void (*unhandle_port) (KmsBaseHub * self, gint port_id);
 
   /* Virtual methods */
