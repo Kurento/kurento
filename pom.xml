@@ -62,4 +62,4 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-<scm><tag>kmf-thrift-interface-4.0.0</tag></scm></project>
+</project>
