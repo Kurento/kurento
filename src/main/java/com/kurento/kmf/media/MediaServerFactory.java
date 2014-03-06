@@ -17,8 +17,7 @@ public abstract class MediaServerFactory {
 	public abstract ZBarFilter.Builder createZBarFilter(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline);
 
-	public abstract MixerPort.Builder createMixerPort(
-			@Param("mediaMixer") MediaMixer mediaMixer);
+	public abstract MixerPort.Builder createMixerPort(@Param("hub") Hub hub);
 
 	public abstract PointerDetectorAdvFilter.Builder createPointerDetectorAdvFilter(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline,
@@ -39,7 +38,7 @@ public abstract class MediaServerFactory {
 
 	public abstract MediaPipeline.Builder createMediaPipeline();
 
-	public abstract DispatcherMixer.Builder createDispatcherMixer(
+	public abstract Dispatcher.Builder createDispatcher(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline);
 
 	public abstract JackVaderFilter.Builder createJackVaderFilter(

@@ -4,9 +4,9 @@ import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.FactoryMethod;
 
 @RemoteClass
-public interface MediaMixer extends MediaObject {
+public interface Hub extends MediaObject {
 
-	@FactoryMethod("mediaMixer")
+	@FactoryMethod("hub")
 	public abstract MixerPort.Builder newMixerPort();
 
 }

@@ -38,7 +38,7 @@ public interface MediaPipeline extends MediaObject {
 			@Param("window") WindowParam window);
 
 	@FactoryMethod("mediaPipeline")
-	public abstract DispatcherMixer.Builder newDispatcherMixer();
+	public abstract Dispatcher.Builder newDispatcher();
 
 	@FactoryMethod("mediaPipeline")
 	public abstract JackVaderFilter.Builder newJackVaderFilter();

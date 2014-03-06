@@ -8,7 +8,7 @@ public interface MixerPort extends MediaElement {
 
 	public interface Factory {
 
-		public Builder create(@Param("mediaMixer") MediaMixer mediaMixer);
+		public Builder create(@Param("hub") Hub hub);
 	}
 
 	public interface Builder extends AbstractBuilder<MixerPort> {
