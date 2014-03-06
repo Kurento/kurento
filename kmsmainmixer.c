@@ -69,7 +69,7 @@ enum
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsMainMixer, kms_main_mixer,
-    KMS_TYPE_BASE_MIXER,
+    KMS_TYPE_BASE_HUB,
     GST_DEBUG_CATEGORY_INIT (kms_main_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for mainmixer element"));
 
@@ -88,9 +88,9 @@ kms_main_mixer_port_data_create (KmsMainMixer * mixer, gint id)
   gst_element_sync_state_with_parent (data->audio_agnostic);
   gst_element_sync_state_with_parent (data->video_agnostic);
 
-  kms_base_mixer_link_video_sink (KMS_BASE_MIXER (mixer), id,
+  kms_base_hub_link_video_sink (KMS_BASE_HUB (mixer), id,
       data->video_agnostic, "sink", FALSE);
-  kms_base_mixer_link_audio_sink (KMS_BASE_MIXER (mixer), id,
+  kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
       data->audio_agnostic, "sink", FALSE);
 
   return data;
@@ -138,13 +138,13 @@ kms_main_mixer_link_port (KmsMainMixer * self, gint to)
 
   KMS_MAIN_MIXER_LOCK (self);
   if (self->priv->main_port < 0) {
-    kms_base_mixer_unlink_audio_src (KMS_BASE_MIXER (self), to);
-    kms_base_mixer_unlink_video_src (KMS_BASE_MIXER (self), to);
+    kms_base_hub_unlink_audio_src (KMS_BASE_HUB (self), to);
+    kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), to);
   } else {
     port_data = g_hash_table_lookup (self->priv->ports, &self->priv->main_port);
-    kms_base_mixer_link_audio_src (KMS_BASE_MIXER (self), to,
+    kms_base_hub_link_audio_src (KMS_BASE_HUB (self), to,
         port_data->audio_agnostic, "src_%u", TRUE);
-    kms_base_mixer_link_video_src (KMS_BASE_MIXER (self), to,
+    kms_base_hub_link_video_src (KMS_BASE_HUB (self), to,
         port_data->video_agnostic, "src_%u", TRUE);
   }
 
@@ -171,7 +171,7 @@ kms_main_mixer_change_main_port (KmsMainMixer * self)
 }
 
 static void
-kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
+kms_main_mixer_unhandle_port (KmsBaseHub * mixer, gint id)
 {
   KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
 
@@ -186,18 +186,18 @@ kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 
   KMS_MAIN_MIXER_UNLOCK (self);
 
-  KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
+  KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
       (kms_main_mixer_parent_class))->unhandle_port (mixer, id);
 }
 
 static gint
-kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_endpoint)
+kms_main_mixer_handle_port (KmsBaseHub * mixer, GstElement * mixer_endpoint)
 {
   KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
   KmsMainMixerPortData *port_data;
   gint port_id;
 
-  port_id = KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
+  port_id = KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
       (kms_main_mixer_parent_class))->handle_port (mixer, mixer_endpoint);
 
   if (port_id < 0)
@@ -284,7 +284,7 @@ static void
 kms_main_mixer_class_init (KmsMainMixerClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-  KmsBaseMixerClass *base_mixer_class = KMS_BASE_MIXER_CLASS (klass);
+  KmsBaseHubClass *base_hub_class = KMS_BASE_HUB_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "MainMixer", "Generic", "Mixer element that makes dispatching of "
@@ -295,9 +295,8 @@ kms_main_mixer_class_init (KmsMainMixerClass * klass)
   gobject_class->get_property = GST_DEBUG_FUNCPTR (kms_main_mixer_get_property);
   gobject_class->set_property = GST_DEBUG_FUNCPTR (kms_main_mixer_set_property);
 
-  base_mixer_class->handle_port =
-      GST_DEBUG_FUNCPTR (kms_main_mixer_handle_port);
-  base_mixer_class->unhandle_port =
+  base_hub_class->handle_port = GST_DEBUG_FUNCPTR (kms_main_mixer_handle_port);
+  base_hub_class->unhandle_port =
       GST_DEBUG_FUNCPTR (kms_main_mixer_unhandle_port);
 
   g_object_class_install_property (gobject_class, PROP_MAIN_PORT,

@@ -54,7 +54,7 @@ struct _KmsCompositeMixerPortData
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsCompositeMixer, kms_composite_mixer,
-    KMS_TYPE_BASE_MIXER,
+    KMS_TYPE_BASE_HUB,
     GST_DEBUG_CATEGORY_INIT (kms_composite_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for compositemixer element"));
 

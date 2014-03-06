@@ -15,7 +15,7 @@
 #ifndef _KMS_COMPOSITE_MIXER_H_
 #define _KMS_COMPOSITE_MIXER_H_
 
-#include "kmsbasemixer.h"
+#include "kmsbasehub.h"
 
 G_BEGIN_DECLS
 #define KMS_TYPE_COMPOSITE_MIXER kms_composite_mixer_get_type()
@@ -50,7 +50,7 @@ typedef struct _KmsCompositeMixerPrivate KmsCompositeMixerPrivate;
 
 struct _KmsCompositeMixer
 {
-  KmsBaseMixer parent;
+  KmsBaseHub parent;
 
   /*< private > */
   KmsCompositeMixerPrivate *priv;
@@ -58,7 +58,7 @@ struct _KmsCompositeMixer
 
 struct _KmsCompositeMixerClass
 {
-  KmsBaseMixerClass parent_class;
+  KmsBaseHubClass parent_class;
 };
 
 GType kms_composite_mixer_get_type (void);
