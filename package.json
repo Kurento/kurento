@@ -1,6 +1,6 @@
 {
   "name": "kws-rpc-builder",
-  "version": "4.0.0",
+  "version": "4.0.1-SNAPSHOT",
   "description": "RPC library for browser and Node.js",
   "main": "index.js",
   "scripts": {
