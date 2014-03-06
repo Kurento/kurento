@@ -37,7 +37,7 @@
     "async": "~0.2.9",
     "extend": "~1.2.1",
     "inherits": "~2.0.1",
-    "kws-rpc-builder": "~3.0.7",
+    "kws-rpc-builder": "~4.0.0",
     "ws": "~0.4.31"
   },
   "devDependencies": {
