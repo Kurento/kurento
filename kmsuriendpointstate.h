@@ -12,17 +12,17 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef __KMS_URI_END_POINT_STATE_H__
-#define __KMS_URI_END_POINT_STATE_H__
+#ifndef __KMS_URI_ENDPOINT_STATE_H__
+#define __KMS_URI_ENDPOINT_STATE_H__
 
 G_BEGIN_DECLS
 
 typedef enum
 {
-  KMS_URI_END_POINT_STATE_STOP,
-  KMS_URI_END_POINT_STATE_START,
-  KMS_URI_END_POINT_STATE_PAUSE
-} KmsUriEndPointState;
+  KMS_URI_ENDPOINT_STATE_STOP,
+  KMS_URI_ENDPOINT_STATE_START,
+  KMS_URI_ENDPOINT_STATE_PAUSE
+} KmsUriEndpointState;
 
 G_END_DECLS
-#endif /* __KMS_URI_END_POINT_STATE__ */
+#endif /* __KMS_URI_ENDPOINT_STATE__ */

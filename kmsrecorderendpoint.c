@@ -48,14 +48,14 @@
 #define HTTP_TIMEOUT 10
 #define MEGA_BYTES(n) ((n) * 1000000)
 
-GST_DEBUG_CATEGORY_STATIC (kms_recorder_end_point_debug_category);
-#define GST_CAT_DEFAULT kms_recorder_end_point_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
+#define GST_CAT_DEFAULT kms_recorder_endpoint_debug_category
 
-#define KMS_RECORDER_END_POINT_GET_PRIVATE(obj) ( \
+#define KMS_RECORDER_ENDPOINT_GET_PRIVATE(obj) (  \
   G_TYPE_INSTANCE_GET_PRIVATE (                   \
     (obj),                                        \
-    KMS_TYPE_RECORDER_END_POINT,                  \
-    KmsRecorderEndPointPrivate                    \
+    KMS_TYPE_RECORDER_ENDPOINT,                   \
+    KmsRecorderEndpointPrivate                    \
   )                                               \
 )
 
@@ -76,7 +76,7 @@ struct state_controller
   gboolean changing;
 };
 
-struct _KmsRecorderEndPointPrivate
+struct _KmsRecorderEndpointPrivate
 {
   GstElement *pipeline;
   GstClockTime paused_time;
@@ -88,9 +88,9 @@ struct _KmsRecorderEndPointPrivate
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndPoint, kms_recorder_end_point,
-    KMS_TYPE_URI_END_POINT,
-    GST_DEBUG_CATEGORY_INIT (kms_recorder_end_point_debug_category, PLUGIN_NAME,
+G_DEFINE_TYPE_WITH_CODE (KmsRecorderEndpoint, kms_recorder_endpoint,
+    KMS_TYPE_URI_ENDPOINT,
+    GST_DEBUG_CATEGORY_INIT (kms_recorder_endpoint_debug_category, PLUGIN_NAME,
         0, "debug category for recorderendpoint element"));
 
 static void
@@ -129,10 +129,10 @@ release_base_time_type (gpointer data)
 static GstFlowReturn
 recv_sample (GstElement * appsink, gpointer user_data)
 {
-  KmsRecorderEndPoint *self =
-      KMS_RECORDER_END_POINT (GST_OBJECT_PARENT (appsink));
+  KmsRecorderEndpoint *self =
+      KMS_RECORDER_ENDPOINT (GST_OBJECT_PARENT (appsink));
   GstElement *appsrc = GST_ELEMENT (user_data);
-  KmsUriEndPointState state;
+  KmsUriEndpointState state;
   GstFlowReturn ret;
   GstSample *sample;
   GstBuffer *buffer;
@@ -172,7 +172,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   }
 
   g_object_get (G_OBJECT (self), "state", &state, NULL);
-  if (state != KMS_URI_END_POINT_STATE_START) {
+  if (state != KMS_URI_ENDPOINT_STATE_START) {
     GST_DEBUG ("Dropping buffer %" GST_PTR_FORMAT, buffer);
     ret = GST_FLOW_OK;
     goto end;
@@ -252,7 +252,7 @@ recv_eos (GstElement * appsink, gpointer user_data)
 }
 
 static void
-kms_recorder_end_point_change_state (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_change_state (KmsRecorderEndpoint * self)
 {
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
@@ -272,10 +272,10 @@ kms_recorder_end_point_change_state (KmsRecorderEndPoint * self)
 }
 
 static void
-kms_recorder_end_point_state_changed (KmsRecorderEndPoint * self,
-    KmsUriEndPointState state)
+kms_recorder_endpoint_state_changed (KmsRecorderEndpoint * self,
+    KmsUriEndpointState state)
 {
-  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
+  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       state);
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 
@@ -289,7 +289,7 @@ kms_recorder_end_point_state_changed (KmsRecorderEndPoint * self,
 }
 
 static void
-kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_send_eos_to_appsrcs (KmsRecorderEndpoint * self)
 {
   GstElement *audiosrc =
       gst_bin_get_by_name (GST_BIN (self->priv->pipeline), AUDIO_APPSRC);
@@ -310,7 +310,7 @@ kms_recorder_end_point_send_eos_to_appsrcs (KmsRecorderEndPoint * self)
 static gboolean
 set_to_null_state_on_EOS (gpointer data)
 {
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (data);
+  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (data);
 
   GST_DEBUG ("Received EOS in pipeline, setting NULL state");
 
@@ -318,7 +318,7 @@ set_to_null_state_on_EOS (gpointer data)
 
   gst_element_set_state (recorder->priv->pipeline, GST_STATE_NULL);
 
-  kms_recorder_end_point_state_changed (recorder, KMS_URI_END_POINT_STATE_STOP);
+  kms_recorder_endpoint_state_changed (recorder, KMS_URI_ENDPOINT_STATE_STOP);
 
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 
@@ -326,17 +326,17 @@ set_to_null_state_on_EOS (gpointer data)
 }
 
 static void
-kms_recorder_end_point_wait_for_pipeline_eos (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_wait_for_pipeline_eos (KmsRecorderEndpoint * self)
 {
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
   // Wait for EOS event to set pipeline to NULL
-  kms_recorder_end_point_send_eos_to_appsrcs (self);
+  kms_recorder_endpoint_send_eos_to_appsrcs (self);
 }
 
 static void
-kms_recorder_end_point_dispose (GObject * object)
+kms_recorder_endpoint_dispose (GObject * object)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
 
   g_clear_object (&self->priv->loop);
   g_clear_object (&self->priv->controller);
@@ -354,11 +354,11 @@ kms_recorder_end_point_dispose (GObject * object)
 
   /* clean up as possible.  may be called multiple times */
 
-  G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_recorder_endpoint_parent_class)->dispose (object);
 }
 
 static void
-kms_recorder_end_point_release_pending_requests (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_release_pending_requests (KmsRecorderEndpoint * self)
 {
   g_mutex_lock (&self->priv->state_manager.mutex);
   while (self->priv->state_manager.changing ||
@@ -376,28 +376,28 @@ kms_recorder_end_point_release_pending_requests (KmsRecorderEndPoint * self)
 }
 
 static void
-kms_recorder_end_point_finalize (GObject * object)
+kms_recorder_endpoint_finalize (GObject * object)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
 
-  kms_recorder_end_point_release_pending_requests (self);
+  kms_recorder_endpoint_release_pending_requests (self);
 
-  G_OBJECT_CLASS (kms_recorder_end_point_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_recorder_endpoint_parent_class)->finalize (object);
 }
 
 static GstElement *
-kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_get_sink_fallback (KmsRecorderEndpoint * self)
 {
   GstElement *sink = NULL;
   gchar *prot;
 
-  prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
+  prot = gst_uri_get_protocol (KMS_URI_ENDPOINT (self)->uri);
 
   if ((g_strcmp0 (prot, HTTP_PROTO) == 0)
       || (g_strcmp0 (prot, HTTPS_PROTO) == 0)) {
     SoupSession *ss;
 
-    if (kms_is_valid_uri (KMS_URI_END_POINT (self)->uri)) {
+    if (kms_is_valid_uri (KMS_URI_ENDPOINT (self)->uri)) {
       /* We use souphttpclientsink */
       sink = gst_element_factory_make ("souphttpclientsink", NULL);
       g_object_set (sink, "blocksize", MEGA_BYTES (1), NULL);
@@ -414,7 +414,7 @@ kms_recorder_end_point_get_sink_fallback (KmsRecorderEndPoint * self)
 }
 
 static GstElement *
-kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_get_sink (KmsRecorderEndpoint * self)
 {
   GObjectClass *sink_class;
   GstElement *sink = NULL;
@@ -423,19 +423,19 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
 
-  if (KMS_URI_END_POINT (self)->uri == NULL)
+  if (KMS_URI_ENDPOINT (self)->uri == NULL)
     goto no_uri;
 
-  if (!gst_uri_is_valid (KMS_URI_END_POINT (self)->uri))
+  if (!gst_uri_is_valid (KMS_URI_ENDPOINT (self)->uri))
     goto invalid_uri;
 
-  sink = gst_element_make_from_uri (GST_URI_SINK, KMS_URI_END_POINT (self)->uri,
+  sink = gst_element_make_from_uri (GST_URI_SINK, KMS_URI_ENDPOINT (self)->uri,
       NULL, &err);
   if (sink == NULL) {
     /* Some elements have no URI handling capabilities though they can */
     /* handle them. We try to find such element before failing to attend */
     /* this request */
-    sink = kms_recorder_end_point_get_sink_fallback (self);
+    sink = kms_recorder_endpoint_get_sink_fallback (self);
     if (sink == NULL)
       goto no_sink;
   }
@@ -448,15 +448,15 @@ kms_recorder_end_point_get_sink (KmsRecorderEndPoint * self)
     if (g_strcmp0 (GST_OBJECT_NAME (gst_element_get_factory (sink)),
             "filesink") == 0) {
       /* Work around for filesink elements */
-      gchar *location = gst_uri_get_location (KMS_URI_END_POINT (self)->uri);
+      gchar *location = gst_uri_get_location (KMS_URI_ENDPOINT (self)->uri);
 
       GST_DEBUG_OBJECT (sink, "filesink location=%s", location);
       g_object_set (sink, "location", location, NULL);
       g_free (location);
     } else {
       GST_DEBUG_OBJECT (sink, "configuring location=%s",
-          KMS_URI_END_POINT (self)->uri);
-      g_object_set (sink, "location", KMS_URI_END_POINT (self)->uri, NULL);
+          KMS_URI_ENDPOINT (self)->uri);
+      g_object_set (sink, "location", KMS_URI_ENDPOINT (self)->uri, NULL);
     }
   }
 
@@ -471,7 +471,7 @@ no_uri:
 invalid_uri:
   {
     GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS, ("Invalid URI \"%s\".",
-            KMS_URI_END_POINT (self)->uri), GST_ERROR_SYSTEM);
+            KMS_URI_ENDPOINT (self)->uri), GST_ERROR_SYSTEM);
     g_clear_error (&err);
     goto end;
   }
@@ -482,7 +482,7 @@ no_sink:
     if (err != NULL && err->code == GST_URI_ERROR_UNSUPPORTED_PROTOCOL) {
       gchar *prot;
 
-      prot = gst_uri_get_protocol (KMS_URI_END_POINT (self)->uri);
+      prot = gst_uri_get_protocol (KMS_URI_ENDPOINT (self)->uri);
       if (prot == NULL)
         goto invalid_uri;
 
@@ -508,7 +508,7 @@ static GstPadProbeReturn
 stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
     gpointer user_data)
 {
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (user_data);
+  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (user_data);
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
     return GST_PAD_PROBE_OK;
@@ -520,7 +520,7 @@ stop_notification_cb (GstPad * srcpad, GstPadProbeInfo * info,
 }
 
 static void
-kms_recorder_end_point_send_force_key_unit_event (GstElement * valve)
+kms_recorder_endpoint_send_force_key_unit_event (GstElement * valve)
 {
   GstStructure *s;
   GstEvent *force_key_unit_event;
@@ -533,25 +533,25 @@ kms_recorder_end_point_send_force_key_unit_event (GstElement * valve)
 }
 
 static void
-kms_recorder_end_point_open_valves (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_open_valves (KmsRecorderEndpoint * self)
 {
   GstElement *valve;
 
   valve = kms_element_get_audio_valve (KMS_ELEMENT (self));
   if (valve != NULL) {
     kms_utils_set_valve_drop (valve, FALSE);
-    kms_recorder_end_point_send_force_key_unit_event (valve);
+    kms_recorder_endpoint_send_force_key_unit_event (valve);
   }
 
   valve = kms_element_get_video_valve (KMS_ELEMENT (self));
   if (valve != NULL) {
     kms_utils_set_valve_drop (valve, FALSE);
-    kms_recorder_end_point_send_force_key_unit_event (valve);
+    kms_recorder_endpoint_send_force_key_unit_event (valve);
   }
 }
 
 static void
-kms_recorder_end_point_close_valves (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_close_valves (KmsRecorderEndpoint * self)
 {
   GstElement *valve;
 
@@ -565,15 +565,15 @@ kms_recorder_end_point_close_valves (KmsRecorderEndPoint * self)
 }
 
 static void
-kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
+kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
   GstElement *audio_src, *video_src;
 
-  kms_recorder_end_point_change_state (self);
+  kms_recorder_endpoint_change_state (self);
 
   /* Close valves */
-  kms_recorder_end_point_close_valves (self);
+  kms_recorder_endpoint_close_valves (self);
 
   // Reset base time data
   audio_src =
@@ -599,19 +599,19 @@ kms_recorder_end_point_stopped (KmsUriEndPoint * obj)
   KMS_ELEMENT_UNLOCK (self);
 
   if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
-    kms_recorder_end_point_wait_for_pipeline_eos (self);
+    kms_recorder_endpoint_wait_for_pipeline_eos (self);
   } else {
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-    kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_STOP);
+    kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
   }
 }
 
 static void
-kms_recorder_end_point_started (KmsUriEndPoint * obj)
+kms_recorder_endpoint_started (KmsUriEndpoint * obj)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
 
-  kms_recorder_end_point_change_state (self);
+  kms_recorder_endpoint_change_state (self);
 
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
@@ -628,20 +628,20 @@ kms_recorder_end_point_started (KmsUriEndPoint * obj)
   KMS_ELEMENT_UNLOCK (self);
 
   /* Open valves */
-  kms_recorder_end_point_open_valves (self);
+  kms_recorder_endpoint_open_valves (self);
 
-  kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_START);
+  kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_START);
 }
 
 static void
-kms_recorder_end_point_paused (KmsUriEndPoint * obj)
+kms_recorder_endpoint_paused (KmsUriEndpoint * obj)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (obj);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
 
-  kms_recorder_end_point_change_state (self);
+  kms_recorder_endpoint_change_state (self);
 
   /* Close valves */
-  kms_recorder_end_point_close_valves (self);
+  kms_recorder_endpoint_close_valves (self);
 
   /* Set internal pipeline to GST_STATE_PAUSED */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
@@ -653,63 +653,63 @@ kms_recorder_end_point_paused (KmsUriEndPoint * obj)
 
   KMS_ELEMENT_UNLOCK (self);
 
-  kms_recorder_end_point_state_changed (self, KMS_URI_END_POINT_STATE_PAUSE);
+  kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_PAUSE);
 }
 
 static void
-kms_recorder_end_point_valve_added (KmsRecorderEndPoint * self,
+kms_recorder_endpoint_valve_added (KmsRecorderEndpoint * self,
     GstElement * valve, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname)
 {
-  KmsUriEndPointState state;
+  KmsUriEndpointState state;
 
   kms_conf_controller_link_valve (self->priv->controller, valve, sinkname,
       srcname, destpadname);
 
   g_object_get (self, "state", &state, NULL);
-  if (state == KMS_URI_END_POINT_STATE_START) {
+  if (state == KMS_URI_ENDPOINT_STATE_START) {
     GST_DEBUG ("Setting %" GST_PTR_FORMAT " drop to FALSE", valve);
     kms_utils_set_valve_drop (valve, FALSE);
   }
 }
 
 static void
-kms_recorder_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
+kms_recorder_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   // TODO: This caps should be set using the profile data
-  kms_recorder_end_point_valve_added (KMS_RECORDER_END_POINT (self), valve,
+  kms_recorder_endpoint_valve_added (KMS_RECORDER_ENDPOINT (self), valve,
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 }
 
 static void
-kms_recorder_end_point_audio_valve_removed (KmsElement * self,
+kms_recorder_endpoint_audio_valve_removed (KmsElement * self,
     GstElement * valve)
 {
   GST_INFO ("TODO: Implement this");
 }
 
 static void
-kms_recorder_end_point_video_valve_added (KmsElement * self, GstElement * valve)
+kms_recorder_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
 {
-  KmsRecorderEndPoint *recorder = KMS_RECORDER_END_POINT (self);
+  KmsRecorderEndpoint *recorder = KMS_RECORDER_ENDPOINT (self);
 
   // TODO: This caps should be set using the profile data
-  kms_recorder_end_point_valve_added (recorder, valve, VIDEO_APPSINK,
+  kms_recorder_endpoint_valve_added (recorder, valve, VIDEO_APPSINK,
       VIDEO_APPSRC, "video_%u");
 }
 
 static void
-kms_recorder_end_point_video_valve_removed (KmsElement * self,
+kms_recorder_endpoint_video_valve_removed (KmsElement * self,
     GstElement * valve)
 {
   GST_INFO ("TODO: Implement this");
 }
 
 static void
-kms_recorder_end_point_set_property (GObject * object, guint property_id,
+kms_recorder_endpoint_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
@@ -729,10 +729,10 @@ kms_recorder_end_point_set_property (GObject * object, guint property_id,
 }
 
 static void
-kms_recorder_end_point_get_property (GObject * object, guint property_id,
+kms_recorder_endpoint_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (object);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
@@ -752,38 +752,38 @@ kms_recorder_end_point_get_property (GObject * object, guint property_id,
 }
 
 static void
-kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
+kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
 {
-  KmsUriEndPointClass *urienpoint_class = KMS_URI_END_POINT_CLASS (klass);
+  KmsUriEndpointClass *urienpoint_class = KMS_URI_ENDPOINT_CLASS (klass);
   KmsElementClass *kms_element_class;
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "RecorderEndPoint", "Sink/Generic", "Kurento plugin recorder end point",
+      "RecorderEndpoint", "Sink/Generic", "Kurento plugin recorder end point",
       "Santiago Carot-Nemesio <sancane.kurento@gmail.com>");
 
-  gobject_class->dispose = kms_recorder_end_point_dispose;
-  gobject_class->finalize = kms_recorder_end_point_finalize;
+  gobject_class->dispose = kms_recorder_endpoint_dispose;
+  gobject_class->finalize = kms_recorder_endpoint_finalize;
 
-  urienpoint_class->stopped = kms_recorder_end_point_stopped;
-  urienpoint_class->started = kms_recorder_end_point_started;
-  urienpoint_class->paused = kms_recorder_end_point_paused;
+  urienpoint_class->stopped = kms_recorder_endpoint_stopped;
+  urienpoint_class->started = kms_recorder_endpoint_started;
+  urienpoint_class->paused = kms_recorder_endpoint_paused;
 
   kms_element_class = KMS_ELEMENT_CLASS (klass);
 
   kms_element_class->audio_valve_added =
-      GST_DEBUG_FUNCPTR (kms_recorder_end_point_audio_valve_added);
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_audio_valve_added);
   kms_element_class->video_valve_added =
-      GST_DEBUG_FUNCPTR (kms_recorder_end_point_video_valve_added);
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_video_valve_added);
   kms_element_class->audio_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_recorder_end_point_audio_valve_removed);
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_audio_valve_removed);
   kms_element_class->video_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_recorder_end_point_video_valve_removed);
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_video_valve_removed);
 
   gobject_class->set_property =
-      GST_DEBUG_FUNCPTR (kms_recorder_end_point_set_property);
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_set_property);
   gobject_class->get_property =
-      GST_DEBUG_FUNCPTR (kms_recorder_end_point_get_property);
+      GST_DEBUG_FUNCPTR (kms_recorder_endpoint_get_property);
 
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
@@ -794,13 +794,13 @@ kms_recorder_end_point_class_init (KmsRecorderEndPointClass * klass)
       N_PROPERTIES, obj_properties);
 
   /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (KmsRecorderEndPointPrivate));
+  g_type_class_add_private (klass, sizeof (KmsRecorderEndpointPrivate));
 }
 
 static gboolean
-kms_recorder_end_point_post_error (gpointer data)
+kms_recorder_endpoint_post_error (gpointer data)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
 
   gchar *message = (gchar *) g_object_steal_data (G_OBJECT (self), "message");
 
@@ -813,7 +813,7 @@ kms_recorder_end_point_post_error (gpointer data)
 static GstBusSyncReply
 bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (data);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (data);
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
     GError *err = NULL;
@@ -824,7 +824,7 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
         g_strdup (err->message), (GDestroyNotify) g_free);
 
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-        kms_recorder_end_point_post_error, g_object_ref (self), g_object_unref);
+        kms_recorder_endpoint_post_error, g_object_ref (self), g_object_unref);
 
     g_error_free (err);
   }
@@ -842,12 +842,12 @@ matched_elements_cb (KmsConfController * controller, GstElement * appsink,
 static void
 sink_required_cb (KmsConfController * controller, gpointer recorder)
 {
-  KmsRecorderEndPoint *self = KMS_RECORDER_END_POINT (recorder);
+  KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (recorder);
   gulong *probe_id;
   GstElement *sink;
   GstPad *sinkpad;
 
-  sink = kms_recorder_end_point_get_sink (self);
+  sink = kms_recorder_endpoint_get_sink (self);
 
   if (sink == NULL) {
     sink = gst_element_factory_make ("fakesink", NULL);
@@ -896,11 +896,11 @@ sink_unrequired_cb (KmsConfController * controller, GstElement * sink,
 }
 
 static void
-kms_recorder_end_point_init (KmsRecorderEndPoint * self)
+kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
 {
   GstBus *bus;
 
-  self->priv = KMS_RECORDER_END_POINT_GET_PRIVATE (self);
+  self->priv = KMS_RECORDER_ENDPOINT_GET_PRIVATE (self);
 
   self->priv->loop = kms_loop_new ();
 
@@ -928,8 +928,8 @@ kms_recorder_end_point_init (KmsRecorderEndPoint * self)
 }
 
 gboolean
-kms_recorder_end_point_plugin_init (GstPlugin * plugin)
+kms_recorder_endpoint_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_RECORDER_END_POINT);
+      KMS_TYPE_RECORDER_ENDPOINT);
 }

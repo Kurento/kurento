@@ -12,8 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef _KMS_MIXER_END_POINT_H_
-#define _KMS_MIXER_END_POINT_H_
+#ifndef _KMS_MIXER_ENDPOINT_H_
+#define _KMS_MIXER_ENDPOINT_H_
 
 #include "kmselement.h"
 
@@ -23,51 +23,51 @@
 #define MIXER_VIDEO_SRC_PAD "mixer_video_src"
 
 G_BEGIN_DECLS
-#define KMS_TYPE_MIXER_END_POINT kms_mixer_end_point_get_type()
-#define KMS_MIXER_END_POINT(obj) (              \
+#define KMS_TYPE_MIXER_ENDPOINT kms_mixer_endpoint_get_type()
+#define KMS_MIXER_ENDPOINT(obj) (               \
   G_TYPE_CHECK_INSTANCE_CAST(                   \
     (obj),                                      \
-    KMS_TYPE_MIXER_END_POINT,                   \
-    KmsMixerEndPoint                            \
+    KMS_TYPE_MIXER_ENDPOINT,                    \
+    KmsMixerEndpoint                            \
   )                                             \
 )
-#define KMS_MIXER_END_POINT_CLASS(klass) (      \
+#define KMS_MIXER_ENDPOINT_CLASS(klass) (       \
   G_TYPE_CHECK_CLASS_CAST (                     \
     (klass),                                    \
-    KMS_TYPE_MIXER_END_POINT,                   \
-    KmsMixerEndPointClass                       \
+    KMS_TYPE_MIXER_ENDPOINT,                    \
+    KmsMixerEndpointClass                       \
   )                                             \
 )
-#define KMS_IS_MIXER_END_POINT(obj) (           \
+#define KMS_IS_MIXER_ENDPOINT(obj) (            \
   G_TYPE_CHECK_INSTANCE_TYPE (                  \
     (obj),                                      \
-    KMS_TYPE_MIXER_END_POINT                    \
+    KMS_TYPE_MIXER_ENDPOINT                     \
   )                                             \
 )
-#define KMS_IS_MIXER_END_POINT_CLASS(klass) (   \
+#define KMS_IS_MIXER_ENDPOINT_CLASS(klass) (    \
   G_TYPE_CHECK_CLASS_TYPE((klass),              \
-  KMS_TYPE_MIXER_END_POINT)                     \
+  KMS_TYPE_MIXER_ENDPOINT)                      \
 )
-typedef struct _KmsMixerEndPoint KmsMixerEndPoint;
-typedef struct _KmsMixerEndPointClass KmsMixerEndPointClass;
-typedef struct _KmsMixerEndPointPrivate KmsMixerEndPointPrivate;
+typedef struct _KmsMixerEndpoint KmsMixerEndpoint;
+typedef struct _KmsMixerEndpointClass KmsMixerEndpointClass;
+typedef struct _KmsMixerEndpointPrivate KmsMixerEndpointPrivate;
 
-struct _KmsMixerEndPoint
+struct _KmsMixerEndpoint
 {
   KmsElement parent;
 
   /*< private > */
-  KmsMixerEndPointPrivate *priv;
+  KmsMixerEndpointPrivate *priv;
 };
 
-struct _KmsMixerEndPointClass
+struct _KmsMixerEndpointClass
 {
   KmsElementClass parent_class;
 };
 
-GType kms_mixer_end_point_get_type (void);
+GType kms_mixer_endpoint_get_type (void);
 
-gboolean kms_mixer_end_point_plugin_init (GstPlugin * plugin);
+gboolean kms_mixer_endpoint_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
-#endif /* _KMS_MIXER_END_POINT_H_ */
+#endif /* _KMS_MIXER_ENDPOINT_H_ */

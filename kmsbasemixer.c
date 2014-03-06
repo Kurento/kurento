@@ -682,7 +682,7 @@ mixer_pad_added (KmsBaseMixer * mixer, GstPad * pad, gpointer data)
 }
 
 static void
-end_point_pad_added (GstElement * end_point, GstPad * pad,
+endpoint_pad_added (GstElement * endpoint, GstPad * pad,
     KmsBaseMixerPortData * port_data)
 {
   if (gst_pad_get_direction (pad) != GST_PAD_SRC ||
@@ -722,34 +722,34 @@ end_point_pad_added (GstElement * end_point, GstPad * pad,
 }
 
 static gint
-kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
+kms_base_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_endpoint)
 {
   KmsBaseMixerPortData *port_data;
   gint *id;
 
-  if (!KMS_IS_MIXER_END_POINT (mixer_end_point)) {
-    GST_INFO_OBJECT (mixer, "Invalid MixerEndPoint: %" GST_PTR_FORMAT,
-        mixer_end_point);
+  if (!KMS_IS_MIXER_ENDPOINT (mixer_endpoint)) {
+    GST_INFO_OBJECT (mixer, "Invalid MixerEndpoint: %" GST_PTR_FORMAT,
+        mixer_endpoint);
 
     return -1;
   }
 
   if (GST_OBJECT_PARENT (mixer) == NULL ||
-      GST_OBJECT_PARENT (mixer) != GST_OBJECT_PARENT (mixer_end_point)) {
+      GST_OBJECT_PARENT (mixer) != GST_OBJECT_PARENT (mixer_endpoint)) {
     GST_ERROR_OBJECT (mixer,
-        "Mixer and MixerEndPoint do not have the same parent");
+        "Mixer and MixerEndpoint do not have the same parent");
     return -1;
   }
 
-  GST_DEBUG_OBJECT (mixer, "Handle port: %" GST_PTR_FORMAT, mixer_end_point);
+  GST_DEBUG_OBJECT (mixer, "Handle port: %" GST_PTR_FORMAT, mixer_endpoint);
 
   id = kms_base_mixer_generate_port_id (mixer);
 
   GST_DEBUG_OBJECT (mixer, "Adding new port %d", *id);
-  port_data = kms_base_mixer_port_data_create (mixer, mixer_end_point, *id);
+  port_data = kms_base_mixer_port_data_create (mixer, mixer_endpoint, *id);
 
-  port_data->signal_id = g_signal_connect (G_OBJECT (mixer_end_point),
-      "pad-added", G_CALLBACK (end_point_pad_added), port_data);
+  port_data->signal_id = g_signal_connect (G_OBJECT (mixer_endpoint),
+      "pad-added", G_CALLBACK (endpoint_pad_added), port_data);
 
   KMS_BASE_MIXER_LOCK (mixer);
   g_hash_table_insert (mixer->priv->ports, id, port_data);

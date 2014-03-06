@@ -12,69 +12,69 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef _KMS_HTTP_END_POINT_H_
-#define _KMS_HTTP_END_POINT_H
+#ifndef _KMS_HTTP_ENDPOINT_H_
+#define _KMS_HTTP_ENDPOINT_H
 
 #include "kmselement.h"
 
 G_BEGIN_DECLS
-#define KMS_TYPE_HTTP_END_POINT \
-  (kms_http_end_point_get_type())
-#define KMS_HTTP_END_POINT(obj) (          \
+#define KMS_TYPE_HTTP_ENDPOINT \
+  (kms_http_endpoint_get_type())
+#define KMS_HTTP_ENDPOINT(obj) (           \
   G_TYPE_CHECK_INSTANCE_CAST(              \
     (obj),                                 \
-    KMS_TYPE_HTTP_END_POINT,               \
-    KmsHttpEndPoint                        \
+    KMS_TYPE_HTTP_ENDPOINT,                \
+    KmsHttpEndpoint                        \
   )                                        \
 )
-#define KMS_HTTP_END_POINT_CLASS(klass) (  \
+#define KMS_HTTP_ENDPOINT_CLASS(klass) (   \
   G_TYPE_CHECK_CLASS_CAST (                \
     (klass),                               \
-    KMS_TYPE_HTTP_END_POINT,               \
-    KmsHttpEndPointClass                   \
+    KMS_TYPE_HTTP_ENDPOINT,                \
+    KmsHttpEndpointClass                   \
   )                                        \
 )
-#define KMS_IS_HTTP_END_POINT(obj) (       \
+#define KMS_IS_HTTP_ENDPOINT(obj) (        \
   G_TYPE_CHECK_INSTANCE_TYPE (             \
     (obj),                                 \
-    KMS_TYPE_HTTP_END_POINT                \
+    KMS_TYPE_HTTP_ENDPOINT                 \
   )                                        \
 )
-#define KMS_IS_HTTP_END_POINT_CLASS(klass) ( \
+#define KMS_IS_HTTP_ENDPOINT_CLASS(klass) (  \
   G_TYPE_CHECK_CLASS_TYPE(                   \
     (klass),                                 \
-    KMS_TYPE_HTTP_END_POINT                  \
+    KMS_TYPE_HTTP_ENDPOINT                   \
   )                                          \
 )
-typedef struct _KmsHttpEndPoint KmsHttpEndPoint;
-typedef struct _KmsHttpEndPointClass KmsHttpEndPointClass;
-typedef struct _KmsHttpEndPointPrivate KmsHttpEndPointPrivate;
+typedef struct _KmsHttpEndpoint KmsHttpEndpoint;
+typedef struct _KmsHttpEndpointClass KmsHttpEndpointClass;
+typedef struct _KmsHttpEndpointPrivate KmsHttpEndpointPrivate;
 
-struct _KmsHttpEndPoint
+struct _KmsHttpEndpoint
 {
   KmsElement parent;
 
   /*< private > */
-  KmsHttpEndPointPrivate *priv;
+  KmsHttpEndpointPrivate *priv;
 };
 
-struct _KmsHttpEndPointClass
+struct _KmsHttpEndpointClass
 {
   KmsElementClass parent_class;
 
   /* signals */
-  void (*eos_signal) (KmsHttpEndPoint * self);
-  GstFlowReturn (*new_sample) (KmsHttpEndPoint *appsink);
+  void (*eos_signal) (KmsHttpEndpoint * self);
+  GstFlowReturn (*new_sample) (KmsHttpEndpoint *appsink);
 
   /* actions */
-  GstFlowReturn (*push_buffer) (KmsHttpEndPoint * self, GstBuffer * buffer);
-  GstSample * (*pull_sample) (KmsHttpEndPoint * self);
-  GstFlowReturn (*end_of_stream) (KmsHttpEndPoint * self);
+  GstFlowReturn (*push_buffer) (KmsHttpEndpoint * self, GstBuffer * buffer);
+  GstSample * (*pull_sample) (KmsHttpEndpoint * self);
+  GstFlowReturn (*end_of_stream) (KmsHttpEndpoint * self);
 };
 
-GType kms_http_end_point_get_type (void);
+GType kms_http_endpoint_get_type (void);
 
-gboolean kms_http_end_point_plugin_init (GstPlugin * plugin);
+gboolean kms_http_endpoint_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
-#endif /* _KMS_HTTP_END_POINT_H */
+#endif /* _KMS_HTTP_ENDPOINT_H */

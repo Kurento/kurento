@@ -12,58 +12,58 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef _KMS_RECORDER_END_POINT_H_
-#define _KMS_RECORDER_END_POINT_H_
+#ifndef _KMS_RECORDER_ENDPOINT_H_
+#define _KMS_RECORDER_ENDPOINT_H_
 
 #include "kmsuriendpoint.h"
 
 G_BEGIN_DECLS
-#define KMS_TYPE_RECORDER_END_POINT \
-  (kms_recorder_end_point_get_type())
-#define KMS_RECORDER_END_POINT(obj) (          \
+#define KMS_TYPE_RECORDER_ENDPOINT \
+  (kms_recorder_endpoint_get_type())
+#define KMS_RECORDER_ENDPOINT(obj) (           \
   G_TYPE_CHECK_INSTANCE_CAST(                  \
     (obj),                                     \
-    KMS_TYPE_RECORDER_END_POINT,               \
-    KmsRecorderEndPoint                        \
+    KMS_TYPE_RECORDER_ENDPOINT,                \
+    KmsRecorderEndpoint                        \
   )                                            \
 )
-#define KMS_RECORDER_END_POINT_CLASS(klass) (  \
+#define KMS_RECORDER_ENDPOINT_CLASS(klass) (   \
   G_TYPE_CHECK_CLASS_CAST (                    \
     (klass),                                   \
-    KMS_TYPE_RECORDER_END_POINT,               \
-    KmsRecorderEndPointClass                   \
+    KMS_TYPE_RECORDER_ENDPOINT,                \
+    KmsRecorderEndpointClass                   \
   )                                            \
 )
-#define KMS_IS_RECORDER_END_POINT(obj) (       \
+#define KMS_IS_RECORDER_ENDPOINT(obj) (        \
   G_TYPE_CHECK_INSTANCE_TYPE (                 \
     (obj),                                     \
-    KMS_TYPE_RECORDER_END_POINT                \
+    KMS_TYPE_RECORDER_ENDPOINT                 \
   )                                            \
 )
-#define KMS_IS_RECORDER_END_POINT_CLASS(klass) (        \
+#define KMS_IS_RECORDER_ENDPOINT_CLASS(klass) (         \
   G_TYPE_CHECK_CLASS_TYPE((klass),                      \
-  KMS_TYPE_RECORDER_END_POINT)                          \
+  KMS_TYPE_RECORDER_ENDPOINT)                           \
 )
-typedef struct _KmsRecorderEndPoint KmsRecorderEndPoint;
-typedef struct _KmsRecorderEndPointClass KmsRecorderEndPointClass;
-typedef struct _KmsRecorderEndPointPrivate KmsRecorderEndPointPrivate;
+typedef struct _KmsRecorderEndpoint KmsRecorderEndpoint;
+typedef struct _KmsRecorderEndpointClass KmsRecorderEndpointClass;
+typedef struct _KmsRecorderEndpointPrivate KmsRecorderEndpointPrivate;
 
-struct _KmsRecorderEndPoint
+struct _KmsRecorderEndpoint
 {
-  KmsUriEndPoint parent;
+  KmsUriEndpoint parent;
 
   /*< private > */
-  KmsRecorderEndPointPrivate *priv;
+  KmsRecorderEndpointPrivate *priv;
 };
 
-struct _KmsRecorderEndPointClass
+struct _KmsRecorderEndpointClass
 {
-  KmsUriEndPointClass parent_class;
+  KmsUriEndpointClass parent_class;
 };
 
-GType kms_recorder_end_point_get_type (void);
+GType kms_recorder_endpoint_get_type (void);
 
-gboolean kms_recorder_end_point_plugin_init (GstPlugin * plugin);
+gboolean kms_recorder_endpoint_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
 #endif

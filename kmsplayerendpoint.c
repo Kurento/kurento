@@ -32,20 +32,20 @@
 #define APPSINK_DATA "appsink_data"
 #define BASE_TIME_DATA "base_time_data"
 
-GST_DEBUG_CATEGORY_STATIC (kms_player_end_point_debug_category);
-#define GST_CAT_DEFAULT kms_player_end_point_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
+#define GST_CAT_DEFAULT kms_player_endpoint_debug_category
 
-#define KMS_PLAYER_END_POINT_GET_PRIVATE(obj) ( \
+#define KMS_PLAYER_ENDPOINT_GET_PRIVATE(obj) (  \
   G_TYPE_INSTANCE_GET_PRIVATE (                 \
     (obj),                                      \
-    KMS_TYPE_PLAYER_END_POINT,                  \
-    KmsPlayerEndPointPrivate                    \
+    KMS_TYPE_PLAYER_ENDPOINT,                   \
+    KmsPlayerEndpointPrivate                    \
   )                                             \
 )
 
 typedef void (*KmsActionFunc) (gpointer user_data);
 
-struct _KmsPlayerEndPointPrivate
+struct _KmsPlayerEndpointPrivate
 {
   GstElement *pipeline;
   GstElement *uridecodebin;
@@ -68,19 +68,19 @@ enum
   LAST_SIGNAL
 };
 
-static guint kms_player_end_point_signals[LAST_SIGNAL] = { 0 };
+static guint kms_player_endpoint_signals[LAST_SIGNAL] = { 0 };
 
 /* pad templates */
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndPoint, kms_player_end_point,
-    KMS_TYPE_URI_END_POINT,
-    GST_DEBUG_CATEGORY_INIT (kms_player_end_point_debug_category, PLUGIN_NAME,
+G_DEFINE_TYPE_WITH_CODE (KmsPlayerEndpoint, kms_player_endpoint,
+    KMS_TYPE_URI_ENDPOINT,
+    GST_DEBUG_CATEGORY_INIT (kms_player_endpoint_debug_category, PLUGIN_NAME,
         0, "debug category for playerendpoint element"));
 
 static void
-kms_player_end_point_set_caps (KmsPlayerEndPoint * self)
+kms_player_endpoint_set_caps (KmsPlayerEndpoint * self)
 {
   GstCaps *deco_caps;
 
@@ -90,16 +90,16 @@ kms_player_end_point_set_caps (KmsPlayerEndPoint * self)
 }
 
 void
-kms_player_end_point_set_property (GObject * object, guint property_id,
+kms_player_endpoint_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsPlayerEndPoint *playerendpoint = KMS_PLAYER_END_POINT (object);
+  KmsPlayerEndpoint *playerendpoint = KMS_PLAYER_ENDPOINT (object);
 
   switch (property_id) {
     case PROP_USE_ENCODED_MEDIA:{
       playerendpoint->priv->use_encoded_media = g_value_get_boolean (value);
       if (playerendpoint->priv->use_encoded_media) {
-        kms_player_end_point_set_caps (playerendpoint);
+        kms_player_endpoint_set_caps (playerendpoint);
       }
       break;
     }
@@ -110,10 +110,10 @@ kms_player_end_point_set_property (GObject * object, guint property_id,
 }
 
 void
-kms_player_end_point_get_property (GObject * object, guint property_id,
+kms_player_endpoint_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsPlayerEndPoint *playerendpoint = KMS_PLAYER_END_POINT (object);
+  KmsPlayerEndpoint *playerendpoint = KMS_PLAYER_ENDPOINT (object);
 
   switch (property_id) {
     case PROP_USE_ENCODED_MEDIA:
@@ -126,9 +126,9 @@ kms_player_end_point_get_property (GObject * object, guint property_id,
 }
 
 static void
-kms_player_end_point_dispose (GObject * object)
+kms_player_endpoint_dispose (GObject * object)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (object);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (object);
 
   g_clear_object (&self->priv->loop);
 
@@ -146,7 +146,7 @@ kms_player_end_point_dispose (GObject * object)
 
   /* clean up as possible. May be called multiple times */
 
-  G_OBJECT_CLASS (kms_player_end_point_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_player_endpoint_parent_class)->dispose (object);
 }
 
 static void
@@ -260,7 +260,7 @@ eos_cb (GstElement * appsink, gpointer user_data)
 }
 
 static void
-pad_added (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
+pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
   GST_DEBUG ("Pad added");
   GstElement *appsrc, *agnosticbin, *appsink;
@@ -331,7 +331,7 @@ end:
 }
 
 static void
-pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
+pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
   GST_DEBUG ("Pad removed");
   GstElement *appsink, *appsrc;
@@ -367,9 +367,9 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndPoint * self)
 }
 
 static void
-kms_player_end_point_stopped (KmsUriEndPoint * obj)
+kms_player_endpoint_stopped (KmsUriEndpoint * obj)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
 
   /* Set internal pipeline to NULL */
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
@@ -377,55 +377,55 @@ kms_player_end_point_stopped (KmsUriEndPoint * obj)
   g_object_set_data (G_OBJECT (self), BASE_TIME_DATA, NULL);
   KMS_ELEMENT_UNLOCK (self);
 
-  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
-      KMS_URI_END_POINT_STATE_STOP);
+  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
+      KMS_URI_ENDPOINT_STATE_STOP);
 }
 
 static void
-kms_player_end_point_started (KmsUriEndPoint * obj)
+kms_player_endpoint_started (KmsUriEndpoint * obj)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
 
   /* Set uri property in uridecodebin */
   g_object_set (G_OBJECT (self->priv->uridecodebin), "uri",
-      KMS_URI_END_POINT (self)->uri, NULL);
+      KMS_URI_ENDPOINT (self)->uri, NULL);
 
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
 
-  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
-      KMS_URI_END_POINT_STATE_START);
+  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
+      KMS_URI_ENDPOINT_STATE_START);
 }
 
 static void
-kms_player_end_point_paused (KmsUriEndPoint * obj)
+kms_player_endpoint_paused (KmsUriEndpoint * obj)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (obj);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (obj);
 
   /* Set internal pipeline to paused */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PAUSED);
 
-  KMS_URI_END_POINT_GET_CLASS (self)->change_state (KMS_URI_END_POINT (self),
-      KMS_URI_END_POINT_STATE_PAUSE);
+  KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
+      KMS_URI_ENDPOINT_STATE_PAUSE);
 }
 
 static void
-kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
+kms_player_endpoint_class_init (KmsPlayerEndpointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-  KmsUriEndPointClass *urienpoint_class = KMS_URI_END_POINT_CLASS (klass);
+  KmsUriEndpointClass *urienpoint_class = KMS_URI_ENDPOINT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "PlayerEndPoint", "Sink/Generic", "Kurento plugin player end point",
+      "PlayerEndpoint", "Sink/Generic", "Kurento plugin player end point",
       "Joaquin Mengual García <kini.mengual@gmail.com>");
 
-  gobject_class->dispose = kms_player_end_point_dispose;
-  gobject_class->set_property = kms_player_end_point_set_property;
-  gobject_class->get_property = kms_player_end_point_get_property;
+  gobject_class->dispose = kms_player_endpoint_dispose;
+  gobject_class->set_property = kms_player_endpoint_set_property;
+  gobject_class->get_property = kms_player_endpoint_get_property;
 
-  urienpoint_class->stopped = kms_player_end_point_stopped;
-  urienpoint_class->started = kms_player_end_point_started;
-  urienpoint_class->paused = kms_player_end_point_paused;
+  urienpoint_class->stopped = kms_player_endpoint_stopped;
+  urienpoint_class->started = kms_player_endpoint_started;
+  urienpoint_class->paused = kms_player_endpoint_paused;
 
   g_object_class_install_property (gobject_class, PROP_USE_ENCODED_MEDIA,
       g_param_spec_boolean ("use-encoded-media", "use encoded media",
@@ -433,69 +433,69 @@ kms_player_end_point_class_init (KmsPlayerEndPointClass * klass)
           "could have an unexpected behaviour if key frames are lost",
           FALSE, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY));
 
-  kms_player_end_point_signals[SIGNAL_EOS] =
+  kms_player_endpoint_signals[SIGNAL_EOS] =
       g_signal_new ("eos",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsPlayerEndPointClass, eos_signal), NULL, NULL,
+      G_STRUCT_OFFSET (KmsPlayerEndpointClass, eos_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
-  kms_player_end_point_signals[SIGNAL_INVALID_URI] =
+  kms_player_endpoint_signals[SIGNAL_INVALID_URI] =
       g_signal_new ("invalid-uri",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsPlayerEndPointClass, invalid_uri_signal), NULL, NULL,
+      G_STRUCT_OFFSET (KmsPlayerEndpointClass, invalid_uri_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
-  kms_player_end_point_signals[SIGNAL_INVALID_MEDIA] =
+  kms_player_endpoint_signals[SIGNAL_INVALID_MEDIA] =
       g_signal_new ("invalid-media",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsPlayerEndPointClass, invalid_media_signal), NULL,
+      G_STRUCT_OFFSET (KmsPlayerEndpointClass, invalid_media_signal), NULL,
       NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (KmsPlayerEndPointPrivate));
+  g_type_class_add_private (klass, sizeof (KmsPlayerEndpointPrivate));
 }
 
 static gboolean
-kms_player_end_point_emit_EOS_signal (gpointer data)
+kms_player_endpoint_emit_EOS_signal (gpointer data)
 {
   GST_DEBUG ("Emit EOS Signal");
-  kms_player_end_point_stopped (KMS_URI_END_POINT (data));
-  g_signal_emit (G_OBJECT (data), kms_player_end_point_signals[SIGNAL_EOS], 0);
+  kms_player_endpoint_stopped (KMS_URI_ENDPOINT (data));
+  g_signal_emit (G_OBJECT (data), kms_player_endpoint_signals[SIGNAL_EOS], 0);
 
   return G_SOURCE_REMOVE;
 }
 
 static gboolean
-kms_player_end_point_emit_invalid_uri_signal (gpointer data)
+kms_player_endpoint_emit_invalid_uri_signal (gpointer data)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
   GST_DEBUG ("Emit invalid uri signal");
   g_signal_emit (G_OBJECT (self),
-      kms_player_end_point_signals[SIGNAL_INVALID_URI], 0);
+      kms_player_endpoint_signals[SIGNAL_INVALID_URI], 0);
 
   return G_SOURCE_REMOVE;
 }
 
 static gboolean
-kms_player_end_point_emit_invalid_media_signal (gpointer data)
+kms_player_endpoint_emit_invalid_media_signal (gpointer data)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
   GST_DEBUG ("Emit invalid media signal");
   g_signal_emit (G_OBJECT (self),
-      kms_player_end_point_signals[SIGNAL_INVALID_MEDIA], 0);
+      kms_player_endpoint_signals[SIGNAL_INVALID_MEDIA], 0);
 
   return G_SOURCE_REMOVE;
 }
 
 static gboolean
-kms_player_end_point_post_media_error (gpointer data)
+kms_player_endpoint_post_media_error (gpointer data)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
   GST_ELEMENT_ERROR (self, STREAM, FORMAT, ("Wrong video format"), (NULL));
 
@@ -505,25 +505,25 @@ kms_player_end_point_post_media_error (gpointer data)
 static GstBusSyncReply
 bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 {
-  KmsPlayerEndPoint *self = KMS_PLAYER_END_POINT (data);
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (data);
 
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) {
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-        kms_player_end_point_emit_EOS_signal, g_object_ref (self),
+        kms_player_endpoint_emit_EOS_signal, g_object_ref (self),
         g_object_unref);
   } else if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
 
     if (g_str_has_prefix (GST_OBJECT_NAME (msg->src), "decodebin")) {
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-          kms_player_end_point_emit_invalid_media_signal, g_object_ref (self),
+          kms_player_endpoint_emit_invalid_media_signal, g_object_ref (self),
           g_object_unref);
     } else if (g_strcmp0 (GST_OBJECT_NAME (msg->src), "source") == 0) {
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-          kms_player_end_point_emit_invalid_uri_signal, g_object_ref (self),
+          kms_player_endpoint_emit_invalid_uri_signal, g_object_ref (self),
           g_object_unref);
     } else {
       kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-          kms_player_end_point_post_media_error, g_object_ref (self),
+          kms_player_endpoint_post_media_error, g_object_ref (self),
           g_object_unref);
     }
   }
@@ -531,11 +531,11 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 static void
-kms_player_end_point_init (KmsPlayerEndPoint * self)
+kms_player_endpoint_init (KmsPlayerEndpoint * self)
 {
   GstBus *bus;
 
-  self->priv = KMS_PLAYER_END_POINT_GET_PRIVATE (self);
+  self->priv = KMS_PLAYER_ENDPOINT_GET_PRIVATE (self);
 
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("pipeline");
@@ -556,9 +556,9 @@ kms_player_end_point_init (KmsPlayerEndPoint * self)
 }
 
 gboolean
-kms_player_end_point_plugin_init (GstPlugin * plugin)
+kms_player_endpoint_plugin_init (GstPlugin * plugin)
 {
 
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_PLAYER_END_POINT);
+      KMS_TYPE_PLAYER_ENDPOINT);
 }

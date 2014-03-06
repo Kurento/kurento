@@ -12,8 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef __KMS_RTP_END_POINT_H__
-#define __KMS_RTP_END_POINT_H__
+#ifndef __KMS_RTP_ENDPOINT_H__
+#define __KMS_RTP_ENDPOINT_H__
 
 #include <gio/gio.h>
 #include <gst/gst.h>
@@ -21,41 +21,41 @@
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
-#define KMS_TYPE_RTP_END_POINT \
-  (kms_rtp_end_point_get_type())
-#define KMS_RTP_END_POINT(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_RTP_END_POINT,KmsRtpEndPoint))
-#define KMS_RTP_END_POINT_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_RTP_END_POINT,KmsRtpEndPointClass))
-#define KMS_IS_RTP_END_POINT(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_RTP_END_POINT))
-#define KMS_IS_RTP_END_POINT_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_RTP_END_POINT))
-#define KMS_RTP_END_POINT_CAST(obj) ((KmsRtpEndPoint*)(obj))
-typedef struct _KmsRtpEndPoint KmsRtpEndPoint;
-typedef struct _KmsRtpEndPointClass KmsRtpEndPointClass;
-typedef struct _KmsRtpEndPointPrivate KmsRtpEndPointPrivate;
+#define KMS_TYPE_RTP_ENDPOINT \
+  (kms_rtp_endpoint_get_type())
+#define KMS_RTP_ENDPOINT(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_RTP_ENDPOINT,KmsRtpEndpoint))
+#define KMS_RTP_ENDPOINT_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_RTP_ENDPOINT,KmsRtpEndpointClass))
+#define KMS_IS_RTP_ENDPOINT(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_RTP_ENDPOINT))
+#define KMS_IS_RTP_ENDPOINT_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_RTP_ENDPOINT))
+#define KMS_RTP_ENDPOINT_CAST(obj) ((KmsRtpEndpoint*)(obj))
+typedef struct _KmsRtpEndpoint KmsRtpEndpoint;
+typedef struct _KmsRtpEndpointClass KmsRtpEndpointClass;
+typedef struct _KmsRtpEndpointPrivate KmsRtpEndpointPrivate;
 
-#define KMS_RTP_END_POINT_LOCK(elem) \
-  (g_rec_mutex_lock (&KMS_RTP_END_POINT_CAST ((elem))->media_mutex))
-#define KMS_RTP_END_POINT_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&KMS_RTP_END_POINT_CAST ((elem))->media_mutex))
+#define KMS_RTP_ENDPOINT_LOCK(elem) \
+  (g_rec_mutex_lock (&KMS_RTP_ENDPOINT_CAST ((elem))->media_mutex))
+#define KMS_RTP_ENDPOINT_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&KMS_RTP_ENDPOINT_CAST ((elem))->media_mutex))
 
-struct _KmsRtpEndPoint
+struct _KmsRtpEndpoint
 {
-  KmsBaseRtpEndPoint parent;
+  KmsBaseRtpEndpoint parent;
 
-  KmsRtpEndPointPrivate *priv;
+  KmsRtpEndpointPrivate *priv;
 };
 
-struct _KmsRtpEndPointClass
+struct _KmsRtpEndpointClass
 {
-  KmsBaseRtpEndPointClass parent_class;
+  KmsBaseRtpEndpointClass parent_class;
 };
 
-GType kms_rtp_end_point_get_type (void);
+GType kms_rtp_endpoint_get_type (void);
 
-gboolean kms_rtp_end_point_plugin_init (GstPlugin * plugin);
+gboolean kms_rtp_endpoint_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
-#endif /* __KMS_RTP_END_POINT_H__ */
+#endif /* __KMS_RTP_ENDPOINT_H__ */

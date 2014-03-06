@@ -12,8 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef __KMS_BASE_RTP_END_POINT_H__
-#define __KMS_BASE_RTP_END_POINT_H__
+#ifndef __KMS_BASE_RTP_ENDPOINT_H__
+#define __KMS_BASE_RTP_ENDPOINT_H__
 
 #include <gst/gst.h>
 #include <kmsbasesdpendpoint.h>
@@ -21,49 +21,49 @@
 
 G_BEGIN_DECLS
 /* #defines don't like whitespacey bits */
-#define KMS_TYPE_BASE_RTP_END_POINT \
-  (kms_base_rtp_end_point_get_type())
-#define KMS_BASE_RTP_END_POINT(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_BASE_RTP_END_POINT,KmsBaseRtpEndPoint))
-#define KMS_BASE_RTP_END_POINT_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_BASE_RTP_END_POINT,KmsBaseRtpEndPointClass))
-#define KMS_IS_BASE_RTP_END_POINT(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_BASE_RTP_END_POINT))
-#define KMS_IS_BASE_RTP_END_POINT_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_BASE_RTP_END_POINT))
-#define KMS_BASE_RTP_END_POINT_CAST(obj) ((KmsBaseRtpEndPoint*)(obj))
-typedef struct _KmsBaseRtpEndPoint KmsBaseRtpEndPoint;
-typedef struct _KmsBaseRtpEndPointClass KmsBaseRtpEndPointClass;
-typedef struct _KmsBaseRtpEndPointPrivate KmsBaseRtpEndPointPrivate;
+#define KMS_TYPE_BASE_RTP_ENDPOINT \
+  (kms_base_rtp_endpoint_get_type())
+#define KMS_BASE_RTP_ENDPOINT(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),KMS_TYPE_BASE_RTP_ENDPOINT,KmsBaseRtpEndpoint))
+#define KMS_BASE_RTP_ENDPOINT_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST((klass),KMS_TYPE_BASE_RTP_ENDPOINT,KmsBaseRtpEndpointClass))
+#define KMS_IS_BASE_RTP_ENDPOINT(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE((obj),KMS_TYPE_BASE_RTP_ENDPOINT))
+#define KMS_IS_BASE_RTP_ENDPOINT_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_BASE_RTP_ENDPOINT))
+#define KMS_BASE_RTP_ENDPOINT_CAST(obj) ((KmsBaseRtpEndpoint*)(obj))
+typedef struct _KmsBaseRtpEndpoint KmsBaseRtpEndpoint;
+typedef struct _KmsBaseRtpEndpointClass KmsBaseRtpEndpointClass;
+typedef struct _KmsBaseRtpEndpointPrivate KmsBaseRtpEndpointPrivate;
 
-#define KMS_BASE_RTP_END_POINT_LOCK(elem) \
-  (g_rec_mutex_lock (&KMS_BASE_RTP_END_POINT_CAST ((elem))->media_mutex))
-#define KMS_BASE_RTP_END_POINT_UNLOCK(elem) \
-  (g_rec_mutex_unlock (&KMS_BASE_RTP_END_POINT_CAST ((elem))->media_mutex))
+#define KMS_BASE_RTP_ENDPOINT_LOCK(elem) \
+  (g_rec_mutex_lock (&KMS_BASE_RTP_ENDPOINT_CAST ((elem))->media_mutex))
+#define KMS_BASE_RTP_ENDPOINT_UNLOCK(elem) \
+  (g_rec_mutex_unlock (&KMS_BASE_RTP_ENDPOINT_CAST ((elem))->media_mutex))
 
 #define AUDIO_RTPBIN_SEND_SINK "send_rtp_sink_0"
 #define VIDEO_RTPBIN_SEND_SINK "send_rtp_sink_1"
 
-struct _KmsBaseRtpEndPoint
+struct _KmsBaseRtpEndpoint
 {
-  KmsBaseSdpEndPoint parent;
+  KmsBaseSdpEndpoint parent;
 
-  KmsBaseRtpEndPointPrivate *priv;
+  KmsBaseRtpEndpointPrivate *priv;
 };
 
-struct _KmsBaseRtpEndPointClass
+struct _KmsBaseRtpEndpointClass
 {
-  KmsBaseSdpEndPointClass parent_class;
+  KmsBaseSdpEndpointClass parent_class;
 
-  void (*media_start) (KmsBaseRtpEndPoint * self, KmsMediaType type,
+  void (*media_start) (KmsBaseRtpEndpoint * self, KmsMediaType type,
     gboolean local);
-  void (*media_stop) (KmsBaseRtpEndPoint * self, KmsMediaType type,
+  void (*media_stop) (KmsBaseRtpEndpoint * self, KmsMediaType type,
     gboolean local);
 };
 
-GType kms_base_rtp_end_point_get_type (void);
+GType kms_base_rtp_endpoint_get_type (void);
 
-GstElement *kms_base_rtp_end_point_get_rtpbin (KmsBaseRtpEndPoint * self);
+GstElement *kms_base_rtp_endpoint_get_rtpbin (KmsBaseRtpEndpoint * self);
 
 G_END_DECLS
-#endif /* __KMS_BASE_RTP_END_POINT_H__ */
+#endif /* __KMS_BASE_RTP_ENDPOINT_H__ */

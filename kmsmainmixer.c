@@ -191,14 +191,14 @@ kms_main_mixer_unhandle_port (KmsBaseMixer * mixer, gint id)
 }
 
 static gint
-kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_end_point)
+kms_main_mixer_handle_port (KmsBaseMixer * mixer, GstElement * mixer_endpoint)
 {
   KmsMainMixer *self = KMS_MAIN_MIXER (mixer);
   KmsMainMixerPortData *port_data;
   gint port_id;
 
   port_id = KMS_BASE_MIXER_CLASS (G_OBJECT_CLASS
-      (kms_main_mixer_parent_class))->handle_port (mixer, mixer_end_point);
+      (kms_main_mixer_parent_class))->handle_port (mixer, mixer_endpoint);
 
   if (port_id < 0)
     return port_id;

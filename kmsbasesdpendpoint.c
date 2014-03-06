@@ -25,11 +25,11 @@
 
 #define PLUGIN_NAME "base_sdp_endpoint"
 
-GST_DEBUG_CATEGORY_STATIC (kms_base_sdp_end_point_debug);
-#define GST_CAT_DEFAULT kms_base_sdp_end_point_debug
+GST_DEBUG_CATEGORY_STATIC (kms_base_sdp_endpoint_debug);
+#define GST_CAT_DEFAULT kms_base_sdp_endpoint_debug
 
-#define kms_base_sdp_end_point_parent_class parent_class
-G_DEFINE_TYPE (KmsBaseSdpEndPoint, kms_base_sdp_end_point, KMS_TYPE_ELEMENT);
+#define kms_base_sdp_endpoint_parent_class parent_class
+G_DEFINE_TYPE (KmsBaseSdpEndpoint, kms_base_sdp_endpoint, KMS_TYPE_ELEMENT);
 
 #define USE_IPV6_DEFAULT FALSE
 
@@ -53,165 +53,165 @@ enum
   PROP_REMOTE_ANSWER_SDP
 };
 
-static guint kms_base_sdp_end_point_signals[LAST_SIGNAL] = { 0 };
+static guint kms_base_sdp_endpoint_signals[LAST_SIGNAL] = { 0 };
 
 static void
-kms_base_sdp_end_point_release_pattern_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point)
+kms_base_sdp_endpoint_release_pattern_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint)
 {
-  if (base_sdp_end_point->pattern_sdp == NULL)
+  if (base_sdp_endpoint->pattern_sdp == NULL)
     return;
 
-  gst_sdp_message_free (base_sdp_end_point->pattern_sdp);
-  base_sdp_end_point->pattern_sdp = NULL;
+  gst_sdp_message_free (base_sdp_endpoint->pattern_sdp);
+  base_sdp_endpoint->pattern_sdp = NULL;
 }
 
 static void
-kms_base_sdp_end_point_release_local_offer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point)
+kms_base_sdp_endpoint_release_local_offer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint)
 {
-  if (base_sdp_end_point->local_offer_sdp == NULL)
+  if (base_sdp_endpoint->local_offer_sdp == NULL)
     return;
 
-  gst_sdp_message_free (base_sdp_end_point->local_offer_sdp);
-  base_sdp_end_point->local_offer_sdp = NULL;
+  gst_sdp_message_free (base_sdp_endpoint->local_offer_sdp);
+  base_sdp_endpoint->local_offer_sdp = NULL;
 }
 
 static void
-kms_base_sdp_end_point_release_local_answer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point)
+kms_base_sdp_endpoint_release_local_answer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint)
 {
-  if (base_sdp_end_point->local_answer_sdp == NULL)
+  if (base_sdp_endpoint->local_answer_sdp == NULL)
     return;
 
-  gst_sdp_message_free (base_sdp_end_point->local_answer_sdp);
-  base_sdp_end_point->local_answer_sdp = NULL;
+  gst_sdp_message_free (base_sdp_endpoint->local_answer_sdp);
+  base_sdp_endpoint->local_answer_sdp = NULL;
 }
 
 static void
-kms_base_sdp_end_point_release_remote_offer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point)
+kms_base_sdp_endpoint_release_remote_offer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint)
 {
-  if (base_sdp_end_point->remote_offer_sdp == NULL)
+  if (base_sdp_endpoint->remote_offer_sdp == NULL)
     return;
 
-  gst_sdp_message_free (base_sdp_end_point->remote_offer_sdp);
-  base_sdp_end_point->remote_offer_sdp = NULL;
+  gst_sdp_message_free (base_sdp_endpoint->remote_offer_sdp);
+  base_sdp_endpoint->remote_offer_sdp = NULL;
 }
 
 static void
-kms_base_sdp_end_point_release_remote_answer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point)
+kms_base_sdp_endpoint_release_remote_answer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint)
 {
-  if (base_sdp_end_point->remote_answer_sdp == NULL)
+  if (base_sdp_endpoint->remote_answer_sdp == NULL)
     return;
 
-  gst_sdp_message_free (base_sdp_end_point->remote_answer_sdp);
-  base_sdp_end_point->remote_answer_sdp = NULL;
+  gst_sdp_message_free (base_sdp_endpoint->remote_answer_sdp);
+  base_sdp_endpoint->remote_answer_sdp = NULL;
 }
 
 static void
-kms_base_sdp_end_point_set_local_offer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point, GstSDPMessage * offer)
+kms_base_sdp_endpoint_set_local_offer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, GstSDPMessage * offer)
 {
-  KMS_ELEMENT_LOCK (base_sdp_end_point);
-  kms_base_sdp_end_point_release_local_offer_sdp (base_sdp_end_point);
-  gst_sdp_message_copy (offer, &base_sdp_end_point->local_offer_sdp);
-  KMS_ELEMENT_UNLOCK (base_sdp_end_point);
-  g_object_notify (G_OBJECT (base_sdp_end_point), "local-offer-sdp");
+  KMS_ELEMENT_LOCK (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_local_offer_sdp (base_sdp_endpoint);
+  gst_sdp_message_copy (offer, &base_sdp_endpoint->local_offer_sdp);
+  KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
+  g_object_notify (G_OBJECT (base_sdp_endpoint), "local-offer-sdp");
 }
 
 static void
-kms_base_sdp_end_point_set_remote_offer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point, GstSDPMessage * offer)
+kms_base_sdp_endpoint_set_remote_offer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, GstSDPMessage * offer)
 {
-  KMS_ELEMENT_LOCK (base_sdp_end_point);
-  kms_base_sdp_end_point_release_remote_offer_sdp (base_sdp_end_point);
-  gst_sdp_message_copy (offer, &base_sdp_end_point->remote_offer_sdp);
-  KMS_ELEMENT_UNLOCK (base_sdp_end_point);
-  g_object_notify (G_OBJECT (base_sdp_end_point), "remote-offer-sdp");
+  KMS_ELEMENT_LOCK (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_remote_offer_sdp (base_sdp_endpoint);
+  gst_sdp_message_copy (offer, &base_sdp_endpoint->remote_offer_sdp);
+  KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
+  g_object_notify (G_OBJECT (base_sdp_endpoint), "remote-offer-sdp");
 }
 
 static void
-kms_base_sdp_end_point_set_local_answer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point, GstSDPMessage * offer)
+kms_base_sdp_endpoint_set_local_answer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, GstSDPMessage * offer)
 {
-  KMS_ELEMENT_LOCK (base_sdp_end_point);
-  kms_base_sdp_end_point_release_local_answer_sdp (base_sdp_end_point);
-  gst_sdp_message_copy (offer, &base_sdp_end_point->local_answer_sdp);
-  KMS_ELEMENT_UNLOCK (base_sdp_end_point);
-  g_object_notify (G_OBJECT (base_sdp_end_point), "local-answer-sdp");
+  KMS_ELEMENT_LOCK (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_local_answer_sdp (base_sdp_endpoint);
+  gst_sdp_message_copy (offer, &base_sdp_endpoint->local_answer_sdp);
+  KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
+  g_object_notify (G_OBJECT (base_sdp_endpoint), "local-answer-sdp");
 }
 
 static void
-kms_base_sdp_end_point_set_remote_answer_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point, GstSDPMessage * offer)
+kms_base_sdp_endpoint_set_remote_answer_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, GstSDPMessage * offer)
 {
-  KMS_ELEMENT_LOCK (base_sdp_end_point);
-  kms_base_sdp_end_point_release_remote_answer_sdp (base_sdp_end_point);
-  gst_sdp_message_copy (offer, &base_sdp_end_point->remote_answer_sdp);
-  KMS_ELEMENT_UNLOCK (base_sdp_end_point);
-  g_object_notify (G_OBJECT (base_sdp_end_point), "remote-answer-sdp");
+  KMS_ELEMENT_LOCK (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_remote_answer_sdp (base_sdp_endpoint);
+  gst_sdp_message_copy (offer, &base_sdp_endpoint->remote_answer_sdp);
+  KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
+  g_object_notify (G_OBJECT (base_sdp_endpoint), "remote-answer-sdp");
 }
 
 static void
-kms_base_sdp_end_point_start_transport_send (KmsBaseSdpEndPoint *
-    base_sdp_end_point, const GstSDPMessage * offer,
+kms_base_sdp_endpoint_start_transport_send (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, const GstSDPMessage * offer,
     const GstSDPMessage * answer, gboolean local_offer)
 {
-  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
-      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+  KmsBaseSdpEndpointClass *base_sdp_endpoint_class =
+      KMS_BASE_SDP_ENDPOINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_endpoint));
 
   /* Defalut function, do nothing */
-  if (base_sdp_end_point_class->start_transport_send ==
-      kms_base_sdp_end_point_start_transport_send) {
+  if (base_sdp_endpoint_class->start_transport_send ==
+      kms_base_sdp_endpoint_start_transport_send) {
     g_warning ("%s does not reimplement \"start_transport_send\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
+        G_OBJECT_CLASS_NAME (base_sdp_endpoint_class));
   }
 }
 
 static void
-kms_base_sdp_end_point_connect_input_elements (KmsBaseSdpEndPoint *
-    base_sdp_end_point, const GstSDPMessage * answer)
+kms_base_sdp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, const GstSDPMessage * answer)
 {
-  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
-      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+  KmsBaseSdpEndpointClass *base_sdp_endpoint_class =
+      KMS_BASE_SDP_ENDPOINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_endpoint));
 
   /* Defalut function, do nothing */
-  if (base_sdp_end_point_class->connect_input_elements ==
-      kms_base_sdp_end_point_connect_input_elements) {
+  if (base_sdp_endpoint_class->connect_input_elements ==
+      kms_base_sdp_endpoint_connect_input_elements) {
     g_warning ("%s does not reimplement \"connect_input_elements\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
+        G_OBJECT_CLASS_NAME (base_sdp_endpoint_class));
   }
 }
 
 static void
-kms_base_sdp_end_point_start_media (KmsBaseSdpEndPoint * base_sdp_end_point,
+kms_base_sdp_endpoint_start_media (KmsBaseSdpEndpoint * base_sdp_endpoint,
     const GstSDPMessage * offer, const GstSDPMessage * answer,
     gboolean local_offer)
 {
   GST_DEBUG ("Start media");
 
-  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
-      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+  KmsBaseSdpEndpointClass *base_sdp_endpoint_class =
+      KMS_BASE_SDP_ENDPOINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_endpoint));
 
-  base_sdp_end_point_class->start_transport_send (base_sdp_end_point, offer,
+  base_sdp_endpoint_class->start_transport_send (base_sdp_endpoint, offer,
       answer, local_offer);
 
-  base_sdp_end_point_class->connect_input_elements (base_sdp_end_point, answer);
+  base_sdp_endpoint_class->connect_input_elements (base_sdp_endpoint, answer);
 }
 
 static gboolean
-kms_base_sdp_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
-    base_sdp_end_point, GstSDPMessage * msg)
+kms_base_sdp_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
+    base_sdp_endpoint, GstSDPMessage * msg)
 {
-  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
-      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+  KmsBaseSdpEndpointClass *base_sdp_endpoint_class =
+      KMS_BASE_SDP_ENDPOINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_endpoint));
 
-  if (base_sdp_end_point_class->set_transport_to_sdp ==
-      kms_base_sdp_end_point_set_transport_to_sdp) {
+  if (base_sdp_endpoint_class->set_transport_to_sdp ==
+      kms_base_sdp_endpoint_set_transport_to_sdp) {
     g_warning ("%s does not reimplement \"set_transport_to_sdp\"",
-        G_OBJECT_CLASS_NAME (base_sdp_end_point_class));
+        G_OBJECT_CLASS_NAME (base_sdp_endpoint_class));
   }
 
   /* Defalut function, do nothing */
@@ -219,55 +219,54 @@ kms_base_sdp_end_point_set_transport_to_sdp (KmsBaseSdpEndPoint *
 }
 
 static GstSDPMessage *
-kms_base_sdp_end_point_generate_offer (KmsBaseSdpEndPoint * base_sdp_end_point)
+kms_base_sdp_endpoint_generate_offer (KmsBaseSdpEndpoint * base_sdp_endpoint)
 {
   GstSDPMessage *offer = NULL;
-  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
-      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+  KmsBaseSdpEndpointClass *base_sdp_endpoint_class =
+      KMS_BASE_SDP_ENDPOINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_endpoint));
 
   GST_DEBUG ("generate_offer");
 
-  KMS_ELEMENT_LOCK (base_sdp_end_point);
-  if (base_sdp_end_point->pattern_sdp != NULL) {
-    gst_sdp_message_copy (base_sdp_end_point->pattern_sdp, &offer);
+  KMS_ELEMENT_LOCK (base_sdp_endpoint);
+  if (base_sdp_endpoint->pattern_sdp != NULL) {
+    gst_sdp_message_copy (base_sdp_endpoint->pattern_sdp, &offer);
   }
-  KMS_ELEMENT_UNLOCK (base_sdp_end_point);
+  KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
 
   if (offer == NULL)
     return NULL;
 
-  if (!base_sdp_end_point_class->set_transport_to_sdp (base_sdp_end_point,
-          offer)) {
+  if (!base_sdp_endpoint_class->set_transport_to_sdp (base_sdp_endpoint, offer)) {
     gst_sdp_message_free (offer);
     return NULL;
   }
 
-  kms_base_sdp_end_point_set_local_offer_sdp (base_sdp_end_point, offer);
+  kms_base_sdp_endpoint_set_local_offer_sdp (base_sdp_endpoint, offer);
 
   return offer;
 }
 
 static GstSDPMessage *
-kms_base_sdp_end_point_process_offer (KmsBaseSdpEndPoint * base_sdp_end_point,
+kms_base_sdp_endpoint_process_offer (KmsBaseSdpEndpoint * base_sdp_endpoint,
     GstSDPMessage * offer)
 {
   GstSDPMessage *answer = NULL, *intersec_offer, *intersect_answer;
-  KmsBaseSdpEndPointClass *base_sdp_end_point_class =
-      KMS_BASE_SDP_END_POINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_end_point));
+  KmsBaseSdpEndpointClass *base_sdp_endpoint_class =
+      KMS_BASE_SDP_ENDPOINT_CLASS (G_OBJECT_GET_CLASS (base_sdp_endpoint));
 
-  kms_base_sdp_end_point_set_remote_offer_sdp (base_sdp_end_point, offer);
+  kms_base_sdp_endpoint_set_remote_offer_sdp (base_sdp_endpoint, offer);
   GST_DEBUG ("process_offer");
 
-  KMS_ELEMENT_LOCK (base_sdp_end_point);
-  if (base_sdp_end_point->pattern_sdp != NULL) {
-    gst_sdp_message_copy (base_sdp_end_point->pattern_sdp, &answer);
+  KMS_ELEMENT_LOCK (base_sdp_endpoint);
+  if (base_sdp_endpoint->pattern_sdp != NULL) {
+    gst_sdp_message_copy (base_sdp_endpoint->pattern_sdp, &answer);
   }
-  KMS_ELEMENT_UNLOCK (base_sdp_end_point);
+  KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
 
   if (answer == NULL)
     return NULL;
 
-  if (!base_sdp_end_point_class->set_transport_to_sdp (base_sdp_end_point,
+  if (!base_sdp_endpoint_class->set_transport_to_sdp (base_sdp_endpoint,
           answer)) {
     gst_sdp_message_free (answer);
     return NULL;
@@ -281,51 +280,51 @@ kms_base_sdp_end_point_process_offer (KmsBaseSdpEndPoint * base_sdp_end_point,
   gst_sdp_message_free (intersec_offer);
   gst_sdp_message_free (answer);
 
-  kms_base_sdp_end_point_set_local_answer_sdp (base_sdp_end_point,
+  kms_base_sdp_endpoint_set_local_answer_sdp (base_sdp_endpoint,
       intersect_answer);
 
-  kms_base_sdp_end_point_start_media (base_sdp_end_point, offer,
+  kms_base_sdp_endpoint_start_media (base_sdp_endpoint, offer,
       intersect_answer, FALSE);
 
   return intersect_answer;
 }
 
 static void
-kms_base_sdp_end_point_process_answer (KmsBaseSdpEndPoint * base_sdp_end_point,
+kms_base_sdp_endpoint_process_answer (KmsBaseSdpEndpoint * base_sdp_endpoint,
     GstSDPMessage * answer)
 {
   GST_DEBUG ("process_answer");
 
-  if (base_sdp_end_point->local_offer_sdp == NULL) {
+  if (base_sdp_endpoint->local_offer_sdp == NULL) {
     // TODO: This should raise an error
-    GST_ERROR_OBJECT (base_sdp_end_point,
+    GST_ERROR_OBJECT (base_sdp_endpoint,
         "Answer received without a local offer generated");
     return;
   }
 
-  kms_base_sdp_end_point_set_remote_answer_sdp (base_sdp_end_point, answer);
+  kms_base_sdp_endpoint_set_remote_answer_sdp (base_sdp_endpoint, answer);
 
-  kms_base_sdp_end_point_start_media (base_sdp_end_point,
-      base_sdp_end_point->local_offer_sdp, answer, TRUE);
+  kms_base_sdp_endpoint_start_media (base_sdp_endpoint,
+      base_sdp_endpoint->local_offer_sdp, answer, TRUE);
 }
 
 static void
-kms_base_sdp_end_point_set_property (GObject * object, guint prop_id,
+kms_base_sdp_endpoint_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsBaseSdpEndPoint *base_sdp_end_point = KMS_BASE_SDP_END_POINT (object);
+  KmsBaseSdpEndpoint *base_sdp_endpoint = KMS_BASE_SDP_ENDPOINT (object);
 
   switch (prop_id) {
     case PROP_PATTERN_SDP:
-      KMS_ELEMENT_LOCK (base_sdp_end_point);
-      kms_base_sdp_end_point_release_pattern_sdp (base_sdp_end_point);
-      base_sdp_end_point->pattern_sdp = g_value_dup_boxed (value);
-      KMS_ELEMENT_UNLOCK (base_sdp_end_point);
+      KMS_ELEMENT_LOCK (base_sdp_endpoint);
+      kms_base_sdp_endpoint_release_pattern_sdp (base_sdp_endpoint);
+      base_sdp_endpoint->pattern_sdp = g_value_dup_boxed (value);
+      KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
       break;
     case PROP_USE_IPV6:
-      KMS_ELEMENT_LOCK (base_sdp_end_point);
-      base_sdp_end_point->use_ipv6 = g_value_get_boolean (value);
-      KMS_ELEMENT_UNLOCK (base_sdp_end_point);
+      KMS_ELEMENT_LOCK (base_sdp_endpoint);
+      base_sdp_endpoint->use_ipv6 = g_value_get_boolean (value);
+      KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -334,29 +333,29 @@ kms_base_sdp_end_point_set_property (GObject * object, guint prop_id,
 }
 
 static void
-kms_base_sdp_end_point_get_property (GObject * object, guint prop_id,
+kms_base_sdp_endpoint_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsBaseSdpEndPoint *base_sdp_end_point = KMS_BASE_SDP_END_POINT (object);
+  KmsBaseSdpEndpoint *base_sdp_endpoint = KMS_BASE_SDP_ENDPOINT (object);
 
   switch (prop_id) {
     case PROP_USE_IPV6:
-      g_value_set_boolean (value, base_sdp_end_point->use_ipv6);
+      g_value_set_boolean (value, base_sdp_endpoint->use_ipv6);
       break;
     case PROP_PATTERN_SDP:
-      g_value_set_boxed (value, base_sdp_end_point->pattern_sdp);
+      g_value_set_boxed (value, base_sdp_endpoint->pattern_sdp);
       break;
     case PROP_LOCAL_OFFER_SDP:
-      g_value_set_boxed (value, base_sdp_end_point->local_offer_sdp);
+      g_value_set_boxed (value, base_sdp_endpoint->local_offer_sdp);
       break;
     case PROP_LOCAL_ANSWER_SDP:
-      g_value_set_boxed (value, base_sdp_end_point->local_answer_sdp);
+      g_value_set_boxed (value, base_sdp_endpoint->local_answer_sdp);
       break;
     case PROP_REMOTE_OFFER_SDP:
-      g_value_set_boxed (value, base_sdp_end_point->remote_offer_sdp);
+      g_value_set_boxed (value, base_sdp_endpoint->remote_offer_sdp);
       break;
     case PROP_REMOTE_ANSWER_SDP:
-      g_value_set_boxed (value, base_sdp_end_point->remote_answer_sdp);
+      g_value_set_boxed (value, base_sdp_endpoint->remote_answer_sdp);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -365,22 +364,22 @@ kms_base_sdp_end_point_get_property (GObject * object, guint prop_id,
 }
 
 static void
-kms_base_sdp_end_point_finalize (GObject * object)
+kms_base_sdp_endpoint_finalize (GObject * object)
 {
-  KmsBaseSdpEndPoint *base_sdp_end_point = KMS_BASE_SDP_END_POINT (object);
+  KmsBaseSdpEndpoint *base_sdp_endpoint = KMS_BASE_SDP_ENDPOINT (object);
 
-  kms_base_sdp_end_point_release_pattern_sdp (base_sdp_end_point);
-  kms_base_sdp_end_point_release_local_offer_sdp (base_sdp_end_point);
-  kms_base_sdp_end_point_release_local_answer_sdp (base_sdp_end_point);
-  kms_base_sdp_end_point_release_remote_offer_sdp (base_sdp_end_point);
-  kms_base_sdp_end_point_release_remote_answer_sdp (base_sdp_end_point);
+  kms_base_sdp_endpoint_release_pattern_sdp (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_local_offer_sdp (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_local_answer_sdp (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_remote_offer_sdp (base_sdp_endpoint);
+  kms_base_sdp_endpoint_release_remote_answer_sdp (base_sdp_endpoint);
 
   /* chain up */
-  G_OBJECT_CLASS (kms_base_sdp_end_point_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_base_sdp_endpoint_parent_class)->finalize (object);
 }
 
 static void
-kms_base_sdp_end_point_class_init (KmsBaseSdpEndPointClass * klass)
+kms_base_sdp_endpoint_class_init (KmsBaseSdpEndpointClass * klass)
 {
   GstElementClass *gstelement_class;
   GObjectClass *gobject_class;
@@ -389,46 +388,46 @@ kms_base_sdp_end_point_class_init (KmsBaseSdpEndPointClass * klass)
 
   gobject_class = G_OBJECT_CLASS (klass);
 
-  gobject_class->get_property = kms_base_sdp_end_point_get_property;
-  gobject_class->set_property = kms_base_sdp_end_point_set_property;
-  gobject_class->finalize = kms_base_sdp_end_point_finalize;
+  gobject_class->get_property = kms_base_sdp_endpoint_get_property;
+  gobject_class->set_property = kms_base_sdp_endpoint_set_property;
+  gobject_class->finalize = kms_base_sdp_endpoint_finalize;
 
   gstelement_class = GST_ELEMENT_CLASS (klass);
   gst_element_class_set_details_simple (gstelement_class,
-      "BaseSdpEndPoint",
-      "Base/Bin/BaseSdpEndPoint",
-      "Base class for sdpEndPoints",
+      "BaseSdpEndpoint",
+      "Base/Bin/BaseSdpEndpoint",
+      "Base class for sdpEndpoints",
       "José Antonio Santos Cadenas <santoscadenas@kurento.com>");
 
-  klass->set_transport_to_sdp = kms_base_sdp_end_point_set_transport_to_sdp;
-  klass->start_transport_send = kms_base_sdp_end_point_start_transport_send;
-  klass->connect_input_elements = kms_base_sdp_end_point_connect_input_elements;
+  klass->set_transport_to_sdp = kms_base_sdp_endpoint_set_transport_to_sdp;
+  klass->start_transport_send = kms_base_sdp_endpoint_start_transport_send;
+  klass->connect_input_elements = kms_base_sdp_endpoint_connect_input_elements;
 
-  klass->generate_offer = kms_base_sdp_end_point_generate_offer;
-  klass->process_offer = kms_base_sdp_end_point_process_offer;
-  klass->process_answer = kms_base_sdp_end_point_process_answer;
+  klass->generate_offer = kms_base_sdp_endpoint_generate_offer;
+  klass->process_offer = kms_base_sdp_endpoint_process_offer;
+  klass->process_answer = kms_base_sdp_endpoint_process_answer;
 
   /* Signals initialization */
-  kms_base_sdp_end_point_signals[SIGNAL_GENERATE_OFFER] =
+  kms_base_sdp_endpoint_signals[SIGNAL_GENERATE_OFFER] =
       g_signal_new ("generate-offer",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsBaseSdpEndPointClass, generate_offer), NULL, NULL,
+      G_STRUCT_OFFSET (KmsBaseSdpEndpointClass, generate_offer), NULL, NULL,
       __kms_marshal_BOXED__VOID, GST_TYPE_SDP_MESSAGE, 0);
 
-  kms_base_sdp_end_point_signals[SIGNAL_PROCESS_OFFER] =
+  kms_base_sdp_endpoint_signals[SIGNAL_PROCESS_OFFER] =
       g_signal_new ("process-offer",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsBaseSdpEndPointClass, process_offer), NULL, NULL,
+      G_STRUCT_OFFSET (KmsBaseSdpEndpointClass, process_offer), NULL, NULL,
       __kms_marshal_BOXED__BOXED, GST_TYPE_SDP_MESSAGE, 1,
       GST_TYPE_SDP_MESSAGE);
 
-  kms_base_sdp_end_point_signals[SIGNAL_PROCESS_ANSWER] =
+  kms_base_sdp_endpoint_signals[SIGNAL_PROCESS_ANSWER] =
       g_signal_new ("process-answer",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsBaseSdpEndPointClass, process_answer), NULL, NULL,
+      G_STRUCT_OFFSET (KmsBaseSdpEndpointClass, process_answer), NULL, NULL,
       __kms_marshal_VOID__BOXED, G_TYPE_NONE, 1, GST_TYPE_SDP_MESSAGE);
 
   /* Properties initialization */
@@ -466,12 +465,12 @@ kms_base_sdp_end_point_class_init (KmsBaseSdpEndPointClass * klass)
 }
 
 static void
-kms_base_sdp_end_point_init (KmsBaseSdpEndPoint * base_sdp_end_point)
+kms_base_sdp_endpoint_init (KmsBaseSdpEndpoint * base_sdp_endpoint)
 {
-  base_sdp_end_point->use_ipv6 = USE_IPV6_DEFAULT;
-  base_sdp_end_point->pattern_sdp = NULL;
-  base_sdp_end_point->local_offer_sdp = NULL;
-  base_sdp_end_point->local_answer_sdp = NULL;
-  base_sdp_end_point->remote_offer_sdp = NULL;
-  base_sdp_end_point->remote_answer_sdp = NULL;
+  base_sdp_endpoint->use_ipv6 = USE_IPV6_DEFAULT;
+  base_sdp_endpoint->pattern_sdp = NULL;
+  base_sdp_endpoint->local_offer_sdp = NULL;
+  base_sdp_endpoint->local_answer_sdp = NULL;
+  base_sdp_endpoint->remote_offer_sdp = NULL;
+  base_sdp_endpoint->remote_answer_sdp = NULL;
 }

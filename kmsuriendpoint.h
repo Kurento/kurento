@@ -12,78 +12,78 @@
  * Lesser General Public License for more details.
  *
  */
-#ifndef _KMS_URI_END_POINT_H_
-#define _KMS_URI_END_POINT_H_
+#ifndef _KMS_URI_ENDPOINT_H_
+#define _KMS_URI_ENDPOINT_H_
 
 #include "kmselement.h"
 #include "kmsuriendpointstate.h"
 
 G_BEGIN_DECLS
-#define KMS_TYPE_URI_END_POINT \
-  (kms_uri_end_point_get_type())
-#define KMS_URI_END_POINT(obj) (           \
+#define KMS_TYPE_URI_ENDPOINT \
+  (kms_uri_endpoint_get_type())
+#define KMS_URI_ENDPOINT(obj) (            \
   G_TYPE_CHECK_INSTANCE_CAST (             \
     (obj),                                 \
-    KMS_TYPE_URI_END_POINT,                \
-    KmsUriEndPoint                         \
+    KMS_TYPE_URI_ENDPOINT,                 \
+    KmsUriEndpoint                         \
   )                                        \
 )
-#define KMS_URI_END_POINT_CLASS(klass) (   \
+#define KMS_URI_ENDPOINT_CLASS(klass) (    \
   G_TYPE_CHECK_CLASS_CAST (                \
     (klass),                               \
-    KMS_TYPE_URI_END_POINT,                \
-    KmsUriEndPointClass                    \
+    KMS_TYPE_URI_ENDPOINT,                 \
+    KmsUriEndpointClass                    \
   )                                        \
 )
-#define KMS_IS_URI_END_POINT(obj) (        \
+#define KMS_IS_URI_ENDPOINT(obj) (         \
   G_TYPE_CHECK_INSTANCE_TYPE (             \
     (obj),                                 \
-    KMS_TYPE_URI_END_POINT                 \
+    KMS_TYPE_URI_ENDPOINT                  \
   )                                        \
 )
-#define KMS_IS_URI_END_POINT_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_URI_END_POINT))
-#define KMS_URI_END_POINT_GET_CLASS(obj) ( \
+#define KMS_IS_URI_ENDPOINT_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE((klass),KMS_TYPE_URI_ENDPOINT))
+#define KMS_URI_ENDPOINT_GET_CLASS(obj) (  \
   G_TYPE_INSTANCE_GET_CLASS (              \
     (obj),                                 \
-    KMS_TYPE_URI_END_POINT,                \
-    KmsUriEndPointClass                    \
+    KMS_TYPE_URI_ENDPOINT,                 \
+    KmsUriEndpointClass                    \
   )                                        \
 )
-typedef struct _KmsUriEndPoint KmsUriEndPoint;
-typedef struct _KmsUriEndPointClass KmsUriEndPointClass;
-typedef struct _KmsUriEndPointPrivate KmsUriEndPointPrivate;
+typedef struct _KmsUriEndpoint KmsUriEndpoint;
+typedef struct _KmsUriEndpointClass KmsUriEndpointClass;
+typedef struct _KmsUriEndpointPrivate KmsUriEndpointPrivate;
 
-struct _KmsUriEndPoint
+struct _KmsUriEndpoint
 {
   KmsElement parent;
 
   /*< private > */
-  KmsUriEndPointPrivate *priv;
+  KmsUriEndpointPrivate *priv;
 
   /*< protected > */
   gchar *uri;
 };
 
-struct _KmsUriEndPointClass
+struct _KmsUriEndpointClass
 {
   KmsElementClass parent_class;
 
   /*< protected >*/
-  void (*change_state) (KmsUriEndPoint *self, KmsUriEndPointState state);
+  void (*change_state) (KmsUriEndpoint *self, KmsUriEndpointState state);
 
   /*< protected abstract methods > */
-  void (*stopped) (KmsUriEndPoint *self);
-  void (*started) (KmsUriEndPoint *self);
-  void (*paused) (KmsUriEndPoint *self);
+  void (*stopped) (KmsUriEndpoint *self);
+  void (*started) (KmsUriEndpoint *self);
+  void (*paused) (KmsUriEndpoint *self);
 
   /*< Signals >*/
-  void (*state_changed) (KmsUriEndPoint *self, KmsUriEndPointState state);
+  void (*state_changed) (KmsUriEndpoint *self, KmsUriEndpointState state);
 };
 
-GType kms_uri_end_point_get_type (void);
+GType kms_uri_endpoint_get_type (void);
 
-gboolean kms_uri_end_point_plugin_init (GstPlugin * plugin);
+gboolean kms_uri_endpoint_plugin_init (GstPlugin * plugin);
 
 G_END_DECLS
 #endif

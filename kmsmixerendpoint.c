@@ -24,18 +24,18 @@
 
 #define KEY_VALVE_DATA "kms-mixer-valve-data"
 
-GST_DEBUG_CATEGORY_STATIC (kms_mixer_end_point_debug_category);
-#define GST_CAT_DEFAULT kms_mixer_end_point_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_mixer_endpoint_debug_category);
+#define GST_CAT_DEFAULT kms_mixer_endpoint_debug_category
 
-#define KMS_MIXER_END_POINT_GET_PRIVATE(obj) (  \
+#define KMS_MIXER_ENDPOINT_GET_PRIVATE(obj) (   \
   G_TYPE_INSTANCE_GET_PRIVATE (                 \
     (obj),                                      \
-    KMS_TYPE_MIXER_END_POINT,                   \
-    KmsMixerEndPointPrivate                     \
+    KMS_TYPE_MIXER_ENDPOINT,                    \
+    KmsMixerEndpointPrivate                     \
   )                                             \
 )
 
-struct _KmsMixerEndPointPrivate
+struct _KmsMixerEndpointPrivate
 {
   GstPad *audio_internal;
   GstPad *vieo_internal;
@@ -72,9 +72,9 @@ GST_STATIC_PAD_TEMPLATE (MIXER_VIDEO_SRC_PAD,
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsMixerEndPoint, kms_mixer_end_point,
+G_DEFINE_TYPE_WITH_CODE (KmsMixerEndpoint, kms_mixer_endpoint,
     KMS_TYPE_ELEMENT,
-    GST_DEBUG_CATEGORY_INIT (kms_mixer_end_point_debug_category, PLUGIN_NAME,
+    GST_DEBUG_CATEGORY_INIT (kms_mixer_endpoint_debug_category, PLUGIN_NAME,
         0, "debug category for mixerendpoint element"));
 
 static GstPad *
@@ -137,12 +137,12 @@ kms_mixer_endpoint_request_new_pad (GstElement * element,
         agnosticbin);
 
   return
-      GST_ELEMENT_CLASS (kms_mixer_end_point_parent_class)->request_new_pad
+      GST_ELEMENT_CLASS (kms_mixer_endpoint_parent_class)->request_new_pad
       (element, templ, name, caps);
 }
 
 static void
-kms_mixer_end_point_internal_src_pad_linked (GstPad * pad, GstPad * peer,
+kms_mixer_endpoint_internal_src_pad_linked (GstPad * pad, GstPad * peer,
     gpointer data)
 {
   GstElement *valve = g_object_get_data (G_OBJECT (pad), KEY_VALVE_DATA);
@@ -151,7 +151,7 @@ kms_mixer_end_point_internal_src_pad_linked (GstPad * pad, GstPad * peer,
 }
 
 static void
-kms_mixer_end_point_internal_src_pad_unlinked (GstPad * pad, GstObject * parent)
+kms_mixer_endpoint_internal_src_pad_unlinked (GstPad * pad, GstObject * parent)
 {
   GstElement *valve = g_object_get_data (G_OBJECT (pad), KEY_VALVE_DATA);
 
@@ -169,9 +169,9 @@ kms_mixer_endpoint_valve_added (KmsElement * self, GstElement * valve,
       g_object_ref (valve), g_object_unref);
 
   g_signal_connect (internal_src, "linked",
-      G_CALLBACK (kms_mixer_end_point_internal_src_pad_linked), NULL);
+      G_CALLBACK (kms_mixer_endpoint_internal_src_pad_linked), NULL);
   internal_src->unlinkfunc =
-      GST_DEBUG_FUNCPTR (kms_mixer_end_point_internal_src_pad_unlinked);
+      GST_DEBUG_FUNCPTR (kms_mixer_endpoint_internal_src_pad_unlinked);
 
   if (GST_STATE (self) >= GST_STATE_PAUSED
       || GST_STATE_PENDING (self) >= GST_STATE_PAUSED
@@ -231,30 +231,30 @@ kms_mixer_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
 }
 
 static void
-kms_mixer_end_point_dispose (GObject * object)
+kms_mixer_endpoint_dispose (GObject * object)
 {
-  G_OBJECT_CLASS (kms_mixer_end_point_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_mixer_endpoint_parent_class)->dispose (object);
 }
 
 static void
-kms_mixer_end_point_finalize (GObject * object)
+kms_mixer_endpoint_finalize (GObject * object)
 {
-  G_OBJECT_CLASS (kms_mixer_end_point_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_mixer_endpoint_parent_class)->finalize (object);
 }
 
 static void
-kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
+kms_mixer_endpoint_class_init (KmsMixerEndpointClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
   KmsElementClass *kms_element_class;
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "MixerEndPoint", "Generic", "Kurento plugin for mixer connection",
+      "MixerEndpoint", "Generic", "Kurento plugin for mixer connection",
       "Jose Antonio Santos Cadenas <santoscadenas@gmail.com>");
 
-  gobject_class->dispose = kms_mixer_end_point_dispose;
-  gobject_class->finalize = kms_mixer_end_point_finalize;
+  gobject_class->dispose = kms_mixer_endpoint_dispose;
+  gobject_class->finalize = kms_mixer_endpoint_finalize;
 
   kms_element_class = KMS_ELEMENT_CLASS (klass);
 
@@ -280,18 +280,18 @@ kms_mixer_end_point_class_init (KmsMixerEndPointClass * klass)
       gst_static_pad_template_get (&mixer_video_sink_factory));
 
   /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (KmsMixerEndPointPrivate));
+  g_type_class_add_private (klass, sizeof (KmsMixerEndpointPrivate));
 }
 
 static void
-kms_mixer_end_point_init (KmsMixerEndPoint * self)
+kms_mixer_endpoint_init (KmsMixerEndpoint * self)
 {
-  self->priv = KMS_MIXER_END_POINT_GET_PRIVATE (self);
+  self->priv = KMS_MIXER_ENDPOINT_GET_PRIVATE (self);
 }
 
 gboolean
-kms_mixer_end_point_plugin_init (GstPlugin * plugin)
+kms_mixer_endpoint_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_MIXER_END_POINT);
+      KMS_TYPE_MIXER_ENDPOINT);
 }

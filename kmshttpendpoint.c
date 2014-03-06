@@ -45,14 +45,14 @@
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 
-#define GST_CAT_DEFAULT kms_http_end_point_debug_category
+#define GST_CAT_DEFAULT kms_http_endpoint_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
-#define KMS_HTTP_END_POINT_GET_PRIVATE(obj) ( \
+#define KMS_HTTP_ENDPOINT_GET_PRIVATE(obj) (  \
   G_TYPE_INSTANCE_GET_PRIVATE (               \
     (obj),                                    \
-    KMS_TYPE_HTTP_END_POINT,                  \
-    KmsHttpEndPointPrivate                    \
+    KMS_TYPE_HTTP_ENDPOINT,                   \
+    KmsHttpEndpointPrivate                    \
   )                                           \
 )
 
@@ -63,7 +63,7 @@ typedef struct _PostData PostData;
 
 struct remove_data
 {
-  KmsHttpEndPoint *httpep;
+  KmsHttpEndpoint *httpep;
   GstElement *element;
 };
 
@@ -78,9 +78,9 @@ struct _GetData
   KmsConfController *controller;
 };
 
-struct _KmsHttpEndPointPrivate
+struct _KmsHttpEndpointPrivate
 {
-  KmsHttpEndPointMethod method;
+  KmsHttpEndpointMethod method;
   GstElement *pipeline;
   gboolean start;
   gboolean use_encoded_media;
@@ -104,8 +104,8 @@ enum
   N_PROPERTIES
 };
 
-#define DEFAULT_HTTP_END_POINT_START FALSE
-#define DEFAULT_HTTP_END_POINT_LIVE TRUE
+#define DEFAULT_HTTP_ENDPOINT_START FALSE
+#define DEFAULT_HTTP_ENDPOINT_LIVE TRUE
 
 static GParamSpec *obj_properties[N_PROPERTIES] = { NULL, };
 
@@ -119,7 +119,7 @@ struct config_valve
 
 struct cb_data
 {
-  KmsHttpEndPoint *self;
+  KmsHttpEndpoint *self;
   gboolean start;
 };
 
@@ -141,12 +141,12 @@ static guint http_ep_signals[LAST_SIGNAL] = { 0 };
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsHttpEndPoint, kms_http_end_point,
+G_DEFINE_TYPE_WITH_CODE (KmsHttpEndpoint, kms_http_endpoint,
     KMS_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME,
         0, "debug category for httpendpoint element"));
 
-static void kms_change_internal_pipeline_state (KmsHttpEndPoint *, gboolean);
+static void kms_change_internal_pipeline_state (KmsHttpEndpoint *, gboolean);
 
 static void
 destroy_cb_data (gpointer data)
@@ -160,7 +160,7 @@ destroy_cb_data (gpointer data)
 static GstFlowReturn
 new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 {
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (user_data);
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (user_data);
   GstFlowReturn ret;
 
   g_signal_emit (G_OBJECT (self), http_ep_signals[SIGNAL_NEW_SAMPLE], 0, &ret);
@@ -195,7 +195,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   GstBuffer *buffer;
   GstCaps *caps;
   BaseTimeType *base_time;
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (GST_OBJECT_PARENT (appsink));
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (GST_OBJECT_PARENT (appsink));
 
   g_signal_emit_by_name (appsink, "pull-sample", &sample);
   if (sample == NULL)
@@ -366,8 +366,8 @@ end:
 static void
 eos_handler (GstElement * appsink, gpointer user_data)
 {
-  if (KMS_IS_HTTP_END_POINT (user_data)) {
-    KmsHttpEndPoint *httep = KMS_HTTP_END_POINT (user_data);
+  if (KMS_IS_HTTP_ENDPOINT (user_data)) {
+    KmsHttpEndpoint *httep = KMS_HTTP_ENDPOINT (user_data);
 
     GST_DEBUG ("EOS detected on %s", GST_ELEMENT_NAME (httep));
     g_signal_emit (httep, http_ep_signals[SIGNAL_EOS], 0);
@@ -384,7 +384,7 @@ eos_handler (GstElement * appsink, gpointer user_data)
 
 static void
 post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
-    KmsHttpEndPoint * self)
+    KmsHttpEndpoint * self)
 {
   GstElement *appsrc, *agnosticbin, *appsink;
   GstPad *sinkpad;
@@ -455,7 +455,7 @@ end:
 
 static void
 post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
-    KmsHttpEndPoint * self)
+    KmsHttpEndpoint * self)
 {
   GstElement *appsink, *appsrc;
 
@@ -495,20 +495,20 @@ post_decodebin_pad_removed_handler (GstElement * decodebin, GstPad * pad,
 }
 
 static void
-bus_message (GstBus * bus, GstMessage * msg, KmsHttpEndPoint * self)
+bus_message (GstBus * bus, GstMessage * msg, KmsHttpEndpoint * self)
 {
   if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS)
     g_signal_emit (G_OBJECT (self), http_ep_signals[SIGNAL_EOS], 0);
 }
 
 static void
-kms_http_end_point_init_post_pipeline (KmsHttpEndPoint * self)
+kms_http_endpoint_init_post_pipeline (KmsHttpEndpoint * self)
 {
   GstElement *decodebin;
   GstBus *bus;
   GstCaps *deco_caps;
 
-  self->priv->method = KMS_HTTP_END_POINT_METHOD_POST;
+  self->priv->method = KMS_HTTP_ENDPOINT_METHOD_POST;
   self->priv->post = g_slice_new0 (PostData);
 
   self->priv->pipeline = gst_pipeline_new (POST_PIPELINE);
@@ -559,7 +559,7 @@ matched_elements_cb (KmsConfController * controller, GstElement * appsink,
 static void
 sink_required_cb (KmsConfController * controller, gpointer httpep)
 {
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (httpep);
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (httpep);
 
   self->priv->get->appsink = gst_element_factory_make ("appsink", NULL);
 
@@ -575,9 +575,9 @@ sink_required_cb (KmsConfController * controller, gpointer httpep)
 }
 
 static void
-kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
+kms_http_endpoint_init_get_pipeline (KmsHttpEndpoint * self)
 {
-  self->priv->method = KMS_HTTP_END_POINT_METHOD_GET;
+  self->priv->method = KMS_HTTP_ENDPOINT_METHOD_GET;
   self->priv->get = g_slice_new0 (GetData);
 
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
@@ -594,16 +594,16 @@ kms_http_end_point_init_get_pipeline (KmsHttpEndPoint * self)
 }
 
 static GstSample *
-kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
+kms_http_endpoint_pull_sample_action (KmsHttpEndpoint * self)
 {
   GstSample *sample;
 
   KMS_ELEMENT_LOCK (self);
 
-  if (self->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
+  if (self->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET) {
     KMS_ELEMENT_UNLOCK (self);
     GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
-        ("Trying to get data from a non-GET HttpEndPoint"), GST_ERROR_SYSTEM);
+        ("Trying to get data from a non-GET HttpEndpoint"), GST_ERROR_SYSTEM);
     return NULL;
   }
 
@@ -615,23 +615,23 @@ kms_http_end_point_pull_sample_action (KmsHttpEndPoint * self)
 }
 
 static GstFlowReturn
-kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
+kms_http_endpoint_push_buffer_action (KmsHttpEndpoint * self,
     GstBuffer * buffer)
 {
   GstFlowReturn ret;
 
   KMS_ELEMENT_LOCK (self);
 
-  if (self->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
-      self->priv->method != KMS_HTTP_END_POINT_METHOD_POST) {
+  if (self->priv->method != KMS_HTTP_ENDPOINT_METHOD_UNDEFINED &&
+      self->priv->method != KMS_HTTP_ENDPOINT_METHOD_POST) {
     KMS_ELEMENT_UNLOCK (self);
     GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
-        ("Trying to push data in a non-POST HttpEndPoint"), GST_ERROR_SYSTEM);
+        ("Trying to push data in a non-POST HttpEndpoint"), GST_ERROR_SYSTEM);
     return GST_FLOW_ERROR;
   }
 
   if (self->priv->pipeline == NULL)
-    kms_http_end_point_init_post_pipeline (self);
+    kms_http_endpoint_init_post_pipeline (self);
 
   KMS_ELEMENT_UNLOCK (self);
 
@@ -641,7 +641,7 @@ kms_http_end_point_push_buffer_action (KmsHttpEndPoint * self,
 }
 
 static GstFlowReturn
-kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
+kms_http_endpoint_end_of_stream_action (KmsHttpEndpoint * self)
 {
   GstFlowReturn ret;
 
@@ -661,20 +661,20 @@ kms_http_end_point_end_of_stream_action (KmsHttpEndPoint * self)
 }
 
 static void
-kms_recorder_end_point_valve_added (KmsHttpEndPoint * self,
+kms_recorder_endpoint_valve_added (KmsHttpEndpoint * self,
     GstElement * valve, const gchar * sinkname,
     const gchar * srcname, const gchar * destpadname)
 {
   gboolean initialized = FALSE;
 
-  if (self->priv->method != KMS_HTTP_END_POINT_METHOD_UNDEFINED &&
-      self->priv->method != KMS_HTTP_END_POINT_METHOD_GET) {
-    GST_ERROR ("Trying to get data from a non-GET HttpEndPoint");
+  if (self->priv->method != KMS_HTTP_ENDPOINT_METHOD_UNDEFINED &&
+      self->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET) {
+    GST_ERROR ("Trying to get data from a non-GET HttpEndpoint");
     return;
   }
 
   if (self->priv->pipeline == NULL) {
-    kms_http_end_point_init_get_pipeline (self);
+    kms_http_endpoint_init_get_pipeline (self);
     initialized = TRUE;
   }
 
@@ -698,43 +698,43 @@ kms_recorder_end_point_valve_added (KmsHttpEndPoint * self,
 }
 
 static void
-kms_http_end_point_audio_valve_added (KmsElement * self, GstElement * valve)
+kms_http_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
 {
-  kms_recorder_end_point_valve_added (KMS_HTTP_END_POINT (self), valve,
+  kms_recorder_endpoint_valve_added (KMS_HTTP_ENDPOINT (self), valve,
       AUDIO_APPSINK, AUDIO_APPSRC, "audio_%u");
 }
 
 static void
-kms_http_end_point_audio_valve_removed (KmsElement * self, GstElement * valve)
+kms_http_endpoint_audio_valve_removed (KmsElement * self, GstElement * valve)
 {
-  KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (self);
+  KmsHttpEndpoint *httpep = KMS_HTTP_ENDPOINT (self);
 
-  if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET)
+  if (httpep->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET)
     return;
 
   GST_INFO ("TODO: Implement this");
 }
 
 static void
-kms_http_end_point_video_valve_added (KmsElement * self, GstElement * valve)
+kms_http_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
 {
-  kms_recorder_end_point_valve_added (KMS_HTTP_END_POINT (self), valve,
+  kms_recorder_endpoint_valve_added (KMS_HTTP_ENDPOINT (self), valve,
       VIDEO_APPSINK, VIDEO_APPSRC, "video_%u");
 }
 
 static void
-kms_http_end_point_video_valve_removed (KmsElement * self, GstElement * valve)
+kms_http_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
 {
-  KmsHttpEndPoint *httpep = KMS_HTTP_END_POINT (self);
+  KmsHttpEndpoint *httpep = KMS_HTTP_ENDPOINT (self);
 
-  if (httpep->priv->method != KMS_HTTP_END_POINT_METHOD_GET)
+  if (httpep->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET)
     return;
 
   GST_INFO ("TODO: Implement this");
 }
 
 static void
-kms_http_end_point_dispose_GET (KmsHttpEndPoint * self)
+kms_http_endpoint_dispose_GET (KmsHttpEndpoint * self)
 {
   g_clear_object (&self->priv->get->controller);
 
@@ -747,7 +747,7 @@ kms_http_end_point_dispose_GET (KmsHttpEndPoint * self)
 }
 
 static void
-kms_http_end_point_dispose_POST (KmsHttpEndPoint * self)
+kms_http_endpoint_dispose_POST (KmsHttpEndpoint * self)
 {
   GstBus *bus;
 
@@ -764,20 +764,20 @@ kms_http_end_point_dispose_POST (KmsHttpEndPoint * self)
 }
 
 static void
-kms_http_end_point_dispose (GObject * object)
+kms_http_endpoint_dispose (GObject * object)
 {
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (object);
 
   GST_DEBUG_OBJECT (self, "dispose");
 
   g_clear_object (&self->priv->loop);
 
   switch (self->priv->method) {
-    case KMS_HTTP_END_POINT_METHOD_GET:
-      kms_http_end_point_dispose_GET (self);
+    case KMS_HTTP_ENDPOINT_METHOD_GET:
+      kms_http_endpoint_dispose_GET (self);
       break;
-    case KMS_HTTP_END_POINT_METHOD_POST:
-      kms_http_end_point_dispose_POST (self);
+    case KMS_HTTP_ENDPOINT_METHOD_POST:
+      kms_http_endpoint_dispose_POST (self);
       break;
     default:
       break;
@@ -785,21 +785,21 @@ kms_http_end_point_dispose (GObject * object)
 
   /* clean up as possible. May be called multiple times */
 
-  G_OBJECT_CLASS (kms_http_end_point_parent_class)->dispose (object);
+  G_OBJECT_CLASS (kms_http_endpoint_parent_class)->dispose (object);
 }
 
 static void
-kms_http_end_point_finalize (GObject * object)
+kms_http_endpoint_finalize (GObject * object)
 {
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
 
   switch (self->priv->method) {
-    case KMS_HTTP_END_POINT_METHOD_GET:
+    case KMS_HTTP_ENDPOINT_METHOD_GET:
       g_slice_free (GetData, self->priv->get);
       break;
-    case KMS_HTTP_END_POINT_METHOD_POST:
+    case KMS_HTTP_ENDPOINT_METHOD_POST:
       g_slice_free (PostData, self->priv->post);
       break;
     default:
@@ -808,11 +808,11 @@ kms_http_end_point_finalize (GObject * object)
 
   /* clean up object here */
 
-  G_OBJECT_CLASS (kms_http_end_point_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_http_endpoint_parent_class)->finalize (object);
 }
 
 static void
-kms_change_internal_pipeline_state (KmsHttpEndPoint * self, gboolean start)
+kms_change_internal_pipeline_state (KmsHttpEndpoint * self, gboolean start)
 {
   GstElement *audio_v, *video_v;
 
@@ -884,10 +884,10 @@ change_state_cb (gpointer user_data)
 }
 
 static void
-kms_http_end_point_set_property (GObject * object, guint property_id,
+kms_http_endpoint_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (object);
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
@@ -907,7 +907,7 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
     }
     case PROP_PROFILE:
       self->priv->profile = g_value_get_enum (value);
-      if (self->priv->method == KMS_HTTP_END_POINT_METHOD_GET)
+      if (self->priv->method == KMS_HTTP_ENDPOINT_METHOD_GET)
         g_object_set (G_OBJECT (self->priv->get->controller), "profile",
             self->priv->profile, NULL);
       break;
@@ -922,10 +922,10 @@ kms_http_end_point_set_property (GObject * object, guint property_id,
 }
 
 static void
-kms_http_end_point_get_property (GObject * object, guint property_id,
+kms_http_endpoint_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsHttpEndPoint *self = KMS_HTTP_END_POINT (object);
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (object);
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
@@ -949,39 +949,39 @@ kms_http_end_point_get_property (GObject * object, guint property_id,
 }
 
 static void
-kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
+kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
 {
   KmsElementClass *kms_element_class = KMS_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "HttpEndPoint", "Generic", "Kurento http end point plugin",
+      "HttpEndpoint", "Generic", "Kurento http end point plugin",
       "Santiago Carot-Nemesio <sancane.kurento@gmail.com>");
 
-  gobject_class->set_property = kms_http_end_point_set_property;
-  gobject_class->get_property = kms_http_end_point_get_property;
-  gobject_class->dispose = kms_http_end_point_dispose;
-  gobject_class->finalize = kms_http_end_point_finalize;
+  gobject_class->set_property = kms_http_endpoint_set_property;
+  gobject_class->get_property = kms_http_endpoint_get_property;
+  gobject_class->dispose = kms_http_endpoint_dispose;
+  gobject_class->finalize = kms_http_endpoint_finalize;
 
   kms_element_class->audio_valve_added =
-      GST_DEBUG_FUNCPTR (kms_http_end_point_audio_valve_added);
+      GST_DEBUG_FUNCPTR (kms_http_endpoint_audio_valve_added);
   kms_element_class->video_valve_added =
-      GST_DEBUG_FUNCPTR (kms_http_end_point_video_valve_added);
+      GST_DEBUG_FUNCPTR (kms_http_endpoint_video_valve_added);
   kms_element_class->audio_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_http_end_point_audio_valve_removed);
+      GST_DEBUG_FUNCPTR (kms_http_endpoint_audio_valve_removed);
   kms_element_class->video_valve_removed =
-      GST_DEBUG_FUNCPTR (kms_http_end_point_video_valve_removed);
+      GST_DEBUG_FUNCPTR (kms_http_endpoint_video_valve_removed);
 
   /* Install properties */
   obj_properties[PROP_METHOD] = g_param_spec_enum ("http-method",
       "Http method",
       "Http method used in requests",
-      GST_TYPE_HTTP_END_POINT_METHOD,
-      KMS_HTTP_END_POINT_METHOD_UNDEFINED, G_PARAM_READABLE);
+      GST_TYPE_HTTP_ENDPOINT_METHOD,
+      KMS_HTTP_ENDPOINT_METHOD_UNDEFINED, G_PARAM_READABLE);
 
   obj_properties[PROP_START] = g_param_spec_boolean ("start",
       "start media stream",
-      "start media stream", DEFAULT_HTTP_END_POINT_START, G_PARAM_READWRITE);
+      "start media stream", DEFAULT_HTTP_ENDPOINT_START, G_PARAM_READWRITE);
 
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
@@ -1002,12 +1002,12 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
       g_signal_new ("eos",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsHttpEndPointClass, eos_signal), NULL, NULL,
+      G_STRUCT_OFFSET (KmsHttpEndpointClass, eos_signal), NULL, NULL,
       g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   http_ep_signals[SIGNAL_NEW_SAMPLE] =
       g_signal_new ("new-sample", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsHttpEndPointClass, new_sample),
+      G_STRUCT_OFFSET (KmsHttpEndpointClass, new_sample),
       NULL, NULL, __kms_marshal_ENUM__VOID, GST_TYPE_FLOW_RETURN, 0,
       G_TYPE_NONE);
 
@@ -1015,45 +1015,45 @@ kms_http_end_point_class_init (KmsHttpEndPointClass * klass)
   http_ep_signals[SIGNAL_PULL_SAMPLE] =
       g_signal_new ("pull-sample", G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-      G_STRUCT_OFFSET (KmsHttpEndPointClass, pull_sample),
+      G_STRUCT_OFFSET (KmsHttpEndpointClass, pull_sample),
       NULL, NULL, __kms_marshal_BOXED__VOID, GST_TYPE_SAMPLE, 0, G_TYPE_NONE);
 
   http_ep_signals[SIGNAL_PUSH_BUFFER] =
       g_signal_new ("push-buffer", G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-      G_STRUCT_OFFSET (KmsHttpEndPointClass, push_buffer),
+      G_STRUCT_OFFSET (KmsHttpEndpointClass, push_buffer),
       NULL, NULL, __kms_marshal_ENUM__BOXED,
       GST_TYPE_FLOW_RETURN, 1, GST_TYPE_BUFFER);
 
   http_ep_signals[SIGNAL_END_OF_STREAM] =
       g_signal_new ("end-of-stream", G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-      G_STRUCT_OFFSET (KmsHttpEndPointClass, end_of_stream),
+      G_STRUCT_OFFSET (KmsHttpEndpointClass, end_of_stream),
       NULL, NULL, __kms_marshal_ENUM__VOID,
       GST_TYPE_FLOW_RETURN, 0, G_TYPE_NONE);
 
-  klass->pull_sample = kms_http_end_point_pull_sample_action;
-  klass->push_buffer = kms_http_end_point_push_buffer_action;
-  klass->end_of_stream = kms_http_end_point_end_of_stream_action;
+  klass->pull_sample = kms_http_endpoint_pull_sample_action;
+  klass->push_buffer = kms_http_endpoint_push_buffer_action;
+  klass->end_of_stream = kms_http_endpoint_end_of_stream_action;
 
   /* Registers a private structure for the instantiatable type */
-  g_type_class_add_private (klass, sizeof (KmsHttpEndPointPrivate));
+  g_type_class_add_private (klass, sizeof (KmsHttpEndpointPrivate));
 }
 
 static void
-kms_http_end_point_init (KmsHttpEndPoint * self)
+kms_http_endpoint_init (KmsHttpEndpoint * self)
 {
-  self->priv = KMS_HTTP_END_POINT_GET_PRIVATE (self);
+  self->priv = KMS_HTTP_ENDPOINT_GET_PRIVATE (self);
 
   self->priv->loop = kms_loop_new ();
-  self->priv->method = KMS_HTTP_END_POINT_METHOD_UNDEFINED;
+  self->priv->method = KMS_HTTP_ENDPOINT_METHOD_UNDEFINED;
   self->priv->pipeline = NULL;
   self->priv->start = FALSE;
 }
 
 gboolean
-kms_http_end_point_plugin_init (GstPlugin * plugin)
+kms_http_endpoint_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_HTTP_END_POINT);
+      KMS_TYPE_HTTP_ENDPOINT);
 }
