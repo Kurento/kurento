@@ -1,5 +1,7 @@
 package com.kurento.kmf.media;
 
+import java.util.List;
+
 import com.kurento.tool.rom.server.Param;
 
 public abstract class MediaServerFactory {
@@ -60,4 +62,8 @@ public abstract class MediaServerFactory {
 	public abstract GStreamerFilter.Builder createGStreamerFilter(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline,
 			@Param("command") String command);
+
+	public abstract CrowdDetectorFilter.Builder createCrowdDetectorFilter(
+			@Param("mediaPipeline") MediaPipeline mediaPipeline,
+			@Param("rois") List<RegionOfInterest> rois);
 }

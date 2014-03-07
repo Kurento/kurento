@@ -1,5 +1,7 @@
 package com.kurento.kmf.media;
 
+import java.util.List;
+
 import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.FactoryMethod;
 import com.kurento.tool.rom.server.Param;
@@ -59,6 +61,10 @@ public interface MediaPipeline extends MediaObject {
 	@FactoryMethod("mediaPipeline")
 	public abstract GStreamerFilter.Builder newGStreamerFilter(
 			@Param("command") String command);
+
+	@FactoryMethod("mediaPipeline")
+	public abstract CrowdDetectorFilter.Builder newCrowdDetectorFilter(
+			@Param("rois") List<RegionOfInterest> rois);
 
 	public interface Factory {
 
