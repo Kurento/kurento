@@ -55,5 +55,4 @@ API Classes
    inheritance
    com/kurento/kmf/media/package-index
    com/kurento/kmf/media/events/package-index
-   com/kurento/kmf/media/params/package-index
 

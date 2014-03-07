@@ -87,7 +87,8 @@ javadoc:
 	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop ) &&\
 	      javasphinx-apidoc -c /tmp -u -T --no-member-headers -o source/$${p}\
 	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/src/main/java" \
-	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p} -name internal -print 2>/dev/null);\
+	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p}\
+                                             -name internal -print -or -name tool -print  2>/dev/null);\
 	      } done
 		  javadoc -d source/javadoc -sourcepath $$(echo $(BUILDDIR)/javadoc/k*/src/main/java | sed -e "s@ @:@g") com.kurento.kmf.media com.kurento.kmf.media.events com.kurento.kmf.media.params com.kurento.kmf.content com.kurento.kmf.repository
 
