@@ -188,6 +188,34 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         .. seealso:: Wikipedia definition of `multimedia containter formats
            <http://en.wikipedia.org/wiki/Container_format_(digital)#Multimedia_container_formats>`__
 
+    NAT
+    Network Address Translation
+        Network address translation (NAT) is the technique of modifying
+        network address information in Internet Protocol (IP) datagram
+        packet headers while they are in transit across a traffic routing
+        device for the purpose of remapping one IP address space into
+        another.
+
+        .. seealso::
+
+            Network Address Translation definition at Wikipedia
+                <http://en.wikipedia.org/wiki/Network_address_translation>__
+
+    NAT-T
+    NAT Traversal
+        NAT traversal (sometimes abbreviated as NAT-T) is a general term
+        for techniques that establish and maintain Internet protocol
+        connections traversing network address translation (NAT) gateways,
+        which break end-to-end connectivity. Intercepting and modifying
+        traffic can only be performed transparently in the absence of
+        secure encryption and authentication.
+
+        .. seealso::
+
+            `NAT Traversal White Paper <http://www.nattraversal.com/>`_
+                White paper on NAT-T and solutions for end-to-end
+                connectivity in its presence
+
     Pad, Media
         A :index:`Media Pad <single: Media; Pad>` is is an element´s
         interface with the outside world. Data streams from the MediaSource
