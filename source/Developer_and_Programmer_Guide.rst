@@ -959,9 +959,9 @@ but they are isolated from the rest of the system. This has to be taken
 into account when programming applications.
 
 As introduced before, currently there are two kinds of `MediaElements`,
-namely `EndPoints` and `Filters`
+namely `Endpoints` and `Filters`
 
-EndPoints
+Endpoints
 ~~~~~~~~~
 
 :term:`KMS` :java:type:`MediaElements <MediaElement>` are created through

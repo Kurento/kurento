@@ -549,7 +549,7 @@ video clip is recovered from a media repository (e.g. the file system)
 and it is fed into a filter performing specific processing on it (e.g.
 augmenting the media, recognizing objects of faces through computer
 vision, adding subtitles, modifying the color palette, etc.) At the end
-of the pipeline an element called ‘’HttpEndPoint’’ adapts the media and
+of the pipeline an element called ‘’HttpEndpoint’’ adapts the media and
 sends it as an HTTP answer upon client requests. This basic pipeline can
 be modified by the developer adding additional elements at wish, which
 can be done creating the server-side application logic.
@@ -572,7 +572,7 @@ this case, the media goes from the client to the server using the
 appropriate HTTP methods for it (i.e. POST or PUT). The negotiation
 phase hence starts with the client requesting to upload the content and
 the Application Server creating the appropriate pipeline for doing it.
-This pipeline will always start with an HttpEndPoint element as the one
+This pipeline will always start with an HttpEndpoint element as the one
 shown in Figure 10, but used in sink mode so that the media stream gets
 into the pipeline instead of out of it. To that end point further
 elements can be connected for filtering media, processing it or storing
@@ -643,8 +643,8 @@ and adding the hat to it.
 
    *During the negotiation phase, the application developer can create a
    pipeline providing the desired specific functionality. For example, this
-   pipeline uses a WebRtcEndPoint for communicating with the client, which
-   is connected to a RecorderEndPoint storing the received media streamd
+   pipeline uses a WebRtcEndpoint for communicating with the client, which
+   is connected to a RecorderEndpoint storing the received media streamd
    and to an augmented reality filter, which feeds its output media stream
    back to the client. As a result, the end user will receive its own image
    filtered (e.g. with a hat added onto her head) and the stream will be

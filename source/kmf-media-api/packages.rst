@@ -17,15 +17,15 @@ applications.
 The main java objects in the API are:
 
 * :java:type:`MediaPipelines <MediaPipeline>` , which are chains of processing.
-  A pipeline connects two :java:type:`EndPoints <EndPoint>`, the :java:type:`MediaSource`
-  of one with the :java:type:`MediaSink` of other `EndPoint`.
+  A pipeline connects two :java:type:`Endpoints <Endpoint>`, the :java:type:`MediaSource`
+  of one with the :java:type:`MediaSink` of other `Endpoint`.
 * :java:type:`MediaElements <MediaElement>` are processing elements composing the pipeline.
   A `MediaElement`, depending of its role in the pipeline, can be a :java:type:`Filter` or
   an :java:type:`Endpoint`
 
     * A :java:type:`Filter` processes media injected through its :java:type:`MediaSink`,
       and delivers the outcome through its :java:type:`MediaSource`.
-    * An :java:type:`EndPoint` is a `MediaElement` enabling KMS to interchange media contents with
+    * An :java:type:`Endpoint` is a `MediaElement` enabling KMS to interchange media contents with
       external systems, supporting different transport protocols and mechanisms (RTP, WebRTC, HTTP, FILE).
       An Endpoint may contain both sources and sinks for different media types, to provide bidirectional
       communication.
@@ -37,7 +37,7 @@ The main java objects in the API are:
     * A :java:type:`MediaSource` is a Pad that generates a media stream to process
     * A :java:type:`MediaSink` is a Pad that *consumes* (receives) a media stream after processing.
 
-The different capabilities of the Kurento Media Server are exposed typically as `Filters` or `EndPoints`
+The different capabilities of the Kurento Media Server are exposed typically as `Filters` or `Endpoints`
 in the Media API.
 
 API Javadoc
