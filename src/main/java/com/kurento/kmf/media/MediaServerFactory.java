@@ -41,6 +41,9 @@ public abstract class MediaServerFactory {
 	public abstract Dispatcher.Builder createDispatcher(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline);
 
+	public abstract Composite.Builder createComposite(
+			@Param("mediaPipeline") MediaPipeline mediaPipeline);
+
 	public abstract JackVaderFilter.Builder createJackVaderFilter(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline);
 

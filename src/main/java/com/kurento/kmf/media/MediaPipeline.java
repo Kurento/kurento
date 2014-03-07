@@ -41,6 +41,9 @@ public interface MediaPipeline extends MediaObject {
 	public abstract Dispatcher.Builder newDispatcher();
 
 	@FactoryMethod("mediaPipeline")
+	public abstract Composite.Builder newComposite();
+
+	@FactoryMethod("mediaPipeline")
 	public abstract JackVaderFilter.Builder newJackVaderFilter();
 
 	@FactoryMethod("mediaPipeline")
