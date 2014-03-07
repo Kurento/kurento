@@ -299,6 +299,6 @@ javadoc_url_map = {
     'com.kurento.kmf.repository':('kmf-repository-api', 'sphinx'),
 }
 
-graphviz_output_format = 'png'
+graphviz_output_format = 'svg'
 
 todo_include_todos = 'dev' in release
