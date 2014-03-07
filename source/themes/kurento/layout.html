@@ -59,7 +59,18 @@
           <p class="searchtip" style="font-size: 90%">
             {{ _('Enter search terms or a module, class or function name.') }}
           </p>
+          {%- if show_source and has_source and sourcename %}
+          <div role="note" aria-label="source link">
+            <h3>{{ _('This Page') }}</h3>
+            <ul class="this-page-menu">
+              <li><a href="http://www.kurento.org/community">Report a Bug</a></li>
+              <li><a href="{{ pathto('_sources/' + sourcename, true)|e }}"
+            rel="nofollow">{{ _('Show Source') }}</a></li>
+            </ul>
+          </div>
+          {%- endif %}
           {%- endblock %}
+
         </div>
         <div class="clearer"></div>
       </div>
@@ -75,11 +86,6 @@
              {{ accesskey(rellink[2]) }}>{{ rellink[3] }}</a>
           {%- if not loop.last %}{{ reldelim2 }}{% endif %}
           {%- endfor %}
-          {%- if show_source and has_source and sourcename %}
-            <br/>
-            <a href="{{ pathto('_sources/' + sourcename, true)|e }}"
-               rel="nofollow">{{ _('Show Source') }}</a>
-          {%- endif %}
         </div>
 
         <div class="right">
