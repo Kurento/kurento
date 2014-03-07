@@ -19,7 +19,7 @@ import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
-import com.kurento.kmf.media.DispatcherMixer;
+import com.kurento.kmf.media.DispatcherOneToMany;
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
@@ -33,13 +33,13 @@ import com.kurento.kmf.media.PlayerEndpoint;
  * @author David Fernández (d.fernandezlop@gmail.com)
  * @version 1.0.1
  */
-@HttpPlayerService(path = "/dispatcherMixer/*", redirect = true, useControlProtocol = true)
-public class DispatcherMixerDemo extends HttpPlayerHandler {
+@HttpPlayerService(path = "/dispatcherOneToMany/*", redirect = true, useControlProtocol = true)
+public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 	// MediaPipeline and MediaElements
 	public MediaPipeline mediaPipeline;
 	public PlayerEndpoint player1;
 	public PlayerEndpoint player2;
-	public DispatcherMixer mixer;
+	public DispatcherOneToMany mixer;
 	public MixerPort mixerPort1;
 	public MixerPort mixerPort2;
 	public MixerPort mixerPort3;
@@ -59,7 +59,7 @@ public class DispatcherMixerDemo extends HttpPlayerHandler {
 		bn = mediaPipeline.newGStreamerFilter("videobalance saturation=0.0")
 				.build();
 
-		mixer = mediaPipeline.newDispatcherMixer().build();
+		mixer = mediaPipeline.newDispatcherOneToMany().build();
 
 		mixerPort1 = mixer.newMixerPort().build();
 		mixerPort2 = mixer.newMixerPort().build();
