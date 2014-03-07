@@ -2,6 +2,7 @@ ${config.subfolder}/events/${event.name}Event.java
 package ${config.packageName}.events;
 
 import com.kurento.tool.rom.server.Param;
+import java.util.List;
 import ${config.packageName}.*;
 
 public class ${event.name}Event <#if event.extends??>extends ${event.extends.name}Event<#else>implements Event</#if> {

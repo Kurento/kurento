@@ -2,6 +2,7 @@ ${config.subfolder}/${complexType.name}.java
 package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
+import java.util.List;
 
 <#if complexType.typeFormat == "REGISTER">
 public class ${complexType.name} {

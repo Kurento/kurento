@@ -17,6 +17,16 @@ class ${complexType.name};
 void Serialize(std::shared_ptr<kurento::${complexType.name}>& object, JsonSerializer& s);
 
 namespace kurento {
+<#list complexType.getChildren() as dependency>
+<#if childs??>
+
+</#if>
+<#if model.remoteClasses?seq_contains(dependency.type.type) ||
+  model.complexTypes?seq_contains(dependency.type.type) ||
+  model.events?seq_contains(dependency.type.type)><#assign childs=true>
+class ${dependency.type.name};
+</#if>
+</#list>
 
 class ${complexType.name}
 {
@@ -29,7 +39,7 @@ public:
       <#lt><#if !property.optional><#rt>
         <#lt><#if (first) ??>, </#if><#rt>
         <#lt><#assign first = true><#rt>
-        <#lt>${getCppObjectType(property.type.name)} ${property.name}<#rt>
+        <#lt>${getCppObjectType(property.type)} ${property.name}<#rt>
       <#lt></#if><#rt>
     <#lt></#list>){
     <#list complexType.properties as property><#rt>
@@ -42,14 +52,14 @@ public:
   ${complexType.name} (const Json::Value &value);
 
   <#list complexType.properties as property>
-  void set${property.name?cap_first} (${getCppObjectType(property.type.name, false)} ${property.name}) {
+  void set${property.name?cap_first} (${getCppObjectType(property.type)} ${property.name}) {
     this->${property.name} = ${property.name};
     <#if property.optional>
     _isSet${property.name?cap_first} = true;
     </#if>
   };
 
-  ${getCppObjectType(property.type.name)} get${property.name?cap_first} () {
+  ${getCppObjectType(property.type, false)} get${property.name?cap_first} () {
     return ${property.name};
   };
 
@@ -62,7 +72,7 @@ public:
   </#list>
 private:
   <#list complexType.properties as property>
-  ${getCppObjectType(property.type.name, false)} ${property.name};
+  ${getCppObjectType(property.type, false)} ${property.name};
   <#if property.optional>
   bool _isSet${property.name?cap_first} = false;
   </#if>

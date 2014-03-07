@@ -2,6 +2,7 @@ ${config.subfolder}/MediaServerFactory.java
 package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
+import java.util.List;
 
 public abstract class MediaServerFactory {
 
