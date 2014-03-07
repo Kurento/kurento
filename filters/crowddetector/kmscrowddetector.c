@@ -155,7 +155,7 @@ kms_crowd_detector_set_property (GObject * object, guint property_id,
       break;
     case PROP_ROIS:
       kms_crowd_detector_release_data (crowddetector);
-      crowddetector->priv->rois = g_value_get_boxed (value);
+      crowddetector->priv->rois = g_value_dup_boxed (value);
       kms_crowd_detector_extract_rois (crowddetector);
       break;
     default:
