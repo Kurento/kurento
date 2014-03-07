@@ -17,6 +17,7 @@ package com.kurento.demo.cebit;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +56,13 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	private MediaPipeline mp;
 	public final Map<WebRtcContentSession, Participant> sessions = new ConcurrentHashMap<WebRtcContentSession, Participant>();
 	public final Map<String, Participant> participants = new ConcurrentHashMap<String, Participant>();
+	public final Set<ParticipantPojo> participantsPojo = new CopyOnWriteArraySet<ParticipantPojo>();
 
 	private static final Gson gson = new Gson();
 
 	/* Commands */
-	private Set<String> getParticipants(WebRtcContentSession session) {
-		return participants.keySet();
+	private Set<ParticipantPojo> getParticipants() {
+		return participantsPojo;
 	}
 
 	private boolean selectParticipant(WebRtcContentSession session,
@@ -78,22 +80,20 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	/* Events */
 	private void notifyJoined(Participant participant) {
-		String part = participant.id + " - " + participant.name;
-		log.debug("Participant joined: {}", part);
+		String json = participant.toJson();
+		log.debug("Participant joined: {}", json);
 
 		for (WebRtcContentSession session : sessions.keySet()) {
-			session.publishEvent(new ContentEvent(EVENT_ON_JOINED,
-					participant.id));
+			session.publishEvent(new ContentEvent(EVENT_ON_JOINED, json));
 		}
 	}
 
 	private void notifyUnjoined(Participant participant) {
-		String part = participant.id + " - " + participant.name;
-		log.debug("Participant unjoined: " + part);
+		String json = participant.toJson();
+		log.debug("Participant unjoined: {}", json);
 
 		for (WebRtcContentSession session : sessions.keySet()) {
-			session.publishEvent(new ContentEvent(EVENT_ON_UNJOINED,
-					participant.id));
+			session.publishEvent(new ContentEvent(EVENT_ON_UNJOINED, json));
 		}
 	}
 
@@ -110,9 +110,11 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			name = "<no name>";
 		}
 
-		Participant participant = new Participant(name, mp);
+		WebRtcEndpoint endpoint = mp.newWebRtcEndpoint().build();
+		Participant participant = new Participant(name, endpoint);
 
-		participants.put(participant.id, participant);
+		participants.put(participant.getId(), participant);
+		participantsPojo.add(participant.pojo);
 		sessions.put(session, participant);
 
 		participant.endpoint.connect(participant.endpoint);
@@ -128,7 +130,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		log.debug("onContentCommand: ({}, {})", cmdType, cmdData);
 
 		if (COMMAND_GET_PARTICIPANTS.equalsIgnoreCase(cmdType)) {
-			String json = gson.toJson(getParticipants(session));
+			String json = gson.toJson(getParticipants());
 			return new ContentCommandResult(json);
 		} else if (COMMAND_SELECT.equalsIgnoreCase(cmdType)) {
 			return new ContentCommandResult(Boolean.toString(selectParticipant(
@@ -143,22 +145,21 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			int code, String reason) throws Exception {
 		Participant participant = sessions.get(session);
 		sessions.remove(session);
-		participants.remove(participant.id);
+		participants.remove(participant.getId());
+		participantsPojo.remove(participant.pojo);
 		notifyUnjoined(participant);
 
 		super.onSessionTerminated(session, code, reason);
 	}
 
-	private static class Participant {
+	private static class ParticipantPojo {
 
 		private String id;
 		private String name;
-		private WebRtcEndpoint endpoint;
 
-		private Participant(String name, MediaPipeline mp) {
+		private ParticipantPojo(String name) {
 			id = generateId();
 			this.name = name;
-			endpoint = mp.newWebRtcEndpoint().build();
 		}
 
 		private static int globalId = 0;
@@ -166,6 +167,28 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		private static synchronized String generateId() {
 			return Integer.toString(globalId++);
 		}
+	}
+
+	private static class Participant {
+
+		private ParticipantPojo pojo;
+		private static final Gson gson = new Gson();
+
+		private WebRtcEndpoint endpoint;
+
+		private String getId() {
+			return pojo.id;
+		}
+
+		private String toJson() {
+			return gson.toJson(pojo);
+		}
+
+		private Participant(String name, WebRtcEndpoint webRtcEndpoint) {
+			pojo = new ParticipantPojo(name);
+			endpoint = webRtcEndpoint;
+		}
+
 	}
 
 }
