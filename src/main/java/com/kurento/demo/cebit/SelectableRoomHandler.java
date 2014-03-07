@@ -17,14 +17,14 @@ package com.kurento.demo.cebit;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
@@ -58,22 +58,17 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	public static final String EVENT_ON_UNJOINED = "onUnjoined";
 
 	private MediaPipeline mp;
-	public final Map<WebRtcContentSession, Participant> sessions = new ConcurrentHashMap<WebRtcContentSession, Participant>();
-	public final Map<String, Participant> participants = new ConcurrentHashMap<String, Participant>();
-	public final Set<ParticipantPojo> participantsPojo = new CopyOnWriteArraySet<ParticipantPojo>();
-
-	private static final Gson gson = new Gson();
-
-	/* Commands */
-	private Set<ParticipantPojo> getParticipants() {
-		return participantsPojo;
-	}
+	public final Map<WebRtcContentSession, Participant> sessions = new ConcurrentHashMap();
+	public final Map<String, Participant> participants = new ConcurrentHashMap();
+	private static final Gson gson = new GsonBuilder()
+			.excludeFieldsWithModifiers(java.lang.reflect.Modifier.TRANSIENT)
+			.create();
 
 	private boolean selectParticipant(WebRtcContentSession session,
 			String partId) {
 		Participant partSelected = participants.get(partId);
 		if (partSelected == null) {
-			log.error("Participant {} does not exist", partSelected);
+			log.error("Participant {} does not exist", partId);
 			return false;
 		}
 
@@ -102,7 +97,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	/* Events */
 	private void notifyJoined(Participant participant) {
-		String json = participant.toJson();
+		String json = gson.toJson(participant);
 		log.debug("Participant joined: {}", json);
 
 		for (WebRtcContentSession session : sessions.keySet()) {
@@ -111,7 +106,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	}
 
 	private void notifyUnjoined(Participant participant) {
-		String json = participant.toJson();
+		String json = gson.toJson(participant);
 		log.debug("Participant unjoined: {}", json);
 
 		for (WebRtcContentSession session : sessions.keySet()) {
@@ -121,9 +116,11 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	@Override
 	public void onContentRequest(WebRtcContentSession session) throws Exception {
-		synchronized (this) {
-			if (mp == null) {
-				mp = session.getMediaPipelineFactory().create();
+		if (mp == null) {
+			synchronized (this) {
+				if (mp == null) {
+					mp = session.getMediaPipelineFactory().create();
+				}
 			}
 		}
 
@@ -136,7 +133,6 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		Participant participant = new Participant(name, endpoint);
 
 		participants.put(participant.getId(), participant);
-		participantsPojo.add(participant.pojo);
 		sessions.put(session, participant);
 
 		participant.endpoint.connect(participant.endpoint);
@@ -152,7 +148,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		log.debug("onContentCommand: ({}, {})", cmdType, cmdData);
 
 		if (COMMAND_GET_PARTICIPANTS.equalsIgnoreCase(cmdType)) {
-			String json = gson.toJson(getParticipants());
+			String json = gson.toJson(participants.values());
 			return new ContentCommandResult(json);
 		} else if (COMMAND_SELECT.equalsIgnoreCase(cmdType)) {
 			return new ContentCommandResult(Boolean.toString(selectParticipant(
@@ -163,7 +159,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			List<String> idList = gson.fromJson(cmdData, listType);
 
 			if (idList.size() != 2) {
-				return new ContentCommandResult(Boolean.toString(false));
+				return new ContentCommandResult(Boolean.FALSE.toString());
 			}
 
 			return new ContentCommandResult(
@@ -180,47 +176,54 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		Participant participant = sessions.get(session);
 		sessions.remove(session);
 		participants.remove(participant.getId());
-		participantsPojo.remove(participant.pojo);
 		notifyUnjoined(participant);
 
 		super.onSessionTerminated(session, code, reason);
 	}
 
-	private static class ParticipantPojo {
+	private static final AtomicInteger globalId = new AtomicInteger();
+
+	private static class Participant {
 
 		private String id;
 		private String name;
 
-		private ParticipantPojo(String name) {
-			id = generateId();
+		private final transient WebRtcEndpoint endpoint;
+
+		/**
+		 * @return the name
+		 */
+		public String getName() {
+			return name;
+		}
+
+		/**
+		 * @return the name
+		 */
+		public String getId() {
+			return id;
+		}
+
+		/**
+		 * @param name
+		 *            the name to set
+		 */
+		public void setName(String name) {
 			this.name = name;
 		}
 
-		private static int globalId = 0;
-
-		private static synchronized String generateId() {
-			return Integer.toString(globalId++);
-		}
-	}
-
-	private static class Participant {
-
-		private ParticipantPojo pojo;
-		private static final Gson gson = new Gson();
-
-		private WebRtcEndpoint endpoint;
-
-		private String getId() {
-			return pojo.id;
-		}
-
-		private String toJson() {
-			return gson.toJson(pojo);
+		/**
+		 * @param id
+		 *            the id to set
+		 */
+		public void setId(String id) {
+			this.id = id;
 		}
 
 		private Participant(String name, WebRtcEndpoint webRtcEndpoint) {
-			pojo = new ParticipantPojo(name);
-			endpoint = webRtcEndpoint;
+			this.name = name;
+			this.id = Integer.toString(globalId.incrementAndGet());
+			this.endpoint = webRtcEndpoint;
 		}
 
 	}
