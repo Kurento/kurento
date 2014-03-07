@@ -111,7 +111,7 @@ create a *Kurento* based application:
            <modelVersion>4.0.0</modelVersion>
            <groupId>my.organization</groupId>
            <artifactId>my-kurento-demo</artifactId>
-           <version>1.0.0 </version>
+           <version>0.0.1-SNAPSHOT</version>
            <packaging>war</packaging>
 
        </project>
@@ -125,7 +125,7 @@ create a *Kurento* based application:
            <dependency>
                <groupId>com.kurento.kmf</groupId>
                <artifactId>kmf-content-api</artifactId>
-               <version>1.0.0</version>
+               <version>|version|</version>
            </dependency>
            ...
        </dependencies>
@@ -865,7 +865,7 @@ Following dependency has to be added to ``pom.xml`` in order to use
         <dependency>
             <groupId>com.kurento.kmf</groupId>
             <artifactId>kmf-media-api</artifactId>
-            <version>1.0.0</version>
+            <version>|version|</version>
         </dependency>
     <!-- … -->
     </dependencies>
@@ -1582,7 +1582,7 @@ of ``pom.xml`` for this Maven project in shown below.
        <modelVersion>4.0.0</modelVersion>
        <groupId>com.kurento.kmf</groupId>
        <artifactId>kmf-content-helloworld</artifactId>
-       <version>1.0.0</version>
+       <version>0.0.1-SNAPSHOT</version>
        <packaging>war</packaging>
 
        <properties>
@@ -1592,8 +1592,7 @@ of ``pom.xml`` for this Maven project in shown below.
           <maven.compiler.target>1.6</maven.compiler.target>
 
           <!-- Kurento Dependencies Versions -->
-          <kmf-content-api.version>1.0.0</kmf-content-api.version>
-          <kws-content-api.version>1.0.0</kws-content-api.version>
+          <kurento.version>|version|</kurento.version>
 
           <!-- Plugins Versions -->
           <maven-war-plugin.version>2.3</maven-war-plugin.version>
@@ -1603,7 +1602,7 @@ of ``pom.xml`` for this Maven project in shown below.
           <dependency>
              <groupId>com.kurento.kmf</groupId>
              <artifactId>kmf-content-api</artifactId>
-             <version>${kmf-content-api.version}</version>
+             <version>${kurento.version}</version>
           </dependency>
         <dependency>
          <groupId>com.kurento.kmf</groupId>

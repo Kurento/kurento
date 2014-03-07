@@ -46,6 +46,7 @@ clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@"); find build/html -name "*.html" -exec sed -i -e "s@|version|@$$ver@" {} \;
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -114,6 +115,10 @@ devhelp:
 
 epub:
 	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
+	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\1@");\
+	find build/epub -name "*.html" -exec sed -i -e "s@|version|@$$ver@" {} \;
+	touch source/pdfindex.rst
+	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
 	@echo
 	@echo "Build finished. The epub file is in $(BUILDDIR)/epub."
 
@@ -127,6 +132,8 @@ latex:
 latexpdf:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
+	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@") &&\
+	find build/latex -name "*.tex" -exec sed -i -e "s@.textbar..version.textbar..@$$ver@" {} \;
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
