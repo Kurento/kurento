@@ -117,20 +117,20 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         :term:`signalling plane` of Kurento applications. Currently
         Kurento support the use of `JBoss 7 <http://en.wikipedia.org/wiki/WildFly>`__.
 
-    Kurento Media Framework
     KMF
+    Kurento Media Framework
         Framework for the development of rich media based applications
         using Java EE technologies. It exposes APIs for accessing and
         controlling KMS capabilities from Java applications.
 
-    Kurento Media Server
     KMS
+    Kurento Media Server
         A media server that provides low-level multimedia capabilities.
         Kurento Media Server processes and runs the :term:`Media
         Pipeline <pipeline, media>` of Kurento applications.
 
-    Kurento Web SDK
     KWS
+    Kurento Web SDK
         A JavaScript client side API taking advantage of
         HTML5 multimedia features for writing clients that
         interact easy and naturally with KAS.
