@@ -38,7 +38,7 @@ public abstract class MediaServerFactory {
 
 	public abstract MediaPipeline.Builder createMediaPipeline();
 
-	public abstract Dispatcher.Builder createDispatcher(
+	public abstract DispatcherOneToMany.Builder createDispatcherOneToMany(
 			@Param("mediaPipeline") MediaPipeline mediaPipeline);
 
 	public abstract Composite.Builder createComposite(

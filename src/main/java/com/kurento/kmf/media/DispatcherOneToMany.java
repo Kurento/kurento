@@ -4,7 +4,7 @@ import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.Param;
 
 @RemoteClass
-public interface Dispatcher extends Hub {
+public interface DispatcherOneToMany extends Hub {
 
 	void setSource(@Param("source") MixerPort source);
 
@@ -20,7 +20,7 @@ public interface Dispatcher extends Hub {
 				@Param("mediaPipeline") MediaPipeline mediaPipeline);
 	}
 
-	public interface Builder extends AbstractBuilder<Dispatcher> {
+	public interface Builder extends AbstractBuilder<DispatcherOneToMany> {
 
 		public Builder withGarbagePeriod(int garbagePeriod);
 	}
