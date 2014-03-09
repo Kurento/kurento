@@ -19,12 +19,13 @@ import com.kurento.kmf.repository.RepositoryItem;
 
 /**
  * Media Session where the client and server use SDP negotiation
- *
+ * 
  * A Sdp ContentSession encapsulates a session where a client requests Content
  * using the SDP protocol}
- *
+ * 
  * @author Luis López (llopez@gsyc.es)
- * @see <a href="http://en.wikipedia.org/wiki/Session_Description_Protocol">SDP Protocol</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Session_Description_Protocol">SDP
+ *      Protocol</a>
  * 
  */
 public interface SdpContentSession extends ContentSession {
@@ -44,7 +45,7 @@ public interface SdpContentSession extends ContentSession {
 
 	/**
 	 * TODO
-	 *
+	 * 
 	 * @param sourceRepositoryItem
 	 *            RepositoryItem generating content into the pipeline
 	 * @param sinkRepositoryItem
@@ -57,9 +58,10 @@ public interface SdpContentSession extends ContentSession {
 
 	/**
 	 * TODO
-	 *
+	 * 
 	 * @param sourceContentPath
-	 *            path to the RepositoryItem generating content into the pipeline
+	 *            path to the RepositoryItem generating content into the
+	 *            pipeline
 	 * @param sinkContentPath
 	 *            path to the output RepositoryItem for the pipeline content
 	 * @throws ContentException

@@ -20,13 +20,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * TODO: review & improve javadoc
- * Anotation for the implementation of a RtpContentHandler; it should be used
- * in conjunction within the implementation of the {@link RtpContentHandler}
- * interface. The following snippet shows an
+ * TODO: review & improve javadoc Anotation for the implementation of a
+ * RtpContentHandler; it should be used in conjunction within the implementation
+ * of the {@link RtpContentHandler} interface. The following snippet shows an
  * skeleton with the implementation of a RTP Handler:
  * 
- * <pre><code>
+ * <pre>
+ * <code>
  * &#064;RtpContentService(name = &quot;MyHandler&quot;, path = &quot;/my-webrtc-media&quot;)
  * public class MyHandler implements WebRtcContentHandler {
  * 
@@ -46,7 +46,8 @@ import java.lang.annotation.Target;
  * 	}
  * 
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  * 
  * @see WebRtcContentHandler
  * @author Luis López (llopez@gsyc.es)

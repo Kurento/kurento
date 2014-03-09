@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.content.internal.base;
 
+import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_EXECUTE;
 import static com.kurento.kmf.content.jsonrpc.JsonRpcConstants.METHOD_START;
 
 import java.io.IOException;
@@ -312,16 +313,24 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 						"Null json message received", 10020);
 			}
 
-			AbstractContentSession contentRequest = null;
+			AbstractContentSession contentSession = null;
 			String sessionId = message.getParams() != null ? message
 					.getParams().getSessionId() : null;
 
-			if (message.getMethod().equals(METHOD_START)) {
-				contentRequest = createContentSession(asyncCtx, contentId);
-				contentSessionManager.put(contentRequest);
+			if (sessionId == null && message.getMethod().equals(METHOD_START)) {
+				// Session is created by a start request, we need to fill
+				// asyncCtx associated to start requests.
+				contentSession = createContentSession(asyncCtx, contentId);
+				contentSessionManager.put(contentSession);
+			} else if (sessionId == null
+					&& message.getMethod().equals(METHOD_EXECUTE)) {
+				// Session is created by an execute request, the asyncCtx for
+				// start requests must be set to null
+				contentSession = createContentSession(null, contentId);
+				contentSessionManager.put(contentSession);
 			} else if (sessionId != null) {
-				contentRequest = contentSessionManager.get(sessionId);
-				if (contentRequest == null) {
+				contentSession = contentSessionManager.get(sessionId);
+				if (contentSession == null) {
 					throw new KurentoMediaFrameworkException(
 							"Cloud not find contentRequest object associated to sessionId "
 									+ sessionId, 10021);
@@ -333,7 +342,7 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 			}
 
 			Future<?> future = executor.getExecutor().submit(
-					createAsyncRequestProcessor(contentRequest, message,
+					createAsyncRequestProcessor(contentSession, message,
 							asyncCtx));
 
 			// Store future for using it in ContentAsyncListener in case of
@@ -343,7 +352,7 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 					future);
 			asyncCtx.getRequest().setAttribute(
 					ContentAsyncListener.CONTENT_REQUEST_ATT_NAME,
-					contentRequest);
+					contentSession);
 			asyncCtx.getRequest()
 					.setAttribute(
 							ContentAsyncListener.CONTROL_PROTOCOL_REQUEST_MESSAGE_ATT_NAME,

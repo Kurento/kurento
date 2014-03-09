@@ -23,12 +23,13 @@ package com.kurento.kmf.content;
  * {@link #onContentCommand(ContentSession,ContentCommand)},
  * {@link #onUncaughtException(ContentSession,Throwable)},
  * {@link #onSessionTerminated(ContentSession,int,String)}, and
- * {@link #onSessionError(ContentSession,int,String)}); the implementation of the
- *  RtpMediaHandler should be used in conjunction with the {@link RtpContentService}
- * annotation. The following snippet shows an skeleton with the implementation
- * of a RtpContentService:
+ * {@link #onSessionError(ContentSession,int,String)}); the implementation of
+ * the RtpMediaHandler should be used in conjunction with the
+ * {@link RtpContentService} annotation. The following snippet shows an skeleton
+ * with the implementation of a RtpContentService:
  * 
- * <pre><code>
+ * <pre>
+ * <code>
  * &#064;RtpContentService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
  * public class MyRtpContentHandler implements RtpContentHandler {
  * 
@@ -48,7 +49,8 @@ package com.kurento.kmf.content;
  * 	}
  * 
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  * 
  * @see RtpContentService
  * @author Luis López (llopez@gsyc.es)

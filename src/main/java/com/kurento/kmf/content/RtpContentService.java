@@ -21,12 +21,13 @@ import java.lang.annotation.Target;
 
 /**
  * 
- * Annotation for the implementation of a RtpContentHandler; it should be used in
- * conjunction within the implementation of the {@link RtpContentHandler}
+ * Annotation for the implementation of a RtpContentHandler; it should be used
+ * in conjunction within the implementation of the {@link RtpContentHandler}
  * interface. The following snippet shows an skeleton with the implementation of
  * a RTP Handler:
  * 
- * <pre><code>
+ * <pre>
+ * <code>
  * &#064;RtpMediaService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
  * public class MyHandler implements RtpContentHandler {
  * 
@@ -46,7 +47,8 @@ import java.lang.annotation.Target;
  * 	}
  * 
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  * 
  * @see RtpContentHandler
  * @author Luis López (llopez@gsyc.es)

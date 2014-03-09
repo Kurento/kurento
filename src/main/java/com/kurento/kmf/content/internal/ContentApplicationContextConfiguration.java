@@ -101,11 +101,12 @@ public class ContentApplicationContextConfiguration {
 	// PLAYER STUFF
 	@Bean
 	@Scope("prototype")
-	HttpPlayerSessionImpl httpPlayerSessionImpl(HttpPlayerHandler playerHandler,
-			ContentSessionManager manager, AsyncContext ctx, String contentId,
-			boolean redirect, boolean useControlProtocol) {
-		return new HttpPlayerSessionImpl(playerHandler, manager, ctx, contentId,
-				redirect, useControlProtocol);
+	HttpPlayerSessionImpl httpPlayerSessionImpl(
+			HttpPlayerHandler playerHandler, ContentSessionManager manager,
+			AsyncContext ctx, String contentId, boolean redirect,
+			boolean useControlProtocol) {
+		return new HttpPlayerSessionImpl(playerHandler, manager, ctx,
+				contentId, redirect, useControlProtocol);
 	}
 
 	// RECORDER STUFF

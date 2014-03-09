@@ -18,18 +18,21 @@ import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * 
- * Defines the operations performed by the WebRTC ContentSession object,
- * which is in charge of the requesting to a content to be retrieved
- * from a Media Server using RTP.
+ * Defines the operations performed by the WebRTC ContentSession object, which
+ * is in charge of the requesting to a content to be retrieved from a Media
+ * Server using RTP.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
  */
 public interface WebRtcContentSession extends SdpContentSession {
 	/**
-	 * Start a session using the given WebRtcEndpoint
-	 *
-	 * @param endpoint to be used by the {@link ContentSession}
+	 * Return the {@link com.kurento.kmf.media.MediaElement MediaElement} that
+	 * the {@link com.kurento.kmf.media.MediaPipeline MediaPipeline} is
+	 * connected with
+	 * 
+	 * @return The {@link com.kurento.kmf.media.Endpoint} we are exchanging
+	 *         Media with
 	 */
 	void start(WebRtcEndpoint endpoint);
 }

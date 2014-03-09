@@ -68,8 +68,27 @@ import com.kurento.kmf.repository.Repository;
  */
 public abstract class AbstractContentSession implements ContentSession {
 
+	/*
+	 * This variable is used as an indication of a client having a sessionId.
+	 * The variable is useful for the case in which a session is initiated
+	 * through a "execute" request. When registered=false, the client does not
+	 * have a sessionId, when true, the client has got one. ACTIVE state =>
+	 * registered = true. However, for IDLE, HANDLING and STARTING registered
+	 * may be false (in case the "start" request is creating the session) or may
+	 * be true (in case a previous execute command created the session)
+	 */
+	private volatile boolean registered = false;
+
+	/*
+	 * This state refers to the media exchange (media session state) and it
+	 * mainly depends on the status of execution of "start" requests.
+	 */
 	protected enum STATE {
-		IDLE, HANDLING, STARTING, ACTIVE, TERMINATED
+		IDLE, // No session yet
+		HANDLING, // onContentRequest on execution in handler
+		STARTING, // start on execution in session
+		ACTIVE, // start answer was sent to client
+		TERMINATED // session is terminated, no more requests accepted
 	};
 
 	// /////////////////////////////////////////////////////
@@ -237,6 +256,10 @@ public abstract class AbstractContentSession implements ContentSession {
 		}
 	}
 
+	// TODO: This method makes no sense when one wish to use HttpServletRequest
+	// on an session initiated by a "execute" request. We should make possible
+	// to access the specific HttpServletRequest associated to a method
+	// execution
 	@Override
 	public HttpServletRequest getHttpServletRequest() {
 		if (state == STATE.ACTIVE || state == STATE.TERMINATED) {
@@ -357,6 +380,7 @@ public abstract class AbstractContentSession implements ContentSession {
 								+ " on state " + state, 10008);
 				state = STATE.HANDLING;
 			}
+			initialAsyncCtx = asyncCtx;
 			initialJsonRequest = message;
 			// Check validity of constraints before making them accessible to
 			// the handler
@@ -372,15 +396,18 @@ public abstract class AbstractContentSession implements ContentSession {
 					10010);
 			processStartJsonRpcRequest(asyncCtx, message);
 		} else if (message.getMethod().equals(METHOD_POLL)) {
-			Assert.isTrue(state == STATE.ACTIVE, "Cannot poll on state "
+			Assert.isTrue(state != STATE.TERMINATED, "Cannot poll on state "
 					+ state, 10011);
+			Assert.isTrue(registered == true,
+					"Cannot poll on unregistered state " + state, 10011); // TODO
+																			// code
 
 			ConsumeEventsResultType events = consumeEvents();
 			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
 					.newPollResponse(events.contentEvents,
 							events.controlEvents, message.getId()));
 		} else if (message.getMethod().equals(METHOD_EXECUTE)) {
-			Assert.isTrue(state == STATE.ACTIVE,
+			Assert.isTrue(state != STATE.TERMINATED,
 					"Cannot execute command on state " + state, 10011);
 			internalProcessCommandExecution(asyncCtx, message);
 		} else if (message.getMethod().equals(METHOD_TERMINATE)) {
@@ -398,28 +425,63 @@ public abstract class AbstractContentSession implements ContentSession {
 			JsonRpcRequest message) {
 		Assert.notNull(message.getParams(), "", 1); // TODO
 		Assert.notNull(message.getParams().getCommand(), "", 1); // TODO
+		ContentCommandResult result = null;
 		try {
-			ContentCommandResult result = interalRawCallToOnContentCommand(new ContentCommand(
+			result = interalRawCallToOnContentCommand(new ContentCommand(
 					message.getParams().getCommand().getType(), message
 							.getParams().getCommand().getData()));
-			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
-					.newExecuteResponse(result.getResult(), message.getId()));
+
+			if (result == null) {
+				throw new NullPointerException(
+						"You must provide a non-null result"); // TODO: message
+			}
+
 		} catch (Throwable t) {
+			getLogger().error(
+					"Error invoking onContentCommand on handler. Cause "
+							+ t.getMessage(), t);
+
 			int errorCode = 1; // TODO: define error code
 			if (t instanceof KurentoMediaFrameworkException) {
 				errorCode = ((KurentoMediaFrameworkException) t).getCode();
 			}
 
-			protocolManager.sendJsonError(
-					asyncCtx,
-					JsonRpcResponse.newError(errorCode, t.getMessage(),
-							message.getId()));
+			if (!registered) {
+				// An error with a command acting a session creation (e.g.
+				// register) makes the session to terminate. This avoids
+				// security problems where a client may force and exception, in
+				// which case it should not be given access to the session.
+				internalTerminateWithError(asyncCtx, errorCode, t.getMessage(),
+						message);
+			} else {
+				// An error executing a command in other scenarion is not
+				// considered faltal and the session may continue
+				protocolManager.sendJsonError(asyncCtx, JsonRpcResponse
+						.newError(errorCode, t.getMessage(), message.getId()));
 
-			getLogger().error(
-					"Error invoking onContentCommand on handler. Cause "
-							+ t.getMessage(), t);
+			}
+
 			callOnUncaughtExceptionThrown(t);
 		}
+
+		registered = true;
+
+		try {
+			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
+					.newExecuteResponse(sessionId, result.getResult(), message.getId()));
+		} catch (Throwable t) {
+			getLogger()
+					.error("Error invoking sendJsonAnswer. Cause "
+							+ t.getMessage(), t);
+
+			int errorCode = 1; // TODO: define error code
+			if (t instanceof KurentoMediaFrameworkException) {
+				errorCode = ((KurentoMediaFrameworkException) t).getCode();
+			}
+			internalTerminateWithError(asyncCtx, errorCode, t.getMessage(),
+					message);
+		}
+
 	}
 
 	// Default implementation that may be overriden by derived classes
@@ -540,50 +602,55 @@ public abstract class AbstractContentSession implements ContentSession {
 			String description, JsonRpcRequest request) {
 		// This method cannot throw exceptions
 
-		STATE localState;
-		synchronized (this) {
-			if (state == STATE.TERMINATED)
-				return;
-			localState = state;
-			state = STATE.TERMINATED;
-		}
-
 		getLogger().info("internalTerminateWithError called");
 
-		try {
-			if (localState == STATE.IDLE || localState == STATE.HANDLING
-					|| localState == STATE.STARTING) {
-				if (asyncCtx != null && asyncCtx != initialAsyncCtx) {
-					// This case represents an error in the processing of a
-					// client request coming in parallel with a start request
+		STATE localState = null;
+		synchronized (this) {
 
+			localState = state;
+			state = STATE.TERMINATED;
+
+			try {
+
+				if (asyncCtx != null) {
+					// If we have an asyncCtx, we nust need to answer on it
 					sendErrorAnswerOnSpecificContext(asyncCtx, code,
 							description, request);
-				}
-				sendErrorAnswerOnInitialContext(code, description);
-			} else if (localState == STATE.ACTIVE) {
-				if (asyncCtx == null) {
-					// This case represents an async error coming from the media
-					// server
-
-					pushErrorEvent(code, description);
 				} else {
-					// This case represents an error processing a message from
-					// the client arriving after the start has been answered
-					// (eg. poll)
-
-					sendErrorAnswerOnSpecificContext(asyncCtx, code,
-							description, request);
+					// Here, we have an error without asyncCtx specified. What
+					// we
+					// need to do depends on state
+					if (localState == STATE.IDLE) {
+						// This case represents and error without having a start
+						// answer pending
+						if (registered) {
+							pushErrorEvent(code, description);
+						} // Else, we can do nothing, just terminate silently
+					} else if (localState == STATE.HANDLING
+							|| localState == STATE.STARTING) {
+						// Here we have a start answer pending, initialAsyncCtx
+						// MUST
+						// be non-null
+						sendErrorAnswerOnInitialContext(code, description);
+					} else if (localState == STATE.ACTIVE) {
+						// This case represents an async error coming from the
+						// media
+						// server. Variable registered MUST be true here.
+						pushErrorEvent(code, description);
+					}
 				}
-			}
 
-		} catch (Throwable t) {
-			getLogger().error(t.getMessage(), t);
-		} finally {
-			destroy();
+			} catch (Throwable t) {
+				getLogger().error(t.getMessage(), t);
+			} finally {
+				destroy();
+			}
 		}
 
-		callOnContentErrorOnHandler(code, description);
+		if (localState != null && localState != STATE.TERMINATED) {
+			// We only want to call the handler once when the session terminates
+			callOnContentErrorOnHandler(code, description);
+		}
 	}
 
 	protected void sendErrorAnswerOnInitialContext(int code, String description) {
@@ -610,8 +677,6 @@ public abstract class AbstractContentSession implements ContentSession {
 	 * 
 	 * - Client sends a terminate message <br>
 	 * - Handler invokes terminate on the session <br>
-	 * - Media server produces an async event showing that the media session has
-	 * completed <br>
 	 * 
 	 * @param asyncCtx
 	 *            represents the context of the client request causing this
@@ -628,51 +693,51 @@ public abstract class AbstractContentSession implements ContentSession {
 			String description, JsonRpcRequest request) {
 		// This method cannot throw exceptions
 
-		STATE localState;
-		synchronized (this) {
-			if (state == STATE.TERMINATED)
-				return;
-			localState = state;
-			state = STATE.TERMINATED;
-		}
-
 		getLogger().info("internalTerminateWithoutError called");
 
-		try {
-			if (localState == STATE.IDLE || localState == STATE.HANDLING
-					|| localState == STATE.STARTING) {
-				if (asyncCtx != null && asyncCtx != initialAsyncCtx) {
-					// This case represents a client terminate message in
-					// parallel with a start message
+		STATE localState = null;
 
+		synchronized (this) {
+
+			localState = state;
+			state = STATE.TERMINATED;
+
+			try {
+				if (asyncCtx != null) {
+					// This can only happen upon execution of a client explicit
+					// terminate command
 					sendAckToExplicitClientTermination(asyncCtx, code,
 							description, request);
-				}
-
-				sendRejectOnInitialContext(code, description);
-			} else if (localState == STATE.ACTIVE) {
-				if (asyncCtx == null) {
-					// This case represents an async terminate invocation on the
-					// session or a media session termination coming from the
-					// media server asynchronously
-
-					pushTerminateEvent(code, description);
 				} else {
-					// This case represents a client terminate message after
-					// start has been answered
-
-					sendAckToExplicitClientTermination(asyncCtx, code,
-							description, request);
+					if (localState == STATE.IDLE) {
+						// This case represents an explicit terminate invocation
+						// on
+						// the session before start occurs.
+						if (registered) {
+							pushTerminateEvent(code, description);
+						}
+					} else if (localState == STATE.HANDLING
+							|| localState == STATE.STARTING) {
+						// This case represents an explicit terminate invocation
+						// on
+						// session when processing a start request
+						sendRejectOnInitialContext(code, description);
+					} else if (localState == STATE.ACTIVE) {
+						pushTerminateEvent(code, description);
+					}
 				}
-			}
 
-		} catch (Throwable t) {
-			getLogger().error(t.getMessage(), t);
-		} finally {
-			destroy();
+			} catch (Throwable t) {
+				getLogger().error(t.getMessage(), t);
+			} finally {
+				destroy();
+			}
 		}
 
-		callOnSessionTerminatedOnHandler(code, description);
+		if (localState != null && localState != STATE.TERMINATED) {
+			// We only want to call the handler once when the session terminates
+			callOnSessionTerminatedOnHandler(code, description);
+		}
 	}
 
 	private void sendAckToExplicitClientTermination(AsyncContext asyncCtx,
@@ -695,6 +760,8 @@ public abstract class AbstractContentSession implements ContentSession {
 	}
 
 	protected synchronized void destroy() {
+		registered = false;
+
 		if (initialAsyncCtx != null) {
 			initialAsyncCtx.complete();
 			initialAsyncCtx = null;
@@ -763,6 +830,8 @@ public abstract class AbstractContentSession implements ContentSession {
 			} else if (target == STATE.ACTIVE) {
 				Assert.isTrue(state == STATE.STARTING, errorMessage, errorCode);
 				state = STATE.ACTIVE;
+				registered = true; // at this stage, user is registered with
+									// certainty
 			} else if (target == STATE.TERMINATED) {
 				state = STATE.TERMINATED;
 			}
@@ -776,7 +845,11 @@ public abstract class AbstractContentSession implements ContentSession {
 			 * are collected.
 			 */
 			if (initial == STATE.TERMINATED) {
-				destroy();
+				internalTerminateWithError(
+						null,
+						1,
+						"Spureous state change attemp while being already termianted",
+						null); // TODO: error code
 			}
 		}
 	}

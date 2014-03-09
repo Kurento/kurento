@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.content;
 
+import com.kurento.kmf.media.HttpPostEndpoint;
+
 /**
  * TODO: review & improve javadoc
  * 
@@ -26,5 +28,14 @@ package com.kurento.kmf.content;
  * @version 1.0.0
  */
 public interface HttpRecorderSession extends HttpContentSession {
-
+	/**
+	 * Starts the content exchange on a given media element. TODO: Explain what
+	 * playing a media element means TODO: Explain what starts mean
+	 * 
+	 * @param endpoint
+	 *            pluggable media component
+	 * @throws ContentException
+	 *             Exception in the play
+	 */
+	void start(HttpPostEndpoint endpoint);
 }

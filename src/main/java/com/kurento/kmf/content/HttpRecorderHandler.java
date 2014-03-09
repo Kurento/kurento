@@ -18,13 +18,15 @@ package com.kurento.kmf.content;
  * TODO: review & improve javadoc
  * 
  * Defines the events associated to the record operation (
- * {@link #onContentRequest(ContentSession)}, {@link #onSessionTerminated(ContentSession,int,String)},
- * and {@link #onSessionError(ContentSession,int,String)}); the implementation of
+ * {@link #onContentRequest(ContentSession)},
+ * {@link #onSessionTerminated(ContentSession,int,String)}, and
+ * {@link #onSessionError(ContentSession,int,String)}); the implementation of
  * the HttpRecorderHandler should be used in conjunction with
  * {@link HttpRecorderService} annotation. The following snippet shows an
  * skeleton with the implementation of a Recorder:
  * 
- * <pre><code>
+ * <pre>
+ * <code>
  * &#064;RecorderService(name = &quot;MyHandlerName&quot;,
  *                       path = &quot;/my-recorder&quot;,
  *                       redirect = &quot;true&quot;,
@@ -47,7 +49,8 @@ package com.kurento.kmf.content;
  * 		// My implementation
  * 	}
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  * 
  * @see HttpRecorderService
  * @author Miguel París (mparisdiaz@gsyc.es)

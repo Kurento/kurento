@@ -1,6 +1,5 @@
 package com.kurento.kmf.content;
 
-import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.repository.RepositoryItem;
 
 public interface HttpContentSession extends ContentSession {
@@ -23,21 +22,12 @@ public interface HttpContentSession extends ContentSession {
 	void start(String contentPath);
 
 	/**
-	 * Start a Http Player content using a {@link com.kurento.kmf.repository.RepositoryItem}
+	 * Start a Http Player content using a
+	 * {@link com.kurento.kmf.repository.RepositoryItem}
 	 * 
-	 * @param repositoryItem The item to be played
+	 * @param repositoryItem
+	 *            The item to be played
 	 */
 	void start(RepositoryItem repositoryItem);
-
-	/**
-	 * Starts the content exchange on a given media element. TODO: Explain what
-	 * playing a media element means TODO: Explain what starts mean
-	 * 
-	 * @param endpoint
-	 *            pluggable media component
-	 * @throws ContentException
-	 *             Exception in the play
-	 */
-	void start(HttpEndpoint endpoint);
 
 }

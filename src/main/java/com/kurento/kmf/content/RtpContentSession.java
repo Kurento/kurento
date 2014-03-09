@@ -18,14 +18,14 @@ import com.kurento.kmf.media.RtpEndpoint;
 
 /**
  * A Media Session where the content is transmitted using RTP.
- *
- * This interface defines a media session where the content is transmitted
- * using the RTP protocol.
- * It inherits from {@link SdpContentSession}.
+ * 
+ * This interface defines a media session where the content is transmitted using
+ * the RTP protocol. It inherits from {@link SdpContentSession}.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @version 1.0.0
- * @see <a href="http://en.wikipedia.org/wiki/Real-time_Transport_Protocol">RTP Protocol</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Real-time_Transport_Protocol">RTP
+ *      Protocol</a>
  */
 public interface RtpContentSession extends SdpContentSession {
 	/**

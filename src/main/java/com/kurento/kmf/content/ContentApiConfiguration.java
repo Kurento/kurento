@@ -27,8 +27,11 @@ public class ContentApiConfiguration {
 
 	/**
 	 * Minimal size of the thread pool executing callbacks on content Handlers
-	 * (e.g. {@link HttpPlayerHandler}, {@link HttpRecorderHandler}, and so on). These threads will be
-	 * kept in the pool, even if they are idle.
+	 * (e.g. {@link HttpPlayerHander}, {@HttpRecorderHandler
+	 * 
+	 * 
+	 * }, and so on). These threads will be kept in the
+	 * pool, even if they are idle.
 	 */
 	private int poolCoreSize = 10;
 
@@ -80,7 +83,7 @@ public class ContentApiConfiguration {
 	private long webRtcEventQueuePollTimeout = 15000L;
 
 	/**
-	 * Setter. {@link ContentApiConfiguration#getPoolCoreSize}
+	 * Setter (mutator) for poolCoreSize field.
 	 * 
 	 * @param poolCoreSize
 	 *            Minimal size of the Thread pool executing callbacks on content
@@ -103,23 +106,18 @@ public class ContentApiConfiguration {
 	}
 
 	/**
-	 * Set Maximum size of the of the Thread pool executing callbacks on
-	 *            content Handlers.
-	 *            Default: 100
+	 * Setter (mutator) for poolMaxSize field.
 	 * 
 	 * @param poolMaxSize
 	 *            Maximum size of the of the Thread pool executing callbacks on
-	 *            content Handlers.
-	 *            Default: 100
+	 *            content Handlers. Default: 100
 	 */
 	public void setPoolMaxSize(int poolMaxSize) {
 		this.poolMaxSize = poolMaxSize;
 	}
 
 	/**
-	 * Set maximum size of the waiting queue of the Thread pool executing
-	 *            callbacks. Threads wait in this queue up to
-	 *            poolExecutionTimeout. Default: 100
+	 * Setter (mutator) for poolMaxQueueSize field.
 	 * 
 	 * @param poolMaxQueueSize
 	 *            Maximum size of the waiting queue of the Thread pool executing
@@ -131,8 +129,7 @@ public class ContentApiConfiguration {
 	}
 
 	/**
-	 * Get maximum size of the waiting queue of the Thread pool executing
-	 *         callbacks
+	 * Getter (accessor) for poolMaxQueueSize field.
 	 * 
 	 * @return Maximum size of the waiting queue of the Thread pool executing
 	 *         callbacks
@@ -142,20 +139,16 @@ public class ContentApiConfiguration {
 	}
 
 	/**
-	 * Gets minimal size of the thread pool executing callbacks on content Handlers
-	 * (e.g. {@link HttpPlayerHandler}, {@link HttpRecorderHandler}, and so on). These threads will be
-	 * kept in the pool, even if they are idle.
+	 * Getter (accessor) for poolCoreSize field.
 	 * 
-	 * @return The minimal size of the thread pool executing callbacks on content Handlers
-	 * 
+	 * @return Minimal size of the Thread pool
 	 */
 	public int getPoolCoreSize() {
 		return poolCoreSize;
 	}
 
 	/**
-	 * Get timeout (in milliseconds) that a Handler callback thread will
-	 *         wait
+	 * Getter (accessor) for poolExecutionTimeout field.
 	 * 
 	 * @return Timeout (in milliseconds) that a Handler callback thread will
 	 *         wait
@@ -165,8 +158,7 @@ public class ContentApiConfiguration {
 	}
 
 	/**
-	 * Get maximum size of the of the Thread pool executing callbacks on
-	 *         content Handlers
+	 * Getter (accessor) for poolMaxSize field.
 	 * 
 	 * @return Maximum size of the of the Thread pool executing callbacks on
 	 *         content Handlers
@@ -266,8 +258,7 @@ public class ContentApiConfiguration {
 	}
 
 	/**
-	 * Set Timeout (in milliseconds) for Poll operation for WebRTC
-	 *            events. Default: 15000
+	 * Setter (mutator) for webRtcEventQueuePollTimeout field.
 	 * 
 	 * @param webRtcEventQueuePollTimeout
 	 *            Timeout (in milliseconds) for Poll operation for WebRTC

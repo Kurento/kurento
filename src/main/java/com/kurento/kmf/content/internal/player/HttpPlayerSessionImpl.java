@@ -28,6 +28,7 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.content.internal.ContentSessionManager;
 import com.kurento.kmf.content.internal.base.AbstractHttpContentSession;
 import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.repository.RepositoryHttpEndpoint;
@@ -56,6 +57,11 @@ public class HttpPlayerSessionImpl extends AbstractHttpContentSession implements
 	@Override
 	protected HttpPlayerHandler getHandler() {
 		return (HttpPlayerHandler) super.getHandler();
+	}
+
+	@Override
+	public void start(HttpGetEndpoint endpoint) {
+		super.start(endpoint);
 	}
 
 	@Override

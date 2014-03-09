@@ -23,12 +23,11 @@ import com.kurento.kmf.repository.Repository;
 /**
  * 
  * Defines the operations performed by a media request to the Media Server.
- *
- * A ContentSession handles a session for media exchange between
- * a client and a Media Server. Its typical lifetime encompasses
- * a number of transport protocol requests (for request-response
- * protocols such as HTTP) and the exchange of a number of commands
- * and events.
+ * 
+ * A ContentSession handles a session for media exchange between a client and a
+ * Media Server. Its typical lifetime encompasses a number of transport protocol
+ * requests (for request-response protocols such as HTTP) and the exchange of a
+ * number of commands and events.
  * 
  * @author Luis López (llopez@gsyc.es)
  * @author Miguel París (mparisdiaz@gsyc.es)

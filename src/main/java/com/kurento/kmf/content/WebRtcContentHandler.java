@@ -22,12 +22,13 @@ package com.kurento.kmf.content;
  * {@link #onContentCommand(ContentSession,ContentCommand)},
  * {@link #onUncaughtException(ContentSession,java.lang.Throwable)},
  * {@link #onSessionTerminated(ContentSession,int,java.lang.String)}, and
- * {@link #onSessionError(ContentSession,int,java.lang.String)});
- * the implementation of the RtpMediaHandler should be used in conjunction with
- * the {@link WebRtcContentService} annotation. The following snippet shows an
+ * {@link #onSessionError(ContentSession,int,java.lang.String)}); the
+ * implementation of the RtpMediaHandler should be used in conjunction with the
+ * {@link WebRtcContentService} annotation. The following snippet shows an
  * skeleton with the implementation of a WebRTC Handler:
  * 
- * <pre><code>
+ * <pre>
+ * <code>
  * &#064;WebRtcContentService(name = &quot;MyRtpHandler&quot;, path = &quot;/my-rtp-media&quot;)
  * public class MyRtpMediaHandler implements RtpMediaHandler {
  * 
@@ -47,7 +48,8 @@ package com.kurento.kmf.content;
  * 	}
  * 
  * }
- * </code></pre>
+ * </code>
+ * </pre>
  * 
  * @see WebRtcContentService
  * @author Luis López (llopez@gsyc.es)

@@ -83,7 +83,6 @@ public abstract class AbstractHttpContentSession extends AbstractContentSession
 	protected abstract RepositoryHttpEndpoint createRepositoryHttpEndpoint(
 			RepositoryItem repositoryItem);
 
-	@Override
 	public void start(HttpEndpoint httpEndpoint) {
 		try {
 			releaseOnTerminate(httpEndpoint);

@@ -60,6 +60,11 @@ public class HttpRecorderSessionImpl extends AbstractHttpContentSession
 	}
 
 	@Override
+	public void start(HttpPostEndpoint endpoint) {
+		super.start(endpoint);
+	}
+
+	@Override
 	public void start(String contentPath) {
 		try {
 			Assert.notNull(contentPath, "Illegal null contentPath provided",
