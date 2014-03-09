@@ -126,17 +126,19 @@ file called */etc/init.d/jboss7*:
 
               # Verify pid file directory exists
               if [ ! -e /var/run ]; then
-                   install -d -m755 /var/run || { log_failure_msg "Unable to access /var/run directory"; exit 1; }
+                   install -d -m755 /var/run ||\
+                         { log_failure_msg "Unable to access /var/run directory"; exit 1; }
               fi
               # Make sure HOME directory belongs to $DAEMON_USER
               sudo -u $DAEMON_USER -H [ -O $JBOSS_HOME/standalone/log ]
               if [ $? != 0 ]; then
-                   chown -R $DAEMON_USER $JBOSS_HOME/* || { log_failure_msg "Unable to access $JBOSS_HOME"; exit 1; }
+                   chown -R $DAEMON_USER $JBOSS_HOME/* ||\
+                         { log_failure_msg "Unable to access $JBOSS_HOME"; exit 1; }
               fi
 
               /sbin/start-stop-daemon --start --pidfile $PIDFILE \
-                        --chuid $DAEMON_USER --chdir $JBOSS_HOME/bin --background --make-pidfile --no-close \
-                        --startas $DAEMON -- $JBOSS_OPTS > /dev/null
+                        --chuid $DAEMON_USER --chdir $JBOSS_HOME/bin --background --make-pidfile\
+                        --no-close --startas $DAEMON -- $JBOSS_OPTS > /dev/null
               log_end_msg $?
               ;;
 
@@ -243,7 +245,7 @@ from final users. The IP addresses and ports to receive these requests
 are configured in the configuration file ``/etc/kurento/kurento.conf``.
 After a fresh install that file looks like this:
 
-::
+.. sourcecode:: ini
 
     [Server]
     serverAddress=localhost
@@ -289,7 +291,7 @@ in the file /etc/kurento/kurento.conf with the appropriate value.
 The following lines would be the contents of this configuration file for
 the present scenario.
 
-.. sourcecode:: properties
+.. sourcecode:: ini
 
     [Server]
     serverAddress=localhost
