@@ -37,14 +37,14 @@ Kurento Application Server (KAS)
 
 First, install *Open JDK 7*:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo apt-get install openjdk-7-jdk
 
 Download *JBoss*, uncompress it and move it to */opt/jboss* by
 executing:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
     $ sudo tar xfvz jboss-as-7.1.1.Final.tar.gz && sudo mv jboss-as-7.1.1.Final /opt/jboss
@@ -52,7 +52,7 @@ executing:
 To avoid running JBoss as root create the user *jboss*, the group
 *jboss* and make that user the owner of JBoss files and folders:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo adduser --system jboss && sudo addgroup jboss
     $ sudo chown -R jboss:jboss /opt/jboss/
@@ -174,7 +174,7 @@ file called */etc/init.d/jboss7*:
 
 Grant *jboss* user *execution* rights to run the startup/stop script:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo chmod 755 /etc/init.d/jboss7
 
@@ -203,7 +203,7 @@ file is used by the startup/stop script):
 
 Finally, configure the server to run JBoss when booted:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo update-rc.d jboss7 defaults
 
@@ -213,7 +213,7 @@ Kurento Media Server (KMS)
 In order to add Personal Package Archive or PPA's repositories, the
 python-software-properties package must be installed:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo apt-get install python-software-properties
 
@@ -221,7 +221,7 @@ Install KMS by typing the following commands, one at a time and in the
 same order as listed here. When asked for any kind of confirmation,
 reply afirmatively:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo add-apt-repository ppa:kurento/kurento
     $ sudo apt-get update
@@ -230,7 +230,7 @@ reply afirmatively:
 
 Finally, configure the server to run KMS when booted:
 
-.. sourcecode:: sh
+.. sourcecode:: console
 
     $ sudo update-rc.d kurento defaults
 
@@ -463,13 +463,13 @@ List of Running Processes
 
 To verify that KAS is up and running type the following:
 
-::
+.. sourcecode:: console
 
     $ ps -ef | grep jboss
 
 The output should be similar to:
 
-::
+.. sourcecode:: console
 
     jboss     4115     1  0 15:16 ?        00:00:00 /bin/sh /opt/jboss/bin/standalone.sh -Djboss.bi
     nd.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0
@@ -486,13 +486,13 @@ The output should be similar to:
 
 To verify that KMS is up and running use the command:
 
-::
+.. sourcecode:: console
 
     $ ps -ef | grep kurento
 
 The output should be similar to:
 
-::
+.. sourcecode:: console
 
     nobody   22527     1  0 13:02 ?        00:00:00 /usr/bin/kurento
     kuser    22711  2326  0 13:10 pts/1    00:00:00 grep --color=auto kurento
@@ -506,13 +506,13 @@ handler port which is used by KMS to send events to KAS.
 
 To verify the ports opened by KAS execute the following command:
 
-::
+.. sourcecode:: console
 
     $ sudo netstat -putan | grep java
 
 The output should be similar to the following:
 
-::
+.. sourcecode:: console
 
     tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      4424/java       
     tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      4424/java       
@@ -526,13 +526,13 @@ Unless configured otherwise, KMS opens the port 9090 to receive HTTP TCP
 requests from KAS and port 9091 for HTTP TCP requests from final users.
 To verify the open ports type the command:
 
-::
+.. sourcecode:: console
 
     $ sudo netstat -putan | grep kurento
 
 The output should be similar to the following:
 
-::
+.. sourcecode:: console
 
     tcp        0      0 127.0.0.1:9091          0.0.0.0:*               LISTEN      22527/kurento  
     tcp6       0      0 :::9090                 :::*                    LISTEN      22527/kurento
