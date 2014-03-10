@@ -12,10 +12,12 @@
  * Lesser General Public License for more details.
  *
  */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+#include "kms-marshal.h"
 #include "kmsdispatcher.h"
 #include "kmsmixerport.h"
 
@@ -60,6 +62,14 @@ G_DEFINE_TYPE_WITH_CODE (KmsDispatcher, kms_dispatcher,
     KMS_TYPE_BASE_HUB,
     GST_DEBUG_CATEGORY_INIT (kms_dispatcher_debug_category, PLUGIN_NAME,
         0, "debug category for dispatcher element"));
+
+enum
+{
+  SIGNAL_CONNECT,
+  LAST_SIGNAL
+};
+
+static guint obj_signals[LAST_SIGNAL] = { 0 };
 
 static void
 destroy_gint (gpointer data)
@@ -182,6 +192,13 @@ kms_dispatcher_handle_port (KmsBaseHub * hub, GstElement * mixer_port)
   return port_id;
 }
 
+static gboolean
+kms_dispatcher_connect (KmsDispatcher * self, guint source, guint sink)
+{
+  /* TODO: Connect source port to sink port */
+  return FALSE;
+}
+
 static void
 kms_dispatcher_class_init (KmsDispatcherClass * klass)
 {
@@ -192,12 +209,23 @@ kms_dispatcher_class_init (KmsDispatcherClass * klass)
       "Dispatcher", "Generic", "N to N dispatcher that makes dispatching of "
       "media flow", "Santiago Carot-Nemesio <sancane at gmail dot com>");
 
+  klass->connect = GST_DEBUG_FUNCPTR (kms_dispatcher_connect);
+
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_dispatcher_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_dispatcher_finalize);
 
   base_hub_class->handle_port = GST_DEBUG_FUNCPTR (kms_dispatcher_handle_port);
   base_hub_class->unhandle_port =
       GST_DEBUG_FUNCPTR (kms_dispatcher_unhandle_port);
+
+  /* Signals initialization */
+  obj_signals[SIGNAL_CONNECT] =
+      g_signal_new ("connect",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsDispatcherClass, connect), NULL, NULL,
+      __kms_marshal_BOOLEAN__UINT_UINT, G_TYPE_BOOLEAN, 2, G_TYPE_UINT,
+      G_TYPE_UINT);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsDispatcherPrivate));

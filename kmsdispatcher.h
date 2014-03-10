@@ -59,6 +59,9 @@ struct _KmsDispatcher
 struct _KmsDispatcherClass
 {
   KmsBaseHubClass parent_class;
+
+  /* Actions */
+  gboolean (*connect) (KmsDispatcher * self, guint source, guint sink);
 };
 
 GType kms_dispatcher_get_type (void);
