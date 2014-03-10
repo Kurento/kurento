@@ -48,6 +48,19 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 			types.remove(remoteClass);
 		}
 
+		types = removeDuplicates(types);
+
+		return types;
+	}
+
+	private List<Type> removeDuplicates(List<Type> original) {
+		List<Type> types = new LinkedList<Type>();
+
+		for (Type t : original) {
+			if (!types.contains(t))
+				types.add(t);
+		}
+
 		return types;
 	}
 
