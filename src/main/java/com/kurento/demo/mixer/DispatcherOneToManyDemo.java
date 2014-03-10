@@ -22,9 +22,9 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.DispatcherOneToMany;
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HubPort;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.media.MixerPort;
 import com.kurento.kmf.media.PlayerEndpoint;
 
 /**
@@ -40,9 +40,9 @@ public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 	public PlayerEndpoint player1;
 	public PlayerEndpoint player2;
 	public DispatcherOneToMany mixer;
-	public MixerPort mixerPort1;
-	public MixerPort mixerPort2;
-	public MixerPort mixerPort3;
+	public HubPort hubPort1;
+	public HubPort hubPort2;
+	public HubPort hubPort3;
 	public GStreamerFilter bn;
 
 	@Override
@@ -61,18 +61,18 @@ public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 
 		mixer = mediaPipeline.newDispatcherOneToMany().build();
 
-		mixerPort1 = mixer.newMixerPort().build();
-		mixerPort2 = mixer.newMixerPort().build();
-		mixerPort3 = mixer.newMixerPort().build();
+		hubPort1 = mixer.newHubPort().build();
+		hubPort2 = mixer.newHubPort().build();
+		hubPort3 = mixer.newHubPort().build();
 
 		player2.connect(bn);
-		player1.connect(mixerPort1);
-		bn.connect(mixerPort2);
+		player1.connect(hubPort1);
+		bn.connect(hubPort2);
 
-		// mixer.setMainEndPoint(mixerPort1);
+		// mixer.setMainEndPoint(hubPort1);
 		HttpEndpoint httpEndpoint = mediaPipeline.newHttpGetEndpoint()
 				.terminateOnEOS().build();
-		mixerPort3.connect(httpEndpoint);
+		hubPort3.connect(httpEndpoint);
 		contentSession.start(httpEndpoint);
 	}
 
@@ -81,7 +81,7 @@ public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 		player1.play();
 		player2.play();
 
-		mixer.setSource(mixerPort1);
+		mixer.setSource(hubPort1);
 	}
 
 	@Override
@@ -89,9 +89,9 @@ public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 			HttpPlayerSession contentSession, ContentCommand contentCommand)
 			throws Exception {
 		if (contentCommand.getType().equalsIgnoreCase("player1")) {
-			mixer.setSource(mixerPort1);
+			mixer.setSource(hubPort1);
 		} else if (contentCommand.getType().equalsIgnoreCase("player2")) {
-			mixer.setSource(mixerPort2);
+			mixer.setSource(hubPort2);
 		}
 		return new ContentCommandResult(contentCommand.getData());
 	}
