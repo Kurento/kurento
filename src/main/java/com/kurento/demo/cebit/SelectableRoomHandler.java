@@ -56,59 +56,10 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	/* Global variables */
 	private MediaPipeline mp;
-	public Map<WebRtcContentSession, Participant> sessions;
-	public Map<String, Participant> participants;
-	private static AtomicInteger globalId;
+	private Map<String, Participant> participants;
+	public static AtomicInteger globalId;
 	private static final Gson gson = new GsonBuilder()
 			.excludeFieldsWithModifiers(TRANSIENT).create();
-
-	private boolean selectParticipant(WebRtcContentSession session,
-			String partId) {
-		Participant partSelected = participants.get(partId);
-		if (partSelected == null) {
-			getLogger().error("Participant {} does not exist", partId);
-			return false;
-		}
-		partSelected.endpoint.connect(sessions.get(session).endpoint);
-		return true;
-	}
-
-	private boolean connectParticipant(String origId, String destId) {
-		Participant orig = participants.get(origId);
-		if (orig == null) {
-			getLogger().error("Participant {} does not exist", origId);
-			return false;
-		}
-
-		Participant dest = participants.get(destId);
-		if (dest == null) {
-			getLogger().error("Participant {} does not exist", destId);
-			return false;
-		}
-
-		orig.endpoint.connect(dest.endpoint);
-
-		return true;
-	}
-
-	/* Events */
-	private void notifyJoined(Participant participant) {
-		String json = gson.toJson(participant);
-		getLogger().debug("Participant joined: {}", json);
-
-		for (WebRtcContentSession session : sessions.keySet()) {
-			session.publishEvent(new ContentEvent(EVENT_ON_JOINED, json));
-		}
-	}
-
-	private void notifyUnjoined(Participant participant) {
-		String json = gson.toJson(participant);
-		getLogger().debug("Participant unjoined: {}", json);
-
-		for (WebRtcContentSession session : sessions.keySet()) {
-			session.publishEvent(new ContentEvent(EVENT_ON_UNJOINED, json));
-		}
-	}
 
 	@Override
 	public void onContentRequest(WebRtcContentSession session) throws Exception {
@@ -116,40 +67,27 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			synchronized (this) {
 				if (mp == null) {
 					mp = session.getMediaPipelineFactory().create();
-					sessions = new ConcurrentHashMap<WebRtcContentSession, Participant>();
 					participants = new ConcurrentHashMap<String, Participant>();
 					globalId = new AtomicInteger();
 				}
 			}
 		}
-
 		String name = session.getContentId();
 		if (name == null || name.isEmpty()) {
 			name = "<no name>";
 		}
 		if (existName(name)) {
-			session.terminate(403, "User " + name + " is already in the room."
+			session.terminate(403, "User " + name + " is already in the room. "
 					+ "Please select another name and try again.");
 		} else {
 			WebRtcEndpoint endpoint = mp.newWebRtcEndpoint().build();
-			Participant participant = new Participant(name, endpoint);
-
-			participants.put(participant.getId(), participant);
-			sessions.put(session, participant);
-
+			Participant participant = new Participant(name, endpoint, session);
 			participant.endpoint.connect(participant.endpoint);
 			session.start(participant.endpoint);
+			session.setAttribute("participant", participant);
+			participants.put(participant.getId(), participant);
 			notifyJoined(participant);
 		}
-	}
-
-	private boolean existName(final String name) {
-		for (Participant p : participants.values()) {
-			if (p.getName().equalsIgnoreCase(name)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	@Override
@@ -157,7 +95,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			ContentCommand command) throws Exception {
 		String cmdType = command.getType();
 		String cmdData = command.getData();
-		getLogger().debug("onContentCommand: ({}, {})", cmdType, cmdData);
+		getLogger().info("onContentCommand: ({}, {})", cmdType, cmdData);
 
 		if (COMMAND_GET_PARTICIPANTS.equalsIgnoreCase(cmdType)) {
 			String json = gson.toJson(participants.values());
@@ -169,7 +107,6 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			Type listType = new TypeToken<List<String>>() {
 			}.getType();
 			List<String> idList = gson.fromJson(cmdData, listType);
-
 			if (idList.size() != 2) {
 				return new ContentCommandResult(Boolean.FALSE.toString());
 			}
@@ -177,55 +114,74 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 					Boolean.toString(connectParticipant(idList.get(0),
 							idList.get(1))));
 		}
-
 		return super.onContentCommand(session, command);
 	}
 
 	@Override
 	public synchronized void onSessionTerminated(WebRtcContentSession session,
 			int code, String reason) throws Exception {
-		Participant participant = sessions.get(session);
-		sessions.remove(session);
+		Participant participant = (Participant) session
+				.getAttribute("participant");
 		participants.remove(participant.getId());
 		notifyUnjoined(participant);
 
 		if (participants.isEmpty()) {
-			getLogger().info("**** Clearing room");
+			getLogger().info("Clearing room");
 			mp = null;
-			sessions.clear();
 			participants.clear();
 		}
-
 		super.onSessionTerminated(session, code, reason);
 	}
 
-	@SuppressWarnings("unused")
-	private static class Participant {
-		private String id;
-		private String name;
-
-		private final transient WebRtcEndpoint endpoint;
-
-		public String getName() {
-			return name;
+	private boolean selectParticipant(WebRtcContentSession session,
+			String partId) {
+		Participant partSelected = participants.get(partId);
+		if (partSelected == null) {
+			getLogger().error("Participant {} does not exist", partId);
+			return false;
 		}
+		partSelected.endpoint.connect(((Participant) session
+				.getAttribute("participant")).endpoint);
+		return true;
+	}
 
-		public String getId() {
-			return id;
+	private boolean connectParticipant(String origId, String destId) {
+		Participant orig = participants.get(origId);
+		if (orig == null) {
+			getLogger().error("Participant {} does not exist", origId);
+			return false;
 		}
-
-		public void setName(String name) {
-			this.name = name;
+		Participant dest = participants.get(destId);
+		if (dest == null) {
+			getLogger().error("Participant {} does not exist", destId);
+			return false;
 		}
+		orig.endpoint.connect(dest.endpoint);
+		return true;
+	}
 
-		public void setId(String id) {
-			this.id = id;
+	private boolean existName(final String name) {
+		for (Participant p : participants.values()) {
+			if (p.getName().equalsIgnoreCase(name)) {
+				return true;
+			}
 		}
+		return false;
+	}
 
-		private Participant(String name, WebRtcEndpoint webRtcEndpoint) {
-			this.name = name;
-			this.id = Integer.toString(globalId.incrementAndGet());
-			this.endpoint = webRtcEndpoint;
+	private void notifyJoined(Participant participant) {
+		String json = gson.toJson(participant);
+		getLogger().info("Participant joined: {}", json);
+		for (Participant p : participants.values()) {
+			p.session.publishEvent(new ContentEvent(EVENT_ON_JOINED, json));
+		}
+	}
+
+	private void notifyUnjoined(Participant participant) {
+		String json = gson.toJson(participant);
+		getLogger().info("Participant unjoined: {}", json);
+		for (Participant p : participants.values()) {
+			p.session.publishEvent(new ContentEvent(EVENT_ON_UNJOINED, json));
 		}
 	}
 
