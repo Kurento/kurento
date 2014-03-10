@@ -6,9 +6,9 @@ import com.kurento.tool.rom.server.Param;
 @RemoteClass
 public interface DispatcherOneToMany extends Hub {
 
-	void setSource(@Param("source") MixerPort source);
+	void setSource(@Param("source") HubPort source);
 
-	void setSource(@Param("source") MixerPort source, Continuation<Void> cont);
+	void setSource(@Param("source") HubPort source, Continuation<Void> cont);
 
 	void removeSource();
 

@@ -7,6 +7,6 @@ import com.kurento.tool.rom.server.FactoryMethod;
 public interface Hub extends MediaObject {
 
 	@FactoryMethod("hub")
-	public abstract MixerPort.Builder newMixerPort();
+	public abstract HubPort.Builder newHubPort();
 
 }
