@@ -7,6 +7,7 @@
 	</parent>
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-thrift-interface</artifactId>
+	<version>${project.parent.version}</version>
 	<packaging>jar</packaging>
 	<name>kmf-thrift-interface</name>
 	<description>
@@ -14,6 +15,32 @@
 
 			Thrift interface consumer/server for  the Kurento Media Framework.
 	</description>
+	<url>http://www.kurento.com/docs/${project.version}</url>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/Kurento/${project.artifactId}</url>
+		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<tag>develop</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kms</groupId>
