@@ -195,8 +195,41 @@ kms_dispatcher_handle_port (KmsBaseHub * hub, GstElement * mixer_port)
 static gboolean
 kms_dispatcher_connect (KmsDispatcher * self, guint source, guint sink)
 {
-  /* TODO: Connect source port to sink port */
-  return FALSE;
+  KmsDispatcherPortData *source_port, *sink_port;
+  gboolean connected = FALSE;
+
+  KMS_DISPATCHER_LOCK (self);
+
+  source_port = g_hash_table_lookup (self->priv->ports, &source);
+  if (source_port == NULL) {
+    GST_ERROR_OBJECT (self, "No source port %u found", source);
+    goto end;
+  }
+
+  sink_port = g_hash_table_lookup (self->priv->ports, &sink);
+  if (sink_port == NULL) {
+    GST_ERROR_OBJECT (self, "No sink port %u found", source);
+    goto end;
+  }
+
+  if (!kms_base_hub_link_audio_src (KMS_BASE_HUB (self), sink_port->id,
+          source_port->audio_agnostic, "src_%u", TRUE)) {
+    GST_ERROR_OBJECT (self, "Can not connect audio port");
+    goto end;
+  }
+
+  if (!kms_base_hub_link_video_src (KMS_BASE_HUB (self), sink_port->id,
+          source_port->video_agnostic, "src_%u", TRUE)) {
+    GST_ERROR_OBJECT (self, "Can not connect video port");
+    kms_base_hub_unlink_audio_src (KMS_BASE_HUB (self), sink_port->id);
+  }
+
+  connected = TRUE;
+
+end:
+
+  KMS_DISPATCHER_UNLOCK (self);
+  return connected;
 }
 
 static void
