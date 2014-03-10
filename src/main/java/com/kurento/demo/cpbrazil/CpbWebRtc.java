@@ -164,7 +164,7 @@ public class CpbWebRtc extends WebRtcContentHandler {
 			WebRtcContentSession contentSession, ContentCommand contentCommand)
 			throws Exception {
 		if (contentCommand.getType().equalsIgnoreCase("calibrate")) {
-			pointerDetectorAdvFilter.trackcolourFromCalibrationRegion();
+			pointerDetectorAdvFilter.trackColorFromCalibrationRegion();
 		}
 		return new ContentCommandResult(contentCommand.getData());
 	}
