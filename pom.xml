@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.1-SNAPSHOT</version>
 	</parent>
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-thrift-interface</artifactId>
-	<version>4.1.1-SNAPSHOT</version>
+	<version>${project.parent.version}</version>
 	<packaging>jar</packaging>
 	<name>kmf-thrift-interface</name>
 	<description>
