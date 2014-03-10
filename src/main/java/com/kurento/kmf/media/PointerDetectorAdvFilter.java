@@ -20,9 +20,9 @@ public interface PointerDetectorAdvFilter extends Filter {
 
 	void clearWindows(Continuation<Void> cont);
 
-	void trackcolourFromCalibrationRegion();
+	void trackColorFromCalibrationRegion();
 
-	void trackcolourFromCalibrationRegion(Continuation<Void> cont);
+	void trackColorFromCalibrationRegion(Continuation<Void> cont);
 
 	void removeWindow(@Param("windowId") String windowId);
 
