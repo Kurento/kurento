@@ -1,232 +1,203 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>WebRTC selectable demo</title>
+<title>Kurento - WebRTC One to Many Selectable</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="../css/global.css">
+<link rel="stylesheet" href="selectable.css">
+<link rel="shortcut icon" href="../img/logo/logo.png" type="image/png" />
+<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/ekko-lightbox.css" rel="stylesheet">
+
+<script src="../lib/jquery-1.11.0.js"></script>
+<script src="../lib/bootstrap.min.js"></script>
+<script src="../lib/bootbox.js"></script>
+<script src="../lib/ekko-lightbox.js"></script>
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+
 <script src="../js/kws-content-api.js"></script>
 <script src="../lib/adapter.js"></script>
 <script src="../lib/Console.js"></script>
-<script>
-	var Attr = {
-		NAME : "name",
-	}
-
-	var Command = {
-		GET_PARTICIPANTS : "getParticipants",
-		SELECT : "selectParticipant",
-		CONNECT : "connectParticipant",
-	}
-
-	var Event = {
-		ON_JOINED : "onJoined",
-		ON_UNJOINED : "onUnjoined",
-	}
-
-	function Participant() {
-		this.id = null;
-		this.name = null;
-	}
-
-	function addParticipant(participant, selectName) {
-		var participants = document.getElementById(selectName);
-		var opt = document.createElement('option');
-		opt.innerHTML = participant.id + " - " + participant.name;
-		opt.value = participant.id;
-		participants.appendChild(opt);
-	}
-
-	function removeParticipant(participant, selectName) {
-		var participants = document.getElementById(selectName);
-		for (i = 0; i < participants.length; i++) {
-			if (participants.options[i].value == participant.id) {
-				participants.remove(i);
-				break;
-			}
-		}
-	}
-
-	function removeAllParticipants(selectName) {
-		var participants = document.getElementById(selectName);
-		while (participants.options.length > 0) {
-			participants.remove(0);
-		}
-	}
-
-	/* Events */
-	function onJoined(participant) {
-		addParticipant(participant, 'orig');
-		addParticipant(participant, 'dest');
-
-		var element = document.createElement('button');
-		element.setAttribute('id', participant.id);
-		element.setAttribute('onClick', "selectParticipant(this.id);");
-		element.innerHTML = participant.id + " - " + participant.name;
-
-		var parent = document.getElementById('participantButtons');
-		parent.appendChild(element);
-	}
-
-	function onUnjoined(participant) {
-		removeParticipant(participant, 'orig');
-		removeParticipant(participant, 'dest');
-
-		var e = document.getElementById(participant.id);
-		e.parentElement.removeChild(e);
-	}
-
-	/* Commands */
-	function getParticipants() {
-		conn.execute(Command.GET_PARTICIPANTS, "", function(error, result) {
-			console.log("error: " + error + ", result: " + result);
-
-			removeAllParticipants('orig');
-			removeAllParticipants('dest');
-
-			//TODO: remove all buttons and add new ones
-
-			participantsList = JSON.parse(result);
-			console.log("participantsList: " + participantsList);
-			participantsList.forEach(function(item) {
-				addParticipant(item, 'orig');
-				addParticipant(item, 'dest');
-			});
-		});
-	}
-
-	function selectParticipant(partId) {
-		console.log("Participant selected: " + partId);
-		conn.execute(Command.SELECT, partId, function(error, result) {
-			console.log("error: " + error + ", result: " + result);
-		});
-	}
-
-	function secect() {
-		var partSelected = document.getElementById("participants").value;
-		selectParticipant(partSelected);
-	}
-
-	function connectParticipants() {
-		var origId = document.getElementById("orig").value;
-		var destId = document.getElementById("dest").value;
-		var list = [ origId, destId ];
-		conn.execute(Command.CONNECT, JSON.stringify(list), function(error,
-				result) {
-			console.log("error: " + error + ", result: " + result);
-		});
-	}
-
-	var conn = null;
-
-	function terminate() {
-		if (conn == null) {
-			console.log("Conn is not created");
-			return;
-		}
-
-		document.getElementById("terminate").disabled = true;
-
-		conn.terminate();
-		console.log("Connection terminated by user");
-		remoteVideo.style.background = "";
-
-		document.getElementById("start").disabled = false;
-	}
-
-	function initConnection(conn) {
-		document.getElementById("terminate").disabled = false;
-
-		conn.on("start", function(event) {
-			document.getElementById("terminate").disabled = false;
-		});
-
-		conn.on("terminate", function(event) {
-			console.log("Connection terminated");
-		});
-
-		conn.on("localstream", function(event) {
-			console.info("LocalStream set");
-		});
-
-		conn.on("remotestream", function(event) {
-			console.info("RemoteStream set");
-		});
-
-		conn.on("mediaevent", function(event) {
-			console
-					.info("MediaEvent: (" + event.type + ", " + event.data
-							+ ")");
-
-			if (Event.ON_JOINED == event.type) {
-				var part = JSON.parse(event.data);
-				onJoined(part);
-			} else if (Event.ON_UNJOINED == event.type) {
-				var part = JSON.parse(event.data);
-				onUnjoined(part);
-			}
-		});
-
-		conn.on("error", function(error) {
-			console.error("Error: " + error.message);
-			terminate();
-		});
-	}
-
-	function start() {
-		document.getElementById("start").disabled = true;
-
-		var localVideo = document.getElementById("localVideo");
-		var remoteVideo = document.getElementById("remoteVideo");
-		localVideo.poster = "../img/transparent-1px.png";
-		localVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
-		remoteVideo.poster = "../img/transparent-1px.png";
-		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
-
-		var options = {
-			iceServers : [],
-			localVideoTag : "localVideo",
-			remoteVideoTag : "remoteVideo"
-		};
-
-		var endpoint = "../selectable?" + Attr.NAME + "="
-				+ document.getElementById("name").value;
-		try {
-			conn = new kwsContentApi.KwsWebRtcContent(endpoint, options);
-			console.log("Creating connection to " + endpoint);
-			initConnection(conn);
-		} catch (error) {
-			document.getElementById("start").disabled = false;
-			console.error(error.message);
-		}
-	}
-
-	window.onbeforeunload = function() {
-		terminate();
-		return "";
-	}
-</script>
+<script src="../lib/dragDrop.js"></script>
+<script src="selectable.js"></script>
 </head>
 
 <body>
-	<h1>WebRTC selectable demo</h1>
-	Name:
-	<input id="name" size="name" type="text" />
-	<br />
-	<button id="start" onclick="start();">Start</button>
-	<button id="terminate" disabled onclick="terminate();">Terminate</button>
+	<header>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="../">Kurento Demo</a>
+				</div>
 
-	<button id="getParticipants" onclick="getParticipants();">Get
-		participants</button>
+				<div class="collapse navbar-collapse"
+					id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li><a href="../"><span class="glyphicon glyphicon-home"></span>
+								Home</a></li>
 
-	<br /> orig:
-	<select id="orig"></select> " dest:"
-	<select id="dest"></select>
-	<button id="connect" onclick="connectParticipants();">Connect
-		participants</button>
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"> <span
+								class="glyphicon glyphicon-play-circle"></span> Player <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../player/player.html">HTTP Player</a></li>
+								<li><a href="../player/playerJson.html">HTTP Player
+										with JSON-RPC</a></li>
+								<li><a href="../rtsp/playerRtsp.html">RTSP Player</a></li>
+							</ul></li>
 
-	<br />
-	<video id="localVideo" autoplay controls width="480px" height="360px"></video>
-	<video id="remoteVideo" autoplay controls width="480px" height="360px"></video>
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"><span
+								class="glyphicon glyphicon-record"></span> Recorder <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../recorder/recorder.html">HTTP Recorder</a></li>
+								<li><a href="../recorder/recorderJson.html">HTTP
+										Recorder with JSON-RPC</a></li>
+							</ul></li>
 
-	<br />
-	<span id="participantButtons">&nbsp;</span>
+						<li class="active" class="dropdown"><a href="#"
+							class="dropdown-toggle" data-toggle="dropdown"><span
+								class="glyphicon glyphicon-facetime-video"></span> WebRTC <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../webrtc/webrtc.html">WebRTC in Loopback</a></li>
+								<li><a href="../webrtc/webrtc-one2many.html">WebRTC One
+										to Many</a></li>
+								<li><a href="../webrtc/videochat.html">WebRTC Many to
+										Many</a></li>
+								<li class="active"><a href="../cebit/selectable.html">WebRTC
+										One to Many Selectable</a></li>
+							</ul></li>
+
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"><span
+								class="glyphicon glyphicon-plus-sign"></span> Mixer <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../mixer/dispatcherOneToMany.html">Dispatcher
+										One To Many</a></li>
+							</ul></li>
+
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"><span
+								class="glyphicon glyphicon-globe"></span> Campus Party <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">Campus Party 2013 London</a></li>
+								<li><a href="#">Campus Party 2014 Brazil</a></li>
+							</ul></li>
+					</ul>
+
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="https://github.com/Kurento/kmf-content-demo"><span
+								class="glyphicon glyphicon-file"></span> Source Code</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<div class="container">
+		<div class="page-header">
+			<h1>WebRTC One to Many Selectable</h1>
+			<p>
+				This application shows how to perform a video conference between
+				browsers using <a href="http://www.webrtc.org/">WebRTC</a> elements
+				which are connected within a <a
+					href="../img/pipelines/webrtc-selectable.png"
+					data-toggle="lightbox" data-title="Media Pipeline"
+					data-footer="Each local stream (i.e. stream from webcam) acts a Media Source, and it is connected to a Media Sink of another WebRTC endpoint (remote stream). Both streams are played in HTML5 video tags.">Media
+					Pipeline</a>. To run this demo, open this URL with different computers
+				(with webcam). It also can be connected an Android mobile with the <a
+					href="https://github.com/Kurento/kas-content-demo-rtp">kas-content-demo-rtp</a>
+				application.
+			</p>
+		</div>
+
+		<div class="row">
+			<div class="col-md-5">
+				<label class="control-label" for="name">Name</label>
+				<div class="row">
+					<div class="col-md-5">
+						<input id="name" name="name" class="form-control" type="text"
+							onkeydown="if (event.keyCode == 13) start();" />
+					</div>
+					<div class="col-md-7 text-right">
+						<a id="start" href="#" class="btn btn-success" onclick="start();"><span
+							class="glyphicon glyphicon-play"></span> Start</a> <a id="terminate"
+							href="#" class="btn btn-danger" onclick="terminate();"><span
+							class="glyphicon glyphicon-stop"></span> Terminate</a>
+					</div>
+				</div>
+
+				<br /> <br /> <label class="control-label" for="orig">Connections</label>
+				<div class="row">
+					<div class="col-md-4">
+						<select id="dest" class="form-control"></select>
+					</div>
+					<div class="col-md-4 text-center">
+						<a id="connect" href="#" class="btn btn-primary"
+							onclick="connectParticipants();"><span
+							class="glyphicon glyphicon-resize-horizontal"></span> Connect</a>
+					</div>
+					<div class="col-md-4">
+						<select id="orig" class="form-control"></select>
+					</div>
+				</div>
+				<br />
+				<div id="participantButtons"></div>
+				<br /> <label class="control-label" for="console">Console</label>
+				<div id="console"></div>
+			</div>
+			<div class="col-md-7">
+				<div id="videoBig">
+					<video id="remoteVideo" autoplay width="640px" height="480px"></video>
+				</div>
+				<div id="videoSmall">
+					<video id="localVideo" autoplay width="240px" height="180px"></video>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+		<div class="foot-fixed-bottom">
+			<div class="container text-center">
+				<hr />
+				<div class="row">&copy; 2014 Kurento</div>
+				<div class="row">
+					<div class="col-md-3">
+						<a href="http://www.fi-ware.eu"><img
+							src="../img/logo/fi-ware.png" alt="FI-WARE" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
+						<a href="http://www.kurento.org"><img
+							src="../img/logo/Kurento.jpg" alt="Kurento" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
+						<a href="http://www.urjc.es"><img src="../img/logo/urjc.gif"
+							alt="Universidad Rey Juan Carlos" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
+						<a href="http://www.naevatec.com"><img
+							src="../img/logo/Naevatec.png" alt="Naevatec" height="50px" /></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
 </body>
 </html>
