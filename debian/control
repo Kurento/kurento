@@ -11,6 +11,7 @@ Package: ktool-rom-processor
 Architecture: all
 Depends: default-jre (>= 6) | default-jre-headless (>= 6) | java6-runtime | java6-runtime-headless,
  libfreemarker-java, libgoogle-gson-java, libslf4j-java, libcommons-cli-java, ${misc:Depends}
-Description: Kurento Media Server IDL Interface
- This tools creates IDL interfaces for communication
- with the Kurento Media server.
+Description: Kurento Media Server Remote Object Model Processor
+ This tools generates stubs in different languages for communication
+ with the Kurento Media server using a json-rpc model and
+ language-dependent templates.
