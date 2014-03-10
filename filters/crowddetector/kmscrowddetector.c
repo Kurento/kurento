@@ -481,16 +481,16 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
           crowddetector->priv->actualImage->height),
       IPL_DEPTH_8U, 1);
   IplImage *low_speed_map =
-      cvCreateImage (cvSize (crowddetector->priv->acumulated_edges->width,
-          crowddetector->priv->acumulated_edges->height),
+      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
+          crowddetector->priv->actualImage->height),
       IPL_DEPTH_8U, 1);
   IplImage *high_speed_map =
-      cvCreateImage (cvSize (crowddetector->priv->acumulated_edges->width,
-          crowddetector->priv->acumulated_edges->height),
+      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
+          crowddetector->priv->actualImage->height),
       IPL_DEPTH_8U, 1);
   IplImage *actual_motion =
-      cvCreateImage (cvSize (crowddetector->priv->acumulated_edges->width,
-          crowddetector->priv->acumulated_edges->height),
+      cvCreateImage (cvSize (crowddetector->priv->actualImage->width,
+          crowddetector->priv->actualImage->height),
       IPL_DEPTH_8U, 3);
 
   uint8_t *lowSpeedPointer;
@@ -502,6 +502,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
 
   int w, h;
 
+  cvSet (actual_motion, CV_RGB (0, 0, 0), 0);
   cvZero (actualImage_masked);
   if (crowddetector->priv->num_rois != 0) {
     cvFillPoly (actualImage_masked, crowddetector->priv->curves,
@@ -592,9 +593,32 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     actualMotionPointer += actual_motion->widthStep;
   }
 
-  cvAddWeighted (actual_motion, IMAGE_FUSION_ADD_RATIO,
-      crowddetector->priv->actualImage, 1 - IMAGE_FUSION_ADD_RATIO, 0,
-      crowddetector->priv->actualImage);
+  {
+    uint8_t *orig_row_pointer =
+        (uint8_t *) crowddetector->priv->actualImage->imageData;
+    uint8_t *overlay_row_pointer = (uint8_t *) actual_motion->imageData;
+
+    for (h = 0; h < crowddetector->priv->actualImage->height; h++) {
+      uint8_t *orig_column_pointer = orig_row_pointer;
+      uint8_t *overlay_column_pointer = overlay_row_pointer;
+
+      for (w = 0; w < crowddetector->priv->actualImage->width; w++) {
+        int c;
+
+        for (c = 0; c < crowddetector->priv->actualImage->nChannels; c++) {
+          if (overlay_column_pointer[c] != 0) {
+            orig_column_pointer[c] = overlay_column_pointer[c];
+          }
+        }
+
+        orig_column_pointer += crowddetector->priv->actualImage->nChannels;
+        overlay_column_pointer += actual_motion->nChannels;
+      }
+      orig_row_pointer += crowddetector->priv->actualImage->widthStep;
+      overlay_row_pointer += actual_motion->widthStep;
+    }
+  }
+
   if (crowddetector->priv->num_rois != 0) {
     cvPolyLine (crowddetector->priv->actualImage, crowddetector->priv->curves,
         crowddetector->priv->n_points, crowddetector->priv->num_rois, 1,
