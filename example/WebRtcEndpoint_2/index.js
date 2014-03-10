@@ -1,6 +1,29 @@
 var WebRtcEndpoint = KwsMedia.endpoints.WebRtcEndpoint;
 
 
+const ws_uri = 'ws://192.168.0.105:7788/thrift/ws/websocket';
+
+
+function createOffer(peerConnection, onerror)
+{
+  peerConnection.createOffer(function(offer)
+  {
+    peerConnection.setLocalDescription(offer, function()
+    {
+      console.log('offer', offer.sdp);
+    },
+    onerror);
+  },
+  onerror);
+};
+
+
+function onerror(error)
+{
+  console.error(error);
+};
+
+
 getUserMedia({'audio': true, 'video': true}, function(stream)
 {
   var videoInput  = document.getElementById("videoInput");
@@ -8,8 +31,7 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
   videoInput.src = URL.createObjectURL(stream);
 
-  KwsMedia('ws://192.168.0.110:7788/thrift/ws/websocket',
-  function(kwsMedia)
+  KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
     kwsMedia.createMediaPipeline(function(error, pipeline)
@@ -30,27 +52,7 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
         peerConnection.addStream(stream);
 
-        var constraints =
-        {
-          'mandatory':
-          {
-            'OfferToReceiveAudio':true,
-            'OfferToReceiveVideo':true
-          }
-        };
-
-        peerConnection.createOffer(function(offer)
-        {
-          console.log('offer', offer.sdp);
-
-          peerConnection.setLocalDescription(offer, function()
-          {
-            console.log('setLocalDescription');
-          },
-          console.error);
-        },
-        console.error,
-        constraints);
+        createOffer(peerConnection, onerror);
 
         peerConnection.addEventListener('icecandidate', function(event)
         {
@@ -83,18 +85,13 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
                 console.log('loopback established');
               });
-            });
+            },
+            onerror);
           });
         });
       });
     });
   },
-  function(error)
-  {
-    console.error('An error ocurred:',error);
-  });
+  onerror);
 },
-function(error)
-{
-  console.error('An error ocurred:',error);
-});
+onerror);
