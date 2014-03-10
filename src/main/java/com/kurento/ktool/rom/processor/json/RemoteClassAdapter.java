@@ -13,7 +13,6 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-import com.kurento.ktool.rom.processor.model.Doc;
 import com.kurento.ktool.rom.processor.model.Method;
 import com.kurento.ktool.rom.processor.model.RemoteClass;
 import com.kurento.ktool.rom.processor.model.TypeRef;
@@ -32,7 +31,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		}
 
 		if (src.getDoc() != null) {
-			object.addProperty("doc", src.getDoc().getDoc());
+			object.addProperty("doc", src.getDoc());
 		}
 
 		if (src.isAbstract()) {
@@ -65,7 +64,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		JsonObject object = (JsonObject) json;
 
 		String name = null;
-		Doc doc = null;
+		String doc = null;
 		boolean abstractValue = false;
 		TypeRef extendsValue = null;
 		List<Method> constructors = new ArrayList<Method>();
@@ -77,7 +76,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		}
 
 		if (object.get("doc") != null) {
-			doc = new Doc(object.get("doc").getAsString());
+			doc = object.get("doc").getAsString();
 		}
 
 		if (object.get("abstract") != null) {

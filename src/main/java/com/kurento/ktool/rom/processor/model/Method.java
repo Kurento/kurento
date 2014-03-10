@@ -12,7 +12,7 @@ public class Method extends NamedElement {
 	@SerializedName("return")
 	private Return returnProp;
 
-	public Method(String name, Doc doc, List<Param> params, Return returnProp) {
+	public Method(String name, String doc, List<Param> params, Return returnProp) {
 		super(name, doc);
 		this.params = params;
 		this.returnProp = returnProp;

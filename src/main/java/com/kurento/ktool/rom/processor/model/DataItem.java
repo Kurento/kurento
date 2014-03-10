@@ -12,13 +12,14 @@ public class DataItem extends NamedElement {
 	private boolean optional = false;
 	private JsonElement defaultValue;
 
-	public DataItem(String name, Doc doc, TypeRef type, boolean optional) {
+	public DataItem(String name, String doc, TypeRef type, boolean optional) {
 		super(name, doc);
 		this.type = type;
 		this.optional = optional;
 	}
 
-	public DataItem(String name, Doc doc, TypeRef type, JsonElement defaultValue) {
+	public DataItem(String name, String doc, TypeRef type,
+			JsonElement defaultValue) {
 		super(name, doc);
 		this.type = type;
 		this.optional = true;

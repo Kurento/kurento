@@ -21,7 +21,7 @@ public class DataItemAdapter implements JsonSerializer<DataItem> {
 		}
 
 		if (src.getDoc() != null) {
-			object.addProperty("doc", src.getDoc().getDoc());
+			object.addProperty("doc", src.getDoc());
 		}
 
 		if (src.getType() != null) {

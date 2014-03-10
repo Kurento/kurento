@@ -18,7 +18,7 @@ public class ComplexType extends Type {
 	private List<Property> properties;
 	private List<String> values;
 
-	public ComplexType(String name, Doc doc, List<Property> properties,
+	public ComplexType(String name, String doc, List<Property> properties,
 			List<String> values) {
 		super(name, doc);
 		this.properties = properties;

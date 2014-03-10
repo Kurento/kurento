@@ -4,18 +4,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 public class Return extends ModelElement {
 
 	private TypeRef type;
-	private Doc doc;
+	private String doc;
 
-	public Return(TypeRef type, Doc doc) {
+	public Return(TypeRef type, String doc) {
 		super();
 		this.type = type;
 		this.doc = doc;
 	}
 
-	public Doc getDoc() {
+	public String getDoc() {
 		return doc;
 	}
 
@@ -23,7 +24,7 @@ public class Return extends ModelElement {
 		return type;
 	}
 
-	public void setDoc(Doc doc) {
+	public void setDoc(String doc) {
 		this.doc = doc;
 	}
 

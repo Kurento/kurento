@@ -14,7 +14,7 @@ public class RemoteClass extends Type {
 	private List<TypeRef> events;
 	private boolean abstractClass;
 
-	public RemoteClass(String name, Doc doc, TypeRef extendsProp) {
+	public RemoteClass(String name, String doc, TypeRef extendsProp) {
 		super(name, doc);
 		this.extendsProp = extendsProp;
 		this.constructors = new ArrayList<Method>();
@@ -22,7 +22,7 @@ public class RemoteClass extends Type {
 		this.events = new ArrayList<TypeRef>();
 	}
 
-	public RemoteClass(String name, Doc doc, TypeRef extendsProp,
+	public RemoteClass(String name, String doc, TypeRef extendsProp,
 			List<Method> constructors, List<Method> methods,
 			List<TypeRef> events) {
 		super(name, doc);

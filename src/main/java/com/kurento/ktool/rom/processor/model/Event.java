@@ -14,7 +14,7 @@ public class Event extends Type {
 
 	private List<Property> parentProperties;
 
-	public Event(String name, Doc doc, List<Property> properties) {
+	public Event(String name, String doc, List<Property> properties) {
 		super(name, doc);
 		this.properties = properties;
 	}

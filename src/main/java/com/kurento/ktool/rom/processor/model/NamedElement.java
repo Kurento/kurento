@@ -3,15 +3,15 @@ package com.kurento.ktool.rom.processor.model;
 public class NamedElement extends ModelElement {
 
 	protected String name;
-	protected Doc doc;
+	protected String doc;
 
-	public NamedElement(String name, Doc doc) {
+	public NamedElement(String name, String doc) {
 		super();
 		this.name = name;
 		this.doc = doc;
 	}
 
-	public Doc getDoc() {
+	public String getDoc() {
 		return doc;
 	}
 
@@ -19,7 +19,7 @@ public class NamedElement extends ModelElement {
 		return name;
 	}
 
-	public void setDoc(Doc doc) {
+	public void setDoc(String doc) {
 		this.doc = doc;
 	}
 
