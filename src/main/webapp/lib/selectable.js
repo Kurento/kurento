@@ -202,7 +202,7 @@ function switchVideoPosters(showSpinner) {
 	remoteVideo.poster = transparentPixel;
 }
 
-function start() {
+function start(servlet) {
 	var name = document.getElementById("name").value;
 	if (!name) {
 		bootbox.alert("You must specify your name", function() {
@@ -220,7 +220,7 @@ function start() {
 		remoteVideoTag : "remoteVideo"
 	};
 
-	var endpoint = "../selectable/" + name;
+	var endpoint = "../" + servlet + "/" + name;
 	try {
 		conn = new kwsContentApi.KwsWebRtcContent(endpoint, options);
 		console.info("Creating connection to handler located at " + endpoint);

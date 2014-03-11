@@ -136,10 +136,10 @@
 				<div class="row">
 					<div class="col-md-5">
 						<input id="name" name="name" class="form-control" type="text"
-							onkeydown="if (event.keyCode == 13) start();" />
+							onkeydown="if (event.keyCode == 13) start('selectable');" />
 					</div>
 					<div class="col-md-7 text-right">
-						<a id="start" href="#" class="btn btn-success" onclick="start();"><span
+						<a id="start" href="#" class="btn btn-success" onclick="start('selectable');"><span
 							class="glyphicon glyphicon-play"></span> Start</a> <a id="terminate"
 							href="#" class="btn btn-danger" onclick="terminate();"><span
 							class="glyphicon glyphicon-stop"></span> Terminate</a>
