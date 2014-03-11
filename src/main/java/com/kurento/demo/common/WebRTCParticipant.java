@@ -34,11 +34,10 @@ public class WebRTCParticipant {
 	public final transient WebRtcEndpoint endpoint;
 	public final transient WebRtcContentSession session;
 
-	public WebRTCParticipant(String name, WebRtcEndpoint endpoint,
+	public WebRTCParticipant(String id, String name, WebRtcEndpoint endpoint,
 			WebRtcContentSession session) {
 		this.name = name;
-		this.id = Integer.toString(SelectableRoomHandler.globalId
-				.incrementAndGet());
+		this.id = id;
 		this.endpoint = endpoint;
 		this.session = session;
 	}

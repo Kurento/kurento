@@ -82,7 +82,8 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 					+ "Please select another name and try again.");
 		} else {
 			WebRtcEndpoint endpoint = mp.newWebRtcEndpoint().build();
-			WebRTCParticipant participant = new WebRTCParticipant(name, endpoint, session);
+			WebRTCParticipant participant = new WebRTCParticipant(Integer.toString(SelectableRoomHandler.globalId
+					.incrementAndGet()), name, endpoint, session);
 			participant.endpoint.connect(participant.endpoint);
 			session.start(participant.endpoint);
 			session.setAttribute("participant", participant);
