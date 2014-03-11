@@ -33,6 +33,7 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.demo.common.WebRTCParticipant;
 
 /**
  * WebRtc Handler for OneToMany rooms.
@@ -56,7 +57,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	/* Global variables */
 	private MediaPipeline mp;
-	private Map<String, Participant> participants;
+	private Map<String, WebRTCParticipant> participants;
 	public static AtomicInteger globalId;
 	private static final Gson gson = new GsonBuilder()
 			.excludeFieldsWithModifiers(TRANSIENT).create();
@@ -67,7 +68,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 			synchronized (this) {
 				if (mp == null) {
 					mp = session.getMediaPipelineFactory().create();
-					participants = new ConcurrentHashMap<String, Participant>();
+					participants = new ConcurrentHashMap<String, WebRTCParticipant>();
 					globalId = new AtomicInteger();
 				}
 			}
@@ -81,7 +82,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 					+ "Please select another name and try again.");
 		} else {
 			WebRtcEndpoint endpoint = mp.newWebRtcEndpoint().build();
-			Participant participant = new Participant(name, endpoint, session);
+			WebRTCParticipant participant = new WebRTCParticipant(name, endpoint, session);
 			participant.endpoint.connect(participant.endpoint);
 			session.start(participant.endpoint);
 			session.setAttribute("participant", participant);
@@ -120,7 +121,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	@Override
 	public synchronized void onSessionTerminated(WebRtcContentSession session,
 			int code, String reason) throws Exception {
-		Participant participant = (Participant) session
+		WebRTCParticipant participant = (WebRTCParticipant) session
 				.getAttribute("participant");
 		participants.remove(participant.getId());
 		notifyUnjoined(participant);
@@ -135,23 +136,23 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 
 	private boolean selectParticipant(WebRtcContentSession session,
 			String partId) {
-		Participant partSelected = participants.get(partId);
+		WebRTCParticipant partSelected = participants.get(partId);
 		if (partSelected == null) {
 			getLogger().error("Participant {} does not exist", partId);
 			return false;
 		}
-		partSelected.endpoint.connect(((Participant) session
+		partSelected.endpoint.connect(((WebRTCParticipant) session
 				.getAttribute("participant")).endpoint);
 		return true;
 	}
 
 	private boolean connectParticipant(String origId, String destId) {
-		Participant orig = participants.get(origId);
+		WebRTCParticipant orig = participants.get(origId);
 		if (orig == null) {
 			getLogger().error("Participant {} does not exist", origId);
 			return false;
 		}
-		Participant dest = participants.get(destId);
+		WebRTCParticipant dest = participants.get(destId);
 		if (dest == null) {
 			getLogger().error("Participant {} does not exist", destId);
 			return false;
@@ -161,7 +162,7 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	}
 
 	private boolean existName(final String name) {
-		for (Participant p : participants.values()) {
+		for (WebRTCParticipant p : participants.values()) {
 			if (p.getName().equalsIgnoreCase(name)) {
 				return true;
 			}
@@ -169,18 +170,18 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 		return false;
 	}
 
-	private void notifyJoined(Participant participant) {
+	private void notifyJoined(WebRTCParticipant participant) {
 		String json = gson.toJson(participant);
 		getLogger().info("Participant joined: {}", json);
-		for (Participant p : participants.values()) {
+		for (WebRTCParticipant p : participants.values()) {
 			p.session.publishEvent(new ContentEvent(EVENT_ON_JOINED, json));
 		}
 	}
 
-	private void notifyUnjoined(Participant participant) {
+	private void notifyUnjoined(WebRTCParticipant participant) {
 		String json = gson.toJson(participant);
 		getLogger().info("Participant unjoined: {}", json);
-		for (Participant p : participants.values()) {
+		for (WebRTCParticipant p : participants.values()) {
 			p.session.publishEvent(new ContentEvent(EVENT_ON_UNJOINED, json));
 		}
 	}

@@ -12,20 +12,21 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.demo.cebit;
+package com.kurento.demo.common;
 
+import com.kurento.demo.cebit.SelectableRoomHandler;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * Participant for selectable one to many WebRTC video conference room.
- * 
+ *
  * @author Miguel París Díaz (mparisdiaz@gmail.com)
  * @author Ivan Gracia (izanmail@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.0.1
  */
-public class Participant {
+public class WebRTCParticipant {
 
 	private String id;
 	private String name;
@@ -33,7 +34,7 @@ public class Participant {
 	public final transient WebRtcEndpoint endpoint;
 	public final transient WebRtcContentSession session;
 
-	public Participant(String name, WebRtcEndpoint endpoint,
+	public WebRTCParticipant(String name, WebRtcEndpoint endpoint,
 			WebRtcContentSession session) {
 		this.name = name;
 		this.id = Integer.toString(SelectableRoomHandler.globalId
