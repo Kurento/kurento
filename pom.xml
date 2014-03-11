@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.1.0</version>
+		<version>4.1.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
@@ -31,7 +31,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kmf-repository-api-test-4.1.0</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
