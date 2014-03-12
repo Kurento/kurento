@@ -31,6 +31,7 @@
 #include <gstsctpserversrc.h>
 #include <kmscompositemixer.h>
 #include <kmsdispatcher.h>
+#include <kmsaudiomixer.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -81,6 +82,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_dispatcher_plugin_init (kurento))
+    return FALSE;
+
+if (!kms_audio_mixer_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
