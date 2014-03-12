@@ -22,7 +22,7 @@
 #include "kmsaudiomixer.h"
 
 #define PLUGIN_NAME "audiomixer"
-
+#define KEY_SINK_PAD_NAME "kms-key-sink-pad-name"
 #define KMS_AUDIO_MIXER_LOCK(mixer) \
   (g_rec_mutex_lock (&(mixer)->priv->mutex))
 
@@ -43,7 +43,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_audio_mixer_debug_category);
 struct _KmsAudioMixerPrivate
 {
   GRecMutex mutex;
-
+  GHashTable *adders;
+  GHashTable *agnostics;
   guint count;
 };
 
@@ -74,8 +75,49 @@ G_DEFINE_TYPE_WITH_CODE (KmsAudioMixer, kms_audio_mixer,
         PLUGIN_NAME, 0, "debug category for " PLUGIN_NAME " element"));
 
 static void
+link_new_agnosticbin (gchar * padname, GstElement * adder,
+    GstElement * agnosticbin)
+{
+  GST_DEBUG ("Linking %s to %s", GST_ELEMENT_NAME (agnosticbin),
+      GST_ELEMENT_NAME (adder));
+
+  if (!gst_element_link_pads (agnosticbin, "src_%u", adder, "sink_%u"))
+    GST_ERROR ("Could not link %s to %s", GST_ELEMENT_NAME (agnosticbin),
+        GST_ELEMENT_NAME (adder));
+}
+
+static void
+link_new_adder (gchar * padname, GstElement * agnosticbin, GstElement * adder)
+{
+  GST_DEBUG ("Linking %s to %s", GST_ELEMENT_NAME (agnosticbin),
+      GST_ELEMENT_NAME (adder));
+
+  if (!gst_element_link_pads (agnosticbin, "src_%u", adder, "sink_%u"))
+    GST_ERROR ("Could not link %s to %s", GST_ELEMENT_NAME (agnosticbin),
+        GST_ELEMENT_NAME (adder));
+}
+
+static void
 kms_audio_mixer_dispose (GObject * object)
 {
+  KmsAudioMixer *self = KMS_AUDIO_MIXER (object);
+
+  KMS_AUDIO_MIXER_LOCK (self);
+
+  if (self->priv->agnostics != NULL) {
+    g_hash_table_remove_all (self->priv->agnostics);
+    g_hash_table_unref (self->priv->agnostics);
+    self->priv->agnostics = NULL;
+  }
+
+  if (self->priv->adders != NULL) {
+    g_hash_table_remove_all (self->priv->adders);
+    g_hash_table_unref (self->priv->adders);
+    self->priv->adders = NULL;
+  }
+
+  KMS_AUDIO_MIXER_UNLOCK (self);
+
   G_OBJECT_CLASS (kms_audio_mixer_parent_class)->dispose (object);
 }
 
@@ -94,20 +136,35 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
     gpointer data)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (data);
-  GstElement *audiorate, *agnosticbin;
+  GstElement *audiorate, *agnosticbin, *adder;
+  gchar *padname;
 
   audiorate = gst_element_factory_make ("audiorate", NULL);
   agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
-  gst_bin_add_many (GST_BIN (self), audiorate, agnosticbin, NULL);
+  adder = gst_element_factory_make ("adder", NULL);
+
+  gst_bin_add_many (GST_BIN (self), audiorate, agnosticbin, adder, NULL);
+
   gst_element_sync_state_with_parent (audiorate);
   gst_element_sync_state_with_parent (agnosticbin);
+  gst_element_sync_state_with_parent (adder);
+
   gst_element_link_many (typefind, audiorate, agnosticbin, NULL);
 
-  /* TODO:
-   * 1) Link as many agnosticbin's source pads as adder elements we have
-   * 2) Link others agnosticbin sources to the new adder element
-   * 3) Create a new src pad for the new adder element
-   */
+  padname = g_object_get_data (G_OBJECT (typefind), KEY_SINK_PAD_NAME);
+
+  KMS_AUDIO_MIXER_LOCK (self);
+
+  g_hash_table_foreach (self->priv->adders, (GHFunc) link_new_agnosticbin,
+      agnosticbin);
+  g_hash_table_foreach (self->priv->agnostics, (GHFunc) link_new_adder, adder);
+
+  g_hash_table_insert (self->priv->agnostics, padname, agnosticbin);
+  g_hash_table_insert (self->priv->adders, padname, adder);
+
+  /* TODO: Add src pad */
+
+  KMS_AUDIO_MIXER_UNLOCK (self);
 }
 
 static GstPad *
@@ -154,13 +211,15 @@ kms_audio_mixer_request_new_pad (GstElement * element,
     gst_bin_remove (GST_BIN (self), typefind);
     self->priv->count--;
     pad = NULL;
+    g_free (padname);
   } else {
+    g_object_set_data_full (G_OBJECT (typefind), KEY_SINK_PAD_NAME, padname,
+        g_free);
     g_signal_connect (G_OBJECT (typefind), "have-type",
         G_CALLBACK (kms_audio_mixer_have_type), self);
   }
 
   KMS_AUDIO_MIXER_UNLOCK (self);
-  g_free (padname);
 
   return pad;
 }
@@ -202,6 +261,11 @@ static void
 kms_audio_mixer_init (KmsAudioMixer * self)
 {
   self->priv = KMS_AUDIO_MIXER_GET_PRIVATE (self);
+
+  self->priv->adders = g_hash_table_new_full (g_str_hash, g_str_equal, NULL,
+      NULL);
+  self->priv->agnostics = g_hash_table_new_full (g_str_hash, g_str_equal, NULL,
+      NULL);
 
   g_rec_mutex_init (&self->priv->mutex);
 
