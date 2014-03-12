@@ -547,6 +547,138 @@ kms_crowd_detector_process_edges_image (KmsCrowdDetector * crowddetector,
 }
 
 static void
+kms_crowd_detector_roi_occup_analysis (KmsCrowdDetector * crowddetector,
+    double occupation_percentage, int occupancy_num_frames_to_event,
+    int occupancy_level_min, int occupancy_level_med, int occupancy_level_max,
+    int curve)
+{
+  if (occupation_percentage > occupancy_level_max) {
+    if (crowddetector->priv->rois_data[curve].potential_occupation_level != 3) {
+      crowddetector->priv->rois_data[curve].potential_occupation_level = 3;
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level = 1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level++;
+    }
+  } else if (occupation_percentage > occupancy_level_med) {
+    if (crowddetector->priv->rois_data[curve].potential_occupation_level != 2) {
+      crowddetector->priv->rois_data[curve].potential_occupation_level = 2;
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level = 1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level++;
+    }
+  } else if (occupation_percentage > occupancy_level_min) {
+    if (crowddetector->priv->rois_data[curve].potential_occupation_level != 1) {
+      crowddetector->priv->rois_data[curve].potential_occupation_level = 1;
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level = 1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level++;
+    }
+  } else {
+    if (crowddetector->priv->rois_data[curve].potential_occupation_level != 0) {
+      crowddetector->priv->rois_data[curve].potential_occupation_level = 0;
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level = 1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_occupancy_level++;
+    }
+  }
+
+  if (crowddetector->priv->rois_data[curve].
+      num_frames_potential_occupancy_level > occupancy_num_frames_to_event) {
+    crowddetector->priv->rois_data[curve].num_frames_potential_occupancy_level =
+        occupancy_num_frames_to_event;
+  }
+
+  if (crowddetector->priv->rois_data[curve].
+      num_frames_potential_occupancy_level == occupancy_num_frames_to_event
+      && crowddetector->priv->rois_data[curve].actual_occupation_level !=
+      crowddetector->priv->rois_data[curve].potential_occupation_level) {
+    crowddetector->priv->rois_data[curve].actual_occupation_level =
+        crowddetector->priv->rois_data[curve].potential_occupation_level;
+    GST_DEBUG ("%s: occupancy_percentage:%f occupancy_level:%d",
+        crowddetector->priv->rois_data[curve].name, occupation_percentage,
+        crowddetector->priv->rois_data[curve].actual_occupation_level);
+  }
+}
+
+static void
+kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
+    int high_speed_points, int low_speed_points, int fluid_num_frames_to_event,
+    int fluidity_level_min, int fluidity_level_med, int fluidity_level_max,
+    int curve)
+{
+  double fluidity_percentage = 0;
+
+  if (high_speed_points + low_speed_points > 0) {
+    fluidity_percentage =
+        low_speed_points * 100 / (high_speed_points + low_speed_points);
+  } else {
+    fluidity_percentage = 0;
+  }
+  if (fluidity_percentage >= fluidity_level_max) {
+    if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 3) {
+      crowddetector->priv->rois_data[curve].potential_fluidity_level = 3;
+      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
+          1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_fluidity_level++;
+    }
+  } else if (fluidity_percentage > fluidity_level_med) {
+    if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 2) {
+      crowddetector->priv->rois_data[curve].potential_fluidity_level = 2;
+      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
+          1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_fluidity_level++;
+    }
+  } else if (fluidity_percentage > fluidity_level_min) {
+    if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 1) {
+      crowddetector->priv->rois_data[curve].potential_fluidity_level = 1;
+      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
+          1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_fluidity_level++;
+    }
+  } else {
+    if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 0) {
+      crowddetector->priv->rois_data[curve].potential_fluidity_level = 0;
+      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
+          1;
+    } else {
+      crowddetector->priv->rois_data[curve].
+          num_frames_potential_fluidity_level++;
+    }
+  }
+
+  if (crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level >
+      fluid_num_frames_to_event) {
+    crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
+        fluid_num_frames_to_event;
+  }
+
+  if (crowddetector->priv->rois_data[curve].
+      num_frames_potential_fluidity_level == fluid_num_frames_to_event
+      && crowddetector->priv->rois_data[curve].actual_fluidity_level !=
+      crowddetector->priv->rois_data[curve].potential_fluidity_level) {
+    crowddetector->priv->rois_data[curve].actual_fluidity_level =
+        crowddetector->priv->rois_data[curve].potential_fluidity_level;
+    GST_DEBUG ("%s: FLUIDITY_percentage:%f fluidity_level:%d",
+        crowddetector->priv->rois_data[curve].name, fluidity_percentage,
+        crowddetector->priv->rois_data[curve].actual_fluidity_level);
+  }
+}
+
+static void
 kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
     IplImage * low_speed_map, IplImage * high_speed_map)
 {
@@ -554,6 +686,10 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
 
   for (curve = 0; curve < crowddetector->priv->num_rois; curve++) {
     int w1, w2, h1, h2;
+    int high_speed_points = 0;
+    int low_speed_points = 0;
+    int total_pixels_occupied = 0;
+    double occupation_percentage = 0;
     CvRect container;
 
     w1 = crowddetector->priv->actual_image->width;
@@ -571,16 +707,45 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
       if (crowddetector->priv->curves[curve][point].y > h2)
         h2 = crowddetector->priv->curves[curve][point].y;
     }
+
     container.x = w1;
     container.y = h1;
     container.width = abs (w2 - w1);
     container.height = abs (h2 - h1);
 
+    cvRectangle (low_speed_map, cvPoint (container.x, container.y),
+        cvPoint (container.x + container.width, container.y + container.height),
+        cvScalar (0, 255, 0, 0), 1, 8, 0);
     cvSetImageROI (low_speed_map, container);
     cvSetImageROI (high_speed_map, container);
+    low_speed_points = cvCountNonZero (low_speed_map);
+    high_speed_points = cvCountNonZero (high_speed_map);
     cvResetImageROI (low_speed_map);
     cvResetImageROI (high_speed_map);
-    // TODO: send events with info about rois
+    total_pixels_occupied = high_speed_points + low_speed_points;
+    if (crowddetector->priv->rois_data[curve].n_pixels_roi > 0) {
+      occupation_percentage = (total_pixels_occupied * 100 /
+          crowddetector->priv->rois_data[curve].n_pixels_roi);
+    } else {
+      occupation_percentage = 0;
+    }
+
+    if (crowddetector->priv->rois_data[curve].send_occupancy_event == TRUE) {
+      kms_crowd_detector_roi_occup_analysis (crowddetector,
+          occupation_percentage,
+          crowddetector->priv->rois_data[curve].occupancy_num_frames_to_event,
+          crowddetector->priv->rois_data[curve].occupancy_level_min,
+          crowddetector->priv->rois_data[curve].occupancy_level_med,
+          crowddetector->priv->rois_data[curve].occupancy_level_max, curve);
+    }
+    if (crowddetector->priv->rois_data[curve].send_fluidity_event == TRUE) {
+      kms_crowd_detector_roi_fluidity_analysis (crowddetector,
+          high_speed_points, low_speed_points,
+          crowddetector->priv->rois_data[curve].fluidity_num_frames_to_event,
+          crowddetector->priv->rois_data[curve].fluidity_level_min,
+          crowddetector->priv->rois_data[curve].fluidity_level_med,
+          crowddetector->priv->rois_data[curve].fluidity_level_max, curve);
+    }
   }
 }
 
@@ -717,6 +882,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   cvZero (low_speed_map);
   kms_crowd_detector_process_edges_image (crowddetector, low_speed_map, 3);
   cvErode (low_speed_map, low_speed_map, 0, 1);
+
   low_speed_pointer = (uint8_t *) low_speed_map->imageData;
   high_speed_pointer = (uint8_t *) high_speed_map->imageData;
   actual_motion_pointer = (uint8_t *) actual_motion->imageData;
@@ -726,6 +892,9 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     high_speed_pointer_aux = high_speed_pointer;
     actual_motion_pointer_aux = actual_motion_pointer;
     for (w = 0; w < low_speed_map->width; w++) {
+      if (*high_speed_pointer_aux == 0) {
+        actual_motion_pointer_aux[0] = 255;
+      }
       if (*low_speed_pointer_aux == 255) {
         *actual_motion_pointer_aux = 0;
         actual_motion_pointer_aux[2] = 255;
