@@ -35,6 +35,9 @@ public class KurentoContextInitializer implements ServletContextAware {
 			appCtx = KurentoApplicationContextUtils
 					.createKurentoApplicationContext(servletContext);
 		}
+
+		KurentoApplicationContextUtils
+				.processInjectionBasedOnKurentoApplicationContext(this);
 	}
 
 }

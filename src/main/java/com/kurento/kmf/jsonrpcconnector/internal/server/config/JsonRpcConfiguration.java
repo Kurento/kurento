@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.jsonrpcconnector.internal.server.config;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -23,18 +22,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Context;
 import org.apache.tomcat.websocket.server.WsSci;
-import org.scribe.model.OAuthRequest;
-import org.scribe.model.Response;
-import org.scribe.model.Verb;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.embedded.ServletListenerRegistrationBean;
 import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -45,7 +36,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -66,8 +56,6 @@ import com.kurento.kmf.spring.KurentoServletContextListener;
 public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 	public static final boolean INJECT_SESSION_ID = true;
-
-	public static final String X_AUTH_HEADER = "X-Auth-Token";
 
 	@Autowired
 	protected ApplicationContext ctx;
@@ -93,41 +81,11 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 	}
 
 	@Configuration
-	@AutoConfigureAfter({ JsonRpcConfiguration.class })
 	protected static class ApplicationContextFilterConfiguration {
-
-		@Autowired
-		private JsonRpcProperties props;
 
 		@Bean
 		public Filter applicationContextOAuthFilter(ApplicationContext context) {
-			return new OncePerRequestFilter() {
-				@Override
-				protected void doFilterInternal(HttpServletRequest request,
-						HttpServletResponse response, FilterChain filterChain)
-						throws ServletException, IOException {
-
-					if (!"".equals(props.getKeystoneHost())) {
-						String accessToken = request.getHeader(X_AUTH_HEADER);
-						String kmfAuthToken = props.getAuthToken();
-
-						String url = props.getKeystoneHost() + ':'
-								+ props.getKeystonePort()
-								+ props.getKeystonePath() + accessToken;
-
-						OAuthRequest oauthReq = new OAuthRequest(Verb.GET, url);
-						oauthReq.addHeader(X_AUTH_HEADER, kmfAuthToken);
-
-						Response oauthResp = oauthReq.send();
-						if (!oauthResp.isSuccessful()) {
-							response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-							return;
-						}
-					}
-
-					filterChain.doFilter(request, response);
-				}
-			};
+			return new OAuthFiWareFilter();
 		}
 	}
 
@@ -143,7 +101,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 		DefaultJsonRpcHandlerRegistry registry = getJsonRpcHandlersRegistry();
 
-		Map<String, Object> urlMap = new LinkedHashMap<String, Object>();
+		Map<String, Object> urlMap = new LinkedHashMap();
 
 		for (DefaultJsonRpcHandlerRegistration registration : registry
 				.getRegistrations()) {
@@ -303,7 +261,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 	@Bean
 	public ServletListenerRegistrationBean<KurentoServletContextListener> kurentoServletContextListenerRegistrationBean() {
-		return new ServletListenerRegistrationBean<KurentoServletContextListener>(
+		return new ServletListenerRegistrationBean(
 				new KurentoServletContextListener());
 	}
 

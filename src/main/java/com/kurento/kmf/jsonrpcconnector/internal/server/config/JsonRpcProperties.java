@@ -18,22 +18,24 @@ package com.kurento.kmf.jsonrpcconnector.internal.server.config;
  * Properties of the JSON RPC connector
  * 
  * @author Ivan Gracia (izanmail@gmail.com)
- * @since 3.0.7
+ * @since 4.1.1
  * 
  */
 public class JsonRpcProperties {
 
-	private String keystoneHost = "";// "http://cloud.lab.fi-ware.org";
+	private String keystoneHost; // "http://cloud.lab.fi-ware.org";
 
 	private int keystonePort = 4731;
 
-	private String keystonePath = "/v2.0/tokens/";
+	private String oAuthVersion = "v2.0";
 
-	private String kurentoUsername = "pepProxy";
+	private String Path = '/' + oAuthVersion + "/access-tokens/";
 
-	private String kurentoPassword = "pepProxy";
+	private String proxyUser = "pepProxy";
 
-	private String authToken = "7a5001779cfdd301e5174339c101e661";
+	private String proxyPass = "pepProxy";
+
+	private String proxyToken;
 
 	/**
 	 * @return the keystoneHost
@@ -66,10 +68,25 @@ public class JsonRpcProperties {
 	}
 
 	/**
+	 * @return the keystoneOAuthVersionPath
+	 */
+	public String getOAuthVersion() {
+		return oAuthVersion;
+	}
+
+	/**
+	 * @param keystoneOAuthVersionPath
+	 *            the keystoneOAuthVersionPath to set
+	 */
+	public void setKeystoneOAuthVersionPath(String keystoneOAuthVersionPath) {
+		this.oAuthVersion = keystoneOAuthVersionPath;
+	}
+
+	/**
 	 * @return the keystonePath
 	 */
 	public String getKeystonePath() {
-		return keystonePath;
+		return Path;
 	}
 
 	/**
@@ -77,44 +94,44 @@ public class JsonRpcProperties {
 	 *            the keystonePath to set
 	 */
 	public void setKeystonePath(String keystonePath) {
-		this.keystonePath = keystonePath;
+		this.Path = keystonePath;
 	}
 
 	/**
-	 * @return the kurentoUsername
+	 * @return the proxyUser
 	 */
-	public String getKurentoUsername() {
-		return kurentoUsername;
+	public String getKeystoneProxyUser() {
+		return proxyUser;
 	}
 
 	/**
-	 * @param kurentoUsername
-	 *            the kurentoUsername to set
+	 * @param proxyUser
+	 *            the proxyUser to set
 	 */
-	public void setKurentoUsername(String kurentoUsername) {
-		this.kurentoUsername = kurentoUsername;
+	public void setKeystoneProxyUser(String proxyUser) {
+		this.proxyUser = proxyUser;
 	}
 
 	/**
-	 * @return the kurentoPassword
+	 * @return the proxyPass
 	 */
-	public String getKurentoPassword() {
-		return kurentoPassword;
+	public String getKeystoneProxyPass() {
+		return proxyPass;
 	}
 
 	/**
-	 * @param kurentoPassword
-	 *            the kurentoPassword to set
+	 * @param proxyPass
+	 *            the proxyPass to set
 	 */
-	public void setKurentoPassword(String kurentoPassword) {
-		this.kurentoPassword = kurentoPassword;
+	public void setKeystoneProxyPass(String proxyPass) {
+		this.proxyPass = proxyPass;
 	}
 
 	/**
 	 * @return the authToken
 	 */
 	public String getAuthToken() {
-		return authToken;
+		return proxyToken;
 	}
 
 	/**
@@ -122,6 +139,6 @@ public class JsonRpcProperties {
 	 *            the authToken to set
 	 */
 	public void setAuthToken(String authToken) {
-		this.authToken = authToken;
+		this.proxyToken = authToken;
 	}
 }

@@ -25,7 +25,7 @@ public class ResponseError {
 	/**
 	 * Error status code.
 	 */
-	private int code;
+	private Integer code;
 
 	/**
 	 * Error message.
@@ -66,7 +66,9 @@ public class ResponseError {
 	public ResponseError(int code, String message, String data) {
 		this.code = code;
 		this.message = message;
-		this.data = new JsonPrimitive(data);
+		if (data != null) {
+			this.data = new JsonPrimitive(data);
+		}
 	}
 
 	public ResponseError(int code, String message, JsonElement data) {
@@ -86,7 +88,11 @@ public class ResponseError {
 	 * @return Error status code
 	 */
 	public int getCode() {
-		return code;
+		if (code != null) {
+			return code;
+		} else {
+			return 0;
+		}
 	}
 
 	/**
