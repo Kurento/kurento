@@ -135,7 +135,8 @@ window.addEventListener('load', function()
             console.error("No remote streams are available");
         };
       };
-    });
+    },
+    onerror);
   });
 
   buttonTerminate.addEventListener('click', function()

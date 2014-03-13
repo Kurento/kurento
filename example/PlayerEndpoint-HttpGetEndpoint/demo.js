@@ -6,7 +6,7 @@ window.addEventListener('load', function()
 {
   var videoOutput = document.getElementById("videoOutput");
 
-  KwsMedia('ws://192.168.0.102:7788/thrift/ws/websocket',
+  KwsMedia('ws://130.206.81.87/thrift/ws/websocket',
   function(kwsMedia)
   {
     // Create pipeline

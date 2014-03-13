@@ -291,7 +291,7 @@ function CpbWebRtc()
       contentId = contentId.disabled ? "" : "/" + contentId.value;
 
 //  var endpoint = 'ws://192.168.0.110:7788/thrift/ws';
-  var endpoint = 'ws://192.168.0.110:7788/thrift/ws/websocket';
+  var endpoint = 'ws://130.206.81.87/thrift/ws/websocket';
 //  var endpoint = "ws://193.147.51.35:7788/thrift/ws/websocket/cpbWebRtc" + contentId;
 
   var kwsMedia = null;

@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <title>Kurento demo - Campus Party 2014 Brazil</title>
 
-    <link href="style.css" rel="stylesheet">
+    <link href="demo.css" rel="stylesheet">
 
-    <script src="adapter.js"></script>
+    <script src="https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js"></script>
     <script src="../../dist/KwsMedia.js"></script>
 
     <script src="cpbWebRtc.js"></script>
@@ -14,7 +14,7 @@
     <script src="filters/Mirror.js"></script>
     <script src="filters/Rate.js"></script>
 
-    <script src="index.js"></script>
+    <script src="demo.js"></script>
   </head>
   <body>
     <h1>Campus Party 2014 Brazil</h1>
@@ -27,6 +27,7 @@
     <button id="calibrate">Calibrate</button>
     <br />
     <video id="videoInput" autoplay></video>
-    <video id="remoteVideo" autoplay controls poster="img/transparent-1px.png"></video>
+    <video id="remoteVideo" autoplay controls
+        poster="http://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png"></video>
   </body>
 </html>
