@@ -129,7 +129,7 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
       update_caps = TRUE;
     }
 
-    if (self->priv->framerate_denom != num) {
+    if (self->priv->framerate_denom != denom) {
       GST_INFO_OBJECT (self, "Updating fps denom: %d", denom);
       self->priv->framerate_denom = denom;
       update_caps = TRUE;
