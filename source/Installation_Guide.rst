@@ -211,11 +211,26 @@ Kurento Media Server (KMS)
 --------------------------
 
 In order to add Personal Package Archive or PPA's repositories, the
-python-software-properties package must be installed:
+software-properties-commons package must be installed. This package is
+part of Ubuntu Desktop, but it might not be included if you are using
+a VM or a server:
 
 .. sourcecode:: console
 
-    $ sudo apt-get install python-software-properties
+    $ sudo apt-get install software-properties-common
+
+.. note:: Transient problem with Intel Graphics video
+
+    There is a `packaging bug in libopencv-ocl2.4 Ubuntu 13.10
+    <https://bugs.launchpad.net/ubuntu/+source/opencv/+bug/1245260>`_,
+    which causes some installation problems [#]_. There is a workaround
+    while the bug is fixed. If your computer has not a nvidia chipset,
+    you need to install one package before kurento. Do:
+
+    .. sourcecode:: console
+
+        $ sudo apt-get install ocl-icd-libopencl1
+
 
 Install KMS by typing the following commands, one at a time and in the
 same order as listed here. When asked for any kind of confirmation,
@@ -226,7 +241,7 @@ reply afirmatively:
     $ sudo add-apt-repository ppa:kurento/kurento
     $ sudo apt-get update
     $ sudo apt-get upgrade
-    $ sudo apt-get install libevent-dev kurento
+    $ sudo apt-get install kurento
 
 Finally, configure the server to run KMS when booted:
 
@@ -633,3 +648,16 @@ Unless configured otherwise, the GE will open the following ports:
    port 9091 for HTTP TCP requests from final users. Also it needs fully
    opened UDP port range.
 
+.. rubric:: Footnotes
+
+.. [#]
+
+    The reason is that kurento uses :term:`openCV` and needs some resources
+    from ``libopencv-dev``, which depends on ``libopencv-ocl2.4``, which depends
+    on the virtual ``<libopencl1>``, that can be provided by either
+    ``ocl-icd-libopencl1`` or one of the ``nvidia-*`` packages. If your machine
+    has a nvidia chipset you should already have libopencl1, if not, it is better
+    to install ocl-icd-libopencl1, as the nvidia packages sometimes break
+    OpenGL and nowadays most linux desktops need a working OpenGL. The problem is
+    further complicated because ``ocl-icd-libopencl1`` conflicts with the
+    nvida packages.

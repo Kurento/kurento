@@ -290,6 +290,17 @@ dl.glossary dd {
   background: antiquewhite;
 }
 
+/* Footnotes */
+p.rubric {
+  border-bottom-color: black;
+  border-bottom-style: solid;
+  margin-top: 1em;
+}
+
+table.footnote td.label {
+  padding-right: 0.5em;
+}
+
 /* Sidebar */
 
 div.sidebar {
