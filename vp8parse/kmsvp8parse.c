@@ -124,13 +124,13 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
 
   if (num != 0) {
     if (self->priv->framerate_num != num) {
-      GST_INFO_OBJECT (self, "Updading fps num: %d", num);
+      GST_INFO_OBJECT (self, "Updating fps num: %d", num);
       self->priv->framerate_num = num;
       update_caps = TRUE;
     }
 
     if (self->priv->framerate_denom != num) {
-      GST_INFO_OBJECT (self, "Updading fps denom: %d", denom);
+      GST_INFO_OBJECT (self, "Updating fps denom: %d", denom);
       self->priv->framerate_denom = denom;
       update_caps = TRUE;
     }
@@ -178,13 +178,13 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
   if (status == VPX_CODEC_OK) {
     if (self->priv->height != stream_info.h) {
       self->priv->height = stream_info.h;
-      GST_INFO_OBJECT (parse, "Updading height: %d", stream_info.h);
+      GST_INFO_OBJECT (parse, "Updating height: %d", stream_info.h);
       update_caps = TRUE;
     }
 
     if (self->priv->width != stream_info.w) {
       self->priv->width = stream_info.w;
-      GST_INFO_OBJECT (parse, "Updading width: %d", stream_info.w);
+      GST_INFO_OBJECT (parse, "Updating width: %d", stream_info.w);
       update_caps = TRUE;
     }
   }
