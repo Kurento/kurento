@@ -290,9 +290,8 @@ function CpbWebRtc()
   var contentId = document.getElementById("contentId");
       contentId = contentId.disabled ? "" : "/" + contentId.value;
 
-//  var endpoint = 'ws://192.168.0.110:7788/thrift/ws';
   var endpoint = 'ws://130.206.81.87/thrift/ws/websocket';
-//  var endpoint = "ws://193.147.51.35:7788/thrift/ws/websocket/cpbWebRtc" + contentId;
+//  var endpoint = "ws://130.206.81.87/thrift/ws/websocket" + contentId;
 
   var kwsMedia = null;
 
@@ -445,7 +444,6 @@ function CpbWebRtc()
   this.calibrate = function()
   {
     if(pointerDetectorAdvFilter)
-//       pointerDetectorAdvFilter.trackcolourFromCalibrationRegion();
        pointerDetectorAdvFilter.trackcolourFromCalibrationRegion(function(error)
        {
          if(error) console.error(error);
