@@ -161,12 +161,9 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     return GST_FLOW_ERROR;
   }
 
-  if (self->priv->started)
-    goto end;
-
-  if (GST_CLOCK_TIME_IS_VALID (frame->buffer->duration) ||
-      GST_BUFFER_PTS_IS_VALID (frame->buffer) ||
-      GST_BUFFER_DTS_IS_VALID (frame->buffer))
+  if ((GST_CLOCK_TIME_IS_VALID (frame->buffer->duration) ||
+          GST_BUFFER_PTS_IS_VALID (frame->buffer) ||
+          GST_BUFFER_DTS_IS_VALID (frame->buffer)) && !self->priv->started)
     gst_base_parse_set_has_timing_info (parse, TRUE);
 
   memset (&stream_info, 0, sizeof (stream_info));
@@ -189,7 +186,8 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     }
   }
 
-  update_caps = kms_vp8_parse_detect_framerate (self, frame);
+  if (!self->priv->started)
+    update_caps |= kms_vp8_parse_detect_framerate (self, frame);
 
   if (update_caps && kms_vp8_parse_check_caps_ready (self)) {
     GstCaps *caps;
@@ -212,8 +210,6 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
 
   self->priv->last_dts = frame->buffer->dts;
   self->priv->last_pts = frame->buffer->pts;
-
-end:
 
   frame->size = minfo.size;
 
