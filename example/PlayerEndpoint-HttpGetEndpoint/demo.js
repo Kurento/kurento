@@ -2,12 +2,14 @@ var PlayerEndpoint  = KwsMedia.endpoints.PlayerEndpoint;
 var HttpGetEndpoint = KwsMedia.endpoints.HttpGetEndpoint;
 
 
+const ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
+
+
 window.addEventListener('load', function()
 {
   var videoOutput = document.getElementById("videoOutput");
 
-  KwsMedia('ws://130.206.81.87/thrift/ws/websocket',
-  function(kwsMedia)
+  KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
     kwsMedia.createMediaPipeline(function(error, pipeline)
