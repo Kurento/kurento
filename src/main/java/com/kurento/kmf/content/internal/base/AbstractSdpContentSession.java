@@ -79,13 +79,11 @@ public abstract class AbstractSdpContentSession extends AbstractContentSession
 	}
 
 	/**
-	 * Build end point for SDP declaration.
+	 * Build an end point for SDP declaration in a MediaPipeline.
 	 * 
-	 * @param sinkElement
-	 *            Out-going media element
-	 * @param sourceElement
-	 *            In-going media element
-	 * @return answer
+	 * @param mediaPipeline
+	 *            a MediaPipeline for which the SdpEndpoint is created
+	 * @return a SdpEndpoint 
 	 * @throws Throwable
 	 *             Error/Exception
 	 */
@@ -94,12 +92,12 @@ public abstract class AbstractSdpContentSession extends AbstractContentSession
 	/**
 	 * Star media element implementation.
 	 * 
-	 * @param sinkElement
-	 *            Out-going media element
-	 * @param sourceElement
-	 *            In-going media element
-	 * @throws ContentException
-	 *             Exception while sending SDP as answer to client
+	 * @param sourceContentPath
+	 *            Path of outgoing media element
+	 * @param sinkContentPath
+	 *            Path of ingoing media element
+	 * @throws KurentoMediaFrameworkException
+	 *             Exception while sending an SDP answer to client
 	 */
 	@Override
 	public void start(String sourceContentPath, String sinkContentPath) {

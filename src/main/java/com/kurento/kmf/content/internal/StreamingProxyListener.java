@@ -17,8 +17,8 @@ package com.kurento.kmf.content.internal;
 /**
  * 
  * Streaming proxy triggers events depending on the result of its operation,
- * this interfaces defines these events ( {@link #onProxySuccess()},
- * {@link #onProxyError(String)}).
+ * this interfaces defines these events ( {@link #onProxySuccess},
+ * {@link #onProxyError}).
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
