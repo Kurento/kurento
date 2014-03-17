@@ -20,9 +20,12 @@
 #include <gst/gst.h>
 
 #include "kmsaudiomixer.h"
+#include "kmsloop.h"
 
 #define PLUGIN_NAME "audiomixer"
 #define KEY_SINK_PAD_NAME "kms-key-sink-pad-name"
+#define KEY_CONDITION "kms-key-condition"
+
 #define KMS_AUDIO_MIXER_LOCK(mixer) \
   (g_rec_mutex_lock (&(mixer)->priv->mutex))
 
@@ -45,6 +48,7 @@ struct _KmsAudioMixerPrivate
   GRecMutex mutex;
   GHashTable *adders;
   GHashTable *agnostics;
+  KmsLoop *loop;
   guint count;
 };
 
@@ -73,12 +77,53 @@ GST_STATIC_PAD_TEMPLATE (AUDIO_SRC_PAD,
     GST_STATIC_CAPS (RAW_AUDIO_CAPS)
     );
 
+typedef struct _WaitCond WaitCond;
+struct _WaitCond
+{
+  GCond cond;
+  GMutex mutex;
+  guint steps;
+};
+
+#define ONE_STEP_DONE(wait) do {                   \
+  g_mutex_lock (&(wait)->mutex);                   \
+  (wait)->steps--;                                 \
+  g_cond_signal (&(wait)->cond);                   \
+  g_mutex_unlock (&(wait)->mutex);                 \
+} while (0)
+
+#define WAIT_UNTIL_DONE(wait) do {                 \
+  g_mutex_lock (&(wait)->mutex);                   \
+  while ((wait)->steps > 0)                        \
+      g_cond_wait (&(wait)->cond, &(wait)->mutex); \
+  g_mutex_unlock (&(wait)->mutex);                 \
+} while (0)
+
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsAudioMixer, kms_audio_mixer,
     GST_TYPE_BIN,
     GST_DEBUG_CATEGORY_INIT (kms_audio_mixer_debug_category,
         PLUGIN_NAME, 0, "debug category for " PLUGIN_NAME " element"));
+
+static void
+destroy_wait_condition (WaitCond * cond)
+{
+  g_slice_free (WaitCond, cond);
+}
+
+static WaitCond *
+create_wait_condition (guint steps)
+{
+  WaitCond *cond;
+
+  cond = g_slice_new (WaitCond);
+  cond->steps = steps;
+  g_mutex_init (&cond->mutex);
+  g_cond_init (&cond->cond);
+
+  return cond;
+}
 
 static void
 link_new_agnosticbin (gchar * padname, GstElement * adder,
@@ -127,6 +172,8 @@ kms_audio_mixer_dispose (GObject * object)
   KmsAudioMixer *self = KMS_AUDIO_MIXER (object);
 
   KMS_AUDIO_MIXER_LOCK (self);
+
+  g_clear_object (&self->priv->loop);
 
   if (self->priv->agnostics != NULL) {
     g_hash_table_remove_all (self->priv->agnostics);
@@ -232,6 +279,279 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
   gst_bin_remove_many (GST_BIN (self), audiorate, agnosticbin, adder, NULL);
 }
 
+struct callback_counter
+{
+  guint count;
+  gpointer data;
+  GDestroyNotify notif;
+  GMutex mutex;
+};
+
+struct callback_counter *
+create_callback_counter (gpointer data, GDestroyNotify notif)
+{
+  struct callback_counter *counter;
+
+  counter = g_slice_new (struct callback_counter);
+
+  g_mutex_init (&counter->mutex);
+  counter->notif = notif;
+  counter->data = data;
+  counter->count = 1;
+
+  return counter;
+}
+
+static void
+callback_count_inc (struct callback_counter *counter)
+{
+  g_mutex_lock (&counter->mutex);
+  counter->count++;
+  g_mutex_unlock (&counter->mutex);
+}
+
+static void
+callback_count_dec (struct callback_counter *counter)
+{
+  g_mutex_lock (&counter->mutex);
+  counter->count--;
+  if (counter->count > 0) {
+    g_mutex_unlock (&counter->mutex);
+    return;
+  }
+
+  g_mutex_unlock (&counter->mutex);
+  g_mutex_clear (&counter->mutex);
+
+  if (counter->notif)
+    counter->notif (counter->data);
+
+  g_slice_free (struct callback_counter, counter);
+}
+
+static GstPadProbeReturn
+event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
+    return GST_PAD_PROBE_OK;
+
+  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
+
+  return GST_PAD_PROBE_DROP;
+}
+
+static void
+destroy_sink_elements (GstElement * agnosticbin)
+{
+  KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (agnosticbin));
+  GstElement *audiorate, *typefind;
+  GstPad *sinkpad, *peerpad;
+  WaitCond *wait;
+
+  wait = g_object_get_data (G_OBJECT (agnosticbin), KEY_CONDITION);
+
+  sinkpad = gst_element_get_static_pad (agnosticbin, "sink");
+  peerpad = gst_pad_get_peer (sinkpad);
+  audiorate = gst_pad_get_parent_element (peerpad);
+  gst_object_unref (sinkpad);
+  gst_object_unref (peerpad);
+
+  sinkpad = gst_element_get_static_pad (audiorate, "sink");
+  peerpad = gst_pad_get_peer (sinkpad);
+  typefind = gst_pad_get_parent_element (peerpad);
+  gst_object_unref (sinkpad);
+  gst_object_unref (peerpad);
+
+  gst_element_unlink_many (typefind, audiorate, agnosticbin, NULL);
+  gst_element_set_state (typefind, GST_STATE_NULL);
+  gst_element_set_state (audiorate, GST_STATE_NULL);
+  gst_element_set_state (agnosticbin, GST_STATE_NULL);
+  gst_bin_remove_many (GST_BIN (self), typefind, audiorate, agnosticbin, NULL);
+
+  gst_object_unref (audiorate);
+  gst_object_unref (typefind);
+  gst_object_unref (self);
+
+  if (wait != NULL)
+    ONE_STEP_DONE (wait);
+}
+
+static gboolean
+unlink_agnosticbin (GstElement * agnosticbin)
+{
+  GValue val = G_VALUE_INIT;
+  GstIterator *it;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_src_pads (agnosticbin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *srcpad, *sinkpad;
+        GstElement *adder;
+
+        srcpad = g_value_get_object (&val);
+        sinkpad = gst_pad_get_peer (srcpad);
+        adder = gst_pad_get_parent_element (sinkpad);
+
+        gst_pad_unlink (srcpad, sinkpad);
+        gst_element_release_request_pad (adder, sinkpad);
+        gst_element_release_request_pad (agnosticbin, srcpad);
+
+        gst_object_unref (sinkpad);
+        gst_object_unref (adder);
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's src pads",
+            GST_ELEMENT_NAME (agnosticbin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+  destroy_sink_elements (agnosticbin);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+agnosticbin_counter_done (GstElement * agnosticbin)
+{
+  KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (agnosticbin));
+
+  /* All EOS on agnosticbin are been received */
+  if (self == NULL)
+    return;
+
+  /* We can not access to some GstPad functions because of mutex deadlocks */
+  /* So we are going to manage all the stuff in a separate thread */
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
+      (GSourceFunc) unlink_agnosticbin, agnosticbin, NULL);
+
+  gst_object_unref (self);
+}
+
+static void
+agnosticbin_set_EOS_cb (GstElement * agnostic)
+{
+  struct callback_counter *counter;
+  GValue val = G_VALUE_INIT;
+  GstIterator *it;
+  gboolean done = FALSE;
+
+  counter =
+      create_callback_counter (agnostic,
+      (GDestroyNotify) agnosticbin_counter_done);
+
+  it = gst_element_iterate_src_pads (agnostic);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *srcpad;
+
+        srcpad = g_value_get_object (&val);
+
+        /* install new probe for EOS */
+        callback_count_inc (counter);
+        gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BLOCK |
+            GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, event_probe_cb, counter,
+            (GDestroyNotify) callback_count_dec);
+
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's src pads",
+            GST_ELEMENT_NAME (agnostic));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  callback_count_dec (counter);
+  gst_iterator_free (it);
+}
+
+static void
+unlink_pad_in_playing (GstPad * pad, GstElement * agnosticbin,
+    GstElement * adder)
+{
+  WaitCond *wait;
+
+  wait = create_wait_condition (1);
+  g_object_set_data (G_OBJECT (agnosticbin), KEY_CONDITION, wait);
+
+  agnosticbin_set_EOS_cb (agnosticbin);
+
+  /* push EOS into the element, the probe will be fired when the */
+  /* EOS leaves the effect and it has thus drained all of its data */
+  gst_pad_send_event (pad, gst_event_new_eos ());
+
+  GST_DEBUG ("TODO: %" GST_PTR_FORMAT, adder);
+  WAIT_UNTIL_DONE (wait);
+
+  destroy_wait_condition (wait);
+}
+
+static void
+unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  GstElement *agnostic, *adder, *parent;
+  KmsAudioMixer *self;
+  gchar *padname;
+
+  GST_DEBUG ("Unlinked pad %" GST_PTR_FORMAT, pad);
+  parent = gst_pad_get_parent_element (pad);
+
+  if (parent == NULL)
+    return;
+
+  self = KMS_AUDIO_MIXER (parent);
+
+  if (gst_pad_get_direction (pad) != GST_PAD_SINK)
+    return;
+
+  padname = gst_pad_get_name (pad);
+
+  KMS_AUDIO_MIXER_LOCK (self);
+
+  agnostic = g_hash_table_lookup (self->priv->agnostics, padname);
+  adder = g_hash_table_lookup (self->priv->adders, padname);
+
+  g_hash_table_steal (self->priv->agnostics, padname);
+  g_hash_table_steal (self->priv->adders, padname);
+
+  KMS_AUDIO_MIXER_UNLOCK (self);
+
+  g_free (padname);
+
+  if (GST_STATE (parent) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (parent) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (parent) >= GST_STATE_PAUSED) {
+    unlink_pad_in_playing (pad, agnostic, adder);
+  } else {
+    unlink_agnosticbin (agnostic);
+  }
+
+  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
+  gst_object_unref (parent);
+}
+
 static GstPad *
 kms_audio_mixer_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -286,13 +606,27 @@ kms_audio_mixer_request_new_pad (GstElement * element,
 
   KMS_AUDIO_MIXER_UNLOCK (self);
 
+  g_signal_connect (G_OBJECT (pad), "unlinked",
+      G_CALLBACK (unlinked_pad), NULL);
+
   return pad;
 }
 
 static void
 kms_audio_mixer_release_pad (GstElement * element, GstPad * pad)
 {
-  GST_DEBUG ("Remove pad %" GST_PTR_FORMAT, pad);
+  GST_DEBUG ("Release pad %" GST_PTR_FORMAT, pad);
+
+  if (gst_pad_get_direction (pad) != GST_PAD_SINK)
+    return;
+
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED) {
+    gst_pad_set_active (pad, FALSE);
+  }
+
+  gst_element_remove_pad (element, pad);
 }
 
 static void
@@ -333,6 +667,7 @@ kms_audio_mixer_init (KmsAudioMixer * self)
       NULL);
 
   g_rec_mutex_init (&self->priv->mutex);
+  self->priv->loop = kms_loop_new ();
 
   g_object_set (G_OBJECT (self), "async-handling", TRUE, NULL);
 }
