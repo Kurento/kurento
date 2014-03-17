@@ -22,8 +22,25 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
     void add${event.name}Listener(MediaEventListener<${event.name}Event> listener, Continuation<ListenerRegistration> cont);
     </#list>
 
-	<#if !remoteClass.extends??>void release();</#if>
-	<#if !remoteClass.extends??>void release(Continuation<Void> continuation);</#if>
+	<#if !remoteClass.extends??>
+    /**
+     *
+     * Explicitly release a media object form memory. All of its children
+     * will also be released.
+     *
+     **/
+    void release();
+    /**
+     *
+     * Explicitly release a media object form memory. All of its children
+     * will also be released. Asynchronous call.
+     *
+     * @param continuation {@link #onSuccess(void)} will be called when the actions complete.
+     *                     {@link #onError} will be called if there is an exception.
+     *
+     **/
+	void release(Continuation<Void> continuation);
+    </#if>
 
     <#--Factory methods for other elements -->
     <#list model.remoteClasses as otherRemoteClass>
