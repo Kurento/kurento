@@ -30,6 +30,16 @@
 #define NEIGHBORS ((int) 8)
 #define GRAY_THRESHOLD_VALUE ((int) 45)
 #define EDGE_THRESHOLD ((int) 45)
+#define NUMBER_FEATURES_OPTICAL_FLOW ((int) 400)
+#define WINDOW_SIZE_OPTICAL_FLOW ((int) 5)
+#define MAX_ITER_OPTICAL_FLOW ((int) 20)
+#define EPSILON_OPTICAL_FLOW ((float) 0.3)
+#define HARRIS_DETECTOR_K ((float) 0.04)
+#define USE_HARRIS_DETECTOR (FALSE)
+#define BLOCK_SIZE ((int) 3)
+#define QUALITY_LEVEL ((float) 0.01)
+#define MIN_DISTANCE ((float) 0.01)
+#define HYPOTENUSE_THRESHOLD ((float) 3.0)
 
 GST_DEBUG_CATEGORY_STATIC (kms_crowd_detector_debug_category);
 #define GST_CAT_DEFAULT kms_crowd_detector_debug_category
@@ -62,12 +72,13 @@ typedef struct _RoiData
   int fluidity_level_max;
   int fluidity_num_frames_to_event;
   gboolean send_fluidity_event;
+  gboolean send_optical_flow_event;
 } RoiData;
 
 struct _KmsCrowdDetectorPrivate
 {
   IplImage *actual_image, *previous_lbp, *frame_previous_gray, *background,
-      *acumulated_edges, *acumulated_lbp;
+      *acumulated_edges, *acumulated_lbp, *previous_image;
   gboolean show_debug_info;
   int num_rois;
   CvPoint **curves;
@@ -99,6 +110,123 @@ G_DEFINE_TYPE_WITH_CODE (KmsCrowdDetector, kms_crowd_detector,
     GST_TYPE_VIDEO_FILTER,
     GST_DEBUG_CATEGORY_INIT (kms_crowd_detector_debug_category, PLUGIN_NAME,
         0, "debug category for crowddetector element"));
+
+static void
+kms_crowd_detector_compute_roi_direction_vector (KmsCrowdDetector *
+    crowddetector, int number_of_features,
+    char optical_flow_found_feature[NUMBER_FEATURES_OPTICAL_FLOW],
+    CvPoint2D32f frame1_features[NUMBER_FEATURES_OPTICAL_FLOW],
+    CvPoint2D32f frame2_features[NUMBER_FEATURES_OPTICAL_FLOW], CvScalar Color,
+    IplImage * binary_actual_motion, CvRect container)
+{
+  CvPoint p, q;
+  double hypotenuse;
+  int it;
+  int total_x = 0;
+  int total_y = 0;
+  int total_counter = 0;
+
+  for (it = 0; it < number_of_features; it++) {
+    if (optical_flow_found_feature[it] == 0) {
+      continue;
+    }
+
+    if (((int) frame1_features[it].x < 0)
+        || ((int) frame1_features[it].x > container.width)
+        || ((int) frame1_features[it].y < 0)
+        || ((int) frame1_features[it].y > container.height)) {
+      continue;
+    }
+
+    p.x = (int) frame1_features[it].x;
+    p.y = (int) frame1_features[it].y;
+    q.x = (int) frame2_features[it].x;
+    q.y = (int) frame2_features[it].y;
+
+    hypotenuse = sqrt (pow ((p.y - q.y), 2) + pow ((p.x - q.x), 2));
+
+    if ((*(uchar *) (binary_actual_motion->imageData +
+                (p.y + container.y) * binary_actual_motion->widthStep +
+                (p.x + container.x) * 1) == 255)
+        && (hypotenuse > HYPOTENUSE_THRESHOLD)) {
+      total_x = total_x + (q.x - p.x);
+      total_y = total_y + (q.y - p.y);
+      total_counter++;
+    }
+  }
+
+  if (total_counter > 0) {
+    cvLine (crowddetector->priv->actual_image,
+        cvPoint (container.width / 2, container.height / 2),
+        cvPoint (container.width / 2 + total_x, container.height / 2 + total_y),
+        CV_RGB (0, 255, 0), 6, CV_AA, 0);
+  }
+
+  cvCircle (crowddetector->priv->actual_image,
+      cvPoint (container.width / 2, container.height / 2),
+      5, CV_RGB (0, 255, 0), 2, 5, 0);
+}
+
+static void
+kms_crowd_detector_compute_optical_flow (KmsCrowdDetector * crowddetector,
+    IplImage * binary_actual_motion, CvRect container)
+{
+  IplImage *eig_image;
+  IplImage *temp_image;
+  IplImage *frame1_1C;
+  IplImage *frame2_1C;
+  IplImage *pyramid1;
+  IplImage *pyramid2;
+  CvSize frame_size;
+  CvPoint2D32f frame2_features[NUMBER_FEATURES_OPTICAL_FLOW];
+  char optical_flow_found_feature[NUMBER_FEATURES_OPTICAL_FLOW];
+  float optical_flow_feature_error[NUMBER_FEATURES_OPTICAL_FLOW];
+  CvPoint2D32f frame1_features[NUMBER_FEATURES_OPTICAL_FLOW];
+  int number_of_features = NUMBER_FEATURES_OPTICAL_FLOW;
+  CvSize optical_flow_window =
+      cvSize (WINDOW_SIZE_OPTICAL_FLOW, WINDOW_SIZE_OPTICAL_FLOW);
+
+  frame_size.width = crowddetector->priv->actual_image->width;
+  frame_size.height = crowddetector->priv->actual_image->height;
+
+  eig_image = cvCreateImage (frame_size, IPL_DEPTH_8U, 1);
+  frame1_1C = cvCreateImage (frame_size, IPL_DEPTH_8U, 1);
+  frame2_1C = cvCreateImage (frame_size, IPL_DEPTH_8U, 1);
+
+  cvConvertImage (crowddetector->priv->actual_image, frame1_1C, 0);
+  cvConvertImage (crowddetector->priv->previous_image, frame2_1C, 0);
+  temp_image = cvCreateImage (frame_size, IPL_DEPTH_32F, 1);
+
+  cvGoodFeaturesToTrack (frame1_1C, eig_image, temp_image, frame1_features,
+      &number_of_features, QUALITY_LEVEL, MIN_DISTANCE, NULL,
+      BLOCK_SIZE, USE_HARRIS_DETECTOR, HARRIS_DETECTOR_K);
+
+  CvTermCriteria optical_flow_termination_criteria =
+      cvTermCriteria (CV_TERMCRIT_ITER | CV_TERMCRIT_EPS,
+      MAX_ITER_OPTICAL_FLOW, EPSILON_OPTICAL_FLOW);
+
+  pyramid1 = cvCreateImage (frame_size, IPL_DEPTH_8U, 1);
+  pyramid2 = cvCreateImage (frame_size, IPL_DEPTH_8U, 1);
+
+  cvCalcOpticalFlowPyrLK (frame2_1C, frame1_1C, pyramid1, pyramid2,
+      frame1_features, frame2_features, number_of_features,
+      optical_flow_window, 3, optical_flow_found_feature,
+      optical_flow_feature_error, optical_flow_termination_criteria, 0);
+
+  cvCopy (crowddetector->priv->actual_image,
+      crowddetector->priv->previous_image, 0);
+
+  kms_crowd_detector_compute_roi_direction_vector (crowddetector,
+      number_of_features, optical_flow_found_feature, frame1_features,
+      frame2_features, CV_RGB (255, 0, 0), binary_actual_motion, container);
+
+  cvReleaseImage (&eig_image);
+  cvReleaseImage (&temp_image);
+  cvReleaseImage (&frame1_1C);
+  cvReleaseImage (&frame2_1C);
+  cvReleaseImage (&pyramid1);
+  cvReleaseImage (&pyramid2);
+}
 
 static void
 kms_crowd_detector_release_data (KmsCrowdDetector * crowddetector)
@@ -136,9 +264,9 @@ static void
 kms_crowd_detector_count_num_pixels_rois (KmsCrowdDetector * self)
 {
   int curve;
+
   IplImage *src = cvCreateImage (cvSize (self->priv->actual_image->width,
-          self->priv->actual_image->height),
-      IPL_DEPTH_8U, 1);
+          self->priv->actual_image->height), IPL_DEPTH_8U, 1);
 
   for (curve = 0; curve < self->priv->num_rois; curve++) {
     cvFillConvexPoly (src, self->priv->curves[curve],
@@ -233,7 +361,9 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             &self->priv->rois_data[it].fluidity_num_frames_to_event, NULL);
         gst_structure_get (point, "send_fluidity_event", G_TYPE_BOOLEAN,
             &self->priv->rois_data[it].send_fluidity_event, NULL);
-        GST_DEBUG ("rois info loaded: %s %d %d %d %d %d %d %d %d %d %d",
+        gst_structure_get (point, "send_optical_flow_event", G_TYPE_BOOLEAN,
+            &self->priv->rois_data[it].send_optical_flow_event, NULL);
+        GST_DEBUG ("rois info loaded: %s %d %d %d %d %d %d %d %d %d %d %d",
             self->priv->rois_data[it].name,
             self->priv->rois_data[it].occupancy_level_min,
             self->priv->rois_data[it].occupancy_level_med,
@@ -244,7 +374,8 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             self->priv->rois_data[it].fluidity_level_med,
             self->priv->rois_data[it].fluidity_level_max,
             self->priv->rois_data[it].fluidity_num_frames_to_event,
-            self->priv->rois_data[it].send_fluidity_event);
+            self->priv->rois_data[it].send_fluidity_event,
+            self->priv->rois_data[it].send_optical_flow_event);
       }
 
       gst_structure_free (point);
@@ -324,6 +455,7 @@ kms_crowd_detector_release_images (KmsCrowdDetector * crowddetector)
   cvReleaseImage (&crowddetector->priv->background);
   cvReleaseImage (&crowddetector->priv->acumulated_edges);
   cvReleaseImage (&crowddetector->priv->acumulated_lbp);
+  cvReleaseImage (&crowddetector->priv->previous_image);
 }
 
 static void
@@ -392,6 +524,9 @@ kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
   crowddetector->priv->acumulated_lbp =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
+  crowddetector->priv->previous_image =
+      cvCreateImage (cvSize (frame->info.width, frame->info.height),
+      IPL_DEPTH_8U, 3);
 }
 
 static void
@@ -679,40 +814,52 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
   }
 }
 
+static CvRect
+kms_crowd_detector_get_square_roi_contaniner (KmsCrowdDetector * crowddetector,
+    int curve)
+{
+  int w1, w2, h1, h2;
+  CvRect container;
+  int point;
+
+  w1 = crowddetector->priv->actual_image->width;
+  h1 = crowddetector->priv->actual_image->height;
+  w2 = 0;
+  h2 = 0;
+
+  for (point = 0; point < crowddetector->priv->n_points[curve]; point++) {
+    if (crowddetector->priv->curves[curve][point].x < w1)
+      w1 = crowddetector->priv->curves[curve][point].x;
+    if (crowddetector->priv->curves[curve][point].x > w2)
+      w2 = crowddetector->priv->curves[curve][point].x;
+    if (crowddetector->priv->curves[curve][point].y < h1)
+      h1 = crowddetector->priv->curves[curve][point].y;
+    if (crowddetector->priv->curves[curve][point].y > h2)
+      h2 = crowddetector->priv->curves[curve][point].y;
+  }
+
+  container.x = w1;
+  container.y = h1;
+  container.width = abs (w2 - w1);
+  container.height = abs (h2 - h1);
+
+  return container;
+}
+
 static void
 kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
     IplImage * low_speed_map, IplImage * high_speed_map)
 {
-  int curve, point;
+  int curve;
 
   for (curve = 0; curve < crowddetector->priv->num_rois; curve++) {
-    int w1, w2, h1, h2;
+
     int high_speed_points = 0;
     int low_speed_points = 0;
     int total_pixels_occupied = 0;
     double occupation_percentage = 0;
-    CvRect container;
-
-    w1 = crowddetector->priv->actual_image->width;
-    h1 = crowddetector->priv->actual_image->height;
-    w2 = 0;
-    h2 = 0;
-
-    for (point = 0; point < crowddetector->priv->n_points[curve]; point++) {
-      if (crowddetector->priv->curves[curve][point].x < w1)
-        w1 = crowddetector->priv->curves[curve][point].x;
-      if (crowddetector->priv->curves[curve][point].x > w2)
-        w2 = crowddetector->priv->curves[curve][point].x;
-      if (crowddetector->priv->curves[curve][point].y < h1)
-        h1 = crowddetector->priv->curves[curve][point].y;
-      if (crowddetector->priv->curves[curve][point].y > h2)
-        h2 = crowddetector->priv->curves[curve][point].y;
-    }
-
-    container.x = w1;
-    container.y = h1;
-    container.width = abs (w2 - w1);
-    container.height = abs (h2 - h1);
+    CvRect container =
+        kms_crowd_detector_get_square_roi_contaniner (crowddetector, curve);
 
     cvRectangle (low_speed_map, cvPoint (container.x, container.y),
         cvPoint (container.x + container.width, container.y + container.height),
@@ -805,6 +952,10 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 3);
+  IplImage *binary_actual_motion =
+      cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
+          crowddetector->priv->actual_image->height),
+      IPL_DEPTH_8U, 1);
 
   uint8_t *low_speed_pointer;
   uint8_t *low_speed_pointer_aux;
@@ -812,11 +963,14 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   uint8_t *high_speed_pointer_aux;
   uint8_t *actual_motion_pointer;
   uint8_t *actual_motion_pointer_aux;
+  uint8_t *binary_actual_motion_pointer;
+  uint8_t *binary_actual_motion_pointer_aux;
 
   int w, h;
 
   cvSet (actual_motion, CV_RGB (0, 0, 0), 0);
   cvZero (actual_image_masked);
+  cvZero (binary_actual_motion);
   cvZero (high_speed_map);
   cvZero (low_speed_map);
   if (crowddetector->priv->num_rois != 0) {
@@ -887,28 +1041,55 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   low_speed_pointer = (uint8_t *) low_speed_map->imageData;
   high_speed_pointer = (uint8_t *) high_speed_map->imageData;
   actual_motion_pointer = (uint8_t *) actual_motion->imageData;
+  binary_actual_motion_pointer = (uint8_t *) binary_actual_motion->imageData;
 
   for (h = 0; h < low_speed_map->height; h++) {
     low_speed_pointer_aux = low_speed_pointer;
     high_speed_pointer_aux = high_speed_pointer;
     actual_motion_pointer_aux = actual_motion_pointer;
+    binary_actual_motion_pointer_aux = binary_actual_motion_pointer;
     for (w = 0; w < low_speed_map->width; w++) {
       if (*high_speed_pointer_aux == 0) {
         actual_motion_pointer_aux[0] = 255;
+        binary_actual_motion_pointer_aux[0] = 255;
       }
       if (*low_speed_pointer_aux == 255) {
         *actual_motion_pointer_aux = 0;
         actual_motion_pointer_aux[2] = 255;
+        binary_actual_motion_pointer_aux[0] = 255;
       } else if (*high_speed_pointer_aux == 0) {
         actual_motion_pointer_aux[0] = 255;
       }
       low_speed_pointer_aux++;
       high_speed_pointer_aux++;
       actual_motion_pointer_aux = actual_motion_pointer_aux + 3;
+      binary_actual_motion_pointer_aux++;
     }
     low_speed_pointer += low_speed_map->widthStep;
     high_speed_pointer += high_speed_map->widthStep;
     actual_motion_pointer += actual_motion->widthStep;
+    binary_actual_motion_pointer += binary_actual_motion->widthStep;
+  }
+
+  int curve;
+
+  for (curve = 0; curve < crowddetector->priv->num_rois; curve++) {
+
+    if (crowddetector->priv->rois_data[curve].send_optical_flow_event == TRUE) {
+
+      CvRect container =
+          kms_crowd_detector_get_square_roi_contaniner (crowddetector, curve);
+
+      cvSetImageROI (crowddetector->priv->actual_image, container);
+      cvSetImageROI (crowddetector->priv->previous_image, container);
+      cvSetImageROI (actual_motion, container);
+
+      kms_crowd_detector_compute_optical_flow (crowddetector,
+          binary_actual_motion, container);
+
+      cvResetImageROI (crowddetector->priv->actual_image);
+      cvResetImageROI (crowddetector->priv->previous_image);
+    }
   }
 
   {
@@ -957,6 +1138,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   cvReleaseImage (&low_speed_map);
   cvReleaseImage (&high_speed_map);
   cvReleaseImage (&actual_motion);
+  cvReleaseImage (&binary_actual_motion);
 
   gst_buffer_unmap (frame->buffer, &info);
 
