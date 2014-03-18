@@ -21,6 +21,7 @@
 #include "kms-marshal.h"
 #include "kmsmixerport.h"
 #include "kmsloop.h"
+#include "kmsaudiomixer.h"
 
 #define N_ELEMENTS_WIDTH 2
 
@@ -46,6 +47,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_composite_mixer_debug_category);
 struct _KmsCompositeMixerPrivate
 {
   GstElement *videomixer;
+  GstElement *audiomixer;
   GHashTable *ports;
   GstElement *mixer_audio_agnostic;
   GstElement *mixer_video_agnostic;
@@ -238,11 +240,21 @@ kms_composite_mixer_port_data_destroy (gpointer data)
 {
   KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) data;
   KmsCompositeMixer *self = port_data->mixer;
+  GstPad *audiosink;
+  gchar *padname;
 
   KMS_COMPOSITE_MIXER_LOCK (self);
 
   kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
   kms_base_hub_unlink_audio_sink (KMS_BASE_HUB (self), port_data->id);
+
+  padname = g_strdup_printf (AUDIO_SINK_PAD, port_data->id);
+  audiosink = gst_element_get_static_pad (self->priv->audiomixer, padname);
+
+  gst_element_release_request_pad (self->priv->audiomixer, audiosink);
+
+  gst_object_unref (audiosink);
+  g_free (padname);
 
   KMS_COMPOSITE_MIXER_UNLOCK (self);
 
@@ -356,25 +368,26 @@ static KmsCompositeMixerPortData *
 kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
 {
   KmsCompositeMixerPortData *data = g_slice_new0 (KmsCompositeMixerPortData);
+  gchar *padname;
 
   data->mixer = mixer;
   data->video_agnostic = gst_element_factory_make ("agnosticbin", NULL);
-  data->audio_agnostic = gst_element_factory_make ("agnosticbin", NULL);
+
   data->id = id;
   data->input = FALSE;
 
-  gst_bin_add_many (GST_BIN (mixer), data->audio_agnostic,
-      data->video_agnostic, NULL);
+  gst_bin_add_many (GST_BIN (mixer), data->video_agnostic, NULL);
 
   gst_element_sync_state_with_parent (data->video_agnostic);
-  gst_element_sync_state_with_parent (data->audio_agnostic);
 
   /*link basemixer -> video_agnostic */
   kms_base_hub_link_video_sink (KMS_BASE_HUB (mixer), id,
       data->video_agnostic, "sink", FALSE);
 
+  padname = g_strdup_printf (AUDIO_SINK_PAD, id);
   kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
-      data->audio_agnostic, "sink", FALSE);
+      mixer->priv->audiomixer, padname, FALSE);
+  g_free (padname);
 
   data->agnostic_sink_pad =
       gst_element_get_static_pad (data->video_agnostic, "sink");
@@ -383,6 +396,50 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
       (GstPadProbeCallback) link_to_videomixer, data, NULL);
 
   return data;
+}
+
+static gint
+get_stream_id_from_padname (const gchar * name)
+{
+  gint64 id;
+
+  if (name == NULL)
+    return -1;
+
+  if (!g_str_has_prefix (name, AUDIO_SRC_PAD_PREFIX))
+    return -1;
+
+  id = g_ascii_strtoll (name + LENGTH_AUDIO_SRC_PAD_PREFIX, NULL, 10);
+  if (id > G_MAXINT)
+    return -1;
+
+  return id;
+}
+
+static void
+pad_added_cb (GstElement * element, GstPad * pad, gpointer data)
+{
+  gint id;
+  KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (data);
+
+  if (gst_pad_get_direction (pad) != GST_PAD_SRC)
+    return;
+
+  id = get_stream_id_from_padname (GST_OBJECT_NAME (pad));
+
+  if (id < 0) {
+    GST_ERROR_OBJECT (self, "Invalid HubPort for %" GST_PTR_FORMAT, pad);
+    return;
+  }
+
+  kms_base_hub_link_audio_src (KMS_BASE_HUB (self), id,
+      self->priv->audiomixer, GST_OBJECT_NAME (pad), TRUE);
+}
+
+static void
+pad_removed_cb (GstElement * element, GstPad * pad, gpointer data)
+{
+  GST_DEBUG ("Removed pad %" GST_PTR_FORMAT, pad);
 }
 
 static gint
@@ -420,6 +477,18 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
 
     gst_element_link_many (self->priv->videomixer, videorate_mixer,
         self->priv->mixer_video_agnostic, NULL);
+  }
+
+  if (self->priv->audiomixer == NULL) {
+    self->priv->audiomixer = gst_element_factory_make ("audiomixer", NULL);
+
+    gst_bin_add (GST_BIN (mixer), self->priv->audiomixer);
+
+    gst_element_sync_state_with_parent (self->priv->audiomixer);
+    g_signal_connect (self->priv->audiomixer, "pad-added",
+        G_CALLBACK (pad_added_cb), self);
+    g_signal_connect (self->priv->audiomixer, "pad-removed",
+        G_CALLBACK (pad_removed_cb), self);
   }
   kms_base_hub_link_video_src (KMS_BASE_HUB (self), port_id,
       self->priv->mixer_video_agnostic, "src_%u", TRUE);
