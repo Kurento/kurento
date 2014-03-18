@@ -57,17 +57,16 @@ public:
   public:
     Factory () {};
 
-    virtual std::shared_ptr<MediaObject> createObject (const Json::Value
-        &params);
-
     virtual std::string getName () {
       return "${remoteClass.name}";
     };
 
   private:
 
+    virtual MediaObject * createObjectPointer (const Json::Value &params);
+
     <#list remoteClass.constructors as constructor><#rt>
-    std::shared_ptr<MediaObject> createObject (<#rt>
+    MediaObject * createObject (<#rt>
      <#lt><#list constructor.params as param><#rt>
         <#lt>${getCppObjectType(param.type, true)} ${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>

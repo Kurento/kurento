@@ -12,7 +12,7 @@ ${remoteClass.name}.cpp
 namespace kurento {
 
 <#if (!remoteClass.abstract) && (remoteClass.constructors[0])??>
-std::shared_ptr<MediaObject> ${remoteClass.name}::Factory::createObject (const Json::Value &params)
+MediaObject * ${remoteClass.name}::Factory::createObjectPointer (const Json::Value &params)
 {
   <#list remoteClass.constructors[0].params as param>
   ${getCppObjectType(param.type, false)} ${param.name}<#rt>
@@ -73,8 +73,8 @@ ${remoteClass.name}::Factory::StaticConstructor::StaticConstructor()
     objectRegistrar->registerFactory(factory);
   }
 }
-</#if>
 
+</#if>
 void
 ${remoteClass.name}::Invoker::invoke (std::shared_ptr<MediaObject> obj,
     const std::string &methodName, const Json::Value &params,
