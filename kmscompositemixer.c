@@ -53,7 +53,6 @@ struct _KmsCompositeMixerPrivate
   GRecMutex mutex;
   gint n_elems;
   gint output_width, output_height;
-  gint counter;
 };
 
 typedef struct _KmsCompositeMixerPortData KmsCompositeMixerPortData;
@@ -80,46 +79,191 @@ G_DEFINE_TYPE_WITH_CODE (KmsCompositeMixer, kms_composite_mixer,
         0, "debug category for compositemixer element"));
 
 static void
-kms_composite_mixer_recalculate_sizes (gpointer key, gpointer value,
-    gpointer data)
+kms_composite_mixer_recalculate_sizes (gpointer data)
 {
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (data);
-  KmsCompositeMixerPortData *port_data = value;
   GstCaps *filtercaps;
-  gint width, height, top, left;
+  gint width, height, top, left, counter;
+  GHashTableIter iter;
+  gpointer key, value;
 
-  if (port_data->input == FALSE) {
-    return;
+  counter = 0;
+
+  g_hash_table_iter_init (&iter, self->priv->ports);
+  while (g_hash_table_iter_next (&iter, &key, &value)) {
+    KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) value;
+
+    if (port_data->input == FALSE) {
+      return;
+    }
+
+    if (self->priv->n_elems == 1) {
+      width = self->priv->output_width;
+    } else {
+      width = self->priv->output_width / N_ELEMENTS_WIDTH;
+    }
+
+    if (self->priv->n_elems < N_ELEMENTS_WIDTH) {
+      height = self->priv->output_height;
+    } else {
+      height =
+          self->priv->output_height / ((self->priv->n_elems /
+              N_ELEMENTS_WIDTH) + (self->priv->n_elems % N_ELEMENTS_WIDTH));
+    }
+    filtercaps =
+        gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
+        "width", G_TYPE_INT, width, "height", G_TYPE_INT, height,
+        "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
+    g_object_set (G_OBJECT (port_data->capsfilter), "caps", filtercaps, NULL);
+    gst_caps_unref (filtercaps);
+
+    top = ((counter / N_ELEMENTS_WIDTH) * height);
+    left = ((counter % N_ELEMENTS_WIDTH) * width);
+
+    g_object_set (port_data->video_mixer_pad, "xpos", left, "ypos", top,
+        "alpha", 1.0, NULL);
+    counter++;
+
+    GST_DEBUG ("top %d left %d width %d height %d", top, left, width, height);
+  }
+}
+
+static gboolean
+remove_elements_from_pipeline (gpointer data)
+{
+  KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) data;
+  KmsCompositeMixer *self = port_data->mixer;
+
+  KMS_COMPOSITE_MIXER_LOCK (self);
+
+  gst_element_unlink (port_data->capsfilter,
+      port_data->mixer->priv->videomixer);
+
+  if (port_data->video_mixer_pad != NULL) {
+    gst_element_release_request_pad (self->priv->videomixer,
+        port_data->video_mixer_pad);
+    g_object_unref (port_data->video_mixer_pad);
+    port_data->video_mixer_pad = NULL;
   }
 
-  if (self->priv->n_elems == 1) {
-    width = self->priv->output_width;
+  g_object_ref (port_data->video_agnostic);
+  g_object_ref (port_data->videorate);
+  g_object_ref (port_data->videoscale);
+  g_object_ref (port_data->capsfilter);
+
+  gst_bin_remove_many (GST_BIN (self),
+      port_data->video_agnostic, port_data->videoscale, port_data->capsfilter,
+      port_data->videorate, NULL);
+
+  kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
+
+  if (self->priv->n_elems > 0) {
+
+    self->priv->n_elems--;
+    kms_composite_mixer_recalculate_sizes (self);
+  }
+
+  gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
+  gst_element_set_state (port_data->videoscale, GST_STATE_NULL);
+  gst_element_set_state (port_data->videorate, GST_STATE_NULL);
+  gst_element_set_state (port_data->capsfilter, GST_STATE_NULL);
+
+  g_clear_object (&port_data->agnostic_sink_pad);
+  g_clear_object (&port_data->video_agnostic);
+  g_clear_object (&port_data->videoscale);
+  g_clear_object (&port_data->videorate);
+  g_clear_object (&port_data->capsfilter);
+
+  KMS_COMPOSITE_MIXER_UNLOCK (self);
+
+  return G_SOURCE_REMOVE;
+}
+
+static gboolean
+remove_agnostics_from_pipeline (gpointer data)
+{
+  KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) data;
+  KmsCompositeMixer *self = port_data->mixer;
+
+  KMS_COMPOSITE_MIXER_LOCK (self);
+
+  gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
+
+  g_object_unref (port_data->agnostic_sink_pad);
+  g_object_unref (port_data->video_agnostic);
+
+  port_data->video_agnostic = NULL;
+  port_data->agnostic_sink_pad = NULL;
+
+  KMS_COMPOSITE_MIXER_UNLOCK (self);
+  g_slice_free (KmsCompositeMixerPortData, data);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+destroy_port_data (gpointer data)
+{
+  g_slice_free (KmsCompositeMixerPortData, data);
+}
+
+static GstPadProbeReturn
+cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event;
+
+  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_EOS) {
+    return GST_PAD_PROBE_PASS;
+  }
+
+  KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) data;
+  KmsCompositeMixer *self = port_data->mixer;
+
+  KMS_COMPOSITE_MIXER_LOCK (self);
+
+  gst_pad_remove_probe (pad, port_data->probe_id);
+  event = gst_event_new_eos ();
+  gst_pad_send_event (pad, event);
+
+  KMS_COMPOSITE_MIXER_UNLOCK (self);
+
+  kms_loop_idle_add_full (self->priv->loop, 1, remove_elements_from_pipeline,
+      data, destroy_port_data);
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+kms_composite_mixer_port_data_destroy (gpointer data)
+{
+  KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) data;
+  KmsCompositeMixer *self = port_data->mixer;
+
+  KMS_COMPOSITE_MIXER_LOCK (self);
+
+  kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
+  kms_base_hub_unlink_audio_sink (KMS_BASE_HUB (self), port_data->id);
+
+  KMS_COMPOSITE_MIXER_UNLOCK (self);
+
+  if (port_data->input) {
+    GstEvent *event;
+    gboolean result;
+
+    gst_element_unlink (port_data->video_agnostic, port_data->videorate);
+
+    event = gst_event_new_eos ();
+    result = gst_element_send_event (port_data->videorate, event);
+
+    if (!result) {
+      GST_WARNING ("EOS event did not send");
+    }
   } else {
-    width = self->priv->output_width / N_ELEMENTS_WIDTH;
+    gst_pad_remove_probe (port_data->agnostic_sink_pad, port_data->probe_id);
+    g_object_ref (port_data->video_agnostic);
+    gst_bin_remove (GST_BIN (self), port_data->video_agnostic);
+    g_timeout_add_seconds (2, remove_agnostics_from_pipeline, port_data);
   }
-
-  if (self->priv->n_elems < N_ELEMENTS_WIDTH) {
-    height = self->priv->output_height;
-  } else {
-    height =
-        self->priv->output_height / ((self->priv->n_elems / N_ELEMENTS_WIDTH) +
-        (self->priv->n_elems % N_ELEMENTS_WIDTH));
-  }
-  filtercaps =
-      gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
-      "width", G_TYPE_INT, width, "height", G_TYPE_INT, height,
-      "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
-  g_object_set (G_OBJECT (port_data->capsfilter), "caps", filtercaps, NULL);
-  gst_caps_unref (filtercaps);
-
-  top = ((self->priv->counter / N_ELEMENTS_WIDTH) * height);
-  left = ((self->priv->counter % N_ELEMENTS_WIDTH) * width);
-
-  g_object_set (port_data->video_mixer_pad, "xpos", left, "ypos", top, "alpha",
-      1.0, NULL);
-  self->priv->counter++;
-
-  GST_DEBUG ("top %d left %d width %d height %d", top, left, width, height);
 }
 
 static GstPadProbeReturn
@@ -167,17 +311,23 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 
   gst_element_link (data->video_agnostic, data->videorate);
 
+  data->probe_id = gst_pad_add_probe (data->video_mixer_pad,
+      GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      (GstPadProbeCallback) cb_EOS_received, data, NULL);
+
   /*recalculate the output sizes */
   data->mixer->priv->n_elems++;
-  data->mixer->priv->counter = 0;
-
-  g_hash_table_foreach (data->mixer->priv->ports,
-      kms_composite_mixer_recalculate_sizes, data->mixer);
-  data->mixer->priv->counter = 0;
+  kms_composite_mixer_recalculate_sizes (data->mixer);
 
   KMS_COMPOSITE_MIXER_UNLOCK (data->mixer);
 
   return GST_PAD_PROBE_REMOVE;
+}
+
+static void
+release_gint (gpointer data)
+{
+  g_slice_free (gint, data);
 }
 
 static gint *
@@ -187,6 +337,19 @@ create_gint (gint value)
 
   *p = value;
   return p;
+}
+
+static void
+kms_composite_mixer_unhandle_port (KmsBaseHub * mixer, gint id)
+{
+  KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (mixer);
+
+  GST_DEBUG ("unhandle id %d", id);
+
+  g_hash_table_remove (self->priv->ports, &id);
+
+  KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
+      (kms_composite_mixer_parent_class))->unhandle_port (mixer, id);
 }
 
 static KmsCompositeMixerPortData *
@@ -328,6 +491,9 @@ kms_composite_mixer_class_init (KmsCompositeMixerClass * klass)
 
   base_hub_class->handle_port =
       GST_DEBUG_FUNCPTR (kms_composite_mixer_handle_port);
+  base_hub_class->unhandle_port =
+      GST_DEBUG_FUNCPTR (kms_composite_mixer_unhandle_port);
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsCompositeMixerPrivate));
 }
@@ -339,8 +505,8 @@ kms_composite_mixer_init (KmsCompositeMixer * self)
 
   g_rec_mutex_init (&self->priv->mutex);
 
-  self->priv->ports = g_hash_table_new (g_int_hash, g_int_equal);
-
+  self->priv->ports = g_hash_table_new_full (g_int_hash, g_int_equal,
+      release_gint, kms_composite_mixer_port_data_destroy);
   //TODO:Obtain the dimensions of the bigger input stream
   self->priv->output_height = 600;
   self->priv->output_width = 800;
