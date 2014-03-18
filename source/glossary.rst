@@ -101,18 +101,19 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         several components, providing solutions to most multimedia
         common services requirements. Those components include:
 
+        * Kurento Application Server (:term:`KAS`).
         * Kurento Media Server (:term:`KMS`).
         * Kurento Media Framework (:term:`KMF`).
         * Kurento Web SDK (:term:`KWS`).
         * Kurento Android SDK (:term:`KANDS`).
 
-    Kurento Android SDK
     KANDS
+    Kurento Android SDK
         An SDK that integrates audio and video streaming into 
         Android applications.
 
-    Kurento Application Server
     KAS
+    Kurento Application Server
         A :term:`Java EE` Application container that hosts the server side
         :term:`signalling plane` of Kurento applications. Currently
         Kurento support the use of `JBoss 7 <http://en.wikipedia.org/wiki/WildFly>`__.
