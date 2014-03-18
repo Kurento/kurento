@@ -52,14 +52,6 @@ struct _KmsAudioMixerPrivate
   guint count;
 };
 
-#define AUDIO_SINK_PAD_PREFIX  "sink_"
-#define AUDIO_SRC_PAD_PREFIX  "src_"
-
-#define AUDIO_SINK_PAD AUDIO_SINK_PAD_PREFIX "%u"
-#define AUDIO_SRC_PAD AUDIO_SRC_PAD_PREFIX "%u"
-
-#define LENGTH_AUDIO_SINK_PAD_PREFIX 5  /* sizeof("sink_") */
-
 #define RAW_AUDIO_CAPS "audio/x-raw;"
 
 /* the capabilities of the inputs and outputs. */
