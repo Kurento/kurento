@@ -26,7 +26,11 @@ namespace kurento {
 class ${dependency.name};
 </#list>
 
-class ${remoteClass.name}<#if remoteClass.extends??> : public virtual ${remoteClass.extends.name}</#if> {
+class ${remoteClass.name}<#if remoteClass.extends??><#rt>
+   <#lt> : public virtual ${remoteClass.extends.name}<#rt>
+   <#else>
+   <#lt> : public std::enable_shared_from_this<${remoteClass.name}><#rt>
+   </#if> {
 
 public:
 
