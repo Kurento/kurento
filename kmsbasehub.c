@@ -655,7 +655,7 @@ mixer_pad_added (KmsBaseHub * mixer, GstPad * pad, gpointer data)
 
   if (g_str_has_prefix (GST_OBJECT_NAME (pad), VIDEO_SRC_PAD_PREFIX)) {
     KmsBaseHubPortData *port;
-    gint id;
+    gint64 id;
     const gchar *pad_name;
 
     pad_name = GST_OBJECT_NAME (pad);
@@ -666,7 +666,7 @@ mixer_pad_added (KmsBaseHub * mixer, GstPad * pad, gpointer data)
         port->port, "mixer_video_sink");
   } else if (g_str_has_prefix (GST_OBJECT_NAME (pad), AUDIO_SRC_PAD_PREFIX)) {
     KmsBaseHubPortData *port;
-    gint id;
+    gint64 id;
     const gchar *pad_name;
 
     pad_name = GST_OBJECT_NAME (pad);
