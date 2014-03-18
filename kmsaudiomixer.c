@@ -109,6 +109,8 @@ G_DEFINE_TYPE_WITH_CODE (KmsAudioMixer, kms_audio_mixer,
 static void
 destroy_wait_condition (WaitCond * cond)
 {
+  g_mutex_clear (&cond->mutex);
+  g_cond_clear (&cond->cond);
   g_slice_free (WaitCond, cond);
 }
 
