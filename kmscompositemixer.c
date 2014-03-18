@@ -44,6 +44,43 @@ GST_DEBUG_CATEGORY_STATIC (kms_composite_mixer_debug_category);
   )                                           \
 )
 
+#define AUDIO_SINK_PAD_PREFIX_COMP "audio_sink_"
+#define VIDEO_SINK_PAD_PREFIX_COMP "video_sink_"
+#define AUDIO_SRC_PAD_PREFIX_COMP "audio_src_"
+#define VIDEO_SRC_PAD_PREFIX_COMP "video_src_"
+#define AUDIO_SINK_PAD_NAME_COMP AUDIO_SINK_PAD_PREFIX_COMP "%u"
+#define VIDEO_SINK_PAD_NAME_COMP VIDEO_SINK_PAD_PREFIX_COMP "%u"
+#define AUDIO_SRC_PAD_NAME_COMP AUDIO_SRC_PAD_PREFIX_COMP "%u"
+#define VIDEO_SRC_PAD_NAME_COMP VIDEO_SRC_PAD_PREFIX_COMP "%u"
+
+static GstStaticPadTemplate audio_sink_factory =
+GST_STATIC_PAD_TEMPLATE (AUDIO_SINK_PAD_NAME_COMP,
+    GST_PAD_SINK,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_AUDIO_CAPS)
+    );
+
+static GstStaticPadTemplate video_sink_factory =
+GST_STATIC_PAD_TEMPLATE (VIDEO_SINK_PAD_NAME_COMP,
+    GST_PAD_SINK,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_VIDEO_CAPS)
+    );
+
+static GstStaticPadTemplate audio_src_factory =
+GST_STATIC_PAD_TEMPLATE (AUDIO_SRC_PAD_NAME_COMP,
+    GST_PAD_SRC,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_AUDIO_CAPS)
+    );
+
+static GstStaticPadTemplate video_src_factory =
+GST_STATIC_PAD_TEMPLATE (VIDEO_SRC_PAD_NAME_COMP,
+    GST_PAD_SRC,
+    GST_PAD_SOMETIMES,
+    GST_STATIC_CAPS (KMS_AGNOSTIC_RAW_VIDEO_CAPS)
+    );
+
 struct _KmsCompositeMixerPrivate
 {
   GstElement *videomixer;
@@ -546,6 +583,7 @@ kms_composite_mixer_class_init (KmsCompositeMixerClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   KmsBaseHubClass *base_hub_class = KMS_BASE_HUB_CLASS (klass);
+  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
       "CompositeMixer", "Generic", "Mixer element that composes n input flows"
@@ -562,6 +600,15 @@ kms_composite_mixer_class_init (KmsCompositeMixerClass * klass)
       GST_DEBUG_FUNCPTR (kms_composite_mixer_handle_port);
   base_hub_class->unhandle_port =
       GST_DEBUG_FUNCPTR (kms_composite_mixer_unhandle_port);
+
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&audio_src_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&video_src_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&audio_sink_factory));
+  gst_element_class_add_pad_template (gstelement_class,
+      gst_static_pad_template_get (&video_sink_factory));
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsCompositeMixerPrivate));
