@@ -338,9 +338,9 @@ remove_unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
   GST_DEBUG_OBJECT (GST_OBJECT_PARENT (parent), "Removing pad %" GST_PTR_FORMAT,
       pad);
 
-  if (GST_STATE (GST_ELEMENT (parent)) <= GST_STATE_PAUSED
-      || GST_STATE_PENDING (GST_ELEMENT (parent)) <= GST_STATE_PAUSED
-      || GST_STATE_TARGET (GST_ELEMENT (parent)) <= GST_STATE_PAUSED) {
+  if (GST_STATE (GST_ELEMENT (parent)) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (GST_ELEMENT (parent)) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (GST_ELEMENT (parent)) >= GST_STATE_PAUSED) {
     gst_pad_set_active (pad, FALSE);
   }
   gst_element_remove_pad (parent, pad);
