@@ -2,16 +2,33 @@
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
-kws-media-api
-==========
+KWS Media API
+=============
 Media API for Kurento Web SDK
 
-The kws-media-api project contains the implementation of the Kurento client
+The KWS Media API project contains the implementation of the Kurento client
 side Media API for web applications.
 
+The source code of this project can be cloned from the [GitHub repository].
+
+How to test
+-----------
+Tests are autonomous, only requirement is to have exec ```npm install``` to have
+installed all the dev dependencies.
+
+To exec tests in browser, you only need to open the file ```test/index.html```
+and it will launch automatically using [QUnit]. You can be able to configure to
+what WebSocket endpoint you want to connect on the dropdown at the top of the
+tests page.
+
+To exec test in Node.js, you only need to exec ```npm test``` that will launch
+all the tests automatically using [QUnit-cli].
+
+Kurento
+=======
 
 What is Kurento
------
+---------------
 Kurento provides an open platform for video processing and streaming based on
 standards.
 
@@ -32,10 +49,7 @@ Downloads
 ---------
 To download binary releases of Kurento components visit http://kurento.org
 
-Source
-------
-The source code of this project can be cloned from the [GitHub Repository].
-Code for other Kurento projects can be found in the [GitHub Kurento Group].
+Code for other Kurento projects can be found in the [GitHub Kurento group].
 
 News and Website
 ----------------
@@ -44,7 +58,9 @@ Follow us on Twitter @[kurentoms].
 
 [KurentoImage]: https://0.gravatar.com/avatar/b8fffabbe3831731cb4c4c9667bfa439?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/kurento/kws-media-api
-[GitHub Kurento Group]: https://github.com/kurento
+[GitHub repository]: https://github.com/kurento/kws-media-api
+[GitHub Kurento group]: https://github.com/kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
+[QUnit]: http://qunitjs.com
+[QUnit-cli]: https://github.com/devongovett/qunit-cli

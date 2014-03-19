@@ -38,11 +38,6 @@ module.exports = function(grunt)
         }
     },
 
-    nodeunit:
-    {
-      all: ['test/**/*.js']
-    },
-
     curl:
     {
       'shims/sockjs-0.3.js': 'http://cdn.sockjs.org/sockjs-0.3.js'
@@ -103,7 +98,6 @@ module.exports = function(grunt)
   // Load plugins
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-curl');
 
