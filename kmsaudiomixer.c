@@ -223,7 +223,7 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
 
   audiorate = gst_element_factory_make ("audiorate", NULL);
   agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
-  adder = gst_element_factory_make ("adder", NULL);
+  adder = gst_element_factory_make ("liveadder", NULL);
 
   gst_bin_add_many (GST_BIN (self), audiorate, agnosticbin, adder, NULL);
 
@@ -518,11 +518,6 @@ unlink_adder_sources (GstElement * adder)
 
         gst_element_release_request_pad (agnosticbin, srcpad);
 
-        if (!gst_pad_send_event (sinkpad, gst_event_new_eos ())) {
-          GST_WARNING ("EOS event could not be sent on %" GST_PTR_FORMAT,
-              sinkpad);
-        }
-
         gst_object_unref (srcpad);
         gst_object_unref (agnosticbin);
         g_value_reset (&val);
@@ -585,34 +580,10 @@ remove_adder (GstElement * adder)
   return G_SOURCE_REMOVE;
 }
 
-static GstPadProbeReturn
-adder_eos_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
-{
-  KmsAudioMixer *self;
-  GstElement *adder;
-
-  if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_DATA (info)) != GST_EVENT_EOS)
-    return GST_PAD_PROBE_OK;
-
-  adder = gst_pad_get_parent_element (pad);
-  self = KMS_AUDIO_MIXER (gst_element_get_parent (adder));
-
-  /* We can not access to some GstPad functions because of mutex deadlocks */
-  /* So we are going to manage all the stuff in a separate thread */
-  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
-      (GSourceFunc) remove_adder, adder, NULL);
-
-  gst_object_unref (adder);
-  gst_object_unref (self);
-
-  return GST_PAD_PROBE_DROP;
-}
-
 static void
 unlink_pad_in_playing (GstPad * pad, GstElement * agnosticbin,
     GstElement * adder)
 {
-  GstPad *srcpad;
   WaitCond *wait;
 
   wait = create_wait_condition (2);
@@ -625,12 +596,8 @@ unlink_pad_in_playing (GstPad * pad, GstElement * agnosticbin,
   /* EOS leaves the effect and it has thus drained all of its data */
   gst_pad_send_event (pad, gst_event_new_eos ());
 
-  srcpad = gst_element_get_static_pad (adder, "src");
-  gst_pad_add_probe (srcpad, GST_PAD_PROBE_TYPE_BLOCK |
-      GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, adder_eos_cb, adder, NULL);
-  gst_object_unref (srcpad);
-
   unlink_adder_sources (adder);
+  remove_adder (adder);
 
   WAIT_UNTIL_DONE (wait);
 
