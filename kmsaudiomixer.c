@@ -99,6 +99,9 @@ struct _WaitCond
   g_mutex_unlock (&(wait)->mutex);                 \
 } while (0)
 
+static void unlink_agnosticbin (GstElement * agnosticbin);
+static void unlink_adder_sources (GstElement * adder);
+
 /* class initialization */
 
 G_DEFINE_TYPE_WITH_CODE (KmsAudioMixer, kms_audio_mixer,
@@ -258,13 +261,17 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
     return;
   }
 
+/* ERROR */
   GST_ERROR_OBJECT (self, "Can not add pad %" GST_PTR_FORMAT, pad);
 
   padname = g_object_get_data (G_OBJECT (typefind), KEY_SINK_PAD_NAME);
   g_hash_table_remove (self->priv->agnostics, padname);
   g_hash_table_remove (self->priv->adders, padname);
-  /*TODO: Unlink agnostic and adder connections */
+
   KMS_AUDIO_MIXER_UNLOCK (self);
+
+  unlink_agnosticbin (agnosticbin);
+  unlink_adder_sources (adder);
 
   gst_object_unref (pad);
 
@@ -343,7 +350,7 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 }
 
 static void
-destroy_sink_elements (GstElement * agnosticbin)
+remove_agnostic_bin (GstElement * agnosticbin)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (agnosticbin));
   GstElement *audiorate, *typefind;
@@ -378,7 +385,7 @@ destroy_sink_elements (GstElement * agnosticbin)
     ONE_STEP_DONE (wait);
 }
 
-static gboolean
+static void
 unlink_agnosticbin (GstElement * agnosticbin)
 {
   GValue val = G_VALUE_INIT;
@@ -420,7 +427,13 @@ unlink_agnosticbin (GstElement * agnosticbin)
   } while (!done);
 
   gst_iterator_free (it);
-  destroy_sink_elements (agnosticbin);
+}
+
+static gboolean
+remove_agnosticbin (GstElement * agnosticbin)
+{
+  unlink_agnosticbin (agnosticbin);
+  remove_agnostic_bin (agnosticbin);
 
   return G_SOURCE_REMOVE;
 }
@@ -437,7 +450,8 @@ agnosticbin_counter_done (GstElement * agnosticbin)
   /* We can not access to some GstPad functions because of mutex deadlocks */
   /* So we are going to manage all the stuff in a separate thread */
   kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
-      (GSourceFunc) unlink_agnosticbin, agnosticbin, NULL);
+      (GSourceFunc) remove_agnosticbin, gst_object_ref (agnosticbin),
+      gst_object_unref);
 
   gst_object_unref (self);
 }
@@ -552,7 +566,12 @@ remove_adder (GstElement * adder)
 
   srcpad = gst_element_get_static_pad (adder, "src");
   peer = gst_pad_get_peer (srcpad);
+  if (peer == NULL)
+    goto end_phase_1;
+
   internal = gst_proxy_pad_get_internal ((GstProxyPad *) peer);
+  if (internal == NULL)
+    goto end_phase_2;
 
   gst_object_ref (adder);
   gst_element_set_state (adder, GST_STATE_NULL);
@@ -570,7 +589,11 @@ remove_adder (GstElement * adder)
   gst_element_remove_pad (GST_ELEMENT (self), GST_PAD (internal));
 
   gst_object_unref (internal);
+
+end_phase_2:
   gst_object_unref (peer);
+
+end_phase_1:
   gst_object_unref (srcpad);
   gst_object_unref (self);
 
@@ -584,20 +607,32 @@ static void
 unlink_pad_in_playing (GstPad * pad, GstElement * agnosticbin,
     GstElement * adder)
 {
-  WaitCond *wait;
+  WaitCond *wait = NULL;
+  guint steps = 0;
 
-  wait = create_wait_condition (2);
-  g_object_set_data (G_OBJECT (agnosticbin), KEY_CONDITION, wait);
-  g_object_set_data (G_OBJECT (adder), KEY_CONDITION, wait);
+  if (agnosticbin != NULL)
+    steps++;
 
-  agnosticbin_set_EOS_cb (agnosticbin);
+  if (adder != NULL)
+    steps++;
 
-  /* push EOS into the element, the probe will be fired when the */
-  /* EOS leaves the effect and it has thus drained all of its data */
-  gst_pad_send_event (pad, gst_event_new_eos ());
+  wait = create_wait_condition (steps);
 
-  unlink_adder_sources (adder);
-  remove_adder (adder);
+  if (agnosticbin != NULL) {
+    g_object_set_data (G_OBJECT (agnosticbin), KEY_CONDITION, wait);
+    agnosticbin_set_EOS_cb (agnosticbin);
+
+    /* push EOS into the element, the probe will be fired when the */
+    /* EOS leaves the effect and it has thus drained all of its data */
+    gst_pad_send_event (pad, gst_event_new_eos ());
+  }
+
+  if (adder != NULL) {
+    g_object_set_data (G_OBJECT (adder), KEY_CONDITION, wait);
+
+    unlink_adder_sources (adder);
+    remove_adder (adder);
+  }
 
   WAIT_UNTIL_DONE (wait);
 
@@ -641,7 +676,14 @@ unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
       || GST_STATE_TARGET (parent) >= GST_STATE_PAUSED) {
     unlink_pad_in_playing (pad, agnostic, adder);
   } else {
-    unlink_agnosticbin (agnostic);
+    if (agnostic != NULL) {
+      unlink_agnosticbin (agnostic);
+      remove_agnostic_bin (agnostic);
+    }
+    if (adder != NULL) {
+      unlink_adder_sources (adder);
+      remove_adder (adder);
+    }
   }
 
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
