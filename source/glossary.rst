@@ -53,7 +53,8 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
 
         .. seealso::
             :rfc:`6184`
-                RTP Payload Format for H.264 Video. This RFC obsoletes :rfc:`3984`.
+                RTP Payload Format for H.264 Video. This RFC obsoletes
+                :rfc:`3984`.
 
     HTTP
         The `Hypertext Transfer Protocol <http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol>`__
