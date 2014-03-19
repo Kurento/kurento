@@ -20,7 +20,8 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  javadoc    to make javadocs of the kurento APIs into"
-	@echo "             source/kmf-*-api and _static"
+	@echo "             source/kmf-*-api, source/langdocs/javadoc to be "
+	@echo "             deployed from build/html/javadoc"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dist       to make javadoc html epub latexpdf and then copy"
 	@echo "             Kurento.{pdf,epub} in build/html and make a tgz"
@@ -47,7 +48,7 @@ help:
 clean:
 	-rm -rf $(BUILDDIR)/*
 	for p in $(APIS); do rm -rf source/$$p/com; done
-	-rm -rf source/javadoc
+	-rm -rf source/langdocs
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -96,7 +97,7 @@ javadoc:
 	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p}\
                                              -name internal -print -or -name tool -print  2>/dev/null);\
 	      } done
-		  javadoc -d source/javadoc -sourcepath $$(echo $(BUILDDIR)/javadoc/k*/src/main/java | sed -e "s@ @:@g")\
+		  javadoc -d source/langdocs/javadoc -sourcepath $$(echo $(BUILDDIR)/javadoc/k*/src/main/java | sed -e "s@ @:@g")\
 		          -link http://tomcat.apache.org/tomcat-7.0-doc/servletapi \
 		             com.kurento.kmf.media com.kurento.kmf.media.events com.kurento.kmf.media.params com.kurento.kmf.content com.kurento.kmf.repository
 

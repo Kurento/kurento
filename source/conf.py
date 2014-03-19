@@ -22,6 +22,7 @@ import sys, os
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #needs_sphinx = '1.0'
+needs_sphinx = '1.2' # For html_extra_path to javadoc, jsdoc, ...
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -129,7 +130,9 @@ html_favicon = 'images/favicon.ico'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static', 'javadoc']
+html_static_path = ['_static',]
+
+html_extra_path = ['langdocs',]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.

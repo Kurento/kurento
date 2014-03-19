@@ -7,7 +7,7 @@ Kurento Media API Documentation
 Introduction
 ============
 
-The :doc:`KMF Media API </kmf-media-api/packages>` (`javadoc <../_static/index.html?com/kurento/kmf/media/package-summary.html>`__)
+The :doc:`KMF Media API </kmf-media-api/packages>` (`javadoc <../javadoc/index.html?com/kurento/kmf/media/package-summary.html>`__)
 is a Java API exposing a toolbox of Media Elements that
 can be chained for creating complex multimedia processing pipelines.
 The abstraction and modularity of the Media API makes possible for
@@ -43,7 +43,7 @@ in the Media API.
 API Javadoc
 ===========
 
-This is the standard `javadoc of the Kurento Media API  <../_static/index.html?com/kurento/kmf/media/package-summary.html>`__
+This is the standard `javadoc of the Kurento Media API  <../javadoc/index.html?com/kurento/kmf/media/package-summary.html>`__
 classes.
 
 API Classes

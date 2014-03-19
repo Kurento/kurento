@@ -6,7 +6,7 @@ Introduction
 ============
 
 The :java:package:`com.kurento.kmf.repository` package 
-(`javadoc <../_static/index.html?com/kurento/kmf/repository/package-summary.html>`__)
+(`javadoc <../javadoc/index.html?com/kurento/kmf/repository/package-summary.html>`__)
 includes the media repository offered by the :term:`Kurento Media Framework`.
 
 The API includes a :java:type:`Repository` interface, intended to
@@ -20,7 +20,7 @@ create :java:meth:`a recorder <RepositoryItem.createRepositoryHttpRecorder>` or
 API Javadoc
 ===========
 
-This is the standard `javadoc of the Kurento Repository API  <../_static/index.html?com/kurento/kmf/repository/package-summary.html>`__ classes.
+This is the standard `javadoc of the Kurento Repository API  <../javadoc/index.html?com/kurento/kmf/repository/package-summary.html>`__ classes.
 
 API Classes
 ===========
