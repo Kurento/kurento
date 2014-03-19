@@ -65,8 +65,12 @@ public class DispatcherDemo extends WebRtcContentHandler {
 	private static final Gson gson = new GsonBuilder()
 			.excludeFieldsWithModifiers(TRANSIENT).create();
 
-	/* (non-Javadoc)
-	 * @see com.kurento.kmf.content.ContentHandler#onContentRequest(com.kurento.kmf.content.ContentSession)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.kurento.kmf.content.ContentHandler#onContentRequest(com.kurento.kmf
+	 * .content.ContentSession)
 	 */
 	@Override
 	public void onContentRequest(WebRtcContentSession session) throws Exception {
@@ -92,8 +96,9 @@ public class DispatcherDemo extends WebRtcContentHandler {
 			HubPort hubPort = dispatcher.newHubPort().build();
 			endpoint.connect(hubPort);
 			hubPort.connect(endpoint);
-			DispatcherParticipant participant = new DispatcherParticipant(Integer.toString(DispatcherDemo.globalId
-					.incrementAndGet()), name, endpoint, session, hubPort);
+			DispatcherParticipant participant = new DispatcherParticipant(
+					Integer.toString(DispatcherDemo.globalId.incrementAndGet()),
+					name, endpoint, session, hubPort);
 			session.start(participant.endpoint);
 			session.setAttribute("participant", participant);
 			participants.put(participant.getId(), participant);
@@ -134,9 +139,6 @@ public class DispatcherDemo extends WebRtcContentHandler {
 		DispatcherParticipant participant = (DispatcherParticipant) session
 				.getAttribute("participant");
 		participants.remove(participant.getId());
-
-		participant.endpoint.release();
-		participant.port.release();
 		notifyUnjoined(participant);
 
 		if (participants.isEmpty()) {
@@ -155,8 +157,9 @@ public class DispatcherDemo extends WebRtcContentHandler {
 			getLogger().error("Participant {} does not exist", partId);
 			return false;
 		}
-		partSelected.endpoint.connect(((DispatcherParticipant) session
-				.getAttribute("participant")).endpoint);
+		dispatcher
+				.connect(partSelected.port, ((DispatcherParticipant) session
+						.getAttribute("participant")).port);
 		return true;
 	}
 
