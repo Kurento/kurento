@@ -158,6 +158,22 @@ gst_dtls_dec_loop (gpointer user_data)
 
     if (caps) {
       GstQuery *alloc_query;
+      gchar *stream_id;
+
+      stream_id = gst_pad_get_stream_id (base->srcpad);
+
+      if (stream_id == NULL) {
+        stream_id = gst_pad_get_stream_id (base->sinkpad);
+
+        if (stream_id == NULL) {
+          stream_id = gst_pad_create_stream_id (base->srcpad,
+                                                GST_ELEMENT (base), NULL);
+        }
+
+        gst_pad_push_event (base->srcpad, gst_event_new_stream_start(stream_id));
+      }
+
+      g_free (stream_id);
 
       if (!gst_pad_set_caps (base->srcpad, caps)) {
         gst_caps_unref (caps);
