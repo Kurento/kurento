@@ -36,10 +36,11 @@
 #define EPSILON_OPTICAL_FLOW ((float) 0.3)
 #define HARRIS_DETECTOR_K ((float) 0.04)
 #define USE_HARRIS_DETECTOR (FALSE)
-#define BLOCK_SIZE ((int) 3)
+#define BLOCK_SIZE ((int) 5)
 #define QUALITY_LEVEL ((float) 0.01)
 #define MIN_DISTANCE ((float) 0.01)
 #define HYPOTENUSE_THRESHOLD ((float) 3.0)
+#define RADIAN_TO_DEGREE ((float) 57.3)
 
 GST_DEBUG_CATEGORY_STATIC (kms_crowd_detector_debug_category);
 #define GST_CAT_DEFAULT kms_crowd_detector_debug_category
@@ -73,6 +74,13 @@ typedef struct _RoiData
   int fluidity_num_frames_to_event;
   gboolean send_fluidity_event;
   gboolean send_optical_flow_event;
+  int actual_optical_flow_angle;
+  int potential_optical_flow_angle;
+  int num_frames_potential_optical_flow_angle;
+  int num_frames_reset_optical_flow_angle;
+  int optical_flow_num_frames_to_event;
+  int optical_flow_num_frames_to_reset;
+  int optical_flow_angle_offset;
 } RoiData;
 
 struct _KmsCrowdDetectorPrivate
@@ -112,19 +120,42 @@ G_DEFINE_TYPE_WITH_CODE (KmsCrowdDetector, kms_crowd_detector,
         0, "debug category for crowddetector element"));
 
 static void
+kms_crowd_detector_analyze_optical_flow_angle (KmsCrowdDetector *
+    self, double angle, int curve)
+{
+  if (self->priv->rois_data[curve].actual_optical_flow_angle != angle) {
+    if (self->priv->rois_data[curve].potential_optical_flow_angle == angle) {
+      self->priv->rois_data[curve].num_frames_potential_optical_flow_angle++;
+    } else {
+      self->priv->rois_data[curve].potential_optical_flow_angle = angle;
+      self->priv->rois_data[curve].num_frames_potential_optical_flow_angle = 1;
+    }
+  }
+
+  if (self->priv->rois_data[curve].num_frames_potential_optical_flow_angle >
+      self->priv->rois_data[curve].optical_flow_num_frames_to_event) {
+    GST_DEBUG ("%s --- direction:%f", self->priv->rois_data[curve].name, angle);
+    self->priv->rois_data[curve].actual_optical_flow_angle = angle;
+    self->priv->rois_data[curve].num_frames_potential_optical_flow_angle = 1;
+  }
+}
+
+static void
 kms_crowd_detector_compute_roi_direction_vector (KmsCrowdDetector *
-    crowddetector, int number_of_features,
+    self, int number_of_features,
     char optical_flow_found_feature[NUMBER_FEATURES_OPTICAL_FLOW],
     CvPoint2D32f frame1_features[NUMBER_FEATURES_OPTICAL_FLOW],
     CvPoint2D32f frame2_features[NUMBER_FEATURES_OPTICAL_FLOW], CvScalar Color,
-    IplImage * binary_actual_motion, CvRect container)
+    IplImage * binary_actual_motion, CvRect container, int curve)
 {
   CvPoint p, q;
   double hypotenuse;
+  double angle = -1;
   int it;
   int total_x = 0;
   int total_y = 0;
   int total_counter = 0;
+  int offset = self->priv->rois_data[curve].optical_flow_angle_offset;
 
   for (it = 0; it < number_of_features; it++) {
     if (optical_flow_found_feature[it] == 0) {
@@ -156,20 +187,48 @@ kms_crowd_detector_compute_roi_direction_vector (KmsCrowdDetector *
   }
 
   if (total_counter > 0) {
-    cvLine (crowddetector->priv->actual_image,
+    cvLine (self->priv->actual_image,
         cvPoint (container.width / 2, container.height / 2),
         cvPoint (container.width / 2 + total_x, container.height / 2 + total_y),
         CV_RGB (0, 255, 0), 6, CV_AA, 0);
   }
 
-  cvCircle (crowddetector->priv->actual_image,
+  cvCircle (self->priv->actual_image,
       cvPoint (container.width / 2, container.height / 2),
       5, CV_RGB (0, 255, 0), 2, 5, 0);
+
+  angle = atan2 (total_y, total_x) * RADIAN_TO_DEGREE;
+
+  if (angle > 0)
+    angle = 360 - angle;
+  else
+    angle = abs (angle);
+
+  if (angle > 0) {
+    if (angle >= 45 + offset && angle < 135 + offset)
+      angle = 90 + offset;
+    else if (angle >= 135 + offset && angle < 225 + offset)
+      angle = 180 + offset;
+    else if (angle >= 225 + offset && angle < 315 + offset)
+      angle = 270 + offset;
+    else if ((angle >= 315 + offset && angle < 360 + offset) ||
+        (angle >= 0 + offset && angle < 45 + offset))
+      angle = 0 + offset;
+    kms_crowd_detector_analyze_optical_flow_angle (self, angle, curve);
+    self->priv->rois_data[curve].num_frames_reset_optical_flow_angle = 0;
+  } else {
+    self->priv->rois_data[curve].num_frames_reset_optical_flow_angle++;
+    if (self->priv->rois_data[curve].num_frames_reset_optical_flow_angle >
+        self->priv->rois_data[curve].optical_flow_num_frames_to_reset) {
+      self->priv->rois_data[curve].actual_optical_flow_angle = -1;
+      self->priv->rois_data[curve].potential_optical_flow_angle = -1;
+    }
+  }
 }
 
 static void
 kms_crowd_detector_compute_optical_flow (KmsCrowdDetector * crowddetector,
-    IplImage * binary_actual_motion, CvRect container)
+    IplImage * binary_actual_motion, CvRect container, int curve)
 {
   IplImage *eig_image;
   IplImage *temp_image;
@@ -218,7 +277,8 @@ kms_crowd_detector_compute_optical_flow (KmsCrowdDetector * crowddetector,
 
   kms_crowd_detector_compute_roi_direction_vector (crowddetector,
       number_of_features, optical_flow_found_feature, frame1_features,
-      frame2_features, CV_RGB (255, 0, 0), binary_actual_motion, container);
+      frame2_features, CV_RGB (255, 0, 0), binary_actual_motion, container,
+      curve);
 
   cvReleaseImage (&eig_image);
   cvReleaseImage (&temp_image);
@@ -363,7 +423,16 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             &self->priv->rois_data[it].send_fluidity_event, NULL);
         gst_structure_get (point, "send_optical_flow_event", G_TYPE_BOOLEAN,
             &self->priv->rois_data[it].send_optical_flow_event, NULL);
-        GST_DEBUG ("rois info loaded: %s %d %d %d %d %d %d %d %d %d %d %d",
+        gst_structure_get (point, "optical_flow_num_frames_to_event",
+            G_TYPE_INT,
+            &self->priv->rois_data[it].optical_flow_num_frames_to_event, NULL);
+        gst_structure_get (point, "optical_flow_num_frames_to_reset",
+            G_TYPE_INT,
+            &self->priv->rois_data[it].optical_flow_num_frames_to_reset, NULL);
+        gst_structure_get (point, "optical_flow_angle_offset", G_TYPE_INT,
+            &self->priv->rois_data[it].optical_flow_angle_offset, NULL);
+        GST_DEBUG
+            ("rois info loaded: %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
             self->priv->rois_data[it].name,
             self->priv->rois_data[it].occupancy_level_min,
             self->priv->rois_data[it].occupancy_level_med,
@@ -375,7 +444,10 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             self->priv->rois_data[it].fluidity_level_max,
             self->priv->rois_data[it].fluidity_num_frames_to_event,
             self->priv->rois_data[it].send_fluidity_event,
-            self->priv->rois_data[it].send_optical_flow_event);
+            self->priv->rois_data[it].send_optical_flow_event,
+            self->priv->rois_data[it].optical_flow_num_frames_to_event,
+            self->priv->rois_data[it].optical_flow_num_frames_to_reset,
+            self->priv->rois_data[it].optical_flow_angle_offset);
       }
 
       gst_structure_free (point);
@@ -1085,7 +1157,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
       cvSetImageROI (actual_motion, container);
 
       kms_crowd_detector_compute_optical_flow (crowddetector,
-          binary_actual_motion, container);
+          binary_actual_motion, container, curve);
 
       cvResetImageROI (crowddetector->priv->actual_image);
       cvResetImageROI (crowddetector->priv->previous_image);
