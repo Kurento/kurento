@@ -19,7 +19,12 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  javadoc    to make javadocs of the kurento APIs into"
+	@echo "             source/kmf-*-api and _static"
 	@echo "  html       to make standalone HTML files"
+	@echo "  dist       to make javadoc html epub latexpdf and then copy"
+	@echo "             Kurento.{pdf,epub} in build/html and make a tgz"
+	@echo "             as kurento-docs-$${VERSION}.tgz"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
