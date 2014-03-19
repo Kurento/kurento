@@ -305,3 +305,6 @@ javadoc_url_map = {
 graphviz_output_format = 'svg'
 
 todo_include_todos = 'dev' in release
+
+# linkcheck, jboss forbids us
+linkcheck_ignore = [r'http://www.jboss.org/jbossas',]

@@ -116,7 +116,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
     Kurento Application Server
         A :term:`Java EE` Application container that hosts the server side
         :term:`signalling plane` of Kurento applications. Currently
-        Kurento support the use of `JBoss 7 <http://en.wikipedia.org/wiki/WildFly>`__.
+        Kurento support the use of `JBoss 7 <http://www.jboss.org/jbossas>`__
 
     KMF
     Kurento Media Framework
