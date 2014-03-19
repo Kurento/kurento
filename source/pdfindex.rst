@@ -32,3 +32,12 @@ Community
    :maxdepth: 2
 
    community/building-kurento-media-server.rst
+
+Component Documentation
+=======================
+
+.. toctree::
+   :maxdepth: 2
+
+   components/servers/index.rst
+

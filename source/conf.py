@@ -229,7 +229,9 @@ latex_use_parts = True
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'kurento', u'Kurento Documentation',
-     [u'kurento doc team'], 1)
+     [u'kurento doc team'], 1),
+    ('components/servers/kmf-media-connector', u'kmf-media-connector',
+		u'Kurento Media Proxy', [u'kurento doc team'], 1),
 ]
 
 # If true, show URL addresses after external links.
