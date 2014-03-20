@@ -760,6 +760,8 @@ kms_base_hub_dispose (GObject * object)
 {
   KmsBaseHub *self = KMS_BASE_HUB (object);
 
+  GST_DEBUG_OBJECT (self, "dispose");
+
   KMS_BASE_HUB_LOCK (self);
   g_hash_table_remove_all (self->priv->ports);
   KMS_BASE_HUB_UNLOCK (self);
@@ -771,6 +773,8 @@ static void
 kms_base_hub_finalize (GObject * object)
 {
   KmsBaseHub *self = KMS_BASE_HUB (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
 
   g_rec_mutex_clear (&self->priv->mutex);
 
