@@ -625,8 +625,8 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
   if (fluidity_percentage >= fluidity_level_max) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 3) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 3;
-      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
-          1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level = 1;
     } else {
       crowddetector->priv->rois_data[curve].
           num_frames_potential_fluidity_level++;
@@ -634,8 +634,8 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
   } else if (fluidity_percentage > fluidity_level_med) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 2) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 2;
-      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
-          1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level = 1;
     } else {
       crowddetector->priv->rois_data[curve].
           num_frames_potential_fluidity_level++;
@@ -643,8 +643,8 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
   } else if (fluidity_percentage > fluidity_level_min) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 1) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 1;
-      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
-          1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level = 1;
     } else {
       crowddetector->priv->rois_data[curve].
           num_frames_potential_fluidity_level++;
@@ -652,15 +652,16 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
   } else {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 0) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 0;
-      crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
-          1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level = 1;
     } else {
       crowddetector->priv->rois_data[curve].
           num_frames_potential_fluidity_level++;
     }
   }
 
-  if (crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level >
+  if (crowddetector->priv->
+      rois_data[curve].num_frames_potential_fluidity_level >
       fluid_num_frames_to_event) {
     crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
         fluid_num_frames_to_event;
