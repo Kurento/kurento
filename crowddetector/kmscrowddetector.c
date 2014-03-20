@@ -120,6 +120,52 @@ G_DEFINE_TYPE_WITH_CODE (KmsCrowdDetector, kms_crowd_detector,
         0, "debug category for crowddetector element"));
 
 static void
+kms_crowd_detector_send_message_occupacy (KmsCrowdDetector * crowddetector,
+    double occupation_percentage, int curve)
+{
+  GstStructure *s;
+  GstMessage *m;
+
+  s = gst_structure_new ("occupancy-event",
+      "roi", G_TYPE_STRING, crowddetector->priv->rois_data[curve].name,
+      "occupancy_percentage", G_TYPE_DOUBLE, occupation_percentage,
+      "occupancy_level", G_TYPE_INT,
+      crowddetector->priv->rois_data[curve].actual_occupation_level, NULL);
+  m = gst_message_new_element (GST_OBJECT (crowddetector), s);
+  gst_element_post_message (GST_ELEMENT (crowddetector), m);
+}
+
+static void
+kms_crowd_detector_send_message_fluidity (KmsCrowdDetector * crowddetector,
+    double fluidity_percentage, int curve)
+{
+  GstStructure *s;
+  GstMessage *m;
+
+  s = gst_structure_new ("fluidity-event",
+      "roi", G_TYPE_STRING, crowddetector->priv->rois_data[curve].name,
+      "fluidity_percentage", G_TYPE_DOUBLE, fluidity_percentage,
+      "fluidity_level", G_TYPE_INT,
+      crowddetector->priv->rois_data[curve].actual_fluidity_level, NULL);
+  m = gst_message_new_element (GST_OBJECT (crowddetector), s);
+  gst_element_post_message (GST_ELEMENT (crowddetector), m);
+}
+
+static void
+kms_crowd_detector_send_message_direction (KmsCrowdDetector * crowddetector,
+    double angle, int curve)
+{
+  GstStructure *s;
+  GstMessage *m;
+
+  s = gst_structure_new ("direction-event",
+      "roi", G_TYPE_STRING, crowddetector->priv->rois_data[curve].name,
+      "direction_angle", G_TYPE_DOUBLE, angle, NULL);
+  m = gst_message_new_element (GST_OBJECT (crowddetector), s);
+  gst_element_post_message (GST_ELEMENT (crowddetector), m);
+}
+
+static void
 kms_crowd_detector_analyze_optical_flow_angle (KmsCrowdDetector *
     self, double angle, int curve)
 {
@@ -135,6 +181,7 @@ kms_crowd_detector_analyze_optical_flow_angle (KmsCrowdDetector *
   if (self->priv->rois_data[curve].num_frames_potential_optical_flow_angle >
       self->priv->rois_data[curve].optical_flow_num_frames_to_event) {
     GST_DEBUG ("%s --- direction:%f", self->priv->rois_data[curve].name, angle);
+    kms_crowd_detector_send_message_direction (self, angle, curve);
     self->priv->rois_data[curve].actual_optical_flow_angle = angle;
     self->priv->rois_data[curve].num_frames_potential_optical_flow_angle = 1;
   }
@@ -812,6 +859,8 @@ kms_crowd_detector_roi_occup_analysis (KmsCrowdDetector * crowddetector,
     GST_DEBUG ("%s: occupancy_percentage:%f occupancy_level:%d",
         crowddetector->priv->rois_data[curve].name, occupation_percentage,
         crowddetector->priv->rois_data[curve].actual_occupation_level);
+    kms_crowd_detector_send_message_occupacy (crowddetector,
+        occupation_percentage, curve);
   }
 }
 
@@ -883,6 +932,8 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
     GST_DEBUG ("%s: FLUIDITY_percentage:%f fluidity_level:%d",
         crowddetector->priv->rois_data[curve].name, fluidity_percentage,
         crowddetector->priv->rois_data[curve].actual_fluidity_level);
+    kms_crowd_detector_send_message_fluidity (crowddetector,
+        fluidity_percentage, curve);
   }
 }
 
