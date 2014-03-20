@@ -307,4 +307,5 @@ graphviz_output_format = 'svg'
 todo_include_todos = 'dev' in release
 
 # linkcheck, jboss forbids us
-linkcheck_ignore = [r'http://www.jboss.org/jbossas',]
+linkcheck_ignore = [r'http://www.jboss.org/jbossas',
+                    r'http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm']
