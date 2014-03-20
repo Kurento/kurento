@@ -20,11 +20,11 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.kurento.demo.common.WebRTCParticipant;
 import com.kurento.kmf.content.ContentCommand;
 import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.ContentEvent;
@@ -33,7 +33,6 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
-import com.kurento.demo.common.WebRTCParticipant;
 
 /**
  * WebRtc Handler for OneToMany rooms.
@@ -58,7 +57,6 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 	/* Global variables */
 	private MediaPipeline mp;
 	private Map<String, WebRTCParticipant> participants;
-	public static AtomicInteger globalId;
 	private static final Gson gson = new GsonBuilder()
 			.excludeFieldsWithModifiers(TRANSIENT).create();
 
@@ -69,7 +67,6 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 				if (mp == null) {
 					mp = session.getMediaPipelineFactory().create();
 					participants = new ConcurrentHashMap<String, WebRTCParticipant>();
-					globalId = new AtomicInteger();
 				}
 			}
 		}
@@ -82,8 +79,8 @@ public class SelectableRoomHandler extends WebRtcContentHandler {
 					+ "Please select another name and try again.");
 		} else {
 			WebRtcEndpoint endpoint = mp.newWebRtcEndpoint().build();
-			WebRTCParticipant participant = new WebRTCParticipant(Integer.toString(SelectableRoomHandler.globalId
-					.incrementAndGet()), name, endpoint, session);
+			WebRTCParticipant participant = new WebRTCParticipant(
+					session.getSessionId(), name, endpoint, session);
 			participant.endpoint.connect(participant.endpoint);
 			session.start(participant.endpoint);
 			session.setAttribute("participant", participant);

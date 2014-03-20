@@ -20,7 +20,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -61,17 +60,9 @@ public class DispatcherDemo extends WebRtcContentHandler {
 	private MediaPipeline mp;
 	private Dispatcher dispatcher;
 	private Map<String, DispatcherParticipant> participants;
-	public static AtomicInteger globalId;
 	private static final Gson gson = new GsonBuilder()
 			.excludeFieldsWithModifiers(TRANSIENT).create();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.kurento.kmf.content.ContentHandler#onContentRequest(com.kurento.kmf
-	 * .content.ContentSession)
-	 */
 	@Override
 	public void onContentRequest(WebRtcContentSession session) throws Exception {
 		if (mp == null) {
@@ -80,7 +71,6 @@ public class DispatcherDemo extends WebRtcContentHandler {
 					mp = session.getMediaPipelineFactory().create();
 					dispatcher = mp.newDispatcher().build();
 					participants = new ConcurrentHashMap<String, DispatcherParticipant>();
-					globalId = new AtomicInteger();
 				}
 			}
 		}
@@ -97,8 +87,7 @@ public class DispatcherDemo extends WebRtcContentHandler {
 			endpoint.connect(hubPort);
 			hubPort.connect(endpoint);
 			DispatcherParticipant participant = new DispatcherParticipant(
-					Integer.toString(DispatcherDemo.globalId.incrementAndGet()),
-					name, endpoint, session, hubPort);
+					session.getSessionId(), name, endpoint, session, hubPort);
 			session.start(participant.endpoint);
 			session.setAttribute("participant", participant);
 			participants.put(participant.getId(), participant);
