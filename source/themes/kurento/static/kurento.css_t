@@ -136,8 +136,8 @@ dt:target, .highlighted {
 /* Header */
 
 div.header {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: 20px;
+  padding-bottom: 30px;
 }
 
 div.header .headertitle {
@@ -163,11 +163,12 @@ div.header div.rel a, div.sidebar a {
 }
 
 p.logo {
-    float: right;
+    float: left;
 }
 
 img.logo {
     border: 0;
+    width: 210px;
 }
 
 
@@ -322,6 +323,7 @@ div.sidebar h3 {
   text-transform: uppercase;
   font-size: 130%;
   letter-spacing: .1em;
+  margin-top: 1em;
 }
 
 div.sidebar ul {

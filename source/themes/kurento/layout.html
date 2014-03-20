@@ -14,12 +14,12 @@
 {% endblock %}
 {% block header %}
     <div class="header-wrapper">
-      <div class="header">
         {%- if logo %}
-          <p class="logo"><a href="{{ pathto(master_doc) }}">
+          <p class="logo"><a href="http://www.kurento.org">
             <img class="logo" src="{{ pathto('_static/' + logo, 1) }}" alt="Logo"/>
           </a></p>
         {%- endif %}
+      <div class="header">
         {%- block headertitle %}
         <div class="headertitle"><a
           href="{{ pathto(master_doc) }}">{{ shorttitle|e }}</a></div>
@@ -49,7 +49,7 @@
           {{ toctree() }}
           {%- endblock %}
           {%- block sidebarsearch %}
-          <h3 style="margin-top: 1.5em;">{{ _('Search') }}</h3>
+          <h3>{{ _('Search') }}</h3>
           <form class="search" action="{{ pathto('search') }}" method="get">
             <input type="text" name="q" />
             <input type="submit" value="{{ _('Go') }}" />
@@ -61,17 +61,16 @@
           </p>
           {%- if show_source and has_source and sourcename %}
           <div role="note" aria-label="source link">
+            <h3>{{ _('Kurento Docs') }}</h3>
+            <ul class="this-page-menu">
+              <li><a href="Kurento.epub">Download as epub ebook</a></li>
+              <li><a href="Kurento.pdf">Download as PDF book</a></li>
+            </ul>
             <h3>{{ _('This Page') }}</h3>
             <ul class="this-page-menu">
               <li><a href="http://www.kurento.org/community">Report a Bug</a></li>
               <li><a href="{{ pathto('_sources/' + sourcename, true)|e }}"
             rel="nofollow">{{ _('Show Source') }}</a></li>
-            </ul>
-            <h3>{{ _('Kurento') }}</h3>
-            <ul class="this-page-menu">
-              <li><a href="http://www.kurento.org">Kurento site</a></li>
-              <li><a href="Kurento.epub">Download docs as epub ebook</a></li>
-              <li><a href="Kurento.pdf">Download docs as PDF book</a></li>
             </ul>
           </div>
           {%- endif %}
