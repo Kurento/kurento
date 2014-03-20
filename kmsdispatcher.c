@@ -134,6 +134,8 @@ kms_dispatcher_dispose (GObject * object)
 {
   KmsDispatcher *self = KMS_DISPATCHER (object);
 
+  GST_DEBUG_OBJECT (self, "dispose");
+
   KMS_DISPATCHER_LOCK (self);
   if (self->priv->ports != NULL) {
     g_hash_table_remove_all (self->priv->ports);
@@ -149,6 +151,8 @@ static void
 kms_dispatcher_finalize (GObject * object)
 {
   KmsDispatcher *self = KMS_DISPATCHER (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
 
   G_OBJECT_CLASS (kms_dispatcher_parent_class)->finalize (object);
   g_rec_mutex_clear (&self->priv->mutex);
