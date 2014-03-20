@@ -11,18 +11,38 @@ side Media API for web applications.
 
 The source code of this project can be cloned from the [GitHub repository].
 
+Installation instructions
+-------------------------
+
+Be sure Install node tools in your system.
+
+In ubuntu:
+
+```bash
+sudo apt-get install nodejs-legacy
+sudo apt-get install npm
+```
+
+After that, to build the browser version of the API you'll only need to exec
+```node_modules/.bin/grunt``` and they will be generated on the
+```dist``` folder.
+
+
 How to test
 -----------
-Tests are autonomous, only requirement is to have exec ```npm install``` to have
-installed all the dev dependencies.
 
-To exec tests in browser, you only need to open the file ```test/index.html```
+Tests are autonomous, only requirement is to have exec ```npm install``` in 
+the root of the project to have installed all the dev dependencies.
+
+To exec tests in browser, you'll need to generate previously the browser version
+of the API. After that, you only need to open the file ```test/index.html```
 and it will launch automatically using [QUnit]. You can be able to configure to
 what WebSocket endpoint you want to connect on the dropdown at the top of the
-tests page.
+tests page. By default the tests execute against 130.206.81.87:80.
 
 To exec test in Node.js, you only need to exec ```npm test``` that will launch
-all the tests automatically using [QUnit-cli].
+all the tests automatically using [QUnit-cli] (At the moment, the default IP can
+not be changed.
 
 Kurento
 =======
