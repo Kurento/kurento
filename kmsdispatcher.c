@@ -226,6 +226,7 @@ kms_dispatcher_connect (KmsDispatcher * self, guint source, guint sink)
           source_port->video_agnostic, "src_%u", TRUE)) {
     GST_ERROR_OBJECT (self, "Can not connect video port");
     kms_base_hub_unlink_audio_src (KMS_BASE_HUB (self), sink_port->id);
+    goto end;
   }
 
   connected = TRUE;
@@ -243,7 +244,7 @@ kms_dispatcher_class_init (KmsDispatcherClass * klass)
   KmsBaseHubClass *base_hub_class = KMS_BASE_HUB_CLASS (klass);
 
   gst_element_class_set_static_metadata (GST_ELEMENT_CLASS (klass),
-      "Dispatcher", "Generic", "N to N dispatcher that makes dispatching of "
+      "Dispatcher", "Generic", "N to M dispatcher that makes dispatching of "
       "media flow", "Santiago Carot-Nemesio <sancane at gmail dot com>");
 
   klass->connect = GST_DEBUG_FUNCPTR (kms_dispatcher_connect);
