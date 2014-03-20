@@ -31,7 +31,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.WindowInEvent;
 import com.kurento.kmf.media.events.WindowOutEvent;
@@ -83,12 +82,13 @@ public class PointerDetectorFilterTest {
 	public void testPointerDetectorFilter() throws InterruptedException {
 		player.connect(filter);
 
-		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
+		filter.addWindow(new PointerDetectorWindowMediaParam("goal", 50, 50,
+				150, 150));
+		final BlockingQueue<WindowInEvent> events = new ArrayBlockingQueue<WindowInEvent>(
 				1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
-
+		filter.addWindowInListener(new MediaEventListener<WindowInEvent>() {
 			@Override
-			public void onEvent(EndOfStreamEvent event) {
+			public void onEvent(WindowInEvent event) {
 				events.add(event);
 			}
 		});
