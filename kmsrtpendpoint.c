@@ -416,6 +416,8 @@ kms_rtp_endpoint_finalize (GObject * object)
 {
   KmsRtpEndpoint *rtp_endpoint = KMS_RTP_ENDPOINT (object);
 
+  GST_DEBUG_OBJECT (rtp_endpoint, "finalize");
+
   finalize_socket (&rtp_endpoint->priv->audio_rtp_socket);
   finalize_socket (&rtp_endpoint->priv->audio_rtcp_socket);
   finalize_socket (&rtp_endpoint->priv->video_rtp_socket);
