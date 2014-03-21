@@ -21,6 +21,7 @@
 
 #include "kmsrtpendpoint.h"
 #include "sdp_utils.h"
+#include "kmsloop.h"
 
 #define PLUGIN_NAME "rtpendpoint"
 
@@ -42,6 +43,8 @@ G_DEFINE_TYPE (KmsRtpEndpoint, kms_rtp_endpoint, KMS_TYPE_BASE_RTP_ENDPOINT);
 
 struct _KmsRtpEndpointPrivate
 {
+  KmsLoop *loop;
+
   GSocket *audio_rtp_socket;
   GSocket *audio_rtcp_socket;
 
@@ -412,6 +415,20 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
 }
 
 static void
+kms_rtp_endpoint_dispose (GObject * object)
+{
+  KmsRtpEndpoint *rtp_endpoint = KMS_RTP_ENDPOINT (object);
+
+  GST_DEBUG_OBJECT (rtp_endpoint, "dispose");
+
+  KMS_ELEMENT_LOCK (rtp_endpoint);
+  g_clear_object (&rtp_endpoint->priv->loop);
+  KMS_ELEMENT_UNLOCK (rtp_endpoint);
+
+  G_OBJECT_CLASS (kms_rtp_endpoint_parent_class)->dispose (object);
+}
+
+static void
 kms_rtp_endpoint_finalize (GObject * object)
 {
   KmsRtpEndpoint *rtp_endpoint = KMS_RTP_ENDPOINT (object);
@@ -442,6 +459,7 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, PLUGIN_NAME, 0, PLUGIN_NAME);
 
   gobject_class = G_OBJECT_CLASS (klass);
+  gobject_class->dispose = kms_rtp_endpoint_dispose;
   gobject_class->finalize = kms_rtp_endpoint_finalize;
 
   base_sdp_endpoint_class = KMS_BASE_SDP_ENDPOINT_CLASS (klass);
@@ -532,6 +550,8 @@ kms_rtp_endpoint_init (KmsRtpEndpoint * rtp_endpoint)
   gint retries = 0;
 
   rtp_endpoint->priv = KMS_RTP_ENDPOINT_GET_PRIVATE (rtp_endpoint);
+
+  rtp_endpoint->priv->loop = kms_loop_new ();
 
   rtp_endpoint->priv->audio_rtp_socket = NULL;
   rtp_endpoint->priv->audio_rtcp_socket = NULL;
