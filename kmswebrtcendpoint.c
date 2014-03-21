@@ -1234,9 +1234,11 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 
       gst_element_link_pads (rtpbin, AUDIO_RTPBIN_SEND_RTP_SRC,
           webrtc_endpoint->priv->bundle_rtp_funnel, "sink_%u");
-      g_idle_add_full (G_PRIORITY_DEFAULT,
-          (GSourceFunc) (connect_bundle_rtcp_funnel), data,
-          connect_rtcp_bundle_data_destroy);
+
+      /* We can not connect rtcp from here without causing a deadlock */
+      kms_loop_idle_add_full (webrtc_endpoint->priv->loop,
+          G_PRIORITY_DEFAULT_IDLE, (GSourceFunc) (connect_bundle_rtcp_funnel),
+          data, connect_rtcp_bundle_data_destroy);
     } else if (g_strcmp0 (GST_OBJECT_NAME (pad),
             VIDEO_RTPBIN_SEND_RTP_SRC) == 0) {
       ConnectRtcpBundleData *data =
@@ -1245,9 +1247,11 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 
       gst_element_link_pads (rtpbin, VIDEO_RTPBIN_SEND_RTP_SRC,
           webrtc_endpoint->priv->bundle_rtp_funnel, "sink_%u");
-      g_idle_add_full (G_PRIORITY_DEFAULT,
-          (GSourceFunc) (connect_bundle_rtcp_funnel), data,
-          connect_rtcp_bundle_data_destroy);
+
+      /* We can not connect rtcp from here without causing a deadlock */
+      kms_loop_idle_add_full (webrtc_endpoint->priv->loop,
+          G_PRIORITY_DEFAULT_IDLE, (GSourceFunc) (connect_bundle_rtcp_funnel),
+          data, connect_rtcp_bundle_data_destroy);
     }
   } else {
     KmsWebRTCConnection *conn = NULL;
@@ -1274,7 +1278,10 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 
       gst_element_link_pads (rtpbin,
           rtp_src_pad_name, conn->rtp_transport->dtlssrtpenc, "rtp_sink");
-      g_idle_add_full (G_PRIORITY_DEFAULT, (GSourceFunc) (connect_rtcp), data,
+
+      /* We can not connect rtcp from here without causing a deadlock */
+      kms_loop_idle_add_full (webrtc_endpoint->priv->loop,
+          G_PRIORITY_DEFAULT_IDLE, (GSourceFunc) (connect_rtcp), data,
           connect_rtcp_data_destroy);
     }
   }
