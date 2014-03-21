@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -53,61 +56,51 @@ QUnit.module('FaceOverlayFilter', lifecycle);
 
 QUnit.asyncTest('Detect face in a video', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(3);
 
 
   var timeoutDelay = 20 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR},
+  function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    QUnit.notEqual(player, undefined, 'player');
+
+    var timeout;
+
+    FaceOverlayFilter.create(pipeline, function(error, faceOverlay)
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(pipeline, undefined, 'pipeline');
+      QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
 
-      PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR},
-      function(error, player)
+      player.connect(faceOverlay, function(error)
       {
         if(error) return onerror(error);
 
-        QUnit.notEqual(player, undefined, 'player');
-
-        var timeout;
-
-        FaceOverlayFilter.create(pipeline, function(error, faceOverlay)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
-
-          player.connect(faceOverlay, function(error)
+          timeout = setTimeout(function()
           {
-            if(error) return onerror(error);
-
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout = setTimeout(function()
-              {
-                onerror('Time out');
-              },
-              timeoutDelay);
-            });
-          });
-        });
-
-        player.on('EndOfStream', function(data)
-        {
-          QUnit.ok(true, 'EndOfStream');
-
-          clearTimeout(timeout);
-
-          QUnit.start();
+            onerror('Time out');
+          },
+          timeoutDelay);
         });
       });
-    })
+    });
+
+    player.on('EndOfStream', function(data)
+    {
+      QUnit.ok(true, 'EndOfStream');
+
+      clearTimeout(timeout);
+
+      QUnit.start();
+    });
   });
 });

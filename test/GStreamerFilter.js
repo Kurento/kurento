@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -53,65 +56,54 @@ QUnit.module('GStreamerFilter', lifecycle);
 
 QUnit.asyncTest('End of Stream', function()
 {
-  QUnit.expect(5);
+  QUnit.expect(4);
 
 
   var timeoutDelay = 7 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    QUnit.notEqual(player, undefined, 'player');
+
+    GStreamerFilter.create(pipeline,
+    {command: 'videoflip method=horizontal-flip'},
+    function(error, gStreamerFilter)
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(pipeline, undefined, 'pipeline');
+      QUnit.notEqual(gStreamerFilter, undefined, 'gStreamerFilter');
 
-      PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
-      function(error, player)
+      pipeline.connect(player, gStreamerFilter, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        QUnit.notEqual(player, undefined, 'player');
+        QUnit.notEqual(pipeline, undefined, 'connect');
 
-        GStreamerFilter.create(pipeline,
-        {command: 'videoflip method=horizontal-flip'},
-        function(error, gStreamerFilter)
+        var timeout;
+
+        player.on('EndOfStream', function(data)
+        {
+          QUnit.ok(true, 'EndOfStream');
+
+          clearTimeout(timeout);
+
+          QUnit.start();
+        });
+
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(gStreamerFilter, undefined, 'gStreamerFilter');
-
-          pipeline.connect(player, gStreamerFilter, function(error, pipeline)
+          timeout = setTimeout(function()
           {
-            if(error) return onerror(error);
-
-            QUnit.notEqual(pipeline, undefined, 'connect');
-
-            var timeout;
-
-            player.on('EndOfStream', function(data)
-            {
-              QUnit.ok(true, 'EndOfStream');
-
-              clearTimeout(timeout);
-
-              QUnit.start();
-            });
-
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout = setTimeout(function()
-              {
-                onerror('Time out');
-              },
-              timeoutDelay);
-            });
-          });
+            onerror('Time out');
+          },
+          timeoutDelay);
         });
       });
-    })
+    });
   });
 });

@@ -56,6 +56,20 @@ lifecycle =
     kwsMedia = new KwsMedia(ws_uri);
 
     kwsMedia.on('error', onerror);
+
+    kwsMedia.on('connect', function()
+    {
+      kwsMedia.createMediaPipeline(function(error, pipe)
+      {
+        if(error) return onerror(error);
+
+        pipeline = pipe;
+
+        QUnit.start();
+      });
+    });
+
+    QUnit.stop();
   },
 
   teardown: function()

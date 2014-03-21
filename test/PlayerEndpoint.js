@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -52,47 +55,37 @@ QUnit.module('PlayerEndpoint', lifecycle);
 
 QUnit.asyncTest('Play, Pause & Stop', function()
 {
-  QUnit.expect(5);
+  QUnit.expect(4);
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
+  function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    QUnit.notEqual(player, undefined, 'player');
+
+    player.play(function(error)
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(pipeline, undefined, 'pipeline');
+      QUnit.notEqual(player, undefined, 'play');
 
-      PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
-      function(error, player)
+      player.pause(function(error)
       {
         if(error) return onerror(error);
 
-        QUnit.notEqual(player, undefined, 'player');
+        QUnit.notEqual(player, undefined, 'pause');
 
-        player.play(function(error)
+        player.stop(function(error)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(player, undefined, 'play');
+          QUnit.ok(true, 'stop');
 
-          player.pause(function(error)
-          {
-            if(error) return onerror(error);
-
-            QUnit.notEqual(player, undefined, 'pause');
-
-            player.stop(function(error)
-            {
-              if(error) return onerror(error);
-
-              QUnit.ok(true, 'stop');
-
-              QUnit.start();
-            });
-          });
+          QUnit.start();
         });
       });
-    })
+    });
   });
 });
 
@@ -104,39 +97,30 @@ QUnit.asyncTest('End of Stream', function()
   var timeoutDelay = 5 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    var timeout;
+
+    player.on('EndOfStream', function(data)
+    {
+      QUnit.ok(true, 'EndOfStream');
+
+      clearTimeout(timeout);
+
+      QUnit.start();
+    });
+
+    player.play(function(error)
     {
       if(error) return onerror(error);
 
-      PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
-      function(error, player)
+      timeout = setTimeout(function()
       {
-        if(error) return onerror(error);
-
-        var timeout;
-
-        player.on('EndOfStream', function(data)
-        {
-          QUnit.ok(true, 'EndOfStream');
-
-          clearTimeout(timeout);
-
-          QUnit.start();
-        });
-
-        player.play(function(error)
-        {
-          if(error) return onerror(error);
-
-          timeout = setTimeout(function()
-          {
-            onerror('Time out');
-          },
-          timeoutDelay);
-        });
-      });
-    })
+        onerror('Time out');
+      },
+      timeoutDelay);
+    });
   });
 });

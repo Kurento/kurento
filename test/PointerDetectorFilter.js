@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -59,52 +62,43 @@ QUnit.asyncTest('Detect pointer', function()
   var timeoutDelay = 20 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
-      PlayerEndpoint.create(pipeline, {uri: URL_PLATES},
-      function(error, player)
+      var timeout;
+
+      pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          var timeout;
-
-          pipeline.connect(player, pointerDetector, function(error, pipeline)
+          timeout = setTimeout(function()
           {
-            if(error) return onerror(error);
-
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout = setTimeout(function()
-              {
-                onerror('Time out');
-              },
-              timeoutDelay);
-            });
-          });
-
-          pointerDetector.addWindow('goal', 50, 50, 150, 150);
-
-          pointerDetector.on('WindowIn', function(data)
-          {
-            QUnit.ok(true, 'WindowIn');
-
-            clearTimeout(timeout);
-
-            QUnit.start();
-          });
+            onerror('Time out');
+          },
+          timeoutDelay);
         });
       });
-    })
+
+      pointerDetector.addWindow('goal', 50, 50, 150, 150);
+
+      pointerDetector.on('WindowIn', function(data)
+      {
+        QUnit.ok(true, 'WindowIn');
+
+        clearTimeout(timeout);
+
+        QUnit.start();
+      });
+    });
   });
 });
 
@@ -117,69 +111,60 @@ QUnit.asyncTest('Window events', function()
   var timeoutDelay1 =  5 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
-      PlayerEndpoint.create(pipeline, {uri: URL_PLATES},
-      function(error, player)
+      var timeout0;
+      var timeout1;
+
+      pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          var timeout0;
-          var timeout1;
-
-          pipeline.connect(player, pointerDetector, function(error, pipeline)
+          timeout0 = setTimeout(function()
           {
-            if(error) return onerror(error);
+            onerror('Time out 0');
+          },
+          timeoutDelay0);
 
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout0 = setTimeout(function()
-              {
-                onerror('Time out 0');
-              },
-              timeoutDelay0);
-
-              timeout1 = setTimeout(function()
-              {
-                onerror('Time out 1');
-              },
-              timeoutDelay1);
-            });
-          });
-
-          pointerDetector.addWindow('window0', 50, 50, 200,  50);
-          pointerDetector.addWindow('window1', 50, 50, 200, 150);
-
-          pointerDetector.on('WindowIn', function(data)
+          timeout1 = setTimeout(function()
           {
-            QUnit.ok(true, 'WindowIn');
-
-            clearTimeout(timeout0);
-
-            QUnit.start();
-          });
-
-          pointerDetector.on('WindowOut', function(data)
-          {
-            QUnit.ok(true, 'WindowOut');
-
-            clearTimeout(timeout1);
-
-            QUnit.start();
-          });
+            onerror('Time out 1');
+          },
+          timeoutDelay1);
         });
       });
-    })
+
+      pointerDetector.addWindow('window0', 50, 50, 200,  50);
+      pointerDetector.addWindow('window1', 50, 50, 200, 150);
+
+      pointerDetector.on('WindowIn', function(data)
+      {
+        QUnit.ok(true, 'WindowIn');
+
+        clearTimeout(timeout0);
+
+        QUnit.start();
+      });
+
+      pointerDetector.on('WindowOut', function(data)
+      {
+        QUnit.ok(true, 'WindowOut');
+
+        clearTimeout(timeout1);
+
+        QUnit.start();
+      });
+    });
   });
 });
 
@@ -192,67 +177,58 @@ QUnit.asyncTest('Window overlay', function()
   var timeoutDelay1 =  5 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
-      PlayerEndpoint.create(pipeline, {uri: URL_PLATES},
-      function(error, player)
+      var timeout0;
+      var timeout1;
+
+      pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          var timeout0;
-          var timeout1;
-
-          pipeline.connect(player, pointerDetector, function(error, pipeline)
+          timeout0 = setTimeout(function()
           {
-            if(error) return onerror(error);
+            onerror('Time out WindowIn');
+          },
+          timeoutDelay0);
 
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout0 = setTimeout(function()
-              {
-                onerror('Time out WindowIn');
-              },
-              timeoutDelay0);
-
-              timeout1 = setTimeout(function()
-              {
-                onerror('Time out WindowOut');
-              },
-              timeoutDelay1);
-            });
-          });
-
-          pointerDetector.addWindow('window0', 50, 50, 200, 50);
-
-          pointerDetector.on('WindowIn', function(data)
+          timeout1 = setTimeout(function()
           {
-            QUnit.ok(true, 'WindowIn');
-
-            clearTimeout(timeout0);
-
-            QUnit.start();
-          });
-
-          pointerDetector.on('WindowOut', function(data)
-          {
-            QUnit.ok(true, 'WindowOut');
-
-            clearTimeout(timeout1);
-
-            QUnit.start();
-          });
+            onerror('Time out WindowOut');
+          },
+          timeoutDelay1);
         });
       });
-    })
+
+      pointerDetector.addWindow('window0', 50, 50, 200, 50);
+
+      pointerDetector.on('WindowIn', function(data)
+      {
+        QUnit.ok(true, 'WindowIn');
+
+        clearTimeout(timeout0);
+
+        QUnit.start();
+      });
+
+      pointerDetector.on('WindowOut', function(data)
+      {
+        QUnit.ok(true, 'WindowOut');
+
+        clearTimeout(timeout1);
+
+        QUnit.start();
+      });
+    });
   });
 });

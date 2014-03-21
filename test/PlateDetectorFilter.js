@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -59,49 +62,40 @@ QUnit.asyncTest('Detect plate in a video', function()
   var timeoutDelay = 7 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    PlateDetectorFilter.create(pipeline, function(error, plateDetector)
     {
       if(error) return onerror(error);
 
-      PlayerEndpoint.create(pipeline, {uri: URL_PLATES},
-      function(error, player)
+      var timeout;
+
+      pipeline.connect(player, plateDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        PlateDetectorFilter.create(pipeline, function(error, plateDetector)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          var timeout;
-
-          pipeline.connect(player, plateDetector, function(error, pipeline)
+          timeout = setTimeout(function()
           {
-            if(error) return onerror(error);
-
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout = setTimeout(function()
-              {
-                onerror('Time out');
-              },
-              timeoutDelay);
-            });
-          });
-
-          plateDetector.on('PlateDetected', function(data)
-          {
-            QUnit.ok(true, 'PlateDetected');
-
-            clearTimeout(timeout);
-
-            QUnit.start();
-          });
+            onerror('Time out');
+          },
+          timeoutDelay);
         });
       });
-    })
+
+      plateDetector.on('PlateDetected', function(data)
+      {
+        QUnit.ok(true, 'PlateDetected');
+
+        clearTimeout(timeout);
+
+        QUnit.start();
+      });
+    });
   });
 });

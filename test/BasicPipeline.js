@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -53,15 +56,15 @@ QUnit.module('BasicPipeline', lifecycle);
 
 QUnit.asyncTest('Creation', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(3);
 
-  kwsMedia.on('connect', function()
-  {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
-    {
-      if(error) return onerror(error);
+//  kwsMedia.on('connect', function()
+//  {
+//    kwsMedia.createMediaPipeline(function(error, pipeline)
+//    {
+//      if(error) return onerror(error);
 
-      QUnit.notEqual(pipeline, undefined, 'pipeline');
+//      QUnit.notEqual(pipeline, undefined, 'pipeline');
 
       PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
       function(error, player)
@@ -89,6 +92,6 @@ QUnit.asyncTest('Creation', function()
           });
         });
       });
-    })
-  });
+//    })
+//  });
 });

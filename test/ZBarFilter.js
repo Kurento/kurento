@@ -42,6 +42,9 @@ if(typeof QUnit == 'undefined')
   wock = require('wock');
 
   KwsMedia = require('..');
+
+  require('./_common');
+  require('./_proxy');
 };
 
 
@@ -53,45 +56,34 @@ QUnit.module('ZBarFilter', lifecycle);
 
 QUnit.asyncTest('Create pipeline and play video', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(3);
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    QUnit.notEqual(player, undefined, 'player');
+
+    ZBarFilter.create(pipeline, function(error, zbar)
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(pipeline, undefined, 'pipeline');
+      QUnit.notEqual(zbar, undefined, 'zbar');
 
-      PlayerEndpoint.create(pipeline, {uri: URL_BARCODES},
-      function(error, player)
+      pipeline.connect(player, zbar, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        QUnit.notEqual(player, undefined, 'player');
+        QUnit.notEqual(pipeline, undefined, 'connect');
 
-        ZBarFilter.create(pipeline, function(error, zbar)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(zbar, undefined, 'zbar');
-
-          pipeline.connect(player, zbar, function(error, pipeline)
-          {
-            if(error) return onerror(error);
-
-            QUnit.notEqual(pipeline, undefined, 'connect');
-
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              QUnit.start();
-            });
-          });
+          QUnit.start();
         });
       });
-    })
+    });
   });
 });
 
@@ -103,49 +95,40 @@ QUnit.asyncTest('Detect bar-code in a video', function()
   var timeoutDelay = 5 * 1000;
 
 
-  kwsMedia.on('connect', function()
+  PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)
   {
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    if(error) return onerror(error);
+
+    ZBarFilter.create(pipeline, function(error, zbar)
     {
       if(error) return onerror(error);
 
-      PlayerEndpoint.create(pipeline, {uri: URL_BARCODES},
-      function(error, player)
+      var timeout;
+
+      pipeline.connect(player, zbar, function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        ZBarFilter.create(pipeline, function(error, zbar)
+        player.play(function(error)
         {
           if(error) return onerror(error);
 
-          var timeout;
-
-          pipeline.connect(player, zbar, function(error, pipeline)
+          timeout = setTimeout(function()
           {
-            if(error) return onerror(error);
-
-            player.play(function(error)
-            {
-              if(error) return onerror(error);
-
-              timeout = setTimeout(function()
-              {
-                onerror('Time out');
-              },
-              timeoutDelay);
-            });
-          });
-
-          zbar.on('CodeFound', function(data)
-          {
-            QUnit.ok(true, 'CodeFound');
-
-            clearTimeout(timeout);
-
-            QUnit.start();
-          });
+            onerror('Time out');
+          },
+          timeoutDelay);
         });
       });
-    })
+
+      zbar.on('CodeFound', function(data)
+      {
+        QUnit.ok(true, 'CodeFound');
+
+        clearTimeout(timeout);
+
+        QUnit.start();
+      });
+    });
   });
 });
