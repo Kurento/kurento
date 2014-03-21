@@ -513,7 +513,7 @@ kms_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     gst_element_link_pads (rtpbin, "send_rtp_src_0",
         rtp_endpoint->priv->audio_rtp_udpsink, "sink");
 
-    g_idle_add_full (G_PRIORITY_DEFAULT,
+    kms_loop_idle_add_full (rtp_endpoint->priv->loop, G_PRIORITY_DEFAULT,
         (GSourceFunc) (kms_rtp_endpoint_connect_audio_rtcp),
         g_object_ref (rtp_endpoint), g_object_unref);
     KMS_ELEMENT_UNLOCK (rtp_endpoint);
@@ -534,7 +534,7 @@ kms_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     gst_element_link_pads (rtpbin, "send_rtp_src_1",
         rtp_endpoint->priv->video_rtp_udpsink, "sink");
 
-    g_idle_add_full (G_PRIORITY_DEFAULT,
+    kms_loop_idle_add_full (rtp_endpoint->priv->loop, G_PRIORITY_DEFAULT,
         (GSourceFunc) kms_rtp_endpoint_connect_video_rtcp,
         g_object_ref (rtp_endpoint), g_object_unref);
     KMS_ELEMENT_UNLOCK (rtp_endpoint);
