@@ -1,4 +1,5 @@
 *~
+**/*.pyc
 build
 source/*/com
 source/langdocs
