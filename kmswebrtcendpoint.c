@@ -1374,6 +1374,8 @@ kms_webrtc_endpoint_dispose (GObject * object)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
 
+  GST_DEBUG_OBJECT (self, "dispose");
+
   KMS_ELEMENT_LOCK (self);
 
   g_clear_object (&self->priv->agent);
@@ -1389,6 +1391,8 @@ static void
 kms_webrtc_endpoint_finalize (GObject * object)
 {
   KmsWebrtcEndpoint *self = KMS_WEBRTC_ENDPOINT (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
 
   kms_webrtc_connection_destroy (self->priv->audio_connection);
   kms_webrtc_connection_destroy (self->priv->video_connection);
