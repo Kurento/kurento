@@ -18,6 +18,7 @@ import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -51,10 +52,12 @@ public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
 
 		ZBarFilter zBarFilter = mp.newZBarFilter().build();
 		player.connect(zBarFilter);
-		session.start(zBarFilter);
+		HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS().build();
+		zBarFilter.connect(httpEP);
+		session.start(httpEP);
 		session.setAttribute("eventValue", "");
 		zBarFilter
-				.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+				.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
 
 					@Override
 					public void onEvent(CodeFoundEvent event) {

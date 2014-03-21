@@ -115,4 +115,9 @@ public class WebRtcTst extends BaseArquillianTst {
 		webRtcTest(ChromeDriver.class, "./webRtcJackVaderLoopback");
 	}
 
+	@Test
+	public void testWebRtcMixerChrome() throws Exception {
+		webRtcTest(ChromeDriver.class, "../dispatcher");
+	}
+
 }

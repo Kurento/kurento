@@ -20,6 +20,7 @@ import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -45,8 +46,9 @@ public class PlayerJsonBadMediaElement extends HttpPlayerHandler {
 		contentSession.releaseOnTerminate(mp);
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint("").build();
 		contentSession.setAttribute("player", playerEndpoint);
-		contentSession.start(playerEndpoint);
-
+		HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS().build();
+		playerEndpoint.connect(httpEP);
+		contentSession.start(httpEP);
 	}
 
 	@Override

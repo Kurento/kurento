@@ -252,40 +252,4 @@ public class SeleniumFlowsIT extends BaseSeleniumTst {
 		testFlowCommands(FirefoxDriver.class, "player-json-tunnel");
 	}
 
-	/**
-	 * Flow test 7: Flow on handler js->h.onContentRequest->s.start(player)
-	 * player plays of "fileOk" within the start: new Thread() sleep(2) ...
-	 * player.release();
-	 * 
-	 * @param driverClass
-	 *            Driver class (Firefox | Chrome)
-	 * @throws Exception
-	 */
-	public void testFlowRelease(Class<? extends WebDriver> driverClass)
-			throws Exception {
-		// TEST DATA
-		// Handler
-		final String handlerPath = "playerFlowOkRelease";
-		// Expected flows
-		final String[] expectedHandlerFlow = { HANDLER_ON_CONTENT_REQUEST,
-				HANDLER_ON_CONTENT_STARTED, HANDLER_ON_SESSION_TERMINATED };
-		final String[] expectedJavaScriptFlow = { JS_ON_REMOTE_STREAM,
-				JS_ON_START, JS_ON_TERMINATE };
-		final String[] expectedEvents = {};
-
-		// TEST EXERCISE
-		seleniumTest(driverClass, handlerPath, null, expectedHandlerFlow,
-				expectedJavaScriptFlow, expectedEvents);
-	}
-
-	// @Test
-	public void testFlowReleaseChrome() throws Exception {
-		testFlowRelease(ChromeDriver.class);
-	}
-
-	// @Test
-	public void testFlowReleaseFirefox() throws Exception {
-		testFlowRelease(FirefoxDriver.class);
-	}
-
 }

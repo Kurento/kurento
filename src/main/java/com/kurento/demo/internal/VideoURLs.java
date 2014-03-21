@@ -32,25 +32,40 @@ public class VideoURLs {
 	public static final String[] small = { "small-3gp", "small-mkv",
 			"small-mov", "small-mp4", "small-webm" };
 
+	/**
+	 * @since 4.1.1
+	 */
 	public static final Map<String, String> map;
 	static {
 		map = new HashMap<String, String>();
-		map.put(small[0], "https://ci.kurento.com/video/small.3gp");
-		map.put(small[1], "https://ci.kurento.com/video/small.mkv");
-		map.put(small[2], "https://ci.kurento.com/video/small.mov");
-		map.put(small[3], "https://ci.kurento.com/video/small.mp4");
-		map.put(small[4], "https://ci.kurento.com/video/small.webm");
+		map.put(small[0], "http://ci.kurento.com/video/small.3gp");
+		map.put(small[1], "http://ci.kurento.com/video/small.mkv");
+		map.put(small[2], "http://ci.kurento.com/video/small.mov");
+		map.put(small[3], "http://ci.kurento.com/video/small.mp4");
+		map.put(small[4], "http://ci.kurento.com/video/small.webm");
 
-		map.put("webm", "https://ci.kurento.com/video/sintel.webm");
-		map.put("mov", "https://ci.kurento.com/video/rabbit.mov");
-		map.put("mkv", "https://ci.kurento.com/video/fiware.mkv");
-		map.put("3gp", "https://ci.kurento.com/video/blackberry.3gp");
-		map.put("ogv", "https://ci.kurento.com/video/pacman.ogv");
-		map.put("mp4", "https://ci.kurento.com/video/chrome.mp4");
-		map.put("avi", "https://ci.kurento.com/video/car.avi");
+		map.put("webm", "http://ci.kurento.com/video/sintel.webm");
+		map.put("mov", "http://ci.kurento.com/video/rabbit.mov");
+		map.put("mkv", "http://ci.kurento.com/video/fiware.mkv");
+		map.put("3gp", "http://ci.kurento.com/video/blackberry.3gp");
+		map.put("ogv", "http://ci.kurento.com/video/pacman.ogv");
+		map.put("mp4", "http://ci.kurento.com/video/chrome.mp4");
+		map.put("avi", "http://ci.kurento.com/video/car.avi");
 
-		map.put("jack", "https://ci.kurento.com/video/fiwarecut.webm");
-		map.put("zbar", "https://ci.kurento.com/video/barcodes.webm");
+		// RTSP streams from YouTube can be obtained using Google Data API at
+		// gdata.youtube.com. For instance, for the following video:
+		// https://www.youtube.com/watch?v=0CGCy7gC9Zk
+		// ... we simply visit this page:
+		// http://gdata.youtube.com/feeds/api/videos/0CGCy7gC9Zk
+		// ... and obtain the RTSP URL from the returned XML
+		map.put("rtsp",
+				"rtsp://r1---sn-cg07luee.c.youtube.com/CiILENy73wIaGQmZ9QK4y4Ih0BMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp");
+
+		map.put("jack", "http://ci.kurento.com/video/fiwarecut.webm");
+		map.put("zbar", "http://ci.kurento.com/video/barcodes.webm");
+		map.put("crowd", "http://ci.kurento.com/video/crowd.mp4");
+		map.put("plate", "http://ci.kurento.com/video/plates.webm");
+		map.put("pointer", "http://ci.kurento.com/video/pointerDetector.mp4");
 	};
 
 }

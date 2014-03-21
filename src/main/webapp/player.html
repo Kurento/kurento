@@ -19,6 +19,8 @@
 					<option value="mp4">MP4 video</option>
 					<option value="jack">JackVader Filter</option>
 					<option value="zbar">ZBar Filter</option>
+					<option value="crowd">Crowd Detector Filter</option>
+					<option value="rtsp">RTSP Stream</option>
 			</select></td>
 			<td rowspan="3"><video id="video" autoplay></video></td>
 		</tr>
@@ -41,31 +43,33 @@
 		var myPath = myUrl.substring(0, myUrl.lastIndexOf("/") + 1);
 
 		video.addEventListener('ended', videoEnd, false);
-	    function videoEnd(e) {
-	        if(!e) { e = window.event; }
-	        document.getElementById("play").disabled = false;
-	    }
+		function videoEnd(e) {
+			if (!e) {
+				e = window.event;
+			}
+			document.getElementById("play").disabled = false;
+		}
 
-	    function play() {
-		    var handler = document.getElementById("tunnel").checked ? 
-				    "player-tunnel/" : "player-redirect/";
+		function play() {
+			var handler = document.getElementById("tunnel").checked ? "player-tunnel/"
+					: "player-redirect/";
 			var url = document.getElementById("url");
 			var endpoint = myPath + handler + url.value
 			video.src = endpoint;
 			video.play();
-			document.getElementById("play").disabled = true;			
-	    }
+			document.getElementById("play").disabled = true;
+		}
 
-	    function pause() {
+		function pause() {
 			var pause = document.getElementById("pause");
-	        if (video.paused) {
-	           video.play();
-	           pause.textContent = "Pause";
-	        } else {
-	           video.pause();
-	           pause.textContent = "Continue";
-	        }
-	    }
+			if (video.paused) {
+				video.play();
+				pause.textContent = "Pause";
+			} else {
+				video.pause();
+				pause.textContent = "Continue";
+			}
+		}
 	</script>
 </body>
 </html>

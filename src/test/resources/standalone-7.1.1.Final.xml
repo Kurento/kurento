@@ -80,6 +80,15 @@
 			<logger category="jacorb.config">
 				<level name="ERROR" />
 			</logger>
+			<logger category="com.kurento.kmf.media">
+				<level name="INFO" />
+			</logger>
+			<logger category="org.jboss.modules">
+				<level name="ERROR" />
+			</logger>
+			<logger category="org.jboss.as.ee">
+				<level name="ERROR" />
+			</logger>
 			<logger category="com.kurento.kmf.media.internal">
 				<level name="ERROR" />
 			</logger>
@@ -193,8 +202,8 @@
 		<subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
 			<properties>
 				<property name="org.osgi.framework.startlevel.beginning">
-                    1
-                </property>
+					1
+				</property>
 			</properties>
 			<capabilities>
 				<capability name="javax.servlet.api:v25" />

@@ -22,7 +22,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
@@ -60,7 +60,7 @@ public class PlayerTst implements Runnable {
 
 	public void run() {
 		try {
-			HttpClient client = new DefaultHttpClient();
+			HttpClient client = HttpClientBuilder.create().build();
 			HttpGet httpGet = new HttpGet(url);
 			HttpResponse response = client.execute(httpGet);
 			HttpEntity resEntity = response.getEntity();

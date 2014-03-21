@@ -26,11 +26,11 @@
 
 		// Options
 		var options = {
-			remoteVideoTag: "remoteVideo",
-			audio: document.getElementById("audio").value,
-			video: document.getElementById("video").value
+			remoteVideoTag : "remoteVideo",
+			audio : document.getElementById("audio").value,
+			video : document.getElementById("video").value
 		};
-		
+
 		var audio = document.getElementById("audio").value;
 		if (audio != "sendrecv") {
 			// Changed the default value
@@ -48,8 +48,8 @@
 		document.getElementById("events").value = "";
 
 		// Kws-Content-API instantiation
-        var KwsContentPlayer = kwsContentApi.KwsContentPlayer;
-        conn = new KwsContentPlayer(endpoint, options);
+		var KwsContentPlayer = kwsContentApi.KwsContentPlayer;
+		conn = new KwsContentPlayer(endpoint, options);
 
 		// Start and terminate events
 		conn.on("start", function() {
@@ -84,16 +84,16 @@
 		});
 	}
 
-    function pause() {
+	function pause() {
 		var pause = document.getElementById("pause");
-        if (remoteVideo.paused) {
+		if (remoteVideo.paused) {
 			remoteVideo.play();
 			pause.textContent = "Pause";
-        } else {
+		} else {
 			remoteVideo.pause();
 			pause.textContent = "Continue";
-        }
-    }
+		}
+	}
 
 	function log(text, locator) {
 		var elementId = "flows";
@@ -105,7 +105,9 @@
 
 	function handlerChanged() {
 		var handler = document.getElementById("handler").value;
-		var disableVideo = new Array("playerFlowBad","playerFlowBadMediaElement","playerFlowNothing","playerFlowOkWithExcp","playerFlowOkRelease");
+		var disableVideo = new Array("playerFlowBad",
+				"playerFlowBadMediaElement", "playerFlowNothing",
+				"playerFlowOkWithExcp", "playerFlowOkRelease");
 		selectUrl.disabled = (disableVideo.indexOf(handler) != -1);
 	}
 </script>
@@ -126,8 +128,6 @@
 					<option value="playerFlowNothing">Player doing nothing</option>
 					<option value="playerFlowOkWithExcp">Player which raises
 						an Exception and recovers from it</option>
-					<!-- <option value="playerFlowOkRelease">Player which releases
-						session after 5 seconds</option> -->
 			</select></td>
 		</tr>
 		<tr>
@@ -141,6 +141,10 @@
 					<option value="mp4">MP4 video</option>
 					<option value="jack">JackVader Filter</option>
 					<option value="zbar">ZBar Filter</option>
+					<option value="crowd">Crowd Detector Filter</option>
+					<option value="plate">Plate Detector Filter</option>
+					<option value="pointer">Pointer Detector Filter</option>
+					<option value="rtsp">RTSP Stream</option>
 			</select></td>
 			<td rowspan="10"><video id="remoteVideo" autoplay></video></td>
 		</tr>
@@ -185,7 +189,7 @@
 		var remoteVideo = document.getElementById("remoteVideo");
 		var inputStatus = document.getElementById("status");
 		var selectUrl = document.getElementById("url");
-	
+
 		remoteVideo.addEventListener("play", function(event) {
 			inputStatus.value = "play";
 			console.log(status.value);

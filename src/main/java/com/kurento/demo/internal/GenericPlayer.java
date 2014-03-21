@@ -14,6 +14,11 @@
  */
 package com.kurento.demo.internal;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -23,13 +28,22 @@ import com.kurento.demo.playerjson.PlayerJsonRedirect;
 import com.kurento.demo.playerjson.PlayerJsonTunnel;
 import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.CrowdDetectorFilter;
+import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.PlateDetectorFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.Point;
+import com.kurento.kmf.media.PointerDetectorFilter;
+import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
+import com.kurento.kmf.media.RegionOfInterest;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.PlateDetectedEvent;
+import com.kurento.kmf.media.events.WindowInEvent;
 
 /**
  * Static class which contains a generic implementation of an HTTP Player,
@@ -57,29 +71,27 @@ public class GenericPlayer {
 			if (contentId != null && VideoURLs.map.containsKey(contentId)) {
 				url = VideoURLs.map.get(contentId);
 			}
+
+			MediaPipelineFactory mpf = session.getMediaPipelineFactory();
+			MediaPipeline mp = mpf.create();
+			session.releaseOnTerminate(mp);
+			PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(url).build();
+			HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+					.build();
 			if (contentId != null && contentId.equalsIgnoreCase("jack")) {
 				// Jack Vader Filter
-				MediaPipelineFactory mpf = session.getMediaPipelineFactory();
-				MediaPipeline mp = mpf.create();
-				session.releaseOnTerminate(mp);
-				PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(url)
-						.build();
 				JackVaderFilter filter = mp.newJackVaderFilter().build();
 				playerEndpoint.connect(filter);
-				session.setAttribute("player", playerEndpoint);
-				session.start(filter);
+				filter.connect(httpEP);
+
 			} else if (contentId != null && contentId.equalsIgnoreCase("zbar")) {
 				// ZBar Filter
-				MediaPipelineFactory mpf = session.getMediaPipelineFactory();
-				MediaPipeline mp = mpf.create();
-				PlayerEndpoint player = mp.newPlayerEndpoint(url).build();
-				session.setAttribute("player", player);
 				ZBarFilter zBarFilter = mp.newZBarFilter().build();
-				player.connect(zBarFilter);
-				session.start(zBarFilter);
+				playerEndpoint.connect(zBarFilter);
+				zBarFilter.connect(httpEP);
 				session.setAttribute("eventValue", "");
 				zBarFilter
-						.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+						.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
 							@Override
 							public void onEvent(CodeFoundEvent event) {
 								log.info("Code Found " + event.getValue());
@@ -95,10 +107,71 @@ public class GenericPlayer {
 						});
 			}
 
+			else if (contentId != null && contentId.equalsIgnoreCase("crowd")) {
+				// Crowd Detector Filter
+				List<Point> points = new ArrayList<Point>();
+				points.add(new Point(0, 0));
+				points.add(new Point(640, 0));
+				points.add(new Point(640, 480));
+				points.add(new Point(0, 480));
+				List<RegionOfInterest> rois = newArrayList(new RegionOfInterest(
+						points, "Roi"));
+				CrowdDetectorFilter crowdDetector = mp.newCrowdDetectorFilter(
+						rois).build();
+				playerEndpoint.connect(crowdDetector);
+				crowdDetector.connect(httpEP);
+			}
+
+			else if (contentId != null && contentId.equalsIgnoreCase("plate")) {
+				// Plate Detector Filter
+				PlateDetectorFilter plateDetectorFilter = mp
+						.newPlateDetectorFilter().build();
+				playerEndpoint.connect(plateDetectorFilter);
+				plateDetectorFilter.connect(httpEP);
+				session.setAttribute("plateValue", "");
+				plateDetectorFilter
+						.addPlateDetectedListener(new MediaEventListener<PlateDetectedEvent>() {
+							@Override
+							public void onEvent(PlateDetectedEvent event) {
+								if (session.getAttribute("plateValue")
+										.toString().equals(event.getPlate())) {
+									return;
+								}
+								session.setAttribute("plateValue",
+										event.getPlate());
+								session.publishEvent(new ContentEvent(event
+										.getType(), event.getPlate()));
+							}
+						});
+			}
+
+			else if (contentId != null && contentId.equalsIgnoreCase("pointer")) {
+				// Pointer Detector Filter
+				PointerDetectorFilter pointerDetectorFilter = mp
+						.newPointerDetectorFilter().build();
+				pointerDetectorFilter
+						.addWindow(new PointerDetectorWindowMediaParam("goal",
+								50, 50, 150, 150));
+				pointerDetectorFilter
+						.addWindowInListener(new MediaEventListener<WindowInEvent>() {
+							@Override
+							public void onEvent(WindowInEvent event) {
+								session.publishEvent(new ContentEvent(event
+										.getType(), event.getWindowId()));
+							}
+						});
+
+				playerEndpoint.connect(pointerDetectorFilter);
+				pointerDetectorFilter.connect(httpEP);
+			}
+
 			else {
 				// Player without filter
-				session.start(url);
+				playerEndpoint.connect(httpEP);
 			}
+
+			session.start(httpEP);
+			session.setAttribute("player", playerEndpoint);
 		}
 	}
 }
