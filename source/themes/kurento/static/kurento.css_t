@@ -276,6 +276,12 @@ dl.type th {
   padding-right: 0.5em;
 }
 
+/* FAQ */
+div#kurento-faq  dl dt {
+  font-weight: bold;
+  margin-top: 1em;
+}
+
 /* Glossary */
 
 a em.std-term {
