@@ -21,8 +21,22 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         transformations making possible the chaining of the two elements
         into the resulting :term:`Pipeline <pipeline, media>`.
 
+    AVI
+        Audio Video Interleaved, known by its initials AVI, is a multimedia
+        container format introduced by Microsoft in November 1992 as part
+        of its Video for Windows technology. AVI files can contain both
+        audio and video data in a file container that allows synchronous
+        audio-with-video playback. AVI is a derivative of the Resource
+        Interchange File Format (RIFF).
+
+        .. seealso::
+            :wikipedia:`en,Audio Video Interleave`
+                Wikipedia reference of the AVI format
+            :wikipedia:`en,Resource Interchange File Format`
+                Wikipedia reference of the RIFF format
+
     CORS
-        `CORS <http://en.wikipedia.org/wiki/Cross-origin_resource_sharing>`__
+        :wikipedia:`CORS <en,Cross-origin_resource_sharing>`
         is a mechanism that allows JavaScript code on a web page to make
         XMLHttpRequests to different domains than the one the
         JavaScript originated from. It works by adding new HTTP headers
@@ -40,6 +54,11 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         media capability.  For example, a :java:type:`RecorderEndpoint`,
         a Video :java:type:`PlayerEndpoint`
 
+    EOS
+        Acronym of End Of Stream. In kurento some elements will raise an
+        :rom:evnt:`EndOfStream` event when the media they are processing is
+        finished.
+
     GStreamer
         `GStreamer <http://gstreamer.freedesktop.org/>`__ is a pipeline-based
         multimedia framework written in the C programming language.
@@ -49,7 +68,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         The H.264 standard can be viewed as a "family of standards" composed
         of a number of profiles.  Each specific decoder deals with at least
         one such profiles, but not necessarily all. See
-        `H.264 entry at wikipedia <http://en.wikipedia.org/wiki/H.264/MPEG-4_AVC>`__
+        :wikipedia:`H.264 entry at wikipedia <en,H.264/MPEG-4_AVC>`
 
         .. seealso::
             :rfc:`6184`
@@ -57,7 +76,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
                 :rfc:`3984`.
 
     HTTP
-        The `Hypertext Transfer Protocol <http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol>`__
+        The :wikipedia:`Hypertext Transfer Protocol <en,Hypertext_Transfer_Protocol>`
         is an application protocol for distributed, collaborative, hypermedia
         information systems. HTTP is the foundation of data communication for
         the World Wide Web. 
@@ -65,8 +84,8 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         .. seealso:: :rfc:`2616`
 
     IMS
-    `IP Multimedia Subsystem <http://en.wikipedia.org/wiki/IP_Multimedia_Subsystem>`__
-        `3GPP <http://en.wikipedia.org/wiki/3rd_Generation_Partnership_Project>`__
+    :wikipedia:`IP Multimedia Subsystem <en,IP_Multimedia_Subsystem>` is
+        :wikipedia:`3GPP <en,3rd_Generation_Partnership_Project>`
         Mobile Architectural Framework for delivering IP Multimedia Services
         in 3G (and beyond) Mobile Networks.
 
@@ -80,9 +99,11 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
 
         .. seealso::
             Oracle Site
-                `Java EE Overview <http://www.oracle.com/technetwork/java/javaee/overview/index.html>`__
+                `Java EE Overview
+                <http://www.oracle.com/technetwork/java/javaee/overview/index.html>`__
             Wikipedia
-                `Java Platform Enterprise Edition <http://en.wikipedia.org/wiki/Java_Platform,_Enterprise_Edition>`__
+                :wikipedia:`Java Platform Enterprise Edition
+                <en,Java_Platform,_Enterprise_Edition>`
 
     JSON
         `JSON <http://json.org>`__ (JavaScript Object Notation) is a lightweight
@@ -138,9 +159,9 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         interact easy and naturally with KAS.
 
     Media Plane
-        In the traditional `3GPP Mobile Carrier Media Framework
-        <http://en.wikipedia.org/wiki/IP_Multimedia_Subsystem>`__,
-        the handling of media is conceptually splitted in two layers.
+        In the traditional :wikipedia:`3GPP Mobile Carrier Media Framework
+        <en,IP_Multimedia_Subsystem>`, the handling of media is conceptually
+        splitted in two layers.
         The one that handles the media itself, with functionalities such as
         media transport, encoding/decoding, and processing, is called
         :index:`Media Plane <single: Plane; Media>`.
@@ -152,8 +173,8 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         used to store video and audio, but can also be used to store other
         data such as subtitles and still images.
 
-        .. seealso:: Wikipedia definition of `MP4
-           <http://en.wikipedia.org/wiki/MPEG-4_Part_14>`__.
+        .. seealso:: Wikipedia definition of :wikipedia:`MP4
+                     <en,MPEG-4_Part_14>`.
 
     Multimedia
         Multimedia is concerned with the computer controlled integration
@@ -171,8 +192,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
               keeping video and audio synchronized or displaying captions
               or subtitles in the required intervals.
 
-        .. seealso:: Wikipedia definition of `multimedia
-            <http://en.wikipedia.org/wiki/Multimedia>`__
+        .. seealso:: Wikipedia definition of :wikipedia:`en,Multimedia`
 
     Multimedia container format
         Container or wrapper formats are metafile formats whose
@@ -187,8 +207,10 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         In most cases, the file header, most of the  metadata and the
         synchro chunks are specified by the container format.
 
-        .. seealso:: Wikipedia definition of `multimedia containter formats
-           <http://en.wikipedia.org/wiki/Container_format_(digital)#Multimedia_container_formats>`__
+        .. seealso::
+
+           Wikipedia definition of :wikipedia:`multimedia container formats
+           <en,Container_format_(digital)#Multimedia_container_formats>`
 
     NAT
     Network Address Translation
@@ -200,8 +222,9 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
 
         .. seealso::
 
-            Network Address Translation definition at Wikipedia
-                <http://en.wikipedia.org/wiki/Network_address_translation>__
+            :wikipedia:`Network Address Translation
+            <en,Network_address_translation>`
+            definition at Wikipedia
 
     NAT-T
     NAT Traversal
@@ -217,6 +240,20 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
             `NAT Traversal White Paper <http://www.nattraversal.com/>`_
                 White paper on NAT-T and solutions for end-to-end
                 connectivity in its presence
+
+    OpenCL
+        `OpenCL <http://www.khronos.org/opencl/>`__\ ™ is standard
+        framework for  cross-platform, parallel programming of
+        heterogeneous platforms consisting of central processing units
+        (CPUs), graphics processing units (GPUs), digital signal
+        processors (DSPs), field-programmable gate arrays (FPGAs) and
+        other processors.
+
+    OpenCV
+        OpenCV (Open Source Computer Vision Library) is a BSD-licensed
+        open source computer vision and machine learning software library.
+        OpenCV aims to provide a common infrastructure for computer vision
+        applications and to accelerate the use of machine perception.
 
     Pad, Media
         A :index:`Media Pad <single: Media; Pad>` is is an element´s
@@ -238,8 +275,19 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         represents a “machine” capable of performing a sequence of
         operations over a stream.
 
+    QR
+        QR code (Quick Response Code) is a type of two-dimensional barcode.
+        that became popular in the mobile phone industry due to its fast
+        readability and greater storage capacity compared to standard UPC
+        barcodes.
+
+        .. seealso::
+
+            :wikipedia:`QR Code<en,QR_Code>`
+                Entry in wikipedia
+
     REST
-        `Representational State Transfer <http://en.wikipedia.org/wiki/Representational_state_transfer>`__
+        :wikipedia:`Representational State Transfer <en,Representational_state_transfer>`
         is an architectural style consisting of a coordinated set of constraints applied to
         components, connectors, and data elements, within a distributed hypermedia system.
         The term representational state transfer was introduced and defined in 2000 by
@@ -247,25 +295,28 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         <http://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm>`__.
 
     RTCP
-        The `RTP Control Protocol <http://en.wikipedia.org/wiki/RTP_Control_Protocol>`__
-        is a sister protocol of the :term:`RTP`, that provides out-of-band statistics and
-        control information for an RTP flow.
+        The :wikipedia:`RTP Control Protocol <en,RTP_Control_Protocol>` is a
+        sister protocol of the :term:`RTP`, that provides out-of-band
+        statistics and control information for an RTP flow.
 
         .. seealso:: :rfc:`3605`
 
     RTP
-        The `Real-Time Transport Protocol <http://en.wikipedia.org/wiki/Real-time_Transport_Protocol>`__
-        is a standard packet format designed for transmitting audio and video streams on IP networks.
-        It is used in conjunction with the :term:`RTP Control Protocol <RTCP>`.
-        Transmissions using `the RTP audio/video profile <http://en.wikipedia.org/wiki/RTP_audio_video_profile>`__
-        typically use :term:`SDP` to describe the technical parameters of the media streams.
+        The :wikipedia:`Real-Time Transport Protocol <en,Real-time_Transport_Protocol>`
+        is a standard packet format designed for transmitting audio and video
+        streams on IP networks. It is used in conjunction with the
+        :term:`RTP Control Protocol <RTCP>`. Transmissions using
+        :wikipedia:`the RTP audio/video profile <en,RTP_audio_video_profile>`
+        typically use :term:`SDP` to describe the technical parameters of
+        the media streams.
 
         .. seealso:: :rfc:`3550`
 
     SDP
     Session Description Protocol
-        The `Session Description Protocol <http://en.wikipedia.org/wiki/Session_Description_Protocol>`__
-        describes initialization parameters for a streaming media session.
+        The :wikipedia:`Session Description Protocol
+        <en,Session_Description_Protocol>` describes initialization
+        parameters for a streaming media session.
         Both parties of a streaming media session exchange SDP files
         to negotiate and agree in the parameters to be used for the
         streaming.
@@ -293,11 +344,11 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         Data streams from a MediaSource pad to another element’s MediaSink pad.
 
     SIP
-        `Session Initiation Protocol <http://en.wikipedia.org/wiki/Session_Initiation_Protocol>`__ 
-        is a `signalling plane`:term: widely used for controlling multimedia
-        communication sessions such as voice and video calls over Internet
-        Protocol (IP) networks. SIP works in conjunction with several other application
-        layer protocols:
+        :wikipedia:`Session Initiation Protocol <en,Session_Initiation_Protocol>`
+        is a `signalling plane`:term: protocol widely used for controlling
+        multimedia communication sessions such as voice and video calls
+        over Internet Protocol (IP) networks. SIP works in conjunction with
+        several other application layer protocols:
 
         * `SDP`:term: for media identification and negotiation
         * `RTP`:term:, `SRTP`:term: or `WebRTC`:term: for the transmission of media streams
@@ -306,6 +357,12 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
     Source, Media
         A :index:`Media Source <single: Media; Source>` is a Media Pad
         that generates a Media Stream.
+
+    sphinx
+        Documentation generation system used for kurento documentation
+
+        .. seealso:: `Easy and beautiful documentation with Sphinx\
+                <http://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html?ca=dat>`_
 
     SRTCP
         SRTCP provides the same security-related features to RTCP,
@@ -316,7 +373,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         .. seealso:: :term:`SRTP`
 
     SRTP
-        `Secure RTP <http://en.wikipedia.org/wiki/Secure_Real-time_Transport_Protocol>`__
+        :wikipedia:`Secure RTP <,enSecure_Real-time_Transport_Protocol>`
          is a profile of RTP (`Real-time Transport Protocol <RTP>`:term:),
          intended to provide encryption, message authentication and integrity,
          and replay protection to the RTP data in both unicast and multicast
@@ -330,12 +387,25 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         Secure Socket Layer. See `TLS`:term:.
 
     TLS
-        `Transport Layer Security <http://en.wikipedia.org/wiki/Transport_Layer_Security>`__
+        :wikipedia:`Transport Layer Security <en,Transport_Layer_Security>`
         and its prececessor Secure Socket Layer (SSL) 
 
         .. seealso::
             :rfc:`5246`
                 Version 1.2 of the Transport Layer Security protocol
+
+    VP8
+        VP8 is a video compression format created by On2 Technologies as a
+        successor to VP7. Its  patents rights are owned by Google, who made
+        an irrevocable patent promise on its patents for implementing it
+        and released a specification under the `Creative Commons Attribution
+        3.0 license <https://creativecommons.org/licenses/by/3.0/>`__.
+
+        .. seealso::
+                :rfc:`6386`
+                    VP8 Data Format and Decoding Guide
+                :wikipedia:`en,VP8`
+                    VP8 page at Wikipedia
 
     WebM
         `WebM <http://www.webmproject.org/>`__ is an open media file format 
