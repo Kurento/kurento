@@ -49,9 +49,6 @@ var PlayerEndpoint = KwsMedia.endpoints.PlayerEndpoint;
 var ZBarFilter     = KwsMedia.filters.ZBarFilter;
 
 
-var timeoutDelay = 5 * 1000;
-
-
 QUnit.module('ZBarFilter', lifecycle);
 
 QUnit.asyncTest('Create pipeline and play video', function()
@@ -101,6 +98,10 @@ QUnit.asyncTest('Create pipeline and play video', function()
 QUnit.asyncTest('Detect bar-code in a video', function()
 {
   QUnit.expect(1);
+
+
+  var timeoutDelay = 5 * 1000;
+
 
   kwsMedia.on('connect', function()
   {

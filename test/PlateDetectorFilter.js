@@ -45,18 +45,18 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint    = KwsMedia.endpoints.PlayerEndpoint;
-var FaceOverlayFilter = KwsMedia.filters.FaceOverlayFilter;
+var PlayerEndpoint      = KwsMedia.endpoints.PlayerEndpoint;
+var PlateDetectorFilter = KwsMedia.filters.PlateDetectorFilter;
 
 
-QUnit.module('FaceOverlayFilter', lifecycle);
+QUnit.module('PlateDetectorFilter', lifecycle);
 
-QUnit.asyncTest('Detect face in a video', function()
+QUnit.asyncTest('Detect plate in a video', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(1);
 
 
-  var timeoutDelay = 20 * 1000;
+  var timeoutDelay = 7 * 1000;
 
 
   kwsMedia.on('connect', function()
@@ -65,24 +65,18 @@ QUnit.asyncTest('Detect face in a video', function()
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(pipeline, undefined, 'pipeline');
-
-      PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR},
+      PlayerEndpoint.create(pipeline, {uri: URL_PLATES},
       function(error, player)
       {
         if(error) return onerror(error);
 
-        QUnit.notEqual(player, undefined, 'player');
-
-        var timeout;
-
-        FaceOverlayFilter.create(pipeline, function(error, faceOverlay)
+        PlateDetectorFilter.create(pipeline, function(error, plateDetector)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
+          var timeout;
 
-          player.connect(faceOverlay, function(error)
+          pipeline.connect(player, plateDetector, function(error, pipeline)
           {
             if(error) return onerror(error);
 
@@ -97,15 +91,15 @@ QUnit.asyncTest('Detect face in a video', function()
               timeoutDelay);
             });
           });
-        });
 
-        player.on('EndOfStream', function(data)
-        {
-          QUnit.ok(true, 'EndOfStream');
+          plateDetector.on('PlateDetected', function(data)
+          {
+            QUnit.ok(true, 'PlateDetected');
 
-          clearTimeout(timeout);
+            clearTimeout(timeout);
 
-          QUnit.start();
+            QUnit.start();
+          });
         });
       });
     })

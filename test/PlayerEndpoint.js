@@ -46,14 +46,13 @@ if(typeof QUnit == 'undefined')
 
 
 var PlayerEndpoint = KwsMedia.endpoints.PlayerEndpoint;
-var ZBarFilter     = KwsMedia.filters.ZBarFilter;
 
 
 QUnit.module('PlayerEndpoint', lifecycle);
 
 QUnit.asyncTest('Play, Pause & Stop', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(5);
 
   kwsMedia.on('connect', function()
   {
@@ -86,6 +85,8 @@ QUnit.asyncTest('Play, Pause & Stop', function()
             {
               if(error) return onerror(error);
 
+              QUnit.ok(true, 'stop');
+
               QUnit.start();
             });
           });
@@ -98,6 +99,10 @@ QUnit.asyncTest('Play, Pause & Stop', function()
 QUnit.asyncTest('End of Stream', function()
 {
   QUnit.expect(1);
+
+
+  var timeoutDelay = 5 * 1000;
+
 
   kwsMedia.on('connect', function()
   {
@@ -129,7 +134,7 @@ QUnit.asyncTest('End of Stream', function()
           {
             onerror('Time out');
           },
-          5000);
+          timeoutDelay);
         });
       });
     })

@@ -14,8 +14,10 @@
  */
 
 URL_BARCODES         = "https://ci.kurento.com/video/barcodes.webm";
-URL_SMALL            = "https://ci.kurento.com/video/small.webm";
+URL_FIWARECUT        = "https://ci.kurento.com/video/fiwarecut.webm";
+URL_PLATES           = "https://ci.kurento.com/video/plates.webm";
 URL_POINTER_DETECTOR = "https://ci.kurento.com/video/pointerDetector.mp4";
+URL_SMALL            = "https://ci.kurento.com/video/small.webm";
 
 
 function onerror(error)
@@ -52,6 +54,8 @@ lifecycle =
     };
 
     kwsMedia = new KwsMedia(ws_uri);
+
+    kwsMedia.on('error', onerror);
   },
 
   teardown: function()

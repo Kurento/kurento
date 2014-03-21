@@ -45,18 +45,18 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint    = KwsMedia.endpoints.PlayerEndpoint;
-var FaceOverlayFilter = KwsMedia.filters.FaceOverlayFilter;
+var PlayerEndpoint  = KwsMedia.endpoints.PlayerEndpoint;
+var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
 
 
-QUnit.module('FaceOverlayFilter', lifecycle);
+QUnit.module('GStreamerFilter', lifecycle);
 
-QUnit.asyncTest('Detect face in a video', function()
+QUnit.asyncTest('End of Stream', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(5);
 
 
-  var timeoutDelay = 20 * 1000;
+  var timeoutDelay = 7 * 1000;
 
 
   kwsMedia.on('connect', function()
@@ -67,24 +67,37 @@ QUnit.asyncTest('Detect face in a video', function()
 
       QUnit.notEqual(pipeline, undefined, 'pipeline');
 
-      PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR},
+      PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
       function(error, player)
       {
         if(error) return onerror(error);
 
         QUnit.notEqual(player, undefined, 'player');
 
-        var timeout;
-
-        FaceOverlayFilter.create(pipeline, function(error, faceOverlay)
+        GStreamerFilter.create(pipeline,
+        {command: 'videoflip method=horizontal-flip'},
+        function(error, gStreamerFilter)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(faceOverlay, undefined, 'faceOverlay');
+          QUnit.notEqual(gStreamerFilter, undefined, 'gStreamerFilter');
 
-          player.connect(faceOverlay, function(error)
+          pipeline.connect(player, gStreamerFilter, function(error, pipeline)
           {
             if(error) return onerror(error);
+
+            QUnit.notEqual(pipeline, undefined, 'connect');
+
+            var timeout;
+
+            player.on('EndOfStream', function(data)
+            {
+              QUnit.ok(true, 'EndOfStream');
+
+              clearTimeout(timeout);
+
+              QUnit.start();
+            });
 
             player.play(function(error)
             {
@@ -97,15 +110,6 @@ QUnit.asyncTest('Detect face in a video', function()
               timeoutDelay);
             });
           });
-        });
-
-        player.on('EndOfStream', function(data)
-        {
-          QUnit.ok(true, 'EndOfStream');
-
-          clearTimeout(timeout);
-
-          QUnit.start();
         });
       });
     })
