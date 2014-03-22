@@ -1,11 +1,11 @@
 package com.kurento.tool.rom.client;
 
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.MapMaker;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.tool.rom.transport.serialization.ObjectRefsManager;
 
@@ -15,15 +15,13 @@ public class RomClientObjectManager implements RomEventHandler,
 	private static final Logger LOG = LoggerFactory
 			.getLogger(RomClientObjectManager.class);
 
-	private DistributedGarbageCollector dgc;
-
-	private ConcurrentMap<String, RemoteObject> objects = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, RemoteObject> objects = new MapMaker()
+			.weakValues().makeMap();
 
 	private RomClient client;
 
 	public RomClientObjectManager(RomClient client) {
 		this.client = client;
-		this.dgc = new DistributedGarbageCollector(client);
 	}
 
 	public RomClient getClient() {
@@ -46,12 +44,14 @@ public class RomClientObjectManager implements RomEventHandler,
 
 	public void registerObject(String objectRef, RemoteObject remoteObject) {
 		this.objects.put(objectRef, remoteObject);
-		// this.dgc.registerReference(objectRef);
 	}
 
 	public void releaseObject(String objectRef) {
 		this.objects.remove(objectRef);
-		// this.dgc.removeReference(objectRef);
+	}
+
+	public RemoteObject getRemoteObject(String objectRef) {
+		return this.objects.get(objectRef);
 	}
 
 	@Override
