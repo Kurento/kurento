@@ -1,0 +1,21 @@
+<#macro comment doc params=[] return={}>
+/**
+ *
+    <#t><#if doc??>
+        <#t><#list doc?split("\n") as x><#assign line = sphinxLinks(x) >
+			<#if (line != "") ><#lt> * ${line}<#rt></#if>
+        </#list>
+    <#t></#if>
+    <#if (params?? && params?size > 0) >
+ * 
+    </#if>
+    <#t><#list params as param>
+<#lt> * @param ${param.name}
+<#if param.doc??><#list param.doc?split("\n") as x><#rt>
+ *       ${sphinxLinks(x)}
+</#list></#if></#list>
+<#if return.doc??> * @return ${sphinxLinks(return.doc)}</#if>
+ *
+ **/
+</#macro>
+

@@ -1,17 +1,8 @@
 ${config.subfolder}/Continuation.java
-/*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
- *
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Lesser General Public License
- * (LGPL) version 2.1 which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/lgpl-2.1.html
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
+/**
+ * This file is generated with Kurento ktool-rom-processor.
+ * Please don't edit. Changes should go to kms-interface-rom and
+ * ktool-rom-processor templates.
  */
 package ${config.packageName};
 
@@ -32,6 +23,7 @@ public interface Continuation<F> {
 	 * This method is called when the operation succeeds
 	 *
 	 * @param result
+     *            The result of the completed operation
 	 */
 	void onSuccess(F result);
 

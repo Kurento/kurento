@@ -1,16 +1,25 @@
 ${config.subfolder}/${complexType.name}.java
+<#include "macros.ftm" >
+/**
+ * This file is generated with Kurento ktool-rom-processor.
+ * Please don't edit. Changes should go to kms-interface-rom and
+ * ktool-rom-processor templates.
+ */
 package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
 import java.util.List;
 
 <#if complexType.typeFormat == "REGISTER">
+<@comment complexType.doc />
 public class ${complexType.name} {
 
    <#list complexType.properties as property>
+    <@comment property.doc />
     private ${getJavaObjectType(property.type,false)} ${property.name};
    </#list>
 
+    <@comment "Create a ${complexType.name}" />
     public ${complexType.name}(<#rt>
      <#assign num=0>
      <#list complexType.properties as property>
@@ -40,6 +49,7 @@ public class ${complexType.name} {
 }
 
 <#else>
+<@comment complexType.doc />
 public enum ${complexType.name} {<#rt>
    <#lt><#list complexType.values as value>${value}<#if value_has_next>, </#if></#list>}
 </#if>
