@@ -4,6 +4,9 @@ import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -34,6 +37,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(JsonRpcClientThrift.class);
 
+	public static final int KEEP_ALIVE_TIME = 120000;
+
 	private MediaServerClientPoolService clientPool;
 
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
@@ -47,8 +52,53 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	};
 
 	private ThriftServer server;
+	private boolean stopKeepAlive = false;
+	private final Set<String> sessions = new HashSet<String>();
 
 	private InetSocketAddress localHandlerAddress;
+
+	private final Thread keepAliveThread = new Thread(new Runnable() {
+
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					Thread.sleep(KEEP_ALIVE_TIME);
+				} catch (InterruptedException e) {
+
+				}
+
+				synchronized (keepAliveThread) {
+					if (stopKeepAlive)
+						return;
+				}
+
+				Set<String> copiedSessions = new HashSet<String>();
+
+				synchronized (sessions) {
+					copiedSessions.addAll(sessions);
+				}
+
+				/* sendKeepAlives */
+				for (String session : copiedSessions) {
+					int id = new Random().nextInt();
+					Request<Void> request = new Request<Void>(session, id,
+							"keepAlive", null);
+
+					LOG.info("Sending keep alive for session: {}", session);
+					Response<Void> response = internalSendRequestThrift(
+							request, Void.class);
+					if (response.isError()) {
+						LOG.error("Error on session {} keep alive, removing",
+								session);
+						synchronized (sessions) {
+							sessions.remove(session);
+						}
+					}
+				}
+			}
+		}
+	});
 
 	public JsonRpcClientThrift(MediaServerClientPoolService clientPool,
 			ThriftInterfaceExecutorService executorService,
@@ -99,6 +149,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				localHandlerAddress);
 
 		server.start();
+		keepAliveThread.start();
 	}
 
 	private void handleRequestFromServer(JsonObject message) throws IOException {
@@ -124,11 +175,23 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			}
 			// ---------------------------------------------
 
-			String response = client.invokeJsonRpc(request.toString());
+			String responseStr = client.invokeJsonRpc(request.toString());
 
-			LOG.info("[Client] Response received: " + response);
+			LOG.info("[Client] Response received: " + responseStr);
 
-			return JsonUtils.fromJsonResponse(response, resultClass);
+			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
+					resultClass);
+			String sessionId = response.getSessionId();
+
+			if (sessionId != null && !sessions.contains(sessionId)) {
+				synchronized (sessions) {
+					if (!sessions.contains(sessionId)) {
+						sessions.add(sessionId);
+					}
+				}
+			}
+
+			return response;
 
 		} catch (TException e) {
 			throw new RuntimeException(
@@ -196,6 +259,11 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		if (server != null) {
 			server.destroy();
 		}
+
+		synchronized (keepAliveThread) {
+			stopKeepAlive = true;
+		}
+		keepAliveThread.interrupt();
 	}
 
 }
