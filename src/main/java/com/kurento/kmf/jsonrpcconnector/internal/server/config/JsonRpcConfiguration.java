@@ -26,7 +26,6 @@ import javax.servlet.Filter;
 import org.apache.catalina.Context;
 import org.apache.tomcat.websocket.server.WsSci;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.ServletListenerRegistrationBean;
 import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ApplicationContext;
@@ -49,7 +48,6 @@ import com.kurento.kmf.jsonrpcconnector.internal.server.ProtocolManager;
 import com.kurento.kmf.jsonrpcconnector.internal.server.SessionsManager;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.JsonRpcWebSocketHandler;
 import com.kurento.kmf.jsonrpcconnector.server.JsonRpcConfigurer;
-import com.kurento.kmf.spring.KurentoServletContextListener;
 
 @Configuration
 @EnableWebSocket
@@ -101,7 +99,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 		DefaultJsonRpcHandlerRegistry registry = getJsonRpcHandlersRegistry();
 
-		Map<String, Object> urlMap = new LinkedHashMap();
+		Map<String, Object> urlMap = new LinkedHashMap<>();
 
 		for (DefaultJsonRpcHandlerRegistration registration : registry
 				.getRegistrations()) {
@@ -259,14 +257,15 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 	// ----------------------- Kurento context ---------------------
 
-	@Bean
-	public ServletListenerRegistrationBean<KurentoServletContextListener> kurentoServletContextListenerRegistrationBean() {
-		return new ServletListenerRegistrationBean(
-				new KurentoServletContextListener());
-	}
-
-	@Bean
-	KurentoContextInitializer kurentoContextInitializer() {
-		return new KurentoContextInitializer();
-	}
+	// @Bean
+	// public ServletListenerRegistrationBean<KurentoServletContextListener>
+	// kurentoServletContextListenerRegistrationBean() {
+	// return new ServletListenerRegistrationBean(
+	// new KurentoServletContextListener());
+	// }
+	//
+	// @Bean
+	// KurentoContextInitializer kurentoContextInitializer() {
+	// return new KurentoContextInitializer();
+	// }
 }
