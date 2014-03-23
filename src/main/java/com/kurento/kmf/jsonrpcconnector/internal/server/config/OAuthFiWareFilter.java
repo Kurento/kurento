@@ -76,6 +76,10 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
 						"Unathorized request");
 			}
+		} else {
+			log.info("The request from was authorized because there is"
+					+ " not keystone host configured", request.getRemoteAddr());
+			filterChain.doFilter(request, response);
 		}
 	}
 
