@@ -35,6 +35,7 @@ import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
+import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
@@ -97,11 +98,16 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 	@PostConstruct
 	private void init() {
-		ctx.getBean(
+		
+		LOG.info("Handler Address: "+config.getHandlerAddress());
+		LOG.info("Handler Port: "+config.getHandlerPort());
+		
+		ThriftServer server = (ThriftServer) ctx.getBean(
 				"mediaHandlerServer",
 				this.processor,
 				new InetSocketAddress(config.getHandlerAddress(), config
 						.getHandlerPort()));
+		server.start();
 	}
 
 	@Override

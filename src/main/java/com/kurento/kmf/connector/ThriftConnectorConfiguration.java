@@ -14,17 +14,6 @@
  */
 package com.kurento.kmf.connector;
 
-import org.springframework.stereotype.Component;
-
-/**
- * Configuration parameters for Media API. This class is intended to be created
- * as a bean inside an Spring context, and is needed by the Media API to work
- * correctly.
- * 
- * @author Ivan Gracia (igracia@gsyc.es)
- * @since 1.0.0
- */
-@Component
 public class ThriftConnectorConfiguration {
 
 	/**
@@ -36,7 +25,7 @@ public class ThriftConnectorConfiguration {
 	/**
 	 * Port where the local thrift server will be listening.
 	 */
-	private int handlerPort = 9191;
+	private int handlerPort = 5555;
 
 	/**
 	 * Gets the address of the local thrift server, which will be used to

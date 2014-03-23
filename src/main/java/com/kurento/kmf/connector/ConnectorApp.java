@@ -37,7 +37,8 @@ public class ConnectorApp implements JsonRpcConfigurer {
 	@Bean
 	public JsonRpcProperties jsonRpcProperties() {
 		JsonRpcProperties configuration = new JsonRpcProperties();
-		configuration.setKeystoneHost(env.getProperty("oauthserver.url", "")); // "http://cloud.lab.fi-ware.org"
+		// Official FI-WARE OAuth server: http://cloud.lab.fi-ware.org
+		configuration.setKeystoneHost(env.getProperty("oauthserver.url", ""));		
 		return configuration;
 	}
 
@@ -53,7 +54,7 @@ public class ConnectorApp implements JsonRpcConfigurer {
 		config.setHandlerAddress(env
 				.getProperty("handler.address", "127.0.0.1"));
 		config.setHandlerPort(Integer.parseInt(env.getProperty("handler.port",
-				"9999")));
+				"9191")));
 
 		LOG.info("Using Handler Address:"
 				+ config.getHandlerAddress()
