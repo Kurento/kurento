@@ -24,7 +24,5 @@ public interface ChromaFilter extends Filter {
 	public interface Builder extends AbstractBuilder<ChromaFilter> {
 
 		public Builder withBackgroundImage(String backgroundImage);
-
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

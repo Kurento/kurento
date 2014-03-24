@@ -14,6 +14,5 @@ public interface JackVaderFilter extends Filter {
 
 	public interface Builder extends AbstractBuilder<JackVaderFilter> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

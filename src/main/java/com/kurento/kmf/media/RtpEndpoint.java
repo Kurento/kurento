@@ -14,6 +14,5 @@ public interface RtpEndpoint extends SdpEndpoint {
 
 	public interface Builder extends AbstractBuilder<RtpEndpoint> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

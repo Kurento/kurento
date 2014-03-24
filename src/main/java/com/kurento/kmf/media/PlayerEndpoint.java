@@ -28,7 +28,5 @@ public interface PlayerEndpoint extends UriEndpoint {
 	public interface Builder extends AbstractBuilder<PlayerEndpoint> {
 
 		public Builder useEncodedMedia();
-
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

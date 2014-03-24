@@ -14,6 +14,5 @@ public interface Composite extends Hub {
 
 	public interface Builder extends AbstractBuilder<Composite> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

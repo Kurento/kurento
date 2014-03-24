@@ -22,7 +22,5 @@ public interface RecorderEndpoint extends UriEndpoint {
 		public Builder withMediaProfile(MediaProfileSpecType mediaProfile);
 
 		public Builder stopOnEndOfStream();
-
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

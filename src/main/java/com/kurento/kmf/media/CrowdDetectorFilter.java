@@ -17,6 +17,5 @@ public interface CrowdDetectorFilter extends Filter {
 
 	public interface Builder extends AbstractBuilder<CrowdDetectorFilter> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

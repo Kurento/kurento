@@ -25,7 +25,5 @@ public interface HttpPostEndpoint extends HttpEndpoint {
 		public Builder withDisconnectionTimeout(int disconnectionTimeout);
 
 		public Builder useEncodedMedia();
-
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

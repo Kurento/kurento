@@ -15,6 +15,5 @@ public interface GStreamerFilter extends Filter {
 
 	public interface Builder extends AbstractBuilder<GStreamerFilter> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

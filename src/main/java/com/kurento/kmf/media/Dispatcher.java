@@ -19,6 +19,5 @@ public interface Dispatcher extends Hub {
 
 	public interface Builder extends AbstractBuilder<Dispatcher> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

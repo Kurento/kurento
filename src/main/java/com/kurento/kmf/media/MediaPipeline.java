@@ -76,6 +76,5 @@ public interface MediaPipeline extends MediaObject {
 
 	public interface Builder extends AbstractBuilder<MediaPipeline> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

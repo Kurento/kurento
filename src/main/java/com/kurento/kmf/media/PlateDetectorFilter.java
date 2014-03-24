@@ -23,6 +23,5 @@ public interface PlateDetectorFilter extends Filter {
 
 	public interface Builder extends AbstractBuilder<PlateDetectorFilter> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

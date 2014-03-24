@@ -19,7 +19,5 @@ public interface HttpGetEndpoint extends HttpEndpoint {
 		public Builder withMediaProfile(MediaProfileSpecType mediaProfile);
 
 		public Builder withDisconnectionTimeout(int disconnectionTimeout);
-
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

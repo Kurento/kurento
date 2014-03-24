@@ -13,6 +13,5 @@ public interface HubPort extends MediaElement {
 
 	public interface Builder extends AbstractBuilder<HubPort> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

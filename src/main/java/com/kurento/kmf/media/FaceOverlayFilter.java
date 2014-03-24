@@ -30,6 +30,5 @@ public interface FaceOverlayFilter extends Filter {
 
 	public interface Builder extends AbstractBuilder<FaceOverlayFilter> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

@@ -14,6 +14,5 @@ public interface WebRtcEndpoint extends SdpEndpoint {
 
 	public interface Builder extends AbstractBuilder<WebRtcEndpoint> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

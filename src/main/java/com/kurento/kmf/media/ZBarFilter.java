@@ -22,6 +22,5 @@ public interface ZBarFilter extends Filter {
 
 	public interface Builder extends AbstractBuilder<ZBarFilter> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }

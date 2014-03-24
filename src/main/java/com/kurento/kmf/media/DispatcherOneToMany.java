@@ -22,6 +22,5 @@ public interface DispatcherOneToMany extends Hub {
 
 	public interface Builder extends AbstractBuilder<DispatcherOneToMany> {
 
-		public Builder withGarbagePeriod(int garbagePeriod);
 	}
 }
