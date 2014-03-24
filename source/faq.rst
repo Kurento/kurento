@@ -70,6 +70,47 @@ How do I...
         $ # if you have neither, you should probably be installing ocl-icd-libopencl1 like:
         $ sudo apt-get install ocl-icd-libopencl1
 
+Why do I get the error...
+
+...Dynamic Web Module 3.0 requires Java 1.6 o newer?
+    The error is due to the use of annotations for web service configuration
+    in Kurento Content API programming samples. Those annotations require a
+    java compliance level of 1.6 or beyond, and by is solved by using
+    something like:
+
+    .. sourcecode:: xml
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.0</version>
+            <configuration>
+                <source>1.6</source>
+                <target>1.6</target>
+            </configuration>
+        </plugin>
+
+    in your project pom.xml file, or the equivalent java compiler option
+    in your favorite IDE
+
+...Webxml attribute is required?
+    With Servlet 3.0 annotations can be used to specify how kurento
+    HTTP endpoints are to be deployed. Still, to have the maven war plugin
+    build correctly your program, you have to specify:
+
+    .. sourcecode:: xml
+
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+                <failOnMissingWebXml>false</failOnMissingWebXml>
+            </configuration>
+        </plugin>
+
+    .. seealso:: `This answer 
+        <http://stackoverflow.com/questions/18186590/webxml-attribute-is-required-with-servlet-3-0>`_
+        about the issue.
 
 Why can't I...
 -----------

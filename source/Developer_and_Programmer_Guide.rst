@@ -1620,6 +1620,9 @@ of ``pom.xml`` for this Maven project in shown below.
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven-war-plugin.version}</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
              </plugin>
           </plugins>
        </build>
