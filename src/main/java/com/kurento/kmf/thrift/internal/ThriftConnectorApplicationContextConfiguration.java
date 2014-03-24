@@ -67,11 +67,6 @@ public class ThriftConnectorApplicationContextConfiguration {
 		return new ThriftInterfaceConfiguration();
 	}
 
-	// @Bean
-	// DistributedGarbageCollector distributedGarbageCollector() {
-	// return new DistributedGarbageCollector();
-	// }
-
 	@Bean
 	@Scope("prototype")
 	ThriftServer mediaHandlerServer(Processor<?> processor,

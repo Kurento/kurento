@@ -21,7 +21,8 @@ import com.kurento.kmf.jsonrpcconnector.internal.server.TransactionImpl;
 import com.kurento.kmf.jsonrpcconnector.internal.server.TransactionImpl.ResponseSender;
 import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
-import com.kurento.kms.thrift.api.KmsMediaServerService;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Iface;
+import com.kurento.kms.thrift.api.KmsMediaServerService.Processor;
 
 public class JsonRpcServerThrift {
 
@@ -43,21 +44,20 @@ public class JsonRpcServerThrift {
 		this.handler = jsonRpcHandler;
 		this.paramsClass = JsonRpcHandlerManager.getParamsType(handler);
 
-		KmsMediaServerService.Processor<KmsMediaServerService.Iface> serverProcessor = new KmsMediaServerService.Processor<KmsMediaServerService.Iface>(
-				new KmsMediaServerService.Iface() {
+		Processor<Iface> serverProcessor = new Processor<Iface>(new Iface() {
 
-					@Override
-					public String invokeJsonRpc(final String requestStr)
-							throws TException {
+			@Override
+			public String invokeJsonRpc(final String requestStr)
+					throws TException {
 
-						Request<?> request = JsonUtils.fromJsonRequest(
-								requestStr, paramsClass);
+				Request<?> request = JsonUtils.fromJsonRequest(requestStr,
+						paramsClass);
 
-						Response<JsonObject> response = processRequest(request);
+				Response<JsonObject> response = processRequest(request);
 
-						return response.toString();
-					}
-				});
+				return response.toString();
+			}
+		});
 
 		session = new ServerSession("XXX", null, null, "YYY") {
 			@Override
@@ -100,7 +100,7 @@ public class JsonRpcServerThrift {
 			// Simulate receiving json string from net
 			String jsonResponse = response[0].toString();
 
-			LOG.debug("< " + jsonResponse);
+			LOG.debug("<-- " + jsonResponse);
 
 			Response<JsonObject> newResponse = JsonUtils.fromJsonResponse(
 					jsonResponse, JsonObject.class);

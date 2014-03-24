@@ -42,7 +42,7 @@ public class MediaServerSyncClientFactory extends
 
 	@Override
 	public PooledObject<Client> wrap(Client obj) {
-		return new DefaultPooledObject<Client>(obj);
+		return new DefaultPooledObject<>(obj);
 	}
 
 	/**

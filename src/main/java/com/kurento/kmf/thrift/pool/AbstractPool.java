@@ -36,7 +36,7 @@ public abstract class AbstractPool<T> implements Pool<T> {
 	protected void init(BasePooledObjectFactory<T> factory) {
 		GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 		config.setMinIdle(apiConfig.getClientPoolSize());
-		this.pool = PoolUtils.erodingPool(new GenericObjectPool<T>(factory,
+		this.pool = PoolUtils.erodingPool(new GenericObjectPool<>(factory,
 				config));
 	}
 

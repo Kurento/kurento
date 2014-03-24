@@ -86,15 +86,6 @@ public class JsonRpcConnectorClientServerTest {
 		JsonRpcClient client = new JsonRpcClientThrift(clientPool,
 				executorService, new InetSocketAddress("127.0.0.1", 7979));
 
-		// client.setServerRequestHandler(new
-		// DefaultJsonRpcHandler<JsonObject>() {
-		// @Override
-		// public void handleRequest(Transaction transaction,
-		// Request<JsonObject> request) throws Exception {
-		//
-		// }
-		// });
-
 		Params params = new Params();
 		params.param1 = "Value1";
 		params.param2 = "Value2";

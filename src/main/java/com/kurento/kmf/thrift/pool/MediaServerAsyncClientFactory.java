@@ -44,7 +44,7 @@ public class MediaServerAsyncClientFactory extends
 
 	@Override
 	public PooledObject<AsyncClient> wrap(AsyncClient obj) {
-		return new DefaultPooledObject<AsyncClient>(obj);
+		return new DefaultPooledObject<>(obj);
 	}
 
 	/**
