@@ -55,7 +55,7 @@ public class BootBaseTest {
 	protected static String getPort() {
 		String port = System.getProperty("http.port");
 		if (port == null) {
-			port = "8080";
+			port = "7788";
 		}
 		return port;
 	}
