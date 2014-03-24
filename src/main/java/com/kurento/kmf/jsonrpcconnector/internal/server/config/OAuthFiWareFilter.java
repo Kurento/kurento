@@ -77,8 +77,8 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 						"Unathorized request");
 			}
 		} else {
-			log.info("The request from was authorized because there is"
-					+ " not keystone host configured", request.getRemoteAddr());
+			log.info("Request from {} authorized: no keystone host configured",
+					request.getRemoteAddr());
 			filterChain.doFilter(request, response);
 		}
 	}

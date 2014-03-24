@@ -31,7 +31,7 @@ public class PendingRequests {
 	private static final Logger log = LoggerFactory
 			.getLogger(PendingRequests.class);
 
-	private final ConcurrentMap<Integer, BasicFuture<Response<JsonElement>>> pendingRequests = new ConcurrentHashMap<Integer, BasicFuture<Response<JsonElement>>>();
+	private final ConcurrentMap<Integer, BasicFuture<Response<JsonElement>>> pendingRequests = new ConcurrentHashMap<>();
 
 	public void handleResponse(Response<JsonElement> response) {
 

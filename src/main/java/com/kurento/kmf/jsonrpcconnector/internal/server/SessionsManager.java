@@ -31,8 +31,8 @@ public class SessionsManager {
 
 	// TODO Review atomic management of two maps
 
-	private ConcurrentHashMap<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
-	private ConcurrentHashMap<String, ServerSession> sessionsByTransportId = new ConcurrentHashMap<String, ServerSession>();
+	private final ConcurrentHashMap<String, ServerSession> sessions = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, ServerSession> sessionsByTransportId = new ConcurrentHashMap<>();
 
 	public void put(ServerSession session) {
 		sessions.put(session.getSessionId(), session);

@@ -20,6 +20,7 @@ package com.kurento.kmf.jsonrpcconnector.internal.message;
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
+ * @param <R>
  */
 public class Response<R> extends Message {
 

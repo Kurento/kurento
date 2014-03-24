@@ -37,9 +37,9 @@ import com.kurento.kmf.jsonrpcconnector.server.JsonRpcHandlerRegistration;
 public class DefaultJsonRpcHandlerRegistration implements
 		JsonRpcHandlerRegistration {
 
-	private MultiValueMap<JsonRpcHandler<?>, String> handlerMap = new LinkedMultiValueMap<JsonRpcHandler<?>, String>();
-	private MultiValueMap<Class<? extends JsonRpcHandler<?>>, String> perSessionHandlerClassMap = new LinkedMultiValueMap<Class<? extends JsonRpcHandler<?>>, String>();
-	private MultiValueMap<String, String> perSessionHandlerBeanNameMap = new LinkedMultiValueMap<String, String>();
+	private final MultiValueMap<JsonRpcHandler<?>, String> handlerMap = new LinkedMultiValueMap<>();
+	private final MultiValueMap<Class<? extends JsonRpcHandler<?>>, String> perSessionHandlerClassMap = new LinkedMultiValueMap<>();
+	private final MultiValueMap<String, String> perSessionHandlerBeanNameMap = new LinkedMultiValueMap<>();
 
 	@Override
 	public JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> handler,

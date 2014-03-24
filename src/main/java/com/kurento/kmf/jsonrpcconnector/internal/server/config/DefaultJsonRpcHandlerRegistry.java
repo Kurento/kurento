@@ -35,7 +35,7 @@ import com.kurento.kmf.jsonrpcconnector.server.JsonRpcHandlerRegistry;
  */
 public class DefaultJsonRpcHandlerRegistry implements JsonRpcHandlerRegistry {
 
-	private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<DefaultJsonRpcHandlerRegistration>();
+	private final List<DefaultJsonRpcHandlerRegistration> registrations = new ArrayList<>();
 
 	@Override
 	public JsonRpcHandlerRegistration addHandler(

@@ -80,9 +80,10 @@ public class MessageUtils {
 					Entry<String, JsonElement> prop = properties.iterator()
 							.next();
 
-					log.warn("Converting a result with " + properties.size()
-							+ " properties in a value of type " + resultClass
-							+ ". Selecting propoerty '" + prop.getKey() + "'");
+					log.warn(
+							"Converting a result with {} properties in a value"
+									+ " of type {}. Selecting propoerty '{}'",
+							properties.size(), resultClass, prop.getKey());
 
 					value = prop.getValue();
 
@@ -95,13 +96,13 @@ public class MessageUtils {
 			} else if (resultJsonObject.isJsonArray()) {
 				JsonArray array = (JsonArray) resultJsonObject;
 				if (array.size() > 1) {
-					log.warn("Converting an array with " + array.size()
-							+ " elements in a value of type " + resultClass
-							+ ". Selecting first element");
-					value = array.get(0);
-				} else {
-					value = array.get(0);
+					log.warn("Converting an array with elements in a value "
+							+ "of type. Selecting first element", array.size(),
+							resultClass);
+
 				}
+
+				value = array.get(0);
 			} else {
 				value = resultJsonObject;
 			}

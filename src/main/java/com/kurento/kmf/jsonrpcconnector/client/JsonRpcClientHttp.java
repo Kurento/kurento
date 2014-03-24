@@ -107,9 +107,8 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 
 			try {
 				Thread.sleep(1000);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			} catch (InterruptedException e) {
+				log.info("Long polling thread interrupted", e);
 			}
 
 			if (Thread.interrupted()) {
@@ -122,7 +121,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 						Request.POLL_METHOD_NAME, rs.getResponseListToSend(),
 						JsonElement.class);
 
-				log.info("Response from pool:" + requestsListJsonObject);
+				log.info("Response from pool: {}", requestsListJsonObject);
 
 				Type collectionType = new TypeToken<List<Request<JsonElement>>>() {
 				}.getType();
@@ -135,7 +134,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 			} catch (IOException e) {
 				// TODO Decide what to do in this case. If the net connection is
 				// lost, this will retry indefinitely
-				log.error("Exeception when waiting for events (long-pooling). Retry");
+				log.error("Exception when waiting for events (long-pooling). Retry");
 			}
 		}
 	}
@@ -160,7 +159,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 				.execute().returnContent().asString();
 
 		if (resultJson == null || resultJson.trim().isEmpty()) {
-			return new Response<R>(request.getId(), new ResponseError(3,
+			return new Response<>(request.getId(), new ResponseError(3,
 					"The server send an empty response"));
 		}
 
@@ -174,7 +173,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 	@Override
 	public void close() {
 		if (this.longPoolingThread != null) {
-			log.info("Interrupted!!!!");
+			log.info("Interrupted!!!");
 			this.longPoolingThread.interrupt();
 		}
 		handlerManager.afterConnectionClosed(session,

@@ -52,8 +52,7 @@ public class TransactionImpl implements Transaction {
 
 		if (notResponded) {
 
-			Response<Object> response = new Response<Object>(request.getId(),
-					result);
+			Response<Object> response = new Response<>(request.getId(), result);
 
 			if (JsonRpcConfiguration.INJECT_SESSION_ID) {
 				response.setSessionId(session.getSessionId());
@@ -88,7 +87,7 @@ public class TransactionImpl implements Transaction {
 	public void sendError(int code, String message, String data)
 			throws IOException {
 
-		responseSender.sendResponse(new Response<Object>(request.getId(),
+		responseSender.sendResponse(new Response<>(request.getId(),
 				new ResponseError(code, message, data)));
 	}
 
@@ -96,8 +95,7 @@ public class TransactionImpl implements Transaction {
 	public void sendError(Exception e) throws IOException {
 
 		ResponseError error = ResponseError.newFromException(e);
-		responseSender
-				.sendResponse(new Response<Object>(request.getId(), error));
+		responseSender.sendResponse(new Response<>(request.getId(), error));
 
 	}
 

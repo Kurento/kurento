@@ -69,12 +69,11 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		// Simulate sending json string for net
 		String jsonRequest = request.toString();
 
-		LOG.debug("> " + jsonRequest);
+		LOG.debug("--> {}", jsonRequest);
 
 		Request<JsonObject> newRequest = JsonUtils.fromJsonRequest(jsonRequest,
 				JsonObject.class);
 
-		@SuppressWarnings("unchecked")
 		final Response<JsonObject>[] response = new Response[1];
 
 		TransactionImpl t = new TransactionImpl(session, newRequest,
@@ -92,14 +91,14 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		} catch (Exception e) {
 
 			ResponseError error = ResponseError.newFromException(e);
-			return new Response<R>(request.getId(), error);
+			return new Response<>(request.getId(), error);
 		}
 
 		if (response[0] != null) {
 			// Simulate receiving json string from net
 			String jsonResponse = response[0].toString();
 
-			LOG.debug("< " + jsonResponse);
+			// LOG.debug("< " + jsonResponse);
 
 			Response<R> newResponse = JsonUtils.fromJsonResponse(jsonResponse,
 					resultClass);
@@ -109,7 +108,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 			return newResponse;
 
 		} else {
-			return new Response<R>(request.getId());
+			return new Response<>(request.getId());
 		}
 	}
 

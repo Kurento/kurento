@@ -117,7 +117,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					// issued by client.
 					handlerManager.afterConnectionClosed(session,
 							status.getReason());
-					log.debug("WebSocket closed due to: " + status);
+					log.debug("WebSocket closed due to: {}", status);
 					wsSession = null;
 					// TODO Start a timer to force reconnect in x millis
 					// For the moment we are going to force it sending another
@@ -145,7 +145,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					String result = rsHelper.sendRequest(
 							JsonRpcConstants.METHOD_RECONNECT, String.class);
 
-					log.info("Reconnection result: " + result);
+					log.info("Reconnection result: {}", result);
 
 				}
 
@@ -169,13 +169,13 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	}
 
 	private void handleRequestFromServer(JsonObject message) throws IOException {
-		log.info("[Client] Message Received: " + message);
+		// log.debug("<-- {}", message);
 		handlerManager.handleRequest(session,
 				fromJsonRequest(message, JsonElement.class), rs);
 	}
 
 	private void handleResponseFromServer(JsonObject message) {
-		log.info("[Client] Message Received: " + message);
+		// log.debug("<-- {}", message);
 
 		Response<JsonElement> response = fromJsonResponse(message,
 				JsonElement.class);
@@ -202,7 +202,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 
 		String jsonMessage = request.toString();
-		log.info("[Client] Message sent: " + jsonMessage);
+		// log.info("--> {}", jsonMessage);
 		wsSession.sendMessage(new TextMessage(jsonMessage));
 
 		if (responseFuture == null) {
@@ -211,8 +211,12 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		try {
 
-			Response<R> response = MessageUtils.convertResponse(
-					responseFuture.get(), resultClass);
+			// TODO Put a timeout to avoid blocking the thread when a response
+			// is not sent from server
+			Response<JsonElement> responseJson = responseFuture.get();
+
+			Response<R> response = MessageUtils.convertResponse(responseJson,
+					resultClass);
 
 			if (response.getSessionId() != null) {
 				session.setSessionId(response.getSessionId());

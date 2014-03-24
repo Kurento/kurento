@@ -255,17 +255,4 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 		return new ThreadPoolTaskScheduler();
 	}
 
-	// ----------------------- Kurento context ---------------------
-
-	// @Bean
-	// public ServletListenerRegistrationBean<KurentoServletContextListener>
-	// kurentoServletContextListenerRegistrationBean() {
-	// return new ServletListenerRegistrationBean(
-	// new KurentoServletContextListener());
-	// }
-	//
-	// @Bean
-	// KurentoContextInitializer kurentoContextInitializer() {
-	// return new KurentoContextInitializer();
-	// }
 }

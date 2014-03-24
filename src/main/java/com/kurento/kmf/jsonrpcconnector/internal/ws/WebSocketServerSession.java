@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -32,6 +34,9 @@ import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
 import com.kurento.kmf.jsonrpcconnector.internal.server.SessionsManager;
 
 public class WebSocketServerSession extends ServerSession {
+
+	private static Logger LOG = LoggerFactory
+			.getLogger(WebSocketServerSession.class);
 
 	private WebSocketSession wsSession;
 	private final PendingRequests pendingRequests = new PendingRequests();
@@ -69,7 +74,15 @@ public class WebSocketServerSession extends ServerSession {
 			responseFuture = pendingRequests.prepareResponse(request.getId());
 		}
 
-		wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));
+		try {
+			wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));
+		} catch (Exception e) {
+			LOG.error(
+					"Exception while sending message '{}' to websocket with native sessionId '{}': {}",
+					JsonUtils.toJson(request), wsSession.getId(), e);
+			// TODO Implement retries if possible
+			return null;
+		}
 
 		if (responseFuture == null) {
 			return null;

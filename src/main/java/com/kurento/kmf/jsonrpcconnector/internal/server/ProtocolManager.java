@@ -73,6 +73,7 @@ public class ProtocolManager {
 	 * @param messageJson
 	 * @param factory
 	 * @param responseSender
+	 * @param internalSessionId
 	 * @return
 	 * @throws IOException
 	 */
