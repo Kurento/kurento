@@ -3,6 +3,7 @@ package com.kurento.kmf.connector.test;
 import java.io.IOException;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -169,11 +170,25 @@ public class BasicPipelineTest extends BootBaseTest {
 				"        \"operation\": \"play\",\n" + 
 				"        \"sessionId\": \""+sessionId+"\"\n" + 
 				"      },\n" + 
-				"      \"id\": 6\n" + 
+				"      \"id\": 8\n" + 
 				"    }");
 		
-		System.out.println("URL: "+url);		
+		Assert.assertTrue(url.contains("9091"));		
 		
+		sendRequest(" {\n" + 
+				"      \"jsonrpc\": \"2.0\",\n" +
+				"      \"method\": \"release\",\n" + 
+				"      \"params\": {\n" + 
+				"        \"object\": \""+pipelineId+"\"\n" + 
+				"      },\n" + 
+				"      \"id\": 9\n" + 
+				"    }");
+		
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
-
 }

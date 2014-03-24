@@ -38,11 +38,9 @@ public class BootBaseTest {
 	@AfterClass
 	public static void stop() {
 
-		KurentoApplicationContextUtils
-				.closeAllKurentoApplicationContexts(((WebApplicationContext) context)
-						.getServletContext());
-		
-		context.close();
+		if(context != null) {
+			context.close();
+		}
 	}
 
 	private static void trasvaseProperty(String systemPropertyName,
@@ -57,7 +55,7 @@ public class BootBaseTest {
 	protected static String getPort() {
 		String port = System.getProperty("http.port");
 		if (port == null) {
-			port = "7788";
+			port = "8080";
 		}
 		return port;
 	}
