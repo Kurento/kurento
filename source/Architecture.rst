@@ -549,7 +549,7 @@ video clip is recovered from a media repository (e.g. the file system)
 and it is fed into a filter performing specific processing on it (e.g.
 augmenting the media, recognizing objects of faces through computer
 vision, adding subtitles, modifying the color palette, etc.) At the end
-of the pipeline an element called ‘’HttpEndpoint’’ adapts the media and
+of the pipeline an element called :rom:cls:`HttpGetEndpoint` adapts the media and
 sends it as an HTTP answer upon client requests. This basic pipeline can
 be modified by the developer adding additional elements at wish, which
 can be done creating the server-side application logic.
@@ -572,7 +572,7 @@ this case, the media goes from the client to the server using the
 appropriate HTTP methods for it (i.e. POST or PUT). The negotiation
 phase hence starts with the client requesting to upload the content and
 the Application Server creating the appropriate pipeline for doing it.
-This pipeline will always start with an HttpEndpoint element as the one
+This pipeline will always start with an :rom:cls:`HttpPostEndpoint` element as the one
 shown in Figure 10, but used in sink mode so that the media stream gets
 into the pipeline instead of out of it. To that end point further
 elements can be connected for filtering media, processing it or storing

@@ -483,9 +483,9 @@ known before transmission is started.
 -  ***Known issues***:
 
    -  In current version, only the WebM muxer is supported. Hence,
-      HttpEndpoint generated media flows can be only consumed by
+      the HTTP endpoints generated media flows can be only consumed by
       browsers supporting that format (i.e. Firefox an Chrome). Future
-      versions will also support MP4 making HttpEndpoint compatible with
+      versions will also support MP4 making HTTP endpoints compatible with
       Microsoft IE and Safari.
    -  It is known a bad behaviour with Chrome when the *service URL* is
       placed in the address bar of the browser. This is due to a
@@ -964,8 +964,8 @@ their values.
 
     public void createMediaElements() {
         MediaPipeline mp = mpf.create();
-        HttpEndpoint httpEndpoint = mp.newHttpEndpoint()
-            .withDisconnectionTimeout(1000).withGarbagePeriod(100)
+        HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+            .withDisconnectionTimeout(1000)
             .withMediaProfile(MediaProfileSpecType.WEBM).build();
 
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
@@ -993,7 +993,7 @@ owner ``MediaPipeline``.
     public void connectElements() {
         MediaPipeline mp = mpf.create();
 
-        HttpEndpoint httpEndpoint = mp.newHttpEndpoint()
+        HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
             .build();
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
@@ -1011,7 +1011,7 @@ element.
     public void connectElements() {
         MediaPipeline mp = mpf.create();
 
-        HttpEndpoint httpEndpoint = mp.newHttpEndpoint()
+        HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
             .build();
 
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
@@ -1051,10 +1051,10 @@ increase in complexity.
             
         mp = mpf.create();
                     
-        mp.newHttpEndpoint().buildAsync( new Continuation<HttpEndpoint>() {
+        mp.newHttpGetEndpoint().buildAsync( new Continuation<HttpGetEndpoint>() {
 
             @Override
-            public void onSuccess(HttpEndpoint result) {
+            public void onSuccess(HttpGetEndpoint result) {
                 connectAsync (null, result);
             }
             @Override
@@ -1079,10 +1079,10 @@ increase in complexity.
         });
     }
         
-    private HttpEndpoint http;
+    private HttpGetEndpoint http;
     private PlayerEndpoint player;
 
-    public void connectAsync(PlayerEndpoint player, HttpEndpoint http) {
+    public void connectAsync(PlayerEndpoint player, HttpGetEndpoint http) {
         if (player != null) {
             this.player = player;
         }
@@ -1357,7 +1357,7 @@ Examples
 This section provides two examples of the *Kurento*
 platform. Both examples implement a *MediaPipeline* composed by a
 *PlayerEndpoint* connected to a *Filter* and generating a media flow
-through an *HttpEndpoint*. The main difference between these two example
+through an *HttpGetEndpoint*. The main difference between these two example
 is the filter. The first example uses the *JackVaderFilter*. This filter
 is an example of augmented reality element, since it recognizes faces in
 media streams adding Jack Sparrow or Darth Vader hat onto these
@@ -1367,8 +1367,8 @@ codes in a media stream generating events with the information of the
 detected codes in the stream. Therefore, the *MediaPipelines* used in
 these examples are the following:
 
--  *PlayerEndpoint* → *JackVaderFilter* → *HttpEndpoint*
--  *PlayerEndpoint* → *ZBarFilter* → *HttpEndpoint*
+-  *PlayerEndpoint* → *JackVaderFilter* → *HttpGetEndpoint*
+-  *PlayerEndpoint* → *ZBarFilter* → *HttpGetEndpoint*
 
 For both examples, the handler (Java) and client (JavaScript) code is
 provided.
@@ -1409,9 +1409,9 @@ puts a pirate hat in the faces of this video.
             //Store a player reference for later use
             session.setAttribute("player", playerEndpoint);
 
-            //Calling "start" creates the HttpEndpoint and connects it to the filter
+            //Calling "start" creates the HttpGetEndpoint and connects it to the filter
             session.start(filter);
-            //Create a HttpEndpoint and connects it to the filter
+            //Create a HttpGetEndpoint and connects it to the filter
             HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
                             .terminateOnEOS().build();
             filter.connect(httpEndpoint);
@@ -1423,7 +1423,7 @@ puts a pirate hat in the faces of this video.
 
         @Override
         public void onContentStarted(HttpPlayerSession session) {
-            //Content starts when the client connects to the HttpEndpoin
+            //Content starts when the client connects to the HttpGetEndpoint
             //At that instant, the player must start reproducing the file
             PlayerEndpoint playerendPoint = (PlayerEndpoint) session
                     .getAttribute("player");
