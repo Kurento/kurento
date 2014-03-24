@@ -1,9 +1,11 @@
 {
   "name": "kws-media-api",
-  "version": "0.0.1",
-  "authors": "Kurento <info@kurento.com> (http://kurento.org)",
+  "version": "4.1.1",
+  "authors": [
+    "Kurento <info@kurento.com> (http://kurento.org)"
+  ],
   "description": "Kurento Content Management API for Web SDK",
-  "main": "dist/kws-media-api.js",
+  "main": "dist/KwsMedia.js",
   "keywords": [
     "API",
     "Kurento",
@@ -14,5 +16,12 @@
     "WebRTC"
   ],
   "license": "LGPL",
-  "homepage": "http://www.kurento.com"
+  "homepage": "http://www.kurento.com",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
 }
