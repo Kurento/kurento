@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -62,6 +63,8 @@ public final class ThriftConnectorJsonRpcHandler extends
 				public void eventJsonRpc(String request) throws TException {
 					try {
 
+						LOG.debug("<-* {}", request.trim());
+
 						Request<JsonObject> requestObj = JsonUtils
 								.fromJsonRequest(request, JsonObject.class);
 
@@ -96,18 +99,27 @@ public final class ThriftConnectorJsonRpcHandler extends
 	@Autowired
 	private ApplicationContext ctx;
 
+	private ThriftServer server;
+
 	@PostConstruct
 	private void init() {
-		
-		LOG.info("Handler Address: "+config.getHandlerAddress());
-		LOG.info("Handler Port: "+config.getHandlerPort());
-		
-		ThriftServer server = (ThriftServer) ctx.getBean(
+
+		LOG.info("Handler Address: {}", config.getHandlerAddress());
+		LOG.info("Handler Port: {}", config.getHandlerPort());
+
+		server = (ThriftServer) ctx.getBean(
 				"mediaHandlerServer",
 				this.processor,
 				new InetSocketAddress(config.getHandlerAddress(), config
 						.getHandlerPort()));
 		server.start();
+	}
+
+	@PreDestroy
+	private void destroy() {
+		if (server != null) {
+			server.destroy();
+		}
 	}
 
 	@Override
@@ -129,23 +141,28 @@ public final class ThriftConnectorJsonRpcHandler extends
 			request.getParams().addProperty("port", config.getHandlerPort());
 		}
 
-		client.invokeJsonRpc(request.toString(),
-				new AsyncMethodCallback<invokeJsonRpc_call>() {
+		try {
+			client.invokeJsonRpc(request.toString(),
+					new AsyncMethodCallback<invokeJsonRpc_call>() {
 
-					@Override
-					public void onComplete(invokeJsonRpc_call response) {
-						clientPool.release(client);
+						@Override
+						public void onComplete(invokeJsonRpc_call response) {
+							clientPool.release(client);
 
-						if (request.getId() != null)
-							requestOnComplete(response, transaction);
-					}
+							if (request.getId() != null)
+								requestOnComplete(response, transaction);
+						}
 
-					@Override
-					public void onError(Exception exception) {
-						clientPool.release(client);
-						requestOnError(exception, transaction);
-					}
-				});
+						@Override
+						public void onError(Exception exception) {
+							clientPool.release(client);
+							requestOnError(exception, transaction);
+						}
+					});
+		} catch (Exception e) {
+			LOG.error("Exception while executing a command"
+					+ " in thrift interface of the MediaServer", e);
+		}
 	}
 
 	protected void requestOnError(Exception exception, Transaction transaction) {
