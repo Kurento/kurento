@@ -26,8 +26,8 @@ import com.kurento.kmf.jsonrpcconnector.internal.server.TransactionImpl.Response
 import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
-import com.kurento.kms.thrift.api.KmsMediaHandlerService;
-import com.kurento.kms.thrift.api.KmsMediaServerService;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
+import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRpc_call;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
@@ -44,16 +44,16 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
 		public void sendResponse(Message message) throws IOException {
-			LOG.warn("The thrift client is trying to send "
-					+ " the response '"
-					+ message
-					+ "' for a request from server. But with Thrift it is not possible");
+			LOG.warn(
+					"The thrift client is trying to send the response '{}' for "
+							+ "a request from server. But with Thrift it is not possible",
+					message);
 		}
 	};
 
 	private ThriftServer server;
-	private boolean stopKeepAlive = false;
-	private final Set<String> sessions = new HashSet<String>();
+	private boolean stopKeepAlive;
+	private final Set<String> sessions = new HashSet<>();
 
 	private InetSocketAddress localHandlerAddress;
 
@@ -65,7 +65,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				try {
 					Thread.sleep(KEEP_ALIVE_TIME);
 				} catch (InterruptedException e) {
-
+					LOG.info("Sleep interrupted", e);
 				}
 
 				synchronized (keepAliveThread) {
@@ -73,16 +73,16 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 						return;
 				}
 
-				Set<String> copiedSessions = new HashSet<String>();
+				Set<String> copiedSessions;
 
 				synchronized (sessions) {
-					copiedSessions.addAll(sessions);
+					copiedSessions = new HashSet<>(sessions);
 				}
 
 				/* sendKeepAlives */
 				for (String session : copiedSessions) {
 					int id = new Random().nextInt();
-					Request<Void> request = new Request<Void>(session, id,
+					Request<Void> request = new Request<>(session, id,
 							"keepAlive", null);
 
 					LOG.info("Sending keep alive for session: {}", session);
@@ -123,14 +123,14 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			}
 		};
 
-		final KmsMediaHandlerService.Processor<KmsMediaHandlerService.Iface> clientProcessor = new KmsMediaHandlerService.Processor<KmsMediaHandlerService.Iface>(
-				new KmsMediaHandlerService.Iface() {
+		final Processor<Iface> clientProcessor = new Processor<Iface>(
+				new Iface() {
 					@Override
 					public void eventJsonRpc(String request) throws TException {
 
 						try {
 
-							LOG.info("[Client] Request Received: " + request);
+							LOG.info("[Client] Request Received: {}", request);
 
 							JsonObject message = JsonUtils.fromJson(request,
 									JsonObject.class);
@@ -165,7 +165,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		try {
 
-			LOG.info("[Client] Request sent: " + request);
+			LOG.debug("[Client] Request sent: {}", request);
 
 			// TODO Remove this hack -----------------------
 			if (request.getMethod().equals("subscribe")) {
@@ -177,7 +177,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 			String responseStr = client.invokeJsonRpc(request.toString());
 
-			LOG.info("[Client] Response received: " + responseStr);
+			LOG.debug("[Client] Response received: {}", responseStr);
 
 			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
 					resultClass);
@@ -207,7 +207,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		final AsyncClient client = clientPool.acquireAsync();
 
-		LOG.info("[Client] Request sent: " + request);
+		LOG.info("[Client] Request sent: {}", request);
 
 		// TODO Remove this hack -----------------------
 		if (request.getMethod().equals("subscribe")) {
@@ -218,9 +218,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		// ---------------------------------------------
 
 		try {
-			client.invokeJsonRpc(
-					request.toString(),
-					new AsyncMethodCallback<KmsMediaServerService.AsyncClient.invokeJsonRpc_call>() {
+			client.invokeJsonRpc(request.toString(),
+					new AsyncMethodCallback<AsyncClient.invokeJsonRpc_call>() {
 
 						@Override
 						public void onError(Exception exception) {
@@ -234,8 +233,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 							try {
 								String response = thriftResponse.getResult();
-								LOG.info("[Client] Response received: "
-										+ response);
+								LOG.debug("[Client] Response received: {}",
+										response);
 
 								continuation.onSuccess(JsonUtils
 										.fromJsonResponse(response, resultClass));

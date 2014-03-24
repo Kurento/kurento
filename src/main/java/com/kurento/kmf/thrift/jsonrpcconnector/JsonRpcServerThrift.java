@@ -93,14 +93,14 @@ public class JsonRpcServerThrift {
 		} catch (Exception e) {
 
 			ResponseError error = ResponseError.newFromException(e);
-			return new Response<JsonObject>(request.getId(), error);
+			return new Response<>(request.getId(), error);
 		}
 
 		if (response[0] != null) {
 			// Simulate receiving json string from net
 			String jsonResponse = response[0].toString();
 
-			LOG.debug("<-- " + jsonResponse);
+			LOG.debug("<-- {}", jsonResponse);
 
 			Response<JsonObject> newResponse = JsonUtils.fromJsonResponse(
 					jsonResponse, JsonObject.class);
@@ -110,7 +110,7 @@ public class JsonRpcServerThrift {
 			return newResponse;
 
 		} else {
-			return new Response<JsonObject>(request.getId());
+			return new Response<>(request.getId());
 		}
 	}
 
