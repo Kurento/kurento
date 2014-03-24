@@ -21,7 +21,25 @@ public interface MediaObject {
 	void addErrorListener(MediaEventListener<ErrorEvent> listener,
 			Continuation<ListenerRegistration> cont);
 
+	/**
+	 * 
+	 * Explicitly release a media object form memory. All of its children will
+	 * also be released.
+	 * 
+	 **/
 	void release();
 
+	/**
+	 * 
+	 * Explicitly release a media object form memory. All of its children will
+	 * also be released. Asynchronous call.
+	 * 
+	 * @param continuation
+	 *            {@link #onSuccess(void)} will be called when the actions
+	 *            complete. {@link #onError} will be called if there is an
+	 *            exception.
+	 * 
+	 **/
 	void release(Continuation<Void> continuation);
+
 }
