@@ -105,13 +105,16 @@ QUnit.asyncTest('Media session started', function()
 
   var timeout;
 
+  function _onerror(message)
+  {
+    clearTimeout(timeout);
+
+    onerror(message);
+  };
+
   function enableTimeout()
   {
-    timeout = setTimeout(function()
-    {
-      onerror('Time out');
-    },
-    timeoutDelay);
+    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
   };
 
   function disableTimeout()

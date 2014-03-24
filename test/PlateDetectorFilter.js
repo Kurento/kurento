@@ -59,7 +59,27 @@ QUnit.asyncTest('Detect plate in a video', function()
   QUnit.expect(1);
 
 
-  var timeoutDelay = 7 * 1000;
+  var timeoutDelay = 10 * 1000;
+
+
+  var timeout;
+
+  function _onerror(message)
+  {
+    clearTimeout(timeout);
+
+    onerror(message);
+  };
+
+  function enableTimeout()
+  {
+    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
+  };
+
+  function disableTimeout()
+  {
+    clearTimeout(timeout);
+  };
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
@@ -70,8 +90,6 @@ QUnit.asyncTest('Detect plate in a video', function()
     {
       if(error) return onerror(error);
 
-      var timeout;
-
       pipeline.connect(player, plateDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
@@ -80,19 +98,15 @@ QUnit.asyncTest('Detect plate in a video', function()
         {
           if(error) return onerror(error);
 
-          timeout = setTimeout(function()
-          {
-            onerror('Time out');
-          },
-          timeoutDelay);
+          enableTimeout();
         });
       });
 
       plateDetector.on('PlateDetected', function(data)
       {
-        QUnit.ok(true, 'PlateDetected');
+        QUnit.ok(true, 'PlateDetected: '+data.plate);
 
-        clearTimeout(timeout);
+        disableTimeout();
 
         QUnit.start();
       });

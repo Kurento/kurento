@@ -95,6 +95,26 @@ QUnit.asyncTest('Detect bar-code in a video', function()
   var timeoutDelay = 5 * 1000;
 
 
+  var timeout;
+
+  function _onerror(message)
+  {
+    clearTimeout(timeout);
+
+    onerror(message);
+  };
+
+  function enableTimeout()
+  {
+    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
+  };
+
+  function disableTimeout()
+  {
+    clearTimeout(timeout);
+  };
+
+
   PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)
   {
     if(error) return onerror(error);
@@ -102,8 +122,6 @@ QUnit.asyncTest('Detect bar-code in a video', function()
     ZBarFilter.create(pipeline, function(error, zbar)
     {
       if(error) return onerror(error);
-
-      var timeout;
 
       pipeline.connect(player, zbar, function(error, pipeline)
       {
@@ -113,19 +131,15 @@ QUnit.asyncTest('Detect bar-code in a video', function()
         {
           if(error) return onerror(error);
 
-          timeout = setTimeout(function()
-          {
-            onerror('Time out');
-          },
-          timeoutDelay);
+          enableTimeout();
         });
       });
 
       zbar.on('CodeFound', function(data)
       {
-        QUnit.ok(true, 'CodeFound');
+        QUnit.ok(true, 'CodeFound:'+data.value);
 
-        clearTimeout(timeout);
+        disableTimeout();
 
         QUnit.start();
       });

@@ -62,14 +62,32 @@ QUnit.asyncTest('Detect face in a video', function()
   var timeoutDelay = 20 * 1000;
 
 
+  var timeout;
+
+  function _onerror(message)
+  {
+    clearTimeout(timeout);
+
+    onerror(message);
+  };
+
+  function enableTimeout()
+  {
+    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
+  };
+
+  function disableTimeout()
+  {
+    clearTimeout(timeout);
+  };
+
+
   PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR},
   function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
-
-    var timeout;
 
     FaceOverlayFilter.create(pipeline, function(error, faceOverlay)
     {
@@ -85,11 +103,7 @@ QUnit.asyncTest('Detect face in a video', function()
         {
           if(error) return onerror(error);
 
-          timeout = setTimeout(function()
-          {
-            onerror('Time out');
-          },
-          timeoutDelay);
+          enableTimeout();
         });
       });
     });
@@ -98,7 +112,7 @@ QUnit.asyncTest('Detect face in a video', function()
     {
       QUnit.ok(true, 'EndOfStream');
 
-      clearTimeout(timeout);
+      disableTimeout();
 
       QUnit.start();
     });

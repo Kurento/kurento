@@ -62,15 +62,33 @@ QUnit.asyncTest('Detect pointer', function()
   var timeoutDelay = 20 * 1000;
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
+  var timeout;
+
+  function _onerror(message)
+  {
+    clearTimeout(timeout);
+
+    onerror(message);
+  };
+
+  function enableTimeout()
+  {
+    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
+  };
+
+  function disableTimeout()
+  {
+    clearTimeout(timeout);
+  };
+
+
+  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
     PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
     {
       if(error) return onerror(error);
-
-      var timeout;
 
       pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
@@ -80,21 +98,25 @@ QUnit.asyncTest('Detect pointer', function()
         {
           if(error) return onerror(error);
 
-          timeout = setTimeout(function()
-          {
-            onerror('Time out');
-          },
-          timeoutDelay);
+          enableTimeout();
         });
       });
 
-      pointerDetector.addWindow('goal', 50, 50, 150, 150);
+      var window =
+      {
+        id: 'goal',
+        height: 50,
+        width: 50,
+        upperRightX: 150,
+        upperRightY: 150
+      };
+      pointerDetector.addWindow(window);
 
       pointerDetector.on('WindowIn', function(data)
       {
         QUnit.ok(true, 'WindowIn');
 
-        clearTimeout(timeout);
+        disableTimeout();
 
         QUnit.start();
       });
@@ -102,82 +124,17 @@ QUnit.asyncTest('Detect pointer', function()
   });
 });
 
-QUnit.asyncTest('Window events', function()
+QUnit.test('Window events', function()
 {
-  QUnit.expect(2);
-
-
-  var timeoutDelay0 = 20 * 1000;
-  var timeoutDelay1 =  5 * 1000;
-
-
-  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
-  {
-    if(error) return onerror(error);
-
-    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
-    {
-      if(error) return onerror(error);
-
-      var timeout0;
-      var timeout1;
-
-      pipeline.connect(player, pointerDetector, function(error, pipeline)
-      {
-        if(error) return onerror(error);
-
-        player.play(function(error)
-        {
-          if(error) return onerror(error);
-
-          timeout0 = setTimeout(function()
-          {
-            onerror('Time out 0');
-          },
-          timeoutDelay0);
-
-          timeout1 = setTimeout(function()
-          {
-            onerror('Time out 1');
-          },
-          timeoutDelay1);
-        });
-      });
-
-      pointerDetector.addWindow('window0', 50, 50, 200,  50);
-      pointerDetector.addWindow('window1', 50, 50, 200, 150);
-
-      pointerDetector.on('WindowIn', function(data)
-      {
-        QUnit.ok(true, 'WindowIn');
-
-        clearTimeout(timeout0);
-
-        QUnit.start();
-      });
-
-      pointerDetector.on('WindowOut', function(data)
-      {
-        QUnit.ok(true, 'WindowOut');
-
-        clearTimeout(timeout1);
-
-        QUnit.start();
-      });
-    });
-  });
-});
-
-QUnit.asyncTest('Window overlay', function()
-{
+  QUnit.stop(2);
   QUnit.expect(2);
 
 
   var timeoutDelay0 = 10 * 1000;
-  var timeoutDelay1 =  5 * 1000;
+  var timeoutDelay1 = 20 * 1000;
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
+  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
@@ -188,6 +145,14 @@ QUnit.asyncTest('Window overlay', function()
       var timeout0;
       var timeout1;
 
+      function _onerror(message)
+      {
+        clearTimeout(timeout0);
+        clearTimeout(timeout1);
+
+        onerror(message);
+      };
+
       pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
@@ -196,38 +161,131 @@ QUnit.asyncTest('Window overlay', function()
         {
           if(error) return onerror(error);
 
-          timeout0 = setTimeout(function()
-          {
-            onerror('Time out WindowIn');
-          },
-          timeoutDelay0);
-
-          timeout1 = setTimeout(function()
-          {
-            onerror('Time out WindowOut');
-          },
-          timeoutDelay1);
+          timeout0 = setTimeout(_onerror, timeoutDelay0, 'Time out 0');
+          timeout1 = setTimeout(_onerror, timeoutDelay1, 'Time out 1');
         });
       });
 
-      pointerDetector.addWindow('window0', 50, 50, 200, 50);
+      var window0 =
+      {
+        id: 'window0',
+        height: 50,
+        width: 50,
+        upperRightX: 200,
+        upperRightY: 50
+      };
+      var window1 =
+      {
+        id: 'window1',
+        height: 50,
+        width: 50,
+        upperRightX: 200,
+        upperRightY: 150
+      };
+      pointerDetector.addWindow(window0);
+      pointerDetector.addWindow(window1);
 
       pointerDetector.on('WindowIn', function(data)
       {
-        QUnit.ok(true, 'WindowIn');
+        if(data.windowId == 'window0')
+        {
+          QUnit.ok(true, 'WindowIn');
 
-        clearTimeout(timeout0);
+          clearTimeout(timeout0);
 
-        QUnit.start();
+          QUnit.start();
+        };
       });
 
       pointerDetector.on('WindowOut', function(data)
       {
-        QUnit.ok(true, 'WindowOut');
+        if(data.windowId == 'window1')
+        {
+          QUnit.ok(true, 'WindowOut');
 
+          clearTimeout(timeout1);
+
+          QUnit.start();
+        };
+      });
+    });
+  });
+});
+
+QUnit.test('Window overlay', function()
+{
+  QUnit.stop(2);
+  QUnit.expect(2);
+
+
+  var timeoutDelay0 = 10 * 1000;
+  var timeoutDelay1 = 15 * 1000;
+
+
+  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
+  {
+    if(error) return onerror(error);
+
+    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+    {
+      if(error) return onerror(error);
+
+      var timeout0;
+      var timeout1;
+
+      function _onerror(message)
+      {
+        clearTimeout(timeout0);
         clearTimeout(timeout1);
 
-        QUnit.start();
+        onerror(message);
+      };
+
+      pipeline.connect(player, pointerDetector, function(error, pipeline)
+      {
+        if(error) return onerror(error);
+
+        player.play(function(error)
+        {
+          if(error) return onerror(error);
+
+          timeout0 = setTimeout(_onerror, timeoutDelay0, 'Time out WindowIn');
+          timeout1 = setTimeout(_onerror, timeoutDelay1, 'Time out WindowOut');
+        });
+      });
+
+      var window0 =
+      {
+        id: 'window0',
+        height: 50,
+        width: 50,
+        upperRightX: 200,
+        upperRightY: 50
+      };
+      pointerDetector.addWindow(window0);
+
+      pointerDetector.on('WindowIn', function(data)
+      {
+        if(data.windowId == 'window0')
+        {
+          QUnit.ok(true, 'WindowIn');
+
+          clearTimeout(timeout0);
+
+          QUnit.start();
+        };
+      });
+
+      pointerDetector.on('WindowOut', function(data)
+      {
+        if(data.windowId == 'window0')
+        {
+          QUnit.ok(true, 'WindowOut');
+
+          clearTimeout(timeout1);
+
+          QUnit.start();
+        };
       });
     });
   });

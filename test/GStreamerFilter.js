@@ -62,6 +62,26 @@ QUnit.asyncTest('End of Stream', function()
   var timeoutDelay = 7 * 1000;
 
 
+  var timeout;
+
+  function _onerror(message)
+  {
+    clearTimeout(timeout);
+
+    onerror(message);
+  };
+
+  function enableTimeout()
+  {
+    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
+  };
+
+  function disableTimeout()
+  {
+    clearTimeout(timeout);
+  };
+
+
   PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
@@ -82,13 +102,11 @@ QUnit.asyncTest('End of Stream', function()
 
         QUnit.notEqual(pipeline, undefined, 'connect');
 
-        var timeout;
-
         player.on('EndOfStream', function(data)
         {
           QUnit.ok(true, 'EndOfStream');
 
-          clearTimeout(timeout);
+          disableTimeout();
 
           QUnit.start();
         });
@@ -97,11 +115,7 @@ QUnit.asyncTest('End of Stream', function()
         {
           if(error) return onerror(error);
 
-          timeout = setTimeout(function()
-          {
-            onerror('Time out');
-          },
-          timeoutDelay);
+          enableTimeout();
         });
       });
     });

@@ -58,40 +58,30 @@ QUnit.asyncTest('Creation', function()
 {
   QUnit.expect(3);
 
-//  kwsMedia.on('connect', function()
-//  {
-//    kwsMedia.createMediaPipeline(function(error, pipeline)
-//    {
-//      if(error) return onerror(error);
+  PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
+  function(error, player)
+  {
+    if(error) return onerror(error);
 
-//      QUnit.notEqual(pipeline, undefined, 'pipeline');
+    QUnit.notEqual(player, undefined, 'player');
 
-      PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
-      function(error, player)
+    HttpGetEndpoint.create(pipeline, function(error, httpGet)
+    {
+      if(error) return onerror(error);
+
+      QUnit.notEqual(httpGet, undefined, 'httpGet');
+
+      player.connect(httpGet, function(error)
       {
-        if(error) return onerror(error);
-
-        QUnit.notEqual(player, undefined, 'player');
-
-        HttpGetEndpoint.create(pipeline, function(error, httpGet)
+        httpGet.getUrl(function(error, url)
         {
           if(error) return onerror(error);
 
-          QUnit.notEqual(httpGet, undefined, 'httpGet');
+          QUnit.notEqual(url, undefined, 'URL: '+url);
 
-          player.connect(httpGet, function(error)
-          {
-            httpGet.getUrl(function(error, url)
-            {
-              if(error) return onerror(error);
-
-              QUnit.notEqual(url, undefined, 'URL: '+url);
-
-              QUnit.start();
-            })
-          });
-        });
+          QUnit.start();
+        })
       });
-//    })
-//  });
+    });
+  });
 });
