@@ -1,6 +1,6 @@
 [![][KurentoImage]][website]
 
-Copyright © 2013 Kurento. Licensed under [LGPL License].
+Copyright © 2014 Kurento. Licensed under [LGPL License].
 
 KWS Media API
 =============
@@ -30,19 +30,31 @@ After that, to build the browser version of the API you'll only need to exec
 
 How to test
 -----------
+Tests are autonomous, only requirement is to exec previously ```npm install```
+to have installed all the dev dependencies.
 
-Tests are autonomous, only requirement is to have exec ```npm install``` in 
-the root of the project to have installed all the dev dependencies.
+### Browser
 
-To exec tests in browser, you'll need to generate previously the browser version
-of the API. After that, you only need to open the file ```test/index.html```
-and it will launch automatically using [QUnit]. You can be able to configure to
-what WebSocket endpoint you want to connect on the dropdown at the top of the
-tests page. By default the tests execute against 130.206.81.87:80.
+To exec tests in browser, you need to build the browser version of the library
+with ```node_modules/.bin/grunt```.
+
+After that, just open the file ```test/index.html``` with any browser, and the
+tests will launch automatically using [QUnit]. In case of the browser raising
+security policy errors, you can host the code using any static web server from
+the source code root folder, for example using the command
+```python -m SimpleHTTPServer 8000```.
+
+You can be able to configure to what WebSocket endpoint you want to connect on
+the dropdown at the top of the tests page.
+
+### Node.js
 
 To exec test in Node.js, you only need to exec ```npm test``` that will launch
 all the tests automatically using [QUnit-cli] (At the moment, the default IP can
 not be changed.
+
+If you need to use a WebSocket endpoint different from the default one, you can exec the underlying test command with
+```node_modules/.bin/qunit-cli -c KwsMedia:. -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js``` and append the *ws_uri* parameter.
 
 Kurento
 =======
