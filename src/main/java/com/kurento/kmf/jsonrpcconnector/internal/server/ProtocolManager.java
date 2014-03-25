@@ -151,8 +151,8 @@ public class ProtocolManager {
 			session = sessionsManager.get(request.getSessionId());
 
 			if (session == null) {
-				log.warn("There is no session with specified id '"
-						+ request.getSessionId() + "'. Creating a new one.");
+				log.warn("There is no session with specified id '{}'." +
+						 "Creating a new one.", request.getSessionId());
 			}
 
 		} else if (transportId != null) {
@@ -236,8 +236,8 @@ public class ProtocolManager {
 
 		if (session != null) {
 
-			log.info("Configuring close timeout for session: "
-					+ session.getSessionId());
+			log.info("Configuring close timeout for session: {}",
+					session.getSessionId());
 
 			try {
 
@@ -257,14 +257,14 @@ public class ProtocolManager {
 				session.setCloseTimerTask(lastStartedTimerFuture);
 
 			} catch (TaskRejectedException e) {
-				log.warn("Close timeout for session " + session.getSessionId()
-						+ " can not be set beacause the scheduler is shutdown");
+				log.warn("Close timeout for session {} can not be set " +
+						 "because the scheduler is shutdown", session.getSessionId());
 			}
 		}
 	}
 
 	public void closeSession(ServerSession session, String reason) {
-		log.info("Closing session: " + session.getSessionId());
+		log.info("Closing session: {}", session.getSessionId());
 		sessionsManager.remove(session);
 		handlerManager.afterConnectionClosed(session, reason);
 	}

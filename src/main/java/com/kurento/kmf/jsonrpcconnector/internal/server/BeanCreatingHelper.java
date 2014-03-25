@@ -15,8 +15,8 @@
  */
 package com.kurento.kmf.jsonrpcconnector.internal.server;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -33,8 +33,8 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
  */
 public class BeanCreatingHelper<T> implements BeanFactoryAware {
 
-	private static final Log logger = LogFactory
-			.getLog(BeanCreatingHelper.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(BeanCreatingHelper.class);
 
 	private AutowireCapableBeanFactory beanFactory;
 
@@ -62,7 +62,7 @@ public class BeanCreatingHelper<T> implements BeanFactoryAware {
 	@SuppressWarnings("unchecked")
 	public T createBean() {
 		if (logger.isTraceEnabled()) {
-			logger.trace("Creating instance for handler type " + this.beanType);
+			logger.trace("Creating instance for handler type {}", this.beanType);
 		}
 		if (this.beanFactory == null) {
 			logger.warn("No BeanFactory available, attempting to use default constructor");
@@ -82,7 +82,7 @@ public class BeanCreatingHelper<T> implements BeanFactoryAware {
 	public void destroy(T handler) {
 		if (this.beanFactory != null) {
 			if (logger.isTraceEnabled()) {
-				logger.trace("Destroying handler instance " + handler);
+				logger.trace("Destroying handler instance {}", handler);
 			}
 			this.beanFactory.destroyBean(handler);
 		}
