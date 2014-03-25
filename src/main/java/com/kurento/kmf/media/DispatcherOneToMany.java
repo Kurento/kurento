@@ -10,8 +10,7 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * A {@link Hub} that sends a given source to all the connected sinks
  * 
  **/
 @RemoteClass
@@ -19,14 +18,11 @@ public interface DispatcherOneToMany extends Hub {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Sets the source port that will be connected to the sinks of every
+	 * {@link HubPort} of the dispatcher
 	 * 
 	 * @param source
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            source to be broadcasted
 	 * 
 	 **/
 	void setSource(@Param("source") HubPort source);
@@ -40,18 +36,14 @@ public interface DispatcherOneToMany extends Hub {
 	 * @see DispatcherOneToMany#setSource
 	 * 
 	 * @param source
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            source to be broadcasted
 	 * 
 	 **/
 	void setSource(@Param("source") HubPort source, Continuation<Void> cont);
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Remove the source port and stop the media pipeline.
 	 * 
 	 **/
 	void removeSource();

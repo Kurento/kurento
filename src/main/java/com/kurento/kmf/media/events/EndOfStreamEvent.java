@@ -26,12 +26,7 @@ public class EndOfStreamEvent extends MediaEvent {
 	 * @param source
 	 *            Object that raised the event
 	 * @param type
-	 *            Type of event raised
-	 * 
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            ROM name?
+	 *            Type of event that was raised
 	 * 
 	 **/
 	public EndOfStreamEvent(@Param("source") MediaObject source,

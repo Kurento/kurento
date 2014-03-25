@@ -18,57 +18,49 @@ public class PointerDetectorWindowMediaParam {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * id of the window for pointer detection
 	 * 
 	 **/
 	private String id;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * height in pixels
 	 * 
 	 **/
 	private int height;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * width in pixels
 	 * 
 	 **/
 	private int width;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * X coordinate in pixels of the upper left corner
 	 * 
 	 **/
 	private int upperRightX;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Y coordinate in pixels of the upper left corner
 	 * 
 	 **/
 	private int upperRightY;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * uri of the image (cursor) to be used to indicate activity
 	 * 
 	 **/
 	private String activeImage;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * transparency ratio of the image
 	 * 
 	 **/
 	private float imageTransparency;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * uri of the image (cursor) to be used when not active
 	 * 
 	 **/
 	private String image;

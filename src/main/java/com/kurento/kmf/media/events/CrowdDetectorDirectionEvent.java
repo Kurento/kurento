@@ -39,12 +39,7 @@ public class CrowdDetectorDirectionEvent extends MediaEvent {
 	 * @param source
 	 *            Object that raised the event
 	 * @param type
-	 *            Type of event raised
-	 * 
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            ROM name?
+	 *            Type of event that was raised
 	 * @param directionAngle
 	 *            <hr/>
 	 *            <b>TODO</b>

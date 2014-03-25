@@ -8,8 +8,7 @@ package com.kurento.kmf.media;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * Media Profile. Currently WEBM and MP4 are supported.
  * 
  **/
 public enum MediaProfileSpecType {

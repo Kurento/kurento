@@ -10,8 +10,9 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * A {@link Hub} that mixes the {@link #MediaType.AUDIO} stream of its connected
+ * sources and constructs a grid with the {@link #MediaType.VIDEO} streams of its
+ * connected sources into its sink
  * 
  **/
 @RemoteClass

@@ -10,8 +10,7 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * A {@link Hub} that allows routing between arbitrary port pairs
  * 
  **/
 @RemoteClass
@@ -19,19 +18,13 @@ public interface Dispatcher extends Hub {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Connects each corresponding :rom:enum:`MediaType` of the given source
+	 * port with the sink port.
 	 * 
 	 * @param source
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Source port to be connected
 	 * @param sink
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Sink port to be connected
 	 * 
 	 **/
 	void connect(@Param("source") HubPort source, @Param("sink") HubPort sink);
@@ -45,15 +38,9 @@ public interface Dispatcher extends Hub {
 	 * @see Dispatcher#connect
 	 * 
 	 * @param source
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Source port to be connected
 	 * @param sink
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Sink port to be connected
 	 * 
 	 **/
 	void connect(@Param("source") HubPort source, @Param("sink") HubPort sink,

@@ -40,7 +40,8 @@ public interface MediaPad extends MediaObject {
 	 * 
 	 * Obtains the type of media that this pad accepts
 	 * 
-	 * @return One of :rom:ref:`AUDIO`, :rom:ref:`DATA` or :rom:ref:`VIDEO` *
+	 * @return One of {@link #MediaType.AUDIO}, {@link #MediaType.DATA} or
+	 *         {@link #MediaType.VIDEO} *
 	 **/
 	MediaType getMediaType();
 

@@ -23,9 +23,7 @@ public class MediaEvent implements Event {
 	private MediaObject source;
 	/**
 	 * 
-	 * Type of event raised
-	 * <hr/>
-	 * <b>TODO</b> ROM name?
+	 * Type of event that was raised
 	 * 
 	 **/
 	private String type;
@@ -37,12 +35,7 @@ public class MediaEvent implements Event {
 	 * @param source
 	 *            Object that raised the event
 	 * @param type
-	 *            Type of event raised
-	 * 
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            ROM name?
+	 *            Type of event that was raised
 	 * 
 	 **/
 	public MediaEvent(@Param("source") MediaObject source,
@@ -78,12 +71,7 @@ public class MediaEvent implements Event {
 	 * 
 	 * Getter for the type property
 	 * 
-	 * @return Type of event raised
-	 * 
-	 *         <hr/>
-	 *         <b>TODO</b>
-	 * 
-	 *         ROM name? *
+	 * @return Type of event that was raised *
 	 **/
 	public String getType() {
 		return type;
@@ -94,12 +82,7 @@ public class MediaEvent implements Event {
 	 * Setter for the type property
 	 * 
 	 * @param type
-	 *            Type of event raised
-	 * 
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            ROM name?
+	 *            Type of event that was raised
 	 * 
 	 **/
 	public void setType(String type) {

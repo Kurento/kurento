@@ -16,8 +16,7 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * Filter that detects people agglomeration in video streams
  * 
  **/
 @RemoteClass

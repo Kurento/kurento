@@ -80,10 +80,8 @@ public interface RecorderEndpoint extends UriEndpoint {
 		 * Sets a value for mediaProfile in Builder for RecorderEndpoint.
 		 * 
 		 * @param mediaProfile
-		 *            <hr/>
-		 *            <b>TODO</b>
-		 * 
-		 *            FIXME: documentation needed
+		 *            Choose either a {@link #WEBM} or a {@link #MP4} profile
+		 *            for recording
 		 * 
 		 **/
 		public Builder withMediaProfile(MediaProfileSpecType mediaProfile);

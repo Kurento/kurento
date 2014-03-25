@@ -19,9 +19,8 @@ public interface FaceOverlayFilter extends Filter {
 
 	/**
 	 * 
-	 * Clear the image to be shown over each detected face.
-	 * <hr/>
-	 * <b>TODO</b> FIXME: behaviour?
+	 * Clear the image to be shown over each detected face. Stops overlying of
+	 * the faces.
 	 * 
 	 **/
 	void unsetOverlayedImage();

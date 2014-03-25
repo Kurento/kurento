@@ -10,8 +10,7 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * This {@link MediaElement} specifies a connection with a {@link Hub}
  * 
  **/
 @RemoteClass
@@ -40,10 +39,7 @@ public interface HubPort extends MediaElement {
 		 * Sets a value for hub in Builder for HubPort.
 		 * 
 		 * @param hub
-		 *            <hr/>
-		 *            <b>TODO</b>
-		 * 
-		 *            FIXME: documentation needed
+		 *            :rom:cls`Hub` to which this port belongs
 		 * 
 		 **/
 		public Builder withHub(Hub hub);

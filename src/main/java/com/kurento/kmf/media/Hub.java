@@ -10,8 +10,8 @@ import com.kurento.tool.rom.server.FactoryMethod;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * A Hub is a routing {@link MediaObject`. It connects several
+ * :rom:cls`endpoints MediaEndpoint} together
  * 
  **/
 @RemoteClass

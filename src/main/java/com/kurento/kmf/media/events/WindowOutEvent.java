@@ -29,12 +29,7 @@ public class WindowOutEvent extends MediaEvent {
 	 * @param source
 	 *            Object that raised the event
 	 * @param type
-	 *            Type of event raised
-	 * 
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            ROM name?
+	 *            Type of event that was raised
 	 * @param windowId
 	 *            Opaque String indicating the id of the window entered
 	 * 

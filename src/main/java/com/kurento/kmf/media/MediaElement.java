@@ -47,17 +47,14 @@ public interface MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Get the media sources of the given type and description
 	 * 
 	 * @param mediaType
 	 *            One of {@link #MediaType.AUDIO}, {@link #MediaType.VIDEO} or
 	 *            {@link #MediaType.DATA}
 	 * @param description
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            A textual description of the media source. Currently not used,
+	 *            aimed mainly for {@link #MediaType.DATA} sources
 	 * @return A list of sources. The list will be empty if no sources are
 	 *         found. *
 	 **/
@@ -76,10 +73,8 @@ public interface MediaElement extends MediaObject {
 	 *            One of {@link #MediaType.AUDIO}, {@link #MediaType.VIDEO} or
 	 *            {@link #MediaType.DATA}
 	 * @param description
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            A textual description of the media source. Currently not used,
+	 *            aimed mainly for {@link #MediaType.DATA} sources
 	 * 
 	 **/
 	void getMediaSrcs(@Param("mediaType") MediaType mediaType,
@@ -88,8 +83,7 @@ public interface MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get media sources of the given type
 	 * 
 	 * @param mediaType
 	 *            One of {@link #MediaType.AUDIO}, {@link #MediaType.VIDEO} or
@@ -171,10 +165,8 @@ public interface MediaElement extends MediaObject {
 	 *            One of {@link #MediaType.AUDIO}, {@link #MediaType.VIDEO} or
 	 *            {@link #MediaType.DATA}
 	 * @param description
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            A textual description of the media source. Currently not used,
+	 *            aimed mainly for {@link #MediaType.DATA} sources
 	 * @return A list of sinks. The list will be empty if no sinks are found. *
 	 **/
 	List<MediaSink> getMediaSinks(@Param("mediaType") MediaType mediaType,
@@ -192,10 +184,8 @@ public interface MediaElement extends MediaObject {
 	 *            One of {@link #MediaType.AUDIO}, {@link #MediaType.VIDEO} or
 	 *            {@link #MediaType.DATA}
 	 * @param description
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            A textual description of the media source. Currently not used,
+	 *            aimed mainly for {@link #MediaType.DATA} sources
 	 * 
 	 **/
 	void getMediaSinks(@Param("mediaType") MediaType mediaType,
@@ -213,10 +203,8 @@ public interface MediaElement extends MediaObject {
 	 * @param mediaType
 	 *            the :rom:enum:`MediaType` of the pads that will be connected
 	 * @param mediaDescription
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            A textual description of the media source. Currently not used,
+	 *            aimed mainly for {@link #MediaType.DATA} sources
 	 * 
 	 **/
 	void connect(@Param("sink") MediaElement sink,
@@ -237,10 +225,8 @@ public interface MediaElement extends MediaObject {
 	 * @param mediaType
 	 *            the :rom:enum:`MediaType` of the pads that will be connected
 	 * @param mediaDescription
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            A textual description of the media source. Currently not used,
+	 *            aimed mainly for {@link #MediaType.DATA} sources
 	 * 
 	 **/
 	void connect(@Param("sink") MediaElement sink,
@@ -250,7 +236,7 @@ public interface MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * Connects all {@link MediaSource} of this element belonging to the
+	 * Connects every {@link MediaSource} of this element belonging to the
 	 * specified :rom:enum:`MediaType` to the corresponding {@link MediaSink} of
 	 * the target {@link MediaElement}. This method will throw an exception if
 	 * any of the following occur: .. * The number of sources for the specified
