@@ -33,8 +33,10 @@ class ${complexType.name}
 
 public:
 
+<#assign createEmptyConstructor = true>
 <#if complexType.typeFormat == "REGISTER">
   ${complexType.name} (<#rt>
+    <#assign createEmptyConstructor = false>
     <#lt><#list complexType.properties as property><#rt>
       <#lt><#if !property.optional><#rt>
         <#lt><#if (first) ??>, </#if><#rt>
@@ -44,6 +46,7 @@ public:
     <#lt></#list>){
     <#list complexType.properties as property><#rt>
       <#lt><#if !property.optional><#rt>
+      <#assign createEmptyConstructor = true>
     this->${property.name} = ${property.name};
       </#if><#rt>
     <#lt></#list>
@@ -121,7 +124,9 @@ private:
 // TODO: Type format ${complexType.typeFormat} not supported
 </#if>
 
+  <#if createEmptyConstructor >
   ${complexType.name}() {};
+  </#if>
 
   friend void ::Serialize(std::shared_ptr<${complexType.name}>& object, JsonSerializer& s);
 };
