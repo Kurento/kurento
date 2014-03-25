@@ -107,26 +107,33 @@ echo ""
 echo "========================================================================="
 echo ""
 if [ -z "$PIDFILE" ]; then
-	PIDFILE=/var/run/kmf-media-connector.pid
+	PIDFILE=$KMF_MEDIA_CONNECTOR_HOME/kmf-media-connector.pid
 fi
 
 while true; do
    if [ "x$LAUNCH_KMF_IN_BACKGROUND" = "x" ]; then
       # Execute the JVM in the foreground
       eval \"$JAVA\"  $JAVA_OPTS \
-         -jar \"$KMF_MEDIA_CONNECTOR_HOME/lib/kmf-media-connector.jar\" \
-         "$@"
+         -jar \"$KMF_MEDIA_CONNECTOR_HOME/lib/kmf-media-connector.jar\"
       KMF_STATUS=$?
    else
       # Execute the JVM in the background
       eval \"$JAVA\"  $JAVA_OPTS \
          -jar \"$KMF_MEDIA_CONNECTOR_HOME/lib/kmf-media-connector.jar\" \
-         "$@" "&"
+         "&"
       PID=$!
 
       if [ "x$PIDFILE" != "x" ]; then
         echo $PID > $PIDFILE
       fi
+
+echo "========================================================================="
+echo ""
+      echo "$PID"
+echo "$PIDFILE"
+echo ""
+echo "========================================================================="
+
       # Wait until the background process exits
       WAIT_STATUS=128
       while [ "$WAIT_STATUS" -ge 128 ]; do

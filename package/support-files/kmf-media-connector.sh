@@ -12,44 +12,71 @@
 ### END INIT INFO
 
 # Variables
-SERVICE_NAME=Kurento Media Connector
+SERVICE_NAME=KurentoMediaConnector
+
+. /lib/lsb/init-functions
+
+
 
 if [ -z "$KMF_MEDIA_CONNECTOR_HOME" ]; then
-  KMF_MEDIA_CONNECTOR_HOME=/opt/kmf-media-connector/
+  KMF_MEDIA_CONNECTOR_HOME=/opt/kmf-media-connector
 fi
+export KMF_MEDIA_CONNECTOR_HOME
 
 if [ -z "$SHUTDOWN_WAIT" ]; then
   SHUTDOWN_WAIT=30
 fi
 
-export KMF_MEDIA_CONNECTOR_HOME
+PIDFILE=/var/run/kurento/kmf-media-connector.pid
+export PIDFILE
 
-PIDFILE=/var/run/kmf-media-connector.pid
+KMF_MEDIA_CONNECTOR_SCRIPT=$KMF_MEDIA_CONNECTOR_HOME/bin/start.sh
 
+# Check startup file
+if [ ! -x $KMF_MEDIA_CONNECTOR_SCRIPT ]; then
+	log_failure_msg "$KMF_MEDIA_CONNECTOR_SCRIPT is not an executable!"
+	exit 1
+fi
 
-KMF_MEDIA_CONNECTOR_SCRIPT=$KMF_MEDIA_CONNECTOR_HOME/bin/standalone.sh
+# Location to keep the console log
+if [ -z "$CONSOLE_LOG" ]; then
+	CONSOLE_LOG=/var/log/kurento/media-connector/console.log
+fi
+export CONSOLE_LOG
+
+#Launch in background 
+LAUNCH_KMF_IN_BACKGROUND=1
+export LAUNCH_KMF_IN_BACKGROUND
 
 start() {
-	echo -n "Starting $SERVICE_NAME ..."
+	log_daemon_msg "$SERVICE_NAME starting"
 	if [ ! -f $PIDFILE ]; then
-		LAUNCH_JBOSS_IN_BACKGROUND=1 $KMF_MEDIA_CONNECTOR_SCRIPT
-		echo -n "$SERVICE_NAME started ..."
+		mkdir -p $(dirname $PIDFILE)
+		mkdir -p $(dirname $CONSOLE_LOG)
+		#chown $KURENTO_USER $(dirname $PIDFILE) || true
+		cat /dev/null > $CONSOLE_LOG
+
+		start-stop-daemon --start \
+ 		--chdir "$KMF_MEDIA_CONNECTOR_HOME" --pidfile "$PIDFILE" \
+		--exec "$KMF_MEDIA_CONNECTOR_SCRIPT" -- >> $CONSOLE_LOG 2>&1 &
+		log_daemon_msg "$SERVICE_NAME started ..."
 	else
-		echo -n "$SERVICE_NAME is already running ..."
+		log_action_msg "$SERVICE_NAME is already running ..."
 	fi
 }
 
 stop () {
 	if [ -f $PIDFILE ]; then
 		read kpid < $PIDFILE
-		let kwait=$SHUTDOWN_WAIT
-
-		echo -n "$SERVICE_NAME stopping ..."
+		kwait=$SHUTDOWN_WAIT
+		
+		count=0
+		log_daemon_msg "$SERVICE_NAME stopping ..."
 		kill -15 $kpid
 		until [ `ps --pid $kpid 2> /dev/null | grep -c $kpid 2> /dev/null` -eq '0' ] || [ $count -gt $kwait ]
 		do
 			sleep 1
-			let count=$count+1;
+			coount=$((count+1))
 		done
     		
 		if [ $count -gt $kwait ]; then
@@ -57,9 +84,9 @@ stop () {
 		fi
     		
 		rm -f $PIDFILE
-		echo -n "$SERVICE_NAME stopped ..."
+		log_daemon_msg "$SERVICE_NAME stopped ..."
 	else
-		echo -n "$SERVICE_NAME is not running ..."
+		log_failure_msg "$SERVICE_NAME is not running ..."
 	fi
 }
 
@@ -68,14 +95,14 @@ status() {
 	if [ -f $PIDFILE ]; then
 		read ppid < $PIDFILE
 		if [ `ps --pid $ppid 2> /dev/null | grep -c $ppid 2> /dev/null` -eq '1' ]; then
-			echo -n "$prog is running (pid $ppid)"
+			log_daemon_msg "$prog is running (pid $ppid)"
 			return 0
 		else
-			echo -n "$prog dead but pid file exists"
+			log_daemon_msg "$prog dead but pid file exists"
 			return 1
 		fi
 	fi
-	echo -n "$prog is not running"
+	log_daemon_msg "$SERVICE_NAME is not running"
 	return 3
 }
 
@@ -95,7 +122,7 @@ case "$1" in
 		;;
 	*)
 		## If no parameters are given, print which are avaiable.
-		echo -n "Usage: $0 {start|stop|status|restart|reload}"
+		log_daemon_msg "Usage: $0 {start|stop|status|restart|reload}"
 		exit 1
 		;;
 esac
