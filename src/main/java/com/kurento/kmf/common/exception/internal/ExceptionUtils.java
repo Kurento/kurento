@@ -96,8 +96,8 @@ public class ExceptionUtils {
 		try {
 			message = readBundleString(errorCode, 0);
 		} catch (MissingResourceException e) {
-			log.warn("Especific description for error code " + errorCode
-					+ " not found");
+			log.warn("Especific description for error code {} not found",
+						errorCode);
 		}
 		return message;
 	}
@@ -118,10 +118,10 @@ public class ExceptionUtils {
 			httpErrorCode = readBundleString(errorCode, 1);
 			result = Integer.parseInt(httpErrorCode);
 		} catch (MissingResourceException e1) {
-			log.warn("Especific description for error code " + errorCode
-					+ " not found");
+			log.warn("Especific description for error code {} not found", 
+					errorCode);
 		} catch (NumberFormatException e2) {
-			log.warn("Error parsing HTTP Error Code " + httpErrorCode);
+			log.warn("Error parsing HTTP Error Code {}", httpErrorCode);
 		}
 		return result;
 	}
@@ -142,10 +142,10 @@ public class ExceptionUtils {
 			jsonErrorCode = readBundleString(errorCode, 2);
 			result = Integer.parseInt(jsonErrorCode);
 		} catch (MissingResourceException e1) {
-			log.warn("Especific description for error code " + errorCode
-					+ " not found");
+			log.warn("Especific description for error code {}  not found", 
+					errorCode);
 		} catch (NumberFormatException e2) {
-			log.warn("Error parsing JSON Error Code " + jsonErrorCode);
+			log.warn("Error parsing JSON Error Code {}", jsonErrorCode);
 		}
 		return result;
 	}
