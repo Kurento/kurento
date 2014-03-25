@@ -24,7 +24,6 @@ import java.util.concurrent.Semaphore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -84,10 +83,8 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 		player.release();
 	}
 
-	// TODO enable when CodeFoundEvent is implemented
-	@Ignore
 	@Test
-	public void ZBarFilter() throws InterruptedException {
+	public void testCodeFoundEvent() throws InterruptedException {
 		player.connect(zbar);
 
 		final BlockingQueue<CodeFoundEvent> events = new ArrayBlockingQueue<CodeFoundEvent>(
