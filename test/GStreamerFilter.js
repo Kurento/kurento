@@ -41,15 +41,15 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kwsMediaApi = require('..');
 
   require('./_common');
   require('./_proxy');
 };
 
 
-var PlayerEndpoint  = KwsMedia.endpoints.PlayerEndpoint;
-var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
+var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
+var GStreamerFilter = kwsMediaApi.filters.GStreamerFilter;
 
 
 QUnit.module('GStreamerFilter', lifecycle);

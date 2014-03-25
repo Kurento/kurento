@@ -41,35 +41,15 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kwsMediaApi = require('..');
 
   require('./_common');
   require('./_proxy');
 };
 
 
-var PlayerEndpoint  = KwsMedia.endpoints.PlayerEndpoint;
-var HttpGetEndpoint = KwsMedia.endpoints.HttpGetEndpoint;
-
-
-function doGet(url, onsuccess, onerror)
-{
-  // Node.js
-  if(typeof XMLHttpRequest == 'undefined')
-    require('http').get(url, onsuccess).on('error', onerror);
-
-  // browser
-  else
-  {
-    var xhr = new XMLHttpRequest();
-
-    xhr.open("get", url);
-    xhr.send();
-
-    xhr.addEventListener('load', onsuccess);
-    xhr.addEventListener('error', onerror);
-  };
-};
+var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
+var HttpGetEndpoint = kwsMediaApi.endpoints.HttpGetEndpoint;
 
 
 QUnit.module('HttpGetEndpoint', lifecycle);
@@ -100,27 +80,7 @@ QUnit.asyncTest('Media session started', function()
   QUnit.expect(5);
 
 
-  var timeoutDelay = 7 * 1000;
-
-
-  var timeout;
-
-  function _onerror(message)
-  {
-    clearTimeout(timeout);
-
-    onerror(message);
-  };
-
-  function enableTimeout()
-  {
-    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
-  };
-
-  function disableTimeout()
-  {
-    clearTimeout(timeout);
-  };
+  var timeout = new Timeout(7 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
@@ -133,7 +93,7 @@ QUnit.asyncTest('Media session started', function()
     {
       QUnit.ok(true, 'EndOfStream');
 
-      disableTimeout();
+      timeout.stop();
 
       QUnit.start();
     });
@@ -148,13 +108,13 @@ QUnit.asyncTest('Media session started', function()
       {
         QUnit.ok(true, 'MediaSessionStarted');
 
-        disableTimeout();
+        timeout.stop();
 
         player.play(function(error)
         {
           if(error) return onerror(error);
 
-          enableTimeout();
+          timeout.start();
         });
       });
 
@@ -169,7 +129,12 @@ QUnit.asyncTest('Media session started', function()
           QUnit.notEqual(url, undefined, 'URL: '+url);
 
           // This should trigger MediaSessionStarted event
-          doGet(url, enableTimeout, onerror);
+          doGet(url,
+          function()
+          {
+            timeout.start()
+          },
+          onerror);
         })
       });
     });

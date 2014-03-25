@@ -41,15 +41,15 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kwsMediaApi = require('..');
 
   require('./_common');
   require('./_proxy');
 };
 
 
-var PlayerEndpoint      = KwsMedia.endpoints.PlayerEndpoint;
-var PlateDetectorFilter = KwsMedia.filters.PlateDetectorFilter;
+var PlayerEndpoint      = kwsMediaApi.endpoints.PlayerEndpoint;
+var PlateDetectorFilter = kwsMediaApi.filters.PlateDetectorFilter;
 
 
 QUnit.module('PlateDetectorFilter', lifecycle);

@@ -41,15 +41,15 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kwsMediaApi = require('..');
 
   require('./_common');
   require('./_proxy');
 };
 
 
-var PlayerEndpoint        = KwsMedia.endpoints.PlayerEndpoint;
-var PointerDetectorFilter = KwsMedia.filters.PointerDetectorFilter;
+var PlayerEndpoint        = kwsMediaApi.endpoints.PlayerEndpoint;
+var PointerDetectorFilter = kwsMediaApi.filters.PointerDetectorFilter;
 
 
 QUnit.module('PointerDetectorFilter', lifecycle);

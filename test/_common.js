@@ -20,6 +20,9 @@ URL_POINTER_DETECTOR = "https://ci.kurento.com/video/pointerDetector.mp4";
 URL_SMALL            = "https://ci.kurento.com/video/small.webm";
 
 
+/**
+ * Set an assert error and re-start the test so it can fail
+ */
 function onerror(error)
 {
   QUnit.ok(false, error.message || error);
@@ -27,6 +30,59 @@ function onerror(error)
   QUnit.start();
 };
 
+/**
+ * Do an asynchronous HTTP GET request both on Node.js & browser
+ */
+function doGet(url, onsuccess, onerror)
+{
+  // Node.js
+  if(typeof XMLHttpRequest == 'undefined')
+    require('http').get(url, onsuccess).on('error', onerror);
+
+  // browser
+  else
+  {
+    var xhr = new XMLHttpRequest();
+
+    xhr.open("get", url);
+    xhr.send();
+
+    xhr.addEventListener('load', onsuccess);
+    xhr.addEventListener('error', onerror);
+  };
+};
+
+
+/**
+ * Manage timeouts in an object-oriented style
+ */
+function Timeout(delay, ontimeout)
+{
+  if(!(this instanceof Timeout))
+    return new Timeout(delay, ontimeout);
+
+  var timeout;
+
+  function _ontimeout(message)
+  {
+    clearTimeout(timeout);
+
+    ontimeout(message);
+  };
+
+  this.start = function()
+  {
+    timeout = setTimeout(_ontimeout, delay, 'Time out ('+delay+'ms)');
+  };
+
+  this.stop = function()
+  {
+    clearTimeout(timeout);
+  };
+};
+
+
+// Tell QUnit what WebSocket servers to use
 
 QUnit.config.urlConfig.push(
 {
@@ -41,6 +97,8 @@ QUnit.config.urlConfig.push(
 });
 
 
+// Tests lifecycle
+
 lifecycle =
 {
   setup: function()
@@ -53,7 +111,7 @@ lifecycle =
       ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
     };
 
-    kwsMedia = new KwsMedia(ws_uri);
+    kwsMedia = new kwsMediaApi.KwsMedia(ws_uri);
 
     kwsMedia.on('error', onerror);
 

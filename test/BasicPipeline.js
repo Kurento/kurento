@@ -41,19 +41,22 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kwsMediaApi = require('..');
 
   require('./_common');
   require('./_proxy');
 };
 
 
-var PlayerEndpoint  = KwsMedia.endpoints.PlayerEndpoint;
-var HttpGetEndpoint = KwsMedia.endpoints.HttpGetEndpoint;
+var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
+var HttpGetEndpoint = kwsMediaApi.endpoints.HttpGetEndpoint;
 
 
 QUnit.module('BasicPipeline', lifecycle);
 
+/**
+ * 
+ */
 QUnit.asyncTest('Creation', function()
 {
   QUnit.expect(3);

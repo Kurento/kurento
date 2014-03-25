@@ -41,15 +41,15 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kwsMediaApi = require('..');
 
   require('./_common');
   require('./_proxy');
 };
 
 
-var PlayerEndpoint = KwsMedia.endpoints.PlayerEndpoint;
-var ZBarFilter     = KwsMedia.filters.ZBarFilter;
+var PlayerEndpoint = kwsMediaApi.endpoints.PlayerEndpoint;
+var ZBarFilter     = kwsMediaApi.filters.ZBarFilter;
 
 
 QUnit.module('ZBarFilter', lifecycle);
