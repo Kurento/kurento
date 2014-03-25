@@ -10,6 +10,9 @@ suggest new entries or different wording for answers!
 How do I...
 -----------
 
+...install kurento media server from sources?
+    Just follow the :ref:`building` guide.
+
 ...know how many :rom:cls:`pipelines<MediaPipeline>` do I need for my Application?
     :rom:cls:`Media elements<MediaElement>` can only communicate
     with each other when they are part of the same pipeline.
@@ -32,7 +35,10 @@ How do I...
     the :rom:cls:`WebRtcEndpoint`  internal Id (which is a string) to
     whatever application information is desired.
 
+.. _intel_nvidia:
+
 ...stop kurento installing nvidia drivers in my machine?
+
     Kurento uses libopencv-dev to get auxiliary files for several
     Computer Vision algorythms in its filters. This package is part
     of the :wikipedia:`Open Source Computer Vision Library<en,OpenCV>`.
@@ -40,6 +46,7 @@ How do I...
     libopencv-dev depends on libopencv-ocl-dev, which depends on
     libopencv-ocl2.4 which depends on virtual <libopencl1>, provided
     by any of
+
         * ocl-icd-libopencl1
         * nvidia-304
         * nvidia-304-updates
@@ -113,7 +120,7 @@ Why do I get the error...
         about the issue.
 
 Why can't I...
------------
+--------------
 
 ...install the kurento media server with an Ubuntu LTS version?
     If you read this message after April 2014, odds are that you will be able

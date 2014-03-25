@@ -24,3 +24,11 @@ API Documentation
    kmf-content-api/packages.rst
    kmf-repository-api/packages.rst
    kmf-media-api/packages.rst
+
+Community
+=========
+
+.. toctree::
+   :maxdepth: 2
+
+   community/building-kurento-media-server.rst
