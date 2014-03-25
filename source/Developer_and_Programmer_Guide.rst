@@ -137,11 +137,11 @@ create a *Kurento* based application:
 
        # Put here the IP address where the KMS process is executing
        # If you launched KMS in the same hosts where you are executing KAS, let it as 127.0.0.1
-       mediaApiConfiguration.serverAddress=127.0.0.1
+       thriftInterfaceConfiguration.serverAddress=127.0.0.1
 
        # Put here the port where KMS management daemon is bound
        # If you did not modify KMS default configuration, let it as 9090
-       mediaApiConfiguration.serverPort=9090
+       thriftInterfaceConfiguration.serverPort=9090
 
        # Put here the IP address where KAS management handler must listen
        # If you launched KMS int the same host where you are executing KAS, let it as 127.0.0.1
@@ -901,9 +901,9 @@ configurations.
 
 .. sourcecode:: xml
 
-    <beans xmlns=http://www.springframework.org/schema/beans 
-                xmlns:xsi=http://www.w3.org/2001/XMLSchema-instance 
-                xmlns:context=http://www.springframework.org/schema/context
+    <beans xmlns="http://www.springframework.org/schema/beans"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xmlns:context="http://www.springframework.org/schema/context"
         xsi:schemaLocation="http://www.springframework.org/schema/beans
                http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
                http://www.springframework.org/schema/context
@@ -912,7 +912,7 @@ configurations.
         <context:annotation-config />
         <context:component-scan base-package="com.kurento.kmf.media" />
 
-        <bean id="mediaApiConfiguration" class="com.kurento.kmf.media.MediaApiConfiguration">
+        <bean id="thriftInterfaceConfiguration" class="com.kurento.kmf.media.MediaApiConfiguration">
             <property name="serverAddress" value="127.0.0.1" />
             <property name="serverPort" value="9090" />
             <property name="handlerAddress" value="127.0.0.1" />
