@@ -1,6 +1,6 @@
 {
   "name": "KwsMedia",
-  "version": "4.1.1-SNAPSHOT",
+  "version": "4.2.0",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.com",
   "license": "LGPL",
