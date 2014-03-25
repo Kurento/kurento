@@ -922,6 +922,8 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
     KmsAgnosticBin2 *self = user_data;
 
     GST_DEBUG_OBJECT (pad, "Received reconfigure event");
+    gst_pad_push_event (KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (pad))->priv->sink,
+        gst_event_new_reconfigure ());
     kms_agnostic_bin2_add_pad_to_queue (self, pad);
     return GST_PAD_PROBE_DROP;
   }
