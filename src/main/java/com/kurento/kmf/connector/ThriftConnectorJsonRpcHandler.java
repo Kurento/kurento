@@ -16,6 +16,11 @@ package com.kurento.kmf.connector;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -27,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
@@ -61,31 +67,9 @@ public final class ThriftConnectorJsonRpcHandler extends
 			new Iface() {
 				@Override
 				public void eventJsonRpc(String request) throws TException {
-					try {
-
-						LOG.debug("<-* {}", request.trim());
-
-						Request<JsonObject> requestObj = JsonUtils
-								.fromJsonRequest(request, JsonObject.class);
-
-						try {
-
-							session.sendNotification("onEvent",
-									requestObj.getParams());
-
-						} catch (Exception e) {
-							LOG.error("Exception while sending event", e);
-						}
-
-					} catch (Exception e) {
-						throw new KurentoMediaFrameworkException(
-								"Exception processing server event", e);
-					}
+					internalEventJsonRpc(request);
 				}
-
 			});
-
-	private Session session;
 
 	/**
 	 * Pool of KMS clients.
@@ -100,6 +84,8 @@ public final class ThriftConnectorJsonRpcHandler extends
 	private ApplicationContext ctx;
 
 	private ThriftServer server;
+
+	private ConcurrentMap<String, Session> subscriptions = new ConcurrentHashMap<>();
 
 	@PostConstruct
 	private void init() {
@@ -125,7 +111,21 @@ public final class ThriftConnectorJsonRpcHandler extends
 	@Override
 	public void afterConnectionEstablished(final Session session)
 			throws Exception {
-		this.session = session;
+
+	}
+
+	@Override
+	public void afterConnectionClosed(Session session, String status)
+			throws Exception {
+
+		Iterator<Entry<String, Session>> it = subscriptions.entrySet()
+				.iterator();
+		while (it.hasNext()) {
+			Entry<String, Session> value = it.next();
+			if (value.getValue() == session) {
+				it.remove();
+			}
+		}
 	}
 
 	@Override
@@ -136,11 +136,14 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 		transaction.startAsync();
 
+		boolean subscribeRequest = false;
 		if (request.getMethod().equals("subscribe")) {
 			request.getParams().addProperty("ip", config.getHandlerAddress());
 			request.getParams().addProperty("port", config.getHandlerPort());
+			subscribeRequest = true;
 		}
 
+		final boolean subscribeRequestFinal = subscribeRequest;
 		try {
 			client.invokeJsonRpc(request.toString(),
 					new AsyncMethodCallback<invokeJsonRpc_call>() {
@@ -148,9 +151,10 @@ public final class ThriftConnectorJsonRpcHandler extends
 						@Override
 						public void onComplete(invokeJsonRpc_call response) {
 							clientPool.release(client);
-
-							if (request.getId() != null)
-								requestOnComplete(response, transaction);
+							if (request.getId() != null) {
+								requestOnComplete(response, transaction,
+										subscribeRequestFinal);
+							}
 						}
 
 						@Override
@@ -176,20 +180,27 @@ public final class ThriftConnectorJsonRpcHandler extends
 	}
 
 	protected void requestOnComplete(invokeJsonRpc_call mediaServerResponse,
-			Transaction transaction) {
+			Transaction transaction, boolean subscribeResponse) {
 
 		try {
 
 			String result = mediaServerResponse.getResult();
 
-			Response<JsonObject> response = JsonUtils.fromJsonResponse(result,
-					JsonObject.class);
+			Response<JsonElement> response = JsonUtils.fromJsonResponse(result,
+					JsonElement.class);
 
 			if (response.isError()) {
 				ResponseError error = response.getError();
 				transaction.sendError(error.getCode(), error.getMessage(),
 						error.getData());
 			} else {
+
+				if (subscribeResponse) {
+					String subscription = response.getResult().getAsString()
+							.trim();
+					subscriptions.put(subscription, transaction.getSession());
+				}
+
 				transaction.sendResponse(response.getResult());
 			}
 
@@ -209,6 +220,43 @@ public final class ThriftConnectorJsonRpcHandler extends
 			// TODO Error code
 			throw new KurentoMediaFrameworkException(
 					"Exception while sending response to client");
+		}
+	}
+
+	private void internalEventJsonRpc(String request) {
+		try {
+
+			LOG.debug("<-* {}", request.trim());
+
+			Request<JsonObject> requestObj = JsonUtils.fromJsonRequest(request,
+					JsonObject.class);
+
+			JsonElement subsJsonElem = requestObj.getParams().get(
+					"subscription");
+
+			if (subsJsonElem == null) {
+				LOG.error("Received event wihthout subscription: " + request);
+				return;
+			}
+
+			String subscription = subsJsonElem.getAsString().trim();
+			Session session = subscriptions.get(subscription);
+			if (session == null) {
+				LOG.error("Unknown subscription: \"" + subscription + "\"");
+				LOG.info("Subscriptions\n");
+				return;
+			}
+
+			try {
+
+				session.sendRequest("onEvent", requestObj.getParams());
+
+			} catch (Exception e) {
+				LOG.error("Exception while sending event", e);
+			}
+
+		} catch (Exception e) {
+			LOG.error("Exception processing server event", e);
 		}
 	}
 }
