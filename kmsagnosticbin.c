@@ -877,7 +877,7 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
 
   if (new_caps == NULL) {
     GST_ERROR_OBJECT (self, "Unexpected NULL caps");
-    return GST_PAD_PROBE_PASS;
+    return GST_PAD_PROBE_OK;
   }
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
