@@ -797,6 +797,8 @@ set_input_caps (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
   if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
     return GST_PAD_PROBE_OK;
 
+  KMS_AGNOSTIC_BIN2_LOCK (self);
+
   self->priv->started = TRUE;
   if (self->priv->current_caps != NULL)
     gst_caps_unref (self->priv->current_caps);
