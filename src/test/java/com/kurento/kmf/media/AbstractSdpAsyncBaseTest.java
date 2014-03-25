@@ -14,14 +14,16 @@
  */
 package com.kurento.kmf.media;
 
-import static com.kurento.kmf.media.SyncMediaServerTest.URL_BARCODES;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+
+import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -32,6 +34,22 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 		AbstractAsyncBaseTest {
 
 	protected T sdp;
+	protected T sdp2;
+
+	final BlockingQueue<T> creationResults = new ArrayBlockingQueue<T>(2);
+
+	Continuation<T> cont = new Continuation<T>() {
+
+		@Override
+		public void onSuccess(T result) {
+			creationResults.add(result);
+		}
+
+		@Override
+		public void onError(Throwable cause) {
+			throw new KurentoMediaFrameworkException(cause);
+		}
+	};
 
 	// TODO connect a local sdp or fails
 	@Test
@@ -64,7 +82,7 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 			}
 		});
 
-		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
+		Assert.assertTrue(sem.tryAcquire(10, SECONDS));
 	}
 
 	// TODO connect a remote sdp or fails
@@ -106,7 +124,7 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 			}
 		});
 
-		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
+		Assert.assertTrue(sem.tryAcquire(10, SECONDS));
 	}
 
 	@Test
@@ -115,8 +133,6 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 		Assert.assertFalse(offer.isEmpty());
 	}
 
-	// TODO This test shuts down the remote KMS!
-	@Ignore
 	@Test
 	public void testProcessOfferMethod() {
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
@@ -130,41 +146,13 @@ public abstract class AbstractSdpAsyncBaseTest<T extends SdpEndpoint> extends
 		Assert.assertFalse(ret.isEmpty());
 	}
 
-	// TODO This test shuts down the remote KMS!
-	@Ignore
 	@Test
 	public void testProcessAnswerMethod() {
-		// TODO
-		String answer = "";
+		String offer = sdp.generateOffer();
+		String answer = sdp2.processOffer(offer);
+
 		String ret = sdp.processAnswer(answer);
 		Assert.assertFalse(ret.isEmpty());
 	}
 
-	// TODO This test shuts down the remote KMS!
-	@Ignore
-	@Test
-	public void testRtpEndpointSimulatingAndroidSdp()
-			throws InterruptedException {
-
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
-				.build();
-
-		RtpEndpoint rtpEndpoint = pipeline.newRtpEndpoint().build();
-
-		String requestSdp = "v=0\r\n"
-				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
-				+ "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
-				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
-				+ "a=rtpmap:96 H264/90000\r\n"
-				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
-				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
-				+ "b=AS:384\r\n";
-
-		rtpEndpoint.processOffer(requestSdp);
-		player.connect(rtpEndpoint, MediaType.VIDEO);
-		player.play();
-
-		// just a little bit of time before destroying
-		Thread.sleep(2000);
-	}
 }

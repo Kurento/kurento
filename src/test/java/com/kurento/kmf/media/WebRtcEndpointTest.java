@@ -33,11 +33,13 @@ public class WebRtcEndpointTest extends AbstractSdpBaseTest<WebRtcEndpoint> {
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		sdp = pipeline.newWebRtcEndpoint().build();
+		sdp2 = pipeline.newWebRtcEndpoint().build();
 	}
 
 	@After
 	public void teardown() {
 		sdp.release();
+		sdp2.release();
 	}
 
 }

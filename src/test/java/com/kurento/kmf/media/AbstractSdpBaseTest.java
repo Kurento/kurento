@@ -19,7 +19,6 @@ import static com.kurento.kmf.media.SyncMediaServerTest.URL_BARCODES;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,7 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 	protected MediaPipeline pipeline;
 
 	protected T sdp;
+	protected T sdp2;
 
 	@Before
 	public void abstractSetup() {
@@ -52,7 +52,6 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 		pipeline.release();
 	}
 
-	// TODO connect a local sdp or fails
 	@Test
 	public void testGetLocalSdpMethod() {
 		sdp.generateOffer();
@@ -60,7 +59,6 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 		Assert.assertFalse(localDescriptor.isEmpty());
 	}
 
-	// TODO connect a remote sdp or fails
 	@Test
 	public void testGetRemoteSdpMethod() {
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
@@ -81,8 +79,6 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 		Assert.assertFalse(offer.isEmpty());
 	}
 
-	// TODO This test shuts down the remote KMS!
-	@Ignore
 	@Test
 	public void testProcessOfferMethod() {
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
@@ -96,18 +92,14 @@ public abstract class AbstractSdpBaseTest<T extends SdpEndpoint> {
 		Assert.assertFalse(ret.isEmpty());
 	}
 
-	// TODO This test shuts down the remote KMS!
-	@Ignore
 	@Test
 	public void testProcessAnswerMethod() {
-		// TODO
-		String answer = "";
+		String offer = sdp.generateOffer();
+		String answer = sdp2.processOffer(offer);
 		String ret = sdp.processAnswer(answer);
 		Assert.assertFalse(ret.isEmpty());
 	}
 
-	// TODO This test shuts down the remote KMS!
-	@Ignore
 	@Test
 	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {

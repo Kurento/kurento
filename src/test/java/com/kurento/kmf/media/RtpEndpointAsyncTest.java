@@ -14,16 +14,14 @@
  */
 package com.kurento.kmf.media;
 
+import static com.kurento.kmf.media.SyncMediaServerTest.URL_BARCODES;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
@@ -55,27 +53,45 @@ public class RtpEndpointAsyncTest extends AbstractSdpAsyncBaseTest<RtpEndpoint> 
 
 	@Before
 	public void setup() throws InterruptedException {
-		final BlockingQueue<RtpEndpoint> events = new ArrayBlockingQueue<RtpEndpoint>(
-				1);
-		pipeline.newRtpEndpoint().buildAsync(new Continuation<RtpEndpoint>() {
+		pipeline.newRtpEndpoint().buildAsync(cont);
+		pipeline.newRtpEndpoint().buildAsync(cont);
 
-			@Override
-			public void onSuccess(RtpEndpoint result) {
-				events.add(result);
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
-			}
-		});
-		sdp = events.poll(500, MILLISECONDS);
+		sdp = creationResults.poll(500, MILLISECONDS);
+		sdp2 = creationResults.poll(500, MILLISECONDS);
 		Assert.assertNotNull(sdp);
+		Assert.assertNotNull(sdp2);
 	}
 
 	@After
 	public void teardown() throws InterruptedException {
 		releaseMediaObject(sdp);
+		releaseMediaObject(sdp2);
+	}
+
+	@Test
+	public void testRtpEndpointSimulatingAndroidSdp()
+			throws InterruptedException {
+
+		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
+				.build();
+
+		RtpEndpoint rtpEndpoint = pipeline.newRtpEndpoint().build();
+
+		String requestSdp = "v=0\r\n"
+				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
+				+ "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
+				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
+				+ "a=rtpmap:96 H264/90000\r\n"
+				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
+				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
+				+ "b=AS:384\r\n";
+
+		rtpEndpoint.processOffer(requestSdp);
+		player.connect(rtpEndpoint, MediaType.VIDEO);
+		player.play();
+
+		// just a little bit of time before destroying
+		Thread.sleep(2000);
 	}
 
 }

@@ -50,10 +50,12 @@ public class RtpEndpointTest extends AbstractSdpBaseTest<RtpEndpoint> {
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
 		sdp = pipeline.newRtpEndpoint().build();
+		sdp2 = pipeline.newRtpEndpoint().build();
 	}
 
 	@After
 	public void teardown() {
 		sdp.release();
+		sdp2.release();
 	}
 }
