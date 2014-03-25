@@ -910,11 +910,13 @@ configurations.
                http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
         <context:annotation-config />
-        <context:component-scan base-package="com.kurento.kmf.media" />
+        <context:component-scan base-package="com.kurento.kmf" />
 
-        <bean id="thriftInterfaceConfiguration" class="com.kurento.kmf.media.MediaApiConfiguration">
+        <bean id="thriftInterfaceConfiguration" class="com.kurento.kmf.thrift.ThriftInterfaceConfiguration">
             <property name="serverAddress" value="127.0.0.1" />
             <property name="serverPort" value="9090" />
+        </bean>
+        <bean id="mediaApiConfiguration" class="com.kurento.kmf.media.MediaApiConfiguration">
             <property name="handlerAddress" value="127.0.0.1" />
             <property name="handlerPort" value="9191" />
         </bean>
