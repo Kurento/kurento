@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.1.0</version>
+		<version>4.2.0</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-demo</artifactId>
-	<version>4.1.1-SNAPSHOT</version>
+	<version>${project.parent.version}</version>
 	<packaging>war</packaging>
 
 	<name>Kurento Media Framework - Demo</name>
@@ -33,7 +33,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
+		<tag>kmf-content-demo-4.2.0</tag>
 	</scm>
 
 	<developers>
