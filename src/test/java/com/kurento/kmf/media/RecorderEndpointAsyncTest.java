@@ -24,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
@@ -96,8 +95,6 @@ public class RecorderEndpointAsyncTest extends AbstractAsyncBaseTest {
 		Assert.assertEquals(URL_SMALL, uri);
 	}
 
-	// TODO this test fails in the release from teardown
-	@Ignore
 	@Test
 	public void testRecorder() throws InterruptedException {
 

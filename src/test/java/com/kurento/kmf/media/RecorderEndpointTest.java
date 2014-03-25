@@ -19,7 +19,6 @@ import static com.kurento.kmf.media.SyncMediaServerTest.URL_SMALL;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,8 +69,6 @@ public class RecorderEndpointTest {
 	/**
 	 * start/pause/stop sequence test
 	 */
-	// TODO enable when release() after this sequence works
-	@Ignore
 	@Test
 	public void testRecorder() {
 		recorder.record();
