@@ -67,12 +67,10 @@ typedef struct _RoiData
   int occupancy_level_med;
   int occupancy_level_max;
   int occupancy_num_frames_to_event;
-  gboolean send_occupancy_event;
   int fluidity_level_min;
   int fluidity_level_med;
   int fluidity_level_max;
   int fluidity_num_frames_to_event;
-  gboolean send_fluidity_event;
   gboolean send_optical_flow_event;
   int actual_optical_flow_angle;
   int potential_optical_flow_angle;
@@ -456,8 +454,6 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             &self->priv->rois_data[it].occupancy_level_max, NULL);
         gst_structure_get (point, "occupancy_num_frames_to_event", G_TYPE_INT,
             &self->priv->rois_data[it].occupancy_num_frames_to_event, NULL);
-        gst_structure_get (point, "send_occupancy_event", G_TYPE_BOOLEAN,
-            &self->priv->rois_data[it].send_occupancy_event, NULL);
         gst_structure_get (point, "fluidity_level_min", G_TYPE_INT,
             &self->priv->rois_data[it].fluidity_level_min, NULL);
         gst_structure_get (point, "fluidity_level_med", G_TYPE_INT,
@@ -466,8 +462,6 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
             &self->priv->rois_data[it].fluidity_level_max, NULL);
         gst_structure_get (point, "fluidity_num_frames_to_event", G_TYPE_INT,
             &self->priv->rois_data[it].fluidity_num_frames_to_event, NULL);
-        gst_structure_get (point, "send_fluidity_event", G_TYPE_BOOLEAN,
-            &self->priv->rois_data[it].send_fluidity_event, NULL);
         gst_structure_get (point, "send_optical_flow_event", G_TYPE_BOOLEAN,
             &self->priv->rois_data[it].send_optical_flow_event, NULL);
         gst_structure_get (point, "optical_flow_num_frames_to_event",
@@ -479,18 +473,16 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
         gst_structure_get (point, "optical_flow_angle_offset", G_TYPE_INT,
             &self->priv->rois_data[it].optical_flow_angle_offset, NULL);
         GST_DEBUG
-            ("rois info loaded: %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+            ("rois info loaded: %s %d %d %d %d %d %d %d %d %d %d %d %d",
             self->priv->rois_data[it].name,
             self->priv->rois_data[it].occupancy_level_min,
             self->priv->rois_data[it].occupancy_level_med,
             self->priv->rois_data[it].occupancy_level_max,
             self->priv->rois_data[it].occupancy_num_frames_to_event,
-            self->priv->rois_data[it].send_occupancy_event,
             self->priv->rois_data[it].fluidity_level_min,
             self->priv->rois_data[it].fluidity_level_med,
             self->priv->rois_data[it].fluidity_level_max,
             self->priv->rois_data[it].fluidity_num_frames_to_event,
-            self->priv->rois_data[it].send_fluidity_event,
             self->priv->rois_data[it].send_optical_flow_event,
             self->priv->rois_data[it].optical_flow_num_frames_to_event,
             self->priv->rois_data[it].optical_flow_num_frames_to_reset,
@@ -1000,23 +992,18 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
     } else {
       occupation_percentage = 0;
     }
-
-    if (crowddetector->priv->rois_data[curve].send_occupancy_event == TRUE) {
-      kms_crowd_detector_roi_occup_analysis (crowddetector,
-          occupation_percentage,
-          crowddetector->priv->rois_data[curve].occupancy_num_frames_to_event,
-          crowddetector->priv->rois_data[curve].occupancy_level_min,
-          crowddetector->priv->rois_data[curve].occupancy_level_med,
-          crowddetector->priv->rois_data[curve].occupancy_level_max, curve);
-    }
-    if (crowddetector->priv->rois_data[curve].send_fluidity_event == TRUE) {
-      kms_crowd_detector_roi_fluidity_analysis (crowddetector,
-          high_speed_points, low_speed_points,
-          crowddetector->priv->rois_data[curve].fluidity_num_frames_to_event,
-          crowddetector->priv->rois_data[curve].fluidity_level_min,
-          crowddetector->priv->rois_data[curve].fluidity_level_med,
-          crowddetector->priv->rois_data[curve].fluidity_level_max, curve);
-    }
+    kms_crowd_detector_roi_occup_analysis (crowddetector,
+        occupation_percentage,
+        crowddetector->priv->rois_data[curve].occupancy_num_frames_to_event,
+        crowddetector->priv->rois_data[curve].occupancy_level_min,
+        crowddetector->priv->rois_data[curve].occupancy_level_med,
+        crowddetector->priv->rois_data[curve].occupancy_level_max, curve);
+    kms_crowd_detector_roi_fluidity_analysis (crowddetector,
+        high_speed_points, low_speed_points,
+        crowddetector->priv->rois_data[curve].fluidity_num_frames_to_event,
+        crowddetector->priv->rois_data[curve].fluidity_level_min,
+        crowddetector->priv->rois_data[curve].fluidity_level_med,
+        crowddetector->priv->rois_data[curve].fluidity_level_max, curve);
   }
 }
 
