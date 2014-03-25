@@ -1,21 +1,109 @@
+/**
+ * This file is generated with Kurento ktool-rom-processor.
+ * Please don't edit. Changes should go to kms-interface-rom and
+ * ktool-rom-processor templates.
+ */
 package com.kurento.kmf.media;
 
 
+/**
+ * 
+ * <hr/>
+ * <b>TODO</b> FIXME: documentation needed
+ * 
+ **/
 public class RegionOfInterestConfig {
 
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int occupancyLevelMin;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int occupancyLevelMed;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int occupancyLevelMax;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int occupancyNumFramesToEvent;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int fluidityLevelMin;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int fluidityLevelMed;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int fluidityLevelMax;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int fluidityNumFramesToEvent;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private boolean sendOpticalFlowEvent;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int opticalFlowNumFramesToEvent;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int opticalFlowNumFramesToReset;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private int opticalFlowAngleOffset;
 
+	/**
+	 * 
+	 * Create a RegionOfInterestConfig
+	 * 
+	 **/
 	public RegionOfInterestConfig() {
 	}
 

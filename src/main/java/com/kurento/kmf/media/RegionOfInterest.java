@@ -1,15 +1,46 @@
+/**
+ * This file is generated with Kurento ktool-rom-processor.
+ * Please don't edit. Changes should go to kms-interface-rom and
+ * ktool-rom-processor templates.
+ */
 package com.kurento.kmf.media;
 
 import java.util.List;
 
 import com.kurento.tool.rom.server.Param;
 
+/**
+ * 
+ * Region of interest for some events in a video processing filter
+ * 
+ **/
 public class RegionOfInterest {
 
+	/**
+	 * 
+	 * list of points delimiting the region of interest
+	 * 
+	 **/
 	private List<Point> points;
+	/**
+	 * 
+	 * <hr/>
+	 * <b>TODO</b> FIXME: documentation needed
+	 * 
+	 **/
 	private RegionOfInterestConfig regionOfInterestConfig;
+	/**
+	 * 
+	 * identifier of the region of interest
+	 * 
+	 **/
 	private String id;
 
+	/**
+	 * 
+	 * Create a RegionOfInterest
+	 * 
+	 **/
 	public RegionOfInterest(
 			@Param("points") List<Point> points,
 			@Param("regionOfInterestConfig") RegionOfInterestConfig regionOfInterestConfig,
