@@ -20,6 +20,14 @@ public class BootBaseTest {
 
 		Properties properties = new Properties();
 		properties.put("server.port", getPort());
+
+		trasvaseProperty("kurento.serverAddress", "mediaserver.address",
+				properties);
+		trasvaseProperty("kurento.serverPort", "mediaserver.port", properties);
+		trasvaseProperty("kurento.handlerAddress", "handler.address",
+				properties);
+		trasvaseProperty("kurento.handlerPort", "handler.port", properties);
+
 		SpringApplication application = new SpringApplication(
 				BootApplication.class);
 
@@ -34,8 +42,17 @@ public class BootBaseTest {
 		KurentoApplicationContextUtils
 				.closeAllKurentoApplicationContexts(((WebApplicationContext) context)
 						.getServletContext());
-
+		
 		context.close();
+	}
+
+	private static void trasvaseProperty(String systemPropertyName,
+			String propertyName, Properties properties) {
+		String property = System.getProperty(systemPropertyName);
+
+		if (property != null)
+			properties.put(propertyName, property);
+
 	}
 
 	protected static String getPort() {
