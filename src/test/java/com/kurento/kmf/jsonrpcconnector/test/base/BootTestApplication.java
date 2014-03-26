@@ -10,6 +10,7 @@ import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.server.JsonRpcConfigurer;
 import com.kurento.kmf.jsonrpcconnector.server.JsonRpcHandlerRegistry;
 import com.kurento.kmf.jsonrpcconnector.test.AsyncServerTest;
+import com.kurento.kmf.jsonrpcconnector.test.BidirectionalMultiTest;
 import com.kurento.kmf.jsonrpcconnector.test.BidirectionalTest;
 import com.kurento.kmf.jsonrpcconnector.test.CloseSessionTest;
 import com.kurento.kmf.jsonrpcconnector.test.ErrorServerTest;
@@ -31,6 +32,8 @@ public class BootTestApplication implements JsonRpcConfigurer {
 		registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
 
 		registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
+		
+		registry.addHandler(new BidirectionalMultiTest.Handler(), "/BidirectionalMultiTest");
 
 		registry.addHandler(new ServerEventsTest.Handler(), "/serverevents");
 
