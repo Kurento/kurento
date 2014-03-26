@@ -84,7 +84,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 	private ThriftServer server;
 
-	private ConcurrentMap<String, Session> subscriptions = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, Session> subscriptions = new ConcurrentHashMap<>();
 
 	@PostConstruct
 	private void init() {
@@ -201,8 +201,8 @@ public final class ThriftConnectorJsonRpcHandler extends
 						subscriptions.put(subscription,
 								transaction.getSession());
 					} catch (Exception e) {
-						LOG.error("Error getting subscription on response "
-								+ response + "", e);
+						LOG.error("Error getting subscription on response {}",
+								response, e);
 					}
 				}
 
@@ -240,14 +240,14 @@ public final class ThriftConnectorJsonRpcHandler extends
 					"subscription");
 
 			if (subsJsonElem == null) {
-				LOG.error("Received event wihthout subscription: " + request);
+				LOG.error("Received event wihthout subscription: {}", request);
 				return;
 			}
 
 			String subscription = subsJsonElem.getAsString().trim();
 			Session session = subscriptions.get(subscription);
 			if (session == null) {
-				LOG.error("Unknown subscription: \"" + subscription + "\"");
+				LOG.error("Unknown subscription: \"{}\"", subscriptions);
 				LOG.info("Subscriptions\n");
 				return;
 			}
