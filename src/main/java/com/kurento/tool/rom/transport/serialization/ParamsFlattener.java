@@ -22,7 +22,7 @@ import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.client.RemoteObject;
 import com.kurento.tool.rom.client.RemoteObjectInvocationHandler;
 import com.kurento.tool.rom.client.RomClientObjectManager;
-import com.kurento.tool.rom.server.MediaApiException;
+import com.kurento.tool.rom.server.ProtocolException;
 import com.kurento.tool.rom.server.RemoteObjectManager;
 
 public class ParamsFlattener {
@@ -127,7 +127,7 @@ public class ParamsFlattener {
 				RemoteObjectInvocationHandler roHandler = (RemoteObjectInvocationHandler) handler;
 				processedParam = roHandler.getRemoteObject().getObjectRef();
 			} else {
-				throw new MediaApiException(
+				throw new ProtocolException(
 						"Only proxies from remote objects are allowed, but found one with InvocationHandler "
 								+ handler);
 			}
@@ -305,7 +305,7 @@ public class ParamsFlattener {
 
 				} else {
 					// TODO Improve exception reporting
-					throw new MediaApiException(
+					throw new ProtocolException(
 							"A objectRef coded with a String or a Props is expected for param type '"
 									+ type + "'");
 				}
@@ -321,7 +321,7 @@ public class ParamsFlattener {
 		}
 
 		// TODO Improve exception reporting
-		throw new MediaApiException("Type '" + type + "' is not supported");
+		throw new ProtocolException("Type '" + type + "' is not supported");
 	}
 
 	private boolean isPrimitiveClass(Class<?> clazz) {
@@ -352,7 +352,7 @@ public class ParamsFlattener {
 		try {
 			return constructor.newInstance(constParams);
 		} catch (Exception e) {
-			throw new MediaApiException(
+			throw new ProtocolException(
 					"Exception while creating an object for the class '"
 							+ clazz.getSimpleName() + "'", e);
 		}
@@ -387,7 +387,7 @@ public class ParamsFlattener {
 				return newRemoteObject;
 
 			} else {
-				throw new MediaApiException("Remote object with objectRef '"
+				throw new ProtocolException("Remote object with objectRef '"
 						+ value + "' is not found");
 			}
 
@@ -414,7 +414,7 @@ public class ParamsFlattener {
 			}
 		}
 		// TODO Improve exception reporting
-		throw new MediaApiException("Enum '" + value
+		throw new ProtocolException("Enum '" + value
 				+ "' not found in enumType '" + type.toString() + "'");
 	}
 
@@ -436,7 +436,7 @@ public class ParamsFlattener {
 		case REMOTE_CLASS:
 			return String.class;
 		default:
-			throw new MediaApiException("Unknown type: " + type);
+			throw new ProtocolException("Unknown type: " + type);
 		}
 
 	}
@@ -465,7 +465,7 @@ public class ParamsFlattener {
 		} else if (isRemoteClass(type)) {
 			return RomType.REMOTE_CLASS;
 		} else {
-			throw new MediaApiException("Unknown type: " + type);
+			throw new ProtocolException("Unknown type: " + type);
 		}
 	}
 

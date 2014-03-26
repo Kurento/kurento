@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientLocal;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.client.RemoteObjectTypedFactory;
-import com.kurento.tool.rom.server.MediaApiException;
+import com.kurento.tool.rom.server.ProtocolException;
 import com.kurento.tool.rom.test.model.SampleRemoteClass;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
@@ -34,47 +34,47 @@ public class RomInterfaceImplTest {
 	}
 
 	@Test
-	public void voidReturnMethodTest() throws MediaApiException {
+	public void voidReturnMethodTest() throws ProtocolException {
 		obj.methodReturnVoid();
 	}
 
 	@Test
-	public void stringReturnMethodTest() throws MediaApiException {
+	public void stringReturnMethodTest() throws ProtocolException {
 		assertEquals(obj.methodReturnsString(), "XXXX");
 	}
 
 	@Test
-	public void intReturnMethodTest() throws MediaApiException {
+	public void intReturnMethodTest() throws ProtocolException {
 		assertEquals(obj.methodReturnsInt(), 0);
 	}
 
 	@Test
-	public void booleanReturnMethodTest() throws MediaApiException {
+	public void booleanReturnMethodTest() throws ProtocolException {
 		assertEquals(obj.methodReturnsBoolean(), false);
 	}
 
 	@Test
-	public void floatReturnMethodTest() throws MediaApiException {
+	public void floatReturnMethodTest() throws ProtocolException {
 		assertEquals(obj.methodReturnsFloat(), 0.5f, 0.01);
 	}
 
 	@Test
-	public void stringParamMethodTest() throws MediaApiException {
+	public void stringParamMethodTest() throws ProtocolException {
 		assertEquals(obj.methodParamString("XXXX"), "XXXX");
 	}
 
 	@Test
-	public void intParamMethodTest() throws MediaApiException {
+	public void intParamMethodTest() throws ProtocolException {
 		assertEquals(obj.methodParamInt(55), 55);
 	}
 
 	@Test
-	public void booleanParamMethodTest() throws MediaApiException {
+	public void booleanParamMethodTest() throws ProtocolException {
 		assertEquals(obj.methodParamBoolean(true), true);
 	}
 
 	@Test
-	public void floatParamMethodTest() throws MediaApiException {
+	public void floatParamMethodTest() throws ProtocolException {
 		assertEquals(obj.methodParamFloat(0.5f), 0.5f, 0.01);
 	}
 

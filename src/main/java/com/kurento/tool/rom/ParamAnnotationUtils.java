@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
-import com.kurento.tool.rom.server.MediaApiException;
 import com.kurento.tool.rom.server.Param;
+import com.kurento.tool.rom.server.ProtocolException;
 
 public class ParamAnnotationUtils {
 
 	public static Props extractProps(Annotation[][] annotations, Object[] args)
-			throws MediaApiException {
+			throws ProtocolException {
 
 		Props props = null;
 
@@ -31,17 +31,17 @@ public class ParamAnnotationUtils {
 	}
 
 	public static List<String> getParamNames(Method method)
-			throws MediaApiException {
+			throws ProtocolException {
 		return getParamNames(method.getParameterAnnotations());
 	}
 
 	public static List<String> getParamNames(Constructor<?> constructor)
-			throws MediaApiException {
+			throws ProtocolException {
 		return getParamNames(constructor.getParameterAnnotations());
 	}
 
 	public static List<String> getParamNames(Annotation[][] annotationsParams)
-			throws MediaApiException {
+			throws ProtocolException {
 
 		List<String> paramNames = new ArrayList<>();
 
@@ -54,7 +54,7 @@ public class ParamAnnotationUtils {
 	}
 
 	public static Param getParamAnnotation(Annotation[] annotationsParam)
-			throws MediaApiException {
+			throws ProtocolException {
 
 		Param param = null;
 
@@ -66,7 +66,7 @@ public class ParamAnnotationUtils {
 		}
 
 		if (param == null) {
-			throw new MediaApiException("@Param annotation must be specified"
+			throw new ProtocolException("@Param annotation must be specified"
 					+ " in all methods and constructor params");
 		}
 
@@ -75,7 +75,7 @@ public class ParamAnnotationUtils {
 
 	public static Object[] extractEventParams(
 			Annotation[][] parameterAnnotations, Props data)
-			throws MediaApiException {
+			throws ProtocolException {
 
 		List<String> names = getParamNames(parameterAnnotations);
 

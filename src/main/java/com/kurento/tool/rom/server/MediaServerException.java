@@ -17,7 +17,11 @@ package com.kurento.tool.rom.server;
 import com.kurento.kmf.common.exception.KurentoSystemException;
 
 /**
+ * This exception represents errors that take place in KMS, while operating with
+ * pipelines and media elements
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
+ * @since 4.2.1
  * 
  */
 public class MediaServerException extends KurentoSystemException {

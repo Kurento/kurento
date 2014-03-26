@@ -14,25 +14,27 @@
  */
 package com.kurento.tool.rom.server;
 
-import com.kurento.kmf.common.exception.KurentoSystemException;
-
 /**
+ * Exception that represents an error in the JSON RPC protocol (i.e. malformed
+ * commands and so on)
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
+ * @since 4.2.1
  * 
  */
-public class MediaServerUnreachableException extends KurentoSystemException {
+public class ProtocolException extends MediaServerException {
 
 	private static final long serialVersionUID = -4925041543188451274L;
 
-	public MediaServerUnreachableException(String message, Throwable cause) {
+	public ProtocolException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public MediaServerUnreachableException(String message) {
+	public ProtocolException(String message) {
 		super(message);
 	}
 
-	public MediaServerUnreachableException(Throwable cause) {
+	public ProtocolException(Throwable cause) {
 		super(cause);
 	}
 

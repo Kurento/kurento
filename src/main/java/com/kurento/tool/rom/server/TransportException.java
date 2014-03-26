@@ -14,23 +14,30 @@
  */
 package com.kurento.tool.rom.server;
 
+import com.kurento.kmf.common.exception.KurentoSystemException;
+
 /**
+ * This exception occurs when there is a communication error. This could happen
+ * either when trying to reach KMS, or when the server is trying to send a
+ * response to the client.
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
+ * @since 4.2.1
  * 
  */
-public class MediaServerResponseException extends MediaServerException {
+public class TransportException extends KurentoSystemException {
 
-	private static final long serialVersionUID = -4925041543188451274L;
+	private static final long serialVersionUID = -9166377169939591329L;
 
-	public MediaServerResponseException(String message, Throwable cause) {
+	public TransportException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public MediaServerResponseException(String message) {
+	public TransportException(String message) {
 		super(message);
 	}
 
-	public MediaServerResponseException(Throwable cause) {
+	public TransportException(Throwable cause) {
 		super(cause);
 	}
 

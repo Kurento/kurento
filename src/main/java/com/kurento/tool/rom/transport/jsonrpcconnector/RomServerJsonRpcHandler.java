@@ -24,7 +24,7 @@ import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.tool.rom.server.MediaApiException;
+import com.kurento.tool.rom.server.ProtocolException;
 import com.kurento.tool.rom.server.RomServer;
 
 public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
@@ -81,7 +81,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				LOG.warn("Unknown request method '{}'", method);
 
 			}
-		} catch (MediaApiException e) {
+		} catch (ProtocolException e) {
 			try {
 				transaction.sendError(e);
 			} catch (IOException ex) {
@@ -96,12 +96,12 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			String propertyDescription) {
 
 		if (jsonObject == null) {
-			throw new MediaApiException("There are no params in the request");
+			throw new ProtocolException("There are no params in the request");
 		}
 
 		JsonElement element = jsonObject.get(propName);
 		if (element == null) {
-			throw new MediaApiException("It is necessary a property '"
+			throw new ProtocolException("It is necessary a property '"
 					+ propName + "' with " + propertyDescription);
 		} else {
 			return element.getAsString();

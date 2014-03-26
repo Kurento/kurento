@@ -42,8 +42,8 @@ import com.kurento.kmf.media.Continuation;
 import com.kurento.tool.rom.client.RomClient;
 import com.kurento.tool.rom.client.RomEventHandler;
 import com.kurento.tool.rom.server.MediaServerException;
-import com.kurento.tool.rom.server.MediaServerResponseException;
-import com.kurento.tool.rom.server.MediaServerUnreachableException;
+import com.kurento.tool.rom.server.ProtocolException;
+import com.kurento.tool.rom.server.TransportException;
 import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RomClientJsonRpcClient extends RomClient {
@@ -149,7 +149,7 @@ public class RomClientJsonRpcClient extends RomClient {
 				JsonObject subsObject = (JsonObject) subscription;
 				Set<Entry<String, JsonElement>> entries = subsObject.entrySet();
 				if (entries.size() != 1) {
-					throw new MediaServerResponseException(
+					throw new ProtocolException(
 							"Error format in response to subscription operation."
 									+ "The response should have one property and it has "
 									+ entries.size() + ". The response is: "
@@ -258,7 +258,7 @@ public class RomClientJsonRpcClient extends RomClient {
 			return null;
 
 		} catch (IOException e) {
-			throw new MediaServerUnreachableException(
+			throw new TransportException(
 					"Error connecting with server", e);
 		} catch (JsonRpcErrorException e) {
 			throw new MediaServerException("Exception invoking the ", e);
@@ -300,13 +300,13 @@ public class RomClientJsonRpcClient extends RomClient {
 				return result;
 
 			} else if (result instanceof JsonArray) {
-				throw new MediaServerResponseException("Json array '" + result
+				throw new ProtocolException("Json array '" + result
 						+ " cannot be converted to " + getTypeName(type));
 			} else if (result instanceof JsonObject) {
 				return extractSimpleValueFromJsonObject((JsonObject) result,
 						type);
 			} else {
-				throw new MediaServerResponseException(
+				throw new ProtocolException(
 						"Unrecognized json element: " + result);
 			}
 
@@ -326,7 +326,7 @@ public class RomClientJsonRpcClient extends RomClient {
 			Type type) {
 
 		if (!result.has("value")) {
-			throw new MediaServerResponseException("Json object " + result
+			throw new ProtocolException("Json object " + result
 					+ " cannot be converted to " + getTypeName(type)
 					+ " without a 'value' property");
 		}

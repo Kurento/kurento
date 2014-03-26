@@ -30,7 +30,7 @@ public class RomServer {
 					+ classSuffix);
 
 			if (clazz.getAnnotation(RemoteClass.class) == null) {
-				throw new MediaApiException(
+				throw new ProtocolException(
 						"Remote classes must be annotated with @RemoteClass");
 			}
 
@@ -47,7 +47,7 @@ public class RomServer {
 
 		} catch (Exception e) {
 			// TODO Improve exception reporting
-			throw new MediaApiException(
+			throw new ProtocolException(
 					"Exception while creating an object with remoteClass='"
 							+ remoteClassType + "' and params="
 							+ constructorParams, e);
@@ -66,7 +66,7 @@ public class RomServer {
 		Object remoteObject = manager.getObject(objectRef);
 
 		if (remoteObject == null) {
-			throw new MediaApiException("Invalid remote object reference");
+			throw new ProtocolException("Invalid remote object reference");
 		}
 
 		Class<?> remoteObjClass = remoteObject.getClass();
@@ -85,7 +85,7 @@ public class RomServer {
 
 		} catch (Exception e) {
 			// TODO Improve exception reporting
-			throw new MediaApiException(
+			throw new ProtocolException(
 					"Invocation exception of object with remoteClass='"
 							+ remoteObjClass.getSimpleName() + "', method="
 							+ methodName + " and params=" + params, e);
