@@ -44,13 +44,13 @@ public class SphinxLinks implements TemplateMethodModelEx {
 				{ ":java:ref:`(.*?)<(.*?)>`", // java ref, alternate title
 						"{@link $1 $2}" }, { ":java:ref:`(.*?)`", // java ref
 						"{@link $1}" },
-				{ ":rom:cls:`(.*?)<(.*?)>`", "{@link $1 $2}" },
+				{ ":rom:cls:`(.*?)<([^`]*?)>`", "{@link $1 $2}" },
 				{ ":rom:cls:`(.*?)`", "{@link $1}" },
-				{ ":rom:meth:`(.*?)<(.*?)>`", "{@link #$1 $2}" },
+				{ ":rom:meth:`(.*?)<([^`]*?)>`", "{@link #$1 $2}" },
 				{ ":rom:meth:`(.*?)`", "{@link #$1}" },
-				{ ":rom:attr:`(.*?)<(.*?)>`", "{@link #$1 $2}" },
+				{ ":rom:attr:`(.*?)<([^`]*?)>`", "{@link #$1 $2}" },
 				{ ":rom:attr:`(.*?)`", "{@link #$1}" },
-				{ ":rom:evt:`(.*?)<(.*?)>`", "{@link $1Event $2}" },
+				{ ":rom:evt:`(.*?)<([^`]*?)>`", "{@link $1Event $2}" },
 				{ ":rom:evt:`(.*?)`", "{@link $1Event}" },
 				{ ":author:", "@author" }, // author
 				{ ":since:", "@since" }, // since
