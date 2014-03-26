@@ -80,7 +80,7 @@ QUnit.asyncTest('Media session started', function()
   QUnit.expect(5);
 
 
-  var timeout = new Timeout(7 * 1000, onerror);
+  var timeout = new Timeout(10 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)

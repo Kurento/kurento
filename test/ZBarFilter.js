@@ -91,28 +91,7 @@ QUnit.asyncTest('Detect bar-code in a video', function()
 {
   QUnit.expect(1);
 
-
-  var timeoutDelay = 5 * 1000;
-
-
-  var timeout;
-
-  function _onerror(message)
-  {
-    clearTimeout(timeout);
-
-    onerror(message);
-  };
-
-  function enableTimeout()
-  {
-    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
-  };
-
-  function disableTimeout()
-  {
-    clearTimeout(timeout);
-  };
+  var timeout = new Timeout(5 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)
@@ -131,7 +110,7 @@ QUnit.asyncTest('Detect bar-code in a video', function()
         {
           if(error) return onerror(error);
 
-          enableTimeout();
+          timeout.start();
         });
       });
 
@@ -139,7 +118,7 @@ QUnit.asyncTest('Detect bar-code in a video', function()
       {
         QUnit.ok(true, 'CodeFound:'+data.value);
 
-        disableTimeout();
+        timeout.stop();
 
         QUnit.start();
       });

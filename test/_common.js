@@ -33,7 +33,7 @@ function onerror(error)
 /**
  * Do an asynchronous HTTP GET request both on Node.js & browser
  */
-function doGet(url, onsuccess, onerror)
+doGet = function doGet(url, onsuccess, onerror)
 {
   // Node.js
   if(typeof XMLHttpRequest == 'undefined')
@@ -56,7 +56,7 @@ function doGet(url, onsuccess, onerror)
 /**
  * Manage timeouts in an object-oriented style
  */
-function Timeout(delay, ontimeout)
+Timeout = function Timeout(delay, ontimeout)
 {
   if(!(this instanceof Timeout))
     return new Timeout(delay, ontimeout);
@@ -91,7 +91,7 @@ QUnit.config.urlConfig.push(
   value:
   {
     'ws://130.206.81.87/thrift/ws/websocket':  'Kurento demo server',
-    'ws://127.0.0.1:7788/thrift/ws/websocket': 'localhost (puerto 7788)'
+    'ws://127.0.0.1:8080/thrift/ws/websocket': 'localhost (puerto 8080)'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });

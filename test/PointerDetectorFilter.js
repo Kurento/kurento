@@ -58,28 +58,7 @@ QUnit.asyncTest('Detect pointer', function()
 {
   QUnit.expect(1);
 
-
-  var timeoutDelay = 20 * 1000;
-
-
-  var timeout;
-
-  function _onerror(message)
-  {
-    clearTimeout(timeout);
-
-    onerror(message);
-  };
-
-  function enableTimeout()
-  {
-    timeout = setTimeout(_onerror, timeoutDelay, 'Time out');
-  };
-
-  function disableTimeout()
-  {
-    clearTimeout(timeout);
-  };
+  var timeout = new Timeout(20 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
@@ -98,7 +77,7 @@ QUnit.asyncTest('Detect pointer', function()
         {
           if(error) return onerror(error);
 
-          enableTimeout();
+          timeout.start();
         });
       });
 
@@ -116,7 +95,7 @@ QUnit.asyncTest('Detect pointer', function()
       {
         QUnit.ok(true, 'WindowIn');
 
-        disableTimeout();
+        timeout.stop();
 
         QUnit.start();
       });
@@ -130,8 +109,31 @@ QUnit.test('Window events', function()
   QUnit.expect(2);
 
 
-  var timeoutDelay0 = 10 * 1000;
-  var timeoutDelay1 = 20 * 1000;
+  var delay =
+  {
+    WindowIn:  10 * 1000,
+    WindowOut: 20 * 1000
+  };
+
+  var timeout = {};
+
+  function _ontimeout(message)
+  {
+    for(var id in timeout)
+      clearTimeout(timeout[id]);
+
+    onerror(message);
+  };
+
+  timeout_start = function(id)
+  {
+    timeout[id] = setTimeout(_ontimeout, delay[id], 'Time out '+id+' ('+delay[id]+'ms)');
+  };
+
+  timeout_stop = function(id)
+  {
+    clearTimeout(timeout[id]);
+  };
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
@@ -142,17 +144,6 @@ QUnit.test('Window events', function()
     {
       if(error) return onerror(error);
 
-      var timeout0;
-      var timeout1;
-
-      function _onerror(message)
-      {
-        clearTimeout(timeout0);
-        clearTimeout(timeout1);
-
-        onerror(message);
-      };
-
       pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
@@ -161,8 +152,8 @@ QUnit.test('Window events', function()
         {
           if(error) return onerror(error);
 
-          timeout0 = setTimeout(_onerror, timeoutDelay0, 'Time out 0');
-          timeout1 = setTimeout(_onerror, timeoutDelay1, 'Time out 1');
+          timeout_start('WindowIn');
+          timeout_start('WindowOut');
         });
       });
 
@@ -185,13 +176,16 @@ QUnit.test('Window events', function()
       pointerDetector.addWindow(window0);
       pointerDetector.addWindow(window1);
 
+      var windowIn_asserted = windowOut_asserted = false;
+
       pointerDetector.on('WindowIn', function(data)
       {
-        if(data.windowId == 'window0')
+        if(data.windowId == 'window0' && !windowIn_asserted)
         {
           QUnit.ok(true, 'WindowIn');
+          windowIn_asserted = true;
 
-          clearTimeout(timeout0);
+          timeout_stop('WindowIn');
 
           QUnit.start();
         };
@@ -199,11 +193,12 @@ QUnit.test('Window events', function()
 
       pointerDetector.on('WindowOut', function(data)
       {
-        if(data.windowId == 'window1')
+        if(data.windowId == 'window1' && !windowOut_asserted)
         {
           QUnit.ok(true, 'WindowOut');
+          windowOut_asserted = true;
 
-          clearTimeout(timeout1);
+          timeout_stop('WindowOut');
 
           QUnit.start();
         };
@@ -218,8 +213,31 @@ QUnit.test('Window overlay', function()
   QUnit.expect(2);
 
 
-  var timeoutDelay0 = 10 * 1000;
-  var timeoutDelay1 = 15 * 1000;
+  var delay =
+  {
+    WindowIn:  10 * 1000,
+    WindowOut: 15 * 1000
+  };
+
+  var timeout = {};
+
+  function _ontimeout(message)
+  {
+    for(var id in timeout)
+      clearTimeout(timeout[id]);
+
+    onerror(message);
+  };
+
+  timeout_start = function(id)
+  {
+    timeout[id] = setTimeout(_ontimeout, delay[id], 'Time out '+id+' ('+delay[id]+'ms)');
+  };
+
+  timeout_stop = function(id)
+  {
+    clearTimeout(timeout[id]);
+  };
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
@@ -230,17 +248,6 @@ QUnit.test('Window overlay', function()
     {
       if(error) return onerror(error);
 
-      var timeout0;
-      var timeout1;
-
-      function _onerror(message)
-      {
-        clearTimeout(timeout0);
-        clearTimeout(timeout1);
-
-        onerror(message);
-      };
-
       pipeline.connect(player, pointerDetector, function(error, pipeline)
       {
         if(error) return onerror(error);
@@ -249,8 +256,8 @@ QUnit.test('Window overlay', function()
         {
           if(error) return onerror(error);
 
-          timeout0 = setTimeout(_onerror, timeoutDelay0, 'Time out WindowIn');
-          timeout1 = setTimeout(_onerror, timeoutDelay1, 'Time out WindowOut');
+          timeout_start('WindowIn');
+          timeout_start('WindowOut');
         });
       });
 
@@ -270,7 +277,7 @@ QUnit.test('Window overlay', function()
         {
           QUnit.ok(true, 'WindowIn');
 
-          clearTimeout(timeout0);
+          timeout_stop('WindowIn');
 
           QUnit.start();
         };
@@ -282,7 +289,7 @@ QUnit.test('Window overlay', function()
         {
           QUnit.ok(true, 'WindowOut');
 
-          clearTimeout(timeout1);
+          timeout_stop('WindowOut');
 
           QUnit.start();
         };
