@@ -84,7 +84,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         .. seealso:: :rfc:`2616`
 
     IMS
-    :wikipedia:`IP Multimedia Subsystem <en,IP_Multimedia_Subsystem>` is
+        :wikipedia:`IP Multimedia Subsystem <en,IP_Multimedia_Subsystem>` is
         :wikipedia:`3GPP <en,3rd_Generation_Partnership_Project>`
         Mobile Architectural Framework for delivering IP Multimedia Services
         in 3G (and beyond) Mobile Networks.
