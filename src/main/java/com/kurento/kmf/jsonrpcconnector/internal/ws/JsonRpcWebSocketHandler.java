@@ -16,6 +16,7 @@ package com.kurento.kmf.jsonrpcconnector.internal.ws;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -47,6 +48,14 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	@Override
 	public void afterConnectionClosed(WebSocketSession wsSession,
 			org.springframework.web.socket.CloseStatus status) throws Exception {
+
+		log.info("Connection closed because: " + status);
+		if(!status.equals(CloseStatus.NORMAL)){
+			log.error("Abnormal termination");
+		} else {
+			log.info("Normal termination");
+		}
+
 		protocolManager.closeSessionIfTimeout(wsSession.getId(),
 				status.getReason());
 	}
@@ -63,7 +72,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		String messageJson = message.getPayload();
 
-		log.debug("--> {}", messageJson);
+		log.info("--> {}", messageJson);
 
 		// TODO Ensure only one register message per websocket session.
 		ServerSessionFactory factory = new ServerSessionFactory() {

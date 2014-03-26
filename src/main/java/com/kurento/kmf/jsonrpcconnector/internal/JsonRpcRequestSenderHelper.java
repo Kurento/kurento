@@ -75,11 +75,11 @@ public abstract class JsonRpcRequestSenderHelper implements
 	public <P, R> R sendRequest(Request<P> request, Class<R> resultClass)
 			throws JsonRpcErrorException, IOException {
 
-		// LOG.info("--> " + request);
+		//LOG.info("--> " + request);
 
 		Response<R> response = internalSendRequest(request, resultClass);
 
-		// LOG.info("<-- " + response);
+		//LOG.info("<-- " + response);
 
 		if (response == null) {
 			return null;

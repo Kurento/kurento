@@ -76,14 +76,14 @@ public class WebSocketServerSession extends ServerSession {
 
 		try {
 			wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));
-		} catch (Exception e) {
+		} catch (Exception e) {	
 			LOG.error(
 					"Exception while sending message '{}' to websocket with native sessionId '{}': {}",
 					JsonUtils.toJson(request), wsSession.getId(), e);
 			// TODO Implement retries if possible
 			return null;
 		}
-
+		
 		if (responseFuture == null) {
 			return null;
 		}

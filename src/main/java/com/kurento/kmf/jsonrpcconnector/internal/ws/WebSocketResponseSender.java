@@ -39,6 +39,8 @@ public final class WebSocketResponseSender implements ResponseSender {
 	public void sendResponse(Message message) throws IOException {
 		String jsonMessage = message.toString();
 		log.debug("<-- {}", jsonMessage);
-		wsSession.sendMessage(new TextMessage(jsonMessage));
+		synchronized (wsSession) {
+			wsSession.sendMessage(new TextMessage(jsonMessage));	
+		}		
 	}
 }

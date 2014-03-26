@@ -203,8 +203,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		String jsonMessage = request.toString();
 		// log.info("--> {}", jsonMessage);
-		wsSession.sendMessage(new TextMessage(jsonMessage));
-
+		synchronized (wsSession) {
+			wsSession.sendMessage(new TextMessage(jsonMessage));	
+		}
+		
 		if (responseFuture == null) {
 			return null;
 		}
