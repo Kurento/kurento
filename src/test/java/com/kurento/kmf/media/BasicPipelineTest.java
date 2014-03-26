@@ -43,6 +43,7 @@ public class BasicPipelineTest {
 
 		System.out.println("URL: " + url);
 
+		pipeline.release();
 	}
 
 }

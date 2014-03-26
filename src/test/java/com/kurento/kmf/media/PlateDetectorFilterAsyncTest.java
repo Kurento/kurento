@@ -80,6 +80,7 @@ public class PlateDetectorFilterAsyncTest extends AbstractAsyncBaseTest {
 	public void teardown() throws InterruptedException {
 		player.release();
 		releaseMediaObject(detector);
+		pipeline.release();
 	}
 
 	@Test
