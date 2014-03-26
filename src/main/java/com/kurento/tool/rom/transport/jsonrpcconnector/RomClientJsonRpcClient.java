@@ -36,16 +36,19 @@ import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
+import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.tool.rom.client.RomClient;
 import com.kurento.tool.rom.client.RomEventHandler;
-import com.kurento.tool.rom.server.RomException;
+import com.kurento.tool.rom.server.MediaServerException;
+import com.kurento.tool.rom.server.MediaServerResponseException;
+import com.kurento.tool.rom.server.MediaServerUnreachableException;
 import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RomClientJsonRpcClient extends RomClient {
 
-	private JsonRpcClient client;
+	private final JsonRpcClient client;
 
 	public RomClientJsonRpcClient(JsonRpcClient client) {
 		this.client = client;
@@ -63,29 +66,28 @@ public class RomClientJsonRpcClient extends RomClient {
 	}
 
 	@Override
-	public String create(String remoteClassName, Props constructorParams)
-			throws RomException {
+	public String create(String remoteClassName, Props constructorParams) {
 		return create(remoteClassName, constructorParams, null);
 	}
 
 	@Override
-	public void release(String objectRef) throws RomException {
+	public void release(String objectRef) {
 		release(objectRef, null);
 	}
 
 	@Override
 	public String create(String remoteClassName, Props constructorParams,
-			Continuation<String> cont) throws RomException {
+			Continuation<String> cont) {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(CREATE_TYPE, remoteClassName);
 		if (constructorParams != null) {
 
-			constructorParams = ParamsFlattener.getInstance().flattenParams(
+			Props flatParams = ParamsFlattener.getInstance().flattenParams(
 					constructorParams);
 
 			params.add(CREATE_CONSTRUCTOR_PARAMS,
-					JsonUtils.toJsonObject(constructorParams));
+					JsonUtils.toJsonObject(flatParams));
 		}
 
 		return this.<String, String> sendRequest(CREATE_METHOD, String.class,
@@ -95,15 +97,14 @@ public class RomClientJsonRpcClient extends RomClient {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E> E invoke(String objectRef, String operationName,
-			Props operationParams, Class<E> clazz) throws RomException {
+			Props operationParams, Class<E> clazz) {
 		return (E) invoke(objectRef, operationName, operationParams,
 				(Type) clazz);
 	}
 
 	@Override
 	public Object invoke(String objectRef, String operationName,
-			Props operationParams, Type type, Continuation<?> cont)
-			throws RomException {
+			Props operationParams, Type type, Continuation<?> cont) {
 
 		JsonObject params = new JsonObject();
 		params.addProperty(INVOKE_OBJECT, objectRef);
@@ -111,19 +112,18 @@ public class RomClientJsonRpcClient extends RomClient {
 
 		if (operationParams != null) {
 
-			operationParams = ParamsFlattener.getInstance().flattenParams(
+			Props flatParams = ParamsFlattener.getInstance().flattenParams(
 					operationParams);
 
 			params.add(INVOKE_OPERATION_PARAMS,
-					JsonUtils.toJsonObject(operationParams));
+					JsonUtils.toJsonObject(flatParams));
 		}
 
 		return sendRequest(INVOKE_METHOD, type, params, null, cont);
 	}
 
 	@Override
-	public void release(String objectRef, Continuation<Void> cont)
-			throws RomException {
+	public void release(String objectRef, Continuation<Void> cont) {
 
 		JsonObject params = JsonUtils.toJsonObject(new Props(RELEASE_OBJECT,
 				objectRef));
@@ -144,22 +144,19 @@ public class RomClientJsonRpcClient extends RomClient {
 
 				if (subscription instanceof JsonPrimitive) {
 					return subscription.getAsString();
-				} else {
-
-					JsonObject subsObject = (JsonObject) subscription;
-					Set<Entry<String, JsonElement>> entries = subsObject
-							.entrySet();
-					if (entries.size() != 1) {
-						throw new RomException(
-								"Error format in response to subscription operation."
-										+ "The response should have one property and it has "
-										+ entries.size()
-										+ ". The response is: " + subscription);
-					} else {
-						return entries.iterator().next().getValue()
-								.getAsString();
-					}
 				}
+
+				JsonObject subsObject = (JsonObject) subscription;
+				Set<Entry<String, JsonElement>> entries = subsObject.entrySet();
+				if (entries.size() != 1) {
+					throw new MediaServerResponseException(
+							"Error format in response to subscription operation."
+									+ "The response should have one property and it has "
+									+ entries.size() + ". The response is: "
+									+ subscription);
+				}
+
+				return entries.iterator().next().getValue().getAsString();
 			}
 		};
 
@@ -236,33 +233,35 @@ public class RomClientJsonRpcClient extends RomClient {
 				return processReqResult(type, processor,
 						client.sendRequest(method, params, JsonElement.class));
 
-			} else {
-
-				client.sendRequest(
-						method,
-						params,
-						new com.kurento.kmf.jsonrpcconnector.client.Continuation<JsonElement>() {
-
-							@SuppressWarnings({ "rawtypes" })
-							@Override
-							public void onSuccess(JsonElement reqResult) {
-
-								R methodResult = processReqResult(type,
-										processor, reqResult);
-								((Continuation) cont).onSuccess(methodResult);
-							}
-
-							@Override
-							public void onError(Throwable cause) {
-								cont.onError(cause);
-							}
-						});
-
-				return null;
 			}
 
+			client.sendRequest(
+					method,
+					params,
+					new com.kurento.kmf.jsonrpcconnector.client.Continuation<JsonElement>() {
+
+						@SuppressWarnings({ "rawtypes" })
+						@Override
+						public void onSuccess(JsonElement reqResult) {
+
+							R methodResult = processReqResult(type, processor,
+									reqResult);
+							((Continuation) cont).onSuccess(methodResult);
+						}
+
+						@Override
+						public void onError(Throwable cause) {
+							cont.onError(cause);
+						}
+					});
+
+			return null;
+
 		} catch (IOException e) {
-			throw new RomException("Exception while sending request", e);
+			throw new MediaServerUnreachableException(
+					"Error connecting with server", e);
+		} catch (JsonRpcErrorException e) {
+			throw new MediaServerException("Exception invoking the ", e);
 		}
 	}
 
@@ -273,9 +272,9 @@ public class RomClientJsonRpcClient extends RomClient {
 
 		if (processor == null) {
 			return (R) methodResult;
-		} else {
-			return processor.apply(methodResult);
 		}
+
+		return processor.apply(methodResult);
 	}
 
 	private <E> E convertFromResult(JsonElement result, Type type) {
@@ -301,27 +300,23 @@ public class RomClientJsonRpcClient extends RomClient {
 				return result;
 
 			} else if (result instanceof JsonArray) {
-				throw new RomException("Json array '" + result
+				throw new MediaServerResponseException("Json array '" + result
 						+ " cannot be converted to " + getTypeName(type));
-
 			} else if (result instanceof JsonObject) {
 				return extractSimpleValueFromJsonObject((JsonObject) result,
 						type);
-
 			} else {
-				throw new RomException("Unrecognized json element: " + result);
+				throw new MediaServerResponseException(
+						"Unrecognized json element: " + result);
 			}
 
 		} else if (isList(type)) {
 
 			if (result instanceof JsonArray) {
 				return result;
-
-			} else {
-				return extractSimpleValueFromJsonObject((JsonObject) result,
-						type);
 			}
 
+			return extractSimpleValueFromJsonObject((JsonObject) result, type);
 		} else {
 			return result;
 		}
@@ -331,7 +326,7 @@ public class RomClientJsonRpcClient extends RomClient {
 			Type type) {
 
 		if (!result.has("value")) {
-			throw new RomException("Json object " + result
+			throw new MediaServerResponseException("Json object " + result
 					+ " cannot be converted to " + getTypeName(type)
 					+ " without a 'value' property");
 		}
@@ -391,13 +386,13 @@ public class RomClientJsonRpcClient extends RomClient {
 
 			Type[] arguments = pType.getActualTypeArguments();
 			if (arguments.length > 0) {
-				sb.append("<");
+				sb.append('<');
 				for (Type aType : arguments) {
 					sb.append(getTypeName(aType));
-					sb.append(",");
+					sb.append(',');
 				}
 				sb.deleteCharAt(sb.length() - 1);
-				sb.append(">");
+				sb.append('>');
 			}
 
 			return sb.toString();

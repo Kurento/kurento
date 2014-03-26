@@ -24,7 +24,7 @@ import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.tool.rom.server.RomException;
+import com.kurento.tool.rom.server.MediaApiException;
 import com.kurento.tool.rom.server.RomServer;
 
 public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
@@ -32,7 +32,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private static Logger LOG = LoggerFactory
 			.getLogger(RomServerJsonRpcHandler.class);
 
-	private RomServer server;
+	private final RomServer server;
 
 	public RomServerJsonRpcHandler(String packageName, String classSuffix) {
 		server = new RomServer(packageName, classSuffix);
@@ -46,8 +46,8 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			JsonObject params = request.getParams();
 			String method = request.getMethod();
-			if (method.equals(INVOKE_METHOD)) {
-
+			switch (method) {
+			case INVOKE_METHOD:
 				String objectRef = getAsString(params, INVOKE_OBJECT,
 						"object reference");
 
@@ -59,32 +59,32 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 				handleInvokeCommand(transaction, objectRef, operationName,
 						operationParams);
-
-			} else if (method.equals(RELEASE_METHOD)) {
-
-				String objectRef = getAsString(params, RELEASE_OBJECT,
+				break;
+			case RELEASE_METHOD:
+				String objectReleaseRef = getAsString(params, RELEASE_OBJECT,
 						"object reference to be released");
 
-				handleReleaseCommand(transaction, objectRef);
-
-			} else if (method.equals(CREATE_METHOD)) {
-
+				handleReleaseCommand(transaction, objectReleaseRef);
+				break;
+			case CREATE_METHOD:
 				String type = getAsString(params, CREATE_TYPE,
 						"RemoteClass of the object to be created");
 
 				handleCreateCommand(transaction, type,
 						params.getAsJsonObject(CREATE_CONSTRUCTOR_PARAMS));
-			} else if (method.equals(KEEPALIVE_METHOD)) {
-				LOG.info("Received a keepAlive request for object "
-						+ params.get(KEEPALIVE_OBJECT));
-			} else {
-				LOG.warn("Unknown request method '" + method + "'");
-			}
+				break;
+			case KEEPALIVE_METHOD:
+				LOG.info("Received a keepAlive request for object {}",
+						params.get(KEEPALIVE_OBJECT));
+				break;
+			default:
+				LOG.warn("Unknown request method '{}'", method);
 
-		} catch (RomException e) {
+			}
+		} catch (MediaApiException e) {
 			try {
 				transaction.sendError(e);
-			} catch (IOException e1) {
+			} catch (IOException ex) {
 				LOG.warn("Exception while sending a response", e);
 			}
 		} catch (IOException e) {
@@ -96,13 +96,13 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			String propertyDescription) {
 
 		if (jsonObject == null) {
-			throw new RomException("There are no params in the request");
+			throw new MediaApiException("There are no params in the request");
 		}
 
 		JsonElement element = jsonObject.get(propName);
 		if (element == null) {
-			throw new RomException("It is necessary a property '" + propName
-					+ "' with " + propertyDescription);
+			throw new MediaApiException("It is necessary a property '"
+					+ propName + "' with " + propertyDescription);
 		} else {
 			return element.getAsString();
 		}

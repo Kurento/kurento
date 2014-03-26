@@ -2,12 +2,11 @@ package com.kurento.tool.rom.client;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.media.Continuation;
-import com.kurento.tool.rom.server.RomException;
 
 public class RemoteObjectFactory {
 
-	private RomClientObjectManager manager;
-	private RomClient client;
+	private final RomClientObjectManager manager;
+	private final RomClient client;
 
 	public RemoteObjectFactory(RomClient client) {
 		this.client = client;
@@ -15,22 +14,19 @@ public class RemoteObjectFactory {
 		this.client.addRomEventHandler(manager);
 	}
 
-	public RemoteObject create(String remoteClassName, Props constructorParams)
-			throws RomException {
+	public RemoteObject create(String remoteClassName, Props constructorParams) {
 
 		String objectRef = client.create(remoteClassName, constructorParams);
 
 		return new RemoteObject(objectRef, remoteClassName, client, manager);
 	}
 
-	public RemoteObject create(String remoteClassName) throws RomException {
-
+	public RemoteObject create(String remoteClassName) {
 		return create(remoteClassName, (Props) null);
 	}
 
 	public void create(final String remoteClassName,
-			final Props constructorParams, final Continuation<RemoteObject> cont)
-			throws RomException {
+			final Props constructorParams, final Continuation<RemoteObject> cont) {
 
 		client.create(remoteClassName, constructorParams,
 				new Continuation<String>() {
@@ -47,9 +43,7 @@ public class RemoteObjectFactory {
 				});
 	}
 
-	public void create(String remoteClassName, Continuation<RemoteObject> cont)
-			throws RomException {
-
+	public void create(String remoteClassName, Continuation<RemoteObject> cont) {
 		create(remoteClassName, null, cont);
 	}
 

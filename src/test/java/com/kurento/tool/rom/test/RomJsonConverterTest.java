@@ -19,7 +19,7 @@ public class RomJsonConverterTest {
 
 	@Test
 	public void stringConversion() {
-		assertEquals(JsonUtils.fromJson(new JsonPrimitive("XXX"),
+		assertEquals((String) JsonUtils.fromJson(new JsonPrimitive("XXX"),
 				String.class), "XXX");
 	}
 
@@ -32,7 +32,7 @@ public class RomJsonConverterTest {
 	@Test
 	public void floatConversion() {
 		assertEquals(
-				JsonUtils.fromJson(new JsonPrimitive(0.5), float.class),
+				(float) JsonUtils.fromJson(new JsonPrimitive(0.5), float.class),
 				0.5, 0.01);
 	}
 

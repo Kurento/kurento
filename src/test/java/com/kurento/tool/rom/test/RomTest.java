@@ -10,7 +10,6 @@ import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.client.RemoteObject;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.server.RomException;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 
@@ -33,7 +32,7 @@ public class RomTest {
 	}
 
 	@Test
-	public void simpleCreationTest() throws RomException {
+	public void simpleCreationTest() {
 
 		RemoteObject obj = factory.create("RomTest$RemoteClassTest");
 
@@ -45,7 +44,7 @@ public class RomTest {
 	}
 
 	@Test
-	public void creationReleaseTest() throws RomException {
+	public void creationReleaseTest() {
 
 		RemoteObject obj = factory.create("RomTest$RemoteClassTest");
 
@@ -64,7 +63,7 @@ public class RomTest {
 	@RemoteClass
 	static public class RemoteClassConstTest {
 
-		private String att;
+		private final String att;
 
 		public RemoteClassConstTest(@Param("param") String param) {
 			this.att = param;
@@ -76,15 +75,15 @@ public class RomTest {
 	}
 
 	@Test
-	public void consCreationTest() throws RomException {
+	public void consCreationTest() {
 
 		String paramValue = "XXX";
 
 		RemoteObject obj = factory.create("RomTest$RemoteClassConstTest",
 				new Props("param", paramValue));
 
-		String result = obj.invoke("getAtt", new Props("param",
-				paramValue), String.class);
+		String result = obj.invoke("getAtt", new Props("param", paramValue),
+				String.class);
 
 		Assert.assertEquals(paramValue, result);
 

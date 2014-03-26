@@ -1,6 +1,7 @@
 package com.kurento.tool.rom.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,7 +14,6 @@ import org.junit.Test;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientLocal;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.client.RemoteObjectTypedFactory;
-import com.kurento.tool.rom.server.RomException;
 import com.kurento.tool.rom.test.model.client.ComplexParam;
 import com.kurento.tool.rom.test.model.client.SampleClass;
 import com.kurento.tool.rom.test.model.client.SampleEnum;
@@ -24,6 +24,7 @@ public class SyncConstMethodsTest {
 
 	private static RemoteObjectTypedFactory factory;
 
+	@SuppressWarnings("resource")
 	@BeforeClass
 	public static void initFactory() {
 		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
@@ -44,18 +45,18 @@ public class SyncConstMethodsTest {
 	@Test
 	public void constructionTest() {
 		assertEquals(obj.getAtt1(), "XXX");
-		assertEquals(obj.getAtt2(), false);
+		assertFalse(obj.getAtt2());
 		assertEquals(obj.getAtt3(), 0.5f, 0.01);
 		assertEquals(obj.getAtt4(), 22);
 	}
 
 	@Test
-	public void echoEnumTest() throws RomException {
+	public void echoEnumTest() {
 		assertEquals(SampleEnum.CONSTANT_1, obj.echoEnum(SampleEnum.CONSTANT_1));
 	}
 
 	@Test
-	public void echoRegisterTest() throws RomException {
+	public void echoRegisterTest() {
 
 		ComplexParam returnValue = obj.echoRegister(new ComplexParam("prop1",
 				33));
@@ -65,7 +66,7 @@ public class SyncConstMethodsTest {
 	}
 
 	@Test
-	public void echoEnumListTest() throws RomException {
+	public void echoEnumListTest() {
 
 		List<SampleEnum> result = obj.echoListEnum(Arrays.asList(
 				SampleEnum.CONSTANT_1, SampleEnum.CONSTANT_2));
@@ -75,9 +76,9 @@ public class SyncConstMethodsTest {
 	}
 
 	@Test
-	public void echoRegisterListTest() throws RomException {
+	public void echoRegisterListTest() {
 
-		List<ComplexParam> params = new ArrayList<ComplexParam>();
+		List<ComplexParam> params = new ArrayList<>();
 		params.add(new ComplexParam("prop1_1", 33));
 		params.add(new ComplexParam("prop1_2", 44));
 

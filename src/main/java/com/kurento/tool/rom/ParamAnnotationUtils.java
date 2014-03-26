@@ -7,12 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.kurento.kmf.jsonrpcconnector.Props;
+import com.kurento.tool.rom.server.MediaApiException;
 import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.server.RomException;
 
 public class ParamAnnotationUtils {
 
-	public static Props extractProps(Annotation[][] annotations, Object[] args) {
+	public static Props extractProps(Annotation[][] annotations, Object[] args)
+			throws MediaApiException {
 
 		Props props = null;
 
@@ -29,17 +30,20 @@ public class ParamAnnotationUtils {
 		return props;
 	}
 
-	public static List<String> getParamNames(Method method) {
+	public static List<String> getParamNames(Method method)
+			throws MediaApiException {
 		return getParamNames(method.getParameterAnnotations());
 	}
 
-	public static List<String> getParamNames(Constructor<?> constructor) {
+	public static List<String> getParamNames(Constructor<?> constructor)
+			throws MediaApiException {
 		return getParamNames(constructor.getParameterAnnotations());
 	}
 
-	public static List<String> getParamNames(Annotation[][] annotationsParams) {
+	public static List<String> getParamNames(Annotation[][] annotationsParams)
+			throws MediaApiException {
 
-		List<String> paramNames = new ArrayList<String>();
+		List<String> paramNames = new ArrayList<>();
 
 		for (int x = 0; x < annotationsParams.length; x++) {
 			Annotation[] annotationsParam = annotationsParams[x];
@@ -49,7 +53,8 @@ public class ParamAnnotationUtils {
 		return paramNames;
 	}
 
-	public static Param getParamAnnotation(Annotation[] annotationsParam) {
+	public static Param getParamAnnotation(Annotation[] annotationsParam)
+			throws MediaApiException {
 
 		Param param = null;
 
@@ -61,7 +66,7 @@ public class ParamAnnotationUtils {
 		}
 
 		if (param == null) {
-			throw new RomException("@Param annotation must be specified"
+			throw new MediaApiException("@Param annotation must be specified"
 					+ " in all methods and constructor params");
 		}
 
@@ -69,7 +74,8 @@ public class ParamAnnotationUtils {
 	}
 
 	public static Object[] extractEventParams(
-			Annotation[][] parameterAnnotations, Props data) {
+			Annotation[][] parameterAnnotations, Props data)
+			throws MediaApiException {
 
 		List<String> names = getParamNames(parameterAnnotations);
 

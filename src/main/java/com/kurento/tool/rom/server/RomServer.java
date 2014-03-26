@@ -10,20 +10,19 @@ import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RomServer {
 
-	private RemoteObjectManager manager = new RemoteObjectManager();
+	private final RemoteObjectManager manager = new RemoteObjectManager();
 
 	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
-	private String packageName;
-	private String classSuffix;
+	private final String packageName;
+	private final String classSuffix;
 
 	public RomServer(String packageName, String classSuffix) {
 		this.packageName = packageName;
 		this.classSuffix = classSuffix;
 	}
 
-	public String create(String remoteClassType, Props constructorParams)
-			throws RomException {
+	public String create(String remoteClassType, Props constructorParams) {
 
 		try {
 
@@ -31,7 +30,7 @@ public class RomServer {
 					+ classSuffix);
 
 			if (clazz.getAnnotation(RemoteClass.class) == null) {
-				throw new RomException(
+				throw new MediaApiException(
 						"Remote classes must be annotated with @RemoteClass");
 			}
 
@@ -48,7 +47,7 @@ public class RomServer {
 
 		} catch (Exception e) {
 			// TODO Improve exception reporting
-			throw new RomException(
+			throw new MediaApiException(
 					"Exception while creating an object with remoteClass='"
 							+ remoteClassType + "' and params="
 							+ constructorParams, e);
@@ -57,17 +56,17 @@ public class RomServer {
 
 	@SuppressWarnings("unchecked")
 	public <E> E invoke(String objectRef, String methodName, Props params,
-			Class<E> clazz) throws RomException {
+			Class<E> clazz) {
 		return (E) invoke(objectRef, methodName, params, (Type) clazz);
 	}
 
 	public Object invoke(String objectRef, String methodName, Props params,
-			Type type) throws RomException {
+			Type type) {
 
 		Object remoteObject = manager.getObject(objectRef);
 
 		if (remoteObject == null) {
-			throw new RomException("Invalid remote object reference");
+			throw new MediaApiException("Invalid remote object reference");
 		}
 
 		Class<?> remoteObjClass = remoteObject.getClass();
@@ -86,7 +85,7 @@ public class RomServer {
 
 		} catch (Exception e) {
 			// TODO Improve exception reporting
-			throw new RomException(
+			throw new MediaApiException(
 					"Invocation exception of object with remoteClass='"
 							+ remoteObjClass.getSimpleName() + "', method="
 							+ methodName + " and params=" + params, e);

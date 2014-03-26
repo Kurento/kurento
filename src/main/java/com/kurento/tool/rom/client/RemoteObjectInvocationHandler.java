@@ -91,13 +91,13 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			Type[] paramTypes = method.getGenericParameterTypes();
 			ParameterizedType contType = (ParameterizedType) paramTypes[paramTypes.length - 1];
 			Type returnType = contType.getActualTypeArguments()[0];
-
 			remoteObject.invoke(method.getName(), props, returnType, cont);
 			return null;
-		} else {
-			return remoteObject.invoke(method.getName(), props,
-					method.getGenericReturnType());
 		}
+
+		return remoteObject.invoke(method.getName(), props,
+				method.getGenericReturnType());
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -202,18 +202,23 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		RemoteObjectInvocationHandler other = (RemoteObjectInvocationHandler) obj;
 		if (remoteObject == null) {
-			if (other.remoteObject != null)
+			if (other.remoteObject != null) {
 				return false;
-		} else if (!remoteObject.equals(other.remoteObject))
+			}
+		} else if (!remoteObject.equals(other.remoteObject)) {
 			return false;
+		}
 		return true;
 	}
 

@@ -22,8 +22,8 @@ import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.client.RemoteObject;
 import com.kurento.tool.rom.client.RemoteObjectInvocationHandler;
 import com.kurento.tool.rom.client.RomClientObjectManager;
+import com.kurento.tool.rom.server.MediaApiException;
 import com.kurento.tool.rom.server.RemoteObjectManager;
-import com.kurento.tool.rom.server.RomException;
 
 public class ParamsFlattener {
 
@@ -36,7 +36,7 @@ public class ParamsFlattener {
 
 	public static class GenericListType implements ParameterizedType {
 
-		private Type[] elementsTypes;
+		private final Type[] elementsTypes;
 
 		public GenericListType(Type elementsType) {
 			this.elementsTypes = new Type[] { elementsType };
@@ -69,7 +69,7 @@ public class ParamsFlattener {
 	 * method
 	 * 
 	 * @param params
-	 * @return
+	 * @return Properties holding flattened params
 	 */
 	public Props flattenParams(Props params) {
 
@@ -88,7 +88,7 @@ public class ParamsFlattener {
 	 * @return
 	 */
 	private List<?> flattenParamsList(List<? extends Object> params) {
-		List<Object> plainParams = new ArrayList<Object>(params.size());
+		List<Object> plainParams = new ArrayList<>(params.size());
 		for (Object param : params) {
 			plainParams.add(flattenParam(param));
 		}
@@ -127,7 +127,7 @@ public class ParamsFlattener {
 				RemoteObjectInvocationHandler roHandler = (RemoteObjectInvocationHandler) handler;
 				processedParam = roHandler.getRemoteObject().getObjectRef();
 			} else {
-				throw new RuntimeException(
+				throw new MediaApiException(
 						"Only proxies from remote objects are allowed, but found one with InvocationHandler "
 								+ handler);
 			}
@@ -158,13 +158,12 @@ public class ParamsFlattener {
 			return result;
 		} else if (result instanceof List<?>) {
 			return flattenResultList((List<?>) result, manager);
+		} else if (result.getClass().getAnnotation(RemoteClass.class) != null) {
+			return extractObjectRefFromRemoteClass(result, manager);
 		} else {
-			if (result.getClass().getAnnotation(RemoteClass.class) != null) {
-				return extractObjectRefFromRemoteClass(result, manager);
-			} else {
-				return extractResultAsProps(result, manager);
-			}
+			return extractResultAsProps(result, manager);
 		}
+
 	}
 
 	private Object extractObjectRefFromRemoteClass(Object result,
@@ -178,7 +177,7 @@ public class ParamsFlattener {
 	private Object extractResultAsProps(Object result,
 			RemoteObjectManager manager) {
 
-		Map<String, Object> propsMap = new HashMap<String, Object>();
+		Map<String, Object> propsMap = new HashMap<>();
 		for (Method method : result.getClass().getMethods()) {
 
 			String propName = null;
@@ -199,8 +198,9 @@ public class ParamsFlattener {
 					propsMap.put(propName, value);
 
 				} catch (Exception e) {
-					LOG.warn("Exception while accessing to prop '" + propName
-							+ "' in param object: " + result, e);
+					LOG.warn(
+							"Exception while accessing prop '{}' in param object: {}",
+							propName, result, e);
 				}
 			}
 		}
@@ -212,7 +212,7 @@ public class ParamsFlattener {
 	// this but with params instead result
 	private Object flattenResultList(List<?> resultList,
 			RemoteObjectManager manager) {
-		List<Object> plainResult = new ArrayList<Object>(resultList.size());
+		List<Object> plainResult = new ArrayList<>(resultList.size());
 		for (Object result : resultList) {
 			plainResult.add(flattenResult(result, manager));
 		}
@@ -227,7 +227,7 @@ public class ParamsFlattener {
 	 */
 	private Object extractParamAsProps(Object param) {
 
-		Map<String, Object> propsMap = new HashMap<String, Object>();
+		Map<String, Object> propsMap = new HashMap<>();
 		for (Method method : param.getClass().getMethods()) {
 
 			String propName = null;
@@ -248,8 +248,9 @@ public class ParamsFlattener {
 					propsMap.put(propName, value);
 
 				} catch (Exception e) {
-					LOG.warn("Exception while accessing to prop '" + propName
-							+ "' in param object: " + param, e);
+					LOG.warn(
+							"Exception while accessing prop '{}' in param object: {}",
+							propName, param, e);
 				}
 			}
 		}
@@ -304,7 +305,7 @@ public class ParamsFlattener {
 
 				} else {
 					// TODO Improve exception reporting
-					throw new RuntimeException(
+					throw new MediaApiException(
 							"A objectRef coded with a String or a Props is expected for param type '"
 									+ type + "'");
 				}
@@ -320,7 +321,7 @@ public class ParamsFlattener {
 		}
 
 		// TODO Improve exception reporting
-		throw new RuntimeException("Type '" + type + "' is not supported");
+		throw new MediaApiException("Type '" + type + "' is not supported");
 	}
 
 	private boolean isPrimitiveClass(Class<?> clazz) {
@@ -351,7 +352,7 @@ public class ParamsFlattener {
 		try {
 			return constructor.newInstance(constParams);
 		} catch (Exception e) {
-			throw new RuntimeException(
+			throw new MediaApiException(
 					"Exception while creating an object for the class '"
 							+ clazz.getSimpleName() + "'", e);
 		}
@@ -360,7 +361,7 @@ public class ParamsFlattener {
 	private Object unflattenList(String paramName, List<?> value, Type type,
 			ObjectRefsManager manager) {
 
-		List<Object> list = new ArrayList<Object>();
+		List<Object> list = new ArrayList<>();
 		int counter = 0;
 		for (Object object : value) {
 			list.add(unflattenValue(paramName + "[" + counter + "]", type,
@@ -386,25 +387,23 @@ public class ParamsFlattener {
 				return newRemoteObject;
 
 			} else {
-				throw new RuntimeException("Remote object with objectRef '"
+				throw new MediaApiException("Remote object with objectRef '"
 						+ value + "' is not found");
 			}
 
-		} else {
-
-			if (remoteObject instanceof RemoteObject) {
-				// We are in the client side
-				Object wrapper = ((RemoteObject) remoteObject)
-						.getWrapperForUnflatten();
-				if (wrapper != null) {
-					return wrapper;
-				} else {
-					return remoteObject;
-				}
+		} else if (remoteObject instanceof RemoteObject) {
+			// We are in the client side
+			Object wrapper = ((RemoteObject) remoteObject)
+					.getWrapperForUnflatten();
+			if (wrapper != null) {
+				return wrapper;
 			} else {
 				return remoteObject;
 			}
+		} else {
+			return remoteObject;
 		}
+
 	}
 
 	private Object unflattenEnumConstant(Type type, Object value, Class<?> clazz) {
@@ -415,7 +414,7 @@ public class ParamsFlattener {
 			}
 		}
 		// TODO Improve exception reporting
-		throw new RuntimeException("Enum '" + value
+		throw new MediaApiException("Enum '" + value
 				+ "' not found in enumType '" + type.toString() + "'");
 	}
 
@@ -436,9 +435,10 @@ public class ParamsFlattener {
 					calculateFlattenType(extractListType(type)));
 		case REMOTE_CLASS:
 			return String.class;
+		default:
+			throw new MediaApiException("Unknown type: " + type);
 		}
 
-		throw new RomException("Unknown type " + type);
 	}
 
 	private Type extractListType(Type type) {
@@ -465,7 +465,7 @@ public class ParamsFlattener {
 		} else if (isRemoteClass(type)) {
 			return RomType.REMOTE_CLASS;
 		} else {
-			throw new RomException("Unknown type: " + type);
+			throw new MediaApiException("Unknown type: " + type);
 		}
 	}
 
