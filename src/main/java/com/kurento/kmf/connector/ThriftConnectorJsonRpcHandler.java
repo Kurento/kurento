@@ -195,9 +195,15 @@ public final class ThriftConnectorJsonRpcHandler extends
 			} else {
 
 				if (subscribeResponse) {
-					String subscription = response.getResult().getAsString()
-							.trim();
-					subscriptions.put(subscription, transaction.getSession());
+					try {
+						String subscription = ((JsonObject) response
+								.getResult()).get("value").getAsString().trim();
+						subscriptions.put(subscription,
+								transaction.getSession());
+					} catch (Exception e) {
+						LOG.error("Error getting subscription on response "
+								+ response + "", e);
+					}
 				}
 
 				transaction.sendResponse(response.getResult());
