@@ -690,12 +690,12 @@ kms_agnostic_bin2_process_pad_loop (gpointer data)
   KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (data);
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
-  kms_agnostic_bin2_process_pad (self,
-      g_queue_pop_head (self->priv->pads_to_link));
-
-  if (g_queue_is_empty (self->priv->pads_to_link)) {
-    kms_agnostic_bin2_remove_block_probe (self);
+  while (!g_queue_is_empty (self->priv->pads_to_link)) {
+    kms_agnostic_bin2_process_pad (self,
+        g_queue_pop_head (self->priv->pads_to_link));
   }
+
+  kms_agnostic_bin2_remove_block_probe (self);
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   return FALSE;
@@ -704,9 +704,8 @@ kms_agnostic_bin2_process_pad_loop (gpointer data)
 static void
 kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 {
-  KMS_AGNOSTIC_BIN2_LOCK (self);
   if (!self->priv->started)
-    goto end;
+    return;
 
   if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
     GST_DEBUG_OBJECT (pad, "Adding pad to queue");
@@ -714,14 +713,7 @@ kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 
     remove_target_pad (pad);
     g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
-    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
-        kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
-        g_object_unref);
   }
-
-end:
-
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 }
 
 static void
@@ -731,6 +723,8 @@ iterate_src_pads (KmsAgnosticBin2 * self)
   gboolean done = FALSE;
   GstPad *pad;
   GValue item = G_VALUE_INIT;
+
+  KMS_AGNOSTIC_BIN2_LOCK (self);
 
   while (!done) {
     switch (gst_iterator_next (it, &item)) {
@@ -748,6 +742,11 @@ iterate_src_pads (KmsAgnosticBin2 * self)
         break;
     }
   }
+
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
+      kms_agnostic_bin2_process_pad_loop, g_object_ref (self), g_object_unref);
+
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   gst_iterator_free (it);
 }
@@ -926,7 +925,14 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
     GST_DEBUG_OBJECT (pad, "Received reconfigure event");
     gst_pad_push_event (KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (pad))->priv->sink,
         gst_event_new_reconfigure ());
+
+    KMS_AGNOSTIC_BIN2_LOCK (self);
     kms_agnostic_bin2_add_pad_to_queue (self, pad);
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
+        kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
+        g_object_unref);
+    KMS_AGNOSTIC_BIN2_UNLOCK (self);
+
     return GST_PAD_PROBE_DROP;
   }
 
