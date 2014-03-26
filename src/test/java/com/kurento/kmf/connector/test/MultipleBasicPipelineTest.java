@@ -51,8 +51,6 @@ public class MultipleBasicPipelineTest extends BootBaseTest {
 					Request<JsonObject> request) throws Exception {
 
 				LOG.info("Request received: " + request);
-				
-				transaction.sendResponse("OK");
 			}
 		});
 
