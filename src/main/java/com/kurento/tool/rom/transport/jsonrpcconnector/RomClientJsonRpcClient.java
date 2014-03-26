@@ -200,6 +200,12 @@ public class RomClientJsonRpcClient extends RomClient {
 
 		JsonObject params = request.getParams();
 
+		try {
+			params = (JsonObject) params.get("value");
+		} catch (Exception e) {
+			// TODO: Print error?
+		}
+
 		String objectRef = params.get(ONEVENT_OBJECT).getAsString();
 		String subscription = params.get(ONEVENT_SUBSCRIPTION).getAsString();
 		String type = params.get(ONEVENT_TYPE).getAsString();
