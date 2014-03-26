@@ -29,8 +29,6 @@ public class Assert {
 	 * error code (ContentApiException = 10000..19999,
 	 * ContentApiUserException=10000..29999).
 	 * 
-	 * @see ContentApiException
-	 * @see ContentApiUserException
 	 * @param object
 	 *            Object to be checked whether or not is null
 	 * @param errorCode
@@ -48,8 +46,6 @@ public class Assert {
 	 * ContentApiUserException=10000..29999); in addition, a message passed as
 	 * parameter is appended at the end of the error description.
 	 * 
-	 * @see ContentApiException
-	 * @see ContentApiUserException
 	 * @param object
 	 *            Object to be checked whether or not is null
 	 * @param errorCode
@@ -76,8 +72,6 @@ public class Assert {
 	 * @param errorCode
 	 *            Error code which determines the exception to be raise if the
 	 *            condition is not met
-	 * @param errorMessageAppend
-	 *            Message to be appended at the end of the description error
 	 */
 	public static void isTrue(boolean condition, int errorCode) {
 		isTrue(condition, "", errorCode);
@@ -91,6 +85,7 @@ public class Assert {
 	 * 
 	 * @param condition
 	 *            Boolean condition to be checked
+	 * @param message
 	 * @param errorCode
 	 *            Error code which determines the exception to be raise if the
 	 *            condition is not met
