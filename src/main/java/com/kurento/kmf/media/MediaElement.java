@@ -16,10 +16,10 @@ import com.kurento.tool.rom.server.Param;
  * the API. A {@link MediaElement} is a module that encapsulates a specific
  * media capability. They can be connected to create media pipelines where those
  * capabilities are applied, in sequence, to the stream going through the
- * pipeline. {@link MediaElement` objects are classified by its supported media
+ * pipeline. {@link MediaElement} objects are classified by its supported media
  * type (audio, video, etc.) and the flow direction: {@link MediaSource} pads
- * are intended for media delivery while :rom:cls:`MediaSinks MediaSink} behave
- * as reception points.
+ * are intended for media delivery while {@link MediaSinks MediaSink} behave as
+ * reception points.
  * 
  **/
 @RemoteClass
