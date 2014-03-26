@@ -13,6 +13,20 @@ How do I...
 ...install kurento media server from sources?
     Just follow the :ref:`building` guide.
 
+...get a WebRTC stream without the browser asking the user for webcam/micro permissions?
+    In your client-side code you can use these options when creating the
+    kwsContentApi.KwsWebRtcContent object to indicate that you are just
+    receiving:
+
+    .. sourcecode:: js
+
+        var options = {
+	        remoteVideoTag: "yourRemoteVideoTagId",
+	        audio: "recvonly",
+	        video: "recvonly"
+        };
+
+
 ...know how many :rom:cls:`pipelines<MediaPipeline>` do I need for my Application?
     :rom:cls:`Media elements<MediaElement>` can only communicate
     with each other when they are part of the same pipeline.
