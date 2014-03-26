@@ -690,11 +690,23 @@ kms_agnostic_bin2_process_pad_loop (gpointer data)
   KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (data);
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
+
+  if (!self->priv->started) {
+    GST_DEBUG_OBJECT (self,
+        "Caps reconfiguration when reconnection is taking place");
+    while (!g_queue_is_empty (self->priv->pads_to_link)) {
+      gst_object_unref (GST_OBJECT (g_queue_pop_head (self->priv->
+                  pads_to_link)));
+    }
+    goto end;
+  }
+
   while (!g_queue_is_empty (self->priv->pads_to_link)) {
     kms_agnostic_bin2_process_pad (self,
         g_queue_pop_head (self->priv->pads_to_link));
   }
 
+end:
   kms_agnostic_bin2_remove_block_probe (self);
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
