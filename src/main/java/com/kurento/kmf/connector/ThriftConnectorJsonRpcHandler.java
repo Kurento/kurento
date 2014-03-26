@@ -16,7 +16,6 @@ package com.kurento.kmf.connector;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -249,7 +248,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 			try {
 
-				session.sendRequest("onEvent", requestObj.getParams());
+				session.sendNotification("onEvent", requestObj.getParams());
 
 			} catch (Exception e) {
 				LOG.error("Exception while sending event", e);
