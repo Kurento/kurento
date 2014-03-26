@@ -75,7 +75,9 @@ public class WebSocketServerSession extends ServerSession {
 		}
 
 		try {
-			wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));
+			synchronized (wsSession) {
+				wsSession.sendMessage(new TextMessage(JsonUtils.toJson(request)));	
+			}			
 		} catch (Exception e) {	
 			LOG.error(
 					"Exception while sending message '{}' to websocket with native sessionId '{}': {}",
