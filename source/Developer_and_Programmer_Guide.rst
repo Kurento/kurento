@@ -500,14 +500,15 @@ HTTP Recorder Service
 ^^^^^^^^^^^^^^^^^^^^^
 
 *HTTP recorder service* allows applications to inject contents into
-*KMS* through the standard file upload protocol. Method
-``onContentRequest()`` will be called for each ``multipart/form`` *POST*
-request received in the *service entry point*. The receiver *HTTP
-Endpoint* will search for the first *content part* with a supported
-multimedia format and will feed the media resource specified by the
-handler (``file:///myfile``). *Recorder service* accepts from client any
-multimedia format supported by *Gstreamer*, but transforms content to
-*WebM* or *MP4* before writing to file.
+:term:`KMS` through the standard file upload protocol. Every time that
+a ``POST`` request with a :mimetype:`multipart/form-data` body is received
+in the *service entry point*, the method
+:java:meth:`~com.kurento.kmf.content.HttpRecorderHandler#onContentRequest()`.
+The receiver *HTTP Endpoint* will search for the first *content part*
+with a supported multimedia format and will send it to the media resource
+specified by the handler (``file:///myfile``). *Recorder service* accepts
+from client any multimedia format supported by *Gstreamer*, but transforms
+content to :term:`WEBM` before writing to file. [#]_
 
 ::
 
@@ -955,6 +956,8 @@ namely `Endpoints` and `Filters`
 
 Endpoints
 ~~~~~~~~~
+
+.. _mp4-recorder:
 
 :term:`KMS` :java:type:`MediaElements <MediaElement>` are created through
 specific builders, allowing a
@@ -1648,3 +1651,11 @@ The list of examples within `kmf-content-demo` is as follows:
     * Campus Party 2013 London demo (HTTP Player and RTP examples)
     * Campus Party 2014 Brazil demo (computer vision example using WebRTC and different filters)
 
+.. rubric:: Footnotes
+
+.. [#]
+
+    WEBM is the format supported _out of the box_ by the Content API.
+    To use :term:`MP4` a specific Media Pipeline needs to be constructed,
+    and  :java:field:`~com.kurento.kmf.media.MediaProfileSpecType.WebM`
+    specified, like in `this sample <mp4-recorder>`:ref:.
