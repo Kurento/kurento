@@ -26,7 +26,7 @@ the proxy can be executed as::
 
     $ java -jar kmf-media-connector.jar --server.port=8080\
     > --mediaserver.address=127.0.0.1 --mediaserver.port=9090\
-    > --handler.address=127.0.0.1 --handler.port=9999\
+    > --handler.address=127.0.0.1 --handler.port=9900\
     > --oauthserver.url=http://cloud.lab.fi-ware.org 
 
 Description of the configuration properties:
@@ -50,10 +50,10 @@ Description of the configuration properties:
 
 ``handler.port``
     The port that Kurento Media Server will use to connect to the proxy.
-    If not specified, the port 9999 will be used.
+    If not specified, the port 9900 will be used.
 
 ``oauthserver.url``
-    The url of the ouath service used to authenticate the client requests.
+    The url of the oauth service used to authenticate the client requests.
     The url ``http://cloud.lab.fi-ware.org`` is the official OAuth service
     in FI-WARE project. The empty URL can be used to allow all clients to
     use the proxy (that is, no authentication is enforced). If not specified,
@@ -70,7 +70,7 @@ directory. The file is formated as a plain Java properties file:
     mediaserver.address=127.0.0.1
     mediaserver.port=9090
     handler.address=127.0.0.1
-    handler.port=9999
+    handler.port=9900
     oauthserver.url=http://cloud.lab.fi-ware.org
 
 If you don't like application.properties as the configuration file name
