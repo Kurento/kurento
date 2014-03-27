@@ -20,7 +20,7 @@ The meaning of configuration properties are:
 * mediaserver.port: The port of the thrift interface in Kurento Media Server. If not specified, the port 9090 will be used.
 * handler.address: The IP or address that Kurento Media Server will use to connect to the proxy. If not specified, the address 127.0.0.1 will be used.
 * handler.port: The port that Kurento Media Server will use to connect to the proxy. If not specified, the port 9900 will be used.
-* oauthserver.url: The url of the ouath service used to authenticate the client requests. The url "http://cloud.lab.fi-ware.org" is the official OAuth service in FI-WARE project. The empty URL can be used to allow all clients to use the proxy (that is, no authentication is enforced). If not specified, the empty URL will be used.
+* oauthserver.url: The url of the oauth service used to authenticate the client requests. The url "http://cloud.lab.fi-ware.org" is the official OAuth service in FI-WARE project. The empty URL can be used to allow all clients to use the proxy (that is, no authentication is enforced). If not specified, the empty URL will be used.
 
 If you prefer, insted of using the command line parameters, you can specify these properties in a configuration file. The configuration file has to be called 'application.properties' and must be placed in the working directory. The file is formated as a plain Java properties file:
 
