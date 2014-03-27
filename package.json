@@ -43,7 +43,7 @@
   "devDependencies": {
     "bower": "latest",
     "grunt": "latest",
-    "grunt-browserify": "latest",
+    "grunt-browserify": "~2.0.1",
     "grunt-cli": "latest",
     "grunt-contrib-clean": "latest",
     "grunt-contrib-copy": "latest",

@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -52,7 +52,9 @@ module.exports = function(grunt)
 
         options:
         {
-          standalone: '<%= pkg.name %>'
+          bundleOptions: {
+            standalone: '<%= pkg.name %>'
+          }
         }
       },
 
@@ -107,5 +109,6 @@ module.exports = function(grunt)
   // Default task(s).
   grunt.registerTask('browser', ['curl', 'browserify', 'uglify']);
   grunt.registerTask('default', ['clean', 'browser']);
+//  grunt.registerTask('default', ['clean', 'jsdoc', 'browser']);
   grunt.registerTask('maven',   ['default', 'copy']);
 };
