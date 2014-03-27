@@ -3,6 +3,7 @@ package com.kurento.kmf.thrift.jsonrpcconnector;
 import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Random;
@@ -175,7 +176,9 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			}
 			// ---------------------------------------------
 
-			String responseStr = client.invokeJsonRpc(request.toString());
+			String responseStr;
+
+			responseStr = client.invokeJsonRpc(request.toString());
 
 			LOG.debug("[Client] Response received: {}", responseStr);
 
@@ -204,9 +207,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	protected void internalSendRequestThrift(Request<Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
-
-		final AsyncClient client = clientPool.acquireAsync();
-
 		LOG.info("[Client] Request sent: {}", request);
 
 		// TODO Remove this hack -----------------------
@@ -217,15 +217,31 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		}
 		// ---------------------------------------------
 
+		sendRequest(request, resultClass, continuation, true);
+	}
+
+	private void sendRequest(final Request<Object> request,
+			final Class<JsonElement> resultClass,
+			final Continuation<Response<JsonElement>> continuation,
+			final boolean retry) {
+		final AsyncClient client = clientPool.acquireAsync();
+
 		try {
 			client.invokeJsonRpc(request.toString(),
 					new AsyncMethodCallback<AsyncClient.invokeJsonRpc_call>() {
 
 						@Override
 						public void onError(Exception exception) {
-							// TODO Auto-generated method stub
-							continuation.onError(exception);
 							clientPool.release(client);
+
+							LOG.error("Error on release", exception);
+
+							if (retry && exception instanceof ConnectException) {
+								sendRequest(request, resultClass, continuation,
+										false);
+							} else {
+								continuation.onError(exception);
+							}
 						}
 
 						@Override
@@ -248,9 +264,9 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 					});
 		} catch (TException e) {
+			LOG.error("Error on sendRequest", e);
 			continuation.onError(e);
 		}
-
 	}
 
 	@Override

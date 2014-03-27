@@ -45,17 +45,14 @@
 		<dependency>
 			<groupId>com.kurento.kms</groupId>
 			<artifactId>kms-interface</artifactId>
-			<version>${kms-interface.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector</artifactId>
-			<version>${kmf-jsonrpcconnector.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
-			<version>${kmf-commons.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

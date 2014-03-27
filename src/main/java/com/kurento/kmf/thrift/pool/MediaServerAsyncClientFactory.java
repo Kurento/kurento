@@ -57,13 +57,12 @@ public class MediaServerAsyncClientFactory extends
 	 */
 	@Override
 	public boolean validateObject(PooledObject<AsyncClient> obj) {
-		// TODO check if this is enough to guarantee the client
-		return !obj.getObject().hasError();
+		return ((AsyncClientWithValidation) obj.getObject()).isValid();
 	}
 
 	@Override
 	public void destroyObject(PooledObject<AsyncClient> obj) {
-		// TODO close the transport
+		// TODO close the transport if needed
 	}
 
 	private AsyncClient createAsyncClient() {
@@ -87,7 +86,8 @@ public class MediaServerAsyncClientFactory extends
 
 		TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();
 
-		return new AsyncClient(protocolFactory, clientManager, transport);
+		return new AsyncClientWithValidation(protocolFactory, clientManager,
+				transport);
 	}
 
 }

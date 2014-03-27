@@ -56,7 +56,7 @@ public class MediaServerSyncClientFactory extends
 	 */
 	@Override
 	public boolean validateObject(PooledObject<Client> obj) {
-		return obj.getObject().getOutputProtocol().getTransport().isOpen();
+		return ((ClientWithValidation) obj.getObject()).isValid();
 	}
 
 	/**
@@ -68,9 +68,10 @@ public class MediaServerSyncClientFactory extends
 	@Override
 	public void destroyObject(PooledObject<Client> obj) {
 		obj.getObject().getOutputProtocol().getTransport().close();
+		obj.getObject().getInputProtocol().getTransport().close();
 	}
 
-	private Client createSyncClient() {
+	private ClientWithValidation createSyncClient() {
 		TSocket socket = new TSocket(this.apiConfig.getServerAddress(),
 				this.apiConfig.getServerPort());
 		TTransport transport = new TFramedTransport(socket);
@@ -83,7 +84,7 @@ public class MediaServerSyncClientFactory extends
 					"Could not open transport for client", e, 30000);
 		}
 
-		return new Client(prot);
+		return new ClientWithValidation(prot);
 	}
 
 }
