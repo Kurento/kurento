@@ -37,10 +37,12 @@ public class ${complexType.name} {
     }
 
     <#list complexType.properties as property>
+    <@comment "get " + property.doc />
     public ${getJavaObjectType(property.type,false)} get${property.name?cap_first}(){
     	return ${property.name};
     }
 
+    <@comment "set " + property.doc />
     public void set${property.name?cap_first}(${getJavaObjectType(property.type,false)} ${property.name}){
     	this.${property.name} = ${property.name};
     }
