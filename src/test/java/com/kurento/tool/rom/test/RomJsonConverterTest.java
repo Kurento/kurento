@@ -19,7 +19,7 @@ public class RomJsonConverterTest {
 
 	@Test
 	public void stringConversion() {
-		assertEquals((String) JsonUtils.fromJson(new JsonPrimitive("XXX"),
+		assertEquals(JsonUtils.fromJson(new JsonPrimitive("XXX"),
 				String.class), "XXX");
 	}
 
@@ -32,7 +32,7 @@ public class RomJsonConverterTest {
 	@Test
 	public void floatConversion() {
 		assertEquals(
-				(float) JsonUtils.fromJson(new JsonPrimitive(0.5), float.class),
+				JsonUtils.fromJson(new JsonPrimitive(0.5), float.class),
 				0.5, 0.01);
 	}
 
@@ -58,7 +58,7 @@ public class RomJsonConverterTest {
 	public void booleanObjectConversion() {
 		assertEquals(
 				JsonUtils.fromJson(new JsonPrimitive(false), Boolean.class),
-				(Boolean) false);
+				false);
 	}
 
 	private static enum EnumType {
@@ -139,9 +139,9 @@ public class RomJsonConverterTest {
 		@SuppressWarnings("unchecked")
 		List<Boolean> list = JsonUtils.fromJson(array, List.class);
 
-		assertEquals(list.get(0), (Boolean) true);
-		assertEquals(list.get(1), (Boolean) false);
-		assertEquals(list.get(2), (Boolean) true);
+		assertEquals(list.get(0), true);
+		assertEquals(list.get(1), false);
+		assertEquals(list.get(2), true);
 	}
 
 	@Test

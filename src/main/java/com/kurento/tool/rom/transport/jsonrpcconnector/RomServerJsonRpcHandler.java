@@ -104,7 +104,7 @@ public class RomServerJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			throw new RomException("It is necessary a property '" + propName
 					+ "' with " + propertyDescription);
 		} else {
-			return (String) element.getAsString();
+			return element.getAsString();
 		}
 	}
 

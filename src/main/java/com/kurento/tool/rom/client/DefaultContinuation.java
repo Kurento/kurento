@@ -10,6 +10,7 @@ public abstract class DefaultContinuation<F> implements Continuation<F> {
 		this.cont = cont;
 	}
 
+	@Override
 	public abstract void onSuccess(F result);
 
 	@Override

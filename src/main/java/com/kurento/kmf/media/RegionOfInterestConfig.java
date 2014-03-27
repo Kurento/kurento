@@ -5,7 +5,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * 
  * <hr/>

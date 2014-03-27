@@ -83,7 +83,7 @@ public class RomTest {
 		RemoteObject obj = factory.create("RomTest$RemoteClassConstTest",
 				new Props("param", paramValue));
 
-		String result = (String) obj.invoke("getAtt", new Props("param",
+		String result = obj.invoke("getAtt", new Props("param",
 				paramValue), String.class);
 
 		Assert.assertEquals(paramValue, result);

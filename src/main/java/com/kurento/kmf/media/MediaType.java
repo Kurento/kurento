@@ -5,7 +5,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * 
  * Type of media stream to be exchanged. Can take the values AUDIO, DATA or

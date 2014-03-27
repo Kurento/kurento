@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
  * Configuration parameters for Media API. This class is intended to be created
  * as a bean inside an Spring context, and is needed by the Media API to work
  * correctly.
- *
+ * 
  * @author Luis López (llopez@gsyc.es)
  * @author Iván Gracia (igracia@gsyc.es)
  * @version 2.0.0
@@ -42,7 +42,7 @@ public class MediaApiConfiguration {
 	/**
 	 * Gets the address of the local thrift server, which will be used to
 	 * receive events and error notifications sent by the Kurento Media Server.
-	 *
+	 * 
 	 * @return The handler address.
 	 */
 	public String getHandlerAddress() {
@@ -52,7 +52,7 @@ public class MediaApiConfiguration {
 	/**
 	 * Sets the address of the local thrift server, which will be used to
 	 * receive events and error notifications sent by the Kurento Media Server.
-	 *
+	 * 
 	 * @param handlerAddress
 	 *            The address.
 	 */
@@ -63,7 +63,7 @@ public class MediaApiConfiguration {
 	/**
 	 * Gets the port of the local thrift server, which will be used to receive
 	 * events and error notifications sent by the Kurento Media Server.
-	 *
+	 * 
 	 * @return The local thrift server port.
 	 */
 	public int getHandlerPort() {
@@ -73,7 +73,7 @@ public class MediaApiConfiguration {
 	/**
 	 * Sets the port of the local thrift server, which will be used to receive
 	 * events and error notifications sent by the Kurento Media Server.
-	 *
+	 * 
 	 * @param handlerPort
 	 *            The local thrift server port.
 	 */

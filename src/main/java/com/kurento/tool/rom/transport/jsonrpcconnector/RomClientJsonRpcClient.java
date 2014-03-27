@@ -215,6 +215,7 @@ public class RomClientJsonRpcClient extends RomClient {
 		eventHandler.processEvent(objectRef, subscription, type, data);
 	}
 
+	@Override
 	public void destroy() {
 		try {
 			client.close();

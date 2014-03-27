@@ -5,7 +5,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * 
  * Media Profile. Currently WEBM and MP4 are supported.
