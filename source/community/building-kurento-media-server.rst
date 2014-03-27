@@ -30,7 +30,7 @@ You need to execute the following commands:
      $ sudo apt-get install libgstreamer-plugins-base1.0-dev libnice-dev gtk-doc-tools
      $ sudo apt-get install cmake libglibmm-2.4-dev uuid-dev libevent-dev libboost-dev
      $ sudo apt-get install libboost-system-dev libboost-filesystem-dev
-     $ sudp apt-get install libopencv-dev autoconf git
+     $ sudo apt-get install libopencv-dev autoconf git
      $ sudo apt-get install libtool libsoup2.4-dev tesseract-ocr-dev tesseract-ocr-eng
      $ sudo apt-get install libgnutls28-dev gnutls-bin libvpx-dev
 
