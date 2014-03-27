@@ -386,11 +386,18 @@ HttpRecorder Service
 This service allows the upload of a content through HTTP to be stored in
 a Media Server.
 
-+------------+----------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **Verb**   | **URI**                                            | **Description**                                                                                                                                                                                      |
-+============+====================================================+======================================================================================================================================================================================================+
-| **POST**   | */{CONTEXT-ROOT}/{APP\_LOGIC\_PATH}/{ContentID}*   | Performs an RPC call regarding *{ContentID}*. The *Request object* is processed by the *HttpRecorder* application handler tied to *{APP\_LOGIC\_PATH}* in the *{CONTEXT-ROOT}* of the application.   |
-+------------+----------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+.. table:: **HttpRecorder service**
+
+    ============================= ====================================================
+    **Verb**                      POST
+    ============================= ====================================================
+    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    ----------------------------- ----------------------------------------------------
+    **Description**               Performs an RPC call regarding *{ContentID}*.
+                                  The *Request object* is processed by the *HttpRecorder*
+                                  application handler tied to ``{APP_LOGIC_PATH}`` in the
+                                  ``{CONTEXT-ROOT}`` of the application. 
+    ============================= ====================================================
 
 The *Request object* (body of the HTTP request) can contain one of these
 four methods: *start*, *poll*, *execute*, and *terminate*.
@@ -450,18 +457,28 @@ APIs defined in Kurento. However, it is recommended to
 also expose a simpler API as described here not requiring the use of
 JSON.
 
-+------------+----------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
-| **Verb**   | **URI**                                            | **Description**                                                                                                                                   |
-+============+====================================================+===================================================================================================================================================+
-| **POST**   | */{CONTEXT-ROOT}/{APP\_LOGIC\_PATH}/{ContentID}*   | Uploads *{ContentID}* to be stored according to the application handler tied to *{APP\_LOGIC\_PATH}* in the *{CONTEXT-ROOT}* of the application   |
-+------------+----------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------+
+.. table:: **Simplified HttpRecorder POST request**
+
+    ============================= ====================================================
+    **Verb**                      POST
+    ============================= ====================================================
+    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    ----------------------------- ----------------------------------------------------
+    **Description**               Uploads ``{ContentID}`` to be stored according to the
+                                  application handler tied to ``{APP_LOGIC_PATH}`` in
+                                  the ``{CONTEXT-ROOT}`` of the application
+    ----------------------------- ----------------------------------------------------
+    **Successful Reponse codes**  ``200 OK``
+
+                                  ``307 Temporary Redirect`` (to actual content)
+    ----------------------------- ----------------------------------------------------
+    **Error Reponse codes**       ``404 Not Found``
+
+                                  ``500 Internal Server Error``
+    ============================= ====================================================
+
 
 The request body of this method is the content to be uploaded.
-
-Successful Response Codes: 200 OK, 307 Temporary Redirect (to the actual
-storage server)
-
-Error Response Codes: 404 Not Found, 500 Internal Server Error
 
 RtpContent
 ~~~~~~~~~~
@@ -469,11 +486,20 @@ RtpContent
 This service allows establishing an *RTP content session* between the
 client performing the request and a Media Server.
 
-+------------+----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| **Verb**   | **URI**                                            | **Description**                                                                                                                                                                                    |
-+============+====================================================+====================================================================================================================================================================================================+
-| **POST**   | */{CONTEXT-ROOT}/{APP\_LOGIC\_PATH}/{ContentID}*   | Performs an RPC call regarding *{ContentID}*. The *Request object* is processed by the *RTPContent* application handler tied to *{APP\_LOGIC\_PATH}* in the *{CONTEXT-ROOT}* of the application.   |
-+------------+----------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+.. table:: **RtpContent service**
+
+    ============================= ====================================================
+    **Verb**                      POST
+    ============================= ====================================================
+    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    ----------------------------- ----------------------------------------------------
+    **Description**               Performs an RPC call regarding ``{ContentID}``. The
+                                  *Request object* is processed by the *RTPContent*
+                                  application handler tied to ``{APP_LOGIC_PATH}``
+                                  in the ``{CONTEXT-ROOT}`` of the application.
+    ============================= ====================================================
+
+
 
 The *Request object* (body of the HTTP request) can contain one of these
 four methods: *start*, *poll*, *execute*, and *terminate*.
