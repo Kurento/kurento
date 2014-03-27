@@ -13,8 +13,8 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * A pipeline is a container for a collection of {@link MediaElements
- * MediaElement} and {@link MediaMixers MediaMixer}. It offers the methods
+ * A pipeline is a container for a collection of {@link MediaElement
+ * MediaElements} and {@link MediaMixer MediaMixers}. It offers the methods
  * needed to control the creation and connection of elements inside a certain
  * pipeline.
  * 

@@ -14,7 +14,7 @@ import com.kurento.tool.rom.server.Param;
  * 
  * An {@link HttpPostEndpoint} contains SINK pads for AUDIO and VIDEO, which
  * provide access to an HTTP file upload function This type of endpoint provide
- * unidirectional communications. Its {@link MediaSources MediaSource} are
+ * unidirectional communications. Its {@link MediaSource MediaSources } are
  * accessed through the <a
  * href="http://www.kurento.org/docs/current/glossary.html#term-HTTP">HTTP</a>
  * POST method.

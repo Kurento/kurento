@@ -38,18 +38,38 @@ public class Point {
 		this.y = y;
 	}
 
+	/**
+	 * 
+	 * get X coordinate in pixels of a point in the screen
+	 * 
+	 **/
 	public int getX() {
 		return x;
 	}
 
+	/**
+	 * 
+	 * set X coordinate in pixels of a point in the screen
+	 * 
+	 **/
 	public void setX(int x) {
 		this.x = x;
 	}
 
+	/**
+	 * 
+	 * get Y coordinate in pixels of a point in the screen
+	 * 
+	 **/
 	public int getY() {
 		return y;
 	}
 
+	/**
+	 * 
+	 * set Y coordinate in pixels of a point in the screen
+	 * 
+	 **/
 	public void setY(int y) {
 		this.y = y;
 	}

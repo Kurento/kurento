@@ -20,7 +20,7 @@ public interface MediaSource extends MediaPad {
 
 	/**
 	 * 
-	 * Gets all the {@link MediaSinks MediaSink} to which this source is
+	 * Gets all the {@link MediaSink MediaSinks} to which this source is
 	 * connected
 	 * 
 	 * @return the list of sinks that the source is connected to *

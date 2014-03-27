@@ -18,7 +18,7 @@ import com.kurento.tool.rom.server.Param;
  * capabilities are applied, in sequence, to the stream going through the
  * pipeline. {@link MediaElement} objects are classified by its supported media
  * type (audio, video, etc.) and the flow direction: {@link MediaSource} pads
- * are intended for media delivery while {@link MediaSinks MediaSink} behave as
+ * are intended for media delivery while {@link MediaSink MediaSinks} behave as
  * reception points.
  * 
  **/
@@ -27,7 +27,7 @@ public interface MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * Get the {@link sources MediaSource} of this element
+	 * Get the {@link MediaSource sources } of this element
 	 * 
 	 * @return A list of sources. The list will be empty if no sources are
 	 *         found. *
@@ -111,7 +111,7 @@ public interface MediaElement extends MediaObject {
 
 	/**
 	 * 
-	 * Get the {@link sinks MediaSink} of this element
+	 * Get the {@link MediaSink sinks } of this element
 	 * 
 	 * @return A list of sinks. The list will be empty if no sinks are found. *
 	 **/

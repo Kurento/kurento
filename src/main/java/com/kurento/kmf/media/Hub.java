@@ -10,8 +10,8 @@ import com.kurento.tool.rom.server.FactoryMethod;
 
 /**
  * 
- * A Hub is a routing {@link MediaObject}. It connects several {@link endpoints
- * MediaEndpoint} together
+ * A Hub is a routing {@link MediaObject}. It connects several {@link Endpoint
+ * endpoints } together
  * 
  **/
 @RemoteClass

@@ -24,8 +24,7 @@ public class RegionOfInterest {
 	private List<Point> points;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * data structure for configuration of CrowdDetector regions of interest
 	 * 
 	 **/
 	private RegionOfInterestConfig regionOfInterestConfig;
@@ -50,27 +49,57 @@ public class RegionOfInterest {
 		this.id = id;
 	}
 
+	/**
+	 * 
+	 * get list of points delimiting the region of interest
+	 * 
+	 **/
 	public List<Point> getPoints() {
 		return points;
 	}
 
+	/**
+	 * 
+	 * set list of points delimiting the region of interest
+	 * 
+	 **/
 	public void setPoints(List<Point> points) {
 		this.points = points;
 	}
 
+	/**
+	 * 
+	 * get data structure for configuration of CrowdDetector regions of interest
+	 * 
+	 **/
 	public RegionOfInterestConfig getRegionOfInterestConfig() {
 		return regionOfInterestConfig;
 	}
 
+	/**
+	 * 
+	 * set data structure for configuration of CrowdDetector regions of interest
+	 * 
+	 **/
 	public void setRegionOfInterestConfig(
 			RegionOfInterestConfig regionOfInterestConfig) {
 		this.regionOfInterestConfig = regionOfInterestConfig;
 	}
 
+	/**
+	 * 
+	 * get identifier of the region of interest
+	 * 
+	 **/
 	public String getId() {
 		return id;
 	}
 
+	/**
+	 * 
+	 * set identifier of the region of interest
+	 * 
+	 **/
 	public void setId(String id) {
 		this.id = id;
 	}

@@ -48,7 +48,7 @@ public class PointerDetectorWindowMediaParam {
 	private int upperRightY;
 	/**
 	 * 
-	 * uri of the image (cursor) to be used to indicate activity
+	 * uri of the image to be used when the pointer is inside the window
 	 * 
 	 **/
 	private String activeImage;
@@ -60,7 +60,9 @@ public class PointerDetectorWindowMediaParam {
 	private float imageTransparency;
 	/**
 	 * 
-	 * uri of the image (cursor) to be used when not active
+	 * uri of the image to be used for the window. If {@link #setActiveImage}
+	 * has been called, it will only be shown when the pointer is outside of the
+	 * window.
 	 * 
 	 **/
 	private String image;
@@ -81,66 +83,150 @@ public class PointerDetectorWindowMediaParam {
 		this.upperRightY = upperRightY;
 	}
 
+	/**
+	 * 
+	 * get id of the window for pointer detection
+	 * 
+	 **/
 	public String getId() {
 		return id;
 	}
 
+	/**
+	 * 
+	 * set id of the window for pointer detection
+	 * 
+	 **/
 	public void setId(String id) {
 		this.id = id;
 	}
 
+	/**
+	 * 
+	 * get height in pixels
+	 * 
+	 **/
 	public int getHeight() {
 		return height;
 	}
 
+	/**
+	 * 
+	 * set height in pixels
+	 * 
+	 **/
 	public void setHeight(int height) {
 		this.height = height;
 	}
 
+	/**
+	 * 
+	 * get width in pixels
+	 * 
+	 **/
 	public int getWidth() {
 		return width;
 	}
 
+	/**
+	 * 
+	 * set width in pixels
+	 * 
+	 **/
 	public void setWidth(int width) {
 		this.width = width;
 	}
 
+	/**
+	 * 
+	 * get X coordinate in pixels of the upper left corner
+	 * 
+	 **/
 	public int getUpperRightX() {
 		return upperRightX;
 	}
 
+	/**
+	 * 
+	 * set X coordinate in pixels of the upper left corner
+	 * 
+	 **/
 	public void setUpperRightX(int upperRightX) {
 		this.upperRightX = upperRightX;
 	}
 
+	/**
+	 * 
+	 * get Y coordinate in pixels of the upper left corner
+	 * 
+	 **/
 	public int getUpperRightY() {
 		return upperRightY;
 	}
 
+	/**
+	 * 
+	 * set Y coordinate in pixels of the upper left corner
+	 * 
+	 **/
 	public void setUpperRightY(int upperRightY) {
 		this.upperRightY = upperRightY;
 	}
 
+	/**
+	 * 
+	 * get uri of the image to be used when the pointer is inside the window
+	 * 
+	 **/
 	public String getActiveImage() {
 		return activeImage;
 	}
 
+	/**
+	 * 
+	 * set uri of the image to be used when the pointer is inside the window
+	 * 
+	 **/
 	public void setActiveImage(String activeImage) {
 		this.activeImage = activeImage;
 	}
 
+	/**
+	 * 
+	 * get transparency ratio of the image
+	 * 
+	 **/
 	public float getImageTransparency() {
 		return imageTransparency;
 	}
 
+	/**
+	 * 
+	 * set transparency ratio of the image
+	 * 
+	 **/
 	public void setImageTransparency(float imageTransparency) {
 		this.imageTransparency = imageTransparency;
 	}
 
+	/**
+	 * 
+	 * get uri of the image to be used for the window. If
+	 * {@link #setActiveImage} has been called, it will only be shown when the
+	 * pointer is outside of the window.
+	 * 
+	 **/
 	public String getImage() {
 		return image;
 	}
 
+	/**
+	 * 
+	 * set uri of the image to be used for the window. If
+	 * {@link #setActiveImage} has been called, it will only be shown when the
+	 * pointer is outside of the window.
+	 * 
+	 **/
 	public void setImage(String image) {
 		this.image = image;
 	}

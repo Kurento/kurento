@@ -55,34 +55,74 @@ public class WindowParam {
 		this.height = height;
 	}
 
+	/**
+	 * 
+	 * get X coordinate of the left upper point of the window
+	 * 
+	 **/
 	public int getTopRightCornerX() {
 		return topRightCornerX;
 	}
 
+	/**
+	 * 
+	 * set X coordinate of the left upper point of the window
+	 * 
+	 **/
 	public void setTopRightCornerX(int topRightCornerX) {
 		this.topRightCornerX = topRightCornerX;
 	}
 
+	/**
+	 * 
+	 * get Y coordinate of the left upper point of the window
+	 * 
+	 **/
 	public int getTopRightCornerY() {
 		return topRightCornerY;
 	}
 
+	/**
+	 * 
+	 * set Y coordinate of the left upper point of the window
+	 * 
+	 **/
 	public void setTopRightCornerY(int topRightCornerY) {
 		this.topRightCornerY = topRightCornerY;
 	}
 
+	/**
+	 * 
+	 * get width in pixels of the window
+	 * 
+	 **/
 	public int getWidth() {
 		return width;
 	}
 
+	/**
+	 * 
+	 * set width in pixels of the window
+	 * 
+	 **/
 	public void setWidth(int width) {
 		this.width = width;
 	}
 
+	/**
+	 * 
+	 * get height in pixels of the window
+	 * 
+	 **/
 	public int getHeight() {
 		return height;
 	}
 
+	/**
+	 * 
+	 * set height in pixels of the window
+	 * 
+	 **/
 	public void setHeight(int height) {
 		this.height = height;
 	}
