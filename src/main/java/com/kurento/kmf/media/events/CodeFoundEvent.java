@@ -19,7 +19,8 @@ public class CodeFoundEvent extends MediaEvent {
 
 	/**
 	 * 
-	 * type of <a href="http://www.kurento.org/glossary.html#term-QR">QR</a>
+	 * type of <a
+	 * href="http://www.kurento.org/docs/current/glossary.html#term-QR">QR</a>
 	 * code found
 	 * 
 	 **/
@@ -27,7 +28,8 @@ public class CodeFoundEvent extends MediaEvent {
 	/**
 	 * 
 	 * value contained in the <a
-	 * href="http://www.kurento.org/glossary.html#term-QR">QR</a> code
+	 * href="http://www.kurento.org/docs/current/glossary.html#term-QR">QR</a>
+	 * code
 	 * 
 	 **/
 	private String value;
@@ -42,13 +44,13 @@ public class CodeFoundEvent extends MediaEvent {
 	 * @param type
 	 *            Type of event that was raised
 	 * @param codeType
-	 *            type of <a
-	 *            href="http://www.kurento.org/glossary.html#term-QR">QR</a>
-	 *            code found
+	 *            type of <a href=
+	 *            "http://www.kurento.org/docs/current/glossary.html#term-QR"
+	 *            >QR</a> code found
 	 * @param value
-	 *            value contained in the <a
-	 *            href="http://www.kurento.org/glossary.html#term-QR">QR</a>
-	 *            code
+	 *            value contained in the <a href=
+	 *            "http://www.kurento.org/docs/current/glossary.html#term-QR"
+	 *            >QR</a> code
 	 * 
 	 **/
 	public CodeFoundEvent(@Param("source") MediaObject source,
@@ -64,8 +66,8 @@ public class CodeFoundEvent extends MediaEvent {
 	 * Getter for the codeType property
 	 * 
 	 * @return type of <a
-	 *         href="http://www.kurento.org/glossary.html#term-QR">QR</a> code
-	 *         found *
+	 *         href="http://www.kurento.org/docs/current/glossary.html#term-QR"
+	 *         >QR</a> code found *
 	 **/
 	public String getCodeType() {
 		return codeType;
@@ -76,9 +78,9 @@ public class CodeFoundEvent extends MediaEvent {
 	 * Setter for the codeType property
 	 * 
 	 * @param codeType
-	 *            type of <a
-	 *            href="http://www.kurento.org/glossary.html#term-QR">QR</a>
-	 *            code found
+	 *            type of <a href=
+	 *            "http://www.kurento.org/docs/current/glossary.html#term-QR"
+	 *            >QR</a> code found
 	 * 
 	 **/
 	public void setCodeType(String codeType) {
@@ -90,7 +92,8 @@ public class CodeFoundEvent extends MediaEvent {
 	 * Getter for the value property
 	 * 
 	 * @return value contained in the <a
-	 *         href="http://www.kurento.org/glossary.html#term-QR">QR</a> code *
+	 *         href="http://www.kurento.org/docs/current/glossary.html#term-QR"
+	 *         >QR</a> code *
 	 **/
 	public String getValue() {
 		return value;
@@ -101,9 +104,9 @@ public class CodeFoundEvent extends MediaEvent {
 	 * Setter for the value property
 	 * 
 	 * @param value
-	 *            value contained in the <a
-	 *            href="http://www.kurento.org/glossary.html#term-QR">QR</a>
-	 *            code
+	 *            value contained in the <a href=
+	 *            "http://www.kurento.org/docs/current/glossary.html#term-QR"
+	 *            >QR</a> code
 	 * 
 	 **/
 	public void setValue(String value) {

@@ -16,7 +16,8 @@ import com.kurento.tool.rom.server.Param;
  * provide access to an HTTP file upload function This type of endpoint provide
  * unidirectional communications. Its {@link MediaSources MediaSource} are
  * accessed through the <a
- * href="http://www.kurento.org/glossary.html#term-HTTP">HTTP</a> POST method.
+ * href="http://www.kurento.org/docs/current/glossary.html#term-HTTP">HTTP</a>
+ * POST method.
  * 
  **/
 @RemoteClass

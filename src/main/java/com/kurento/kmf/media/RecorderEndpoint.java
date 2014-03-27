@@ -89,8 +89,9 @@ public interface RecorderEndpoint extends UriEndpoint {
 		/**
 		 * 
 		 * Forces the recorder endpoint to finish processing data when an <a
-		 * href="http://www.kurento.org/glossary.html#term-EOS">EOS</a> is
-		 * detected in the stream
+		 * href
+		 * ="http://www.kurento.org/docs/current/glossary.html#term-EOS">EOS</a>
+		 * is detected in the stream
 		 * 
 		 **/
 		public Builder stopOnEndOfStream();
