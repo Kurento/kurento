@@ -350,10 +350,6 @@ kms_element_release_pad (GstElement * element, GstPad * pad)
     g_object_unref (target);
   }
 
-  if (GST_STATE (element) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED)
-    gst_pad_set_active (pad, FALSE);
-
   gst_element_remove_pad (element, pad);
 }
 
