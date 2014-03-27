@@ -3,3 +3,4 @@
 build
 source/*/com
 source/langdocs
+npm-debug.log

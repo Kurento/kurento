@@ -6,7 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-APIS          = kmf-media-api kmf-content-api kmf-repository-api
+JAVA_APIS     = kmf-media-api kmf-content-api kmf-repository-api
+JS_APIS       = kws-media-api kws-content-api
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -82,24 +83,31 @@ htmlhelp:
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
-javadoc:
-	- mkdir -p $(BUILDDIR)/javadoc &&\
-	  for p in $(APIS); do \
-	      ( cd  $(BUILDDIR)/javadoc && git clone https://github.com/Kurento/$${p}.git );\
+langdoc:
+	- mkdir -p $(BUILDDIR)/langdoc && mkdir -p source/langdocs/jsdoc &&\
+	  for p in $(JAVA_APIS) $(JS_APIS); do \
+	      ( cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/$${p}.git );\
 	      done
-	  for p in $(APIS); do {\
+	  for p in $(JAVA_APIS); do {\
 	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
 	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
-	      ( cd $(BUILDDIR)/javadoc/$${p} &&\
+	      ( cd $(BUILDDIR)/langdoc/$${p} &&\
 	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop ) &&\
 	      javasphinx-apidoc -c /tmp -u -T --no-member-headers -o source/$${p}\
-	                                 "$$(cd $(BUILDDIR)/javadoc && pwd)/$${p}/src/main/java" \
-	                                 $$(find $$(cd $(BUILDDIR)/javadoc && pwd)/$${p}\
-                                             -name internal -print -or -name tool -print  2>/dev/null);\
+	                                 "$$(cd $(BUILDDIR)/langdoc && pwd)/$${p}/src/main/java" \
+	                                 $$(find $$(cd $(BUILDDIR)/langdoc && pwd)/$${p}\
+	                                         -name internal -print -or -name tool -print  2>/dev/null);\
 	      } done
-		  javadoc -d source/langdocs/javadoc -sourcepath $$(echo $(BUILDDIR)/javadoc/k*/src/main/java | sed -e "s@ @:@g")\
+		  javadoc -d source/langdocs/javadoc -sourcepath $$(echo $(BUILDDIR)/langdoc/k*/src/main/java | sed -e "s@ @:@g")\
 		          -link http://tomcat.apache.org/tomcat-7.0-doc/servletapi \
 		             com.kurento.kmf.media com.kurento.kmf.media.events com.kurento.kmf.media.params com.kurento.kmf.content com.kurento.kmf.repository
+	  for p in $(JS_APIS); do {\
+	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
+	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
+	      ( cd $(BUILDDIR)/langdoc/$${p} &&\
+	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop  &&\
+	         npm install && node_modules/.bin/grunt --force jsdoc ) && cp -r $(BUILDDIR)/langdoc/$${p}/doc/jsdoc source/langdocs/jsdoc/$${p} ;\
+	      } done
 
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
@@ -187,7 +195,7 @@ doctest:
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
-dist: javadoc html epub latexpdf
+dist: langdoc html epub latexpdf
 	mkdir -p $(BUILDDIR)/dist
 	@echo
 	@echo "Packaging documentation"
