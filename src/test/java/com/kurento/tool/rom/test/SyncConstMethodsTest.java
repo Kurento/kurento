@@ -24,7 +24,6 @@ public class SyncConstMethodsTest {
 
 	private static RemoteObjectTypedFactory factory;
 
-	@SuppressWarnings("resource")
 	@BeforeClass
 	public static void initFactory() {
 		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(

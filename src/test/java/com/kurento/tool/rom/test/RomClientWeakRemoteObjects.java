@@ -23,6 +23,7 @@ public class RomClientWeakRemoteObjects {
 		}
 
 		try {
+			@SuppressWarnings("unused")
 			Object[] ignored = new Object[(int) Runtime.getRuntime()
 					.maxMemory()];
 		} catch (Throwable e) {
@@ -47,6 +48,7 @@ public class RomClientWeakRemoteObjects {
 		}
 
 		try {
+			@SuppressWarnings("unused")
 			Object[] ignored = new Object[(int) Runtime.getRuntime()
 					.maxMemory()];
 		} catch (Throwable e) {
@@ -69,6 +71,7 @@ public class RomClientWeakRemoteObjects {
 		}
 
 		try {
+			@SuppressWarnings("unused")
 			Object[] ignored = new Object[(int) Runtime.getRuntime()
 					.maxMemory()];
 		} catch (Throwable e) {
@@ -93,6 +96,7 @@ public class RomClientWeakRemoteObjects {
 		obj = null;
 
 		try {
+			@SuppressWarnings("unused")
 			Object[] ignored = new Object[(int) Runtime.getRuntime()
 					.maxMemory()];
 		} catch (Throwable e) {
