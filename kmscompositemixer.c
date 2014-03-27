@@ -100,12 +100,12 @@ struct _KmsCompositeMixerPortData
 {
   KmsCompositeMixer *mixer;
   gint id;
-  GstElement *audio_agnostic;
-  GstElement *video_agnostic;
+  GstElement *videoconvert;
   GstElement *capsfilter;
   GstElement *videoscale;
   GstElement *videorate;
-  GstPad *video_mixer_pad, *agnostic_sink_pad;
+  GstElement *queue;
+  GstPad *video_mixer_pad, *videoconvert_sink_pad;
   gboolean input;
   gint probe_id;
 };
@@ -185,14 +185,15 @@ remove_elements_from_pipeline (gpointer data)
     port_data->video_mixer_pad = NULL;
   }
 
-  g_object_ref (port_data->video_agnostic);
+  g_object_ref (port_data->videoconvert);
   g_object_ref (port_data->videorate);
+  g_object_ref (port_data->queue);
   g_object_ref (port_data->videoscale);
   g_object_ref (port_data->capsfilter);
 
   gst_bin_remove_many (GST_BIN (self),
-      port_data->video_agnostic, port_data->videoscale, port_data->capsfilter,
-      port_data->videorate, NULL);
+      port_data->videoconvert, port_data->videoscale, port_data->capsfilter,
+      port_data->videorate, port_data->queue, NULL);
 
   kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
 
@@ -202,41 +203,20 @@ remove_elements_from_pipeline (gpointer data)
     kms_composite_mixer_recalculate_sizes (self);
   }
 
-  gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
+  gst_element_set_state (port_data->videoconvert, GST_STATE_NULL);
   gst_element_set_state (port_data->videoscale, GST_STATE_NULL);
   gst_element_set_state (port_data->videorate, GST_STATE_NULL);
   gst_element_set_state (port_data->capsfilter, GST_STATE_NULL);
+  gst_element_set_state (port_data->queue, GST_STATE_NULL);
 
-  g_clear_object (&port_data->agnostic_sink_pad);
-  g_clear_object (&port_data->video_agnostic);
+  g_clear_object (&port_data->videoconvert_sink_pad);
+  g_clear_object (&port_data->videoconvert);
   g_clear_object (&port_data->videoscale);
   g_clear_object (&port_data->videorate);
   g_clear_object (&port_data->capsfilter);
+  g_clear_object (&port_data->queue);
 
   KMS_COMPOSITE_MIXER_UNLOCK (self);
-
-  return G_SOURCE_REMOVE;
-}
-
-static gboolean
-remove_agnostics_from_pipeline (gpointer data)
-{
-  KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) data;
-  KmsCompositeMixer *self = port_data->mixer;
-
-  KMS_COMPOSITE_MIXER_LOCK (self);
-
-  gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
-
-  g_object_unref (port_data->agnostic_sink_pad);
-  g_object_unref (port_data->video_agnostic);
-
-  port_data->video_agnostic = NULL;
-  port_data->agnostic_sink_pad = NULL;
-
-  KMS_COMPOSITE_MIXER_UNLOCK (self);
-  g_slice_free (KmsCompositeMixerPortData, data);
-
   return G_SOURCE_REMOVE;
 }
 
@@ -298,20 +278,32 @@ kms_composite_mixer_port_data_destroy (gpointer data)
   if (port_data->input) {
     GstEvent *event;
     gboolean result;
+    GstPad *pad;
 
-    gst_element_unlink (port_data->video_agnostic, port_data->videorate);
+    pad = gst_element_get_static_pad (port_data->videorate, "sink");
 
-    event = gst_event_new_eos ();
-    result = gst_element_send_event (port_data->videorate, event);
+    if (pad == NULL)
+      return;
 
-    if (!result) {
-      GST_WARNING ("EOS event did not send");
+    if (!GST_OBJECT_FLAG_IS_SET (pad, GST_PAD_FLAG_EOS)) {
+
+      event = gst_event_new_eos ();
+      result = gst_pad_send_event (pad, event);
+
+      if (!result) {
+        GST_WARNING ("EOS event did not send");
+      }
+    } else {
+      GST_WARNING ("EOS event already sent");
     }
+    gst_element_unlink (port_data->videoconvert, port_data->videorate);
+
+    g_object_unref (pad);
   } else {
-    gst_pad_remove_probe (port_data->agnostic_sink_pad, port_data->probe_id);
-    g_object_ref (port_data->video_agnostic);
-    gst_bin_remove (GST_BIN (self), port_data->video_agnostic);
-    g_timeout_add_seconds (2, remove_agnostics_from_pipeline, port_data);
+    gst_pad_remove_probe (port_data->videoconvert_sink_pad,
+        port_data->probe_id);
+    g_object_ref (port_data->videoconvert);
+    gst_bin_remove (GST_BIN (self), port_data->videoconvert);
   }
 }
 
@@ -332,19 +324,22 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   data->videoscale = gst_element_factory_make ("videoscale", NULL);
   data->capsfilter = gst_element_factory_make ("capsfilter", NULL);
   data->videorate = gst_element_factory_make ("videorate", NULL);
+  data->queue = gst_element_factory_make ("queue", NULL);
   data->input = TRUE;
 
-  gst_bin_add_many (GST_BIN (data->mixer), data->videorate, data->videoscale,
-      data->capsfilter, NULL);
+  gst_bin_add_many (GST_BIN (data->mixer), data->queue, data->videorate,
+      data->videoscale, data->capsfilter, NULL);
 
   gst_element_sync_state_with_parent (data->videoscale);
   gst_element_sync_state_with_parent (data->capsfilter);
   gst_element_sync_state_with_parent (data->videorate);
+  gst_element_sync_state_with_parent (data->queue);
 
   g_object_set (data->videorate, "average-period", 200 * GST_MSECOND, NULL);
+  g_object_set (data->queue, "flush-on-eos", TRUE, NULL);
 
-  gst_element_link_many (data->videorate, data->videoscale, data->capsfilter,
-      NULL);
+  gst_element_link_many (data->videorate, data->queue, data->videoscale,
+      data->capsfilter, NULL);
 
   /*link capsfilter -> videomixer */
   sink_pad_template =
@@ -356,9 +351,11 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
         sink_pad_template, NULL, NULL);
     gst_element_link_pads (data->capsfilter, NULL,
         data->mixer->priv->videomixer, GST_OBJECT_NAME (data->video_mixer_pad));
+  } else {
+    GST_ERROR ("Error taking a new pad from videomixer");
   }
 
-  gst_element_link (data->video_agnostic, data->videorate);
+  gst_element_link (data->videoconvert, data->videorate);
 
   data->probe_id = gst_pad_add_probe (data->video_mixer_pad,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
@@ -408,27 +405,28 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
   gchar *padname;
 
   data->mixer = mixer;
-  data->video_agnostic = gst_element_factory_make ("agnosticbin", NULL);
+  data->videoconvert = gst_element_factory_make ("videoconvert", NULL);
 
   data->id = id;
   data->input = FALSE;
 
-  gst_bin_add_many (GST_BIN (mixer), data->video_agnostic, NULL);
+  gst_bin_add_many (GST_BIN (mixer), data->videoconvert, NULL);
 
-  gst_element_sync_state_with_parent (data->video_agnostic);
+  gst_element_sync_state_with_parent (data->videoconvert);
 
   /*link basemixer -> video_agnostic */
   kms_base_hub_link_video_sink (KMS_BASE_HUB (mixer), id,
-      data->video_agnostic, "sink", FALSE);
+      data->videoconvert, "sink", FALSE);
 
   padname = g_strdup_printf (AUDIO_SINK_PAD, id);
   kms_base_hub_link_audio_sink (KMS_BASE_HUB (mixer), id,
       mixer->priv->audiomixer, padname, FALSE);
   g_free (padname);
 
-  data->agnostic_sink_pad =
-      gst_element_get_static_pad (data->video_agnostic, "sink");
-  gst_pad_add_probe (data->agnostic_sink_pad,
+  data->videoconvert_sink_pad =
+      gst_element_get_static_pad (data->videoconvert, "sink");
+
+  gst_pad_add_probe (data->videoconvert_sink_pad,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_BLOCK,
       (GstPadProbeCallback) link_to_videomixer, data, NULL);
 
