@@ -55,7 +55,7 @@ var HttpGetEndpoint = kwsMediaApi.endpoints.HttpGetEndpoint;
 QUnit.module('BasicPipeline', lifecycle);
 
 /**
- * 
+ * Basic pipeline reading a video from a URL and stream it over HTTP
  */
 QUnit.asyncTest('Creation', function()
 {

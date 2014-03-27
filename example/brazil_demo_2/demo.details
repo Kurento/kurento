@@ -5,7 +5,7 @@
    - Jesús Leganés Combarro "piranna" <piranna@gmail.com>
  resources:
    - https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js
-   - http://193.147.51.4/tmp/KwsMedia.js
+   - http://ci.kurento.com/apps/kws-media-api.js
    - http://github.com/kurento/kmf-media-api/tree/master/example/brazil_demo_2/cpbWebRtc.js
    - http://github.com/kurento/kmf-media-api/tree/master/example/brazil_demo_2/filters/Mirror.js
    - http://github.com/kurento/kmf-media-api/tree/master/example/brazil_demo_2/filters/Rate.js

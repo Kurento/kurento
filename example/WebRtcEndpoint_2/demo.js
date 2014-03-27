@@ -1,4 +1,4 @@
-var WebRtcEndpoint = KwsMedia.endpoints.WebRtcEndpoint;
+var WebRtcEndpoint = kwsMediaApi.endpoints.WebRtcEndpoint;
 
 
 const ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
@@ -31,7 +31,7 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
   videoInput.src = URL.createObjectURL(stream);
 
-  KwsMedia(ws_uri, function(kwsMedia)
+  kwsMediaApi.KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
     kwsMedia.createMediaPipeline(function(error, pipeline)

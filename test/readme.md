@@ -32,8 +32,7 @@ If you need to use a WebSocket endpoint different from the default one, you can 
 
 ## Creation
 
-A basic pipeline reading a video from its URL and stream it over HTTP without
-any filters.
+Basic pipeline reading a video from its URL and stream it over HTTP
 
 ### Assertions
 

@@ -1,8 +1,8 @@
-var WebRtcEndpoint = KwsMedia.endpoints.WebRtcEndpoint;
+var WebRtcEndpoint = kwsMediaApi.endpoints.WebRtcEndpoint;
 
-var ChromaFilter             = KwsMedia.filters.ChromaFilter;
-var FaceOverlayFilter        = KwsMedia.filters.FaceOverlayFilter;
-var PointerDetectorAdvFilter = KwsMedia.filters.PointerDetectorAdvFilter;
+var ChromaFilter             = kwsMediaApi.filters.ChromaFilter;
+var FaceOverlayFilter        = kwsMediaApi.filters.FaceOverlayFilter;
+var PointerDetectorAdvFilter = kwsMediaApi.filters.PointerDetectorAdvFilter;
 
 
 var handlerUrl = 'https://raw.github.com/Kurento/kmf-content-demo/develop/src/main/webapp';
@@ -309,7 +309,7 @@ function CpbWebRtc()
    */
   this.start = function(offer, callback)
   {
-    kwsMedia = KwsMedia(endpoint, function(kwsMedia)
+    kwsMediaApi.kwsMedia = KwsMedia(endpoint, function(kwsMedia)
     {
       // Create pipeline
       kwsMedia.createMediaPipeline(function(error, pipeline)
