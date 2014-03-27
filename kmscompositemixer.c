@@ -92,6 +92,9 @@ struct _KmsCompositeMixerPrivate
   GRecMutex mutex;
   gint n_elems;
   gint output_width, output_height;
+  GMutex mutex_recalculate;
+  GCond cond_recalculate;
+  gboolean recalculating;
 };
 
 typedef struct _KmsCompositeMixerPortData KmsCompositeMixerPortData;
@@ -216,6 +219,11 @@ remove_elements_from_pipeline (gpointer data)
   g_clear_object (&port_data->capsfilter);
   g_clear_object (&port_data->queue);
 
+  g_mutex_lock (&self->priv->mutex_recalculate);
+  self->priv->recalculating = FALSE;
+  g_cond_signal (&self->priv->cond_recalculate);
+  g_mutex_unlock (&self->priv->mutex_recalculate);
+
   KMS_COMPOSITE_MIXER_UNLOCK (self);
   return G_SOURCE_REMOVE;
 }
@@ -297,6 +305,14 @@ kms_composite_mixer_port_data_destroy (gpointer data)
       GST_WARNING ("EOS event already sent");
     }
     gst_element_unlink (port_data->videoconvert, port_data->videorate);
+
+    g_mutex_lock (&self->priv->mutex_recalculate);
+    while (self->priv->recalculating) {
+      g_cond_wait (&self->priv->cond_recalculate,
+          &self->priv->mutex_recalculate);
+    }
+    self->priv->recalculating = TRUE;
+    g_mutex_unlock (&self->priv->mutex_recalculate);
 
     g_object_unref (pad);
   } else {
@@ -567,6 +583,8 @@ kms_composite_mixer_finalize (GObject * object)
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (object);
 
   g_rec_mutex_clear (&self->priv->mutex);
+  g_mutex_clear (&self->priv->mutex_recalculate);
+  g_cond_clear (&self->priv->cond_recalculate);
 
   if (self->priv->ports != NULL) {
     g_hash_table_unref (self->priv->ports);
@@ -625,6 +643,10 @@ kms_composite_mixer_init (KmsCompositeMixer * self)
   self->priv->output_height = 600;
   self->priv->output_width = 800;
   self->priv->n_elems = 0;
+  self->priv->recalculating = FALSE;
+
+  g_mutex_init (&self->priv->mutex_recalculate);
+  g_cond_init (&self->priv->cond_recalculate);
 
   self->priv->loop = kms_loop_new ();
 }
