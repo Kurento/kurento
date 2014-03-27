@@ -34,27 +34,27 @@ public class SphinxLinks implements TemplateMethodModelEx {
 		// TODO: `<text>`, ** and *, :rom:meth/attr...
 		String[][] toReplace = {
 				{ ":term:`m(.*?)<(.*?)>`", // Kurento Glossary Term, alt
-						"<a href=\"http://www.kurento.org/glossary.html#term-$2\">$1</a>" },
+						"<a href=\"http://www.kurento.org/docs/current/glossary.html#term-$2\">$1</a>" },
 				{ ":term:`(.*?)`", // Kurento Glossary Term
-						"<a href=\"http://www.kurento.org/glossary.html#term-$1\">$1</a>" },
+						"<a href=\"http://www.kurento.org/docs/current/glossary.html#term-$1\">$1</a>" },
 				{ ":wikipedia:`(.*?),(.*?)`", // Kurento wikipedia, alt
 						"<a href=\"http://$1.wikipedia.org/wiki/$2\">$2</a>" },
 				{ ":wikipedia:`(.*?)<(.*?),(.*?)>`", // Kurento wikipedia
 						"<a href=\"http://$2.wikipedia.org/wiki/$3\">$1</a>" },
-				{ ":java:ref:`(.*?)<(.*?)>`", // java ref, alternate title
+				{ ":java:ref:`([^`]*?)<(.*?)>`", // java ref, alternate title
 						"{@link $1 $2}" }, { ":java:ref:`(.*?)`", // java ref
 						"{@link $1}" },
-				{ ":rom:cls:`(.*?)<([^`]*?)>`", "{@link $1 $2}" },
-				{ ":rom:cls:`(.*?)`", "{@link $1}" },
-				{ ":rom:meth:`(.*?)<([^`]*?)>`", "{@link #$1 $2}" },
-				{ ":rom:meth:`(.*?)`", "{@link #$1}" },
-				{ ":rom:attr:`(.*?)<([^`]*?)>`", "{@link #$1 $2}" },
-				{ ":rom:attr:`(.*?)`", "{@link #$1}" },
-				{ ":rom:evt:`(.*?)<([^`]*?)>`", "{@link $1Event $2}" },
-				{ ":rom:evt:`(.*?)`", "{@link $1Event}" },
+				{ ":rom:cls:`([^`]*?)<([^`<]*?)>`", "{@link $1 $2}" },
+				{ ":rom:cls:`([^`]*?)`", "{@link $1}" },
+				{ ":rom:meth:`([^`]*?)<([^`]*?)>`", "{@link #$1 $2}" },
+				{ ":rom:meth:`([^`]*?)`", "{@link #$1}" },
+				{ ":rom:attr:`([^`]*?)<([^`]*?)>`", "{@link #$1 $2}" },
+				{ ":rom:attr:`([^`]*?)`", "{@link #$1}" },
+				{ ":rom:evt:`([^`]*?)<([^`]*?)>`", "{@link $1Event $2}" },
+				{ ":rom:evt:`([^`]*?)`", "{@link $1Event}" },
 				{ ":author:", "@author" }, // author
 				{ ":since:", "@since" }, // since
-				{ "``(.*?)``", "<code>$1</code>" },
+				{ "``([^`]*?)``", "<code>$1</code>" },
 				{ "\\.\\.\\s+todo::(.*?)", "<hr/><b>TODO</b>$1" },
 				{ "\\.\\.\\s+note::(.*?)", "<hr/><b>Note</b>$1" },
 		};
