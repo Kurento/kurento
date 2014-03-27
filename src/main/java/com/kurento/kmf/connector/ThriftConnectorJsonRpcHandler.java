@@ -15,6 +15,7 @@
 package com.kurento.kmf.connector;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -130,19 +131,26 @@ public final class ThriftConnectorJsonRpcHandler extends
 	@Override
 	public void handleRequest(final Transaction transaction,
 			final Request<JsonObject> request) throws Exception {
-
-		final AsyncClient client = clientPool.acquireAsync();
-
 		transaction.startAsync();
 
-		boolean subscribeRequest = false;
+		sendRequest(transaction, request, true);
+
+	}
+
+	private void sendRequest(final Transaction transaction,
+			final Request<JsonObject> request, final boolean retry) {
+
+		final AsyncClient client = clientPool.acquireAsync();
+		final boolean subscribeRequest;
+
 		if (request.getMethod().equals("subscribe")) {
 			request.getParams().addProperty("ip", config.getHandlerAddress());
 			request.getParams().addProperty("port", config.getHandlerPort());
 			subscribeRequest = true;
+		} else {
+			subscribeRequest = false;
 		}
 
-		final boolean subscribeRequestFinal = subscribeRequest;
 		try {
 			client.invokeJsonRpc(request.toString(),
 					new AsyncMethodCallback<invokeJsonRpc_call>() {
@@ -152,14 +160,20 @@ public final class ThriftConnectorJsonRpcHandler extends
 							clientPool.release(client);
 							if (request.getId() != null) {
 								requestOnComplete(response, transaction,
-										subscribeRequestFinal);
+										subscribeRequest);
 							}
 						}
 
 						@Override
 						public void onError(Exception exception) {
 							clientPool.release(client);
-							requestOnError(exception, transaction);
+
+							LOG.error("Error on release", exception);
+							if (retry && exception instanceof ConnectException) {
+								sendRequest(transaction, request, false);
+							} else {
+								requestOnError(exception, transaction);
+							}
 						}
 					});
 		} catch (Exception e) {
