@@ -201,12 +201,6 @@ remove_elements_from_pipeline (gpointer data)
 
   kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
 
-  if (self->priv->n_elems > 0) {
-
-    self->priv->n_elems--;
-    kms_composite_mixer_recalculate_sizes (self);
-  }
-
   gst_element_set_state (port_data->videoconvert, GST_STATE_NULL);
   gst_element_set_state (port_data->videoscale, GST_STATE_NULL);
   gst_element_set_state (port_data->videorate, GST_STATE_NULL);
@@ -298,6 +292,12 @@ kms_composite_mixer_port_data_destroy (gpointer data)
 
       event = gst_event_new_eos ();
       result = gst_pad_send_event (pad, event);
+
+      if (port_data->input && self->priv->n_elems > 0) {
+        port_data->input = FALSE;
+        self->priv->n_elems--;
+        kms_composite_mixer_recalculate_sizes (self);
+      }
 
       if (!result) {
         GST_WARNING ("EOS event did not send");
@@ -448,7 +448,11 @@ kms_composite_mixer_unhandle_port (KmsBaseHub * mixer, gint id)
 
   GST_DEBUG ("unhandle id %d", id);
 
+  KMS_COMPOSITE_MIXER_LOCK (self);
+
   g_hash_table_remove (self->priv->ports, &id);
+
+  KMS_COMPOSITE_MIXER_UNLOCK (self);
 
   KMS_BASE_HUB_CLASS (G_OBJECT_CLASS
       (kms_composite_mixer_parent_class))->unhandle_port (mixer, id);
