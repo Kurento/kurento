@@ -24,7 +24,7 @@ public interface MediaObject {
 	 * 
 	 * @return the MediaPipeline this MediaObject belongs to.
 	 * 
-	 *         If called on a :java:cls:`MediaPipeline` it will return
+	 *         If called on a {@link MediaPipeline} it will return
 	 *         <code>this</code>. *
 	 **/
 	MediaPipeline getMediaPipeline();

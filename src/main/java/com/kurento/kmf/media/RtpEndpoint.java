@@ -11,8 +11,8 @@ import com.kurento.tool.rom.server.Param;
 /**
  * 
  * Endpoint that provides bidirectional content delivery capabilities with
- * remote networked peers through RTP protocol. An :rom:cls`RtpEndpoint`
- * contains paired sink and source :rom:cls`MediaPad` for audio and video.
+ * remote networked peers through RTP protocol. An {@link RtpEndpoint} contains
+ * paired sink and source {@link MediaPad} for audio and video.
  * 
  **/
 @RemoteClass

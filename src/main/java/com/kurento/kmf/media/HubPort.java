@@ -39,7 +39,7 @@ public interface HubPort extends MediaElement {
 		 * Sets a value for hub in Builder for HubPort.
 		 * 
 		 * @param hub
-		 *            :rom:cls`Hub` to which this port belongs
+		 *            {@link Hub} to which this port belongs
 		 * 
 		 **/
 		public Builder withHub(Hub hub);
