@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -36,15 +36,13 @@ import com.kurento.test.base.BaseArquillianTst;
 /**
  * Selenium tests for WebRtc features.
  * 
- * @author Boni García (bgarcia@gsyc.es)
+ * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 1.0.1
  */
 @RunWith(Arquillian.class)
 public class WebRtcTst extends BaseArquillianTst {
 
 	private WebDriver driver;
-
-	private final String HTMLTEST = "webrtc.html";
 
 	private final static int TIMEOUT = 80; // seconds
 
@@ -73,7 +71,8 @@ public class WebRtcTst extends BaseArquillianTst {
 	}
 
 	public void webRtcTest(Class<? extends WebDriver> driverClass,
-			String handler) throws InterruptedException {
+			String clientPage, String handler, final String status)
+			throws InterruptedException {
 		// Setup
 		setup(driverClass);
 		Assert.assertNotNull("Null web driver for " + driverClass.getName(),
@@ -81,7 +80,7 @@ public class WebRtcTst extends BaseArquillianTst {
 
 		// Exercise test
 		driver.get("http://localhost:" + getServerPort()
-				+ "/kmf-content-api-test/" + HTMLTEST);
+				+ "/kmf-content-api-test/" + clientPage);
 
 		if (handler != null) {
 			Select handlerSelect = new Select(driver.findElement(By
@@ -96,8 +95,8 @@ public class WebRtcTst extends BaseArquillianTst {
 				.until(new ExpectedCondition<Boolean>() {
 					public Boolean apply(WebDriver d) {
 						return d.findElement(By.id("status"))
-								.getAttribute("value")
-								.endsWith("Connection started");
+								.getAttribute("value").endsWith(status);
+
 					}
 				});
 
@@ -107,17 +106,24 @@ public class WebRtcTst extends BaseArquillianTst {
 
 	@Test
 	public void testWebRtcLoopbackChrome() throws Exception {
-		webRtcTest(ChromeDriver.class, "./webRtcLoopback");
+		webRtcTest(ChromeDriver.class, "webrtc.html", "./webRtcLoopback",
+				"Connection started");
 	}
 
 	@Test
 	public void testWebRtcLoopbackJackVaderChrome() throws Exception {
-		webRtcTest(ChromeDriver.class, "./webRtcJackVaderLoopback");
+		webRtcTest(ChromeDriver.class, "webrtc.html",
+				"./webRtcJackVaderLoopback", "Connection started");
 	}
 
+	/**
+	 * @since 4.2.1
+	 * @throws Exception
+	 */
 	@Test
-	public void testWebRtcMixerChrome() throws Exception {
-		webRtcTest(ChromeDriver.class, "../dispatcher");
+	public void testWebRtcRegisterChrome() throws Exception {
+		webRtcTest(ChromeDriver.class, "webrtc/webrtc-one2many.html", null,
+				"Register set");
 	}
 
 }

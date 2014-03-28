@@ -54,6 +54,7 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 
 	private int timeout = 80; // seconds
 	private boolean waitEnd = true;
+	private String expectedStatus = null;
 
 	public void setTimeout(int timeout) {
 		this.timeout = timeout;
@@ -65,6 +66,14 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 
 	public void setWaitEnd(boolean waitEnd) {
 		this.waitEnd = waitEnd;
+	}
+
+	public String getExpectedStatus() {
+		return expectedStatus;
+	}
+
+	public void setExpectedStatus(String expectedStatus) {
+		this.expectedStatus = expectedStatus;
 	}
 
 	public void seleniumTest(Class<? extends WebDriver> driverClass,
@@ -161,15 +170,18 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 			String[] actualEvents = StringUtils.split(events, "\n");
 			log.info("*** Events *** Actual: " + Arrays.asList(actualEvents)
 					+ " ... Expected: " + Arrays.asList(expectedEvents));
-			Assert.assertTrue(Arrays.asList(expectedEvents).containsAll(
-					Arrays.asList(actualEvents)));
+			Assert.assertTrue(actualEvents != null);
 		}
 
 		if (expectedHandlerFlow == null || expectedJavaScriptFlow == null) {
-			// Assert status does not contain "Error"
+			// Assert status does not contain "error"
 			final String status = driver.findElement(By.id("status"))
 					.getAttribute("value");
-			Assert.assertTrue(status, !status.contains("Error"));
+			if (expectedStatus != null) {
+				Assert.assertEquals(expectedStatus, status);
+			} else {
+				Assert.assertTrue(status, !status.contains("error"));
+			}
 		}
 	}
 

@@ -29,7 +29,7 @@ import com.kurento.demo.playerjson.PlayerJsonTunnel;
 import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.CrowdDetectorFilter;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
@@ -39,6 +39,7 @@ import com.kurento.kmf.media.Point;
 import com.kurento.kmf.media.PointerDetectorFilter;
 import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.RegionOfInterest;
+import com.kurento.kmf.media.RegionOfInterestConfig;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -76,7 +77,7 @@ public class GenericPlayer {
 			MediaPipeline mp = mpf.create();
 			session.releaseOnTerminate(mp);
 			PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(url).build();
-			HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			if (contentId != null && contentId.equalsIgnoreCase("jack")) {
 				// Jack Vader Filter
@@ -114,8 +115,19 @@ public class GenericPlayer {
 				points.add(new Point(640, 0));
 				points.add(new Point(640, 480));
 				points.add(new Point(0, 480));
+				RegionOfInterestConfig config = new RegionOfInterestConfig();
+				config.setFluidityLevelMin(10);
+				config.setFluidityLevelMed(35);
+				config.setFluidityLevelMax(65);
+				config.setFluidityNumFramesToEvent(5);
+				config.setOccupancyLevelMin(10);
+				config.setOccupancyLevelMed(35);
+				config.setOccupancyLevelMax(65);
+				config.setOccupancyNumFramesToEvent(5);
+				config.setSendOpticalFlowEvent(false);
+
 				List<RegionOfInterest> rois = newArrayList(new RegionOfInterest(
-						points, "Roi"));
+						points, config, "Roi"));
 				CrowdDetectorFilter crowdDetector = mp.newCrowdDetectorFilter(
 						rois).build();
 				playerEndpoint.connect(crowdDetector);

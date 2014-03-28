@@ -16,7 +16,7 @@ package com.kurento.demo.recorder;
 
 import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpPostEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RecorderEndpoint;
 
@@ -37,7 +37,7 @@ public abstract class AbstractBaseRecorder extends HttpRecorderHandler {
 		RecorderEndpoint recorderEndpoint = mp.newRecorderEndpoint(getUri())
 				.build();
 		contentSession.setAttribute("recorder", recorderEndpoint);
-		HttpEndpoint httpEndpoint = mp.newHttpPostEndpoint().build();
+		HttpPostEndpoint httpEndpoint = mp.newHttpPostEndpoint().build();
 		httpEndpoint.connect(recorderEndpoint);
 		contentSession.start(httpEndpoint);
 	}

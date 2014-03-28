@@ -91,7 +91,7 @@ public class PlayerTst implements Runnable {
 						realEventList.toArray());
 			}
 
-			if (contentType != null) {
+			if (contentType != null && resEntity.getContentType() != null) {
 				Header responseContentType = resEntity.getContentType();
 				log.info("contentType " + responseContentType.getValue());
 				Assert.assertEquals("Content-Type in response header must be "

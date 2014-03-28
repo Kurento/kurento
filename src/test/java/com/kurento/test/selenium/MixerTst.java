@@ -40,7 +40,7 @@ import com.kurento.test.base.BaseArquillianTst;
 @RunWith(Arquillian.class)
 public class MixerTst extends BaseArquillianTst {
 
-	public final static int TIMEOUT = 20; // seconds
+	public final static int TIMEOUT = 25; // seconds
 
 	private WebDriver createDriver(Class<? extends WebDriver> driverClass) {
 		WebDriver driver = null;
@@ -64,9 +64,9 @@ public class MixerTst extends BaseArquillianTst {
 
 	public void dispatcherTest(WebDriver driver, final String clientPage,
 			String userName) {
-		DispatcherTst dispatcherTst = new DispatcherTst(driver, clientPage,
+		RunnableMixerTst runnableTst = new RunnableMixerTst(driver, clientPage,
 				userName);
-		dispatcherTst.run();
+		runnableTst.run();
 	}
 
 	@Test
@@ -79,12 +79,22 @@ public class MixerTst extends BaseArquillianTst {
 		driver = null;
 	}
 
-	class DispatcherTst implements Runnable {
+	@Test
+	public void testCompositeChrome() throws Exception {
+		WebDriver driver = createDriver(ChromeDriver.class);
+		dispatcherTest(driver, "mixer/compositeWebRTC.html", "user1");
+
+		// Teardown
+		driver.quit();
+		driver = null;
+	}
+
+	class RunnableMixerTst implements Runnable {
 		private WebDriver driver;
 		private String clientPage;
 		private String userName;
 
-		public DispatcherTst(WebDriver driver, String clientPage,
+		public RunnableMixerTst(WebDriver driver, String clientPage,
 				String userName) {
 			this.driver = driver;
 			this.clientPage = clientPage;

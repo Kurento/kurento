@@ -21,7 +21,7 @@ import com.kurento.kmf.content.ContentCommandResult;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -49,7 +49,8 @@ public class PlayerJsonOkRelease extends HttpPlayerHandler {
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				VideoURLs.map.get("webm")).build();
 		contentSession.setAttribute("player", playerEndpoint);
-		HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS().build();
+		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+				.build();
 		playerEndpoint.connect(httpEP);
 		contentSession.start(httpEP);
 	}

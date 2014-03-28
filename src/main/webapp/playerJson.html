@@ -107,7 +107,9 @@
 		var handler = document.getElementById("handler").value;
 		var disableVideo = new Array("playerFlowBad",
 				"playerFlowBadMediaElement", "playerFlowNothing",
-				"playerFlowOkWithExcp", "playerFlowOkRelease");
+				"playerFlowOkWithExcp", "playerFlowOkRelease",
+				"playerErrors/exception", "playerErrors/terminate",
+				"compositeMixer");
 		selectUrl.disabled = (disableVideo.indexOf(handler) != -1);
 	}
 </script>
@@ -128,6 +130,11 @@
 					<option value="playerFlowNothing">Player doing nothing</option>
 					<option value="playerFlowOkWithExcp">Player which raises
 						an Exception and recovers from it</option>
+					<option value="playerErrors/exception">Error in handler
+						due to Exception</option>
+					<option value="playerErrors/terminate">Session terminated
+						in handler</option>
+					<option value="compositeMixer">Player with Mixer</option>
 			</select></td>
 		</tr>
 		<tr>
