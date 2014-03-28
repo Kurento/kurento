@@ -636,10 +636,8 @@ kms_base_hub_generate_port_id (KmsBaseHub * mixer)
 {
   gint *id;
 
-  KMS_BASE_HUB_LOCK (mixer);
   id = g_slice_new (gint);
-  *id = mixer->priv->port_count++;
-  KMS_BASE_HUB_UNLOCK (mixer);
+  *id = g_atomic_int_add (&mixer->priv->port_count, 1);
 
   return id;
 }
