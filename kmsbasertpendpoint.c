@@ -692,7 +692,7 @@ kms_base_rtp_endpoint_init (KmsBaseRtpEndpoint * base_rtp_endpoint)
       base_rtp_endpoint);
 
   g_object_set (base_rtp_endpoint->priv->rtpbin, "do-lost", TRUE,
-      "do-retransmission", TRUE, "drop-on-latency", TRUE, NULL);
+      "do-retransmission", TRUE, NULL);
   g_object_set (base_rtp_endpoint, "accept-eos", FALSE, NULL);
 
   gst_bin_add (GST_BIN (base_rtp_endpoint), base_rtp_endpoint->priv->rtpbin);
