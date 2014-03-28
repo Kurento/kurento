@@ -113,6 +113,13 @@ public class JsonRpcResponse {
 				id);
 	}
 
+	public static JsonRpcResponse newExecuteResponse(String sessionId,
+			String commandResult, int id) {
+		return new JsonRpcResponse(
+				JsonRpcResponseResult.newExecuteResponseResult(sessionId,
+						commandResult), id);
+	}
+
 	/**
 	 * Create an instance of JsonRpcResponse for acknowledge.
 	 * 

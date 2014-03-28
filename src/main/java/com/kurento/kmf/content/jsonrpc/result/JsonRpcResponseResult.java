@@ -68,6 +68,14 @@ public class JsonRpcResponseResult {
 		return result;
 	}
 
+	public static JsonRpcResponseResult newExecuteResponseResult(
+			String sessionId, String commandResult) {
+		JsonRpcResponseResult result = new JsonRpcResponseResult();
+		result.setCommandResult(commandResult);
+		result.setSessionId(sessionId);
+		return result;
+	}
+
 	public static JsonRpcResponseResult newPollResponseResult(
 			JsonRpcContentEvent[] contentEvents,
 			JsonRpcControlEvent[] controlEvents) {
