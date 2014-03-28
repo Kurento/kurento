@@ -250,8 +250,8 @@ public final class ThriftConnectorJsonRpcHandler extends
 			Request<JsonObject> requestObj = JsonUtils.fromJsonRequest(request,
 					JsonObject.class);
 
-			JsonElement subsJsonElem = requestObj.getParams().get(
-					"subscription");
+			JsonElement subsJsonElem = requestObj.getParams().get("value")
+					.getAsJsonObject().get("subscription");
 
 			if (subsJsonElem == null) {
 				LOG.error("Received event wihthout subscription: {}", request);
