@@ -338,6 +338,8 @@ kms_recorder_endpoint_dispose (GObject * object)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
 
+  GST_DEBUG_OBJECT (self, "dispose");
+
   g_clear_object (&self->priv->loop);
   g_clear_object (&self->priv->controller);
 
@@ -379,6 +381,8 @@ static void
 kms_recorder_endpoint_finalize (GObject * object)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
 
   kms_recorder_endpoint_release_pending_requests (self);
 
