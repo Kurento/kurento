@@ -249,8 +249,8 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   KMS_COMPOSITE_MIXER_UNLOCK (self);
 
-  kms_loop_idle_add_full (self->priv->loop, 1, remove_elements_from_pipeline,
-      data, destroy_port_data);
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
+      remove_elements_from_pipeline, data, destroy_port_data);
 
   return GST_PAD_PROBE_OK;
 }
