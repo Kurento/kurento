@@ -263,6 +263,11 @@ kms_composite_mixer_port_data_destroy (gpointer data)
   GstPad *audiosink;
   gchar *padname;
 
+  if (!KMS_IS_COMPOSITE_MIXER (self)) {
+    destroy_port_data (port_data);
+    return;
+  }
+
   KMS_COMPOSITE_MIXER_LOCK (self);
 
   kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
