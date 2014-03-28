@@ -5,7 +5,7 @@
 
 	<groupId>com.kurento.kws</groupId>
 	<artifactId>kws-media-api</artifactId>
-	<version>4.2.1</version>
+	<version>4.2.2-SNAPSHOT</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
@@ -38,7 +38,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kws-media-api-4.2.1</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
