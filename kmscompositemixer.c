@@ -243,7 +243,10 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   KMS_COMPOSITE_MIXER_LOCK (self);
 
-  gst_pad_remove_probe (pad, port_data->probe_id);
+  if (port_data->probe_id >= 0) {
+    gst_pad_remove_probe (pad, port_data->probe_id);
+    port_data->probe_id = -1;
+  }
   event = gst_event_new_eos ();
   gst_pad_send_event (pad, event);
 
