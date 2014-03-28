@@ -21,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderService;
 import com.kurento.kmf.content.HttpRecorderSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpPostEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
@@ -77,7 +77,7 @@ public class RecorderJackVaderRepository extends HttpRecorderHandler {
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		filter.connect(recorderEndPoint);
 		contentSession.setAttribute("recorder", recorderEndPoint);
-		HttpEndpoint httpEndpoint = mp.newHttpPostEndpoint().build();
+		HttpPostEndpoint httpEndpoint = mp.newHttpPostEndpoint().build();
 		httpEndpoint.connect(filter);
 		contentSession.start(httpEndpoint);
 	}

@@ -21,7 +21,7 @@ import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.DispatcherOneToMany;
 import com.kurento.kmf.media.GStreamerFilter;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.HubPort;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
@@ -70,7 +70,7 @@ public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 		bn.connect(hubPort2);
 
 		// mixer.setMainEndPoint(hubPort1);
-		HttpEndpoint httpEndpoint = mediaPipeline.newHttpGetEndpoint()
+		HttpGetEndpoint httpEndpoint = mediaPipeline.newHttpGetEndpoint()
 				.terminateOnEOS().build();
 		hubPort3.connect(httpEndpoint);
 		contentSession.start(httpEndpoint);

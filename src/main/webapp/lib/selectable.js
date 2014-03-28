@@ -139,7 +139,7 @@ function connectParticipants() {
 	conn.execute(Command.CONNECT, JSON.stringify(list),
 			function(error, result) {
 				if (error) {
-					console.error("Error " + error);
+					console.error("Error " + error.message);
 				}
 			});
 }

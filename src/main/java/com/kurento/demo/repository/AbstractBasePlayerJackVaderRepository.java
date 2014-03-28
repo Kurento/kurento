@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
@@ -61,7 +61,7 @@ public class AbstractBasePlayerJackVaderRepository extends HttpPlayerHandler {
 			JackVaderFilter filter = mp.newJackVaderFilter().build();
 			playerEndpoint.connect(filter);
 			contentSession.setAttribute("player", playerEndpoint);
-			HttpEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+			HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
 					.terminateOnEOS().build();
 			filter.connect(httpEndpoint);
 			contentSession.start(httpEndpoint);

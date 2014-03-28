@@ -18,7 +18,7 @@ import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 
@@ -42,7 +42,7 @@ public class CpRtcPlayerZbarHandler extends HttpPlayerHandler {
 					}
 				});
 
-		HttpEndpoint httpEndpoint = CpRtcRtpZbarHandler.sharedFilterReference
+		HttpGetEndpoint httpEndpoint = CpRtcRtpZbarHandler.sharedFilterReference
 				.getMediaPipeline().newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		CpRtcRtpZbarHandler.sharedFilterReference.connect(httpEndpoint);

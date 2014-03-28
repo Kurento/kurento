@@ -17,7 +17,7 @@ package com.kurento.demo.webrtc;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaElement;
 import com.kurento.kmf.media.MediaPipeline;
 
@@ -45,7 +45,7 @@ public class PlayerLiveWebRtc extends HttpPlayerHandler {
 			session.terminate(400, "WebRTC source is not running");
 		} else {
 			MediaPipeline mp = mediaElement.getMediaPipeline();
-			HttpEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+			HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
 					.terminateOnEOS().build();
 			mediaElement.connect(httpEndpoint);
 			session.start(httpEndpoint);
