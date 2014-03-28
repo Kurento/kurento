@@ -611,8 +611,8 @@ kms_composite_mixer_dispose (GObject * object)
 
   KMS_COMPOSITE_MIXER_LOCK (self);
   g_hash_table_remove_all (self->priv->ports);
-  g_clear_object (&self->priv->loop);
   KMS_COMPOSITE_MIXER_UNLOCK (self);
+  g_clear_object (&self->priv->loop);
 
   G_OBJECT_CLASS (kms_composite_mixer_parent_class)->dispose (object);
 }
