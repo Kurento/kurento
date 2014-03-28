@@ -10,46 +10,36 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * Event raise when a movement direction is detected in a ROI
  * 
  **/
 public class CrowdDetectorDirectionEvent extends MediaEvent {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Direction angle of the detected movement in the ROI
 	 * 
 	 **/
 	private float directionAngle;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Opaque String indicating the id of the involved ROI
 	 * 
 	 **/
 	private String roiID;
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Event raise when a movement direction is detected in a ROI
 	 * 
 	 * @param source
 	 *            Object that raised the event
 	 * @param type
 	 *            Type of event that was raised
 	 * @param directionAngle
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Direction angle of the detected movement in the ROI
 	 * @param roiID
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Opaque String indicating the id of the involved ROI
 	 * 
 	 **/
 	public CrowdDetectorDirectionEvent(@Param("source") MediaObject source,
@@ -65,10 +55,7 @@ public class CrowdDetectorDirectionEvent extends MediaEvent {
 	 * 
 	 * Getter for the directionAngle property
 	 * 
-	 * @return <hr/>
-	 *         <b>TODO</b>
-	 * 
-	 *         FIXME: documentation needed *
+	 * @return Direction angle of the detected movement in the ROI *
 	 **/
 	public float getDirectionAngle() {
 		return directionAngle;
@@ -79,10 +66,7 @@ public class CrowdDetectorDirectionEvent extends MediaEvent {
 	 * Setter for the directionAngle property
 	 * 
 	 * @param directionAngle
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Direction angle of the detected movement in the ROI
 	 * 
 	 **/
 	public void setDirectionAngle(float directionAngle) {
@@ -93,10 +77,7 @@ public class CrowdDetectorDirectionEvent extends MediaEvent {
 	 * 
 	 * Getter for the roiID property
 	 * 
-	 * @return <hr/>
-	 *         <b>TODO</b>
-	 * 
-	 *         FIXME: documentation needed *
+	 * @return Opaque String indicating the id of the involved ROI *
 	 **/
 	public String getRoiID() {
 		return roiID;
@@ -107,10 +88,7 @@ public class CrowdDetectorDirectionEvent extends MediaEvent {
 	 * Setter for the roiID property
 	 * 
 	 * @param roiID
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Opaque String indicating the id of the involved ROI
 	 * 
 	 **/
 	public void setRoiID(String roiID) {

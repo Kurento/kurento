@@ -15,7 +15,7 @@ import com.kurento.tool.rom.server.Param;
  * This filter detects <a
  * href="http://www.kurento.org/docs/current/glossary.html#term-QR">QR</a> codes
  * in a video feed. When a code is found, the filter raises a
- * :rom:ref:`CodeFound` event.
+ * :rom:evnt:`CodeFound` event.
  * 
  **/
 @RemoteClass

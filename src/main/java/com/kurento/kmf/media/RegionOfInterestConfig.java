@@ -15,85 +15,88 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * minimun occupancy percentage in the ROI to send occupancy events
 	 * 
 	 **/
 	private int occupancyLevelMin;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * send occupancy level = 1 if the occupancy percentage is between
+	 * occupancy_level_min and this level
 	 * 
 	 **/
 	private int occupancyLevelMed;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * send occupancy level = 2 if the occupancy percentage is between
+	 * occupancy_level_med and this level, and send occupancy level = 3 if the
+	 * occupancy percentage is between this level and 100
 	 * 
 	 **/
 	private int occupancyLevelMax;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * number of consecutive frames that a new occupancy level has to be
+	 * detected to recognize it as a occupancy level change. A new occupancy
+	 * event will be send
 	 * 
 	 **/
 	private int occupancyNumFramesToEvent;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * minimun fluidity percentage in the ROI to send fluidity events
 	 * 
 	 **/
 	private int fluidityLevelMin;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * send fluidity level = 1 if the fluidity percentage is between
+	 * fluidity_level_min and this level
 	 * 
 	 **/
 	private int fluidityLevelMed;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * send fluidity level = 2 if the fluidity percentage is between
+	 * fluidity_level_med and this level, and send fluidity level = 3 if the
+	 * fluidity percentage is between this level and 100
 	 * 
 	 **/
 	private int fluidityLevelMax;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * number of consecutive frames that a new fluidity level has to be detected
+	 * to recognize it as a fluidity level change. A new fluidity event will be
+	 * send
 	 * 
 	 **/
 	private int fluidityNumFramesToEvent;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Enable/disable the movement direction detection into the ROI
 	 * 
 	 **/
 	private boolean sendOpticalFlowEvent;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * number of consecutive frames that a new direction of movement has to be
+	 * detected to recognize a new movement direction. A new direction event
+	 * will be send
 	 * 
 	 **/
 	private int opticalFlowNumFramesToEvent;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * number of consecutive frames in order to reset the counter of repeated
+	 * directions
 	 * 
 	 **/
 	private int opticalFlowNumFramesToReset;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Direction of the movement. The angle could have four different values:
+	 * left (0), up (90), right (180) and down (270). This cartesian axis could
+	 * be rotated adding an angle offset
 	 * 
 	 **/
 	private int opticalFlowAngleOffset;
@@ -108,9 +111,7 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get minimun occupancy percentage in the ROI to send occupancy events
 	 * 
 	 **/
 	public int getOccupancyLevelMin() {
@@ -119,9 +120,7 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set minimun occupancy percentage in the ROI to send occupancy events
 	 * 
 	 **/
 	public void setOccupancyLevelMin(int occupancyLevelMin) {
@@ -130,9 +129,8 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get send occupancy level = 1 if the occupancy percentage is between
+	 * occupancy_level_min and this level
 	 * 
 	 **/
 	public int getOccupancyLevelMed() {
@@ -141,9 +139,8 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set send occupancy level = 1 if the occupancy percentage is between
+	 * occupancy_level_min and this level
 	 * 
 	 **/
 	public void setOccupancyLevelMed(int occupancyLevelMed) {
@@ -152,9 +149,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get send occupancy level = 2 if the occupancy percentage is between
+	 * occupancy_level_med and this level, and send occupancy level = 3 if the
+	 * occupancy percentage is between this level and 100
 	 * 
 	 **/
 	public int getOccupancyLevelMax() {
@@ -163,9 +160,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set send occupancy level = 2 if the occupancy percentage is between
+	 * occupancy_level_med and this level, and send occupancy level = 3 if the
+	 * occupancy percentage is between this level and 100
 	 * 
 	 **/
 	public void setOccupancyLevelMax(int occupancyLevelMax) {
@@ -174,9 +171,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get number of consecutive frames that a new occupancy level has to be
+	 * detected to recognize it as a occupancy level change. A new occupancy
+	 * event will be send
 	 * 
 	 **/
 	public int getOccupancyNumFramesToEvent() {
@@ -185,9 +182,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set number of consecutive frames that a new occupancy level has to be
+	 * detected to recognize it as a occupancy level change. A new occupancy
+	 * event will be send
 	 * 
 	 **/
 	public void setOccupancyNumFramesToEvent(int occupancyNumFramesToEvent) {
@@ -196,9 +193,7 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get minimun fluidity percentage in the ROI to send fluidity events
 	 * 
 	 **/
 	public int getFluidityLevelMin() {
@@ -207,9 +202,7 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set minimun fluidity percentage in the ROI to send fluidity events
 	 * 
 	 **/
 	public void setFluidityLevelMin(int fluidityLevelMin) {
@@ -218,9 +211,8 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get send fluidity level = 1 if the fluidity percentage is between
+	 * fluidity_level_min and this level
 	 * 
 	 **/
 	public int getFluidityLevelMed() {
@@ -229,9 +221,8 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set send fluidity level = 1 if the fluidity percentage is between
+	 * fluidity_level_min and this level
 	 * 
 	 **/
 	public void setFluidityLevelMed(int fluidityLevelMed) {
@@ -240,9 +231,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get send fluidity level = 2 if the fluidity percentage is between
+	 * fluidity_level_med and this level, and send fluidity level = 3 if the
+	 * fluidity percentage is between this level and 100
 	 * 
 	 **/
 	public int getFluidityLevelMax() {
@@ -251,9 +242,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set send fluidity level = 2 if the fluidity percentage is between
+	 * fluidity_level_med and this level, and send fluidity level = 3 if the
+	 * fluidity percentage is between this level and 100
 	 * 
 	 **/
 	public void setFluidityLevelMax(int fluidityLevelMax) {
@@ -262,9 +253,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get number of consecutive frames that a new fluidity level has to be
+	 * detected to recognize it as a fluidity level change. A new fluidity event
+	 * will be send
 	 * 
 	 **/
 	public int getFluidityNumFramesToEvent() {
@@ -273,9 +264,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set number of consecutive frames that a new fluidity level has to be
+	 * detected to recognize it as a fluidity level change. A new fluidity event
+	 * will be send
 	 * 
 	 **/
 	public void setFluidityNumFramesToEvent(int fluidityNumFramesToEvent) {
@@ -284,9 +275,7 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get Enable/disable the movement direction detection into the ROI
 	 * 
 	 **/
 	public boolean getSendOpticalFlowEvent() {
@@ -295,9 +284,7 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set Enable/disable the movement direction detection into the ROI
 	 * 
 	 **/
 	public void setSendOpticalFlowEvent(boolean sendOpticalFlowEvent) {
@@ -306,9 +293,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get number of consecutive frames that a new direction of movement has to
+	 * be detected to recognize a new movement direction. A new direction event
+	 * will be send
 	 * 
 	 **/
 	public int getOpticalFlowNumFramesToEvent() {
@@ -317,9 +304,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set number of consecutive frames that a new direction of movement has to
+	 * be detected to recognize a new movement direction. A new direction event
+	 * will be send
 	 * 
 	 **/
 	public void setOpticalFlowNumFramesToEvent(int opticalFlowNumFramesToEvent) {
@@ -328,9 +315,8 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get number of consecutive frames in order to reset the counter of
+	 * repeated directions
 	 * 
 	 **/
 	public int getOpticalFlowNumFramesToReset() {
@@ -339,9 +325,8 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set number of consecutive frames in order to reset the counter of
+	 * repeated directions
 	 * 
 	 **/
 	public void setOpticalFlowNumFramesToReset(int opticalFlowNumFramesToReset) {
@@ -350,9 +335,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * get
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * get Direction of the movement. The angle could have four different
+	 * values: left (0), up (90), right (180) and down (270). This cartesian
+	 * axis could be rotated adding an angle offset
 	 * 
 	 **/
 	public int getOpticalFlowAngleOffset() {
@@ -361,9 +346,9 @@ public class RegionOfInterestConfig {
 
 	/**
 	 * 
-	 * set
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * set Direction of the movement. The angle could have four different
+	 * values: left (0), up (90), right (180) and down (270). This cartesian
+	 * axis could be rotated adding an angle offset
 	 * 
 	 **/
 	public void setOpticalFlowAngleOffset(int opticalFlowAngleOffset) {

@@ -10,58 +10,44 @@ import com.kurento.tool.rom.server.Param;
 
 /**
  * 
- * <hr/>
- * <b>TODO</b> FIXME: documentation needed
+ * Event raise when a level of occupancy is detected in a ROI
  * 
  **/
 public class CrowdDetectorOccupancyEvent extends MediaEvent {
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Percentage of occupancy in the ROI
 	 * 
 	 **/
 	private float occupancyPercentage;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Level of occupancy in the ROI
 	 * 
 	 **/
 	private int occupancyLevel;
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Opaque String indicating the id of the involved ROI
 	 * 
 	 **/
 	private String roiID;
 
 	/**
 	 * 
-	 * <hr/>
-	 * <b>TODO</b> FIXME: documentation needed
+	 * Event raise when a level of occupancy is detected in a ROI
 	 * 
 	 * @param source
 	 *            Object that raised the event
 	 * @param type
 	 *            Type of event that was raised
 	 * @param occupancyPercentage
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Percentage of occupancy in the ROI
 	 * @param occupancyLevel
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Level of occupancy in the ROI
 	 * @param roiID
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Opaque String indicating the id of the involved ROI
 	 * 
 	 **/
 	public CrowdDetectorOccupancyEvent(@Param("source") MediaObject source,
@@ -79,10 +65,7 @@ public class CrowdDetectorOccupancyEvent extends MediaEvent {
 	 * 
 	 * Getter for the occupancyPercentage property
 	 * 
-	 * @return <hr/>
-	 *         <b>TODO</b>
-	 * 
-	 *         FIXME: documentation needed *
+	 * @return Percentage of occupancy in the ROI *
 	 **/
 	public float getOccupancyPercentage() {
 		return occupancyPercentage;
@@ -93,10 +76,7 @@ public class CrowdDetectorOccupancyEvent extends MediaEvent {
 	 * Setter for the occupancyPercentage property
 	 * 
 	 * @param occupancyPercentage
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Percentage of occupancy in the ROI
 	 * 
 	 **/
 	public void setOccupancyPercentage(float occupancyPercentage) {
@@ -107,10 +87,7 @@ public class CrowdDetectorOccupancyEvent extends MediaEvent {
 	 * 
 	 * Getter for the occupancyLevel property
 	 * 
-	 * @return <hr/>
-	 *         <b>TODO</b>
-	 * 
-	 *         FIXME: documentation needed *
+	 * @return Level of occupancy in the ROI *
 	 **/
 	public int getOccupancyLevel() {
 		return occupancyLevel;
@@ -121,10 +98,7 @@ public class CrowdDetectorOccupancyEvent extends MediaEvent {
 	 * Setter for the occupancyLevel property
 	 * 
 	 * @param occupancyLevel
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Level of occupancy in the ROI
 	 * 
 	 **/
 	public void setOccupancyLevel(int occupancyLevel) {
@@ -135,10 +109,7 @@ public class CrowdDetectorOccupancyEvent extends MediaEvent {
 	 * 
 	 * Getter for the roiID property
 	 * 
-	 * @return <hr/>
-	 *         <b>TODO</b>
-	 * 
-	 *         FIXME: documentation needed *
+	 * @return Opaque String indicating the id of the involved ROI *
 	 **/
 	public String getRoiID() {
 		return roiID;
@@ -149,10 +120,7 @@ public class CrowdDetectorOccupancyEvent extends MediaEvent {
 	 * Setter for the roiID property
 	 * 
 	 * @param roiID
-	 *            <hr/>
-	 *            <b>TODO</b>
-	 * 
-	 *            FIXME: documentation needed
+	 *            Opaque String indicating the id of the involved ROI
 	 * 
 	 **/
 	public void setRoiID(String roiID) {
