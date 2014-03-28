@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.2.1</version>
+		<version>4.2.2-SNAPSHOT</version>
 	</parent>
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-jsonrpcconnector-test</artifactId>
@@ -28,7 +28,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kmf-jsonrpcconnector-test-4.2.1</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
