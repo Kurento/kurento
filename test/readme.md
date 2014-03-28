@@ -21,7 +21,7 @@ the dropdown at the top of the tests page.
 
 ### Node.js
 
-To exec test in Node.js, you only need to exec ```npm test``` that will launch
+To exec test in Node.js, you only need to exec ```gnpm test``` that will launch
 all the tests automatically using [QUnit-cli].
 
 If you need to use a WebSocket endpoint different from the default one, you can exec the underlying test command with
@@ -82,7 +82,7 @@ Create an empty HttpGet endpoint and check it has a valid URL
 
 ## Media session started
 
-Create an empty HttpGet endpoint and check it has a valid URL
+Create an empty HttpGet endpoint and check the stream start and ends
 
 ### Assertions
 
@@ -104,4 +104,73 @@ Check if a plate is detected on a video
 * a plate detected event is dispatched
 
 
+# PlayerEndpoint
 
+## Play, Pause & Stop
+
+Check player stream operations
+
+### Assertions
+
+* player endpoint is set
+* player start to play
+* player pause
+* player stops
+
+## End of Stream
+
+Player receives end of stream
+
+### Assertions
+
+* player receives end of stream event
+
+
+# PointerDetectorFilter
+
+## Detect pointer
+
+Detector receives a WindowIn event
+
+### Assertions
+
+* WindowIn event received
+
+## Window events
+
+Detector receives WindowIn and WindowOut events
+
+### Assertions
+
+* WindowIn event received
+* WindowOut event received
+
+## Window overlay
+
+Detector is over the image
+
+### Assertions
+
+* WindowIn event received
+* WindowOut event received
+
+
+# ZBarFilter
+
+## Create pipeline and play video
+
+Create a pipeline with a ZBar filter
+
+### Assertions
+
+* player endpoint is set
+* zbar filter is set
+* player and zbar are connected
+
+## Detect bar-code in a video
+
+Detect a bar code inside the video stream
+
+### Assertions
+
+* bar code is found
