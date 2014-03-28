@@ -85,6 +85,7 @@ struct _KmsCompositeMixerPrivate
 {
   GstElement *videomixer;
   GstElement *audiomixer;
+  GstElement *videotestsrc;
   GHashTable *ports;
   GstElement *mixer_audio_agnostic;
   GstElement *mixer_video_agnostic;
@@ -136,7 +137,7 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
     KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) value;
 
     if (port_data->input == FALSE) {
-      return;
+      continue;
     }
 
     if (self->priv->n_elems == 1) {
@@ -337,6 +338,48 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   GST_DEBUG ("stream start detected");
   KMS_COMPOSITE_MIXER_LOCK (data->mixer);
 
+  sink_pad_template =
+      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (data->mixer->
+          priv->videomixer), "sink_%u");
+
+  if (data->mixer->priv->videotestsrc == NULL) {
+    GstElement *capsfilter;
+    GstCaps *filtercaps;
+
+    data->mixer->priv->videotestsrc =
+        gst_element_factory_make ("videotestsrc", NULL);
+    capsfilter = gst_element_factory_make ("capsfilter", NULL);
+
+    g_object_set (data->mixer->priv->videotestsrc, "is-live", TRUE, "pattern",
+        /*black */ 2, NULL);
+
+    filtercaps =
+        gst_caps_new_simple ("video/x-raw", "format", G_TYPE_STRING, "AYUV",
+        "width", G_TYPE_INT, data->mixer->priv->output_width,
+        "height", G_TYPE_INT, data->mixer->priv->output_height,
+        "framerate", GST_TYPE_FRACTION, 15, 1, NULL);
+    g_object_set (G_OBJECT (capsfilter), "caps", filtercaps, NULL);
+    gst_caps_unref (filtercaps);
+
+    gst_bin_add_many (GST_BIN (data->mixer), data->mixer->priv->videotestsrc,
+        capsfilter, NULL);
+
+    gst_element_link (data->mixer->priv->videotestsrc, capsfilter);
+    gst_element_sync_state_with_parent (capsfilter);
+
+    /*link capsfilter -> videomixer */
+    if (sink_pad_template != NULL) {
+      GstPad *pad = gst_element_request_pad (data->mixer->priv->videomixer,
+          sink_pad_template, NULL, NULL);
+
+      gst_element_link_pads (capsfilter, NULL,
+          data->mixer->priv->videomixer, GST_OBJECT_NAME (pad));
+      g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, NULL);
+    }
+
+    gst_element_sync_state_with_parent (data->mixer->priv->videotestsrc);
+  }
+
   data->videoscale = gst_element_factory_make ("videoscale", NULL);
   data->capsfilter = gst_element_factory_make ("capsfilter", NULL);
   data->videorate = gst_element_factory_make ("videorate", NULL);
@@ -358,9 +401,6 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
       data->capsfilter, NULL);
 
   /*link capsfilter -> videomixer */
-  sink_pad_template =
-      gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (data->
-          mixer->priv->videomixer), "sink_%u");
   if (sink_pad_template != NULL) {
     data->video_mixer_pad =
         gst_element_request_pad (data->mixer->priv->videomixer,
