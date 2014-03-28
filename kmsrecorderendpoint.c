@@ -296,6 +296,14 @@ kms_recorder_endpoint_send_eos_to_appsrcs (KmsRecorderEndpoint * self)
   GstElement *videosrc =
       gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
 
+  if (audiosrc == NULL && videosrc == NULL) {
+    gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
+    kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
+    return;
+  }
+
+  gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
+
   if (audiosrc != NULL) {
     send_eos (audiosrc);
     g_object_unref (audiosrc);
@@ -323,14 +331,6 @@ set_to_null_state_on_EOS (gpointer data)
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (recorder));
 
   return G_SOURCE_REMOVE;
-}
-
-static void
-kms_recorder_endpoint_wait_for_pipeline_eos (KmsRecorderEndpoint * self)
-{
-  gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
-  // Wait for EOS event to set pipeline to NULL
-  kms_recorder_endpoint_send_eos_to_appsrcs (self);
 }
 
 static void
@@ -603,7 +603,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   KMS_ELEMENT_UNLOCK (self);
 
   if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
-    kms_recorder_endpoint_wait_for_pipeline_eos (self);
+    kms_recorder_endpoint_send_eos_to_appsrcs (self);
   } else {
     gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
     kms_recorder_endpoint_state_changed (self, KMS_URI_ENDPOINT_STATE_STOP);
