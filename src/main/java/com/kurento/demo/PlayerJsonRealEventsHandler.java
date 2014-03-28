@@ -4,7 +4,7 @@ import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
-import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -57,7 +57,8 @@ public class PlayerJsonRealEventsHandler extends HttpPlayerHandler {
 		});
 		session.setAttribute("player", playerEndpoint);
 
-		HttpEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS().build();
+		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+				.build();
 		filter.connect(httpEP);
 		session.start(httpEP);
 	}
