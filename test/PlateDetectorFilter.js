@@ -58,7 +58,8 @@ QUnit.asyncTest('Detect plate in a video', function()
 {
   QUnit.expect(1);
 
-  var timeout = new Timeout(10 * 1000, onerror);
+  var timeout = new Timeout('"PlateDetectorFilter:Detect plate in a video"',
+                            10 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)

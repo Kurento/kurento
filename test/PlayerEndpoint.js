@@ -93,7 +93,8 @@ QUnit.asyncTest('End of Stream', function()
 {
   QUnit.expect(1);
 
-  var timeout = new Timeout(10 * 1000, onerror);
+  var timeout = new Timeout('"PlayerEndpoint:End of Stream"',
+                            10 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)

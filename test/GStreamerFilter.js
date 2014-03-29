@@ -58,7 +58,8 @@ QUnit.asyncTest('End of Stream', function()
 {
   QUnit.expect(4);
 
-  var timeout = new Timeout(10 * 1000, onerror);
+  var timeout = new Timeout('"GStreamerFilter:End of Stream"',
+                            10 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)

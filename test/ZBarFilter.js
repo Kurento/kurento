@@ -91,7 +91,8 @@ QUnit.asyncTest('Detect bar-code in a video', function()
 {
   QUnit.expect(1);
 
-  var timeout = new Timeout(5 * 1000, onerror);
+  var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
+                            5 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)

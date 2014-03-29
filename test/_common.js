@@ -56,10 +56,10 @@ doGet = function doGet(url, onsuccess, onerror)
 /**
  * Manage timeouts in an object-oriented style
  */
-Timeout = function Timeout(delay, ontimeout)
+Timeout = function Timeout(id, delay, ontimeout)
 {
   if(!(this instanceof Timeout))
-    return new Timeout(delay, ontimeout);
+    return new Timeout(id, delay, ontimeout);
 
   var timeout;
 
@@ -72,7 +72,7 @@ Timeout = function Timeout(delay, ontimeout)
 
   this.start = function()
   {
-    timeout = setTimeout(_ontimeout, delay, 'Time out ('+delay+'ms)');
+    timeout = setTimeout(_ontimeout, delay, 'Time out '+id+' ('+delay+'ms)');
   };
 
   this.stop = function()

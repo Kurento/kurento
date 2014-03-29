@@ -58,7 +58,8 @@ QUnit.asyncTest('Detect pointer', function()
 {
   QUnit.expect(1);
 
-  var timeout = new Timeout(20 * 1000, onerror);
+  var timeout = new Timeout('"PointerDetectorFilter:Detect pointer"',
+                            20 * 1000, onerror);
 
 
   PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
