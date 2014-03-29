@@ -72,10 +72,10 @@ integrate the *Kurento* framework into applications.
 Basic Setup
 ~~~~~~~~~~~
 
--  ***Install and configure KMS***: This piece of software is the actual
+-  **Install and configure KMS**: This piece of software is the actual
    engine providing media processing and delivery.
 
--  ***Install and configure JBoss 7 Application Server***: This is a
+-  **Install and configure JBoss 7 Application Server**: This is a
    :term:`Java EE` container that hosts the server side of applications. Other
    *Java* enterprise servers can be used, although no support from
    *Kurento* will be provided. This server will also be called *Kurento
@@ -480,7 +480,7 @@ independently of the nature of the media archive. Future versions will
 support pseudo-streaming for media resources whose file size can be
 known before transmission is started.
 
--  ***Known issues***:
+-  **Known issues**:
 
    -  In current version, only the WebM muxer is supported. Hence,
       the HTTP endpoints generated media flows can be only consumed by
@@ -574,14 +574,14 @@ and *sink* elements. The input/ouput stream configuration for a given
 connection can be known thanks to methods ``getVideoConstraints()`` and
 ``getAudioConstraints()``, that returns one of following values:
 
--  ***SENDONLY***: *KMS* delivers media to remote peer and does not
+-  **SENDONLY**: *KMS* delivers media to remote peer and does not
    receive.
--  ***RECVONLY***: *KMS* receives media from remote peer and does not
+-  **RECVONLY**: *KMS* receives media from remote peer and does not
    deliver.
--  ***SENDRECV***: *KMS* sends and receives media at the same time.
+-  **SENDRECV**: *KMS* sends and receives media at the same time.
    Received media is stored into connected recorder while delivered
    media is read from connected player.
--  ***INACTIVE***: There is no media transfer in any direction,
+-  **INACTIVE**: There is no media transfer in any direction,
    independently of any player or recorded connected.
 
 Played file can take any format supported by *Gstreamer* and will be
@@ -1263,11 +1263,11 @@ must activate the control protocol at handler level. Boolean attribute
 The *Kurento HTML5* SDK provides the following set of
 *Content API* clients:
 
--  ***KwsContentPlayer***: Allows connection with Kurento's *HTTP player
+-  **KwsContentPlayer**: Allows connection with Kurento's *HTTP player
    handler* in order to implement download services.
--  ***KwsContentUploader***: Intended to interoperate with the *HTTP
+-  **KwsContentUploader**: Intended to interoperate with the *HTTP
    recorder handler*. It allows implementing file upload services.
--  ***KwsWebRtcContent***: Helps applications to setup WebRTC
+-  **KwsWebRtcContent**: Helps applications to setup WebRTC
    connections with the *WebRTC handler*.
 
 Clients above are intended to connect one *Content API service*. The
@@ -1288,13 +1288,13 @@ the service.
 -  **'audio**': Sets the audio stream mode. Can be any of ``inactive``,
    ``sendonly``, ``recvonly`` and ``sendrecv``. Default value is
    ``sendrecv``.
--  ***video***: Sets the video stream mode with the same alternatives
+-  **video**: Sets the video stream mode with the same alternatives
    available to audio. Default value is ``sendrecv``.
--  ***localVideoTag***: ID of the ``<video>`` tag where local video will
+-  **localVideoTag**: ID of the ``<video>`` tag where local video will
    be displayed. No local video will be displayed if not defined.
--  ***remoteVideoTag***: ID of the ``<video>`` tag where remote video
+-  **remoteVideoTag**: ID of the ``<video>`` tag where remote video
    will be displayed. No remote video will be displayed if not defined.
--  ***iceServers***: *STUN/TURN* server array used by *WebRTC ICE*
+-  **iceServers**: *STUN/TURN* server array used by *WebRTC ICE*
    client. By default *Google* public *STUN* server is used.
 
 Upon creation the client sends a start request to the server, causing
