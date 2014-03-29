@@ -399,7 +399,7 @@ public void onContentStarted(WebRtcContentSession contentSession) throws Excepti
 
 </pre>
 
-One important feature of the ''content session'' is its capability to share real time information with clients through a bidirectional channel. In order to interchange messages with a browser an  [http://forge.fi-ware.eu/plugins/mediawiki/wiki/fiware/index.php/StreamOriented_Open_API_Specification_(PRELIMINARY)''Open API''] client, like the one implemented by the HTML5 SDK, has to be used.  These messages follows a signaling protocol based on '''''JSON-RPC'''''. Messages can be interchanged between the ''service handler'' and the client while the ''content session'' is active. Method <code>publishEvent()</code> is used for this purpose. This capability is quite useful combined with  computer vision filter, as it allows sending events to clients coming from video content analysis (e.g. plate recognized, QR code detected, face detected, etc.)
+One important feature of the ''content session'' is its capability to share real time information with clients through a bidirectional channel. In order to interchange messages with a browser an  [http://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/StreamOriented_Open_API_Specification_(PRELIMINARY)''Open API''] client, like the one implemented by the HTML5 SDK, has to be used.  These messages follows a signaling protocol based on '''''JSON-RPC'''''. Messages can be interchanged between the ''service handler'' and the client while the ''content session'' is active. Method <code>publishEvent()</code> is used for this purpose. This capability is quite useful combined with  computer vision filter, as it allows sending events to clients coming from video content analysis (e.g. plate recognized, QR code detected, face detected, etc.)
 
 <pre>
 @Override
@@ -425,7 +425,7 @@ public ContentCommandResult onContentCommand( WebRtcContentSession contentSessio
 }
 </pre>
 
-See the [http://forge.fi-ware.eu/plugins/mediawiki/wiki/fiware/index.php/StreamOriented_Open_API_Specification_(PRELIMINARY)''Open API''] specification for a detailed reference of available commands and events that can be exchange between ''service handlers'' and HTML5 SDK clients.
+See the [http://forge.fi-ware.org/plugins/mediawiki/wiki/fiware/index.php/StreamOriented_Open_API_Specification_(PRELIMINARY)''Open API''] specification for a detailed reference of available commands and events that can be exchange between ''service handlers'' and HTML5 SDK clients.
 
 === Content identification ===
 
@@ -813,7 +813,7 @@ The ''Stream Oriented GE HTML5'' SDK is a ''Javascript'' library implementing a 
 sudo apt-get install npm
 </pre>
 
-Current release of HTML5 SDK does not provide a library archive, so it must be built directly from the [https://github.com/Kurento/kws-content-api source code]. A [https://forge.fi-ware.eu/frs/download.php/818/kws-content-api.min.js bundle file] is also available at FI-WARE download page.
+Current release of HTML5 SDK does not provide a library archive, so it must be built directly from the [https://github.com/Kurento/kws-content-api source code]. A [https://forge.fi-ware.org/frs/download.php/818/kws-content-api.min.js bundle file] is also available at FI-WARE download page.
 
 <pre>
 git clone https://github.com/Kurento/kws-content-api.git

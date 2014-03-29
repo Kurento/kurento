@@ -53,7 +53,7 @@ Things you need to know before start programing
    `Gradle <http://www.gradle.org/>`__ can also be used, but we still
    haven't tested. If you don't use any dependency management you can
    still download the `KMF API
-   Bundle <https://forge.fi-ware.eu/frs/download.php/819/kmf-api.jar>`__
+   Bundle <https://forge.fi-ware.org/frs/download.php/819/kmf-api.jar>`__
    and incorporate manually all dependencies to your application, but
    this is not recommended.
 
@@ -1200,7 +1200,7 @@ installed.
 Current release of HTML5 SDK does not provide a library archive, so it
 must be built directly from the `source
 code <https://github.com/Kurento/kws-content-api>`__. A `bundle
-file <https://forge.fi-ware.eu/frs/download.php/818/kws-content-api.min.js>`__
+file <https://forge.fi-ware.org/frs/download.php/818/kws-content-api.min.js>`__
 is also available at FI-WARE download page.
 
 .. sourcecode:: bash
