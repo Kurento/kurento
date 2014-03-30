@@ -40,12 +40,12 @@ Conventions used in this document
 Some special notations are applied to differentiate some special words
 or concepts. The following list summarizes these special notations:
 
--  A **bold**, mono-spaced font is used to represent code or logical
-   entities, e.g., HTTP method (**GET**, **PUT**, **POST**, **DELETE**).
+-  A ``code style`` with mono-spaced font is used to represent code or logical
+   entities, e.g., HTTP method (``GET``, ``PUT``, ``POST``, ``DELETE``).
 -  An *italic* font is used to represent document titles or some other
    kind of special text, e.g., *URI*.
--  Variables are represented between brackets, e.g. *{id}*, and in
-   italic font. When the reader finds one, it can assume that the
+-  Variables are represented in italic font and code style. For instance
+   :samp:`{id}`. When the reader finds one, it can assume that the
    variable can be changed for any value.
 
 API General Features
@@ -178,12 +178,12 @@ Server using HTTP pseudostreaming.
     =============== ==================================================
     **Verb**        POST
     =============== ==================================================
-    **URI**         ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    **URI**         :samp:`/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}`
     --------------- --------------------------------------------------
-    **Description** Performs an RPC call regarding ``{ContentID}``.
+    **Description** Performs an RPC call regarding :samp:`{ContentID}`.
                     The *Request object* is processed by the
                     *HttpPlayer* application handler tied to
-                    ``{APP_LOGIC_PATH}`` in the ``{CONTEXT-ROOT}``
+                    :samp:`{APP_LOGIC_PATH}` in the :samp:`{CONTEXT-ROOT}`
                     of the application.  The *Request object* (body
                     of the HTTP request) can contain one of these
                     four methods: ``start``, ``poll``,
@@ -193,7 +193,7 @@ Server using HTTP pseudostreaming.
 Methods of the HttpPlayer service
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    ``start(constraints)``
+    :samp:`start({constraints)}`
         Requests the retrieval of the content. The parameter *constraints*
         indicates the kind of media (audio or/and video) to be received. In the
         case of *HttpPlayer*, the values for these constraints for audio and
@@ -226,7 +226,7 @@ Methods of the HttpPlayer service
               },
               "id": 1
             }
-    ``poll(sessionId)``
+    :samp:`poll({sessionId})`
         This method allows emulating *push events* coming from the server by
         using a technique kown as *long polling*. With long polling, the client
         requests information from the server in a way similar to a normal
@@ -284,7 +284,7 @@ Methods of the HttpPlayer service
               },
               "id": 1
             }
-    ``execute(sessionId)``
+    :samp:`execute({sessionId},{command})`
         Exec a command on the server. The *param* object has a *sessionId*
         attribute containing the ID for this session, and a *command* object
         with a *type* string attribute for the command type and a *data*
@@ -320,7 +320,7 @@ Methods of the HttpPlayer service
               },
               "id": 1
             }
-    ``terminate(sessionId)``
+    :samp:`terminate({sessionId},{reason})`
         Requests the termination of the session identified by *sessionId* so the
         server can release the resources assigned to it:
 
@@ -363,11 +363,11 @@ JSON.
     ============================= ====================================================
     **Verb**                      GET
     ============================= ====================================================
-    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    **URI**                       :samp:`/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}`
     ----------------------------- ----------------------------------------------------
-    **Description**               Requests ``{ContentID}`` to be served according to
-                                  the application handler tied to ``{APP_LOGIC_PATH}``
-                                  in the ``{CONTEXT-ROOT}`` of the application
+    **Description**               Requests :samp:`{ContentID}` to be served according to
+                                  the application handler tied to :samp:`{APP_LOGIC_PATH}`
+                                  in the :samp:`{CONTEXT-ROOT}` of the application
     ----------------------------- ----------------------------------------------------
     **Successful Reponse codes**  ``200 OK``
 
@@ -391,12 +391,12 @@ a Media Server.
     ============================= ====================================================
     **Verb**                      POST
     ============================= ====================================================
-    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    **URI**                       :samp:`/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}`
     ----------------------------- ----------------------------------------------------
-    **Description**               Performs an RPC call regarding *{ContentID}*.
+    **Description**               Performs an RPC call regarding :samp:`{ContentID}`.
                                   The *Request object* is processed by the *HttpRecorder*
-                                  application handler tied to ``{APP_LOGIC_PATH}`` in the
-                                  ``{CONTEXT-ROOT}`` of the application. 
+                                  application handler tied to :samp:`{APP_LOGIC_PATH}` in the
+                                  :samp:`{CONTEXT-ROOT}` of the application. 
     ============================= ====================================================
 
 The *Request object* (body of the HTTP request) can contain one of these
@@ -462,11 +462,11 @@ JSON.
     ============================= ====================================================
     **Verb**                      POST
     ============================= ====================================================
-    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    **URI**                       :samp:`/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}`
     ----------------------------- ----------------------------------------------------
-    **Description**               Uploads ``{ContentID}`` to be stored according to the
-                                  application handler tied to ``{APP_LOGIC_PATH}`` in
-                                  the ``{CONTEXT-ROOT}`` of the application
+    **Description**               Uploads :samp:`{ContentID}` to be stored according to the
+                                  application handler tied to :samp:`{APP_LOGIC_PATH}` in
+                                  the :samp:`{CONTEXT-ROOT}` of the application
     ----------------------------- ----------------------------------------------------
     **Successful Reponse codes**  ``200 OK``
 
@@ -491,12 +491,12 @@ client performing the request and a Media Server.
     ============================= ====================================================
     **Verb**                      POST
     ============================= ====================================================
-    **URI**                       ``/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}``
+    **URI**                       :samp:`/{CONTEXT-ROOT}/{APP_LOGIC_PATH}/{ContentID}`
     ----------------------------- ----------------------------------------------------
-    **Description**               Performs an RPC call regarding ``{ContentID}``. The
+    **Description**               Performs an RPC call regarding :samp:`{ContentID}`. The
                                   *Request object* is processed by the *RTPContent*
-                                  application handler tied to ``{APP_LOGIC_PATH}``
-                                  in the ``{CONTEXT-ROOT}`` of the application.
+                                  application handler tied to :samp:`{APP_LOGIC_PATH}`
+                                  in the :samp:`{CONTEXT-ROOT}` of the application.
     ============================= ====================================================
 
 
