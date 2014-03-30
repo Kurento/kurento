@@ -42,7 +42,7 @@ public interface RtpEndpoint extends SdpEndpoint {
 		 * Sets a value for mediaPipeline in Builder for RtpEndpoint.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the endpoint belongs}
+		 *            the {@link MediaPipeline} to which the endpoint belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);

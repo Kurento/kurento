@@ -41,7 +41,7 @@ public interface WebRtcEndpoint extends SdpEndpoint {
 		 * Sets a value for mediaPipeline in Builder for WebRtcEndpoint.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the endpoint belongs}
+		 *            the {@link MediaPipeline} to which the endpoint belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);

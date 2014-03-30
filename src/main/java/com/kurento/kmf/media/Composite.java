@@ -42,7 +42,7 @@ public interface Composite extends Hub {
 		 * Sets a value for mediaPipeline in Builder for Composite.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the dispatcher belongs}
+		 *            the {@link MediaPipeline} to which the dispatcher belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);

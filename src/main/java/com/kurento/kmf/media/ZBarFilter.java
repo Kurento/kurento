@@ -13,7 +13,7 @@ import com.kurento.tool.rom.server.Param;
 /**
  * 
  * This filter detects <a
- * href="http://www.kurento.org/docs/current/glossary.html#term-QR">QR</a> codes
+ * href="http://www.kurento.org/docs/current/glossary.html#term-qr">QR</a> codes
  * in a video feed. When a code is found, the filter raises a
  * :rom:evnt:`CodeFound` event.
  * 
@@ -71,7 +71,7 @@ public interface ZBarFilter extends Filter {
 		 * Sets a value for mediaPipeline in Builder for ZBarFilter.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the filter belongs}
+		 *            the {@link MediaPipeline} to which the filter belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);

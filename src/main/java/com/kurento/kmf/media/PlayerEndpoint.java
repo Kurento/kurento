@@ -14,7 +14,7 @@ import com.kurento.tool.rom.server.Param;
  * 
  * Retrieves content from seekable sources in reliable mode (does not discard
  * media information) and inject them into <a
- * href="http://www.kurento.org/docs/current/glossary.html#term-KMS">KMS</a>. It
+ * href="http://www.kurento.org/docs/current/glossary.html#term-kms">KMS</a>. It
  * contains one {@link MediaSource} for each media type detected.
  * 
  **/

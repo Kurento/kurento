@@ -60,7 +60,7 @@ public interface RecorderEndpoint extends UriEndpoint {
 		 * Sets a value for mediaPipeline in Builder for RecorderEndpoint.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the endpoint belongs}
+		 *            the {@link MediaPipeline} to which the endpoint belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);
@@ -90,7 +90,7 @@ public interface RecorderEndpoint extends UriEndpoint {
 		 * 
 		 * Forces the recorder endpoint to finish processing data when an <a
 		 * href
-		 * ="http://www.kurento.org/docs/current/glossary.html#term-EOS">EOS</a>
+		 * ="http://www.kurento.org/docs/current/glossary.html#term-eos">EOS</a>
 		 * is detected in the stream
 		 * 
 		 **/

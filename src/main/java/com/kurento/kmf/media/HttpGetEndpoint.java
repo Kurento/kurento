@@ -43,7 +43,7 @@ public interface HttpGetEndpoint extends HttpEndpoint {
 		 * Sets a value for mediaPipeline in Builder for HttpGetEndpoint.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the endpoint belongs}
+		 *            the {@link MediaPipeline} to which the endpoint belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);
@@ -62,8 +62,8 @@ public interface HttpGetEndpoint extends HttpEndpoint {
 		 * Sets a value for mediaProfile in Builder for HttpGetEndpoint.
 		 * 
 		 * @param mediaProfile
-		 *            the :rom:rec:`MediaProfileSpecType` (WEBM, MP4...) for the
-		 *            endpoint
+		 *            the :rom:enum:`MediaProfileSpecType` (WEBM, MP4...) for
+		 *            the endpoint
 		 * 
 		 **/
 		public Builder withMediaProfile(MediaProfileSpecType mediaProfile);

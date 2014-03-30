@@ -128,7 +128,7 @@ public interface CrowdDetectorFilter extends Filter {
 		 * Sets a value for mediaPipeline in Builder for CrowdDetectorFilter.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the filter belongs}
+		 *            the {@link MediaPipeline} to which the filter belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);

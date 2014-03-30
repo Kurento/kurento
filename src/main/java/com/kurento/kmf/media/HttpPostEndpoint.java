@@ -16,7 +16,7 @@ import com.kurento.tool.rom.server.Param;
  * provide access to an HTTP file upload function This type of endpoint provide
  * unidirectional communications. Its {@link MediaSource MediaSources } are
  * accessed through the <a
- * href="http://www.kurento.org/docs/current/glossary.html#term-HTTP">HTTP</a>
+ * href="http://www.kurento.org/docs/current/glossary.html#term-http">HTTP</a>
  * POST method.
  * 
  **/
@@ -73,7 +73,7 @@ public interface HttpPostEndpoint extends HttpEndpoint {
 		 * Sets a value for mediaPipeline in Builder for HttpPostEndpoint.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the endpoint belongs}
+		 *            the {@link MediaPipeline} to which the endpoint belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);

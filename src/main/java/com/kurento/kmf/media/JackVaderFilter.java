@@ -44,7 +44,7 @@ public interface JackVaderFilter extends Filter {
 		 * Sets a value for mediaPipeline in Builder for JackVaderFilter.
 		 * 
 		 * @param mediaPipeline
-		 *            the {@link MediaPipeline to which the filter belongs}
+		 *            the {@link MediaPipeline} to which the filter belongs
 		 * 
 		 **/
 		public Builder withMediaPipeline(MediaPipeline mediaPipeline);
