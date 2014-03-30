@@ -63,7 +63,7 @@ Representation Transport
 
 Resource representation is transmitted between client and server by
 using HTTP 1.1 protocol, as defined by IETF RFC-2616. Each time an HTTP
-request contains payload, a Content-Type header shall be used to specify
+request contains payload, a `Content-Type`:mailheader: header shall be used to specify
 the MIME type of wrapped representation. In addition, both client and
 server may use as many HTTP headers as they consider necessary.
 
@@ -75,11 +75,11 @@ request and response parameters following the recommendations in the
 proposal `JSON-RPC over
 HTTP <http://www.simple-is-better.org/json-rpc/jsonrpc20-over-http.html>`__.
 
-The format of the requests is specified by using the *Content-Type*
-header with a value of *application/json-rpc* and is required for
+The format of the requests is specified by using the `Content-Type`:mailheader:
+header with a value of :mimetype:`application/json-rpc` and is required for
 requests containing a body. The format required for the response is
-specified in the request by setting the *Accept* header to the value
-*application/json-rpc*, that is, request and response bodies are
+specified in the request by setting the `Accept`:mailheader: header to the value
+:mimetype:`application/json-rpc`, that is, request and response bodies are
 serialized using the same format.
 
 Request object
