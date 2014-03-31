@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.2.2</version>
+		<version>4.2.3-SNAPSHOT</version>
 	</parent>
 	
 	<groupId>com.kurento.kmf</groupId>
@@ -50,4 +50,4 @@
 		</plugins>
 	</build>
 
-<scm><tag>kmf-assembly-4.2.2</tag></scm></project>
+</project>
