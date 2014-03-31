@@ -431,11 +431,6 @@ public abstract class AbstractContentSession implements ContentSession {
 					message.getParams().getCommand().getType(), message
 							.getParams().getCommand().getData()));
 
-			if (result == null) {
-				throw new NullPointerException(
-						"You must provide a non-null result"); // TODO: message
-			}
-
 		} catch (Throwable t) {
 			getLogger().error(
 					"Error invoking onContentCommand on handler. Cause "
@@ -462,13 +457,17 @@ public abstract class AbstractContentSession implements ContentSession {
 			}
 
 			callOnUncaughtExceptionThrown(t);
+			return;
 		}
 
-		registered = true;
-
 		try {
-			protocolManager.sendJsonAnswer(asyncCtx, JsonRpcResponse
-					.newExecuteResponse(sessionId, result.getResult(), message.getId()));
+			protocolManager.sendJsonAnswer(
+					asyncCtx,
+					JsonRpcResponse.newExecuteResponse(sessionId,
+							result.getResult(), message.getId()));
+
+			registered = true;
+
 		} catch (Throwable t) {
 			getLogger()
 					.error("Error invoking sendJsonAnswer. Cause "
