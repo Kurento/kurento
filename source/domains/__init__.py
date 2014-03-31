@@ -34,7 +34,6 @@ def gen_role(func, use_explicit=False):
 
     return role
 def wikipedia(word, has_title=False):
-    print word, has_title
     try:
         l, q = word.split(",", 1)
     except:
