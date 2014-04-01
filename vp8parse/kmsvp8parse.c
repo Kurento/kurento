@@ -146,6 +146,21 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
   return update_caps;
 }
 
+static void
+kms_vp8_parse_force_key_unit_event (GstBaseParse * self)
+{
+  GstStructure *s;
+  GstEvent *key_unit_event;
+
+  GST_DEBUG_OBJECT (self, "Request key frame");
+
+  s = gst_structure_new ("GstForceKeyUnit",
+      "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
+  key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+
+  gst_pad_push_event (GST_BASE_PARSE_SINK_PAD (self), key_unit_event);
+}
+
 static GstFlowReturn
 kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     gint * skipsize)
@@ -184,6 +199,8 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
       GST_INFO_OBJECT (parse, "Updating width: %d", stream_info.w);
       update_caps = TRUE;
     }
+  } else if (!self->priv->started) {
+    kms_vp8_parse_force_key_unit_event (parse);
   }
 
   if (!self->priv->started)
