@@ -9,6 +9,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-media-connector</artifactId>
+	<version>${project.parent.version}</version>
 	<packaging>jar</packaging>
 
 	<name>kmf-media-connector</name>
