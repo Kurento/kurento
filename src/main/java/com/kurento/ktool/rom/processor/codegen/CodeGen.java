@@ -18,6 +18,7 @@ import com.kurento.ktool.rom.processor.codegen.function.CamelToUnderscore;
 import com.kurento.ktool.rom.processor.codegen.function.CppObjectType;
 import com.kurento.ktool.rom.processor.codegen.function.IsFirstConstructorParam;
 import com.kurento.ktool.rom.processor.codegen.function.JavaObjectType;
+import com.kurento.ktool.rom.processor.codegen.function.JsNamespace;
 import com.kurento.ktool.rom.processor.codegen.function.RemoteClassDependencies;
 import com.kurento.ktool.rom.processor.codegen.function.SphinxLinks;
 import com.kurento.ktool.rom.processor.model.Model;
@@ -124,6 +125,7 @@ public class CodeGen {
 		root.put("remoteClassDependencies", new RemoteClassDependencies());
 		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
 		root.put("sphinxLinks", new SphinxLinks());
+		root.put("getJsNamespace", new JsNamespace());
 
 		root.put("model", model);
 		if (this.config != null) {
