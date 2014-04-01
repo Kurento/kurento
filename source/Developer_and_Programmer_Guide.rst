@@ -1655,7 +1655,7 @@ The list of examples within `kmf-content-demo` is as follows:
 
 .. [#]
 
-    WEBM is the format supported _out of the box_ by the Content API.
+    WEBM is the format supported *out of the box* by the Content API.
     To use :term:`MP4` a specific Media Pipeline needs to be constructed,
     and  :java:field:`~com.kurento.kmf.media.MediaProfileSpecType.WebM`
     specified, like in `this sample <mp4-recorder>`:ref:.
