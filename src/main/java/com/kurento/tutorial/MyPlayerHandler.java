@@ -27,7 +27,7 @@ import com.kurento.kmf.media.PlayerEndpoint;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.2
  */
-@HttpPlayerService(path = "/player", useControlProtocol = false)
+@HttpPlayerService(path = "/player")
 public class MyPlayerHandler extends HttpPlayerHandler {
 
 	@Override
