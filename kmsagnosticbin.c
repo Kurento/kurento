@@ -160,12 +160,76 @@ tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   return GST_PAD_PROBE_PASS;
 }
 
+static gboolean
+remove_on_unlinked_async (gpointer data)
+{
+  GstElement *elem = GST_ELEMENT_CAST (data);
+
+  gst_element_set_state (elem, GST_STATE_NULL);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  GstElement *elem = GST_ELEMENT (GST_OBJECT_PARENT (pad));
+  KmsAgnosticBin2 *self;
+  GstBin *parent;
+
+  if (elem == NULL) {
+    return;
+  }
+
+  GST_INFO_OBJECT (elem, "Removing");
+
+  parent = GST_BIN (GST_OBJECT_PARENT (elem));
+  self = KMS_AGNOSTIC_BIN2 (parent);
+
+  if (parent != NULL && self != NULL) {
+    g_object_ref (elem);
+    gst_bin_remove (parent, elem);
+    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
+        remove_on_unlinked_async, elem, g_object_unref);
+  }
+
+  GST_INFO_OBJECT (elem, "OK");
+}
+
+static void
+remove_element_on_unlinked (GstElement * element, const gchar * pad_name)
+{
+  GstPad *pad = gst_element_get_static_pad (element, pad_name);
+
+  if (pad == NULL) {
+    return;
+  }
+
+  g_signal_connect (pad, "unlinked", G_CALLBACK (remove_on_unlinked_cb), NULL);
+
+  g_object_unref (pad);
+}
+
+static void
+remove_tee_pad_on_unlink (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  GstElement *tee = GST_ELEMENT (GST_OBJECT_PARENT (pad));
+
+  if (tee == NULL) {
+    return;
+  }
+
+  gst_element_release_request_pad (tee, pad);
+}
+
 static void
 link_queue_to_tee (GstElement * tee, GstElement * queue)
 {
   GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
   GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
   GstPadLinkReturn ret;
+
+  remove_element_on_unlinked (queue, "src");
 
   gst_pad_add_probe (tee_src,
       GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_DATA_BOTH, tee_src_probe,
@@ -175,6 +239,9 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
   if (G_UNLIKELY (GST_PAD_LINK_FAILED (ret)))
     GST_ERROR ("Linking %" GST_PTR_FORMAT " with %" GST_PTR_FORMAT " result %d",
         tee_src, queue_sink, ret);
+
+  g_signal_connect (tee_src, "unlinked", G_CALLBACK (remove_tee_pad_on_unlink),
+      NULL);
 
   g_object_unref (queue_sink);
   g_object_unref (tee_src);
@@ -308,6 +375,9 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
   if (!gst_caps_is_any (caps) && is_raw_caps (caps)) {
     GstElement *convert = create_convert_for_caps (caps);
     GstElement *rate = create_rate_for_caps (caps);
+
+    remove_element_on_unlinked (convert, "src");
+    remove_element_on_unlinked (rate, "src");
 
     gst_bin_add_many (GST_BIN (self), convert, rate, NULL);
     gst_element_sync_state_with_parent (convert);
