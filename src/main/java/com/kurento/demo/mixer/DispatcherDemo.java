@@ -91,6 +91,7 @@ public class DispatcherDemo extends WebRtcContentHandler {
 			session.start(participant.endpoint);
 			session.setAttribute("participant", participant);
 			participants.put(participant.getId(), participant);
+			dispatcher.connect(hubPort, hubPort);
 			notifyJoined(participant);
 		}
 	}
