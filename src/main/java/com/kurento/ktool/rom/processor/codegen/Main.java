@@ -4,6 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -15,9 +21,11 @@ import org.apache.commons.cli.PosixParser;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.kurento.ktool.rom.processor.json.JsonModel;
 import com.kurento.ktool.rom.processor.model.Model;
@@ -79,13 +87,11 @@ public class Main {
 		}
 
 		File romFile = getRomFile(line);
+		JsonObject configContent = getConfigContent(line);
 		File templatesDir = getTemplatesDir(line);
 		File codegenDir = getCodegenDir(line);
-		JsonObject configContent = getConfigContent(line, romFile);
 
-		if (line.hasOption(DELETE) && codegenDir.exists()) {
-			delete(codegenDir);
-		}
+		deleteIfNecessary(line, configContent, codegenDir);
 
 		Model model = new JsonModel().loadFromFile(romFile);
 
@@ -98,14 +104,14 @@ public class Main {
 
 	}
 
-	private static JsonObject getConfigContent(CommandLine line, File romFile)
+	private static JsonObject getConfigContent(CommandLine line)
 			throws FileNotFoundException {
 		JsonObject configContents = null;
 		String configValue = line.getOptionValue(CONFIG);
 		if (configValue != null) {
 			File configFile = new File(configValue);
 			if (!configFile.exists() || !configFile.canRead()) {
-				System.err.println("Config file '" + romFile
+				System.err.println("Config file '" + configFile
 						+ "' does not exist or is not readable");
 				System.exit(1);
 			}
@@ -174,14 +180,51 @@ public class Main {
 		}
 	}
 
-	public static void delete(File f) throws IOException {
+	private static void deleteIfNecessary(CommandLine line,
+			JsonObject configContent, File codegenDir) throws IOException {
+		if (line.hasOption(DELETE) && codegenDir.exists()) {
+
+			List<String> noDeleteFiles = new ArrayList<String>();
+			if (configContent != null) {
+				JsonArray array = configContent.getAsJsonArray("no_delete");
+				if (array != null) {
+					for (JsonElement elem : array) {
+						if (elem instanceof JsonPrimitive) {
+							noDeleteFiles.add(((JsonPrimitive) elem)
+									.getAsString());
+						}
+					}
+				}
+			}
+
+			delete(codegenDir, noDeleteFiles);
+		}
+	}
+
+	public static void delete(File f, List<String> noDeleteFiles)
+			throws IOException {
+		delete(f, f, noDeleteFiles);
+	}
+
+	public static void delete(File basePath, File f, List<String> noDeleteFiles)
+			throws IOException {
+
+		Path relativePath = basePath.toPath().relativize(f.toPath());
+
+		if (noDeleteFiles.contains(relativePath.toString())) {
+			return;
+		}
+
 		if (f.isDirectory()) {
 			for (File c : f.listFiles()) {
-				delete(c);
+				delete(basePath, c, noDeleteFiles);
 			}
 		}
-		if (!f.delete()) {
-			throw new FileNotFoundException("Failed to delete file: " + f);
+
+		if (f.listFiles().length == 0) {
+			if (!f.delete()) {
+				throw new FileNotFoundException("Failed to delete file: " + f);
+			}
 		}
 	}
 
