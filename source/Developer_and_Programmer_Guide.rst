@@ -219,7 +219,7 @@ Next steps
 -  Review :ref:`programming-with-kmf-content-api` for a detailed
    reference on content services.
 -  Go to :ref:`programming-with-kmf-media-api` for a detailed explanation
-   about how to achieve full control of :term:`Kurento Media Server`.
+   about how to achieve full control of :term:`Kurento Media Server <KMS>`.
 -  Review :ref:`programming-with-kws` for a
    detailed reference of capabilities available in browsers.
 
