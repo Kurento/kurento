@@ -164,8 +164,11 @@ static gboolean
 remove_on_unlinked_async (gpointer data)
 {
   GstElement *elem = GST_ELEMENT_CAST (data);
+  GstBin *parent = GST_BIN (GST_OBJECT_PARENT (elem));
 
+  gst_element_set_locked_state (elem, TRUE);
   gst_element_set_state (elem, GST_STATE_NULL);
+  gst_bin_remove (parent, elem);
 
   return G_SOURCE_REMOVE;
 }
@@ -175,7 +178,6 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 {
   GstElement *elem = GST_ELEMENT (GST_OBJECT_PARENT (pad));
   KmsAgnosticBin2 *self;
-  GstBin *parent;
 
   if (elem == NULL) {
     return;
@@ -183,12 +185,23 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 
   GST_INFO_OBJECT (elem, "Removing");
 
-  parent = GST_BIN (GST_OBJECT_PARENT (elem));
-  self = KMS_AGNOSTIC_BIN2 (parent);
+  self = KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (elem));
 
-  if (parent != NULL && self != NULL) {
+  if (self != NULL) {
+    GstPad *sink = gst_element_get_static_pad (elem, (gchar *) user_data);
+
+    if (sink != NULL) {
+      GstPad *peer = gst_pad_get_peer (sink);
+
+      if (peer != NULL) {
+        gst_pad_unlink (peer, sink);
+        gst_object_unref (peer);
+      }
+
+      g_object_unref (sink);
+    }
+
     g_object_ref (elem);
-    gst_bin_remove (parent, elem);
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
         remove_on_unlinked_async, elem, g_object_unref);
   }
@@ -196,8 +209,10 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
   GST_INFO_OBJECT (elem, "OK");
 }
 
+/* Sink name should be static memory */
 static void
-remove_element_on_unlinked (GstElement * element, const gchar * pad_name)
+remove_element_on_unlinked (GstElement * element, const gchar * pad_name,
+    gchar * sink_name)
 {
   GstPad *pad = gst_element_get_static_pad (element, pad_name);
 
@@ -205,7 +220,8 @@ remove_element_on_unlinked (GstElement * element, const gchar * pad_name)
     return;
   }
 
-  g_signal_connect (pad, "unlinked", G_CALLBACK (remove_on_unlinked_cb), NULL);
+  g_signal_connect (pad, "unlinked", G_CALLBACK (remove_on_unlinked_cb),
+      sink_name);
 
   g_object_unref (pad);
 }
@@ -229,7 +245,7 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
   GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
   GstPadLinkReturn ret;
 
-  remove_element_on_unlinked (queue, "src");
+  remove_element_on_unlinked (queue, "src", "sink");
 
   gst_pad_add_probe (tee_src,
       GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_DATA_BOTH, tee_src_probe,
@@ -355,8 +371,8 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
     GstElement *convert = create_convert_for_caps (caps);
     GstElement *rate = create_rate_for_caps (caps);
 
-    remove_element_on_unlinked (convert, "src");
-    remove_element_on_unlinked (rate, "src");
+    remove_element_on_unlinked (convert, "src", "sink");
+    remove_element_on_unlinked (rate, "src", "sink");
 
     gst_bin_add_many (GST_BIN (self), convert, rate, NULL);
     gst_element_sync_state_with_parent (convert);
