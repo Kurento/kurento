@@ -293,7 +293,22 @@ public final class KurentoApplicationContextUtils {
 		log.info("Registering Kurento ServletContextListener ...");
 		ctx.setAttribute(KURENTO_SERVLET_CONTEXT_LISTENER_ATTRIBUTE_NAME,
 				"initialized");
-		ctx.addListener(KurentoServletContextListener.class);
+
+		try {
+			ctx.addListener(KurentoServletContextListener.class);
+		} catch (NullPointerException e) {
+			// TODO: Workaround to make it compatible with/without SpringBoot.
+			// This exception is thrown when this class is used with SpringBoot.
+			// As workaround, SpringBoot application has to define the following
+			// @Bean in a @Configuration class:
+			//
+			// @Bean
+			// public ServletListenerRegistrationBean
+			// <KurentoServletContextListener> listener(){
+			// return new ServletListenerRegistrationBean<>(
+			// new KurentoServletContextListener());
+			// }
+		}
 	}
 
 	public static AnnotationConfigApplicationContext debugOnlyCreateKurentoApplicationContext() {
