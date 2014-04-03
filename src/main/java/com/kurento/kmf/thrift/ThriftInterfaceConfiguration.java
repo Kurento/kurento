@@ -67,6 +67,16 @@ public class ThriftInterfaceConfiguration {
 	 */
 	private int clientPoolSize = 5;
 
+	// Used in Spring environments
+	public ThriftInterfaceConfiguration() {
+	}
+
+	// Used in non Spring environments
+	public ThriftInterfaceConfiguration(String serverAddress, int serverPort) {
+		this.serverAddress = serverAddress;
+		this.serverPort = serverPort;
+	}
+
 	/**
 	 * Obtains the address where the thrift server exposed by the Kurento Media
 	 * Server is listening.

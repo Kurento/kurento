@@ -39,6 +39,19 @@ public class MediaServerClientPoolService {
 	@Autowired
 	private MediaServerSyncClientPool syncClientPool;
 
+	// Used in Spring environments
+	public MediaServerClientPoolService() {
+	}
+
+	// Used in non Spring environments
+	public MediaServerClientPoolService(
+			MediaServerAsyncClientPool asyncClientPool,
+			MediaServerSyncClientPool syncClientPool) {
+
+		this.asyncClientPool = asyncClientPool;
+		this.syncClientPool = syncClientPool;
+	}
+
 	public AsyncClient acquireAsync() throws PoolLimitException,
 			KurentoMediaFrameworkException {
 		log.trace("Acquiring async client from pool");

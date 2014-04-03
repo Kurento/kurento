@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class MediaServerSyncClientPool extends AbstractPool<Client> {
@@ -25,8 +26,16 @@ public class MediaServerSyncClientPool extends AbstractPool<Client> {
 	@Autowired
 	private MediaServerSyncClientFactory syncFactory;
 
+	// Used in Spring environments
 	public MediaServerSyncClientPool() {
-		super();
+	}
+
+	// Used in non Spring environments
+	public MediaServerSyncClientPool(MediaServerSyncClientFactory syncFactory,
+			ThriftInterfaceConfiguration cfg) {
+		super(cfg);
+		this.syncFactory = syncFactory;
+		init();
 	}
 
 	@PostConstruct

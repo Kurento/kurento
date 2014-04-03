@@ -66,12 +66,13 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				try {
 					Thread.sleep(KEEP_ALIVE_TIME);
 				} catch (InterruptedException e) {
-					LOG.info("Sleep interrupted", e);
+					return;
 				}
 
 				synchronized (keepAliveThread) {
-					if (stopKeepAlive)
+					if (stopKeepAlive) {
 						return;
+					}
 				}
 
 				Set<String> copiedSessions;

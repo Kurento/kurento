@@ -33,6 +33,15 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
 	private ObjectPool<T> pool;
 
+	// Used in Spring environments
+	public AbstractPool() {
+	}
+
+	// Used in non Spring environments
+	public AbstractPool(ThriftInterfaceConfiguration apiConfig) {
+		this.apiConfig = apiConfig;
+	}
+
 	protected void init(BasePooledObjectFactory<T> factory) {
 		GenericObjectPoolConfig config = new GenericObjectPoolConfig();
 		config.setMinIdle(apiConfig.getClientPoolSize());

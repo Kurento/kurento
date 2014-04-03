@@ -35,6 +35,15 @@ public class MediaServerSyncClientFactory extends
 	@Autowired
 	private ThriftInterfaceConfiguration apiConfig;
 
+	// Used in Spring environments
+	public MediaServerSyncClientFactory() {
+	}
+
+	// Used in non Spring environments
+	public MediaServerSyncClientFactory(ThriftInterfaceConfiguration apiConfig) {
+		this.apiConfig = apiConfig;
+	}
+
 	@Override
 	public Client create() throws Exception {
 		return createSyncClient();

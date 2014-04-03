@@ -37,6 +37,16 @@ public class MediaServerAsyncClientFactory extends
 	@Autowired
 	private ThriftInterfaceConfiguration apiConfig;
 
+	// Used in Spring environments
+	public MediaServerAsyncClientFactory() {
+		// TODO Auto-generated constructor stub
+	}
+
+	// Used in non Spring environments
+	public MediaServerAsyncClientFactory(ThriftInterfaceConfiguration apiConfig) {
+		this.apiConfig = apiConfig;
+	}
+
 	@Override
 	public AsyncClient create() throws Exception {
 		return createAsyncClient();

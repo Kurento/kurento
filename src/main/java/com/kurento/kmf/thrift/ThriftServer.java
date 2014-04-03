@@ -69,15 +69,12 @@ public class ThriftServer {
 
 		TNonblockingServerTransport transport;
 
-		while (true) {
-			try {
-				transport = new TNonblockingServerSocket(addr);
-				break;
-			} catch (TTransportException e) {
-				throw new KurentoMediaFrameworkException(
-						"Could not start media handler server. "
-								+ e.getMessage(), e, 30003);
-			}
+		try {
+			transport = new TNonblockingServerSocket(addr);
+		} catch (TTransportException e) {
+			throw new KurentoMediaFrameworkException(
+					"Could not start media handler server. " + e.getMessage(),
+					e, 30003);
 		}
 
 		// TODO default selectorThreads is 2. Test if this is enough under load,

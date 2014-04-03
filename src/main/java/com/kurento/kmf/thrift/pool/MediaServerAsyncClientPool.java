@@ -26,11 +26,17 @@ public class MediaServerAsyncClientPool extends AbstractPool<AsyncClient> {
 	@Autowired
 	private MediaServerAsyncClientFactory asyncFactory;
 
-	@Autowired
-	private ThriftInterfaceConfiguration cfg;
-
+	// Used in Spring environments
 	public MediaServerAsyncClientPool() {
-		super();
+	}
+
+	// Used in non Spring environments
+	public MediaServerAsyncClientPool(
+			MediaServerAsyncClientFactory asyncFactory,
+			ThriftInterfaceConfiguration cfg) {
+		super(cfg);
+		this.asyncFactory = asyncFactory;
+		init();
 	}
 
 	@PostConstruct

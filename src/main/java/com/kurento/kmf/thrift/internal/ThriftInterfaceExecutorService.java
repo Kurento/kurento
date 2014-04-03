@@ -60,14 +60,16 @@ public class ThriftInterfaceExecutorService {
 	public ThriftInterfaceExecutorService() {
 	}
 
+	public ThriftInterfaceExecutorService(ThriftInterfaceConfiguration config) {
+		this.config = config;
+		afterPropertiesSet();
+	}
+
 	/**
 	 * Post constructor method; instantiate thread pool.
-	 * 
-	 * @throws Exception
-	 *             Error in the creation of the thread pool
 	 */
 	@PostConstruct
-	public void afterPropertiesSet() throws Exception {
+	public void afterPropertiesSet() {
 		executor = new ThreadPoolExecutor(config.getPoolCoreSize(),
 				config.getPoolMaxSize(), config.getPoolExecutionTimeout(),
 				TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(
@@ -89,7 +91,7 @@ public class ThriftInterfaceExecutorService {
 	 *             Problem while shutting down thread
 	 */
 	@PreDestroy
-	public void destroy() throws Exception {
+	public void destroy() {
 		executor.shutdown();
 	}
 
