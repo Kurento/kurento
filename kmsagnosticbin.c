@@ -142,22 +142,17 @@ end:
 static GstPadProbeReturn
 tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
-  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
-    return GST_PAD_PROBE_OK;
-
   if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_BOTH) {
     GstEvent *event = gst_pad_probe_info_get_event (info);
 
     if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
-      // We drop reconfigure events to avoid not negotiated error caused by
-      // continious negotiations
+      // Request key frame to upstream elements
       send_force_key_unit_event (pad);
       GST_DEBUG_OBJECT (pad, "Dropping reconfigure event");
-      return GST_PAD_PROBE_DROP;
     }
   }
 
-  return GST_PAD_PROBE_PASS;
+  return GST_PAD_PROBE_OK;
 }
 
 static gboolean
@@ -247,8 +242,7 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
 
   remove_element_on_unlinked (queue, "src", "sink");
 
-  gst_pad_add_probe (tee_src,
-      GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_DATA_BOTH, tee_src_probe,
+  gst_pad_add_probe (tee_src, GST_PAD_PROBE_TYPE_EVENT_BOTH, tee_src_probe,
       NULL, NULL);
   ret = gst_pad_link (tee_src, queue_sink);
 
