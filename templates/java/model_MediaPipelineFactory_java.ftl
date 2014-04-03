@@ -13,7 +13,7 @@ ${config.subfolder}/MediaPipelineFactory.java
  * Lesser General Public License for more details.
  *
  */
-package ${config.packageName};
+package com.kurento.kmf.media;
 
 import java.net.InetSocketAddress;
 
@@ -25,9 +25,14 @@ import org.springframework.stereotype.Component;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
+import com.kurento.kmf.thrift.pool.MediaServerAsyncClientFactory;
+import com.kurento.kmf.thrift.pool.MediaServerAsyncClientPool;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
+import com.kurento.kmf.thrift.pool.MediaServerSyncClientFactory;
+import com.kurento.kmf.thrift.pool.MediaServerSyncClientPool;
 import com.kurento.tool.rom.client.RemoteObjectFactory;
 import com.kurento.tool.rom.client.RemoteObjectTypedFactory;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
@@ -53,6 +58,37 @@ public class MediaPipelineFactory {
 
 	private RemoteObjectTypedFactory factory;
 
+	private boolean springEnv = true;
+
+	// Used in Spring environments
+	public MediaPipelineFactory() {
+	}
+
+	// Used in non Spring environments
+	public MediaPipelineFactory(String serverAddress, int serverPort,
+			String handlerAdress, int handlerPort) {
+
+		this.config = new MediaApiConfiguration();
+
+		ThriftInterfaceConfiguration cfg = new ThriftInterfaceConfiguration(
+				serverAddress, serverPort);
+
+		MediaServerAsyncClientPool asyncClientPool = new MediaServerAsyncClientPool(
+				new MediaServerAsyncClientFactory(cfg), cfg);
+
+		MediaServerSyncClientPool syncClientPool = new MediaServerSyncClientPool(
+				new MediaServerSyncClientFactory(cfg), cfg);
+
+		this.clientPool = new MediaServerClientPoolService(asyncClientPool,
+				syncClientPool);
+
+		this.executorService = new ThriftInterfaceExecutorService(cfg);
+
+		this.springEnv = false;
+
+		init();
+	}
+
 	@PostConstruct
 	private void init() {
 
@@ -65,8 +101,11 @@ public class MediaPipelineFactory {
 	}
 
 	@PreDestroy
-	private void destroy() {
+	public void destroy() {
 		factory.destroy();
+		if(!springEnv){
+			executorService.destroy();
+		}
 	}
 
 	/**

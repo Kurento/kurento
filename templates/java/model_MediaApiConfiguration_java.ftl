@@ -13,7 +13,7 @@ ${config.subfolder}/MediaApiConfiguration.java
  * Lesser General Public License for more details.
  *
  */
-package ${config.packageName};
+package com.kurento.kmf.media;
 
 import org.springframework.stereotype.Component;
 
@@ -39,6 +39,16 @@ public class MediaApiConfiguration {
 	 * Port where the local thrift server will be listening.
 	 */
 	private int handlerPort = 9292;
+
+	//Used in Spring environments
+	public MediaApiConfiguration() {
+	}
+
+	//Used in non Spring environments
+	public MediaApiConfiguration(String handlerAddress, int handlerPort){
+		this.handlerAddress = handlerAddress;
+		this.handlerPort = handlerPort;
+	}
 
 	/**
 	 * Gets the address of the local thrift server, which will be used to
