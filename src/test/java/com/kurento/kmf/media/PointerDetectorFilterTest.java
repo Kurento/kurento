@@ -25,10 +25,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -42,12 +38,7 @@ import com.kurento.kmf.media.events.WindowOutEvent;
  * @version 1.0.0
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class PointerDetectorFilterTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public class PointerDetectorFilterTest extends MediaApiTest {
 
 	private MediaPipeline pipeline;
 

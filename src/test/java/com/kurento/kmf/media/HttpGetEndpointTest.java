@@ -20,19 +20,17 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -62,12 +60,7 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  * @version 1.0.0
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class HttpGetEndpointTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public class HttpGetEndpointTest extends MediaApiTest {
 
 	private MediaPipeline pipeline;
 
@@ -102,7 +95,7 @@ public class HttpGetEndpointTest {
 		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
 		player.connect(httpEP);
 
-		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<EndOfStreamEvent>(
+		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<>(
 				1);
 		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
 
@@ -120,8 +113,8 @@ public class HttpGetEndpointTest {
 			}
 		});
 
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		try {
+		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		} catch (ClientProtocolException e) {
@@ -130,7 +123,7 @@ public class HttpGetEndpointTest {
 			throw new KurentoMediaFrameworkException();
 		}
 
-		Assert.assertNotNull(eosEvents.poll(7, SECONDS));
+		Assert.assertNotNull(eosEvents.poll(60, SECONDS));
 
 		httpEP.release();
 		player.release();
@@ -141,37 +134,33 @@ public class HttpGetEndpointTest {
 	 * 
 	 * @throws InterruptedException
 	 */
-	// TODO how to test this event?
 	@Ignore
 	@Test
 	public void testEventMediaSessionTerminated() throws InterruptedException {
-		// HttpGetEndpoint httpEP = pipeline.createHttpGetEndpoint(1, 1);
-		//
-		// final Semaphore sem = new Semaphore(0);
-		//
-		// httpEP.addMediaSessionTerminatedListener(new
-		// MediaEventListener<MediaSessionTerminatedEvent>() {
-		//
-		// @Override
-		// public void onEvent(MediaSessionTerminatedEvent event) {
-		// sem.release();
-		// }
-		// });
-		//
-		// DefaultHttpClient httpclient = new DefaultHttpClient();
-		// try {
-		// // This should trigger MediaSessionStartedEvent
-		// httpclient.execute(new HttpGet(httpEP.getUrl()));
-		// } catch (ClientProtocolException e) {
-		// throw new KurentoMediaFrameworkException();
-		// } catch (IOException e) {
-		// throw new KurentoMediaFrameworkException();
-		// }
-		//
-		// //TODO set a time simila
-		// Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
-		//
-		// httpEP.release();
-	}
+		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
 
+		final Semaphore sem = new Semaphore(0);
+
+		httpEP.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
+
+			@Override
+			public void onEvent(MediaSessionTerminatedEvent event) {
+				sem.release();
+			}
+		});
+
+		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+				.build()) {
+			// This should trigger MediaSessionStartedEvent
+			httpclient.execute(new HttpGet(httpEP.getUrl()));
+		} catch (ClientProtocolException e) {
+			throw new KurentoMediaFrameworkException();
+		} catch (IOException e) {
+			throw new KurentoMediaFrameworkException();
+		}
+
+		Assert.assertTrue(sem.tryAcquire(50, SECONDS));
+
+		httpEP.release();
+	}
 }

@@ -43,12 +43,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
  * @version 1.0.0
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class RecorderEndpointTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public class RecorderEndpointTest extends MediaApiTest {
 
 	private MediaPipeline pipeline;
 

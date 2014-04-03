@@ -99,7 +99,7 @@ public class ZBarFilterAsyncTest extends AbstractAsyncBaseTest {
 
 		player.play();
 
-		CodeFoundEvent event = events.poll(500, MILLISECONDS);
+		CodeFoundEvent event = events.poll(5000, MILLISECONDS);
 		Assert.assertNotNull(event);
 
 		player.stop();

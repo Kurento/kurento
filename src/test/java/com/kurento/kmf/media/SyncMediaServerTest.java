@@ -19,27 +19,17 @@ import java.util.Collection;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class SyncMediaServerTest {
+public class SyncMediaServerTest extends MediaApiTest {
 
 	public static final String URL_BARCODES = "https://ci.kurento.com/video/barcodes.webm";
 	public static final String URL_FIWARECUT = "https://ci.kurento.com/video/fiwarecut.webm";
 	public static final String URL_SMALL = "https://ci.kurento.com/video/small.webm";
 	public static final String URL_PLATES = "https://ci.kurento.com/video/plates.webm";
 	public static final String URL_POINTER_DETECTOR = "https://ci.kurento.com/video/pointerDetector.mp4";
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
 
 	private MediaPipeline pipeline;
 

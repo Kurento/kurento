@@ -40,12 +40,7 @@ import com.kurento.kmf.media.events.MediaEventListener;
  * @since 2.0.1
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class FaceOverlayFilterTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public class FaceOverlayFilterTest extends MediaApiTest {
 
 	private MediaPipeline pipeline;
 
@@ -53,6 +48,7 @@ public class FaceOverlayFilterTest {
 
 	@Before
 	public void setup() throws KurentoMediaFrameworkException {
+
 		pipeline = pipelineFactory.create();
 		overlayFilter = pipeline.newFaceOverlayFilter().build();
 	}

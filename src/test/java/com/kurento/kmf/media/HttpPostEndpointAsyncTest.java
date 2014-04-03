@@ -25,7 +25,8 @@ import java.util.concurrent.Semaphore;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -95,7 +96,7 @@ public class HttpPostEndpointAsyncTest extends AbstractAsyncBaseTest {
 	 */
 	@Test
 	public void testMethodGetUrl() throws InterruptedException {
-		final BlockingQueue<String> events = new ArrayBlockingQueue<String>(1);
+		final BlockingQueue<String> events = new ArrayBlockingQueue<>(1);
 		httpEp.getUrl(new Continuation<String>() {
 
 			@Override
@@ -134,7 +135,7 @@ public class HttpPostEndpointAsyncTest extends AbstractAsyncBaseTest {
 			}
 		});
 
-		final BlockingQueue<ListenerRegistration> events = new ArrayBlockingQueue<ListenerRegistration>(
+		final BlockingQueue<ListenerRegistration> events = new ArrayBlockingQueue<>(
 				1);
 		httpEp.addMediaSessionStartedListener(
 				new MediaEventListener<MediaSessionStartedEvent>() {
@@ -159,14 +160,14 @@ public class HttpPostEndpointAsyncTest extends AbstractAsyncBaseTest {
 		ListenerRegistration reg = events.poll(500, MILLISECONDS);
 		Assert.assertNotNull(reg);
 
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		try {
+		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException(e);
+			throw new KurentoMediaFrameworkException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException(e);
+			throw new KurentoMediaFrameworkException();
 		}
 
 		try {

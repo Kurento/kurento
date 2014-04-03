@@ -16,24 +16,21 @@ package com.kurento.kmf.media;
 
 import static com.kurento.kmf.media.SyncMediaServerTest.URL_SMALL;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import junit.framework.Assert;
-
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -63,12 +60,7 @@ import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
  * @version 1.0.0
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class HttpPostEndpointTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public class HttpPostEndpointTest extends MediaApiTest {
 
 	private MediaPipeline pipeline;
 
@@ -88,7 +80,7 @@ public class HttpPostEndpointTest {
 	@Test
 	public void testMethodGetUrl() {
 		HttpPostEndpoint httpEP = pipeline.newHttpPostEndpoint().build();
-		Assert.assertTrue(!httpEP.getUrl().isEmpty());
+		assertTrue(!httpEP.getUrl().isEmpty());
 	}
 
 	/**
@@ -103,7 +95,7 @@ public class HttpPostEndpointTest {
 		HttpPostEndpoint httpEP = pipeline.newHttpPostEndpoint().build();
 		player.connect(httpEP);
 
-		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<EndOfStreamEvent>(
+		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<>(
 				1);
 		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
 
@@ -121,8 +113,8 @@ public class HttpPostEndpointTest {
 			}
 		});
 
-		DefaultHttpClient httpclient = new DefaultHttpClient();
-		try {
+		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		} catch (ClientProtocolException e) {
@@ -131,7 +123,7 @@ public class HttpPostEndpointTest {
 			throw new KurentoMediaFrameworkException();
 		}
 
-		Assert.assertNotNull(eosEvents.poll(7, SECONDS));
+		assertNotNull(eosEvents.poll(7, SECONDS));
 
 		httpEP.release();
 		player.release();

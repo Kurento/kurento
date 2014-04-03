@@ -24,10 +24,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -46,12 +42,7 @@ import com.kurento.kmf.media.events.PlateDetectedEvent;
  * @version 2.0.1
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public class PlateDetectorFilterTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public class PlateDetectorFilterTest extends MediaApiTest {
 
 	private MediaPipeline pipeline;
 

@@ -45,59 +45,10 @@
 		</developer>
 	</developers>
 
-	<profiles>
-		<!-- Default values for testing -->
-		<profile>
-			<id>serverAddress</id>
-			<activation>
-				<property>
-					<name>!kurento.serverAddress</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.serverAddress>localhost</kurento.serverAddress>
-			</properties>
-		</profile>
-		<profile>
-			<id>serverPort</id>
-			<activation>
-				<property>
-					<name>!kurento.serverPort</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.serverPort>9090</kurento.serverPort>
-			</properties>
-		</profile>
-		<profile>
-			<id>handlerAddress</id>
-			<activation>
-				<property>
-					<name>!kurento.handlerAddress</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.handlerAddress>localhost</kurento.handlerAddress>
-			</properties>
-		</profile>
-		<profile>
-			<id>handlerPort</id>
-			<activation>
-				<property>
-					<name>!kurento.handlerPort</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.handlerPort>9191</kurento.handlerPort>
-			</properties>
-		</profile>
-	</profiles>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
-			<version>${kmf-media-api.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -23,10 +23,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 
@@ -34,12 +30,7 @@ import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
  * @author Ivan Gracia (igracia@gsyc.es)
  * 
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/kmf-api-test-context.xml")
-public abstract class AbstractAsyncBaseTest {
-
-	@Autowired
-	private MediaPipelineFactory pipelineFactory;
+public abstract class AbstractAsyncBaseTest extends MediaApiTest {
 
 	protected MediaPipeline pipeline;
 
