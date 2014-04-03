@@ -39,6 +39,16 @@ public class MediaApiConfiguration {
 	 */
 	private int handlerPort = 9292;
 
+	// Used in Spring environments
+	public MediaApiConfiguration() {
+	}
+
+	// Used in non Spring environments
+	public MediaApiConfiguration(String handlerAddress, int handlerPort) {
+		this.handlerAddress = handlerAddress;
+		this.handlerPort = handlerPort;
+	}
+
 	/**
 	 * Gets the address of the local thrift server, which will be used to
 	 * receive events and error notifications sent by the Kurento Media Server.
