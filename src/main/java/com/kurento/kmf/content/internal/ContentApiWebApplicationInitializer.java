@@ -117,7 +117,7 @@ public class ContentApiWebApplicationInitializer implements
 					String name = playerService.name().isEmpty() ? ph
 							: playerService.name();
 					String path = playerService.path();
-					log.debug("Registering HttpPlayerHandler with name " + name
+					log.info("Registering HttpPlayerHandler with name " + name
 							+ " at path " + path);
 					ServletRegistration.Dynamic sr = sc.addServlet(name,
 							PlayerHandlerServlet.class);
@@ -282,7 +282,7 @@ public class ContentApiWebApplicationInitializer implements
 		List<String> handlerList = new ArrayList<String>();
 		for (Class<?> clazz : annotatedList) {
 			if (handlerClass.isAssignableFrom(clazz)) {
-				handlerList.add(clazz.getCanonicalName());
+				handlerList.add(clazz.getName());
 			} else {
 				String error = "Incorrect implementation of handler: class "
 						+ clazz.getCanonicalName() + " is annotated with "
