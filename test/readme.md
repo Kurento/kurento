@@ -21,7 +21,7 @@ the dropdown at the top of the tests page.
 
 ### Node.js
 
-To exec test in Node.js, you only need to exec ```gnpm test``` that will launch
+To exec test in Node.js, you only need to exec ```npm test``` that will launch
 all the tests automatically using [QUnit-cli].
 
 If you need to use a WebSocket endpoint different from the default one, you can exec the underlying test command with
