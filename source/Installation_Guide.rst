@@ -75,20 +75,20 @@ file called */etc/init.d/jboss7*:
     ### END INIT INFO
 
     PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-    NAME="jboss" 
-    JBOSS_HOME="/opt/jboss" 
-    DAEMON="$JBOSS_HOME/bin/standalone.sh" 
-    SHUTDOWN_CMD="$JBOSS_HOME/bin/jboss-cli.sh" 
+    NAME="jboss"
+    JBOSS_HOME="/opt/jboss"
+    DAEMON="$JBOSS_HOME/bin/standalone.sh"
+    SHUTDOWN_CMD="$JBOSS_HOME/bin/jboss-cli.sh"
     DAEMON_USER=jboss
 
     PIDFILE=/var/run/$NAME.pid
     SCRIPTNAME=/etc/init.d/$NAME
-    DESC="JBoss AS Server" 
+    DESC="JBoss AS Server"
 
     if [ -r "/lib/lsb/init-functions" ]; then
       . /lib/lsb/init-functions
     else
-      echo "E: /lib/lsb/init-functions not found, package lsb-base needed" 
+      echo "E: /lib/lsb/init-functions not found, package lsb-base needed"
       exit 1
     fi
 
@@ -100,29 +100,29 @@ file called */etc/init.d/jboss7*:
     verify_user () {
     # Only root can start Kurento
         if [ `id -u` -ne 0 ]; then
-            log_failure_msg "Only root can start JBoss" 
+            log_failure_msg "Only root can start JBoss"
             exit 1
         fi
     }
 
     if [ "$START_JBOSS" != "true" ]; then
-        log_failure_msg "Review activate settings within file /etc/default/jboss7" 
+        log_failure_msg "Review activate settings within file /etc/default/jboss7"
         exit 1
     fi
 
     if [ ! -e $JBOSS_HOME ]; then
-         log_failure_msg "Unable to access JBoss home directory at: $JBOSS_HOME" 
+         log_failure_msg "Unable to access JBoss home directory at: $JBOSS_HOME"
          exit 1
     fi
 
     #[ -z "$BIND_IP" ] && BIND_IP=12.0.0.1
-    #[ -n "$DAR_PATH" ] && DAR_PATH="-Djavax.servlet.sip.dar=file://$DAR_PATH" 
+    #[ -n "$DAR_PATH" ] && DAR_PATH="-Djavax.servlet.sip.dar=file://$DAR_PATH"
 
-    JBOSS_OPTS="$JBOSS_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0" 
+    JBOSS_OPTS="$JBOSS_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0"
 
     case "$1" in
           start)
-              log_daemon_msg "Starting $DESC" "$NAME" 
+              log_daemon_msg "Starting $DESC" "$NAME"
                     verify_user
 
               # Verify pid file directory exists
@@ -144,7 +144,7 @@ file called */etc/init.d/jboss7*:
               ;;
 
            stop)
-                log_daemon_msg "Stopping $DESC" "$NAME" 
+                log_daemon_msg "Stopping $DESC" "$NAME"
                 # This will just kill the standalone script. Java process detaches :(
                 /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE \
                      --chuid $DAEMON_USER --startas $DAEMON
@@ -157,7 +157,7 @@ file called */etc/init.d/jboss7*:
                 ;;
 
           restart|force-reload)
-                echo -n "Restarting $DESC: $NAME" 
+                echo -n "Restarting $DESC: $NAME"
                 /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE \
                         --exec $DAEMON
                 rm -f $PIDFILE
@@ -197,7 +197,7 @@ file is used by the startup/stop script):
 
     # Additional options that are passed to the service.
     BIND_IP=0.0.0.0
-    JBOSS_OPTS="" 
+    JBOSS_OPTS=""
 
     # whom the daemons should run as
     JBOSS_USER=jboss
@@ -539,10 +539,10 @@ The output should be similar to the following:
 
 .. sourcecode:: console
 
-    tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      4424/java       
-    tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      4424/java       
-    tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      4424/java       
-    tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      4424/java       
+    tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      4424/java
+    tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      4424/java
+    tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      4424/java
+    tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      4424/java
 
 The two additional ports listened are 4447, jBoss remoting port, and
 9999, a port for jBoss native management interface.
@@ -559,7 +559,7 @@ The output should be similar to the following:
 
 .. sourcecode:: console
 
-    tcp        0      0 127.0.0.1:9091          0.0.0.0:*               LISTEN      22527/kurento  
+    tcp        0      0 127.0.0.1:9091          0.0.0.0:*               LISTEN      22527/kurento
     tcp6       0      0 :::9090                 :::*                    LISTEN      22527/kurento
 
 Databases
