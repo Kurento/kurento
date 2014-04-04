@@ -104,18 +104,18 @@ kms_element_get_audio_agnosticbin (KmsElement * self)
 {
   GST_DEBUG ("Audio agnostic requested");
   KMS_ELEMENT_LOCK (self);
-  if (self->priv->audio_agnosticbin != NULL)
-    goto end;
+  if (self->priv->audio_agnosticbin != NULL) {
+    KMS_ELEMENT_UNLOCK (self);
+    return self->priv->audio_agnosticbin;
+  }
 
   self->priv->audio_agnosticbin =
       gst_element_factory_make ("agnosticbin", AUDIO_AGNOSTICBIN);
   gst_bin_add (GST_BIN (self), self->priv->audio_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->audio_agnosticbin);
+  KMS_ELEMENT_UNLOCK (self);
 
   g_signal_emit (self, element_signals[AGNOSTICBIN_ADDED], 0);
-
-end:
-  KMS_ELEMENT_UNLOCK (self);
 
   return self->priv->audio_agnosticbin;
 }
@@ -125,18 +125,18 @@ kms_element_get_video_agnosticbin (KmsElement * self)
 {
   GST_DEBUG ("Video agnostic requested");
   KMS_ELEMENT_LOCK (self);
-  if (self->priv->video_agnosticbin != NULL)
-    goto end;
+  if (self->priv->video_agnosticbin != NULL) {
+    KMS_ELEMENT_UNLOCK (self);
+    return self->priv->video_agnosticbin;
+  }
 
   self->priv->video_agnosticbin =
       gst_element_factory_make ("agnosticbin", VIDEO_AGNOSTICBIN);
   gst_bin_add (GST_BIN (self), self->priv->video_agnosticbin);
   gst_element_sync_state_with_parent (self->priv->video_agnosticbin);
+  KMS_ELEMENT_UNLOCK (self);
 
   g_signal_emit (self, element_signals[AGNOSTICBIN_ADDED], 0);
-
-end:
-  KMS_ELEMENT_UNLOCK (self);
 
   return self->priv->video_agnosticbin;
 }
@@ -239,61 +239,71 @@ kms_element_request_new_pad (GstElement * element,
   gchar *pad_name;
   gboolean added;
 
-  KMS_ELEMENT_LOCK (element);
   if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), "audio_src_%u")) {
+    KMS_ELEMENT_LOCK (element);
     pad_name = g_strdup_printf ("audio_src_%d",
         KMS_ELEMENT (element)->priv->audio_pad_count++);
 
     ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
         KMS_ELEMENT (element)->priv->audio_agnosticbin, templ);
+
     if (ret_pad == NULL)
       KMS_ELEMENT (element)->priv->audio_pad_count--;
+
+    KMS_ELEMENT_UNLOCK (element);
 
     g_free (pad_name);
 
   } else if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), "video_src_%u")) {
+    KMS_ELEMENT_LOCK (element);
     pad_name = g_strdup_printf ("video_src_%d",
         KMS_ELEMENT (element)->priv->video_pad_count++);
 
     ret_pad = kms_element_generate_src_pad (KMS_ELEMENT (element), pad_name,
         KMS_ELEMENT (element)->priv->video_agnosticbin, templ);
+
     if (ret_pad == NULL)
       KMS_ELEMENT (element)->priv->video_pad_count--;
+
+    KMS_ELEMENT_UNLOCK (element);
 
     g_free (pad_name);
 
   } else if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), AUDIO_SINK_PAD)) {
+    KMS_ELEMENT_LOCK (element);
     ret_pad =
         kms_element_generate_sink_pad (KMS_ELEMENT (element), AUDIO_SINK_PAD,
         &KMS_ELEMENT (element)->priv->audio_valve, templ);
 
     gst_pad_add_probe (ret_pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
         accept_eos_probe, element, NULL);
+    KMS_ELEMENT_UNLOCK (element);
 
     g_signal_connect (G_OBJECT (ret_pad), "unlinked",
         G_CALLBACK (send_flush_on_unlink), NULL);
   } else if (templ ==
       gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
               (element)), VIDEO_SINK_PAD)) {
+    KMS_ELEMENT_LOCK (element);
     ret_pad =
         kms_element_generate_sink_pad (KMS_ELEMENT (element), VIDEO_SINK_PAD,
         &KMS_ELEMENT (element)->priv->video_valve, templ);
 
     gst_pad_add_probe (ret_pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
         accept_eos_probe, element, NULL);
+    KMS_ELEMENT_UNLOCK (element);
 
     g_signal_connect (G_OBJECT (ret_pad), "unlinked",
         G_CALLBACK (send_flush_on_unlink), NULL);
   }
 
   if (ret_pad == NULL) {
-    KMS_ELEMENT_UNLOCK (element);
     GST_WARNING ("No pad created");
     return NULL;
   }
@@ -304,7 +314,6 @@ kms_element_request_new_pad (GstElement * element,
     gst_pad_set_active (ret_pad, TRUE);
 
   added = gst_element_add_pad (element, ret_pad);
-  KMS_ELEMENT_UNLOCK (element);
 
   if (added)
     return ret_pad;
@@ -363,16 +372,16 @@ kms_element_set_property (GObject * object, guint property_id,
 {
   KmsElement *self = KMS_ELEMENT (object);
 
-  KMS_ELEMENT_LOCK (self);
   switch (property_id) {
     case PROP_ACCEPT_EOS:
+      KMS_ELEMENT_LOCK (self);
       self->priv->accept_eos = g_value_get_boolean (value);
+      KMS_ELEMENT_UNLOCK (self);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
-  KMS_ELEMENT_UNLOCK (self);
 }
 
 static void
@@ -381,16 +390,16 @@ kms_element_get_property (GObject * object, guint property_id,
 {
   KmsElement *self = KMS_ELEMENT (object);
 
-  KMS_ELEMENT_LOCK (self);
   switch (property_id) {
     case PROP_ACCEPT_EOS:
+      KMS_ELEMENT_LOCK (self);
       g_value_set_boolean (value, self->priv->accept_eos);
+      KMS_ELEMENT_UNLOCK (self);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
   }
-  KMS_ELEMENT_UNLOCK (self);
 }
 
 static void
