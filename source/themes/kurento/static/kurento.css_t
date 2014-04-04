@@ -220,6 +220,12 @@ div.document div.highlight {
   margin-bottom: .8em;
 }
 
+div.highlight-console div pre span.go:before {
+  color: #c65d09;
+  font-weight: bold;
+  content: "$ ";
+}
+
 div.document h2 {
   margin-top: .7em;
 }
