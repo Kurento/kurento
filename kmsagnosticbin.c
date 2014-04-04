@@ -162,6 +162,11 @@ remove_on_unlinked_async (gpointer data)
   GstBin *parent = GST_BIN (GST_OBJECT_PARENT (elem));
 
   gst_element_set_locked_state (elem, TRUE);
+  if (g_strcmp0 (GST_OBJECT_NAME (gst_element_get_factory (elem)),
+          "queue") == 0) {
+    g_object_set (G_OBJECT (elem), "flush-on-eos", TRUE, NULL);
+    gst_element_send_event (elem, gst_event_new_eos ());
+  }
   gst_element_set_state (elem, GST_STATE_NULL);
   gst_bin_remove (parent, elem);
 
