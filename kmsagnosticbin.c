@@ -416,6 +416,7 @@ kms_agnostic_bin2_find_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
 
     g_object_unref (tee_sink);
   }
+  g_list_free (tees);
 
   return tee;
 }
