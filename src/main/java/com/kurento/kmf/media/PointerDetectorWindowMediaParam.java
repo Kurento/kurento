@@ -60,8 +60,8 @@ public class PointerDetectorWindowMediaParam {
 	private float imageTransparency;
 	/**
 	 * 
-	 * uri of the image to be used for the window. If {@link #setActiveImage}
-	 * has been called, it will only be shown when the pointer is outside of the
+	 * uri of the image to be used for the window. If {@link #activeImage} has
+	 * been set, it will only be shown when the pointer is outside of the
 	 * window.
 	 * 
 	 **/
@@ -211,9 +211,9 @@ public class PointerDetectorWindowMediaParam {
 
 	/**
 	 * 
-	 * get uri of the image to be used for the window. If
-	 * {@link #setActiveImage} has been called, it will only be shown when the
-	 * pointer is outside of the window.
+	 * get uri of the image to be used for the window. If {@link #activeImage}
+	 * has been set, it will only be shown when the pointer is outside of the
+	 * window.
 	 * 
 	 **/
 	public String getImage() {
@@ -222,9 +222,9 @@ public class PointerDetectorWindowMediaParam {
 
 	/**
 	 * 
-	 * set uri of the image to be used for the window. If
-	 * {@link #setActiveImage} has been called, it will only be shown when the
-	 * pointer is outside of the window.
+	 * set uri of the image to be used for the window. If {@link #activeImage}
+	 * has been set, it will only be shown when the pointer is outside of the
+	 * window.
 	 * 
 	 **/
 	public void setImage(String image) {
