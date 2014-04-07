@@ -90,7 +90,9 @@ public class MediaServerSyncClientFactory extends
 			transport.open();
 		} catch (TTransportException e) {
 			throw new KurentoMediaFrameworkException(
-					"Could not open transport for client", e, 30000);
+					"Could not open transport for sync client with "
+							+ this.apiConfig.getServerAddress() + ":"
+							+ this.apiConfig.getServerPort(), e, 30000);
 		}
 
 		return new ClientWithValidation(prot);

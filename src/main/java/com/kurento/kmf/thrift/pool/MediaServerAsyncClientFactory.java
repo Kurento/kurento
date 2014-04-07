@@ -83,7 +83,9 @@ public class MediaServerAsyncClientFactory extends
 					apiConfig.getServerPort());
 		} catch (IOException e) {
 			throw new KurentoMediaFrameworkException(
-					"Error creating non blocking transport", e, 30000);
+					"Error creating non blocking transport for asynchronous client with \"\n"
+							+ this.apiConfig.getServerAddress() + ":"
+							+ this.apiConfig.getServerPort(), e, 30000);
 		}
 
 		TAsyncClientManager clientManager;
