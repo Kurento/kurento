@@ -15,8 +15,7 @@ public class RomClientWeakRemoteObjects {
 	@Test
 	public void testWeakReference() throws Exception {
 
-		WeakReference<Object> weakReference = new WeakReference<Object>(
-				new Object());
+		WeakReference<Object> weakReference = new WeakReference<>(new Object());
 
 		if (null == weakReference.get()) {
 			Assert.fail("Reference should NOT be null");
@@ -61,7 +60,7 @@ public class RomClientWeakRemoteObjects {
 	}
 
 	@Test
-	public void testRomClientObjectManager() throws InterruptedException {
+	public void testRomClientObjectManager() {
 
 		RomClientObjectManager manager = new RomClientObjectManager(null);
 		new RemoteObject("xxx", null, null, manager);
@@ -84,7 +83,7 @@ public class RomClientWeakRemoteObjects {
 	}
 
 	@Test
-	public void testRomClientObjectManager2() throws InterruptedException {
+	public void testRomClientObjectManager2() {
 
 		RomClientObjectManager manager = new RomClientObjectManager(null);
 		RemoteObject obj = new RemoteObject("xxx", null, null, manager);

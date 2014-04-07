@@ -1,6 +1,7 @@
 package com.kurento.tool.rom.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
+import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
@@ -41,7 +43,7 @@ import com.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 public class ThriftAbstractRomTest {
 
 	@Configuration
-	@ComponentScan(value = "com.kurento.kmf", basePackageClasses = { com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration.class })
+	@ComponentScan(value = "com.kurento.kmf", basePackageClasses = { JsonRpcConfiguration.class })
 	public static class KmfThriftTestConfiguration {
 
 		@Bean
@@ -111,7 +113,7 @@ public class ThriftAbstractRomTest {
 		for (int i = 0; i < 5; i++) {
 
 			assertEquals(obj.getAtt1(), "XXX");
-			assertEquals(obj.getAtt2(), false);
+			assertFalse(obj.getAtt2());
 			assertEquals(obj.getAtt3(), 0.5f, 0.01);
 			assertEquals(obj.getAtt4(), 22);
 
@@ -130,7 +132,7 @@ public class ThriftAbstractRomTest {
 			assertEquals(SampleEnum.CONSTANT_1, result.get(0));
 			assertEquals(SampleEnum.CONSTANT_2, result.get(1));
 
-			List<ComplexParam> params = new ArrayList<ComplexParam>();
+			List<ComplexParam> params = new ArrayList<>();
 			params.add(new ComplexParam("prop1_1", 33));
 			params.add(new ComplexParam("prop1_2", 44));
 

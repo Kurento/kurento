@@ -15,10 +15,10 @@ public class SampleClassImpl {
 	@InjectEventManager
 	private EventManager eventManager;
 
-	private String att1;
-	private boolean att2;
-	private float att3;
-	private int att4;
+	private final String att1;
+	private final boolean att2;
+	private final float att3;
+	private final int att4;
 
 	public SampleClassImpl(@Param("att1") String att1,
 			@Param("att2") boolean att2, @Param("att3") float att3,
@@ -88,9 +88,5 @@ public class SampleClassImpl {
 	// }
 	// }.start();
 	// }
-
-	public void release() {
-
-	}
 
 }
