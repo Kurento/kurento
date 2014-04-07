@@ -122,7 +122,6 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
 
   g_value_init (&value, GST_TYPE_FRACTION);
   gst_value_set_fraction (&value, (GST_SECOND / duration) * 1000, 1000);
-
   num = gst_value_get_fraction_numerator (&value);
   denom = gst_value_get_fraction_denominator (&value);
 
@@ -137,11 +136,6 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
       GST_INFO_OBJECT (self, "Updating fps denom: %d", denom);
       self->priv->framerate_denom = denom;
       update_caps = TRUE;
-    }
-
-    if (self->priv->framerate_denom != -1 && self->priv->framerate_num != -1) {
-      gst_base_parse_set_frame_rate (GST_BASE_PARSE (self),
-          self->priv->framerate_num, self->priv->framerate_denom, 0, 0);
     }
   }
 
@@ -222,6 +216,10 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
 
     gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse), caps);
     gst_caps_unref (caps);
+
+    if (!self->priv->started)
+      gst_base_parse_set_frame_rate (GST_BASE_PARSE (self),
+          self->priv->framerate_num, self->priv->framerate_denom, 0, 0);
 
     self->priv->started = TRUE;
   }
