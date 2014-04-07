@@ -448,18 +448,17 @@ kms_agnostic_bin2_get_raw_caps (GstCaps * caps)
 static GstElement *
 create_decoder_for_caps (GstCaps * caps, GstCaps * raw_caps)
 {
-  GList *decoder_list, *filtered_list, *l;
+  GList *decoder_list, *filtered_list, *aux_list, *l;
   GstElementFactory *decoder_factory = NULL;
   GstElement *decoder = NULL;
 
   decoder_list =
       gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_DECODER,
       GST_RANK_NONE);
-  filtered_list =
+  aux_list =
       gst_element_factory_list_filter (decoder_list, caps, GST_PAD_SINK, FALSE);
   filtered_list =
-      gst_element_factory_list_filter (filtered_list, raw_caps, GST_PAD_SRC,
-      FALSE);
+      gst_element_factory_list_filter (aux_list, raw_caps, GST_PAD_SRC, FALSE);
 
   for (l = filtered_list; l != NULL && decoder_factory == NULL; l = l->next) {
     decoder_factory = GST_ELEMENT_FACTORY (l->data);
@@ -473,6 +472,7 @@ create_decoder_for_caps (GstCaps * caps, GstCaps * raw_caps)
 
   gst_plugin_feature_list_free (filtered_list);
   gst_plugin_feature_list_free (decoder_list);
+  gst_plugin_feature_list_free (aux_list);
 
   return decoder;
 }
