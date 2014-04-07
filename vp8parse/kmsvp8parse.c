@@ -97,7 +97,7 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
 {
   GValue value = G_VALUE_INIT;
   GstClockTime duration;
-  gint num, denom;
+  gint num = 0, denom = 0;
   gboolean update_caps = FALSE;
 
   if (GST_CLOCK_TIME_IS_VALID (frame->buffer->duration)) {
@@ -114,6 +114,10 @@ kms_vp8_parse_detect_framerate (KmsVp8Parse * self, GstBaseParseFrame * frame)
   } else {
     duration = GST_CLOCK_TIME_NONE;
     GST_INFO_OBJECT (self, "No framerate calculation");
+  }
+
+  if (duration == 0 || duration == GST_CLOCK_TIME_NONE) {
+    return FALSE;
   }
 
   g_value_init (&value, GST_TYPE_FRACTION);
