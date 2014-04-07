@@ -69,7 +69,6 @@ quit_main_loop (KmsLoop * self)
   GST_DEBUG ("Exiting main loop");
 
   g_main_loop_quit (self->priv->loop);
-  g_main_context_release (self->priv->context);
 
   return G_SOURCE_REMOVE;
 }
@@ -83,9 +82,9 @@ loop_thread_init (gpointer data)
 
   KMS_LOOP_LOCK (self);
   self->priv->context = g_main_context_new ();
-  context = self->priv->context;
+  context = g_main_context_ref (self->priv->context);
   self->priv->loop = g_main_loop_new (context, FALSE);
-  loop = self->priv->loop;
+  loop = g_main_loop_ref (self->priv->loop);
   KMS_LOOP_UNLOCK (self);
 
   /* unlock main process because context is already initialized */
@@ -101,9 +100,12 @@ loop_thread_init (gpointer data)
 
   GST_DEBUG ("Running main loop");
   g_main_loop_run (loop);
+  g_main_context_release (context);
 
 end:
   GST_DEBUG ("Thread finished");
+  g_main_loop_unref (loop);
+  g_main_context_unref (context);
 
   return NULL;
 }
@@ -169,6 +171,7 @@ kms_loop_finalize (GObject * obj)
   if (self->priv->context != NULL) {
     g_main_context_unref (self->priv->context);
   }
+
   if (self->priv->loop != NULL) {
     g_main_loop_unref (self->priv->loop);
   }
