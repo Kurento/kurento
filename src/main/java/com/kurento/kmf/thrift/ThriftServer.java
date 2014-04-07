@@ -58,6 +58,9 @@ public class ThriftServer {
 	public ThriftServer(TProcessor processor,
 			ThriftInterfaceExecutorService executorService,
 			InetSocketAddress addr) {
+
+		LOG.info("Configuring thrift server on {}", addr);
+
 		this.executorService = executorService;
 		this.processor = processor;
 		this.addr = addr;
@@ -73,7 +76,8 @@ public class ThriftServer {
 			transport = new TNonblockingServerSocket(addr);
 		} catch (TTransportException e) {
 			throw new KurentoMediaFrameworkException(
-					"Could not start media handler server. " + e.getMessage(),
+					"Could not start media handler server on "
+							+ addr.toString() + "\n Reason: " + e.getMessage(),
 					e, 30003);
 		}
 

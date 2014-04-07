@@ -44,6 +44,8 @@ public class JsonRpcServerThrift {
 		this.handler = jsonRpcHandler;
 		this.paramsClass = JsonRpcHandlerManager.getParamsType(handler);
 
+		LOG.info("Starting JsonRpcServer on {}", inetSocketAddress);
+
 		Processor<Iface> serverProcessor = new Processor<Iface>(new Iface() {
 
 			@Override
