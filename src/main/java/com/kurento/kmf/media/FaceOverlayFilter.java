@@ -19,8 +19,8 @@ public interface FaceOverlayFilter extends Filter {
 
 	/**
 	 * 
-	 * Clear the image to be shown over each detected face. Stops overlying of
-	 * the faces.
+	 * Clear the image to be shown over each detected face. Stops overlaying the
+	 * faces.
 	 * 
 	 **/
 	void unsetOverlayedImage();
