@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento</groupId>
@@ -96,8 +97,9 @@
 		<project.http.version>1.13.1-beta</project.http.version>
 		<project.oauth.version>1.13.1-beta</project.oauth.version>
 		<spring-data.version>1.3.2.RELEASE</spring-data.version>
-		<spring-boot-starter-web.version>1.0.0.RC1</spring-boot-starter-web.version>
+		<spring-boot.version>1.0.1.RELEASE</spring-boot.version>
 		<spring.version>4.0.1.RELEASE</spring.version>
+		<spring-data-commons.version>1.7.1.RELEASE</spring-data-commons.version>
 		<spring-websocket.version>4.0.1.RELEASE</spring-websocket.version>
 		<spring-security.version>3.2.0.RELEASE</spring-security.version>
 		<spring-oauth2.version>1.0.5.RELEASE</spring-oauth2.version>
@@ -105,6 +107,7 @@
 		<commons-lang.version>2.6</commons-lang.version>
 		<scribe.version>1.3.5</scribe.version>
 		<keystone-client.version>3.2.1</keystone-client.version>
+		<tomcat-embed-websocket.version>8.0.5</tomcat-embed-websocket.version>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -307,6 +310,12 @@
 				<version>${slf4j.version}</version>
 				<scope>test</scope>
 			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>${tomcat-embed-websocket.version}</version>
+			</dependency>
+
 			<!-- Spring -->
 			<!-- Added to fix dependenciesfrom different Spring versions in Spring 
 				Security -->
@@ -319,13 +328,23 @@
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-commons</artifactId>
+				<version>${spring-data-commons.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
 				<artifactId>spring-data-mongodb</artifactId>
 				<version>${spring-data.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-web</artifactId>
-				<version>${spring-boot-starter-web.version}</version>
+				<version>${spring-boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot</artifactId>
+				<version>${spring-boot.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -838,7 +857,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<execute/>
+										<execute />
 									</action>
 								</pluginExecution>
 								<!-- Configure m2e to ignore the Maven enforcer plugin -->
@@ -852,7 +871,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<!-- Configure m2e to ignore the buildnumber-maven-plugin. -->
@@ -867,7 +886,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore/>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
