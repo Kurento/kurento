@@ -24,7 +24,7 @@ RateFilter.prototype.__proto__   = GStreamerFilter.prototype;
 RateFilter.prototype.constructor = RateFilter;
 
 
-RateFilter.paramsScheme = GStreamerFilter.paramsScheme;
+RateFilter.constructorParams = GStreamerFilter.constructorParams;
 
 
 RateFilter.create = function(pipeline, callback)

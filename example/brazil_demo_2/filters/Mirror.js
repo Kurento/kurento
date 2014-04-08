@@ -24,7 +24,7 @@ MirrorFilter.prototype.__proto__   = GStreamerFilter.prototype;
 MirrorFilter.prototype.constructor = MirrorFilter;
 
 
-MirrorFilter.paramsScheme = GStreamerFilter.paramsScheme;
+MirrorFilter.constructorParams = GStreamerFilter.constructorParams;
 
 
 MirrorFilter.create = function(pipeline, callback)
