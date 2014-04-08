@@ -172,6 +172,18 @@ kms_audio_mixer_dispose (GObject * object)
 
   KMS_AUDIO_MIXER_LOCK (self);
 
+  if (self->priv->agnostics != NULL) {
+    g_hash_table_remove_all (self->priv->agnostics);
+    g_hash_table_unref (self->priv->agnostics);
+    self->priv->agnostics = NULL;
+  }
+
+  if (self->priv->adders != NULL) {
+    g_hash_table_remove_all (self->priv->adders);
+    g_hash_table_unref (self->priv->adders);
+    self->priv->adders = NULL;
+  }
+
   g_clear_object (&self->priv->loop);
 
   KMS_AUDIO_MIXER_UNLOCK (self);
@@ -185,18 +197,6 @@ kms_audio_mixer_finalize (GObject * object)
   KmsAudioMixer *self = KMS_AUDIO_MIXER (object);
 
   GST_DEBUG_OBJECT (self, "finalize");
-
-  if (self->priv->agnostics != NULL) {
-    g_hash_table_remove_all (self->priv->agnostics);
-    g_hash_table_unref (self->priv->agnostics);
-    self->priv->agnostics = NULL;
-  }
-
-  if (self->priv->adders != NULL) {
-    g_hash_table_remove_all (self->priv->adders);
-    g_hash_table_unref (self->priv->adders);
-    self->priv->adders = NULL;
-  }
 
   g_rec_mutex_clear (&self->priv->mutex);
 
@@ -638,7 +638,7 @@ unlink_pad_in_playing (GstPad * pad, GstElement * agnosticbin,
 static void
 unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
 {
-  GstElement *agnostic, *adder, *parent;
+  GstElement *agnostic = NULL, *adder = NULL, *parent;
   KmsAudioMixer *self;
   gchar *padname;
 
@@ -657,11 +657,15 @@ unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
 
   KMS_AUDIO_MIXER_LOCK (self);
 
-  agnostic = g_hash_table_lookup (self->priv->agnostics, padname);
-  adder = g_hash_table_lookup (self->priv->adders, padname);
+  if (self->priv->agnostics != NULL) {
+    agnostic = g_hash_table_lookup (self->priv->agnostics, padname);
+    g_hash_table_steal (self->priv->agnostics, padname);
+  }
 
-  g_hash_table_steal (self->priv->agnostics, padname);
-  g_hash_table_steal (self->priv->adders, padname);
+  if (self->priv->adders != NULL) {
+    adder = g_hash_table_lookup (self->priv->adders, padname);
+    g_hash_table_steal (self->priv->adders, padname);
+  }
 
   KMS_AUDIO_MIXER_UNLOCK (self);
 
