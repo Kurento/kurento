@@ -202,7 +202,9 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
         }
         KMS_ELEMENT_UNLOCK (base_sdp_endpoint);
 
-        name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
+        // TODO: Un comment this once lookup does not leak memory
+//         name = g_resolver_lookup_by_address (resolver, addr, NULL, NULL);
+        name = NULL;
 
         if (name == NULL) {
           GST_WARNING ("Cannot resolve name, using IP as name");
