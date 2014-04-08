@@ -178,7 +178,7 @@ sdp_media_set_direction (GstSDPMedia * media, GstSDPDirection direction)
     const GstSDPAttribute *attr = gst_sdp_media_get_attribute (media, i);
 
     if (sdp_utils_attribute_is_direction (attr, NULL)) {
-      g_array_remove_index (media->attributes, i);
+      gst_sdp_media_remove_attribute (media, i);
       continue;
     }
 
@@ -317,6 +317,7 @@ intersect_sdp_medias (const GstSDPMedia * offer,
 
   result = sdp_media_create_from_src (answer, answer_result);
   if (result != GST_SDP_OK) {
+    gst_sdp_media_free (*offer_result);
     GST_ERROR ("Error creating sdp media");
     return GST_SDP_EINVAL;
   }
@@ -349,15 +350,15 @@ intersect_sdp_medias (const GstSDPMedia * offer,
     }
   }
 
-  sdp_media_add_extra_info_from_src (offer, *offer_result);
-  sdp_media_add_extra_info_from_src (answer, *answer_result);
-
   if (gst_sdp_media_formats_len (*answer_result) == 0
       && gst_sdp_media_formats_len (*offer_result) == 0) {
     gst_sdp_media_free (*answer_result);
     gst_sdp_media_free (*offer_result);
     return GST_SDP_EINVAL;
   }
+
+  sdp_media_add_extra_info_from_src (offer, *offer_result);
+  sdp_media_add_extra_info_from_src (answer, *answer_result);
 
   return GST_SDP_OK;
 }
@@ -395,6 +396,7 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
 
   result = sdp_message_create_from_src (answer, answer_result);
   if (result != GST_SDP_OK) {
+    gst_sdp_message_free (*offer_result);
     GST_ERROR ("Error creating sdp message");
     goto end;
   }
@@ -422,6 +424,10 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
             g_list_append (ans_used_media_list, GUINT_TO_POINTER (j));
         gst_sdp_message_add_media (*offer_result, offer_media_result);
         gst_sdp_message_add_media (*answer_result, answer_media_result);
+
+        gst_sdp_media_free (offer_media_result);
+        gst_sdp_media_free (answer_media_result);
+
         break;
       }
     }
@@ -456,6 +462,9 @@ sdp_utils_intersect_sdp_messages (const GstSDPMessage * offer,
 
       gst_sdp_message_add_media (*offer_result, offer_media_result);
       gst_sdp_message_add_media (*answer_result, answer_media_result);
+
+      gst_sdp_media_free (offer_media_result);
+      gst_sdp_media_free (answer_media_result);
     }
   }
 
