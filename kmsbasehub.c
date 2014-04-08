@@ -163,6 +163,9 @@ kms_base_hub_port_data_destroy (gpointer data)
     port_data->signal_id = 0;
   }
 
+  g_clear_object (&port_data->audio_sink_target);
+  g_clear_object (&port_data->video_sink_target);
+
   g_clear_object (&port_data->port);
   g_slice_free (KmsBaseHubPortData, data);
 }
@@ -513,6 +516,9 @@ kms_base_hub_link_sink_pad (KmsBaseHub * mixer, gint id,
   }
 
   port_data_target = G_STRUCT_MEMBER_P (port_data, target_offset);
+  if (*port_data_target != NULL) {
+    g_clear_object (port_data_target);
+  }
   *port_data_target = g_object_ref (target);
 
   gp = gst_element_get_static_pad (GST_ELEMENT (mixer), gp_name);
