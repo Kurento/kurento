@@ -383,6 +383,8 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
       gst_element_link_pads (capsfilter, NULL,
           data->mixer->priv->videomixer, GST_OBJECT_NAME (pad));
       g_object_set (pad, "xpos", 0, "ypos", 0, "alpha", 0.0, NULL);
+
+      g_object_unref (pad);
     }
 
     gst_element_sync_state_with_parent (data->mixer->priv->videotestsrc);
