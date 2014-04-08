@@ -268,6 +268,7 @@ static gboolean
 kms_base_hub_unlink_pad (KmsBaseHub * mixer, const gchar * gp_name)
 {
   GstPad *gp;
+  gboolean ret;
 
   gp = gst_element_get_static_pad (GST_ELEMENT (mixer), gp_name);
 
@@ -275,7 +276,9 @@ kms_base_hub_unlink_pad (KmsBaseHub * mixer, const gchar * gp_name)
     return TRUE;
   }
 
-  return set_target (gp, NULL);
+  ret = set_target (gp, NULL);
+  g_object_unref (gp);
+  return ret;
 }
 
 static gboolean
