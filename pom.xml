@@ -46,6 +46,38 @@
 		The kmf-content-api-test project contains the test cases
 		of the Kurento server side Content Management API.
 	</description>
+	<url>https://github.com/Kurento/kmf-content-api-test</url>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.com</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>Kurento</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+	</mailingLists>
 
 	<dependencies>
 		<!-- Kurento Dependencies -->
