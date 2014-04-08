@@ -168,6 +168,8 @@ kms_audio_mixer_dispose (GObject * object)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (object);
 
+  GST_DEBUG_OBJECT (self, "dispose");
+
   KMS_AUDIO_MIXER_LOCK (self);
 
   g_clear_object (&self->priv->loop);
@@ -181,6 +183,8 @@ static void
 kms_audio_mixer_finalize (GObject * object)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (object);
+
+  GST_DEBUG_OBJECT (self, "finalize");
 
   if (self->priv->agnostics != NULL) {
     g_hash_table_remove_all (self->priv->agnostics);
