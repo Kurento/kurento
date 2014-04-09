@@ -62,55 +62,13 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
 
-	<profiles>
-		<!-- Default values for testing -->
-		<profile>
-			<id>serverAddress</id>
-			<activation>
-				<property>
-					<name>!kurento.serverAddress</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.serverAddress>localhost</kurento.serverAddress>
-			</properties>
-		</profile>
-		<profile>
-			<id>serverPort</id>
-			<activation>
-				<property>
-					<name>!kurento.serverPort</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.serverPort>9090</kurento.serverPort>
-			</properties>
-		</profile>
-		<profile>
-			<id>handlerAddress</id>
-			<activation>
-				<property>
-					<name>!kurento.handlerAddress</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.handlerAddress>localhost</kurento.handlerAddress>
-			</properties>
-		</profile>
-		<profile>
-			<id>handlerPort</id>
-			<activation>
-				<property>
-					<name>!kurento.handlerPort</name>
-				</property>
-			</activation>
-			<properties>
-				<kurento.handlerPort>9191</kurento.handlerPort>
-			</properties>
-		</profile>
-	</profiles>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-websocket</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -143,26 +101,5 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<repositories>
-		<repository>
-			<id>spring-milestones</id>
-			<name>Spring Milestones</name>
-			<url>http://repo.spring.io/milestone</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-snapshots</id>
-			<url>http://repo.spring.io/libs-snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</pluginRepository>
-	</pluginRepositories>
 
 </project>
