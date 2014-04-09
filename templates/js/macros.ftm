@@ -1,0 +1,13 @@
+<#macro join sequence separator empty_vaue="" list_ending="">
+  <#if sequence?has_content>
+    <#list sequence as item>
+      <#lt>${item}<#rt>
+      <#if item != sequence?last>
+        <#lt>${separator}<#rt>
+      </#if>
+    </#list>
+    <#lt>${list_ending}<#rt>
+  <#else>
+    <#lt>${empty_vaue}<#rt>
+  </#if>
+</#macro>
