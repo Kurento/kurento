@@ -243,9 +243,9 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 
   KMS_COMPOSITE_MIXER_LOCK (self);
 
-  if (port_data->probe_id >= 0) {
+  if (port_data->probe_id > 0) {
     gst_pad_remove_probe (pad, port_data->probe_id);
-    port_data->probe_id = -1;
+    port_data->probe_id = 0;
   }
   event = gst_event_new_eos ();
   gst_pad_send_event (pad, event);
@@ -325,8 +325,9 @@ kms_composite_mixer_port_data_destroy (gpointer data)
 
     g_object_unref (pad);
   } else {
-    gst_pad_remove_probe (port_data->videoconvert_sink_pad,
-        port_data->probe_id);
+    if (port_data->probe_id > 0) {
+      gst_pad_remove_probe (port_data->video_mixer_pad, port_data->probe_id);
+    }
     g_object_ref (port_data->videoconvert);
     gst_bin_remove (GST_BIN (self), port_data->videoconvert);
   }
