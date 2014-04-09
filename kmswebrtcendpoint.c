@@ -397,6 +397,7 @@ generate_fingerprint (const gchar * pem_file)
   fingerprint =
       g_compute_checksum_for_data (FINGERPRINT_CHECKSUM, ba->data, ba->len);
   g_object_unref (cert);
+  g_byte_array_unref (ba);
 
   length = g_checksum_type_get_length (FINGERPRINT_CHECKSUM);
   size = (int) (length * 2 + length) * sizeof (gchar);
