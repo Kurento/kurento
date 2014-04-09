@@ -159,7 +159,7 @@ static gboolean
 remove_on_unlinked_async (gpointer data)
 {
   GstElement *elem = GST_ELEMENT_CAST (data);
-  GstBin *parent = GST_BIN (GST_OBJECT_PARENT (elem));
+  GstObject *parent = gst_object_get_parent (GST_OBJECT (elem));
 
   gst_element_set_locked_state (elem, TRUE);
   if (g_strcmp0 (GST_OBJECT_NAME (gst_element_get_factory (elem)),
@@ -168,7 +168,10 @@ remove_on_unlinked_async (gpointer data)
     gst_element_send_event (elem, gst_event_new_eos ());
   }
   gst_element_set_state (elem, GST_STATE_NULL);
-  gst_bin_remove (parent, elem);
+  if (parent != NULL) {
+    gst_bin_remove (GST_BIN (parent), elem);
+    g_object_unref (parent);
+  }
 
   return G_SOURCE_REMOVE;
 }
