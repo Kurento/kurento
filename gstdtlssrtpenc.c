@@ -367,6 +367,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 
     gst_buffer_replace (&self->key_and_salt, key_and_salt);
     self->srtp_profile = profile;
+    gst_buffer_unref (key_and_salt);
 
     if (add_enc) {
       gst_bin_add (GST_BIN (self), self->srtp_enc);
