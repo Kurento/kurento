@@ -725,7 +725,6 @@ kms_agnostic_bin2_unlink_pad (KmsAgnosticBin2 * self, GstPad * pad)
 {
   GST_DEBUG_OBJECT (self, "Unlinking: %" GST_PTR_FORMAT, pad);
 
-  // TODO: Implement this
   g_object_unref (pad);
 }
 
