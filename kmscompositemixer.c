@@ -111,7 +111,7 @@ struct _KmsCompositeMixerPortData
   GstElement *queue;
   GstPad *video_mixer_pad, *videoconvert_sink_pad;
   gboolean input;
-  gint probe_id;
+  gint probe_id, link_probe_id;
 };
 
 /* class initialization */
@@ -328,6 +328,10 @@ kms_composite_mixer_port_data_destroy (gpointer data)
     if (port_data->probe_id > 0) {
       gst_pad_remove_probe (port_data->video_mixer_pad, port_data->probe_id);
     }
+    if (port_data->link_probe_id > 0) {
+      gst_pad_remove_probe (port_data->videoconvert_sink_pad,
+          port_data->link_probe_id);
+    }
     g_object_ref (port_data->videoconvert);
     gst_bin_remove (GST_BIN (self), port_data->videoconvert);
   }
@@ -347,6 +351,7 @@ link_to_videomixer (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
   GST_DEBUG ("stream start detected");
   KMS_COMPOSITE_MIXER_LOCK (data->mixer);
 
+  data->link_probe_id = 0;
   sink_pad_template =
       gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS (data->mixer->
           priv->videomixer), "sink_%u");
@@ -497,7 +502,7 @@ kms_composite_mixer_port_data_create (KmsCompositeMixer * mixer, gint id)
   data->videoconvert_sink_pad =
       gst_element_get_static_pad (data->videoconvert, "sink");
 
-  gst_pad_add_probe (data->videoconvert_sink_pad,
+  data->link_probe_id = gst_pad_add_probe (data->videoconvert_sink_pad,
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM | GST_PAD_PROBE_TYPE_BLOCK,
       (GstPadProbeCallback) link_to_videomixer, data, NULL);
 
