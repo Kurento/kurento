@@ -602,9 +602,8 @@ kms_base_hub_remove_port_pad (KmsBaseHub * mixer, gint id,
       pad_name, pad);
 
   if (pad != NULL) {
-    if (!(gst_element_remove_pad (GST_ELEMENT (mixer), pad))) {
-      g_object_unref (pad);
-    }
+    gst_element_remove_pad (GST_ELEMENT (mixer), pad);
+    g_object_unref (pad);
   }
   g_free (pad_name);
 }
