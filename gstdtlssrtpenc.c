@@ -365,8 +365,10 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
         g_assert_not_reached ();
     }
 
+    GST_OBJECT_LOCK (self);
     gst_buffer_replace (&self->key_and_salt, key_and_salt);
     self->srtp_profile = profile;
+    GST_OBJECT_UNLOCK (self);
     gst_buffer_unref (key_and_salt);
 
     if (add_enc) {
