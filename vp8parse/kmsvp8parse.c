@@ -197,8 +197,14 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
       GST_INFO_OBJECT (parse, "Updating width: %d", stream_info.w);
       update_caps = TRUE;
     }
+
+    GST_BUFFER_FLAG_UNSET (frame->buffer, GST_BUFFER_FLAG_DELTA_UNIT);
+    GST_BUFFER_FLAG_SET (frame->buffer, GST_BUFFER_FLAG_HEADER);
   } else if (!self->priv->started) {
     kms_vp8_parse_force_key_unit_event (parse);
+
+    GST_BUFFER_FLAG_SET (frame->buffer, GST_BUFFER_FLAG_DELTA_UNIT);
+    GST_BUFFER_FLAG_UNSET (frame->buffer, GST_BUFFER_FLAG_HEADER);
   }
 
   if (!self->priv->started)
