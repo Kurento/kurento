@@ -582,9 +582,8 @@ remove_adder (GstElement * adder)
     gst_pad_set_active (GST_PAD (internal), FALSE);
   }
 
-  if (!(gst_element_remove_pad (GST_ELEMENT (self), GST_PAD (internal)))) {
-    gst_object_unref (internal);
-  }
+  gst_element_remove_pad (GST_ELEMENT (self), GST_PAD (internal));
+  gst_object_unref (internal);
 
 end_phase_2:
   gst_object_unref (peer);
