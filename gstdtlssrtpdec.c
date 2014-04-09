@@ -346,7 +346,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
     gst_buffer_replace (&self->key_and_salt, key_and_salt);
     self->srtp_profile = profile;
     GST_OBJECT_UNLOCK (self);
-
+    gst_buffer_unref (key_and_salt);
 
     g_signal_emit_by_name (self->srtp_dec, "clear-keys");
 
