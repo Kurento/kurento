@@ -566,6 +566,9 @@ kms_agnostic_bin2_get_or_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * caps)
 
     if (raw_tee == NULL) {
       raw_tee = kms_agnostic_bin2_create_raw_tee (self, raw_caps);
+    }
+
+    if (raw_tee != NULL) {
       g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (raw_tee),
           g_object_ref (raw_tee));
     }
