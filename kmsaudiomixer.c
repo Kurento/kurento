@@ -164,6 +164,50 @@ get_stream_id_from_padname (const gchar * name)
 }
 
 static void
+kms_audio_mixer_remove_sometimes_src_pad (KmsAudioMixer * self,
+    GstElement * adder)
+{
+  GstProxyPad *internal;
+  GstPad *srcpad, *peer;
+
+  srcpad = gst_element_get_static_pad (adder, "src");
+  peer = gst_pad_get_peer (srcpad);
+  if (peer == NULL)
+    goto end_phase_1;
+
+  internal = gst_proxy_pad_get_internal ((GstProxyPad *) peer);
+  if (internal == NULL)
+    goto end_phase_2;
+
+  gst_ghost_pad_set_target (GST_GHOST_PAD (internal), NULL);
+
+  if (GST_STATE (self) < GST_STATE_PAUSED
+      || GST_STATE_PENDING (self) < GST_STATE_PAUSED
+      || GST_STATE_TARGET (self) < GST_STATE_PAUSED) {
+    gst_pad_set_active (GST_PAD (internal), FALSE);
+  }
+
+  GST_DEBUG ("Removing source pad %p", internal);
+  gst_element_remove_pad (GST_ELEMENT (self), GST_PAD (internal));
+  gst_object_unref (internal);
+
+end_phase_2:
+  gst_object_unref (peer);
+
+end_phase_1:
+  gst_object_unref (srcpad);
+}
+
+static gboolean
+remove_adder_cb (gpointer key, gpointer value, gpointer user_data)
+{
+  kms_audio_mixer_remove_sometimes_src_pad (KMS_AUDIO_MIXER (user_data),
+      GST_ELEMENT (value));
+
+  return TRUE;
+}
+
+static void
 kms_audio_mixer_dispose (GObject * object)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (object);
@@ -179,7 +223,7 @@ kms_audio_mixer_dispose (GObject * object)
   }
 
   if (self->priv->adders != NULL) {
-    g_hash_table_remove_all (self->priv->adders);
+    g_hash_table_foreach_remove (self->priv->adders, remove_adder_cb, self);
     g_hash_table_unref (self->priv->adders);
     self->priv->adders = NULL;
   }
@@ -553,43 +597,18 @@ static gboolean
 remove_adder (GstElement * adder)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (adder));
-  GstProxyPad *internal;
-  GstPad *srcpad, *peer;
   WaitCond *wait;
 
   GST_DEBUG ("Removing element %" GST_PTR_FORMAT, adder);
   wait = g_object_get_data (G_OBJECT (adder), KEY_CONDITION);
 
-  srcpad = gst_element_get_static_pad (adder, "src");
-  peer = gst_pad_get_peer (srcpad);
-  if (peer == NULL)
-    goto end_phase_1;
-
-  internal = gst_proxy_pad_get_internal ((GstProxyPad *) peer);
-  if (internal == NULL)
-    goto end_phase_2;
+  kms_audio_mixer_remove_sometimes_src_pad (self, adder);
 
   gst_object_ref (adder);
   gst_element_set_state (adder, GST_STATE_NULL);
   gst_bin_remove (GST_BIN (self), adder);
   gst_object_unref (adder);
 
-  gst_ghost_pad_set_target (GST_GHOST_PAD (internal), NULL);
-
-  if (GST_STATE (self) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (self) >= GST_STATE_PAUSED
-      || GST_STATE_TARGET (self) >= GST_STATE_PAUSED) {
-    gst_pad_set_active (GST_PAD (internal), FALSE);
-  }
-
-  gst_element_remove_pad (GST_ELEMENT (self), GST_PAD (internal));
-  gst_object_unref (internal);
-
-end_phase_2:
-  gst_object_unref (peer);
-
-end_phase_1:
-  gst_object_unref (srcpad);
   gst_object_unref (self);
 
   if (wait != NULL)
