@@ -72,10 +72,33 @@ exports['encode JsonRPC 2.0'] =
     request = this.rpcBuilder.decode(request);
 
     test.ok(request instanceof RpcBuilder.RpcNotification);
-    test.notEqual(request.duplicated, undefined);
+    test.notEqual(request.duplicated, false);
 
     test.equal(request.method, METHOD);
     test.equal(request.params, undefined);
+
+    test.done();
+  },
+
+  'duplicated request': function(test)
+  {
+    test.expect(3);
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result){});
+
+    test.deepEqual(JSON.parse(request),
+    {
+      jsonrpc: '2.0',
+      method: METHOD,
+      id: 0
+    });
+
+    // Test request
+    var request1 = this.rpcBuilder.decode(request);
+    test.notEqual(request1.duplicated, false);
+
+    var request2 = this.rpcBuilder.decode(request);
+    test.ok(request2.duplicated);
 
     test.done();
   },
