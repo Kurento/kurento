@@ -172,7 +172,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			// TODO Remove this hack -----------------------
 			if (request.getMethod().equals("subscribe")) {
 				JsonObject params = (JsonObject) request.getParams();
-				params.addProperty("ip", localHandlerAddress.getHostName());
+				params.addProperty("ip", localHandlerAddress.getHostString());
 				params.addProperty("port", localHandlerAddress.getPort());
 			}
 			// ---------------------------------------------
@@ -213,7 +213,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		// TODO Remove this hack -----------------------
 		if (request.getMethod().equals("subscribe")) {
 			JsonObject params = (JsonObject) request.getParams();
-			params.addProperty("ip", localHandlerAddress.getHostName());
+			params.addProperty("ip", localHandlerAddress.getHostString());
 			params.addProperty("port", localHandlerAddress.getPort());
 		}
 		// ---------------------------------------------
