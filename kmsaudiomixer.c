@@ -199,10 +199,83 @@ end_phase_1:
 }
 
 static gboolean
+remove_adder (GstElement * adder)
+{
+  KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (adder));
+  WaitCond *wait;
+
+  GST_DEBUG ("Removing element %" GST_PTR_FORMAT, adder);
+  wait = g_object_get_data (G_OBJECT (adder), KEY_CONDITION);
+
+  kms_audio_mixer_remove_sometimes_src_pad (self, adder);
+
+  gst_object_ref (adder);
+  gst_element_set_state (adder, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self), adder);
+  gst_object_unref (adder);
+
+  gst_object_unref (self);
+
+  if (wait != NULL)
+    ONE_STEP_DONE (wait);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+remove_agnostic_bin (GstElement * agnosticbin)
+{
+  KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (agnosticbin));
+  GstElement *audiorate, *typefind;
+  GstPad *sinkpad, *peerpad;
+  WaitCond *wait;
+
+  wait = g_object_get_data (G_OBJECT (agnosticbin), KEY_CONDITION);
+
+  sinkpad = gst_element_get_static_pad (agnosticbin, "sink");
+  peerpad = gst_pad_get_peer (sinkpad);
+  audiorate = gst_pad_get_parent_element (peerpad);
+  gst_object_unref (sinkpad);
+  gst_object_unref (peerpad);
+
+  sinkpad = gst_element_get_static_pad (audiorate, "sink");
+  peerpad = gst_pad_get_peer (sinkpad);
+  typefind = gst_pad_get_parent_element (peerpad);
+  gst_object_unref (sinkpad);
+  gst_object_unref (peerpad);
+
+  gst_element_unlink_many (typefind, audiorate, agnosticbin, NULL);
+  gst_element_set_state (typefind, GST_STATE_NULL);
+  gst_element_set_state (audiorate, GST_STATE_NULL);
+  gst_element_set_state (agnosticbin, GST_STATE_NULL);
+  gst_bin_remove_many (GST_BIN (self), typefind, audiorate, agnosticbin, NULL);
+
+  gst_object_unref (audiorate);
+  gst_object_unref (typefind);
+  gst_object_unref (self);
+
+  if (wait != NULL)
+    ONE_STEP_DONE (wait);
+}
+
+static gboolean
 remove_adder_cb (gpointer key, gpointer value, gpointer user_data)
 {
-  kms_audio_mixer_remove_sometimes_src_pad (KMS_AUDIO_MIXER (user_data),
-      GST_ELEMENT (value));
+  GstElement *adder = GST_ELEMENT (value);
+
+  unlink_adder_sources (adder);
+  remove_adder (adder);
+
+  return TRUE;
+}
+
+static gboolean
+remove_agnosticbin_cb (gpointer key, gpointer value, gpointer user_data)
+{
+  GstElement *agnostic = GST_ELEMENT (value);
+
+  unlink_agnosticbin (agnostic);
+  remove_agnostic_bin (agnostic);
 
   return TRUE;
 }
@@ -217,7 +290,8 @@ kms_audio_mixer_dispose (GObject * object)
   KMS_AUDIO_MIXER_LOCK (self);
 
   if (self->priv->agnostics != NULL) {
-    g_hash_table_remove_all (self->priv->agnostics);
+    g_hash_table_foreach_remove (self->priv->agnostics, remove_agnosticbin_cb,
+        NULL);
     g_hash_table_unref (self->priv->agnostics);
     self->priv->agnostics = NULL;
   }
@@ -390,42 +464,6 @@ event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 }
 
 static void
-remove_agnostic_bin (GstElement * agnosticbin)
-{
-  KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (agnosticbin));
-  GstElement *audiorate, *typefind;
-  GstPad *sinkpad, *peerpad;
-  WaitCond *wait;
-
-  wait = g_object_get_data (G_OBJECT (agnosticbin), KEY_CONDITION);
-
-  sinkpad = gst_element_get_static_pad (agnosticbin, "sink");
-  peerpad = gst_pad_get_peer (sinkpad);
-  audiorate = gst_pad_get_parent_element (peerpad);
-  gst_object_unref (sinkpad);
-  gst_object_unref (peerpad);
-
-  sinkpad = gst_element_get_static_pad (audiorate, "sink");
-  peerpad = gst_pad_get_peer (sinkpad);
-  typefind = gst_pad_get_parent_element (peerpad);
-  gst_object_unref (sinkpad);
-  gst_object_unref (peerpad);
-
-  gst_element_unlink_many (typefind, audiorate, agnosticbin, NULL);
-  gst_element_set_state (typefind, GST_STATE_NULL);
-  gst_element_set_state (audiorate, GST_STATE_NULL);
-  gst_element_set_state (agnosticbin, GST_STATE_NULL);
-  gst_bin_remove_many (GST_BIN (self), typefind, audiorate, agnosticbin, NULL);
-
-  gst_object_unref (audiorate);
-  gst_object_unref (typefind);
-  gst_object_unref (self);
-
-  if (wait != NULL)
-    ONE_STEP_DONE (wait);
-}
-
-static void
 unlink_agnosticbin (GstElement * agnosticbin)
 {
   GValue val = G_VALUE_INIT;
@@ -444,7 +482,14 @@ unlink_agnosticbin (GstElement * agnosticbin)
         sinkpad = gst_pad_get_peer (srcpad);
         adder = gst_pad_get_parent_element (sinkpad);
 
-        gst_pad_unlink (srcpad, sinkpad);
+        GST_DEBUG ("Unlink %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT,
+            agnosticbin, adder);
+
+        if (!gst_pad_unlink (srcpad, sinkpad)) {
+          GST_ERROR ("Can not unlink %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT,
+              srcpad, sinkpad);
+        }
+
         gst_element_release_request_pad (adder, sinkpad);
         gst_element_release_request_pad (agnosticbin, srcpad);
 
@@ -570,6 +615,7 @@ unlink_adder_sources (GstElement * adder)
               srcpad, sinkpad);
         }
 
+        gst_element_release_request_pad (adder, sinkpad);
         gst_element_release_request_pad (agnosticbin, srcpad);
 
         gst_object_unref (srcpad);
@@ -591,30 +637,6 @@ unlink_adder_sources (GstElement * adder)
   } while (!done);
 
   gst_iterator_free (it);
-}
-
-static gboolean
-remove_adder (GstElement * adder)
-{
-  KmsAudioMixer *self = KMS_AUDIO_MIXER (gst_element_get_parent (adder));
-  WaitCond *wait;
-
-  GST_DEBUG ("Removing element %" GST_PTR_FORMAT, adder);
-  wait = g_object_get_data (G_OBJECT (adder), KEY_CONDITION);
-
-  kms_audio_mixer_remove_sometimes_src_pad (self, adder);
-
-  gst_object_ref (adder);
-  gst_element_set_state (adder, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self), adder);
-  gst_object_unref (adder);
-
-  gst_object_unref (self);
-
-  if (wait != NULL)
-    ONE_STEP_DONE (wait);
-
-  return G_SOURCE_REMOVE;
 }
 
 static void
