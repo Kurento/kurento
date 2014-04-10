@@ -16,7 +16,7 @@
 
 var nodeunit = require('nodeunit');
 
-var RpcBuilder = require("./index");
+var RpcBuilder = require("..");
 
 
 const METHOD = 'test';
@@ -35,7 +35,7 @@ exports['encode JsonRPC 2.0'] =
   {
     test.expect(5);
 
-    var notification = this.rpcBuilder.encodeJSON(METHOD);
+    var notification = this.rpcBuilder.encode(METHOD);
 
     test.deepEqual(JSON.parse(notification),
     {
@@ -44,7 +44,7 @@ exports['encode JsonRPC 2.0'] =
     });
 
     // Test notification
-    notification = this.rpcBuilder.decodeJSON(notification);
+    notification = this.rpcBuilder.decode(notification);
 
     test.ok(notification instanceof RpcBuilder.RpcNotification);
     test.equal(notification.duplicate, undefined);
@@ -59,7 +59,7 @@ exports['encode JsonRPC 2.0'] =
   {
     test.expect(5);
 
-    var request = this.rpcBuilder.encodeJSON(METHOD, function(error, result){});
+    var request = this.rpcBuilder.encode(METHOD, function(error, result){});
 
     test.deepEqual(JSON.parse(request),
     {
@@ -69,7 +69,7 @@ exports['encode JsonRPC 2.0'] =
     });
 
     // Test request
-    request = this.rpcBuilder.decodeJSON(request);
+    request = this.rpcBuilder.decode(request);
 
     test.ok(request instanceof RpcBuilder.RpcNotification);
     test.notEqual(request.duplicated, undefined);
@@ -84,7 +84,7 @@ exports['encode JsonRPC 2.0'] =
   {
     test.expect(2);
 
-    var request = this.rpcBuilder.encodeJSON(METHOD, function(error, result)
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
     {
       test.equal(result, null);
     });
@@ -98,7 +98,7 @@ exports['encode JsonRPC 2.0'] =
     response = JSON.stringify(response);
 
     // Test response
-    response = this.rpcBuilder.decodeJSON(response);
+    response = this.rpcBuilder.decode(response);
 
     test.equal(response, undefined);
 

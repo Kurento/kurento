@@ -2,21 +2,21 @@
   "name": "kws-rpc-builder",
   "version": "4.2.3-SNAPSHOT",
   "description": "RPC library for browser and Node.js",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "test": "nodeunit test.js"
+    "test": "nodeunit test/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "kurento/kws-rpc-builder"
+    "url": "piranna/rpc-builder"
   },
   "keywords": [
     "RPC",
     "JsonRPC",
     "XML-RPC",
     "HTTP",
-    "WebSocket",
-    "Kurento"
+    "WebP2P",
+    "WebSocket"
   ],
   "author": "Kurento <info@kurento.org> (http://kurento.org)",
   "contributors": [
@@ -25,5 +25,8 @@
   "license": "LGPL 2.1",
   "devDependencies": {
     "nodeunit": "~0.8.6"
+  },
+  "dependencies": {
+    "inherits": "^2.0.1"
   }
 }
