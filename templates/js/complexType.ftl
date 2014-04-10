@@ -59,7 +59,7 @@ function check${complexType.name}(key, value)
  *
 <#switch complexType.typeFormat>
   <#case "ENUM">
- * @type {'<@join sequence=complexType.values separator="'|'"/>'}
+ * @type {<@join sequence=complexType.values separator="|"/>}
   <#break>
   <#case "REGISTER">
  * @type {Object}
