@@ -3,19 +3,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<packaging>jar</packaging>
 
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>4.2.3-SNAPSHOT</version>
+	</parent>
+
 	<groupId>com.kurento.kws</groupId>
 	<artifactId>kws-media-api</artifactId>
-	<version>4.2.3-SNAPSHOT</version>
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-
-		<!-- Extensions Versions -->
-		<wagon-ssh.version>2.0</wagon-ssh.version>
-	</properties>
+	<version>${project.parent.version}</version>
 
 	<name>Kurento Web SDK - Media Api</name>
 	<description>
@@ -51,13 +47,6 @@
 	</developers>
 
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${wagon-ssh.version}</version>
-			</extension>
-		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -83,16 +72,4 @@
 		</plugins>
 	</build>
 
-	<distributionManagement>
-		<repository>
-			<id>releases</id>
-			<name>Kurento releases repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
-		</repository>
-		<snapshotRepository>
-			<id>snapshots</id>
-			<name>Kurento snapshots repository</name>
-			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
