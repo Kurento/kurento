@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>VideoTagBrowser</title>
+<script type="text/javascript">
+	var video;
+	window.onload = function() {
+		video = document.getElementById("video");
+	}
+
+	function addEventListener(type, callback) {
+		video.addEventListener(type, callback, false);
+	}
+
+	function play(url) {
+		video.src = url;
+		video.play();
+	}
+
+	function log(text) {
+		document.getElementById("status").value = text;
+	}
+
+	function videoEvent(e) {
+		if (!e) {
+			e = window.event;
+		}
+		log(e.type);
+	}
+</script>
+</head>
+<body>
+	<video id="video" autoplay></video>
+	<br />
+	<label for="output">Status</label>
+	<input id="status" name="status" />
+</body>
+</html>
