@@ -22,6 +22,9 @@ var RpcBuilder = require("..");
 const METHOD = 'test';
 
 
+function noop(error, result){};
+
+
 exports['encode JsonRPC 2.0'] =
 {
   setUp: function(callback)
@@ -30,6 +33,7 @@ exports['encode JsonRPC 2.0'] =
 
     callback();
   },
+
 
   'notification': function(test)
   {
@@ -59,7 +63,7 @@ exports['encode JsonRPC 2.0'] =
   {
     test.expect(5);
 
-    var request = this.rpcBuilder.encode(METHOD, function(error, result){});
+    var request = this.rpcBuilder.encode(METHOD, noop);
 
     test.deepEqual(JSON.parse(request),
     {
@@ -72,7 +76,7 @@ exports['encode JsonRPC 2.0'] =
     request = this.rpcBuilder.decode(request);
 
     test.ok(request instanceof RpcBuilder.RpcNotification);
-    test.notEqual(request.duplicated, false);
+    test.equal(request.duplicated, false);
 
     test.equal(request.method, METHOD);
     test.equal(request.params, undefined);
@@ -80,25 +84,77 @@ exports['encode JsonRPC 2.0'] =
     test.done();
   },
 
+  'request timeout': function(test)
+  {
+    test.expect(2);
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      test.notEqual(error, undefined);
+      test.deepEqual(error.request, request);
+
+      test.done();
+    });
+  },
+
+  'cancel request': function(test)
+  {
+    test.expect(0);
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      test.ifError(error);
+    });
+
+    request.cancel();
+
+    setTimeout(function()
+    {
+      test.done();
+    }, 6*1000)
+  },
+
   'duplicated request': function(test)
   {
     test.expect(3);
 
-    var request = this.rpcBuilder.encode(METHOD, function(error, result){});
-
-    test.deepEqual(JSON.parse(request),
-    {
-      jsonrpc: '2.0',
-      method: METHOD,
-      id: 0
-    });
+    var request = this.rpcBuilder.encode(METHOD, noop);
 
     // Test request
     var request1 = this.rpcBuilder.decode(request);
-    test.notEqual(request1.duplicated, false);
+    test.equal(request1.duplicated, false);
+
+    var reply1 = request1.reply(null, null);
 
     var request2 = this.rpcBuilder.decode(request);
-    test.ok(request2.duplicated);
+    test.equal(request2.duplicated, true);
+
+    var reply2 = request2.reply();
+
+    test.deepEqual(reply1, reply2);
+
+    test.done();
+  },
+
+  'override duplicated request': function(test)
+  {
+    test.expect(4);
+
+    var request = this.rpcBuilder.encode(METHOD, noop);
+
+    // Test request
+    var request1 = this.rpcBuilder.decode(request);
+    test.equal(request1.duplicated, false);
+
+    var reply1 = request1.reply(null, null);
+
+    var request2 = this.rpcBuilder.decode(request);
+    test.equal(request2.duplicated, true);
+
+    var reply2 = request2.reply(null, 'ok');
+
+    test.equal(JSON.parse(reply1).result, null);
+    test.equal(JSON.parse(reply2).result, 'ok');
 
     test.done();
   },
@@ -123,6 +179,38 @@ exports['encode JsonRPC 2.0'] =
     // Test response
     response = this.rpcBuilder.decode(response);
 
+    test.equal(response, undefined);
+
+    test.done();
+  },
+
+  'request reply response': function(test)
+  {
+    test.expect(3);
+
+    var value = {'asdf': 'qwert'};
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      test.deepEqual(result, value);
+    });
+
+    // Response request
+    request = this.rpcBuilder.decode(request);
+
+    var response = request.reply(null, value);;
+
+    // Test response message
+    test.deepEqual(JSON.parse(response),
+    {
+      jsonrpc: '2.0',
+      result: value,
+      id: 0
+    });
+
+    response = this.rpcBuilder.decode(response);
+
+    // Test response as processed
     test.equal(response, undefined);
 
     test.done();
