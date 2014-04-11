@@ -27,6 +27,7 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
 import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Assert;
 import org.junit.Test;
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.demo.internal.VideoURLs;
 import com.kurento.test.base.BaseArquillianTst;
-import com.kurento.test.player.PlayerTst;
 
 /**
  * Integration test (JUnit/Arquillian) for HTTP Player. It uses
@@ -63,14 +63,7 @@ public class RecorderIT extends BaseArquillianTst {
 
 	@Test
 	public void testRecorderTunnelRepository() throws IOException {
-		final String handler = "recorderTunnelRepository";
-		final int statusCode = 200;
-		final String contentType = "video/webm";
-
-		testRecord(handler, statusCode);
-		PlayerTst playerTst = new PlayerTst(handler, getServerPort(),
-				statusCode, contentType, false, null);
-		playerTst.run();
+		testRecord("recorderTunnelRepository", 200);
 	}
 
 	private void testRecord(String handler, int statusCode) throws IOException {
@@ -91,6 +84,7 @@ public class RecorderIT extends BaseArquillianTst {
 		HttpEntity httpEntity = multipartEntity.build();
 		post.setEntity(httpEntity);
 
+		EntityUtils.consume(httpEntity);
 		HttpResponse response = client.execute(post);
 		final int responseStatusCode = response.getStatusLine().getStatusCode();
 

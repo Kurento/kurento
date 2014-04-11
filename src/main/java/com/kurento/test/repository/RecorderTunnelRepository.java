@@ -43,12 +43,15 @@ public class RecorderTunnelRepository extends HttpRecorderHandler {
 			getLogger().info("Deleting existing repository '{}'", itemId);
 			repository.remove(repositoryItem);
 		} catch (NoSuchElementException e) {
-			getLogger().info("Repository item '{}' does not previously exist",
-					itemId);
+			getLogger().info(
+					"Repository item '{}' does not previously exist ({})",
+					itemId, e.getMessage());
 		}
 		repositoryItem = contentSession.getRepository().createRepositoryItem(
 				itemId);
+		getLogger().info("Created repository item {}", repositoryItem);
 		contentSession.start(repositoryItem);
+		getLogger().info("Session started {}", contentSession.getSessionId());
 	}
 
 }
