@@ -54,6 +54,7 @@ public class JMeterClient {
 	final static String ROOT = "src/test/jmeter/";
 	final static String JMXFOLDER = "target/test-classes/";
 	final static String REPORTS = "target/jmeter-reports/";
+	final static String JMXFILE = "player.jmx";
 
 	private EventListener eventListener;
 	private URL url;
@@ -69,7 +70,7 @@ public class JMeterClient {
 	private void setup() throws TemplateException, IOException {
 		Configuration cfg = new Configuration();
 		// Load template from source folder
-		Template template = cfg.getTemplate(ROOT + "player.jmx.ftl");
+		Template template = cfg.getTemplate(ROOT + JMXFILE + ".ftl");
 
 		// Build the data-model
 		Map<String, Object> data = new HashMap<String, Object>();
@@ -80,8 +81,7 @@ public class JMeterClient {
 		data.put("numUsers", concurrentUsers);
 
 		// File output
-		File jmxFile = new File(JMXFOLDER + "player.jmx");
-		Writer file = new FileWriter(jmxFile);
+		Writer file = new FileWriter(new File(JMXFOLDER + JMXFILE));
 		template.process(data, file);
 		file.flush();
 		file.close();
@@ -133,6 +133,10 @@ public class JMeterClient {
 				jtl2html(xsl, new File(outputFileJtl), new File(outputFileHtml));
 			}
 		}
+
+		// End
+		File jmxFile = new File(JMXFOLDER + JMXFILE);
+		jmxFile.delete();
 	}
 
 	private void jtl2html(File stylesheet, File datafile, File fileOutput)

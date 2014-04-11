@@ -14,7 +14,6 @@
 	<packaging>jar</packaging>
 
 	<properties>
-
 		<!-- Test Dependencies Versions -->
 		<selenium-java.version>2.41.0</selenium-java.version>
 		<xml-apis.version>1.4.01</xml-apis.version>
@@ -28,7 +27,6 @@
 		<linux64-webdriver.version>2.9</linux64-webdriver.version>
 		<mac32-webdriver.version>2.9</mac32-webdriver.version>
 		<win32-webdriver.version>2.9</win32-webdriver.version>
-
 	</properties>
 
 	<name>Kurento Media Framework - System Tests</name>

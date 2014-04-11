@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.test.media;
+package com.kurento.kmf.test.content;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,43 +20,49 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.content.WebRtcContentHandler;
+import com.kurento.kmf.content.WebRtcContentService;
+import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
+import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.EventListener;
 import com.kurento.kmf.test.client.VideoTagBrowser;
 
 /**
- * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
+ * Test of a WebRTC in loopback.
  * 
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerBrowserTest extends MediaApiTest {
+public class ContentApiWebRtcTst extends ContentApiTest {
+
+	private static final String HANDLER = "/webrtc";
+
+	@WebRtcContentService(path = HANDLER)
+	public static class WebRtcHandler extends WebRtcContentHandler {
+
+		@Override
+		public void onContentRequest(WebRtcContentSession session)
+				throws Exception {
+			MediaPipeline mp = session.getMediaPipelineFactory().create();
+			session.releaseOnTerminate(mp);
+			WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+			webRtcEndpoint.connect(webRtcEndpoint);
+			session.start(webRtcEndpoint);
+		}
+
+	}
 
 	@Test
-	public void testPlayer() throws Exception {
-		// Media Pipeline and Media Elements
-		MediaPipeline mp = pipelineFactory.create();
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/small.webm").build();
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
-				.build();
-		playerEP.connect(httpEP);
-		String url = httpEP.getUrl();
-		log.info("url: {}", url);
-
-		// Test execution
+	public void testWebRtc() throws InterruptedException {
 		final CountDownLatch startEvent = new CountDownLatch(1);
-		final CountDownLatch terminationEvent = new CountDownLatch(1);
 
 		try (VideoTagBrowser vtb = new VideoTagBrowser(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
-			vtb.setURL(url);
+				Browser.CHROME, Client.WEBRTC)) {
+			vtb.setURL(HANDLER);
 			vtb.addEventListener("playing", new EventListener() {
 				@Override
 				public void onEvent(String event) {
@@ -64,22 +70,12 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 					startEvent.countDown();
 				}
 			});
-			vtb.addEventListener("ended", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** ended ***");
-					terminationEvent.countDown();
-				}
-			});
-			playerEP.play();
 			vtb.start();
 
 			Assert.assertTrue(startEvent.await(TIMEOUT, TimeUnit.SECONDS));
-			long startTime = System.currentTimeMillis();
-			Assert.assertTrue(terminationEvent.await(TIMEOUT, TimeUnit.SECONDS));
-			long duration = System.currentTimeMillis() - startTime;
-			log.info("Video duration: " + (duration / 60) + " seconds");
+
+			// Guard time to see the remote video
+			Thread.sleep(3000);
 		}
 	}
-
 }

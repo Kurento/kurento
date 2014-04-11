@@ -43,12 +43,11 @@ public class VideoTagBrowser implements Closeable {
 
 	private WebDriver driver;
 	private String videoUrl;
-	private final String HTMLTEST = "/video_tag_browser.html";
 	private final int TIMEOUT = 60; // seconds
 
 	private List<Thread> callbackThreads = new ArrayList<>();
 
-	public VideoTagBrowser(int serverPort, Browser browser) {
+	public VideoTagBrowser(int serverPort, Browser browser, Client client) {
 		// Setup
 		switch (browser) {
 		case FIREFOX:
@@ -59,11 +58,10 @@ public class VideoTagBrowser implements Closeable {
 			setup(ChromeDriver.class);
 			break;
 		}
-
 		driver.manage().timeouts().setScriptTimeout(TIMEOUT, TimeUnit.SECONDS);
 
 		// Exercise test
-		driver.get("http://localhost:" + serverPort + HTMLTEST);
+		driver.get("http://localhost:" + serverPort + client.toString());
 	}
 
 	private void setup(Class<? extends WebDriver> driverClass) {

@@ -28,6 +28,7 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.EventListener;
 import com.kurento.kmf.test.client.VideoTagBrowser;
 
@@ -75,7 +76,7 @@ public class ContentApiMultiplePlayerTest extends ContentApiTest {
 			final CountDownLatch startEvent = new CountDownLatch(1);
 			final CountDownLatch terminationEvent = new CountDownLatch(1);
 			try (VideoTagBrowser vtb = new VideoTagBrowser(getServerPort(),
-					Browser.CHROME)) {
+					Browser.CHROME, Client.PLAYER)) {
 				vtb.setURL(HANDLER);
 				vtb.addEventListener("playing", new EventListener() {
 					@Override
