@@ -28,9 +28,9 @@ family of APIs and toolboxes, which include:
    HTTP network connection.
 
 -  **Open Thrift API**: a network API exposing the kurento capabilities
-   capabilities through Thrift RPCs. This API makes simple the creation
-   of applications on any of the languages and frameworks supported by
-   Thrift including Python, PHP, Node JS, Ruby, etc.
+   through Thrift RPCs. This API makes simple the creation of applications
+   on any of the languages and frameworks supported by Thrift including
+   Python, PHP, Node JS, Ruby, etc.
 
 -  **HTML5 SDK**: a toolbox of JavaScript libraries providing access to
    the kurento capabilities through any HTML5 compatible
