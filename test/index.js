@@ -17,6 +17,7 @@
 var nodeunit = require('nodeunit');
 
 var RpcBuilder = require("..");
+var packer = RpcBuilder.packers.JsonRPC;
 
 
 const METHOD = 'test';
@@ -29,7 +30,7 @@ exports['encode JsonRPC 2.0'] =
 {
   setUp: function(callback)
   {
-    this.rpcBuilder = new RpcBuilder();
+    this.rpcBuilder = new RpcBuilder(packer);
 
     callback();
   },
