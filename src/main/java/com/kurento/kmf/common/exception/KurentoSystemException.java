@@ -67,35 +67,41 @@ public class KurentoSystemException extends RuntimeException implements
 	}
 
 	/**
-	 * default constructor.
+	 * Constructs a new runtime exception with the specified detail message. The
+	 * cause is not initialized, and may subsequently be initialized by a call
+	 * to initCause.
 	 * 
-	 * @param s
-	 *            the message
+	 * @param message
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
 	 */
-	public KurentoSystemException(final String s) {
-		super(s);
+	public KurentoSystemException(final String msg) {
+		super(msg);
 	}
 
 	/**
-	 * default constructor.
 	 * 
-	 * @param s
-	 *            the message
-	 * @param throwable
-	 *            the error cause
+	 * @param msg
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
+	 * @param cause
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
 	 */
-	public KurentoSystemException(final String s, final Throwable throwable) {
-		super(s, throwable);
+	public KurentoSystemException(final String msg, final Throwable throwable) {
+		super(msg, throwable);
 	}
 
 	/**
-	 * default constructor.
 	 * 
-	 * @param throwable
-	 *            the error cause
+	 * @param cause
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
 	 */
-	public KurentoSystemException(final Throwable throwable) {
-		super(throwable);
+	public KurentoSystemException(final Throwable cause) {
+		super(cause);
 	}
 
 }

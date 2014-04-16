@@ -14,8 +14,13 @@
  */
 package com.kurento.kmf.common.exception;
 
-import com.kurento.kmf.common.exception.internal.ExceptionUtils;
-
+/**
+ * @Deprecated Use the new {@link KurentoApplicationException} and
+ *             {@link KurentoSystemException}
+ * @author Ivan Gracia (igracia@naevatec.com)
+ *
+ */
+@Deprecated
 public class KurentoMediaFrameworkException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 
@@ -25,6 +30,12 @@ public class KurentoMediaFrameworkException extends RuntimeException {
 		super();
 	}
 
+	/**
+	 * @param code
+	 *            Error code
+	 * @Deprecated Code is no longer used
+	 */
+	@Deprecated
 	public KurentoMediaFrameworkException(int code) {
 		super();
 		this.code = code;
@@ -34,36 +45,77 @@ public class KurentoMediaFrameworkException extends RuntimeException {
 		super();
 	}
 
+	/**
+	 * @param message
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
+	 * @param code
+	 *            Error code
+	 * @Deprecated Code is no longer used
+	 */
+	@Deprecated
 	public KurentoMediaFrameworkException(String message, int code) {
 		super(message);
 		this.code = code;
 	}
 
+	/**
+	 * 
+	 * @param message
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
+	 * @param cause
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
+	 */
 	public KurentoMediaFrameworkException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * @param message
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
+	 * @param cause
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
+	 * @param code
+	 *            Error code
+	 * @Deprecated Code is no longer used
+	 */
+	@Deprecated
 	public KurentoMediaFrameworkException(String message, Throwable cause,
 			int code) {
 		super(message, cause);
 		this.code = code;
 	}
 
+	/**
+	 * 
+	 * @param cause
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
+	 */
 	public KurentoMediaFrameworkException(Throwable cause) {
 		super(cause);
 	}
 
+	/**
+	 * @param cause
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
+	 * @param code
+	 *            Error code
+	 * @Deprecated Code is no longer used
+	 */
+	@Deprecated
 	public KurentoMediaFrameworkException(Throwable cause, int code) {
 		super(cause);
 		this.code = code;
-	}
-
-	@Override
-	public String getMessage() {
-		String additionalMessage = super.getMessage() != null ? ". "
-				+ super.getMessage() : "";
-		return "Code " + code + ". " + ExceptionUtils.getErrorMessage(code)
-				+ additionalMessage;
 	}
 
 	public int getCode() {

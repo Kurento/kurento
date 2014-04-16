@@ -20,8 +20,7 @@ package com.kurento.kmf.common.exception;
  * exceptions are intended for interacting with the client. Therefore, they
  * should just be used when the client can manage the exception flow, and it
  * provides useful information. For other kind of situations
- * {@link com.kurento.kmf.common.exception.KurentoSystemException
- * KurentoSystemException} must be used.
+ * {@link KurentoSystemException} must be used.
  * </p>
  * 
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -40,6 +39,7 @@ public abstract class KurentoApplicationException extends Exception implements
 	 * Internal error code of the exception.
 	 */
 	// TODO errorCode maybe should have a default value for each project or type
+	// TODO maybe it should be removed?
 	private int errorCode;
 
 	@Override
@@ -53,8 +53,8 @@ public abstract class KurentoApplicationException extends Exception implements
 	}
 
 	/**
-	 * Constructs a new KurentoFrameworkApplicationException with null as its
-	 * detail message.
+	 * Constructs a new KurentoFrameworkApplicationException with an empty
+	 * detail message
 	 * 
 	 * @param errorCode
 	 */
@@ -68,7 +68,7 @@ public abstract class KurentoApplicationException extends Exception implements
 	 * 
 	 * @param msg
 	 *            the detail message. The detail message is saved for later
-	 *            retrieval by the Throwable.getMessage() method.
+	 *            retrieval by the {@link #getMessage()} method.
 	 * @param errorCode
 	 */
 	public KurentoApplicationException(String msg, int errorCode) {
@@ -81,10 +81,12 @@ public abstract class KurentoApplicationException extends Exception implements
 	 * detail message and cause.
 	 * 
 	 * @param msg
-	 *            the detail message
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
 	 * @param cause
-	 *            the cause. A null value is permitted, and indicates that the
-	 *            cause is nonexistent or unknown.
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
 	 * @param errorCode
 	 */
 	public KurentoApplicationException(String msg, Throwable cause,
@@ -98,8 +100,9 @@ public abstract class KurentoApplicationException extends Exception implements
 	 * cause and a detail message.
 	 * 
 	 * @param cause
-	 *            the cause. A null value is permitted, and indicates that the
-	 *            cause is nonexistent or unknown.
+	 *            the cause (which is saved for later retrieval by the
+	 *            {@link #getCause()} method). (A null value is permitted, and
+	 *            indicates that the cause is nonexistent or unknown.)
 	 * @param errorCode
 	 */
 	public KurentoApplicationException(Throwable cause, int errorCode) {
