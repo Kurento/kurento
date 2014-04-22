@@ -373,6 +373,8 @@ kms_crowd_detector_count_num_pixels_rois (KmsCrowdDetector * self)
   IplImage *src = cvCreateImage (cvSize (self->priv->actual_image->width,
           self->priv->actual_image->height), IPL_DEPTH_8U, 1);
 
+  cvZero (src);
+
   for (curve = 0; curve < self->priv->num_rois; curve++) {
     cvFillConvexPoly (src, self->priv->curves[curve],
         self->priv->n_points[curve], cvScalar (255, 255, 255, 0), 8, 0);
@@ -620,24 +622,37 @@ kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
   crowddetector->priv->actual_image =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 3);
+  cvSet (crowddetector->priv->actual_image, CV_RGB (0, 0, 0), 0);
+
   crowddetector->priv->previous_lbp =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
+  cvZero (crowddetector->priv->previous_lbp);
+
   crowddetector->priv->frame_previous_gray =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
+  cvZero (crowddetector->priv->frame_previous_gray);
+
   crowddetector->priv->background =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
+  cvZero (crowddetector->priv->background);
+
   crowddetector->priv->acumulated_edges =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
+  cvZero (crowddetector->priv->acumulated_edges);
+
   crowddetector->priv->acumulated_lbp =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
+  cvZero (crowddetector->priv->acumulated_lbp);
+
   crowddetector->priv->previous_image =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 3);
+  cvSet (crowddetector->priv->previous_image, CV_RGB (0, 0, 0), 0);
 }
 
 static void
@@ -1027,45 +1042,77 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (frame_actual_gray);
+
   IplImage *actual_lbp =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (actual_lbp);
+
   IplImage *lbp_temporal_result =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (lbp_temporal_result);
+
   IplImage *add_lbps_result =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (add_lbps_result);
+
   IplImage *lbps_alpha_result_rgb =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 3);
+
+  cvSet (lbps_alpha_result_rgb, CV_RGB (0, 0, 0), 0);
+
   IplImage *actual_image_masked =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height), IPL_DEPTH_8U, 1);
+
+  cvZero (actual_image_masked);
+
   IplImage *substract_background_to_actual =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (substract_background_to_actual);
+
   IplImage *low_speed_map =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (low_speed_map);
+
   IplImage *high_speed_map =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (high_speed_map);
+
   IplImage *actual_motion =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 3);
+
+  cvSet (actual_motion, CV_RGB (0, 0, 0), 0);
+
   IplImage *binary_actual_motion =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
           crowddetector->priv->actual_image->height),
       IPL_DEPTH_8U, 1);
+
+  cvZero (binary_actual_motion);
 
   uint8_t *low_speed_pointer;
   uint8_t *low_speed_pointer_aux;
@@ -1078,11 +1125,6 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
 
   int w, h;
 
-  cvSet (actual_motion, CV_RGB (0, 0, 0), 0);
-  cvZero (actual_image_masked);
-  cvZero (binary_actual_motion);
-  cvZero (high_speed_map);
-  cvZero (low_speed_map);
   if (crowddetector->priv->num_rois != 0) {
     cvFillPoly (actual_image_masked, crowddetector->priv->curves,
         crowddetector->priv->n_points, crowddetector->priv->num_rois,
@@ -1107,7 +1149,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   cvAddWeighted (crowddetector->priv->previous_lbp, LBPS_ADD_RATIO, actual_lbp,
       (1 - LBPS_ADD_RATIO), 0, add_lbps_result);
   cvSub (crowddetector->priv->previous_lbp, actual_lbp, add_lbps_result, 0);
-  cvThreshold (add_lbps_result, add_lbps_result, 70, 255, CV_THRESH_OTSU);
+  cvThreshold (add_lbps_result, add_lbps_result, 70.0, 255.0, CV_THRESH_OTSU);
   cvNot (add_lbps_result, add_lbps_result);
   cvErode (add_lbps_result, add_lbps_result, 0, 4);
   cvDilate (add_lbps_result, add_lbps_result, 0, 11);
@@ -1124,16 +1166,16 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
         crowddetector->priv->acumulated_lbp);
   }
 
-  cvThreshold (crowddetector->priv->acumulated_lbp, high_speed_map, 150, 255,
-      CV_THRESH_BINARY);
-  cvSmooth (high_speed_map, high_speed_map, CV_MEDIAN, 3, 0, 0, 0);
+  cvThreshold (crowddetector->priv->acumulated_lbp, high_speed_map,
+      150.0, 255.0, CV_THRESH_BINARY);
+  cvSmooth (high_speed_map, high_speed_map, CV_MEDIAN, 3, 0, 0.0, 0.0);
   kms_crowd_detector_substract_background (frame_actual_gray,
       crowddetector->priv->background, substract_background_to_actual);
   cvThreshold (substract_background_to_actual, substract_background_to_actual,
-      70, 255, CV_THRESH_OTSU);
+      70.0, 255.0, CV_THRESH_OTSU);
 
   cvCanny (substract_background_to_actual,
-      substract_background_to_actual, 70, 150, 3);
+      substract_background_to_actual, 70.0, 150.0, 3);
 
   if (crowddetector->priv->acumulated_edges == NULL) {
     cvCopy (substract_background_to_actual,
@@ -1144,7 +1186,6 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
         crowddetector->priv->acumulated_edges);
   }
 
-  cvZero (low_speed_map);
   kms_crowd_detector_process_edges_image (crowddetector, low_speed_map, 3);
   cvErode (low_speed_map, low_speed_map, 0, 1);
 
