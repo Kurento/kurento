@@ -392,9 +392,9 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
 
   self->priv->num_rois = gst_structure_n_fields (self->priv->rois);
   if (self->priv->num_rois != 0) {
-    self->priv->curves = g_malloc (sizeof (CvPoint *) * self->priv->num_rois);
+    self->priv->curves = g_malloc0 (sizeof (CvPoint *) * self->priv->num_rois);
     self->priv->n_points = g_malloc (sizeof (int) * self->priv->num_rois);
-    self->priv->rois_data = g_malloc (sizeof (RoiData) * self->priv->num_rois);
+    self->priv->rois_data = g_malloc0 (sizeof (RoiData) * self->priv->num_rois);
   }
 
   while (it < self->priv->num_rois) {
@@ -862,13 +862,13 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
     int fluidity_level_min, int fluidity_level_med, int fluidity_level_max,
     int curve)
 {
-  double fluidity_percentage = 0;
+  double fluidity_percentage = 0.0;
 
   if (high_speed_points + low_speed_points > 0) {
     fluidity_percentage =
         low_speed_points * 100 / (high_speed_points + low_speed_points);
   } else {
-    fluidity_percentage = 0;
+    fluidity_percentage = 0.0;
   }
   if (fluidity_percentage >= fluidity_level_max) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 3) {
@@ -972,7 +972,7 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
     int high_speed_points = 0;
     int low_speed_points = 0;
     int total_pixels_occupied = 0;
-    double occupation_percentage = 0;
+    double occupation_percentage = 0.0;
     CvRect container =
         kms_crowd_detector_get_square_roi_contaniner (crowddetector, curve);
 
@@ -987,10 +987,10 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
     cvResetImageROI (high_speed_map);
     total_pixels_occupied = high_speed_points + low_speed_points;
     if (crowddetector->priv->rois_data[curve].n_pixels_roi > 0) {
-      occupation_percentage = (total_pixels_occupied * 100 /
+      occupation_percentage = ((double) total_pixels_occupied * 100 /
           crowddetector->priv->rois_data[curve].n_pixels_roi);
     } else {
-      occupation_percentage = 0;
+      occupation_percentage = 0.0;
     }
     kms_crowd_detector_roi_occup_analysis (crowddetector,
         occupation_percentage,
