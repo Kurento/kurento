@@ -20,13 +20,11 @@
 static gboolean
 init (GstPlugin * plugin)
 {
-  if (!kms_pointer_detector_plugin_init (plugin))
-    return FALSE;
-
-  return TRUE;
+  return kms_pointer_detector_plugin_init (plugin);
 }
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmsfilters,
-    "Kurento filters", init, VERSION, "LGPL", "Kurento", "http://kurento.com/")
+    kmspointerdetector,
+    "Kurento pointer detector",
+    init, VERSION, "LGPL", "Kurento", "http://kurento.com/")
