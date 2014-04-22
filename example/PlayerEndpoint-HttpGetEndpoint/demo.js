@@ -41,12 +41,6 @@ window.addEventListener('load', function()
       {
         if(error) return console.error(error);
 
-        // Subscribe to PlayerEndpoint EOS event
-        player.on('EndOfStream', function(event)
-        {
-          console.log("EndOfStream event:", event);
-        });
-
         pipeline.create('HttpGetEndpoint', function(error, httpGet)
         {
           if(error) return onerror(error);
@@ -77,6 +71,12 @@ window.addEventListener('load', function()
                 console.log('player.play');
               });
             });
+          });
+
+          // Subscribe to HttpGetEndpoint EOS event
+          httpGet.on('EndOfStream', function(event)
+          {
+            console.log("EndOfStream event:", event);
           });
         });
       });

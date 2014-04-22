@@ -40,10 +40,9 @@ var oa = new OAuth2(client_id,
 // Handles requests to the main page
 app.get('/', function(req, res)
 {
-  if(!req.session.access_token)
-    res.sendfile('notLogged.html');
-  else
-    res.sendfile('logged.html');
+  var file = req.session.access_token ? 'logged.html' : 'notLogged.html';
+
+  res.sendfile(file);
 });
 
 // Redirection to IDM authentication portal
@@ -74,5 +73,5 @@ app.get('/logout', function(req, res)
 });
 
 
-console.log('Server listen in port 80. Connect to localhost');
 app.listen(80);
+console.log('Server listen in port 80. Connect to localhost');
