@@ -797,8 +797,8 @@ static void
 kms_plate_detector_extract_final_plate (KmsPlateDetector * platedetector)
 {
   int f, g, h;
-  int longString = strlen (platedetector->priv->finalPlate);
-  char stabilizedPlate[longString];
+  int longString = NUM_PLATE_CHARACTERS + 1;
+  char stabilizedPlate[NUM_PLATE_CHARACTERS + 1];
   int characterMatches = 0;
   int characterMatches2 = 0;
   int r;
