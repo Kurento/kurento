@@ -25,6 +25,8 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -59,12 +61,18 @@ public class JMeterClient {
 	private EventListener eventListener;
 	private URL url;
 	private int concurrentUsers;
+	private CountDownLatch terminationEvent;
+	private int timeout; // seconds
 
 	public JMeterClient(URL url) {
 		this.url = url;
+		terminationEvent = new CountDownLatch(1);
 
 		// Default number of concurrent users = 5
 		this.concurrentUsers = 5;
+
+		// default timeout = 100 seconds
+		timeout = 100;
 	}
 
 	private void setup() throws TemplateException, IOException {
@@ -88,6 +96,14 @@ public class JMeterClient {
 	}
 
 	public void start() throws Exception {
+		// Subscribe to termination event
+		this.addEventListener(new EventListener() {
+			@Override
+			public void onEvent(String event) {
+				terminationEvent.countDown();
+			}
+		});
+
 		// Setup
 		setup();
 		final String jmxExtension = ".jmx";
@@ -157,6 +173,10 @@ public class JMeterClient {
 		eventListener.onEvent("end");
 	}
 
+	public boolean waitForEnding() throws InterruptedException {
+		return terminationEvent.await(getTimeout(), TimeUnit.SECONDS);
+	}
+
 	public void addEventListener(final EventListener eventListener) {
 		this.eventListener = eventListener;
 	}
@@ -175,6 +195,14 @@ public class JMeterClient {
 
 	public URL getUrl() {
 		return url;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
 	}
 
 }

@@ -15,8 +15,6 @@
 package com.kurento.kmf.test.content;
 
 import java.net.URL;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,7 +26,6 @@ import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
-import com.kurento.kmf.test.client.EventListener;
 import com.kurento.kmf.test.client.JMeterClient;
 
 /**
@@ -45,45 +42,34 @@ public class ContentApiPerformancePlayerTest extends ContentApiTest {
 	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = false)
 	public static class PlayerRedirect extends HttpPlayerHandler {
 
+		private PlayerEndpoint playerEP;
+
 		@Override
 		public void onContentRequest(HttpPlayerSession session)
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			session.releaseOnTerminate(mp);
-			PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+			playerEP = mp.newPlayerEndpoint(
 					"http://ci.kurento.com/video/small.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);
 			session.start(httpEP);
-			session.setAttribute("player", playerEP);
 		}
 
 		@Override
 		public void onContentStarted(HttpPlayerSession contentSession)
 				throws Exception {
-			if (contentSession.getAttribute("player") != null) {
-				PlayerEndpoint playerEndpoint = (PlayerEndpoint) contentSession
-						.getAttribute("player");
-				playerEndpoint.play();
-			}
+			playerEP.play();
 		}
 	}
 
 	@Test
 	public void testPerfPlayer() throws Exception {
-		final CountDownLatch terminationEvent = new CountDownLatch(1);
 		URL url = new URL("http://localhost:" + getServerPort() + HANDLER);
-		JMeterClient client = new JMeterClient(url);
-		client.setConcurrentUsers(5);
-		client.addEventListener(new EventListener() {
-			@Override
-			public void onEvent(String event) {
-				terminationEvent.countDown();
-			}
-		});
-
-		client.start();
-		Assert.assertTrue(terminationEvent.await(TIMEOUT, TimeUnit.SECONDS));
+		JMeterClient jmeter = new JMeterClient(url);
+		jmeter.setConcurrentUsers(5);
+		jmeter.start();
+		Assert.assertTrue(jmeter.waitForEnding());
 	}
 }

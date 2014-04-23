@@ -14,9 +14,6 @@
  */
 package com.kurento.kmf.test.content;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,9 +25,8 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.EventListener;
-import com.kurento.kmf.test.client.VideoTagBrowser;
 
 /**
  * Test of a HTTP Player, using a HttpPlayerHandler in ther server-side.
@@ -46,63 +42,38 @@ public class ContentApiPlayerTest extends ContentApiTest {
 	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = false)
 	public static class PlayerRedirect extends HttpPlayerHandler {
 
+		private PlayerEndpoint playerEP;
+
 		@Override
 		public void onContentRequest(HttpPlayerSession session)
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
-			PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+			playerEP = mp.newPlayerEndpoint(
 					"http://ci.kurento.com/video/small.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);
 			session.start(httpEP);
-			session.setAttribute("player", playerEP);
 		}
 
 		@Override
 		public void onContentStarted(HttpPlayerSession contentSession)
 				throws Exception {
-			if (contentSession.getAttribute("player") != null) {
-				PlayerEndpoint playerEndpoint = (PlayerEndpoint) contentSession
-						.getAttribute("player");
-
-				playerEndpoint.play();
-			}
+			playerEP.play();
 		}
 	}
 
 	@Test
 	public void testPlayer() throws InterruptedException {
-		final CountDownLatch startEvent = new CountDownLatch(1);
-		final CountDownLatch terminationEvent = new CountDownLatch(1);
-
-		try (VideoTagBrowser vtb = new VideoTagBrowser(getServerPort(),
+		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.PLAYER)) {
-			vtb.setURL(HANDLER);
-			vtb.addEventListener("playing", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** playing ***");
-					startEvent.countDown();
-				}
-			});
-			vtb.addEventListener("ended", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** ended ***");
-					terminationEvent.countDown();
-				}
-			});
+			browser.setURL(HANDLER);
+			browser.subscribeEvents("playing", "ended");
+			browser.start();
 
-			vtb.start();
-
-			Assert.assertTrue(startEvent.await(TIMEOUT, TimeUnit.SECONDS));
-			long startTime = System.currentTimeMillis();
-
-			Assert.assertTrue(terminationEvent.await(TIMEOUT, TimeUnit.SECONDS));
-			long duration = System.currentTimeMillis() - startTime;
-
-			log.info("Video duration: " + (duration / 60) + " seconds");
+			// Assertions
+			Assert.assertTrue(browser.waitForEvent("playing"));
+			Assert.assertTrue(browser.waitForEvent("ended"));
 		}
 	}
 }

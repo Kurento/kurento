@@ -14,9 +14,6 @@
  */
 package com.kurento.kmf.test.content;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,9 +24,8 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.EventListener;
-import com.kurento.kmf.test.client.VideoTagBrowser;
 
 /**
  * Test of a WebRTC in loopback.
@@ -58,23 +54,16 @@ public class ContentApiWebRtcTst extends ContentApiTest {
 
 	@Test
 	public void testWebRtc() throws InterruptedException {
-		final CountDownLatch startEvent = new CountDownLatch(1);
-
-		try (VideoTagBrowser vtb = new VideoTagBrowser(getServerPort(),
+		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.WEBRTC)) {
-			vtb.setURL(HANDLER);
-			vtb.addEventListener("playing", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** playing ***");
-					startEvent.countDown();
-				}
-			});
-			vtb.start();
+			browser.setURL(HANDLER);
+			browser.subscribeEvents("playing");
+			browser.start();
 
-			Assert.assertTrue(startEvent.await(TIMEOUT, TimeUnit.SECONDS));
+			// Assertions
+			Assert.assertTrue(browser.waitForEvent("playing"));
 
-			// Guard time to see the remote video
+			// Guard time to see the loopback
 			Thread.sleep(3000);
 		}
 	}

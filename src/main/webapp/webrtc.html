@@ -22,47 +22,58 @@
 	function initConnection(conn) {
 		// Set connection success and error events
 		conn.on("start", function(event) {
-			log("Connection started");
+			console.info("Connection started");
 		});
 		conn.on("terminate", function(event) {
-			log("Connection terminated");
+			console.info("Connection terminated");
 		});
 		conn.on("localstream", function(event) {
-			log("LocalStream set");
+			console.info("LocalStream set");
 		});
 		conn.on("remotestream", function(event) {
-			log("RemoteStream set");
+			console.info("RemoteStream set");
 		});
 		conn.on("mediaevent", function(event) {
-			log("MediaEvent: " + JSON.stringify(event.data));
+			console.info("MediaEvent: " + JSON.stringify(event.data));
 		});
 		conn.on("error", function(error) {
-			log("Error " + error.message);
+			console.info("Error " + error.message);
 		});
 	}
 
-	function play(url) {
-		// Show spinners
+	function start(url) {
+		play(url, false)
+	}
+
+	function play(url, recvOnly) {
+		// Show spinners (and options configuration)
 		var localVideo = document.getElementById("local");
 		var remoteVideo = document.getElementById("video");
-		localVideo.poster = "./img/transparent-1px.png";
-		localVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
-		remoteVideo.poster = "./img/transparent-1px.png";
-		remoteVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
-
-		// Create a new connection
 		var options = {
 			localVideoTag : "local",
 			remoteVideoTag : "video"
 		};
+		if (recvOnly) {
+			options = {
+				remoteVideoTag : "video",
+				audio : "recvonly",
+				video : "recvonly"
+			};
+		} else {
+			localVideo.poster = "./img/transparent-1px.png";
+			localVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+		remoteVideo.poster = "./img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
 
+		// Create a new connection
 		try {
 			conn = new kwsContentApi.KwsWebRtcContent(url, options);
-			log("Creating connection to " + url);
+			console.info("Creating connection to " + url);
 			initConnection(conn);
 		} catch (error) {
 			// Log the error
-			log(error.message);
+			console.error(error.message);
 		}
 	}
 

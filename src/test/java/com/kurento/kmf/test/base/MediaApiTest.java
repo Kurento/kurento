@@ -36,9 +36,6 @@ public class MediaApiTest {
 
 	protected MediaPipelineFactory pipelineFactory;
 	private HttpServer server;
-
-	public final static int TIMEOUT = 60; // seconds
-
 	public static Logger log = LoggerFactory.getLogger(MediaApiTest.class);
 
 	@Before

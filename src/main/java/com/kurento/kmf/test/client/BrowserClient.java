@@ -17,7 +17,10 @@ package com.kurento.kmf.test.client;
 import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -29,6 +32,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
@@ -39,16 +44,22 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  * @since 4.2.3
  * @see <a href="http://www.seleniumhq.org/">Selenium</a>
  */
-public class VideoTagBrowser implements Closeable {
+public class BrowserClient implements Closeable {
+
+	public Logger log = LoggerFactory.getLogger(BrowserClient.class);
+	private List<Thread> callbackThreads = new ArrayList<>();
+	private Map<String, CountDownLatch> countDownLatchEvents;
 
 	private WebDriver driver;
 	private String videoUrl;
-	private final int TIMEOUT = 100; // seconds
+	private int timeout; // seconds
 
-	private List<Thread> callbackThreads = new ArrayList<>();
-
-	public VideoTagBrowser(int serverPort, Browser browser, Client client) {
+	public BrowserClient(int serverPort, Browser browser, Client client) {
 		// Setup
+		countDownLatchEvents = new HashMap<>();
+		timeout = 100; // default (100 seconds)
+
+		// Browser
 		switch (browser) {
 		case FIREFOX:
 			setup(FirefoxDriver.class);
@@ -58,7 +69,7 @@ public class VideoTagBrowser implements Closeable {
 			setup(ChromeDriver.class);
 			break;
 		}
-		driver.manage().timeouts().setScriptTimeout(TIMEOUT, TimeUnit.SECONDS);
+		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
 
 		// Exercise test
 		driver.get("http://localhost:" + serverPort + client.toString());
@@ -86,6 +97,33 @@ public class VideoTagBrowser implements Closeable {
 		this.videoUrl = videoUrl;
 	}
 
+	public void subscribeEvents(String... eventType) {
+		for (final String e : eventType) {
+			CountDownLatch latch = new CountDownLatch(1);
+			countDownLatchEvents.put(e, latch);
+			this.addEventListener(e, new EventListener() {
+				@Override
+				public void onEvent(String event) {
+					log.info("Event: {}", event);
+					countDownLatchEvents.get(e).countDown();
+				}
+			});
+		}
+	}
+
+	public boolean waitForEvent(final String eventType)
+			throws InterruptedException {
+		if (!countDownLatchEvents.containsKey(eventType)) {
+			// We cannot wait for an event without previous subscription
+			return false;
+		}
+
+		boolean result = countDownLatchEvents.get(eventType).await(timeout,
+				TimeUnit.SECONDS);
+		countDownLatchEvents.remove(eventType);
+		return result;
+	}
+
 	public void addEventListener(final String eventType,
 			final EventListener eventListener) {
 		Thread t = new Thread() {
@@ -93,7 +131,7 @@ public class VideoTagBrowser implements Closeable {
 				((JavascriptExecutor) driver)
 						.executeScript("video.addEventListener('" + eventType
 								+ "', videoEvent, false);");
-				(new WebDriverWait(driver, TIMEOUT))
+				(new WebDriverWait(driver, timeout))
 						.until(new ExpectedCondition<Boolean>() {
 							public Boolean apply(WebDriver d) {
 								return d.findElement(By.id("status"))
@@ -104,7 +142,6 @@ public class VideoTagBrowser implements Closeable {
 				eventListener.onEvent(eventType);
 			}
 		};
-
 		callbackThreads.add(t);
 		t.setDaemon(true);
 		t.start();
@@ -113,7 +150,14 @@ public class VideoTagBrowser implements Closeable {
 	public void start() {
 		if (driver instanceof JavascriptExecutor) {
 			((JavascriptExecutor) driver).executeScript("play('" + videoUrl
-					+ "');");
+					+ "', false);");
+		}
+	}
+
+	public void startRcvOnly() {
+		if (driver instanceof JavascriptExecutor) {
+			((JavascriptExecutor) driver).executeScript("play('" + videoUrl
+					+ "', true);");
 		}
 	}
 
@@ -125,4 +169,13 @@ public class VideoTagBrowser implements Closeable {
 		driver.quit();
 		driver = null;
 	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeout = timeout;
+	}
+
 }

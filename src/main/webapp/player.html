@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>VideoTagBrowser</title>
+<title>HTTP Player</title>
 <script type="text/javascript">
 	var video;
 	window.onload = function() {
@@ -13,6 +13,8 @@
 	}
 
 	function play(url) {
+		video.poster = "./img/transparent-1px.png";
+		video.style.background = "center transparent url('./img/spinner.gif') no-repeat";
 		video.src = url;
 		video.play();
 	}
@@ -30,7 +32,7 @@
 </script>
 </head>
 <body>
-	<video id="video" autoplay></video>
+	<video id="video" autoplay controls width="480px" height="360px"></video>
 	<br />
 	<label for="output">Status</label>
 	<input id="status" name="status" />

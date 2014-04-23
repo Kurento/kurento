@@ -17,12 +17,10 @@ package com.kurento.kmf.test.content;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,9 +33,8 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.EventListener;
-import com.kurento.kmf.test.client.VideoTagBrowser;
 
 /**
  * Test of a HTTP Player with incremental connection strategies:
@@ -78,7 +75,8 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 	}
 
 	@Test
-	public void testIncrementalPlayer() throws InterruptedException, ExecutionException {
+	public void testIncrementalPlayer() throws InterruptedException,
+			ExecutionException {
 		ExecutorService exec = Executors.newFixedThreadPool(NCLIENTS);
 
 		List<Future<Boolean>> results = new ArrayList<>();
@@ -96,34 +94,20 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 		for (Future<Boolean> r : results) {
 			result &= r.get();
 		}
+
+		// Assertions
 		Assert.assertTrue(result);
 	}
 
 	private boolean createPlayer() throws InterruptedException {
-		final CountDownLatch startEvent = new CountDownLatch(1);
-		final CountDownLatch terminationEvent = new CountDownLatch(1);
-
-		try (VideoTagBrowser vtb = new VideoTagBrowser(getServerPort(),
+		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.PLAYER)) {
 
-			vtb.setURL(HANDLER);
-			vtb.addEventListener("playing", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** playing ***");
-					startEvent.countDown();
-				}
-			});
-			vtb.addEventListener("ended", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** ended ***");
-					terminationEvent.countDown();
-				}
-			});
-			vtb.start();
-
-			return terminationEvent.await(TIMEOUT, TimeUnit.SECONDS);
+			browser.setURL(HANDLER);
+			browser.subscribeEvents("playing", "ended");
+			browser.start();
+			return browser.waitForEvent("playing")
+					&& browser.waitForEvent("ended");
 		}
 	}
 }

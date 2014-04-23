@@ -31,13 +31,14 @@ import com.kurento.kmf.test.base.MediaApiTest;
  * Test of a HTTP Player, using directly a MediaPipeline and HttpClient.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
+ * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public class MediaApiPlayerTest extends MediaApiTest {
 
 	@Test
 	public void testPlayer() throws Exception {
-		// Media Pipeline and Media Elements
+		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
 				"http://ci.kurento.com/video/small.webm").build();
@@ -45,14 +46,14 @@ public class MediaApiPlayerTest extends MediaApiTest {
 				.build();
 		playerEP.connect(httpEP);
 		playerEP.play();
-		String url = httpEP.getUrl();
-		log.info("url: {}", url);
 
 		// Test execution
 		HttpClient client = HttpClientBuilder.create().build();
-		HttpGet httpGet = new HttpGet(url);
+		HttpGet httpGet = new HttpGet(httpEP.getUrl());
 		HttpResponse response = client.execute(httpGet);
 		HttpEntity resEntity = response.getEntity();
+
+		// Assertions
 		Assert.assertEquals("video/webm", resEntity.getContentType().getValue());
 	}
 

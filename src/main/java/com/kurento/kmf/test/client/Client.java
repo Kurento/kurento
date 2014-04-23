@@ -21,12 +21,14 @@ package com.kurento.kmf.test.client;
  * @since 4.2.3
  */
 public enum Client {
-	PLAYER, WEBRTC;
+	PLAYER, PLAYERJSON, WEBRTC;
 
 	public String toString() {
 		switch (this) {
 		case PLAYER:
-			return "/video_tag_browser.html";
+			return "/player.html";
+		case PLAYERJSON:
+			return "/playerJson.html";
 		case WEBRTC:
 		default:
 			return "/webrtc.html";

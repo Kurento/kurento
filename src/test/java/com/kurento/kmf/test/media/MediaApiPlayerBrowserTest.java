@@ -14,9 +14,6 @@
  */
 package com.kurento.kmf.test.media;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,9 +22,8 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.MediaApiTest;
 import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.EventListener;
-import com.kurento.kmf.test.client.VideoTagBrowser;
 
 /**
  * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
@@ -40,45 +36,25 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 
 	@Test
 	public void testPlayer() throws Exception {
-		// Media Pipeline and Media Elements
+		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
 				"http://ci.kurento.com/video/small.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);
-		String url = httpEP.getUrl();
-		log.info("url: {}", url);
 
 		// Test execution
-		final CountDownLatch startEvent = new CountDownLatch(1);
-		final CountDownLatch terminationEvent = new CountDownLatch(1);
-
-		try (VideoTagBrowser vtb = new VideoTagBrowser(getServerPort(),
+		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.PLAYER)) {
-			vtb.setURL(url);
-			vtb.addEventListener("playing", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** playing ***");
-					startEvent.countDown();
-				}
-			});
-			vtb.addEventListener("ended", new EventListener() {
-				@Override
-				public void onEvent(String event) {
-					log.info("*** ended ***");
-					terminationEvent.countDown();
-				}
-			});
+			browser.setURL(httpEP.getUrl());
+			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
-			vtb.start();
+			browser.start();
 
-			Assert.assertTrue(startEvent.await(TIMEOUT, TimeUnit.SECONDS));
-			long startTime = System.currentTimeMillis();
-			Assert.assertTrue(terminationEvent.await(TIMEOUT, TimeUnit.SECONDS));
-			long duration = System.currentTimeMillis() - startTime;
-			log.info("Video duration: " + (duration / 60) + " seconds");
+			// Assertions
+			Assert.assertTrue(browser.waitForEvent("playing"));
+			Assert.assertTrue(browser.waitForEvent("ended"));
 		}
 	}
 
