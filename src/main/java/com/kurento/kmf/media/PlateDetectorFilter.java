@@ -20,6 +20,31 @@ import com.kurento.tool.rom.server.Param;
 public interface PlateDetectorFilter extends Filter {
 
 	/**
+	 * 
+	 * Configure the average width of the license plates in the image
+	 * 
+	 * @param plateWidth
+	 *            average width in pixels
+	 * 
+	 **/
+	void setPlateWidthPercentage(@Param("plateWidth") int plateWidth);
+
+	/**
+	 * 
+	 * Asynchronous version of setPlateWidthPercentage:
+	 * {@link Continuation#onSuccess} is called when the action is done. If an
+	 * error occurs, {@link Continuation#onError} is called.
+	 * 
+	 * @see PlateDetectorFilter#setPlateWidthPercentage
+	 * 
+	 * @param plateWidth
+	 *            average width in pixels
+	 * 
+	 **/
+	void setPlateWidthPercentage(@Param("plateWidth") int plateWidth,
+			Continuation<Void> cont);
+
+	/**
 	 * Add a {@link MediaEventListener} for event {@link PlateDetectedEvent}.
 	 * Synchronous call.
 	 * 
