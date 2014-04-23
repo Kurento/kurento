@@ -20,6 +20,8 @@ import java.net.InetSocketAddress;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -39,13 +41,16 @@ import com.kurento.tool.rom.transport.jsonrpcconnector.RomClientJsonRpcClient;
 
 /**
  * Factory to create {@link MediaPipeline} in the media server.
- *
+ * 
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 2.0.0
  */
 @Component
 public class MediaPipelineFactory {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(MediaPipelineFactory.class);
 
 	@Autowired
 	private MediaApiConfiguration config;
@@ -66,9 +71,16 @@ public class MediaPipelineFactory {
 
 	// Used in non Spring environments
 	public MediaPipelineFactory(String serverAddress, int serverPort,
-			String handlerAdress, int handlerPort) {
+			String handlerAddress, int handlerPort) {
+
+		log.info(
+				"Creating pipeline factory in non-spring environment with server {}:{} and handler {}:{}",
+				serverAddress, serverPort, handlerAddress, handlerPort);
 
 		this.config = new MediaApiConfiguration();
+
+		this.config.setHandlerAddress(handlerAddress);
+		this.config.setHandlerPort(handlerPort);
 
 		ThriftInterfaceConfiguration cfg = new ThriftInterfaceConfiguration(
 				serverAddress, serverPort);
@@ -103,14 +115,14 @@ public class MediaPipelineFactory {
 	@PreDestroy
 	public void destroy() {
 		factory.destroy();
-		if(!springEnv){
+		if (!springEnv) {
 			executorService.destroy();
 		}
 	}
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server
-	 *
+	 * 
 	 * @return The media pipeline
 	 */
 	public MediaPipeline create() {
@@ -119,14 +131,14 @@ public class MediaPipelineFactory {
 
 	/**
 	 * Creates a new {@link MediaPipeline} in the media server
-	 *
+	 * 
 	 * @param cont
 	 *            An asynchronous callback handler. If the element was
 	 *            successfully created, the {@code onSuccess} method from the
 	 *            handler will receive a {@link MediaPipeline} stub from the
 	 *            media server.
 	 * @throws KurentoMediaFrameworkException
-	 *
+	 * 
 	 */
 	public void create(final Continuation<MediaPipeline> cont)
 			throws KurentoMediaFrameworkException {
