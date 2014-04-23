@@ -24,9 +24,6 @@ public enum Client {
 	PLAYER, WEBRTC;
 
 	public String toString() {
-		StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
-		System.err.println(stElements[1]);
-
 		switch (this) {
 		case PLAYER:
 			return "/video_tag_browser.html";

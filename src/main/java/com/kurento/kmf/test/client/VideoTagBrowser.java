@@ -43,7 +43,7 @@ public class VideoTagBrowser implements Closeable {
 
 	private WebDriver driver;
 	private String videoUrl;
-	private final int TIMEOUT = 60; // seconds
+	private final int TIMEOUT = 100; // seconds
 
 	private List<Thread> callbackThreads = new ArrayList<>();
 

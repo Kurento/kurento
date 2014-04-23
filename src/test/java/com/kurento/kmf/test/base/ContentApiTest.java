@@ -38,7 +38,7 @@ public class ContentApiTest {
 
 	public static Logger log = LoggerFactory.getLogger(ContentApiTest.class);
 
-	public final static int TIMEOUT = 60; // seconds
+	public final static int TIMEOUT = 100; // seconds
 
 	protected static ConfigurableApplicationContext context;
 
