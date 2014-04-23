@@ -84,6 +84,7 @@ struct _KmsHttpEndpointPrivate
   GstElement *pipeline;
   gboolean start;
   gboolean use_encoded_media;
+  gboolean use_dvr;
   KmsLoop *loop;
   KmsRecordingProfile profile;
   union
@@ -97,6 +98,7 @@ struct _KmsHttpEndpointPrivate
 enum
 {
   PROP_0,
+  PROP_DVR,
   PROP_METHOD,
   PROP_START,
   PROP_PROFILE,
@@ -891,6 +893,12 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
+    case PROP_DVR:
+      self->priv->use_dvr = g_value_get_boolean (value);
+      if (self->priv->method == KMS_HTTP_ENDPOINT_METHOD_GET)
+        g_object_set (G_OBJECT (self->priv->get->controller), "live-DVR",
+            self->priv->use_dvr, NULL);
+      break;
     case PROP_START:{
       if (self->priv->start != g_value_get_boolean (value)) {
         struct cb_data *tmp_data;
@@ -929,6 +937,9 @@ kms_http_endpoint_get_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
+    case PROP_DVR:
+      g_value_set_boolean (value, self->priv->use_dvr);
+      break;
     case PROP_METHOD:
       g_value_set_enum (value, self->priv->method);
       break;
@@ -973,6 +984,10 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
       GST_DEBUG_FUNCPTR (kms_http_endpoint_video_valve_removed);
 
   /* Install properties */
+  obj_properties[PROP_DVR] = g_param_spec_boolean ("live-DVR",
+      "Live digital video recorder", "Enables or disbles DVR", FALSE,
+      G_PARAM_READWRITE);
+
   obj_properties[PROP_METHOD] = g_param_spec_enum ("http-method",
       "Http method",
       "Http method used in requests",

@@ -62,6 +62,7 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
 enum
 {
   PROP_0,
+  PROP_DVR,
   PROP_PROFILE,
   N_PROPERTIES
 };
@@ -81,6 +82,7 @@ struct _KmsRecorderEndpointPrivate
   GstElement *pipeline;
   GstClockTime paused_time;
   GstClockTime paused_start;
+  gboolean use_dvr;
   struct state_controller state_manager;
   KmsLoop *loop;
   KmsConfController *controller;
@@ -717,6 +719,11 @@ kms_recorder_endpoint_set_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
+    case PROP_DVR:
+      self->priv->use_dvr = g_value_get_boolean (value);
+      g_object_set (G_OBJECT (self->priv->controller), "live-DVR",
+          self->priv->use_dvr, NULL);
+      break;
     case PROP_PROFILE:{
       KmsRecordingProfile profile;
 
@@ -740,6 +747,9 @@ kms_recorder_endpoint_get_property (GObject * object, guint property_id,
 
   KMS_ELEMENT_LOCK (KMS_ELEMENT (self));
   switch (property_id) {
+    case PROP_DVR:
+      g_value_set_boolean (value, self->priv->use_dvr);
+      break;
     case PROP_PROFILE:{
       KmsRecordingProfile profile;
 
@@ -788,6 +798,10 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_set_property);
   gobject_class->get_property =
       GST_DEBUG_FUNCPTR (kms_recorder_endpoint_get_property);
+
+  obj_properties[PROP_DVR] = g_param_spec_boolean ("live-DVR",
+      "Live digital video recorder", "Enables or disbles DVR", FALSE,
+      G_PARAM_READWRITE);
 
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
