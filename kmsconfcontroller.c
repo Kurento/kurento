@@ -83,6 +83,7 @@ struct _KmsConfControllerPrivate
   KmsRecordingProfile profile;
   ControllerState state;
   gboolean has_data;
+  gboolean use_dvr;
   struct config_data *confdata;
 };
 
@@ -90,6 +91,7 @@ struct _KmsConfControllerPrivate
 enum
 {
   PROP_0,
+  PROP_DVR,
   PROP_ELEMENT,
   PROP_HAS_DATA,
   PROP_PIPELINE,
@@ -231,6 +233,9 @@ kms_conf_controller_set_property (GObject * object, guint property_id,
   KmsConfController *self = KMS_CONF_CONTROLLER (object);
 
   switch (property_id) {
+    case PROP_DVR:
+      self->priv->use_dvr = g_value_get_boolean (value);
+      break;
     case PROP_ELEMENT:{
       KmsElement *element = g_value_get_object (value);
 
@@ -292,6 +297,9 @@ kms_conf_controller_get_property (GObject * object, guint property_id,
   KmsConfController *self = KMS_CONF_CONTROLLER (object);
 
   switch (property_id) {
+    case PROP_DVR:
+      g_value_set_boolean (value, self->priv->use_dvr);
+      break;
     case PROP_HAS_DATA:
       g_value_set_boolean (value, self->priv->has_data);
       break;
@@ -1076,6 +1084,10 @@ kms_conf_controller_class_init (KmsConfControllerClass * klass)
   klass->link_valve = kms_conf_controller_link_valve_impl;
 
   /* Install properties */
+  obj_properties[PROP_DVR] = g_param_spec_boolean ("live-DVR",
+      "Live digital video recorder", "Enables or disbles DVR", FALSE,
+      G_PARAM_READWRITE);
+
   obj_properties[PROP_ELEMENT] = g_param_spec_object ("kmselement",
       "Kurento element",
       "Kurento element", KMS_TYPE_ELEMENT,
