@@ -89,7 +89,7 @@ kms_face_overlay_set_property (GObject * object, guint property_id,
       break;
     case PROP_IMAGE_TO_OVERLAY:
       g_object_set (faceoverlay->priv->image_overlay, "image-to-overlay",
-          g_value_dup_boxed (value), NULL);
+          g_value_get_boxed (value), NULL);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);

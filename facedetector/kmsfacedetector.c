@@ -295,6 +295,8 @@ kms_face_detector_finalize (GObject * object)
   cvReleaseMemStorage (&facedetector->priv->pStorageFace);
   cvReleaseHaarClassifierCascade (&facedetector->priv->pCascadeFace);
 
+  g_mutex_clear (&facedetector->priv->mutex);
+
   G_OBJECT_CLASS (kms_face_detector_parent_class)->finalize (object);
 }
 
