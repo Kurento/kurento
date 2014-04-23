@@ -72,12 +72,20 @@ kms_jack_vader_initialize_classifiers (KmsJackVader * jackvader)
 
   GST_DEBUG ("Loading classifier: %s",
       HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE);
+
+  if (jackvader->pCascadeFace != NULL)
+    cvReleaseHaarClassifierCascade (&jackvader->pCascadeFace);
+
   jackvader->pCascadeFace = (CvHaarClassifierCascade *)
       cvLoad ((HAAR_CASCADES_DIR_OPENCV_PREFIX FACE_HAAR_FILE), 0, 0, 0);
 
   path = g_strdup_printf ("%s%s", jackvader->images_path, JACK_IMAGE_FILE);
 
   GST_DEBUG ("Loading image: %s", path);
+
+  if (jackvader->originalCostume2 != NULL)
+    cvReleaseImage (&jackvader->originalCostume2);
+
   jackvader->originalCostume2 = cvLoadImage (path, CV_LOAD_IMAGE_UNCHANGED);
   if (jackvader->originalCostume2 == NULL) {
     GST_DEBUG ("cant load Jack image from %s,loading synthetic image..", path);
@@ -90,6 +98,9 @@ kms_jack_vader_initialize_classifiers (KmsJackVader * jackvader)
   path = g_strdup_printf ("%s%s", jackvader->images_path, VADER_IMAGE_FILE);
 
   GST_DEBUG ("Loading image: %s", path);
+  if (jackvader->originalCostume1 != NULL)
+    cvReleaseImage (&jackvader->originalCostume1);
+
   jackvader->originalCostume1 = cvLoadImage (path, CV_LOAD_IMAGE_UNCHANGED);
   if (jackvader->originalCostume1 == NULL) {
     GST_DEBUG ("cant load Vader image from %s,loading synthetic image..", path);
