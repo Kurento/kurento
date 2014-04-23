@@ -357,14 +357,24 @@ kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
   float *ranges[] = { h_ranges, s_ranges };
   pointerdetector->histModel =
       cvCreateHist (2, hist_size, CV_HIST_ARRAY, ranges, 1);
+  cvClearHist (pointerdetector->histModel);
+
   pointerdetector->histCompare =
       cvCreateHist (2, hist_size, CV_HIST_ARRAY, ranges, 1);
+  cvClearHist (pointerdetector->histCompare);
+
   pointerdetector->histSetUp1 =
       cvCreateHist (2, hist_size, CV_HIST_ARRAY, ranges, 1);
+  cvClearHist (pointerdetector->histSetUp1);
+
   pointerdetector->histSetUp2 =
       cvCreateHist (2, hist_size, CV_HIST_ARRAY, ranges, 1);
+  cvClearHist (pointerdetector->histSetUp2);
+
   pointerdetector->histSetUpRef =
       cvCreateHist (2, hist_size, CV_HIST_ARRAY, ranges, 1);
+  cvClearHist (pointerdetector->histSetUpRef);
+
   pointerdetector->upCornerFinalRect.x = 20;
   pointerdetector->upCornerFinalRect.y = 10;
   pointerdetector->downCornerFinalRect.x = 40;
