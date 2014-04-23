@@ -174,7 +174,7 @@ create a *Kurento* based application:
             @Override
             public void onContentRequest(HttpPlayerSession session) throws Exception {
 
-                session.start("file:///path/to/myvideo.webm ");
+                session.start("file:///path/to/myvideo.webm");
             }
         }
 
@@ -668,7 +668,7 @@ If exceptions are not handled, there will be propagated and method
 
 The *content session* is able to store and manage application attributes
 through its lifecycle, in a similar way as ``HttpSession`` does. Method
-:java:meth`setAttribute()` stores an object that can later be retrieved with
+:java:meth:`setAttribute()` stores an object that can later be retrieved with
 method :java:meth:`getAttribute()` or deleted with method :java:meth:`removeAttribute()`.
 ::
 
