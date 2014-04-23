@@ -1,0 +1,3 @@
+[submodule "kmf-spring"]
+	path = kmf-spring
+	url = ../kmf-spring
