@@ -21,13 +21,16 @@ public interface PlateDetectorFilter extends Filter {
 
 	/**
 	 * 
-	 * Configure the average width of the license plates in the image
+	 * Configures the average width of the license plates in the image
+	 * represented as an image percentage.
 	 * 
-	 * @param plateWidth
-	 *            average width in pixels
+	 * @param plateWidthPercentage
+	 *            average width of the license plates represented as an image
+	 *            percentage [0..1].
 	 * 
 	 **/
-	void setPlateWidthPercentage(@Param("plateWidth") int plateWidth);
+	void setPlateWidthPercentage(
+			@Param("plateWidthPercentage") float plateWidthPercentage);
 
 	/**
 	 * 
@@ -37,11 +40,13 @@ public interface PlateDetectorFilter extends Filter {
 	 * 
 	 * @see PlateDetectorFilter#setPlateWidthPercentage
 	 * 
-	 * @param plateWidth
-	 *            average width in pixels
+	 * @param plateWidthPercentage
+	 *            average width of the license plates represented as an image
+	 *            percentage [0..1].
 	 * 
 	 **/
-	void setPlateWidthPercentage(@Param("plateWidth") int plateWidth,
+	void setPlateWidthPercentage(
+			@Param("plateWidthPercentage") float plateWidthPercentage,
 			Continuation<Void> cont);
 
 	/**
