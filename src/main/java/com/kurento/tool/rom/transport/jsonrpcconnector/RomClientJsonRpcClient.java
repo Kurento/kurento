@@ -258,8 +258,7 @@ public class RomClientJsonRpcClient extends RomClient {
 			return null;
 
 		} catch (IOException e) {
-			throw new TransportException(
-					"Error connecting with server", e);
+			throw new TransportException("Error connecting with server", e);
 		} catch (JsonRpcErrorException e) {
 			throw new MediaServerException("Exception invoking the ", e);
 		}
@@ -306,8 +305,8 @@ public class RomClientJsonRpcClient extends RomClient {
 				return extractSimpleValueFromJsonObject((JsonObject) result,
 						type);
 			} else {
-				throw new ProtocolException(
-						"Unrecognized json element: " + result);
+				throw new ProtocolException("Unrecognized json element: "
+						+ result);
 			}
 
 		} else if (isList(type)) {

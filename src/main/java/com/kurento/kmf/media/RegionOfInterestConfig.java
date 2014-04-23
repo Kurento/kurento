@@ -5,7 +5,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * 
  * data structure for configuration of CrowdDetector regions of interest
