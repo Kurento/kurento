@@ -42,7 +42,7 @@
 #define PLATE_WIDTH_EXPAND_RATE ((float) 0.2)
 #define PLATE_HEIGHT_EXPAND_RATE ((float) 0.4)
 #define MIN_OCR_CONFIDENCE_RATE ((int) 70)
-#define NUM_ACCUMULATED_PLATES ((int) 1)
+#define NUM_ACCUMULATED_PLATES ((int) 3)
 #define MAX_NUM_DIF_CHARACTERS ((int) 0)
 #define PREVIOUS_PLATE_INI "*********"
 #define NULL_PLATE "---------"
@@ -58,7 +58,7 @@
 #define MARGIN_200 ((int) 200)
 #define MARGIN_240 ((int) 240)
 
-#define PLATEWINDOWPERCENTAGE ((int) 5)
+#define PLATEWINDOWPERCENTAGE ((int) 6)
 #define KERNELY ((int) 3)
 #define PLATE_HEIGHT_SCALE_RATE ((float) 60)
 
@@ -377,8 +377,8 @@ kms_plate_detector_create_images (KmsPlateDetector * platedetector,
       IPL_DEPTH_8U, 1);
 
   platedetector->priv->kernelX =
-      (platedetector->priv->plate_percentage * (frame->info.width *
-          PLATEWINDOWPERCENTAGE) / 100) / 30;
+      (platedetector->priv->plate_percentage * frame->info.width /
+      PLATEWINDOWPERCENTAGE / 100);
   if ((platedetector->priv->kernelX % 2) == 0) {
     platedetector->priv->kernelX = platedetector->priv->kernelX + 1;
   }
@@ -558,64 +558,6 @@ kms_plate_detector_select_best_characters_contours (GSList * plateStore,
       data2->similarProportion = FALSE;
     }
   }
-}
-
-static gint
-compare_angles (gconstpointer data1, gconstpointer data2)
-{
-  const float *a = data1;
-  const float *b = data2;
-
-  return *a - *b;
-}
-
-static void
-kms_plate_detector_float_free (gpointer data)
-{
-  g_slice_free (float, data);
-}
-
-static float
-kms_plate_detector_calc_rotation_angle (GSList * plateStore)
-{
-  int length;
-  GSList *angleStore = NULL;
-  GSList *iterator = NULL;
-  GSList *iterator2 = NULL;
-
-  for (iterator = plateStore; iterator; iterator = iterator->next) {
-    CharacterData *data1 = iterator->data;
-
-    for (iterator2 = iterator->next; iterator2; iterator2 = iterator2->next) {
-      CharacterData *data2 = iterator2->data;
-
-      if ((data2->x - data1->x != 0) && (data1->similarProportion == TRUE)
-          && (data2->similarProportion == TRUE)) {
-        float *angle = g_slice_new0 (float);
-
-        *angle =
-            atan ((float) (data2->y -
-                data1->y) / (float) (data2->x - data1->x)) * 180 / 3.14;
-        angleStore = g_slist_insert_sorted (angleStore, angle, compare_angles);
-      }
-    }
-  }
-
-  length = g_slist_length (angleStore);
-
-  if (length > 0) {
-    float *angle = g_slist_nth_data (angleStore,
-        (length) / 2);
-    float angleAux = *angle;
-
-    g_slist_free_full (angleStore, kms_plate_detector_float_free);
-
-    return angleAux;
-  }
-
-  g_slist_free_full (angleStore, kms_plate_detector_float_free);
-
-  return 0;
 }
 
 static gboolean
@@ -1709,8 +1651,6 @@ kms_plate_detector_transform_frame_ip (GstVideoFilter * filter,
 
     kms_plate_detector_select_best_characters_contours (plateStore,
         mostSimContPosData);
-
-    kms_plate_detector_calc_rotation_angle (plateStore);
 
     kms_plate_detector_rotate_images (plateInterAux1Color,
         plateInterpolatedAux1, plateInterpolatedAux2, plateInterpolated,
