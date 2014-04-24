@@ -1,3 +1,60 @@
+ktool-rom-processor (1.1.0) testing; urgency=low
+
+  [ Santiago Gala ]
+  * [release] Prepare for next development iteration
+
+  [ Jose Antonio Santos Cadenas ]
+  * Allow any object to be a factory
+  * Deserialize correctly optional parameters in complex types
+  * Fixes to templates to support crowddetector plugin
+
+  [ Santiago Gala ]
+  * Adapt debian/control description to the current name
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove duplicates from dependencies
+  * Make media object inherit from enable_shared_from_this
+  * Cpp templates: Make factories return a pointer
+
+  [ Santiago Gala ]
+  * Generate documentation for release in the java template
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove garbagePeriod from model
+  * cpptemplates: Do not create empty constructor for register type
+
+  [ Santiago Gala ]
+  * Use a String for model documentation.
+  * Doc generation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove empty spaces from generated documentation
+
+  [ Santiago Gala ]
+  * Fix incorrect rst substitution
+  * More errors in javadoc link generation
+  * Missing comments for getter and setter of complexType properties
+  * Add the machinery for the right sphinx glossary ids
+
+  [ mgallego ]
+  * Initial templates for JavaScript generation
+  * getJsNamespace() function for generating JS templates
+  * Support to exclude files from delete
+  * Improve templates for non Spring compliant MediaPipelineFactory
+
+  [ Santiago Gala ]
+  * use parameter name for @param
+
+  [ Jesús Leganés Combarro "piranna ]
+  * Templates for auto-generation of Javascript client (browser & Node.js)
+
+  [ David Fernandez ]
+  * Update template for MediaPipelineFactory
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 24 Apr 2014 15:22:16 +0200
+
 ktool-rom-processor (1.0.0) testing; urgency=low
 
   [ Santiago Gala ]
