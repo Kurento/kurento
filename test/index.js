@@ -55,7 +55,7 @@ exports['encode JsonRPC 2.0'] =
     test.equal(notification.duplicate, undefined);
 
     test.equal(notification.method, METHOD);
-    test.equal(notification.params, undefined);
+    test.deepEqual(notification.params, {});
 
     test.done();
   },
@@ -80,7 +80,7 @@ exports['encode JsonRPC 2.0'] =
     test.equal(request.duplicated, false);
 
     test.equal(request.method, METHOD);
-    test.equal(request.params, undefined);
+    test.deepEqual(request.params, {});
 
     test.done();
   },
@@ -107,7 +107,7 @@ exports['encode JsonRPC 2.0'] =
       test.ifError(error);
     });
 
-    request.cancel();
+    this.rpcBuilder.cancel(request);
 
     setTimeout(function()
     {
@@ -199,7 +199,7 @@ exports['encode JsonRPC 2.0'] =
     // Response request
     request = this.rpcBuilder.decode(request);
 
-    var response = request.reply(null, value);;
+    var response = request.reply(null, value);
 
     // Test response message
     test.deepEqual(JSON.parse(response),
