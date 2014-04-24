@@ -230,6 +230,17 @@
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector</artifactId>
 				<version>${kmf-jsonrpcconnector.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-jsonrpcconnector-client</artifactId>
+				<version>${kmf-jsonrpcconnector.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-jsonrpcconnector-server</artifactId>
+				<version>${kmf-jsonrpcconnector.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
