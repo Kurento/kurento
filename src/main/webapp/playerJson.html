@@ -9,6 +9,11 @@
 	window.onload = function() {
 		video = document.getElementById("video");
 		console = new Console("console", console);
+		setInterval(updateCurrentTime, 500);
+	}
+
+	function updateCurrentTime() {
+		document.getElementById("currentTime").value = video.currentTime;
 	}
 
 	function addEventListener(type, callback) {
@@ -70,8 +75,10 @@
 <body>
 	<video id="video" autoplay controls width="480px" height="360px"></video>
 	<br />
-	<label for="output">Status</label>
+	<label for="status">Status</label>
 	<input id="status" name="status" />
+	<label for="currentTime">Current Time</label>
+	<input id="currentTime" name="currentTime" />
 	<br />
 	<label for="output">Output</label>
 	<div id="console"></div>

@@ -26,37 +26,65 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
+ * Test of a HTTP Player switching videos.
  * 
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerBrowserTest extends MediaApiTest {
+public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
 
 	@Test
 	public void testPlayer() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/small.webm").build();
+		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/color/red.webm").build();
+		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/color/blue.webm").build();
+		PlayerEndpoint playerYellow = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/color/yellow.webm").build();
+		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/color/green.webm").build();
+		PlayerEndpoint playerGrey = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/color/grey.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
-		playerEP.connect(httpEP);
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.PLAYER)) {
 			browser.setURL(httpEP.getUrl());
-			browser.subscribeEvents("playing", "ended");
-			playerEP.play();
-			browser.start();
 
-			// Assertions
+			// Red
+			playerRed.connect(httpEP);
+			playerRed.play();
+			browser.subscribeEvents("playing", "ended");
+			browser.start();
 			Assert.assertTrue(browser.waitForEvent("playing"));
+			Thread.sleep(2000);
+
+			// Blue
+			playerBlue.connect(httpEP);
+			playerBlue.play();
+			Thread.sleep(2000);
+
+			// Yellow
+			playerYellow.connect(httpEP);
+			playerYellow.play();
+			Thread.sleep(2000);
+
+			// Green
+			playerGreen.connect(httpEP);
+			playerGreen.play();
+			Thread.sleep(2000);
+
+			// Grey
+			playerGrey.connect(httpEP);
+			playerGrey.play();
 			Assert.assertTrue(browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 5 seconds",
-					browser.getCurrentTime() >= 5);
+
+			Assert.assertTrue("Playback time must be at least 8 seconds",
+					browser.getCurrentTime() >= 8);
 		}
 	}
 

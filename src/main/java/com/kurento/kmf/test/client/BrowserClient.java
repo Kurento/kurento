@@ -178,4 +178,9 @@ public class BrowserClient implements Closeable {
 		this.timeout = timeout;
 	}
 
+	public double getCurrentTime() {
+		return Double.parseDouble(driver.findElement(By.id("currentTime"))
+				.getAttribute("value"));
+	}
+
 }
