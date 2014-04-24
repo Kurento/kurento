@@ -10,8 +10,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-jsonrpcconnector</artifactId>
-	<version>${project.parent.version}</version>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
 	<name>Kurento Media Framework - JSON-RPC Protocol</name>
 	<description>
@@ -43,99 +42,8 @@
 		</developer>
 	</developers>
 
-	<dependencies>
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>javax.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-commons</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-spring</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-websocket</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>fluent-hc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.scribe</groupId>
-			<artifactId>scribe</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.woorea</groupId>
-			<artifactId>keystone-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.tomcat.embed</groupId>
-			<artifactId>tomcat-embed-websocket</artifactId>
-		</dependency>
-	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>jersey</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.woorea</groupId>
-					<artifactId>jersey-connector</artifactId>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>jersey2</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>com.woorea</groupId>
-					<artifactId>jersey2-connector</artifactId>
-				</dependency>
-			</dependencies>
-		</profile>
-		<profile>
-			<id>resteasy</id>
-			<dependencies>
-				<dependency>
-					<groupId>com.woorea</groupId>
-					<artifactId>resteasy-connector</artifactId>
-				</dependency>
-			</dependencies>
-		</profile>
-	</profiles>
-
+	<modules>
+		<module>kmf-jsonrpcconnector-client</module>
+		<module>kmf-jsonrpcconnector-server</module>
+	</modules>
 </project>
