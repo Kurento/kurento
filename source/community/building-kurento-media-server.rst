@@ -10,7 +10,7 @@ Requirements
 ============
 
 .. note::
-    These instructions are prepared for Ubuntu 13.10
+    These instructions are prepared for Ubuntu 14.04
 
     If you have an Intel graphical card, you should probably do
     ``sudo apt-get install ocl-icd-libopencl1`` before starting.
@@ -30,9 +30,10 @@ You need to execute the following commands: [#]_
      $ sudo apt-get install libgstreamer-plugins-base1.0-dev libnice-dev gtk-doc-tools
      $ sudo apt-get install cmake libglibmm-2.4-dev uuid-dev libevent-dev libboost-dev
      $ sudo apt-get install libboost-system-dev libboost-filesystem-dev
-     $ sudo apt-get install libboost-test-dev, libopencv-dev autoconf git
+     $ sudo apt-get install libboost-test-dev libsctp-dev
+     $ sudo apt-get install libopencv-dev autoconf git libjsoncpp-dev
      $ sudo apt-get install libtool libsoup2.4-dev tesseract-ocr-dev tesseract-ocr-eng
-     $ sudo apt-get install libgnutls28-dev gnutls-bin libvpx-dev libsctp-dev
+     $ sudo apt-get install libgnutls28-dev gnutls-bin libvpx-dev
 
 
 Compilation
