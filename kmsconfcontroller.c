@@ -35,6 +35,7 @@
 #define VIDEO_APPSINK "video_appsink"
 
 #define KEY_DESTINATION_PAD_NAME "kms-pad-key-destination-pad-name"
+#define KEY_USE_DVR "kms-use_dvr"
 #define KEY_PAD_PROBE_ID "kms-pad-key-probe-id"
 #define KEY_APP_SINK "kms-key_app_sink"
 
@@ -84,6 +85,7 @@ struct _KmsConfControllerPrivate
   ControllerState state;
   gboolean has_data;
   gboolean use_dvr;
+  GSList *pads;
   struct config_data *confdata;
 };
 
@@ -125,6 +127,12 @@ static void
 destroy_configuration_data (gpointer data)
 {
   g_slice_free (struct config_valve, data);
+}
+
+static void
+destroy_gboolean (gpointer data)
+{
+  g_slice_free (gboolean, data);
 }
 
 static void
@@ -224,6 +232,41 @@ kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
   pad->queryfunc = fake_query_func;
 
   g_object_unref (pad);
+}
+
+static gboolean
+kms_query_duration (GstPad * pad, GstObject * parent, GstQuery * query)
+{
+  gboolean *use_dvr;
+
+  use_dvr = g_object_get_data (G_OBJECT (pad), KEY_USE_DVR);
+
+  if (!(*use_dvr) || GST_QUERY_TYPE (query) != GST_QUERY_DURATION)
+    return gst_pad_query_default (pad, parent, query);
+
+  GST_LOG ("Using live-DVR. Setting maximum duration");
+
+  gst_query_set_duration (query, GST_FORMAT_TIME, G_MAXINT64);
+  return TRUE;
+}
+
+static void
+kms_configure_DVR (KmsConfController * self, GstElement * appsrc)
+{
+  GstPad *srcpad;
+  gboolean *use_dvr;
+
+  srcpad = gst_element_get_static_pad (appsrc, "src");
+  use_dvr = g_slice_new (gboolean);
+  *use_dvr = self->priv->use_dvr;
+
+  g_object_set_data_full (G_OBJECT (srcpad), KEY_USE_DVR, use_dvr,
+      destroy_gboolean);
+
+  self->priv->pads = g_slist_prepend (self->priv->pads, srcpad);
+
+  gst_pad_set_query_function (srcpad, kms_query_duration);
+  gst_object_unref (srcpad);
 }
 
 static void
@@ -400,6 +443,8 @@ kms_conf_controller_connect_appsrc_to_encodebin (KmsConfController * self,
     GST_ERROR ("No appsrc %s found", conf->srcname);
     return;
   }
+
+  kms_configure_DVR (self, appsrc);
 
   GST_DEBUG ("Connecting %s to %s (%s)", GST_ELEMENT_NAME (appsrc),
       GST_ELEMENT_NAME (self->priv->encodebin), conf->destpadname);
@@ -1066,6 +1111,7 @@ kms_conf_controller_finalize (GObject * obj)
   KmsConfController *self = KMS_CONF_CONTROLLER (obj);
 
   kms_conf_controller_free_config_data (self);
+  g_slist_free (self->priv->pads);
 
   G_OBJECT_CLASS (kms_conf_controller_parent_class)->finalize (obj);
 }

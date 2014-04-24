@@ -589,6 +589,9 @@ kms_http_endpoint_init_get_pipeline (KmsHttpEndpoint * self)
       kms_conf_controller_new (KMS_CONF_CONTROLLER_KMS_ELEMENT, self,
       KMS_CONF_CONTROLLER_PIPELINE, self->priv->pipeline,
       KMS_CONF_CONTROLLER_PROFILE, self->priv->profile, NULL);
+  g_object_set (G_OBJECT (self->priv->get->controller), "live-DVR",
+      self->priv->use_dvr, NULL);
+
   g_signal_connect (self->priv->get->controller, "matched-elements",
       G_CALLBACK (matched_elements_cb), self);
   g_signal_connect (self->priv->get->controller, "sink-required",
