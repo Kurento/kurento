@@ -12,13 +12,13 @@ import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
+import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl;
+import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
-import com.kurento.kmf.jsonrpcconnector.internal.server.TransactionImpl;
-import com.kurento.kmf.jsonrpcconnector.internal.server.TransactionImpl.ResponseSender;
 import com.kurento.kmf.thrift.ThriftServer;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Iface;
@@ -42,7 +42,8 @@ public class JsonRpcServerThrift {
 			InetSocketAddress inetSocketAddress) {
 
 		this.handler = jsonRpcHandler;
-		this.paramsClass = JsonRpcHandlerManager.getParamsType(handler);
+		this.paramsClass = JsonRpcHandlerManager.getParamsType(handler
+				.getHandlerType());
 
 		LOG.info("Starting JsonRpcServer on {}", inetSocketAddress);
 
