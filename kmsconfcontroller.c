@@ -270,6 +270,16 @@ kms_configure_DVR (KmsConfController * self, GstElement * appsrc)
 }
 
 static void
+set_DVR (gpointer data, gpointer user_data)
+{
+  KmsConfController *self = KMS_CONF_CONTROLLER (user_data);
+  gboolean *use_dvr;
+
+  use_dvr = g_object_get_data (G_OBJECT (data), KEY_USE_DVR);
+  *use_dvr = self->priv->use_dvr;
+}
+
+static void
 kms_conf_controller_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -278,6 +288,7 @@ kms_conf_controller_set_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_DVR:
       self->priv->use_dvr = g_value_get_boolean (value);
+      g_slist_foreach (self->priv->pads, set_DVR, self);
       break;
     case PROP_ELEMENT:{
       KmsElement *element = g_value_get_object (value);
