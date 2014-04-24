@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.test.client;
 
+import java.awt.Color;
 import java.io.Closeable;
 import java.io.File;
 import java.util.ArrayList;
@@ -53,11 +54,13 @@ public class BrowserClient implements Closeable {
 	private WebDriver driver;
 	private String videoUrl;
 	private int timeout; // seconds
+	private double maxDistance;
 
 	public BrowserClient(int serverPort, Browser browser, Client client) {
 		// Setup
 		countDownLatchEvents = new HashMap<>();
 		timeout = 100; // default (100 seconds)
+		maxDistance = 300.0; // default distance (for color comparison)
 
 		// Browser
 		switch (browser) {
@@ -89,6 +92,9 @@ public class BrowserClient implements Closeable {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
+			options.addArguments("--disable-web-security",
+					"--use-fake-device-for-media-stream",
+					"--use-fake-ui-for-media-stream");
 			driver = new ChromeDriver(options);
 		}
 	}
@@ -181,6 +187,34 @@ public class BrowserClient implements Closeable {
 	public double getCurrentTime() {
 		return Double.parseDouble(driver.findElement(By.id("currentTime"))
 				.getAttribute("value"));
+	}
+
+	public boolean colorSimilarTo(Color expectedColor) {
+		String[] realColor = driver.findElement(By.id("color"))
+				.getAttribute("value").split(",");
+		int red = Integer.parseInt(realColor[0]);
+		int green = Integer.parseInt(realColor[1]);
+		int blue = Integer.parseInt(realColor[2]);
+
+		double distance = (red - expectedColor.getRed())
+				* (red - expectedColor.getRed())
+				+ (green - expectedColor.getGreen())
+				* (green - expectedColor.getGreen())
+				+ (blue - expectedColor.getBlue())
+				* (blue - expectedColor.getBlue());
+
+		log.info("Color comparision: real {}, expected {}, distance {}",
+				realColor, expectedColor, distance);
+
+		return distance <= getMaxDistance();
+	}
+
+	public double getMaxDistance() {
+		return maxDistance;
+	}
+
+	public void setMaxDistance(double maxDistance) {
+		this.maxDistance = maxDistance;
 	}
 
 }

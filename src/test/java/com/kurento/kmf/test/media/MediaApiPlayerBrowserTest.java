@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.test.media;
 
+import java.awt.Color;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +41,7 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/small.webm").build();
+				"http://ci.kurento.com/video/color/blue.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);
@@ -55,8 +57,9 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 			Assert.assertTrue(browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 5 seconds",
-					browser.getCurrentTime() >= 5);
+			Assert.assertTrue("Playback time must be at least 3 seconds",
+					browser.getCurrentTime() >= 3);
+			Assert.assertTrue(browser.colorSimilarTo(Color.BLUE));
 		}
 	}
 

@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.test.content;
 
+import java.awt.Color;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -65,6 +67,8 @@ public class ContentApiWebRtcTst extends ContentApiTest {
 
 			// Guard time to see the loopback
 			Thread.sleep(3000);
+
+			Assert.assertTrue(browser.colorSimilarTo(new Color(0, 162, 0)));
 		}
 	}
 }

@@ -37,7 +37,7 @@ import com.kurento.kmf.test.client.JMeterClient;
  */
 public class ContentApiPerformancePlayerTest extends ContentApiTest {
 
-	private static final String HANDLER = "/player";
+	private static final String HANDLER = "/playerPerformance";
 
 	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = false)
 	public static class PlayerRedirect extends HttpPlayerHandler {

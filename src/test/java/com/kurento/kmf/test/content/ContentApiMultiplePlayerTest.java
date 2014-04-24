@@ -37,7 +37,7 @@ import com.kurento.kmf.test.client.Client;
  */
 public class ContentApiMultiplePlayerTest extends ContentApiTest {
 
-	private static final String HANDLER = "/player";
+	private static final String HANDLER = "/playerMultiple";
 
 	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = false)
 	public static class PlayerRedirect extends HttpPlayerHandler {

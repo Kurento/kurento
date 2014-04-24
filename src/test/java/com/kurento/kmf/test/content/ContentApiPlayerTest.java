@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.test.content;
 
+import java.awt.Color;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +41,7 @@ public class ContentApiPlayerTest extends ContentApiTest {
 
 	private static final String HANDLER = "/player";
 
-	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = false)
+	@HttpPlayerService(path = HANDLER, redirect = false, useControlProtocol = false)
 	public static class PlayerRedirect extends HttpPlayerHandler {
 
 		private PlayerEndpoint playerEP;
@@ -49,7 +51,7 @@ public class ContentApiPlayerTest extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/small.webm").build();
+					"http://ci.kurento.com/video/color/red.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);
@@ -74,6 +76,9 @@ public class ContentApiPlayerTest extends ContentApiTest {
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Playback time must be at least 3 seconds",
+					browser.getCurrentTime() >= 3);
+			Assert.assertTrue(browser.colorSimilarTo(Color.RED));
 		}
 	}
 }
