@@ -48,7 +48,7 @@ public class MediaApiTest {
 
 		String handlerAddress = getSystemProperty("kurento.handlerAddress",
 				"127.0.0.1");
-		int handlerPort = getSystemProperty("kurento.handlerPort", 9191);
+		int handlerPort = getSystemProperty("kurento.handlerPort", 9104);
 
 		pipelineFactory = new MediaPipelineFactory(serverAddress, serverPort,
 				handlerAddress, handlerPort);
