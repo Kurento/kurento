@@ -44,11 +44,11 @@ public class MultipleSessionsTest extends JsonRpcConnectorBaseTest {
 	}
 
 	@Test
-	public void test() throws IOException, InterruptedException {
+	public void test() throws InterruptedException {
 
 		ExecutorService executorService = Executors.newFixedThreadPool(5);
 
-		List<Callable<Void>> callables = new ArrayList<Callable<Void>>();
+		List<Callable<Void>> callables = new ArrayList<>();
 		for (int i = 0; i < 5; i++) {
 			callables.add(new Callable<Void>() {
 				@Override
