@@ -104,7 +104,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-jsonrpcconnector</artifactId>
+			<artifactId>kmf-jsonrpcconnector-server</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
