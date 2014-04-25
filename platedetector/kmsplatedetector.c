@@ -120,7 +120,7 @@ struct _KmsPlateDetectorPrivate
   CvFont littleFont;
   CvFont bigFont;
   gboolean show_debug_info;
-  int plate_percentage;
+  float plate_percentage;
   int kernelX;
   int kernelY;
 };
@@ -186,8 +186,8 @@ kms_plate_detector_class_init (KmsPlateDetectorClass * klass)
           G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, PROP_PLATE_WIDTH_PERCENTAGE,
-      g_param_spec_int ("plate-width-percentage", "plate width percentage",
-          "define width percentage between window size and plate", 1, 100, 25,
+      g_param_spec_float ("plate-width-percentage", "plate width percentage",
+          "define width percentage between window size and plate", 0, 1, 0.25,
           G_PARAM_READWRITE));
 
   /* Registers a private structure for the instantiatable type */
@@ -237,7 +237,7 @@ kms_plate_detector_init (KmsPlateDetector * platedetector)
   cvInitFont (&platedetector->priv->bigFont,
       CV_FONT_HERSHEY_SIMPLEX | CV_FONT_ITALIC, hScaleBig, vScaleBig, 0, 1,
       lineWidthBig);
-  platedetector->priv->plate_percentage = 25;
+  platedetector->priv->plate_percentage = 0.25;
 }
 
 void
@@ -253,7 +253,7 @@ kms_plate_detector_set_property (GObject * object, guint property_id,
       platedetector->priv->show_debug_info = g_value_get_boolean (value);
       break;
     case PROP_PLATE_WIDTH_PERCENTAGE:
-      platedetector->priv->plate_percentage = g_value_get_int (value);
+      platedetector->priv->plate_percentage = g_value_get_float (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -274,7 +274,7 @@ kms_plate_detector_get_property (GObject * object, guint property_id,
       g_value_set_boolean (value, platedetector->priv->show_debug_info);
       break;
     case PROP_PLATE_WIDTH_PERCENTAGE:
-      g_value_set_int (value, platedetector->priv->plate_percentage);
+      g_value_set_float (value, platedetector->priv->plate_percentage);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -378,7 +378,8 @@ kms_plate_detector_create_images (KmsPlateDetector * platedetector,
 
   platedetector->priv->kernelX =
       (platedetector->priv->plate_percentage * frame->info.width /
-      PLATEWINDOWPERCENTAGE / 100);
+      PLATEWINDOWPERCENTAGE);
+
   if ((platedetector->priv->kernelX % 2) == 0) {
     platedetector->priv->kernelX = platedetector->priv->kernelX + 1;
   }
