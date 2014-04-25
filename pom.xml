@@ -82,7 +82,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-jsonrpcconnector</artifactId>
+			<artifactId>kmf-jsonrpcconnector-client</artifactId>
 		</dependency>
 
 	</dependencies>
