@@ -30,9 +30,8 @@ the :doc:`Programmers Guide <Developer_and_Programmer_Guide>`.
 Moreover, the reader should be also familiar with:
 
 -  :term:`REST` and RESTful web services
--  `HTTP/1.1 (RFC2616) <http://www.ietf.org/rfc/rfc2616.txt>`__
--  `JSON <http://www.ietf.org/rfc/rfc4627.txt?number=4627>`__ data
-   serialization format.
+-  HTTP/1.1 (:rfc:`2616`)
+-  JSON data serialization format (:rfc:`4627`).
 
 Conventions used in this document
 ---------------------------------
@@ -62,7 +61,7 @@ Representation Transport
 ------------------------
 
 Resource representation is transmitted between client and server by
-using HTTP 1.1 protocol, as defined by IETF RFC-2616. Each time an HTTP
+using HTTP 1.1 protocol, as defined by IETF :rfc:`2616`. Each time an HTTP
 request contains payload, a `Content-Type`:mailheader: header shall be used to specify
 the MIME type of wrapped representation. In addition, both client and
 server may use as many HTTP headers as they consider necessary.
