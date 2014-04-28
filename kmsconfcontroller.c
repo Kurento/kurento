@@ -234,6 +234,7 @@ kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
 static gboolean
 kms_query_duration (GstPad * pad, GstObject * parent, GstQuery * query)
 {
+  GstFormat format;
   gboolean *use_dvr;
 
   use_dvr = g_object_get_data (G_OBJECT (pad), KEY_USE_DVR);
@@ -241,9 +242,12 @@ kms_query_duration (GstPad * pad, GstObject * parent, GstQuery * query)
   if (!(*use_dvr) || GST_QUERY_TYPE (query) != GST_QUERY_DURATION)
     return gst_pad_query_default (pad, parent, query);
 
-  GST_LOG ("Using live-DVR. Setting maximum duration");
+  gst_query_parse_duration (query, &format, NULL);
+  gst_query_set_duration (query, format, G_MAXINT64);
 
-  gst_query_set_duration (query, GST_FORMAT_TIME, G_MAXINT64);
+  GST_DEBUG ("Using live-DVR. Setting maximum duration %" GST_PTR_FORMAT,
+      query);
+
   return TRUE;
 }
 
