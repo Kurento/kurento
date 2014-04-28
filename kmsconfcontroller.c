@@ -179,7 +179,7 @@ fake_query_func (GstPad * pad, GstObject * parent, GstQuery * query)
   } else if (GST_QUERY_TYPE (query) | GST_QUERY_TYPE_UPSTREAM) {
     return gst_pad_peer_query (pad, query);
   } else {
-    return FALSE;
+    return gst_pad_query_default (pad, parent, query);
   }
 }
 
