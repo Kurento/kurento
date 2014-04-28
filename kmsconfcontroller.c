@@ -26,8 +26,6 @@
 #include "kms-enumtypes.h"
 #include "kmsloop.h"
 
-#define KMS_TEMP_TEMPLATE "/tmp/kurento-XXXXXX"
-
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 #define DEFAULT_HAS_DATA_VALUE FALSE
 
@@ -196,9 +194,8 @@ kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
   }
 
   self->priv->queue = gst_element_factory_make ("queue2", NULL);
-  g_object_set (self->priv->queue, "temp-template", KMS_TEMP_TEMPLATE,
-      "max-size-buffers", 0, "max-size-bytes", 0, "max-size-time",
-      G_GUINT64_CONSTANT (0), NULL);
+  g_object_set (self->priv->queue, "max-size-buffers", 0, "max-size-bytes", 0,
+      "max-size-time", G_GUINT64_CONSTANT (0), NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->queue);
   gst_element_sync_state_with_parent (self->priv->queue);
 
