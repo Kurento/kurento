@@ -255,6 +255,7 @@ kms_plate_detector_set_property (GObject * object, guint property_id,
       break;
     case PROP_PLATE_WIDTH_PERCENTAGE:
     {
+      GST_OBJECT_LOCK (platedetector);
       platedetector->priv->plate_percentage = g_value_get_float (value);
 
       if (platedetector->priv->frameWidth != 0) {
@@ -265,6 +266,7 @@ kms_plate_detector_set_property (GObject * object, guint property_id,
           platedetector->priv->kernelX = platedetector->priv->kernelX + 1;
         }
       }
+      GST_OBJECT_UNLOCK (platedetector);
       break;
     }
     default:
@@ -286,7 +288,9 @@ kms_plate_detector_get_property (GObject * object, guint property_id,
       g_value_set_boolean (value, platedetector->priv->show_debug_info);
       break;
     case PROP_PLATE_WIDTH_PERCENTAGE:
+      GST_OBJECT_LOCK (platedetector);
       g_value_set_float (value, platedetector->priv->plate_percentage);
+      GST_OBJECT_UNLOCK (platedetector);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -388,6 +392,7 @@ kms_plate_detector_create_images (KmsPlateDetector * platedetector,
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 1);
 
+  GST_OBJECT_LOCK (platedetector);
   platedetector->priv->frameWidth = frame->info.width;
   platedetector->priv->kernelX =
       (platedetector->priv->plate_percentage * platedetector->priv->frameWidth /
@@ -395,6 +400,7 @@ kms_plate_detector_create_images (KmsPlateDetector * platedetector,
   if ((platedetector->priv->kernelX % 2) == 0) {
     platedetector->priv->kernelX = platedetector->priv->kernelX + 1;
   }
+  GST_OBJECT_UNLOCK (platedetector);
 }
 
 static void
