@@ -31,7 +31,7 @@ import com.kurento.kmf.content.internal.ContentApiWebApplicationInitializer;
 import com.kurento.kmf.spring.KurentoServletContextListener;
 
 /**
- * Initializer class to allow execte tests with Spring Boot.
+ * Initializer class to allow execute tests with Spring Boot.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
@@ -51,6 +51,7 @@ public class BootApplication {
 
 				ContentApiWebApplicationInitializer init = new ContentApiWebApplicationInitializer();
 				init.onStartup(servletContext);
+
 			}
 		};
 	}
@@ -62,7 +63,6 @@ public class BootApplication {
 	}
 
 	public static ConfigurableApplicationContext start() {
-
 		Properties properties = new Properties();
 		properties.put("server.port", PortManager.getPort());
 

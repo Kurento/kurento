@@ -21,7 +21,6 @@ import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
@@ -29,14 +28,14 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a Player to WebRTC
+ * Test of a WebRTC in loopback.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class ContentApiPlayer2WebRtcTst extends ContentApiTest {
+public class ContentApiWebRtcTest extends ContentApiTest {
 
-	private static final String HANDLER = "/player2webrtc";
+	private static final String HANDLER = "/webrtc";
 
 	@WebRtcContentService(path = HANDLER)
 	public static class WebRtcHandler extends WebRtcContentHandler {
@@ -46,29 +45,26 @@ public class ContentApiPlayer2WebRtcTst extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			session.releaseOnTerminate(mp);
-			PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/sintel.webm").build();
 			WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
-			playerEP.connect(webRtcEndpoint);
-			playerEP.play();
+			webRtcEndpoint.connect(webRtcEndpoint);
 			session.start(webRtcEndpoint);
 		}
 
 	}
 
 	@Test
-	public void testPlayer2WebRtc() throws InterruptedException {
+	public void testWebRtc() throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.WEBRTC)) {
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing");
-			browser.startRcvOnly();
+			browser.start();
 
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 
-			// Guard time to see the video
-			Thread.sleep(3000);
+			// Guard time to see the loopback
+			Thread.sleep(5000);
 		}
 	}
 }

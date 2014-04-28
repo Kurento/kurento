@@ -14,8 +14,10 @@
  */
 package com.kurento.kmf.test.base;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -23,7 +25,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 import com.kurento.kmf.test.BootApplication;
+import com.kurento.kmf.test.KurentoMediaServer;
 import com.kurento.kmf.test.PortManager;
+import com.kurento.kmf.test.PropertiesManager;
 
 /**
  * Base for tests using kmf-content-api and Spring Boot.
@@ -34,20 +38,39 @@ import com.kurento.kmf.test.PortManager;
  */
 public class ContentApiTest {
 
-	private static boolean springBootEnabled = false;
+	private boolean springBootEnabled = false;
 
 	public static Logger log = LoggerFactory.getLogger(ContentApiTest.class);
 
-	protected static ConfigurableApplicationContext context;
+	protected ConfigurableApplicationContext context;
 
-	@BeforeClass
-	public static void start() throws Exception {
+	private KurentoMediaServer kms;
+
+	@Rule
+	public TestName testName = new TestName();
+
+	@Before
+	public void start() throws Exception {
 		context = BootApplication.start();
 		springBootEnabled = true;
+
+		// KMS
+		String serverAddress = PropertiesManager.getSystemProperty(
+				"kurento.serverAddress", "127.0.0.1");
+		int serverPort = PropertiesManager.getSystemProperty(
+				"kurento.serverPort", 9090);
+		int httpEndpointPort = PropertiesManager.getSystemProperty(
+				"httpEPServer.serverPort", 9091);
+
+		kms = new KurentoMediaServer(serverAddress, serverPort,
+				httpEndpointPort);
+		if (kms.isConfigAvailable()) {
+			kms.start(testName.getMethodName());
+		}
 	}
 
-	@AfterClass
-	public static void stop() {
+	@After
+	public void stop() {
 		log.info("*** Closing...");
 		if (context != null) {
 			KurentoApplicationContextUtils
@@ -56,13 +79,17 @@ public class ContentApiTest {
 			context.close();
 		}
 		log.info("*** Closed");
+
+		if (kms.isConfigAvailable()) {
+			kms.stop();
+		}
 	}
 
 	public int getServerPort() {
 		return PortManager.getPort();
 	}
 
-	public static boolean isSpringBootEnabled() {
+	public boolean isSpringBootEnabled() {
 		return springBootEnabled;
 	}
 

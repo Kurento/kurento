@@ -14,8 +14,6 @@
  */
 package com.kurento.kmf.test.content;
 
-import java.awt.Color;
-
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,6 +21,7 @@ import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
@@ -30,14 +29,14 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a WebRTC in loopback.
+ * Test of a Player to WebRTC
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class ContentApiWebRtcTst extends ContentApiTest {
+public class ContentApiPlayer2WebRtcTest extends ContentApiTest {
 
-	private static final String HANDLER = "/webrtc";
+	private static final String HANDLER = "/player2webrtc";
 
 	@WebRtcContentService(path = HANDLER)
 	public static class WebRtcHandler extends WebRtcContentHandler {
@@ -47,28 +46,29 @@ public class ContentApiWebRtcTst extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			session.releaseOnTerminate(mp);
+			PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+					"http://ci.kurento.com/video/sintel.webm").build();
 			WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
-			webRtcEndpoint.connect(webRtcEndpoint);
+			playerEP.connect(webRtcEndpoint);
+			playerEP.play();
 			session.start(webRtcEndpoint);
 		}
 
 	}
 
 	@Test
-	public void testWebRtc() throws InterruptedException {
+	public void testPlayer2WebRtc() throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.WEBRTC)) {
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing");
-			browser.start();
+			browser.startRcvOnly();
 
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 
-			// Guard time to see the loopback
+			// Guard time to see the video
 			Thread.sleep(3000);
-
-			Assert.assertTrue(browser.colorSimilarTo(new Color(0, 162, 0)));
 		}
 	}
 }

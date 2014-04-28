@@ -13,17 +13,19 @@
  *
  */package com.kurento.kmf.test.base;
 
-import javax.servlet.ServletException;
-
 import org.apache.catalina.LifecycleException;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.test.HttpServer;
+import com.kurento.kmf.test.KurentoMediaServer;
 import com.kurento.kmf.test.PortManager;
+import com.kurento.kmf.test.PropertiesManager;
 
 /**
  * Base for tests using kmf-media-api and Spring Boot.
@@ -37,41 +39,48 @@ public class MediaApiTest {
 	protected MediaPipelineFactory pipelineFactory;
 	private HttpServer server;
 	public static Logger log = LoggerFactory.getLogger(MediaApiTest.class);
+	private KurentoMediaServer kms;
+
+	@Rule
+	public TestName testName = new TestName();
 
 	@Before
-	public void setupMediaPipelineFactory() throws ServletException,
-			LifecycleException {
+	public void setup() throws Exception {
+		String serverAddress = PropertiesManager.getSystemProperty(
+				"kurento.serverAddress", "127.0.0.1");
+		int serverPort = PropertiesManager.getSystemProperty(
+				"kurento.serverPort", 9090);
 
-		String serverAddress = getSystemProperty("kurento.serverAddress",
-				"127.0.0.1");
-		int serverPort = getSystemProperty("kurento.serverPort", 9090);
-
-		String handlerAddress = getSystemProperty("kurento.handlerAddress",
-				"127.0.0.1");
-		int handlerPort = getSystemProperty("kurento.handlerPort", 9104);
+		String handlerAddress = PropertiesManager.getSystemProperty(
+				"kurento.handlerAddress", "127.0.0.1");
+		int handlerPort = PropertiesManager.getSystemProperty(
+				"kurento.handlerPort", 9104);
 
 		pipelineFactory = new MediaPipelineFactory(serverAddress, serverPort,
 				handlerAddress, handlerPort);
 
 		server = new HttpServer(PortManager.getPort());
 		server.start();
+
+		int httpEndpointPort = PropertiesManager.getSystemProperty(
+				"httpEPServer.serverPort", 9091);
+
+		// KMS
+		kms = new KurentoMediaServer(serverAddress, serverPort,
+				httpEndpointPort);
+		if (kms.isConfigAvailable()) {
+			kms.start(testName.getMethodName());
+		}
 	}
 
 	@After
-	public void teardownMediaPipeline() throws LifecycleException {
+	public void teardown() throws LifecycleException {
 		pipelineFactory.destroy();
 		server.destroy();
-	}
 
-	private int getSystemProperty(String property, int defaultValue) {
-		String systemValue = System.getProperty(property);
-		return systemValue != null ? Integer.parseInt(systemValue)
-				: defaultValue;
-	}
-
-	private String getSystemProperty(String property, String defaultValue) {
-		String systemValue = System.getProperty(property);
-		return systemValue != null ? systemValue : defaultValue;
+		if (kms.isConfigAvailable()) {
+			kms.stop();
+		}
 	}
 
 	public int getServerPort() {

@@ -34,7 +34,7 @@ import com.kurento.kmf.test.client.Client;
 public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
 
 	@Test
-	public void testPlayer() throws Exception {
+	public void testPlayerSwitch() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
