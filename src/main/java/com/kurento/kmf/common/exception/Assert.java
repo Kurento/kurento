@@ -43,9 +43,6 @@ public class Assert {
 	 * 
 	 * @param object
 	 *            Object to be checked whether or not is null
-	 * @param errorCode
-	 *            Error code which determines the exception to be raise if the
-	 *            object is null
 	 */
 	public static void notNull(Object object) {
 		notNull(object, "");
@@ -66,7 +63,7 @@ public class Assert {
 	 */
 	public static void notNull(Object object, String message, int errorCode) {
 		if (object == null) {
-			throw new KurentoMediaFrameworkException(message, errorCode);
+			throw new KurentoException(message + ' ' + errorCode);
 		}
 	}
 
@@ -82,7 +79,7 @@ public class Assert {
 	 */
 	public static void notNull(Object object, String message) {
 		if (object == null) {
-			throw new KurentoMediaFrameworkException(message);
+			throw new KurentoException(message);
 		}
 	}
 
@@ -114,7 +111,7 @@ public class Assert {
 	 */
 	public static void isTrue(boolean condition, String message, int errorCode) {
 		if (!condition) {
-			throw new KurentoMediaFrameworkException(message, errorCode);
+			throw new KurentoException(message + ' ' + errorCode);
 		}
 	}
 }

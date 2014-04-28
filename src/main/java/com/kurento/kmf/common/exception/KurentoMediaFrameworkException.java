@@ -15,8 +15,7 @@
 package com.kurento.kmf.common.exception;
 
 /**
- * @Deprecated Use the new {@link KurentoApplicationException} and
- *             {@link KurentoSystemException}
+ * @Deprecated Use the new {@link KurentoException}
  * @author Ivan Gracia (igracia@naevatec.com)
  *
  */
