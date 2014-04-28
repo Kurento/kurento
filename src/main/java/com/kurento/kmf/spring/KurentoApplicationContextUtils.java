@@ -34,6 +34,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+import com.kurento.kmf.common.exception.KurentoException;
+
 public final class KurentoApplicationContextUtils {
 
 	private static final Logger log = LoggerFactory
@@ -63,7 +65,7 @@ public final class KurentoApplicationContextUtils {
 	 * Spring root WebApplicationConext.
 	 * 
 	 * @param ctx
-	 * @return
+	 * @return the context
 	 * 
 	 */
 	public static AnnotationConfigApplicationContext createKurentoApplicationContext(
@@ -91,16 +93,18 @@ public final class KurentoApplicationContextUtils {
 		final String kurentoPropertiesDir = System
 				.getProperty("kurento.properties.dir");
 		final String kurentoProperties = "/kurento.properties";
+
 		InputStream inputStream = null;
 		try {
 			if (jbossServerConfigDir != null
 					&& new File(jbossServerConfigDir + kurentoProperties)
 							.exists()) {
 				// First, look for JVM argument "jboss.server.config.dir"
-				inputStream = new FileInputStream(jbossServerConfigDir
-						+ kurentoProperties);
 				log.info("Found custom properties in 'jboss.server.config.dir': "
 						+ jbossServerConfigDir);
+				inputStream = new FileInputStream(jbossServerConfigDir
+						+ kurentoProperties);
+
 			} else if (kurentoPropertiesDir != null
 					&& new File(kurentoPropertiesDir + kurentoProperties)
 							.exists()) {
@@ -131,8 +135,7 @@ public final class KurentoApplicationContextUtils {
 			}
 
 		} catch (IOException e) {
-			log.error("Exception loading custom properties", e);
-			throw new RuntimeException(e);
+			throw new KurentoException("Exception loading custom properties", e);
 		}
 
 		kurentoApplicationContextInternalReference.refresh();
@@ -152,8 +155,8 @@ public final class KurentoApplicationContextUtils {
 	 * servlet. This method returns null if the context does not exist.
 	 * 
 	 * @param servletClass
-	 * @param ctx
-	 * @return
+	 * @param servletName
+	 * @return the context
 	 */
 	public static AnnotationConfigApplicationContext getKurentoServletApplicationContext(
 			Class<?> servletClass, String servletName) {
@@ -184,7 +187,7 @@ public final class KurentoApplicationContextUtils {
 				"Cannot create KurentoServletApplicationContext from a null Hanlder class");
 
 		if (childContexts == null) {
-			childContexts = new ConcurrentHashMap<String, AnnotationConfigApplicationContext>();
+			childContexts = new ConcurrentHashMap<>();
 		}
 
 		AnnotationConfigApplicationContext childContext = childContexts
