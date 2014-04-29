@@ -1,0 +1,11 @@
+*swp
+/target
+/jar
+.classpath
+.project
+.settings/
+*~
+*orig
+.springBeans
+/test-files/repository/
+/test-files/tmp/
