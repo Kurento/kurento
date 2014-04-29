@@ -1,6 +1,0 @@
-[submodule "kmf-spring"]
-	path = kmf-spring
-	url = ../kmf-spring
-[submodule "kmf-commons"]
-	path = kmf-commons
-	url = ../kmf-commons
