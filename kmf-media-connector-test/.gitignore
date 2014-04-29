@@ -1,0 +1,8 @@
+*~
+.project
+.gitignore
+.classpath
+.settings
+/target
+/bin
+.springBeans
