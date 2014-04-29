@@ -1,0 +1,8 @@
+*swp
+*~
+*orig
+/target
+.project
+.classpath
+.settings
+/test-files
