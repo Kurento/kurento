@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="./js/kws-content-api.js"></script>
+<script
+	src="https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js"></script>
+<script>
+	var conn;
+	function start() {
+		var options = {
+			remoteVideoTag : "remoteVideo"
+		};
+		conn = new kwsContentApi.KwsWebRtcContent("./webRtcWithFilters",
+				options);
+	}
+	function terminate() {
+		conn.terminate();
+	}
+</script>
+</head>
+<body>
+	<button id="start" onclick="start();">Start</button>
+	<button id="terminate" onclick="terminate();">Terminate</button>
+	<br />
+	<video id="remoteVideo" autoplay></video>
+</body>
+</html>
