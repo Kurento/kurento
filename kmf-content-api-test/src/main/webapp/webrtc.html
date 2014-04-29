@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kurento demo - WebRTC</title>
+<script src="./js/kws-content-api.js"></script>
+<script src="./lib/adapter.js"></script>
+<script src="./lib/Console.js"></script>
+<script>
+	var conn;
+
+	window.onload = function() {
+		console = new Console("console", console);
+	}
+
+	function terminate() {
+		// Disable terminate button
+		document.getElementById("terminate").disabled = true;
+
+		// Terminate the connection
+		conn.terminate();
+		log("Connection terminated by user");
+		remoteVideo.style.background = "";
+
+		// Enable connect button
+		document.getElementById("start").disabled = false;
+	}
+
+	function initConnection(conn) {
+		// Enable the terminate button
+		document.getElementById("terminate").disabled = false;
+
+		// Set connection success and error events
+		conn.on("start", function(event) {
+			log("Connection started");
+			// Enable terminate button
+			document.getElementById("terminate").disabled = false;
+		});
+		conn.on("terminate", function(event) {
+			log("Connection terminated");
+		});
+		conn.on("localstream", function(event) {
+			log("LocalStream set");
+		});
+		conn.on("remotestream", function(event) {
+			log("RemoteStream set");
+		});
+		conn.on("mediaevent", function(event) {
+			log("MediaEvent: " + JSON.stringify(event.data));
+		});
+		conn.on("error", function(error) {
+			// Enable connect button
+			document.getElementById("start").disabled = false;
+			// Log the error
+			log("Error " + error.message);
+		});
+	}
+
+	function start() {
+		// Disable start button
+		document.getElementById("start").disabled = true;
+
+		// Show spinners
+		var localVideo = document.getElementById("localVideo");
+		var remoteVideo = document.getElementById("remoteVideo");
+		localVideo.poster = "./img/transparent-1px.png";
+		localVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		remoteVideo.poster = "./img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+
+		// Create a new connection
+		var handler = document.getElementById("handler").value;
+		var contentId = document.getElementById("contentId").disabled ? ""
+				: "/" + document.getElementById("contentId").value;
+		var endpoint = handler + contentId;
+		var options = {
+			localVideoTag : "localVideo",
+			remoteVideoTag : "remoteVideo"
+		};
+
+		try {
+			conn = new kwsContentApi.KwsWebRtcContent(endpoint, options);
+			log("Creating connection to " + endpoint);
+			initConnection(conn);
+		} catch (error) {
+			// Enable start button
+			document.getElementById("start").disabled = false;
+			// Log the error
+			log(error.message);
+		}
+	}
+
+	function log(text) {
+		document.getElementById("status").value = text;
+	}
+
+	function handlerChanged() {
+		var handler = document.getElementById("handler").value;
+		var enableHandlerArray = new Array("");
+		document.getElementById("contentId").disabled = (enableHandlerArray
+				.indexOf(handler) == -1);
+	}
+</script>
+</head>
+<body>
+	<h1>WebRTC Demo</h1>
+	<label for="handler">Handler</label>
+	<select id="handler" onchange="handlerChanged()">
+		<option value="./webRtcLoopback">WebRTC in loopback</option>
+		<option value="./webRtcJackVaderLoopback">WebRTC in loopback
+			with JackVader Filter</option>
+		<option value="./webRtcPlateDetector">WebRTC in loopback with
+			Plate Detector Filter</option>
+	</select>
+	<br />
+	<label for="contentId">ContentId</label>
+	<select id="contentId" disabled>
+		<option value="webm">WEBM</option>
+		<option value="mp4">MP4</option>
+	</select>
+	<br />
+	<button id="start" onclick="start();">Start</button>
+	<button id="terminate" disabled onclick="terminate();">Terminate</button>
+	<br />
+	<video id="localVideo" autoplay controls width="480px" height="360px"></video>
+	<video id="remoteVideo" autoplay controls width="480px" height="360px"></video>
+	<br />
+	<label for="output">Status</label>
+	<input id="status" name="status" style="width: 300px" />
+	<br />
+	<label for="output">Output</label>
+	<div id="console"></div>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<arquillian xmlns="http://jboss.org/schema/arquillian"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://jboss.org/schema/arquillian
+        http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
+
+	<defaultProtocol type="Servlet 3.0" />
+
+	<container qualifier="jbossas-managed" default="true">
+		<configuration>
+			<property name="jbossHome">target/jboss-as-${jboss-as.version}</property>
+			<property name="serverConfig">standalone-${jboss-as.version}.xml</property>
+			<property name="javaVmArguments">-DJBOSS_SERVICE_PORT=${jboss-as.service.port} -Dkurento.properties.dir=${kurento.properties.dir} -Xms128m -Xmx512m -XX:MaxPermSize=512m</property>
+			<property name="managementPort">${jboss-as.management.port}</property>
+		</configuration>
+		<protocol type="Servlet 3.0">
+			<property name="host">${jboss-as.service.host}</property>
+			<property name="port">${jboss-as.service.port}</property>
+		</protocol>
+	</container>
+</arquillian>
