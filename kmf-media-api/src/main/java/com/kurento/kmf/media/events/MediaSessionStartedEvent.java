@@ -1,0 +1,33 @@
+/**
+ * This file is generated with Kurento ktool-rom-processor.
+ * Please don't edit. Changes should go to kms-interface-rom and
+ * ktool-rom-processor templates.
+ */
+package com.kurento.kmf.media.events;
+
+import com.kurento.kmf.media.MediaObject;
+import com.kurento.tool.rom.server.Param;
+
+/**
+ * 
+ * Event raised when a session starts. This event has no data.
+ * 
+ **/
+public class MediaSessionStartedEvent extends MediaEvent {
+
+	/**
+	 * 
+	 * Event raised when a session starts. This event has no data.
+	 * 
+	 * @param source
+	 *            Object that raised the event
+	 * @param type
+	 *            Type of event that was raised
+	 * 
+	 **/
+	public MediaSessionStartedEvent(@Param("source") MediaObject source,
+			@Param("type") String type) {
+		super(source, type);
+	}
+
+}
