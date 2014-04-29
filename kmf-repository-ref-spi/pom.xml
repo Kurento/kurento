@@ -1,0 +1,65 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.kurento.kmf</groupId>
+	<artifactId>kmf-repository-ref-spi</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>1.6</maven.compiler.source>
+		<maven.compiler.target>1.6</maven.compiler.target>
+
+		<!-- Dependencies version -->
+		<wagon-ssh.version>2.0</wagon-ssh.version>
+	</properties>
+
+	<name>Kurento Media Framework - Media Repository Specification</name>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.com</url>
+	</organization>
+
+	<developers>
+		<developer>
+			<id>mparis</id>
+			<name>Miguel París Díaz</name>
+		</developer>
+	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>Kurento</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+	</mailingLists>
+
+	<build>
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>2.0</version>
+			</extension>
+		</extensions>
+	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>Kurento releases repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/internal</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>Kurento snapshots repository</name>
+			<url>scp://repository.kurento.com/opt/tomcat/current/data/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+</project>
