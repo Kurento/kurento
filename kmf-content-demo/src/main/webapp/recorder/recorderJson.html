@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP Recorder JSON</title>
+<style>
+#holder {
+	border: 10px dashed #ccc;
+	width: 120px;
+	min-height: 120px;
+	margin: 20px auto;
+}
+
+#holder.hover {
+	border: 10px dashed #0c0;
+}
+
+#holder img {
+	display: block;
+	margin: 10px auto;
+}
+
+#holder p {
+	margin: 10px;
+	font-size: 14px;
+}
+
+progress {
+	width: 100%;
+}
+
+progress:after {
+	content: "%";
+}
+
+.fail {
+	background: #c00;
+	padding: 2px;
+	color: #fff;
+}
+
+.hidden {
+	display: none !important;
+}
+</style>
+<script src="../js/kws-content-api.js"></script>
+<script>
+	var KwsContentUploader = kwsContentApi.KwsContentUploader;
+
+	window.onload = function() {
+		KwsContentUploader.initDragDrop("holder");
+	}
+
+	function start() {
+	   	var inputStatus = document.getElementById("status");
+	    var inputFile = document.getElementById("inputFile")
+	    var endpoint = document.getElementById("handler").value;
+		var options = {
+			inputTag: "inputFile",
+			dragdropTag: "holder",
+			useFormData: false
+		};
+		var uploader = new KwsContentUploader(endpoint, options)
+
+        inputFile.addEventListener("change", function(event) {
+           inputStatus.value = this.value;
+   	    });
+  	      
+        uploader.on("start", function(event) {
+          log("Connection created");
+        });
+
+        uploader.on("localfile", function(event) {
+          log("File uploaded");
+        });
+
+        uploader.on("terminate", function(event) {
+          log("Connection terminated");
+        });
+
+        uploader.on("error", function(error) {
+          log("Error: "+error.message);
+        });
+    }
+	    
+	function log(text) {
+		document.getElementById("output").value += text + "\n";
+	}
+</script>
+</head>
+<body>
+	<h1>HTTP Recorder</h1>
+	<table style="border-spacing: 10px;">
+		<tr>
+			<td><label for="url">Handler</label></td>
+			<td style="width: 300px;"><select id="handler">
+					<option value="../recorderJsonTunnel">Recorder JSON with
+						tunnel</option>
+					<option value="../recorderJsonRedirect">Recorder JSON with
+						redirect</option>
+					<option value="../recorderJsonTunnelRepository">Recorder
+						JSON to repository with tunnel</option>
+					<option value="../recorderJsonRedirectRepository">Recorder
+						JSON to repository with redirect</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td><label>File</label></td>
+			<td><input id="inputFile" name="inputFile" type="file" /></td>
+		</tr>
+		<tr>
+			<td><label>Drag and Drop</label></td>
+			<td>
+				<div id="holder"></div>
+			</td>
+		</tr>
+		<tr>
+			<td><label>Status</label></td>
+			<td><input id="status" style="width: 100%" /></td>
+		</tr>
+		<tr>
+			<td><label>Output</label></td>
+			<td><textarea id="output" rows="8" style="width: 100%"></textarea></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><button id="start" onclick="start()">Start</button></td>
+		</tr>
+	</table>
+</body>
+</html>

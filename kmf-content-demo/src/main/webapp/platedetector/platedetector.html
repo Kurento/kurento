@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Plate Detector Demo</title>
+<script src="../js/kws-content-api.js"></script>
+<script src="../lib/adapter.js"></script>
+<script>
+	var conn;
+
+	function play() {
+		/// Disable start button
+		document.getElementById("play").disabled = true;
+		document.getElementById("stop").disabled = false;
+
+		// Show spinners
+		var remoteVideo = document.getElementById("remoteVideo");
+		remoteVideo.poster = "../img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+
+		// Adding listeners to video tag
+		remoteVideo.addEventListener("play", function(event) {
+			if (!playing) {
+				play();
+			}
+		});
+
+		// Create a new connection
+		var handler = "../plateDetectorDemo";
+		var endpoint = handler;
+
+		// Options
+		var options = {
+			remoteVideoTag: "remoteVideo"
+		};
+
+		// Show spinner
+		remoteVideo.poster = "../img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+
+		// Kws-Content-API instantiation
+		conn = new kwsContentApi.KwsWebRtcContent(endpoint, options);
+		playing = true;
+
+ 		// Start and terminate events
+		conn.on("start", function() {
+			document.getElementById("play").disabled = true;
+		});
+		conn.on("terminate", function() {
+			inputStatus.value = "end ok";
+			document.getElementById("play").disabled = false;
+		});
+
+		// LocalStream and remoteStream events
+		conn.on("localstream", function() {
+		});
+		conn.on("remotestream", function() {
+		});
+
+		// Media event
+		conn.on("mediaevent", function(data) {
+			//log("onmediaevent");
+			var text = "Plate detected : "+ data.data;
+			log(text, "events");
+		});
+	}
+
+	function log(text, locator) {
+		if (locator) {
+			elementId = locator;
+		}
+		document.getElementById(elementId).value += text + "\n";
+	}
+
+	function terminate() {
+		// Disable terminate button
+		document.getElementById("stop").disabled = true;
+		document.getElementById("play").disabled = false;
+
+		// Terminate the connection
+		conn.terminate();
+		remoteVideo.style.background = "";
+
+	}
+
+ 	function updateValue(val) {
+ 		document.getElementById('rangeValue1').value = val;
+ 		conn.execute("changeWidth", val);
+ 	}
+</script>
+</head>
+
+<body>
+	<h1>Plate Detector Demo</h1>
+	<table style="border-spacing: 10px;">
+		<tr>
+			<td>
+				Width plates 0: <input type="range" name="Plate width" min="0" max="1" step="0.05" onchange="updateValue(this.value)"> 1 
+				<input id="rangeValue1" type="text" size="4">
+			</td>
+		</tr>
+		<tr>
+			<td rowspan="10"><video id="remoteVideo" autoplay controls
+					width="640px" height="360px">
+				</video></td>
+		</tr>
+		<tr>
+			<td><label for="status">Events</label>
+			<textarea id="events" rows="8" style="width: 100%"></textarea></td>
+		</tr>
+		<tr>
+			<td><button id="play" onclick="play()">Play</button>
+				<button id="stop" onclick="terminate()">Stop</button>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

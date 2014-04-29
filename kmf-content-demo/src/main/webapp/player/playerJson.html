@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>HTTP Player with JSON-RPC protocol</title>
+<script src="../js/kws-content-api.js"></script>
+<script>
+	var conn;
+	var remoteVideo;
+	var inputStatus;
+	var playing = false;
+
+	window.onload = function() {
+		remoteVideo = document.getElementById("remoteVideo");
+		inputStatus = document.getElementById("status");
+	
+		// Adding listeners to video tag
+		remoteVideo.addEventListener("play", function(event) {
+			if (!playing) {
+				play();
+			}
+			inputStatus.value = "play";
+		});
+		remoteVideo.addEventListener("playing", function(event) {
+			inputStatus.value = "playing";
+		});
+	}
+
+	function play() {
+		// Handler
+		var handler = document.getElementById("handler").value;
+		var contentId = document.getElementById("contentId").disabled ? "" : "/" + document.getElementById("contentId").value;
+		var endpoint = handler + contentId;
+
+		// Options
+		var options = {
+			remoteVideoTag: "remoteVideo",
+			audio: document.getElementById("audio").value,
+			video: document.getElementById("video").value
+		};
+		
+		var audio = document.getElementById("audio").value;
+		if (audio != "sendrecv") {
+			// Changed the default value
+			options["audio"] = audio;
+		}
+		var video = document.getElementById("video").value;
+		if (video != "sendrecv") {
+			// Changed the default value
+			options["video"] = video;
+		}
+
+		// Clear previous data
+		inputStatus.value = "";
+		document.getElementById("flows").value = "";
+		document.getElementById("events").value = "";
+
+		// Show spinner
+		remoteVideo.poster = "../img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+
+		// Kws-Content-API instantiation
+        var KwsContentPlayer = kwsContentApi.KwsContentPlayer;
+        conn = new KwsContentPlayer(endpoint, options);
+        playing = true;
+
+		// Start and terminate events
+		conn.on("start", function() {
+			log("onstart");
+			document.getElementById("play").disabled = true;
+		});
+		conn.on("terminate", function() {
+			log("onterminate");
+			inputStatus.value = "end ok";
+			document.getElementById("play").disabled = false;
+		});
+
+		// LocalStream and remoteStream events
+		conn.on("localstream", function() {
+			log("onlocalstream");
+		});
+		conn.on("remotestream", function() {
+			log("onremotestream");
+		});
+
+		// Media event
+		conn.on("mediaevent", function(data) {
+			log("onmediaevent");
+			log(JSON.stringify(data), "events");
+		});
+
+		// Error
+		conn.on("error", function(error) {
+			log("onerror");
+			inputStatus.value = "end with error " + error.message;
+			document.getElementById("play").disabled = false;
+			stop();
+		});
+	}
+
+    function pause() {
+		var pause = document.getElementById("pause");
+        if (remoteVideo.paused) {
+			remoteVideo.play();
+			pause.textContent = "Pause";
+        } else {
+			remoteVideo.pause();
+			pause.textContent = "Continue";
+        }
+    }
+
+	function log(text, locator) {
+		var elementId = "flows";
+		if (locator) {
+			elementId = locator;
+		}
+		document.getElementById(elementId).value += text + "\n";
+	}
+
+	function stop() {
+		conn.terminate();
+		remoteVideo.style.background = "";
+		playing = false;
+	}
+
+	function sendCommands() {
+		conn.execute("typeKO", "dataKO");
+	}
+
+	function handlerChanged() {
+		var handler = document.getElementById("handler");
+		var showContentId = handler[handler.selectedIndex].getAttribute("data-show-contentId");
+		document.getElementById("contentId").disabled = (showContentId == "false");
+	}
+</script>
+</head>
+
+<body>
+	<h1>HTTP Player with JSON-RPC protocol</h1>
+	<table style="border-spacing: 10px;">
+		<tr>
+			<td valign="top">Handler</td>
+			<td valign="top"><select id="handler" name="handler"
+				onchange="handlerChanged()">
+					<option value="../playerJsonTunnel" data-show-contentId="true">HTTP
+						Player with tunnel</option>
+					<option value="../playerJsonRedirect" data-show-contentId="true">HTTP
+						Player with redirect</option>
+					<option value="../playerJsonRepository/itemJsonTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using tunnel strategy) in repository</option>
+					<option value="../playerJsonRepository/itemJsonRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using redirect strategy) in repository</option>
+					<option value="../playerJsonJackVaderRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using tunnel strategy) in
+						repository</option>
+					<option value="../playerJsonJackVaderRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using redirect strategy) in
+						repository
+					<option value="../playerJsonRepository/itemJackVader"
+						data-show-contentId="false">HTTP Player of a recorded
+						content previously filtered with JackVaderFilter</option>
+					<option value="../cpRtcPlayerJack" data-show-contentId="false">RTP
+						stream with JackVader Filter</option>
+					<option value="../playerWebRtc" data-show-contentId="false">HTTP
+						Player of a WebRTC recorded content</option>
+					<option value="../playerLiveWebRtc/faceoverlay"
+						data-show-contentId="false">WebRTC stream with
+						FaceOverlay Filter</option>
+					<option value="../playerLiveWebRtc/jackvader"
+						data-show-contentId="false">WebRTC stream with JackVader
+						Filter</option>
+					<option value="../playerLiveWebRtc/loopback"
+						data-show-contentId="false">WebRTC stream in loopback</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td><label for="url">ContentId</label></td>
+			<td style="width: 300px;"><select id="contentId"
+				name="contentId">
+					<option value="webm">WEBM video</option>
+					<option value="mov">MOV video</option>
+					<option value="mkv">MKV video</option>
+					<option value="3gp">3GP video</option>
+					<option value="ogv">OGV video</option>
+					<option value="mp4">MP4 video</option>
+					<option value="jack">JackVader Filter</option>
+					<option value="zbar">ZBar Filter</option>
+			</select></td>
+			<td rowspan="10"><video id="remoteVideo" autoplay controls
+					width="640px" height="360px">
+				</video></td>
+		</tr>
+		<tr>
+			<td><label for="url">Options</label></td>
+			<td>audio <select id="audio">
+					<option value="inactive">inactive</option>
+					<option value="sendonly">sendonly</option>
+					<option value="recvonly">recvonly</option>
+					<option value="sendrecv" selected="selected">sendrecv</option>
+			</select><br /> video <select id="video">
+					<option value="inactive">inactive</option>
+					<option value="sendonly">sendonly</option>
+					<option value="recvonly">recvonly</option>
+					<option value="sendrecv" selected="selected">sendrecv</option>
+			</select><br />
+			</td>
+		</tr>
+		<tr>
+			<td><label for="status">Status</label></td>
+			<td><input id="status" name="status" style="width: 100%" /></td>
+		</tr>
+		<tr>
+			<td><label for="status">Flow</label></td>
+			<td><textarea id="flows" rows="8" style="width: 100%"></textarea></td>
+		</tr>
+		<tr>
+			<td><label for="status">Events</label></td>
+			<td><textarea id="events" rows="8" style="width: 100%"></textarea></td>
+		</tr>
+		<tr>
+			<td></td>
+			<td><button id="play" onclick="play()">Play</button>
+				<button id="pause" onclick="pause();">Pause</button>
+				<button id="stop" onclick="stop()">Stop</button>
+				<button id="sendCommands" onclick="sendCommands()">Send
+					Commands</button></td>
+		</tr>
+	</table>
+</body>
+</html>

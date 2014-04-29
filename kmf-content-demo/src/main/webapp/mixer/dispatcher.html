@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kurento - Dispatcher</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="../css/global.css">
+<link rel="stylesheet" href="../css/selectable.css">
+<link rel="shortcut icon" href="../img/logo/logo.png" type="image/png" />
+<link href="../css/bootstrap.min.css" rel="stylesheet">
+<link href="../css/ekko-lightbox.css" rel="stylesheet">
+
+<script src="../lib/jquery-1.11.0.js"></script>
+<script src="../lib/bootstrap.min.js"></script>
+<script src="../lib/bootbox.js"></script>
+<script src="../lib/ekko-lightbox.js"></script>
+<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+	  <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+  <![endif]-->
+
+<script src="../js/kws-content-api.js"></script>
+<script src="../lib/adapter.js"></script>
+<script src="../lib/Console.js"></script>
+<script src="../lib/dragDrop.js"></script>
+<script src="../lib/selectable.js"></script>
+</head>
+
+<body>
+	<header>
+		<div class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-collapse">
+						<span class="sr-only">Toggle navigation</span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand" href="../">Kurento Demo</a>
+				</div>
+
+				<div class="collapse navbar-collapse"
+					id="bs-example-navbar-collapse-1">
+					<ul class="nav navbar-nav">
+						<li><a href="../"><span class="glyphicon glyphicon-home"></span>
+								Home</a></li>
+
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"> <span
+								class="glyphicon glyphicon-play-circle"></span> Player <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../player/player.html">HTTP Player</a></li>
+								<li><a href="../player/playerJson.html">HTTP Player
+										with JSON-RPC</a></li>
+								<li><a href="../rtsp/playerRtsp.html">RTSP Player</a></li>
+							</ul></li>
+
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"><span
+								class="glyphicon glyphicon-record"></span> Recorder <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../recorder/recorder.html">HTTP Recorder</a></li>
+								<li><a href="../recorder/recorderJson.html">HTTP
+										Recorder with JSON-RPC</a></li>
+							</ul></li>
+
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"><span
+								class="glyphicon glyphicon-facetime-video"></span> WebRTC <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../webrtc/webrtc.html">WebRTC in Loopback</a></li>
+								<li><a href="../webrtc/webrtc-one2many.html">WebRTC One
+										to Many</a></li>
+								<li><a href="../webrtc/videochat.html">WebRTC Many to
+										Many</a></li>
+								<li><a href="../cebit/selectable.html">WebRTC One to
+										Many Selectable</a></li>
+							</ul></li>
+
+						<li class="active" class="dropdown"><a href="#"
+							class="dropdown-toggle" data-toggle="dropdown"><span
+								class="glyphicon glyphicon-plus-sign"></span> Mixer <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../mixer/dispatcherOneToMany.html">Dispatcher
+										One To Many</a></li>
+								<li class="active"><a href="../mixer/dispatcher.html">WebRTC
+										Dispatcher Many to Many</a></li>
+
+							</ul></li>
+
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown"><span
+								class="glyphicon glyphicon-globe"></span> Campus Party <b
+								class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="../london_demo/demo.html">Campus Party
+										2013 London</a></li>
+								<li><a href="../brazil_demo/index.html">Campus Party
+										2014 Brazil</a></li>
+							</ul></li>
+					</ul>
+
+					<ul class="nav navbar-nav navbar-right">
+						<li><a href="https://github.com/Kurento/kmf-content-demo"><span
+								class="glyphicon glyphicon-file"></span> Source Code</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<div class="container">
+		<div class="page-header">
+			<h1>WebRTC Dispatcher Many to Many</h1>
+			<p>
+				This application shows how to perform a video conference between
+				browsers using <a href="http://www.webrtc.org/">WebRTC</a> elements
+				which are connected within a <a
+					href="../img/pipelines/webrtc-dispatcher.png"
+					data-toggle="lightbox" data-title="Media Pipeline"
+					data-footer="Each local stream (i.e. stream from webcam) acts a Media Source, and it is connected to a Media Sink of another WebRTC endpoint (remote stream) through a Dispatcher. Both streams are played in HTML5 video tags.">Media
+					Pipeline</a>. To run this demo, open this URL with different computers
+				(with webcam). It also can be connected an Android mobile with the <a
+					href="https://github.com/Kurento/kas-content-demo-rtp">kas-content-demo-rtp</a>
+				application. The server side code is available on <a
+					href="https://github.com/Kurento/kmf-content-demo/blob/develop/src/main/java/com/kurento/demo/mixer/DispatcherDemo.java">GitHub</a>.
+			</p>
+		</div>
+
+		<div class="row">
+			<div class="col-md-5">
+				<label class="control-label" for="name">Name</label>
+				<div class="row">
+					<div class="col-md-5">
+						<input id="name" name="name" class="form-control" type="text"
+							onkeydown="if (event.keyCode == 13) start('dispatcher');" />
+					</div>
+					<div class="col-md-7 text-right">
+						<a id="start" href="#" class="btn btn-success"
+							onclick="start('dispatcher');"><span
+							class="glyphicon glyphicon-play"></span> Start</a> <a id="terminate"
+							href="#" class="btn btn-danger" onclick="terminate();"><span
+							class="glyphicon glyphicon-stop"></span> Terminate</a>
+					</div>
+				</div>
+				<br /> <br /> <label class="control-label" for="orig">Connections</label>
+				<div class="row">
+					<div class="col-md-4">
+						<select id="orig" class="form-control"></select>
+					</div>
+					<div class="col-md-4 text-center">
+						<a id="connect" href="#" class="btn btn-primary"
+							onclick="connectParticipants();"><span
+							class="glyphicon glyphicon-resize-horizontal"></span> Connect</a>
+					</div>
+					<div class="col-md-4">
+						<select id="dest" class="form-control"></select>
+					</div>
+				</div>
+				<br />
+				<div id="participantButtons"></div>
+				<br /> <label class="control-label" for="console">Console</label>
+				<div id="console"></div>
+			</div>
+			<div class="col-md-7">
+				<div id="videoBig">
+					<video id="remoteVideo" autoplay width="640px" height="480px"></video>
+				</div>
+				<div id="videoSmall">
+					<video id="localVideo" autoplay width="240px" height="180px"></video>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<footer>
+		<div class="foot-fixed-bottom">
+			<div class="container text-center">
+				<hr />
+				<div class="row">&copy; 2014 Kurento</div>
+				<div class="row">
+					<div class="col-md-3">
+						<a href="http://www.fi-ware.eu"><img
+							src="../img/logo/fi-ware.png" alt="FI-WARE" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
+						<a href="http://www.kurento.org"><img
+							src="../img/logo/Kurento.jpg" alt="Kurento" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
+						<a href="http://www.urjc.es"><img src="../img/logo/urjc.gif"
+							alt="Universidad Rey Juan Carlos" height="50px" /></a>
+					</div>
+					<div class="col-md-3">
+						<a href="http://www.naevatec.com"><img
+							src="../img/logo/Naevatec.png" alt="Naevatec" height="50px" /></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
+</body>
+</html>

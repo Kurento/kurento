@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kurento demo - WebRTC One to Many</title>
+<script src="../js/kws-content-api.js"></script>
+<script src="../lib/adapter.js"></script>
+<script src="../lib/Console.js"></script>
+<script>
+	var conn, conn2;
+
+	window.onload = function() {
+		console = new Console("console", console);
+	}
+
+	function terminate() {
+		// If the option "Yes" of the recording is enabled, then the handler
+		// combo box becomes visible
+		var record = document.getElementById("rec-yes").checked;
+		if (record) {
+			document.getElementById("handler").style.visibility = 'visible';
+		}
+
+		// Disable terminate button
+		document.getElementById("terminate").disabled = true;
+
+		// Terminate the connection
+		conn.terminate();
+		if (conn2) {
+			conn2.terminate();
+		}
+		console.log("Connection terminated by user");
+		remoteVideo.style.background = "";
+
+		// Enable connect button
+		document.getElementById("start").disabled = false;
+	}
+
+	function initConnection(conn) {
+		// Enable the terminate button
+		document.getElementById("terminate").disabled = false;
+
+		// Set connection success and error events
+		conn.on("start", function(event) {
+			console.log("Connection started");
+			// Enable terminate button
+			document.getElementById("terminate").disabled = false;
+		});
+		conn.on("terminate", function(event) {
+			console.log("Connection terminated");
+			// Enable start button
+			document.getElementById("start").disabled = false;
+		});
+		conn.on("localstream", function(event) {
+			console.info("LocalStream set");
+		});
+		conn.on("remotestream", function(event) {
+			console.info("RemoteStream set");
+		});
+		conn.on("mediaevent", function(event) {
+			console.info("MediaEvent: "+JSON.stringify(event.data));
+		});
+		conn.on("error", function(error) {
+			// Enable connect button
+			document.getElementById("start").disabled = false;
+			// Log the error
+			console.error(error.message);
+		});
+	}
+
+	function start() {
+		// Disable start button
+		document.getElementById("start").disabled = true;
+
+		// Show spinners
+		var localVideo = document.getElementById("localVideo");
+		var remoteVideo = document.getElementById("remoteVideo");
+		localVideo.poster = "../img/transparent-1px.png";
+		localVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+		remoteVideo.poster = "../img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+
+		// Create a new connection
+		var handler = "../webRtcOneToMany"
+		var options = {
+			localVideoTag: "localVideo",
+			remoteVideoTag: "remoteVideo"
+		};
+
+		// If record radio button is selected, the contentId is the word "record"
+		var record = document.getElementById("rec-yes").checked;
+		if (record) {
+			handler += "/record";
+		}
+
+		// If the play combo box option is selected, then the video tags are used to play
+		// the previously recorded video conversation
+		var play = document.getElementById("handler").style.visibility == "visible" &&
+				   document.getElementById("handler").value == "../playerWebRtc";
+		try {
+			if (play) {
+				handler = document.getElementById("handler").value;
+				var options = {
+					remoteVideoTag: "localVideo"
+				};
+				var options2 = {
+					remoteVideoTag: "remoteVideo"
+				};
+				conn = new kwsContentApi.KwsContentPlayer(handler + "/master", options);
+				conn2 = new kwsContentApi.KwsContentPlayer(handler + "/peer", options2);
+				initConnection(conn2);
+			}
+			else {
+				conn = new kwsContentApi.KwsWebRtcContent(handler, options);
+			}
+			console.log("Creating connection to " + handler);
+			initConnection(conn);
+		}
+		catch(error) {
+			// Enable start button
+			document.getElementById("start").disabled = false;
+			// Log the error
+			console.error(error.message);
+		}
+	}
+</script>
+</head>
+<body>
+	<h1>WebRTC One to Many Demo</h1>
+	<div style="width: 1000px;">Connect different computers (with
+		webcam) to this page and click on start. You can record the video
+		conference by selecting the "Yes" radio button. After recording a
+		video conference, a combo box will appear that will let you play the
+		recordings.</div>
+	<br />
+
+	<label for="recording">Record</label>
+	<input type="radio" name="recording" id="rec-yes" value="yes" />
+	<label for="rec-yes">Yes</label>
+	<input type="radio" name="recording" id="rec-no" value="no"
+		checked="checked" />
+	<label for="rec-no">No</label>
+	<br />
+
+	<button id="start" onclick="start();">Start</button>
+	<button id="terminate" disabled onclick="terminate();">Terminate</button>
+
+	<select id="handler" name="handler" style="visibility: hidden">
+		<option value="../playerWebRtc">Play recorded videos</option>
+		<option value="../webRtcOneToMany">Start new video conference</option>
+	</select>
+	<br />
+
+	<video id="localVideo" autoplay controls width="480px" height="360px"></video>
+	<video id="remoteVideo" autoplay controls width="480px" height="360px"></video>
+	<br />
+	<label for="output">Output</label>
+	<div id="console"></div>
+</body>
+</html>

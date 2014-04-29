@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP Player</title>
+<script type="text/javascript">
+		var video;
+
+		window.onload = function() {
+			video = document.getElementById("video");
+			video.addEventListener("ended", videoEnd, false);
+		}
+		    
+	    function play() {
+		    var handler = document.getElementById("handler").value;
+			var contentId = document.getElementById("contentId").disabled ? "" : "/" + document.getElementById("contentId").value;
+			var endpoint = handler + contentId;
+			video.poster = "../img/transparent-1px.png";
+			video.style.background = "center transparent url('../img/spinner.gif') no-repeat";
+			video.src = endpoint;
+			video.play();
+			document.getElementById("play").disabled = true;			
+	    }
+
+	    function pause() {
+			var pause = document.getElementById("pause");
+	        if (video.paused) {
+	           video.play();
+	           pause.textContent = "Pause";
+	        } else {
+	           video.pause();
+	           pause.textContent = "Continue";
+	        }
+	    }
+
+	    function videoEnd(e) {
+	        if (!e) { 
+		        e = window.event; 
+		    }
+	        document.getElementById("play").disabled = false;
+	    }
+
+		function handlerChanged() {
+			var handler = document.getElementById("handler");
+			var showContentId = handler[handler.selectedIndex].getAttribute("data-show-contentId");
+			document.getElementById("contentId").disabled = (showContentId == "false");
+		}
+	</script>
+</head>
+<body>
+	<h1>HTTP Player</h1>
+
+	<table style="border-spacing: 10px;">
+		<tr>
+			<td valign="top">Handler</td>
+			<td valign="top"><select id="handler"
+				onchange="handlerChanged()">
+					<option value="../playerTunnel" data-show-contentId="true">HTTP
+						Player with tunnel</option>
+					<option value="../playerRedirect" data-show-contentId="true">HTTP
+						Player with redirect</option>
+					<option value="../playerRecorder/recorderTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (tunnel)</option>
+					<option value="../playerRecorder/recorderRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (redirect)</option>
+					<option value="../playerRecorder/recorderJsonTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (JSON and tunnel)</option>
+					<option value="../playerRecorder/recorderJsonRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (JSON and redirect)</option>
+					<option value="../playerRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using tunnel strategy) in repository</option>
+					<option value="../playerRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player of a recorded
+						content (using redirect strategy) in repository</option>
+					<option value="../playerJackVaderRepository/itemTunnel"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using tunnel strategy) in
+						repository</option>
+					<option value="../playerJackVaderRepository/itemRedirect"
+						data-show-contentId="false">HTTP Player with
+						JackVaderFilter of a recorded content (using redirect strategy) in
+						repository</option>
+					<option value="../playerRepository/itemJackVader"
+						data-show-contentId="false">HTTP Player of a recorded
+						content previously filtered with JackVaderFilter</option>
+			</select></td>
+		</tr>
+		<tr>
+			<td valign="top">ContentId</td>
+			<td valign="top"><select id="contentId">
+					<option value="webm">WEBM video</option>
+					<option value="mov">MOV video</option>
+					<option value="mkv">MKV video</option>
+					<option value="3gp">3GP video</option>
+					<option value="ogv">OGV video</option>
+					<option value="avi">AVI video</option>
+					<option value="mp4">MP4 video</option>
+					<option value="jack">JackVader Filter</option>
+			</select></td>
+			<td rowspan="3"><video id="video" autoplay controls
+					width="640px" height="360px"></video></td>
+		</tr>
+		<tr>
+			<td valign="top"></td>
+			<td valign="top"><button id="play" onclick="play()">Play</button>
+				<button id="pause" onclick="pause()">Pause</button></td>
+		</tr>
+	</table>
+</body>
+</html>

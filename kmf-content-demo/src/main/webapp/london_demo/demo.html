@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>KWS Content Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="css/demo.css">
+<link rel="shortcut icon" href="../img/logo/logo.png" type="image/png" />
+<script src="../js/kws-content-api.min.js"></script>
+<script src="../lib/jquery-1.11.0.js"></script>
+<script src="../lib/jquery.scrollTo.min.js"></script>
+<script src="../lib/Console.js"></script>
+<script src="index.js"></script>
+</head>
+<body>
+
+	<div id="header">
+		<a href="http://www.fi-ware.eu" id="fiWareLogoContainer"> <img
+			src="../img/logo/fi-ware.png" id="fiWareLogo">
+		</a>
+		<div id="poweredByPanel">
+			<em>Powered by</em> <br /> <a href="http://www.fi-ware.eu"> <img
+				src="../img/logo/Kurento.jpg" id="kurentoLogo" />
+			</a>
+		</div>
+	</div>
+
+
+	<div id="content">
+
+		<div id="videoPanel">
+			<div>
+				<input id="txtUri" value="../cpPlayer" />
+				<button id="btnPlayStop">Play</button>
+			</div>
+			<video autoplay="autoplay" poster="img/movie-theater.jpg"
+				id="video" controls></video>
+		</div>
+
+		<div id="iframePanel">
+			<div id="textEventContainer">
+				<div id="eventTypeTxt">Event type:</div>
+				<div id="eventValueTxt">Event data:</div>
+			</div>
+			<iframe class="panel" id="viewer"></iframe>
+		</div>
+
+		<div id="console"></div>
+
+		<img id="arrowRight" src="img/arrowRight.png" /> <img id="arrowDown"
+			src="img/arrowDown.png" />
+	</div>
+
+
+	<div id="footer">
+		<a id="urjcLogoContainer" href="http://www.urjc.es"> <img
+			src="../img/logo/urjc.gif" id="urjcLogo">
+		</a> <a id="naevatecLogoContainer" href="http://www.naevatec.com"> <img
+			src="../img/logo/Naevatec.png" id="naevatecLogo" />
+		</a> <a id="campusPartyLogoContainer"
+			href="http://www.campus-party.eu/2013/index-cpeu.html"> <img
+			src="img/CampusPartyBlueWhite.jpg" id="campusPartyLogo">
+		</a>
+		<p id="copyright">
+			(C) 2013 <a href="http://kurento.com">Kurento</a>
+		</p>
+	</div>
+
+</body>
+</html>
