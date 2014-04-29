@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>4.2.3-SNAPSHOT</version>
+	</parent>
+	
+	<groupId>com.kurento.kmf</groupId>
+	<artifactId>kmf-assembly</artifactId>
+	<packaging>pom</packaging>
+	<name>Kmf assembly project</name>
+	<description>The assembly pom packages all KMF projects into a single zip file.</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-content-api</artifactId>
+			<version>${kmf-content-api.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-media-connector</artifactId>
+			<version>${kmf-media-connector.version}</version>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>
+							${project.basedir}/src/build/assembly.xml
+						</descriptor>
+					</descriptors>
+					<finalName>${project.artifactId}-dist</finalName>
+					<outputDirectory>${project.build.directory}</outputDirectory>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>attached</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
