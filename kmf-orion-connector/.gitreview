@@ -1,5 +1,0 @@
-[gerrit]
-host=repository.kurento.com
-port=12345
-project=kmf-orion-connector
-defaultbranch=develop
