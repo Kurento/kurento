@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>WebRTC</title>
+<script src="./js/kws-content-api.js"></script>
+<script src="./lib/adapter.js"></script>
+<script src="./lib/Console.js"></script>
+<script src="./lib/color.js"></script>
+<script>
+	var conn;
+	var video;
+
+	window.onload = function() {
+		console = new Console("console", console);
+		video = document.getElementById("video");
+	}
+
+	function terminate() {
+		conn.terminate();
+	}
+
+	function initConnection(conn) {
+		// Set connection success and error events
+		conn.on("start", function(event) {
+			console.info("Connection started");
+		});
+		conn.on("terminate", function(event) {
+			console.info("Connection terminated");
+		});
+		conn.on("localstream", function(event) {
+			console.info("LocalStream set");
+		});
+		conn.on("remotestream", function(event) {
+			console.info("RemoteStream set");
+		});
+		conn.on("mediaevent", function(event) {
+			console.info("MediaEvent: " + JSON.stringify(event.data));
+		});
+		conn.on("error", function(error) {
+			console.info("Error " + error.message);
+		});
+	}
+
+	function start(url) {
+		play(url, false)
+	}
+
+	function play(url, recvOnly) {
+		// Show spinners (and options configuration)
+		var localVideo = document.getElementById("local");
+		var remoteVideo = document.getElementById("video");
+		var options = {
+			localVideoTag : "local",
+			remoteVideoTag : "video"
+		};
+		if (recvOnly) {
+			options = {
+				remoteVideoTag : "video",
+				audio : "recvonly",
+				video : "recvonly"
+			};
+		} else {
+			localVideo.poster = "./img/transparent-1px.png";
+			localVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+		remoteVideo.poster = "./img/transparent-1px.png";
+		remoteVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+
+		// Create a new connection
+		try {
+			conn = new kwsContentApi.KwsWebRtcContent(url, options);
+			console.info("Creating connection to " + url);
+			initConnection(conn);
+		} catch (error) {
+			// Log the error
+			console.error(error.message);
+		}
+	}
+
+	function log(text) {
+		document.getElementById("status").value = text;
+	}
+
+	function addEventListener(type, callback) {
+		video.addEventListener(type, callback, false);
+	}
+
+	function videoEvent(e) {
+		if (!e) {
+			e = window.event;
+		}
+		log(e.type);
+	}
+</script>
+</head>
+<body>
+	<h1>WebRTC</h1>
+	<video id="local" autoplay controls width="480px" height="360px"></video>
+	<video id="video" autoplay controls width="480px" height="360px"></video>
+	<br />
+	<label for="output">Status</label>
+	<input id="status" name="status" style="width: 300px;" />
+	<label for="currentTime">Color</label>
+	<input id="color"></input>
+	<br />
+	<label for="output">Output</label>
+	<div id="console"></div>
+</body>
+</html>

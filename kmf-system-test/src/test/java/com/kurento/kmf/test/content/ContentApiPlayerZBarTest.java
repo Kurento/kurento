@@ -1,0 +1,100 @@
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+package com.kurento.kmf.test.content;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+import com.kurento.kmf.content.ContentEvent;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.ZBarFilter;
+import com.kurento.kmf.media.events.CodeFoundEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.test.base.ContentApiTest;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
+
+/**
+ * Test of a HTTP Player and ZBar filter.
+ * 
+ * @author Boni Garcia (bgarcia@gsyc.es)
+ * @since 4.2.3
+ */
+public class ContentApiPlayerZBarTest extends ContentApiTest {
+
+	private static final String HANDLER = "/playerZbar";
+
+	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = true)
+	public static class PlayerRedirect extends HttpPlayerHandler {
+
+		private PlayerEndpoint playerEP;
+
+		@Override
+		public void onContentRequest(final HttpPlayerSession session)
+				throws Exception {
+			MediaPipeline mp = session.getMediaPipelineFactory().create();
+			playerEP = mp.newPlayerEndpoint(
+					"http://ci.kurento.com/video/barcodes.webm").build();
+			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+					.build();
+			ZBarFilter zBarFilter = mp.newZBarFilter().build();
+			playerEP.connect(zBarFilter);
+			zBarFilter.connect(httpEP);
+			session.start(httpEP);
+			session.setAttribute("eventValue", "");
+			zBarFilter
+					.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
+						@Override
+						public void onEvent(CodeFoundEvent event) {
+							log.info("Code Found " + event.getValue());
+							if (session.getAttribute("eventValue").toString()
+									.equals(event.getValue())) {
+								return;
+							}
+							session.setAttribute("eventValue", event.getValue());
+							session.publishEvent(new ContentEvent(event
+									.getType(), event.getValue()));
+						}
+					});
+
+		}
+
+		@Override
+		public void onContentStarted(HttpPlayerSession contentSession)
+				throws Exception {
+			playerEP.play();
+		}
+	}
+
+	@Test
+	public void testPlayerZbar() throws InterruptedException {
+		try (BrowserClient browser = new BrowserClient(getServerPort(),
+				Browser.CHROME, Client.PLAYERJSON)) {
+			browser.setURL(HANDLER);
+			browser.subscribeEvents("playing", "ended");
+			browser.start();
+
+			// Assertions
+			Assert.assertTrue(browser.waitForEvent("playing"));
+			Assert.assertTrue(browser.waitForEvent("ended"));
+		}
+	}
+}
