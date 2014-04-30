@@ -16,6 +16,8 @@ package com.kurento.kmf.thrift.internal;
 
 import java.net.InetSocketAddress;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -31,6 +33,9 @@ import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 
 @Configuration
 public class ThriftConnectorApplicationContextConfiguration {
+
+	public static final Logger log = LoggerFactory
+			.getLogger(ThriftConnectorApplicationContextConfiguration.class);
 
 	@Bean
 	ThriftInterfaceExecutorService executorService() {

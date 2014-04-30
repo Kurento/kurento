@@ -10,9 +10,9 @@
 
 	<files>
 		<file>
-			<source>target/${project.name}-${project.version}.jar</source>
+			<source>target/${project.artifactId}-${project.version}.jar</source>
 			<outputDirectory>lib</outputDirectory>
-			<destName>${project.name}.jar</destName>
+			<destName>${project.artifactId}.jar</destName>
 		</file>
 	</files>
 

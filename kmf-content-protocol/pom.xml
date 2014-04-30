@@ -5,11 +5,11 @@
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.2.3-SNAPSHOT</version>
+		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 	
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-content-protocol</artifactId>
-	<version>${project.parent.version}</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Media Framework - Content Protocol</name>

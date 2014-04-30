@@ -4,24 +4,23 @@
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.2.3-SNAPSHOT</version>
+		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 	
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-assembly</artifactId>
 	<packaging>pom</packaging>
-	<name>Kmf assembly project</name>
+	<name>Kurento Media Framework - Assembly project</name>
 	<description>The assembly pom packages all KMF projects into a single zip file.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-content-api</artifactId>
-			<version>${kmf-content-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-connector</artifactId>
-			<version>${kmf-media-connector.version}</version>
 		</dependency>
 	</dependencies>
 	

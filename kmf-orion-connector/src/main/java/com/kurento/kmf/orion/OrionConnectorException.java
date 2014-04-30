@@ -14,13 +14,13 @@
  */
 package com.kurento.kmf.orion;
 
-import com.kurento.kmf.common.exception.KurentoSystemException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
  *
  */
-public class OrionConnectorException extends KurentoSystemException {
+public class OrionConnectorException extends KurentoException {
 
 	/**
 	 * 

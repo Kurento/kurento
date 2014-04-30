@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.connector.exceptions;
 
-import com.kurento.kmf.common.exception.KurentoSystemException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * Exception to be used when a command cannot be executed due to a Thrift error.
@@ -23,7 +23,7 @@ import com.kurento.kmf.common.exception.KurentoSystemException;
  * @since 1.0.0
  * 
  */
-public class ThriftInvocationException extends KurentoSystemException {
+public class ThriftInvocationException extends KurentoException {
 
 	/**
 	 * Default serial ID

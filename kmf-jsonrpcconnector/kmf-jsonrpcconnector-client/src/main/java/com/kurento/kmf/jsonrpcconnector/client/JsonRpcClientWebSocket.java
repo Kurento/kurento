@@ -35,14 +35,14 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.kurento.kmf.common.exception.KurentoSystemException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
+import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 import com.kurento.kmf.jsonrpcconnector.internal.message.MessageUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
-import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.PendingRequests;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.WebSocketResponseSender;
 
@@ -229,12 +229,11 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
-			throw new KurentoSystemException(
+			throw new KurentoException(
 					"Interrupted while waiting for a response", e);
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
-			throw new KurentoSystemException(
-					"This exception shouldn't be thrown", e);
+			throw new KurentoException("This exception shouldn't be thrown", e);
 		}
 	}
 

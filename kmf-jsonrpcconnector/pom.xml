@@ -6,6 +6,7 @@
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.2.3-SNAPSHOT</version>
+		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>

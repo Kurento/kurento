@@ -14,7 +14,7 @@
  */
 package com.kurento.tool.rom.server;
 
-import com.kurento.kmf.common.exception.KurentoSystemException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * This exception represents errors that take place in KMS, while operating with
@@ -24,7 +24,7 @@ import com.kurento.kmf.common.exception.KurentoSystemException;
  * @since 4.2.1
  * 
  */
-public class MediaServerException extends KurentoSystemException {
+public class MediaServerException extends KurentoException {
 
 	private static final long serialVersionUID = -4925041543188451274L;
 

@@ -110,6 +110,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		this.localHandlerAddress = localHandlerAddress;
 
+		LOG.info("Starting JsonRpcClient at {}", localHandlerAddress);
+
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
 			public <P, R> Response<R> internalSendRequest(Request<P> request,

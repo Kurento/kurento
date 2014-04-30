@@ -90,8 +90,8 @@ public final class ThriftConnectorJsonRpcHandler extends
 	@PostConstruct
 	private void init() {
 
-		LOG.info("Handler Address: {}", config.getHandlerAddress());
-		LOG.info("Handler Port: {}", config.getHandlerPort());
+		LOG.warn("Handler Address: {}", config.getHandlerAddress());
+		LOG.warn("Handler Port: {}", config.getHandlerPort());
 
 		server = (ThriftServer) ctx.getBean(
 				"mediaHandlerServer",

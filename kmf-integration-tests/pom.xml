@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.kurento</groupId>
+		<artifactId>kmf-parent-pom</artifactId>
+		<version>4.2.3-SNAPSHOT</version>
+		<relativePath>../kmf-parent-pom</relativePath>
+	</parent>
+
+	<groupId>com.kurento.kmf</groupId>
+	<artifactId>kmf-integration-tests</artifactId>
+	<packaging>pom</packaging>
+	<name>Kurento Media Framework - Integration tests</name>
+	<description>Integration tests for the Kurento Media Framework. These tests require the existence of a KMS instance.</description>
+	<url>http://www.kurento.com/docs/${project.version}</url>
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>https://github.com/Kurento/${project.artifactId}</url>
+		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<tag>develop</tag>
+	</scm>
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<!--tagNameFormat>v@{project.version}</tagNameFormat -->
+					<commitByProject>true</commitByProject>
+					<pushChanges>false</pushChanges>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<modules>
+		<module>kmf-jsonrpcconnector-test</module>
+		<module>kmf-media-connector-test</module>
+		<module>kmf-media-api-test</module>
+		<!--<module>kmf-content-api-test</module> -->
+		<module>kmf-repository-api-test</module>
+		<!--module>kmf-system-test</module -->
+	</modules>
+
+
+</project>

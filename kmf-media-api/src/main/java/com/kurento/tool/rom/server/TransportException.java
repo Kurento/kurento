@@ -14,7 +14,7 @@
  */
 package com.kurento.tool.rom.server;
 
-import com.kurento.kmf.common.exception.KurentoSystemException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * This exception occurs when there is a communication error. This could happen
@@ -25,7 +25,7 @@ import com.kurento.kmf.common.exception.KurentoSystemException;
  * @since 4.2.1
  * 
  */
-public class TransportException extends KurentoSystemException {
+public class TransportException extends KurentoException {
 
 	private static final long serialVersionUID = -9166377169939591329L;
 

@@ -5,14 +5,14 @@
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.2.3-SNAPSHOT</version>
+		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-media-connector</artifactId>
-	<version>${project.parent.version}</version>
 	<packaging>jar</packaging>
 
-	<name>kmf-media-connector</name>
+	<name>Kurento Media Framework - Media Connector</name>
 	<description>
 		Kurento Media Connector
 
@@ -69,7 +69,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<descriptor>src/assembly/bin.xml</descriptor>
-					<finalName>${project.name}-${project.version}</finalName>
+					<finalName>${project.artifactId}-${project.version}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 				<executions>
@@ -90,7 +90,7 @@
 						<phase>package</phase>
 						<configuration>
 							<tasks>
-								<copy file="${project.build.directory}/target/${project.name}-${project.version}-bin.zip" tofile="${project.build.directory}/target/${project.name}-${project.version}.zip"/>
+								<copy file="${project.build.directory}/target/${project.artifactId}-${project.version}-bin.zip" tofile="${project.build.directory}/target/${project.artifactId}-${project.version}.zip"/>
 							</tasks>
 						</configuration>
 					</execution>
