@@ -1124,8 +1124,9 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
     GSList * plateStore,
     GSList * finalPlateStore, gboolean checkIsPlate, int spacePositionX)
 {
+  int pos;
   int initialPosition = 0;
-  char finalPlateAux[10];
+  char finalPlateAux[10] = { 0 };
   int numbersCounter = 0;
   int position = 0;
   int validPlate = 0;
@@ -1252,12 +1253,13 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
       textConf[0] = ocrResultAux2[0];
     }
 
-    if (confidenceRate > MIN_OCR_CONFIDENCE_RATE) {
-      if (position < NUM_PLATE_CHARACTERS) {
+    pos = position + 2 - initialPosition;
+    if (pos >= 0 && pos < NUM_PLATE_CHARACTERS) {
+      if (confidenceRate > MIN_OCR_CONFIDENCE_RATE) {
         finalPlateAux[position + 2 - initialPosition] = textConf[0];
+      } else {
+        finalPlateAux[position + 2 - initialPosition] = '-';
       }
-    } else {
-      finalPlateAux[position + 2 - initialPosition] = '-';
     }
 
     if (platedetector->priv->show_debug_info == TRUE) {
