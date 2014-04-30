@@ -15,20 +15,33 @@
 package com.kurento.demo.crowddetector;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static java.lang.reflect.Modifier.TRANSIENT;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.kurento.kmf.content.ContentCommand;
+import com.kurento.kmf.content.ContentCommandResult;
+import com.kurento.kmf.content.ContentEvent;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.CrowdDetectorFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.Point;
 import com.kurento.kmf.media.RegionOfInterest;
 import com.kurento.kmf.media.RegionOfInterestConfig;
 import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.kmf.media.events.CrowdDetectorDirectionEvent;
+import com.kurento.kmf.media.events.CrowdDetectorFluidityEvent;
+import com.kurento.kmf.media.events.CrowdDetectorOccupancyEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 
 /**
  * Crowd detector demo.
@@ -39,51 +52,162 @@ import com.kurento.kmf.media.WebRtcEndpoint;
 @WebRtcContentService(path = "/crowdDetector/*")
 public class CrowdDetectorDemo extends WebRtcContentHandler {
 
+	CrowdDetectorFilter crowdDetector;
+	PlayerEndpoint playerendpoint;
+	MediaPipeline mediaPipeline;
+	WebRtcEndpoint webRtcEndpoint;
+	private static final Gson gson = new GsonBuilder()
+			.excludeFieldsWithModifiers(TRANSIENT).create();
+
 	@Override
-	public void onContentRequest(WebRtcContentSession contentSession)
+	public void onContentRequest(final WebRtcContentSession contentSession)
 			throws Exception {
-		MediaPipeline mediaPipeline;
-		WebRtcEndpoint webRtcEndpoint;
-		CrowdDetectorFilter crowdDetector;
-		MediaPipelineFactory mpf;
-
-		mpf = contentSession.getMediaPipelineFactory();
-		mediaPipeline = mpf.create();
-
-		List<Point> points = new ArrayList<Point>();
-		points.add(new Point(0, 0));
-		points.add(new Point(640, 0));
-		points.add(new Point(640, 480));
-		points.add(new Point(0, 480));
-
-		RegionOfInterestConfig config = new RegionOfInterestConfig();
-
-		config.setFluidityLevelMin(10);
-		config.setFluidityLevelMed(35);
-		config.setFluidityLevelMax(65);
-		config.setFluidityNumFramesToEvent(5);
-		config.setOccupancyLevelMin(10);
-		config.setOccupancyLevelMed(35);
-		config.setOccupancyLevelMax(65);
-		config.setOccupancyNumFramesToEvent(5);
-		config.setSendOpticalFlowEvent(false);
-
-		List<RegionOfInterest> rois = newArrayList(new RegionOfInterest(points,
-				config, "Roi"));
-
-		crowdDetector = mediaPipeline.newCrowdDetectorFilter(rois).build();
-		contentSession.releaseOnTerminate(mediaPipeline);
-
-		webRtcEndpoint = mediaPipeline.newWebRtcEndpoint().build();
-		webRtcEndpoint.connect(crowdDetector);
-		crowdDetector.connect(webRtcEndpoint);
-
 		contentSession.start(webRtcEndpoint);
 	}
 
 	@Override
-	public void onSessionTerminated(WebRtcContentSession contentSession,
-			int code, String reason) throws Exception {
-		super.onSessionTerminated(contentSession, code, reason);
+	public ContentCommandResult onContentCommand(
+			final WebRtcContentSession contentSession,
+			ContentCommand contentCommand) throws Exception {
+
+		if ("configureFilter".equalsIgnoreCase(contentCommand.getType())) {
+			if (crowdDetector == null) {
+				MediaPipelineFactory mpf;
+				mpf = contentSession.getMediaPipelineFactory();
+				mediaPipeline = mpf.create();
+				contentSession.releaseOnTerminate(mediaPipeline);
+				webRtcEndpoint = mediaPipeline.newWebRtcEndpoint().build();
+
+				// create PlayerEndpoint
+				playerendpoint = mediaPipeline.newPlayerEndpoint(
+						"https://ci.kurento.com/video/crowd_long.avi").build();
+
+				JsonArray readedRois = gson.fromJson(contentCommand.getData(),
+						JsonArray.class);
+
+				List<RegionOfInterest> rois = newArrayList();
+				for (int j = 0; j < readedRois.size(); j++) {
+
+					JsonObject roi = (JsonObject) readedRois.get(j);
+
+					JsonArray coordenates = (JsonArray) roi.get("coordenates");
+					// create structure to configure crowddetector
+					List<Point> points = new ArrayList<Point>();
+					for (int i = 0; i < coordenates.size(); i++) {
+						JsonObject coordenate = (JsonObject) coordenates.get(i);
+
+						int x = coordenate.getAsJsonPrimitive("x").getAsInt();
+						int y = coordenate.getAsJsonPrimitive("y").getAsInt();
+
+						points.add(new Point(x, y));
+					}
+
+					RegionOfInterestConfig config = new RegionOfInterestConfig();
+
+					config.setFluidityLevelMin(roi.getAsJsonPrimitive(
+							"fluidityLevelMin").getAsInt());
+					config.setFluidityLevelMed(roi.getAsJsonPrimitive(
+							"fluidityLevelMed").getAsInt());
+					config.setFluidityLevelMax(roi.getAsJsonPrimitive(
+							"fluidityLevelMax").getAsInt());
+					config.setFluidityNumFramesToEvent(roi.getAsJsonPrimitive(
+							"fluidityNumFramesToEvent").getAsInt());
+					config.setOccupancyLevelMin(roi.getAsJsonPrimitive(
+							"occupancyLevelMin").getAsInt());
+					config.setOccupancyLevelMed(roi.getAsJsonPrimitive(
+							"occupancyLevelMed").getAsInt());
+					config.setOccupancyLevelMax(roi.getAsJsonPrimitive(
+							"occupancyLevelMax").getAsInt());
+					config.setOccupancyNumFramesToEvent(roi.getAsJsonPrimitive(
+							"occupancyNumFramesToEvent").getAsInt());
+
+					if (roi.getAsJsonPrimitive("sendOpticalFlowEvent")
+							.getAsInt() == 0) {
+						config.setSendOpticalFlowEvent(false);
+					} else {
+						config.setSendOpticalFlowEvent(true);
+					}
+
+					config.setOpticalFlowNumFramesToEvent(roi
+							.getAsJsonPrimitive("opticalFlowNumFramesToEvents")
+							.getAsInt());
+					config.setOpticalFlowNumFramesToReset(roi
+							.getAsJsonPrimitive("opticalFlowNumFramesToReset")
+							.getAsInt());
+					config.setOpticalFlowAngleOffset(roi.getAsJsonPrimitive(
+							"opticalFlowAngleOffset").getAsInt());
+
+					getLogger().info(config.toString());
+					rois.add(new RegionOfInterest(points, config, roi
+							.getAsJsonPrimitive("id").getAsString()));
+				}
+
+				crowdDetector = mediaPipeline.newCrowdDetectorFilter(rois)
+						.build();
+
+				// connect elements
+				playerendpoint.connect(crowdDetector);
+				crowdDetector.connect(webRtcEndpoint);
+				playerendpoint.play();
+
+				contentSession.publishEvent(new ContentEvent("startConn",
+						"startConn"));
+				// addEventListener to crowddetector
+				crowdDetector
+						.addCrowdDetectorDirectionListener(new MediaEventListener<CrowdDetectorDirectionEvent>() {
+							@Override
+							public void onEvent(
+									CrowdDetectorDirectionEvent event) {
+								String eventText = "Direction event detect in ROI "
+										+ event.getRoiID()
+										+ "with direction "
+										+ event.getDirectionAngle();
+								contentSession.publishEvent(new ContentEvent(
+										event.getType(), eventText));
+							}
+						});
+
+				crowdDetector
+						.addCrowdDetectorFluidityListener(new MediaEventListener<CrowdDetectorFluidityEvent>() {
+							@Override
+							public void onEvent(CrowdDetectorFluidityEvent event) {
+								String eventText = "Fluidity event detect in ROI "
+										+ event.getRoiID()
+										+ ". Fluidity level = "
+										+ event.getFluidityLevel()
+										+ " and fluidity percentage = "
+										+ event.getFluidityPercentage();
+								contentSession.publishEvent(new ContentEvent(
+										event.getType(), eventText));
+							}
+						});
+
+				crowdDetector
+						.addCrowdDetectorOccupancyListener(new MediaEventListener<CrowdDetectorOccupancyEvent>() {
+							@Override
+							public void onEvent(
+									CrowdDetectorOccupancyEvent event) {
+								String eventText = "Occupancy event detect in ROI "
+										+ event.getRoiID()
+										+ ". Occupancy level = "
+										+ event.getOccupancyLevel()
+										+ " and occupancy percentage = "
+										+ event.getOccupancyPercentage();
+								contentSession.publishEvent(new ContentEvent(
+										event.getType(), eventText));
+							}
+						});
+			}
+		}
+
+		return new ContentCommandResult(contentCommand.getData());
 	}
+
+	@Override
+	public synchronized void onSessionTerminated(WebRtcContentSession session,
+			int code, String reason) throws Exception {
+		crowdDetector = null;
+		super.onSessionTerminated(session, code, reason);
+	}
+
 }

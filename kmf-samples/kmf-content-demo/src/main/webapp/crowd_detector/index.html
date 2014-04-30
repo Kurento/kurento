@@ -7,6 +7,8 @@
 <script src="../lib/adapter.js"></script>
 <script>
 	var conn;
+	var roiscounter = 0;
+	var roisValues = new Array();
 
 	function start() {
 		/// Disable start button
@@ -19,11 +21,11 @@
 		remoteVideo.style.background = "center transparent url('../img/spinner.gif') no-repeat";
 
 		// Adding listeners to video tag
-		remoteVideo.addEventListener("play", function(event) {
-			if (!playing) {
-				play();
-			}
-		});
+		/* 		remoteVideo.addEventListener("play", function(event) {
+		 if (!playing) {
+		 play();
+		 }
+		 }); */
 
 		// Create a new connection
 		var handler = "../crowdDetector";
@@ -31,7 +33,10 @@
 
 		// Options
 		var options = {
-			remoteVideoTag: "remoteVideo"
+			remoteVideoTag : "remoteVideo",
+			audio : 'recvonly',
+			video : 'recvonly',
+			autostart : false
 		};
 
 		// Show spinner
@@ -40,14 +45,14 @@
 
 		// Kws-Content-API instantiation
 		conn = new kwsContentApi.KwsWebRtcContent(endpoint, options);
-		playing = true;
+		/* playing = true; */
 
- 		// Start and terminate events
+		// Start and terminate events
 		conn.on("start", function() {
 			document.getElementById("play").disabled = true;
 		});
 		conn.on("terminate", function() {
-			inputStatus.value = "end ok";
+			//inputStatus.value = "end ok";
 			document.getElementById("play").disabled = false;
 		});
 
@@ -56,6 +61,63 @@
 		});
 		conn.on("remotestream", function() {
 		});
+		// Media event
+		conn.on("mediaevent", function(data) {
+			if ("startConn" == data.type) {
+				conn.start();
+			}
+			log(data.data, "events");
+		});
+
+		if (roisValues.length < 1) {
+			createDummyRoi();
+		}
+		conn.execute("configureFilter", JSON.stringify(roisValues));
+		roisValues = new Array();
+	}
+
+	function createDummyRoi() {
+		var roi = {};
+		roi.id = 'roi0';
+		roi.coordenates = new Array();
+		roi.coordenates[0] = {
+			x : 0,
+			y : 0
+		};
+		roi.coordenates[1] = {
+			x : 640,
+			y : 0
+		};
+		roi.coordenates[2] = {
+			x : 640,
+			y : 480
+		};
+		roi.coordenates[3] = {
+			x : 0,
+			y : 480
+		};
+
+		roi.occupancyLevelMin = 10;
+		roi.occupancyLevelMed = 35;
+		roi.occupancyLevelMax = 65;
+		roi.occupancyNumFramesToEvent = 5;
+		roi.fluidityLevelMin = 10;
+		roi.fluidityLevelMed = 35;
+		roi.fluidityLevelMax = 65;
+		roi.fluidityNumFramesToEvent = 5;
+		roi.sendOpticalFlowEvent = 0;
+		roi.opticalFlowNumFramesToEvents = 3;
+		roi.opticalFlowNumFramesToReset = 3;
+		roi.opticalFlowAngleOffset = 0;
+
+		roisValues.push(roi);
+	}
+
+	function log(text, locator) {
+		if (locator) {
+			elementId = locator;
+		}
+		document.getElementById(elementId).value += text + "\n";
 	}
 
 	function terminate() {
@@ -66,13 +128,100 @@
 		// Enable connect button
 		document.getElementById("stop").disabled = true;
 		document.getElementById("play").disabled = false;
+		/* playing = false; */
 	}
 
+	function updateValue(val, name) {
+		document.getElementById(name).value = val;
+	}
+
+	function init() {
+		document.getElementById('id').value = 'roi' + roiscounter;
+		document.getElementById('rangeValue1').value = 10;
+		document.getElementById('rangeValue2').value = 35;
+		document.getElementById('rangeValue3').value = 65;
+		document.getElementById('rangeValue4').value = 5;
+		document.getElementById('rangeValue5').value = 10;
+		document.getElementById('rangeValue6').value = 35;
+		document.getElementById('rangeValue7').value = 65;
+		document.getElementById('rangeValue8').value = 5;
+		document.getElementById('rangeValue9').value = 3;
+		document.getElementById('rangeValue10').value = 3;
+		document.getElementById('rangeValue11').value = 0;
+	}
+
+	function addROI() {
+
+		if ((document.getElementById('id').value) === "") {
+			alert("The ROI needs a ID");
+			return;
+		}
+
+		if ((document.getElementById('x1').value) === ""
+				|| (document.getElementById('y1').value) === ""
+				|| (document.getElementById('x2').value) === ""
+				|| (document.getElementById('y2').value) === ""
+				|| (document.getElementById('x3').value) === ""
+				|| (document.getElementById('y3').value) === ""
+				|| (document.getElementById('x4').value) === ""
+				|| (document.getElementById('y4').value) === "") {
+			alert("It is neccessary to define all the coordinates");
+			return;
+		}
+
+		var roi = {};
+		roi.id = document.getElementById('id').value;
+		roi.coordenates = new Array();
+		roi.coordenates[0] = {
+			x : document.getElementById('x1').value,
+			y : document.getElementById('y1').value
+		};
+		roi.coordenates[1] = {
+			x : document.getElementById('x2').value,
+			y : document.getElementById('y2').value
+		};
+		roi.coordenates[2] = {
+			x : document.getElementById('x3').value,
+			y : document.getElementById('y3').value
+		};
+		roi.coordenates[3] = {
+			x : document.getElementById('x4').value,
+			y : document.getElementById('y4').value
+		};
+
+		roi.occupancyLevelMin = document.getElementById('rangeValue1').value;
+		roi.occupancyLevelMed = document.getElementById('rangeValue2').value;
+		roi.occupancyLevelMax = document.getElementById('rangeValue3').value;
+		roi.occupancyNumFramesToEvent = document.getElementById('rangeValue4').value;
+		roi.fluidityLevelMin = document.getElementById('rangeValue5').value;
+		roi.fluidityLevelMed = document.getElementById('rangeValue6').value;
+		roi.fluidityLevelMax = document.getElementById('rangeValue7').value;
+		roi.fluidityNumFramesToEvent = document.getElementById('rangeValue8').value;
+
+		var valueBox = document.getElementById('false');
+		roi.sendOpticalFlowEvent = 1;
+		if (valueBox.checked) {
+			roi.sendOpticalFlowEvent = 0;
+		}
+
+		roi.opticalFlowNumFramesToEvents = document
+				.getElementById('rangeValue9').value;
+		roi.opticalFlowNumFramesToReset = document
+				.getElementById('rangeValue10').value;
+		roi.opticalFlowAngleOffset = document.getElementById('rangeValue11').value;
+
+		roiscounter = roiscounter + 1;
+		roisValues.push(roi);
+
+		init();
+	}
 </script>
 </head>
 
-<body onload="start()">
-	<div id=title><h1>Crowd Detector Demo</h1></div>
+<body onload="init()">
+	<div id=title>
+		<h1>Crowd Detector Demo</h1>
+	</div>
 	<div id=logo></div>
 	<table style="border-spacing: 10px;">
 		<tr>
@@ -81,9 +230,84 @@
 				</video></td>
 		</tr>
 		<tr>
-			<td><button id="play" onclick="start()">Play</button>
-				<button id="stop" onclick="terminate()">Stop</button>
+			<td>Roi ID<input id="id" type="text"> <br> Roi
+				coordenates: <br> Point 1: x <input id="x1" type="text"
+				size="3"> y <input id="y1" type="text" size="3"><br>
+				Point 2: x <input id="x2" type="text" size="3"> y <input
+				id="y2" type="text" size="3"><br> Point 3: x <input
+				id="x3" type="text" size="3"> y <input id="y3" type="text"
+				size="3"><br> Point 4: x <input id="x4" type="text"
+				size="3"> y <input id="y4" type="text" size="3"><br>
+				<br> occupancyLevelMin 0: <input type="range"
+				name="Plate width" min="1" max="100" value="10"
+				onchange="updateValue(this.value,'rangeValue1')"> 100 <input
+				id="rangeValue1" type="text" size="3"><br>
+
+				occupancyLevelMed 0: <input type="range" name="Plate width" min="1"
+				max="100" value="35"
+				onchange="updateValue(this.value,'rangeValue2')"> 100 <input
+				id="rangeValue2" type="text" size="3"><br>
+
+				occupancyLevelMax 0: <input type="range" name="Plate width" min="1"
+				max="100" value="65"
+				onchange="updateValue(this.value,'rangeValue3')"> 100 <input
+				id="rangeValue3" type="text" size="3"><br>
+
+				occupancyNumFramesToEvent 0: <input type="range" name="Plate width"
+				min="1" max="100" value="5"
+				onchange="updateValue(this.value,'rangeValue4')"> 100 <input
+				id="rangeValue4" type="text" size="3"><br>
+
+				fluidityLevelMin 0: <input type="range" name="Plate width" min="1"
+				max="100" value="10"
+				onchange="updateValue(this.value,'rangeValue5')"> 100 <input
+				id="rangeValue5" type="text" size="3"><br>
+
+				fluidityLevelMed 0: <input type="range" name="Plate width" min="1"
+				max="100" value="35"
+				onchange="updateValue(this.value,'rangeValue6')"> 100 <input
+				id="rangeValue6" type="text" size="3"><br>
+
+				fluidityLevelMax 0: <input type="range" name="Plate width" min="1"
+				max="100" value="65"
+				onchange="updateValue(this.value,'rangeValue7')"> 100 <input
+				id="rangeValue7" type="text" size="3"><br>
+
+				fluidityNumFramesToEvent 0: <input type="range" name="Plate width"
+				min="1" max="100" value="5"
+				onchange="updateValue(this.value,'rangeValue8')"> 100 <input
+				id="rangeValue8" type="text" size="3"><br>
+
+				sendOpticalFlowEvent : <input type="checkbox" id="true"
+				name="option1" value="true"> Yes <input type="checkbox"
+				id="false" name="option2" value="false" checked> No<br>
+
+
+				opticalFlowNumFramesToEvents 0: <input type="range"
+				name="Plate width" min="1" max="100" value="3"
+				onchange="updateValue(this.value,'rangeValue9')"> 100 <input
+				id="rangeValue9" type="text" size="3"><br>
+
+				opticalFlowNumFramesToReset 0: <input type="range"
+				name="Plate width" min="1" max="100" value="3"
+				onchange="updateValue(this.value,'rangeValue10')"> 100 <input
+				id="rangeValue10" type="text" size="3"><br>
+
+				opticalFlowAngleOffset 0: <input type="range" name="Plate width"
+				min="1" max="100" value="0"
+				onchange="updateValue(this.value,'rangeValue11')"> 100 <input
+				id="rangeValue11" type="text" size="3"> <br>
+				<button id="addROI" onclick="addROI()">Add ROI</button>
 			</td>
+		</tr>
+
+		<tr>
+			<td><button id="play" onclick="start()">Start</button>
+				<button id="stop" onclick="terminate()">Stop</button></td>
+		</tr>
+		<tr>
+			<td><label for="status">Events</label> <textarea id="events"
+					rows="8" style="width: 100%"></textarea></td>
 		</tr>
 	</table>
 </body>
