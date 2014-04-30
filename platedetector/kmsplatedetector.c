@@ -1267,6 +1267,9 @@ kms_plate_detector_read_characters (KmsPlateDetector * platedetector,
     kms_plate_detector_chop_char (finalPlateAux);
     position++;
 
+    TessDeleteText (ocrResultAux1);
+    TessDeleteText (ocrResultAux2);
+
     cvReleaseImage (&imAux);
     cvReleaseImage (&imAux2);
     cvReleaseImage (&imAuxRGB);
