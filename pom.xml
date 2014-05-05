@@ -78,14 +78,14 @@
 				<module>kmf-samples</module>
 				<module>kmf-content-protocol</module>
 				<module>kmf-repository-api</module>
-				<module>kmf-assembly</module> 
+				<module>kmf-assembly</module>
 			</modules>
 		</profile>
 		<profile>
 			<id>integration</id>
-			<!--activation>
+			<activation>
 				<activeByDefault>true</activeByDefault>
-			</activation-->
+			</activation>
 			<modules>
 				<module>kmf-integration-tests</module>
 			</modules>
