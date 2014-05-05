@@ -41,6 +41,7 @@
 	
 	<modules>
 		<module>kmf-content-demo</module>
+		<module>fi-lab-demo</module>
 	</modules>
 
 </project>

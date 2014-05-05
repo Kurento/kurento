@@ -2,14 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	
 	<parent>
-		<groupId>com.kurento</groupId>
-		<artifactId>kmf-parent-pom</artifactId>
+		<groupId>com.kurento.kmf</groupId>
+		<artifactId>kmf-samples</artifactId>
 		<version>4.2.3-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>fi-lab-demo</artifactId>
-	<version>${project.parent.version}</version>
 	<packaging>war</packaging>
 
 	<name>Kurento Media Framework - FI-WARE LAB Demo</name>
