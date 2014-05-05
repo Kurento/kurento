@@ -49,27 +49,22 @@
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
-			<version>${kmf-commons.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-spring</artifactId>
-			<version>${kmf-spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-content-protocol</artifactId>
-			<version>${kmf-content-protocol.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-repository-api</artifactId>
-			<version>${kmf-repository-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
-			<version>${kmf-media-api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>

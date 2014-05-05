@@ -65,8 +65,9 @@
 		<!-- ********************* -->
 		<!-- Dependencies versions -->
 		<!-- ********************* -->
+		<!-- 
 		<kmf-media-api.version>${project.version}</kmf-media-api.version>
-		<kmf-jsonrpcconnector.version>${project.version}</kmf-jsonrpcconnector.version>
+		<kmf-jsonrpcconnector.version>kurento-media-framework.version${project.version}</kmf-jsonrpcconnector.version>
 		<kmf-thrift-interface.version>${project.version}</kmf-thrift-interface.version>
 		<kms-interface.version>${project.version}</kms-interface.version>
 		<kmf-commons.version>${project.version}</kmf-commons.version>
@@ -76,7 +77,9 @@
 		<kmf-repository-api.version>${project.version}</kmf-repository-api.version>
 		<kmf-media-connector.version>${project.version}</kmf-media-connector.version>
 		<kws-content-api.version>${project.version}</kws-content-api.version>
-		<kms-interface.version>${project.version}</kms-interface.version>
+		<kms-interface.version>${project.version}</kms-interface.version> 
+		-->
+		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
 
 		<libthrift.version>0.9.0</libthrift.version>
 		<gson.version>2.2.4</gson.version>
@@ -199,68 +202,68 @@
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-content-protocol</artifactId>
-				<version>${kmf-content-protocol.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-repository-api</artifactId>
-				<version>${kmf-repository-api.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kws</groupId>
 				<artifactId>kws-content-api</artifactId>
-				<version>${kws-content-api.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-thrift-interface</artifactId>
-				<version>${kmf-thrift-interface.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-media-api</artifactId>
-				<version>${kmf-media-api.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-media-connector</artifactId>
-				<version>${kmf-media-connector.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector</artifactId>
-				<version>${kmf-jsonrpcconnector.version}</version>
+				<version>${kurento-media-framework.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector-client</artifactId>
-				<version>${kmf-jsonrpcconnector.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector-server</artifactId>
-				<version>${kmf-jsonrpcconnector.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-content-api</artifactId>
-				<version>${kmf-content-api.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kms</groupId>
 				<artifactId>kms-interface</artifactId>
-				<version>${kms-interface.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-commons</artifactId>
-				<version>${kmf-commons.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-spring</artifactId>
-				<version>${kmf-spring.version}</version>
+				<version>${kurento-media-framework.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.woorea</groupId>
