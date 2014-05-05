@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HTTP Player</title>
+</head>
+<body>
+	<h1>HTTP Player</h1>
+
+	<table style="border-spacing: 10px;">
+		<tr>
+			<td valign="top"><button id="play" onclick="play();">Play</button>
+				<select id="handler">
+					<option value="playerHttp/webm">WEBM video</option>
+					<option value="playerHttp/mov">MOV video</option>
+					<option value="playerHttp/mkv">MKV video</option>
+					<option value="playerHttp/3gp">3GP video</option>
+					<option value="playerHttp/ogv">OGV video</option>
+					<option value="playerHttp/mp4">MP4 video</option>
+					<option value="playerHttpJackVader">JackVader Filter</option>
+			</select></td>
+			<td><video id="video" autoplay controls width="640px"
+					height="360px"></video></td>
+		</tr>
+	</table>
+
+	<script type="text/javascript">
+		var video = document.getElementById("video");
+
+		video.addEventListener('ended', videoEnd, false);
+	    function videoEnd(e) {
+	        if(!e) { e = window.event; }
+	        document.getElementById("play").disabled = false;
+	    }
+
+	    function play() {
+			video.poster = "img/transparent-1px.png";
+			video.style.background = "center transparent url('img/spinner.gif') no-repeat";
+			video.src = document.getElementById("handler").value;
+			video.play();
+			document.getElementById("play").disabled = true;
+	    }
+	</script>
+</body>
+</html>
