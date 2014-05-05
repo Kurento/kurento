@@ -79,6 +79,7 @@
 		<kws-content-api.version>${project.version}</kws-content-api.version>
 		<kms-interface.version>${project.version}</kms-interface.version> 
 		-->
+		<kms-interface.version>4.2.2</kms-interface.version> 
 		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
 
 		<libthrift.version>0.9.0</libthrift.version>
@@ -253,7 +254,7 @@
 			<dependency>
 				<groupId>com.kurento.kms</groupId>
 				<artifactId>kms-interface</artifactId>
-				<version>${kurento-media-framework.version}</version>
+				<version>${kms-interface.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
