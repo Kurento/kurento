@@ -293,7 +293,7 @@ kms_chroma_initialize_images (KmsChroma * chroma, GstVideoFrame * frame)
     aux = cvCloneImage (chroma->priv->background_image);
     cvReleaseImage (&chroma->priv->background_image);
     chroma->priv->background_image = cvCreateImage (cvSize (frame->info.width,
-            frame->info.height), IPL_DEPTH_8U, 3);
+            frame->info.height), IPL_DEPTH_8U, aux->nChannels);
     cvResize (aux, chroma->priv->background_image, CV_INTER_LINEAR);
     cvReleaseImage (&aux);
   }
