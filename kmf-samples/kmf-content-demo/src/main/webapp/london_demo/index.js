@@ -51,9 +51,7 @@ $(function(event) {
 			console.info("RemoteStream set to " + JSON.stringify(event));
 		});
 
-		conn.on('mediaevent', function(event) {
-			var mediaEvent = event.data;
-
+		conn.on('mediaevent', function(mediaEvent) {
 			// Do not send two times an event with the same value
 			if (mediaEvent.data == lastEventValue)
 				return;
