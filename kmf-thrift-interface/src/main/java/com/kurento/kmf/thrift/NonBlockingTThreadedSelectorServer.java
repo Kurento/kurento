@@ -3,8 +3,6 @@ package com.kurento.kmf.thrift;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-
 /**
  * Decorator of the {@link TThreadedSelectorServer}. This server does not block
  * when invoking the {@link TServer#serve} method. The {@code ExecutorService}
@@ -32,13 +30,13 @@ public class NonBlockingTThreadedSelectorServer extends TThreadedSelectorServer 
 	public void serve() {
 		// start any IO threads
 		if (!startThreads()) {
-			throw new KurentoMediaFrameworkException(
-					"Could not start thread in Thrift server", 30001);
+			throw new ThriftServerException(
+					"Error starting non blocking selector server: Could not start threads");
 		}
 		// start listening, or exit
 		if (!startListening()) {
-			throw new KurentoMediaFrameworkException(
-					"Could not start listening in Thrift server", 30002);
+			throw new ThriftServerException(
+					"Error starting non blocking selector server: Could not start listening");
 		}
 		setServing(true);
 	}

@@ -23,10 +23,16 @@ import org.apache.thrift.transport.TNonblockingTransport;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 
 /**
+ * Thrift client that adds a validation method. This class is to be used
+ * internally, and for external users of the pool it should be transparent. The
+ * validating clients have been implemented to overcome the impossibility, found
+ * during several trials, of correctly asserting whether the client is still
+ * valid.
+ * 
  * @author Ivan Gracia (izanmail@gmail.com)
  * 
  */
-public class AsyncClientWithValidation extends AsyncClient {
+class AsyncClientWithValidation extends AsyncClient {
 
 	/**
 	 * @param protocolFactory

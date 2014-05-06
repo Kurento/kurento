@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -17,22 +17,21 @@ package com.kurento.kmf.thrift.pool;
 import com.kurento.kmf.common.exception.KurentoException;
 
 /**
- * This exception is used when the pool is exhausted and no more clients can be
- * created.
+ * This exception is thrown when acquiring or returning clients to/from the
+ * pool.
  * 
  * @author Ivan Gracia (izanmail@gmail.com)
- * @since 1.0.0
  *
  */
-public class PoolLimitException extends KurentoException {
+public class ClientPoolException extends KurentoException {
 
-	private static final long serialVersionUID = 1428726405659800781L;
+	private static final long serialVersionUID = -6427664638336803375L;
 
-	public PoolLimitException(String message) {
+	public ClientPoolException(String message) {
 		super(message);
 	}
 
-	public PoolLimitException(String message, Throwable cause) {
+	public ClientPoolException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

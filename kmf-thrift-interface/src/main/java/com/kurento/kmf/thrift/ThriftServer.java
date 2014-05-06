@@ -25,7 +25,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 
 /**
@@ -38,7 +37,8 @@ import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
  */
 public class ThriftServer {
 
-	private static Logger LOG = LoggerFactory.getLogger(ThriftServer.class);
+	private static final Logger log = LoggerFactory
+			.getLogger(ThriftServer.class);
 
 	private final TProcessor processor;
 
@@ -59,26 +59,33 @@ public class ThriftServer {
 			ThriftInterfaceExecutorService executorService,
 			InetSocketAddress addr) {
 
-		LOG.info("Configuring thrift server on {}", addr);
+		log.info("Configuring thrift server on {}", addr);
 
 		this.executorService = executorService;
 		this.processor = processor;
 		this.addr = addr;
 	}
 
+	/**
+	 * Starts the thrift server in the configured address and port.
+	 * 
+	 * @throws ThriftServerException
+	 *             if the server can't bind to the provided address, or it
+	 *             cannot be started
+	 */
 	public void start() {
 
-		LOG.info("Starting thrift server at {}", addr);
+		log.info("Starting thrift server at {}", addr);
 
 		TNonblockingServerTransport transport;
 
 		try {
 			transport = new TNonblockingServerSocket(addr);
 		} catch (TTransportException e) {
-			throw new KurentoMediaFrameworkException(
+			throw new ThriftServerException(
 					"Could not start media handler server on "
 							+ addr.toString() + "\n Reason: " + e.getMessage(),
-					e, 30003);
+					e);
 		}
 
 		// TODO default selectorThreads is 2. Test if this is enough under load,

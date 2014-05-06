@@ -25,7 +25,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
@@ -35,17 +35,24 @@ public class MediaServerSyncClientFactory extends
 	@Autowired
 	private ThriftInterfaceConfiguration apiConfig;
 
-	// Used in Spring environments
+	/**
+	 * Default constructor, to be used in spring environments
+	 */
 	public MediaServerSyncClientFactory() {
 	}
 
-	// Used in non Spring environments
+	/**
+	 * Constructor for non-spring environments.
+	 * 
+	 * @param apiConfig
+	 *            configuration object
+	 */
 	public MediaServerSyncClientFactory(ThriftInterfaceConfiguration apiConfig) {
 		this.apiConfig = apiConfig;
 	}
 
 	@Override
-	public Client create() throws Exception {
+	public Client create() throws KurentoException {
 		return createSyncClient();
 	}
 
@@ -89,10 +96,10 @@ public class MediaServerSyncClientFactory extends
 		try {
 			transport.open();
 		} catch (TTransportException e) {
-			throw new KurentoMediaFrameworkException(
+			throw new ClientPoolException(
 					"Could not open transport for sync client with "
 							+ this.apiConfig.getServerAddress() + ":"
-							+ this.apiConfig.getServerPort(), e, 30000);
+							+ this.apiConfig.getServerPort(), e);
 		}
 
 		return new ClientWithValidation(prot);

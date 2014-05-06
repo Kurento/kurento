@@ -27,7 +27,7 @@ import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 
@@ -37,18 +37,33 @@ public class MediaServerAsyncClientFactory extends
 	@Autowired
 	private ThriftInterfaceConfiguration apiConfig;
 
-	// Used in Spring environments
+	private TAsyncClientManager clientManager;
+
+	/**
+	 * Default constructor, to be used in spring environments
+	 */
 	public MediaServerAsyncClientFactory() {
-		// TODO Auto-generated constructor stub
+
+		try {
+			clientManager = new TAsyncClientManager();
+		} catch (IOException e) {
+			throw new ClientPoolException("Error creating client manager", e);
+		}
 	}
 
-	// Used in non Spring environments
+	/**
+	 * Constructor for non-spring environments.
+	 * 
+	 * @param apiConfig
+	 *            configuration object
+	 */
 	public MediaServerAsyncClientFactory(ThriftInterfaceConfiguration apiConfig) {
+		this();
 		this.apiConfig = apiConfig;
 	}
 
 	@Override
-	public AsyncClient create() throws Exception {
+	public AsyncClient create() throws KurentoException {
 		return createAsyncClient();
 	}
 
@@ -82,18 +97,10 @@ public class MediaServerAsyncClientFactory extends
 			transport = new TNonblockingSocket(apiConfig.getServerAddress(),
 					apiConfig.getServerPort());
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException(
+			throw new ClientPoolException(
 					"Error creating non blocking transport for asynchronous client with \"\n"
 							+ this.apiConfig.getServerAddress() + ":"
-							+ this.apiConfig.getServerPort(), e, 30000);
-		}
-
-		TAsyncClientManager clientManager;
-		try {
-			clientManager = new TAsyncClientManager();
-		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException(
-					"Error creating client manager", e, 30000);
+							+ this.apiConfig.getServerPort(), e);
 		}
 
 		TProtocolFactory protocolFactory = new TBinaryProtocol.Factory();

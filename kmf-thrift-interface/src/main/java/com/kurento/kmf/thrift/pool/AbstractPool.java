@@ -23,7 +23,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 
 public abstract class AbstractPool<T> implements Pool<T> {
@@ -33,11 +33,18 @@ public abstract class AbstractPool<T> implements Pool<T> {
 
 	private ObjectPool<T> pool;
 
-	// Used in Spring environments
+	/**
+	 * Default constructor, to be used in spring environments
+	 */
 	public AbstractPool() {
 	}
 
-	// Used in non Spring environments
+	/**
+	 * Constructor for non-spring environments.
+	 * 
+	 * @param apiConfig
+	 *            configuration object
+	 */
 	public AbstractPool(ThriftInterfaceConfiguration apiConfig) {
 		this.apiConfig = apiConfig;
 	}
@@ -52,33 +59,31 @@ public abstract class AbstractPool<T> implements Pool<T> {
 	}
 
 	@Override
-	public T acquire() throws PoolLimitException,
-			KurentoMediaFrameworkException {
+	public T acquire() throws PoolLimitException, KurentoException,
+			ClientPoolException {
 		try {
 			return this.pool.borrowObject();
 		} catch (NoSuchElementException e) {
 			throw new PoolLimitException(
-					"Max number of pooled sync client instances reached");
+					"Max number of pooled client instances reached");
 		} catch (IllegalStateException e) {
-			throw new KurentoMediaFrameworkException(
-					"Trying to acquire an object from a closed pool", e, 30000);
+			throw new ClientPoolException(
+					"Trying to acquire an object from a closed pool", e);
 		} catch (Exception e) {
-			if (e instanceof KurentoMediaFrameworkException) {
-				throw (KurentoMediaFrameworkException) e;
+			if (e instanceof KurentoException) {
+				throw (KurentoException) e;
 			}
 
-			throw new KurentoMediaFrameworkException("Object creation failed",
-					e, 30000);
+			throw new ClientPoolException("Object creation failed", e);
 		}
 	}
 
 	@Override
-	public void release(T obj) {
+	public void release(T obj) throws ClientPoolException {
 		try {
 			this.pool.returnObject(obj);
 		} catch (Exception e) {
-			throw new KurentoMediaFrameworkException(
-					"Object could not be realeased", e, 30000);
+			throw new ClientPoolException("Object could not be realeased", e);
 		}
 	}
 }

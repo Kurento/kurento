@@ -35,7 +35,7 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
 public class JsonRpcClientThrift extends JsonRpcClient {
 
-	private static final Logger LOG = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcClientThrift.class);
 
 	public static final int KEEP_ALIVE_TIME = 120000;
@@ -45,7 +45,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
 		public void sendResponse(Message message) throws IOException {
-			LOG.warn(
+			log.warn(
 					"The thrift client is trying to send the response '{}' for "
 							+ "a request from server. But with Thrift it is not possible",
 					message);
@@ -87,15 +87,23 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 					Request<Void> request = new Request<>(session, id,
 							"keepAlive", null);
 
-					LOG.info("Sending keep alive for session: {}", session);
-					Response<Void> response = internalSendRequestThrift(
-							request, Void.class);
-					if (response.isError()) {
-						LOG.error("Error on session {} keep alive, removing",
-								session);
-						synchronized (sessions) {
-							sessions.remove(session);
+					log.info("Sending keep alive for session: {}", session);
+
+					try {
+						Response<Void> response = internalSendRequestThrift(
+								request, Void.class);
+
+						if (response.isError()) {
+							log.error(
+									"Error on session {} keep alive, removing",
+									session);
+							synchronized (sessions) {
+								sessions.remove(session);
+							}
 						}
+					} catch (IOException e) {
+						log.warn("Could not send keepalive for session {}",
+								session, e);
 					}
 				}
 			}
@@ -109,8 +117,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		this.clientPool = clientPool;
 
 		this.localHandlerAddress = localHandlerAddress;
-
-		LOG.info("Starting JsonRpcClient at {}", localHandlerAddress);
 
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
@@ -134,7 +140,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 						try {
 
-							LOG.info("[Client] Request Received: {}", request);
+							log.debug("[Client] Request Received: {}", request);
 
 							JsonObject message = JsonUtils.fromJson(request,
 									JsonObject.class);
@@ -142,7 +148,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 							handleRequestFromServer(message);
 
 						} catch (Exception e) {
-							LOG.error(
+							log.error(
 									"Exception while processing a request received from server",
 									e);
 						}
@@ -163,13 +169,13 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	}
 
 	public <P, R> Response<R> internalSendRequestThrift(Request<P> request,
-			Class<R> resultClass) {
+			Class<R> resultClass) throws IOException {
 
 		Client client = clientPool.acquireSync();
 
 		try {
 
-			LOG.debug("[Client] Request sent: {}", request);
+			log.debug("[Client] Request sent: {}", request);
 
 			// TODO Remove this hack -----------------------
 			if (request.getMethod().equals("subscribe")) {
@@ -183,7 +189,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 			responseStr = client.invokeJsonRpc(request.toString());
 
-			LOG.debug("[Client] Response received: {}", responseStr);
+			log.debug("[Client] Response received: {}", responseStr);
 
 			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
 					resultClass);
@@ -200,8 +206,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			return response;
 
 		} catch (TException e) {
-			throw new RuntimeException(
-					"Exception while invoking request to server", e);
+			throw new IOException("Exception while invoking request on server",
+					e);
 		} finally {
 			clientPool.release(client);
 		}
@@ -210,7 +216,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	protected void internalSendRequestThrift(Request<Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
-		LOG.info("[Client] Request sent: {}", request);
+		log.info("[Client] Request sent: {}", request);
 
 		// TODO Remove this hack -----------------------
 		if (request.getMethod().equals("subscribe")) {
@@ -237,7 +243,9 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 						public void onError(Exception exception) {
 							clientPool.release(client);
 
-							LOG.error("Error on release", exception);
+							log.error(
+									"[Client] Error sending request to server",
+									exception);
 
 							if (retry && exception instanceof ConnectException) {
 								sendRequest(request, resultClass, continuation,
@@ -249,10 +257,11 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 						@Override
 						public void onComplete(invokeJsonRpc_call thriftResponse) {
+							clientPool.release(client);
 
 							try {
 								String response = thriftResponse.getResult();
-								LOG.debug("[Client] Response received: {}",
+								log.debug("[Client] Response received: {}",
 										response);
 
 								continuation.onSuccess(JsonUtils
@@ -261,13 +270,11 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 							} catch (TException e) {
 								continuation.onError(e);
 							}
-
-							clientPool.release(client);
 						}
 
 					});
 		} catch (TException e) {
-			LOG.error("Error on sendRequest", e);
+			log.error("Error on sendRequest", e);
 			continuation.onError(e);
 		}
 	}

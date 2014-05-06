@@ -55,11 +55,17 @@ public class ThriftInterfaceExecutorService {
 	private ThriftInterfaceConfiguration config;
 
 	/**
-	 * Default constructor.
+	 * Default constructor, to be used in spring environments
 	 */
 	public ThriftInterfaceExecutorService() {
 	}
 
+	/**
+	 * Constructor for non-spring environments.
+	 * 
+	 * @param config
+	 *            configuration object
+	 */
 	public ThriftInterfaceExecutorService(ThriftInterfaceConfiguration config) {
 		this.config = config;
 		afterPropertiesSet();
@@ -85,10 +91,15 @@ public class ThriftInterfaceExecutorService {
 	}
 
 	/**
-	 * Pre destroy method; shutdown the thread pool.
+	 * Pre-destroy method; shutdown the thread pool.
 	 * 
-	 * @throws Exception
-	 *             Problem while shutting down thread
+	 * @throws SecurityException
+	 *             if a security manager exists and shutting down this
+	 *             ExecutorService may manipulate threads that the caller is not
+	 *             permitted to modify because it does not hold
+	 *             {@link java.lang.RuntimePermission}{@code ("modifyThread")},
+	 *             or the security manager's {@code checkAccess} method denies
+	 *             access.
 	 */
 	@PreDestroy
 	public void destroy() {

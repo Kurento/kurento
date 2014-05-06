@@ -20,13 +20,14 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
 import com.kurento.kmf.thrift.ThriftServer;
+import com.kurento.kmf.thrift.ThriftServerException;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Processor;
 
 public class JsonRpcServerThrift {
 
-	private static Logger LOG = LoggerFactory
+	private static Logger log = LoggerFactory
 			.getLogger(JsonRpcServerThrift.class);
 
 	private ThriftServer server;
@@ -45,7 +46,7 @@ public class JsonRpcServerThrift {
 		this.paramsClass = JsonRpcHandlerManager.getParamsType(handler
 				.getHandlerType());
 
-		LOG.info("Starting JsonRpcServer on {}", inetSocketAddress);
+		log.info("Starting JsonRpcServer on {}", inetSocketAddress);
 
 		Processor<Iface> serverProcessor = new Processor<Iface>(new Iface() {
 
@@ -65,7 +66,7 @@ public class JsonRpcServerThrift {
 		session = new ServerSession("XXX", null, null, "YYY") {
 			@Override
 			public void handleResponse(Response<JsonElement> response) {
-				LOG.error("Trying to send a response from by means of session but it is not supported");
+				log.error("Trying to send a response from by means of session but it is not supported");
 			}
 		};
 
@@ -73,14 +74,19 @@ public class JsonRpcServerThrift {
 				inetSocketAddress);
 	}
 
+	/**
+	 * Process a request received through the thrift interface.
+	 * 
+	 * @param request
+	 * @return a response to the request
+	 */
+	@SuppressWarnings("unchecked")
 	public Response<JsonObject> processRequest(Request<?> request) {
 
-		@SuppressWarnings("unchecked")
 		final Response<JsonObject>[] response = new Response[1];
 
 		TransactionImpl t = new TransactionImpl(session, request,
 				new ResponseSender() {
-					@SuppressWarnings("unchecked")
 					@Override
 					public void sendResponse(Message message)
 							throws IOException {
@@ -90,6 +96,7 @@ public class JsonRpcServerThrift {
 
 		try {
 
+			@SuppressWarnings("rawtypes")
 			JsonRpcHandler genericHandler = handler;
 			genericHandler.handleRequest(t, request);
 
@@ -103,7 +110,7 @@ public class JsonRpcServerThrift {
 			// Simulate receiving json string from net
 			String jsonResponse = response[0].toString();
 
-			LOG.debug("<-- {}", jsonResponse);
+			log.debug("<-- {}", jsonResponse);
 
 			Response<JsonObject> newResponse = JsonUtils.fromJsonResponse(
 					jsonResponse, JsonObject.class);
@@ -112,15 +119,22 @@ public class JsonRpcServerThrift {
 
 			return newResponse;
 
-		} else {
-			return new Response<>(request.getId());
 		}
+
+		return new Response<>(request.getId());
+
 	}
 
+	/**
+	 * Starts the thrift server
+	 * 
+	 * @throws ThriftServerException
+	 *             in case of error during creation
+	 */
 	public void start() {
-		LOG.info("Starting Thrift Server");
+		log.info("Starting Thrift Server");
 		server.start();
-		LOG.info("Thrift Server started");
+		log.info("Thrift Server started");
 	}
 
 	public void destroy() {

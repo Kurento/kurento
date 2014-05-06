@@ -26,11 +26,20 @@ public class MediaServerSyncClientPool extends AbstractPool<Client> {
 	@Autowired
 	private MediaServerSyncClientFactory syncFactory;
 
-	// Used in Spring environments
+	/**
+	 * Default constructor, to be used in spring environments
+	 */
 	public MediaServerSyncClientPool() {
 	}
 
-	// Used in non Spring environments
+	/**
+	 * Constructor for non-spring environments.
+	 * 
+	 * @param syncFactory
+	 *            the factory that builds sync clients
+	 * @param cfg
+	 *            configuration object
+	 */
 	public MediaServerSyncClientPool(MediaServerSyncClientFactory syncFactory,
 			ThriftInterfaceConfiguration cfg) {
 		super(cfg);

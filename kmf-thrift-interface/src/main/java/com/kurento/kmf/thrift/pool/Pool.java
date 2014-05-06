@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.thrift.pool;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 public interface Pool<T> {
 
@@ -25,17 +25,18 @@ public interface Pool<T> {
 	 * @throws PoolLimitException
 	 *             If the maximum number of allowed instances have already been
 	 *             created
-	 * @throws KurentoMediaFrameworkException
+	 * @throws KurentoException
+	 *             if an uncontrolled exception happens
 	 */
-	public T acquire() throws PoolLimitException,
-			KurentoMediaFrameworkException;
+	public T acquire() throws PoolLimitException, KurentoException;
 
 	/**
 	 * Returns an object to the pool
 	 * 
 	 * @param obj
-	 * @throws KurentoMediaFrameworkException
-	 *             In case of an internal exception in the pool
+	 *            the object to release
+	 * @throws KurentoException
+	 *             if an uncontrolled exception happens
 	 */
 	public void release(T obj);
 }

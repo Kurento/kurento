@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
 
@@ -39,11 +39,18 @@ public class MediaServerClientPoolService {
 	@Autowired
 	private MediaServerSyncClientPool syncClientPool;
 
-	// Used in Spring environments
+	/**
+	 * Default constructor, to be used in spring environments
+	 */
 	public MediaServerClientPoolService() {
 	}
 
-	// Used in non Spring environments
+	/**
+	 * Constructor for non-spring environments.
+	 * 
+	 * @param asyncClientPool
+	 * @param syncClientPool
+	 */
 	public MediaServerClientPoolService(
 			MediaServerAsyncClientPool asyncClientPool,
 			MediaServerSyncClientPool syncClientPool) {
@@ -53,13 +60,13 @@ public class MediaServerClientPoolService {
 	}
 
 	public AsyncClient acquireAsync() throws PoolLimitException,
-			KurentoMediaFrameworkException {
+			ClientPoolException, KurentoException {
 		log.trace("Acquiring async client from pool");
 		return asyncClientPool.acquire();
 	}
 
-	public Client acquireSync() throws PoolLimitException,
-			KurentoMediaFrameworkException {
+	public Client acquireSync() throws PoolLimitException, ClientPoolException,
+			KurentoException {
 		log.trace("Acquiring sync client from pool");
 		return syncClientPool.acquire();
 	}
