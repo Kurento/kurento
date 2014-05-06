@@ -6,11 +6,16 @@
 <script src="./lib/Console.js"></script>
 <script src="./lib/color.js"></script>
 <script type="text/javascript">
+	var conn;
 	var video;
 	window.onload = function() {
 		video = document.getElementById("video");
 		console = new Console("console", console);
-		setInterval(updateCurrentTime, 500);
+		setInterval(updateCurrentTime, 100);
+	}
+
+	function terminate() {
+		conn.terminate();
 	}
 
 	function updateCurrentTime() {
@@ -82,6 +87,10 @@
 	<input id="currentTime" name="currentTime" />
 	<label for="currentTime">Color</label>
 	<input id="color"></input>
+	<label for="x">x</label>
+	<input id="x" style="width: 20px;" value="0" />
+	<label for="y">y</label>
+	<input id="y" style="width: 20px;" value="0" />
 	<br />
 	<label for="output">Output</label>
 	<div id="console"></div>

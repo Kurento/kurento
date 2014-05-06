@@ -14,6 +14,9 @@
  */
 package com.kurento.kmf.test.content;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -75,12 +78,20 @@ public class ContentApiPlayerZBarTest extends ContentApiTest {
 						}
 					});
 
+			terminateLatch = new CountDownLatch(1);
 		}
 
 		@Override
-		public void onContentStarted(HttpPlayerSession contentSession)
+		public void onContentStarted(HttpPlayerSession session)
 				throws Exception {
 			playerEP.play();
+		}
+
+		@Override
+		public void onSessionTerminated(HttpPlayerSession session, int code,
+				String reason) throws Exception {
+			super.onSessionTerminated(session, code, reason);
+			terminateLatch.countDown();
 		}
 	}
 
@@ -93,8 +104,16 @@ public class ContentApiPlayerZBarTest extends ContentApiTest {
 			browser.start();
 
 			// Assertions
-			Assert.assertTrue(browser.waitForEvent("playing"));
-			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting ended event",
+					browser.waitForEvent("ended"));
+
+			// Ending session in order
+			browser.stop();
+			Assert.assertTrue(
+					"Timeout waiting onSessionTerminated",
+					terminateLatch.await(browser.getTimeout(), TimeUnit.SECONDS));
 		}
 	}
 }

@@ -17,10 +17,12 @@ package com.kurento.kmf.test.content;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -71,6 +73,15 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 					.build();
 			playerEP.connect(httpEP);
 			session.start(httpEP);
+
+			terminateLatch = new CountDownLatch(NCLIENTS);
+		}
+
+		@Override
+		public void onSessionTerminated(HttpPlayerSession session, int code,
+				String reason) throws Exception {
+			super.onSessionTerminated(session, code, reason);
+			terminateLatch.countDown();
 		}
 	}
 
@@ -97,7 +108,7 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 		}
 
 		// Assertions
-		Assert.assertTrue(result);
+		Assert.assertTrue("Timeout waiting playing or ended events", result);
 	}
 
 	private boolean createPlayer() throws InterruptedException {
@@ -107,8 +118,15 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing", "ended");
 			browser.start();
-			return browser.waitForEvent("playing")
+			boolean result = browser.waitForEvent("playing")
 					&& browser.waitForEvent("ended");
+
+			browser.stop();
+			Assert.assertTrue(
+					"Timeout waiting onSessionTerminated",
+					terminateLatch.await(browser.getTimeout(), TimeUnit.SECONDS));
+
+			return result;
 		}
 	}
 }

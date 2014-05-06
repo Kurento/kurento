@@ -103,6 +103,17 @@ public class BrowserClient implements Closeable {
 		this.videoUrl = videoUrl;
 	}
 
+	public void resetEvents() {
+		driver.findElement(By.id("status")).clear();
+	}
+
+	public void setColorCoordinates(int x, int y) {
+		driver.findElement(By.id("x")).clear();
+		driver.findElement(By.id("y")).clear();
+		driver.findElement(By.id("x")).sendKeys(String.valueOf(x));
+		driver.findElement(By.id("y")).sendKeys(String.valueOf(y));
+	}
+
 	public void subscribeEvents(String... eventType) {
 		for (final String e : eventType) {
 			CountDownLatch latch = new CountDownLatch(1);
@@ -157,6 +168,12 @@ public class BrowserClient implements Closeable {
 		if (driver instanceof JavascriptExecutor) {
 			((JavascriptExecutor) driver).executeScript("play('" + videoUrl
 					+ "', false);");
+		}
+	}
+
+	public void stop() {
+		if (driver instanceof JavascriptExecutor) {
+			((JavascriptExecutor) driver).executeScript("terminate();");
 		}
 	}
 

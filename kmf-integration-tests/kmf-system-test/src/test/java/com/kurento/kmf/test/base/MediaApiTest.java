@@ -31,6 +31,7 @@ import com.kurento.kmf.test.PropertiesManager;
  * Base for tests using kmf-media-api and Spring Boot.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
+ * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
  */
@@ -40,6 +41,7 @@ public class MediaApiTest {
 	private HttpServer server;
 	public static Logger log = LoggerFactory.getLogger(MediaApiTest.class);
 	private KurentoMediaServer kms;
+	private boolean autostart;
 
 	@Rule
 	public TestName testName = new TestName();
@@ -50,11 +52,12 @@ public class MediaApiTest {
 				"kurento.serverAddress", "127.0.0.1");
 		int serverPort = PropertiesManager.getSystemProperty(
 				"kurento.serverPort", 9090);
-
 		String handlerAddress = PropertiesManager.getSystemProperty(
 				"kurento.handlerAddress", "127.0.0.1");
 		int handlerPort = PropertiesManager.getSystemProperty(
 				"kurento.handlerPort", 9104);
+		autostart = PropertiesManager.getSystemProperty("kurento.autostart",
+				true);
 
 		pipelineFactory = new MediaPipelineFactory(serverAddress, serverPort,
 				handlerAddress, handlerPort);
@@ -68,7 +71,7 @@ public class MediaApiTest {
 		// KMS
 		kms = new KurentoMediaServer(serverAddress, serverPort,
 				httpEndpointPort);
-		if (kms.isConfigAvailable()) {
+		if (autostart && kms.isConfigAvailable()) {
 			kms.start(testName.getMethodName());
 		}
 	}
@@ -78,7 +81,7 @@ public class MediaApiTest {
 		pipelineFactory.destroy();
 		server.destroy();
 
-		if (kms.isConfigAvailable()) {
+		if (autostart && kms.isConfigAvailable()) {
 			kms.stop();
 		}
 	}

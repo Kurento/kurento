@@ -33,7 +33,6 @@ import freemarker.template.TemplateException;
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
- * @see <a href="https://github.com/xebialabs/overthere">overthere</a>
  */
 public class KurentoMediaServer {
 

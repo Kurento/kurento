@@ -33,4 +33,10 @@ public class PropertiesManager {
 		return systemValue != null ? systemValue : defaultValue;
 	}
 
+	public static boolean getSystemProperty(String property,
+			boolean defaultValue) {
+		String systemValue = System.getProperty(property);
+		return systemValue != null ? Boolean.getBoolean(systemValue)
+				: defaultValue;
+	}
 }

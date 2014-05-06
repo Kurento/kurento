@@ -54,7 +54,8 @@ public class MediaApiPlayerTest extends MediaApiTest {
 		HttpEntity resEntity = response.getEntity();
 
 		// Assertions
-		Assert.assertEquals("video/webm", resEntity.getContentType().getValue());
+		Assert.assertEquals("Response content-type must be video/webm",
+				"video/webm", resEntity.getContentType().getValue());
 	}
 
 }

@@ -14,6 +14,9 @@
  */
 package com.kurento.kmf.test.content;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -34,7 +37,7 @@ import com.kurento.kmf.test.client.Client;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class ContentApiPlayer2WebRtcTest extends ContentApiTest {
+public class ContentApiPlayer2WebRtcTst extends ContentApiTest {
 
 	private static final String HANDLER = "/player2webrtc";
 
@@ -52,8 +55,16 @@ public class ContentApiPlayer2WebRtcTest extends ContentApiTest {
 			playerEP.connect(webRtcEndpoint);
 			playerEP.play();
 			session.start(webRtcEndpoint);
+
+			terminateLatch = new CountDownLatch(1);
 		}
 
+		@Override
+		public void onSessionTerminated(WebRtcContentSession session, int code,
+				String reason) throws Exception {
+			super.onSessionTerminated(session, code, reason);
+			terminateLatch.countDown();
+		}
 	}
 
 	@Test
@@ -65,10 +76,17 @@ public class ContentApiPlayer2WebRtcTest extends ContentApiTest {
 			browser.startRcvOnly();
 
 			// Assertions
-			Assert.assertTrue(browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
 
 			// Guard time to see the video
 			Thread.sleep(3000);
+
+			// Ending session in order
+			browser.stop();
+			Assert.assertTrue(
+					"Timeout waiting onSessionTerminated",
+					terminateLatch.await(browser.getTimeout(), TimeUnit.SECONDS));
 		}
 	}
 }

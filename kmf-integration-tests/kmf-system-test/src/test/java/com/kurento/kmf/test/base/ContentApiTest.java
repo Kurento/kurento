@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.test.base;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,19 +35,19 @@ import com.kurento.kmf.test.PropertiesManager;
  * Base for tests using kmf-content-api and Spring Boot.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
+ * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
  */
 public class ContentApiTest {
 
-	private boolean springBootEnabled = false;
-
 	public static final Logger log = LoggerFactory
 			.getLogger(ContentApiTest.class);
-
+	private boolean springBootEnabled = false;
 	protected ConfigurableApplicationContext context;
-
 	private KurentoMediaServer kms;
+	protected static CountDownLatch terminateLatch;
+	private boolean autostart;
 
 	@Rule
 	public TestName testName = new TestName();
@@ -62,13 +64,14 @@ public class ContentApiTest {
 				"kurento.serverPort", 9090);
 		int httpEndpointPort = PropertiesManager.getSystemProperty(
 				"httpEPServer.serverPort", 9091);
+		autostart = PropertiesManager.getSystemProperty("kurento.autostart", true);
 
 		log.info("Configuring KMS in {}:{}, with httpEP por {}", serverAddress,
 				serverPort, httpEndpointPort);
 
 		kms = new KurentoMediaServer(serverAddress, serverPort,
 				httpEndpointPort);
-		if (kms.isConfigAvailable()) {
+		if (autostart && kms.isConfigAvailable()) {
 			kms.start(testName.getMethodName());
 		}
 	}
@@ -84,7 +87,7 @@ public class ContentApiTest {
 		}
 		log.info("*** Closed");
 
-		if (kms.isConfigAvailable()) {
+		if (autostart && kms.isConfigAvailable()) {
 			kms.stop();
 		}
 	}
@@ -95,6 +98,10 @@ public class ContentApiTest {
 
 	public boolean isSpringBootEnabled() {
 		return springBootEnabled;
+	}
+
+	public KurentoMediaServer getKms() {
+		return kms;
 	}
 
 }

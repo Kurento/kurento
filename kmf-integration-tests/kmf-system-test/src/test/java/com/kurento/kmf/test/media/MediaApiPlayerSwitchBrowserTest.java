@@ -38,15 +38,15 @@ public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/red.webm").build();
-		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/blue.webm").build();
-		PlayerEndpoint playerYellow = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/yellow.webm").build();
+				"http://ci.kurento.com/video/gst/red.webm").build();
 		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/green.webm").build();
-		PlayerEndpoint playerGrey = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/grey.webm").build();
+				"http://ci.kurento.com/video/gst/green.webm").build();
+		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/gst/blue.webm").build();
+		PlayerEndpoint playerSmpte = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/gst/smpte.webm").build();
+		PlayerEndpoint playerBall = mp.newPlayerEndpoint(
+				"http://ci.kurento.com/video/gst/ball.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 
@@ -55,34 +55,35 @@ public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
 				Browser.CHROME, Client.PLAYER)) {
 			browser.setURL(httpEP.getUrl());
 
-			// Red
+			// red
 			playerRed.connect(httpEP);
 			playerRed.play();
 			browser.subscribeEvents("playing", "ended");
 			browser.start();
-			Assert.assertTrue(browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
 			Thread.sleep(2000);
 
-			// Blue
-			playerBlue.connect(httpEP);
-			playerBlue.play();
-			Thread.sleep(2000);
-
-			// Yellow
-			playerYellow.connect(httpEP);
-			playerYellow.play();
-			Thread.sleep(2000);
-
-			// Green
+			// green
 			playerGreen.connect(httpEP);
 			playerGreen.play();
 			Thread.sleep(2000);
 
-			// Grey
-			playerGrey.connect(httpEP);
-			playerGrey.play();
-			Assert.assertTrue(browser.waitForEvent("ended"));
+			// blue
+			playerBlue.connect(httpEP);
+			playerBlue.play();
+			Thread.sleep(2000);
 
+			// smpte
+			playerSmpte.connect(httpEP);
+			playerSmpte.play();
+			Thread.sleep(2000);
+
+			// ball
+			playerBall.connect(httpEP);
+			playerBall.play();
+			Assert.assertTrue("Timeout waiting ended event",
+					browser.waitForEvent("ended"));
 			Assert.assertTrue("Playback time must be at least 8 seconds",
 					browser.getCurrentTime() >= 8);
 		}

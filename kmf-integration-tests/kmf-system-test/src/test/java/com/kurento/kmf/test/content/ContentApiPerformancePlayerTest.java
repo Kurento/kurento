@@ -58,7 +58,7 @@ public class ContentApiPerformancePlayerTest extends ContentApiTest {
 		}
 
 		@Override
-		public void onContentStarted(HttpPlayerSession contentSession)
+		public void onContentStarted(HttpPlayerSession session)
 				throws Exception {
 			playerEP.play();
 		}
@@ -70,6 +70,7 @@ public class ContentApiPerformancePlayerTest extends ContentApiTest {
 		JMeterClient jmeter = new JMeterClient(url);
 		jmeter.setConcurrentUsers(5);
 		jmeter.start();
-		Assert.assertTrue(jmeter.waitForEnding());
+		Assert.assertTrue("Timeout waiting JMeter ending",
+				jmeter.waitForEnding());
 	}
 }

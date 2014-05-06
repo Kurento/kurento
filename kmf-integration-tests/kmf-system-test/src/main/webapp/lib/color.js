@@ -11,10 +11,19 @@ window.addEventListener('load', function() {
 	var canvasContext = canvas.getContext("2d");
 
 	function step() {
+		var x = document.getElementById("x").value;
+		var y = document.getElementById("y").value;
+		x = isNumeric(x) ? x : 0;
+		y = isNumeric(y) ? y : 0;
+
+		canvasContext.drawImage(video, x, y, 1, 1, 0, 0, 1, 1);
 		color.value = Array.prototype.slice.apply(canvasContext.getImageData(0,
 				0, 1, 1).data);
-		canvasContext.drawImage(video, 0, 0, 1, 1);
 		requestAnimationFrame(step);
 	}
 	requestAnimationFrame(step);
 });
+
+function isNumeric(n) {
+	return !isNaN(parseFloat(n)) && isFinite(n);
+}

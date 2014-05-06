@@ -15,6 +15,8 @@
 package com.kurento.kmf.test.content;
 
 import java.awt.Color;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,12 +58,21 @@ public class ContentApiPlayerTest extends ContentApiTest {
 					.build();
 			playerEP.connect(httpEP);
 			session.start(httpEP);
+
+			terminateLatch = new CountDownLatch(1);
 		}
 
 		@Override
-		public void onContentStarted(HttpPlayerSession contentSession)
+		public void onContentStarted(HttpPlayerSession session)
 				throws Exception {
 			playerEP.play();
+		}
+
+		@Override
+		public void onSessionTerminated(HttpPlayerSession session, int code,
+				String reason) throws Exception {
+			super.onSessionTerminated(session, code, reason);
+			terminateLatch.countDown();
 		}
 	}
 
@@ -74,11 +85,20 @@ public class ContentApiPlayerTest extends ContentApiTest {
 			browser.start();
 
 			// Assertions
-			Assert.assertTrue(browser.waitForEvent("playing"));
-			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting ended event",
+					browser.waitForEvent("ended"));
 			Assert.assertTrue("Playback time must be at least 3 seconds",
 					browser.getCurrentTime() >= 3);
-			Assert.assertTrue(browser.colorSimilarTo(Color.RED));
+			Assert.assertTrue("The color of the video should be red",
+					browser.colorSimilarTo(Color.RED));
+
+			// Ending session in order
+			browser.stop();
+			Assert.assertTrue(
+					"Timeout waiting onSessionTerminated",
+					terminateLatch.await(browser.getTimeout(), TimeUnit.SECONDS));
 		}
 	}
 }

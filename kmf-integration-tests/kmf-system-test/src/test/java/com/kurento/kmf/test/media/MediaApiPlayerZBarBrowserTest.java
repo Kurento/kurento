@@ -79,10 +79,13 @@ public class MediaApiPlayerZBarBrowserTest extends MediaApiTest {
 			browser.start();
 
 			// Assertions
-			Assert.assertTrue(browser.waitForEvent("playing"));
-			Assert.assertTrue(browser.waitForEvent("ended"));
-			Assert.assertFalse(codeFoundEvents.isEmpty());
-			Assert.assertFalse(eosEvents.isEmpty());
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting ended event",
+					browser.waitForEvent("ended"));
+			Assert.assertFalse("No code found by ZBar filter",
+					codeFoundEvents.isEmpty());
+			Assert.assertFalse("No EOS event", eosEvents.isEmpty());
 			Assert.assertTrue("Playback time must be at least 12 seconds",
 					browser.getCurrentTime() > 12);
 		}

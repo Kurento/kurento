@@ -9,7 +9,7 @@
 	window.onload = function() {
 		video = document.getElementById("video");
 		console = new Console("console", console);
-		setInterval(updateCurrentTime, 500);
+		setInterval(updateCurrentTime, 100);
 	}
 
 	function updateCurrentTime() {
@@ -37,10 +37,15 @@
 		}
 		log(e.type);
 	}
+
+	function terminate() {
+		// Player without control protocol does not need to terminate
+	}
 </script>
 </head>
 <body>
-	<video id="video" autoplay controls width="480px" height="360px"></video>
+	<video id="video" autoplay controls width="480px" height="360px">
+	</video>
 	<br />
 	<label for="status">Status</label>
 	<input id="status" name="status" />
@@ -48,6 +53,10 @@
 	<input id="currentTime" name="currentTime" />
 	<label for="currentTime">Color</label>
 	<input id="color"></input>
+	<label for="x">x</label>
+	<input id="x" style="width: 20px;" value="0" />
+	<label for="y">y</label>
+	<input id="y" style="width: 20px;" value="0" />
 	<br />
 	<label for="output">Output</label>
 	<div id="console"></div>
