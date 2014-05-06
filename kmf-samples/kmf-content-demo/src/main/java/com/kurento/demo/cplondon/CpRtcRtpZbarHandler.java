@@ -34,7 +34,7 @@ public class CpRtcRtpZbarHandler extends RtpContentHandler {
 		session.releaseOnTerminate(mp);
 		ZBarFilter filter = mp.newZBarFilter().build();
 		RtpEndpoint rtpEndpoint = mp.newRtpEndpoint().build();
-		filter.connect(rtpEndpoint);
+		rtpEndpoint.connect(filter);
 		rtpEndpoint.connect(rtpEndpoint);
 		session.start(rtpEndpoint);
 		sharedFilterReference = filter;

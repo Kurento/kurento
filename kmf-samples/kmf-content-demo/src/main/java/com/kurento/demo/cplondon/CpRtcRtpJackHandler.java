@@ -34,7 +34,7 @@ public class CpRtcRtpJackHandler extends RtpContentHandler {
 		session.releaseOnTerminate(mp);
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		RtpEndpoint rtpEndpoint = mp.newRtpEndpoint().build();
-		filter.connect(rtpEndpoint);
+		rtpEndpoint.connect(filter);
 		rtpEndpoint.connect(rtpEndpoint);
 		session.start(rtpEndpoint);
 		sharedFilterReference = filter;
