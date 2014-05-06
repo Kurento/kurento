@@ -55,7 +55,7 @@
 		<module>kmf-media-api-test</module>
 		<module>kmf-content-api-test</module>
 		<module>kmf-repository-api-test</module>
-		<!--module>kmf-system-test</module -->
+		<module>kmf-system-test</module>
 	</modules>
 
 
