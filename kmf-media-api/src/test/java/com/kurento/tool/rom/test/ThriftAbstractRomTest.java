@@ -25,6 +25,7 @@ import org.springframework.test.context.support.AnnotationConfigContextLoader;
 
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
+import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
@@ -53,6 +54,11 @@ public class ThriftAbstractRomTest {
 			configuration.setServerAddress("127.0.0.1");
 			configuration.setServerPort(6464);
 			return configuration;
+		}
+
+		@Bean
+		public MediaApiConfiguration mediaApiConfiguration() {
+			return new MediaApiConfiguration();
 		}
 	}
 

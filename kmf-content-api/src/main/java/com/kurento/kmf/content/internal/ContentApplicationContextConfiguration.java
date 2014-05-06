@@ -40,6 +40,7 @@ import com.kurento.kmf.content.internal.webrtc.WebRtcContentSessionImpl;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 
 /**
  * 
@@ -177,5 +178,21 @@ public class ContentApplicationContextConfiguration {
 					+ ". Switching to default configuration ...");
 		}
 		return new MediaApiConfiguration();
+	}
+
+	@Bean
+	@Primary
+	ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
+		try {
+			return parentRecoverer.getParentContext().getBean(
+					ThriftInterfaceConfiguration.class);
+		} catch (NullPointerException npe) {
+			log.info("Configuring Media API. Could not find parent context. Switching to default configuration ...");
+		} catch (NoSuchBeanDefinitionException t) {
+			log.info("Configuring Media API. Could not find exacly one bean of class "
+					+ ThriftInterfaceConfiguration.class.getSimpleName()
+					+ ". Switching to default configuration ...");
+		}
+		return new ThriftInterfaceConfiguration();
 	}
 }

@@ -103,6 +103,7 @@ public class MediaPipelineFactory {
 	@PostConstruct
 	private void init() {
 
+		@SuppressWarnings("resource")
 		JsonRpcClient client = new JsonRpcClientThrift(clientPool,
 				executorService, new InetSocketAddress(
 						config.getHandlerAddress(), config.getHandlerPort()));

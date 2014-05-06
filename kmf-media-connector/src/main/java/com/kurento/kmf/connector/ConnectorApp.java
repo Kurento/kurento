@@ -38,7 +38,7 @@ public class ConnectorApp implements JsonRpcConfigurer {
 	public JsonRpcProperties jsonRpcProperties() {
 		JsonRpcProperties configuration = new JsonRpcProperties();
 		// Official FI-WARE OAuth server: http://cloud.lab.fi-ware.org
-		configuration.setKeystoneHost(env.getProperty("oauthserver.url", ""));		
+		configuration.setKeystoneHost(env.getProperty("oauthserver.url", ""));
 		return configuration;
 	}
 
