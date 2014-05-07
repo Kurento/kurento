@@ -14,6 +14,11 @@
 	window.onload = function() {
 		console = new Console("console", console);
 		video = document.getElementById("video");
+		setInterval(updateCurrentTime, 100);
+	}
+
+	function updateCurrentTime() {
+		document.getElementById("currentTime").value = video.currentTime;
 	}
 
 	function terminate() {
@@ -101,7 +106,9 @@
 	<br />
 	<label for="output">Status</label>
 	<input id="status" name="status" style="width: 300px;" />
-	<label for="currentTime">Color</label>
+	<label for="currentTime">Current Time</label>
+	<input id="currentTime" name="currentTime" />
+	<label for="color">Color</label>
 	<input id="color"></input>
 	<label for="x">x</label>
 	<input id="x" style="width: 20px;" value="0" />

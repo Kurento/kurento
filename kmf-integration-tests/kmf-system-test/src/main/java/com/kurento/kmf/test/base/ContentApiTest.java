@@ -27,9 +27,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 import com.kurento.kmf.test.BootApplication;
-import com.kurento.kmf.test.KurentoMediaServer;
-import com.kurento.kmf.test.PortManager;
-import com.kurento.kmf.test.PropertiesManager;
 
 /**
  * Base for tests using kmf-content-api and Spring Boot.
