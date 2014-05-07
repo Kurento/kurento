@@ -217,31 +217,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>unpack-jboss</id>
-						<phase>process-test-classes</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.jboss.as</groupId>
-									<artifactId>jboss-as-dist</artifactId>
-									<version>${jboss-as.version}</version>
-									<type>zip</type>
-									<overWrite>false</overWrite>
-									<outputDirectory>${basedir}/target</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<argLine>-Xms128m -Xmx512m -XX:MaxPermSize=512m</argLine>
@@ -280,6 +255,33 @@
 	</reporting>
 
 	<profiles>
+		<profile>
+			<id>default</id>
+			<activation>
+				<property>
+					<name>default</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<skipTests>true</skipTests>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<configuration>
+							<skipTests>true</skipTests>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 		<!-- Webdrivers for Chrome (binary dependencies in the repository) -->
 		<profile>
 			<id>mac</id>
@@ -293,6 +295,25 @@
 					<plugin>
 						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
+							<execution>
+								<id>unpack-jboss</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jboss.as</groupId>
+											<artifactId>jboss-as-dist</artifactId>
+											<version>${jboss-as.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${basedir}/target</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
 							<execution>
 								<id>unpack</id>
 								<phase>process-test-classes</phase>
@@ -331,6 +352,25 @@
 						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
 							<execution>
+								<id>unpack-jboss</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jboss.as</groupId>
+											<artifactId>jboss-as-dist</artifactId>
+											<version>${jboss-as.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${basedir}/target</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
+							<execution>
 								<id>unpack</id>
 								<phase>process-test-classes</phase>
 								<goals>
@@ -367,6 +407,25 @@
 					<plugin>
 						<artifactId>maven-dependency-plugin</artifactId>
 						<executions>
+							<execution>
+								<id>unpack-jboss</id>
+								<phase>process-test-classes</phase>
+								<goals>
+									<goal>unpack</goal>
+								</goals>
+								<configuration>
+									<artifactItems>
+										<artifactItem>
+											<groupId>org.jboss.as</groupId>
+											<artifactId>jboss-as-dist</artifactId>
+											<version>${jboss-as.version}</version>
+											<type>zip</type>
+											<overWrite>false</overWrite>
+											<outputDirectory>${basedir}/target</outputDirectory>
+										</artifactItem>
+									</artifactItems>
+								</configuration>
+							</execution>
 							<execution>
 								<id>unpack</id>
 								<phase>process-test-classes</phase>
