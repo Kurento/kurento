@@ -13,6 +13,7 @@
 	<name>Kurento Media Framework</name>
 	<description>TODO</description>
 	<url>http://www.kurento.com/docs/${project.version}</url>
+
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
@@ -20,12 +21,14 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
 	<scm>
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
 		<tag>develop</tag>
 	</scm>
+
 	<developers>
 		<developer>
 			<id>kurento.org</id>
@@ -80,8 +83,9 @@
 				<module>kmf-repository-api</module>
 				<module>kmf-assembly</module>
 				<module>kmf-integration-tests</module>
+				<module>kmf-broker</module>
 			</modules>
-						<build>
+			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>

@@ -65,21 +65,16 @@
 		<!-- ********************* -->
 		<!-- Dependencies versions -->
 		<!-- ********************* -->
-		<!-- 
-		<kmf-media-api.version>${project.version}</kmf-media-api.version>
-		<kmf-jsonrpcconnector.version>kurento-media-framework.version${project.version}</kmf-jsonrpcconnector.version>
-		<kmf-thrift-interface.version>${project.version}</kmf-thrift-interface.version>
-		<kms-interface.version>${project.version}</kms-interface.version>
-		<kmf-commons.version>${project.version}</kmf-commons.version>
-		<kmf-content-api.version>${project.version}</kmf-content-api.version>
-		<kmf-spring.version>${project.version}</kmf-spring.version>
-		<kmf-content-protocol.version>${project.version}</kmf-content-protocol.version>
-		<kmf-repository-api.version>${project.version}</kmf-repository-api.version>
-		<kmf-media-connector.version>${project.version}</kmf-media-connector.version>
-		<kws-content-api.version>${project.version}</kws-content-api.version>
-		<kms-interface.version>${project.version}</kms-interface.version> 
-		-->
-		<kms-interface.version>4.2.2</kms-interface.version> 
+		<!-- <kmf-media-api.version>${project.version}</kmf-media-api.version> 
+			<kmf-jsonrpcconnector.version>kurento-media-framework.version${project.version}</kmf-jsonrpcconnector.version> 
+			<kmf-thrift-interface.version>${project.version}</kmf-thrift-interface.version> 
+			<kms-interface.version>${project.version}</kms-interface.version> <kmf-commons.version>${project.version}</kmf-commons.version> 
+			<kmf-content-api.version>${project.version}</kmf-content-api.version> <kmf-spring.version>${project.version}</kmf-spring.version> 
+			<kmf-content-protocol.version>${project.version}</kmf-content-protocol.version> 
+			<kmf-repository-api.version>${project.version}</kmf-repository-api.version> 
+			<kmf-media-connector.version>${project.version}</kmf-media-connector.version> 
+			<kws-content-api.version>${project.version}</kws-content-api.version> <kms-interface.version>${project.version}</kms-interface.version> -->
+		<kms-interface.version>4.2.2</kms-interface.version>
 		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
 
 		<libthrift.version>0.9.0</libthrift.version>
@@ -111,7 +106,7 @@
 		<scribe.version>1.3.5</scribe.version>
 		<keystone-client.version>3.2.1</keystone-client.version>
 		<tomcat-embed-websocket.version>7.0.52</tomcat-embed-websocket.version>
-
+		<activemq.version>5.7.0</activemq.version>
 		<!-- **************** -->
 		<!-- Plugins versions -->
 		<!-- **************** -->
@@ -200,6 +195,11 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-system-test</artifactId>
+				<version>${kurento-media-framework.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-content-protocol</artifactId>
@@ -397,7 +397,11 @@
 				<version>${spring-oauth2.version}</version>
 			</dependency>
 
-
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>activemq-core</artifactId>
+				<version>${activemq.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.scribe</groupId>
 				<artifactId>scribe</artifactId>

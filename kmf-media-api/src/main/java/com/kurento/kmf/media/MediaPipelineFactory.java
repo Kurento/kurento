@@ -64,6 +64,8 @@ public class MediaPipelineFactory {
 
 	private boolean springEnv = true;
 
+	private JsonRpcClient client;
+
 	// Used in Spring environments
 	public MediaPipelineFactory() {
 	}
@@ -100,13 +102,20 @@ public class MediaPipelineFactory {
 		init();
 	}
 
+	// Used in non Spring environments
+	public MediaPipelineFactory(JsonRpcClient client) {
+		this.client = client;
+		init();
+	}
+
 	@PostConstruct
 	private void init() {
 
-		@SuppressWarnings("resource")
-		JsonRpcClient client = new JsonRpcClientThrift(clientPool,
-				executorService, new InetSocketAddress(
-						config.getHandlerAddress(), config.getHandlerPort()));
+		if(client == null){
+			this.client = new JsonRpcClientThrift(clientPool,
+					executorService, new InetSocketAddress(
+							config.getHandlerAddress(), config.getHandlerPort()));			
+		}
 
 		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
 				new RomClientJsonRpcClient(client)));

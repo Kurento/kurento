@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<logger name="org.springframework.web" level="INFO" />
+	<logger name="org.springframework.amqp.rabbit.core" level="INFO" />
+	<logger name="kmf" level="DEBUG" />
+
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+
+</configuration>
+
+
