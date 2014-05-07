@@ -86,4 +86,20 @@ public class BaseTest {
 		return kms;
 	}
 
+	/**
+	 * Compares two numbers and return true|false if these number are similar,
+	 * using a threshold in the comparison.
+	 * 
+	 * @param i
+	 *            First number to be compared
+	 * @param j
+	 *            Second number to be compared
+	 * @param threslhold
+	 *            Comparison threslhold
+	 * @return true|false
+	 */
+	public boolean compare(double i, double j, int threslhold) {
+		return (j - i) <= (i * threslhold / 100);
+	}
+
 }

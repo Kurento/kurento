@@ -104,7 +104,7 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 	}
 
 	@Test
-	public void testWebRtc() throws InterruptedException {
+	public void testWebRtc2WebRtc() throws InterruptedException {
 		try (BrowserClient browser1 = new BrowserClient(getServerPort(),
 				Browser.CHROME, Client.WEBRTC);
 				BrowserClient browser2 = new BrowserClient(getServerPort(),
@@ -165,19 +165,4 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 		}
 	}
 
-	/**
-	 * Compares two numbers and return true|false if these number are similar,
-	 * using a threshold in the comparison.
-	 * 
-	 * @param i
-	 *            First number to be compared
-	 * @param j
-	 *            Second number to be compared
-	 * @param threslhold
-	 *            Comparison threslhold
-	 * @return true|false
-	 */
-	private boolean compare(double i, double j, int threslhold) {
-		return (j - i) <= (i * THRESHOLD / 100);
-	}
 }
