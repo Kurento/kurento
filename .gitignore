@@ -3,3 +3,8 @@ target
 .classpath
 .project
 .settings
+*orig
+.springBeans
+*repository/
+*tmp/
+
