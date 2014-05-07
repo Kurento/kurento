@@ -17,6 +17,7 @@ package com.kurento.kmf.test;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,6 +25,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import freemarker.cache.TemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -77,6 +79,10 @@ public class KurentoMediaServer {
 
 	public void start(String callerTest) throws IOException, TemplateException,
 			InterruptedException {
+
+		log.info("Starting KMS in {}:{}, with httpEP port {}", serverAddress,
+				serverPort, httpEndpointPort);
+
 		createKurentoConf();
 		createFolder(callerTest);
 
@@ -107,6 +113,8 @@ public class KurentoMediaServer {
 		data.put("workspace", workspace);
 		data.put("httpEndpointPort", httpEndpointPort);
 
+		cfg.setClassForTemplateLoading(KurentoMediaServer.class, "/templates/");
+
 		createFileFromTemplate(cfg, data, "kurento.conf");
 		createFileFromTemplate(cfg, data, "kurento.sh");
 		runLocal("chmod", "+x", workspace + "kurento.sh");
@@ -116,8 +124,7 @@ public class KurentoMediaServer {
 	private void createFileFromTemplate(Configuration cfg,
 			Map<String, Object> data, String filename) throws IOException,
 			TemplateException {
-		Template template = cfg.getTemplate("./src/test/resources/" + filename
-				+ ".ftl");
+		Template template = cfg.getTemplate(filename + ".ftl");
 		Writer writer = new FileWriter(new File(workspace + filename));
 		template.process(data, writer);
 		writer.flush();

@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.test;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 
 import org.apache.catalina.LifecycleException;
@@ -22,6 +24,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.springframework.core.io.ClassPathResource;
 
 /**
  * Jetty server for tests.
@@ -33,12 +36,13 @@ public class HttpServer {
 
 	private Server server;
 
-	public HttpServer(int port) throws ServletException {
+	public HttpServer(int port) throws ServletException, IOException {
 		server = new Server(port);
 		ResourceHandler resource_handler = new ResourceHandler();
 		resource_handler.setDirectoriesListed(true);
 		resource_handler.setWelcomeFiles(new String[] { "index.html" });
-		resource_handler.setResourceBase("src/main/webapp");
+		resource_handler.setResourceBase(new ClassPathResource("static")
+				.getURI().toString());
 		HandlerList handlers = new HandlerList();
 		handlers.setHandlers(new Handler[] { resource_handler,
 				new DefaultHandler() });

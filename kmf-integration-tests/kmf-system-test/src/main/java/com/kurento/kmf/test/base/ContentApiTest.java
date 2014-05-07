@@ -39,45 +39,30 @@ import com.kurento.kmf.test.PropertiesManager;
  * @since 4.2.3
  * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
  */
-public class ContentApiTest {
+public class ContentApiTest extends BaseTest {
 
 	public static final Logger log = LoggerFactory
 			.getLogger(ContentApiTest.class);
+
 	private boolean springBootEnabled = false;
 	protected ConfigurableApplicationContext context;
-	private KurentoMediaServer kms;
 	protected static CountDownLatch terminateLatch;
-	private boolean autostart;
 
 	@Rule
 	public TestName testName = new TestName();
 
 	@Before
 	public void start() throws Exception {
+
 		context = BootApplication.start();
 		springBootEnabled = true;
 
-		// KMS
-		String serverAddress = PropertiesManager.getSystemProperty(
-				"kurento.serverAddress", "127.0.0.1");
-		int serverPort = PropertiesManager.getSystemProperty(
-				"kurento.serverPort", 9090);
-		int httpEndpointPort = PropertiesManager.getSystemProperty(
-				"httpEPServer.serverPort", 9091);
-		autostart = PropertiesManager.getSystemProperty("kurento.autostart", true);
-
-		log.info("Configuring KMS in {}:{}, with httpEP por {}", serverAddress,
-				serverPort, httpEndpointPort);
-
-		kms = new KurentoMediaServer(serverAddress, serverPort,
-				httpEndpointPort);
-		if (autostart && kms.isConfigAvailable()) {
-			kms.start(testName.getMethodName());
-		}
+		setupKurentoServer();
 	}
 
 	@After
 	public void stop() {
+
 		log.info("*** Closing...");
 		if (context != null) {
 			KurentoApplicationContextUtils
@@ -87,21 +72,10 @@ public class ContentApiTest {
 		}
 		log.info("*** Closed");
 
-		if (autostart && kms.isConfigAvailable()) {
-			kms.stop();
-		}
-	}
-
-	public int getServerPort() {
-		return PortManager.getPort();
+		teardownKurentoServer();
 	}
 
 	public boolean isSpringBootEnabled() {
 		return springBootEnabled;
 	}
-
-	public KurentoMediaServer getKms() {
-		return kms;
-	}
-
 }
