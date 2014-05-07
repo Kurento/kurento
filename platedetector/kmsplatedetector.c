@@ -63,6 +63,7 @@
 #define PLATE_HEIGHT_SCALE_RATE ((float) 60)
 
 #define TESSERAC_PREFIX_DEFAULT DATAROOTDIR "/" PACKAGE "/"
+#define TESSDATA_PREFIX "TESSDATA_PREFIX"
 
 GST_DEBUG_CATEGORY_STATIC (kms_plate_detector_debug_category);
 #define GST_CAT_DEFAULT kms_plate_detector_debug_category
@@ -211,9 +212,11 @@ kms_plate_detector_init (KmsPlateDetector * platedetector)
   platedetector->priv->preprocessingType = PREPROCESSING_ONE;
   platedetector->priv->handle = TessBaseAPICreate ();
   setlocale (LC_NUMERIC, "C");
-  setenv ("TESSDATA_PREFIX", TESSERAC_PREFIX_DEFAULT, FALSE);
+  setenv (TESSDATA_PREFIX, TESSERAC_PREFIX_DEFAULT, FALSE);
+  GST_DEBUG (TESSDATA_PREFIX ": %s", getenv (TESSDATA_PREFIX));
   ret_value =
-      TessBaseAPIInit3 (platedetector->priv->handle, "", "plateLanguage");
+      TessBaseAPIInit3 (platedetector->priv->handle, getenv (TESSDATA_PREFIX),
+      "plateLanguage");
 
   if (ret_value == -1) {
     GST_ELEMENT_ERROR (platedetector, RESOURCE, NOT_FOUND,
