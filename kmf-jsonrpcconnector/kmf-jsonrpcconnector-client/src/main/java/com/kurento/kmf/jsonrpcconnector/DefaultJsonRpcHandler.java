@@ -14,7 +14,12 @@
  */
 package com.kurento.kmf.jsonrpcconnector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
+
+	private Logger LOG = LoggerFactory.getLogger(DefaultJsonRpcHandler.class);
 
 	@Override
 	public void afterConnectionEstablished(Session session) throws Exception {
@@ -32,6 +37,8 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 
 	@Override
 	public void handleUncaughtException(Session session, Exception exception) {
+		LOG.warn("Uncaught exception in handler " + this.getClass().getName(),
+				exception);
 	}
 
 	@Override
