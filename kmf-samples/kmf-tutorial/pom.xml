@@ -3,20 +3,23 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento</groupId>
-		<artifactId>kmf-parent-pom</artifactId>
+		<groupId>com.kurento.kmf</groupId>
+		<artifactId>kmf-samples</artifactId>
 		<version>4.2.3-SNAPSHOT</version>
-		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
+	<artifactId>kmf-tutorial</artifactId>
+	<packaging>war</packaging>
 
-	<groupId>com.kurento.kmf</groupId>
-	<artifactId>kmf-samples</artifactId>
-	<packaging>pom</packaging>
-	<name>Kurento Media Framework - Samples</name>
-	<description>Sample projects</description>
+	<name>Kurento Media Framework - Tutorial</name>
+	<description>
+		Kurento Media Framework base tutorial
 
+		Implements several examples of use of kurento content-api
+		and kurento media-api.
+	</description>
 	<url>http://www.kurento.com/docs/${project.version}</url>
+
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
@@ -24,12 +27,14 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
 	<scm>
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
 		<tag>develop</tag>
 	</scm>
+
 	<developers>
 		<developer>
 			<id>kurento.org</id>
@@ -39,10 +44,15 @@
 		</developer>
 	</developers>
 	
-	<modules>
-		<module>kmf-content-demo</module>
-		<module>fi-lab-demo</module>
-		<module>kmf-tutorial</module>
-	</modules>
+	<dependencies>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-content-api</artifactId>
+		</dependency>
 
+		<dependency>
+			<groupId>com.kurento.kws</groupId>
+			<artifactId>kws-content-api</artifactId>
+		</dependency>
+	</dependencies>
 </project>
