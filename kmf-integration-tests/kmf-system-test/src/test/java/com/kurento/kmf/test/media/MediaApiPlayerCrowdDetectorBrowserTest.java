@@ -26,9 +26,9 @@ import com.kurento.kmf.media.CrowdDetectorFilter;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.Point;
 import com.kurento.kmf.media.RegionOfInterest;
 import com.kurento.kmf.media.RegionOfInterestConfig;
+import com.kurento.kmf.media.RelativePoint;
 import com.kurento.kmf.media.events.CrowdDetectorFluidityEvent;
 import com.kurento.kmf.media.events.CrowdDetectorOccupancyEvent;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -57,12 +57,12 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends MediaApiTest {
 				.build();
 
 		List<RegionOfInterest> rois = newArrayList();
-		List<Point> points = new ArrayList<Point>();
+		List<RelativePoint> points = new ArrayList<RelativePoint>();
 
-		points.add(new Point(0, 0));
-		points.add(new Point(500, 0));
-		points.add(new Point(500, 300));
-		points.add(new Point(0, 300));
+		points.add(new RelativePoint(0, 0));
+		points.add(new RelativePoint((float) 0.5, 0));
+		points.add(new RelativePoint((float) 0.5, (float) 0.5));
+		points.add(new RelativePoint(0, (float) 0.5));
 
 		RegionOfInterestConfig config = new RegionOfInterestConfig();
 

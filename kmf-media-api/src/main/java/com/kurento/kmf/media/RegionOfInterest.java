@@ -21,7 +21,7 @@ public class RegionOfInterest {
 	 * list of points delimiting the region of interest
 	 * 
 	 **/
-	private List<Point> points;
+	private List<RelativePoint> points;
 	/**
 	 * 
 	 * data structure for configuration of CrowdDetector regions of interest
@@ -41,7 +41,7 @@ public class RegionOfInterest {
 	 * 
 	 **/
 	public RegionOfInterest(
-			@Param("points") List<Point> points,
+			@Param("points") List<RelativePoint> points,
 			@Param("regionOfInterestConfig") RegionOfInterestConfig regionOfInterestConfig,
 			@Param("id") String id) {
 		this.points = points;
@@ -54,7 +54,7 @@ public class RegionOfInterest {
 	 * get list of points delimiting the region of interest
 	 * 
 	 **/
-	public List<Point> getPoints() {
+	public List<RelativePoint> getPoints() {
 		return points;
 	}
 
@@ -63,7 +63,7 @@ public class RegionOfInterest {
 	 * set list of points delimiting the region of interest
 	 * 
 	 **/
-	public void setPoints(List<Point> points) {
+	public void setPoints(List<RelativePoint> points) {
 		this.points = points;
 	}
 

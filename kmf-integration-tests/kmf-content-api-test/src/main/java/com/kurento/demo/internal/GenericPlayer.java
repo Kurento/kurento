@@ -35,11 +35,11 @@ import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlateDetectorFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.Point;
 import com.kurento.kmf.media.PointerDetectorFilter;
 import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.RegionOfInterest;
 import com.kurento.kmf.media.RegionOfInterestConfig;
+import com.kurento.kmf.media.RelativePoint;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -110,11 +110,11 @@ public class GenericPlayer {
 
 			else if (contentId != null && contentId.equalsIgnoreCase("crowd")) {
 				// Crowd Detector Filter
-				List<Point> points = new ArrayList<Point>();
-				points.add(new Point(0, 0));
-				points.add(new Point(640, 0));
-				points.add(new Point(640, 480));
-				points.add(new Point(0, 480));
+				List<RelativePoint> points = new ArrayList<RelativePoint>();
+				points.add(new RelativePoint(0, 0));
+				points.add(new RelativePoint(1, 0));
+				points.add(new RelativePoint(1, 1));
+				points.add(new RelativePoint(0, 1));
 				RegionOfInterestConfig config = new RegionOfInterestConfig();
 				config.setFluidityLevelMin(10);
 				config.setFluidityLevelMed(35);

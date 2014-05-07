@@ -34,9 +34,9 @@ import com.kurento.kmf.media.CrowdDetectorFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.Point;
 import com.kurento.kmf.media.RegionOfInterest;
 import com.kurento.kmf.media.RegionOfInterestConfig;
+import com.kurento.kmf.media.RelativePoint;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.CrowdDetectorDirectionEvent;
 import com.kurento.kmf.media.events.CrowdDetectorFluidityEvent;
@@ -92,14 +92,16 @@ public class CrowdDetectorDemo extends WebRtcContentHandler {
 
 					JsonArray coordenates = (JsonArray) roi.get("coordenates");
 					// create structure to configure crowddetector
-					List<Point> points = new ArrayList<Point>();
+					List<RelativePoint> points = new ArrayList<RelativePoint>();
 					for (int i = 0; i < coordenates.size(); i++) {
 						JsonObject coordenate = (JsonObject) coordenates.get(i);
 
-						int x = coordenate.getAsJsonPrimitive("x").getAsInt();
-						int y = coordenate.getAsJsonPrimitive("y").getAsInt();
+						float x = coordenate.getAsJsonPrimitive("x")
+								.getAsFloat();
+						float y = coordenate.getAsJsonPrimitive("y")
+								.getAsFloat();
 
-						points.add(new Point(x, y));
+						points.add(new RelativePoint(x, y));
 					}
 
 					RegionOfInterestConfig config = new RegionOfInterestConfig();

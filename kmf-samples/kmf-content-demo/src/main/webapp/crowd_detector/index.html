@@ -81,20 +81,20 @@
 		roi.id = 'roi0';
 		roi.coordenates = new Array();
 		roi.coordenates[0] = {
-			x : 0,
-			y : 0
+			x : 0.0,
+			y : 0.0
 		};
 		roi.coordenates[1] = {
-			x : 640,
-			y : 0
+			x : 1.0,
+			y : 0.0
 		};
 		roi.coordenates[2] = {
-			x : 640,
-			y : 480
+			x : 1.0,
+			y : 1.0
 		};
 		roi.coordenates[3] = {
-			x : 0,
-			y : 480
+			x : 0.0,
+			y : 1.0
 		};
 
 		roi.occupancyLevelMin = 10;
@@ -169,6 +169,31 @@
 			return;
 		}
 
+		if ((document.getElementById('x1').value) > 1) {
+			document.getElementById('x1').value = 1;
+		}
+		if ((document.getElementById('y1').value) > 1) {
+			document.getElementById('y1').value = 1;
+		}
+		if ((document.getElementById('x2').value) > 1) {
+			document.getElementById('x2').value = 1;
+		}
+		if ((document.getElementById('y2').value) > 1) {
+			document.getElementById('y2').value = 1;
+		}
+		if ((document.getElementById('x3').value) > 1) {
+			document.getElementById('x3').value = 1;
+		}
+		if ((document.getElementById('y3').value) > 1) {
+			document.getElementById('y3').value = 1;
+		}
+		if ((document.getElementById('x4').value) > 1) {
+			document.getElementById('x4').value = 1;
+		}
+		if ((document.getElementById('y4').value) > 1) {
+			document.getElementById('y4').value = 1;
+		}
+
 		var roi = {};
 		roi.id = document.getElementById('id').value;
 		roi.coordenates = new Array();
@@ -231,15 +256,16 @@
 		</tr>
 		<tr>
 			<td>Roi ID<input id="id" type="text"> <br> Roi
-				coordenates: <br> Point 1: x <input id="x1" type="text"
-				size="3"> y <input id="y1" type="text" size="3"><br>
-				Point 2: x <input id="x2" type="text" size="3"> y <input
-				id="y2" type="text" size="3"><br> Point 3: x <input
-				id="x3" type="text" size="3"> y <input id="y3" type="text"
-				size="3"><br> Point 4: x <input id="x4" type="text"
-				size="3"> y <input id="y4" type="text" size="3"><br>
-				<br> occupancyLevelMin 0: <input type="range"
-				name="Plate width" min="1" max="100" value="10"
+				coordenates: <br> RelativePoint 1 [0..1]: x <input id="x1"
+				type="text" size="3"> y <input id="y1" type="text" size="3"><br>
+				RelativePoint 2 [0..1]: x <input id="x2" type="text" size="3">
+				y <input id="y2" type="text" size="3"><br>
+				RelativePoint 3 [0..1]: x <input id="x3" type="text" size="3">
+				y <input id="y3" type="text" size="3"><br>
+				RelativePoint 4 [0..1]: x <input id="x4" type="text" size="3">
+				y <input id="y4" type="text" size="3"><br> <br>
+				occupancyLevelMin 0: <input type="range" name="Plate width" min="1"
+				max="100" value="10"
 				onchange="updateValue(this.value,'rangeValue1')"> 100 <input
 				id="rangeValue1" type="text" size="3"><br>
 
