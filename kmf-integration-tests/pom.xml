@@ -37,19 +37,7 @@
 			<organizationUrl>http://www.kurento.org</organizationUrl>
 		</developer>
 	</developers>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<!--tagNameFormat>v@{project.version}</tagNameFormat -->
-					<commitByProject>true</commitByProject>
-					<pushChanges>false</pushChanges>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	
 	<modules>
 		<module>kmf-jsonrpcconnector-test</module>
 		<module>kmf-media-connector-test</module>

@@ -41,27 +41,7 @@
 	<properties>
 		<main.basedir>${basedir}</main.basedir>
 	</properties>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<configuration>
-					<!--tagNameFormat>v@{project.version}</tagNameFormat -->
-					<commitByProject>true</commitByProject>
-					<pushChanges>false</pushChanges>
-				</configuration>
-			</plugin>
-		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<artifactId>maven-antrun-plugin</artifactId>
-					<version>1.7</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
+
 	<profiles>
 		<profile>
 			<id>default</id>
