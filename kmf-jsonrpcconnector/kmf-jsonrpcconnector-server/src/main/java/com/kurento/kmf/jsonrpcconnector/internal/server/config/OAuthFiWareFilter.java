@@ -58,7 +58,7 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 		String fullUrl = request.getRequestURL().append('?')
 				.append(request.getQueryString()).toString();
 
-		log.info("Client trying to stablish new websocket session with {}",
+		log.debug("Client trying to stablish new websocket session with {}",
 				fullUrl);
 
 		if (!Strings.isNullOrEmpty(props.getKeystoneHost())) {
@@ -69,7 +69,7 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
 						"Access token not found in request");
 			} else if (isTokenValid(accessToken)) {
-				log.info("The request from {} was authorized",
+				log.debug("The request from {} was authorized",
 						request.getRemoteAddr());
 				filterChain.doFilter(request, response);
 			} else {
@@ -77,7 +77,7 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 						"Unathorized request");
 			}
 		} else {
-			log.info("Request from {} authorized: no keystone host configured",
+			log.debug("Request from {} authorized: no keystone host configured",
 					request.getRemoteAddr());
 			filterChain.doFilter(request, response);
 		}

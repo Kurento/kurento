@@ -16,6 +16,8 @@ package com.kurento.kmf.jsonrpcconnector.client;
 
 import java.io.IOException;
 
+import javax.websocket.CloseReason;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,25 +25,28 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
+import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl;
+import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
-import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl;
-import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 
 public class JsonRpcClientLocal extends JsonRpcClient {
 
 	private static Logger LOG = LoggerFactory
 			.getLogger(JsonRpcClientLocal.class);
 
-	private JsonRpcHandler<JsonObject> handler;
+	private JsonRpcHandler<? extends Object> remoteHandler;
+	private JsonRpcHandlerManager remoteHandlerManager = new JsonRpcHandlerManager();
 
-	public <F> JsonRpcClientLocal(JsonRpcHandler<JsonObject> paramHandler) {
+	public <F> JsonRpcClientLocal(JsonRpcHandler<? extends Object> paramHandler) {
 
-		this.handler = paramHandler;
+		this.remoteHandler = paramHandler;
+		this.remoteHandlerManager.setJsonRpcHandler(remoteHandler);
 
 		session = new ClientSession("XXX", null, this);
 
@@ -76,7 +81,70 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 		final Response<JsonObject>[] response = new Response[1];
 
-		TransactionImpl t = new TransactionImpl(session, newRequest,
+		ClientSession clientSession = new ClientSession("XXX", null,
+				new JsonRpcRequestSenderHelper() {
+
+					@Override
+					protected void internalSendRequest(
+							Request<Object> request,
+							Class<JsonElement> clazz,
+							final Continuation<Response<JsonElement>> continuation) {
+						try {
+							handlerManager.handleRequest(session,
+									(Request) request, new ResponseSender() {
+										@Override
+										public void sendResponse(Message message)
+												throws IOException {
+											continuation
+													.onSuccess((Response) message);
+										}
+									});
+						} catch (IOException e) {
+							continuation.onError(e);
+						}
+					}
+
+					@Override
+					protected <P, R> Response<R> internalSendRequest(
+							Request<P> request, Class<R> resultClass)
+							throws IOException {
+
+						final Object[] response = new Object[1];
+						try {
+							handlerManager.handleRequest(session,
+									(Request) request, new ResponseSender() {
+										@Override
+										public void sendResponse(Message message)
+												throws IOException {
+											response[0] = message;
+										}
+									});
+
+							Response<R> response2 = (Response<R>) response[0];
+							Object result = response2.getResult();
+
+							if (result == null
+									|| resultClass.isAssignableFrom(result
+											.getClass())) {
+								return response2;
+							} else if (resultClass == JsonElement.class) {
+								response2.setResult((R) JsonUtils
+										.toJsonElement(result));
+								return response2;
+							} else {
+								throw new ClassCastException(
+										"Cannot be converted " + result
+												+ " to " + resultClass);
+							}
+
+						} catch (IOException e) {
+							return new Response(request.getId(), ResponseError
+									.newFromException(e));
+						}
+					}
+				});
+
+		TransactionImpl t = new TransactionImpl(clientSession, newRequest,
 				new ResponseSender() {
 
 					@Override
@@ -87,7 +155,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 				});
 
 		try {
-			handler.handleRequest(t, (Request<JsonObject>) request);
+			remoteHandler.handleRequest(t, (Request) request);
 		} catch (Exception e) {
 
 			ResponseError error = ResponseError.newFromException(e);
@@ -114,7 +182,14 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 	@Override
 	public void close() throws IOException {
-
+		handlerManager.afterConnectionClosed(session, CloseReason.CloseCodes.NORMAL_CLOSURE.toString());
 	}
+
+	public void setServerRequestHandler(
+			com.kurento.kmf.jsonrpcconnector.JsonRpcHandler<?> handler) {
+		super.setServerRequestHandler(handler);
+		handlerManager.afterConnectionEstablished(session);
+		remoteHandlerManager.afterConnectionEstablished(session);
+	};
 
 }

@@ -81,6 +81,12 @@ public class PerSessionJsonRpcHandler<T> implements JsonRpcHandler<T>,
 			throws Exception {
 
 		JsonRpcHandler<T> handler = getHandler(transaction.getSession());
+
+		Assert.isTrue(handler != null,
+				"Handler of class " + provider.getClass()
+						+ " can't be created. Be sure that there"
+						+ " is a bean registered of this type");
+
 		try {
 			handler.handleRequest(transaction, request);
 		} catch (Exception e) {

@@ -47,6 +47,15 @@ public class ResponseError {
 				+ e.getMessage(), writer.toString());
 	}
 
+	// TODO Improve the way errors are created from Exceptions
+	public static ResponseError newFromException(int requestId, Exception e) {
+
+		StringWriter writer = new StringWriter();
+		e.printStackTrace(new PrintWriter(writer));
+		return new ResponseError(requestId, e.getClass().getSimpleName() + ":"
+				+ e.getMessage(), writer.toString());
+	}
+
 	/**
 	 * Default constructor.
 	 */

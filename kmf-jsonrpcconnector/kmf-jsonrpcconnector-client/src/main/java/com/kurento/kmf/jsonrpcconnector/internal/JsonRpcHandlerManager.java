@@ -94,6 +94,13 @@ public class JsonRpcHandlerManager {
 
 		try {
 
+			if (handler == null) {
+				log.warn("JsonRpcClient has received a request from server but"
+						+ " there is no JsonRpcHandler configured to manage this"
+						+ " request");
+				return;
+			}
+
 			Class<?> paramsType = getParamsType(handler.getHandlerType());
 			Request<?> nonGenRequest;
 			try {
@@ -132,7 +139,7 @@ public class JsonRpcHandlerManager {
 
 				if (notResponded) {
 					// Empty response
-					rs.sendResponse(new Response<>(request.getId(), null));
+					rs.sendResponse(new Response<>(request.getId(), ""));
 				}
 			}
 

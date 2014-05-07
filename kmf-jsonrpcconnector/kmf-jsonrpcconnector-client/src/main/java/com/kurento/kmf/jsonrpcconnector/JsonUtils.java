@@ -407,7 +407,8 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 
 		} else {
 			throw new JsonParseException("Invalid JsonRpc response lacking '"
-					+ RESULT_PROPERTY + "' and '" + ERROR_PROPERTY + "' fields");
+					+ RESULT_PROPERTY + "' and '" + ERROR_PROPERTY
+					+ "' fields. " + json);
 		}
 
 	}
