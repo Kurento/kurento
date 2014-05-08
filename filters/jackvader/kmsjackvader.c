@@ -32,7 +32,7 @@
 #define HAAR_CASCADES_DIR_OPENCV_PREFIX "/usr/share/opencv/haarcascades/"
 
 #define FACE_HAAR_FILE "haarcascade_frontalface_default.xml"
-#define COSTUME_IMAGES_PATH_DEFAULT FINAL_INSTALL_DIR "/share/" PACKAGE "/"
+#define COSTUME_IMAGES_PATH_DEFAULT DATAROOTDIR "/" PACKAGE "/"
 #define JACK_IMAGE_FILE "jack.png"
 #define VADER_IMAGE_FILE "vader.png"
 

@@ -1,0 +1,34 @@
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${OPENCV_INCLUDE_DIRS}
+)
+
+set(JACKVADER_SOURCES
+  jackvader.c
+  kmsjackvader.c kmsjackvader.h
+  classifier.cpp classifier.h
+)
+
+add_library(jackvader MODULE ${JACKVADER_SOURCES})
+
+target_link_libraries(jackvader
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
+  ${OPENCV_LIBRARIES}
+)
+
+install(
+  TARGETS jackvader
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install ( FILES
+  jack.png
+  vader.png
+
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE}
+)
