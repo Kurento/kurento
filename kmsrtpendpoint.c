@@ -164,7 +164,7 @@ kms_rtp_endpoint_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
 static guint64
 get_ntp_time ()
 {
-  return time (NULL) + 2208988800;
+  return time (NULL) + G_GUINT64_CONSTANT (2208988800);
 }
 
 static void
@@ -270,12 +270,12 @@ kms_rtp_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint * base_sdp_endpoint,
 
     if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0)
       ((GstSDPMedia *) media)->port =
-          kms_rtp_endpoint_get_socket_port (rtp_endpoint->priv->
-          audio_rtp_socket);
+          kms_rtp_endpoint_get_socket_port (rtp_endpoint->
+          priv->audio_rtp_socket);
     else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0)
       ((GstSDPMedia *) media)->port =
-          kms_rtp_endpoint_get_socket_port (rtp_endpoint->priv->
-          video_rtp_socket);
+          kms_rtp_endpoint_get_socket_port (rtp_endpoint->
+          priv->video_rtp_socket);
   }
 
   return TRUE;
@@ -370,10 +370,10 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
         g_object_set (rtp_endpoint->priv->audio_rtcp_udpsink, "host",
             media_con->address, "port", media->port + 1, "async", FALSE, NULL);
 
-        gst_element_sync_state_with_parent (rtp_endpoint->priv->
-            audio_rtp_udpsink);
-        gst_element_sync_state_with_parent (rtp_endpoint->priv->
-            audio_rtcp_udpsink);
+        gst_element_sync_state_with_parent (rtp_endpoint->
+            priv->audio_rtp_udpsink);
+        gst_element_sync_state_with_parent (rtp_endpoint->
+            priv->audio_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_endpoint);
 
         GST_DEBUG ("Audio sent to: %s:%d", media_con->address, media->port);
@@ -404,10 +404,10 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
             media_con->address, "port", gst_sdp_media_get_port (media) + 1,
             NULL);
 
-        gst_element_sync_state_with_parent (rtp_endpoint->priv->
-            video_rtp_udpsink);
-        gst_element_sync_state_with_parent (rtp_endpoint->priv->
-            video_rtcp_udpsink);
+        gst_element_sync_state_with_parent (rtp_endpoint->
+            priv->video_rtp_udpsink);
+        gst_element_sync_state_with_parent (rtp_endpoint->
+            priv->video_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_endpoint);
 
         GST_DEBUG ("Video sent to: %s:%d", media_con->address, media->port);
