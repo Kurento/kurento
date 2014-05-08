@@ -92,6 +92,8 @@ struct _KmsCrowdDetectorPrivate
   RoiData *rois_data;
   GstStructure *rois;
   gboolean pixels_rois_counted;
+  int image_width;
+  int image_height;
 };
 
 enum
@@ -428,10 +430,14 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
       ret = gst_structure_get (roi, name, GST_TYPE_STRUCTURE, &point, NULL);
 
       if (ret) {
-        gst_structure_get (point, "x", G_TYPE_INT,
-            &self->priv->curves[it][it2].x, NULL);
-        gst_structure_get (point, "y", G_TYPE_INT,
-            &self->priv->curves[it][it2].y, NULL);
+        gfloat percentageX;
+        gfloat percentageY;
+
+        gst_structure_get (point, "x", G_TYPE_FLOAT, &percentageX, NULL);
+        gst_structure_get (point, "y", G_TYPE_FLOAT, &percentageY, NULL);
+
+        self->priv->curves[it][it2].x = percentageX * self->priv->image_width;
+        self->priv->curves[it][it2].y = percentageY * self->priv->image_height;
       }
       gst_structure_free (point);
     }
@@ -515,7 +521,6 @@ kms_crowd_detector_set_property (GObject * object, guint property_id,
     case PROP_ROIS:
       kms_crowd_detector_release_data (crowddetector);
       crowddetector->priv->rois = g_value_dup_boxed (value);
-      kms_crowd_detector_extract_rois (crowddetector);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
@@ -619,6 +624,8 @@ static void
 kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
     GstVideoFrame * frame)
 {
+  crowddetector->priv->image_width = frame->info.width;
+  crowddetector->priv->image_height = frame->info.height;
   crowddetector->priv->actual_image =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 3);
@@ -1030,6 +1037,10 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   GstMapInfo info;
 
   kms_crowd_detector_initialize_images (crowddetector, frame);
+  if ((crowddetector->priv->num_rois == 0)
+      && (crowddetector->priv->rois != NULL)) {
+    kms_crowd_detector_extract_rois (crowddetector);
+  }
   if (crowddetector->priv->pixels_rois_counted == TRUE &&
       crowddetector->priv->actual_image != NULL) {
     kms_crowd_detector_count_num_pixels_rois (crowddetector);
