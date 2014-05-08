@@ -1,17 +1,7 @@
-add_subdirectory(vp8parse)
-add_subdirectory(filters)
 
 include_directories(
-  ${GSTREAMER_INCLUDE_DIRS}
-  ${GSTREAMER_BASE_SOURCE_DIRS}
-  ${GSTREAMER_SDP_SOURCE_DIRS}
-  ${GSTREAMER_PBUTILS_SOURCE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${SOUP_INCLUDE_DIRS}
-  ${NICE_INCLUDE_DIRS}
-  ${GIO_INCLUDE_DIRS}
-  ${SCTP_INCLUDE_DIRS}
 )
 
 set(KMS_PLUGIN_SOURCES
@@ -58,6 +48,22 @@ add_glib_enumtypes(KMS_PLUGIN_SOURCES kms-enumtypes KMS ${ENUM_HEADERS})
 add_glib_marshal(KMS_PLUGIN_SOURCES kms-marshal __kms_marshal)
 
 add_library(kmsplugin MODULE ${KMS_PLUGIN_SOURCES})
+
+add_subdirectory(vp8parse)
+add_subdirectory(filters)
+
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_BASE_SOURCE_DIRS}
+  ${GSTREAMER_SDP_SOURCE_DIRS}
+  ${GSTREAMER_PBUTILS_SOURCE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${SOUP_INCLUDE_DIRS}
+  ${NICE_INCLUDE_DIRS}
+  ${GIO_INCLUDE_DIRS}
+  ${SCTP_INCLUDE_DIRS}
+)
 
 target_link_libraries(kmsplugin
   ${GSTREAMER_LIBRARIES}
