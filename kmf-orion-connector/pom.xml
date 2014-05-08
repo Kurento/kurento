@@ -15,7 +15,7 @@
 	<name>Kurento Media Framework - Orion connector</name>
 	<description>Orion context broker consumer</description>
 
-	<url>http://www.kurento.com/docs/${project.version}</url>
+	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
 		<license>
@@ -24,7 +24,19 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
+	
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+	
+	<scm>
+		<url>${kmf.scm.url}</url>
+		<connection>scm:git:${kmf.scm.connection}</connection>
+		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
+	
 	<developers>
 		<developer>
 			<id>kurento.org</id>

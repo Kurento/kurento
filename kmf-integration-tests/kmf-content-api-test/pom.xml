@@ -46,7 +46,7 @@
 		The kmf-content-api-test project contains the test cases
 		of the Kurento server side Content Management API.
 	</description>
-	<url>https://github.com/Kurento/kmf-content-api-test</url>
+	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
 		<license>
@@ -58,8 +58,15 @@
 
 	<organization>
 		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
+		<url>http://www.kurento.org</url>
 	</organization>
+
+	<scm>
+		<url>${kmf.scm.url}</url>
+		<connection>scm:git:${kmf.scm.connection}</connection>
+		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
 
 	<developers>
 		<developer>

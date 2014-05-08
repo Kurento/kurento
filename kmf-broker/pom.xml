@@ -14,11 +14,48 @@
 	<artifactId>kmf-broker</artifactId>
 	<packaging>jar</packaging>
 
+	<name>Kurento Media Framework - Message broker</name>
+	
+	<description>
+		Kurento Message Broker
+	</description>
+
+	<url>http://www.kurento.org/docs/${project.version}</url>
+	
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
+	<scm>
+		<url>${kmf.scm.url}</url>
+		<connection>scm:git:${kmf.scm.connection}</connection>
+		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
-			<version>1.0.2.RELEASE</version>
+			<version>${version.spring-boot}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -56,6 +93,7 @@
 		<linux64-webdriver.version>2.9</linux64-webdriver.version>
 		<mac32-webdriver.version>2.9</mac32-webdriver.version>
 		<win32-webdriver.version>2.9</win32-webdriver.version>
+		<version.spring-boot>1.0.2.RELEASE</version.spring-boot>
 	</properties>
 
 	<build>
@@ -63,7 +101,6 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>1.0.2.RELEASE</version>
 			</plugin>
 		</plugins>
 	</build>

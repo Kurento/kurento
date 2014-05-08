@@ -13,7 +13,7 @@
 		<maven.compiler.target>1.6</maven.compiler.target>
 
 		<!-- Dependencies Versions -->
-		<servlet-api.version>3.0.1</servlet-api.version>
+		<version.servlet-api>3.0.1</version.servlet-api>
 		<spring.version>3.1.4.RELEASE</spring.version>
 		<cglib.version>2.2.2</cglib.version>
 		<slf4j-api.version>1.7.5</slf4j-api.version>
@@ -28,7 +28,9 @@
 
 		The kmf-spring project provides common utilities to manage beans lifecycle.
 	</description>
-	<url>https://github.com/Kurento/kmf-spring</url>
+	
+	<url>http://www.kurento.org/docs/${project.version}</url>
+	
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
@@ -39,9 +41,16 @@
 
 	<organization>
 		<name>Kurento</name>
-		<url>http://www.kurento.com</url>
+		<url>http://www.kurento.org</url>
 	</organization>
 
+	<scm>
+		<url>${kmf.scm.url}</url>
+		<connection>scm:git:${kmf.scm.connection}</connection>
+		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
+	
 	<developers>
 		<developer>
 			<id>llopez</id>
@@ -62,7 +71,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>${servlet-api.version}</version>
+			<version>${version.servlet-api}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -91,12 +100,5 @@
 			</extension>
 		</extensions>
 	</build>
-
-	<scm>
-		<url>https://github.com/Kurento/${project.artifactId}</url>
-		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
-	</scm>
 
 </project>

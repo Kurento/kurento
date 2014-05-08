@@ -18,7 +18,7 @@
 
 		The kmf-spring project provides common utilities to manage beans lifecycle.
 	</description>
-	<url>http://www.kurento.com/docs/${project.version}</url>
+	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
 		<license>
@@ -28,10 +28,15 @@
 		</license>
 	</licenses>
 
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
 	<scm>
-		<url>https://github.com/Kurento/${project.artifactId}</url>
-		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<url>${kmf.scm.url}</url>
+		<connection>scm:git:${kmf.scm.connection}</connection>
+		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
