@@ -34,6 +34,7 @@ import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.common.SecretGenerator;
@@ -67,6 +68,9 @@ import com.kurento.kmf.repository.Repository;
  * @version 1.0.0
  */
 public abstract class AbstractContentSession implements ContentSession {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(AbstractContentSession.class);
 
 	/*
 	 * This variable is used as an indication of a client having a sessionId.
@@ -346,7 +350,12 @@ public abstract class AbstractContentSession implements ContentSession {
 		try {
 			internalRawCallToOnUncaughtExceptionThrown(t);
 		} catch (Throwable tw) {
-			callOnUncaughtExceptionThrown(tw);
+			log.error(
+					"Uncaught exception thrown while processing a content request",
+					t);
+			log.error(
+					"Exception thrown while processing the uncaught exception",
+					tw);
 		}
 	}
 
@@ -516,6 +525,7 @@ public abstract class AbstractContentSession implements ContentSession {
 				event = eventQueue.poll(contentApiConfiguration
 						.getWebRtcEventQueuePollTimeout(),
 						TimeUnit.MILLISECONDS);
+
 			} catch (InterruptedException e) {
 				break;
 			}
@@ -762,7 +772,14 @@ public abstract class AbstractContentSession implements ContentSession {
 		registered = false;
 
 		if (initialAsyncCtx != null) {
-			initialAsyncCtx.complete();
+			try {
+				initialAsyncCtx.complete();
+			} catch (IllegalStateException e) {
+				log.warn("Exception try to complete initialAsyncCtx: {}", e
+						.getClass().getName());
+				// FIXME: We ignore this exception because is thrown when
+				// asyncContext in yet in COMPLETING STATE.
+			}
 			initialAsyncCtx = null;
 		}
 		if (manager != null) {

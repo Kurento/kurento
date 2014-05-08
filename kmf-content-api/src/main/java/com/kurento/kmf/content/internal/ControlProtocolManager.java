@@ -151,7 +151,14 @@ public class ControlProtocolManager {
 			log.info("Cannot send answer message to destination", e);
 		} finally {
 			if (asyncCtx != null) {
-				asyncCtx.complete();
+				try {
+					asyncCtx.complete();
+				} catch (IllegalStateException e) {
+					log.warn("Exception try to complete asyncCtx: {}", e
+							.getClass().getName());
+					// FIXME: We ignore this exception because is thrown when
+					// asyncContext in yet in MUST_COMPLETE STATE.
+				}
 			}
 		}
 	}
