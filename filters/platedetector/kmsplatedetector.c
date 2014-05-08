@@ -62,7 +62,7 @@
 #define KERNELY ((int) 3)
 #define PLATE_HEIGHT_SCALE_RATE ((float) 60)
 
-#define TESSERAC_PREFIX_DEFAULT FINAL_INSTALL_DIR "/share/" PACKAGE "/"
+#define TESSERAC_PREFIX_DEFAULT DATAROOTDIR "/" PACKAGE "/"
 
 GST_DEBUG_CATEGORY_STATIC (kms_plate_detector_debug_category);
 #define GST_CAT_DEFAULT kms_plate_detector_debug_category
