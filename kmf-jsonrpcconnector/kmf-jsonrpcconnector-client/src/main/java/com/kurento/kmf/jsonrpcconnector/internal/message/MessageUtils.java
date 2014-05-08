@@ -43,17 +43,21 @@ public class MessageUtils {
 		return responseR;
 	}
 
+	@SuppressWarnings("unchecked")
 	public static <P> Request<P> convertRequest(
 			Request<? extends Object> request, Class<P> paramsClass) {
 
-		P paramsP;
-		if (paramsClass.isAssignableFrom(request.getParams().getClass())) {
-			paramsP = (P) request.getParams();
-		} else if (request.getParams() instanceof JsonElement) {
-			paramsP = convertJsonTo((JsonElement) request.getParams(),
-					paramsClass);
-		} else {
-			throw new ClassCastException();
+		P paramsP = null;
+		Object params = request.getParams();
+		if (params != null) {
+			if (paramsClass.isAssignableFrom(params.getClass())) {
+				paramsP = (P) params;
+			} else if (params instanceof JsonElement) {
+				paramsP = convertJsonTo((JsonElement) request.getParams(),
+						paramsClass);
+			} else {
+				throw new ClassCastException();
+			}
 		}
 
 		@SuppressWarnings("unchecked")
