@@ -1,0 +1,26 @@
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${OPENCV_INCLUDE_DIRS}
+)
+
+set(MOVEMENTDETECTOR_SOURCES
+  movementdetector.c
+  kmsmovementdetector.c kmsmovementdetector.h
+)
+
+add_library(movementdetector MODULE ${MOVEMENTDETECTOR_SOURCES})
+
+target_link_libraries(movementdetector
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
+  ${OPENCV_LIBRARIES}
+)
+
+install(
+  TARGETS movementdetector
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
