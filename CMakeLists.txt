@@ -1,3 +1,4 @@
+add_subdirectory(vp8parse)
 
 include_directories(
   ${GSTREAMER_INCLUDE_DIRS}
