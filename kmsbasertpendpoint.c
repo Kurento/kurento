@@ -266,7 +266,7 @@ kms_base_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
       const gchar *rtpbin_pad_name;
       GstElement *valve = NULL;
 
-      GST_DEBUG ("Found depayloader %" GST_PTR_FORMAT, payloader);
+      GST_DEBUG ("Found payloader %" GST_PTR_FORMAT, payloader);
       if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
         rtp_endpoint->priv->audio_payloader = payloader;
         valve = kms_element_get_audio_valve (element);
@@ -396,6 +396,8 @@ kms_base_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     gst_caps_unref (caps);
 
   if (depayloader != NULL) {
+    GST_DEBUG ("Found depayloader %" GST_PTR_FORMAT, depayloader);
+
     gst_bin_add (GST_BIN (rtp_endpoint), depayloader);
     gst_element_sync_state_with_parent (depayloader);
 
