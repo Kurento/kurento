@@ -79,16 +79,6 @@ enum
 #define CERTTOOL_TEMPLATE "certtool.tmpl"
 #define CERT_KEY_PEM_FILE "certkey.pem"
 
-/* rtpbin pad names */
-#define AUDIO_RTPBIN_RECV_RTP_SINK "recv_rtp_sink_0"
-#define AUDIO_RTPBIN_RECV_RTCP_SINK "recv_rtcp_sink_0"
-#define AUDIO_RTPBIN_SEND_RTP_SRC "send_rtp_src_0"
-#define AUDIO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_0"
-#define VIDEO_RTPBIN_RECV_RTP_SINK "recv_rtp_sink_1"
-#define VIDEO_RTPBIN_RECV_RTCP_SINK "recv_rtcp_sink_1"
-#define VIDEO_RTPBIN_SEND_RTP_SRC "send_rtp_src_1"
-#define VIDEO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_1"
-
 typedef struct _KmsWebRTCTransport
 {
   guint component_id;
@@ -552,9 +542,9 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
 
   if (is_bundle) {
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
-      rtpbin_pad_name = AUDIO_RTPBIN_SEND_SINK;
+      rtpbin_pad_name = AUDIO_RTPBIN_SEND_RTP_SINK;
     } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
-      rtpbin_pad_name = VIDEO_RTPBIN_SEND_SINK;
+      rtpbin_pad_name = VIDEO_RTPBIN_SEND_RTP_SINK;
     } else {
       GST_WARNING_OBJECT (webrtc_endpoint, "Media \"%s\" not supported",
           media_str);

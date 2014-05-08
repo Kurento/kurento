@@ -270,11 +270,11 @@ kms_base_rtp_endpoint_connect_input_elements (KmsBaseSdpEndpoint *
       if (g_strcmp0 ("audio", gst_sdp_media_get_media (media)) == 0) {
         rtp_endpoint->priv->audio_payloader = payloader;
         valve = kms_element_get_audio_valve (element);
-        rtpbin_pad_name = AUDIO_RTPBIN_SEND_SINK;
+        rtpbin_pad_name = AUDIO_RTPBIN_SEND_RTP_SINK;
       } else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0) {
         rtp_endpoint->priv->video_payloader = payloader;
         valve = kms_element_get_video_valve (element);
-        rtpbin_pad_name = VIDEO_RTPBIN_SEND_SINK;
+        rtpbin_pad_name = VIDEO_RTPBIN_SEND_RTP_SINK;
       } else {
         g_object_unref (payloader);
       }
@@ -426,7 +426,7 @@ kms_base_rtp_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
   if (base_rtp_endpoint->priv->negotiated)
     kms_base_rtp_endpoint_connect_valve_to_payloader (base_rtp_endpoint,
         valve, base_rtp_endpoint->priv->audio_payloader,
-        AUDIO_RTPBIN_SEND_SINK);
+        AUDIO_RTPBIN_SEND_RTP_SINK);
   KMS_ELEMENT_UNLOCK (self);
 }
 
@@ -446,7 +446,7 @@ kms_base_rtp_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
   if (base_rtp_endpoint->priv->negotiated)
     kms_base_rtp_endpoint_connect_valve_to_payloader (base_rtp_endpoint,
         valve, base_rtp_endpoint->priv->video_payloader,
-        VIDEO_RTPBIN_SEND_SINK);
+        VIDEO_RTPBIN_SEND_RTP_SINK);
   KMS_ELEMENT_UNLOCK (self);
 }
 

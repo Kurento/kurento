@@ -41,8 +41,17 @@ typedef struct _KmsBaseRtpEndpointPrivate KmsBaseRtpEndpointPrivate;
 #define KMS_BASE_RTP_ENDPOINT_UNLOCK(elem) \
   (g_rec_mutex_unlock (&KMS_BASE_RTP_ENDPOINT_CAST ((elem))->media_mutex))
 
-#define AUDIO_RTPBIN_SEND_SINK "send_rtp_sink_0"
-#define VIDEO_RTPBIN_SEND_SINK "send_rtp_sink_1"
+/* rtpbin pad names */
+#define AUDIO_RTPBIN_RECV_RTP_SINK "recv_rtp_sink_0"
+#define AUDIO_RTPBIN_RECV_RTCP_SINK "recv_rtcp_sink_0"
+#define AUDIO_RTPBIN_SEND_RTP_SRC "send_rtp_src_0"
+#define AUDIO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_0"
+#define AUDIO_RTPBIN_SEND_RTP_SINK "send_rtp_sink_0"
+#define VIDEO_RTPBIN_RECV_RTP_SINK "recv_rtp_sink_1"
+#define VIDEO_RTPBIN_RECV_RTCP_SINK "recv_rtcp_sink_1"
+#define VIDEO_RTPBIN_SEND_RTP_SRC "send_rtp_src_1"
+#define VIDEO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_1"
+#define VIDEO_RTPBIN_SEND_RTP_SINK "send_rtp_sink_1"
 
 struct _KmsBaseRtpEndpoint
 {
