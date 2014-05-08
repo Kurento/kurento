@@ -1,0 +1,34 @@
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${OPENCV_INCLUDE_DIRS}
+  ${TESSERACT_INCLUDE_DIRS}
+)
+
+set(PLATEDETECTOR_SOURCES
+  platedetector.c
+  kmsplatedetector.c kmsplatedetector.h
+)
+
+add_library(platedetector MODULE ${PLATEDETECTOR_SOURCES})
+
+target_link_libraries(platedetector
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
+  ${OPENCV_LIBRARIES}
+  ${TESSERACT_LIBRARIES}
+)
+
+install(
+  TARGETS platedetector
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install ( FILES
+  plateLanguage.traineddata
+
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE}/tessdata/
+)
