@@ -1,4 +1,4 @@
-package com.kurento.kmf.connector;
+package com.kurento.kmf.phone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,43 +8,32 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 
 import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
-import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcProperties;
 import com.kurento.kmf.jsonrpcconnector.server.JsonRpcConfigurer;
 import com.kurento.kmf.jsonrpcconnector.server.JsonRpcHandlerRegistry;
+import com.kurento.kmf.media.MediaApiConfiguration;
+import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.internal.ThriftConnectorApplicationContextConfiguration;
 
 @Configuration
-@ComponentScan(basePackageClasses = { JsonRpcConfiguration.class,
-		ThriftConnectorApplicationContextConfiguration.class })
 @EnableAutoConfiguration
-public class ConnectorApp implements JsonRpcConfigurer {
+@ComponentScan(basePackageClasses = { JsonRpcConfiguration.class,
+		MediaPipelineFactory.class,
+		ThriftConnectorApplicationContextConfiguration.class })
+public class PhoneApp implements JsonRpcConfigurer {
 
-	private static final Logger LOG = LoggerFactory
-			.getLogger(ConnectorApp.class);
+	private static final Logger LOG = LoggerFactory.getLogger(PhoneApp.class);
 
 	@Autowired
 	private Environment env;
 
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addHandler(thriftConnectorJsonRpcHandler(), "/thrift");
-	}
-
-	@Bean
-	public JsonRpcProperties jsonRpcProperties() {
-		JsonRpcProperties configuration = new JsonRpcProperties();
-		// Official FI-WARE OAuth server: http://cloud.lab.fi-ware.org
-		configuration.setKeystoneHost(env.getProperty("oauthserver.url", ""));
-		return configuration;
-	}
-
-	@Bean
-	public ThriftConnectorJsonRpcHandler thriftConnectorJsonRpcHandler() {
-		return new ThriftConnectorJsonRpcHandler();
+		registry.addPerSessionHandler(PhoneHandler.class, "/phone");
 	}
 
 	@Bean
@@ -84,12 +73,26 @@ public class ConnectorApp implements JsonRpcConfigurer {
 
 		return config;
 	}
-	
+
+	@Bean
+	@Scope("prototype")
+	public PhoneHandler multipleJsonRpcHandler() {
+		return new PhoneHandler();
+	}
+
+	@Bean
+	public MediaApiConfiguration mediaApiConfiguration() {
+		return new MediaApiConfiguration();
+	}
+
+	@Bean
+	public Registry registry() {
+		return new Registry();
+	}
+
 	public static void main(String[] args) throws Exception {
 
-		SpringApplication application = new SpringApplication(
-				ConnectorApp.class);
-
+		SpringApplication application = new SpringApplication(PhoneApp.class);
 		application.run(args);
 	}
 }

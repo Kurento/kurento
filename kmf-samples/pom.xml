@@ -51,6 +51,7 @@
 		<module>kmf-content-demo</module>
 		<module>fi-lab-demo</module>
 		<module>kmf-tutorial</module>
+		<module>kmf-phone-demo</module>
 	</modules>
 
 </project>
