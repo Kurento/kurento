@@ -506,7 +506,7 @@ kms_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
       GST_WARNING ("RtpEndpoint not configured to send audio");
       gst_bin_add (GST_BIN (rtp_endpoint), fakesink);
       gst_element_sync_state_with_parent (fakesink);
-      gst_element_link_pads (rtpbin, "send_rtp_src_1", fakesink, NULL);
+      gst_element_link_pads (rtpbin, "send_rtp_src_0", fakesink, NULL);
       KMS_ELEMENT_UNLOCK (rtp_endpoint);
 
       return;
