@@ -1,6 +1,0 @@
-git submodule update --init --recursive
-git submodule foreach "git branch -D develop"
-git submodule foreach "git checkout -b develop origin/develop"
-git commit -a -m "Update submodules to last develop version"
-mvn release:prepare
-mvn release:perform
