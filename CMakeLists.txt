@@ -3,6 +3,7 @@ add_subdirectory(rtcpdemux)
 include_directories(
   ${GSTREAMER_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 set(KMS_DTLS_SOURCES
