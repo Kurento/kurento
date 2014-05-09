@@ -53,7 +53,7 @@ public class ContentApiPlayerTest extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/color/red.webm").build();
+					"http://ci.kurento.com/video/gst/red.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);
@@ -89,8 +89,8 @@ public class ContentApiPlayerTest extends ContentApiTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 3 seconds",
-					browser.getCurrentTime() >= 3);
+			Assert.assertTrue("Playback time must be at least 8 seconds",
+					browser.getCurrentTime() >= 8);
 			Assert.assertTrue("The color of the video should be red",
 					browser.colorSimilarTo(Color.RED));
 

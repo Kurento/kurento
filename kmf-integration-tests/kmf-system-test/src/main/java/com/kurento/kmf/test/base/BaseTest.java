@@ -45,9 +45,13 @@ public class BaseTest {
 	protected int handlerPort;
 
 	protected int httpEndpointPort;
+	protected int threshold;
 
 	protected void setupKurentoServer() throws IOException, TemplateException,
 			InterruptedException {
+
+		// Default threshold (% of error in play time)
+		threshold = 10;
 
 		serverAddress = PropertiesManager.getSystemProperty(
 				"kurento.serverAddress", "127.0.0.1");
@@ -94,12 +98,17 @@ public class BaseTest {
 	 *            First number to be compared
 	 * @param j
 	 *            Second number to be compared
-	 * @param threslhold
-	 *            Comparison threslhold
 	 * @return true|false
 	 */
-	public boolean compare(double i, double j, int threslhold) {
-		return (j - i) <= (i * threslhold / 100);
+	public boolean compare(double i, double j) {
+		return Math.abs(j - i) <= (i * getThreshold() / 100);
 	}
 
+	public int getThreshold() {
+		return threshold;
+	}
+
+	public void setThreshold(int threshold) {
+		this.threshold = threshold;
+	}
 }

@@ -2,16 +2,23 @@ function onerror(error) {
 	console.error(error);
 };
 
-function prepareSendPlayer(sdpOfferReady) {
+function prepareSendPlayer(audio, video, sdpOfferReady) {
 
 	getUserMedia({
-		'audio' : true,
-		'video' : true
+		'audio' : audio,
+		'video' : video
 	}, function(stream) {
 
 		var videoInput = document.getElementById("local");
 
 		videoInput.src = URL.createObjectURL(stream);
+
+		var mediaConstraints = {
+			mandatory : {
+				OfferToReceiveAudio : true,
+				OfferToReceiveVideo : true
+			}
+		};
 
 		// Create a PeerConnection client in the browser
 		var peerConnection = new RTCPeerConnection({
@@ -30,7 +37,7 @@ function prepareSendPlayer(sdpOfferReady) {
 			peerConnection.setLocalDescription(offer, function() {
 				console.log('offer', offer.sdp);
 			}, onerror);
-		}, onerror);
+		}, onerror, mediaConstraints);
 
 		peerConnection.addEventListener('icecandidate', function(event) {
 			if (event.candidate)

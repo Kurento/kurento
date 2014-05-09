@@ -33,7 +33,18 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player with ZBar Filter.
+ * <strong>Description</strong>: Test of a HTTP Player with ZBar Filter.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> ZBarFilter -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>CodeFound events received</li>
+ * <li>EOS event received</li>
+ * <li>Browser ends before 60 seconds (default timeout)</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

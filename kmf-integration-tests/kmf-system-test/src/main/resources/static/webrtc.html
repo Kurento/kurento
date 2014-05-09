@@ -14,8 +14,8 @@
 	var sdpOffer;
 	var peerConn;
 
-	function getSdpOffer() {
-		prepareSendPlayer(function(peerConnection, offer) {
+	function getSdpOffer(audio, video) {
+		prepareSendPlayer(audio, video, function(peerConnection, offer) {
 			peerConn = peerConnection;
 			sdpOffer = offer.sdp;
 			console.info(sdpOffer);

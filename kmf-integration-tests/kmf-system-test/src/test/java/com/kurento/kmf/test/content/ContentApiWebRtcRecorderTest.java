@@ -45,10 +45,10 @@ import com.kurento.kmf.test.mediainfo.MediaInfo;
  * <strong>Pipeline</strong>: WebRtcEndpoint -> RecorderEndpoint<br/>
  * <strong>Pass criteria</strong>: <br/>
  * <ul>
- * <li>Browser #1 and #2 starts before 100 seconds</li>
+ * <li>Browser #1 and #2 starts before 60 seconds (default timeout)</li>
  * <li>Video/audio codecs of the recording are correct (VP8/Vorbis)</li>
  * <li>Record play time does not differ in a 10% of the transmitted video</li>
- * <li>Browser #1 and #2 stops before 100 seconds</li>
+ * <li>Browser #1 and #2 stops before 60 seconds (default timeout)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -61,7 +61,6 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 	private static final String FILE_SCHEMA = "file://";
 	private static final String RECORDING = "/tmp/webrtc";
 
-	private static int THRESHOLD = 10; // %
 	private static int PLAYTIME = 5; // seconds
 
 	@WebRtcContentService(path = HANDLER1)
@@ -137,7 +136,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 	public void testWebRtcRecorder() throws InterruptedException {
 		// Step 1: Record video from WebRTC in loopback
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.WEBRTC)) {
+				Browser.CHROME_FOR_TEST, Client.WEBRTC)) {
 			browser.setURL(HANDLER1);
 			browser.subscribeEvents("playing");
 			browser.start();
@@ -176,7 +175,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 
 		// Step 3: Play recorded video to assess the video duration
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
+				Browser.CHROME_FOR_TEST, Client.PLAYER)) {
 			browser.setURL(HANDLER2);
 			browser.subscribeEvents("playing", "ended");
 			browser.start();
@@ -187,8 +186,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
 			Assert.assertTrue("Play time must be around " + PLAYTIME
-					+ " seconds",
-					compare(PLAYTIME, browser.getCurrentTime(), THRESHOLD));
+					+ " seconds", compare(PLAYTIME, browser.getCurrentTime()));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
 					browser.colorSimilarTo(new Color(0, 135, 0)));

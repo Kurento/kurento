@@ -33,7 +33,18 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player with PlateDetector Filter.
+ * <strong>Description</strong>: HTTP Player with PlateDetector Filter.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> PlateDetector -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Plates detected (2651DLC and 3882GKP)</li>
+ * <li>EOS event received</li>
+ * <li>Browser ends before 60 seconds (default timeout)</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)

@@ -71,8 +71,8 @@ public class JMeterClient {
 		// Default number of concurrent users = 5
 		this.concurrentUsers = 5;
 
-		// default timeout = 100 seconds
-		timeout = 100;
+		// default timeout = 60 seconds
+		timeout = 60;
 	}
 
 	private void setup() throws TemplateException, IOException {

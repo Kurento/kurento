@@ -41,6 +41,20 @@ import com.kurento.kmf.test.client.Client;
 /**
  * Test of a HTTP Player with CrowdDetector Filter.
  * 
+ * <strong>Description</strong>: HTTP Player with CrowdDetector Filter.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> CrowdDetectorFilter -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Occupancy events received</li>
+ * <li>Fluidity event received</li>
+ * <li>EOS event received</li>
+ * <li>Browser ends before 60 seconds (default timeout)</li>
+ * </ul>
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 4.2.3

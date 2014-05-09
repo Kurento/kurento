@@ -28,13 +28,22 @@ import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.MediaApiTest;
 
 /**
- * Test of a HTTP Player, using directly a MediaPipeline and HttpClient.
+ * <strong>Description</strong>: HTTP Player, tested with HttpClient (not
+ * Selenium).<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Received content/type is video/webm</li>
+ * </ul>
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerTest extends MediaApiTest {
+public class MediaApiPlayerNoBrowserTest extends MediaApiTest {
 
 	@Test
 	public void testPlayer() throws Exception {

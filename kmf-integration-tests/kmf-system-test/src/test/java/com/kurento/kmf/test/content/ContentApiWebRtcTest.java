@@ -67,7 +67,7 @@ public class ContentApiWebRtcTest extends ContentApiTest {
 	@Test
 	public void testWebRtc() throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.WEBRTC)) {
+				Browser.CHROME_FOR_TEST, Client.WEBRTC)) {
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing");
 			browser.start();

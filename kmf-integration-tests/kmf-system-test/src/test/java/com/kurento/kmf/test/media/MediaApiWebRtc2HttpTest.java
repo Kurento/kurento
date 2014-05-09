@@ -31,19 +31,22 @@ import com.kurento.kmf.test.base.MediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * <strong>Description</strong>: Back-to-back WebRTC Test<br/>
- * <strong>Pipeline 1</strong>: WebRtcEndpoint -> WebRtcEndpoint<br/>
- * <strong>Pipeline 2</strong>: WebRtcEndpoint -> HttpEndpoint<br/>
- * <strong>Pass criteria</strong>: <br/>
+ * <strong>Pipeline</strong>:
  * <ul>
- * <li>Browser #1 and #2 starts before 100 seconds</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> HttpEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browsers starts before 60 seconds (default timeout)</li>
  * <li>HttpPlayer play time does not differ in a 10% of the transmitting time by
  * WebRTC</li>
  * <li>Color received by HttpPlayer should be green (RGB #008700, video test of
  * Chrome)</li>
- * <li>Browser #1 and #2 stops before 100 seconds</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -52,7 +55,6 @@ import com.kurento.kmf.test.client.Client;
 public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 
 	private static int PLAYTIME = 5; // seconds to play in HTTP player
-	private static int THRESHOLD = 10; // % of error in play time
 	private static int NPLAYERS = 2; // number of HttpEndpoint connected to
 										// WebRTC source
 
@@ -65,10 +67,11 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.WEBRTC)) {
+				Browser.CHROME_FOR_TEST, Client.WEBRTC)) {
 
 			browser.subscribeEvents("playing");
-			browser.connectToWebRtcEndpoint(webRtcEndpoint);
+			browser.connectToWebRtcEndpoint(webRtcEndpoint,
+					WebRtcChannel.AUDIO_AND_VIDEO);
 
 			// Wait until event playing in the WebRTC remote stream
 			Assert.assertTrue("Timeout waiting playing event",
@@ -101,7 +104,7 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 
 	private void createPlayer(String url) throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
+				Browser.CHROME_FOR_TEST, Client.PLAYER)) {
 			browser.setURL(url);
 			browser.subscribeEvents("playing");
 			browser.start();
@@ -115,8 +118,7 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 			// Assertions
 			Assert.assertTrue("Error in play time of HTTP player (expected: "
 					+ PLAYTIME + " sec, real: " + browser.getCurrentTime()
-					+ " sec)",
-					compare(PLAYTIME, browser.getCurrentTime(), THRESHOLD));
+					+ " sec)", compare(PLAYTIME, browser.getCurrentTime()));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
 					browser.colorSimilarTo(new Color(0, 135, 0)));

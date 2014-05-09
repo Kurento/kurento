@@ -30,6 +30,19 @@ import com.kurento.kmf.test.client.Client;
 /**
  * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
  * 
+ * <strong>Description</strong>: HTTP Player.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Play time should be the expected (at least 8 seconds)</li>
+ * <li>Color of the video should be the expected (blue)</li>
+ * <li>Browser ends before 60 seconds (default timeout)</li>
+ * </ul>
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -41,14 +54,14 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/blue.webm").build();
+				"http://ci.kurento.com/video/gst/blue.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
+				Browser.CHROME_FOR_TEST, Client.PLAYER)) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
@@ -59,8 +72,8 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 3 seconds",
-					browser.getCurrentTime() >= 3);
+			Assert.assertTrue("Playback time must be at least 8 seconds",
+					browser.getCurrentTime() >= 8);
 			Assert.assertTrue("The color of the video should be blue",
 					browser.colorSimilarTo(Color.BLUE));
 		}

@@ -25,15 +25,19 @@ import com.kurento.kmf.test.base.MediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * <strong>Description</strong>: Back-To-Back WebRTC switch. Three clients:
  * A,B,C sets up WebRTC send-recv with audio/video. Switch between following
  * scenarios: A<->B, A<->C, B<->C. At least two rounds. <br/>
- * <strong>Pipeline</strong>: WebRtcEndpoint -> WebRtcEndpoint (x3)<br/>
- * <strong>Pass criteria</strong>: <br/>
+ * <strong>Pipeline</strong>:
  * <ul>
- * <li>Browsers starts before 100 seconds</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint (x3)</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browsers starts before 60 seconds (default timeout)</li>
  * <li>Color received by clients should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
@@ -55,29 +59,32 @@ public class MediaApiWebRtcSwitchTest extends MediaApiTest {
 		webRtcEndpoint3.connect(webRtcEndpoint3);
 
 		try (BrowserClient browser1 = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.WEBRTC);
+				Browser.CHROME_FOR_TEST, Client.WEBRTC);
 				BrowserClient browser2 = new BrowserClient(getServerPort(),
-						Browser.CHROME, Client.WEBRTC);
+						Browser.CHROME_FOR_TEST, Client.WEBRTC);
 				BrowserClient browser3 = new BrowserClient(getServerPort(),
-						Browser.CHROME, Client.WEBRTC);) {
+						Browser.CHROME_FOR_TEST, Client.WEBRTC);) {
 
 			// Start WebRTC in loopback in each browser
 			browser1.subscribeEvents("playing");
-			browser1.connectToWebRtcEndpoint(webRtcEndpoint1);
+			browser1.connectToWebRtcEndpoint(webRtcEndpoint1,
+					WebRtcChannel.AUDIO_AND_VIDEO);
 
 			// Delay time (to avoid the same timing in videos)
 			Thread.sleep(1000);
 
 			// Browser 2
 			browser2.subscribeEvents("playing");
-			browser2.connectToWebRtcEndpoint(webRtcEndpoint2);
+			browser2.connectToWebRtcEndpoint(webRtcEndpoint2,
+					WebRtcChannel.AUDIO_AND_VIDEO);
 
 			// Delay time (to avoid the same timing in videos)
 			Thread.sleep(1000);
 
 			// Browser 3
 			browser3.subscribeEvents("playing");
-			browser3.connectToWebRtcEndpoint(webRtcEndpoint3);
+			browser3.connectToWebRtcEndpoint(webRtcEndpoint3,
+					WebRtcChannel.AUDIO_AND_VIDEO);
 
 			// Wait until event playing in the remote streams
 			Assert.assertTrue("Timeout waiting playing event",

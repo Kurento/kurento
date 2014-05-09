@@ -15,11 +15,35 @@
 package com.kurento.kmf.test.client;
 
 /**
- * Browser to perform automated web testing with Selenium WebDriver.
+ * Type of channel in WebRTC communications (audio, video, or both).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public enum Browser {
-	CHROME, CHROME_FOR_TEST, FIREFOX
+public enum WebRtcChannel {
+	VIDEO_ONLY, AUDIO_ONLY, AUDIO_AND_VIDEO;
+
+	public boolean getAudio() {
+		switch (this) {
+		case VIDEO_ONLY:
+			return false;
+		case AUDIO_ONLY:
+			return true;
+		case AUDIO_AND_VIDEO:
+		default:
+			return true;
+		}
+	}
+
+	public boolean getVideo() {
+		switch (this) {
+		case VIDEO_ONLY:
+			return true;
+		case AUDIO_ONLY:
+			return false;
+		case AUDIO_AND_VIDEO:
+		default:
+			return true;
+		}
+	}
 }

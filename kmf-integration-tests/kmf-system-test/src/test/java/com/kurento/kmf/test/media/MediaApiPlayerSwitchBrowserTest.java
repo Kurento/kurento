@@ -26,7 +26,17 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player switching videos.
+ * <strong>Description</strong>: HTTP Player switching videos.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> (N) HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Play time should be the expected (at least 8 seconds)</li>
+ * <li>Browser ends before 60 seconds (default timeout)</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

@@ -62,17 +62,20 @@ public class BrowserClient implements Closeable {
 	public BrowserClient(int serverPort, Browser browser, Client client) {
 		// Setup
 		countDownLatchEvents = new HashMap<>();
-		timeout = 100; // default (100 seconds)
+		timeout = 60; // default (60 seconds)
 		maxDistance = 300.0; // default distance (for color comparison)
 
 		// Browser
 		switch (browser) {
 		case FIREFOX:
-			setup(FirefoxDriver.class);
+			setup(FirefoxDriver.class, false);
 			break;
 		case CHROME:
+			setup(ChromeDriver.class, false);
+			break;
+		case CHROME_FOR_TEST:
 		default:
-			setup(ChromeDriver.class);
+			setup(ChromeDriver.class, true);
 			break;
 		}
 		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
@@ -81,7 +84,7 @@ public class BrowserClient implements Closeable {
 		driver.get("http://localhost:" + serverPort + client.toString());
 	}
 
-	private void setup(Class<? extends WebDriver> driverClass) {
+	private void setup(Class<? extends WebDriver> driverClass, boolean flags) {
 		if (driverClass.equals(FirefoxDriver.class)) {
 			driver = new FirefoxDriver();
 
@@ -95,9 +98,11 @@ public class BrowserClient implements Closeable {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
-			options.addArguments("--disable-web-security",
-					"--use-fake-device-for-media-stream",
-					"--use-fake-ui-for-media-stream");
+			if (flags) {
+				options.addArguments("--disable-web-security",
+						"--use-fake-device-for-media-stream",
+						"--use-fake-ui-for-media-stream");
+			}
 			driver = new ChromeDriver(options);
 		}
 	}
@@ -237,9 +242,11 @@ public class BrowserClient implements Closeable {
 		this.maxDistance = maxDistance;
 	}
 
-	public void connectToWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint) {
+	public void connectToWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint,
+			WebRtcChannel channel) {
 		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver).executeScript("getSdpOffer();");
+			((JavascriptExecutor) driver).executeScript("getSdpOffer("
+					+ channel.getAudio() + "," + channel.getVideo() + ");");
 
 			// Wait to valid sdpOffer
 			(new WebDriverWait(driver, timeout))

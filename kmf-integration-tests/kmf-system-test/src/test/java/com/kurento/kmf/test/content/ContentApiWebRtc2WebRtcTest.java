@@ -35,10 +35,10 @@ import com.kurento.kmf.test.client.Client;
  * <strong>Pipeline</strong>: WebRtcEndpoint -> WebRtcEndpoint<br/>
  * <strong>Pass criteria</strong>: <br/>
  * <ul>
- * <li>Browser #1 and #2 starts before 100 seconds</li>
+ * <li>Browser #1 and #2 starts before 60 seconds (default timeout)</li>
  * <li>Remote play time in browser #1 and #2 does not differ in a 10% of the
  * transmitting time</li>
- * <li>Browser #1 and #2 stops before 100 seconds</li>
+ * <li>Browser #1 and #2 stops before 60 seconds (default timeout)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -47,8 +47,6 @@ import com.kurento.kmf.test.client.Client;
 public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 
 	private static final String HANDLER = "/webrtc2webrtc";
-
-	private static int THRESHOLD = 10; // %
 
 	@WebRtcContentService(path = HANDLER)
 	public static class WebRtcHandler extends WebRtcContentHandler {
@@ -106,9 +104,9 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 	@Test
 	public void testWebRtc2WebRtc() throws InterruptedException {
 		try (BrowserClient browser1 = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.WEBRTC);
+				Browser.CHROME_FOR_TEST, Client.WEBRTC);
 				BrowserClient browser2 = new BrowserClient(getServerPort(),
-						Browser.CHROME, Client.WEBRTC)) {
+						Browser.CHROME_FOR_TEST, Client.WEBRTC)) {
 
 			browser1.setURL(HANDLER);
 			browser1.subscribeEvents("playing");
@@ -146,12 +144,10 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 			// Pass criteria: threshold 10 %
 			Assert.assertTrue("Error in play time of #1 browser (expected: "
 					+ browser1time + " sec, real: " + browser1.getCurrentTime()
-					+ " sec)",
-					compare(browser1time, browser1.getCurrentTime(), THRESHOLD));
+					+ " sec)", compare(browser1time, browser1.getCurrentTime()));
 			Assert.assertTrue("Error in play time of #2 browser (expected: "
 					+ browser2time + " sec, real: " + browser2.getCurrentTime()
-					+ " sec)",
-					compare(browser2time, browser2.getCurrentTime(), THRESHOLD));
+					+ " sec)", compare(browser2time, browser2.getCurrentTime()));
 
 			// Ending sessions in both sessions
 			browser1.stop();
