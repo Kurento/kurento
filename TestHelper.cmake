@@ -15,13 +15,11 @@ endfunction()
 
 ## This function simplifies tests creation
 ## Name : add_test_program
-## Params: test_name, extra_source (optional)
-function(add_test_program test_name)
+## Params: test_name, sources
+function(add_test_program test_name sources)
   message (STATUS "Adding tests: ${test_name}")
 
-  set (extra_source ${ARGV1})
-
-  add_executable (${test_name} ${test_name}.c ${extra_source})
+  add_executable (${test_name} ${sources})
   create_check_target()
   add_dependencies(check ${test_name})
 
