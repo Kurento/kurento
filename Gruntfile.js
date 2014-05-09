@@ -53,7 +53,7 @@ module.exports = function(grunt)
         options:
         {
           bundleOptions: {
-            standalone: '<%= pkg.name %>'
+            standalone: 'KwsMedia'
           }
         }
       },
@@ -108,7 +108,6 @@ module.exports = function(grunt)
 
   // Default task(s).
   grunt.registerTask('browser', ['curl', 'browserify', 'uglify']);
-  grunt.registerTask('default', ['clean', 'browser']);
-//  grunt.registerTask('default', ['clean', 'jsdoc', 'browser']);
+  grunt.registerTask('default', ['clean', 'jsdoc', 'browser']);
   grunt.registerTask('maven',   ['default', 'copy']);
 };

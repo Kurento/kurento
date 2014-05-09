@@ -1,4 +1,19 @@
-var WebRtcEndpoint = KwsMedia.endpoints.WebRtcEndpoint;
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+
+const ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
 
 
 function processOffer(peerConnection, offer, onsuccess, onerror)
@@ -34,6 +49,11 @@ function processOffer(peerConnection, offer, onsuccess, onerror)
   onerror);
 };
 
+function onerror(error)
+{
+  console.error(error);
+};
+
 
 getUserMedia({'audio': true, 'video': true}, function(stream)
 {
@@ -42,23 +62,22 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
   videoInput.src = URL.createObjectURL(stream);
 
-  KwsMedia('ws://192.168.0.106:7788/thrift/ws/websocket',
-  function(kwsMedia)
+  KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    kwsMedia.create('MediaPipeline', function(error, pipeline)
     {
-      if(error) return console.error(error);
+      if(error) return onerror(error);
 
       // Create pipeline media elements (endpoints & filters)
-      WebRtcEndpoint.create(pipeline, function(error, webRtc)
+      pipeline.create('WebRtcEndpoint', function(error, webRtc)
       {
-        if(error) return console.error(error);
+        if(error) return onerror(error);
 
         // Connect the pipeline to the PeerConnection client
         webRtc.generateOffer(function(error, offer)
         {
-          if(error) return console.error(error);
+          if(error) return onerror(error);
 
           // Create a PeerConnection client in the browser
           var peerConnection = new RTCPeerConnection
@@ -73,7 +92,7 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
           {
             webRtc.processAnswer(answer, function(error)
             {
-              if(error) return console.error(error);
+              if(error) return onerror(error);
 
               var stream = peerConnection.getRemoteStreams()[0];
 
@@ -81,28 +100,19 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
               videoOutput.src = URL.createObjectURL(stream);
 
              // loopback
-              pipeline.connect(webRtc, webRtc, function(error)
+              webRtc.connect(webRtc, function(error)
               {
-                if(error) return console.error(error);
+                if(error) return onerror(error);
 
                 console.log('loopback established');
               });
             });
           },
-          function(error)
-          {
-            console.error(error);
-          });
+          onerror);
         });
       });
     });
   },
-  function(error)
-  {
-    console.error('An error ocurred:',error);
-  });
+  onerror);
 },
-function(error)
-{
-  console.error('An error ocurred:',error);
-});
+onerror);

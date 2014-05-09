@@ -1,9 +1,17 @@
-var WebRtcEndpoint = kwsMediaApi.endpoints.WebRtcEndpoint;
-
-var ChromaFilter             = kwsMediaApi.filters.ChromaFilter;
-var FaceOverlayFilter        = kwsMediaApi.filters.FaceOverlayFilter;
-var PointerDetectorAdvFilter = kwsMediaApi.filters.PointerDetectorAdvFilter;
-
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 
 var handlerUrl = 'https://raw.github.com/Kurento/kmf-content-demo/develop/src/main/webapp';
 
@@ -259,7 +267,7 @@ function CpbWebRtc()
     {
       console.info('recordUrl ');
 
-      
+
     };
   };
 
@@ -309,19 +317,19 @@ function CpbWebRtc()
    */
   this.start = function(offer, callback)
   {
-    kwsMediaApi.kwsMedia = KwsMedia(endpoint, function(kwsMedia)
+    kwsMedia = KwsMedia(endpoint, function(kwsMedia)
     {
       // Create pipeline
-      kwsMedia.createMediaPipeline(function(error, pipeline)
+      kwsMedia.create('MediaPipeline', function(error, pipeline)
       {
         if(error) return callback(error);
 
-        WebRtcEndpoint.create(pipeline, function(error, webRtcEndpoint)
+        pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
         {
           if(error) return callback(error);
 
           // Create pipeline media elements (endpoints & filters)
-          RateFilter.create(pipeline, function(error, rateFilter)
+          pipeline.create('RateFilter', function(error, rateFilter)
           {
             if(error) return callback(error);
 
@@ -329,7 +337,7 @@ function CpbWebRtc()
             {
               if(error) return callback(error);
 
-              MirrorFilter.create(pipeline, function(error, mirrorFilter)
+              pipeline.create('MirrorFilter', function(error, mirrorFilter)
               {
                 if(error) return callback(error);
 
@@ -346,7 +354,7 @@ function CpbWebRtc()
                   };
                   var params = {calibrationRegion: calibrationRegion};
 
-                  PointerDetectorAdvFilter.create(pipeline, params,
+                  pipeline.create('PointerDetectorAdvFilter', params,
                   function(error, filter)
                   {
                     if(error) return callback(error);
@@ -378,7 +386,7 @@ function CpbWebRtc()
                             height: 400
                           };
 
-                          ChromaFilter.create(pipeline, {window: window},
+                          pipeline.create('ChromaFilter', {window: window},
                           function(error, filter)
                           {
                             if(error) return callback(error);
@@ -390,7 +398,7 @@ function CpbWebRtc()
                             {
                               if(error) return callback(error);
 
-                              FaceOverlayFilter.create(pipeline,
+                              pipeline.create('FaceOverlayFilter',
                               function(error, filter)
                               {
                                 if(error) return callback(error);

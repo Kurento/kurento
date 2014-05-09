@@ -48,10 +48,6 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint    = kwsMediaApi.endpoints.PlayerEndpoint;
-var FaceOverlayFilter = kwsMediaApi.filters.FaceOverlayFilter;
-
-
 QUnit.module('FaceOverlayFilter', lifecycle);
 
 QUnit.asyncTest('Detect face in a video', function()
@@ -62,14 +58,14 @@ QUnit.asyncTest('Detect face in a video', function()
                             20 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR},
+  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR},
   function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    FaceOverlayFilter.create(pipeline, function(error, faceOverlay)
+    pipeline.create('FaceOverlayFilter', function(error, faceOverlay)
     {
       if(error) return onerror(error);
 

@@ -48,10 +48,6 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint        = kwsMediaApi.endpoints.PlayerEndpoint;
-var PointerDetectorFilter = kwsMediaApi.filters.PointerDetectorFilter;
-
-
 QUnit.module('PointerDetectorFilter', lifecycle);
 
 QUnit.asyncTest('Detect pointer', function()
@@ -62,15 +58,15 @@ QUnit.asyncTest('Detect pointer', function()
                             20 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
-    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+    pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
-      pipeline.connect(player, pointerDetector, function(error, pipeline)
+      player.connect(pointerDetector, function(error)
       {
         if(error) return onerror(error);
 
@@ -137,15 +133,15 @@ QUnit.test('Window events', function()
   };
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
-    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+    pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
-      pipeline.connect(player, pointerDetector, function(error, pipeline)
+      player.connect(pointerDetector, function(error)
       {
         if(error) return onerror(error);
 
@@ -241,15 +237,15 @@ QUnit.test('Window overlay', function()
   };
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_POINTER_DETECTOR}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
-    PointerDetectorFilter.create(pipeline, function(error, pointerDetector)
+    pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
-      pipeline.connect(player, pointerDetector, function(error, pipeline)
+      player.connect(pointerDetector, function(error)
       {
         if(error) return onerror(error);
 

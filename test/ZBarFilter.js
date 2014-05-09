@@ -48,33 +48,27 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint = kwsMediaApi.endpoints.PlayerEndpoint;
-var ZBarFilter     = kwsMediaApi.filters.ZBarFilter;
-
-
 QUnit.module('ZBarFilter', lifecycle);
 
 QUnit.asyncTest('Create pipeline and play video', function()
 {
-  QUnit.expect(3);
+  QUnit.expect(2);
 
-  PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    ZBarFilter.create(pipeline, function(error, zbar)
+    pipeline.create('ZBarFilter', function(error, zbar)
     {
       if(error) return onerror(error);
 
       QUnit.notEqual(zbar, undefined, 'zbar');
 
-      pipeline.connect(player, zbar, function(error, pipeline)
+      player.connect(zbar, function(error)
       {
         if(error) return onerror(error);
-
-        QUnit.notEqual(pipeline, undefined, 'connect');
 
         player.play(function(error)
         {
@@ -95,15 +89,15 @@ QUnit.asyncTest('Detect bar-code in a video', function()
                             5 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_BARCODES}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
   {
     if(error) return onerror(error);
 
-    ZBarFilter.create(pipeline, function(error, zbar)
+    pipeline.create('ZBarFilter', function(error, zbar)
     {
       if(error) return onerror(error);
 
-      pipeline.connect(player, zbar, function(error, pipeline)
+      player.connect(zbar, function(error)
       {
         if(error) return onerror(error);
 

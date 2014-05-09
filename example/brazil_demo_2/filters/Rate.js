@@ -16,9 +16,9 @@
 var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
 
 
-function RateFilter(id, parent, pipeline, params)
+function RateFilter(id)
 {
-  GStreamerFilter.call(this, id, parent, pipeline, params);
+  GStreamerFilter.call(this, id);
 };
 RateFilter.prototype.__proto__   = GStreamerFilter.prototype;
 RateFilter.prototype.constructor = RateFilter;

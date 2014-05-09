@@ -48,17 +48,13 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
-var HttpGetEndpoint = kwsMediaApi.endpoints.HttpGetEndpoint;
-
-
 QUnit.module('HttpGetEndpoint', lifecycle);
 
 QUnit.asyncTest('Method GetUrl', function()
 {
   QUnit.expect(2);
 
-  HttpGetEndpoint.create(pipeline, function(error, httpGet)
+  pipeline.create('HttpGetEndpoint', function(error, httpGet)
   {
     if(error) return onerror(error);
 
@@ -84,7 +80,7 @@ QUnit.asyncTest('Media session started', function()
                             10 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 
@@ -99,7 +95,7 @@ QUnit.asyncTest('Media session started', function()
       QUnit.start();
     });
 
-    HttpGetEndpoint.create(pipeline, function(error, httpGet)
+    pipeline.create('HttpGetEndpoint', function(error, httpGet)
     {
       if(error) return onerror(error);
 

@@ -1,23 +1,40 @@
-var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
-var HttpGetEndpoint = kwsMediaApi.endpoints.HttpGetEndpoint;
-
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 
 const ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
+
+
+function onerror(error)
+{
+  console.error(error);
+};
 
 
 window.addEventListener('load', function()
 {
   var videoOutput = document.getElementById("videoOutput");
 
-  kwsMediaApi.KwsMedia(ws_uri, function(kwsMedia)
+  KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    kwsMedia.create('MediaPipeline', function(error, pipeline)
     {
-      if(error) return console.error(error);
+      if(error) return onerror(error);
 
       // Create pipeline media elements (endpoints & filters)
-      PlayerEndpoint.create(pipeline,
+      pipeline.create('PlayerEndpoint',
       {uri: "https://ci.kurento.com/video/small.webm"},
       function(error, player)
       {
@@ -29,23 +46,23 @@ window.addEventListener('load', function()
           console.log("EndOfStream event:", event);
         });
 
-        HttpGetEndpoint.create(pipeline, function(error, httpGet)
+        pipeline.create('HttpGetEndpoint', function(error, httpGet)
         {
-          if(error) return console.error(error);
+          if(error) return onerror(error);
 
           console.log('httpGet',httpGet);
 
           // Connect media element between them
-          pipeline.connect(player, httpGet, function(error, pipeline)
+          player.connect(httpGet, function(error, pipeline)
           {
-            if(error) return console.error(error);
+            if(error) return onerror(error);
 
             console.log('pipeline',pipeline);
 
             // Set the video on the video tag
             httpGet.getUrl(function(error, url)
             {
-              if(error) return console.error(error);
+              if(error) return onerror(error);
 
               videoOutput.src = url;
 
@@ -54,7 +71,7 @@ window.addEventListener('load', function()
               // Start player
               player.play(function(error)
               {
-                if(error) return console.error(error);
+                if(error) return onerror(error);
 
                 console.log('player.play');
               });
@@ -64,8 +81,5 @@ window.addEventListener('load', function()
       });
     });
   },
-  function(error)
-  {
-    console.error('An error ocurred:',error);
-  });
+  onerror);
 });

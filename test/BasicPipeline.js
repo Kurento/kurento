@@ -41,15 +41,11 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  kwsMediaApi = require('..');
+  KwsMedia = require('..');
 
   require('./_common');
   require('./_proxy');
 };
-
-
-var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
-var HttpGetEndpoint = kwsMediaApi.endpoints.HttpGetEndpoint;
 
 
 QUnit.module('BasicPipeline', lifecycle);
@@ -61,14 +57,13 @@ QUnit.asyncTest('Creation', function()
 {
   QUnit.expect(3);
 
-  PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
-  function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    HttpGetEndpoint.create(pipeline, function(error, httpGet)
+    pipeline.create('HttpGetEndpoint', function(error, httpGet)
     {
       if(error) return onerror(error);
 

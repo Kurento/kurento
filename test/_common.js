@@ -111,13 +111,13 @@ lifecycle =
       ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
     };
 
-    kwsMedia = new kwsMediaApi.KwsMedia(ws_uri);
+    kwsMedia = new KwsMedia(ws_uri);
 
     kwsMedia.on('error', onerror);
 
     kwsMedia.on('connect', function()
     {
-      kwsMedia.createMediaPipeline(function(error, pipe)
+      kwsMedia.create('MediaPipeline', function(error, pipe)
       {
         if(error) return onerror(error);
 
@@ -132,6 +132,17 @@ lifecycle =
 
   teardown: function()
   {
-    kwsMedia.close();
+    var kws  = kwsMedia;
+    var pipe = pipeline;
+
+    delete kwsMedia;
+    delete pipeline;
+
+    pipe.release(function(error)
+    {
+      if(error) console.error(error);
+
+      kws.close();
+    });
   }
 };

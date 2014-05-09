@@ -48,16 +48,13 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint = kwsMediaApi.endpoints.PlayerEndpoint;
-
-
 QUnit.module('PlayerEndpoint', lifecycle);
 
 QUnit.asyncTest('Play, Pause & Stop', function()
 {
   QUnit.expect(4);
 
-  PlayerEndpoint.create(pipeline, {uri: URL_SMALL},
+  pipeline.create('PlayerEndpoint', {uri: URL_SMALL},
   function(error, player)
   {
     if(error) return onerror(error);
@@ -97,7 +94,7 @@ QUnit.asyncTest('End of Stream', function()
                             10 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 

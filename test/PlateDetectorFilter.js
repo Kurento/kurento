@@ -48,10 +48,6 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint      = kwsMediaApi.endpoints.PlayerEndpoint;
-var PlateDetectorFilter = kwsMediaApi.filters.PlateDetectorFilter;
-
-
 QUnit.module('PlateDetectorFilter', lifecycle);
 
 QUnit.asyncTest('Detect plate in a video', function()
@@ -62,15 +58,15 @@ QUnit.asyncTest('Detect plate in a video', function()
                             10 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_PLATES}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_PLATES}, function(error, player)
   {
     if(error) return onerror(error);
 
-    PlateDetectorFilter.create(pipeline, function(error, plateDetector)
+    pipeline.create('PlateDetectorFilter', function(error, plateDetector)
     {
       if(error) return onerror(error);
 
-      pipeline.connect(player, plateDetector, function(error, pipeline)
+      player.connect(plateDetector, function(error)
       {
         if(error) return onerror(error);
 

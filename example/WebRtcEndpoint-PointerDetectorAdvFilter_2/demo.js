@@ -1,6 +1,17 @@
-var WebRtcEndpoint           = kwsMediaApi.endpoints.WebRtcEndpoint;
-var PointerDetectorAdvFilter = kwsMediaApi.filters.PointerDetectorAdvFilter;
-
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 
 const ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
 
@@ -35,17 +46,17 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
 
   videoInput.src = URL.createObjectURL(stream);
 
-  kwsMediaApi.KwsMedia(ws_uri, function(kwsMedia)
+  KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    kwsMedia.create('MediaPipeline', function(error, pipeline)
     {
-      if(error) return console.error(error);
+      if(error) return onerror(error);
 
       // Create pipeline media elements (endpoints & filters)
-      WebRtcEndpoint.create(pipeline, function(error, webRtc)
+      pipeline.create('WebRtcEndpoint', function(error, webRtc)
       {
-        if(error) return console.error(error);
+        if(error) return onerror(error);
 
         var calibrationRegion =
         {
@@ -55,15 +66,15 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
           height: 50
         };
 
-        PointerDetectorAdvFilter.create(pipeline,
+        pipeline.create('PointerDetectorAdvFilter',
         {calibrationRegion: calibrationRegion},
         function(error, filter)
         {
-          if(error) return console.error(error);
+          if(error) return onerror(error);
 
           pointerDetectorAdv = filter;
 
-          pipeline.connect(webRtc, pointerDetectorAdv, function(error)
+          webRtc.connect(pointerDetectorAdv, function(error)
           {
             if(error) return console.error(error);
 
@@ -89,7 +100,7 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
               // Connect the pipeline to the PeerConnection client
               webRtc.processOffer(offer.sdp, function(error, answer)
               {
-                if(error) return console.error(error);
+                if(error) return onerror(error);
 
                 answer = new RTCSessionDescription({sdp: answer, type: 'answer'});
 
@@ -103,9 +114,9 @@ getUserMedia({'audio': true, 'video': true}, function(stream)
                   videoOutput.src = URL.createObjectURL(stream);
 
                   // loopback
-                  pipeline.connect(pointerDetectorAdv, webRtc, function(error)
+                  pointerDetectorAdv.connect(webRtc, function(error)
                   {
-                    if(error) return console.error(error);
+                    if(error) return onerror(error);
 
                     console.log('loopback established');
                   });
@@ -131,7 +142,7 @@ window.addEventListener('load', function()
   {
     pointerDetectorAdv.trackColorFromCalibrationRegion(function(error)
     {
-      if(error) return console.error(error);
+      if(error) return onerror(error);
 
       console.log('calibrated');
     });

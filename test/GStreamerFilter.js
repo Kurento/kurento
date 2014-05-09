@@ -48,27 +48,23 @@ if(typeof QUnit == 'undefined')
 };
 
 
-var PlayerEndpoint  = kwsMediaApi.endpoints.PlayerEndpoint;
-var GStreamerFilter = kwsMediaApi.filters.GStreamerFilter;
-
-
 QUnit.module('GStreamerFilter', lifecycle);
 
 QUnit.asyncTest('End of Stream', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(3);
 
   var timeout = new Timeout('"GStreamerFilter:End of Stream"',
                             10 * 1000, onerror);
 
 
-  PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
+  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    GStreamerFilter.create(pipeline,
+    pipeline.create('GStreamerFilter',
     {command: 'videoflip method=horizontal-flip'},
     function(error, gStreamerFilter)
     {
@@ -76,11 +72,9 @@ QUnit.asyncTest('End of Stream', function()
 
       QUnit.notEqual(gStreamerFilter, undefined, 'gStreamerFilter');
 
-      pipeline.connect(player, gStreamerFilter, function(error, pipeline)
+      player.connect(gStreamerFilter, function(error)
       {
         if(error) return onerror(error);
-
-        QUnit.notEqual(pipeline, undefined, 'connect');
 
         player.on('EndOfStream', function(data)
         {
