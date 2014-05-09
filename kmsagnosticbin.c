@@ -282,6 +282,23 @@ create_convert_for_caps (GstCaps * caps)
 }
 
 static GstElement *
+create_mediator_element (GstCaps * caps)
+{
+  GstCaps *audio_caps = gst_static_caps_get (&static_audio_caps);
+  GstElement *element = NULL;
+
+  if (gst_caps_can_intersect (caps, audio_caps)) {
+    element = gst_element_factory_make ("audioresample", NULL);
+  } else {
+    element = gst_element_factory_make ("videoscale", NULL);
+  }
+
+  gst_caps_unref (audio_caps);
+
+  return element;
+}
+
+static GstElement *
 create_rate_for_caps (GstCaps * caps)
 {
   GstCaps *audio_caps = gst_static_caps_get (&static_audio_caps);
@@ -372,16 +389,20 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
   if (!gst_caps_is_any (caps) && is_raw_caps (caps)) {
     GstElement *convert = create_convert_for_caps (caps);
     GstElement *rate = create_rate_for_caps (caps);
+    GstElement *mediator = create_mediator_element (caps);
 
     remove_element_on_unlinked (convert, "src", "sink");
     remove_element_on_unlinked (rate, "src", "sink");
+    remove_element_on_unlinked (mediator, "src", "sink");
 
-    gst_bin_add_many (GST_BIN (self), convert, rate, NULL);
+    gst_bin_add_many (GST_BIN (self), convert, rate, mediator, NULL);
+
     gst_element_sync_state_with_parent (convert);
     gst_element_sync_state_with_parent (rate);
-    gst_element_link_many (queue, rate, convert, NULL);
+    gst_element_sync_state_with_parent (mediator);
 
-    target = gst_element_get_static_pad (convert, "src");
+    gst_element_link_many (queue, rate, convert, mediator, NULL);
+    target = gst_element_get_static_pad (mediator, "src");
   } else {
     target = gst_element_get_static_pad (queue, "src");
   }
@@ -633,7 +654,8 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
 {
   GstElement *tee;
   GstElement *raw_tee = kms_agnostic_bin2_get_or_create_raw_tee (self, caps);
-  GstElement *encoder, *queue, *rate, *convert, *fakequeue, *fakesink;
+  GstElement *encoder, *queue, *rate, *convert, *mediator, *fakequeue,
+      *fakesink;
 
   if (raw_tee == NULL)
     return NULL;
@@ -649,25 +671,27 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
   queue = gst_element_factory_make ("queue", NULL);
   rate = create_rate_for_caps (caps);
   convert = create_convert_for_caps (caps);
+  mediator = create_mediator_element (caps);
   tee = gst_element_factory_make ("tee", NULL);
   fakequeue = gst_element_factory_make ("queue", NULL);
   fakesink = gst_element_factory_make ("fakesink", NULL);
 
   g_object_set (G_OBJECT (fakesink), "async", FALSE, NULL);
 
-  gst_bin_add_many (GST_BIN (self), queue, rate, convert, encoder, tee,
-      fakequeue, fakesink, NULL);
+  gst_bin_add_many (GST_BIN (self), queue, rate, convert, mediator, encoder,
+      tee, fakequeue, fakesink, NULL);
 
   gst_element_sync_state_with_parent (queue);
   gst_element_sync_state_with_parent (rate);
   gst_element_sync_state_with_parent (convert);
+  gst_element_sync_state_with_parent (mediator);
   gst_element_sync_state_with_parent (encoder);
   gst_element_sync_state_with_parent (tee);
   gst_element_sync_state_with_parent (fakequeue);
   gst_element_sync_state_with_parent (fakesink);
 
-  gst_element_link_many (queue, rate, convert, encoder, tee, fakequeue,
-      fakesink, NULL);
+  gst_element_link_many (queue, rate, convert, mediator, encoder, tee,
+      fakequeue, fakesink, NULL);
   link_queue_to_tee (raw_tee, queue);
 
   g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
