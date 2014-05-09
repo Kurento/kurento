@@ -1,4 +1,4 @@
-core/MediaObject.js
+_MediaObject.js
 /*
  * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
  *
@@ -18,7 +18,7 @@ var EventEmitter = require('events').EventEmitter;
 
 var inherits = require('inherits');
 
-var noop = require('../utils').noop;
+var noop = require('./utils').noop;
 
 
 /**
@@ -32,10 +32,10 @@ var noop = require('../utils').noop;
 
 
 /**
- * Base for all objects that can be created in the media server.
+ * Internal base class for all objects that can be created in the media server.
  *
  * @abstract
- * @class   module:kwsMediaApi~MediaObject
+ * @class   module:kwsMediaApi~_MediaObject
  * @extends external:EventEmitter
  */
 
@@ -45,7 +45,7 @@ var noop = require('../utils').noop;
  *
  * @param {string} id
  */
-function MediaObject(id)
+function _MediaObject(id)
 {
   var self = this;
 
@@ -113,19 +113,19 @@ function MediaObject(id)
     });
   });
 };
-inherits(MediaObject, EventEmitter);
+inherits(_MediaObject, EventEmitter);
 
 
 /**
  * Send a command to a media object
  *
  * @param {external:String} method - Command to be executed by the server
- * @param {module:kwsMediaApi~MediaObject.constructorParams} [params]
- * @callback {createMediaObjectCallback} callback
+ * @param {module:kwsMediaApi~_MediaObject.constructorParams} [params]
+ * @callback {invokeCallback} callback
  *
- * @return {module:kwsMediaApi~MediaObject} The own media object
+ * @return {module:kwsMediaApi~_MediaObject} The own media object
  */
-MediaObject.prototype.invoke = function(method, params, callback)
+_MediaObject.prototype.invoke = function(method, params, callback)
 {
   // Fix optional parameters
   if(params instanceof Function)
@@ -158,15 +158,19 @@ MediaObject.prototype.invoke = function(method, params, callback)
   // Do request
   this.emit('_rpc', 'invoke', params2, callback2);
 };
+/**
+ * @callback invokeCallback
+ * @param {MediaServerError} error
+ */
 
 /**
- * Explicity release a {@link module:kwsMediaApi~MediaObject MediaObject} from memory
+ * Explicity release a {@link module:kwsMediaApi~_MediaObject MediaObject} from memory
  *
  * All its descendants will be also released and collected
  *
  * @throws {module:kwsMediaApi~MediaServerError}
  */
-MediaObject.prototype.release = function(callback){
+_MediaObject.prototype.release = function(callback){
   var self = this;
 
   callback = callback || noop;
@@ -185,40 +189,4 @@ MediaObject.prototype.release = function(callback){
 };
 
 
-/**
- *
- *
- * @callback createMediaObjectCallback
- * @param {MediaServerError} error
- * @param {module:kwsMediaApi~MediaObject} mediaObject - The created media object child instance
- */
-
-/**
- * @type   module:kwsMediaApi~MediaObject.constructorParams
- */
-MediaObject.constructorParams =
-{
-  /**
-   * @type Boolean
-   */
-  collectOnUnreferenced:
-  {
-    type: 'boolean'
-  },
-
-  /**
-   * @type integer
-   */
-  garbageCollectorPeriod:
-  {
-    type: 'integer'
-  }
-};
-
-/**
- * @type   module:kwsMediaApi~MediaObject.events
- */
-MediaObject.events = ['Error'];
-
-
-module.exports = MediaObject;
+module.exports = _MediaObject;

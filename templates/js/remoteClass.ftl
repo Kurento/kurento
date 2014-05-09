@@ -7,6 +7,13 @@
     <#default>core<#break>
   </#switch>
 </#assign>
+<#assign extends_name>
+  <#if remoteClass.name=="MediaObject">
+    <#lt>_MediaObject<#rt>
+  <#elseif remoteClass.extends??>
+    <#lt>${remoteClass.extends.name}<#rt>
+  </#if>
+</#assign>
 <#assign filename>
   <#lt><#if namespace != "">${namespace}/</#if>${remoteClass.name}.js<#rt>
 </#assign>
@@ -43,7 +50,10 @@ var checkType = require('<#if namespace != "">..<#else>.</#if>/checkType');
  */
 <#if remoteClass.extends??>
 
-var ${remoteClass.extends.name} = require('<#if getJsNamespace(remoteClass) == getJsNamespace(remoteClass.extends.type)>.<#else>../core</#if>/${remoteClass.extends.name}');
+var ${extends_name} = require('<#if getJsNamespace(remoteClass) == getJsNamespace(remoteClass.extends.type)>.<#else>../core</#if>/${extends_name}');
+<#elseif remoteClass.name=="MediaObject">
+
+var ${extends_name} = require('../${extends_name}');
 </#if>
 
 
@@ -57,7 +67,7 @@ var ${remoteClass.extends.name} = require('<#if getJsNamespace(remoteClass) == g
 </#if>
  * @class   module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}
 <#if remoteClass.extends??>
- * @extends module:kwsMediaApi~${remoteClass.extends.name}
+ * @extends module:kwsMediaApi~${extends_name}
 </#if>
  */
 
@@ -72,12 +82,12 @@ var ${remoteClass.extends.name} = require('<#if getJsNamespace(remoteClass) == g
  */
 function ${remoteClass.name}(id)
 {
-<#if remoteClass.extends??>
-  ${remoteClass.extends.name}.call(this, id);
+<#if remoteClass.extends?? || remoteClass.name=="MediaObject">
+  ${extends_name}.call(this, id);
 </#if>
 };
-<#if remoteClass.extends??>
-inherits(${remoteClass.name}, ${remoteClass.extends.name});
+<#if remoteClass.extends?? || remoteClass.name=="MediaObject">
+inherits(${remoteClass.name}, ${extends_name});
 </#if>
 <#if remoteClass.methods?has_content>
 
@@ -427,7 +437,7 @@ ${remoteClass.name}.constructorParams = {<#list (remoteClass.constructors[0].par
 /**
  * @type <#if remoteClass.extends??>  </#if>module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.events
 <#if remoteClass.extends??>
- * @extend module:kwsMediaApi~${remoteClass.extends.name}.events
+ * @extend module:kwsMediaApi~${extends_name}.events
 </#if>
  */
 <#assign remoteClassEvents_name=[]>
@@ -436,7 +446,7 @@ ${remoteClass.name}.constructorParams = {<#list (remoteClass.constructors[0].par
 </#list>
 ${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator=", "/>];
 <#if remoteClass.extends??>
-${remoteClass.name}.events.concat(${remoteClass.extends.name}.events);
+${remoteClass.name}.events.concat(${extends_name}.events);
 </#if>
 
 
