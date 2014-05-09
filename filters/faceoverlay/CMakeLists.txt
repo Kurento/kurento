@@ -12,6 +12,8 @@ set(FACEOVERLAY_SOURCES
 
 add_library(faceoverlay MODULE ${FACEOVERLAY_SOURCES})
 
+add_dependencies(faceoverlay imageoverlay facedetector)
+
 target_link_libraries(faceoverlay
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
