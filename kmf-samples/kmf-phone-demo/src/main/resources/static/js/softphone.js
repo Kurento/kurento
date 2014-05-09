@@ -1,8 +1,6 @@
 var client = new JsonRpcClient("ws://localhost:8080/phone/ws/websocket",
 		onRequest);
 
-var localPeerConnection;
-
 function onRequest(transaction, message) {
 	
 	if (message.method === "incommingCall") {
@@ -50,13 +48,11 @@ function call() {
 
 	prepareSendPlayer(function(peerConnection, offer) {
 
-		localPeerConnection = peerConnection;
-		
 		client.sendRequest("call", {
 			callTo : peer,
 			sdpOffer : offer.sdp
 		}, function(error, result) {
-			prepareReceivePlayer(localPeerConnection, result.sdpAnswer);			
+			prepareReceivePlayer(peerConnection, result.sdpAnswer);
 		});	
 	});
 }
