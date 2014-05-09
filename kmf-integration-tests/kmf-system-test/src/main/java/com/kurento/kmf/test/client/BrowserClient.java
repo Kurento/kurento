@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SystemUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -35,6 +36,8 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
@@ -232,6 +235,31 @@ public class BrowserClient implements Closeable {
 
 	public void setMaxDistance(double maxDistance) {
 		this.maxDistance = maxDistance;
+	}
+
+	public void connectToWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint) {
+		if (driver instanceof JavascriptExecutor) {
+			((JavascriptExecutor) driver).executeScript("getSdpOffer();");
+
+			// Wait to valid sdpOffer
+			(new WebDriverWait(driver, timeout))
+					.until(new ExpectedCondition<Boolean>() {
+						public Boolean apply(WebDriver d) {
+							return ((JavascriptExecutor) driver)
+									.executeScript("return sdpOffer;") != null;
+						}
+					});
+			String sdpOffer = (String) ((JavascriptExecutor) driver)
+					.executeScript("return sdpOffer;");
+			String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+
+			// Encode to base64 to avoid parsing error in Javascript due to
+			// break lines
+			sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
+
+			((JavascriptExecutor) driver).executeScript("setSdpAnswer('"
+					+ sdpAnswer + "');");
+		}
 	}
 
 }

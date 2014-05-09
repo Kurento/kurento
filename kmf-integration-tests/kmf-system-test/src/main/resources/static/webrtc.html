@@ -7,9 +7,25 @@
 <script src="./lib/adapter.js"></script>
 <script src="./lib/Console.js"></script>
 <script src="./lib/color.js"></script>
+<script src="./lib/webrtc-utils.js"></script>
 <script>
 	var conn;
 	var video;
+	var sdpOffer;
+	var peerConn;
+
+	function getSdpOffer() {
+		prepareSendPlayer(function(peerConnection, offer) {
+			peerConn = peerConnection;
+			sdpOffer = offer.sdp;
+			console.info(sdpOffer);
+		});
+	}
+
+	function setSdpAnswer(sdpAnswer) {
+		var decodedSdpAnswer = window.atob(sdpAnswer);
+		prepareReceivePlayer(peerConn, decodedSdpAnswer);
+	}
 
 	window.onload = function() {
 		console = new Console("console", console);
