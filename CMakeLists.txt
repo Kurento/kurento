@@ -4,13 +4,65 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
 )
 
+set(KMS_SDP_UTILS
+  sdp_utils.c sdp_utils.h
+)
+
+add_library(sdputils SHARED ${KMS_SDP_UTILS})
+
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_BASE_SOURCE_DIRS}
+  ${GSTREAMER_SDP_SOURCE_DIRS}
+  ${GSTREAMER_PBUTILS_SOURCE_DIRS}
+)
+
+target_link_libraries(sdputils
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_BASE_LIBRARIES}
+  ${GSTREAMER_SDP_LIBRARIES}
+  ${GSTREAMER_PBUTILS_LIBRARIES}
+)
+
+install(
+  TARGETS sdputils
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+set(KMS_UTILS
+  kmsutils.c kmsutils.h
+)
+
+add_library(kmsutils SHARED ${KMS_UTILS})
+
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_BASE_SOURCE_DIRS}
+  ${GSTREAMER_SDP_SOURCE_DIRS}
+  ${GSTREAMER_PBUTILS_SOURCE_DIRS}
+)
+
+target_link_libraries(kmsutils
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_BASE_LIBRARIES}
+  ${GSTREAMER_SDP_LIBRARIES}
+  ${GSTREAMER_PBUTILS_LIBRARIES}
+)
+
+install(
+  TARGETS kmsutils
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
 set(KMS_PLUGIN_SOURCES
   kmsplugin.c
   kmsloop.c kmsloop.h
   kmsconfcontroller.c kmsconfcontroller.h
   kmsrecordingprofile.h kmsrecordingprofile.c
-  kmsutils.c kmsutils.h
-  sdp_utils.c sdp_utils.h
   kmsagnosticbin.c kmsagnosticbin.h
   kmselement.c kmselement.h
   kmsbasesdpendpoint.c kmsbasesdpendpoint.h
@@ -66,6 +118,8 @@ include_directories(
 )
 
 target_link_libraries(kmsplugin
+  sdputils
+  kmsutils
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_BASE_LIBRARIES}
   ${GSTREAMER_SDP_LIBRARIES}
