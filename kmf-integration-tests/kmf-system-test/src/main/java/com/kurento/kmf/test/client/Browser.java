@@ -14,6 +14,10 @@
  */
 package com.kurento.kmf.test.client;
 
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+
 /**
  * Browser to perform automated web testing with Selenium WebDriver.
  * 
@@ -21,5 +25,30 @@ package com.kurento.kmf.test.client;
  * @since 4.2.3
  */
 public enum Browser {
-	CHROME, CHROME_FOR_TEST, FIREFOX
+	CHROME, CHROME_FOR_TEST, FIREFOX;
+
+	public boolean getFlags() {
+		switch (this) {
+		case CHROME:
+			return false;
+		case FIREFOX:
+			return false;
+		case CHROME_FOR_TEST:
+		default:
+			return true;
+		}
+	}
+
+	public Class<? extends WebDriver> getDriverClass() {
+		switch (this) {
+		case CHROME:
+			return ChromeDriver.class;
+		case FIREFOX:
+			return FirefoxDriver.class;
+		case CHROME_FOR_TEST:
+		default:
+			return ChromeDriver.class;
+		}
+	}
+
 }

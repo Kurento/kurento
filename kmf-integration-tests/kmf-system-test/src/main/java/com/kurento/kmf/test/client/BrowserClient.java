@@ -59,32 +59,42 @@ public class BrowserClient implements Closeable {
 	private int timeout; // seconds
 	private double maxDistance;
 
+	private String video;
+	private int serverPort;
+	private Client client;
+	private Browser browser;
+
+	public BrowserClient(int serverPort, Browser browser, Client client,
+			String video) {
+		this.video = video;
+		setupAndLaunchBrowser(serverPort, browser, client);
+	}
+
 	public BrowserClient(int serverPort, Browser browser, Client client) {
-		// Setup
+		setupAndLaunchBrowser(serverPort, browser, client);
+	}
+
+	private void setupAndLaunchBrowser(int serverPort, Browser browser,
+			Client client) {
+		this.serverPort = serverPort;
+		this.client = client;
+		this.browser = browser;
+
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
 		maxDistance = 300.0; // default distance (for color comparison)
 
-		// Browser
-		switch (browser) {
-		case FIREFOX:
-			setup(FirefoxDriver.class, false);
-			break;
-		case CHROME:
-			setup(ChromeDriver.class, false);
-			break;
-		case CHROME_FOR_TEST:
-		default:
-			setup(ChromeDriver.class, true);
-			break;
-		}
-		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
+		initDriver();
+		launchBrowser();
+	}
 
-		// Exercise test
+	private void launchBrowser() {
 		driver.get("http://localhost:" + serverPort + client.toString());
 	}
 
-	private void setup(Class<? extends WebDriver> driverClass, boolean flags) {
+	private void initDriver() {
+		Class<? extends WebDriver> driverClass = browser.getDriverClass();
+
 		if (driverClass.equals(FirefoxDriver.class)) {
 			driver = new FirefoxDriver();
 
@@ -98,13 +108,18 @@ public class BrowserClient implements Closeable {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
-			if (flags) {
+			if (browser.getFlags()) {
 				options.addArguments("--disable-web-security",
 						"--use-fake-device-for-media-stream",
 						"--use-fake-ui-for-media-stream");
+				if (video != null) {
+					options.addArguments("--use-file-for-fake-video-capture="
+							+ video);
+				}
 			}
 			driver = new ChromeDriver(options);
 		}
+		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
 	}
 
 	public void setURL(String videoUrl) {
