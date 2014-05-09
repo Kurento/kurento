@@ -1,6 +1,6 @@
 KwsMedia.js
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -24,15 +24,30 @@ KwsMedia.js
  */
 
 var EventEmitter = require('events').EventEmitter;
+var inherits     = require('inherits');
 var url          = require('url');
 
 var async = require('async');
 var WebSocket = require('ws');
 
 var RpcBuilder = require('kws-rpc-builder');
+var JsonRPC    = RpcBuilder.packers.JsonRPC;
 
-var MediaPipeline = require('./MediaPipeline');
-var checkParams   = require('./checkType').checkParams;
+var checkType   = require('./checkType');
+var checkParams = checkType.checkParams;
+
+var core      = require('./core');
+var endpoints = require('./endpoints');
+var filters   = require('./filters');
+var hubs      = require('./hubs');
+
+var Hub          = require('./core/Hub');
+var MediaElement = require('./core/MediaElement');
+
+var HubPort       = core.HubPort;
+var MediaPipeline = core.MediaPipeline;
+
+var noop = require('./utils').noop;
 
 
 /**
@@ -78,9 +93,11 @@ function KwsMedia(uri, options, onconnect, onerror)
     var method = message.method;
     var params = message.params.value;
 
-    var object = objects[params.object];
+    var id = params.object;
+
+    var object = objects[id];
     if(!object)
-      return console.warn("Unknown object id '"+params.object+"'", message);
+      return console.warn("Unknown object id '"+id+"'", message);
 
     switch(method)
     {
@@ -102,7 +119,7 @@ function KwsMedia(uri, options, onconnect, onerror)
   // JsonRPC
   //
 
-  var rpc = new RpcBuilder();
+  var rpc = new RpcBuilder(JsonRPC);
 
   var ws;
   if(typeof uri == 'string')
@@ -119,6 +136,8 @@ function KwsMedia(uri, options, onconnect, onerror)
 
     ws = new WebSocket(uri, null, options);
   }
+
+  // URI is the WebSocket itself
   else
     ws = uri;
 
@@ -137,14 +156,14 @@ function KwsMedia(uri, options, onconnect, onerror)
 //    self.emit('error', new Error('Connection error'));
   });
 
-  ws.addEventListener('close', function()
+  ws.addEventListener('close', function(event)
   {
-    self.emit('disconnect');
+    self.emit('disconnect', event);
   });
 
   ws.addEventListener('message', function(event)
   {
-    var message = rpc.decodeJSON(event.data);
+    var message = rpc.decode(event.data);
 
     // Response was processed, do nothing
     if(message == undefined) return;
@@ -164,43 +183,22 @@ function KwsMedia(uri, options, onconnect, onerror)
   });
 
 
-  var pipelines = [];
-
   this.close = function()
   {
-    async.each(pipelines,
-    function(pipeline, callback)
-    {
-      pipeline.release(callback);
-    },
-    function(error)
-    {
-      if(error) console.error(error);
-
-      ws.close();
-    });
+    ws.close();
   };
 
 
-  //
-  // Register created objects
-  //
-
-  /**
-   * A new MediaObject has been created
-   */
-  this.on('mediaObject', function(mediaObject)
+  function createObject(constructor, id, params)
   {
-    var object_id = mediaObject.id;
-
-    objects[object_id] = mediaObject;
+    var mediaObject = new constructor(id, params);
 
     /**
      * Request to release the object on the server and remove it from cache
      */
     mediaObject.on('release', function()
     {
-      delete objects[object_id];
+      delete objects[id];
     });
 
     /**
@@ -208,23 +206,105 @@ function KwsMedia(uri, options, onconnect, onerror)
      */
     mediaObject.on('_rpc', function(method, params, callback)
     {
-      if(method != 'create')
-        params.object = this.id;
+      params.object = id;
 
-      ws.send(rpc.encodeJSON(method, params, callback));
+      ws.send(rpc.encode(method, params, callback));
     });
-  });
+
+    if(mediaObject instanceof Hub
+    || mediaObject instanceof MediaPipeline)
+      mediaObject.on('_create', function(type, params, callback)
+      {
+        self.create(type, params, callback);
+      });
+
+    objects[id] = mediaObject;
+
+    return mediaObject;
+  };
+
+  /**
+   * Request to the server to create a new MediaElement
+   */
+  function createMediaObject(item, callback)
+  {
+    var type = item.type;
+
+    // If element type is not registered, use generic MediaObject
+    var constructor = core[type] || endpoints[type] || filters[type]
+                   || hubs[type] || MediaObject;
+
+    item.constructorParams = checkParams(item.params, 
+                                         constructor.constructorParams, type);
+    delete item.params;
+
+    if(type == 'HubPort')
+    {
+      var hub = item.constructorParams.hub;
+      item.constructorParams.hub = hub.id;
+    };
+
+    var mediaPipeline = item.constructorParams.mediaPipeline;
+    if(mediaPipeline)
+      item.constructorParams.mediaPipeline = mediaPipeline.id;
+
+    ws.send(rpc.encode('create', item, function(error, result)
+    {
+      if(error) return callback(error);
+
+      var id     = result.value;
+      var params = item.params;
+
+      var mediaObject = objects[id];
+      if(mediaObject) return callback(null, mediaObject);
+
+      callback(null, createObject(constructor, id));
+    }));
+  };
+
+  function describe(id, callback)
+  {
+    var mediaObject = objects[id];
+    if(mediaObject) return callback(null, mediaObject);
+
+    ws.send(rpc.encode('describe', {id: id}, function(error, result)
+    {
+      if(error) return callback(error);
+
+      var type = result.type;
+
+      // If element type is not registered, use generic MediaObject
+      var constructor = core[type] || endpoints[type] || filters[type]
+                     || hubs[type] || MediaObject;
+
+      return callback(null, createObject(constructor, id));
+    }));
+  };
+
+
+  this.getMediaobjectById = function(id, callback)
+  {
+    callback = callback || noop;
+
+    if(id instanceof Array)
+      async.map(id, describe, callback);
+    else
+      describe(id, callback);
+
+    return this;
+  };
 
 
   /**
+   * Create a new instance of a MediaObject
    *
+   * @param {external:String} type - Type of the element
+   * @param {external:string[]} [params]
+   * @callback {createMediaPipelineCallback} callback
    *
-   * @param {Object} [params] -
-   * @callback {createMediaObjectCallback} [callback]
-   *
-   * @return {KwsMedia} The own pipeline
+   * @return {module:kwsMediaApi~MediaPipeline} The pipeline itself
    */
-  this.createMediaPipeline = function(params, callback)
+  this.create = function(type, params, callback)
   {
     // Fix optional parameters
     if(params instanceof Function)
@@ -233,45 +313,61 @@ function KwsMedia(uri, options, onconnect, onerror)
         throw new SyntaxError("Nothing can be defined after the callback");
 
       callback = params;
-      params = null;
+      params   = undefined;
     };
 
-    callback = callback || function(){};
+    callback = callback || noop;
+    params   = params   || {};
 
-    var params2 =
-    {
-      type: 'MediaPipeline'
-    };
-
-    if(params)
-      params2.constructorParams = checkParams(params,
-          MediaPipeline.constructorParams, 'MediaPipeline');
-
-    // Do the request
-    ws.send(rpc.encodeJSON('create', params2, function(error, result)
-    {
-      if(error) return callback(error);
-
-      var value = result.value;
-
-      var mediaPipeline = new MediaPipeline(value, self);
-
-      pipelines.push(mediaPipeline);
-
-      mediaPipeline.on('release', function()
-      {
-        pipelines.splice(pipelines.indexOf(mediaPipeline), 1);
-      });
-
-      // Exec successful callback if it's defined
-      callback(null, mediaPipeline);
-    }));
+    if(type instanceof Array)
+      async.map(type, createMediaObject, callback);
+    else
+      createMediaObject({params: params, type: type}, callback);
 
     return this;
   };
 };
-KwsMedia.prototype.__proto__   = EventEmitter.prototype;
-KwsMedia.prototype.constructor = KwsMedia;
+inherits(KwsMedia, EventEmitter);
+
+
+/**
+ * Connect the source of a media to the sink of the next one
+ *
+ * @param {...MediaObject} media - A media to be connected
+ * @callback {createMediaObjectCallback} [callback]
+ *
+ * @return {module:kwsMediaApi~MediaPipeline} The pipeline itself
+ *
+ * @throws {SyntaxError}
+ */
+KwsMedia.prototype.connect = function(media, callback)
+{
+  // Fix lenght-variable arguments
+  media = Array.prototype.slice.call(arguments, 0);
+  callback = (typeof media[media.length - 1] == 'function') ? media.pop() : noop;
+
+  // Check if we have enought media components
+  if(media.length < 2)
+    throw new SyntaxError("Need at least two media elements to connect");
+
+  // Check MediaElements are of the correct type
+  media.forEach(function(element)
+  {
+    checkType('MediaElement', 'media', element);
+  });
+
+  // Connect the media elements
+  var src = media[0];
+
+  async.each(media.slice(1), function(sink, callback)
+  {
+    src.connect(sink, callback);
+    src = sink;
+  }, callback);
+
+  // Allow method chaining
+  return this;
+};
 
 
 /**

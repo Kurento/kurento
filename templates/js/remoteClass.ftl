@@ -4,28 +4,11 @@
     <#case "Filter">filters<#break>
     <#case "Endpoint">endpoints<#break>
     <#case "Hub">hubs<#break>
+    <#default>core<#break>
   </#switch>
 </#assign>
-<#if remoteClass.extends??>
-  <#assign extends_name>
-    <#switch remoteClass.name>
-      <#case "Hub">
-      <#case "MediaElement">
-      <#case "MediaPipeline"><#lt>MediaContainer<#break>
-      <#default>${remoteClass.extends.name}<#break>
-    </#switch>
-  </#assign>
-</#if>
 <#assign filename>
-  <#switch remoteClass.name>
-    <#case "MediaElement"><#break>
-    <#case "MediaObject"><#break>
-    <#case "MediaPad"><#break>
-    <#case "MediaPipeline"><#break>
-    <#case "MediaSink"><#break>
-    <#case "MediaSource"><#break>
-    <#default><#lt><#if namespace != "">${namespace}/</#if>${remoteClass.name}.js<#rt><#break>
-  </#switch>
+  <#lt><#if namespace != "">${namespace}/</#if>${remoteClass.name}.js<#rt>
 </#assign>
 ${filename}
 /*
@@ -43,7 +26,6 @@ ${filename}
  *
  */
 
-var extend   = require('extend');
 var inherits = require('inherits');
 <#if remoteClass.methods?has_content>
 
@@ -61,49 +43,226 @@ var checkType = require('<#if namespace != "">..<#else>.</#if>/checkType');
  */
 <#if remoteClass.extends??>
 
-var ${extends_name} = require('<#if getJsNamespace(remoteClass) == getJsNamespace(remoteClass.extends.type)>.<#else>..</#if>/${extends_name}');
+var ${remoteClass.extends.name} = require('<#if getJsNamespace(remoteClass) == getJsNamespace(remoteClass.extends.type)>.<#else>../core</#if>/${remoteClass.extends.name}');
 </#if>
 
 
 /**
 <#if remoteClass.doc??>
  * ${remoteClass.doc}
-</#if>
  *
+</#if>
 <#if remoteClass.abstract>
  * @abstract
 </#if>
  * @class   module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}
 <#if remoteClass.extends??>
- * @extends module:kwsMediaApi~${extends_name}
+ * @extends module:kwsMediaApi~${remoteClass.extends.name}
 </#if>
  */
 
 /**
 <#if remoteClass.constructors[0]??>
  * ${remoteClass.constructors[0].doc}
-</#if>
  *
+</#if>
  * @constructor
  *
  * @param {string} id
- * @param {module:kwsMediaApi~MediaContainer} parent
- * @param {module:kwsMediaApi~MediaPipeline} pipeline
- * @param {module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.constructorParams} params
  */
-function ${remoteClass.name}(id, parent, pipeline, params)
+function ${remoteClass.name}(id)
 {
 <#if remoteClass.extends??>
-  ${extends_name}.call(this, id, parent, pipeline, params);
+  ${remoteClass.extends.name}.call(this, id);
 </#if>
 };
 <#if remoteClass.extends??>
-inherits(${remoteClass.name}, ${extends_name});
+inherits(${remoteClass.name}, ${remoteClass.extends.name});
 </#if>
-
 <#if remoteClass.methods?has_content>
+
+  <#assign mediaElement_processedDuplicates=false>
   <#list remoteClass.methods?sort_by("name") as method>
 
+    <#if remoteClass.name == "MediaElement" && (method.name == "connect" || method.name == "getMediaSinks" || method.name == "getMediaSrcs")>
+      <#if !mediaElement_processedDuplicates>
+/**
+ * perform :rom:meth:`connect(sink,mediaType)` if there is exactly one sink for the given type, and their mediaDescriptions are the same
+ *
+ * @param {MediaElement} sink
+ *  the target :rom:cls:`MediaElement`  from which :rom:cls:`MediaSink` will be obtained
+ *
+ * @param {MediaPad.MediaType} [mediaType]
+ *  the :rom:enum:`MediaType` of the pads that will be connected
+ *
+ * @param {external:String} [mediaDescription]
+ *  A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources
+ *
+ * @param {module:kwsMediaApi/core~MediaElement.connectCallback} [callback]
+ *
+ * @return {module:kwsMediaApi/core~MediaElement}
+ *  The own media object
+ */
+MediaElement.prototype.connect = function(sink, mediaType, mediaDescription, callback){
+  // Fix optional parameters
+  if(mediaType instanceof Function)
+  {
+    if(mediaDescription)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = mediaType;
+    mediaDescription = undefined;
+    mediaType = undefined;
+  }
+
+  else if(mediaDescription instanceof Function)
+  {
+    if(callback)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = mediaDescription;
+    mediaDescription = undefined;
+  };
+
+  if(!mediaType && mediaDescription)
+    throw new SyntaxError("'mediaType' is undefined while 'mediaDescription' is not");
+
+  checkType('MediaElement', 'sink', sink, {required: true});
+  checkType('MediaType', 'mediaType', mediaType);
+  checkType('String', 'mediaDescription', mediaDescription);
+
+  var params = {
+    sink: sink.id,
+    mediaType: mediaType,
+    mediaDescription: mediaDescription,
+  };
+
+  this.invoke('connect', params, callback);
+
+  return this;
+};
+/**
+ * @callback MediaElement~connectCallback
+ * @param {Error} error
+ */
+
+/**
+ * A list of sinks of the given :rom:ref:`MediaType`. The list will be empty if no sinks are found.
+ *
+ * @param {MediaPad.MediaType} [mediaType]
+ *  One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.VIDEO` or :rom:attr:`MediaType.DATA`
+ *
+ * @param {external:String} [description]
+ *  A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources
+ *
+ * @param {module:kwsMediaApi/core~MediaElement.getMediaSinksCallback} [callback]
+ *
+ * @return {module:kwsMediaApi/core~MediaElement}
+ *  The own media object
+ */
+MediaElement.prototype.getMediaSinks = function(mediaType, description, callback){
+  // Fix optional parameters
+  if(mediaType instanceof Function)
+  {
+    if(description)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = mediaType;
+    description = undefined;
+    mediaType = undefined;
+  }
+
+  else if(description instanceof Function)
+  {
+    if(callback)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = description;
+    mediaDescription = undefined;
+  };
+
+  if(!mediaType && description)
+    throw new SyntaxError("'mediaType' is undefined while 'description' is not");
+
+  checkType('MediaType', 'mediaType', mediaType);
+  checkType('String', 'description', description);
+
+  var params = {
+    mediaType: mediaType,
+    description: description,
+  };
+
+  this.invoke('getMediaSinks', params, callback);
+
+  return this;
+};
+/**
+ * @callback MediaElement~getMediaSinksCallback
+ * @param {Error} error
+ * @param {MediaSink} result
+ *  A list of sinks. The list will be empty if no sinks are found.
+ */
+
+/**
+ * Get the media sources of the given type and description
+ *
+ * @param {MediaPad.MediaType} [mediaType]
+ *  One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.VIDEO` or :rom:attr:`MediaType.DATA`
+ *
+ * @param {external:string} [description]
+ *  A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources
+ *
+ * @param {module:kwsMediaApi/core~MediaElement.getMediaSrcsCallback} [callback]
+ *
+ * @return {module:kwsMediaApi/core~MediaElement}
+ *  The own media object
+ */
+MediaElement.prototype.getMediaSrcs = function(mediaType, description, callback){
+  // Fix optional parameters
+  if(mediaType instanceof Function)
+  {
+    if(description)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = mediaType;
+    description = undefined;
+    mediaType = undefined;
+  }
+
+  else if(description instanceof Function)
+  {
+    if(callback)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = description;
+    mediaDescription = undefined;
+  };
+
+  if(!mediaType && description)
+    throw new SyntaxError("'mediaType' is undefined while 'description' is not");
+
+  checkType('MediaType', 'mediaType', mediaType);
+  checkType('String', 'description', description);
+
+  var params = {
+    mediaType: mediaType,
+    description: description,
+  };
+
+  this.invoke('getMediaSrcs', params, callback);
+
+  return this;
+};
+/**
+ * @callback MediaElement~getMediaSrcsCallback
+ * @param {Error} error
+ * @param {MediaSource} result
+ *  A list of sources. The list will be empty if no sources are found.
+ */
+      </#if>
+      <#assign mediaElement_processedDuplicates=true>
+      <#break>
+    </#if>
     <#assign methodParams_name=[]>
     <#list method.params as param>
       <#assign methodParams_name=methodParams_name+[param.name]>
@@ -112,13 +271,13 @@ inherits(${remoteClass.name}, ${extends_name});
     <#if method.doc??>
  * ${method.doc}
     </#if>
-    <#list method.params as param>
+      <#list method.params as param>
  *
  * @param {${param.type.name}} ${param.name}
       <#if param.doc??>
  *  ${param.doc}
       </#if>
-    </#list>
+     </#list>
  *
  * @param {module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.${method.name}Callback} [callback]
  *
@@ -153,11 +312,98 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   </#list>
 </#if>
 
+<#if remoteClass.name == "Hub">
+
 /**
- * @type   module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.constructorParams
-<#if remoteClass.extends??>
- * @extend module:kwsMediaApi~${extends_name}.constructorParams
+ * Create a new instance of a {module:kwsMediaApi/core~HubPort} attached to this {module:kwsMediaApi/core~Hub}
+ *
+ * @callback {createHubCallback} callback
+ *
+ * @return {module:kwsMediaApi/core~Hub} The hub itself
+ */
+Hub.prototype.createHubPort = function(callback)
+{
+  this.emit('_create', 'HubPort', {hub: this.id}, callback);
+
+  return this;
+};
+/**
+ * @callback module:kwsMediaApi/core~Hub~createHubCallback
+ * @param {Error} error
+ * @param {module:kwsMediaApi/core~HubPort} result
+ *  The created HubPort
+ */
+
 </#if>
+<#if remoteClass.name == "MediaPipeline">
+
+/**
+ * Create a new instance of a {module:kwsMediaApi/core~MediaObject} attached to this {module:kwsMediaApi/core~MediaPipeline}
+ *
+ * @param {external:string} type - Type of the {module:kwsMediaApi/core~MediaObject}
+ * @param {external:string[]} [params]
+ * @callback {module:kwsMediaApi/core~MediaPipeline~createCallback} callback
+ *
+ * @return {module:kwsMediaApi/core~MediaPipeline} The pipeline itself
+ */
+MediaPipeline.prototype.create = function(type, params, callback){
+  // Fix optional parameters
+  if(params instanceof Function){
+    if(callback)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = params;
+    params = {};
+  };
+
+  params.mediaPipeline = this;
+
+  this.emit('_create', type, params, callback);
+
+  return this;
+};
+/**
+ * @callback module:kwsMediaApi/core~MediaPipeline~createCallback
+ * @param {Error} error
+ * @param {module:kwsMediaApi/core~MediaElement} result
+ *  The created MediaElement
+ */
+
+</#if>
+<#if remoteClass.name == "MediaSource">
+
+/**
+ * Disconnect this source pad from the specified sink pad
+ *
+ * @public
+ *
+ * @param {...module:kwsMediaApi/core~MediaSink} sink - Sink to be disconnected
+ * @callback {module:kwsMediaApi/core~MediaSource~disconnectCallback} callback
+ *
+ * @return {module:kwsMediaApi/core~MediaSource} The own {module:kwsMediaApi/core~MediaSource}
+ */
+MediaSource.prototype.disconnect = function(sink, callback)
+{
+  checkType('MediaSink', 'sink', sink, {required: true});
+
+  var params =
+  {
+    sink: sink
+  };
+
+  this.invoke('disconnect', params, callback);
+
+  return this;
+};
+/**
+ * @callback module:kwsMediaApi/core~MediaSource~disconnectCallback
+ * @param {Error} error
+ */
+
+</#if>
+
+/**
+ * @type module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.constructorParams
 <#if remoteClass.constructors[0]??>
   <#list remoteClass.constructors[0].params?sort_by("name") as param>
  *
@@ -177,14 +423,11 @@ ${remoteClass.name}.constructorParams = {<#list (remoteClass.constructors[0].par
 </#if>
   },
 </#list>};
-<#if remoteClass.extends??>
-extend(${remoteClass.name}.constructorParams, ${extends_name}.constructorParams);
-</#if>
 
 /**
- * @type   module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.events
+ * @type <#if remoteClass.extends??>  </#if>module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.events
 <#if remoteClass.extends??>
- * @extend module:kwsMediaApi~${extends_name}.events
+ * @extend module:kwsMediaApi~${remoteClass.extends.name}.events
 </#if>
  */
 <#assign remoteClassEvents_name=[]>
@@ -193,21 +436,26 @@ extend(${remoteClass.name}.constructorParams, ${extends_name}.constructorParams)
 </#list>
 ${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator=", "/>];
 <#if remoteClass.extends??>
-${remoteClass.name}.events.concat(${extends_name}.events);
-</#if>
-<#if !remoteClass.abstract>
-
-
-/**
- *
- *
- * @param {module:kwsMediaApi<#if namespace != "">/${namespace}</#if>~${remoteClass.name}.constructorParams} params
- */
-${remoteClass.name}.create = function(pipeline, params, callback)
-{
-  pipeline.createMediaElement('${remoteClass.name}', params, callback);
-};
+${remoteClass.name}.events.concat(${remoteClass.extends.name}.events);
 </#if>
 
 
 module.exports = ${remoteClass.name};
+<#if !remoteClass.abstract>
+
+
+${remoteClass.name}.check = function(key, value)
+{
+  if(!(value instanceof ${remoteClass.name}))
+    throw SyntaxError(key+' param should be a ${remoteClass.name}, not '+typeof value);
+};
+</#if>
+<#if remoteClass.name == "MediaElement">
+
+
+MediaElement.check = function(key, value)
+{
+  if(!(value instanceof MediaElement))
+    throw SyntaxError(key+' param should be a MediaElement, not '+typeof value);
+};
+</#if>

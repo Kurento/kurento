@@ -159,10 +159,10 @@ function checkMethodParams(callparams, method_params)
 
 module.exports = checkType;
 
-var complexTypes = require('./complexTypes');
-
-
 checkType.checkParams = checkParams;
+
+
+// Basic types
 
 checkType.boolean = checkBoolean;
 checkType.double  = checkDouble;
@@ -170,4 +170,37 @@ checkType.int     = checkInteger;
 checkType.Object  = checkObject;
 checkType.String  = checkString;
 
+
+// Complex types
+
+var complexTypes = require('./complexTypes');
+
 extend(checkType, complexTypes);
+
+
+// Elements
+
+function addCheckers(elements)
+{
+  for(var key in elements)
+  {
+    var check = elements[key].check;
+    if(check) checkType[key] = check;
+  };
+};
+
+
+var core      = require('./core');
+var endpoints = require('./endpoints');
+var filters   = require('./filters');
+var hubs      = require('./hubs');
+
+addCheckers(core);
+addCheckers(endpoints);
+addCheckers(filters);
+addCheckers(hubs);
+
+
+var MediaElement = require('./core/MediaElement');
+
+checkType.MediaElement = MediaElement.check;

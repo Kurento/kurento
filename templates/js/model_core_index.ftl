@@ -1,6 +1,6 @@
-index.js
+core/index.js
 /*
- * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -17,21 +17,21 @@ index.js
 /**
  * Media API for the Kurento Web SDK
  *
- * @module kwsMediaApi
+ * @module kwsMediaApi/core
  *
- * @copyright 2013-2014 Kurento (http://kurento.org/)
+ * @copyright 2014 Kurento (http://kurento.org/)
  * @license LGPL
  */
 
-var KwsMedia = require('./KwsMedia');
+<#list model.remoteClasses?sort_by("name") as remoteClass>
+  <#if getJsNamespace(remoteClass) == "None" && !remoteClass.abstract>
+var ${remoteClass.name} = require('./${remoteClass.name}');
+  </#if>
+</#list>
 
-var endpoints = require('./endpoints');
-var filters   = require('./filters');
-var hubs      = require('./hubs');
 
-
-exports.KwsMedia = KwsMedia;
-
-exports.endpoints = endpoints;
-exports.filters   = filters;
-exports.hubs      = hubs;
+<#list model.remoteClasses?sort_by("name") as remoteClass>
+  <#if getJsNamespace(remoteClass) == "None" && !remoteClass.abstract>
+exports.${remoteClass.name} = ${remoteClass.name};
+  </#if>
+</#list>

@@ -1,4 +1,4 @@
-MediaObject.js
+core/MediaObject.js
 /*
  * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
  *
@@ -17,6 +17,8 @@ MediaObject.js
 var EventEmitter = require('events').EventEmitter;
 
 var inherits = require('inherits');
+
+var noop = require('../utils').noop;
 
 
 /**
@@ -42,81 +44,12 @@ var inherits = require('inherits');
  * @constructor
  *
  * @param {string} id
- * @param {module:kwsMediaApi~MediaContainer} parent
- * @param {module:kwsMediaApi~MediaPipeline} [pipeline]
- * @param {module:kwsMediaApi~MediaObject.constructorParams} params
  */
-function MediaObject(id, parent, pipeline, params)
+function MediaObject(id)
 {
   var self = this;
 
   EventEmitter.call(this);
-
-  for(var key in params)
-    Object.defineProperty(this, key, {value: params[key]});
-
-
-  //
-  // Subscribe and unsubscribe events on the server when adding and removing
-  // event listeners on this MediaObject
-  //
-
-  var tokens = {};
-
-  this.on('removeListener', function(event, listener)
-  {
-    // Blacklisted events
-    if(event == 'release'
-    || event == '_rpc'
-    || event == 'mediaObject'
-    || event == 'newListener')
-      return;
-
-    var count = EventEmitter.listenerCount(self, event);
-
-    if(!count)
-    {
-      var token = tokens[event];
-
-      var params =
-      {
-        subscription: token
-      };
-
-      this.emit('_rpc', 'unsubscribe', params, function(error)
-      {
-        console.error(error);
-        if(error) return self.emit('error', error);
-
-        delete tokens[event];
-      });
-    };
-  });
-
-  this.on('newListener', function(event, listener)
-  {
-    // Blacklisted events
-    if(event == 'release'
-    || event == '_rpc')
-      return;
-
-    var count = EventEmitter.listenerCount(self, event);
-
-    if(!count)
-    {
-      var params =
-      {
-        type: event
-      };
-
-      this.emit('_rpc', 'subscribe', params, function(error, token)
-      {
-        if(error) return self.emit('error', error);
-
-        tokens[event] = token;
-      });
-    };
-  });
 
 
   //
@@ -130,31 +63,55 @@ function MediaObject(id, parent, pipeline, params)
    * @readonly
    * @member {external:Number}
    */
-  Object.defineProperty(this, "id", {value : id});
-
-  /**
-   * Parent (object that created it) of a MediaObject
-   *
-   * @public
-   * @readonly
-   * @member {module:kwsMediaApi~MediaObject}
-   */
-  Object.defineProperty(this, "parent", {value : parent});
-
-  /**
-   * Pipeline to which this MediaObjects belong
-   *
-   * If this MediaObject is a pipeline, return itself
-   *
-   * @public
-   * @readonly
-   * @member {module:kwsMediaApi~MediaPipeline}
-   */
-  Object.defineProperty(this, "pipeline", {value : pipeline || this});
+  Object.defineProperty(this, "id", {value: id});
 
 
-  // Notify that this MediaObject has been created
-  parent.emit('mediaObject', this);
+  //
+  // Subscribe and unsubscribe events on the server when adding and removing
+  // event listeners on this MediaObject
+  //
+
+  var subscriptions = {};
+
+  this.on('removeListener', function(event, listener)
+  {
+    // Blacklisted events
+    if(event == 'release'
+    || event == '_rpc'
+    || event == 'newListener')
+      return;
+
+    var count = EventEmitter.listenerCount(self, event);
+    if(count) return;
+
+    var token = subscriptions[event];
+
+    this.emit('_rpc', 'unsubscribe', {subscription: token}, function(error)
+    {
+      if(error) return self.emit('error', error);
+
+      delete subscriptions[event];
+    });
+  });
+
+  this.on('newListener', function(event, listener)
+  {
+    // Blacklisted events
+    if(event == 'release'
+    || event == '_rpc'
+    || event == '_create')
+      return;
+
+    var count = EventEmitter.listenerCount(self, event);
+    if(count) return;
+
+    this.emit('_rpc', 'subscribe', {type: event}, function(error, token)
+    {
+      if(error) return self.emit('error', error);
+
+      subscriptions[event] = token;
+    });
+  });
 };
 inherits(MediaObject, EventEmitter);
 
@@ -163,7 +120,7 @@ inherits(MediaObject, EventEmitter);
  * Send a command to a media object
  *
  * @param {external:String} method - Command to be executed by the server
- * @param {module:kwsMediaApi~MediaObject.constructorParams} [params] -
+ * @param {module:kwsMediaApi~MediaObject.constructorParams} [params]
  * @callback {createMediaObjectCallback} callback
  *
  * @return {module:kwsMediaApi~MediaObject} The own media object
@@ -177,7 +134,7 @@ MediaObject.prototype.invoke = function(method, params, callback)
       throw new SyntaxError("Nothing can be defined after the callback");
 
     callback = params;
-    params = null;
+    params = undefined;
   };
 
   // Generate request parameters
@@ -212,10 +169,7 @@ MediaObject.prototype.invoke = function(method, params, callback)
 MediaObject.prototype.release = function(callback){
   var self = this;
 
-  callback = callback || function(error)
-  {
-    if(error) console.error(error);
-  };
+  callback = callback || noop;
 
   this.emit('_rpc', 'release', {}, function(error)
   {
