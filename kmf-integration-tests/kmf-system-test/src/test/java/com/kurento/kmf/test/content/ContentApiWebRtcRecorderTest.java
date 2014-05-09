@@ -54,7 +54,7 @@ import com.kurento.kmf.test.mediainfo.MediaInfo;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class ContentApiWebRtcRecorder extends ContentApiTest {
+public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 
 	private static final String HANDLER1 = "/webrtcRecorder";
 	private static final String HANDLER2 = "/webrtcRecorderPlayer";
