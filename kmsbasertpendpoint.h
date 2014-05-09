@@ -63,6 +63,7 @@ struct _KmsBaseRtpEndpointClass
 
 GType kms_base_rtp_endpoint_get_type (void);
 
+/* rtpbin must be used helding the KmsBaseRtpEndpoint's lock */
 GstElement *kms_base_rtp_endpoint_get_rtpbin (KmsBaseRtpEndpoint * self);
 
 G_END_DECLS

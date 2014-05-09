@@ -272,7 +272,7 @@ kms_webrtc_connection_create (NiceAgent * agent, GMainContext * context,
 
 typedef struct _ConnectRtcpData
 {
-  GstElement *rtpbin;
+  KmsWebrtcEndpoint *webrtc_endpoint;
   KmsWebRTCTransport *tr;
   const gchar *src_pad_name;
 } ConnectRtcpData;
@@ -284,6 +284,19 @@ connect_rtcp_data_destroy (gpointer data)
     return;
 
   g_slice_free (ConnectRtcpData, data);
+}
+
+static ConnectRtcpData *
+create_connect_rtcp_data (KmsWebrtcEndpoint * webrtc_endpoint,
+    KmsWebRTCTransport * tr, const gchar * src_pad_name)
+{
+  ConnectRtcpData *data = g_slice_new0 (ConnectRtcpData);
+
+  data->webrtc_endpoint = g_object_ref (webrtc_endpoint);
+  data->tr = tr;
+  data->src_pad_name = src_pad_name;
+
+  return data;
 }
 
 typedef struct _ConnectRtcpBundleData
@@ -1197,8 +1210,15 @@ gathering_done (NiceAgent * agent, guint stream_id, KmsWebrtcEndpoint * self)
 static gboolean
 connect_rtcp (ConnectRtcpData * data)
 {
-  gst_element_link_pads (data->rtpbin,
+  KmsBaseRtpEndpoint *base_rtp_endpoint =
+      KMS_BASE_RTP_ENDPOINT (data->webrtc_endpoint);
+
+  KMS_ELEMENT_LOCK (base_rtp_endpoint);
+
+  gst_element_link_pads (kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint),
       data->src_pad_name, data->tr->dtlssrtpenc, "rtcp_sink");
+
+  KMS_ELEMENT_UNLOCK (base_rtp_endpoint);
 
   return FALSE;
 }
@@ -1216,6 +1236,7 @@ connect_bundle_rtcp_funnel (ConnectRtcpBundleData * data)
       "sink_%u");
 
   KMS_ELEMENT_UNLOCK (base_rtp_endpoint);
+
   return FALSE;
 }
 
@@ -1270,12 +1291,9 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     }
 
     if (conn != NULL) {
-      ConnectRtcpData *data;
-
-      data = g_slice_new0 (ConnectRtcpData);
-      data->rtpbin = rtpbin;
-      data->tr = conn->rtcp_transport;
-      data->src_pad_name = rtcp_src_pad_name;
+      ConnectRtcpData *data =
+          create_connect_rtcp_data (webrtc_endpoint, conn->rtcp_transport,
+          rtcp_src_pad_name);
 
       gst_element_link_pads (rtpbin,
           rtp_src_pad_name, conn->rtp_transport->dtlssrtpenc, "rtp_sink");
