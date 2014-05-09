@@ -18,8 +18,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -44,9 +42,6 @@ public class ContentApiTest extends BaseTest {
 	private boolean springBootEnabled = false;
 	protected ConfigurableApplicationContext context;
 	protected static CountDownLatch terminateLatch;
-
-	@Rule
-	public TestName testName = new TestName();
 
 	@Before
 	public void start() throws Exception {
