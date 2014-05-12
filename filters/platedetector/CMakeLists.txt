@@ -23,12 +23,12 @@ target_link_libraries(platedetector
 install(
   TARGETS platedetector
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_MODULESDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install ( FILES
-  plateLanguage.traineddata
+  tessdata/plateLanguage.traineddata
 
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PACKAGE}/tessdata/
 )

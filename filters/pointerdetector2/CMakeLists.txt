@@ -13,6 +13,8 @@ set(POINTERDETECTOR2_SOURCES
 
 add_library(pointerdetector2 MODULE ${POINTERDETECTOR2_SOURCES})
 
+add_dependencies(pointerdetector2 kmsplugin)
+
 target_link_libraries(pointerdetector2
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
@@ -23,6 +25,6 @@ target_link_libraries(pointerdetector2
 install(
   TARGETS pointerdetector2
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_MODULESDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
