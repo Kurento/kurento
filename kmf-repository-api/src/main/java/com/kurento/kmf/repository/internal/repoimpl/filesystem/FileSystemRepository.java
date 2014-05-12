@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.repository.DuplicateItemException;
 import com.kurento.kmf.repository.RepositoryApiConfiguration;
 import com.kurento.kmf.repository.RepositoryItem;
@@ -85,22 +86,20 @@ public class FileSystemRepository implements RepositoryWithHttp {
 		}
 	}
 
-	private void checkFolder(File baseFolder) {
-		if (baseFolder.exists() && !baseFolder.isDirectory()) {
+	private void checkFolder(File folder) {
+		if (folder.exists() && !folder.isDirectory()) {
 			throw new IllegalArgumentException("The specified \""
-					+ baseFolder.getAbsolutePath() + "\" is not a valid folder");
-		} else {
+					+ folder.getAbsolutePath() + "\" is not a valid folder");
+		}
 
-			if (!baseFolder.exists()) {
-				boolean created = baseFolder.mkdirs();
-				if (!created) {
-					throw new IllegalArgumentException(
-							"Error while creating \""
-									+ baseFolder.getAbsolutePath()
-									+ "\" folder");
-				}
+		if (!folder.exists()) {
+			boolean created = folder.mkdirs();
+			if (!created) {
+				throw new IllegalArgumentException("Error while creating \""
+						+ folder.getAbsolutePath() + "\" folder");
 			}
 		}
+
 	}
 
 	@Override
@@ -148,7 +147,7 @@ public class FileSystemRepository implements RepositoryWithHttp {
 
 	private List<RepositoryItem> createItemsForIds(
 			List<Entry<String, Map<String, String>>> itemsInfo) {
-		List<RepositoryItem> items = new ArrayList<RepositoryItem>();
+		List<RepositoryItem> items = new ArrayList<>();
 		for (Entry<String, Map<String, String>> itemInfo : itemsInfo) {
 			String id = itemInfo.getKey();
 			items.add(new FileRepositoryItem(this, getFileForId(id), id,
@@ -161,6 +160,7 @@ public class FileSystemRepository implements RepositoryWithHttp {
 		return new File(baseFolder, id);
 	}
 
+	@Override
 	public RepositoryHttpManager getRepositoryHttpManager() {
 		return httpManager;
 	}
@@ -173,7 +173,7 @@ public class FileSystemRepository implements RepositoryWithHttp {
 		File file = fileItem.getFile();
 		boolean success = file.delete();
 		if (!success) {
-			throw new RuntimeException("The file can't be deleted");
+			throw new KurentoException("The file can't be deleted");
 		}
 	}
 

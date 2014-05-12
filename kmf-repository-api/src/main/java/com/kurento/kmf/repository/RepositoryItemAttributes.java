@@ -68,7 +68,7 @@ public class RepositoryItemAttributes {
 	/**
 	 * Creation date.
 	 */
-	protected Date creationDate = null;
+	protected Date creationDate;
 
 	/**
 	 * Last modified time.
@@ -78,27 +78,27 @@ public class RepositoryItemAttributes {
 	/**
 	 * Last modified date.
 	 */
-	protected Date lastModifiedDate = null;
+	protected Date lastModifiedDate;
 
 	/**
 	 * Last modified date in HTTP format.
 	 */
-	protected String lastModifiedHttp = null;
+	protected String lastModifiedHttp;
 
 	/**
 	 * MIME type.
 	 */
-	protected String mimeType = null;
+	protected String mimeType;
 
 	/**
 	 * Weak ETag.
 	 */
-	protected String weakETag = null;
+	protected String weakETag;
 
 	/**
 	 * Strong ETag.
 	 */
-	protected String strongETag = null;
+	protected String strongETag;
 
 	/**
 	 * Get content length.

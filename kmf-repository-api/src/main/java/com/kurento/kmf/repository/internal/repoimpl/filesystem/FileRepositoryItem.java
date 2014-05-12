@@ -26,12 +26,18 @@ import java.io.OutputStream;
 import java.net.URLConnection;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.repository.RepositoryItemAttributes;
 import com.kurento.kmf.repository.internal.repoimpl.AbstractRepositoryItem;
 
 public class FileRepositoryItem extends AbstractRepositoryItem {
 
-	private File file;
+	private static final Logger log = LoggerFactory
+			.getLogger(FileRepositoryItem.class);
+	private final File file;
 	private OutputStream storingOutputStream;
 
 	public FileRepositoryItem(FileSystemRepository repository, File file,
@@ -53,11 +59,10 @@ public class FileRepositoryItem extends AbstractRepositoryItem {
 		attributes.setLastModified(file.lastModified());
 
 		String mimeType = null;
-		try {
-			InputStream is = new BufferedInputStream(new FileInputStream(file));
+		try (InputStream is = new BufferedInputStream(new FileInputStream(file))) {
 			mimeType = URLConnection.guessContentTypeFromStream(is);
-			is.close();
 		} catch (Exception e) {
+			log.warn("Exception produced during load of attributes", e);
 		}
 
 		attributes.setMimeType(mimeType);
@@ -73,7 +78,7 @@ public class FileRepositoryItem extends AbstractRepositoryItem {
 		try {
 			return new FileInputStream(file);
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(
+			throw new KurentoException(
 					"The file storing this repositoty item was deleted before creation",
 					e);
 		}
@@ -90,6 +95,7 @@ public class FileRepositoryItem extends AbstractRepositoryItem {
 
 			storingOutputStream = new FilterOutputStream(new FileOutputStream(
 					file)) {
+				@Override
 				public void close() throws java.io.IOException {
 					refreshAttributesOnClose();
 				}
@@ -98,8 +104,8 @@ public class FileRepositoryItem extends AbstractRepositoryItem {
 			return storingOutputStream;
 
 		} catch (FileNotFoundException e) {
-			throw new RuntimeException(
-					"There is a problem to open the output stream to the file "
+			throw new KurentoException(
+					"There is a problem opening the output stream to the file "
 							+ "that will store the contents of the repositoty item",
 					e);
 		}

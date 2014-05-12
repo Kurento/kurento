@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.repository.Repository;
 import com.kurento.kmf.repository.RepositoryApiConfiguration;
 import com.kurento.kmf.repository.internal.repoimpl.filesystem.FileSystemRepository;
@@ -56,7 +57,7 @@ public class RepositoryApplicationContextConfiguration {
 				"mongodb")) {
 			return new MongoRepository();
 		} else {
-			throw new RuntimeException(
+			throw new KurentoException(
 					"Unrecognized repository type. Must be filesystem or mongodb");
 		}
 	}
@@ -75,9 +76,9 @@ public class RepositoryApplicationContextConfiguration {
 		} catch (NullPointerException npe) {
 			log.info("Configuring Repository API. Could not find parent context. Switching to default configuration ...");
 		} catch (NoSuchBeanDefinitionException t) {
-			log.info("Configuring Repository API. Could not find exacly one bean of class "
-					+ RepositoryApiConfiguration.class.getSimpleName()
-					+ ". Switching to default configuration ...");
+			log.info(
+					"Configuring Repository API. Could not find exacly one bean of class {}. Switching to default configuration ...",
+					RepositoryApiConfiguration.class.getSimpleName());
 		}
 		return new RepositoryApiConfiguration();
 	}

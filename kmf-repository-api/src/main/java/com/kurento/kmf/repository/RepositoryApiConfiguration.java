@@ -38,6 +38,9 @@ public class RepositoryApiConfiguration {
 	/**
 	 * Sets the type of the repository. The value can be "filesystem" or
 	 * "mongodb".
+	 * 
+	 * @param webappPublicURL
+	 *            URL for the web application
 	 */
 	public void setWebappPublicURL(String webappPublicURL) {
 		this.webappPublicURL = webappPublicURL;
@@ -57,6 +60,9 @@ public class RepositoryApiConfiguration {
 	/**
 	 * Sets the type of the repository. The value can be "filesystem" or
 	 * "mongodb".
+	 * 
+	 * @param repositoryType
+	 *            type of the repository
 	 */
 	public void setRepositoryType(String repositoryType) {
 		this.repositoryType = repositoryType;
@@ -77,6 +83,10 @@ public class RepositoryApiConfiguration {
 	/**
 	 * Sets the folder path of the repository. This property is only used when
 	 * the repository type is "filesystem".
+	 * 
+	 * @param fileSystemFolder
+	 *            folder, in the filesystem, that the repository will use to
+	 *            save the files
 	 */
 	public void setFileSystemFolder(String fileSystemFolder) {
 		this.fileSystemFolder = fileSystemFolder;
@@ -97,6 +107,9 @@ public class RepositoryApiConfiguration {
 	/**
 	 * Sets the database name used for the repository. This property is only
 	 * used when the repository type is "mongodb".
+	 * 
+	 * @param mongoDatabaseName
+	 *            The database name
 	 */
 	public void setMongoDatabaseName(String mongoDatabaseName) {
 		this.mongoDatabaseName = mongoDatabaseName;
@@ -118,6 +131,9 @@ public class RepositoryApiConfiguration {
 	/**
 	 * Sets the name of the gridfs collection used for the repository. This
 	 * property is only used when the repository type is "mongodb".
+	 * 
+	 * @param mongoGridFSCollectionName
+	 *            the name of the gridfs collection
 	 */
 	public void setMongoGridFSCollectionName(String mongoGridFSCollectionName) {
 		this.mongoGridFSCollectionName = mongoGridFSCollectionName;
@@ -140,6 +156,9 @@ public class RepositoryApiConfiguration {
 	 * Sets the connection to mongo database in the format specified in
 	 * http://docs.mongodb.org/manual/reference/connection-string/. This
 	 * property is only used when the repository type is "mongodb".
+	 * 
+	 * @param mongoURLConnection
+	 *            connection URL for the mong database
 	 */
 	public void setMongoURLConnection(String mongoURLConnection) {
 		this.mongoURLConnection = mongoURLConnection;

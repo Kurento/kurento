@@ -57,15 +57,11 @@ public class MongoRepository implements RepositoryWithHttp {
 	}
 
 	// TODO Define ways to let users access to low level mongo backend. I prefer
-	// using Spring with @Autowired, but
-	// can be useful to let users access mongo from repository.
+	// using Spring with @Autowired, but can be useful to let users access
+	// mongo from repository.
 	public GridFS getGridFS() {
 		return gridFS;
 	}
-
-	// public MongoTemplate getMongoTemplate() {
-	// return mongoTemplate;
-	// }
 
 	@Override
 	public RepositoryItem findRepositoryItemById(String id) {
@@ -98,7 +94,7 @@ public class MongoRepository implements RepositoryWithHttp {
 
 		MongoRepositoryItem item = new MongoRepositoryItem(this, dbFile);
 
-		Map<String, String> metadata = new HashMap<String, String>();
+		Map<String, String> metadata = new HashMap<>();
 		DBObject object = dbFile.getMetaData();
 		for (String key : object.keySet()) {
 			metadata.put(key, object.get(key).toString());
@@ -128,6 +124,7 @@ public class MongoRepository implements RepositoryWithHttp {
 		return createRepositoryItem(dbFile);
 	}
 
+	@Override
 	public RepositoryHttpManager getRepositoryHttpManager() {
 		return httpManager;
 	}
@@ -161,7 +158,7 @@ public class MongoRepository implements RepositoryWithHttp {
 	private List<RepositoryItem> findRepositoryItemsByQuery(String query) {
 		List<GridFSDBFile> files = gridFS.find((DBObject) JSON.parse(query));
 
-		List<RepositoryItem> repositoryItems = new ArrayList<RepositoryItem>();
+		List<RepositoryItem> repositoryItems = new ArrayList<>();
 		for (GridFSDBFile file : files) {
 			repositoryItems.add(createRepositoryItem(file));
 		}

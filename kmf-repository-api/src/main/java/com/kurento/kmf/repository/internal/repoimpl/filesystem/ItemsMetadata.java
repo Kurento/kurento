@@ -37,12 +37,12 @@ import com.mongodb.util.JSON;
 
 public class ItemsMetadata {
 
-	private Logger log = LoggerFactory.getLogger(ItemsMetadata.class);
+	private final Logger log = LoggerFactory.getLogger(ItemsMetadata.class);
 
 	// TODO Avoid potential memory leaks using Google's MapMaker
 	private ConcurrentMap<String, Map<String, String>> itemsMetadata;
 
-	private File itemsMetadataFile;
+	private final File itemsMetadataFile;
 
 	public ItemsMetadata(File itemsMetadataFile) {
 		this.itemsMetadataFile = itemsMetadataFile;
@@ -54,20 +54,20 @@ public class ItemsMetadata {
 	}
 
 	private void loadItemsMetadata() throws IOException {
-		itemsMetadata = new ConcurrentHashMap<String, Map<String, String>>();
+		itemsMetadata = new ConcurrentHashMap<>();
 		DBObject contents = (DBObject) JSON.parse(loadFileAsString());
 		if (contents != null) {
 			for (String key : contents.keySet()) {
 				try {
 					DBObject metadata = (DBObject) contents.get(key);
-					Map<String, String> map = new HashMap<String, String>();
+					Map<String, String> map = new HashMap<>();
 					for (String metadataKey : metadata.keySet()) {
 						map.put(metadataKey, metadata.get(metadataKey)
 								.toString());
 					}
 					itemsMetadata.put(key, map);
 				} catch (ClassCastException e) {
-					log.warn("Attribute '" + key + "' should be an object");
+					log.warn("Attribute '{}' should be an object", key);
 				}
 			}
 		}
@@ -80,13 +80,14 @@ public class ItemsMetadata {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		FileReader metadataFile = new FileReader(itemsMetadataFile);
-		BufferedReader br = new BufferedReader(metadataFile);
-		String line;
-		while ((line = br.readLine()) != null) {
-			sb.append(line).append("\n");
+		try (FileReader metadataFile = new FileReader(itemsMetadataFile)) {
+			try (BufferedReader br = new BufferedReader(metadataFile)) {
+				String line;
+				while ((line = br.readLine()) != null) {
+					sb.append(line).append("\n");
+				}
+			}
 		}
-		br.close();
 		return sb.toString();
 	}
 
@@ -98,7 +99,7 @@ public class ItemsMetadata {
 	public synchronized Map<String, String> loadMetadata(String id) {
 		Map<String, String> metadata = itemsMetadata.get(id);
 		if (metadata == null) {
-			metadata = new HashMap<String, String>();
+			metadata = new HashMap<>();
 			itemsMetadata.put(id, metadata);
 		}
 		return metadata;
@@ -107,7 +108,7 @@ public class ItemsMetadata {
 	public List<Entry<String, Map<String, String>>> findByAttValue(
 			String attributeName, String value) {
 
-		List<Entry<String, Map<String, String>>> list = new ArrayList<Map.Entry<String, Map<String, String>>>();
+		List<Entry<String, Map<String, String>>> list = new ArrayList<>();
 
 		for (Entry<String, Map<String, String>> item : itemsMetadata.entrySet()) {
 			String attValue = item.getValue().get(attributeName);
@@ -124,7 +125,7 @@ public class ItemsMetadata {
 
 		Pattern pattern = Pattern.compile(regex);
 
-		List<Entry<String, Map<String, String>>> list = new ArrayList<Map.Entry<String, Map<String, String>>>();
+		List<Entry<String, Map<String, String>>> list = new ArrayList<>();
 
 		for (Entry<String, Map<String, String>> item : itemsMetadata.entrySet()) {
 			String value = item.getValue().get(attributeName);
@@ -143,10 +144,10 @@ public class ItemsMetadata {
 				itemsMetadataFile.getParentFile().mkdirs();
 				itemsMetadataFile.createNewFile();
 			}
-			PrintWriter writer = new PrintWriter(itemsMetadataFile);
-			String content = JSON.serialize(itemsMetadata);
-			writer.print(content);
-			writer.close();
+			try (PrintWriter writer = new PrintWriter(itemsMetadataFile)) {
+				String content = JSON.serialize(itemsMetadata);
+				writer.print(content);
+			}
 		} catch (IOException e) {
 			log.error("Exception writing metadata file", e);
 		}

@@ -45,9 +45,9 @@ public class RepositoryHttpManager {
 
 	private String servletPath;
 
-	private ConcurrentMap<String, RepositoryHttpEndpointImpl> sessions = new ConcurrentHashMap<String, RepositoryHttpEndpointImpl>();
+	private final ConcurrentMap<String, RepositoryHttpEndpointImpl> sessions = new ConcurrentHashMap<>();
 
-	private SecretGenerator generator = new SecretGenerator();
+	private final SecretGenerator generator = new SecretGenerator();
 
 	@Autowired
 	@Qualifier("repositoryTaskScheduler")
@@ -116,11 +116,7 @@ public class RepositoryHttpManager {
 	}
 
 	public RepositoryHttpEndpointImpl getHttpRepoItemElem(String sessionId) {
-		if (sessionId == null) {
-			return null;
-		} else {
-			return sessions.get(sessionId);
-		}
+		return (sessionId == null) ? null : sessions.get(sessionId);
 	}
 
 	public TaskScheduler getScheduler() {

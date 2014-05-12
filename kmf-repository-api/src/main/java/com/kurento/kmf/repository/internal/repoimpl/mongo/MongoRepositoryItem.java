@@ -16,6 +16,7 @@
 package com.kurento.kmf.repository.internal.repoimpl.mongo;
 
 import java.io.FilterOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -78,13 +79,14 @@ public class MongoRepositoryItem extends AbstractRepositoryItem {
 		storingOutputStream = new FilterOutputStream(
 				((GridFSInputFile) dbFile).getOutputStream()) {
 
-			public void close() throws java.io.IOException {
+			@Override
+			public void close() throws IOException {
 				putMetadataInGridFS();
 				super.close();
 				refreshAttributesOnClose();
 			}
 
-			// TODO Optimize this to use the GridFS metadata
+			// TODO Optimise this to use the GridFS metadata
 			private void putMetadataInGridFS() {
 				DBObject metadataDBO = new BasicDBObject();
 				for (Entry<String, String> entry : metadata.entrySet()) {

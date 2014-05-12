@@ -35,7 +35,7 @@ public class ListenerManager {
 	private static final Logger log = LoggerFactory
 			.getLogger(ListenerManager.class);
 
-	private Map<Class<? extends RepositoryHttpSessionEvent>, List<RepositoryHttpEventListener>> listeners = new ConcurrentHashMap<Class<? extends RepositoryHttpSessionEvent>, List<RepositoryHttpEventListener>>();
+	private final Map<Class<? extends RepositoryHttpSessionEvent>, List<RepositoryHttpEventListener>> listeners = new ConcurrentHashMap<>();
 
 	public void addStartedEventListener(
 			RepositoryHttpEventListener<HttpSessionStartedEvent> listener) {
@@ -60,7 +60,7 @@ public class ListenerManager {
 				.get(eventType);
 
 		if (listenersType == null) {
-			listenersType = new ArrayList<RepositoryHttpEventListener>();
+			listenersType = new ArrayList<>();
 			listeners.put(eventType, listenersType);
 		}
 

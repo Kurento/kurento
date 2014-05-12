@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 
 import org.apache.commons.io.output.ProxyOutputStream;
 
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.repository.HttpSessionErrorEvent;
 import com.kurento.kmf.repository.HttpSessionStartedEvent;
 import com.kurento.kmf.repository.HttpSessionTerminatedEvent;
@@ -33,25 +34,25 @@ import com.kurento.kmf.repository.internal.http.RepositoryHttpManager;
 
 public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
 
-	private RepositoryHttpManager httpManager;
-	private RepositoryItem repositoryItem;
+	private final RepositoryHttpManager httpManager;
+	private final RepositoryItem repositoryItem;
 
-	private String sessionId;
-	private String url;
+	private final String sessionId;
+	private final String url;
 
 	private OutputStream os;
 
-	private ListenerManager listeners = new ListenerManager();
+	private final ListenerManager listeners = new ListenerManager();
 
 	private long disconnectionTimeoutInMillis = 5000;
 
 	@SuppressWarnings("rawtypes")
 	private volatile ScheduledFuture lastStartedTimerFuture;
 
-	private boolean startedEventFired = false;
+	private boolean startedEventFired;
 
 	private long writtenBytes;
-	private boolean outputStreamClosed = false;
+	private boolean outputStreamClosed;
 
 	public RepositoryHttpEndpointImpl(RepositoryItem repositoryItem,
 			String sessionId, String url, RepositoryHttpManager httpManager) {
@@ -71,10 +72,12 @@ public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
 		return httpManager.getDispatchURL(sessionId);
 	}
 
+	@Override
 	public void setAutoTerminationTimeout(long timeoutInMillis) {
 		this.disconnectionTimeoutInMillis = timeoutInMillis;
 	}
 
+	@Override
 	public long getAutoTerminationTimeout() {
 		return disconnectionTimeoutInMillis;
 	}
@@ -138,9 +141,10 @@ public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
 			os = new ProxyOutputStream(
 					repositoryItem.createOutputStreamToWrite()) {
 
+				@Override
 				protected void afterWrite(int n) throws IOException {
 					addWrittenBytes(n);
-				};
+				}
 
 				@Override
 				public void close() throws IOException {
@@ -216,7 +220,7 @@ public class RepositoryHttpEndpointImpl implements RepositoryHttpEndpoint {
 			try {
 				os.close();
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw new KurentoException(e);
 			}
 		}
 	}

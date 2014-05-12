@@ -15,6 +15,14 @@
 
 package com.kurento.kmf.repository.internal.http;
 
+import static javax.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_MODIFIED;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
+import static javax.servlet.http.HttpServletResponse.SC_PARTIAL_CONTENT;
+import static javax.servlet.http.HttpServletResponse.SC_PRECONDITION_FAILED;
+import static javax.servlet.http.HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -45,8 +53,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.repository.RepositoryApiConfiguration;
 import com.kurento.kmf.repository.RepositoryItem;
 import com.kurento.kmf.repository.RepositoryItemAttributes;
@@ -64,6 +72,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 		/**
 		 * Validate range.
+		 * 
 		 */
 		public boolean validate() {
 			if (length != -1 && end >= length) {
@@ -82,7 +91,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 	/**
 	 * Full range constant.
 	 */
-	protected static final List<Range> FULL = new ArrayList<Range>();
+	protected static final List<Range> FULL = new ArrayList<>();
 
 	/**
 	 * MIME multipart separation string
@@ -107,13 +116,13 @@ public class RepositoryHttpServlet extends HttpServlet {
 	/**
 	 * The debugging detail level for this servlet.
 	 */
-	protected int debug = 0;
+	protected int debug;
 
 	/**
 	 * RepoItemHttpElems
 	 */
 	@Autowired
-	protected transient RepositoryHttpManager repoHttpManager = null;
+	protected transient RepositoryHttpManager repoHttpManager;
 
 	@Autowired
 	private RepositoryApiConfiguration config;
@@ -164,7 +173,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 				.getMappings();
 
 		if (mappings.isEmpty()) {
-			throw new RuntimeException("There is no mapping for servlet "
+			throw new KurentoException("There is no mapping for servlet "
 					+ RepositoryHttpServlet.class.getName());
 		}
 
@@ -181,11 +190,8 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 	private void configureKurentoAppContext(ServletConfig servletConfig) {
 
-		AnnotationConfigApplicationContext appCtx = KurentoApplicationContextUtils
-				.getKurentoApplicationContext();
-
-		if (appCtx == null) {
-			appCtx = KurentoApplicationContextUtils
+		if (KurentoApplicationContextUtils.getKurentoApplicationContext() == null) {
+			KurentoApplicationContextUtils
 					.createKurentoApplicationContext(servletConfig
 							.getServletContext());
 		}
@@ -308,7 +314,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 	}
 
 	protected void uploadContent(HttpServletRequest req,
-			HttpServletResponse resp) throws ServletException, IOException {
+			HttpServletResponse resp) throws IOException {
 
 		String sessionId = extractSessionId(req);
 
@@ -323,92 +329,83 @@ public class RepositoryHttpServlet extends HttpServlet {
 		elem.stopCurrentTimer();
 		elem.fireStartedEventIfFirstTime();
 
-		InputStream requestInputStream = req.getInputStream();
+		try (InputStream requestInputStream = req.getInputStream()) {
 
-		try {
+			try (OutputStream repoItemOutputStream = elem
+					.getRepoItemOutputStream()) {
 
-			OutputStream repoItemOutputStrem = elem.getRepoItemOutputStream();
+				Range range = parseContentRange(req, resp);
 
-			Range range = parseContentRange(req, resp);
+				if (range != null) {
 
-			if (range != null) {
+					if (range.start > elem.getWrittenBytes()) {
+						resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+						resp.getOutputStream().println(
+								"The server doesn't support writing ranges "
+										+ "ahead of previously written bytes");
+					} else if (range.end == elem.getWrittenBytes()) {
 
-				if (range.start > elem.getWrittenBytes()) {
-					resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-					resp.getOutputStream().println(
-							"The server doesn't support writing ranges "
-									+ "ahead of previously written bytes");
-					return;
-				}
+						// TODO We assume that the put range is the same than
+						// the
+						// previous one. Do we need to check this?
 
-				if (range.end == elem.getWrittenBytes()) {
+						resp.setStatus(SC_OK);
+						resp.getOutputStream()
+								.println(
+										"The server has detected that the submited range "
+												+ "has already submited in a previous request");
+					} else if (range.start < elem.getWrittenBytes()
+							&& range.end > elem.getWrittenBytes()) {
 
-					// TODO We assume that the put range is the same than the
-					// previous one. Do we need to check this?
+						Range copyRange = new Range();
+						copyRange.start = elem.getWrittenBytes() - range.start;
+						copyRange.end = range.end - range.start;
 
-					resp.setStatus(HttpServletResponse.SC_OK);
-					resp.getOutputStream()
-							.println(
-									"The server has detected that the submited range "
-											+ "has already submited in a previous request");
-					return;
-				}
+						copyStreamsRange(requestInputStream,
+								repoItemOutputStream, copyRange);
 
-				if (range.start < elem.getWrittenBytes()
-						&& range.end > elem.getWrittenBytes()) {
+						resp.setStatus(SC_OK);
 
-					Range copyRange = new Range();
-					copyRange.start = elem.getWrittenBytes() - range.start;
-					copyRange.end = range.end - range.start;
+					} else if (range.start == elem.getWrittenBytes()) {
 
-					copyStreamsRange(requestInputStream, repoItemOutputStrem,
-							copyRange);
+						IOUtils.copy(requestInputStream, repoItemOutputStream);
 
-					resp.setStatus(HttpServletResponse.SC_OK);
-					return;
-				}
+						resp.setStatus(SC_OK);
 
-				if (range.start == elem.getWrittenBytes()) {
-
-					IOUtils.copy(requestInputStream, repoItemOutputStrem);
-
-					resp.setStatus(HttpServletResponse.SC_OK);
-
-					return;
-				}
-
-			} else {
-
-				boolean isMultipart = ServletFileUpload.isMultipartContent(req);
-
-				if (isMultipart) {
-
-					uploadMultipart(req, resp, repoItemOutputStrem);
+					}
 
 				} else {
 
-					try {
+					boolean isMultipart = ServletFileUpload
+							.isMultipartContent(req);
 
-						log.info("Start to receive bytes (estimated "
-								+ req.getContentLength() + " bytes)");
-						int bytes = IOUtils.copy(requestInputStream,
-								repoItemOutputStrem);
-						resp.setStatus(HttpServletResponse.SC_OK);
-						log.info("Bytes received: " + bytes);
+					if (isMultipart) {
 
-					} catch (Exception e) {
+						uploadMultipart(req, resp, repoItemOutputStream);
 
-						log.info("Exception when uploading content");
+					} else {
 
-						elem.fireSessionErrorEvent(e);
-						resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+						try {
+
+							log.info("Start to receive bytes (estimated "
+									+ req.getContentLength() + " bytes)");
+							int bytes = IOUtils.copy(requestInputStream,
+									repoItemOutputStream);
+							resp.setStatus(SC_OK);
+							log.info("Bytes received: " + bytes);
+
+						} catch (Exception e) {
+
+							log.warn("Exception when uploading content", e);
+
+							elem.fireSessionErrorEvent(e);
+							resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+						}
 					}
 				}
 			}
 
 		} finally {
-
-			requestInputStream.close();
 			elem.stopInTimeout();
 		}
 	}
@@ -428,22 +425,23 @@ public class RepositoryHttpServlet extends HttpServlet {
 			while (iter.hasNext()) {
 				FileItemStream item = iter.next();
 				String name = item.getFieldName();
-				InputStream stream = item.openStream();
-				if (item.isFormField()) {
-					// TODO What to do with this?
-					log.info("Form field " + name + " with value "
-							+ Streams.asString(stream) + " detected.");
-				} else {
+				try (InputStream stream = item.openStream()) {
+					if (item.isFormField()) {
+						// TODO What to do with this?
+						log.info("Form field {} with value {} detected.", name,
+								Streams.asString(stream));
+					} else {
 
-					// TODO Must we support multiple files uploading?
-					log.info("File field " + name + " with file name "
-							+ item.getName() + " detected.");
+						// TODO Must we support multiple files uploading?
+						log.info("File field {} with file name detected.",
+								name, item.getName());
 
-					log.info("Start to receive bytes (estimated "
-							+ req.getContentLength() + " bytes)");
-					int bytes = IOUtils.copy(stream, repoItemOutputStrem);
-					resp.setStatus(HttpServletResponse.SC_OK);
-					log.info("Bytes received: " + bytes);
+						log.info("Start to receive bytes (estimated bytes)",
+								Integer.toString(req.getContentLength()));
+						int bytes = IOUtils.copy(stream, repoItemOutputStrem);
+						resp.setStatus(SC_OK);
+						log.info("Bytes received: {}", Integer.toString(bytes));
+					}
 				}
 			}
 
@@ -461,11 +459,11 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 			String headerName = headerNames.nextElement();
 			Enumeration<String> values = req.getHeaders(headerName);
-			List<String> valueList = new ArrayList<String>();
+			List<String> valueList = new ArrayList<>();
 			while (values.hasMoreElements()) {
 				valueList.add(values.nextElement());
 			}
-			log.info("  Header " + headerName + ": " + valueList);
+			log.info("  Header {}: {}", headerName, valueList);
 		}
 	}
 
@@ -474,7 +472,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 		Collection<String> headerNames = resp.getHeaderNames();
 		for (String headerName : headerNames) {
 			Collection<String> values = resp.getHeaders(headerName);
-			log.info("  Header " + headerName + ": " + values);
+			log.info("  Header {}: {}", headerName, values);
 		}
 	}
 
@@ -491,9 +489,10 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 		if (pathInfo != null && pathInfo.length() >= 1) {
 			return pathInfo.substring(1);
-		} else {
-			return null;
 		}
+
+		return null;
+
 	}
 
 	/**
@@ -525,46 +524,46 @@ public class RepositoryHttpServlet extends HttpServlet {
 			contentFile.deleteOnExit();
 		}
 
-		RandomAccessFile randAccessContentFile = new RandomAccessFile(
-				contentFile, "rw");
+		try (RandomAccessFile randAccessContentFile = new RandomAccessFile(
+				contentFile, "rw")) {
 
-		RepositoryHttpEndpointImpl repoItemHttpElem = repoHttpManager
-				.getHttpRepoItemElem(sessionId);
+			RepositoryHttpEndpointImpl repoItemHttpElem = repoHttpManager
+					.getHttpRepoItemElem(sessionId);
 
-		// Copy data in oldRevisionContent to contentFile
-		if (repoItemHttpElem != null) {
+			// Copy data in oldRevisionContent to contentFile
+			if (repoItemHttpElem != null) {
 
-			BufferedInputStream bufOldRevStream = new BufferedInputStream(
-					repoItemHttpElem.createRepoItemInputStream(),
-					FILE_BUFFER_SIZE);
+				try (BufferedInputStream bufOldRevStream = new BufferedInputStream(
+						repoItemHttpElem.createRepoItemInputStream(),
+						FILE_BUFFER_SIZE)) {
 
-			int numBytesRead;
-			byte[] copyBuffer = new byte[FILE_BUFFER_SIZE];
-			while ((numBytesRead = bufOldRevStream.read(copyBuffer)) != -1) {
-				randAccessContentFile.write(copyBuffer, 0, numBytesRead);
+					int numBytesRead;
+					byte[] copyBuffer = new byte[FILE_BUFFER_SIZE];
+					while ((numBytesRead = bufOldRevStream.read(copyBuffer)) != -1) {
+						randAccessContentFile
+								.write(copyBuffer, 0, numBytesRead);
+					}
+				}
 			}
 
-			bufOldRevStream.close();
+			randAccessContentFile.setLength(range.length);
+
+			// Append data in request input stream to contentFile
+			randAccessContentFile.seek(range.start);
+
+			int numBytesRead;
+
+			byte[] transferBuffer = new byte[FILE_BUFFER_SIZE];
+
+			try (BufferedInputStream requestBufInStream = new BufferedInputStream(
+					req.getInputStream(), FILE_BUFFER_SIZE)) {
+
+				while ((numBytesRead = requestBufInStream.read(transferBuffer)) != -1) {
+					randAccessContentFile
+							.write(transferBuffer, 0, numBytesRead);
+				}
+			}
 		}
-
-		randAccessContentFile.setLength(range.length);
-
-		// Append data in request input stream to contentFile
-		randAccessContentFile.seek(range.start);
-
-		int numBytesRead;
-
-		byte[] transferBuffer = new byte[FILE_BUFFER_SIZE];
-
-		BufferedInputStream requestBufInStream = new BufferedInputStream(
-				req.getInputStream(), FILE_BUFFER_SIZE);
-
-		while ((numBytesRead = requestBufInStream.read(transferBuffer)) != -1) {
-			randAccessContentFile.write(transferBuffer, 0, numBytesRead);
-		}
-
-		randAccessContentFile.close();
-		requestBufInStream.close();
 
 		return contentFile;
 	}
@@ -629,8 +628,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 				log("Resource with sessionId '" + sessionId + "' not found");
 			}
 
-			response.sendError(HttpServletResponse.SC_NOT_FOUND,
-					request.getRequestURI());
+			response.sendError(SC_NOT_FOUND, request.getRequestURI());
 			return;
 		}
 
@@ -653,7 +651,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 			}
 		}
 
-		boolean malformedRequest = response.getStatus() >= HttpServletResponse.SC_BAD_REQUEST;
+		boolean malformedRequest = response.getStatus() >= SC_BAD_REQUEST;
 
 		if (!malformedRequest && !checkIfHeaders(request, response, attributes)) {
 			return;
@@ -718,7 +716,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 			}
 
 			// Partial content response.
-			response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT);
+			response.setStatus(SC_PARTIAL_CONTENT);
 
 			if (ranges.size() == 1) {
 
@@ -806,7 +804,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 		// bytes is the only range unit supported
 		if (!rangeHeader.startsWith("bytes")) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			response.sendError(SC_BAD_REQUEST);
 			return null;
 		}
 
@@ -816,12 +814,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 		int slashPos = rangeHeader.indexOf('/');
 
 		if (dashPos == -1) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			response.sendError(SC_BAD_REQUEST);
 			return null;
 		}
 
 		if (slashPos == -1) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			response.sendError(SC_BAD_REQUEST);
 			return null;
 		}
 
@@ -842,12 +840,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 			}
 
 		} catch (NumberFormatException e) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			response.sendError(SC_BAD_REQUEST);
 			return null;
 		}
 
 		if (!range.validate()) {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			response.sendError(SC_BAD_REQUEST);
 			return null;
 		}
 
@@ -918,7 +916,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 		// of adding new ones).
 		if (!rangeHeader.startsWith("bytes")) {
 			response.addHeader("Content-Range", "bytes */" + fileLength);
-			response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+			response.sendError(SC_REQUESTED_RANGE_NOT_SATISFIABLE);
 			return null;
 		}
 
@@ -926,7 +924,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 		// Vector which will contain all the ranges which are successfully
 		// parsed.
-		List<Range> result = new ArrayList<Range>();
+		List<Range> result = new ArrayList<>();
 		StringTokenizer commaTokenizer = new StringTokenizer(rangeHeader, ",");
 
 		// Parsing the range list
@@ -941,7 +939,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 			if (dashPos == -1) {
 				response.addHeader("Content-Range", "bytes */" + fileLength);
-				response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+				response.sendError(SC_REQUESTED_RANGE_NOT_SATISFIABLE);
 				return null;
 			}
 
@@ -953,7 +951,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 					currentRange.end = fileLength - 1;
 				} catch (NumberFormatException e) {
 					response.addHeader("Content-Range", "bytes */" + fileLength);
-					response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+					response.sendError(SC_REQUESTED_RANGE_NOT_SATISFIABLE);
 					return null;
 				}
 
@@ -971,7 +969,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 					}
 				} catch (NumberFormatException e) {
 					response.addHeader("Content-Range", "bytes */" + fileLength);
-					response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+					response.sendError(SC_REQUESTED_RANGE_NOT_SATISFIABLE);
 					return null;
 				}
 
@@ -979,7 +977,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 			if (!currentRange.validate()) {
 				response.addHeader("Content-Range", "bytes */" + fileLength);
-				response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
+				response.sendError(SC_REQUESTED_RANGE_NOT_SATISFIABLE);
 				return null;
 			}
 
@@ -1026,7 +1024,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 				// If none of the given ETags match, 412 Precodition failed is
 				// sent back
 				if (!conditionSatisfied) {
-					response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+					response.sendError(SC_PRECONDITION_FAILED);
 					return false;
 				}
 			}
@@ -1063,7 +1061,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 						&& (lastModified < headerValue + 1000)) {
 					// The entity has not been modified since the date
 					// specified by the client. This is not an error case.
-					response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+					response.setStatus(SC_NOT_MODIFIED);
 					response.setHeader("ETag", resourceAttributes.getETag());
 
 					return false;
@@ -1124,12 +1122,12 @@ public class RepositoryHttpServlet extends HttpServlet {
 				// back.
 				if (("GET".equals(request.getMethod()))
 						|| ("HEAD".equals(request.getMethod()))) {
-					response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+					response.setStatus(SC_NOT_MODIFIED);
 					response.setHeader("ETag", eTag);
 
 					return false;
 				}
-				response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+				response.sendError(SC_PRECONDITION_FAILED);
 				return false;
 			}
 		}
@@ -1161,7 +1159,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 				if (lastModified >= (headerValue + 1000)) {
 					// The entity has not been modified since the date
 					// specified by the client. This is not an error case.
-					response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
+					response.sendError(SC_PRECONDITION_FAILED);
 					return false;
 				}
 			}
@@ -1213,20 +1211,21 @@ public class RepositoryHttpServlet extends HttpServlet {
 			// Silent catch
 		}
 
-		ServletOutputStream ostream = response.getOutputStream();
-
-		InputStream istream = new BufferedInputStream(
-				repoItemHttpElem.createRepoItemInputStream(), INPUT_BUFFER_SIZE);
-
 		IOException exception;
-		if (range != null) {
-			exception = copyStreamsRange(istream, ostream, range);
-		} else {
-			exception = copyStreams(istream, ostream);
-		}
 
-		// Clean up the input stream
-		istream.close();
+		try (ServletOutputStream ostream = response.getOutputStream()) {
+			try (InputStream istream = new BufferedInputStream(
+					repoItemHttpElem.createRepoItemInputStream(),
+					INPUT_BUFFER_SIZE)) {
+
+				if (range != null) {
+					exception = copyStreamsRange(istream, ostream, range);
+				} else {
+					exception = copyStreams(istream, ostream);
+				}
+
+			}
+		}
 
 		// Rethrow any exception that has occurred
 		if (exception != null) {
@@ -1261,38 +1260,38 @@ public class RepositoryHttpServlet extends HttpServlet {
 		}
 
 		IOException exception = null;
-		ServletOutputStream ostream = response.getOutputStream();
+		try (ServletOutputStream ostream = response.getOutputStream()) {
 
-		for (Range currentRange : ranges) {
+			for (Range currentRange : ranges) {
 
-			InputStream istream = new BufferedInputStream(
-					repoItemHttpElem.createRepoItemInputStream(),
-					INPUT_BUFFER_SIZE);
+				try (InputStream istream = new BufferedInputStream(
+						repoItemHttpElem.createRepoItemInputStream(),
+						INPUT_BUFFER_SIZE)) {
 
-			// Writing MIME header.
-			ostream.println();
-			ostream.println("--" + MIME_SEPARATION);
+					// Writing MIME header.
+					ostream.println();
+					ostream.println("--" + MIME_SEPARATION);
 
-			if (contentType != null) {
-				ostream.println("Content-Type: " + contentType);
+					if (contentType != null) {
+						ostream.println("Content-Type: " + contentType);
+					}
+
+					ostream.println("Content-Range: bytes "
+							+ currentRange.start + "-" + currentRange.end + "/"
+							+ currentRange.length);
+					ostream.println();
+
+					exception = copyStreamsRange(istream, ostream, currentRange);
+
+					if (exception != null) {
+						break;
+					}
+				}
 			}
 
-			ostream.println("Content-Range: bytes " + currentRange.start + "-"
-					+ currentRange.end + "/" + currentRange.length);
 			ostream.println();
-
-			exception = copyStreamsRange(istream, ostream, currentRange);
-
-			istream.close();
-
-			if (exception != null) {
-				break;
-			}
+			ostream.print("--" + MIME_SEPARATION + "--");
 		}
-
-		ostream.println();
-		ostream.print("--" + MIME_SEPARATION + "--");
-
 		// Rethrow any exception that has occurred
 		if (exception != null) {
 			throw exception;
@@ -1327,7 +1326,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 				}
 				ostream.write(buffer, 0, len);
 
-				log.debug(len + " bytes has been written to item");
+				log.debug("{} bytes have been written to item" + len);
 
 			} catch (IOException e) {
 				exception = e;
@@ -1396,26 +1395,6 @@ public class RepositoryHttpServlet extends HttpServlet {
 				break;
 			}
 		}
-
-		// int len = buffer.length;
-		// while ((bytesToRead > 0) && (len >= buffer.length)) {
-		// try {
-		// len = istream.read(buffer);
-		// if (bytesToRead >= len) {
-		// ostream.write(buffer, 0, len);
-		// bytesToRead -= len;
-		// } else {
-		// ostream.write(buffer, 0, (int) bytesToRead);
-		// bytesToRead = 0;
-		// }
-		// } catch (IOException e) {
-		// exception = e;
-		// len = -1;
-		// }
-		// if (len < buffer.length) {
-		// break;
-		// }
-		// }
 
 		return exception;
 	}

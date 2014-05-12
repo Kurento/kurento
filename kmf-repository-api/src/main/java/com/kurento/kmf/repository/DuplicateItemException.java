@@ -15,6 +15,8 @@
 
 package com.kurento.kmf.repository;
 
+import com.kurento.kmf.common.exception.KurentoException;
+
 /**
  * This exception is thrown when the user is trying to create a repository item
  * with the same id than existing repository item.
@@ -22,12 +24,12 @@ package com.kurento.kmf.repository;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * 
  */
-public class DuplicateItemException extends RuntimeException {
+public class DuplicateItemException extends KurentoException {
 
 	private static final long serialVersionUID = 3515920000618086477L;
 
 	public DuplicateItemException(String id) {
-		super("There is an item with id=" + id);
+		super("An item with id " + id + " already exists");
 	}
 
 }
