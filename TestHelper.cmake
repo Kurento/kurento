@@ -19,7 +19,7 @@ endfunction()
 function(add_test_program test_name sources)
   message (STATUS "Adding tests: ${test_name}")
 
-  add_executable (${test_name} ${sources})
+  add_executable (${test_name} EXCLUDE_FROM_ALL ${sources})
   create_check_target()
   add_dependencies(check ${test_name})
 
