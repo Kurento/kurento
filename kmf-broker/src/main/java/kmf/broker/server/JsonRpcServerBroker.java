@@ -6,10 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import kmf.broker.Broker;
 import kmf.broker.Broker.BrokerMessageReceiverWithResponse;
-import kmf.broker.Broker.ExchangeAndQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Queue;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -47,26 +47,26 @@ public class JsonRpcServerBroker {
 
 		broker.addMessageReceiverWithResponse(Broker.PIPELINE_CREATION_QUEUE,
 				new BrokerMessageReceiverWithResponse() {
-			@Override
-			public String onMessage(String message) {
-
-				return processRequestFromBroker(message);
-			}
-
-		});
-
-		this.client
-				.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
-
 					@Override
-					public void handleRequest(Transaction transaction,
-							Request<JsonObject> request) throws Exception {
+					public String onMessage(String message) {
 
-						processEventFromServer(request);
-
+						return processRequestFromBroker(message);
 					}
 
 				});
+
+		this.client
+		.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
+
+			@Override
+			public void handleRequest(Transaction transaction,
+					Request<JsonObject> request) throws Exception {
+
+				processEventFromServer(request);
+
+			}
+
+		});
 	}
 
 	private String processRequestFromBroker(String message) {
@@ -125,25 +125,25 @@ public class JsonRpcServerBroker {
 
 			final String realPipelineId = getValue(response);
 
-			ExchangeAndQueue pipelineEQ = broker.declarePipelineQueue();
+			Queue pipelineEQ = broker.declarePipelineQueue();
 
-			final String brokerPipelineId = pipelineEQ.getExchangeName();
+			final String brokerPipelineId = pipelineEQ.getName();
 
-			broker.addMessageReceiverWithResponse(pipelineEQ.getQueueName(),
+			broker.addMessageReceiverWithResponse(pipelineEQ.getName(),
 					new BrokerMessageReceiverWithResponse() {
-				@Override
-				public String onMessage(String message) {
+						@Override
+						public String onMessage(String message) {
 
-					LOG.debug("[PQ] --> {}", message);
+							LOG.debug("[PQ] --> {}", message);
 
-					String response = onPipelineMessage(
-							brokerPipelineId, realPipelineId, message);
+							String response = onPipelineMessage(
+									brokerPipelineId, realPipelineId, message);
 
-					LOG.debug("[PQ] <-- {}", response);
+							LOG.debug("[PQ] <-- {}", response);
 
-					return response;
-				}
-			});
+							return response;
+						}
+					});
 
 			String exchange = broker.declareEventsExchange(brokerPipelineId);
 

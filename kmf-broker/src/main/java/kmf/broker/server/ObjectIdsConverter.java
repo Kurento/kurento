@@ -3,8 +3,6 @@ package kmf.broker.server;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import kmf.broker.Broker;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -66,7 +64,7 @@ public class ObjectIdsConverter {
 
 		if (value instanceof JsonPrimitive) {
 			String stringValue = ((JsonPrimitive) value).getAsString();
-			if (stringValue.startsWith(Broker.MEDIA_PIPELINE_QUEUE_PREFIX)) {
+			if (stringValue.startsWith("amq.gen-")) {
 
 				return new JsonPrimitive(extractRealObjectIdFromBrokerObjectId(
 						stringValue, pipelinesByBroker));

@@ -39,30 +39,6 @@ public class Broker {
 		public void onMessage(String message);
 	}
 
-	public class ExchangeAndQueue {
-
-		private String exchangeName;
-		private Queue queue;
-
-		public ExchangeAndQueue(String exchangeName, Queue queue) {
-			super();
-			this.exchangeName = exchangeName;
-			this.queue = queue;
-		}
-
-		public String getExchangeName() {
-			return exchangeName;
-		}
-
-		public String getQueueName() {
-			return queue.getName();
-		}
-
-		public Queue getQueue() {
-			return queue;
-		}
-	}
-
 	public Broker() {
 		this("");
 	}
@@ -93,59 +69,17 @@ public class Broker {
 				+ "' declared.");
 	}
 
-	public ExchangeAndQueue declarePipelineQueue() {
-
-		Queue queue = admin.declareQueue();
-
-		String queueName = queue.getName();
-		String exchangeName = MEDIA_PIPELINE_QUEUE_PREFIX
-				+ queueName.substring("amq.gen-".length(), queueName.length());
-
-		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
-		admin.declareExchange(exchange);
-
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(""));
-
-		LOG.debug("[" + logId + "] Pipeline queue '" + queueName
-				+ "' declared. Exchange '" + exchangeName + "' declared.");
-
-		return new ExchangeAndQueue(exchangeName, queue);
+	public Queue declarePipelineQueue() {
+		return admin.declareQueue();
 	}
 
-	public ExchangeAndQueue declareClientQueue() {
-
-		Queue queue = admin.declareQueue();
-
-		String queueName = queue.getName();
-		String exchangeName = CLIENT_QUEUE_PREFIX
-				+ queueName.substring("amq.gen-".length(), queueName.length());
-
-		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
-		admin.declareExchange(exchange);
-
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(""));
-
-		LOG.debug("[" + logId + "] Client queue '" + queueName
-				+ "' declared. Exchange '" + exchangeName + "' declared.");
-
-		return new ExchangeAndQueue(exchangeName, queue);
+	public Queue declareClientQueue() {
+		return admin.declareQueue();
 	}
 
 	public RabbitTemplate createClientTemplate() {
 
 		Queue queue = admin.declareQueue();
-
-		String queueName = queue.getName();
-		String exchangeName = CLIENT_REPLY_QUEUE_PREFIX
-				+ queueName.substring("amq.gen-".length(), queueName.length());
-
-		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
-		admin.declareExchange(exchange);
-
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(""));
-
-		LOG.debug("[" + logId + "] Client queue '" + queueName
-				+ "' declared. Exchange '" + exchangeName + "' declared.");
 
 		RabbitTemplate template = new RabbitTemplate(cf);
 

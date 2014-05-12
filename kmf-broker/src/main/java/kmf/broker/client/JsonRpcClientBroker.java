@@ -7,11 +7,11 @@ import java.io.IOException;
 
 import kmf.broker.Broker;
 import kmf.broker.Broker.BrokerMessageReceiver;
-import kmf.broker.Broker.ExchangeAndQueue;
 import kmf.broker.server.ObjectIdsConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
@@ -53,8 +53,9 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 
 		this.broker = broker;
 
-		ExchangeAndQueue eq = broker.declareClientQueue();
-		clientId = eq.getQueueName();
+		Queue queue = broker.declareClientQueue();
+
+		clientId = queue.getName();
 
 		rabbitTemplate = broker.createClientTemplate();
 
@@ -97,8 +98,9 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 					&& "MediaPipeline".equals(paramsJson.get("type")
 							.getAsString())) {
 
-				responseStr = broker.sendAndReceive(PIPELINE_CREATION_QUEUE,
-						"", request.toString(), rabbitTemplate);
+				responseStr = broker.sendAndReceive("",
+						PIPELINE_CREATION_QUEUE, request.toString(),
+						rabbitTemplate);
 
 			} else {
 
@@ -135,7 +137,7 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 					}
 				}
 
-				responseStr = broker.sendAndReceive(brokerPipelineId, "",
+				responseStr = broker.sendAndReceive("", brokerPipelineId,
 						request.toString(), rabbitTemplate);
 			}
 
