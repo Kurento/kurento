@@ -56,12 +56,12 @@ public class ConnectorApp implements JsonRpcConfigurer {
 		config.setHandlerPort(Integer.parseInt(env.getProperty("handler.port",
 				"9900")));
 
-		LOG.info("Using Handler Address:"
-				+ config.getHandlerAddress()
-				+ " (This address is used from Kurento Media Server to connect to this proxy)");
-		LOG.info("Using Handler Port:"
-				+ config.getHandlerPort()
-				+ " (This port is used from Kurento Media Server to connect to this proxy)");
+		LOG.info(
+				"Using Handler Address: {} (This address is used from Kurento Media Server to connect to this proxy)",
+				config.getHandlerAddress());
+		LOG.info(
+				"Using Handler Port: {} (This port is used from Kurento Media Server to connect to this proxy)",
+				Integer.valueOf(config.getHandlerPort()));
 
 		return config;
 	}
@@ -75,16 +75,16 @@ public class ConnectorApp implements JsonRpcConfigurer {
 		config.setServerPort(Integer.parseInt(env.getProperty(
 				"mediaserver.port", "9090")));
 
-		LOG.info("Using Kurento Media Server Address:"
-				+ config.getServerAddress()
-				+ " (This address is used from this proxy to connect to Kurento Media Server)");
-		LOG.info("Using Kurento Media Server Port:"
-				+ config.getServerPort()
-				+ " (This port is used from this proxy to connect to Kurento Media Server)");
+		LOG.info(
+				"Using Kurento Media Server Address: {} (This address is used from this proxy to connect to Kurento Media Server)",
+				config.getServerAddress());
+		LOG.info(
+				"Using Kurento Media Server Port:{} (This port is used from this proxy to connect to Kurento Media Server)",
+				Integer.valueOf(config.getServerPort()));
 
 		return config;
 	}
-	
+
 	public static void main(String[] args) throws Exception {
 
 		SpringApplication application = new SpringApplication(

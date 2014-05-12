@@ -12,9 +12,8 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.tool.rom.server;
+package com.kurento.kmf.common.exception;
 
-import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * This exception occurs when there is a communication error. This could happen
@@ -24,22 +23,20 @@ import com.kurento.kmf.common.exception.KurentoException;
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.1
  * 
- * @deprecated use instead MediaServerTransportException
  */
-@Deprecated
-public class TransportException extends KurentoException {
+public class MediaServerTransportException extends KurentoException {
 
 	private static final long serialVersionUID = -9166377169939591329L;
 
-	public TransportException(String message, Throwable cause) {
+	public MediaServerTransportException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public TransportException(String message) {
+	public MediaServerTransportException(String message) {
 		super(message);
 	}
 
-	public TransportException(Throwable cause) {
+	public MediaServerTransportException(Throwable cause) {
 		super(cause);
 	}
 

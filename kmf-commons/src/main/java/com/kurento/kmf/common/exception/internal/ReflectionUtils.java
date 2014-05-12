@@ -40,13 +40,13 @@ public class ReflectionUtils {
 	/**
 	 * Singleton.
 	 */
-	private static ReflectionUtils singleton = null;
+	private static ReflectionUtils singleton;
 
 	/**
 	 * Reflections scans the classpath, indexes the metadata, allows to query it
 	 * on runtime and may save and collect that information.
 	 */
-	private Reflections reflections;
+	private final Reflections reflections;
 
 	/**
 	 * Constructor; it instantiates the Reflections (
@@ -56,7 +56,7 @@ public class ReflectionUtils {
 		// Former Reflections instantiation:
 		// this.reflections = new Reflections("", new TypeAnnotationsScanner());
 
-		List<URL> urls = new ArrayList<URL>();
+		List<URL> urls = new ArrayList<>();
 		for (URL url : ClasspathHelper.forManifest(ClasspathHelper
 				.forClassLoader())) {
 			if (url.toString().toLowerCase().endsWith(".jar")) {

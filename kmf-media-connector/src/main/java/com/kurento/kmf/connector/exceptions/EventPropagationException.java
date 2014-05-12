@@ -17,13 +17,14 @@ package com.kurento.kmf.connector.exceptions;
 import com.kurento.kmf.common.exception.KurentoException;
 
 /**
- * Exception to be used when a command cannot be executed due to a Thrift error.
- * 
- * @author Ivan Gracia (igracia@gsyc.es)
- * @since 1.0.0
- * 
+ * Exception to be used when an event that has been received form the media
+ * server can't be propagated to the client
+ *
+ * @author Ivan Gracia (izanmail@gmail.com)
+ * @since 4.2.3
+ *
  */
-public class ThriftInvocationException extends KurentoException {
+public class EventPropagationException extends KurentoException {
 
 	/**
 	 * Default serial ID
@@ -33,32 +34,32 @@ public class ThriftInvocationException extends KurentoException {
 	/**
 	 * Default constructor
 	 */
-	public ThriftInvocationException() {
+	public EventPropagationException() {
 		super();
 	}
 
 	/**
-	 * 
+	 *
 	 * @param msg
 	 */
-	public ThriftInvocationException(String msg) {
+	public EventPropagationException(String msg) {
 		super(msg);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param msg
 	 * @param cause
 	 */
-	public ThriftInvocationException(String msg, Throwable cause) {
+	public EventPropagationException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param cause
 	 */
-	public ThriftInvocationException(Throwable cause) {
+	public EventPropagationException(Throwable cause) {
 		super(cause);
 	}
 

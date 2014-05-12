@@ -30,7 +30,7 @@ public class ThriftConnectorConfiguration {
 	/**
 	 * Gets the address of the local thrift server, which will be used to
 	 * receive events and error notifications sent by the Kurento Media Server.
-	 * 
+	 *
 	 * @return The handler address.
 	 */
 	public String getHandlerAddress() {
@@ -40,7 +40,7 @@ public class ThriftConnectorConfiguration {
 	/**
 	 * Sets the address of the local thrift server, which will be used to
 	 * receive events and error notifications sent by the Kurento Media Server.
-	 * 
+	 *
 	 * @param handlerAddress
 	 *            The address.
 	 */
@@ -51,7 +51,7 @@ public class ThriftConnectorConfiguration {
 	/**
 	 * Gets the port of the local thrift server, which will be used to receive
 	 * events and error notifications sent by the Kurento Media Server.
-	 * 
+	 *
 	 * @return The local thrift server port.
 	 */
 	public int getHandlerPort() {
@@ -61,7 +61,7 @@ public class ThriftConnectorConfiguration {
 	/**
 	 * Sets the port of the local thrift server, which will be used to receive
 	 * events and error notifications sent by the Kurento Media Server.
-	 * 
+	 *
 	 * @param handlerPort
 	 *            The local thrift server port.
 	 */

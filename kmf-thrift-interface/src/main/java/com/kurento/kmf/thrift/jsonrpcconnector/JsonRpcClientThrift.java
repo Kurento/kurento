@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.kurento.kmf.common.exception.MediaServerTransportException;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
@@ -82,12 +83,13 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				}
 
 				/* sendKeepAlives */
-				for (String session : copiedSessions) {
+				for (String copiedSession : copiedSessions) {
 					int id = new Random().nextInt();
-					Request<Void> request = new Request<>(session, id,
-							"keepAlive", null);
+					Request<Void> request = new Request<>(copiedSession,
+							Integer.valueOf(id), "keepAlive", null);
 
-					log.info("Sending keep alive for session: {}", session);
+					log.info("Sending keep alive for session: {}",
+							copiedSession);
 
 					try {
 						Response<Void> response = internalSendRequestThrift(
@@ -96,14 +98,14 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 						if (response.isError()) {
 							log.error(
 									"Error on session {} keep alive, removing",
-									session);
+									copiedSession);
 							synchronized (sessions) {
-								sessions.remove(session);
+								sessions.remove(copiedSession);
 							}
 						}
-					} catch (IOException e) {
+					} catch (MediaServerTransportException e) {
 						log.warn("Could not send keepalive for session {}",
-								session, e);
+								copiedSession, e);
 					}
 				}
 			}
@@ -168,8 +170,19 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				dummyResponseSenderForEvents);
 	}
 
+	/**
+	 * 
+	 * @param request
+	 *            the request
+	 * @param resultClass
+	 *            the expected result class
+	 * @return The response from the media server
+	 * @throws MediaServerTransportException
+	 *             if the request could not be sent to the media server due to a
+	 *             problem in the transport
+	 */
 	public <P, R> Response<R> internalSendRequestThrift(Request<P> request,
-			Class<R> resultClass) throws IOException {
+			Class<R> resultClass) throws MediaServerTransportException {
 
 		Client client = clientPool.acquireSync();
 
@@ -181,7 +194,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			if (request.getMethod().equals("subscribe")) {
 				JsonObject params = (JsonObject) request.getParams();
 				params.addProperty("ip", localHandlerAddress.getHostString());
-				params.addProperty("port", localHandlerAddress.getPort());
+				params.addProperty("port",
+						Integer.valueOf(localHandlerAddress.getPort()));
 			}
 			// ---------------------------------------------
 
@@ -206,8 +220,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			return response;
 
 		} catch (TException e) {
-			throw new IOException("Exception while invoking request on server",
-					e);
+			throw new MediaServerTransportException(
+					"Could not invoke the request on the media server", e);
 		} finally {
 			clientPool.release(client);
 		}
@@ -222,7 +236,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		if (request.getMethod().equals("subscribe")) {
 			JsonObject params = (JsonObject) request.getParams();
 			params.addProperty("ip", localHandlerAddress.getHostString());
-			params.addProperty("port", localHandlerAddress.getPort());
+			params.addProperty("port",
+					Integer.valueOf(localHandlerAddress.getPort()));
 		}
 		// ---------------------------------------------
 

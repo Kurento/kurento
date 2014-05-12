@@ -34,7 +34,8 @@ import org.springframework.context.ApplicationContext;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.MediaServerTransportException;
+import com.kurento.kmf.connector.exceptions.ResponsePropagationException;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Session;
@@ -50,9 +51,9 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRpc_call;
 
 /**
- * @author Ivan Gracia (igracia@gsyc.es)
+ * @author Ivan Gracia (izanmail@gmail.com)
  * @since 1.0.0
- * 
+ *
  */
 public final class ThriftConnectorJsonRpcHandler extends
 		DefaultJsonRpcHandler<JsonObject> {
@@ -90,14 +91,14 @@ public final class ThriftConnectorJsonRpcHandler extends
 	@PostConstruct
 	private void init() {
 
-		LOG.warn("Handler Address: {}", config.getHandlerAddress());
-		LOG.warn("Handler Port: {}", config.getHandlerPort());
+		InetSocketAddress remoteServerAddr = new InetSocketAddress(
+				config.getHandlerAddress(), config.getHandlerPort());
 
-		server = (ThriftServer) ctx.getBean(
-				"mediaHandlerServer",
-				this.processor,
-				new InetSocketAddress(config.getHandlerAddress(), config
-						.getHandlerPort()));
+		LOG.info("Initialising thrift connection with remote server on {}",
+				remoteServerAddr);
+
+		server = (ThriftServer) ctx.getBean("mediaHandlerServer",
+				this.processor, remoteServerAddr);
 		server.start();
 	}
 
@@ -145,7 +146,8 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 		if (request.getMethod().equals("subscribe")) {
 			request.getParams().addProperty("ip", config.getHandlerAddress());
-			request.getParams().addProperty("port", config.getHandlerPort());
+			request.getParams().addProperty("port",
+					Integer.valueOf(config.getHandlerPort()));
 			subscribeRequest = true;
 		} else {
 			subscribeRequest = false;
@@ -176,34 +178,34 @@ public final class ThriftConnectorJsonRpcHandler extends
 							}
 						}
 					});
-		} catch (Exception e) {
-			LOG.error("Exception while executing a command"
-					+ " in thrift interface of the MediaServer", e);
+		} catch (TException e) {
+			throw new MediaServerTransportException(
+					"Exception while executing a command"
+							+ " in thrift interface of the MediaServer", e);
 		}
 	}
 
-	protected void requestOnError(Exception exception, Transaction transaction) {
+	private void requestOnError(Exception exception, Transaction transaction) {
 		try {
 			transaction.sendError(exception);
 		} catch (IOException e) {
-			// TODO Error code
-			throw new KurentoMediaFrameworkException(
-					"Exception while sending response to client");
+			throw new ResponsePropagationException(
+					"Exception while sending response to client", e);
 		}
 	}
 
-	protected void requestOnComplete(invokeJsonRpc_call mediaServerResponse,
+	private void requestOnComplete(invokeJsonRpc_call mediaServerResponse,
 			Transaction transaction, boolean subscribeResponse) {
 
 		try {
 
 			String result = mediaServerResponse.getResult();
-
 			Response<JsonElement> response = JsonUtils.fromJsonResponse(result,
 					JsonElement.class);
 
 			if (response.isError()) {
 				ResponseError error = response.getError();
+
 				transaction.sendError(error.getCode(), error.getMessage(),
 						error.getData());
 			} else {
@@ -222,24 +224,21 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 				transaction.sendResponse(response.getResult());
 			}
-
 		} catch (TException e) {
 
 			try {
-
 				transaction.sendError(e);
-
 			} catch (IOException e1) {
-				// TODO Error code
-				throw new KurentoMediaFrameworkException(
-						"Exception while sending response to client");
+				throw new ResponsePropagationException(
+						"Could not notify client that an exception was produced getting the result from a media server response",
+						e1);
 			}
 
 		} catch (IOException e) {
-			// TODO Error code
-			throw new KurentoMediaFrameworkException(
-					"Exception while sending response to client");
+			throw new ResponsePropagationException(
+					"Exception while sending response to client", e);
 		}
+
 	}
 
 	private void internalEventJsonRpc(String request) {
@@ -261,8 +260,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 			String subscription = subsJsonElem.getAsString().trim();
 			Session session = subscriptions.get(subscription);
 			if (session == null) {
-				LOG.error("Unknown subscription: \"{}\"", subscriptions);
-				LOG.info("Subscriptions\n");
+				LOG.error("Unknown event subscription: '{}'", subscription);
 				return;
 			}
 
@@ -270,8 +268,10 @@ public final class ThriftConnectorJsonRpcHandler extends
 
 				session.sendNotification("onEvent", requestObj.getParams());
 
-			} catch (Exception e) {
-				LOG.error("Exception while sending event", e);
+			} catch (IOException e) {
+				LOG.error(
+						"Exception while sending event from KMS to the client",
+						e);
 			}
 
 		} catch (Exception e) {
