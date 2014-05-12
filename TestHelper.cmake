@@ -2,7 +2,11 @@
 function(create_check_target)
   if (NOT TARGET check)
     MESSAGE (STATUS "Enabling check target")
-    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    if (${DISABLE_TESTS})
+      add_custom_target(check WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMENT "Make check is disabled")
+    else ()
+      add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+    endif()
   endif()
 endfunction()
 
