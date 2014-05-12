@@ -16,8 +16,9 @@ public class ObjectIdsConverter {
 
 		// TODO: Implement a reliable way to convert all realObjectIds in
 		// parameters to brokerObjectIds. To do this it is necessary to know the
-		// API. The current implementation is fragile because it manages only the
-		// common cases. 
+		// API. The current implementation is fragile because it manages only
+		// the
+		// common cases.
 
 		if (RomJsonRpcConstants.CREATE_METHOD.equals(method)) {
 
@@ -40,8 +41,8 @@ public class ObjectIdsConverter {
 
 		} else if (params.has(RomJsonRpcConstants.INVOKE_OBJECT)) {
 
-			String brokerObjectId = params
-					.get(RomJsonRpcConstants.INVOKE_OBJECT).getAsString();
+			String brokerObjectId = params.get(
+					RomJsonRpcConstants.INVOKE_OBJECT).getAsString();
 
 			String realObjectId = extractRealObjectIdFromBrokerObjectId(
 					brokerObjectId, pipelinesByBroker);

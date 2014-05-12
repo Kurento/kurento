@@ -6,7 +6,9 @@ import static kmf.broker.Broker.PIPELINE_CREATION_QUEUE;
 import java.io.IOException;
 
 import kmf.broker.Broker;
+import kmf.broker.Broker.BrokerMessageReceiver;
 import kmf.broker.Broker.ExchangeAndQueue;
+import kmf.broker.server.ObjectIdsConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,14 +19,11 @@ import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
+import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
-import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants;
-
-import kmf.broker.Broker.BrokerMessageReceiver;
-import kmf.broker.server.ObjectIdsConverter;
 
 public class JsonRpcClientBroker extends JsonRpcClient {
 
@@ -43,8 +42,7 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 			LOG.warn(
 					"The broker client is trying to send the response '{}' for "
 							+ "a request from server. But with broker it is"
-							+ " not yet implemented",
-					message);
+							+ " not yet implemented", message);
 		}
 	};
 
@@ -78,8 +76,7 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 		}
 	}
 
-	public <P, R> Response<R> internalSendRequestBroker(
-			Request<P> request,
+	public <P, R> Response<R> internalSendRequestBroker(Request<P> request,
 			Class<R> resultClass) {
 
 		JsonObject paramsJson = (JsonObject) request.getParams();
@@ -92,9 +89,8 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 					&& "MediaPipeline".equals(paramsJson.get("type")
 							.getAsString())) {
 
-				responseStr = broker.sendAndReceive(
-						PIPELINE_CREATION_QUEUE, "",
-						request.toString());
+				responseStr = broker.sendAndReceive(PIPELINE_CREATION_QUEUE,
+						"", request.toString());
 
 			} else {
 
@@ -104,13 +100,13 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 
 				if (RomJsonRpcConstants.CREATE_METHOD.equals(method)) {
 
-					JsonObject constructorParams = paramsJson
-							.get(RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS)
+					JsonObject constructorParams = paramsJson.get(
+							RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS)
 							.getAsJsonObject();
 
 					if (constructorParams.has("mediaPipeline")) {
-						brokerPipelineId = constructorParams.get("mediaPipeline")
-								.getAsString();
+						brokerPipelineId = constructorParams.get(
+								"mediaPipeline").getAsString();
 					} else {
 						brokerPipelineId = converter
 								.extractBrokerPipelineFromBrokerObjectId(constructorParams
@@ -161,18 +157,15 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 			clientId = eq.getQueue();
 		}
 
-		final String eventRoutingKey = element + "/"
-				+ eventType;
+		final String eventRoutingKey = element + "/" + eventType;
 
-		broker.bindExchangeToQueue("e_" + pipeline, clientId,
-				eventRoutingKey);
-		broker.addMessageReceiver(clientId,
-				new BrokerMessageReceiver() {
-					@Override
-					public void onMessage(String message) {
-						handleRequestFromServer(message);
-					}
-				});
+		broker.bindExchangeToQueue("e_" + pipeline, clientId, eventRoutingKey);
+		broker.addMessageReceiver(clientId, new BrokerMessageReceiver() {
+			@Override
+			public void onMessage(String message) {
+				handleRequestFromServer(message);
+			}
+		});
 	}
 
 	protected void internalSendRequestBroker(Request<Object> request,

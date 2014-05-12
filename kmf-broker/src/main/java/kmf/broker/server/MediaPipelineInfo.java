@@ -6,7 +6,8 @@ public class MediaPipelineInfo {
 	private String realPipelineId;
 	private String eventsExchange;
 
-	public MediaPipelineInfo(String brokerPipelineId, String realPipelineId, String eventsExchange) {
+	public MediaPipelineInfo(String brokerPipelineId, String realPipelineId,
+			String eventsExchange) {
 		this.brokerPipelineId = brokerPipelineId;
 		this.realPipelineId = realPipelineId;
 		this.eventsExchange = eventsExchange;
@@ -15,7 +16,7 @@ public class MediaPipelineInfo {
 	public String getBrokerPipelineId() {
 		return brokerPipelineId;
 	}
-	
+
 	public String getRealPipelineId() {
 		return realPipelineId;
 	}

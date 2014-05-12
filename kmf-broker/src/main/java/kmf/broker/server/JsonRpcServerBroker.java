@@ -45,8 +45,7 @@ public class JsonRpcServerBroker {
 	public void start() {
 		this.broker.init();
 
-		broker.addMessageReceiverWithResponse(
-				Broker.PIPELINE_CREATION_QUEUE,
+		broker.addMessageReceiverWithResponse(Broker.PIPELINE_CREATION_QUEUE,
 				new BrokerMessageReceiverWithResponse() {
 					@Override
 					public String onMessage(String message) {
@@ -57,28 +56,26 @@ public class JsonRpcServerBroker {
 				});
 
 		this.client
-				.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
+		.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
 
-					@Override
-					public void handleRequest(Transaction transaction,
-							Request<JsonObject> request) throws Exception {
+			@Override
+			public void handleRequest(Transaction transaction,
+					Request<JsonObject> request) throws Exception {
 
-						processEventFromServer(request);
+				processEventFromServer(request);
 
-					}
+			}
 
-				});
+		});
 	}
 
 	private String processRequestFromBroker(String message) {
 		LOG.debug("[PCQ] --> {}", message);
 
-		Request<JsonObject> request = JsonUtils
-				.fromJsonRequest(message,
-						JsonObject.class);
+		Request<JsonObject> request = JsonUtils.fromJsonRequest(message,
+				JsonObject.class);
 
-		String response = createMediaPipeline(request)
-				.toString();
+		String response = createMediaPipeline(request).toString();
 
 		LOG.debug("[PCQ] <-- {}", response);
 
@@ -87,39 +84,36 @@ public class JsonRpcServerBroker {
 
 	private void processEventFromServer(Request<JsonObject> request) {
 
-		if (!RomJsonRpcConstants.ONEVENT_METHOD.equals(request
-				.getMethod())) {
+		if (!RomJsonRpcConstants.ONEVENT_METHOD.equals(request.getMethod())) {
 			LOG.warn("Unrecognized server message {}", request);
 			return;
 		}
 
 		JsonObject value = request.getParams().get("value").getAsJsonObject();
 
-		String subscriptionId = value
-				.get(RomJsonRpcConstants.ONEVENT_SUBSCRIPTION).getAsString();
+		String subscriptionId = value.get(
+				RomJsonRpcConstants.ONEVENT_SUBSCRIPTION).getAsString();
 
 		MediaPipelineInfo pipelineInfo = pipelinesBySubscription
 				.get(subscriptionId);
 
-		String objectId = value
-				.get(RomJsonRpcConstants.ONEVENT_OBJECT).getAsString();
+		String objectId = value.get(RomJsonRpcConstants.ONEVENT_OBJECT)
+				.getAsString();
 
 		String brokerObjectId = converter.createBrokerObjectId(
 				pipelineInfo.getBrokerPipelineId(), objectId);
 
 		value.addProperty(RomJsonRpcConstants.ONEVENT_OBJECT, brokerObjectId);
 
-		String type = value
-				.get(RomJsonRpcConstants.ONEVENT_TYPE).getAsString();
+		String type = value.get(RomJsonRpcConstants.ONEVENT_TYPE).getAsString();
 
-		final String eventRoutingKey = brokerObjectId + "/"
-				+ type;
+		final String eventRoutingKey = brokerObjectId + "/" + type;
 
 		// exchange de events
 		// routing key mediaelement/EventType
 		// message
-		broker.send(pipelineInfo.getEventsExchange(),
-				eventRoutingKey, request.toString());
+		broker.send(pipelineInfo.getEventsExchange(), eventRoutingKey,
+				request.toString());
 
 		// final MediaPipeline pipeline =
 		// this.pipelines.get(brokerPipelineId);
@@ -174,16 +168,15 @@ public class JsonRpcServerBroker {
 
 			final String brokerPipelineId = pipelineEQ.getExchange();
 
-			broker.addMessageReceiverWithResponse(
-					pipelineEQ.getQueue(),
+			broker.addMessageReceiverWithResponse(pipelineEQ.getQueue(),
 					new BrokerMessageReceiverWithResponse() {
+						@Override
 						public String onMessage(String message) {
 
 							LOG.debug("[PQ] --> {}", message);
 
 							String response = onPipelineMessage(
-									brokerPipelineId,
-									realPipelineId, message);
+									brokerPipelineId, realPipelineId, message);
 
 							LOG.debug("[PQ] <-- {}", response);
 
@@ -194,8 +187,7 @@ public class JsonRpcServerBroker {
 			String exchange = broker.declareEventsExchange(brokerPipelineId);
 
 			MediaPipelineInfo pipeline = new MediaPipelineInfo(
-					brokerPipelineId,
-					realPipelineId, exchange);
+					brokerPipelineId, realPipelineId, exchange);
 
 			this.pipelinesByBrokerId.put(brokerPipelineId, pipeline);
 
@@ -204,8 +196,7 @@ public class JsonRpcServerBroker {
 
 		} catch (Exception e) {
 			return new Response<JsonElement>(request.getId(),
-					ResponseError.newFromException(
-							request.getId(), e));
+					ResponseError.newFromException(request.getId(), e));
 		}
 	}
 
@@ -227,8 +218,7 @@ public class JsonRpcServerBroker {
 	}
 
 	public String onPipelineMessage(String brokerPipelineId,
-			String realPipelineId,
-			String message) {
+			String realPipelineId, String message) {
 
 		Request<JsonObject> request = JsonUtils.fromJsonRequest(message,
 				JsonObject.class);
@@ -247,24 +237,23 @@ public class JsonRpcServerBroker {
 						.toString();
 			default:
 				throw new RuntimeException(
-						"Invalid message in pipeline queue: "
-								+ message);
+						"Invalid message in pipeline queue: " + message);
 			}
 		} catch (Exception e) {
-			
-			LOG.warn("Exception processing request from client. ",e);
-			
+
+			LOG.warn("Exception processing request from client. ", e);
+
 			return new Response<JsonElement>(request.getId(),
-					ResponseError.newFromException(
-							request.getId(), e)).toString();
+					ResponseError.newFromException(request.getId(), e))
+					.toString();
 		}
 	}
 
 	private Object release(String realPipelineId, String brokerPipelineId,
 			Request<JsonObject> request) {
 
-		String brokerObjectId = ((JsonObject) request.getParams()).get(
-				RomJsonRpcConstants.RELEASE_OBJECT).getAsString();
+		String brokerObjectId = request.getParams()
+				.get(RomJsonRpcConstants.RELEASE_OBJECT).getAsString();
 
 		boolean isPipeline = pipelinesByBrokerId.containsKey(brokerObjectId);
 
@@ -291,16 +280,14 @@ public class JsonRpcServerBroker {
 			String realObjectId = getValue(response);
 
 			String brokerObjectId = converter.createBrokerObjectId(
-					brokerPipelineId,
-					realObjectId);
+					brokerPipelineId, realObjectId);
 
 			return new Response<JsonElement>(request.getId(),
 					new JsonPrimitive(brokerObjectId));
 
 		} catch (Exception e) {
 			return new Response<JsonElement>(request.getId(),
-					ResponseError.newFromException(
-							request.getId(), e));
+					ResponseError.newFromException(request.getId(), e));
 		}
 	}
 
@@ -316,17 +303,16 @@ public class JsonRpcServerBroker {
 
 			converter.convertRefsFromRealToBroker(null, result);
 
-			//TODO: Improve this handling of null responses
-			if(result == null || result instanceof JsonNull){
+			// TODO: Improve this handling of null responses
+			if (result == null || result instanceof JsonNull) {
 				result = new JsonObject();
 			}
-			
+
 			return new Response<JsonElement>(request.getId(), result);
 
 		} catch (Exception e) {
 			return new Response<JsonElement>(request.getId(),
-					ResponseError.newFromException(
-							request.getId(), e));
+					ResponseError.newFromException(request.getId(), e));
 		}
 	}
 

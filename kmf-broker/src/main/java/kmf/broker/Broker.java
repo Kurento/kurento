@@ -196,8 +196,8 @@ public class Broker {
 		RabbitTemplate template = new RabbitTemplate(cf);
 		LOG.debug("[" + logId + "] --> Exchange:'" + exchange
 				+ "' RoutingKey:'" + routingKey + "' " + message);
-		template.send(exchange, routingKey, new Message(message
-				.getBytes(), new MessageProperties()));
+		template.send(exchange, routingKey, new Message(message.getBytes(),
+				new MessageProperties()));
 	}
 
 	public String sendAndReceive(String exchange, String routingKey,
@@ -210,12 +210,11 @@ public class Broker {
 		LOG.debug("[" + logId + "]--> Exchange:'" + exchange + "' RoutingKey:'"
 				+ routingKey + "' " + message);
 		Message response = template.sendAndReceive(exchange, routingKey,
-				new Message(message.getBytes(),
-						new MessageProperties()));
+				new Message(message.getBytes(), new MessageProperties()));
 
 		if (response == null) {
-			throw new BrokerException("Timeout waiting a reply to message: " +
-					message);
+			throw new BrokerException("Timeout waiting a reply to message: "
+					+ message);
 		}
 
 		String responseAsString = new String(response.getBody());

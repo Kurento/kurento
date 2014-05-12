@@ -44,7 +44,7 @@ import com.kurento.kmf.test.client.Client;
 
 /**
  * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */

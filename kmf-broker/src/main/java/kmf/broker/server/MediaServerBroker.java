@@ -77,25 +77,23 @@ public class MediaServerBroker {
 	private void init() {
 
 		LOG.info("Starting Media Connector");
-		
+
 		if (client == null) {
 
-			this.client = new JsonRpcClientThrift(
-					clientPool,
-					executorService,
-					new InetSocketAddress(
-							config.getHandlerAddress(), config.getHandlerPort()));
+			this.client = new JsonRpcClientThrift(clientPool, executorService,
+					new InetSocketAddress(config.getHandlerAddress(),
+							config.getHandlerPort()));
 
 		}
 
 		this.serverBroker = new JsonRpcServerBroker(client);
 		this.serverBroker.start();
-		
+
 		LOG.info("Media Connector started");
 	}
-	
+
 	@PreDestroy
-	public void destroy() throws IOException{
+	public void destroy() throws IOException {
 		this.client.close();
 		this.serverBroker.destroy();
 	}
