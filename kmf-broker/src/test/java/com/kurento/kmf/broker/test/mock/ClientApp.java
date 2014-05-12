@@ -45,14 +45,16 @@ public class ClientApp {
 
 	private CountDownLatch finished = new CountDownLatch(1);
 
+	private JsonRpcClientBroker client;
+
 	public ClientApp(String logId) {
 		this.broker = new Broker(logId);
-		this.mpf = new MediaPipelineFactory(new JsonRpcClientBroker(broker));
+		this.broker.init();
+		this.client = new JsonRpcClientBroker(broker);
+		this.mpf = new MediaPipelineFactory(client);
 	}
 
 	public void start() {
-
-		this.broker.init();
 
 		new Thread() {
 			@Override
@@ -70,7 +72,7 @@ public class ClientApp {
 
 		MediaPipeline mp = mpf.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/small.webm").build();
+				"https://ci.kurento.com/video/small.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);

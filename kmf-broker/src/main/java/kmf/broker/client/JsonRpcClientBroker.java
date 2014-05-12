@@ -12,6 +12,7 @@ import kmf.broker.server.ObjectIdsConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -36,6 +37,8 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 
 	private String clientId;
 
+	private RabbitTemplate rabbitTemplate;
+
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
 		public void sendResponse(Message message) throws IOException {
@@ -49,6 +52,11 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 	public JsonRpcClientBroker(Broker broker) {
 
 		this.broker = broker;
+
+		ExchangeAndQueue eq = broker.declareClientQueue();
+		clientId = eq.getQueueName();
+
+		rabbitTemplate = broker.createClientTemplate();
 
 		this.rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
@@ -90,7 +98,7 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 							.getAsString())) {
 
 				responseStr = broker.sendAndReceive(PIPELINE_CREATION_QUEUE,
-						"", request.toString());
+						"", request.toString(), rabbitTemplate);
 
 			} else {
 
@@ -128,7 +136,7 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 				}
 
 				responseStr = broker.sendAndReceive(brokerPipelineId, "",
-						request.toString());
+						request.toString(), rabbitTemplate);
 			}
 
 			LOG.debug("[Client] Response received: {}", responseStr);
@@ -152,14 +160,12 @@ public class JsonRpcClientBroker extends JsonRpcClient {
 		String element = paramsJson.get(RomJsonRpcConstants.SUBSCRIBE_OBJECT)
 				.getAsString();
 
-		if (clientId == null) {
-			ExchangeAndQueue eq = broker.declareClientQueue();
-			clientId = eq.getQueue();
-		}
+		final String eventRoutingKey = broker.createRoutingKey(element,
+				eventType);
 
-		final String eventRoutingKey = element + "/" + eventType;
+		broker.bindExchangeToQueue(Broker.EVENT_QUEUE_PREFIX + pipeline,
+				clientId, eventRoutingKey);
 
-		broker.bindExchangeToQueue("e_" + pipeline, clientId, eventRoutingKey);
 		broker.addMessageReceiver(clientId, new BrokerMessageReceiver() {
 			@Override
 			public void onMessage(String message) {

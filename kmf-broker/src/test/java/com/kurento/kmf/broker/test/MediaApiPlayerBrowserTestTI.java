@@ -99,7 +99,7 @@ public class MediaApiPlayerBrowserTestTI extends MediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/color/blue.webm").build();
+				"https://ci.kurento.com/video/color/blue.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);

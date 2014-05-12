@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
@@ -16,16 +15,21 @@ import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 
 public class Broker {
 
-	private Logger LOG = LoggerFactory.getLogger(Broker.class);
-
+	public static final String EVENT_QUEUE_PREFIX = "event_";
+	public static final String CLIENT_QUEUE_PREFIX = "client_";
+	public static final String CLIENT_REPLY_QUEUE_PREFIX = "client_reply_";
+	public static final String MEDIA_PIPELINE_QUEUE_PREFIX = "media_pipeline_";
 	public static final String PIPELINE_CREATION_QUEUE = "pipeline_creation";
 
-	private static final long TIMEOUT = 100000;
+	private Logger LOG = LoggerFactory.getLogger(Broker.class);
+
+	private static final long TIMEOUT = 1000000;
 
 	private CachingConnectionFactory cf;
 	private RabbitAdmin admin;
 
 	private String logId;
+	private RabbitTemplate template;
 
 	public interface BrokerMessageReceiverWithResponse {
 		public String onMessage(String message);
@@ -36,20 +40,25 @@ public class Broker {
 	}
 
 	public class ExchangeAndQueue {
-		private String exchange;
-		private String queue;
 
-		public ExchangeAndQueue(String exchange, String queue) {
+		private String exchangeName;
+		private Queue queue;
+
+		public ExchangeAndQueue(String exchangeName, Queue queue) {
 			super();
-			this.exchange = exchange;
+			this.exchangeName = exchangeName;
 			this.queue = queue;
 		}
 
-		public String getExchange() {
-			return exchange;
+		public String getExchangeName() {
+			return exchangeName;
 		}
 
-		public String getQueue() {
+		public String getQueueName() {
+			return queue.getName();
+		}
+
+		public Queue getQueue() {
 			return queue;
 		}
 	}
@@ -74,10 +83,10 @@ public class Broker {
 		Queue queue = new Queue(PIPELINE_CREATION_QUEUE, false, false, false);
 		admin.declareQueue(queue);
 
-		FanoutExchange exchange = new FanoutExchange(PIPELINE_CREATION_QUEUE);
+		DirectExchange exchange = new DirectExchange(PIPELINE_CREATION_QUEUE);
 		admin.declareExchange(exchange);
 
-		admin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(""));
 
 		LOG.debug("[" + logId + "] Queue '" + PIPELINE_CREATION_QUEUE
 				+ "' declared. Exchange '" + PIPELINE_CREATION_QUEUE
@@ -89,7 +98,7 @@ public class Broker {
 		Queue queue = admin.declareQueue();
 
 		String queueName = queue.getName();
-		String exchangeName = "mp_"
+		String exchangeName = MEDIA_PIPELINE_QUEUE_PREFIX
 				+ queueName.substring("amq.gen-".length(), queueName.length());
 
 		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
@@ -100,7 +109,7 @@ public class Broker {
 		LOG.debug("[" + logId + "] Pipeline queue '" + queueName
 				+ "' declared. Exchange '" + exchangeName + "' declared.");
 
-		return new ExchangeAndQueue(exchangeName, queueName);
+		return new ExchangeAndQueue(exchangeName, queue);
 	}
 
 	public ExchangeAndQueue declareClientQueue() {
@@ -108,7 +117,7 @@ public class Broker {
 		Queue queue = admin.declareQueue();
 
 		String queueName = queue.getName();
-		String exchangeName = "c_"
+		String exchangeName = CLIENT_QUEUE_PREFIX
 				+ queueName.substring("amq.gen-".length(), queueName.length());
 
 		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
@@ -119,12 +128,42 @@ public class Broker {
 		LOG.debug("[" + logId + "] Client queue '" + queueName
 				+ "' declared. Exchange '" + exchangeName + "' declared.");
 
-		return new ExchangeAndQueue(exchangeName, queueName);
+		return new ExchangeAndQueue(exchangeName, queue);
+	}
+
+	public RabbitTemplate createClientTemplate() {
+
+		Queue queue = admin.declareQueue();
+
+		String queueName = queue.getName();
+		String exchangeName = CLIENT_REPLY_QUEUE_PREFIX
+				+ queueName.substring("amq.gen-".length(), queueName.length());
+
+		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
+		admin.declareExchange(exchange);
+
+		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(""));
+
+		LOG.debug("[" + logId + "] Client queue '" + queueName
+				+ "' declared. Exchange '" + exchangeName + "' declared.");
+
+		RabbitTemplate template = new RabbitTemplate(cf);
+
+		template.setReplyTimeout(TIMEOUT);
+		template.setReplyQueue(queue);
+
+		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
+				cf);
+		container.setMessageListener(template);
+		container.setQueueNames(queue.getName());
+		container.start();
+
+		return template;
 	}
 
 	public String declareEventsExchange(String pipeline) {
 
-		String exchangeName = "e_" + pipeline;
+		String exchangeName = EVENT_QUEUE_PREFIX + pipeline;
 
 		DirectExchange exchange = new DirectExchange(exchangeName, false, true);
 		admin.declareExchange(exchange);
@@ -202,10 +241,16 @@ public class Broker {
 
 	public String sendAndReceive(String exchange, String routingKey,
 			String message) {
+		return sendAndReceive(exchange, routingKey, message, null);
+	}
 
-		RabbitTemplate template = new RabbitTemplate(cf);
+	public String sendAndReceive(String exchange, String routingKey,
+			String message, RabbitTemplate template) {
 
-		template.setReplyTimeout(TIMEOUT);
+		if (template == null) {
+			template = new RabbitTemplate(cf);
+			template.setReplyTimeout(TIMEOUT);
+		}
 
 		LOG.debug("[" + logId + "]--> Exchange:'" + exchange + "' RoutingKey:'"
 				+ routingKey + "' " + message);
@@ -235,6 +280,10 @@ public class Broker {
 				+ "' bind to queue '" + queueId + "' with routingKey '"
 				+ eventRoutingKey + "'");
 
+	}
+
+	public String createRoutingKey(String mediaElementId, String eventType) {
+		return mediaElementId + "/" + eventType;
 	}
 
 	public void destroy() {
