@@ -79,10 +79,58 @@ destroy_gint (gpointer data)
   g_slice_free (gint, data);
 }
 
+static gint *
+create_gint (gint value)
+{
+  gint *p = g_slice_new (gint);
+
+  *p = value;
+  return p;
+}
+
 static void
 kms_selectable_mixer_port_data_destroy (gpointer data)
 {
-  /* TODO: */
+  KmsSelectableMixerPortData *port_data = (KmsSelectableMixerPortData *) data;
+  KmsSelectableMixer *self = port_data->mixer;
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+  gst_bin_remove_many (GST_BIN (self), port_data->audio_agnostic,
+      port_data->video_agnostic, NULL);
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  /* TODO: Disconnect all src pads connected to other audio mixers */
+
+  gst_element_set_state (port_data->audio_agnostic, GST_STATE_NULL);
+  gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
+
+  g_clear_object (&port_data->video_agnostic);
+  g_clear_object (&port_data->audio_agnostic);
+
+  g_slice_free (KmsSelectableMixerPortData, data);
+}
+
+static KmsSelectableMixerPortData *
+kms_selectable_mixer_port_data_create (KmsSelectableMixer * self, gint id)
+{
+  KmsSelectableMixerPortData *data = g_slice_new0 (KmsSelectableMixerPortData);
+
+  data->mixer = self;
+  data->audio_agnostic = gst_element_factory_make ("agnosticbin", NULL);
+  data->video_agnostic = gst_element_factory_make ("agnosticbin", NULL);
+  data->id = id;
+
+  gst_bin_add_many (GST_BIN (self), g_object_ref (data->audio_agnostic),
+      g_object_ref (data->video_agnostic), NULL);
+  gst_element_sync_state_with_parent (data->audio_agnostic);
+  gst_element_sync_state_with_parent (data->video_agnostic);
+
+  kms_base_hub_link_video_sink (KMS_BASE_HUB (self), id,
+      data->video_agnostic, "sink", FALSE);
+  kms_base_hub_link_audio_sink (KMS_BASE_HUB (self), id,
+      data->audio_agnostic, "sink", FALSE);
+
+  return data;
 }
 
 static void
@@ -119,14 +167,41 @@ kms_selectable_mixer_finalize (GObject * object)
 static void
 kms_selectable_mixer_unhandle_port (KmsBaseHub * hub, gint id)
 {
-  /* TODO: */
+  KmsSelectableMixer *self = KMS_SELECTABLE_MIXER (hub);
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  g_hash_table_remove (self->priv->ports, &id);
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  KMS_BASE_HUB_CLASS (kms_selectable_mixer_parent_class)->unhandle_port (hub,
+      id);
 }
 
 static gint
 kms_selectable_mixer_handle_port (KmsBaseHub * hub, GstElement * mixer_port)
 {
-  /* TODO: */
-  return -1;
+  KmsSelectableMixer *self = KMS_SELECTABLE_MIXER (hub);
+  KmsSelectableMixerPortData *port_data;
+  gint port_id;
+
+  port_id =
+      KMS_BASE_HUB_CLASS (kms_selectable_mixer_parent_class)->handle_port (hub,
+      mixer_port);
+
+  if (port_id < 0)
+    return -1;
+
+  port_data = kms_selectable_mixer_port_data_create (self, port_id);
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  g_hash_table_insert (self->priv->ports, create_gint (port_id), port_data);
+
+  KMS_SELECTABLE_MIXER_UNLOCK (self);
+
+  return port_id;
 }
 
 static gboolean
