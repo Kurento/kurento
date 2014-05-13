@@ -613,18 +613,6 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
 }
 
 static void
-kms_composite_mixer_set_property (GObject * object, guint property_id,
-    const GValue * value, GParamSpec * pspec)
-{
-}
-
-static void
-kms_composite_mixer_get_property (GObject * object, guint property_id,
-    GValue * value, GParamSpec * pspec)
-{
-}
-
-static void
 kms_composite_mixer_dispose (GObject * object)
 {
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (object);
@@ -667,10 +655,6 @@ kms_composite_mixer_class_init (KmsCompositeMixerClass * klass)
 
   gobject_class->dispose = GST_DEBUG_FUNCPTR (kms_composite_mixer_dispose);
   gobject_class->finalize = GST_DEBUG_FUNCPTR (kms_composite_mixer_finalize);
-  gobject_class->get_property =
-      GST_DEBUG_FUNCPTR (kms_composite_mixer_get_property);
-  gobject_class->set_property =
-      GST_DEBUG_FUNCPTR (kms_composite_mixer_set_property);
 
   base_hub_class->handle_port =
       GST_DEBUG_FUNCPTR (kms_composite_mixer_handle_port);
