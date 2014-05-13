@@ -208,8 +208,33 @@ static gboolean
 kms_selectable_mixer_connect_video (KmsSelectableMixer * self, guint source,
     guint sink)
 {
-  /* TODO */
-  return FALSE;
+  KmsSelectableMixerPortData *source_port, *sink_port;
+  gboolean connected = FALSE;
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  source_port = g_hash_table_lookup (self->priv->ports, &source);
+  if (source_port == NULL) {
+    GST_ERROR_OBJECT (self, "No source port %u found", source);
+    goto end;
+  }
+
+  sink_port = g_hash_table_lookup (self->priv->ports, &sink);
+  if (sink_port == NULL) {
+    GST_ERROR_OBJECT (self, "No sink port %u found", source);
+    goto end;
+  }
+
+  if (!(connected =
+          kms_base_hub_link_video_src (KMS_BASE_HUB (self), sink_port->id,
+              source_port->video_agnostic, "src_%u", TRUE))) {
+    GST_ERROR_OBJECT (self, "Can not connect video port");
+  }
+
+end:
+
+  KMS_SELECTABLE_MIXER_UNLOCK (self);
+  return connected;
 }
 
 static gboolean
