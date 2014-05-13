@@ -61,8 +61,8 @@ public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
 				.build();
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME_FOR_TEST).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 
 			// red

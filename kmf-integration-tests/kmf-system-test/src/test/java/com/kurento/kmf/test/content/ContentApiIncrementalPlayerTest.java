@@ -112,8 +112,8 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 	}
 
 	private boolean createPlayer() throws InterruptedException {
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing", "ended");

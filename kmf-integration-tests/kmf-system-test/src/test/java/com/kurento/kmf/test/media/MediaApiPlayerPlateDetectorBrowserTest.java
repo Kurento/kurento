@@ -85,8 +85,8 @@ public class MediaApiPlayerPlateDetectorBrowserTest extends MediaApiTest {
 				});
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYER)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

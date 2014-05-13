@@ -58,12 +58,14 @@ public class MediaApiWebRtcSwitchTest extends MediaApiTest {
 		webRtcEndpoint2.connect(webRtcEndpoint2);
 		webRtcEndpoint3.connect(webRtcEndpoint3);
 
-		try (BrowserClient browser1 = new BrowserClient(getServerPort(),
-				Browser.CHROME_FOR_TEST, Client.WEBRTC);
-				BrowserClient browser2 = new BrowserClient(getServerPort(),
-						Browser.CHROME_FOR_TEST, Client.WEBRTC);
-				BrowserClient browser3 = new BrowserClient(getServerPort(),
-						Browser.CHROME_FOR_TEST, Client.WEBRTC);) {
+		try (BrowserClient browser1 = new BrowserClient.Builder()
+				.browser(Browser.CHROME_FOR_TEST).client(Client.WEBRTC).build();
+				BrowserClient browser2 = new BrowserClient.Builder()
+						.browser(Browser.CHROME_FOR_TEST).client(Client.WEBRTC)
+						.build();
+				BrowserClient browser3 = new BrowserClient.Builder()
+						.browser(Browser.CHROME_FOR_TEST).client(Client.WEBRTC)
+						.build()) {
 
 			// Start WebRTC in loopback in each browser
 			browser1.subscribeEvents("playing");

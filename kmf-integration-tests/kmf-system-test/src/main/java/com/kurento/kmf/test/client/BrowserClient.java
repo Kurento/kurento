@@ -38,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.kmf.test.PortManager;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
@@ -64,31 +65,20 @@ public class BrowserClient implements Closeable {
 	private Client client;
 	private Browser browser;
 
-	public BrowserClient(int serverPort, Browser browser, Client client,
-			String video) {
-		this.video = video;
-		setupAndLaunchBrowser(serverPort, browser, client);
-	}
-
-	public BrowserClient(int serverPort, Browser browser, Client client) {
-		setupAndLaunchBrowser(serverPort, browser, client);
-	}
-
-	private void setupAndLaunchBrowser(int serverPort, Browser browser,
-			Client client) {
-		this.serverPort = serverPort;
-		this.client = client;
-		this.browser = browser;
+	private BrowserClient(Builder builder) {
+		this.video = builder.video;
+		this.serverPort = builder.serverPort;
+		this.client = builder.client;
+		this.browser = builder.browser;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
 		maxDistance = 300.0; // default distance (for color comparison)
 
+		// Setup Selenium
 		initDriver();
-		launchBrowser();
-	}
 
-	private void launchBrowser() {
+		// Launch Browser
 		driver.get("http://localhost:" + serverPort + client.toString());
 	}
 
@@ -284,4 +274,37 @@ public class BrowserClient implements Closeable {
 		}
 	}
 
+	public static class Builder {
+		private String video;
+		private int serverPort;
+		private Client client;
+		private Browser browser;
+
+		public Builder() {
+			this.serverPort = PortManager.getPort();
+		}
+
+		public Builder(int serverPort) {
+			this.serverPort = serverPort;
+		}
+
+		public Builder video(String video) {
+			this.video = video;
+			return this;
+		}
+
+		public Builder client(Client client) {
+			this.client = client;
+			return this;
+		}
+
+		public Builder browser(Browser browser) {
+			this.browser = browser;
+			return this;
+		}
+
+		public BrowserClient build() {
+			return new BrowserClient(this);
+		}
+	}
 }

@@ -66,9 +66,8 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME_FOR_TEST, Client.WEBRTC)) {
-
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME_FOR_TEST).client(Client.WEBRTC).build()) {
 			browser.subscribeEvents("playing");
 			browser.connectToWebRtcEndpoint(webRtcEndpoint,
 					WebRtcChannel.AUDIO_AND_VIDEO);
@@ -103,8 +102,8 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 	}
 
 	private void createPlayer(String url) throws InterruptedException {
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME_FOR_TEST, Client.PLAYER)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME_FOR_TEST).client(Client.PLAYER).build()) {
 			browser.setURL(url);
 			browser.subscribeEvents("playing");
 			browser.start();

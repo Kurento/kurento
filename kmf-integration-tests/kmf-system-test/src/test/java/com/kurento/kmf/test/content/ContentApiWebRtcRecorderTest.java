@@ -135,8 +135,8 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 	@Test
 	public void testWebRtcRecorder() throws InterruptedException {
 		// Step 1: Record video from WebRTC in loopback
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME_FOR_TEST, Client.WEBRTC)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME_FOR_TEST).client(Client.WEBRTC).build()) {
 			browser.setURL(HANDLER1);
 			browser.subscribeEvents("playing");
 			browser.start();
@@ -174,8 +174,8 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 				expectedAudioCodec, audioFormat);
 
 		// Step 3: Play recorded video to assess the video duration
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME_FOR_TEST, Client.PLAYER)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME_FOR_TEST).client(Client.PLAYER).build()) {
 			browser.setURL(HANDLER2);
 			browser.subscribeEvents("playing", "ended");
 			browser.start();

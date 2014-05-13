@@ -97,8 +97,8 @@ public class ContentApiPlayerZBarTest extends ContentApiTest {
 
 	@Test
 	public void testPlayerZbar() throws InterruptedException {
-		try (BrowserClient browser = new BrowserClient(getServerPort(),
-				Browser.CHROME, Client.PLAYERJSON)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME).client(Client.PLAYERJSON).build()) {
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing", "ended");
 			browser.start();

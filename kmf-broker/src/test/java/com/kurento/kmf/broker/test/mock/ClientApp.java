@@ -24,27 +24,27 @@ import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.EventListener;
 
 public class ClientApp {
-	
+
 	public final static int TIMEOUT = 60;
-	
+
 	private static Logger LOG = LoggerFactory.getLogger(ClientApp.class);
-	
+
 	private volatile static HttpServer server;
-	
+
 	static {
 		try {
 			server = new HttpServer(PortManager.getPort());
 			server.start();
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
 	}
 
 	private MediaPipelineFactory mpf;
 	private Broker broker;
 
 	private CountDownLatch finished = new CountDownLatch(1);
-		
+
 	public ClientApp(String logId) {
 		this.broker = new Broker(logId);
 		this.mpf = new MediaPipelineFactory(new JsonRpcClientBroker(broker));
@@ -53,7 +53,7 @@ public class ClientApp {
 	public void start() {
 
 		this.broker.init();
-		
+
 		new Thread() {
 			@Override
 			public void run() {
@@ -65,9 +65,9 @@ public class ClientApp {
 			}
 		}.start();
 	}
-	
+
 	private void useMediaAPI() throws InterruptedException {
-		
+
 		MediaPipeline mp = mpf.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
 				"http://ci.kurento.com/video/small.webm").build();
@@ -89,8 +89,8 @@ public class ClientApp {
 		final CountDownLatch startEvent = new CountDownLatch(1);
 		final CountDownLatch terminationEvent = new CountDownLatch(1);
 
-		try (BrowserClient browser = new BrowserClient(PortManager.getPort(),
-				Browser.CHROME, Client.PLAYER)) {
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(url);
 			browser.addEventListener("playing", new EventListener() {
 				@Override
@@ -122,11 +122,11 @@ public class ClientApp {
 		playerEP.release();
 		httpEP.release();
 		mp.release();
-		
+
 		finished.countDown();
 	}
 
 	public void await() throws InterruptedException {
-		finished.await(TIMEOUT, TimeUnit.SECONDS);		
+		finished.await(TIMEOUT, TimeUnit.SECONDS);
 	}
 }

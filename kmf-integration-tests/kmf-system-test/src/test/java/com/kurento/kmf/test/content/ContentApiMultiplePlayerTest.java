@@ -79,8 +79,8 @@ public class ContentApiMultiplePlayerTest extends ContentApiTest {
 	@Test
 	public void testPlayerMultiple() throws InterruptedException {
 		for (int i = 0; i < 2; i++) {
-			try (BrowserClient browser = new BrowserClient(getServerPort(),
-					Browser.CHROME, Client.PLAYER)) {
+			try (BrowserClient browser = new BrowserClient.Builder()
+					.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 				browser.setURL(HANDLER);
 				browser.subscribeEvents("playing", "ended");
 				browser.start();
