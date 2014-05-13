@@ -23,13 +23,13 @@ public class Broker {
 
 	private Logger LOG = LoggerFactory.getLogger(Broker.class);
 
-	private static final long TIMEOUT = 1000000;
+	private static final long TIMEOUT = 10000;
+	private static final String EXPIRATION_TIME = "10000";
 
 	private CachingConnectionFactory cf;
 	private RabbitAdmin admin;
 
 	private String logId;
-	private RabbitTemplate template;
 
 	public interface BrokerMessageReceiverWithResponse {
 		public String onMessage(String message);
@@ -94,6 +94,65 @@ public class Broker {
 		container.start();
 
 		return template;
+	}
+
+	public String sendAndReceive(String exchange, String routingKey,
+			String message) {
+		return sendAndReceive(exchange, routingKey, message, null);
+	}
+
+	public String sendAndReceive(String exchange, String routingKey,
+			String message, RabbitTemplate template) {
+
+		if (template == null) {
+			template = new RabbitTemplate(cf);
+			template.setReplyTimeout(TIMEOUT);
+		}
+
+		LOG.debug("[" + logId + "]--> Exchange:'" + exchange + "' RoutingKey:'"
+				+ routingKey + "' " + message);
+
+		MessageProperties messageProperties = new MessageProperties();
+
+		// TODO: We need to test what happened when the pipeline is created but
+		// timeout
+		// issued.
+		messageProperties.setExpiration(EXPIRATION_TIME);
+
+		Message response = template.sendAndReceive(exchange, routingKey,
+				new Message(message.getBytes(), messageProperties));
+
+		if (response == null) {
+			throw new BrokerException("Timeout waiting a reply to message: "
+					+ message);
+		}
+
+		String responseAsString = new String(response.getBody());
+		LOG.debug("[" + logId + "] <-- " + responseAsString);
+		return responseAsString;
+	}
+
+	public RabbitTemplate createServerTemplate() {
+
+		return new RabbitTemplate(cf);
+	}
+
+	public void send(String exchange, String routingKey, String message) {
+		send(exchange, routingKey, message, null);
+	}
+
+	public void send(String exchange, String routingKey, String message,
+			RabbitTemplate template) {
+
+		if (template == null) {
+			template = new RabbitTemplate(cf);
+		}
+
+		LOG.debug("[" + logId + "] --> Exchange:'" + exchange
+				+ "' RoutingKey:'" + routingKey + "' " + message);
+
+		template.send(exchange, routingKey, new Message(message.getBytes(),
+				new MessageProperties()));
 	}
 
 	public String declareEventsExchange(String pipeline) {
@@ -167,43 +226,6 @@ public class Broker {
 
 		LOG.debug("[" + logId + "] Registered receiver with response '"
 				+ receiver.getClass().getName() + "' for queue '" + queue);
-	}
-
-	public void send(String exchange, String routingKey, String message) {
-
-		RabbitTemplate template = new RabbitTemplate(cf);
-		LOG.debug("[" + logId + "] --> Exchange:'" + exchange
-				+ "' RoutingKey:'" + routingKey + "' " + message);
-		template.send(exchange, routingKey, new Message(message.getBytes(),
-				new MessageProperties()));
-	}
-
-	public String sendAndReceive(String exchange, String routingKey,
-			String message) {
-		return sendAndReceive(exchange, routingKey, message, null);
-	}
-
-	public String sendAndReceive(String exchange, String routingKey,
-			String message, RabbitTemplate template) {
-
-		if (template == null) {
-			template = new RabbitTemplate(cf);
-			template.setReplyTimeout(TIMEOUT);
-		}
-
-		LOG.debug("[" + logId + "]--> Exchange:'" + exchange + "' RoutingKey:'"
-				+ routingKey + "' " + message);
-		Message response = template.sendAndReceive(exchange, routingKey,
-				new Message(message.getBytes(), new MessageProperties()));
-
-		if (response == null) {
-			throw new BrokerException("Timeout waiting a reply to message: "
-					+ message);
-		}
-
-		String responseAsString = new String(response.getBody());
-		LOG.debug("[" + logId + "] <-- " + responseAsString);
-		return responseAsString;
 	}
 
 	public void bindExchangeToQueue(String exchangeId, String queueId,

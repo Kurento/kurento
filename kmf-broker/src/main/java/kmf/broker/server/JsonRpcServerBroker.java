@@ -10,6 +10,7 @@ import kmf.broker.Broker.BrokerMessageReceiverWithResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -35,6 +36,8 @@ public class JsonRpcServerBroker {
 	private JsonRpcClient client;
 	private Broker broker;
 
+	private RabbitTemplate template;
+
 	private ObjectIdsConverter converter = new ObjectIdsConverter();
 
 	public JsonRpcServerBroker(JsonRpcClient client) {
@@ -44,6 +47,7 @@ public class JsonRpcServerBroker {
 
 	public void start() {
 		this.broker.init();
+		this.template = broker.createServerTemplate();
 
 		broker.addMessageReceiverWithResponse(Broker.PIPELINE_CREATION_QUEUE,
 				new BrokerMessageReceiverWithResponse() {
@@ -111,7 +115,7 @@ public class JsonRpcServerBroker {
 				type);
 
 		broker.send(pipelineInfo.getEventsExchange(), eventRoutingKey,
-				request.toString());
+				request.toString(), template);
 
 	}
 
