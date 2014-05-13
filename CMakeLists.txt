@@ -1,3 +1,5 @@
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -8,7 +10,7 @@ set(KMS_SDP_UTILS
   sdp_utils.c sdp_utils.h
 )
 
-add_library(sdputils SHARED ${KMS_SDP_UTILS})
+add_library(sdputils ${KMS_SDP_UTILS})
 
 include_directories(
   ${GSTREAMER_INCLUDE_DIRS}
@@ -35,7 +37,7 @@ set(KMS_UTILS
   kmsutils.c kmsutils.h
 )
 
-add_library(kmsutils SHARED ${KMS_UTILS})
+add_library(kmsutils ${KMS_UTILS})
 
 include_directories(
   ${GSTREAMER_INCLUDE_DIRS}
