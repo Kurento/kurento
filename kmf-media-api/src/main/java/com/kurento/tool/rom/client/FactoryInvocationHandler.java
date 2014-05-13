@@ -8,8 +8,8 @@ import com.kurento.tool.rom.ParamAnnotationUtils;
 
 public class FactoryInvocationHandler extends DefaultInvocationHandler {
 
-	private Class<?> clazz;
-	private RemoteObjectFactory factory;
+	private final Class<?> clazz;
+	private final RemoteObjectFactory factory;
 
 	public FactoryInvocationHandler(Class<?> clazz, RemoteObjectFactory factory) {
 		super();

@@ -3,17 +3,12 @@ package com.kurento.tool.rom.test.model.server;
 import java.util.List;
 
 import com.kurento.tool.rom.RemoteClass;
-import com.kurento.tool.rom.server.EventManager;
-import com.kurento.tool.rom.server.InjectEventManager;
 import com.kurento.tool.rom.server.Param;
 import com.kurento.tool.rom.test.model.client.ComplexParam;
 import com.kurento.tool.rom.test.model.client.SampleEnum;
 
 @RemoteClass
 public class SampleClassImpl {
-
-	@InjectEventManager
-	private EventManager eventManager;
 
 	private final String att1;
 	private final boolean att2;
@@ -70,23 +65,5 @@ public class SampleClassImpl {
 			@Param("param") List<SampleClassImpl> param) {
 		return param;
 	}
-
-	// public void startTestEvents(@Param("numEvents") final int numEvents) {
-	//
-	// new Thread() {
-	// public void run() {
-	// for(int i = 0; i<numEvents; i++) {
-	// try {
-	// Thread.sleep(1000);
-	// } catch (InterruptedException e) {}
-	// try {
-	// eventManager.fireEvent(new SampleEvent("prop1", "prop2"));
-	// } catch (IOException e) {
-	// e.printStackTrace();
-	// }
-	// }
-	// }
-	// }.start();
-	// }
 
 }

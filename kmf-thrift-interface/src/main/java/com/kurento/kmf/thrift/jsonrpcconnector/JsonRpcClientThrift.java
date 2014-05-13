@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.kurento.kmf.common.exception.MediaServerTransportException;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.TransportException;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
@@ -26,6 +26,7 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.thrift.ThriftServer;
+import com.kurento.kmf.thrift.ThriftTransportException;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
@@ -103,7 +104,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 								sessions.remove(copiedSession);
 							}
 						}
-					} catch (MediaServerTransportException e) {
+					} catch (TransportException e) {
 						log.warn("Could not send keepalive for session {}",
 								copiedSession, e);
 					}
@@ -124,7 +125,12 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			@Override
 			public <P, R> Response<R> internalSendRequest(Request<P> request,
 					Class<R> resultClass) throws IOException {
-				return internalSendRequestThrift(request, resultClass);
+				try {
+					return internalSendRequestThrift(request, resultClass);
+				} catch (ThriftTransportException e) {
+					throw new TransportException(
+							"Error sendind request to server", e);
+				}
 			}
 
 			@Override
@@ -177,12 +183,12 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	 * @param resultClass
 	 *            the expected result class
 	 * @return The response from the media server
-	 * @throws MediaServerTransportException
+	 * @throws ThriftTransportException
 	 *             if the request could not be sent to the media server due to a
 	 *             problem in the transport
 	 */
 	public <P, R> Response<R> internalSendRequestThrift(Request<P> request,
-			Class<R> resultClass) throws MediaServerTransportException {
+			Class<R> resultClass) throws ThriftTransportException {
 
 		Client client = clientPool.acquireSync();
 
@@ -220,8 +226,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			return response;
 
 		} catch (TException e) {
-			throw new MediaServerTransportException(
-					"Could not invoke the request on the media server", e);
+			throw new ThriftTransportException(
+					"Error sending request to the remote server", e);
 		} finally {
 			clientPool.release(client);
 		}

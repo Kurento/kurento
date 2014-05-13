@@ -11,7 +11,8 @@ package com.kurento.kmf.media.events;
  * this interface will be on charge of processing the events raised by media
  * elements.
  * 
- * @param <T>: A class that extends from {@link Event}
+ * @param <T>
+ *            A class that extends from {@link Event}
  * 
  * @author Luis López (llopez@gsyc.es), Ivan Gracia (igracia@gsyc.es)
  * 

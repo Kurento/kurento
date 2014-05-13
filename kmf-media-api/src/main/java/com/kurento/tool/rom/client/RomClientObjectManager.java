@@ -15,10 +15,10 @@ public class RomClientObjectManager implements RomEventHandler,
 	private static final Logger LOG = LoggerFactory
 			.getLogger(RomClientObjectManager.class);
 
-	private ConcurrentMap<String, RemoteObject> objects = new MapMaker()
+	private final ConcurrentMap<String, RemoteObject> objects = new MapMaker()
 			.weakValues().makeMap();
 
-	private RomClient client;
+	private final RomClient client;
 
 	public RomClientObjectManager(RomClient client) {
 		this.client = client;
@@ -35,7 +35,7 @@ public class RomClientObjectManager implements RomEventHandler,
 		RemoteObject object = objects.get(objectRef);
 
 		if (object == null) {
-			LOG.error("Trying to fire event to an object that doesn't exist in the client");
+			LOG.error("Trying to propagate an event to an object that doesn't exist in the client");
 			return;
 		}
 

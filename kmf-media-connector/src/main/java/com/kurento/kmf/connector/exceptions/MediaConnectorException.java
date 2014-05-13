@@ -14,6 +14,7 @@
  */
 package com.kurento.kmf.connector.exceptions;
 
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * Exception to be used when an event that has been received form the media
@@ -23,7 +24,7 @@ package com.kurento.kmf.connector.exceptions;
  * @since 4.2.3
  *
  */
-public class EventPropagationException extends MediaConnectorException {
+public class MediaConnectorException extends KurentoException {
 
 	/**
 	 * Default serial ID
@@ -33,7 +34,7 @@ public class EventPropagationException extends MediaConnectorException {
 	/**
 	 * Default constructor
 	 */
-	public EventPropagationException() {
+	public MediaConnectorException() {
 		super();
 	}
 
@@ -41,7 +42,7 @@ public class EventPropagationException extends MediaConnectorException {
 	 *
 	 * @param msg
 	 */
-	public EventPropagationException(String msg) {
+	public MediaConnectorException(String msg) {
 		super(msg);
 	}
 
@@ -50,7 +51,7 @@ public class EventPropagationException extends MediaConnectorException {
 	 * @param msg
 	 * @param cause
 	 */
-	public EventPropagationException(String msg, Throwable cause) {
+	public MediaConnectorException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 
@@ -58,7 +59,7 @@ public class EventPropagationException extends MediaConnectorException {
 	 *
 	 * @param cause
 	 */
-	public EventPropagationException(Throwable cause) {
+	public MediaConnectorException(Throwable cause) {
 		super(cause);
 	}
 

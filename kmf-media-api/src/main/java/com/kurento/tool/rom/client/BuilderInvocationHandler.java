@@ -7,9 +7,9 @@ import com.kurento.kmf.media.Continuation;
 
 public class BuilderInvocationHandler extends DefaultInvocationHandler {
 
-	private Props props;
-	private RemoteObjectFactory factory;
-	private Class<?> clazz;
+	private final Props props;
+	private final RemoteObjectFactory factory;
+	private final Class<?> clazz;
 
 	public BuilderInvocationHandler(Class<?> clazz, Props props,
 			RemoteObjectFactory factory) {
@@ -41,8 +41,14 @@ public class BuilderInvocationHandler extends DefaultInvocationHandler {
 						@SuppressWarnings("unchecked")
 						@Override
 						public void onSuccess(RemoteObject remoteObject) {
-							cont.onSuccess(RemoteObjectInvocationHandler
-									.newProxy(remoteObject, factory, clazz));
+							try {
+								cont.onSuccess(RemoteObjectInvocationHandler
+										.newProxy(remoteObject, factory, clazz));
+							} catch (Exception e) {
+								log.warn(
+										"[Continuation] error invoking onSuccess implemented by client",
+										e);
+							}
 						}
 					});
 
@@ -59,10 +65,10 @@ public class BuilderInvocationHandler extends DefaultInvocationHandler {
 			} else if (name.startsWith("not")) {
 
 				String propName = extractAndLower("not", name);
-				props.add(propName, false);
+				props.add(propName, Boolean.FALSE);
 
 			} else {
-				props.add(name, true);
+				props.add(name, Boolean.TRUE);
 			}
 
 			return proxy;

@@ -34,12 +34,13 @@ import org.springframework.context.ApplicationContext;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.kurento.kmf.common.exception.MediaServerTransportException;
+import com.kurento.kmf.connector.exceptions.MediaConnectorTransportException;
 import com.kurento.kmf.connector.exceptions.ResponsePropagationException;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
+import com.kurento.kmf.jsonrpcconnector.TransportException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
@@ -133,8 +134,11 @@ public final class ThriftConnectorJsonRpcHandler extends
 	public void handleRequest(final Transaction transaction,
 			final Request<JsonObject> request) throws Exception {
 		transaction.startAsync();
-
-		sendRequest(transaction, request, true);
+		try {
+			sendRequest(transaction, request, true);
+		} catch (MediaConnectorTransportException e) {
+			throw new TransportException(e);
+		}
 
 	}
 
@@ -179,7 +183,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 						}
 					});
 		} catch (TException e) {
-			throw new MediaServerTransportException(
+			throw new MediaConnectorTransportException(
 					"Exception while executing a command"
 							+ " in thrift interface of the MediaServer", e);
 		}

@@ -27,7 +27,7 @@ import com.kurento.tool.rom.server.RemoteObjectManager;
 
 public class ParamsFlattener {
 
-	private static final Logger LOG = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(ParamsFlattener.class);
 
 	public enum RomType {
@@ -56,6 +56,7 @@ public class ParamsFlattener {
 		public Type getOwnerType() {
 			return null;
 		}
+
 	}
 
 	private static final ParamsFlattener INSTANCE = new ParamsFlattener();
@@ -198,7 +199,7 @@ public class ParamsFlattener {
 					propsMap.put(propName, value);
 
 				} catch (Exception e) {
-					LOG.warn(
+					log.warn(
 							"Exception while accessing prop '{}' in param object: {}",
 							propName, result, e);
 				}
@@ -248,7 +249,7 @@ public class ParamsFlattener {
 					propsMap.put(propName, value);
 
 				} catch (Exception e) {
-					LOG.warn(
+					log.warn(
 							"Exception while accessing prop '{}' in param object: {}",
 							propName, param, e);
 				}
@@ -304,7 +305,6 @@ public class ParamsFlattener {
 					return unflattedComplexType(clazz, (Props) value, manager);
 
 				} else {
-					// TODO Improve exception reporting
 					throw new ProtocolException(
 							"A objectRef coded with a String or a Props is expected for param type '"
 									+ type + "'");
@@ -320,7 +320,6 @@ public class ParamsFlattener {
 			}
 		}
 
-		// TODO Improve exception reporting
 		throw new ProtocolException("Type '" + type + "' is not supported");
 	}
 
@@ -386,20 +385,17 @@ public class ParamsFlattener {
 				clientManager.registerObject(value, newRemoteObject);
 				return newRemoteObject;
 
-			} else {
-				throw new ProtocolException("Remote object with objectRef '"
-						+ value + "' is not found");
 			}
+
+			throw new ProtocolException("Remote object with objectRef '"
+					+ value + "' is not found");
 
 		} else if (remoteObject instanceof RemoteObject) {
 			// We are in the client side
 			Object wrapper = ((RemoteObject) remoteObject)
 					.getWrapperForUnflatten();
-			if (wrapper != null) {
-				return wrapper;
-			} else {
-				return remoteObject;
-			}
+			return (wrapper != null) ? wrapper : remoteObject;
+
 		} else {
 			return remoteObject;
 		}

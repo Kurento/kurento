@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.thrift;
 
-import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * Exception thrown when the Thrift Server, used to receive events from the
@@ -24,7 +23,7 @@ import com.kurento.kmf.common.exception.KurentoException;
  * @since 4.2.3
  *
  */
-public class ThriftServerException extends KurentoException {
+public class ThriftServerException extends ThriftInterfaceException {
 
 	private static final long serialVersionUID = -8258926012237744437L;
 

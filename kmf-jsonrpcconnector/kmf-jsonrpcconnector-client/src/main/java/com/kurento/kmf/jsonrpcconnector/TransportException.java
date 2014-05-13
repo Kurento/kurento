@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.tool.rom.server;
+package com.kurento.kmf.jsonrpcconnector;
 
 import com.kurento.kmf.common.exception.KurentoException;
 

@@ -19,9 +19,9 @@ public abstract class DefaultInvocationHandler implements InvocationHandler {
 		String methodName = method.getName();
 		if (DEFAULT_METHODS.contains(methodName)) {
 			return this.getClass().getMethod(methodName).invoke(this);
-		} else {
-			return internalInvoke(proxy, method, args);
 		}
+		return internalInvoke(proxy, method, args);
+
 	}
 
 	protected abstract Object internalInvoke(Object proxy, Method method,

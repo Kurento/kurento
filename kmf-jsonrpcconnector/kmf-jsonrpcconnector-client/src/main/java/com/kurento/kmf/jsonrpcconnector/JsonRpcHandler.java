@@ -26,6 +26,9 @@ public interface JsonRpcHandler<P> {
 	 * @param request
 	 *            the request
 	 * 
+	 * @throws TransportException
+	 *             when there is an error in the transport mechanism
+	 * 
 	 * @throws Exception
 	 *             this method can handle or propagate exceptions.
 	 */

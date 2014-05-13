@@ -129,13 +129,14 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			remoteObject.addEventListener(event,
 					(Continuation<ListenerSubscription>) cont, listener);
 			return null;
-		} else {
-			return remoteObject.addEventListener(event, listener);
 		}
+
+		return remoteObject.addEventListener(event, listener);
+
 	}
 
 	private Object createBuilderObject(final Object proxy, Method method,
-			String methodName, Props props) throws ClassNotFoundException {
+			String methodName, Props props) {
 
 		if (props == null) {
 			props = new Props();
@@ -157,7 +158,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 	protected void propagateEventTo(Object object, String eventType,
 			Props data, MediaEventListener<?> listener) {
 
-		// TODO Optimize this to create only one event for all listeners
+		// TODO Optimise this to create only one event for all listeners
 
 		try {
 
@@ -176,8 +177,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			((MediaEventListener) listener).onEvent(e);
 
 		} catch (Exception e) {
-			LOG.error("Exception propagating event '" + eventType
-					+ "' with params " + data, e);
+			LOG.error("Exception propagating event '{}' with params ",
+					eventType, data, e);
 		}
 	}
 

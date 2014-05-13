@@ -1,9 +1,15 @@
 package com.kurento.tool.rom.client;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.media.Continuation;
 
 public class RemoteObjectFactory {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(RemoteObjectFactory.class);
 
 	private final RomClientObjectManager manager;
 	private final RomClient client;
@@ -32,13 +38,25 @@ public class RemoteObjectFactory {
 				new Continuation<String>() {
 					@Override
 					public void onSuccess(String objectRef) {
-						cont.onSuccess(new RemoteObject(objectRef,
-								remoteClassName, client, manager));
+						try {
+							cont.onSuccess(new RemoteObject(objectRef,
+									remoteClassName, client, manager));
+						} catch (Exception e) {
+							log.warn(
+									"[Continuation] error invoking onSuccess implemented by client",
+									e);
+						}
 					}
 
 					@Override
 					public void onError(Throwable cause) {
-						cont.onError(cause);
+						try {
+							cont.onError(cause);
+						} catch (Exception e) {
+							log.warn(
+									"[Continuation] error invoking onError implemented by client",
+									e);
+						}
 					}
 				});
 	}

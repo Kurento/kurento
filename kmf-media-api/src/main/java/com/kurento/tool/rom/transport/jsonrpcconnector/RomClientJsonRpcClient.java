@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Function;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -42,11 +45,14 @@ import com.kurento.kmf.media.Continuation;
 import com.kurento.tool.rom.client.RomClient;
 import com.kurento.tool.rom.client.RomEventHandler;
 import com.kurento.tool.rom.server.MediaServerException;
+import com.kurento.tool.rom.server.MediaServerTransportException;
 import com.kurento.tool.rom.server.ProtocolException;
-import com.kurento.tool.rom.server.TransportException;
 import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RomClientJsonRpcClient extends RomClient {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(RomClientJsonRpcClient.class);
 
 	private final JsonRpcClient client;
 
@@ -246,19 +252,32 @@ public class RomClientJsonRpcClient extends RomClient {
 
 							R methodResult = processReqResult(type, processor,
 									reqResult);
-							((Continuation) cont).onSuccess(methodResult);
+							try {
+								((Continuation) cont).onSuccess(methodResult);
+							} catch (Exception e) {
+								log.warn(
+										"[Continuation] error invoking OnSuccess implemented by client",
+										e);
+							}
 						}
 
 						@Override
 						public void onError(Throwable cause) {
-							cont.onError(cause);
+							try {
+								cont.onError(cause);
+							} catch (Exception e) {
+								log.warn(
+										"[Continuation] error invoking onError implemented by client",
+										e);
+							}
 						}
 					});
 
 			return null;
 
 		} catch (IOException e) {
-			throw new TransportException("Error connecting with server", e);
+			throw new MediaServerTransportException(
+					"Error connecting with server", e);
 		} catch (JsonRpcErrorException e) {
 			throw new MediaServerException("Exception invoking the ", e);
 		}

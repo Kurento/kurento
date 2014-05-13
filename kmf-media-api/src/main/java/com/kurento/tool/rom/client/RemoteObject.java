@@ -85,8 +85,14 @@ public class RemoteObject {
 					@SuppressWarnings("unchecked")
 					@Override
 					public void onSuccess(Object result) {
-						cont.onSuccess(FLATTENER.unflattenValue("return", type,
-								result, manager));
+						try {
+							cont.onSuccess(FLATTENER.unflattenValue("return",
+									type, result, manager));
+						} catch (Exception e) {
+							log.warn(
+									"[Continuation] error invoking onSuccess implemented by client",
+									e);
+						}
 					}
 				});
 	}
@@ -101,7 +107,13 @@ public class RemoteObject {
 			@Override
 			public void onSuccess(Void result) {
 				manager.releaseObject(objectRef);
-				cont.onSuccess(null);
+				try {
+					cont.onSuccess(null);
+				} catch (Exception e) {
+					log.warn(
+							"[Continuation] error invoking onSuccess implemented by client",
+							e);
+				}
 			}
 		});
 	}
@@ -131,8 +143,14 @@ public class RemoteObject {
 			@Override
 			public void onSuccess(String subscription) {
 				listeners.put(eventType, listener);
-				cont.onSuccess(new ListenerSubscription(subscription,
-						eventType, listener));
+				try {
+					cont.onSuccess(new ListenerSubscription(subscription,
+							eventType, listener));
+				} catch (Exception e) {
+					log.warn(
+							"[Continuation] error invoking onSuccess implemented by client",
+							e);
+				}
 			}
 		});
 	}

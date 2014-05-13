@@ -134,7 +134,7 @@ public class JsonRpcServerThrift {
 	public void start() {
 		log.info("Starting Thrift Server");
 		server.start();
-		log.info("Thrift Server started");
+		log.info("Thrift Server started!");
 	}
 
 	public void destroy() {

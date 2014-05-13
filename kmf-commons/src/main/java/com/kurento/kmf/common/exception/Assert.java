@@ -33,6 +33,7 @@ public class Assert {
 	 *            Error code which determines the exception to be raise if the
 	 *            object is null
 	 */
+	@Deprecated
 	public static void notNull(Object object, int errorCode) {
 		notNull(object, "", errorCode);
 	}
@@ -61,6 +62,7 @@ public class Assert {
 	 * @param message
 	 *            Message to be appended at the end of the description error
 	 */
+	@Deprecated
 	public static void notNull(Object object, String message, int errorCode) {
 		if (object == null) {
 			throw new KurentoException(message + ' ' + errorCode);
@@ -94,6 +96,7 @@ public class Assert {
 	 *            Error code which determines the exception to be raise if the
 	 *            condition is not met
 	 */
+	@Deprecated
 	public static void isTrue(boolean condition, int errorCode) {
 		isTrue(condition, "", errorCode);
 	}
@@ -109,6 +112,7 @@ public class Assert {
 	 *            Error code which determines the exception to be raise if the
 	 *            condition is not met
 	 */
+	@Deprecated
 	public static void isTrue(boolean condition, String message, int errorCode) {
 		if (!condition) {
 			throw new KurentoException(message + ' ' + errorCode);

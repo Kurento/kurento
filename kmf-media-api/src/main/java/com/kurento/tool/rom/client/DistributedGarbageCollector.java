@@ -67,9 +67,9 @@ public class DistributedGarbageCollector {
 	 */
 	public void registerReference(final String objectRef, int collectorPeriod) {
 
-		Assert.notNull(objectRef,
-				"Invalid reference passed to DistributedGarbageCollector",
-				30000); // TODO: message and error code
+		Assert.notNull(
+				objectRef,
+				"An object reference must be provided in order to register an object in the DGC");
 
 		AtomicInteger counter = refCounters.putIfAbsent(objectRef,
 				new AtomicInteger(1));
@@ -103,7 +103,9 @@ public class DistributedGarbageCollector {
 	 */
 	public boolean removeReference(final String objectRef) {
 
-		Assert.notNull(objectRef, "", 30000); // TODO: message and error code
+		Assert.notNull(
+				objectRef,
+				"An object reference must be provided in order to remove an object from the DGC");
 
 		AtomicInteger counter = refCounters.get(objectRef);
 		if (counter == null) {
@@ -116,8 +118,10 @@ public class DistributedGarbageCollector {
 
 		Timer timer = timers.remove(objectRef);
 		if (timer == null) {
-			log.error("Inconsistent state in DistributedGarbageCollector: "
-					+ "no timer found for a media object that was not collected.");
+			log.error(
+					"Inconsistent state in DistributedGarbageCollector: "
+							+ "no timer found for media object {} that was not collected.",
+					objectRef);
 		} else {
 			timer.cancel();
 		}
@@ -135,8 +139,8 @@ public class DistributedGarbageCollector {
 					int errorCode = ((JsonRpcErrorException) e).getCode();
 					// TODO this should be obtained form a common place
 					if (errorCode == -32000) {
-						log.trace(
-								"Object {} not found in KMS. Will remove reference",
+						log.debug(
+								"Keepalive sent, but object {} was not found in KMS. Will remove reference",
 								objectRef);
 						removeReference(objectRef);
 					}

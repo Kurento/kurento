@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.thrift.pool;
 
-import com.kurento.kmf.common.exception.KurentoException;
+import com.kurento.kmf.thrift.ThriftInterfaceException;
 
 /**
  * This exception is thrown when acquiring or returning clients to/from the
@@ -23,7 +23,7 @@ import com.kurento.kmf.common.exception.KurentoException;
  * @author Ivan Gracia (izanmail@gmail.com)
  *
  */
-public class ClientPoolException extends KurentoException {
+public class ClientPoolException extends ThriftInterfaceException {
 
 	private static final long serialVersionUID = -6427664638336803375L;
 

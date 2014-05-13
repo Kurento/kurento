@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,27 +12,27 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.thrift.pool;
+package com.kurento.kmf.thrift;
 
-import com.kurento.kmf.thrift.ThriftInterfaceException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
- * This exception is used when the pool is exhausted and no more clients can be
- * created.
+ * Exception thrown when the Thrift Server, used to receive events from the
+ * Media Server, can't be created or started.
  * 
  * @author Ivan Gracia (izanmail@gmail.com)
- * @since 1.0.0
+ * @since 4.2.3
  *
  */
-public class PoolLimitException extends ThriftInterfaceException {
+public class ThriftInterfaceException extends KurentoException {
 
-	private static final long serialVersionUID = 1428726405659800781L;
+	private static final long serialVersionUID = -8258926012237744437L;
 
-	public PoolLimitException(String message) {
+	public ThriftInterfaceException(String message) {
 		super(message);
 	}
 
-	public PoolLimitException(String message, Throwable cause) {
+	public ThriftInterfaceException(String message, Throwable cause) {
 		super(message, cause);
 	}
 }

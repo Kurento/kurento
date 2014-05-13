@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.connector.exceptions;
 
-import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * Exception to be used when an event that has been received form the media
@@ -24,7 +23,7 @@ import com.kurento.kmf.common.exception.KurentoException;
  * @since 4.2.3
  *
  */
-public class ResponsePropagationException extends KurentoException {
+public class ResponsePropagationException extends MediaConnectorException {
 
 	/**
 	 * Default serial ID

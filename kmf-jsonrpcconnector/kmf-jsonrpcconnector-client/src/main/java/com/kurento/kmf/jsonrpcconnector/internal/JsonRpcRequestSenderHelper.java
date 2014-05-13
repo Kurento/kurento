@@ -63,8 +63,8 @@ public abstract class JsonRpcRequestSenderHelper implements
 	public <R> R sendRequest(String method, Object params, Class<R> resultClass)
 			throws IOException {
 
-		Request<Object> request = new Request<>(id.incrementAndGet(), method,
-				params);
+		Request<Object> request = new Request<>(Integer.valueOf(id
+				.incrementAndGet()), method, params);
 
 		if (INJECT_SESSION_ID) {
 			request.setSessionId(sessionId);
@@ -112,8 +112,8 @@ public abstract class JsonRpcRequestSenderHelper implements
 	public void sendRequest(String method, JsonObject params,
 			final Continuation<JsonElement> continuation) {
 
-		Request<Object> request = new Request<Object>(id.incrementAndGet(),
-				method, params);
+		Request<Object> request = new Request<Object>(Integer.valueOf(id
+				.incrementAndGet()), method, params);
 
 		if (INJECT_SESSION_ID) {
 			request.setSessionId(sessionId);

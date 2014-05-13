@@ -66,7 +66,8 @@ public class RomServer {
 		Object remoteObject = manager.getObject(objectRef);
 
 		if (remoteObject == null) {
-			throw new ProtocolException("Invalid remote object reference");
+			throw new MediaServerException("No object found with reference "
+					+ objectRef);
 		}
 
 		Class<?> remoteObjClass = remoteObject.getClass();
@@ -98,7 +99,7 @@ public class RomServer {
 				return method;
 			}
 		}
-		throw new RuntimeException("Method '" + methodName
+		throw new ProtocolException("Method '" + methodName
 				+ "' not found in class '"
 				+ remoteObjClass.getClass().getSimpleName() + "'");
 	}
