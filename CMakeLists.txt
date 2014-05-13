@@ -87,6 +87,7 @@ set(KMS_PLUGIN_SOURCES
   kmscompositemixer.c kmscompositemixer.h
   kmsdispatcher.c kmsdispatcher.h
   kmsaudiomixer.c kmsaudiomixer.h
+  kmsselectablemixer.c kmsselectablemixer.h
 )
 
 include(GLibHelpers)

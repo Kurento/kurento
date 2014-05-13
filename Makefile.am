@@ -58,7 +58,8 @@ libgstkurento_la_SOURCES = kmsplugin.c \
                         gstsctpserversrc.c gstsctpserversrc.h \
 			kmscompositemixer.c kmscompositemixer.h \
 			kmsdispatcher.c kmsdispatcher.h \
-			kmsaudiomixer.c kmsaudiomixer.h
+			kmsaudiomixer.c kmsaudiomixer.h \
+			kmsselectablemixer.c kmsselectablemixer.h
 
 # compiler and linker flags used to compile this plugin, set in configure.ac
 libgstkurento_la_CFLAGS = $(GST_CFLAGS) $(GIO_CFLAGS) $(NICE_CFLAGS) $(SOUP_CFLAGS) -Werror
