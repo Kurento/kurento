@@ -2,11 +2,7 @@
 function(create_check_target)
   if (NOT TARGET check)
     MESSAGE (STATUS "Enabling check target")
-    if (${DISABLE_TESTS})
-      add_custom_target(check WORKING_DIRECTORY ${CMAKE_BINARY_DIR} COMMENT "Make check is disabled")
-    else ()
-      add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
-    endif()
+    add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
   endif()
 endfunction()
 
@@ -31,11 +27,13 @@ function(add_test_program test_name sources)
   create_check_target()
   add_dependencies(check ${test_name})
 
-  add_test (${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
+  if (NOT ${DISABLE_TESTS})
+    add_test (${test_name} ${CMAKE_CURRENT_BINARY_DIR}/${test_name})
 
-  foreach (p ${TEST_PROPERTIES})
-    set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT ${p})
-  endforeach()
+    foreach (p ${TEST_PROPERTIES})
+      set_property(TEST ${test_name} APPEND PROPERTY ENVIRONMENT ${p})
+    endforeach()
+  endif ()
 
   add_custom_target (${test_name}.check
     COMMAND ${TEST_PROPERTIES} ${CMAKE_CURRENT_BINARY_DIR}/${test_name}
