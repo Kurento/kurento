@@ -18,6 +18,7 @@ target_link_libraries(crowddetector
   ${GSTREAMER_VIDEO_LIBRARIES}
   ${OPENCV_LIBRARIES}
   ${SOUP_LIBRARIES}
+  m
 )
 
 install(
