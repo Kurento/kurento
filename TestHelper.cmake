@@ -23,7 +23,11 @@ endfunction()
 function(add_test_program test_name sources)
   message (STATUS "Adding tests: ${test_name}")
 
-  add_executable (${test_name} EXCLUDE_FROM_ALL ${sources})
+  set (final_sources ${sources})
+  foreach (arg ${ARGN})
+    set (final_sources "${final_sources};${arg}")
+  endforeach()
+  add_executable (${test_name} EXCLUDE_FROM_ALL ${final_sources})
   create_check_target()
   add_dependencies(check ${test_name})
 
