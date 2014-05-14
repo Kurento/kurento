@@ -84,7 +84,7 @@ public class KurentoMediaServer {
 		createKurentoConf();
 		createFolder(callerTest);
 
-		runLocal("sh", "-c", workspace + "kurento.sh > " + workspace
+		Shell.run("sh", "-c", workspace + "kurento.sh > " + workspace
 				+ callerTest + "/kms.log 2>&1");
 
 		// Guard time to start KMS
@@ -115,7 +115,7 @@ public class KurentoMediaServer {
 
 		createFileFromTemplate(cfg, data, "kurento.conf");
 		createFileFromTemplate(cfg, data, "kurento.sh");
-		runLocal("chmod", "+x", workspace + "kurento.sh");
+		Shell.run("chmod", "+x", workspace + "kurento.sh");
 		createFileFromTemplate(cfg, data, "pattern.sdp");
 	}
 
@@ -130,7 +130,7 @@ public class KurentoMediaServer {
 	}
 
 	public void stop() {
-		runLocal("killall", "-9", "kurento");
+		Shell.run("killall", "-9", "kurento");
 	}
 
 	public String getDebugOptions() {
@@ -141,18 +141,4 @@ public class KurentoMediaServer {
 		this.debugOptions = debugOptions;
 	}
 
-	private void runLocal(final String... command) {
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				try {
-					Runtime.getRuntime().exec(command);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		t.setDaemon(true);
-		t.start();
-	}
 }

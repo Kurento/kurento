@@ -44,7 +44,7 @@ import com.kurento.kmf.test.client.Client;
 
 /**
  * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
@@ -117,7 +117,7 @@ public class MediaApiPlayerBrowserTestTI extends MediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME_FOR_TEST).client(Client.PLAYER).build()) {
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

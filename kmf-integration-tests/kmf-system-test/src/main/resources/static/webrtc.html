@@ -20,6 +20,8 @@
 			sdpOffer = offer.sdp;
 			console.info(sdpOffer);
 		});
+		showSpinner("local");
+		showSpinner("video");
 	}
 
 	function setSdpAnswer(sdpAnswer) {
@@ -82,11 +84,9 @@
 				video : "recvonly"
 			};
 		} else {
-			localVideo.poster = "./img/transparent-1px.png";
-			localVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+			showSpinner("local");
 		}
-		remoteVideo.poster = "./img/transparent-1px.png";
-		remoteVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		showSpinner("video");
 
 		// Create a new connection
 		try {
@@ -97,6 +97,12 @@
 			// Log the error
 			console.error(error.message);
 		}
+	}
+
+	function showSpinner(tagId) {
+		var videoTag = document.getElementById(tagId);
+		videoTag.poster = "./img/transparent-1px.png";
+		videoTag.style.background = "center transparent url('./img/spinner.gif') no-repeat";
 	}
 
 	function log(text) {

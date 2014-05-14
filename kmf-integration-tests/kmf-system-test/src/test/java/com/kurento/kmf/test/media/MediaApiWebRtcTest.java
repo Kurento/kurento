@@ -17,6 +17,7 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.MediaPipeline;
@@ -49,15 +50,32 @@ public class MediaApiWebRtcTest extends MediaApiTest {
 	private static int PLAYTIME = 5; // seconds to play in HTTP player
 
 	@Test
-	public void testWebRtcLoopback() throws InterruptedException {
+	public void testWebRtcLoopbackChrome() throws InterruptedException {
+		doTest(Browser.CHROME, null, new Color(0, 135, 0));
 
+		// Other alternative: with custom video
+		// doTest(Browser.CHROME, "/path-to/red.webm", Color.RED);
+	}
+
+	@Ignore
+	@Test
+	public void testWebRtcLoopbackFirefox() throws InterruptedException {
+		doTest(Browser.FIREFOX, "/path-to/blue.webm", Color.BLUE);
+	}
+
+	public void doTest(Browser browserType, String video, Color color)
+			throws InterruptedException {
 		MediaPipeline mp = pipelineFactory.create();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME_FOR_TEST).client(Client.WEBRTC).build()) {
+		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
+				browserType).client(Client.WEBRTC);
+		if (video != null) {
+			builder = builder.video(video);
+		}
 
+		try (BrowserClient browser = builder.build()) {
 			browser.subscribeEvents("playing");
 			browser.connectToWebRtcEndpoint(webRtcEndpoint,
 					WebRtcChannel.AUDIO_AND_VIDEO);
@@ -75,9 +93,10 @@ public class MediaApiWebRtcTest extends MediaApiTest {
 					+ " sec)", compare(PLAYTIME, browser.getCurrentTime()));
 
 			// Assert color
-			Assert.assertTrue(
-					"The color of the video should be green (RGB #008700)",
-					browser.colorSimilarTo(new Color(0, 135, 0)));
+			if (color != null) {
+				Assert.assertTrue("The color of the video should be " + color,
+						browser.colorSimilarTo(color));
+			}
 		}
 	}
 

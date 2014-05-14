@@ -12,29 +12,31 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.test.client;
+package com.kurento.kmf.test;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import java.io.IOException;
 
 /**
- * Browser to perform automated web testing with Selenium WebDriver.
+ * Local shell.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public enum Browser {
-	CHROME, FIREFOX;
+public class Shell {
 
-	public Class<? extends WebDriver> getDriverClass() {
-		switch (this) {
-		case FIREFOX:
-			return FirefoxDriver.class;
-		case CHROME:
-		default:
-			return ChromeDriver.class;
-		}
+	public static void run(final String... command) {
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				try {
+					Runtime.getRuntime().exec(command);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		t.setDaemon(true);
+		t.start();
 	}
 
 }

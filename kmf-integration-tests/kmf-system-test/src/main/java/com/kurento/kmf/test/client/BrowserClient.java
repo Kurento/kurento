@@ -32,6 +32,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.PortManager;
+import com.kurento.kmf.test.Shell;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
@@ -64,12 +66,14 @@ public class BrowserClient implements Closeable {
 	private int serverPort;
 	private Client client;
 	private Browser browser;
+	private boolean usePhysicalCam;
 
 	private BrowserClient(Builder builder) {
 		this.video = builder.video;
 		this.serverPort = builder.serverPort;
 		this.client = builder.client;
 		this.browser = builder.browser;
+		this.usePhysicalCam = builder.usePhysicalCam;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
@@ -86,7 +90,14 @@ public class BrowserClient implements Closeable {
 		Class<? extends WebDriver> driverClass = browser.getDriverClass();
 
 		if (driverClass.equals(FirefoxDriver.class)) {
-			driver = new FirefoxDriver();
+			FirefoxProfile profile = new FirefoxProfile();
+			// This flag avoids granting the access to the camera
+			profile.setPreference("media.navigator.permission.disabled", true);
+			driver = new FirefoxDriver(profile);
+
+			if (!usePhysicalCam && video != null) {
+				launchFakeCam();
+			}
 
 		} else if (driverClass.equals(ChromeDriver.class)) {
 			String chromedriver = null;
@@ -98,18 +109,30 @@ public class BrowserClient implements Closeable {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
-			if (browser.getFlags()) {
-				options.addArguments("--disable-web-security",
-						"--use-fake-device-for-media-stream",
-						"--use-fake-ui-for-media-stream");
+
+			// This flag avoids grant the camera
+			options.addArguments("--use-fake-ui-for-media-stream");
+
+			if (!usePhysicalCam) {
 				if (video != null) {
-					options.addArguments("--use-file-for-fake-video-capture="
-							+ video);
+					launchFakeCam();
+					// Another option (in Chrome):
+					// options.addArguments("--use-file-for-fake-video-capture="
+					// + video);
+				} else {
+					// This flag makes using a synthetic video (green with
+					// spinner) in webrtc
+					options.addArguments("--use-fake-device-for-media-stream");
 				}
 			}
 			driver = new ChromeDriver(options);
 		}
 		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
+	}
+
+	private void launchFakeCam() {
+		Shell.run("sh", "-c", "gst-launch filesrc location=" + video
+				+ " ! decodebin2 ! v4l2sink device=/dev/video0");
 	}
 
 	public void setURL(String videoUrl) {
@@ -181,6 +204,15 @@ public class BrowserClient implements Closeable {
 		if (driver instanceof JavascriptExecutor) {
 			((JavascriptExecutor) driver).executeScript("play('" + videoUrl
 					+ "', false);");
+		}
+	}
+
+	public void showSpinners() {
+		if (driver instanceof JavascriptExecutor) {
+			((JavascriptExecutor) driver)
+					.executeScript("showSpinner('local');");
+			((JavascriptExecutor) driver)
+					.executeScript("showSpinner('video');");
 		}
 	}
 
@@ -279,9 +311,14 @@ public class BrowserClient implements Closeable {
 		private int serverPort;
 		private Client client;
 		private Browser browser;
+		private boolean usePhysicalCam;
 
 		public Builder() {
 			this.serverPort = PortManager.getPort();
+
+			// By default physical camera will not be used; instead synthetic
+			// videos will be used for testing
+			this.usePhysicalCam = false;
 		}
 
 		public Builder(int serverPort) {
@@ -300,6 +337,11 @@ public class BrowserClient implements Closeable {
 
 		public Builder browser(Browser browser) {
 			this.browser = browser;
+			return this;
+		}
+
+		public Builder usePhysicalCam() {
+			this.usePhysicalCam = true;
 			return this;
 		}
 

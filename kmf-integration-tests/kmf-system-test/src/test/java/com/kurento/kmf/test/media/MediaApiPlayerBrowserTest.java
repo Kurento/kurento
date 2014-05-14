@@ -50,7 +50,16 @@ import com.kurento.kmf.test.client.Client;
 public class MediaApiPlayerBrowserTest extends MediaApiTest {
 
 	@Test
-	public void testPlayer() throws Exception {
+	public void testPlayerChrome() throws Exception {
+		doTest(Browser.CHROME);
+	}
+
+	@Test
+	public void testPlayerFirefox() throws Exception {
+		doTest(Browser.FIREFOX);
+	}
+
+	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
@@ -61,7 +70,7 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME_FOR_TEST).client(Client.PLAYER).build()) {
+				.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
