@@ -784,8 +784,10 @@ kms_audio_mixer_request_new_pad (GstElement * element,
 
   KMS_AUDIO_MIXER_UNLOCK (self);
 
-  g_signal_connect (G_OBJECT (pad), "unlinked",
-      G_CALLBACK (unlinked_pad), NULL);
+  if (pad != NULL) {
+    g_signal_connect (G_OBJECT (pad), "unlinked",
+        G_CALLBACK (unlinked_pad), NULL);
+  }
 
   return pad;
 }
