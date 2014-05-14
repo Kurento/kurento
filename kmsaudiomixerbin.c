@@ -43,8 +43,10 @@ GST_DEBUG_CATEGORY_STATIC (kms_audio_mixer_bin_debug_category);
 
 struct _KmsAudioMixerBinPrivate
 {
+  GstElement *adder;
   GRecMutex mutex;
   KmsLoop *loop;
+  GstPad *srcpad;
 };
 
 #define RAW_AUDIO_CAPS "audio/x-raw;"
@@ -143,7 +145,19 @@ kms_audio_mixer_bin_class_init (KmsAudioMixerBinClass * klass)
 static void
 kms_audio_mixer_bin_init (KmsAudioMixerBin * self)
 {
+  GstPad *srcpad;
+
   self->priv = KMS_AUDIO_MIXER_BIN_GET_PRIVATE (self);
+
+  self->priv->adder = gst_element_factory_make ("liveadder", NULL);
+  gst_bin_add (GST_BIN (self), self->priv->adder);
+
+  srcpad = gst_element_get_static_pad (self->priv->adder, "src");
+  self->priv->srcpad = gst_ghost_pad_new (AUDIO_MIXER_BIN_SRC_PAD, srcpad);
+  gst_object_unref (srcpad);
+
+  gst_element_add_pad (GST_ELEMENT (self), self->priv->srcpad);
+  gst_element_sync_state_with_parent (self->priv->adder);
 
   g_rec_mutex_init (&self->priv->mutex);
   self->priv->loop = kms_loop_new ();
