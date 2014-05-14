@@ -744,24 +744,6 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>shell-maven-plugin</artifactId>
 					<version>${version.shell.plugin}</version>
-					<executions>
-						<execution>
-							<id>stage-sources</id>
-							<phase>process-sources</phase>
-							<goals>
-								<goal>shell</goal>
-							</goals>
-							<configuration>
-								<workDir>${workDir}</workDir>
-								<chmod>true</chmod>
-								<keepScriptFile>true</keepScriptFile>
-								<script>
-									npm install
-									${basedir}/node_modules/.bin/grunt maven
-								</script>
-							</configuration>
-						</execution>
-					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
