@@ -32,6 +32,7 @@
 #include <kmscompositemixer.h>
 #include <kmsdispatcher.h>
 #include <kmsaudiomixer.h>
+#include <kmsaudiomixerbin.h>
 #include <kmsselectablemixer.h>
 
 static gboolean
@@ -86,6 +87,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!kms_audio_mixer_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_audio_mixer_bin_plugin_init (kurento))
     return FALSE;
 
   if (!kms_selectable_mixer_plugin_init (kurento))

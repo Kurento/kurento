@@ -87,6 +87,7 @@ set(KMS_PLUGIN_SOURCES
   kmscompositemixer.c kmscompositemixer.h
   kmsdispatcher.c kmsdispatcher.h
   kmsaudiomixer.c kmsaudiomixer.h
+  kmsaudiomixerbin.c kmsaudiomixerbin.h
   kmsselectablemixer.c kmsselectablemixer.h
 )
 
