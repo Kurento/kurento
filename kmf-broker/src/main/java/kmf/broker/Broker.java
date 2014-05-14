@@ -56,10 +56,11 @@ public class Broker {
 
 	private void declarePipelineCreationQueue(RabbitAdmin admin) {
 
-		Queue queue = new Queue(PIPELINE_CREATION_QUEUE, false, false, false);
+		Queue queue = new Queue(PIPELINE_CREATION_QUEUE, true, false, false);
 		admin.declareQueue(queue);
 
-		DirectExchange exchange = new DirectExchange(PIPELINE_CREATION_QUEUE);
+		DirectExchange exchange = new DirectExchange(PIPELINE_CREATION_QUEUE,
+				true, false);
 		admin.declareExchange(exchange);
 
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(""));
