@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
+import com.kurento.kmf.jsonrpcconnector.client.RequestAlreadyRespondedException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
@@ -33,7 +34,7 @@ public class TransactionImpl implements Transaction {
 	}
 
 	private final Session session;
-	private boolean async = false;
+	private boolean async;
 	private final AtomicBoolean responded = new AtomicBoolean(false);
 	private final ResponseSender responseSender;
 	private final Request<?> request;
@@ -62,7 +63,8 @@ public class TransactionImpl implements Transaction {
 			responseSender.sendResponse(response);
 
 		} else {
-			throw new RuntimeException("This request has been yet responded");
+			throw new RequestAlreadyRespondedException(
+					"This request has already been responded");
 		}
 	}
 

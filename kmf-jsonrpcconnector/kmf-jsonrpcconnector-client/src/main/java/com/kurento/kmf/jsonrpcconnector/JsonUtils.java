@@ -53,10 +53,10 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 
 /**
  * 
- * Gson/JSON utilities; used to serialize Java object to JSON (as String).
+ * Gson/JSON utilities; used to serialise Java object to JSON (as String).
  * 
  * @author Miguel París (mparisdiaz@gsyc.es)
- * @version 1.0.0
+ * @since 1.0.0
  */
 public class JsonUtils {
 
@@ -67,18 +67,18 @@ public class JsonUtils {
 	private static Gson gson;
 
 	/**
-	 * Serialize Java object to JSON (as String).
+	 * Serialise Java object to JSON (as String).
 	 * 
 	 * @param obj
 	 *            Java Object representing a JSON message to be serialized
-	 * @return Serialized JSON message (as String)
+	 * @return Serialised JSON message (as String)
 	 */
 	public static String toJson(Object obj) {
 		return getGson().toJson(obj);
 	}
 
 	public static JsonObject toJsonObject(Object obj) {
-		// TODO Optimize this implementation if possible
+		// TODO Optimise this implementation if possible
 		return fromJson(getGson().toJson(obj), JsonObject.class);
 	}
 
@@ -86,42 +86,35 @@ public class JsonUtils {
 			Class<T> paramsClass) {
 
 		if (INJECT_SESSION_ID) {
-
-			// TODO Optimize this implementation if possible
+			// TODO Optimise this implementation if possible
 			return fromJsonRequestInject(fromJson(json, JsonObject.class),
 					paramsClass);
-
-		} else {
-
-			return getGson().fromJson(
-					json,
-					$Gson$Types.newParameterizedTypeWithOwner(null,
-							Request.class, paramsClass));
 		}
+
+		return getGson().fromJson(
+				json,
+				$Gson$Types.newParameterizedTypeWithOwner(null, Request.class,
+						paramsClass));
 	}
 
 	public static <T> Response<T> fromJsonResponse(String json,
 			Class<T> resultClass) {
 
 		if (INJECT_SESSION_ID) {
-
-			// TODO Optimize this implementation if possible
+			// TODO Optimise this implementation if possible
 			return fromJsonResponseInject(fromJson(json, JsonObject.class),
 					resultClass);
+		}
+		try {
+			return getGson().fromJson(
+					json,
+					$Gson$Types.newParameterizedTypeWithOwner(null,
+							Response.class, resultClass));
 
-		} else {
-			try {
-
-				return getGson().fromJson(
-						json,
-						$Gson$Types.newParameterizedTypeWithOwner(null,
-								Response.class, resultClass));
-
-			} catch (JsonSyntaxException e) {
-				throw new RuntimeException("Exception converting Json '" + json
-						+ "' to a JSON-RPC response with params as class "
-						+ resultClass.getName());
-			}
+		} catch (JsonSyntaxException e) {
+			throw new JsonRpcConnectorException("Exception converting Json '"
+					+ json + "' to a JSON-RPC response with params as class "
+					+ resultClass.getName(), e);
 		}
 	}
 
@@ -130,16 +123,16 @@ public class JsonUtils {
 
 		if (INJECT_SESSION_ID) {
 
-			// TODO Optimize this implementation if possible
+			// TODO Optimise this implementation if possible
 			return fromJsonRequestInject(json, paramsClass);
 
-		} else {
-
-			return getGson().fromJson(
-					json,
-					$Gson$Types.newParameterizedTypeWithOwner(null,
-							Request.class, paramsClass));
 		}
+
+		return getGson().fromJson(
+				json,
+				$Gson$Types.newParameterizedTypeWithOwner(null, Request.class,
+						paramsClass));
+
 	}
 
 	public static <T> Response<T> fromJsonResponse(JsonObject json,
@@ -149,13 +142,13 @@ public class JsonUtils {
 
 			// TODO Optimize this implementation if possible
 			return fromJsonResponseInject(json, resultClass);
-		} else {
-
-			return getGson().fromJson(
-					json,
-					$Gson$Types.newParameterizedTypeWithOwner(null,
-							Response.class, resultClass));
 		}
+
+		return getGson().fromJson(
+				json,
+				$Gson$Types.newParameterizedTypeWithOwner(null, Response.class,
+						resultClass));
+
 	}
 
 	private static <T> Response<T> fromJsonResponseInject(
@@ -173,7 +166,7 @@ public class JsonUtils {
 			return response;
 
 		} catch (JsonSyntaxException e) {
-			throw new RuntimeException("Exception converting Json '"
+			throw new JsonRpcConnectorException("Exception converting Json '"
 					+ jsonObject
 					+ "' to a JSON-RPC response with params as class "
 					+ resultClass.getName(), e);
@@ -184,7 +177,6 @@ public class JsonUtils {
 			Class<T> paramsClass) {
 
 		String sessionId = extractSessionId(jsonObject, PARAMS_PROPERTY);
-
 		Request<T> request = getGson().fromJson(
 				jsonObject,
 				$Gson$Types.newParameterizedTypeWithOwner(null, Request.class,
@@ -247,11 +239,7 @@ public class JsonUtils {
 	}
 
 	private static Class<?> getClassOrNull(Object object) {
-		if (object == null) {
-			return null;
-		} else {
-			return object.getClass();
-		}
+		return (object == null) ? null : object.getClass();
 	}
 
 	/**
@@ -318,9 +306,10 @@ public class JsonUtils {
 					message.getSessionId());
 
 			return jsonObject.toString();
-		} else {
-			return JsonUtils.toJson(message);
 		}
+
+		return JsonUtils.toJson(message);
+
 	}
 
 	private static JsonObject convertToObject(JsonObject jsonObject,
@@ -384,7 +373,7 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 
 		Integer id;
 		try {
-			id = jObject.get(ID_PROPERTY).getAsInt();
+			id = Integer.valueOf(jObject.get(ID_PROPERTY).getAsInt());
 		} catch (Exception e) {
 			throw new JsonParseException(
 					"Invalid JsonRpc response. It lacks a valid '"
@@ -395,15 +384,14 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 
 			ParameterizedType parameterizedType = (ParameterizedType) typeOfT;
 
-			return new Response<Object>(id, context.deserialize(
+			return new Response<>(id, context.deserialize(
 					jObject.get(RESULT_PROPERTY),
 					parameterizedType.getActualTypeArguments()[0]));
 
 		} else if (jObject.has(ERROR_PROPERTY)) {
 
-			return new Response<Object>(id,
-					(ResponseError) context.deserialize(
-							jObject.get(ERROR_PROPERTY), ResponseError.class));
+			return new Response<>(id, (ResponseError) context.deserialize(
+					jObject.get(ERROR_PROPERTY), ResponseError.class));
 
 		} else {
 			throw new JsonParseException("Invalid JsonRpc response lacking '"
@@ -445,15 +433,14 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 
 		Integer id = null;
 		if (jObject.has(ID_PROPERTY)) {
-			id = jObject.get(ID_PROPERTY).getAsInt();
+			id = Integer.valueOf(jObject.get(ID_PROPERTY).getAsInt());
 		}
 
 		ParameterizedType parameterizedType = (ParameterizedType) typeOfT;
 
-		return new Request<Object>(id, jObject.get(METHOD_PROPERTY)
-				.getAsString(), context.deserialize(
-				jObject.get(PARAMS_PROPERTY),
-				parameterizedType.getActualTypeArguments()[0]));
+		return new Request<>(id, jObject.get(METHOD_PROPERTY).getAsString(),
+				context.deserialize(jObject.get(PARAMS_PROPERTY),
+						parameterizedType.getActualTypeArguments()[0]));
 
 	}
 
@@ -493,14 +480,15 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 		} else if (value instanceof JsonArray) {
 
 			JsonArray array = (JsonArray) value;
-			List<Object> result = new ArrayList<Object>();
+			List<Object> result = new ArrayList<>();
 			for (JsonElement element : array) {
 				result.add(deserialize(element, context));
 			}
 			return result;
 
 		} else {
-			throw new RuntimeException("Unrecognized Json element: " + value);
+			throw new JsonRpcConnectorException("Unrecognized Json element: "
+					+ value);
 		}
 	}
 
@@ -508,19 +496,20 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 
 		JsonPrimitive primitive = (JsonPrimitive) element;
 		if (primitive.isBoolean()) {
-			return primitive.getAsBoolean();
+			return Boolean.valueOf(primitive.getAsBoolean());
 		} else if (primitive.isNumber()) {
 			Number number = primitive.getAsNumber();
 			double value = number.doubleValue();
 			if (((int) value == value)) {
-				return (int) value;
-			} else {
-				return (float) value;
+				return Integer.valueOf((int) value);
 			}
+
+			return Float.valueOf((float) value);
+
 		} else if (primitive.isString()) {
 			return primitive.getAsString();
 		} else {
-			throw new RuntimeException("Unrecognized JsonPrimitive: "
+			throw new JsonRpcConnectorException("Unrecognized JsonPrimitive: "
 					+ primitive);
 		}
 	}

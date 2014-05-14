@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcConnectorException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
 public class PendingRequests {
@@ -54,9 +55,10 @@ public class PendingRequests {
 				null);
 
 		if (pendingRequests.putIfAbsent(id, responseFuture) != null) {
-			throw new RuntimeException("Can not send a request with the id '"
-					+ id
-					+ "'. There is an already pending request with this id");
+			throw new JsonRpcConnectorException(
+					"Can not send a request with the id '"
+							+ id
+							+ "'. There is already a pending request with this id");
 		}
 
 		return responseFuture;

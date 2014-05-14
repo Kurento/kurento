@@ -14,28 +14,27 @@
  */
 package com.kurento.kmf.jsonrpcconnector;
 
+import com.kurento.kmf.common.exception.KurentoException;
+
 /**
- * This exception occurs when there is a communication error. This could happen
- * either when trying to reach KMS, or when the server is trying to send a
- * response to the client.
+ * This is a general exception used in the JsonRpcConnector package.
  * 
  * @author Ivan Gracia (izanmail@gmail.com)
- * @since 4.2.1
- * 
+ * @since 4.2.3
  */
-public class TransportException extends JsonRpcConnectorException {
+public class JsonRpcConnectorException extends KurentoException {
 
 	private static final long serialVersionUID = -9166377169939591329L;
 
-	public TransportException(String message, Throwable cause) {
+	public JsonRpcConnectorException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public TransportException(String message) {
+	public JsonRpcConnectorException(String message) {
 		super(message);
 	}
 
-	public TransportException(Throwable cause) {
+	public JsonRpcConnectorException(Throwable cause) {
 		super(cause);
 	}
 

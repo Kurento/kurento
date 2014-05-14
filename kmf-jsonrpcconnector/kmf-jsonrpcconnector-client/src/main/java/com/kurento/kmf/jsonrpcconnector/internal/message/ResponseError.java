@@ -63,7 +63,7 @@ public class ResponseError {
 	}
 
 	/**
-	 * Parameterized constructor.
+	 * Parameterised constructor.
 	 * 
 	 * @param code
 	 *            Error status code
@@ -73,7 +73,7 @@ public class ResponseError {
 	 *            Error data
 	 */
 	public ResponseError(int code, String message, String data) {
-		this.code = code;
+		this.code = Integer.valueOf(code);
 		this.message = message;
 		if (data != null) {
 			this.data = new JsonPrimitive(data);
@@ -81,13 +81,13 @@ public class ResponseError {
 	}
 
 	public ResponseError(int code, String message, JsonElement data) {
-		this.code = code;
+		this.code = Integer.valueOf(code);
 		this.message = message;
 		this.data = data;
 	}
 
 	public ResponseError(int code, String message) {
-		this.code = code;
+		this.code = Integer.valueOf(code);
 		this.message = message;
 	}
 
@@ -97,11 +97,7 @@ public class ResponseError {
 	 * @return Error status code
 	 */
 	public int getCode() {
-		if (code != null) {
-			return code;
-		} else {
-			return 0;
-		}
+		return (code != null) ? code.intValue() : 0;
 	}
 
 	/**
@@ -111,7 +107,7 @@ public class ResponseError {
 	 *            Error status code
 	 */
 	void setCode(int code) {
-		this.code = code;
+		this.code = Integer.valueOf(code);
 	}
 
 	/**

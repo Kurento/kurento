@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcConnectorException;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl;
@@ -119,7 +120,7 @@ public class JsonRpcHandlerManager {
 						+ " handler as the supertype generic parameter";
 
 				// TODO Maybe use the pattern handleUncaughtException
-				log.error(message);
+				log.error(message, e);
 
 				if (request.getId() != null) {
 					rs.sendResponse(new Response<>(null, new ResponseError(0,
@@ -175,19 +176,19 @@ public class JsonRpcHandlerManager {
 
 			if (genericSuperclass instanceof Class) {
 				return getParamsType((Class<?>) genericSuperclass);
-			} else {
-
-				ParameterizedType paramClass = (ParameterizedType) genericSuperclass;
-
-				if (paramClass.getRawType() == DefaultJsonRpcHandler.class) {
-					return (Class<?>) paramClass.getActualTypeArguments()[0];
-				}
-
-				return getParamsType((Class<?>) paramClass.getRawType());
 			}
+
+			ParameterizedType paramClass = (ParameterizedType) genericSuperclass;
+
+			if (paramClass.getRawType() == DefaultJsonRpcHandler.class) {
+				return (Class<?>) paramClass.getActualTypeArguments()[0];
+			}
+
+			return getParamsType((Class<?>) paramClass.getRawType());
+
 		}
 
-		throw new RuntimeException(
+		throw new JsonRpcConnectorException(
 				"Unable to obtain the type paramter of JsonRpcHandler");
 	}
 }

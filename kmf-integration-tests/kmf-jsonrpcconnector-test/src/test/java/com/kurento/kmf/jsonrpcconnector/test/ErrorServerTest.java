@@ -7,9 +7,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
-import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.test.base.JsonRpcConnectorBaseTest;
 

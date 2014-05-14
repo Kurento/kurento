@@ -60,7 +60,6 @@ public class MessageUtils {
 			}
 		}
 
-		@SuppressWarnings("unchecked")
 		Request<P> requestP = (Request<P>) request;
 
 		requestP.setParams(paramsP);
@@ -95,7 +94,8 @@ public class MessageUtils {
 					log.warn(
 							"Converting a result with {} properties in a value"
 									+ " of type {}. Selecting propoerty '{}'",
-							properties.size(), resultClass, prop.getKey());
+							Integer.valueOf(properties.size()), resultClass,
+							prop.getKey());
 
 					value = prop.getValue();
 
@@ -110,7 +110,7 @@ public class MessageUtils {
 				if (array.size() > 1) {
 					log.warn("Converting an array with {} elements in a value "
 							+ "of type {}. Selecting first element",
-							array.size(), resultClass);
+							Integer.valueOf(array.size()), resultClass);
 
 				}
 

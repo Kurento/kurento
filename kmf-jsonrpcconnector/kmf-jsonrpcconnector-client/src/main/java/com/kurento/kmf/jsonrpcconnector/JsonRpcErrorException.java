@@ -12,11 +12,11 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.jsonrpcconnector.client;
+package com.kurento.kmf.jsonrpcconnector;
 
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 
-public class JsonRpcErrorException extends RuntimeException {
+public class JsonRpcErrorException extends JsonRpcConnectorException {
 
 	private static final long serialVersionUID = 1584953670536766280L;
 

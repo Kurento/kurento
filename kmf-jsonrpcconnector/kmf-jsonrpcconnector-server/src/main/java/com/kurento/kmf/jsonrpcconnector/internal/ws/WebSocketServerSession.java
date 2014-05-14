@@ -24,6 +24,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.google.gson.JsonElement;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcConnectorException;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
@@ -96,11 +97,12 @@ public class WebSocketServerSession extends ServerSession {
 			responseJsonObject = responseFuture.get();
 		} catch (InterruptedException e) {
 			// TODO What to do in this case?
-			throw new RuntimeException(
+			throw new JsonRpcConnectorException(
 					"Interrupted while waiting for a response", e);
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
-			throw new RuntimeException("This exception shouldn't be thrown", e);
+			throw new JsonRpcConnectorException(
+					"This exception shouldn't be thrown", e);
 		}
 
 		return MessageUtils.convertResponse(responseJsonObject, resultClass);

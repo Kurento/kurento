@@ -44,6 +44,8 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 	private Thread longPoolingThread;
 	private String url;
 
+	// TODO check if this session is needed. It is hiding another one in the
+	// parent
 	private Session session;
 	private HttpResponseSender rs;
 
@@ -108,7 +110,7 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				log.info("Long polling thread interrupted", e);
+				log.debug("Long polling thread interrupted", e);
 			}
 
 			if (Thread.interrupted()) {
@@ -134,7 +136,9 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 			} catch (IOException e) {
 				// TODO Decide what to do in this case. If the net connection is
 				// lost, this will retry indefinitely
-				log.error("Exception when waiting for events (long-pooling). Retry");
+				log.error(
+						"Exception when waiting for events (long-polling). Retry",
+						e);
 			}
 		}
 	}

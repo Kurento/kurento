@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
-import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
@@ -126,10 +126,11 @@ public abstract class JsonRpcRequestSenderHelper implements
 
 					@Override
 					public void onSuccess(Response<JsonElement> response) {
-						log.info("[Server] Message received: " + response);
+						log.info("[Server] Message received: {}", response);
 
 						if (response == null) {
 							continuation.onSuccess(null);
+							return;
 						}
 
 						if (response.getSessionId() != null) {

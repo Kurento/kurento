@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 
-	private Logger LOG = LoggerFactory.getLogger(DefaultJsonRpcHandler.class);
+	private final Logger log = LoggerFactory
+			.getLogger(DefaultJsonRpcHandler.class);
 
 	@Override
 	public void afterConnectionEstablished(Session session) throws Exception {
@@ -37,7 +38,7 @@ public abstract class DefaultJsonRpcHandler<P> implements JsonRpcHandler<P> {
 
 	@Override
 	public void handleUncaughtException(Session session, Exception exception) {
-		LOG.warn("Uncaught exception in handler " + this.getClass().getName(),
+		log.warn("Uncaught exception in handler {}", this.getClass().getName(),
 				exception);
 	}
 

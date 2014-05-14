@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientWebSocket;
-import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.test.base.JsonRpcConnectorBaseTest;

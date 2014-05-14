@@ -14,9 +14,9 @@
  */
 package com.kurento.kmf.jsonrpcconnector.client;
 
-import java.io.IOException;
+import static javax.websocket.CloseReason.CloseCodes.NORMAL_CLOSURE;
 
-import javax.websocket.CloseReason;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +37,11 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 
 public class JsonRpcClientLocal extends JsonRpcClient {
 
-	private static Logger LOG = LoggerFactory
+	private static Logger log = LoggerFactory
 			.getLogger(JsonRpcClientLocal.class);
 
 	private JsonRpcHandler<? extends Object> remoteHandler;
-	private JsonRpcHandlerManager remoteHandlerManager = new JsonRpcHandlerManager();
+	private final JsonRpcHandlerManager remoteHandlerManager = new JsonRpcHandlerManager();
 
 	public <F> JsonRpcClientLocal(JsonRpcHandler<? extends Object> paramHandler) {
 
@@ -74,7 +74,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		// Simulate sending json string for net
 		String jsonRequest = request.toString();
 
-		LOG.debug("--> {}", jsonRequest);
+		log.debug("--> {}", jsonRequest);
 
 		Request<JsonObject> newRequest = JsonUtils.fromJsonRequest(jsonRequest,
 				JsonObject.class);
@@ -132,9 +132,9 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 										.toJsonElement(result));
 								return response2;
 							} else {
-								throw new ClassCastException(
-										"Cannot be converted " + result
-												+ " to " + resultClass);
+								throw new ClassCastException("Class " + result
+										+ " cannot be converted to "
+										+ resultClass);
 							}
 
 						} catch (IOException e) {
@@ -157,7 +157,6 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		try {
 			remoteHandler.handleRequest(t, (Request) request);
 		} catch (Exception e) {
-
 			ResponseError error = ResponseError.newFromException(e);
 			return new Response<>(request.getId(), error);
 		}
@@ -166,7 +165,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 			// Simulate receiving json string from net
 			String jsonResponse = response[0].toString();
 
-			// LOG.debug("< " + jsonResponse);
+			// log.debug("< {}", jsonResponse);
 
 			Response<R> newResponse = JsonUtils.fromJsonResponse(jsonResponse,
 					resultClass);
@@ -175,21 +174,24 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 			return newResponse;
 
-		} else {
-			return new Response<>(request.getId());
 		}
+
+		return new Response<>(request.getId());
+
 	}
 
 	@Override
 	public void close() throws IOException {
-		handlerManager.afterConnectionClosed(session, CloseReason.CloseCodes.NORMAL_CLOSURE.toString());
+		handlerManager
+				.afterConnectionClosed(session, NORMAL_CLOSURE.toString());
 	}
 
+	@Override
 	public void setServerRequestHandler(
 			com.kurento.kmf.jsonrpcconnector.JsonRpcHandler<?> handler) {
 		super.setServerRequestHandler(handler);
 		handlerManager.afterConnectionEstablished(session);
 		remoteHandlerManager.afterConnectionEstablished(session);
-	};
+	}
 
 }

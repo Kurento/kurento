@@ -23,7 +23,7 @@ public interface JsonRpcHandlerRegistry {
 	 * 
 	 * @param jsonRpcHandler
 	 * @param paths
-	 * @return
+	 * @return The handler registration object
 	 */
 	JsonRpcHandlerRegistration addHandler(JsonRpcHandler<?> jsonRpcHandler,
 			String... paths);

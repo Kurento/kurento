@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.exception.Assert;
-import com.kurento.kmf.jsonrpcconnector.client.JsonRpcErrorException;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaObject;
 

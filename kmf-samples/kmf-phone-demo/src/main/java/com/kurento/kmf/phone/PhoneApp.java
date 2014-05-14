@@ -37,25 +37,6 @@ public class PhoneApp implements JsonRpcConfigurer {
 	}
 
 	@Bean
-	public ThriftConnectorConfiguration thriftConnectorConfiguration() {
-
-		ThriftConnectorConfiguration config = new ThriftConnectorConfiguration();
-		config.setHandlerAddress(env
-				.getProperty("handler.address", "127.0.0.1"));
-		config.setHandlerPort(Integer.parseInt(env.getProperty("handler.port",
-				"9900")));
-
-		LOG.info("Using Handler Address:"
-				+ config.getHandlerAddress()
-				+ " (This address is used from Kurento Media Server to connect to this proxy)");
-		LOG.info("Using Handler Port:"
-				+ config.getHandlerPort()
-				+ " (This port is used from Kurento Media Server to connect to this proxy)");
-
-		return config;
-	}
-
-	@Bean
 	public ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
 
 		ThriftInterfaceConfiguration config = new ThriftInterfaceConfiguration();
@@ -82,7 +63,21 @@ public class PhoneApp implements JsonRpcConfigurer {
 
 	@Bean
 	public MediaApiConfiguration mediaApiConfiguration() {
-		return new MediaApiConfiguration();
+
+		MediaApiConfiguration config = new MediaApiConfiguration();
+		config.setHandlerAddress(env
+				.getProperty("handler.address", "127.0.0.1"));
+		config.setHandlerPort(Integer.parseInt(env.getProperty("handler.port",
+				"9900")));
+
+		LOG.info("Using Handler Address:"
+				+ config.getHandlerAddress()
+				+ " (This address is used from Kurento Media Server to connect to this proxy)");
+		LOG.info("Using Handler Port:"
+				+ config.getHandlerPort()
+				+ " (This port is used from Kurento Media Server to connect to this proxy)");
+
+		return config;
 	}
 
 	@Bean

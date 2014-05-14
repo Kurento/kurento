@@ -24,56 +24,56 @@ package com.kurento.kmf.jsonrpcconnector.internal;
  */
 public class JsonRpcConstants {
 
-	public final static String JSON_RPC_VERSION = "2.0";
+	public static final String JSON_RPC_VERSION = "2.0";
 
-	public final static String JSON_RPC_PROPERTY = "jsonrpc";
+	public static final String JSON_RPC_PROPERTY = "jsonrpc";
 
-	public final static String PARAMS_PROPERTY = "params";
+	public static final String PARAMS_PROPERTY = "params";
 
-	public final static String ID_PROPERTY = "id";
+	public static final String ID_PROPERTY = "id";
 
-	public final static String RESULT_PROPERTY = "result";
+	public static final String RESULT_PROPERTY = "result";
 
 	public static final String ERROR_PROPERTY = "error";
 
 	public static final String DATA_PROPERTY = "data";
 
-	public final static String METHOD_PROPERTY = "method";
+	public static final String METHOD_PROPERTY = "method";
 
-	public final static String SESSION_ID_PROPERTY = "sessionId";
+	public static final String SESSION_ID_PROPERTY = "sessionId";
 
-	public final static String METHOD_START = "start";
+	public static final String METHOD_START = "start";
 
-	public final static String METHOD_TERMINATE = "terminate";
+	public static final String METHOD_TERMINATE = "terminate";
 
-	public final static String METHOD_POLL = "poll";
+	public static final String METHOD_POLL = "poll";
 
-	public final static String METHOD_EXECUTE = "execute";
+	public static final String METHOD_EXECUTE = "execute";
 
 	public static final String METHOD_RECONNECT = "reconnect";
 
-	public final static String EVENT_SESSION_TERMINATED = "sessionTerminated";
+	public static final String EVENT_SESSION_TERMINATED = "sessionTerminated";
 
-	public final static String EVENT_SESSION_ERROR = "sessionError";
+	public static final String EVENT_SESSION_ERROR = "sessionError";
 
 	public static final String RECONNECTION_ERROR = "reconnection error";
 
 	public static final String RECONNECTION_SUCCESSFUL = "reconnection successful";
 
-	public final static int ERROR_NO_ERROR = 0;
+	public static final int ERROR_NO_ERROR = 0;
 
-	public final static int ERROR_APPLICATION_TERMINATION = 1;
+	public static final int ERROR_APPLICATION_TERMINATION = 1;
 
-	public final static int ERROR_INVALID_PARAM = -32602;
+	public static final int ERROR_INVALID_PARAM = -32602;
 
-	public final static int ERROR_METHOD_NOT_FOUND = -32601;
+	public static final int ERROR_METHOD_NOT_FOUND = -32601;
 
-	public final static int ERROR_INVALID_REQUEST = -32600;
+	public static final int ERROR_INVALID_REQUEST = -32600;
 
-	public final static int ERROR_PARSE_ERROR = -32700;
+	public static final int ERROR_PARSE_ERROR = -32700;
 
-	public final static int ERROR_INTERNAL_ERROR = -32603;
+	public static final int ERROR_INTERNAL_ERROR = -32603;
 
-	public final static int ERROR_SERVER_ERROR = -32000;
+	public static final int ERROR_SERVER_ERROR = -32000;
 
 }

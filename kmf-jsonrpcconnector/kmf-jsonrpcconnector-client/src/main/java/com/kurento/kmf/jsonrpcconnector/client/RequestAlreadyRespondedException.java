@@ -12,7 +12,9 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.jsonrpcconnector;
+package com.kurento.kmf.jsonrpcconnector.client;
+
+import com.kurento.kmf.jsonrpcconnector.JsonRpcConnectorException;
 
 /**
  * This exception occurs when there is a communication error. This could happen
@@ -23,19 +25,19 @@ package com.kurento.kmf.jsonrpcconnector;
  * @since 4.2.1
  * 
  */
-public class TransportException extends JsonRpcConnectorException {
+public class RequestAlreadyRespondedException extends JsonRpcConnectorException {
 
 	private static final long serialVersionUID = -9166377169939591329L;
 
-	public TransportException(String message, Throwable cause) {
+	public RequestAlreadyRespondedException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public TransportException(String message) {
+	public RequestAlreadyRespondedException(String message) {
 		super(message);
 	}
 
-	public TransportException(Throwable cause) {
+	public RequestAlreadyRespondedException(Throwable cause) {
 		super(cause);
 	}
 
