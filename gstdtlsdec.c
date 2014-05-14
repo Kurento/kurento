@@ -175,10 +175,11 @@ gst_dtls_dec_loop (gpointer user_data)
 
       g_free (stream_id);
 
-      if (!gst_pad_set_caps (base->srcpad, caps)) {
-        gst_caps_unref (caps);
-        goto not_negotiated;
-      }
+      /* FIXME(mparis): hack to avoid "Sticky event misordering, got 'segment' before 'caps'" */
+//    if (!gst_pad_set_caps (base->srcpad, caps)) {
+//      gst_caps_unref (caps);
+//      goto not_negotiated;
+//    }
 
       alloc_query = gst_query_new_allocation (caps, FALSE);
       if (!gst_pad_peer_query (base->srcpad, alloc_query)) {
@@ -243,10 +244,10 @@ gst_dtls_dec_loop (gpointer user_data)
 
   return;
 
-not_negotiated:
-  g_atomic_int_set (&self->flow_ret, GST_FLOW_NOT_NEGOTIATED);
-  gst_pad_pause_task (base->srcpad);
-  return;
+// not_negotiated:
+//   g_atomic_int_set (&self->flow_ret, GST_FLOW_NOT_NEGOTIATED);
+//   gst_pad_pause_task (base->srcpad);
+//   return;
 
 flushing:
   g_atomic_int_set (&self->flow_ret, GST_FLOW_FLUSHING);
