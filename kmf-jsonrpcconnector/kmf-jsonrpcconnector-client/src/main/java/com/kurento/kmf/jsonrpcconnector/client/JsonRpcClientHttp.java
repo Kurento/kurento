@@ -29,7 +29,6 @@ import org.springframework.http.HttpHeaders;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
-import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.internal.HttpResponseSender;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
@@ -44,9 +43,6 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 	private Thread longPoolingThread;
 	private String url;
 
-	// TODO check if this session is needed. It is hiding another one in the
-	// parent
-	private Session session;
 	private HttpResponseSender rs;
 
 	private final HttpHeaders headers = new HttpHeaders();

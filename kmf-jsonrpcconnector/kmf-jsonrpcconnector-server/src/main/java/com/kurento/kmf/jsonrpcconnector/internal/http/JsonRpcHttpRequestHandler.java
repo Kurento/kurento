@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.jsonrpcconnector.internal.http;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
@@ -24,6 +23,7 @@ import javax.servlet.http.HttpSession;
 
 import org.springframework.web.HttpRequestHandler;
 
+import com.google.common.io.CharStreams;
 import com.google.gson.JsonElement;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
@@ -120,16 +120,7 @@ public class JsonRpcHttpRequestHandler implements HttpRequestHandler {
 	 */
 	private String getBodyAsString(final HttpServletRequest request)
 			throws IOException {
-
-		StringBuilder stringBuilder = new StringBuilder();
-		try (BufferedReader bufferedReader = request.getReader()) {
-			String line;
-			while ((line = bufferedReader.readLine()) != null) {
-				stringBuilder.append(line);
-			}
-		}
-
-		return stringBuilder.toString();
+		return CharStreams.toString(request.getReader());
 	}
 
 }

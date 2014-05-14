@@ -15,11 +15,11 @@ import com.kurento.kmf.media.MediaPipelineFactory;
 
 public class PhoneHandler extends DefaultJsonRpcHandler<JsonObject> {
 
-	private Logger LOG = LoggerFactory.getLogger(PhoneHandler.class);
+	private final Logger log = LoggerFactory.getLogger(PhoneHandler.class);
 
 	@Autowired
 	private MediaPipelineFactory mpf;
-	
+
 	@Autowired
 	private Registry registry;
 
@@ -32,7 +32,7 @@ public class PhoneHandler extends DefaultJsonRpcHandler<JsonObject> {
 	private Session getSession() {
 		return session;
 	}
-	
+
 	@Override
 	public void handleRequest(Transaction transaction,
 			Request<JsonObject> request) throws Exception {
@@ -71,7 +71,7 @@ public class PhoneHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 		if ("Accept".equals(callResponse)) {
 
-			LOG.info("Accepted call from '" + name + "' to '" + to + "'");
+			log.info("Accepted call from '{}' to '{}'", name, to);
 
 			call = new Call(mpf);
 			call.setOutgoingPeer(name, session);
@@ -79,20 +79,21 @@ public class PhoneHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			String ipSdpOffer = icResponse.get("sdpOffer").getAsString();
 
-			LOG.info("SdpOffer: "+ipSdpOffer);
-			
+			log.info("SdpOffer: {}", ipSdpOffer);
+
 			String ipSdpAnswer = call.getWebRtcForIncommingPeer().processOffer(
 					ipSdpOffer);
 
 			JsonObject scParams = new JsonObject();
 			scParams.addProperty("sdpAnswer", ipSdpAnswer);
-			
-			LOG.info("SdpAnswer: "+ipSdpAnswer);
+
+			log.info("SdpAnswer: {}", ipSdpAnswer);
 
 			// TODO Should we expect something from client?
 			toSession.sendRequest("startCommunication", scParams);
 
-			String opSdpOffer = params.getAsJsonPrimitive("sdpOffer").getAsString();
+			String opSdpOffer = params.getAsJsonPrimitive("sdpOffer")
+					.getAsString();
 
 			String opSdpAnswer = call.getWebRtcForOutgoingPeer().processOffer(
 					opSdpOffer);

@@ -1,0 +1,30 @@
+<html>
+<head>
+<script
+	src="https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js"></script>
+<script src="js/rpcbuilder.js"></script>
+<script src="js/jsonrpcclient.js"></script>
+<script src="js/webrtc-utils.js"></script>
+<script src="js/softphone.js"></script>
+
+</head>
+<body>
+
+	<a href="" onclick="jsonRpcTest(); return false;">JsonRpcTest</a>
+
+	<form>
+		Name: <input id="name" type="text" name="name" value=""><br>
+		Room: <input id="room" type="text" name="room" value=""><br>
+		<input type="button" value="Register"
+			onclick="register(); return false;">
+	</form>
+
+	<form>
+		Peer: <input id="peer" type="text" name="name" value="a"><br>
+		<input type="button" value="Call" onclick="call(); return false;">
+	</form>
+
+	<video id="videoInput" autoplay></video>
+	<video id="videoOutput" autoplay></video>
+</body>
+</html>
