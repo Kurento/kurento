@@ -47,6 +47,7 @@ struct _KmsAudioMixerBinPrivate
   GRecMutex mutex;
   KmsLoop *loop;
   GstPad *srcpad;
+  guint count;
 };
 
 #define RAW_AUDIO_CAPS "audio/x-raw;"
@@ -73,12 +74,91 @@ G_DEFINE_TYPE_WITH_CODE (KmsAudioMixerBin, kms_audio_mixer_bin,
     GST_DEBUG_CATEGORY_INIT (kms_audio_mixer_bin_debug_category,
         PLUGIN_NAME, 0, "debug category for " PLUGIN_NAME " element"));
 
+static void
+kms_audio_mixer_bin_have_type (GstElement * typefind, guint arg0,
+    GstCaps * caps, gpointer data)
+{
+  KmsAudioMixerBin *self = KMS_AUDIO_MIXER_BIN (data);
+  GstElement *agnosticbin;
+
+  GST_DEBUG ("Found type connecting elements");
+
+  agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
+
+  gst_bin_add_many (GST_BIN (self), agnosticbin, NULL);
+  gst_element_sync_state_with_parent (agnosticbin);
+
+  gst_element_link_pads (typefind, "src", agnosticbin, "sink");
+  gst_element_link_pads (agnosticbin, "src_%u", self->priv->adder, "sink_%u");
+}
+
+static void
+unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  /* TODO: */
+}
+
 static GstPad *
 kms_audio_mixer_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
 {
-  /* TODO: */
-  return NULL;
+  KmsAudioMixerBin *self = KMS_AUDIO_MIXER_BIN (element);
+  GstPad *sinkpad, *pad = NULL;
+  GstElement *typefind;
+  gchar *padname;
+
+  if (templ !=
+      gst_element_class_get_pad_template (GST_ELEMENT_CLASS (G_OBJECT_GET_CLASS
+              (element)), AUDIO_MIXER_BIN_SINK_PAD)) {
+    /* Only sink pads are allowed to be requested */
+    return NULL;
+  }
+
+  GST_DEBUG ("Creating pad");
+  typefind = gst_element_factory_make ("typefind", NULL);
+  sinkpad = gst_element_get_static_pad (typefind, "sink");
+  if (sinkpad == NULL) {
+    gst_object_unref (typefind);
+    return NULL;
+  }
+
+  gst_bin_add (GST_BIN (self), typefind);
+  gst_element_sync_state_with_parent (typefind);
+
+  KMS_AUDIO_MIXER_BIN_LOCK (self);
+
+  padname = g_strdup_printf (AUDIO_MIXER_BIN_SINK_PAD, self->priv->count++);
+  pad = gst_ghost_pad_new (padname, sinkpad);
+  g_object_unref (sinkpad);
+  GST_DEBUG ("Creating pad %s", padname);
+  g_free (padname);
+
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED)
+    gst_pad_set_active (pad, TRUE);
+
+  if (!gst_element_add_pad (element, pad)) {
+    GST_ERROR_OBJECT (self, "Could not create pad");
+    g_object_unref (pad);
+    gst_element_set_locked_state (typefind, TRUE);
+    gst_element_set_state (typefind, GST_STATE_NULL);
+    gst_bin_remove (GST_BIN (self), typefind);
+    self->priv->count--;
+    pad = NULL;
+  } else {
+    g_signal_connect (G_OBJECT (typefind), "have-type",
+        G_CALLBACK (kms_audio_mixer_bin_have_type), self);
+  }
+
+  KMS_AUDIO_MIXER_BIN_UNLOCK (self);
+
+  if (pad != NULL) {
+    g_signal_connect (G_OBJECT (pad), "unlinked",
+        G_CALLBACK (unlinked_pad), NULL);
+  }
+
+  return pad;
 }
 
 static void
