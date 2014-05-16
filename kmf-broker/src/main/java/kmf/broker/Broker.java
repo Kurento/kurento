@@ -121,6 +121,10 @@ public class Broker {
 
 						String messageJson = new String(message);
 
+						onMessage(messageJson);
+					}
+
+					protected void onMessage(String messageJson) {
 						LOG.debug("[" + logId + "] <-- Queue:'" + queue + "' "
 								+ messageJson);
 
