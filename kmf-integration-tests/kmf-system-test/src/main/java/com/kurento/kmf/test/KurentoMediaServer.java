@@ -46,6 +46,7 @@ public class KurentoMediaServer {
 	private final String serverAddress;
 	private final int serverPort;
 	private final int httpEndpointPort;
+	private Process kmsProcess;
 
 	public KurentoMediaServer(String serverAddress, int serverPort,
 			int httpEndpointPort) {
@@ -84,8 +85,9 @@ public class KurentoMediaServer {
 		createKurentoConf();
 		createFolder(callerTest);
 
-		Shell.run("sh", "-c", workspace + "kurento.sh > " + workspace
-				+ callerTest + "/kms.log 2>&1");
+		String outputLog = workspace + callerTest + "/kms.log";
+		String[] kmsCommand = { serverCommand, "-f", workspace + "kurento.conf" };
+		launchKms(outputLog, kmsCommand);
 
 		// Guard time to start KMS
 		Thread.sleep(3000);
@@ -103,8 +105,6 @@ public class KurentoMediaServer {
 
 		// Data-model
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("gstPlugins", gstPlugins);
-		data.put("debugOptions", debugOptions);
 		data.put("serverCommand", serverCommand);
 		data.put("serverAddress", serverAddress);
 		data.put("serverPort", serverPort);
@@ -114,8 +114,6 @@ public class KurentoMediaServer {
 		cfg.setClassForTemplateLoading(KurentoMediaServer.class, "/templates/");
 
 		createFileFromTemplate(cfg, data, "kurento.conf");
-		createFileFromTemplate(cfg, data, "kurento.sh");
-		Shell.run("chmod", "+x", workspace + "kurento.sh");
 		createFileFromTemplate(cfg, data, "pattern.sdp");
 	}
 
@@ -130,7 +128,7 @@ public class KurentoMediaServer {
 	}
 
 	public void stop() {
-		Shell.run("killall", "-9", "kurento");
+		kmsProcess.destroy();
 	}
 
 	public String getDebugOptions() {
@@ -139,6 +137,26 @@ public class KurentoMediaServer {
 
 	public void setDebugOptions(String debugOptions) {
 		this.debugOptions = debugOptions;
+	}
+
+	public void launchKms(final String outputLog, final String... command) {
+		Thread t = new Thread() {
+			@Override
+			public void run() {
+				try {
+					ProcessBuilder builder = new ProcessBuilder(command);
+					builder.redirectOutput(new File(outputLog));
+					builder.redirectError(new File(outputLog));
+					builder.environment().put("GST_PLUGIN_PATH", gstPlugins);
+					builder.environment().put("GST_DEBUG", getDebugOptions());
+					kmsProcess = builder.start();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		t.setDaemon(true);
+		t.start();
 	}
 
 }
