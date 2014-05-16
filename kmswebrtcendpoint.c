@@ -1511,7 +1511,8 @@ kms_webrtc_endpoint_init (KmsWebrtcEndpoint * self)
     return;
   }
 
-  g_object_set (self->priv->agent, "upnp", FALSE, NULL);
+  g_object_set (self->priv->agent, "controlling-mode", FALSE, "upnp", FALSE,
+      NULL);
   g_signal_connect (self->priv->agent, "candidate-gathering-done",
       G_CALLBACK (gathering_done), self);
 
