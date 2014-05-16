@@ -22,6 +22,7 @@ import org.junit.Test;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.test.base.MediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
@@ -29,51 +30,76 @@ import com.kurento.kmf.test.client.Client;
 
 /**
  * 
- * <strong>Description</strong>: Test of a HTTP Player, using directly a
- * MediaPipeline and Selenium.<br/>
- * <strong>Pipeline</strong>:
- * <ul>
+ * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
+ * source from a PlayerEndpoint through an HttpGetEndpoint.<br/>
+ * <strong>Pipelines</strong>:
+ * <ol>
+ * <li>PlayerEndpoint -> RecorderEndpoint & HttpGetEndpoint</li>
  * <li>PlayerEndpoint -> HttpGetEndpoint</li>
- * </ul>
+ * </ol>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
- * <li>Play time should be the expected (at least 8 seconds)</li>
- * <li>Color of the video should be the expected (blue)</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Play time should be the expected</li>
+ * <li>Color of the video should be the expected</li>
+ * <li>Browser ends before default timeout</li>
  * </ul>
  * 
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerBrowserTest extends MediaApiTest {
+public class MediaApiRecorderPlayerTest extends MediaApiTest {
+
+	private static final int VIDEO_LENGTH = 9; // seconds
+	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderPlayerTest";
 
 	@Test
-	public void testPlayerChrome() throws Exception {
+	public void testRecorderPlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
 	@Test
-	public void testPlayerFirefox() throws Exception {
+	public void testRecorderPlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
 
 	public void doTest(Browser browserType) throws Exception {
-		// Media Pipeline
+		// Media Pipeline #1
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/gst/blue.webm").build();
+				"http://ci.kurento.com/video/gst/green.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
+		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(TARGET_RECORDING)
+				.build();
 		playerEP.connect(httpEP);
+		playerEP.connect(recorderEP);
 
-		// Test execution
+		// Test execution #1. Play the video while it is recorded
+		launchBrowser(browserType, httpEP, playerEP, recorderEP);
+
+		// Media Pipeline #2
+		PlayerEndpoint playerEP2 = mp.newPlayerEndpoint(TARGET_RECORDING)
+				.build();
+		HttpGetEndpoint httpEP2 = mp.newHttpGetEndpoint().terminateOnEOS()
+				.build();
+		playerEP2.connect(httpEP2);
+
+		// Test execution #2. Play the recorded video
+		launchBrowser(browserType, httpEP2, playerEP2, null);
+	}
+
+	private void launchBrowser(Browser browserType, HttpGetEndpoint httpEP,
+			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
+			throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
+			if (recorderEP != null) {
+				recorderEP.record();
+			}
 			browser.start();
 
 			// Assertions
@@ -81,11 +107,10 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 8 seconds",
-					browser.getCurrentTime() >= 8);
-			Assert.assertTrue("The color of the video should be blue",
-					browser.colorSimilarTo(Color.BLUE));
+			Assert.assertTrue("Playback time must be at least " + VIDEO_LENGTH
+					+ " seconds", browser.getCurrentTime() >= VIDEO_LENGTH);
+			Assert.assertTrue("The color of the video should be green",
+					browser.colorSimilarTo(Color.GREEN));
 		}
 	}
-
 }
