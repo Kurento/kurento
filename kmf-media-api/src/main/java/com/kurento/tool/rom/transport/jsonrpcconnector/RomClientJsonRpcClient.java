@@ -210,7 +210,11 @@ public class RomClientJsonRpcClient extends RomClient {
 		}
 
 		String objectRef = params.get(ONEVENT_OBJECT).getAsString();
-		String subscription = params.get(ONEVENT_SUBSCRIPTION).getAsString();
+		String subscription = "";
+		if (params.has(ONEVENT_SUBSCRIPTION)) {
+			subscription = params.get(ONEVENT_SUBSCRIPTION).getAsString();
+		}
+
 		String type = params.get(ONEVENT_TYPE).getAsString();
 		JsonObject jsonData = (JsonObject) params.get(ONEVENT_DATA);
 		Props data = JsonUtils.fromJson(jsonData, Props.class);
