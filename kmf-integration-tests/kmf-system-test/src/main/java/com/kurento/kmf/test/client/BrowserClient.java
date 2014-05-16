@@ -77,7 +77,7 @@ public class BrowserClient implements Closeable {
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
-		maxDistance = 300.0; // default distance (for color comparison)
+		maxDistance = 60.0; // default distance (for color comparison)
 
 		// Setup Selenium
 		initDriver();
@@ -251,6 +251,21 @@ public class BrowserClient implements Closeable {
 				.getAttribute("value"));
 	}
 
+	public boolean color(Color expectedColor, final double seconds, int x, int y) {
+		// Wait to be in the right time
+		(new WebDriverWait(driver, timeout))
+				.until(new ExpectedCondition<Boolean>() {
+					public Boolean apply(WebDriver d) {
+						double time = Double.parseDouble(d.findElement(
+								By.id("currentTime")).getAttribute("value"));
+						return time > seconds;
+					}
+				});
+
+		setColorCoordinates(x, y);
+		return colorSimilarTo(expectedColor);
+	}
+
 	public boolean colorSimilarTo(Color expectedColor) {
 		String[] realColor = driver.findElement(By.id("color"))
 				.getAttribute("value").split(",");
@@ -258,12 +273,12 @@ public class BrowserClient implements Closeable {
 		int green = Integer.parseInt(realColor[1]);
 		int blue = Integer.parseInt(realColor[2]);
 
-		double distance = (red - expectedColor.getRed())
+		double distance = Math.sqrt((red - expectedColor.getRed())
 				* (red - expectedColor.getRed())
 				+ (green - expectedColor.getGreen())
 				* (green - expectedColor.getGreen())
 				+ (blue - expectedColor.getBlue())
-				* (blue - expectedColor.getBlue());
+				* (blue - expectedColor.getBlue()));
 
 		log.info("Color comparision: real {}, expected {}, distance {}",
 				realColor, expectedColor, distance);
