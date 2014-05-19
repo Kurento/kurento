@@ -16,11 +16,15 @@ package com.kurento.kmf.jsonrpcconnector.internal.ws;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.kurento.kmf.jsonrpcconnector.internal.server.*;
+import com.kurento.kmf.jsonrpcconnector.internal.server.ProtocolManager;
 import com.kurento.kmf.jsonrpcconnector.internal.server.ProtocolManager.ServerSessionFactory;
+import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
+import com.kurento.kmf.jsonrpcconnector.internal.server.SessionsManager;
 
 public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
@@ -68,7 +72,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		String messageJson = message.getPayload();
 
-		log.info("Req-> {}", messageJson);
+		log.trace("Req-> {}", messageJson);
 
 		// TODO Ensure only one register message per websocket session.
 		ServerSessionFactory factory = new ServerSessionFactory() {

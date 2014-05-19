@@ -1,9 +1,12 @@
-package com.kurento.kmf.phone;
+package com.kurento.kmf.demo.group;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 
 import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
@@ -22,7 +25,7 @@ public class GroupCall implements JsonRpcConfigurer {
 
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addPerSessionHandler(ParticipantHandler.class, "/phone");
+		registry.addPerSessionHandler(ParticipantHandler.class, "/groupcall");
 	}
 
 	@Bean

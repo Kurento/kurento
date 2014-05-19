@@ -38,7 +38,7 @@ public final class WebSocketResponseSender implements ResponseSender {
 	@Override
 	public void sendResponse(Message message) throws IOException {
 		String jsonMessage = message.toString();
-		log.debug("<-Res {}", jsonMessage);
+		log.trace("<-Res {}", jsonMessage);
 		synchronized (wsSession) {
 			wsSession.sendMessage(new TextMessage(jsonMessage));
 		}

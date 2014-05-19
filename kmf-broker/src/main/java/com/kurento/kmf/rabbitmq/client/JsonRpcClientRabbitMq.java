@@ -20,7 +20,9 @@ import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.*;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.rabbitmq.RabbitMqManager;
 import com.kurento.kmf.rabbitmq.RabbitMqManager.BrokerMessageReceiver;
 import com.kurento.kmf.rabbitmq.server.ObjectIdsConverter;
@@ -31,9 +33,10 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcClientRabbitMq.class);
 
-	private ExecutorService execService = Executors.newFixedThreadPool(10);
+	private final ExecutorService execService = Executors
+			.newFixedThreadPool(10);
 
-	private ObjectIdsConverter converter = new ObjectIdsConverter();
+	private final ObjectIdsConverter converter = new ObjectIdsConverter();
 
 	private RabbitMqManager rabbitMqManager;
 
@@ -95,7 +98,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 	public <P, R> Response<R> internalSendRequestBroker(Request<P> request,
 			Class<R> resultClass) {
 
-		log.debug("Req-> {}", request);
+		log.trace("Req-> {}", request);
 
 		JsonObject paramsJson = (JsonObject) request.getParams();
 

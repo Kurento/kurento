@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.phone;
+package com.kurento.kmf.demo.group;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -46,11 +46,11 @@ public class RoomManager {
 	 */
 	public Room getRoom(String roomName) {
 		Room room;
-		if (!isNullOrEmpty(roomName)) {
+		if (isNullOrEmpty(roomName)) {
 			throw new IllegalArgumentException("Room name cannot be empty");
 		}
 
-		log.info("Searching for room {}", roomName);
+		log.debug("Searching for room {}", roomName);
 		room = rooms.get(roomName);
 
 		if (room == null) {

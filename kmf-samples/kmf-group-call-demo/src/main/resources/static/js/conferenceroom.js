@@ -1,62 +1,61 @@
-var client = new JsonRpcClient("ws://localhost:8080/phone/ws/websocket",
+var client = new JsonRpcClient('ws://' + location.host + '/groupcall/ws/websocket',
 		onRequest);
 
 function onRequest(transaction, message) {
-	
-	if (message.method === "newParticipantArrived") {
-		onNewParticipant(transaction, message);
-	} else if (message.method === "existingParticipants") {
+
+	//TODO no message defined for now. This block will always go through the else clause
+	if (message.method === "existingParticipants") {
 		onExistingParticipants(transaction, message);
 	} else {
 		console.error("Unrecognized request: " + JSON.stringify(message));
 	}
 }
 
-function onNewParticipant(transaction, request) {
+function onRequest(message) {
 
-	sendVideo();
-	
-	prepareSendPlayer(function(peerConnection, offer) {
-
-		localPeerConnection = peerConnection;
-
-		transaction.sendResponse({
-			callResponse : "Accept",
-			sdpOffer : offer.sdp
-		});
-	});
+	if (message.method === "newParticipantArrived") {
+		onNewParticipant(message);
+	} else if (message.method === "participantLeft") {
+		onParticipantLeft(message);
+	} else {
+		console.error("Unrecognized request: " + JSON.stringify(message));
+	}
 }
 
-function onExistingParticipants(transaction, request) {
-	prepareReceivePlayer(localPeerConnection, request.params.sdpAnswer);
-	
-	transaction.sendResponse({});
-}
 
 function register() {
 
 	var name = document.getElementById("name").value;
-	var room = document.getElementById("room").value;
+	var room = document.getElementById("roomName").value;
+
+	document.getElementById('join').style.display = 'none';
+	document.getElementById('room').style.display = 'block';
 
 	client.sendRequest("joinRoom", {
 		name : name,
-		room : room 
-	}, function() {
-		console.log(nae + " registered in room " + room);
+		room : room,
+	}, function(error, result) {
+		console.log(name + " registered in room " + room);
+		var participant = new Participant(name);
+		document.getElementById('room').appendChild(participant.getElement());
+		prepareSendPreviewPlayer(participant.getVideoElement(), participant.offerToReceiveVideo.bind(participant));
+		result.value.forEach(receiveVideo);
 	});
 }
 
-function sendVideo() {
+function onNewParticipant(request) {
+	receiveVideo(request.params.name);
+}
 
-	var peer = document.getElementById("peer").value;
+function receiveVideo(sender) {
+	var participant = new Participant(sender);
+	document.getElementById('room').appendChild(participant.getElement());
+	var video = participant.getVideoElement();
+	prepareReceiveOnlyPlayer(video, participant.offerToReceiveVideo.bind(participant));
+}
 
-	prepareSendPlayer(function(peerConnection, offer) {
-
-		client.sendRequest("sendVideo", {
-			callTo : peer,
-			sdpOffer : offer.sdp
-		}, function(error, result) {
-			prepareReceivePlayer(peerConnection, result.sdpAnswer);
-		});	
-	});
+function onParticipantLeft(request) {
+	console.log('Participant ' + request.params.name + ' left');
+	var node = document.getElementById(request.params.name);
+	node.parentNode.removeChild(node);
 }

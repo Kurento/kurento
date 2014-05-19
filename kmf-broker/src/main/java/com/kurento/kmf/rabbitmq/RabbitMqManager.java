@@ -5,7 +5,11 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.*;
+import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -30,9 +34,9 @@ public class RabbitMqManager {
 
 	private CachingConnectionFactory cf;
 	private RabbitAdmin admin;
-	private List<SimpleMessageListenerContainer> containers = new ArrayList<>();
+	private final List<SimpleMessageListenerContainer> containers = new ArrayList<>();
 
-	private Address address;
+	private final Address address;
 
 	public interface BrokerMessageReceiverWithResponse {
 		public String onMessage(String message);
@@ -115,7 +119,7 @@ public class RabbitMqManager {
 			template.setReplyTimeout(TIMEOUT);
 		}
 
-		log.debug("Req-> Exchange:'" + exchange + "' RoutingKey:'" + routingKey
+		log.trace("Req-> Exchange:'" + exchange + "' RoutingKey:'" + routingKey
 				+ "' " + message);
 
 		MessageProperties messageProperties = new MessageProperties();

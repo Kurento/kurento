@@ -5,7 +5,9 @@ import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -20,8 +22,12 @@ import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.*;
-import com.kurento.kmf.thrift.*;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
+import com.kurento.kmf.thrift.ThriftServer;
+import com.kurento.kmf.thrift.ThriftTransportException;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kmf.thrift.pool.ThriftClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
@@ -45,7 +51,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			log.warn(
 					"The thrift client is trying to send the response '{}' for "
 							+ "a request from server. But with Thrift it is not possible",
-							message);
+					message);
 		}
 	};
 
@@ -116,7 +122,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				new ThriftInterfaceExecutorService(
 						new ThriftInterfaceConfiguration(serverAddress,
 								serverPort)), new InetSocketAddress(
-										localAddress, localPort));
+						localAddress, localPort));
 	}
 
 	public JsonRpcClientThrift(ThriftClientPoolService clientPool,
@@ -154,7 +160,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 						try {
 
-							log.debug("<-Req {}", request.trim());
+							log.trace("<-Req {}", request.trim());
 
 							JsonObject message = JsonUtils.fromJson(request,
 									JsonObject.class);
@@ -200,7 +206,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		try {
 
-			log.debug("Req-> {}", request);
+			log.trace("Req-> {}", request);
 
 			// TODO Remove this hack -----------------------
 			if (request.getMethod().equals("subscribe")) {
@@ -249,7 +255,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
 
-		log.debug("Req-> {}", request);
+		log.trace("Req-> {}", request);
 
 		// TODO Remove this hack -----------------------
 		if (request.getMethod().equals("subscribe")) {
@@ -296,7 +302,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 							try {
 								String response = thriftResponse.getResult();
 
-								log.debug("<-Res {}", response.trim());
+								log.trace("<-Res {}", response.trim());
 
 								continuation.onSuccess(JsonUtils
 										.fromJsonResponse(response, resultClass));

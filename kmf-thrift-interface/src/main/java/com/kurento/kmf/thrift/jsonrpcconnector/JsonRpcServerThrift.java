@@ -87,7 +87,7 @@ public class JsonRpcServerThrift {
 	@SuppressWarnings("unchecked")
 	public Response<JsonObject> processRequest(Request<?> request) {
 
-		log.debug("Req-> {}", request);
+		log.trace("Req-> {}", request);
 
 		final Response<JsonObject>[] response = new Response[1];
 

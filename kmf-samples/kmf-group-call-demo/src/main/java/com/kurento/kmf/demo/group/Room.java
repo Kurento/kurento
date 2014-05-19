@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.phone;
+package com.kurento.kmf.demo.group;
 
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.media.MediaPipeline;
 
@@ -56,24 +55,37 @@ public class Room {
 		log.info("ROOM {} has been created", roomName);
 	}
 
+	@PreDestroy
+	private void shutdown() {
+		for (Participant participant : participants.values()) {
+			try {
+				participant.close();
+			} catch (IOException e) {
+				// nothing to do here
+			}
+		}
+	}
+
 	public Participant join(String name, Session session) throws IOException {
 		log.info("ROOM {}: adding participant {}", roomName, name);
 		Participant participant = new Participant(name, session, this.pipeline);
 		joinRoom(participant);
-		return participants.put(name, participant);
+		participants.put(name, participant);
+		return participant;
 	}
 
 	/**
 	 * @param participant
 	 * @throws IOException
 	 */
-	private void joinRoom(Participant newParticipant) throws IOException {
+	private Collection<String> joinRoom(Participant newParticipant)
+			throws IOException {
 		JsonObject newParticipantAnnouncement = new JsonObject();
 		newParticipantAnnouncement
 				.addProperty("name", newParticipant.getName());
 
-		JsonArray existingParticipantsAnnouncement = new JsonArray();
-
+		List<String> participantsList = newArrayListWithExpectedSize(participants
+				.values().size());
 		log.debug(
 				"ROOM {}: notifying other participants of new participant {}",
 				roomName, newParticipant.getName());
@@ -85,46 +97,44 @@ public class Room {
 				log.debug("ROOM {}: participant {} could not be notified",
 						roomName, participant.getName(), e);
 			}
-
-			JsonElement participantName = new JsonPrimitive(
-					participant.getName());
-			existingParticipantsAnnouncement.add(participantName);
+			participantsList.add(participant.getName());
 		}
 
-		newParticipant.getSession().sendNotification("existingParticipants",
-				existingParticipantsAnnouncement);
-
+		return participantsList;
 	}
 
-	public void removeParticipant(String name) {
+	public void removeParticipant(String name) throws IOException {
 
-		Participant removedParticipant = participants.remove(name);
+		String removedParticipantName;
 
-		log.info("ROOM {}: notifying all users that {} is leaving the room",
+		try (Participant removedParticipant = participants.remove(name)) {
+			removedParticipantName = removedParticipant.getName();
+		}
+
+		log.debug("ROOM {}: notifying all users that {} is leaving the room",
 				this.roomName, name);
 
-		List<String> unnotifiedParticipants = null;
+		List<String> unnotifiedParticipants = newArrayListWithExpectedSize(participants
+				.values().size());
+		JsonObject participantLeftNotification = new JsonObject();
+		participantLeftNotification.addProperty("name", removedParticipantName);
 		for (Participant participant : participants.values()) {
-			JsonObject participantLeftNotification = new JsonObject();
-			participantLeftNotification.addProperty("name",
-					removedParticipant.getName());
 			try {
+				participant.cancelVideoFrom(removedParticipantName);
 				participant.getSession().sendNotification("participantLeft",
 						participantLeftNotification);
 			} catch (IOException e) {
-				if (unnotifiedParticipants == null) {
-					unnotifiedParticipants = newArrayListWithExpectedSize(participants
-							.values().size());
-				}
 				unnotifiedParticipants.add(participant.getName());
 			}
 		}
 
-		if (unnotifiedParticipants != null) {
+		if (!unnotifiedParticipants.isEmpty()) {
 			// TODO send the list to the client? Doesn't seem useful
-			log.debug("ROOM {}: The users {} could not be notified that",
-					this.roomName, unnotifiedParticipants);
+			log.debug(
+					"ROOM {}: The users {} could not be notified that {} left the room",
+					this.roomName, unnotifiedParticipants, name);
 		}
+
 	}
 
 	/**
