@@ -837,7 +837,7 @@ bus_sync_signal_handler (GstBus * bus, GstMessage * msg, gpointer data)
     GError *err = NULL;
 
     gst_message_parse_error (msg, &err, NULL);
-    GST_ERROR ("ERROR %s", err->message);
+    GST_ERROR_OBJECT (self, "Message %" GST_PTR_FORMAT, msg);
     g_object_set_data_full (G_OBJECT (self), "message",
         g_strdup (err->message), (GDestroyNotify) g_free);
 
