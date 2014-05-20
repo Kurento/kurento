@@ -186,49 +186,37 @@ fake_query_func (GstPad * pad, GstObject * parent, GstQuery * query)
 static void
 kms_conf_controller_set_sink (KmsConfController * self, GstElement * sink)
 {
-  GstPad *pad;
-
   if (self->priv->pipeline == NULL) {
     GST_ERROR_OBJECT (self, "Not internal pipeline provided");
     return;
   }
 
-  self->priv->queue = gst_element_factory_make ("queue2", NULL);
-  g_object_set (self->priv->queue, "max-size-buffers", 0, "max-size-bytes", 0,
-      "max-size-time", G_GUINT64_CONSTANT (0), NULL);
-  gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->queue);
-  gst_element_sync_state_with_parent (self->priv->queue);
-
-  GST_DEBUG ("Added queue %s", GST_ELEMENT_NAME (self->priv->queue));
-
   gst_bin_add (GST_BIN (self->priv->pipeline), sink);
-  gst_element_sync_state_with_parent (sink);
 
-  GST_DEBUG ("Added sink %s", GST_ELEMENT_NAME (sink));
-
-  if (!gst_element_link_many (self->priv->encodebin, self->priv->queue, sink,
-          NULL)) {
-    GST_ERROR ("Could not link elements: %s, %s, %s",
-        GST_ELEMENT_NAME (self->priv->encodebin),
-        GST_ELEMENT_NAME (self->priv->queue), GST_ELEMENT_NAME (sink));
+  if (!gst_element_link (self->priv->encodebin, sink)) {
+    GST_ERROR ("Could not link elements: %s, %s",
+        GST_ELEMENT_NAME (self->priv->encodebin), GST_ELEMENT_NAME (sink));
     return;
   }
 
   self->priv->sink = gst_object_ref (sink);
 
-  if (self->priv->profile != KMS_RECORDING_PROFILE_MP4)
-    return;
+  if (self->priv->profile != KMS_RECORDING_PROFILE_MP4) {
+    GstPad *pad;
 
-  /* As mp4mux does not work unless the sink supports seeks, as it */
-  /* is configured for fragment output it won't really need to seek */
-  pad = gst_element_get_static_pad (sink, "sink");
+    /* As mp4mux does not work unless the sink supports seeks, as it */
+    /* is configured for fragment output it won't really need to seek */
+    pad = gst_element_get_static_pad (sink, "sink");
 
-  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      fake_seek_support, NULL, NULL);
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+        fake_seek_support, NULL, NULL);
 
-  pad->queryfunc = fake_query_func;
+    pad->queryfunc = fake_query_func;
 
-  g_object_unref (pad);
+    g_object_unref (pad);
+  }
+
+  gst_element_sync_state_with_parent (sink);
 }
 
 static gboolean
@@ -678,13 +666,7 @@ unlock_pending_valves (gpointer data, gpointer user_data)
 static void
 kms_conf_controller_reconfigure_pipeline (KmsConfController * self)
 {
-  gst_element_unlink_many (self->priv->encodebin, self->priv->queue,
-      self->priv->sink, NULL);
-
-  /* Remove old encodebin and sink elements */
-  gst_element_set_locked_state (self->priv->queue, TRUE);
-  gst_element_set_state (self->priv->queue, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self->priv->pipeline), self->priv->queue);
+  gst_element_unlink (self->priv->encodebin, self->priv->sink);
 
   gst_element_set_locked_state (self->priv->sink, TRUE);
   gst_element_set_state (self->priv->sink, GST_STATE_NULL);
@@ -855,7 +837,7 @@ pad_probe_cb (GstPad * srcpad, GstPadProbeInfo * info, gpointer user_data)
         self->priv->sink);
 
     /* install new probe for EOS */
-    pad = gst_element_get_static_pad (self->priv->queue, "src");
+    pad = gst_element_get_static_pad (self->priv->encodebin, "src");
     peer = gst_pad_get_peer (pad);
 
     probe_id = g_object_get_data (G_OBJECT (peer), KEY_PAD_PROBE_ID);
