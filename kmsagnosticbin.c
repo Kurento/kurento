@@ -830,8 +830,6 @@ iterate_src_pads (KmsAgnosticBin2 * self)
   GstPad *pad;
   GValue item = G_VALUE_INIT;
 
-  KMS_AGNOSTIC_BIN2_LOCK (self);
-
   while (!done) {
     switch (gst_iterator_next (it, &item)) {
       case GST_ITERATOR_OK:
@@ -851,8 +849,6 @@ iterate_src_pads (KmsAgnosticBin2 * self)
 
   kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
       kms_agnostic_bin2_process_pad_loop, g_object_ref (self), g_object_unref);
-
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   gst_iterator_free (it);
 }
@@ -916,8 +912,9 @@ set_input_caps (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
   GST_INFO_OBJECT (self, "Setting current caps to: %" GST_PTR_FORMAT,
       current_caps);
 
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
   iterate_src_pads (self);
+
+  KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   return GST_PAD_PROBE_REMOVE;
 }
