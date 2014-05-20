@@ -15,7 +15,7 @@
 
 /**
  * {@link HttpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -41,7 +41,7 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  kwsMediaApi = require('..');
+  KwsMedia = require('..');
 
   require('./_common');
   require('./_proxy');
@@ -52,17 +52,19 @@ QUnit.module('PointerDetectorFilter', lifecycle);
 
 QUnit.asyncTest('Detect pointer', function()
 {
+  var self = this;
+
   QUnit.expect(1);
 
   var timeout = new Timeout('"PointerDetectorFilter:Detect pointer"',
                             20 * 1000, onerror);
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
-    pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
+    self.pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
@@ -102,6 +104,10 @@ QUnit.asyncTest('Detect pointer', function()
 
 QUnit.test('Window events', function()
 {
+  var self = this;
+
+  if(!self.pipeline) return start();
+
   QUnit.stop(2);
   QUnit.expect(2);
 
@@ -133,11 +139,11 @@ QUnit.test('Window events', function()
   };
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
-    pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
+    self.pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
     {
       if(error) return onerror(error);
 
@@ -206,6 +212,10 @@ QUnit.test('Window events', function()
 
 QUnit.test('Window overlay', function()
 {
+  var self = this;
+
+  if(!self.pipeline) return start();
+
   QUnit.stop(2);
   QUnit.expect(2);
 
@@ -237,11 +247,11 @@ QUnit.test('Window overlay', function()
   };
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR}, function(error, player)
   {
     if(error) return onerror(error);
 
-    pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
+    self.pipeline.create('PointerDetectorFilter', function(error, pointerDetector)
     {
       if(error) return onerror(error);
 

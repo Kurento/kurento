@@ -14,7 +14,7 @@
   ],
   "main": "lib/KwsMedia.js",
   "scripts": {
-    "test": "qunit-cli -c KwsMedia:. -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
+    "test": "qunit-cli -c KwsMedia:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
   },
   "repository": {
     "type": "git",
@@ -53,6 +53,7 @@
     "grunt-jsdoc": "latest",
     "nock": "latest",
     "qunit-cli": "ShareIt-project/qunit-cli",
+    "qunit-reporter-junit": "piranna/qunit-reporter-junit",
     "qunitjs": "~1.14.0",
     "wock": "latest"
   }

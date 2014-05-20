@@ -15,7 +15,7 @@
 
 /**
  * {@link HttpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -41,7 +41,7 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  kwsMediaApi = require('..');
+  KwsMedia = require('..');
 
   require('./_common');
   require('./_proxy');
@@ -52,9 +52,11 @@ QUnit.module('HttpGetEndpoint', lifecycle);
 
 QUnit.asyncTest('Method GetUrl', function()
 {
+  var self = this;
+
   QUnit.expect(2);
 
-  pipeline.create('HttpGetEndpoint', function(error, httpGet)
+  self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
   {
     if(error) return onerror(error);
 
@@ -73,6 +75,8 @@ QUnit.asyncTest('Method GetUrl', function()
 
 QUnit.asyncTest('Media session started', function()
 {
+  var self = this;
+
   QUnit.expect(5);
 
 
@@ -80,7 +84,7 @@ QUnit.asyncTest('Media session started', function()
                             10 * 1000, onerror);
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 
@@ -95,7 +99,7 @@ QUnit.asyncTest('Media session started', function()
       QUnit.start();
     });
 
-    pipeline.create('HttpGetEndpoint', function(error, httpGet)
+    self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
     {
       if(error) return onerror(error);
 

@@ -15,7 +15,7 @@
 
 /**
  * {@link HttpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -55,15 +55,17 @@ QUnit.module('BasicPipeline', lifecycle);
  */
 QUnit.asyncTest('Creation', function()
 {
+  var self = this;
+
   QUnit.expect(3);
 
-  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    pipeline.create('HttpGetEndpoint', function(error, httpGet)
+    self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
     {
       if(error) return onerror(error);
 

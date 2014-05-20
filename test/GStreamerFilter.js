@@ -15,7 +15,7 @@
 
 /**
  * {@link HttpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -41,7 +41,7 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  kwsMediaApi = require('..');
+  KwsMedia = require('..');
 
   require('./_common');
   require('./_proxy');
@@ -52,19 +52,21 @@ QUnit.module('GStreamerFilter', lifecycle);
 
 QUnit.asyncTest('End of Stream', function()
 {
+  var self = this;
+
   QUnit.expect(3);
 
   var timeout = new Timeout('"GStreamerFilter:End of Stream"',
                             10 * 1000, onerror);
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    pipeline.create('GStreamerFilter',
+    self.pipeline.create('GStreamerFilter',
     {command: 'videoflip method=horizontal-flip'},
     function(error, gStreamerFilter)
     {

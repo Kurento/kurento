@@ -15,7 +15,7 @@
 
 /**
  * {@link HttpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -41,7 +41,7 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  kwsMediaApi = require('..');
+  KwsMedia = require('..');
 
   require('./_common');
   require('./_proxy');
@@ -52,17 +52,19 @@ QUnit.module('PlateDetectorFilter', lifecycle);
 
 QUnit.asyncTest('Detect plate in a video', function()
 {
+  var self = this;
+
   QUnit.expect(1);
 
   var timeout = new Timeout('"PlateDetectorFilter:Detect plate in a video"',
                             10 * 1000, onerror);
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_PLATES}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_PLATES}, function(error, player)
   {
     if(error) return onerror(error);
 
-    pipeline.create('PlateDetectorFilter', function(error, plateDetector)
+    self.pipeline.create('PlateDetectorFilter', function(error, plateDetector)
     {
       if(error) return onerror(error);
 

@@ -82,6 +82,30 @@ Timeout = function Timeout(id, delay, ontimeout)
 };
 
 
+QUnit.jUnitReport = function(report)
+{
+  // Node.js - write report to file
+  if(typeof window === 'undefined')
+  {
+    var path = './junitResult.xml';
+
+    require('fs').writeFile(path, report.xml, function(error)
+    {
+      if(error) return console.log(error);
+
+      console.log('XML report saved at '+path);
+    });
+  }
+
+  // browser - write report to console
+  else
+    console.log(report.xml);
+};
+
+
+QUnit.config.testTimeout = 60000;
+
+
 // Tell QUnit what WebSocket servers to use
 
 QUnit.config.urlConfig.push(
@@ -90,8 +114,8 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://130.206.81.87/thrift/ws/websocket':  'Kurento demo server',
-    'ws://127.0.0.1:8080/thrift/ws/websocket': 'localhost (puerto 8080)'
+    'ws://127.0.0.1:8080/thrift/ws/websocket': 'localhost (puerto 8080)',
+    'ws://130.206.81.87/thrift/ws/websocket':  'Kurento demo server'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
@@ -103,25 +127,27 @@ lifecycle =
 {
   setup: function()
   {
+    var self = this;
+
     var ws_uri = QUnit.config.ws_uri;
     if(ws_uri == undefined)
     {
     //  var WebSocket = wock(proxy);
     //  ws_uri = new WebSocket();
-      ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
+      ws_uri = 'ws://127.0.0.1:8080/thrift/ws/websocket';
     };
 
-    kwsMedia = new KwsMedia(ws_uri);
+    this.kwsMedia = new KwsMedia(ws_uri);
 
-    kwsMedia.on('error', onerror);
+    this.kwsMedia.on('error', onerror);
 
-    kwsMedia.on('connect', function()
+    this.kwsMedia.on('connect', function()
     {
-      kwsMedia.create('MediaPipeline', function(error, pipe)
+      this.create('MediaPipeline', function(error, pipeline)
       {
         if(error) return onerror(error);
 
-        pipeline = pipe;
+        self.pipeline = pipeline;
 
         QUnit.start();
       });
@@ -132,17 +158,14 @@ lifecycle =
 
   teardown: function()
   {
-    var kws  = kwsMedia;
-    var pipe = pipeline;
+    var self = this;
 
-    delete kwsMedia;
-    delete pipeline;
+    if(self.pipeline)
+      self.pipeline.release(function(error)
+      {
+        if(error) console.error(error);
 
-    pipe.release(function(error)
-    {
-      if(error) console.error(error);
-
-      kws.close();
-    });
+        self.kwsMedia.close();
+      });
   }
 };

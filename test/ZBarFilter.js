@@ -15,7 +15,7 @@
 
 /**
  * {@link HttpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @version 1.0.0
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -41,7 +41,7 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  kwsMediaApi = require('..');
+  KwsMedia = require('..');
 
   require('./_common');
   require('./_proxy');
@@ -52,15 +52,17 @@ QUnit.module('ZBarFilter', lifecycle);
 
 QUnit.asyncTest('Create pipeline and play video', function()
 {
+  var self = this;
+
   QUnit.expect(2);
 
-  pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
   {
     if(error) return onerror(error);
 
     QUnit.notEqual(player, undefined, 'player');
 
-    pipeline.create('ZBarFilter', function(error, zbar)
+    self.pipeline.create('ZBarFilter', function(error, zbar)
     {
       if(error) return onerror(error);
 
@@ -83,17 +85,19 @@ QUnit.asyncTest('Create pipeline and play video', function()
 
 QUnit.asyncTest('Detect bar-code in a video', function()
 {
+  var self = this;
+
   QUnit.expect(1);
 
   var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
                             5 * 1000, onerror);
 
 
-  pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
+  self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
   {
     if(error) return onerror(error);
 
-    pipeline.create('ZBarFilter', function(error, zbar)
+    self.pipeline.create('ZBarFilter', function(error, zbar)
     {
       if(error) return onerror(error);
 
