@@ -268,16 +268,18 @@ kms_audio_mixer_bin_unlink_elements (KmsAudioMixerBin * self,
     GST_ERROR ("Can not unlink %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT,
         srcpad, sinkpad);
   }
-
   gst_element_release_request_pad (self->priv->adder, sinkpad);
   gst_element_release_request_pad (agnosticbin, srcpad);
 
   gst_object_unref (sinkpad);
 
 end:
-  gst_pad_remove_probe (srcpad, *id);
-  g_object_set_data_full (G_OBJECT (srcpad), KMS_AUDIO_MIXER_BIN_PROBE_ID_KEY,
-      NULL, NULL);
+  if (id != NULL) {
+    gst_pad_remove_probe (srcpad, *id);
+    g_object_set_data_full (G_OBJECT (srcpad), KMS_AUDIO_MIXER_BIN_PROBE_ID_KEY,
+        NULL, NULL);
+  }
+
   gst_object_unref (srcpad);
 }
 
@@ -553,6 +555,56 @@ kms_audio_mixer_bin_release_pad (GstElement * element, GstPad * pad)
 }
 
 static void
+kms_audio_mixer_bin_remove_stream_groups (KmsAudioMixerBin * self)
+{
+  GValue val = G_VALUE_INIT;
+  GstIterator *it;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_sink_pads (GST_ELEMENT (self));
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad;
+
+        sinkpad = g_value_get_object (&val);
+        kms_audio_mixer_bin_remove_stream_group (self, sinkpad);
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's src pads",
+            GST_ELEMENT_NAME (self));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
+kms_audio_mixer_bin_tear_down (KmsAudioMixerBin * self)
+{
+  kms_audio_mixer_bin_remove_stream_groups (self);
+
+  /* Set ghostpad target to NULL */
+  gst_ghost_pad_set_target (GST_GHOST_PAD (self->priv->srcpad), NULL);
+
+  if (self->priv->adder) {
+    gst_element_set_state (self->priv->adder, GST_STATE_NULL);
+    gst_bin_remove (GST_BIN (self), self->priv->adder);
+    self->priv->adder = NULL;
+  }
+}
+
+static void
 kms_audio_mixer_bin_dispose (GObject * object)
 {
   KmsAudioMixerBin *self = KMS_AUDIO_MIXER_BIN (object);
@@ -561,6 +613,7 @@ kms_audio_mixer_bin_dispose (GObject * object)
 
   KMS_AUDIO_MIXER_BIN_LOCK (self);
 
+  kms_audio_mixer_bin_tear_down (self);
   g_clear_object (&self->priv->loop);
 
   KMS_AUDIO_MIXER_BIN_UNLOCK (self);
