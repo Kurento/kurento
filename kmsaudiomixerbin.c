@@ -309,6 +309,80 @@ remove_elements (RefCounter * refdata)
   return G_SOURCE_REMOVE;
 }
 
+static GstElement *
+get_typefind_from_pad (GstPad * pad)
+{
+  GstElement *typefind;
+  GstPad *sinkpad;
+
+  sinkpad = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+  if (sinkpad == NULL) {
+    GST_ERROR ("No target element connected to %" GST_PTR_FORMAT, pad);
+    return NULL;
+  }
+
+  typefind = gst_pad_get_parent_element (sinkpad);
+  gst_object_unref (sinkpad);
+
+  return typefind;
+}
+
+static GstElement *
+get_agnostic_from_pad (GstPad * pad)
+{
+  GstElement *typefind, *agnosticbin = NULL;
+  GstPad *srcpad, *peerpad;
+
+  typefind = get_typefind_from_pad (pad);
+  if (typefind == NULL)
+    return NULL;
+
+  srcpad = gst_element_get_static_pad (typefind, "src");
+  if (srcpad == NULL) {
+    GST_ERROR ("No src pad got from %" GST_PTR_FORMAT, typefind);
+    goto unref_typefind;
+  }
+
+  peerpad = gst_pad_get_peer (srcpad);
+  if (peerpad == NULL) {
+    GST_ERROR ("No agnosticbin connected to %" GST_PTR_FORMAT, typefind);
+    goto unref_srcpad;
+  }
+
+  agnosticbin = gst_pad_get_parent_element (peerpad);
+  gst_object_unref (peerpad);
+
+unref_srcpad:
+  gst_object_unref (srcpad);
+
+unref_typefind:
+  gst_object_unref (typefind);
+
+  return agnosticbin;
+}
+
+static void
+kms_audio_mixer_bin_remove_stream_group (KmsAudioMixerBin * self, GstPad * pad)
+{
+  GstElement *typefind, *agnosticbin;
+
+  typefind = get_typefind_from_pad (pad);
+  if (typefind == NULL)
+    return;
+
+  agnosticbin = get_agnostic_from_pad (pad);
+  if (agnosticbin == NULL) {
+    gst_object_unref (typefind);
+    return;
+  }
+
+  kms_audio_mixer_bin_unlink_elements (self, typefind, agnosticbin);
+  kms_audio_mixer_bin_remove_elements (self, typefind, agnosticbin);
+
+  gst_object_unref (typefind);
+  gst_object_unref (agnosticbin);
+}
+
 static GstPadProbeReturn
 event_probe_cb (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
@@ -339,50 +413,37 @@ static void
 kms_audio_mixer_bin_unlink_pad_in_playing (KmsAudioMixerBin * self,
     GstPad * pad)
 {
-  GstPad *sinkpad, *peerpad, *srcpad, *probepad;
+  GstPad *sinkpad, *probepad;
   GstElement *typefind, *agnosticbin;
   WaitCond *wait = NULL;
   RefCounter *refdata;
   ProbeData *data;
 
-  sinkpad = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+  typefind = get_typefind_from_pad (pad);
+  if (typefind == NULL)
+    return;
+
+  sinkpad = gst_element_get_static_pad (typefind, "sink");
   if (sinkpad == NULL) {
-    GST_WARNING_OBJECT (self, "No element chain connected to %" GST_PTR_FORMAT,
-        pad);
+    GST_ERROR_OBJECT (self, "No sink pad got from %" GST_PTR_FORMAT, typefind);
+    gst_object_unref (typefind);
     return;
   }
-
-  typefind = gst_pad_get_parent_element (sinkpad);
-
-  if (typefind == NULL) {
-    GST_ERROR_OBJECT (self, "No typefind owns %" GST_PTR_FORMAT, pad);
-    goto end_phase1;
-  }
-
-  srcpad = gst_element_get_static_pad (typefind, "src");
-  if (srcpad == NULL) {
-    GST_ERROR_OBJECT (self, "No src pad got from %" GST_PTR_FORMAT, typefind);
-    goto end_phase2;
-  }
-
-  peerpad = gst_pad_get_peer (srcpad);
-  if (peerpad == NULL) {
-    GST_ERROR_OBJECT (self, "No agnosticbin connected to %" GST_PTR_FORMAT,
-        typefind);
-    goto end_phase3;
-  }
-
-  agnosticbin = gst_pad_get_parent_element (peerpad);
+  agnosticbin = get_agnostic_from_pad (pad);
   if (agnosticbin == NULL) {
-    GST_ERROR_OBJECT (self, "No agnosticbin owns %" GST_PTR_FORMAT, peerpad);
-    goto end_phase4;
+    gst_object_unref (sinkpad);
+    gst_object_unref (typefind);
+    return;
   }
 
   probepad = gst_element_get_static_pad (agnosticbin, "src_0");
   if (probepad == NULL) {
     GST_ERROR_OBJECT (self, "No src_0 pad found in %" GST_PTR_FORMAT,
         agnosticbin);
-    goto end_phase5;
+    gst_object_unref (sinkpad);
+    gst_object_unref (typefind);
+    gst_object_unref (agnosticbin);
+    return;
   }
 
   wait = create_wait_condition ();
@@ -393,30 +454,19 @@ kms_audio_mixer_bin_unlink_pad_in_playing (KmsAudioMixerBin * self,
   gst_pad_add_probe (probepad, GST_PAD_PROBE_TYPE_BLOCK |
       GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM, event_probe_cb, refdata,
       (GDestroyNotify) ref_counter_dec);
+  gst_object_unref (probepad);
 
   /* push EOS into the typefind's sink pad, the probe will be fired when the */
   /* EOS leaves the agnosticbin's src pad and both elements has thus drained */
   /* all their data */
   gst_pad_send_event (sinkpad, gst_event_new_eos ());
-  gst_object_unref (probepad);
+  gst_object_unref (sinkpad);
 
   WAIT_UNTIL_DONE (wait);
   destroy_wait_condition (wait);
 
-end_phase5:
-  gst_object_unref (agnosticbin);
-
-end_phase4:
-  gst_object_unref (peerpad);
-
-end_phase3:
-  gst_object_unref (srcpad);
-
-end_phase2:
   gst_object_unref (typefind);
-
-end_phase1:
-  gst_object_unref (sinkpad);
+  gst_object_unref (agnosticbin);
 }
 
 static GstPad *
@@ -492,11 +542,14 @@ kms_audio_mixer_bin_release_pad (GstElement * element, GstPad * pad)
       || GST_STATE_TARGET (element) >= GST_STATE_PAUSED) {
     kms_audio_mixer_bin_unlink_pad_in_playing (KMS_AUDIO_MIXER_BIN (element),
         pad);
+    gst_pad_set_active (pad, FALSE);
   } else {
-    GST_DEBUG ("TODO: unlink pad in paused state");
+    kms_audio_mixer_bin_remove_stream_group (KMS_AUDIO_MIXER_BIN (element),
+        pad);
   }
 
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
+  gst_element_remove_pad (element, pad);
 }
 
 static void
