@@ -369,35 +369,6 @@ end_phase1:
   gst_object_unref (sinkpad);
 }
 
-static void
-unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
-{
-  GstElement *agnostic = NULL, *adder = NULL, *parent;
-  KmsAudioMixerBin *self;
-
-  GST_DEBUG ("Unlinked pad %" GST_PTR_FORMAT, pad);
-  parent = gst_pad_get_parent_element (pad);
-
-  if (parent == NULL)
-    return;
-
-  self = KMS_AUDIO_MIXER_BIN (parent);
-
-  if (gst_pad_get_direction (pad) != GST_PAD_SINK)
-    return;
-
-  if (GST_STATE (parent) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (parent) >= GST_STATE_PAUSED
-      || GST_STATE_TARGET (parent) >= GST_STATE_PAUSED) {
-    kms_audio_mixer_bin_unlink_pad_in_playing (self, pad);
-  } else {
-    GST_DEBUG ("TODO: unlink pad in paused state");
-  }
-
-  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
-  gst_object_unref (parent);
-}
-
 static GstPad *
 kms_audio_mixer_bin_request_new_pad (GstElement * element,
     GstPadTemplate * templ, const gchar * name, const GstCaps * caps)
@@ -453,18 +424,29 @@ kms_audio_mixer_bin_request_new_pad (GstElement * element,
 
   KMS_AUDIO_MIXER_BIN_UNLOCK (self);
 
-  if (pad != NULL) {
-    g_signal_connect (G_OBJECT (pad), "unlinked",
-        G_CALLBACK (unlinked_pad), NULL);
-  }
-
   return pad;
 }
 
 static void
 kms_audio_mixer_bin_release_pad (GstElement * element, GstPad * pad)
 {
-  /* TODO: */
+  GstElement *agnostic = NULL, *adder = NULL;
+
+  GST_DEBUG ("Unlinked pad %" GST_PTR_FORMAT, pad);
+
+  if (gst_pad_get_direction (pad) != GST_PAD_SINK)
+    return;
+
+  if (GST_STATE (element) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (element) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (element) >= GST_STATE_PAUSED) {
+    kms_audio_mixer_bin_unlink_pad_in_playing (KMS_AUDIO_MIXER_BIN (element),
+        pad);
+  } else {
+    GST_DEBUG ("TODO: unlink pad in paused state");
+  }
+
+  gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
 }
 
 static void
