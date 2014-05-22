@@ -148,7 +148,6 @@ tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
     if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
       // Request key frame to upstream elements
       send_force_key_unit_event (pad);
-      GST_DEBUG_OBJECT (pad, "Dropping reconfigure event");
     }
   }
 
