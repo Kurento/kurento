@@ -361,7 +361,8 @@ kms_agnostic_bin2_set_block_probe (KmsAgnosticBin2 * self)
   if (self->priv->block_probe == 0L) {
     self->priv->block_probe =
         gst_pad_add_probe (self->priv->sink,
-        GST_PAD_PROBE_TYPE_BLOCK_DOWNSTREAM, sink_block, self, NULL);
+        GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_BUFFER |
+        GST_PAD_PROBE_TYPE_BUFFER_LIST, sink_block, self, NULL);
     GST_DEBUG_OBJECT (self, "Adding probe %ld while connecting",
         self->priv->block_probe);
   }
