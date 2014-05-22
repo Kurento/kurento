@@ -68,12 +68,35 @@ GST_STATIC_PAD_TEMPLATE (AUDIO_MIXER_BIN_SRC_PAD,
     GST_STATIC_CAPS (RAW_AUDIO_CAPS)
     );
 
+typedef struct _WaitCond WaitCond;
+struct _WaitCond
+{
+  GCond cond;
+  GMutex mutex;
+  gboolean done;
+};
+
+#define OPERATION_DONE(wait) do {                  \
+  g_mutex_lock (&(wait)->mutex);                   \
+  (wait)->done = TRUE;                             \
+  g_cond_signal (&(wait)->cond);                   \
+  g_mutex_unlock (&(wait)->mutex);                 \
+} while (0)
+
+#define WAIT_UNTIL_DONE(wait) do {                 \
+  g_mutex_lock (&(wait)->mutex);                   \
+  while (!(wait)->done)                            \
+      g_cond_wait (&(wait)->cond, &(wait)->mutex); \
+  g_mutex_unlock (&(wait)->mutex);                 \
+} while (0)
+
 typedef struct _ProbeData ProbeData;
 struct _ProbeData
 {
   KmsAudioMixerBin *audiomixer;
   GstElement *typefind;
   GstElement *agnosticbin;
+  WaitCond *cond;
 };
 
 typedef struct _RefCounter RefCounter;
@@ -160,12 +183,14 @@ destroy_probe_data (ProbeData * data)
   gst_object_unref (data->agnosticbin);
   gst_object_unref (data->audiomixer);
 
+  OPERATION_DONE (data->cond);
+
   g_slice_free (ProbeData, data);
 }
 
 static ProbeData *
 create_probe_data (KmsAudioMixerBin * audiomixer, GstElement * typefind,
-    GstElement * agnosticbin)
+    GstElement * agnosticbin, WaitCond * cond)
 {
   ProbeData *data;
 
@@ -173,8 +198,30 @@ create_probe_data (KmsAudioMixerBin * audiomixer, GstElement * typefind,
   data->audiomixer = gst_object_ref (audiomixer);
   data->typefind = gst_object_ref (typefind);
   data->agnosticbin = gst_object_ref (agnosticbin);
+  data->cond = cond;
 
   return data;
+}
+
+static void
+destroy_wait_condition (WaitCond * cond)
+{
+  g_mutex_clear (&cond->mutex);
+  g_cond_clear (&cond->cond);
+  g_slice_free (WaitCond, cond);
+}
+
+static WaitCond *
+create_wait_condition ()
+{
+  WaitCond *cond;
+
+  cond = g_slice_new (WaitCond);
+  cond->done = FALSE;
+  g_mutex_init (&cond->mutex);
+  g_cond_init (&cond->cond);
+
+  return cond;
 }
 
 static void
@@ -294,10 +341,9 @@ kms_audio_mixer_bin_unlink_pad_in_playing (KmsAudioMixerBin * self,
 {
   GstPad *sinkpad, *peerpad, *srcpad, *probepad;
   GstElement *typefind, *agnosticbin;
+  WaitCond *wait = NULL;
   RefCounter *refdata;
   ProbeData *data;
-
-  /* TODO: Lock this operation until it is completed */
 
   sinkpad = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
   if (sinkpad == NULL) {
@@ -339,7 +385,8 @@ kms_audio_mixer_bin_unlink_pad_in_playing (KmsAudioMixerBin * self,
     goto end_phase5;
   }
 
-  data = create_probe_data (self, typefind, agnosticbin);
+  wait = create_wait_condition ();
+  data = create_probe_data (self, typefind, agnosticbin, wait);
   refdata = create_ref_counter (data, (GDestroyNotify) destroy_probe_data);
 
   /* install probe for EOS */
@@ -352,6 +399,9 @@ kms_audio_mixer_bin_unlink_pad_in_playing (KmsAudioMixerBin * self,
   /* all their data */
   gst_pad_send_event (sinkpad, gst_event_new_eos ());
   gst_object_unref (probepad);
+
+  WAIT_UNTIL_DONE (wait);
+  destroy_wait_condition (wait);
 
 end_phase5:
   gst_object_unref (agnosticbin);
