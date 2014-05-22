@@ -26,9 +26,9 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.Client;
  * validating clients have been implemented to overcome the impossibility, found
  * during several trials, of correctly asserting whether the client is still
  * valid.
- * 
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
- * 
+ *
  */
 class ClientWithValidation extends Client {
 
@@ -52,6 +52,7 @@ class ClientWithValidation extends Client {
 	@Override
 	public String invokeJsonRpc(String request) throws TException {
 		try {
+			// FIXME: Implement retries
 			return super.invokeJsonRpc(request);
 		} catch (TTransportException e) {
 			isProtocolOpen = false;

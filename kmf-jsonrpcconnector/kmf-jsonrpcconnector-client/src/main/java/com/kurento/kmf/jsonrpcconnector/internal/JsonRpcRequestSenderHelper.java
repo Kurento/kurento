@@ -32,7 +32,7 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 public abstract class JsonRpcRequestSenderHelper implements
 		JsonRpcRequestSender {
 
-	private static Logger log = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcRequestSenderHelper.class);
 
 	protected AtomicInteger id = new AtomicInteger();
@@ -76,11 +76,7 @@ public abstract class JsonRpcRequestSenderHelper implements
 	public <P, R> R sendRequest(Request<P> request, Class<R> resultClass)
 			throws JsonRpcErrorException, IOException {
 
-		// LOG.info("--> {}", request);
-
 		Response<R> response = internalSendRequest(request, resultClass);
-
-		// LOG.info("<-- {}", response);
 
 		if (response == null) {
 			return null;
@@ -119,14 +115,11 @@ public abstract class JsonRpcRequestSenderHelper implements
 			request.setSessionId(sessionId);
 		}
 
-		log.info("[Server] Message sent: {}", request);
-
 		internalSendRequest(request, JsonElement.class,
 				new Continuation<Response<JsonElement>>() {
 
 					@Override
 					public void onSuccess(Response<JsonElement> response) {
-						log.info("[Server] Message received: {}", response);
 
 						if (response == null) {
 							continuation.onSuccess(null);

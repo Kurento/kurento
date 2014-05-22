@@ -17,13 +17,9 @@ package com.kurento.kmf.test.media;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
  * <strong>Description</strong>: HTTP Player switching videos.<br/>
@@ -37,11 +33,11 @@ import com.kurento.kmf.test.client.Client;
  * <li>Play time should be the expected (at least 8 seconds)</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
+public class MediaApiPlayerSwitchBrowserTest extends BrowserMediaApiTest {
 
 	@Test
 	public void testPlayerSwitch() throws Exception {
@@ -62,7 +58,7 @@ public class MediaApiPlayerSwitchBrowserTest extends MediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 
 			// red

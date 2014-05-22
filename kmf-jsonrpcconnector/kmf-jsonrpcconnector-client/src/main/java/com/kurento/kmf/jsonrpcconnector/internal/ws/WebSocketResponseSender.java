@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
 
 public final class WebSocketResponseSender implements ResponseSender {
 
@@ -38,9 +38,9 @@ public final class WebSocketResponseSender implements ResponseSender {
 	@Override
 	public void sendResponse(Message message) throws IOException {
 		String jsonMessage = message.toString();
-		log.debug("<-- {}", jsonMessage);
+		log.debug("<-Res {}", jsonMessage);
 		synchronized (wsSession) {
-			wsSession.sendMessage(new TextMessage(jsonMessage));	
-		}		
+			wsSession.sendMessage(new TextMessage(jsonMessage));
+		}
 	}
 }

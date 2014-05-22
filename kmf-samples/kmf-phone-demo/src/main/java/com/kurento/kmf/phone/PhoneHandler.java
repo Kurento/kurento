@@ -11,7 +11,7 @@ import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 public class PhoneHandler extends DefaultJsonRpcHandler<JsonObject> {
 

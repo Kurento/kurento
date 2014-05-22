@@ -18,9 +18,9 @@ import com.kurento.kmf.content.RtpContentHandler;
 import com.kurento.kmf.content.RtpContentService;
 import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.RtpEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 @RtpContentService(name = "CpRtcRtpZbarHandler", path = "/cpRtpZbar")
 public class CpRtcRtpZbarHandler extends RtpContentHandler {

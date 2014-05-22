@@ -20,8 +20,8 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * HTTP Player Handler; tunnel strategy; JSON control protocol; it creates a

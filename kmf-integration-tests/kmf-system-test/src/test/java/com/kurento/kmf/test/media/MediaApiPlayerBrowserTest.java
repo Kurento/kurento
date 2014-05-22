@@ -19,16 +19,12 @@ import java.awt.Color;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a HTTP Player, using directly a
  * MediaPipeline and Selenium.<br/>
  * <strong>Pipeline</strong>:
@@ -42,12 +38,12 @@ import com.kurento.kmf.test.client.Client;
  * <li>Color of the video should be the expected (blue)</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerBrowserTest extends MediaApiTest {
+public class MediaApiPlayerBrowserTest extends BrowserMediaApiTest {
 
 	@Test
 	public void testPlayerChrome() throws Exception {
@@ -70,7 +66,7 @@ public class MediaApiPlayerBrowserTest extends MediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.PLAYER).build()) {
+		.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

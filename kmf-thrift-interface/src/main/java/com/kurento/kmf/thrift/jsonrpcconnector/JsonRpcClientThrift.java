@@ -5,9 +5,7 @@ import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -22,13 +20,10 @@ import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
-import com.kurento.kmf.thrift.ThriftServer;
-import com.kurento.kmf.thrift.ThriftTransportException;
+import com.kurento.kmf.jsonrpcconnector.internal.message.*;
+import com.kurento.kmf.thrift.*;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
-import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
+import com.kurento.kmf.thrift.pool.ThriftClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -42,7 +37,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 	public static final int KEEP_ALIVE_TIME = 120000;
 
-	private MediaServerClientPoolService clientPool;
+	private ThriftClientPoolService clientPool;
 
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
@@ -50,7 +45,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			log.warn(
 					"The thrift client is trying to send the response '{}' for "
 							+ "a request from server. But with Thrift it is not possible",
-					message);
+							message);
 		}
 	};
 
@@ -113,7 +108,18 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		}
 	});
 
-	public JsonRpcClientThrift(MediaServerClientPoolService clientPool,
+	public JsonRpcClientThrift(String serverAddress, int serverPort,
+			String localAddress, int localPort) {
+
+		this(new ThriftClientPoolService(new ThriftInterfaceConfiguration(
+				serverAddress, serverPort)),
+				new ThriftInterfaceExecutorService(
+						new ThriftInterfaceConfiguration(serverAddress,
+								serverPort)), new InetSocketAddress(
+										localAddress, localPort));
+	}
+
+	public JsonRpcClientThrift(ThriftClientPoolService clientPool,
 			ThriftInterfaceExecutorService executorService,
 			InetSocketAddress localHandlerAddress) {
 
@@ -148,7 +154,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 						try {
 
-							log.debug("[Client] Request Received: {}", request);
+							log.debug("<-Req {}", request.trim());
 
 							JsonObject message = JsonUtils.fromJson(request,
 									JsonObject.class);
@@ -177,7 +183,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param request
 	 *            the request
 	 * @param resultClass
@@ -194,10 +200,16 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		try {
 
-			log.debug("[Client] Request sent: {}", request);
+			log.debug("Req-> {}", request);
 
 			// TODO Remove this hack -----------------------
 			if (request.getMethod().equals("subscribe")) {
+
+				log.debug(
+						"Adding local address info to subscription request. ip:{} port:{}",
+						localHandlerAddress.getHostString(),
+						localHandlerAddress.getPort());
+
 				JsonObject params = (JsonObject) request.getParams();
 				params.addProperty("ip", localHandlerAddress.getHostString());
 				params.addProperty("port",
@@ -209,7 +221,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 			responseStr = client.invokeJsonRpc(request.toString());
 
-			log.debug("[Client] Response received: {}", responseStr);
+			log.debug("<-Res {}", responseStr.trim());
 
 			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
 					resultClass);
@@ -236,7 +248,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	protected void internalSendRequestThrift(Request<Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
-		log.info("[Client] Request sent: {}", request);
+
+		log.debug("Req-> {}", request);
 
 		// TODO Remove this hack -----------------------
 		if (request.getMethod().equals("subscribe")) {
@@ -282,8 +295,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 							try {
 								String response = thriftResponse.getResult();
-								log.debug("[Client] Response received: {}",
-										response);
+
+								log.debug("<-Res {}", response.trim());
 
 								continuation.onSuccess(JsonUtils
 										.fromJsonResponse(response, resultClass));
@@ -311,5 +324,4 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		}
 		keepAliveThread.interrupt();
 	}
-
 }

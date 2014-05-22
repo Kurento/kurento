@@ -19,17 +19,12 @@ import java.awt.Color;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.RecorderEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a HTTP Recorder switching sources from
  * PlayerEndpoint.<br/>
  * <strong>Pipelines</strong>:
@@ -44,11 +39,11 @@ import com.kurento.kmf.test.client.Client;
  * <li>Color of the video should be the expected</li>
  * <li>Browser ends before default timeout</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiRecorderSwitchTest extends MediaApiTest {
+public class MediaApiRecorderSwitchTest extends BrowserMediaApiTest {
 
 	private static final int PLAYTIME = 10; // seconds
 	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderSwitchTest";
@@ -78,7 +73,7 @@ public class MediaApiRecorderSwitchTest extends MediaApiTest {
 				.build();
 
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.PLAYER).build()) {
+		.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 
 			// red
@@ -129,7 +124,7 @@ public class MediaApiRecorderSwitchTest extends MediaApiTest {
 		playerEP2.connect(httpEP2);
 
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.PLAYER).build()) {
+		.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP2.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP2.play();

@@ -14,30 +14,23 @@
  */
 package com.kurento.kmf.thrift.internal;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 
 /**
  * Thread pool within Media-API.
- * 
+ *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  */
-@Component
 public class ThriftInterfaceExecutorService {
 
 	private static final Logger log = LoggerFactory
@@ -49,20 +42,13 @@ public class ThriftInterfaceExecutorService {
 	private ThreadPoolExecutor executor;
 
 	/**
-	 * Autowired configuration.
+	 * Configuration.
 	 */
-	@Autowired
 	private ThriftInterfaceConfiguration config;
 
 	/**
-	 * Default constructor, to be used in spring environments
-	 */
-	public ThriftInterfaceExecutorService() {
-	}
-
-	/**
 	 * Constructor for non-spring environments.
-	 * 
+	 *
 	 * @param config
 	 *            configuration object
 	 */
@@ -92,7 +78,7 @@ public class ThriftInterfaceExecutorService {
 
 	/**
 	 * Pre-destroy method; shutdown the thread pool.
-	 * 
+	 *
 	 * @throws SecurityException
 	 *             if a security manager exists and shutting down this
 	 *             ExecutorService may manipulate threads that the caller is not
@@ -108,7 +94,7 @@ public class ThriftInterfaceExecutorService {
 
 	/**
 	 * Getter (accessor) of the thread pool (executor).
-	 * 
+	 *
 	 * @return Thread pool (executor)
 	 */
 	public ExecutorService getExecutor() {

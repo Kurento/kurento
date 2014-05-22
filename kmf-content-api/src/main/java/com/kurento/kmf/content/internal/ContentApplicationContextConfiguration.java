@@ -20,17 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.*;
 
 import com.kurento.kmf.common.SecretGenerator;
-import com.kurento.kmf.content.ContentApiConfiguration;
-import com.kurento.kmf.content.HttpPlayerHandler;
-import com.kurento.kmf.content.HttpRecorderHandler;
-import com.kurento.kmf.content.RtpContentHandler;
-import com.kurento.kmf.content.WebRtcContentHandler;
+import com.kurento.kmf.content.*;
 import com.kurento.kmf.content.internal.base.AbstractContentSession;
 import com.kurento.kmf.content.internal.base.AsyncContentRequestProcessor;
 import com.kurento.kmf.content.internal.player.HttpPlayerSessionImpl;
@@ -38,15 +31,15 @@ import com.kurento.kmf.content.internal.recorder.HttpRecorderSessionImpl;
 import com.kurento.kmf.content.internal.rtp.RtpContentSessionImpl;
 import com.kurento.kmf.content.internal.webrtc.WebRtcContentSessionImpl;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.media.MediaApiConfiguration;
+import com.kurento.kmf.media.factory.KmfMediaApi;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
-import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 
 /**
- * 
+ *
  * Configuration class, declaring the Spring beans used in Content Management
  * API.
- * 
+ *
  * @author Luis López (llopez@gsyc.es)
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.0
@@ -72,7 +65,7 @@ public class ContentApplicationContextConfiguration {
 
 	/**
 	 * Random word generator.
-	 * 
+	 *
 	 * @return Random word generator bean
 	 */
 	@Bean
@@ -82,7 +75,7 @@ public class ContentApplicationContextConfiguration {
 
 	/**
 	 * Protocol manager.
-	 * 
+	 *
 	 * @return Protocol manager bean
 	 */
 	@Bean
@@ -166,33 +159,17 @@ public class ContentApplicationContextConfiguration {
 
 	@Bean
 	@Primary
-	MediaApiConfiguration mediaApiConfiguration() {
+	MediaPipelineFactory mediaPipelineFactory() {
 		try {
 			return parentRecoverer.getParentContext().getBean(
-					MediaApiConfiguration.class);
+					MediaPipelineFactory.class);
 		} catch (NullPointerException npe) {
-			log.info("Configuring Media API. Could not find parent context. Switching to default configuration ...");
+			log.info("Configuring MediaPipelineFactory. Could not find parent context. Switching to default configuration ...");
 		} catch (NoSuchBeanDefinitionException t) {
-			log.info("Configuring Media API. Could not find exacly one bean of class "
-					+ MediaApiConfiguration.class.getSimpleName()
+			log.info("Configuring MediaPipelineFactory. Could not find exacly one bean of class "
+					+ MediaPipelineFactory.class.getSimpleName()
 					+ ". Switching to default configuration ...");
 		}
-		return new MediaApiConfiguration();
-	}
-
-	@Bean
-	@Primary
-	ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
-		try {
-			return parentRecoverer.getParentContext().getBean(
-					ThriftInterfaceConfiguration.class);
-		} catch (NullPointerException npe) {
-			log.info("Configuring Media API. Could not find parent context. Switching to default configuration ...");
-		} catch (NoSuchBeanDefinitionException t) {
-			log.info("Configuring Media API. Could not find exacly one bean of class "
-					+ ThriftInterfaceConfiguration.class.getSimpleName()
-					+ ". Switching to default configuration ...");
-		}
-		return new ThriftInterfaceConfiguration();
+		return KmfMediaApi.createMediaPipelineFactoryFromSystemProps();
 	}
 }

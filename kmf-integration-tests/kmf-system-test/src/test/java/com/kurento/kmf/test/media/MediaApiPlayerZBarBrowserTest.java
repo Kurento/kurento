@@ -20,17 +20,10 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.ZBarFilter;
-import com.kurento.kmf.media.events.CodeFoundEvent;
-import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
  * <strong>Description</strong>: Test of a HTTP Player with ZBar Filter.<br/>
@@ -45,11 +38,11 @@ import com.kurento.kmf.test.client.Client;
  * <li>EOS event received</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerZBarBrowserTest extends MediaApiTest {
+public class MediaApiPlayerZBarBrowserTest extends BrowserMediaApiTest {
 
 	@Test
 	public void testPlayerZBar() throws Exception {
@@ -73,17 +66,17 @@ public class MediaApiPlayerZBarBrowserTest extends MediaApiTest {
 
 		final List<CodeFoundEvent> codeFoundEvents = new ArrayList<>();
 		zBarFilter
-				.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
-					@Override
-					public void onEvent(CodeFoundEvent event) {
-						log.info("CodeFound {}", event.getValue());
-						codeFoundEvents.add(event);
-					}
-				});
+		.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
+			@Override
+			public void onEvent(CodeFoundEvent event) {
+				log.info("CodeFound {}", event.getValue());
+				codeFoundEvents.add(event);
+			}
+		});
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

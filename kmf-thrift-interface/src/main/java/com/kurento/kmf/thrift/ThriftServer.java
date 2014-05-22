@@ -19,9 +19,7 @@ import java.net.InetSocketAddress;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer.Args;
-import org.apache.thrift.transport.TNonblockingServerSocket;
-import org.apache.thrift.transport.TNonblockingServerTransport;
-import org.apache.thrift.transport.TTransportException;
+import org.apache.thrift.transport.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +28,10 @@ import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 /**
  * Server handler implementation for the thrift interface. This handler is used
  * by KMS to send events and error to the media-api
- * 
+ *
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 1.0.0
- * 
+ *
  */
 public class ThriftServer {
 
@@ -50,7 +48,7 @@ public class ThriftServer {
 
 	/**
 	 * Default constructor
-	 * 
+	 *
 	 * @param processor
 	 * @param executorService
 	 * @param addr
@@ -59,8 +57,6 @@ public class ThriftServer {
 			ThriftInterfaceExecutorService executorService,
 			InetSocketAddress addr) {
 
-		log.info("Configuring thrift server on {}", addr);
-
 		this.executorService = executorService;
 		this.processor = processor;
 		this.addr = addr;
@@ -68,14 +64,12 @@ public class ThriftServer {
 
 	/**
 	 * Starts the thrift server in the configured address and port.
-	 * 
+	 *
 	 * @throws ThriftServerException
 	 *             if the server can't bind to the provided address, or it
 	 *             cannot be started
 	 */
 	public void start() {
-
-		log.info("Starting thrift server at {}", addr);
 
 		TNonblockingServerTransport transport;
 
@@ -84,15 +78,17 @@ public class ThriftServer {
 		} catch (TTransportException e) {
 			throw new ThriftServerException(
 					"Could not start media handler server on "
-							+ addr.toString() + "\n Reason: " + e.getMessage(),
-					e);
+							+ addr.toString() + ". Reason: " + e.getMessage(),
+							e);
 		}
+
+		log.debug("Thrift server started in {}", addr);
 
 		// TODO default selectorThreads is 2. Test if this is enough under load,
 		// or we would need more selector threads.
 		Args args = new Args(transport);
 		args.executorService(executorService.getExecutor())
-				.processor(processor);
+		.processor(processor);
 
 		server = new NonBlockingTThreadedSelectorServer(args);
 		server.serve();

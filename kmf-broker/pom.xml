@@ -61,22 +61,26 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>activemq-core</artifactId>
-		</dependency>
+		</dependency> -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-messaging</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-media-api</artifactId>
+			<artifactId>kmf-jsonrpcconnector-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-system-test</artifactId>
+			<artifactId>kmf-media-api</artifactId>
 		</dependency>
+		<!-- <dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-system-test</artifactId>
+		</dependency> -->
 	</dependencies>
 
 	<properties>
@@ -93,7 +97,8 @@
 		<linux64-webdriver.version>2.9</linux64-webdriver.version>
 		<mac32-webdriver.version>2.9</mac32-webdriver.version>
 		<win32-webdriver.version>2.9</win32-webdriver.version>
-		<version.spring-boot>1.0.2.RELEASE</version.spring-boot>
+		<!--<version.spring-boot>1.0.2.RELEASE</version.spring-boot>-->
+		<version.spring-boot>1.0.0.RC1</version.spring-boot>
 	</properties>
 
 	<build>

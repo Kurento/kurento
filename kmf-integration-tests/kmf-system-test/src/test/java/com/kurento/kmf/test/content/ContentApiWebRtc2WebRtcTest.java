@@ -19,16 +19,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.content.WebRtcContentHandler;
-import com.kurento.kmf.content.WebRtcContentService;
-import com.kurento.kmf.content.WebRtcContentSession;
+import com.kurento.kmf.content.*;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.*;
 
 /**
  * <strong>Description</strong>: Back-to-back WebRTC Test<br/>
@@ -40,11 +38,14 @@ import com.kurento.kmf.test.client.Client;
  * transmitting time</li>
  * <li>Browser #1 and #2 stops before 60 seconds (default timeout)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
+
+	private static Logger log = LoggerFactory
+			.getLogger(ContentApiWebRtc2WebRtcTest.class);
 
 	private static final String HANDLER = "/webrtc2webrtc";
 

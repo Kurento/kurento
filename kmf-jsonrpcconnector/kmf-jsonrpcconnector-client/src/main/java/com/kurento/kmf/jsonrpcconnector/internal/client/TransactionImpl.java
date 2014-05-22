@@ -22,10 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.RequestAlreadyRespondedException;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
-import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
+import com.kurento.kmf.jsonrpcconnector.internal.message.*;
 
 public class TransactionImpl implements Transaction {
 
@@ -95,7 +92,7 @@ public class TransactionImpl implements Transaction {
 	}
 
 	@Override
-	public void sendError(Exception e) throws IOException {
+	public void sendError(Throwable e) throws IOException {
 
 		ResponseError error = ResponseError.newFromException(e);
 		responseSender.sendResponse(new Response<>(request.getId(), error));

@@ -16,23 +16,14 @@ package com.kurento.kmf.test.media;
 
 import java.awt.Color;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.RecorderEndpoint;
-import com.kurento.kmf.media.WebRtcEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.WebRtcChannel;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
  * source from a WebRtcEndpoint in loopback.<br/>
  * <strong>Pipelines</strong>:
@@ -47,11 +38,11 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * <li>Color of the video should be the expected</li>
  * <li>Browser ends before default timeout</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiRecorderWebRtcTest extends MediaApiTest {
+public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 
 	private static int PLAYTIME = 5; // seconds
 	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderWebRtcTest";
@@ -123,7 +114,7 @@ public class MediaApiRecorderWebRtcTest extends MediaApiTest {
 
 		// Test execution #2. Play the recorded video
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.PLAYER).build()) {
+		.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

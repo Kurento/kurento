@@ -1,6 +1,6 @@
 [Server]
 sdpPattern=pattern.sdp
-service=Thrift
+service=${transport}
 
 [HttpEPServer]
 #serverAddress=${serverAddress}
@@ -24,7 +24,7 @@ serverPort=${serverPort}
 
 [RabbitMQ]
 serverAddress = ${serverAddress}
-serverPort = 5672
+serverPort = ${serverPort}
 username = "guest"
 password = "guest"
 vhost = "/"

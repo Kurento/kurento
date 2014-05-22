@@ -19,8 +19,8 @@ import com.kurento.kmf.content.RtpContentService;
 import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.RtpEndpoint;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * RTP Content Handler which produces a media pipeline composed by a

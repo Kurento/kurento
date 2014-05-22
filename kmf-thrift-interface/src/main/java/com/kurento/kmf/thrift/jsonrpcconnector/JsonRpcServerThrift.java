@@ -14,13 +14,9 @@ import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
-import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
+import com.kurento.kmf.jsonrpcconnector.internal.message.*;
 import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
-import com.kurento.kmf.thrift.ThriftServer;
-import com.kurento.kmf.thrift.ThriftServerException;
+import com.kurento.kmf.thrift.*;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Processor;
@@ -37,6 +33,14 @@ public class JsonRpcServerThrift {
 	private ServerSession session;
 
 	private Class<?> paramsClass;
+
+	public JsonRpcServerThrift(JsonRpcHandler<?> jsonRpcHandler,
+			String serverAddress, int serverPort) {
+
+		this(jsonRpcHandler, new ThriftInterfaceExecutorService(
+				new ThriftInterfaceConfiguration(serverAddress, serverPort)),
+				new InetSocketAddress(serverAddress, serverPort));
+	}
 
 	public JsonRpcServerThrift(JsonRpcHandler<?> jsonRpcHandler,
 			ThriftInterfaceExecutorService executorService,
@@ -76,23 +80,25 @@ public class JsonRpcServerThrift {
 
 	/**
 	 * Process a request received through the thrift interface.
-	 * 
+	 *
 	 * @param request
 	 * @return a response to the request
 	 */
 	@SuppressWarnings("unchecked")
 	public Response<JsonObject> processRequest(Request<?> request) {
 
+		log.debug("Req-> {}", request);
+
 		final Response<JsonObject>[] response = new Response[1];
 
 		TransactionImpl t = new TransactionImpl(session, request,
 				new ResponseSender() {
-					@Override
-					public void sendResponse(Message message)
-							throws IOException {
-						response[0] = (Response<JsonObject>) message;
-					}
-				});
+			@Override
+			public void sendResponse(Message message)
+					throws IOException {
+				response[0] = (Response<JsonObject>) message;
+			}
+		});
 
 		try {
 
@@ -110,7 +116,7 @@ public class JsonRpcServerThrift {
 			// Simulate receiving json string from net
 			String jsonResponse = response[0].toString();
 
-			log.debug("<-- {}", jsonResponse);
+			log.debug("<-Res {}", jsonResponse);
 
 			Response<JsonObject> newResponse = JsonUtils.fromJsonResponse(
 					jsonResponse, JsonObject.class);
@@ -127,14 +133,13 @@ public class JsonRpcServerThrift {
 
 	/**
 	 * Starts the thrift server
-	 * 
+	 *
 	 * @throws ThriftServerException
 	 *             in case of error during creation
 	 */
 	public void start() {
-		log.info("Starting Thrift Server");
 		server.start();
-		log.info("Thrift Server started!");
+		log.info("Thrift Server started");
 	}
 
 	public void destroy() {

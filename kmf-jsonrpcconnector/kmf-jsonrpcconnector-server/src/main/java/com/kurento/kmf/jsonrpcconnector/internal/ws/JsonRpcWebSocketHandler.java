@@ -16,15 +16,11 @@ package com.kurento.kmf.jsonrpcconnector.internal.ws;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
-import com.kurento.kmf.jsonrpcconnector.internal.server.ProtocolManager;
+import com.kurento.kmf.jsonrpcconnector.internal.server.*;
 import com.kurento.kmf.jsonrpcconnector.internal.server.ProtocolManager.ServerSessionFactory;
-import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
-import com.kurento.kmf.jsonrpcconnector.internal.server.SessionsManager;
 
 public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
@@ -50,7 +46,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 			org.springframework.web.socket.CloseStatus status) throws Exception {
 
 		log.info("Connection closed because: " + status);
-		if(!status.equals(CloseStatus.NORMAL)){
+		if (!status.equals(CloseStatus.NORMAL)) {
 			log.error("Abnormal termination");
 		} else {
 			log.info("Normal termination");
@@ -72,7 +68,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		String messageJson = message.getPayload();
 
-		log.info("--> {}", messageJson);
+		log.info("Req-> {}", messageJson);
 
 		// TODO Ensure only one register message per websocket session.
 		ServerSessionFactory factory = new ServerSessionFactory() {

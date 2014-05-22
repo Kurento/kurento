@@ -1,0 +1,80 @@
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+package com.kurento.kmf.test.base;
+
+import org.junit.*;
+import org.junit.rules.TestName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.kurento.kmf.test.services.KurentoServicesTestHelper;
+
+/**
+ * Base for tests (Content and Media API).
+ *
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ * @since 4.2.3
+ */
+public class KurentoTest {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(KurentoTest.class);
+
+	@Rule
+	public TestName testName = new TestName();
+
+	protected int threshold = 10;
+
+	/**
+	 * Compares two numbers and return true|false if these number are similar,
+	 * using a threshold in the comparison.
+	 *
+	 * @param i
+	 *            First number to be compared
+	 * @param j
+	 *            Second number to be compared
+	 * @return true|false
+	 */
+	public boolean compare(double i, double j) {
+		return Math.abs(j - i) <= (i * getThreshold() / 100);
+	}
+
+	public int getThreshold() {
+		return threshold;
+	}
+
+	public void setThreshold(int threshold) {
+		this.threshold = threshold;
+	}
+
+	protected int getServerPort() {
+		return KurentoServicesTestHelper.getAppHttpPort();
+	}
+
+	@Before
+	public void setupKurentoServices() throws Exception {
+
+		log.info("Starting test {}",
+				this.getClass().getName() + "." + testName.getMethodName());
+
+		KurentoServicesTestHelper.setTestName(testName.getMethodName());
+		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
+	}
+
+	@After
+	public void teardownKurentoServices() throws Exception {
+		KurentoServicesTestHelper.teardownServices();
+	}
+}

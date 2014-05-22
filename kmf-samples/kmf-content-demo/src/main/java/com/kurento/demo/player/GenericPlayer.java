@@ -22,11 +22,11 @@ import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * Static class which contains a generic implementation of an HTTP Player,

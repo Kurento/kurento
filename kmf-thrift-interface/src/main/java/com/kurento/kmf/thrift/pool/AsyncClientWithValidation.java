@@ -20,6 +20,7 @@ import org.apache.thrift.async.TAsyncClientManager;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TNonblockingTransport;
 
+import com.kurento.kms.thrift.api.KmsMediaServerService;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
 
 /**
@@ -28,9 +29,9 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
  * validating clients have been implemented to overcome the impossibility, found
  * during several trials, of correctly asserting whether the client is still
  * valid.
- * 
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
- * 
+ *
  */
 class AsyncClientWithValidation extends AsyncClient {
 
@@ -46,9 +47,25 @@ class AsyncClientWithValidation extends AsyncClient {
 
 	@Override
 	public void invokeJsonRpc(String request,
-			AsyncMethodCallback<invokeJsonRpc_call> resultHandler)
+			final AsyncMethodCallback<invokeJsonRpc_call> resultHandler)
 			throws TException {
-		super.invokeJsonRpc(request, resultHandler);
+
+		// FIXME: Implement retries
+		super.invokeJsonRpc(
+				request,
+				new AsyncMethodCallback<KmsMediaServerService.AsyncClient.invokeJsonRpc_call>() {
+
+					@Override
+					public void onComplete(
+							KmsMediaServerService.AsyncClient.invokeJsonRpc_call response) {
+						resultHandler.onComplete(response);
+					}
+
+					@Override
+					public void onError(Exception exception) {
+						resultHandler.onError(exception);
+					}
+				});
 	}
 
 	public boolean isValid() {

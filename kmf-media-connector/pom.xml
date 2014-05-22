@@ -115,6 +115,14 @@
 			<artifactId>kmf-thrift-interface</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-media-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-broker</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>

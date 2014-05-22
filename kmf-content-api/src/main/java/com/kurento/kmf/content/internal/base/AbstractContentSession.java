@@ -57,7 +57,7 @@ import com.kurento.kmf.content.jsonrpc.result.JsonRpcContentEvent;
 import com.kurento.kmf.content.jsonrpc.result.JsonRpcControlEvent;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaObject;
-import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 import com.kurento.kmf.repository.Repository;
 
 /**

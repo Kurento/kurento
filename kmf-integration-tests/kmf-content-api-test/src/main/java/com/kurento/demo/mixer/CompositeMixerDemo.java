@@ -28,9 +28,9 @@ import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.HubPort;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.MediaProfileSpecType;
 import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * HTTP Player Handler; tunnel strategy; no JSON control protocol.

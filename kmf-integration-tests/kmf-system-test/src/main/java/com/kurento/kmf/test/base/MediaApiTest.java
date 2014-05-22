@@ -11,80 +11,43 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
  *
- */package com.kurento.kmf.test.base;
+ */
 
-import java.io.IOException;
+package com.kurento.kmf.test.base;
 
-import javax.servlet.ServletException;
-
-import org.apache.catalina.LifecycleException;
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.media.MediaPipelineFactory;
-import com.kurento.kmf.test.HttpServer;
-import com.kurento.kmf.test.PortManager;
-
-import freemarker.template.TemplateException;
+import com.kurento.kmf.media.factory.KmfMediaApi;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
- * Base for tests using kmf-media-api and Spring Boot.
- * 
+ * Base for tests using kmf-media-api.
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
- * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
  */
-public class MediaApiTest extends BaseTest {
+public class MediaApiTest extends KurentoTest {
 
 	public static Logger log = LoggerFactory.getLogger(MediaApiTest.class);
 
 	protected MediaPipelineFactory pipelineFactory;
-	private HttpServer server;
 
 	@Before
-	public void setup() throws Exception {
+	public void setupMediaPipelineFactory() throws Exception {
 
-		setupKurentoServer();
-		setupMediaPipelineFactory();
-		setupHttpServer();
-
+		pipelineFactory = KmfMediaApi
+				.createMediaPipelineFactoryFromSystemProps();
 	}
 
 	@After
-	public void teardown() throws LifecycleException {
+	public void teardownMediaPipelineFactory() throws Exception {
 
-		teardownPipelineFactory();
-		teardownHttpServer();
-		teardownKurentoServer();
-	}
-
-	protected void setupMediaPipelineFactory() throws IOException,
-			TemplateException, InterruptedException {
-
-		pipelineFactory = new MediaPipelineFactory(serverAddress, serverPort,
-				handlerAddress, handlerPort);
-	}
-
-	protected void setupHttpServer() throws ServletException, IOException,
-			LifecycleException {
-
-		server = new HttpServer(PortManager.getPort());
-		server.start();
-	}
-
-	protected void teardownHttpServer() throws LifecycleException {
-		if (server != null) {
-			server.destroy();
-		}
-	}
-
-	protected void teardownPipelineFactory() {
 		if (pipelineFactory != null) {
 			pipelineFactory.destroy();
 		}
 	}
-
 }

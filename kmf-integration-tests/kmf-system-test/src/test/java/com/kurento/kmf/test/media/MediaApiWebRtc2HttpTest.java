@@ -17,21 +17,14 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.WebRtcEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.WebRtcChannel;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
  * <strong>Description</strong>: Back-to-back WebRTC Test<br/>
@@ -48,15 +41,15 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * <li>Color received by HttpPlayer should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiWebRtc2HttpTest extends MediaApiTest {
+public class MediaApiWebRtc2HttpTest extends BrowserMediaApiTest {
 
 	private static int PLAYTIME = 5; // seconds to play in HTTP player
 	private static int NPLAYERS = 2; // number of HttpEndpoint connected to
-										// WebRTC source
+	// WebRTC source
 
 	@Test
 	public void testWebRtc2Http() throws Exception {
@@ -67,7 +60,7 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.WEBRTC).build()) {
+		.browser(Browser.CHROME).client(Client.WEBRTC).build()) {
 			browser.subscribeEvents("playing");
 			browser.connectToWebRtcEndpoint(webRtcEndpoint,
 					WebRtcChannel.AUDIO_AND_VIDEO);
@@ -103,7 +96,7 @@ public class MediaApiWebRtc2HttpTest extends MediaApiTest {
 
 	private void createPlayer(String url) throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(url);
 			browser.subscribeEvents("playing");
 			browser.start();

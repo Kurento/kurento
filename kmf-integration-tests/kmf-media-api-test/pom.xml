@@ -64,20 +64,16 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency> -->
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-system-test</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency>		
 	</dependencies>
 
 	<profiles>

@@ -21,11 +21,11 @@ import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlateDetectorFilter;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.PlateDetectedEvent;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * Plate Detector demo.

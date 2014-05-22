@@ -21,11 +21,8 @@ import org.junit.Test;
 
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.WebRtcChannel;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
  * <strong>Description</strong>: Back-To-Back WebRTC switch. Three clients:
@@ -41,11 +38,11 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * <li>Color received by clients should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiWebRtcSwitchTest extends MediaApiTest {
+public class MediaApiWebRtcSwitchTest extends BrowserMediaApiTest {
 
 	@Test
 	public void testWebRtcSwitch() throws InterruptedException {
@@ -59,7 +56,7 @@ public class MediaApiWebRtcSwitchTest extends MediaApiTest {
 		webRtcEndpoint3.connect(webRtcEndpoint3);
 
 		BrowserClient.Builder builderWebrtc = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.WEBRTC);
+		.browser(Browser.CHROME).client(Client.WEBRTC);
 
 		try (BrowserClient browser1 = builderWebrtc.build();
 				BrowserClient browser2 = builderWebrtc.build();

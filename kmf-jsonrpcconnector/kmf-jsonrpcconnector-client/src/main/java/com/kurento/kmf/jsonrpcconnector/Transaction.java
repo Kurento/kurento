@@ -18,9 +18,9 @@ import java.io.IOException;
 
 /**
  * A transaction represents a conversation between a client and the server.
- * 
+ *
  * @author Ivan Gracia (igracia@gsyc.es) since 1.0.0
- * 
+ *
  */
 public interface Transaction {
 
@@ -28,7 +28,7 @@ public interface Transaction {
 
 	void sendError(int code, String message, String data) throws IOException;
 
-	void sendError(Exception e) throws IOException;
+	void sendError(Throwable e) throws IOException;
 
 	Session getSession();
 

@@ -32,7 +32,6 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.CrowdDetectorFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.RegionOfInterest;
 import com.kurento.kmf.media.RegionOfInterestConfig;
@@ -42,6 +41,7 @@ import com.kurento.kmf.media.events.CrowdDetectorDirectionEvent;
 import com.kurento.kmf.media.events.CrowdDetectorFluidityEvent;
 import com.kurento.kmf.media.events.CrowdDetectorOccupancyEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * Crowd detector demo.

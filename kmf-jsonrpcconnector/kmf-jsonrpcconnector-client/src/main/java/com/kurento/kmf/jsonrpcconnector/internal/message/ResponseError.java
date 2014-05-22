@@ -38,7 +38,7 @@ public class ResponseError {
 	private JsonElement data;
 
 	// TODO Improve the way errors are created from Exceptions
-	public static ResponseError newFromException(Exception e) {
+	public static ResponseError newFromException(Throwable e) {
 
 		StringWriter writer = new StringWriter();
 		e.printStackTrace(new PrintWriter(writer));
@@ -64,7 +64,7 @@ public class ResponseError {
 
 	/**
 	 * Parameterised constructor.
-	 * 
+	 *
 	 * @param code
 	 *            Error status code
 	 * @param message
@@ -93,7 +93,7 @@ public class ResponseError {
 
 	/**
 	 * Error status code accessor (getter).
-	 * 
+	 *
 	 * @return Error status code
 	 */
 	public int getCode() {
@@ -102,7 +102,7 @@ public class ResponseError {
 
 	/**
 	 * Error status code mutator (setter).
-	 * 
+	 *
 	 * @param code
 	 *            Error status code
 	 */
@@ -112,7 +112,7 @@ public class ResponseError {
 
 	/**
 	 * Error message accessor (getter).
-	 * 
+	 *
 	 * @return Error message
 	 */
 	public String getMessage() {
@@ -121,7 +121,7 @@ public class ResponseError {
 
 	/**
 	 * Error message mutator (setter).
-	 * 
+	 *
 	 * @param message
 	 *            Error message
 	 */
@@ -131,7 +131,7 @@ public class ResponseError {
 
 	/**
 	 * Error data accessor (getter).
-	 * 
+	 *
 	 * @return Error data
 	 */
 	public String getData() {
@@ -146,7 +146,7 @@ public class ResponseError {
 
 	/**
 	 * Error data mutator (setter).
-	 * 
+	 *
 	 * @param data
 	 *            Error data
 	 */

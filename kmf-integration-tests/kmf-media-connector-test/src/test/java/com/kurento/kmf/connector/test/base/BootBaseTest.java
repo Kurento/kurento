@@ -8,7 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.kurento.kmf.connector.ConnectorApp;
+import com.kurento.kmf.connector.MediaConnectorApp;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 public class BootBaseTest {
@@ -29,7 +29,7 @@ public class BootBaseTest {
 		trasvaseProperty("kurento.handlerPort", "handler.port", properties);
 
 		SpringApplication application = new SpringApplication(
-				ConnectorApp.class);
+				MediaConnectorApp.class);
 
 		application.setDefaultProperties(properties);
 		context = application.run();

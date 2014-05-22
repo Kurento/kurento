@@ -53,6 +53,15 @@
 			<groupId>com.kurento.kws</groupId>
 			<artifactId>kws-content-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-broker</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-media-connector</artifactId>
+		</dependency>
+		
 
 		<!-- JUnit -->
 		<dependency>

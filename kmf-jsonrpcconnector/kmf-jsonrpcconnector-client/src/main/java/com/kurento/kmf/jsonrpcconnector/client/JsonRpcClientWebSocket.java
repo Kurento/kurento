@@ -14,21 +14,15 @@
  */
 package com.kurento.kmf.jsonrpcconnector.client;
 
-import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJson;
-import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
-import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonResponse;
+import static com.kurento.kmf.jsonrpcconnector.JsonUtils.*;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.*;
 import org.springframework.web.socket.client.WebSocketConnectionManager;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -36,13 +30,12 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.common.exception.KurentoException;
+import com.kurento.kmf.jsonrpcconnector.TransportException;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.MessageUtils;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+import com.kurento.kmf.jsonrpcconnector.internal.message.*;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.PendingRequests;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.WebSocketResponseSender;
 
@@ -50,12 +43,16 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private final Logger log = LoggerFactory.getLogger(JsonRpcClient.class);
 
+	private ExecutorService execService = Executors.newFixedThreadPool(10);
+
 	private String url;
 	private volatile WebSocketSession wsSession;
 	private final PendingRequests pendingRequests = new PendingRequests();
 	private final HttpHeaders headers = new HttpHeaders();
 
 	private ResponseSender rs;
+
+	private static final long TIMEOUT = 5000;
 
 	public JsonRpcClientWebSocket(String url) {
 		this(url, new HttpHeaders());
@@ -72,19 +69,42 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			public <P, R> Response<R> internalSendRequest(Request<P> request,
 					Class<R> resultClass) throws IOException {
 
-				return sendRequestForHelper(request, resultClass);
+				return internalSendRequestWebSocket(request, resultClass);
 			}
 
 			@Override
 			protected void internalSendRequest(Request<Object> request,
-					Class<JsonElement> class1,
+					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
-				throw new UnsupportedOperationException(
-						"Async client with WebSockets is unavailable");
+
+				internalSendRequestWebSocket(request, resultClass, continuation);
 			}
 		};
 
 		this.headers.putAll(headers);
+	}
+
+	protected void internalSendRequestWebSocket(final Request<Object> request,
+			final Class<JsonElement> resultClass,
+			final Continuation<Response<JsonElement>> continuation) {
+
+		// FIXME: Poor man async implementation.
+		execService.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Response<JsonElement> result = internalSendRequestWebSocket(
+							request, resultClass);
+					try {
+						continuation.onSuccess(result);
+					} catch (Exception e) {
+						log.error("Exception while processing response", e);
+					}
+				} catch (Exception e) {
+					continuation.onError(e);
+				}
+			}
+		});
 	}
 
 	private synchronized void connectIfNecessary() throws IOException {
@@ -191,7 +211,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		this.rsHelper.setSessionId(sessionId);
 	}
 
-	private <P, R> Response<R> sendRequestForHelper(Request<P> request,
+	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request,
 			Class<R> resultClass) throws IOException {
 
 		connectIfNecessary();
@@ -212,11 +232,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			return null;
 		}
 
+		Response<JsonElement> responseJson;
 		try {
 
-			// TODO Put a timeout to avoid blocking the thread when a response
-			// is not sent from server
-			Response<JsonElement> responseJson = responseFuture.get();
+			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
 
 			Response<R> response = MessageUtils.convertResponse(responseJson,
 					resultClass);
@@ -234,6 +253,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		} catch (ExecutionException e) {
 			// TODO Is there a better way to handle this?
 			throw new KurentoException("This exception shouldn't be thrown", e);
+		} catch (TimeoutException e) {
+			throw new TransportException("Timeout of " + TIMEOUT
+					+ " seconds waiting from response", e);
 		}
 	}
 
@@ -247,5 +269,4 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	public WebSocketSession getWebSocketSession() {
 		return wsSession;
 	}
-
 }

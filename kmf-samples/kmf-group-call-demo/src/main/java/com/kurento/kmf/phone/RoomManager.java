@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)

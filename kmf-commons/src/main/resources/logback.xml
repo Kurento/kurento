@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<!--  <statusListener class="ch.qos.logback.core.status.NopStatusListener" />-->
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%10.10t{9}] %-5level - %-40.40logger{39} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+	<logger name="com.rabbitmq" level="TRACE" />
+	<logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR" />
+	<logger name="org.apache" level="WARN" />
+	<logger name="org.springframework" level="WARN" />
+	<logger name="org.eclipse.jetty" level="WARN" />
+	<logger name="com.kurento" level="DEBUG" />
+
+</configuration>
+
+

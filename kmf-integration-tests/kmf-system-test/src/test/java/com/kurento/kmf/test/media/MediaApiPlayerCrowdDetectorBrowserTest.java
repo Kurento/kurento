@@ -22,25 +22,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.CrowdDetectorFilter;
-import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.RegionOfInterest;
-import com.kurento.kmf.media.RegionOfInterestConfig;
-import com.kurento.kmf.media.RelativePoint;
-import com.kurento.kmf.media.events.CrowdDetectorFluidityEvent;
-import com.kurento.kmf.media.events.CrowdDetectorOccupancyEvent;
-import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.test.base.MediaApiTest;
-import com.kurento.kmf.test.client.Browser;
-import com.kurento.kmf.test.client.BrowserClient;
-import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.test.base.BrowserMediaApiTest;
+import com.kurento.kmf.test.client.*;
 
 /**
  * Test of a HTTP Player with CrowdDetector Filter.
- * 
+ *
  * <strong>Description</strong>: HTTP Player with CrowdDetector Filter.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
@@ -54,12 +43,12 @@ import com.kurento.kmf.test.client.Client;
  * <li>EOS event received</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 4.2.3
  */
-public class MediaApiPlayerCrowdDetectorBrowserTest extends MediaApiTest {
+public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest {
 
 	@Test
 	public void testPlayerCrowdDetector() throws Exception {
@@ -112,24 +101,24 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends MediaApiTest {
 		final List<CrowdDetectorFluidityEvent> crowdDetectedFluidityEvents = new ArrayList<>();
 
 		crowdDetectorFilter
-				.addCrowdDetectorOccupancyListener(new MediaEventListener<CrowdDetectorOccupancyEvent>() {
-					@Override
-					public void onEvent(CrowdDetectorOccupancyEvent event) {
-						crowdDetectedOccupancyEvents.add(event);
-					}
-				});
+		.addCrowdDetectorOccupancyListener(new MediaEventListener<CrowdDetectorOccupancyEvent>() {
+			@Override
+			public void onEvent(CrowdDetectorOccupancyEvent event) {
+				crowdDetectedOccupancyEvents.add(event);
+			}
+		});
 
 		crowdDetectorFilter
-				.addCrowdDetectorFluidityListener(new MediaEventListener<CrowdDetectorFluidityEvent>() {
-					@Override
-					public void onEvent(CrowdDetectorFluidityEvent event) {
-						crowdDetectedFluidityEvents.add(event);
-					}
-				});
+		.addCrowdDetectorFluidityListener(new MediaEventListener<CrowdDetectorFluidityEvent>() {
+			@Override
+			public void onEvent(CrowdDetectorFluidityEvent event) {
+				crowdDetectedFluidityEvents.add(event);
+			}
+		});
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

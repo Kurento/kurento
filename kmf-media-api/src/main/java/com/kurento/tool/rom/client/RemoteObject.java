@@ -5,9 +5,7 @@ import java.lang.reflect.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.*;
 import com.kurento.kmf.jsonrpcconnector.Props;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
@@ -82,19 +80,19 @@ public class RemoteObject {
 
 		client.invoke(objectRef, method, params, flattenType,
 				new DefaultContinuation<Object>(cont) {
-					@SuppressWarnings("unchecked")
-					@Override
-					public void onSuccess(Object result) {
-						try {
-							cont.onSuccess(FLATTENER.unflattenValue("return",
-									type, result, manager));
-						} catch (Exception e) {
-							log.warn(
-									"[Continuation] error invoking onSuccess implemented by client",
-									e);
-						}
-					}
-				});
+			@SuppressWarnings("unchecked")
+			@Override
+			public void onSuccess(Object result) {
+				try {
+					cont.onSuccess(FLATTENER.unflattenValue("return",
+							type, result, manager));
+				} catch (Exception e) {
+					log.warn(
+							"[Continuation] error invoking onSuccess implemented by client",
+							e);
+				}
+			}
+		});
 	}
 
 	public void release() {
@@ -116,12 +114,6 @@ public class RemoteObject {
 				}
 			}
 		});
-	}
-
-	@Override
-	protected void finalize() {
-		release(new ErrorLogContinuation<Void>(
-				"Exception while releasing object " + objectRef));
 	}
 
 	public ListenerSubscription addEventListener(String eventType,

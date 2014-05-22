@@ -39,13 +39,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
-import com.kurento.kmf.test.PortManager;
+import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 import com.kurento.kmf.test.Shell;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
  * launch the real browser.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -329,7 +329,7 @@ public class BrowserClient implements Closeable {
 		private boolean usePhysicalCam;
 
 		public Builder() {
-			this.serverPort = PortManager.getPort();
+			this.serverPort = KurentoServicesTestHelper.getAppHttpPort();
 
 			// By default physical camera will not be used; instead synthetic
 			// videos will be used for testing

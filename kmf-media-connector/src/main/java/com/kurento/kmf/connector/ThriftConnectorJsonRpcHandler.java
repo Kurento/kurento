@@ -36,16 +36,10 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.connector.exceptions.MediaConnectorTransportException;
 import com.kurento.kmf.connector.exceptions.ResponsePropagationException;
-import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
-import com.kurento.kmf.jsonrpcconnector.JsonUtils;
-import com.kurento.kmf.jsonrpcconnector.Session;
-import com.kurento.kmf.jsonrpcconnector.Transaction;
-import com.kurento.kmf.jsonrpcconnector.TransportException;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
-import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
+import com.kurento.kmf.jsonrpcconnector.*;
+import com.kurento.kmf.jsonrpcconnector.internal.message.*;
 import com.kurento.kmf.thrift.ThriftServer;
-import com.kurento.kmf.thrift.pool.MediaServerClientPoolService;
+import com.kurento.kmf.thrift.pool.ThriftClientPoolService;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaHandlerService.Processor;
 import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient;
@@ -57,9 +51,9 @@ import com.kurento.kms.thrift.api.KmsMediaServerService.AsyncClient.invokeJsonRp
  *
  */
 public final class ThriftConnectorJsonRpcHandler extends
-		DefaultJsonRpcHandler<JsonObject> {
+DefaultJsonRpcHandler<JsonObject> {
 
-	private final Logger LOG = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(ThriftConnectorJsonRpcHandler.class);
 
 	/**
@@ -77,7 +71,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 	 * Pool of KMS clients.
 	 */
 	@Autowired
-	private MediaServerClientPoolService clientPool;
+	private ThriftClientPoolService clientPool;
 
 	@Autowired
 	private ThriftConnectorConfiguration config;
@@ -95,7 +89,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 		InetSocketAddress remoteServerAddr = new InetSocketAddress(
 				config.getHandlerAddress(), config.getHandlerPort());
 
-		LOG.info("Initialising thrift connection with remote server on {}",
+		log.info("Initialising thrift connection with remote server on {}",
 				remoteServerAddr);
 
 		server = (ThriftServer) ctx.getBean("mediaHandlerServer",
@@ -174,7 +168,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 						public void onError(Exception exception) {
 							clientPool.release(client);
 
-							LOG.error("Error on release", exception);
+							log.error("Error on release", exception);
 							if (retry && exception instanceof ConnectException) {
 								sendRequest(transaction, request, false);
 							} else {
@@ -221,7 +215,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 						subscriptions.put(subscription,
 								transaction.getSession());
 					} catch (Exception e) {
-						LOG.error("Error getting subscription on response {}",
+						log.error("Error getting subscription on response {}",
 								response, e);
 					}
 				}
@@ -248,7 +242,7 @@ public final class ThriftConnectorJsonRpcHandler extends
 	private void internalEventJsonRpc(String request) {
 		try {
 
-			LOG.debug("<-* {}", request.trim());
+			log.debug("<-* {}", request.trim());
 
 			Request<JsonObject> requestObj = JsonUtils.fromJsonRequest(request,
 					JsonObject.class);
@@ -257,14 +251,14 @@ public final class ThriftConnectorJsonRpcHandler extends
 					.getAsJsonObject().get("subscription");
 
 			if (subsJsonElem == null) {
-				LOG.error("Received event wihthout subscription: {}", request);
+				log.error("Received event wihthout subscription: {}", request);
 				return;
 			}
 
 			String subscription = subsJsonElem.getAsString().trim();
 			Session session = subscriptions.get(subscription);
 			if (session == null) {
-				LOG.error("Unknown event subscription: '{}'", subscription);
+				log.error("Unknown event subscription: '{}'", subscription);
 				return;
 			}
 
@@ -273,13 +267,13 @@ public final class ThriftConnectorJsonRpcHandler extends
 				session.sendNotification("onEvent", requestObj.getParams());
 
 			} catch (IOException e) {
-				LOG.error(
+				log.error(
 						"Exception while sending event from KMS to the client",
 						e);
 			}
 
 		} catch (Exception e) {
-			LOG.error("Exception processing server event", e);
+			log.error("Exception processing server event", e);
 		}
 	}
 }

@@ -17,7 +17,7 @@ package com.kurento.kmf.content;
 import javax.servlet.http.HttpServletRequest;
 
 import com.kurento.kmf.media.MediaObject;
-import com.kurento.kmf.media.MediaPipelineFactory;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 import com.kurento.kmf.repository.Repository;
 
 /**

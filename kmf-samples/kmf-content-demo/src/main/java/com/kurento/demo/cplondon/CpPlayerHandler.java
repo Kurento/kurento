@@ -19,8 +19,8 @@ import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 @HttpPlayerService(name = "PlayerJson", path = "/cpPlayer", redirect = true, useControlProtocol = true)
 public class CpPlayerHandler extends HttpPlayerHandler {

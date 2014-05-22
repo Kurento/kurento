@@ -2,8 +2,8 @@ package com.kurento.kmf.phone;
 
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 public class Call {
 

@@ -19,8 +19,8 @@ import com.kurento.kmf.content.RtpContentService;
 import com.kurento.kmf.content.RtpContentSession;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.MediaPipelineFactory;
 import com.kurento.kmf.media.RtpEndpoint;
+import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 @RtpContentService(name = "CpRtpWithFilter", path = "/cpRtpJack")
 public class CpRtcRtpJackHandler extends RtpContentHandler {
