@@ -114,8 +114,8 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://127.0.0.1:8080/thrift/ws/websocket': 'localhost (puerto 8080)',
-    'ws://130.206.81.87/thrift/ws/websocket':  'Kurento demo server'
+    'ws://127.0.0.1:8080/thrift/ws/websocket':         'localhost (port 8080)',
+    'ws://kms01.kurento.org:8080/thrift/ws/websocket': 'Kurento test server'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
@@ -134,7 +134,7 @@ lifecycle =
     {
     //  var WebSocket = wock(proxy);
     //  ws_uri = new WebSocket();
-      ws_uri = 'ws://127.0.0.1:8080/thrift/ws/websocket';
+      ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
     };
 
     this.kwsMedia = new KwsMedia(ws_uri);

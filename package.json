@@ -34,7 +34,7 @@
     "WebRTC"
   ],
   "dependencies": {
-    "async": "~0.8.0",
+    "async": "~0.9.0",
     "extend": "~1.2.1",
     "inherits": "~2.0.1",
     "kws-rpc-builder": "~4.2.3",
@@ -43,7 +43,7 @@
   "devDependencies": {
     "bower": "latest",
     "grunt": "latest",
-    "grunt-browserify": "~2.0.8",
+    "grunt-browserify": "~2.1.0",
     "grunt-cli": "latest",
     "grunt-contrib-clean": "latest",
     "grunt-contrib-copy": "latest",
