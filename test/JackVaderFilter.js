@@ -48,53 +48,15 @@ if(typeof QUnit == 'undefined')
 };
 
 
-QUnit.module('PlayerEndpoint', lifecycle);
-
-QUnit.asyncTest('Play, Pause & Stop', function()
-{
-  var self = this;
-
-  QUnit.expect(4);
-
-  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL},
-  function(error, player)
-  {
-    if(error) return onerror(error);
-
-    QUnit.notEqual(player, undefined, 'player');
-
-    player.play(function(error)
-    {
-      if(error) return onerror(error);
-
-      QUnit.notEqual(player, undefined, 'play');
-
-      player.pause(function(error)
-      {
-        if(error) return onerror(error);
-
-        QUnit.notEqual(player, undefined, 'pause');
-
-        player.stop(function(error)
-        {
-          if(error) return onerror(error);
-
-          QUnit.ok(true, 'stop');
-
-          QUnit.start();
-        });
-      });
-    });
-  });
-});
+QUnit.module('JackVaderFilter', lifecycle);
 
 QUnit.asyncTest('End of Stream', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(3);
 
-  var timeout = new Timeout('"PlayerEndpoint:End of Stream"',
+  var timeout = new Timeout('"GStreamerFilter:End of Stream"',
                             10 * 1000, onerror);
 
 
@@ -102,41 +64,34 @@ QUnit.asyncTest('End of Stream', function()
   {
     if(error) return onerror(error);
 
-    player.on('EndOfStream', function(data)
-    {
-      QUnit.ok(true, 'EndOfStream');
+    QUnit.notEqual(player, undefined, 'player');
 
-      timeout.stop();
-
-      QUnit.start();
-    });
-
-    player.play(function(error)
+    self.pipeline.create('JackVaderFilter', function(error, jackVaderFilter)
     {
       if(error) return onerror(error);
 
-      timeout.start();
-    });
-  });
-});
+      QUnit.notEqual(jackVaderFilter, undefined, 'JackVaderFilter');
 
-QUnit.asyncTest('GetUri', function()
-{
-  var self = this;
+      player.connect(jackVaderFilter, function(error)
+      {
+        if(error) return onerror(error);
 
-  QUnit.expect(1);
+        player.on('EndOfStream', function(data)
+        {
+          QUnit.ok(true, 'EndOfStream');
 
-  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
-  {
-    if(error) return onerror(error);
+          timeout.stop();
 
-    player.getUri(function(error, url)
-    {
-      if(error) return onerror(error);
+          QUnit.start();
+        });
 
-      QUnit.equal(url, URL_SMALL, 'URL: '+url);
+        player.play(function(error)
+        {
+          if(error) return onerror(error);
 
-      QUnit.start();
+          timeout.start();
+        });
+      });
     });
   });
 });

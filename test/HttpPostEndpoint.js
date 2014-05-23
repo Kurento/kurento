@@ -48,7 +48,7 @@ if(typeof QUnit == 'undefined')
 };
 
 
-QUnit.module('HttpGetEndpoint', lifecycle);
+QUnit.module('HttpPostEndpoint', lifecycle);
 
 QUnit.asyncTest('Method GetUrl', function()
 {
@@ -56,13 +56,13 @@ QUnit.asyncTest('Method GetUrl', function()
 
   QUnit.expect(2);
 
-  self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
+  self.pipeline.create('HttpPostEndpoint', function(error, httpPost)
   {
     if(error) return onerror(error);
 
-    QUnit.notEqual(httpGet, undefined, 'httpGet');
+    QUnit.notEqual(httpPost, undefined, 'httpPost');
 
-    httpGet.getUrl(function(error, url)
+    httpPost.getUrl(function(error, url)
     {
       if(error) return onerror(error);
 
@@ -80,7 +80,7 @@ QUnit.asyncTest('Media session started', function()
   QUnit.expect(5);
 
 
-  var timeout = new Timeout('"HttpGetEndpoint:Media session started"',
+  var timeout = new Timeout('"HttpPostEndpoint:Media session started"',
                             10 * 1000, onerror);
 
 
@@ -99,13 +99,13 @@ QUnit.asyncTest('Media session started', function()
       QUnit.start();
     });
 
-    self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
+    self.pipeline.create('HttpPostEndpoint', function(error, httpPost)
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(httpGet, undefined, 'httpGet');
+      QUnit.notEqual(httpPost, undefined, 'httpPost');
 
-      httpGet.on('MediaSessionStarted', function(data)
+      httpPost.on('MediaSessionStarted', function(data)
       {
         QUnit.ok(true, 'MediaSessionStarted');
 
@@ -119,11 +119,11 @@ QUnit.asyncTest('Media session started', function()
         });
       });
 
-      player.connect(httpGet, function(error)
+      player.connect(httpPost, function(error)
       {
         if(error) return onerror(error);
 
-        httpGet.getUrl(function(error, url)
+        httpPost.getUrl(function(error, url)
         {
           if(error) return onerror(error);
 
@@ -149,17 +149,17 @@ QUnit.asyncTest('Media session started', function()
 //  QUnit.expect(5);
 
 
-//  var timeout = new Timeout('"HttpGetEndpoint:Media session terminated"',
-//                            50 * 1000, onerror);
+//  var timeout = new Timeout('"HttpPostEndpoint:Media session terminated"',
+//                            0.5 * 1000, onerror);
 
 
-//  self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
+//  self.pipeline.create('HttpPostEndpoint', function(error, httpPost)
 //  {
 //    if(error) return onerror(error);
 
-//    QUnit.notEqual(httpGet, undefined, 'httpGet');
+//    QUnit.notEqual(httpPost, undefined, 'httpPost');
 
-//    httpGet.on('MediaSessionTerminated', function(data)
+//    httpPost.on('MediaSessionTerminated', function(data)
 //    {
 //      QUnit.ok(true, 'MediaSessionTerminated');
 
@@ -168,7 +168,7 @@ QUnit.asyncTest('Media session started', function()
 //      QUnit.start();
 //    });
 
-//    httpGet.getUrl(function(error, url)
+//    httpPost.getUrl(function(error, url)
 //    {
 //      if(error) return onerror(error);
 

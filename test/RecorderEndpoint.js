@@ -48,34 +48,34 @@ if(typeof QUnit == 'undefined')
 };
 
 
-QUnit.module('PlayerEndpoint', lifecycle);
+QUnit.module('RecorderEndpoint', lifecycle);
 
-QUnit.asyncTest('Play, Pause & Stop', function()
+QUnit.asyncTest('Record, Pause & Stop', function()
 {
   var self = this;
 
   QUnit.expect(4);
 
-  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL},
-  function(error, player)
+  self.pipeline.create('RecorderEndpoint', {uri: URL_SMALL},
+  function(error, recorder)
   {
     if(error) return onerror(error);
 
-    QUnit.notEqual(player, undefined, 'player');
+    QUnit.notEqual(recorder, undefined, 'recorder');
 
-    player.play(function(error)
+    recorder.record(function(error)
     {
       if(error) return onerror(error);
 
-      QUnit.notEqual(player, undefined, 'play');
+      QUnit.ok(true, 'record');
 
-      player.pause(function(error)
+      recorder.pause(function(error)
       {
         if(error) return onerror(error);
 
-        QUnit.notEqual(player, undefined, 'pause');
+        QUnit.ok(true, 'pause');
 
-        player.stop(function(error)
+        recorder.stop(function(error)
         {
           if(error) return onerror(error);
 
@@ -88,53 +88,22 @@ QUnit.asyncTest('Play, Pause & Stop', function()
   });
 });
 
-QUnit.asyncTest('End of Stream', function()
+QUnit.asyncTest('GetUrl', function()
 {
   var self = this;
 
   QUnit.expect(1);
 
-  var timeout = new Timeout('"PlayerEndpoint:End of Stream"',
-                            10 * 1000, onerror);
-
-
-  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
+  self.pipeline.create('RecorderEndpoint', {uri: URL_SMALL},
+  function(error, recorder)
   {
     if(error) return onerror(error);
 
-    player.on('EndOfStream', function(data)
-    {
-      QUnit.ok(true, 'EndOfStream');
-
-      timeout.stop();
-
-      QUnit.start();
-    });
-
-    player.play(function(error)
+    recorder.getUri(function(error, uri)
     {
       if(error) return onerror(error);
 
-      timeout.start();
-    });
-  });
-});
-
-QUnit.asyncTest('GetUri', function()
-{
-  var self = this;
-
-  QUnit.expect(1);
-
-  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
-  {
-    if(error) return onerror(error);
-
-    player.getUri(function(error, url)
-    {
-      if(error) return onerror(error);
-
-      QUnit.equal(url, URL_SMALL, 'URL: '+url);
+      QUnit.equal(uri, URL_SMALL, 'URI: '+uri);
 
       QUnit.start();
     });

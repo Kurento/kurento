@@ -5,3 +5,4 @@ node_modules/
 dist/
 src/
 target/
+junitResult.xml

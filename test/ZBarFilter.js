@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -90,7 +90,7 @@ QUnit.asyncTest('Detect bar-code in a video', function()
   QUnit.expect(1);
 
   var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
-                            5 * 1000, onerror);
+                            10 * 1000, onerror);
 
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
