@@ -184,6 +184,7 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
   GstStructure *faces;
   GstStructure *timestamp;
   GstEvent *e;
+  gint i;
 
   faces = gst_structure_new_empty ("faces");
 
@@ -193,7 +194,7 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
   gst_structure_set (faces, "timestamp", GST_TYPE_STRUCTURE, timestamp, NULL);
   gst_structure_free (timestamp);
 
-  for (int i = 0;
+  for (i = 0;
       i <
       (facedetector->priv->pFaceRectSeq ? facedetector->priv->
           pFaceRectSeq->total : 0); i++) {

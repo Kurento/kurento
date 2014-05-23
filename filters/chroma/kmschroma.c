@@ -323,11 +323,12 @@ kms_chroma_add_values (KmsChroma * chroma, IplImage * img)
 {
   IplImage *h_plane = cvCreateImage (cvGetSize (img), 8, 1);
   IplImage *s_plane = cvCreateImage (cvGetSize (img), 8, 1);
+  gint i, j;
 
   cvSplit (img, h_plane, s_plane, NULL, NULL);
 
-  for (int i = 0; i < img->width; i++) {
-    for (int j = 0; j < img->height; j++) {
+  for (i = 0; i < img->width; i++) {
+    for (j = 0; j < img->height; j++) {
       if (chroma->priv->h_values[(*(uchar *) (h_plane->imageData +
                       (j) * h_plane->widthStep + i))] < G_MAXINT) {
         chroma->priv->h_values[(*(uchar *) (h_plane->imageData +
@@ -472,6 +473,7 @@ kms_chroma_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
   GstMapInfo info;
   IplImage *hsv;
   IplImage *mask;
+  gint i;
 
   if (!chroma->priv->calibration_area) {
     GST_DEBUG ("Calibration area not defined");
@@ -512,25 +514,25 @@ kms_chroma_transform_frame_ip (GstVideoFilter * filter, GstVideoFrame * frame)
 
     if (chroma->priv->configure_frames == LIMIT_FRAMES) {
 
-      for (int i = 0; i < H_MAX; i++) {
+      for (i = 0; i < H_MAX; i++) {
         if (chroma->priv->h_values[i] >= HISTOGRAM_THRESHOLD) {
           chroma->priv->h_min = i;
           break;
         }
       }
-      for (int i = H_MAX; i >= 0; i--) {
+      for (i = H_MAX; i >= 0; i--) {
         if (chroma->priv->h_values[i] >= HISTOGRAM_THRESHOLD) {
           chroma->priv->h_max = i;
           break;
         }
       }
-      for (int i = 0; i < S_MAX; i++) {
+      for (i = 0; i < S_MAX; i++) {
         if (chroma->priv->s_values[i] >= HISTOGRAM_THRESHOLD) {
           chroma->priv->s_min = i;
           break;
         }
       }
-      for (int i = S_MAX; i >= 0; i--) {
+      for (i = S_MAX; i >= 0; i--) {
         if (chroma->priv->s_values[i] >= HISTOGRAM_THRESHOLD) {
           chroma->priv->s_max = i;
           break;
