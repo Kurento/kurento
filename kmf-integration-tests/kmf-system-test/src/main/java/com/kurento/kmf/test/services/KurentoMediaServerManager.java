@@ -14,9 +14,11 @@
  */
 package com.kurento.kmf.test.services;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.Address;
 import com.kurento.kmf.common.PropertiesManager;
+import com.kurento.kmf.test.Shell;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.pool.ClientPoolException;
 import com.kurento.kmf.thrift.pool.ThriftClientPoolService;
@@ -63,7 +66,6 @@ public class KurentoMediaServerManager {
 	private String workspace;
 	private String debugOptions;
 
-	private Process kmsProcess;
 	private Address rabbitMqAddress;
 
 	public static KurentoMediaServerManager createWithThriftTransport(
@@ -120,12 +122,18 @@ public class KurentoMediaServerManager {
 		createKurentoConf();
 		createFolder(logFolder);
 
-		String outputLog = workspace + logFolder + "/kms.log";
+		// Before to launch a new KMS process, former KMS process should be
+		// terminated. To ensure it, we are going to check whether exists a file
+		// called kms-pid in the workspace. If so, that process will be killed
+		// sending a SigKill. Otherwise the call of this method has no effect.
+		if (countKmsProcesses() > 0) {
+			kmsSigKill();
+		}
 
-		log.debug("Log file: {}", outputLog);
+		log.debug("Log file: {}", logFolder);
 
-		String[] kmsCommand = { serverCommand, "-f", workspace + "kurento.conf" };
-		launchKms(outputLog, kmsCommand);
+		Shell.run("sh", "-c", workspace + "kurento.sh > " + workspace
+				+ logFolder + "/kms.log 2>&1");
 
 		waitForKurentoMediaServer();
 	}
@@ -141,7 +149,8 @@ public class KurentoMediaServerManager {
 					new ThriftInterfaceConfiguration(thriftAddress.getHost(),
 							thriftAddress.getPort()));
 
-			// FIXME Don't wait forever...
+			// Wait for a max of 20 seconds
+			long timeout = System.currentTimeMillis() + 20000;
 			while (true) {
 				try {
 					clientPool.acquireSync();
@@ -149,6 +158,10 @@ public class KurentoMediaServerManager {
 				} catch (ClientPoolException e) {
 					try {
 						Thread.sleep(100);
+						if (System.currentTimeMillis() > timeout) {
+							throw new RuntimeException(
+									"Timeout (20 sec) waiting for ThriftClientPoolService");
+						}
 					} catch (InterruptedException e1) {
 					}
 				}
@@ -185,6 +198,8 @@ public class KurentoMediaServerManager {
 			data.put("serverPort", thriftAddress.getPort());
 		}
 
+		data.put("gstPlugins", gstPlugins);
+		data.put("debugOptions", debugOptions);
 		data.put("serverCommand", serverCommand);
 		data.put("workspace", workspace);
 		data.put("httpEndpointPort", httpPort);
@@ -194,6 +209,8 @@ public class KurentoMediaServerManager {
 
 		createFileFromTemplate(cfg, data, "kurento.conf");
 		createFileFromTemplate(cfg, data, "pattern.sdp");
+		createFileFromTemplate(cfg, data, "kurento.sh");
+		Shell.run("chmod", "+x", workspace + "kurento.sh");
 	}
 
 	private void createFileFromTemplate(Configuration cfg,
@@ -214,15 +231,50 @@ public class KurentoMediaServerManager {
 	}
 
 	public void stop() {
-		kmsProcess.destroy();
+		int numKmsProcesses = 0;
+		// Max timeout waiting kms ending: 5 seconds
+		long timeout = System.currentTimeMillis() + 5000;
+		do {
+			// If timeout, break the loop
+			if (System.currentTimeMillis() > timeout) {
+				break;
+			}
 
-		// FIXME Improve termination
-		// Shell.run("sh", "-c", "killall -9 kurento");
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+			// Sending SIGTERM signal to KMS process
+			kmsSigTerm();
+
+			// Wait 100 msec to order kms termination
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			numKmsProcesses = countKmsProcesses();
+
+		} while (numKmsProcesses > 0);
+
+		if (numKmsProcesses > 0) {
+			// If at this point there is still kms process (after trying to
+			// kill it with SIGTERM during 5 seconds), we send the SIGKILL
+			// signal to the process
+			kmsSigKill();
 		}
+
+		// Clean-up
+		Shell.run("sh", "-c", "rm " + workspace + "kms-pid");
+		Shell.run("sh", "-c", "rm " + workspace + "kurento.sh");
+		Shell.run("sh", "-c", "rm " + workspace + "kurento.conf");
+		Shell.run("sh", "-c", "rm " + workspace + "pattern.sdp");
+	}
+
+	private void kmsSigTerm() {
+		log.debug("Sending SIGTERM to KMS process");
+		Shell.run("sh", "-c", "kill `cat " + workspace + "kms-pid`");
+	}
+
+	private void kmsSigKill() {
+		log.debug("Sending SIGKILL to KMS process");
+		Shell.run("sh", "-c", "kill -9 `cat " + workspace + "kms-pid`");
 	}
 
 	public String getDebugOptions() {
@@ -233,27 +285,34 @@ public class KurentoMediaServerManager {
 		this.debugOptions = debugOptions;
 	}
 
-	public void launchKms(final String outputLog, final String... command) {
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				try {
-					ProcessBuilder builder = new ProcessBuilder(command);
-					builder.redirectOutput(new File(outputLog));
-					builder.redirectError(new File(outputLog));
-					builder.environment().put("GST_PLUGIN_PATH", gstPlugins);
-					builder.environment().put("GST_DEBUG", getDebugOptions());
-					kmsProcess = builder.start();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		t.setDaemon(true);
-		t.start();
-	}
-
 	public void setHttpPort(int httpPort) {
 		this.httpPort = httpPort;
+	}
+
+	public int countKmsProcesses() {
+		int result = 0;
+		try {
+			// This command counts number of process (given its PID, stored in
+			// kms-pid file)
+			String[] command = {
+					"sh",
+					"-c",
+					"ps --pid `cat " + workspace
+							+ "kms-pid` --no-headers | wc -l" };
+			Process countKms = Runtime.getRuntime().exec(command);
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					countKms.getInputStream()));
+			StringBuilder builder = new StringBuilder();
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				builder.append(line);
+			}
+			result = Integer.parseInt(builder.toString());
+		} catch (IOException e) {
+			log.error("Exception counting KMS processes", e);
+		}
+
+		return result;
 	}
 }
