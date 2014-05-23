@@ -24,18 +24,20 @@ module.exports = function(grunt)
     pkg: grunt.file.readJSON('package.json'),
 
     // Plugins configuration
-    clean: [DIST_DIR, 'src', 'doc/jsdoc'],
+    clean:
+    {
+      generated_code: [DIST_DIR, 'src'],
+
+      generated_doc: '<%= jsdoc.all.dest %>'
+    },
 
     jsdoc:
     {
-        dist:
-        {
-            src: ['README.md', 'lib/**/*.js'], 
-            options:
-            {
-                destination: 'doc/jsdoc'
-            }
-        }
+      all:
+      {
+        src: ['README.md', 'lib/**/*.js', 'test/*.js'], 
+        dest: 'doc/jsdoc'
+      }
     },
 
     curl:
@@ -45,6 +47,12 @@ module.exports = function(grunt)
 
     browserify:
     {
+      require:
+      {
+        src:  '<%= pkg.main %>',
+        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
+      },
+
       standalone:
       {
         src:  '<%= pkg.main %>',
@@ -58,30 +66,44 @@ module.exports = function(grunt)
         }
       },
 
-      require:
+      'require minified':
       {
         src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
-      }
-    },
+        dest: DIST_DIR+'/<%= pkg.name %>_require_sourcemap.js',
 
-    uglify:
-    {
-      options:
-      {
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'
+        options:
+        {
+          debug: true,
+          plugin: [
+            ['minifyify',
+             {
+               compressPath: DIST_DIR,
+               map: '<%= pkg.name %>.map'
+             }]
+          ]
+        }
       },
 
-      standalone:
+      'standalone minified':
       {
-        src:  DIST_DIR+'/<%= pkg.name %>.js',
-        dest: DIST_DIR+'/<%= pkg.name %>.min.js'
-      },
+        src:  '<%= pkg.main %>',
+        dest: DIST_DIR+'/<%= pkg.name %>_sourcemap.js',
 
-      require:
-      {
-        src:  DIST_DIR+'/<%= pkg.name %>_require.js',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.min.js'
+        options:
+        {
+          debug: true,
+          bundleOptions: {
+            standalone: 'KwsMedia'
+          },
+          plugin: [
+            ['minifyify',
+             {
+               compressPath: DIST_DIR,
+               map: '<%= pkg.name %>.map',
+               output: DIST_DIR+'/<%= pkg.name %>.map'
+             }]
+          ]
+        }
       }
     },
 
@@ -100,14 +122,12 @@ module.exports = function(grunt)
   // Load plugins
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-curl');
 
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
 
   // Default task(s).
-  grunt.registerTask('browser', ['curl', 'browserify', 'uglify']);
-  grunt.registerTask('default', ['clean', 'jsdoc', 'browser']);
+  grunt.registerTask('default', ['clean', 'jsdoc', 'curl', 'browserify']);
   grunt.registerTask('maven',   ['default', 'copy']);
 };
