@@ -121,21 +121,30 @@ G_DEFINE_TYPE_WITH_CODE (KmsCompositeMixer, kms_composite_mixer,
     GST_DEBUG_CATEGORY_INIT (kms_composite_mixer_debug_category, PLUGIN_NAME,
         0, "debug category for compositemixer element"));
 
+static gint
+compare_port_data (gconstpointer a, gconstpointer b)
+{
+  KmsCompositeMixerPortData *port_data_a = (KmsCompositeMixerPortData *) a;
+  KmsCompositeMixerPortData *port_data_b = (KmsCompositeMixerPortData *) b;
+
+  return port_data_a->id - port_data_b->id;
+}
+
 static void
 kms_composite_mixer_recalculate_sizes (gpointer data)
 {
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (data);
   GstCaps *filtercaps;
   gint width, height, top, left, counter;
-  GHashTableIter iter;
-  gpointer key, value;
+  GList *l;
+  GList *values = g_hash_table_get_values (self->priv->ports);
 
   counter = 0;
+  values = g_list_sort (values, compare_port_data);
 
-  g_hash_table_iter_init (&iter, self->priv->ports);
-  while (g_hash_table_iter_next (&iter, &key, &value)) {
-    KmsCompositeMixerPortData *port_data = (KmsCompositeMixerPortData *) value;
-
+  for (l = values; l != NULL; l = l->next) {
+    KmsCompositeMixerPortData *port_data =
+        (KmsCompositeMixerPortData *) l->data;
     if (port_data->input == FALSE) {
       continue;
     }
@@ -167,8 +176,10 @@ kms_composite_mixer_recalculate_sizes (gpointer data)
         "alpha", 1.0, NULL);
     counter++;
 
+    GST_DEBUG ("counter %d id_port %d ", counter, port_data->id);
     GST_DEBUG ("top %d left %d width %d height %d", top, left, width, height);
   }
+  g_list_free (values);
 }
 
 static gboolean
