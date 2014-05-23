@@ -522,9 +522,7 @@ create_parser_for_caps (GstCaps * caps)
   if (parser_factory != NULL) {
     parser = gst_element_factory_create (parser_factory, NULL);
   } else {
-    parser = gst_element_factory_make ("identity", NULL);
-
-    g_object_set (G_OBJECT (parser), "signal-handoffs", FALSE, NULL);
+    parser = gst_element_factory_make ("capsfilter", NULL);
   }
 
   gst_plugin_feature_list_free (filtered_list);
