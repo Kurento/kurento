@@ -123,9 +123,22 @@ create_wait_condition (guint steps)
 }
 
 static void
-link_new_agnosticbin (gchar * padname, GstElement * adder,
-    GstElement * agnosticbin)
+link_new_agnosticbin (gchar * key, GstElement * adder, GstElement * agnosticbin)
 {
+  char *padname;
+
+  padname = g_object_get_data (G_OBJECT (agnosticbin), KEY_SINK_PAD_NAME);
+  if (padname == NULL) {
+    GST_ERROR ("No pad associated with %" GST_PTR_FORMAT, agnosticbin);
+    return;
+  }
+
+  if (g_str_equal (key, padname)) {
+    /* Do not connect the origin audio input */
+    GST_TRACE ("Do not connect echo audio input %" GST_PTR_FORMAT, agnosticbin);
+    return;
+  }
+
   GST_DEBUG ("Linking %s to %s", GST_ELEMENT_NAME (agnosticbin),
       GST_ELEMENT_NAME (adder));
 
@@ -135,8 +148,22 @@ link_new_agnosticbin (gchar * padname, GstElement * adder,
 }
 
 static void
-link_new_adder (gchar * padname, GstElement * agnosticbin, GstElement * adder)
+link_new_adder (gchar * key, GstElement * agnosticbin, GstElement * adder)
 {
+  char *padname;
+
+  padname = g_object_get_data (G_OBJECT (adder), KEY_SINK_PAD_NAME);
+  if (padname == NULL) {
+    GST_ERROR ("No pad associated with %" GST_PTR_FORMAT, adder);
+    return;
+  }
+
+  if (g_str_equal (key, padname)) {
+    /* Do not connect the origin audio input */
+    GST_TRACE ("Do not connect echo audio input %" GST_PTR_FORMAT, agnosticbin);
+    return;
+  }
+
   GST_DEBUG ("Linking %s to %s", GST_ELEMENT_NAME (agnosticbin),
       GST_ELEMENT_NAME (adder));
 
@@ -326,8 +353,7 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
     gpointer data)
 {
   KmsAudioMixer *self = KMS_AUDIO_MIXER (data);
-  GstElement *audiorate, *agnosticbin, *adder;
-  GstPad *srcpad, *pad;
+  GstElement *audiorate, *agnosticbin;
   gchar *padname;
   gint id;
 
@@ -340,13 +366,13 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
 
   audiorate = gst_element_factory_make ("audiorate", NULL);
   agnosticbin = gst_element_factory_make ("agnosticbin", NULL);
-  adder = gst_element_factory_make ("liveadder", NULL);
+  g_object_set_data_full (G_OBJECT (agnosticbin), KEY_SINK_PAD_NAME,
+      g_strdup (padname), g_free);
 
-  gst_bin_add_many (GST_BIN (self), audiorate, agnosticbin, adder, NULL);
+  gst_bin_add_many (GST_BIN (self), audiorate, agnosticbin, NULL);
 
   gst_element_sync_state_with_parent (audiorate);
   gst_element_sync_state_with_parent (agnosticbin);
-  gst_element_sync_state_with_parent (adder);
 
   gst_element_link_many (typefind, audiorate, agnosticbin, NULL);
 
@@ -354,52 +380,10 @@ kms_audio_mixer_have_type (GstElement * typefind, guint arg0, GstCaps * caps,
 
   g_hash_table_foreach (self->priv->adders, (GHFunc) link_new_agnosticbin,
       agnosticbin);
-  g_hash_table_foreach (self->priv->agnostics, (GHFunc) link_new_adder, adder);
 
-  g_hash_table_insert (self->priv->agnostics, padname, agnosticbin);
-  g_hash_table_insert (self->priv->adders, padname, adder);
-
-  padname = g_strdup_printf ("src_%u", id);
-  srcpad = gst_element_get_static_pad (adder, "src");
-  pad = gst_ghost_pad_new (padname, srcpad);
-  g_free (padname);
-  gst_object_unref (srcpad);
-
-  if (GST_STATE (self) >= GST_STATE_PAUSED
-      || GST_STATE_PENDING (self) >= GST_STATE_PAUSED
-      || GST_STATE_TARGET (self) >= GST_STATE_PAUSED)
-    gst_pad_set_active (pad, TRUE);
-
-  if (gst_element_add_pad (GST_ELEMENT (self), pad)) {
-    KMS_AUDIO_MIXER_UNLOCK (self);
-    return;
-  }
-
-/* ERROR */
-  GST_ERROR_OBJECT (self, "Can not add pad %" GST_PTR_FORMAT, pad);
-
-  padname = g_object_get_data (G_OBJECT (typefind), KEY_SINK_PAD_NAME);
-  g_hash_table_remove (self->priv->agnostics, padname);
-  g_hash_table_remove (self->priv->adders, padname);
+  g_hash_table_insert (self->priv->agnostics, g_strdup (padname), agnosticbin);
 
   KMS_AUDIO_MIXER_UNLOCK (self);
-
-  unlink_agnosticbin (agnosticbin);
-  unlink_adder_sources (adder);
-
-  gst_object_unref (pad);
-
-  gst_element_set_locked_state (audiorate, TRUE);
-  gst_element_set_locked_state (agnosticbin, TRUE);
-  gst_element_set_locked_state (adder, TRUE);
-
-  gst_element_set_state (audiorate, GST_STATE_NULL);
-  gst_element_set_state (agnosticbin, GST_STATE_NULL);
-  gst_element_set_state (adder, GST_STATE_NULL);
-
-  gst_element_unlink_many (audiorate, agnosticbin, adder, NULL);
-
-  gst_bin_remove_many (GST_BIN (self), audiorate, agnosticbin, adder, NULL);
 }
 
 struct callback_counter
@@ -699,12 +683,12 @@ unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
 
   if (self->priv->agnostics != NULL) {
     agnostic = g_hash_table_lookup (self->priv->agnostics, padname);
-    g_hash_table_steal (self->priv->agnostics, padname);
+    g_hash_table_remove (self->priv->agnostics, padname);
   }
 
   if (self->priv->adders != NULL) {
     adder = g_hash_table_lookup (self->priv->adders, padname);
-    g_hash_table_steal (self->priv->adders, padname);
+    g_hash_table_remove (self->priv->adders, padname);
   }
 
   KMS_AUDIO_MIXER_UNLOCK (self);
@@ -728,6 +712,65 @@ unlinked_pad (GstPad * pad, GstPad * peer, gpointer user_data)
 
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
   gst_object_unref (parent);
+}
+
+static gboolean
+kms_audio_mixer_add_src_pad (KmsAudioMixer * self, const char *padname)
+{
+  GstPad *srcpad, *pad;
+  GstElement *adder;
+  gchar *srcname;
+  gint id;
+
+  if ((id = get_stream_id_from_padname (padname)) < 0) {
+    GST_ERROR_OBJECT (self, "Can not get pad id from element %s", padname);
+    return FALSE;
+  }
+
+  adder = gst_element_factory_make ("liveadder", NULL);
+  g_object_set_data_full (G_OBJECT (adder), KEY_SINK_PAD_NAME,
+      g_strdup (padname), g_free);
+
+  gst_bin_add (GST_BIN (self), adder);
+  gst_element_sync_state_with_parent (adder);
+
+  KMS_AUDIO_MIXER_LOCK (self);
+
+  g_hash_table_foreach (self->priv->agnostics, (GHFunc) link_new_adder, adder);
+  g_hash_table_insert (self->priv->adders, g_strdup (padname), adder);
+
+  srcname = g_strdup_printf ("src_%u", id);
+  srcpad = gst_element_get_static_pad (adder, "src");
+  pad = gst_ghost_pad_new (srcname, srcpad);
+  g_free (srcname);
+  gst_object_unref (srcpad);
+
+  if (GST_STATE (self) >= GST_STATE_PAUSED
+      || GST_STATE_PENDING (self) >= GST_STATE_PAUSED
+      || GST_STATE_TARGET (self) >= GST_STATE_PAUSED)
+    gst_pad_set_active (pad, TRUE);
+
+  if (gst_element_add_pad (GST_ELEMENT (self), pad)) {
+    KMS_AUDIO_MIXER_UNLOCK (self);
+    return TRUE;
+  }
+
+  /* ERROR */
+  GST_ERROR_OBJECT (self, "Can not add pad %" GST_PTR_FORMAT, pad);
+  g_hash_table_remove (self->priv->adders, padname);
+
+  KMS_AUDIO_MIXER_UNLOCK (self);
+
+  unlink_adder_sources (adder);
+
+  gst_object_unref (pad);
+
+  gst_element_set_locked_state (adder, TRUE);
+  gst_element_set_state (adder, GST_STATE_NULL);
+
+  gst_bin_remove (GST_BIN (self), adder);
+
+  return FALSE;
 }
 
 static GstPad *
@@ -767,21 +810,27 @@ kms_audio_mixer_request_new_pad (GstElement * element,
     gst_pad_set_active (pad, TRUE);
 
   if (!gst_element_add_pad (element, pad)) {
-    GST_ERROR_OBJECT (self, "Could not create pad");
-    g_object_unref (pad);
-    gst_element_set_locked_state (typefind, TRUE);
-    gst_element_set_state (typefind, GST_STATE_NULL);
-    gst_bin_remove (GST_BIN (self), typefind);
-    self->priv->count--;
-    pad = NULL;
-    g_free (padname);
+    GST_ERROR_OBJECT (self, "Could not create sink pad");
+  } else if (!kms_audio_mixer_add_src_pad (self, padname)) {
+    GST_ERROR_OBJECT (self, "Could not create source pad");
   } else {
     g_object_set_data_full (G_OBJECT (typefind), KEY_SINK_PAD_NAME, padname,
         g_free);
     g_signal_connect (G_OBJECT (typefind), "have-type",
         G_CALLBACK (kms_audio_mixer_have_type), self);
+    goto end;
   }
 
+  /* Error */
+  g_object_unref (pad);
+  gst_element_set_locked_state (typefind, TRUE);
+  gst_element_set_state (typefind, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self), typefind);
+  self->priv->count--;
+  pad = NULL;
+  g_free (padname);
+
+end:
   KMS_AUDIO_MIXER_UNLOCK (self);
 
   if (pad != NULL) {
@@ -841,10 +890,10 @@ kms_audio_mixer_init (KmsAudioMixer * self)
 {
   self->priv = KMS_AUDIO_MIXER_GET_PRIVATE (self);
 
-  self->priv->adders = g_hash_table_new_full (g_str_hash, g_str_equal, NULL,
+  self->priv->adders = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
       NULL);
-  self->priv->agnostics = g_hash_table_new_full (g_str_hash, g_str_equal, NULL,
-      NULL);
+  self->priv->agnostics =
+      g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
 
   g_rec_mutex_init (&self->priv->mutex);
   self->priv->loop = kms_loop_new ();
