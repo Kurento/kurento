@@ -142,7 +142,7 @@ end:
 static GstPadProbeReturn
 tee_src_probe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
 {
-  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_BOTH) {
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_UPSTREAM) {
     GstEvent *event = gst_pad_probe_info_get_event (info);
 
     if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
@@ -249,7 +249,7 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
 
   remove_element_on_unlinked (queue, "src", "sink");
 
-  gst_pad_add_probe (tee_src, GST_PAD_PROBE_TYPE_EVENT_BOTH, tee_src_probe,
+  gst_pad_add_probe (tee_src, GST_PAD_PROBE_TYPE_EVENT_UPSTREAM, tee_src_probe,
       NULL, NULL);
   ret = gst_pad_link (tee_src, queue_sink);
 
@@ -677,8 +677,9 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
   GstElement *encoder, *queue, *rate, *convert, *mediator, *fakequeue,
       *fakesink;
 
-  if (raw_tee == NULL)
+  if (raw_tee == NULL) {
     return NULL;
+  }
 
   if (is_raw_caps (caps))
     return raw_tee;
@@ -748,8 +749,9 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
     GST_DEBUG_OBJECT (self, "Created tee: %" GST_PTR_FORMAT, tee);
   }
 
-  if (tee != NULL)
+  if (tee != NULL) {
     kms_agnostic_bin2_link_to_tee (self, pad, tee, caps);
+  }
 
   gst_caps_unref (caps);
 
@@ -977,6 +979,7 @@ kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
       fakesink, NULL);
 
   self->priv->started = FALSE;
+
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   gst_pad_push_event (self->priv->sink, gst_event_new_reconfigure ());
@@ -1039,8 +1042,9 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
 {
   GstEvent *event;
 
-  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
+  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK) {
     return GST_PAD_PROBE_OK;
+  }
 
   event = gst_pad_probe_info_get_event (info);
 
@@ -1048,8 +1052,6 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
     KmsAgnosticBin2 *self = user_data;
 
     GST_DEBUG_OBJECT (pad, "Received reconfigure event");
-    gst_pad_push_event (KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (pad))->priv->sink,
-        gst_event_new_reconfigure ());
 
     KMS_AGNOSTIC_BIN2_LOCK (self);
     kms_agnostic_bin2_add_pad_to_queue (self, pad);
@@ -1057,6 +1059,8 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
         kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
         g_object_unref);
     KMS_AGNOSTIC_BIN2_UNLOCK (self);
+
+    gst_pad_push_event (self->priv->sink, gst_event_new_reconfigure ());
 
     return GST_PAD_PROBE_DROP;
   }
@@ -1205,7 +1209,7 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
   GstPadTemplate *templ;
   GstElement *tee, *queue, *fakesink;
-  GstPad *target;
+  GstPad *target, *sink;
 
   self->priv = KMS_AGNOSTIC_BIN2_GET_PRIVATE (self);
   self->priv->pad_count = 0;
@@ -1232,8 +1236,10 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   g_object_unref (templ);
   g_object_unref (target);
 
-  gst_pad_add_probe (self->priv->sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+  sink = gst_element_get_static_pad (fakesink, "sink");
+  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
       kms_agnostic_bin2_sink_caps_probe, self, NULL);
+  g_object_unref (sink);
 
   gst_element_add_pad (GST_ELEMENT (self), self->priv->sink);
 
