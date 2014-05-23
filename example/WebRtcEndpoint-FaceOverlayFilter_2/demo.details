@@ -1,0 +1,11 @@
+---
+ name: WebRtcEndpoint-FaceOverlayFilter_2
+ description: Detect a face using a WebRTC loopback from your webcam.
+ authors:
+   - Jesús Leganés Combarro "piranna" <piranna@gmail.com>
+ resources:
+   - https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js
+   - http://ci.kurento.com/apps/kws-media-api.js
+ js_wrap: h
+ normalize_css: no
+ ...
