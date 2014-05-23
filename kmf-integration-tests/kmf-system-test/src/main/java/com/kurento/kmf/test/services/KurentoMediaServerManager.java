@@ -14,7 +14,10 @@
  */
 package com.kurento.kmf.test.services;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.common.Address;
 import com.kurento.kmf.common.PropertiesManager;
-import com.kurento.kmf.test.Shell;
 import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
 import com.kurento.kmf.thrift.pool.ClientPoolException;
 import com.kurento.kmf.thrift.pool.ThriftClientPoolService;
@@ -33,7 +35,7 @@ import freemarker.template.Template;
 
 /**
  * Initializer/stopper class for Kurento Media Server (KMS).
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -212,14 +214,13 @@ public class KurentoMediaServerManager {
 	}
 
 	public void stop() {
-		// kmsProcess.destroy();
-		Shell.run("sh", "-c", "killall -9 kurento");
+		kmsProcess.destroy();
 
-		// FIXME Very bad waiting system
+		// FIXME Improve termination
+		// Shell.run("sh", "-c", "killall -9 kurento");
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

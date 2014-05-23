@@ -1,7 +1,9 @@
 package com.kurento.kmf.test.services;
 
 import static com.kurento.kmf.common.PropertiesManager.getProperty;
-import static com.kurento.kmf.media.factory.KmfMediaApiProperties.*;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getRabbitMqAddress;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getThriftKmfAddress;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getThriftKmsAddress;
 
 import org.apache.catalina.LifecycleException;
 
@@ -42,6 +44,9 @@ public class KurentoServicesTestHelper {
 
 	public static final String MEDIA_CONNECTOR_PREFIX = "kmc";
 	public static final String RABBITMQ_CONNECTOR_PREFIX = "krc";
+
+	public static final String KURENTO_TESTFILES_PROP = "kurento.testFiles";
+	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
 
 	private static HttpServer httpServer;
 	private static KurentoMediaServerManager kms;
@@ -231,5 +236,10 @@ public class KurentoServicesTestHelper {
 	public static int getKmcHttpPort() {
 		return PropertiesManager.getProperty(KMC_HTTP_PORT_PROP,
 				KMC_HTTP_PORT_DEFAULT);
+	}
+
+	public static String getTestFilesPath() {
+		return PropertiesManager.getProperty(KURENTO_TESTFILES_PROP,
+				KURENTO_TESTFILES_DEFAULT);
 	}
 }

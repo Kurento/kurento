@@ -40,12 +40,11 @@ import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
-import com.kurento.kmf.test.Shell;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
  * launch the real browser.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -114,15 +113,17 @@ public class BrowserClient implements Closeable {
 			options.addArguments("--use-fake-ui-for-media-stream");
 
 			if (!usePhysicalCam) {
+				// This flag makes using a synthetic video (green with
+				// spinner) in webrtc. Or it is needed to combine with
+				// use-file-for-fake-video-capture to use a file faking the cam
+				options.addArguments("--use-fake-device-for-media-stream");
+
 				if (video != null) {
-					launchFakeCam();
-					// Another option (in Chrome):
-					// options.addArguments("--use-file-for-fake-video-capture="
-					// + video);
-				} else {
-					// This flag makes using a synthetic video (green with
-					// spinner) in webrtc
-					options.addArguments("--use-fake-device-for-media-stream");
+					options.addArguments("--use-file-for-fake-video-capture="
+							+ video);
+
+					// Alternative: lauch fake cam also in Chrome
+					// launchFakeCam();
 				}
 			}
 			driver = new ChromeDriver(options);
@@ -131,8 +132,7 @@ public class BrowserClient implements Closeable {
 	}
 
 	private void launchFakeCam() {
-		Shell.run("sh", "-c", "gst-launch filesrc location=" + video
-				+ " ! decodebin2 ! v4l2sink device=/dev/video0");
+		FakeCam.getSingleton().launchCam(video);
 	}
 
 	public void setURL(String videoUrl) {

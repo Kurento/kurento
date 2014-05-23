@@ -15,6 +15,10 @@
 package com.kurento.kmf.test;
 
 import java.io.IOException;
+import java.util.Arrays;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Local shell.
@@ -24,7 +28,11 @@ import java.io.IOException;
  */
 public class Shell {
 
+	public static Logger log = LoggerFactory.getLogger(Shell.class);
+
 	public static void run(final String... command) {
+		log.debug("Running command on the shell: {}", Arrays.toString(command));
+
 		Thread t = new Thread() {
 			@Override
 			public void run() {

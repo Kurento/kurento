@@ -14,7 +14,9 @@
  */
 package com.kurento.kmf.test.base;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +25,9 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
  * Base for tests (Content and Media API).
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
+ * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public class KurentoTest {
@@ -40,7 +43,7 @@ public class KurentoTest {
 	/**
 	 * Compares two numbers and return true|false if these number are similar,
 	 * using a threshold in the comparison.
-	 *
+	 * 
 	 * @param i
 	 *            First number to be compared
 	 * @param j
@@ -63,6 +66,10 @@ public class KurentoTest {
 		return KurentoServicesTestHelper.getAppHttpPort();
 	}
 
+	public String getPathTestFiles() {
+		return KurentoServicesTestHelper.getTestFilesPath();
+	}
+
 	@Before
 	public void setupKurentoServices() throws Exception {
 
@@ -71,10 +78,12 @@ public class KurentoTest {
 
 		KurentoServicesTestHelper.setTestName(testName.getMethodName());
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
+
 	}
 
 	@After
 	public void teardownKurentoServices() throws Exception {
 		KurentoServicesTestHelper.teardownServices();
 	}
+
 }

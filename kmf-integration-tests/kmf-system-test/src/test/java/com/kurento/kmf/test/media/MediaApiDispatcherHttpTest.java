@@ -19,73 +19,75 @@ import java.awt.Color;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.kurento.kmf.media.Dispatcher;
 import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.HubPort;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
- * <strong>Description</strong>: Test of a HTTP Player, using directly a
- * MediaPipeline and Selenium.<br/>
+ * <strong>Description</strong>: Test of a Dispatcher Mixer.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>PlayerEndpoint -> HttpGetEndpoint</li>
+ * <li>WebRtcEndpoint -> Dispatcher -> HttpGetEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
- * <li>Play time should be the expected (at least 8 seconds)</li>
- * <li>Color of the video should be the expected (blue)</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Color of the video should be the expected</li>
  * </ul>
  * 
- * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class MediaApiPlayerBrowserTest extends BrowserMediaApiTest {
+public class MediaApiDispatcherHttpTest extends BrowserMediaApiTest {
 
 	@Test
-	public void testPlayerChrome() throws Exception {
+	public void testDispatcherHttpChrome() throws Exception {
 		doTest(Browser.CHROME);
-	}
-
-	@Test
-	public void testPlayerFirefox() throws Exception {
-		doTest(Browser.FIREFOX);
 	}
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/gst/blue.webm").build();
+		WebRtcEndpoint webRtcEP1 = mp.newWebRtcEndpoint().build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
-		playerEP.connect(httpEP);
+
+		Dispatcher dispatcher = mp.newDispatcher().build();
+		HubPort hubPort1 = dispatcher.newHubPort().build();
+		HubPort hubPort2 = dispatcher.newHubPort().build();
+
+		webRtcEP1.connect(hubPort1);
+		hubPort2.connect(httpEP);
+
+		dispatcher.connect(hubPort1, hubPort2);
 
 		// Test execution
-		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(browserType).client(Client.PLAYER).build()) {
-			browser.setURL(httpEP.getUrl());
-			browser.subscribeEvents("playing", "ended");
-			playerEP.play();
-			browser.start();
+		try (BrowserClient browser1 = new BrowserClient.Builder()
+				.browser(browserType).client(Client.WEBRTC).build();
+				BrowserClient browser2 = new BrowserClient.Builder()
+						.browser(browserType).client(Client.PLAYER).build();) {
+
+			browser1.connectToWebRtcEndpoint(webRtcEP1,
+					WebRtcChannel.AUDIO_AND_VIDEO);
+
+			browser2.setURL(httpEP.getUrl());
+			browser2.subscribeEvents("playing");
+			browser2.start();
 
 			// Assertions
 			Assert.assertTrue("Timeout waiting playing event",
-					browser.waitForEvent("playing"));
-			Assert.assertTrue("Timeout waiting ended event",
-					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 8 seconds",
-					browser.getCurrentTime() >= 8);
-			Assert.assertTrue("The color of the video should be blue",
-					browser.colorSimilarTo(Color.BLUE));
+					browser2.waitForEvent("playing"));
+			Assert.assertTrue("The color of the video should be green",
+					browser2.colorSimilarTo(new Color(0, 135, 0)));
+			Thread.sleep(5000);
 		}
 	}
-
 }
