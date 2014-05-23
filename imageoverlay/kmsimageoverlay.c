@@ -375,12 +375,12 @@ remove_recursive (const gchar * path)
 static GSList *
 get_faces (GstStructure * faces)
 {
-  gint len;
+  gint len, aux;
   GSList *list = NULL;
 
   len = gst_structure_n_fields (faces);
 
-  for (gint aux = 0; aux < len; aux++) {
+  for (aux = 0; aux < len; aux++) {
     GstStructure *face;
     gboolean ret;
 
