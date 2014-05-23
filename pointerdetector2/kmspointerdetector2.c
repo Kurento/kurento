@@ -347,6 +347,7 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
   gint s_values[S_VALUES];
   IplImage *h_channel, *s_channel;
   IplImage *calibration_area;
+  gint i, j;
 
   if (pointerdetector->priv->cvImage == NULL) {
     return;
@@ -378,8 +379,8 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
   cvCvtColor (calibration_area, calibration_area, CV_BGR2HSV);
   cvSplit (calibration_area, h_channel, s_channel, NULL, NULL);
 
-  for (int i = 0; i < calibration_area->width; i++) {
-    for (int j = 0; j < calibration_area->height; j++) {
+  for (i = 0; i < calibration_area->width; i++) {
+    for (j = 0; j < calibration_area->height; j++) {
       h_values[(*(uchar *) (h_channel->imageData +
                   (j) * h_channel->widthStep + i))]++;
       s_values[(*(uchar *) (s_channel->imageData +
@@ -387,25 +388,25 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
     }
   }
 
-  for (int i = 1; i < H_MAX; i++) {
+  for (i = 1; i < H_MAX; i++) {
     if (h_values[i] >= HIST_THRESHOLD) {
       pointerdetector->priv->h_min = i - 5;
       break;
     }
   }
-  for (int i = H_MAX; i >= 0; i--) {
+  for (i = H_MAX; i >= 0; i--) {
     if (h_values[i] >= HIST_THRESHOLD) {
       pointerdetector->priv->h_max = i + 5;
       break;
     }
   }
-  for (int i = 1; i < S_MAX; i++) {
+  for (i = 1; i < S_MAX; i++) {
     if (s_values[i] >= HIST_THRESHOLD) {
       pointerdetector->priv->s_min = i - 5;
       break;
     }
   }
-  for (int i = S_MAX; i >= 0; i--) {
+  for (i = S_MAX; i >= 0; i--) {
     if (s_values[i] >= HIST_THRESHOLD) {
       pointerdetector->priv->s_max = i + 5;
       break;
@@ -807,6 +808,7 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
   CvSeq *circles;
   int distance;
   int best_candidate;
+  gint i;
 
   if ((pointerdetector->priv->x_calibration == 0)
       && (pointerdetector->priv->y_calibration == 0)
@@ -874,7 +876,7 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
   distance = 0;
   best_candidate = 0;
 
-  for (int i = 0; i < circles->total; i++) {
+  for (i = 0; i < circles->total; i++) {
     int current_distance;
     float *p = (float *) cvGetSeqElem (circles, i);
 
