@@ -532,8 +532,6 @@ kms_audio_mixer_bin_request_new_pad (GstElement * element,
 static void
 kms_audio_mixer_bin_release_pad (GstElement * element, GstPad * pad)
 {
-  GstElement *agnostic = NULL, *adder = NULL;
-
   GST_DEBUG ("Unlinked pad %" GST_PTR_FORMAT, pad);
 
   if (gst_pad_get_direction (pad) != GST_PAD_SINK)
