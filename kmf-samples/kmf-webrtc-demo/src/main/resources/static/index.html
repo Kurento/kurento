@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>WebRTC Demo</title>
+<script src="js/adapter.js"></script>
+<script src="js/console.js"></script>
+<script src="js/rpcbuilder.js"></script>
+<script src="js/jsonrpcclient.js"></script>
+<script src="js/webrtc-utils.js"></script>
+<script>
+	var client = new JsonRpcClient(
+			"ws://localhost:8080/webrtc/ws/websocket", onRequest);
+	var sdpOffer;
+	var localPeerConnection;
+
+	window.onload = function() {
+		console = new Console("console", console);
+	}
+
+	function start() {
+		showSpinner("videoInput", "videoOutput");
+		prepareSendPlayer(function(peerConnection, offer) {
+			localPeerConnection = peerConnection;
+			sdpOffer = offer.sdp;
+			console.info(sdpOffer);
+			client.sendRequest("start", {
+				sdpOffer : offer.sdp
+			}, function(error, result) {
+				prepareReceivePlayer(peerConnection, result.sdpAnswer);
+			});
+		});
+	}
+
+	function onRequest(transaction, message) {
+		if (message.method === "started") {
+			onStarted(transaction, message);
+		} else {
+			console.error("Unrecognized request: " + JSON.stringify(message));
+		}
+	}
+
+	function onStarted(transaction, message) {
+		prepareReceivePlayer(localPeerConnection, message.params.sdpAnswer);
+		transaction.sendResponse({});
+	}
+
+	function showSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			var videoTag = document.getElementById(arguments[i]);
+			videoTag.poster = "./img/transparent-1px.png";
+			videoTag.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+	}
+</script>
+</head>
+<body>
+	<h1>WebRTC Demo</h1>
+	<video id="videoInput" autoplay controls width="480px" height="360px"></video>
+	<video id="videoOutput" autoplay controls width="480px" height="360px"></video>
+	<br />
+	<input type="button" value="Start" onclick="start(); return false;">
+	<br />
+	<div id="console"></div>
+</body>
+</html>
