@@ -56,7 +56,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.kurento.kmf.connector.ConnectorApp</mainClass>
+					<mainClass>com.kurento.kmf.connector.MediaConnectorApp</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
