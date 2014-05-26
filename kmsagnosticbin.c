@@ -63,6 +63,8 @@ G_DEFINE_TYPE (KmsAgnosticBin2, kms_agnostic_bin2, GST_TYPE_BIN);
   g_mutex_unlock (KMS_AGNOSTIC_BIN2_GET_LOCK (obj))     \
 )
 
+#define OLD_CHAIN_KEY "kms-old-chain-key"
+
 struct _KmsAgnosticBin2Private
 {
   GHashTable *tees;
@@ -240,12 +242,36 @@ remove_tee_pad_on_unlink (GstPad * pad, GstPad * peer, gpointer user_data)
   gst_element_release_request_pad (tee, pad);
 }
 
+static GstFlowReturn
+queue_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
+{
+  GstPadChainFunction old_func =
+      g_object_get_data (G_OBJECT (pad), OLD_CHAIN_KEY);
+
+  old_func (pad, parent, buffer);
+
+  return GST_FLOW_OK;
+}
+
 static void
 link_queue_to_tee (GstElement * tee, GstElement * queue)
 {
   GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
   GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
   GstPadLinkReturn ret;
+  GstPadChainFunction old_func;
+
+  /*
+   * HACK Add a custom chain function that does not return error, this way
+   * we avoid race conditions produced by reconnect events not using the stream
+   * lock
+   */
+  old_func = GST_PAD_CHAINFUNC (queue_sink);
+
+  if (old_func != NULL) {
+    g_object_set_data (G_OBJECT (queue_sink), OLD_CHAIN_KEY, old_func);
+    gst_pad_set_chain_function (queue_sink, queue_chain);
+  }
 
   remove_element_on_unlinked (queue, "src", "sink");
 
