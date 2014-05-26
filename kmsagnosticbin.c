@@ -375,6 +375,25 @@ remove_target_pad (GstPad * pad)
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
 }
 
+static GstPadProbeReturn
+drop_until_keyframe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  GstBuffer *buffer;
+
+  buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DELTA_UNIT)) {
+    /* Drop buffer until a keyframe is received */
+    send_force_key_unit_event (pad);
+    return GST_PAD_PROBE_DROP;
+  }
+
+  /* So this buffer is a keyframe we don't need this probe any more */
+  gst_pad_remove_probe (pad, GST_PAD_PROBE_INFO_ID (info));
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
     GstElement * tee, GstCaps * caps)
@@ -407,6 +426,9 @@ kms_agnostic_bin2_link_to_tee (KmsAgnosticBin2 * self, GstPad * pad,
   }
 
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), target);
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, drop_until_keyframe, self,
+      NULL);
+
   g_object_unref (target);
 
   link_queue_to_tee (tee, queue);
