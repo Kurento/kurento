@@ -14,10 +14,7 @@
  */
 package com.kurento.kmf.spring;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -59,14 +56,14 @@ public final class KurentoApplicationContextUtils {
 	 * KurentoApplicationContext will be made child of this root context. When
 	 * necessary, this method creates the KurentoApplicationContext, so it
 	 * should never return null.
-	 * 
+	 *
 	 * This method MUST NOT be called in ServletContextListeners, given that at
 	 * that stage there might not be information about the presence of a root
 	 * Spring root WebApplicationConext.
-	 * 
+	 *
 	 * @param ctx
 	 * @return the context
-	 * 
+	 *
 	 */
 	public static AnnotationConfigApplicationContext createKurentoApplicationContext(
 			ServletContext ctx) {
@@ -77,8 +74,14 @@ public final class KurentoApplicationContextUtils {
 
 		kurentoApplicationContextInternalReference = new AnnotationConfigApplicationContext();
 
-		// Add or remove packages when required
-		kurentoApplicationContextInternalReference.scan("com.kurento.kmf");
+		// We can't scan whole com.kurento.kmf package because there are classes
+		// in classpath not designed to work with content-api
+		kurentoApplicationContextInternalReference
+		.scan("com.kurento.kmf.spring");
+		kurentoApplicationContextInternalReference
+		.scan("com.kurento.kmf.content");
+		kurentoApplicationContextInternalReference
+				.scan("com.kurento.kmf.repository");
 
 		// Recover root WebApplicationContext context just in case
 		// application developer is using Spring
@@ -153,7 +156,7 @@ public final class KurentoApplicationContextUtils {
 	/**
 	 * Returns a specific application context associated to a Kurento handler
 	 * servlet. This method returns null if the context does not exist.
-	 * 
+	 *
 	 * @param servletClass
 	 * @param servletName
 	 * @return the context

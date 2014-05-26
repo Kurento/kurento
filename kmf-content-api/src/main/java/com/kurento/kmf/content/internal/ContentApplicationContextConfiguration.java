@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.content.internal;
 
+import java.net.InetSocketAddress;
+
 import javax.servlet.AsyncContext;
 
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 
 import com.kurento.kmf.common.SecretGenerator;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.content.*;
 import com.kurento.kmf.content.internal.base.AbstractContentSession;
 import com.kurento.kmf.content.internal.base.AsyncContentRequestProcessor;
@@ -31,9 +34,14 @@ import com.kurento.kmf.content.internal.recorder.HttpRecorderSessionImpl;
 import com.kurento.kmf.content.internal.rtp.RtpContentSessionImpl;
 import com.kurento.kmf.content.internal.webrtc.WebRtcContentSessionImpl;
 import com.kurento.kmf.content.jsonrpc.JsonRpcRequest;
-import com.kurento.kmf.media.factory.KmfMediaApi;
+import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
+import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.factory.MediaPipelineFactory;
 import com.kurento.kmf.spring.RootWebApplicationContextParentRecoverer;
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
+import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
+import com.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
+import com.kurento.kmf.thrift.pool.ThriftClientPoolService;
 
 /**
  *
@@ -141,35 +149,82 @@ public class ContentApplicationContextConfiguration {
 		return new ContentSessionManager();
 	}
 
-	@Bean
-	@Primary
-	ContentApiConfiguration contentApiConfiguration() {
-		try {
-			return parentRecoverer.getParentContext().getBean(
-					ContentApiConfiguration.class);
-		} catch (NullPointerException npe) {
-			log.info("Configuring Content API. Could not find parent context. Switching to default configuration ...");
-		} catch (NoSuchBeanDefinitionException t) {
-			log.info("Configuring Content API. Could not find exacly one bean of class "
-					+ ContentApiConfiguration.class.getSimpleName()
-					+ ". Switching to default configuration ...");
+	private <E> E getBeanInParentOrDefault(Class<E> beanClass) {
+
+		E bean = returnBeanInParent(beanClass);
+
+		if (bean != null) {
+			return bean;
+		} else {
+			try {
+				return beanClass.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new KurentoException(
+						"Exception creating default configuration for "
+								+ beanClass.getSimpleName(), e);
+			}
 		}
-		return new ContentApiConfiguration();
+	}
+
+	private <E> E returnBeanInParent(Class<E> beanClass) {
+		try {
+			return parentRecoverer.getParentContext().getBean(beanClass);
+		} catch (NullPointerException npe) {
+			log.info(
+					"Loading {}. Could not find parent context. Switching to default configuration ...",
+					beanClass.getSimpleName());
+			return null;
+		} catch (NoSuchBeanDefinitionException t) {
+			log.info("Loading {}. Could not find exacly one bean of class "
+					+ beanClass.getSimpleName()
+					+ ". Switching to default configuration ...");
+			return null;
+		}
 	}
 
 	@Bean
 	@Primary
-	MediaPipelineFactory mediaPipelineFactory() {
-		try {
-			return parentRecoverer.getParentContext().getBean(
-					MediaPipelineFactory.class);
-		} catch (NullPointerException npe) {
-			log.info("Configuring MediaPipelineFactory. Could not find parent context. Switching to default configuration ...");
-		} catch (NoSuchBeanDefinitionException t) {
-			log.info("Configuring MediaPipelineFactory. Could not find exacly one bean of class "
-					+ MediaPipelineFactory.class.getSimpleName()
-					+ ". Switching to default configuration ...");
+	ContentApiConfiguration contentApiConfiguration() {
+		return getBeanInParentOrDefault(ContentApiConfiguration.class);
+	}
+
+	@Bean
+	@Primary
+	public MediaPipelineFactory mediaPipelineFactory() {
+
+		MediaPipelineFactory bean = returnBeanInParent(MediaPipelineFactory.class);
+
+		if (bean != null) {
+			return bean;
+
+		} else {
+
+			ThriftClientPoolService clientPool = new ThriftClientPoolService(
+					thriftInterfaceConfiguration());
+
+			ThriftInterfaceExecutorService executorService = new ThriftInterfaceExecutorService(
+					thriftInterfaceConfiguration());
+
+			MediaApiConfiguration mediaApiConfiguration = mediaApiConfiguration();
+
+			JsonRpcClient client = new JsonRpcClientThrift(clientPool,
+					executorService, new InetSocketAddress(
+							mediaApiConfiguration.getHandlerAddress(),
+							mediaApiConfiguration.getHandlerPort()));
+
+			return new MediaPipelineFactory(client);
 		}
-		return KmfMediaApi.createMediaPipelineFactoryFromSystemProps();
+	}
+
+	@Bean
+	@Primary
+	public ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
+		return getBeanInParentOrDefault(ThriftInterfaceConfiguration.class);
+	}
+
+	@Bean
+	@Primary
+	MediaApiConfiguration mediaApiConfiguration() {
+		return getBeanInParentOrDefault(MediaApiConfiguration.class);
 	}
 }

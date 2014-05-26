@@ -64,31 +64,6 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 		return new ThriftConnectorJsonRpcHandler2();
 	}
 
-	// @Bean
-	// @Scope("prototype")
-	// ThriftServer mediaHandlerServer(Processor<?> processor,
-	// InetSocketAddress address) {
-	// return new ThriftServer(processor, executorService(), address);
-	// }
-	//
-	// @Bean
-	// public ThriftInterfaceExecutorService executorService() {
-	// return new ThriftInterfaceExecutorService(
-	// thriftInterfaceConfiguration());
-	// }
-	//
-	// @Bean
-	// public ThriftConnectorConfiguration thriftConnectorConfiguration() {
-	//
-	// Address thriftKmfAddress = KmfMediaApiProperties.getThriftKmfAddress();
-	//
-	// ThriftConnectorConfiguration config = new ThriftConnectorConfiguration();
-	// config.setHandlerAddress(thriftKmfAddress.getHost());
-	// config.setHandlerPort(thriftKmfAddress.getPort());
-	//
-	// return config;
-	// }
-
 	@Bean
 	public JsonRpcClient client() {
 
@@ -98,52 +73,6 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 			return KmfMediaApi.createJsonRpcClientFromSystemProperties();
 		}
 	}
-
-	// @Bean
-	// public ThriftInterfaceConfiguration thriftInterfaceConfiguration() {
-	//
-	// // TODO: Complete
-	// // * Allow use JsonRpcClient instead of base Thrift client. This will
-	// // allow to use RabbitMq JsonRpcClient.
-	// // * Separate Media Connector App from Media Connector Manager. The
-	// // objective is allow to init Media Connector programatically with
-	// // params or start the app from command line
-	//
-	// Address thriftKmsAddress = KmfMediaApiProperties.getThriftKmsAddress();
-	//
-	// ThriftInterfaceConfiguration config = new ThriftInterfaceConfiguration();
-	// config.setServerAddress(thriftKmsAddress.getHost());
-	// config.setServerPort(thriftKmsAddress.getPort());
-	//
-	// log.debug("Server address: " + thriftKmsAddress);
-	//
-	// return config;
-	// }
-
-	// @Bean
-	// public ThriftClientPoolService thriftClientPoolService() {
-	// return new ThriftClientPoolService();
-	// }
-	//
-	// @Bean
-	// public ThriftAsyncClientPool thriftAsyncClientPool() {
-	// return new ThriftAsyncClientPool();
-	// }
-	//
-	// @Bean
-	// public ThriftAsyncClientFactory thriftAsyncClientFactory() {
-	// return new ThriftAsyncClientFactory();
-	// }
-	//
-	// @Bean
-	// public ThriftSyncClientFactory thriftSyncClientFactory() {
-	// return new ThriftSyncClientFactory();
-	// }
-	//
-	// @Bean
-	// public ThriftSyncClientPool thriftSyncClientPool() {
-	// return new ThriftSyncClientPool();
-	// }
 
 	public static void main(String[] args) throws Exception {
 
