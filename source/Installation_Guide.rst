@@ -256,19 +256,21 @@ Running Kurento Without NAT configuration
 =========================================
 
 KMS can receive requests from the Kurento Application Server (KAS) and
-from final users. The IP addresses and ports to receive these requests
-are configured in the configuration file ``/etc/kurento/kurento.conf``.
-After a fresh install that file looks like this:
+from final users. KMS uses a easily extensible service abstraction layer
+that enables it to attend application requests from either Thrift or
+RabbitMQ altough other services can also be deployed on it.
+The service in charge of attending all those requests is configured in the
+configuration file ``/etc/kurento/kurento.conf``.
+After a fresh installation that file looks like this:
 
 .. sourcecode:: ini
-
     [Server]
-    serverAddress=localhost
-    serverPort=9090
     sdpPattern=pattern.sdp
+    service=Thrift
 
     [HttpEPServer]
     #serverAddress=localhost
+
     # Announced IP Address may be helpful under situations such as the server needs
     # to provide URLs to clients whose host name is different from the one the
     # server is listening in. If this option is not provided, http server will try
@@ -277,10 +279,26 @@ After a fresh install that file looks like this:
 
     serverPort=9091
 
-That configuration implies that only requests from the localhost are
-accepted. The section ``[Server]`` allows to configure the IP address and
-port where KMS will listen to KAS requests. The section ``[HttpEPServer]``
-controls the IP address and port to listen to the final users.
+    [WebRtcEndPoint]
+    #stunServerAddress = xxx.xxx.xxx.xxx
+    #stunServerPort = xx
+    #pemCertificate = file
+
+    [Thrift]
+    serverPort=9090
+
+    [RabbitMQ]
+    serverAddress = 127.0.0.1
+    serverPort = 5672
+    username = "guest"
+    password = "guest"
+    vhost = "/"
+
+That configuration implies that only requests done through Thrift are
+accepted. By default Thrift server will be attached in all availables network
+interfaces. The section ``[Thrift]`` allows to configure the port where KMS
+will listen to KAS requests. The section ``[HttpEPServer]`` controls the IP
+address and port to listen to the final users.
 
 Running Kurento With NAT configuration
 ======================================
