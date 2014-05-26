@@ -52,7 +52,7 @@ public class ContentApiBootApp {
 					throws ServletException {
 
 				new ContentApiWebApplicationInitializer()
-				.onStartup(servletContext);
+						.onStartup(servletContext);
 			}
 		};
 	}
@@ -74,7 +74,7 @@ public class ContentApiBootApp {
 				ContentApiBootApp.class);
 
 		Properties properties = new Properties();
-		// TODO:
+		// TODO: Make this configurable with system properties
 		properties.put("server.port",
 				KurentoServicesTestHelper.getAppHttpPort());
 		application.setDefaultProperties(properties);
