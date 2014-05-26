@@ -13,7 +13,6 @@
 		<appender-ref ref="CONSOLE" />
 	</root>
 
-	<logger name="com.rabbitmq" level="TRACE" />
 	<logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR" />
 	<logger name="org.apache" level="WARN" />
 	<logger name="org.springframework" level="WARN" />
