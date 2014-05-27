@@ -154,8 +154,9 @@ kms_dispatcher_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  G_OBJECT_CLASS (kms_dispatcher_parent_class)->finalize (object);
   g_rec_mutex_clear (&self->priv->mutex);
+
+  G_OBJECT_CLASS (kms_dispatcher_parent_class)->finalize (object);
 }
 
 static void
