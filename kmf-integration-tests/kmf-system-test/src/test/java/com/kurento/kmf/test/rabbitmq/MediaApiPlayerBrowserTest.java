@@ -21,9 +21,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.catalina.LifecycleException;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.factory.KmfMediaApiProperties;
@@ -31,11 +36,13 @@ import com.kurento.kmf.media.factory.MediaPipelineFactory;
 import com.kurento.kmf.rabbitmq.client.JsonRpcClientRabbitMq;
 import com.kurento.kmf.rabbitmq.server.RabbitMqConnectorManager;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
  * Test of a HTTP Player, using directly a MediaPipeline and Selenium.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
@@ -70,7 +77,7 @@ public class MediaApiPlayerBrowserTest extends BrowserMediaApiTest {
 	}
 
 	@Test
-	public void testPlayer() throws Exception {
+	public void testPlayerRabbit() throws Exception {
 
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();

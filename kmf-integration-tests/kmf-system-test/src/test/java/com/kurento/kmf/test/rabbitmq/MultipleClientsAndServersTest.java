@@ -13,7 +13,7 @@ public class MultipleClientsAndServersTest {
 			.getLogger(MultipleClientsAndServersTest.class);
 
 	@Test
-	public void test() throws InterruptedException {
+	public void testMultipleClientsAndServers() throws InterruptedException {
 
 		int numMediaServers = 2;
 		int numClientApps = 2;
