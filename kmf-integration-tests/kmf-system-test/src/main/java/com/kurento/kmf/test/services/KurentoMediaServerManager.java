@@ -47,10 +47,10 @@ public class KurentoMediaServerManager {
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
-	private static final String KURENTO_GST_PLUGINS_PROP = "kurento.gstPlugins";
+	private static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
 	private static final String KURENTO_GST_PLUGINS_DEFAULT = "";
 
-	private static final String KURENTO_SERVER_COMMAND_PROP = "kurento.serverCommand";
+	private static final String KURENTO_SERVER_COMMAND_PROP = "kms.command";
 	private static final String KURENTO_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento";
 
 	public static Logger log = LoggerFactory

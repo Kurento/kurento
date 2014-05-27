@@ -45,7 +45,7 @@ public class KurentoServicesTestHelper {
 	public static final String MEDIA_CONNECTOR_PREFIX = "kmc";
 	public static final String RABBITMQ_CONNECTOR_PREFIX = "krc";
 
-	public static final String KURENTO_TESTFILES_PROP = "kurento.testFiles";
+	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";
 	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
 
 	private static HttpServer httpServer;
