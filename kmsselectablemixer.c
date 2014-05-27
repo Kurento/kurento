@@ -304,8 +304,30 @@ static gboolean
 kms_selectable_mixer_connect_audio (KmsSelectableMixer * self, guint source,
     guint sink)
 {
-  /* TODO: */
-  return FALSE;
+  KmsSelectableMixerPortData *source_port, *sink_port;
+  gboolean connected = FALSE;
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  source_port = g_hash_table_lookup (self->priv->ports, &source);
+  if (source_port == NULL) {
+    GST_ERROR_OBJECT (self, "No source port %u found", source);
+    goto end;
+  }
+
+  sink_port = g_hash_table_lookup (self->priv->ports, &sink);
+  if (sink_port != NULL) {
+    connected =
+        gst_element_link (source_port->audio_agnostic, sink_port->audiomixer);
+  } else {
+    GST_ERROR_OBJECT (self, "No sink port %u found", source);
+  }
+
+end:
+
+  KMS_SELECTABLE_MIXER_UNLOCK (self);
+
+  return connected;
 }
 
 static gboolean
