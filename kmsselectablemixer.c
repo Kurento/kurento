@@ -141,6 +141,62 @@ release_sink_pads (GstElement * audiomixer)
   gst_iterator_free (it);
 }
 
+static gboolean
+disconnect_elements (GstElement * agnosticbin, GstElement * audiomixer)
+{
+  gboolean done = FALSE, disconnected = FALSE;
+  GValue val = G_VALUE_INIT;
+  GstIterator *it;
+
+  it = gst_element_iterate_src_pads (agnosticbin);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *srcpad, *sinkpad;
+        GstElement *mixer;
+
+        srcpad = g_value_get_object (&val);
+        sinkpad = gst_pad_get_peer (srcpad);
+        mixer = gst_pad_get_parent_element (sinkpad);
+
+        if (mixer == audiomixer) {
+          GST_DEBUG ("Unlink %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT,
+              agnosticbin, mixer);
+
+          if (!gst_pad_unlink (srcpad, sinkpad)) {
+            GST_ERROR ("Can not unlink %" GST_PTR_FORMAT " and %"
+                GST_PTR_FORMAT, srcpad, sinkpad);
+          }
+
+          gst_element_release_request_pad (mixer, sinkpad);
+          gst_element_release_request_pad (agnosticbin, srcpad);
+          disconnected |= TRUE;
+        }
+
+        gst_object_unref (sinkpad);
+        gst_object_unref (mixer);
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's src pads",
+            GST_ELEMENT_NAME (agnosticbin));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+
+  return disconnected;
+}
+
 static void
 kms_selectable_mixer_port_data_destroy (gpointer data)
 {
@@ -334,8 +390,30 @@ static gboolean
 kms_selectable_mixer_disconnect_audio (KmsSelectableMixer * self, guint source,
     guint sink)
 {
-  /* TODO: */
-  return FALSE;
+  KmsSelectableMixerPortData *source_port, *sink_port;
+  gboolean disconnected = FALSE;
+
+  KMS_SELECTABLE_MIXER_LOCK (self);
+
+  source_port = g_hash_table_lookup (self->priv->ports, &source);
+  if (source_port == NULL) {
+    GST_ERROR_OBJECT (self, "No source port %u found", source);
+    goto end;
+  }
+
+  sink_port = g_hash_table_lookup (self->priv->ports, &sink);
+  if (sink_port != NULL) {
+    disconnected = disconnect_elements (source_port->audio_agnostic,
+        sink_port->audiomixer);
+  } else {
+    GST_ERROR_OBJECT (self, "No sink port %u found", source);
+  }
+
+end:
+
+  KMS_SELECTABLE_MIXER_UNLOCK (self);
+
+  return disconnected;
 }
 
 static void
