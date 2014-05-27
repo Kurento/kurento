@@ -38,6 +38,9 @@ public class KurentoTest {
 	@Rule
 	public TestName testName = new TestName();
 
+	@Rule
+	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
+
 	protected int threshold = 10;
 
 	/**

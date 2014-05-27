@@ -20,6 +20,9 @@ public class KurentoServicesTestHelper {
 	public static final String KMS_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
 	public static final String KMS_TRANSPORT_DEFAULT = KMS_TRANSPORT_THRIFT_VALUE;
 
+	public static final String KMS_PRINT_LOG_PROP = "kms.print.log";
+	public static final String KMS_PRINT_LOG_DEFAULT = "true";
+
 	public static final String AUTOSTART_FALSE_VALUE = "false";
 	public static final String AUTOSTART_TEST_VALUE = "test";
 	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
@@ -54,9 +57,11 @@ public class KurentoServicesTestHelper {
 	private static MediaConnectorManager mediaConnector;
 
 	private static String testName;
+	private static String workspace;
 	private static String kmsAutostart;
 	private static String krcAutostart;
 	private static String kmcAutostart;
+	private static String kmsPrintLog;
 
 	public static void startKurentoServicesIfNeccessary() {
 
@@ -108,6 +113,7 @@ public class KurentoServicesTestHelper {
 
 	private static void startKurentoMediaServerIfNecessary() {
 		kmsAutostart = getProperty(KMS_AUTOSTART_PROP, KMS_AUTOSTART_DEFAULT);
+		kmsPrintLog = getProperty(KMS_PRINT_LOG_PROP, KMS_PRINT_LOG_DEFAULT);
 
 		switch (kmsAutostart) {
 		case AUTOSTART_FALSE_VALUE:
@@ -221,6 +227,22 @@ public class KurentoServicesTestHelper {
 
 	public static void setTestName(String testName) {
 		KurentoServicesTestHelper.testName = testName;
+	}
+
+	public static String getTestName() {
+		return KurentoServicesTestHelper.testName;
+	}
+
+	public static void setWorkspace(String workspace) {
+		KurentoServicesTestHelper.workspace = workspace;
+	}
+
+	public static String getWorkspace() {
+		return KurentoServicesTestHelper.workspace;
+	}
+
+	public static boolean printKmsLog() {
+		return Boolean.parseBoolean(kmsPrintLog);
 	}
 
 	public static int getKmsHttpPort() {

@@ -106,6 +106,8 @@ public class KurentoMediaServerManager {
 			workspace += "/";
 		}
 
+		KurentoServicesTestHelper.setWorkspace(workspace);
+
 		// Default debug options
 		debugOptions = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
 
