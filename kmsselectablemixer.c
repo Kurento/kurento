@@ -20,6 +20,7 @@
 #include "kms-marshal.h"
 #include "kmsselectablemixer.h"
 #include "kmsmixerport.h"
+#include "kmsaudiomixerbin.h"
 
 #define PLUGIN_NAME "selectablemixer"
 
@@ -51,6 +52,7 @@ typedef struct _KmsSelectableMixerPortData KmsSelectableMixerPortData;
 struct _KmsSelectableMixerPortData
 {
   KmsSelectableMixer *mixer;
+  GstElement *audiomixer;
   gint id;
   GstElement *audio_agnostic;
   GstElement *video_agnostic;
@@ -89,21 +91,76 @@ create_gint (gint value)
 }
 
 static void
+release_sink_pads (GstElement * audiomixer)
+{
+  GValue val = G_VALUE_INIT;
+  GstIterator *it;
+  gboolean done = FALSE;
+
+  it = gst_element_iterate_sink_pads (audiomixer);
+  do {
+    switch (gst_iterator_next (it, &val)) {
+      case GST_ITERATOR_OK:
+      {
+        GstPad *sinkpad, *srcpad;
+        GstElement *agnosticbin;
+
+        sinkpad = g_value_get_object (&val);
+        srcpad = gst_pad_get_peer (sinkpad);
+        agnosticbin = gst_pad_get_parent_element (srcpad);
+
+        GST_DEBUG ("Unlink %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT,
+            agnosticbin, audiomixer);
+
+        if (!gst_pad_unlink (srcpad, sinkpad)) {
+          GST_ERROR ("Can not unlink %" GST_PTR_FORMAT " and %" GST_PTR_FORMAT,
+              srcpad, sinkpad);
+        }
+
+        gst_element_release_request_pad (audiomixer, sinkpad);
+        gst_element_release_request_pad (agnosticbin, srcpad);
+
+        gst_object_unref (srcpad);
+        gst_object_unref (agnosticbin);
+        g_value_reset (&val);
+        break;
+      }
+      case GST_ITERATOR_RESYNC:
+        gst_iterator_resync (it);
+        break;
+      case GST_ITERATOR_ERROR:
+        GST_ERROR ("Error iterating over %s's src pads",
+            GST_ELEMENT_NAME (audiomixer));
+      case GST_ITERATOR_DONE:
+        g_value_unset (&val);
+        done = TRUE;
+        break;
+    }
+  } while (!done);
+
+  gst_iterator_free (it);
+}
+
+static void
 kms_selectable_mixer_port_data_destroy (gpointer data)
 {
   KmsSelectableMixerPortData *port_data = (KmsSelectableMixerPortData *) data;
   KmsSelectableMixer *self = port_data->mixer;
 
   KMS_SELECTABLE_MIXER_LOCK (self);
+
+  release_sink_pads (port_data->audiomixer);
+
   gst_bin_remove_many (GST_BIN (self), port_data->audio_agnostic,
-      port_data->video_agnostic, NULL);
+      port_data->video_agnostic, port_data->audiomixer, NULL);
+
   KMS_SELECTABLE_MIXER_LOCK (self);
 
-  /* TODO: Disconnect all src pads connected to other audio mixers */
-
+  gst_element_set_state (port_data->audiomixer, GST_STATE_NULL);
   gst_element_set_state (port_data->audio_agnostic, GST_STATE_NULL);
   gst_element_set_state (port_data->video_agnostic, GST_STATE_NULL);
 
+  g_clear_object (&port_data->audiomixer);
   g_clear_object (&port_data->video_agnostic);
   g_clear_object (&port_data->audio_agnostic);
 
@@ -116,19 +173,24 @@ kms_selectable_mixer_port_data_create (KmsSelectableMixer * self, gint id)
   KmsSelectableMixerPortData *data = g_slice_new0 (KmsSelectableMixerPortData);
 
   data->mixer = self;
+  data->audiomixer = gst_element_factory_make ("audiomixerbin", NULL);
   data->audio_agnostic = gst_element_factory_make ("agnosticbin", NULL);
   data->video_agnostic = gst_element_factory_make ("agnosticbin", NULL);
   data->id = id;
 
   gst_bin_add_many (GST_BIN (self), g_object_ref (data->audio_agnostic),
-      g_object_ref (data->video_agnostic), NULL);
+      g_object_ref (data->video_agnostic), data->audiomixer, NULL);
+
   gst_element_sync_state_with_parent (data->audio_agnostic);
   gst_element_sync_state_with_parent (data->video_agnostic);
+  gst_element_sync_state_with_parent (data->audiomixer);
 
-  kms_base_hub_link_video_sink (KMS_BASE_HUB (self), id,
-      data->video_agnostic, "sink", FALSE);
-  kms_base_hub_link_audio_sink (KMS_BASE_HUB (self), id,
-      data->audio_agnostic, "sink", FALSE);
+  kms_base_hub_link_video_sink (KMS_BASE_HUB (self), id, data->video_agnostic,
+      "sink", FALSE);
+  kms_base_hub_link_audio_sink (KMS_BASE_HUB (self), id, data->audio_agnostic,
+      "sink", FALSE);
+  kms_base_hub_link_audio_src (KMS_BASE_HUB (self), id, data->audiomixer,
+      "src", FALSE);
 
   return data;
 }
