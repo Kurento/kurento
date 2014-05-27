@@ -146,7 +146,7 @@ QUnit.asyncTest('Media session started', function()
 //{
 //  var self = this;
 
-//  QUnit.expect(5);
+//  QUnit.expect(3);
 
 
 //  var timeout = new Timeout('"HttpGetEndpoint:Media session terminated"',

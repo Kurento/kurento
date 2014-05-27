@@ -139,11 +139,9 @@ lifecycle =
 
     this.kwsMedia = new KwsMedia(ws_uri);
 
-    this.kwsMedia.on('error', onerror);
-
-    this.kwsMedia.on('connect', function()
+    this.kwsMedia.then(function()
     {
-      this.create('MediaPipeline', function(error, pipeline)
+      self.kwsMedia.create('MediaPipeline', function(error, pipeline)
       {
         if(error) return onerror(error);
 
@@ -151,7 +149,8 @@ lifecycle =
 
         QUnit.start();
       });
-    });
+    },
+    onerror);
 
     QUnit.stop();
   },
