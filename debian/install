@@ -1,2 +1,2 @@
-target/ktool-rom-processor.jar /usr/share/java
+target/ktool-rom-processor-jar-with-dependencies.jar /usr/bin
 scripts/ktool-rom-processor /usr/bin

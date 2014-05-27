@@ -13,15 +13,31 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<wagon-ssh.version>2.0</wagon-ssh.version>
 	</properties>
-
+	<profiles>
+		<profile>
+			<id>release</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-release-plugin</artifactId>
+						<version>2.5</version>
+						<configuration>
+							<pushChanges>false</pushChanges>
+							<extensions>
+								<extension>
+									<groupId>org.apache.maven.wagon</groupId>
+									<artifactId>wagon-ssh</artifactId>
+									<version>2.x</version>
+								</extension>
+							</extensions>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<build>
-		<extensions>
-			<extension>
-				<groupId>org.apache.maven.wagon</groupId>
-				<artifactId>wagon-ssh</artifactId>
-				<version>${wagon-ssh.version}</version>
-			</extension>
-		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -37,7 +53,7 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.2.1</version>
 				<configuration>
-					<finalName>kurento-idl-generator</finalName>
+					<finalName>ktool-rom-processor</finalName>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
@@ -56,14 +72,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<pushChanges>false</pushChanges>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

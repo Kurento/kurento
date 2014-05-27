@@ -2,15 +2,23 @@ Source: ktool-rom-processor
 Section: devel
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
-Build-Depends: debhelper(>=9), openjdk-7-jdk | openjdk-6-jdk | java-compiler, libfreemarker-java,
- libgoogle-gson-java, libslf4j-java, libcommons-cli-java
+Build-Depends: debhelper(>=9),
+               cdbs,
+               default-jdk,
+               maven-debian-helper,
+               libmaven-assembly-plugin-java,
+               libmaven-compiler-plugin-java,
+               libfreemarker-java,
+               libgoogle-gson-java,
+               libslf4j-java,
+               libcommons-cli-java
 Standards-Version: 3.9.4
 
 
 Package: ktool-rom-processor
 Architecture: all
-Depends: default-jre (>= 6) | default-jre-headless (>= 6) | java6-runtime | java6-runtime-headless,
- libfreemarker-java, libgoogle-gson-java, libslf4j-java, libcommons-cli-java, ${misc:Depends}
+Depends: ${maven:Depends},
+         ${misc:Depends}
 Description: Kurento Media Server Remote Object Model Processor
  This tools generates stubs in different languages for communication
  with the Kurento Media server using a json-rpc model and
