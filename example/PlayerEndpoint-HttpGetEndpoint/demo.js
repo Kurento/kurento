@@ -13,7 +13,7 @@
  *
  */
 
-const ws_uri = 'ws://130.206.81.87/thrift/ws/websocket';
+const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
 
 
 function onerror(error)
