@@ -28,7 +28,7 @@
 								<extension>
 									<groupId>org.apache.maven.wagon</groupId>
 									<artifactId>wagon-ssh</artifactId>
-									<version>2.x</version>
+									<version>${wagon-ssh.version}</version>
 								</extension>
 							</extensions>
 						</configuration>
