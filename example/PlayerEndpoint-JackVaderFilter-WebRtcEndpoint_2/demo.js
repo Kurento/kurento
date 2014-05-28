@@ -1,4 +1,19 @@
-const ws_uri = 'ws://192.168.0.102:7788/thrift/ws/websocket';
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+
+const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
 
 const URL_FIWARECUT = "https://ci.kurento.com/video/fiwarecut.webm";
 
@@ -29,7 +44,7 @@ window.addEventListener('load', function()
   KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    kwsMedia.create('MediaPipeline', function(error, pipeline)
     {
       if(error) return onerror(error);
 
@@ -59,8 +74,7 @@ window.addEventListener('load', function()
               if(error) return onerror(error);
 
               // Connect media element between them
-              pipeline.connect(player, webRtc, function(error, pipeline)
-//              pipeline.connect(jackVader, webRtc, function(error, pipeline)
+              jackVader.connect(webRtc, function(error, pipeline)
               {
                 // Create a PeerConnection client in the browser
                 var peerConnection = new RTCPeerConnection

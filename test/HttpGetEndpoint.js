@@ -130,12 +130,7 @@ QUnit.asyncTest('Media session started', function()
           QUnit.notEqual(url, undefined, 'URL: '+url);
 
           // This should trigger MediaSessionStarted event
-          doGet(url,
-          function()
-          {
-            timeout.start()
-          },
-          onerror);
+          doGet(url, timeout.start.bind(timeout), onerror);
         })
       });
     });

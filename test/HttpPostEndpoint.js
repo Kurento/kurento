@@ -146,11 +146,19 @@ QUnit.asyncTest('Media session started', function()
 //{
 //  var self = this;
 
+<<<<<<< HEAD
 //  QUnit.expect(5);
 
 
 //  var timeout = new Timeout('"HttpPostEndpoint:Media session terminated"',
 //                            0.5 * 1000, onerror);
+=======
+//  QUnit.expect(3);
+
+
+//  var timeout = new Timeout('"HttpPostEndpoint:Media session terminated"',
+//                            50 * 1000, onerror);
+>>>>>>> f484a6d... Updated tests to new server and API
 
 
 //  self.pipeline.create('HttpPostEndpoint', function(error, httpPost)

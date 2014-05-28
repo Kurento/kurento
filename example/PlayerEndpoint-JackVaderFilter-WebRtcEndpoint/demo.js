@@ -1,29 +1,24 @@
-var PlayerEndpoint  = KwsMedia.endpoints.PlayerEndpoint;
-var JackVaderFilter = KwsMedia.filters.JackVaderFilter;
-var WebRtcEndpoint  = KwsMedia.endpoints.WebRtcEndpoint;
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
+
+const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
 
 
-function processOffer(peerConnection, offer, onsuccess, onerror)
+function onerror(error)
 {
-  offer = new RTCSessionDescription({sdp: offer, type: 'offer'});
-
-  peerConnection.setRemoteDescription(offer, function()
-  {
-    console.log(offer.sdp);
-
-    peerConnection.createAnswer(function(answer)
-    {
-      console.log(answer.sdp);
-
-      peerConnection.setLocalDescription(answer, function()
-      {
-        onsuccess(answer.sdp);
-      },
-      onerror);
-    },
-    onerror);
-  },
-  onerror);
+  console.error(error);
 };
 
 
@@ -31,20 +26,19 @@ window.addEventListener('load', function()
 {
   var videoOutput = document.getElementById("videoOutput");
 
-  KwsMedia('ws://192.168.0.110:7788/thrift/ws/websocket',
-  function(kwsMedia)
+  KwsMedia(ws_uri, function(kwsMedia)
   {
     // Create pipeline
-    kwsMedia.createMediaPipeline(function(error, pipeline)
+    kwsMedia.create('MediaPipeline', function(error, pipeline)
     {
-      if(error) return console.error(error);
+      if(error) return onerror(error);
 
       // Create pipeline media elements (endpoints & filters)
-      PlayerEndpoint.create(pipeline,
+      pipeline.create('PlayerEndpoint',
       {uri: "https://ci.kurento.com/video/fiwarecut.webm"},
       function(error, player)
       {
-        if(error) return console.error(error);
+        if(error) return onerror(error);
 
         // Subscribe to PlayerEndpoint EOS event
         player.on('EndOfStream', function(event)
@@ -52,26 +46,26 @@ window.addEventListener('load', function()
           console.log("EndOfStream event:", event);
         });
 
-        JackVaderFilter.create(pipeline, function(error, jackVader)
+        pipeline.create('JackVaderFilter', function(error, jackVader)
         {
-          if(error) return console.error(error);
+          if(error) return onerror(error);
 
           // Connect media element between them
-          pipeline.connect(player, jackVader, function(error, pipeline)
+          player.connect(jackVader, function(error, pipeline)
           {
-            if(error) return console.error(error);
+            if(error) return onerror(error);
 
-            WebRtcEndpoint.create(pipeline, function(error, webRtc)
+            pipeline.create('WebRtcEndpoint', function(error, webRtc)
             {
-              if(error) return console.error(error);
+              if(error) return onerror(error);
 
               // Connect media element between them
-              pipeline.connect(jackVader, webRtc, function(error, pipeline)
+              jackVader.connect(webRtc, function(error, pipeline)
               {
                 // Connect the pipeline to the PeerConnection client
                 webRtc.generateOffer(function(error, offer)
                 {
-                  if(error) return console.error(error);
+                  if(error) return onerror(error);
 
                   // Create a PeerConnection client in the browser
                   var peerConnection = new RTCPeerConnection
@@ -84,7 +78,7 @@ window.addEventListener('load', function()
                   {
                     webRtc.processAnswer(answer, function(error)
                     {
-                      if(error) return console.error(error);
+                      if(error) return onerror(error);
 
                       var stream = peerConnection.getRemoteStreams()[0];
 
@@ -94,13 +88,13 @@ window.addEventListener('load', function()
                       // Start player
                       player.play(function(error, result)
                       {
-                        if(error) return console.error(error);
+                        if(error) return onerror(error);
 
                         console.log(result);
                       });
                     });
                   },
-                  console.error);
+                  onerror);
                 });
               });
             });
@@ -109,5 +103,5 @@ window.addEventListener('load', function()
       });
     });
   },
-  console.error);
+  onerror);
 });

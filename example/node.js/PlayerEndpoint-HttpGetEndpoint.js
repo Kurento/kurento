@@ -4,7 +4,7 @@ var http = require('http');
 var KwsMedia = require('../..')
 
 
-const ws_uri = 'ws://192.168.0.110:7788/thrift/ws/websocket';
+const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
 
 const URL_SMALL = "https://ci.kurento.com/video/small.webm";
 
@@ -12,32 +12,41 @@ const URL_SMALL = "https://ci.kurento.com/video/small.webm";
 function onerror(error)
 {
   console.error(error);
+
+  kwsMedia.close();
 };
 
 
-KwsMedia(ws_uri, function(kwsMedia)
+var kwsMedia = KwsMedia(ws_uri, function(kwsMedia)
 {
   // Create pipeline
-  kwsMedia.create('MediaPipeline' function(error, pipeline)
+  kwsMedia.create('MediaPipeline', function(error, pipeline)
   {
     if(error) return console.error(error);
+
+    console.log('pipeline');
 
     // Create pipeline media elements (endpoints & filters)
     pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
     {
       if(error) return console.error(error);
 
+      console.log('player');
+
       // Subscribe to PlayerEndpoint EOS event
       player.on('EndOfStream', function(event)
       {
-        console.log("EndOfStream event:", event);
+        console.log("Player EndOfStream");
+
+        pipeline.release();
+        kwsMedia.close();
       });
 
       pipeline.create('HttpGetEndpoint', function(error, httpGet)
       {
         if(error) return console.error(error);
 
-        console.log('httpGet',httpGet);
+        console.log('httpGet');
 
         // Connect media element between them
         player.connect(httpGet, function(error)
@@ -59,7 +68,7 @@ KwsMedia(ws_uri, function(kwsMedia)
 
               http.get(url, function(response)
               {
-                console.log("Got response", response);
+                console.log("Got response");
 
                 var file = fs.createWriteStream("file.webm");
 
@@ -67,13 +76,16 @@ KwsMedia(ws_uri, function(kwsMedia)
                 {
                   kwsMedia.close();
                 });
-              }).on('error', function(error)
-              {
-                console.log("Got error: " + error.message);
-              });
+              }).on('error', onerror);
             });
           });
         });
+
+//        // Subscribe to HttpGetEndpoint EOS event
+//        httpGet.on('EndOfStream', function(event)
+//        {
+//          console.log("httpGet EndOfStream");
+//        });
       });
     });
   });

@@ -298,8 +298,8 @@ function CpbWebRtc()
   var contentId = document.getElementById("contentId");
       contentId = contentId.disabled ? "" : "/" + contentId.value;
 
-  var endpoint = 'ws://130.206.81.87/thrift/ws/websocket';
-//  var endpoint = "ws://130.206.81.87/thrift/ws/websocket" + contentId;
+  var endpoint = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
+//  var endpoint = 'ws://kms01.kurento.org:8080/thrift/ws/websocket' + contentId;
 
   var kwsMedia = null;
 

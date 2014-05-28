@@ -19,7 +19,11 @@ of them are available as online demos:
 * [WebRtcEndpoint FaceOverlayFilter 2](./WebRtcEndpoint-FaceOverlayFilter_2)
 * [WebRtcEndpoint PointerDetectorAdvFilter 2](./WebRtcEndpoint-PointerDetectorAdvFilter_2)
 
+Also, there're some examples regarding how to use the Kurento Web SDK Media API
+from [Node.js].
+
 
 [KurentoImage]: https://0.gravatar.com/avatar/b8fffabbe3831731cb4c4c9667bfa439?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
+[Node.js]: http://nodejs.org
 [website]: http://kurento.org

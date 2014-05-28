@@ -1,4 +1,25 @@
-var RTCPeerConnection = RTCPeerConnection || webkitRTCPeerConnection;
+function processOffer(peerConnection, offer, onsuccess, onerror)
+{
+  offer = new RTCSessionDescription({sdp: offer, type: 'offer'});
+
+  peerConnection.setRemoteDescription(offer, function()
+  {
+    console.log(offer.sdp);
+
+    peerConnection.createAnswer(function(answer)
+    {
+      console.log(answer.sdp);
+
+      peerConnection.setLocalDescription(answer, function()
+      {
+        onsuccess(answer.sdp);
+      },
+      onerror);
+    },
+    onerror);
+  },
+  onerror);
+};
 
 
 window.addEventListener('load', function()
@@ -44,34 +65,23 @@ window.addEventListener('load', function()
         {
           if(error) return console.error(error);
 
-          peerConnection.setRemoteDescription(offer, function()
+          processOffer(peerConnection, offer, function()
           {
-            peerConnection.createAnswer(function(answer)
+            webRtcEndPoint.invoke("processAnswer", {answer: answer},
+            function(error)
             {
-              peerConnection.setLocalDescription(answer, function()
-              {
+              if(error) return console.error(error);
 
-                webRtcEndPoint.invoke("processAnswer", {answer: answer},
-                function(error)
-                {
-                  if(error) return console.error(error);
+              var stream = peerConnection.getLocalStreams()[0];
 
-                  var stream = peerConnection.getLocalStreams()[0];
+              // Set the stream on the video tag
+              var videoOutput = document.getElementById("videoOutput");
+                  videoOutput.src = URL.createObjectURL(stream);
 
-                  // Set the stream on the video tag
-                  var videoOutput = document.getElementById("videoOutput");
-                      videoOutput.src = URL.createObjectURL(stream);
-
-                  // Start player
-                  playerEndPoint.start();
-                });
-
-              },
-              console.error);
-            },
-            console.error);
-          },
-          console.error);
+              // Start player
+              playerEndPoint.start();
+            });
+          });
 
         });
       });
