@@ -1,0 +1,10 @@
+---
+ name: PlayerEndpoint-HttpGetEndpoint
+ description: Play a file from a given URL and streaming it over HTTP.
+ authors:
+   - Jesús Leganés Combarro "piranna" <piranna@gmail.com>
+ resources:
+   - http://ci.kurento.com/apps/kws-media-api.js
+ js_wrap: h
+ normalize_css: no
+ ...
