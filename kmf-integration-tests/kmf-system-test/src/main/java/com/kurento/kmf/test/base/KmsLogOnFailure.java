@@ -40,7 +40,8 @@ public class KmsLogOnFailure extends TestWatcher {
 	protected void failed(Throwable e, Description description) {
 
 		if (KurentoServicesTestHelper.printKmsLog()) {
-			String workspace = KurentoServicesTestHelper.getWorkspace();
+			String testDir = KurentoServicesTestHelper.getTestDir();
+			String testCaseName = KurentoServicesTestHelper.getTestCaseName();
 			String testName = KurentoServicesTestHelper.getTestName();
 
 			log.info("******************************************************************************");
@@ -50,8 +51,8 @@ public class KmsLogOnFailure extends TestWatcher {
 			log.info("******************************************************************************");
 
 			try {
-				BufferedReader br = new BufferedReader(new FileReader(workspace
-						+ testName + "/kms.log"));
+				BufferedReader br = new BufferedReader(new FileReader(testDir
+						+ "TEST-" + testCaseName + "/" + testName + "-kms.log"));
 				String line;
 				while ((line = br.readLine()) != null) {
 					log.info(line);

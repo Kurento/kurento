@@ -47,6 +47,9 @@ public class KurentoMediaServerManager {
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
+	private static final String KURENTO_TEST_DIR_PROP = "kurento.test.dir";
+	private static final String KURENTO_TEST_DIR_DEFAULT = "/tmp";
+
 	private static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
 	private static final String KURENTO_GST_PLUGINS_DEFAULT = "";
 
@@ -59,7 +62,9 @@ public class KurentoMediaServerManager {
 	private Address thriftAddress;
 	private int httpPort;
 
-	private String logFolder = "";
+	private String testClassName;
+	private String testMethodName;
+	private String testDir;
 
 	private String serverCommand;
 	private String gstPlugins;
@@ -84,11 +89,15 @@ public class KurentoMediaServerManager {
 		return manager;
 	}
 
-	public void setLogFolder(String logFolder) {
-		this.logFolder = logFolder;
+	private KurentoMediaServerManager() {
 	}
 
-	private KurentoMediaServerManager() {
+	public void setTestClassName(String testClassName) {
+		this.testClassName = testClassName;
+	}
+
+	public void setTestMethodName(String testMethodName) {
+		this.testMethodName = testMethodName;
 	}
 
 	public void start() {
@@ -102,11 +111,17 @@ public class KurentoMediaServerManager {
 		workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
 				KURENTO_WORKSPACE_DEFAULT);
 
+		testDir = PropertiesManager.getProperty(KURENTO_TEST_DIR_PROP,
+				KURENTO_TEST_DIR_DEFAULT);
+
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
 		}
+		if (!testDir.endsWith("/")) {
+			testDir += "/";
+		}
 
-		KurentoServicesTestHelper.setWorkspace(workspace);
+		KurentoServicesTestHelper.setTestDir(testDir);
 
 		// Default debug options
 		debugOptions = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
@@ -122,6 +137,7 @@ public class KurentoMediaServerManager {
 		}
 
 		createKurentoConf();
+		String logFolder = testDir + "TEST-" + testClassName;
 		createFolder(logFolder);
 
 		// Before to launch a new KMS process, former KMS process should be
@@ -134,8 +150,8 @@ public class KurentoMediaServerManager {
 
 		log.debug("Log file: {}", logFolder);
 
-		Shell.run("sh", "-c", workspace + "kurento.sh > " + workspace
-				+ logFolder + "/kms.log 2>&1");
+		Shell.run("sh", "-c", workspace + "kurento.sh > " + logFolder + "/"
+				+ testMethodName + "-kms.log 2>&1");
 
 		waitForKurentoMediaServer();
 	}
@@ -176,10 +192,10 @@ public class KurentoMediaServerManager {
 		}
 	}
 
-	private void createFolder(String callerTest) {
-		File testFolder = new File(workspace + callerTest);
-		if (!testFolder.exists()) {
-			testFolder.mkdir();
+	private void createFolder(String folder) {
+		File folderFile = new File(folder);
+		if (!folderFile.exists()) {
+			folderFile.mkdir();
 		}
 	}
 

@@ -79,6 +79,7 @@ public class KurentoTest {
 		log.info("Starting test {}",
 				this.getClass().getName() + "." + testName.getMethodName());
 
+		KurentoServicesTestHelper.setTestCaseName(this.getClass().getName());
 		KurentoServicesTestHelper.setTestName(testName.getMethodName());
 		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 

@@ -56,8 +56,9 @@ public class KurentoServicesTestHelper {
 	private static RabbitMqConnectorManager rabbitMqConnector;
 	private static MediaConnectorManager mediaConnector;
 
+	private static String testCaseName;
 	private static String testName;
-	private static String workspace;
+	private static String testDir;
 	private static String kmsAutostart;
 	private static String krcAutostart;
 	private static String kmcAutostart;
@@ -172,7 +173,8 @@ public class KurentoServicesTestHelper {
 					+ " is not valid for property " + KMS_TRANSPORT_PROP);
 		}
 
-		kms.setLogFolder(testName);
+		kms.setTestClassName(testCaseName);
+		kms.setTestMethodName(testName);
 		kms.start();
 	}
 
@@ -233,12 +235,20 @@ public class KurentoServicesTestHelper {
 		return KurentoServicesTestHelper.testName;
 	}
 
-	public static void setWorkspace(String workspace) {
-		KurentoServicesTestHelper.workspace = workspace;
+	public static void setTestCaseName(String testCaseName) {
+		KurentoServicesTestHelper.testCaseName = testCaseName;
 	}
 
-	public static String getWorkspace() {
-		return KurentoServicesTestHelper.workspace;
+	public static String getTestCaseName() {
+		return KurentoServicesTestHelper.testCaseName;
+	}
+
+	public static void setTestDir(String testDir) {
+		KurentoServicesTestHelper.testDir = testDir;
+	}
+
+	public static String getTestDir() {
+		return KurentoServicesTestHelper.testDir;
 	}
 
 	public static boolean printKmsLog() {
