@@ -193,18 +193,18 @@ public class KurentoMediaServerManager {
 		if (rabbitMqAddress != null) {
 			data.put("transport", "RabbitMQ");
 			data.put("serverAddress", rabbitMqAddress.getHost());
-			data.put("serverPort", rabbitMqAddress.getPort());
+			data.put("serverPort", String.valueOf(rabbitMqAddress.getPort()));
 		} else {
 			data.put("transport", "Thrift");
 			data.put("serverAddress", thriftAddress.getHost());
-			data.put("serverPort", thriftAddress.getPort());
+			data.put("serverPort", String.valueOf(thriftAddress.getPort()));
 		}
 
 		data.put("gstPlugins", gstPlugins);
 		data.put("debugOptions", debugOptions);
 		data.put("serverCommand", serverCommand);
 		data.put("workspace", workspace);
-		data.put("httpEndpointPort", httpPort);
+		data.put("httpEndpointPort", String.valueOf(httpPort));
 
 		cfg.setClassForTemplateLoading(KurentoMediaServerManager.class,
 				"/templates/");
