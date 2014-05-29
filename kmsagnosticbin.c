@@ -244,8 +244,6 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
     return;
   }
 
-  GST_INFO_OBJECT (elem, "Removing");
-
   self = KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (elem));
 
   if (self != NULL) {
@@ -262,12 +260,9 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
       g_object_unref (sink);
     }
 
-    g_object_ref (elem);
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
-        remove_on_unlinked_async, elem, g_object_unref);
+        remove_on_unlinked_async, g_object_ref (elem), g_object_unref);
   }
-
-  GST_INFO_OBJECT (elem, "OK");
 }
 
 /* Sink name should be static memory */
@@ -331,17 +326,17 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
   }
 
   remove_element_on_unlinked (queue, "src", "sink");
+  g_signal_connect (tee_src, "unlinked", G_CALLBACK (remove_tee_pad_on_unlink),
+      NULL);
 
   gst_pad_add_probe (tee_src, GST_PAD_PROBE_TYPE_EVENT_UPSTREAM, tee_src_probe,
       NULL, NULL);
+
   ret = gst_pad_link (tee_src, queue_sink);
 
   if (G_UNLIKELY (GST_PAD_LINK_FAILED (ret)))
     GST_ERROR ("Linking %" GST_PTR_FORMAT " with %" GST_PTR_FORMAT " result %d",
         tee_src, queue_sink, ret);
-
-  g_signal_connect (tee_src, "unlinked", G_CALLBACK (remove_tee_pad_on_unlink),
-      NULL);
 
   g_object_unref (queue_sink);
   g_object_unref (tee_src);
