@@ -631,8 +631,6 @@ kms_base_hub_unhandle_port (KmsBaseHub * mixer, gint id)
 
   GST_DEBUG ("Removing element: %" GST_PTR_FORMAT, port_data->port);
 
-  KMS_BASE_HUB_LOCK (mixer);
-
   kms_base_hub_remove_port_pads (mixer, id);
 
   g_hash_table_remove (mixer->priv->ports, &id);
