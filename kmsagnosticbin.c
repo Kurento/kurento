@@ -100,7 +100,31 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
     GST_STATIC_CAPS (KMS_AGNOSTIC_CAPS_CAPS)
     );
 
-static void iterate_src_pads (KmsAgnosticBin2 * self);
+typedef void (*KmsPadIterationAction) (KmsAgnosticBin2 * self, GstPad * pad);
+
+static void kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self,
+    GstPad * pad);
+static gboolean kms_agnostic_bin2_process_pad_loop (gpointer data);
+static void iterate_src_pads (KmsAgnosticBin2 * self,
+    KmsPadIterationAction action);
+
+static void
+add_unlinked_pads_without_target (KmsAgnosticBin2 * self, GstPad * pad)
+{
+  GstPad *target;
+
+  if (!gst_pad_is_linked (pad)) {
+    return;
+  }
+
+  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target == NULL) {
+    kms_agnostic_bin2_add_pad_to_queue (self, pad);
+  } else {
+    g_object_unref (target);
+  }
+}
 
 static gboolean
 iterate_pads_on_main_loop (gpointer data)
@@ -108,8 +132,9 @@ iterate_pads_on_main_loop (gpointer data)
   KmsAgnosticBin2 *self = data;
 
   KMS_AGNOSTIC_BIN2_LOCK (self);
-  iterate_src_pads (self);
+  iterate_src_pads (self, add_unlinked_pads_without_target);
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
+  kms_agnostic_bin2_process_pad_loop (self);
 
   return FALSE;
 }
@@ -927,8 +952,8 @@ kms_agnostic_bin2_process_pad_loop (gpointer data)
     GST_DEBUG_OBJECT (self,
         "Caps reconfiguration when reconnection is taking place");
     while (!g_queue_is_empty (self->priv->pads_to_link)) {
-      gst_object_unref (GST_OBJECT (g_queue_pop_head (self->priv->
-                  pads_to_link)));
+      gst_object_unref (GST_OBJECT (g_queue_pop_head (self->
+                  priv->pads_to_link)));
     }
     goto end;
   }
@@ -961,7 +986,7 @@ kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 }
 
 static void
-iterate_src_pads (KmsAgnosticBin2 * self)
+iterate_src_pads (KmsAgnosticBin2 * self, KmsPadIterationAction action)
 {
   GstIterator *it = gst_element_iterate_src_pads (GST_ELEMENT (self));
   gboolean done = FALSE;
@@ -972,7 +997,7 @@ iterate_src_pads (KmsAgnosticBin2 * self)
     switch (gst_iterator_next (it, &item)) {
       case GST_ITERATOR_OK:
         pad = g_value_get_object (&item);
-        kms_agnostic_bin2_add_pad_to_queue (self, pad);
+        action (self, pad);
         g_value_reset (&item);
         break;
       case GST_ITERATOR_RESYNC:
@@ -984,9 +1009,6 @@ iterate_src_pads (KmsAgnosticBin2 * self)
         break;
     }
   }
-
-  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
-      kms_agnostic_bin2_process_pad_loop, g_object_ref (self), g_object_unref);
 
   gst_iterator_free (it);
 }
@@ -1024,6 +1046,16 @@ kms_agnostic_bin2_disconnect_previous_input_tee (KmsAgnosticBin2 * self)
   g_object_unref (tee_sink);
 }
 
+static void
+add_linked_pads (KmsAgnosticBin2 * self, GstPad * pad)
+{
+  if (!gst_pad_is_linked (pad)) {
+    return;
+  }
+
+  kms_agnostic_bin2_add_pad_to_queue (self, pad);
+}
+
 static GstPadProbeReturn
 set_input_caps (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
 {
@@ -1050,7 +1082,10 @@ set_input_caps (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
   GST_INFO_OBJECT (self, "Setting current caps to: %" GST_PTR_FORMAT,
       current_caps);
 
-  iterate_src_pads (self);
+  iterate_src_pads (self, add_linked_pads);
+
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
+      kms_agnostic_bin2_process_pad_loop, g_object_ref (self), g_object_unref);
 
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
