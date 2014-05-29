@@ -9,46 +9,38 @@
 <script src="js/jsonrpcclient.js"></script>
 <script src="js/webrtc-utils.js"></script>
 <script>
-	var client = new JsonRpcClient(
-			"ws://localhost:8080/webrtc/ws/websocket", onRequest);
+	var client = new JsonRpcClient('ws://' + location.host + '/webrtc/ws/websocket',
+			function() {});
+
 	var sdpOffer;
 	var localPeerConnection;
 
 	window.onload = function() {
-		console = new Console("console", console);
+		console = new Console('console', console);
 	}
 
 	function start() {
-		showSpinner("videoInput", "videoOutput");
-		prepareSendPlayer(function(peerConnection, offer) {
-			localPeerConnection = peerConnection;
-			sdpOffer = offer.sdp;
-			console.info(sdpOffer);
+		showSpinner('videoFromServer', 'videoLoopback');
+		var doc = document;
+		var videoFromServer = doc.getElementById('videoFromServer');
+		var videoLoopback = doc.getElementById('videoLoopback');
+		prepareSendAndReceivePlayer(videoFromServer, function(offerSdp, callback) {
+			console.log('Invoking SDP offer callback function');
 			client.sendRequest("start", {
-				sdpOffer : offer.sdp
+				sdpOffer : offerSdp
 			}, function(error, result) {
-				prepareReceivePlayer(peerConnection, result.sdpAnswer);
+				if (error) {
+					return console.error(error);
+				}
+				callback(result.sdpAnswer);
 			});
-		});
-	}
-
-	function onRequest(transaction, message) {
-		if (message.method === "started") {
-			onStarted(transaction, message);
-		} else {
-			console.error("Unrecognized request: " + JSON.stringify(message));
-		}
-	}
-
-	function onStarted(transaction, message) {
-		prepareReceivePlayer(localPeerConnection, message.params.sdpAnswer);
-		transaction.sendResponse({});
+		}, videoLoopback);
 	}
 
 	function showSpinner() {
 		for (var i = 0; i < arguments.length; i++) {
 			var videoTag = document.getElementById(arguments[i]);
-			videoTag.poster = "./img/transparent-1px.png";
+			videoTag.poster = './img/transparent-1px.png';
 			videoTag.style.background = "center transparent url('./img/spinner.gif') no-repeat";
 		}
 	}
@@ -56,8 +48,8 @@
 </head>
 <body>
 	<h1>WebRTC Demo</h1>
-	<video id="videoInput" autoplay controls width="480px" height="360px"></video>
-	<video id="videoOutput" autoplay controls width="480px" height="360px"></video>
+	<video id="videoLoopback" autoplay controls width="480px" height="360px"></video>
+	<video id="videoFromServer" autoplay controls width="480px" height="360px"></video>
 	<br />
 	<input type="button" value="Start" onclick="start(); return false;">
 	<br />

@@ -83,7 +83,7 @@ public class WebRtcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 		JsonObject scParams = new JsonObject();
 		scParams.addProperty("sdpAnswer", sdpAnswer);
-		session.sendRequest("started", scParams);
+		transaction.sendResponse(scParams);
 	}
 
 }
