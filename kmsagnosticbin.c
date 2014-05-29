@@ -234,6 +234,39 @@ remove_on_unlinked_async (gpointer data)
   return G_SOURCE_REMOVE;
 }
 
+static GstPadProbeReturn
+remove_on_unlinked_blocked (GstPad * pad, GstPadProbeInfo * info, gpointer elem)
+{
+  KmsAgnosticBin2 *self;
+  GstPad *sink;
+
+  if (elem == NULL) {
+    return GST_PAD_PROBE_REMOVE;
+  }
+
+  GST_DEBUG_OBJECT (pad, "Unlinkig pad");
+
+  if (g_object_get_data (G_OBJECT (pad), "unlinking")) {
+    GST_DEBUG ("Already unlinking");
+    return GST_PAD_PROBE_DROP;
+  }
+
+  g_object_set_data (G_OBJECT (pad), "unlinking", GINT_TO_POINTER (TRUE));
+
+  sink = gst_pad_get_peer (pad);
+  if (sink != NULL) {
+    gst_pad_unlink (pad, sink);
+    g_object_unref (sink);
+  }
+
+  self = KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (elem));
+
+  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
+      remove_on_unlinked_async, g_object_ref (elem), g_object_unref);
+
+  return GST_PAD_PROBE_PASS;
+}
+
 static void
 remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 {
@@ -253,8 +286,11 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
       GstPad *peer = gst_pad_get_peer (sink);
 
       if (peer != NULL) {
-        gst_pad_unlink (peer, sink);
+        gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_BLOCK,
+            remove_on_unlinked_blocked, g_object_ref (elem), g_object_unref);
         gst_object_unref (peer);
+        gst_object_unref (sink);
+        return;
       }
 
       g_object_unref (sink);
