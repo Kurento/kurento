@@ -263,6 +263,14 @@ public class BrowserClient implements Closeable {
 				});
 
 		setColorCoordinates(x, y);
+		// Guard time to wait JavaScript function to detect the color (otherwise
+		// race conditions could appear)
+		try {
+			Thread.sleep(200);
+		} catch (InterruptedException e) {
+			log.trace("InterruptedException in guard condition ({})",
+					e.getMessage());
+		}
 		return colorSimilarTo(expectedColor);
 	}
 

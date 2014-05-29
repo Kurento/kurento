@@ -47,9 +47,6 @@ public class KurentoMediaServerManager {
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
-	private static final String KURENTO_TEST_DIR_PROP = "kurento.test.dir";
-	private static final String KURENTO_TEST_DIR_DEFAULT = "/tmp";
-
 	private static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
 	private static final String KURENTO_GST_PLUGINS_DEFAULT = "";
 
@@ -111,14 +108,10 @@ public class KurentoMediaServerManager {
 		workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
 				KURENTO_WORKSPACE_DEFAULT);
 
-		testDir = PropertiesManager.getProperty(KURENTO_TEST_DIR_PROP,
-				KURENTO_TEST_DIR_DEFAULT);
+		testDir = "./target/surefire-reports/";
 
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
-		}
-		if (!testDir.endsWith("/")) {
-			testDir += "/";
 		}
 
 		KurentoServicesTestHelper.setTestDir(testDir);
@@ -195,7 +188,7 @@ public class KurentoMediaServerManager {
 	private void createFolder(String folder) {
 		File folderFile = new File(folder);
 		if (!folderFile.exists()) {
-			folderFile.mkdir();
+			folderFile.mkdirs();
 		}
 	}
 

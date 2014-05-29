@@ -3,6 +3,7 @@ package com.kurento.kmf.test.rabbitmq;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,7 @@ public class MultipleClientsAndServersTest {
 	private static final Logger log = LoggerFactory
 			.getLogger(MultipleClientsAndServersTest.class);
 
+	@Ignore
 	@Test
 	public void testMultipleClientsAndServers() throws InterruptedException {
 

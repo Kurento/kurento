@@ -128,13 +128,13 @@ public class MediaApiCompositeWebRtcTest extends BrowserMediaApiTest {
 			Assert.assertTrue("Timeout waiting playing event",
 					browserPlayer.waitForEvent("playing"));
 			Assert.assertTrue("Upper left part of the video must be red",
-					browserPlayer.color(Color.RED, 10, 0, 0));
+					browserPlayer.color(Color.RED, 12, 0, 0));
 			Assert.assertTrue("Upper right part of the video must be green",
-					browserPlayer.color(Color.GREEN, 11, 450, 0));
+					browserPlayer.color(Color.GREEN, 14, 450, 0));
 			Assert.assertTrue("Lower left part of the video must be blue",
-					browserPlayer.color(Color.BLUE, 12, 0, 450));
+					browserPlayer.color(Color.BLUE, 16, 0, 450));
 			Assert.assertTrue("Lower right part of the video must be white",
-					browserPlayer.color(Color.WHITE, 13, 450, 450));
+					browserPlayer.color(Color.WHITE, 18, 450, 450));
 
 			// Finally, a B&N filter is connected in one of the WebRTC's
 			GStreamerFilter bn = mp.newGStreamerFilter(
@@ -144,7 +144,7 @@ public class MediaApiCompositeWebRtcTest extends BrowserMediaApiTest {
 			Thread.sleep(5000);
 			Assert.assertTrue(
 					"When connecting the filter, the upper left part of the video must be gray",
-					browserPlayer.color(new Color(75, 75, 75), 15, 0, 0));
+					browserPlayer.color(new Color(75, 75, 75), 25, 0, 0));
 		}
 	}
 
