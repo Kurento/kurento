@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>WebRTC Demo</title>
+<script src="js/adapter.js"></script>
+<script src="js/console.js"></script>
+<script src="js/rpcbuilder.js"></script>
+<script src="js/jsonrpcclient.js"></script>
+<script src="js/webrtc-utils.js"></script>
+<script>
+	var client = new JsonRpcClient("ws://" + location.host
+			+ "/webrtc/ws/websocket", onRequest);
+	var sdpOffer;
+	var localPeerConnection;
+
+	window.onload = function() {
+		console = new Console("console", console);
+	}
+
+	function start() {
+		showSpinner("videoInput", "videoOutput");
+
+		var videoOutput = document.getElementById('videoOutput');
+		var videoInput = document.getElementById('videoInput');
+		prepareSendAndReceivePlayer(videoOutput, function(offerSdp, callback) {
+			console.log('Invoking SDP offer callback function');
+			client.sendRequest("start", {
+				sdpOffer : offerSdp
+			}, function(error, result) {
+				if (error) {
+					return console.error(error);
+				}
+				callback(result.sdpAnswer);
+			});
+		}, videoInput);
+
+		document.getElementById("start").disabled = true;
+		document.getElementById("stop").disabled = false;
+	}
+
+	function stop() {
+		client.sendRequest("stop", {}, null);
+		document.getElementById("start").disabled = false;
+		document.getElementById("stop").disabled = true;
+	}
+
+	function onRequest(transaction, message) {
+	}
+
+	function showSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			var videoTag = document.getElementById(arguments[i]);
+			videoTag.poster = "./img/transparent-1px.png";
+			videoTag.style.background = "black";
+		}
+	}
+</script>
+</head>
+<body>
+	<h1>WebRTC Demo</h1>
+	<video id="videoInput" autoplay controls width="480px" height="360px"></video>
+	<video id="videoOutput" autoplay controls width="480px" height="360px"></video>
+	<br />
+	<input type="button" value="Start" id="start"
+		onclick="start(); return false;">
+	<input type="button" value="Stop" id="stop"
+		onclick="stop(); return false;" disabled>
+	<br />
+	<div id="console"></div>
+</body>
+</html>

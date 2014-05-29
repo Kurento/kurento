@@ -69,6 +69,7 @@
 				<module>kmf-assembly</module>
 				<module>kmf-integration-tests</module>
 				<module>kmf-broker</module>
+				<module>kmf-sandbox</module>
 			</modules>
 			<build>
 				<plugins>
