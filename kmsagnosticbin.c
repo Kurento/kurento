@@ -1098,6 +1098,10 @@ kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
 
   self->priv->started = FALSE;
 
+  while (!g_queue_is_empty (self->priv->pads_to_link)) {
+    gst_object_unref (GST_OBJECT (g_queue_pop_head (self->priv->pads_to_link)));
+  }
+
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   gst_pad_push_event (self->priv->sink, gst_event_new_reconfigure ());
