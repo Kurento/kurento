@@ -18,18 +18,23 @@ import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -116,18 +121,29 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 	 *
 	 * @throws InterruptedException
 	 */
-	@Ignore
 	@Test
 	public void testEventMediaSessionTerminated() throws InterruptedException {
-		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
+		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
+				.build();
+		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().terminateOnEOS()
+				.build();
+		player.connect(httpEP);
 
-		final Semaphore sem = new Semaphore(0);
+		httpEP.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
 
+			@Override
+			public void onEvent(MediaSessionStartedEvent event) {
+				player.play();
+			}
+		});
+
+		final BlockingQueue<MediaSessionTerminatedEvent> events = new ArrayBlockingQueue<>(
+				1);
 		httpEP.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
 
 			@Override
 			public void onEvent(MediaSessionTerminatedEvent event) {
-				sem.release();
+				events.add(event);
 			}
 		});
 
@@ -141,8 +157,9 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 			throw new KurentoMediaFrameworkException();
 		}
 
-		Assert.assertTrue(sem.tryAcquire(50, SECONDS));
+		Assert.assertNotNull(events.poll(20, SECONDS));
 
 		httpEP.release();
+		player.release();
 	}
 }

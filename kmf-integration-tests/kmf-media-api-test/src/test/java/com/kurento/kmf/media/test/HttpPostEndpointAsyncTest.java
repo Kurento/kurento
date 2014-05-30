@@ -18,17 +18,29 @@ import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.*;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.HttpPostEndpoint;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -169,15 +181,6 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 			throw new KurentoMediaFrameworkException(e);
 		}
 
-	}
-
-	/**
-	 * Test for {@link MediaSessionTerminatedEvent}
-	 */
-	@Ignore
-	@Test
-	public void testEventMediaSessionTerminated() {
-		// TODO how to test this event?
 	}
 
 }

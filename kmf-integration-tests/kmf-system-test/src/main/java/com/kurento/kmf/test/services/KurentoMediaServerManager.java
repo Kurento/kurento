@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.test.services;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,6 +25,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CharStreams;
 import com.kurento.kmf.common.Address;
 import com.kurento.kmf.common.PropertiesManager;
 import com.kurento.kmf.test.Shell;
@@ -312,14 +312,10 @@ public class KurentoMediaServerManager {
 							+ "kms-pid` --no-headers | wc -l" };
 			Process countKms = Runtime.getRuntime().exec(command);
 
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					countKms.getInputStream()));
-			StringBuilder builder = new StringBuilder();
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				builder.append(line);
-			}
-			result = Integer.parseInt(builder.toString());
+			String stringFromStream = CharStreams
+					.toString(new InputStreamReader(countKms.getInputStream(),
+							"UTF-8"));
+			result = Integer.parseInt(stringFromStream.trim());
 		} catch (IOException e) {
 			log.error("Exception counting KMS processes", e);
 		}

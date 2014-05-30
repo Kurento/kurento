@@ -20,17 +20,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.*;
-import org.junit.*;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
 import com.kurento.kmf.media.HttpPostEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -110,41 +114,6 @@ public class HttpPostEndpointTest extends MediaPipelineBaseTest {
 
 		httpEP.release();
 		player.release();
-	}
-
-	/**
-	 * Test for {@link MediaSessionTerminatedEvent}
-	 *
-	 * @throws InterruptedException
-	 * @throws IOException
-	 * @throws ClientProtocolException
-	 */
-	// TODO how to test this event?
-	@Ignore
-	@Test
-	public void testEventMediaSessionTerminated() throws Exception {
-
-		HttpPostEndpoint httpEP = pipeline.newHttpPostEndpoint().build();
-
-		final Semaphore sem = new Semaphore(0);
-
-		httpEP.addMediaSessionTerminatedListener(new MediaEventListener<MediaSessionTerminatedEvent>() {
-
-			@Override
-			public void onEvent(MediaSessionTerminatedEvent event) {
-				sem.release();
-			}
-		});
-
-		try (DefaultHttpClient httpclient = new DefaultHttpClient()) {
-			// This should trigger MediaSessionStartedEvent
-			httpclient.execute(new HttpGet(httpEP.getUrl()));
-		}
-
-		// TODO set a time simila
-		Assert.assertTrue(sem.tryAcquire(500, TimeUnit.MILLISECONDS));
-
-		httpEP.release();
 	}
 
 }

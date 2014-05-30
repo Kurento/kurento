@@ -14,10 +14,10 @@
  */
 package com.kurento.kmf.test.base;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
@@ -40,29 +40,31 @@ public class KmsLogOnFailure extends TestWatcher {
 	protected void failed(Throwable e, Description description) {
 
 		if (KurentoServicesTestHelper.printKmsLog()) {
+
 			String testDir = KurentoServicesTestHelper.getTestDir();
 			String testCaseName = KurentoServicesTestHelper.getTestCaseName();
 			String testName = KurentoServicesTestHelper.getTestName();
+			File file = new File(testDir + "TEST-" + testCaseName + "/"
+					+ testName + "-kms.log");
 
-			log.info("******************************************************************************");
-			log.info("{}.{} FAILED", description.getClassName(), testName);
-			log.info("\tcaused by: {} ({})", e.getClass().getCanonicalName(),
-					e.getMessage());
-			log.info("******************************************************************************");
+			if (file.exists()) {
+				log.info("******************************************************************************");
+				log.info("{}.{} FAILED", description.getClassName(), testName);
+				log.info("\tcaused by: {} ({})", e.getClass()
+						.getCanonicalName(), e.getMessage());
+				log.info("******************************************************************************");
 
-			try {
-				BufferedReader br = new BufferedReader(new FileReader(testDir
-						+ "TEST-" + testCaseName + "/" + testName + "-kms.log"));
-				String line;
-				while ((line = br.readLine()) != null) {
-					log.info(line);
+				try {
+					for (String line : FileUtils.readLines(file)) {
+						log.info(line);
+					}
+				} catch (IOException e1) {
+					log.warn("Error reading lines in log file", e1);
 				}
-				br.close();
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
 
-			log.info("******************************************************************************");
+				log.info("******************************************************************************");
+			}
 		}
+
 	}
 }

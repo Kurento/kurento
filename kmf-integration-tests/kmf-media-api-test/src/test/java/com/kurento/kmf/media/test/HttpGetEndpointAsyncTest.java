@@ -18,17 +18,30 @@ import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
-import com.kurento.kmf.media.*;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.MediaSessionStartedEvent;
+import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -165,20 +178,74 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		try {
 			eosLatch.await(500, MILLISECONDS);
-		} catch (InterruptedException e) {
+		} finally {
 			player.release();
-			throw new KurentoMediaFrameworkException(e);
 		}
 
 	}
 
 	/**
 	 * Test for {@link MediaSessionTerminatedEvent}
+	 * 
+	 * @throws InterruptedException
 	 */
 	@Ignore
 	@Test
-	public void testEventMediaSessionTerminated() {
-		// TODO how to test this event?
+	public void testEventMediaSessionTerminated() throws InterruptedException {
+
+		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
+				.build();
+		player.connect(httpEp);
+
+		httpEp.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
+
+			@Override
+			public void onEvent(MediaSessionStartedEvent event) {
+				player.play();
+			}
+		});
+		final CountDownLatch latch = new CountDownLatch(1);
+		final BlockingQueue<ListenerRegistration> events = new ArrayBlockingQueue<>(
+				1);
+		httpEp.addMediaSessionTerminatedListener(
+				new MediaEventListener<MediaSessionTerminatedEvent>() {
+
+					@Override
+					public void onEvent(MediaSessionTerminatedEvent event) {
+						latch.countDown();
+					}
+				}, new Continuation<ListenerRegistration>() {
+
+					@Override
+					public void onSuccess(ListenerRegistration result) {
+						events.add(result);
+					}
+
+					@Override
+					public void onError(Throwable cause) {
+						throw new KurentoMediaFrameworkException(cause);
+					}
+				});
+
+		ListenerRegistration reg = events.poll(500, MILLISECONDS);
+		Assert.assertNotNull(reg);
+
+		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
+				.build()) {
+			// This should trigger MediaSessionStartedEvent
+			httpclient.execute(new HttpGet(httpEp.getUrl()));
+		} catch (ClientProtocolException e) {
+			throw new KurentoMediaFrameworkException();
+		} catch (IOException e) {
+			throw new KurentoMediaFrameworkException();
+		}
+
+		try {
+			latch.await(500, MILLISECONDS);
+		} finally {
+			player.release();
+		}
+
 	}
 
 }
