@@ -35,6 +35,13 @@ exports['encode JsonRPC 2.0'] =
     callback();
   },
 
+  tearDown: function(callback)
+  {
+    this.rpcBuilder.close();
+
+    callback();
+  },
+
 
   'notification': function(test)
   {
@@ -98,6 +105,44 @@ exports['encode JsonRPC 2.0'] =
     });
   },
 
+  'request timeout and retry': function(test)
+  {
+    var self = this;
+
+    test.expect(4);
+
+    var gotError = false;
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      if(!gotError)
+      {
+        gotError = true;
+
+        test.notEqual(error, undefined);
+        test.deepEqual(error.request, request);
+
+        var request2 = error.retry();
+
+        test.deepEqual(request2, request);
+
+        // Process request on 'server'
+        request2 = self.rpcBuilder.decode(request2);
+        var response = request2.reply();
+
+        // Process response by 'client'
+        self.rpcBuilder.decode(response);
+      }
+
+      else
+      {
+        test.equal(error, undefined);
+
+        test.done();
+      }
+    });
+  },
+
   'cancel request': function(test)
   {
     test.expect(0);
@@ -135,6 +180,27 @@ exports['encode JsonRPC 2.0'] =
     test.deepEqual(reply1, reply2);
 
     test.done();
+  },
+
+  'duplicated request with transport': function(test)
+  {
+    test.expect(2);
+
+    var request = this.rpcBuilder.encode(METHOD, noop);
+
+    // Test request
+    var request1 = this.rpcBuilder.decode(request);
+    test.equal(request1.duplicated, false);
+
+    var reply1 = request1.reply(null, null);
+
+    var request2 = this.rpcBuilder.decode(request, function(reply2)
+    {
+      test.deepEqual(reply1, reply2);
+
+      test.done();
+    });
+    test.equal(request2, undefined);
   },
 
   'override duplicated request': function(test)
@@ -185,6 +251,34 @@ exports['encode JsonRPC 2.0'] =
     test.done();
   },
 
+  'duplicate response': function(test)
+  {
+    test.expect(3);
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      test.equal(result, null);
+    });
+
+    // Compose response manually from the request
+    var response = JSON.parse(request);
+
+    delete response.method;
+    response.result = null;
+
+    response = JSON.stringify(response);
+
+    // Test response
+    var result = this.rpcBuilder.decode(response);
+    test.equal(result, undefined);
+
+    // Ignored response
+    var result = this.rpcBuilder.decode(response);
+    test.equal(result, undefined);
+
+    test.done();
+  },
+
   'request reply response': function(test)
   {
     test.expect(3);
@@ -212,6 +306,82 @@ exports['encode JsonRPC 2.0'] =
     response = this.rpcBuilder.decode(response);
 
     // Test response as processed
+    test.equal(response, undefined);
+
+    test.done();
+  },
+
+  'reply with transport': function(test)
+  {
+    test.expect(4);
+
+    var self = this;
+
+    var value = {'asdf': 'qwert'};
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      test.deepEqual(result, value);
+    });
+
+    // Response request
+    request = this.rpcBuilder.decode(request);
+
+    var response = request.reply(null, value, function(message)
+    {
+      // Test response message
+      test.deepEqual(JSON.parse(message),
+      {
+        jsonrpc: '2.0',
+        result: value,
+        id: 0
+      });
+
+      message = self.rpcBuilder.decode(message);
+
+      // Test response as processed
+      test.equal(message, undefined);
+    });
+
+    // Test response as send by reply transport
+    test.equal(response, undefined);
+
+    test.done();
+  },
+
+  'decode with transport': function(test)
+  {
+    test.expect(4);
+
+    var self = this;
+
+    var value = {'asdf': 'qwert'};
+
+    var request = this.rpcBuilder.encode(METHOD, function(error, result)
+    {
+      test.deepEqual(result, value);
+    });
+
+    // Response request
+    request = this.rpcBuilder.decode(request, function(message)
+    {
+      // Test response message
+      test.deepEqual(JSON.parse(message),
+      {
+        jsonrpc: '2.0',
+        result: value,
+        id: 0
+      });
+
+      message = self.rpcBuilder.decode(message);
+
+      // Test response as processed
+      test.equal(message, undefined);
+    });
+
+    var response = request.reply(null, value);
+
+    // Test response as send by reply transport
     test.equal(response, undefined);
 
     test.done();
