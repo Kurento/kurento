@@ -1,58 +1,104 @@
-var client = new JsonRpcClient("ws://localhost:8080/phone/ws/websocket",
-		onRequest);
+function Softphone(wsUrl, videoInput, videoOutput)
+{
+  var client = new JsonRpcClient(wsUrl, onRequest);
 
-function onRequest(transaction, message) {
-	
-	if (message.method === "incommingCall") {
-		onIncommingCall(transaction, message);
-	} else if (message.method === "startCommunication") {
-		onStartCommunication(transaction, message);
-	} else {
-		console.error("Unrecognized request: " + JSON.stringify(message));
-	}
-}
+  var localPeerConnection;
 
-function onIncommingCall(transaction, request) {
 
-	prepareSendPlayer(function(peerConnection, offer) {
+  // Process request messages
 
-		localPeerConnection = peerConnection;
+  function onRequest(request)
+  {
+    switch(request.method)
+    {
+      case 'incommingCall':
+        onIncommingCall(request);
+      break;
 
-		transaction.sendResponse({
-			callResponse : "Accept",
-			sdpOffer : offer.sdp
-		});
-	});
-}
+      case 'startCommunication':
+        onStartCommunication(request);
+      break;
 
-function onStartCommunication(transaction, request) {
-	prepareReceivePlayer(localPeerConnection, request.params.sdpAnswer);
-	
-	transaction.sendResponse({});
-}
+      default:
+        console.error('Unrecognized request', request);
+    }
+  };
 
-function register() {
+  function onIncommingCall(request)
+  {
+    function sdpOfferReady(peerConnection, offer)
+    {
+      localPeerConnection = peerConnection;
 
-	var name = document.getElementById("name").value;
+      var response =
+      {
+        callResponse: 'Accept',
+        sdpOffer: offer.sdp
+      };
 
-	client.sendRequest("register", {
-		name : name
-	}, function() {
-		console.log("registered");
-	});
-}
+      request.reply(null, response);
+    };
 
-function call() {
+    createSendPlayer(sdpOfferReady, setVideoInput);
+  };
 
-	var peer = document.getElementById("peer").value;
+  function onStartCommunication(request)
+  {
+    var sdpAnswer = request.params.sdpAnswer;
 
-	prepareSendPlayer(function(peerConnection, offer) {
+    createReceivePlayer(localPeerConnection, sdpAnswer, setVideoOutput);
 
-		client.sendRequest("call", {
-			callTo : peer,
-			sdpOffer : offer.sdp
-		}, function(error, result) {
-			prepareReceivePlayer(peerConnection, result.sdpAnswer);
-		});	
-	});
-}
+    request.reply(null, {});
+  };
+
+
+  // Set videos
+
+  function setVideoInput(error, stream)
+  {
+    if(error) return onerror(error);
+
+    // Set the stream on the video tag
+    videoInput.src = URL.createObjectURL(stream);
+  };
+
+  function setVideoOutput(error, stream)
+  {
+    if(error) return onerror(error);
+
+    // Set the stream on the video tag
+    videoOutput.src = URL.createObjectURL(stream);
+  };
+
+
+  // Public API
+
+  this.register = function(name)
+  {
+    var params = {name: name};
+
+    client.sendRequest('register', params, function(error)
+    {
+      if(error) return onerror(error);
+
+      console.log('registered');
+    });
+  };
+
+  this.call = function(peer)
+  {
+    function sdpOfferReady(peerConnection, offer)
+    {
+      var params = {callTo: peer, sdpOffer: offer.sdp};
+
+      client.sendRequest('call', params, function(error, result)
+      {
+        if(error) return onerror(error);
+
+        createReceivePlayer(peerConnection, result.sdpAnswer, setVideoOutput);
+      });	
+    };
+
+    createSendPlayer(sdpOfferReady, setVideoInput);
+  };
+};

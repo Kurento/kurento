@@ -1,29 +1,34 @@
 <html>
-<head>
-<script
-	src="https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js"></script>
-<script src="js/rpcbuilder.js"></script>
-<script src="js/jsonrpcclient.js"></script>
-<script src="js/webrtc-utils.js"></script>
-<script src="js/softphone.js"></script>
+  <head>
+    <script src="https://webrtc.googlecode.com/svn/trunk/samples/js/base/adapter.js"></script>
 
-</head>
-<body>
+    <script src="js/rpcbuilder.js"></script>
+    <script src="js/jsonrpcclient.js"></script>
+    <script src="js/webrtc-utils.js"></script>
+    <script src="js/softphone.js"></script>
 
-	<a href="" onclick="jsonRpcTest(); return false;">JsonRpcTest</a>
+    <script src="js/index.js"></script>
+  </head>
+  <body>
+    <form>
+      <span>
+        <label for="name">Name:</label>
+        <input id="name" type="text" name="name" value="a">
+      </span>
+      <br>
+      <input id="register" type="button" value="Register">
+    </form>
 
-	<form>
-		Name: <input id="name" type="text" name="name" value="a"><br>
-		<input type="button" value="Register"
-			onclick="register(); return false;">
-	</form>
+    <form>
+      <span>
+        <label for="peer">Peer:</label>
+        <input id="peer" type="text" name="peer" value="a">
+      </span>
+      <br>
+      <input id="call" type="button" value="Call">
+    </form>
 
-	<form>
-		Peer: <input id="peer" type="text" name="name" value="a"><br>
-		<input type="button" value="Call" onclick="call(); return false;">
-	</form>
-
-	<video id="videoInput" autoplay></video>
-	<video id="videoOutput" autoplay></video>
-</body>
+    <video id="videoInput" autoplay></video>
+    <video id="videoOutput" autoplay></video>
+  </body>
 </html>
