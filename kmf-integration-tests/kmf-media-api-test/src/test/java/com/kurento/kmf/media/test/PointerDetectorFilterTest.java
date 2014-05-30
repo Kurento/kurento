@@ -21,7 +21,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.media.events.*;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
@@ -40,7 +40,7 @@ public class PointerDetectorFilterTest extends MediaPipelineBaseTest {
 	private PlayerEndpoint player;
 
 	@Before
-	public void setupMediaElements() throws KurentoMediaFrameworkException {
+	public void setupMediaElements() throws KurentoException {
 		filter = pipeline.newPointerDetectorFilter().build();
 		player = pipeline.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
 		player.connect(filter);

@@ -22,7 +22,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -57,7 +57,7 @@ public class PointerDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 		filter = events.poll(4, SECONDS);

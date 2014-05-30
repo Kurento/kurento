@@ -20,7 +20,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.SdpEndpoint;
 
@@ -53,7 +53,7 @@ MediaPipelineAsyncBaseTest {
 
 		@Override
 		public void onError(Throwable cause) {
-			throw new KurentoMediaFrameworkException(cause);
+			throw new KurentoException(cause);
 		}
 	};
 

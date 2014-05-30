@@ -19,7 +19,7 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
@@ -80,7 +80,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 	}
 
 	@Test
-	public void testConnect() throws KurentoMediaFrameworkException {
+	public void testConnect() throws KurentoException {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
@@ -92,7 +92,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 	}
 
 	@Test
-	public void testConnectByType() throws KurentoMediaFrameworkException {
+	public void testConnectByType() throws KurentoException {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 

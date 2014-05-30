@@ -22,7 +22,7 @@ import java.util.concurrent.BlockingQueue;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.PlateDetectorFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -49,7 +49,7 @@ public class PlateDetectorFilterTest extends MediaPipelineBaseTest {
 	private PlayerEndpoint player;
 
 	@Before
-	public void setupMediaElements() throws KurentoMediaFrameworkException {
+	public void setupMediaElements() throws KurentoException {
 		player = pipeline.newPlayerEndpoint(URL_PLATES).build();
 		detector = pipeline.newPlateDetectorFilter().build();
 	}

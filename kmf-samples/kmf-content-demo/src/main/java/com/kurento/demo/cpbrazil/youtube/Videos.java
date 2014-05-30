@@ -41,7 +41,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.services.youtube.YouTube;
 import com.google.api.services.youtube.model.Video;
 import com.google.api.services.youtube.model.VideoSnippet;
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * Class with static methods implementing the upload to of a given URL to
@@ -75,7 +75,7 @@ public class Videos {
 			youtube = new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY,
 					credential).setApplicationName("kurento-videos").build();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 	}
 
@@ -165,13 +165,13 @@ public class Videos {
 			log.error("GoogleJsonResponseException code: "
 					+ e.getDetails().getCode() + " : "
 					+ e.getDetails().getMessage());
-			throw new KurentoMediaFrameworkException(e);
+			throw new KurentoException(e);
 		} catch (IOException e) {
 			log.error("IOException: " + e.getMessage());
-			throw new KurentoMediaFrameworkException(e);
+			throw new KurentoException(e);
 		} catch (Throwable t) {
 			log.error("Throwable: " + t.getMessage());
-			throw new KurentoMediaFrameworkException(t);
+			throw new KurentoException(t);
 		}
 
 		return uploadedVideo;

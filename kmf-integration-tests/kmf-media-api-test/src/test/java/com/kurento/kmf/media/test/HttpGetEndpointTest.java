@@ -28,7 +28,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -105,9 +105,9 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 
 		Assert.assertNotNull(eosEvents.poll(60, SECONDS));
@@ -152,9 +152,9 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 
 		Assert.assertNotNull(events.poll(20, SECONDS));

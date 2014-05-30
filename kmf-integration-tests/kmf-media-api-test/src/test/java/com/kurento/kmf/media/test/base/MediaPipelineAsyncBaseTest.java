@@ -18,7 +18,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.test.base.MediaApiTest;
 
@@ -42,7 +42,7 @@ public abstract class MediaPipelineAsyncBaseTest extends MediaApiTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		pipeline = events.poll(3, TimeUnit.SECONDS);
@@ -72,7 +72,7 @@ public abstract class MediaPipelineAsyncBaseTest extends MediaApiTest {
 
 				@Override
 				public void onError(Throwable cause) {
-					throw new KurentoMediaFrameworkException(cause);
+					throw new KurentoException(cause);
 				}
 			});
 			Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));

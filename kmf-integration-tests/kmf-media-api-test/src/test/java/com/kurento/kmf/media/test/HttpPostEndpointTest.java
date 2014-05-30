@@ -29,7 +29,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.HttpPostEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -105,9 +105,9 @@ public class HttpPostEndpointTest extends MediaPipelineBaseTest {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 
 		assertNotNull(eosEvents.poll(7, SECONDS));

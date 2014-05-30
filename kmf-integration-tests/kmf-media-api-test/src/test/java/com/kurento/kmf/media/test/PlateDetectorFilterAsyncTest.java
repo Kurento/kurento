@@ -22,7 +22,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.PlateDetectedEvent;
@@ -48,7 +48,7 @@ public class PlateDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 	private PlayerEndpoint player;
 
 	@Before
-	public void setupMediaElements() throws KurentoMediaFrameworkException,
+	public void setupMediaElements() throws KurentoException,
 	InterruptedException {
 		final BlockingQueue<PlateDetectorFilter> events = new ArrayBlockingQueue<PlateDetectorFilter>(
 				1);
@@ -65,7 +65,7 @@ public class PlateDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException();
+						throw new KurentoException();
 					}
 				});
 
@@ -102,7 +102,7 @@ public class PlateDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 		latch.await(500, MILLISECONDS);

@@ -14,7 +14,7 @@
  */
 package com.kurento.kmf.media.factory;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.MediaPipeline;
@@ -55,14 +55,14 @@ public class MediaPipelineFactory {
 	 *            successfully created, the {@code onSuccess} method from the
 	 *            handler will receive a {@link MediaPipeline} stub from the
 	 *            media server.
-	 * @throws KurentoMediaFrameworkException
+	 * @throws KurentoException
 	 *
 	 */
 	public void create(final Continuation<MediaPipeline> cont)
-			throws KurentoMediaFrameworkException {
+			throws KurentoException {
 
 		factory.getFactory(MediaPipeline.Factory.class).create()
-		.buildAsync(cont);
+				.buildAsync(cont);
 	}
 
 	public void destroy() {

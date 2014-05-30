@@ -24,7 +24,7 @@ import junit.framework.Assert;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -43,7 +43,7 @@ public class JackVaderFilterTest extends MediaPipelineBaseTest {
 	private JackVaderFilter jackVader;
 
 	@Before
-	public void setupMediaElements() throws KurentoMediaFrameworkException {
+	public void setupMediaElements() throws KurentoException {
 		jackVader = pipeline.newJackVaderFilter().build();
 	}
 

@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.ListenerRegistration;
@@ -84,7 +84,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
@@ -112,7 +112,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 
@@ -159,7 +159,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 
@@ -171,9 +171,9 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 
 		try {
@@ -223,7 +223,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 
@@ -235,9 +235,9 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 
 		try {

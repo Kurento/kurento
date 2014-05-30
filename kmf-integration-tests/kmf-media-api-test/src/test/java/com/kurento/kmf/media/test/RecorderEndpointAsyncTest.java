@@ -21,7 +21,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
@@ -60,7 +60,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException();
+						throw new KurentoException();
 					}
 				});
 		recorder = events.poll(500, MILLISECONDS);
@@ -85,7 +85,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException();
+				throw new KurentoException();
 			}
 		});
 
@@ -105,7 +105,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertTrue(recordLatch.await(500, MILLISECONDS));
@@ -119,7 +119,7 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertTrue(pauseLatch.await(500, MILLISECONDS));

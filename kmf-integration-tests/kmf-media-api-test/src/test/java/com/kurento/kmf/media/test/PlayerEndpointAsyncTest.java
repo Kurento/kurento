@@ -22,7 +22,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -70,7 +70,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException();
+						throw new KurentoException();
 					}
 				});
 		player = events.poll(500, MILLISECONDS);
@@ -95,7 +95,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException();
+				throw new KurentoException();
 			}
 		});
 
@@ -120,7 +120,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertTrue(playLatch.await(500, MILLISECONDS));
@@ -134,7 +134,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertTrue(pauseLatch.await(500, MILLISECONDS));
@@ -176,7 +176,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 		latch.await(500, MILLISECONDS);
@@ -202,7 +202,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 

@@ -30,7 +30,7 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaSink;
@@ -63,7 +63,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 						@Override
 						public void onError(Throwable cause) {
-							throw new KurentoMediaFrameworkException();
+							throw new KurentoException();
 						}
 					});
 					Assert.assertTrue(semCont.tryAcquire(5000, MILLISECONDS));
@@ -72,7 +72,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 					Assert.fail(e.getMessage());
-				} catch (KurentoMediaFrameworkException e) {
+				} catch (KurentoException e) {
 					e.printStackTrace();
 					Assert.fail(e.getMessage());
 				}
@@ -88,7 +88,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 								@Override
 								public void onError(Throwable cause) {
-									throw new KurentoMediaFrameworkException();
+									throw new KurentoException();
 								}
 							});
 					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
@@ -96,7 +96,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 					sem.release();
 				} catch (InterruptedException e) {
 					Assert.fail(e.getMessage());
-				} catch (KurentoMediaFrameworkException e) {
+				} catch (KurentoException e) {
 					Assert.fail(e.getMessage());
 				}
 
@@ -111,7 +111,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 								@Override
 								public void onError(Throwable cause) {
-									throw new KurentoMediaFrameworkException();
+									throw new KurentoException();
 								}
 							});
 					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
@@ -119,7 +119,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 					sem.release();
 				} catch (InterruptedException e) {
 					Assert.fail(e.getMessage());
-				} catch (KurentoMediaFrameworkException e) {
+				} catch (KurentoException e) {
 					Assert.fail(e.getMessage());
 				}
 
@@ -135,7 +135,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 						@Override
 						public void onError(Throwable cause) {
-							throw new KurentoMediaFrameworkException();
+							throw new KurentoException();
 						}
 					});
 					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
@@ -143,7 +143,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 					sem.release();
 				} catch (InterruptedException e) {
 					Assert.fail(e.getMessage());
-				} catch (KurentoMediaFrameworkException e) {
+				} catch (KurentoException e) {
 					Assert.fail(e.getMessage());
 				}
 
@@ -159,7 +159,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 						@Override
 						public void onError(Throwable cause) {
-							throw new KurentoMediaFrameworkException();
+							throw new KurentoException();
 						}
 					});
 					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
@@ -167,7 +167,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 					sem.release();
 				} catch (InterruptedException e) {
 					Assert.fail(e.getMessage());
-				} catch (KurentoMediaFrameworkException e) {
+				} catch (KurentoException e) {
 					Assert.fail(e.getMessage());
 				}
 			}
@@ -182,7 +182,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 	}
 
 	@Test
-	public void testSourceSinks() throws KurentoMediaFrameworkException,
+	public void testSourceSinks() throws KurentoException,
 			InterruptedException {
 		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
 
@@ -199,7 +199,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 
@@ -214,7 +214,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertNotNull(sinkEvent.poll(500, MILLISECONDS));
@@ -228,7 +228,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertNotNull(srcEvent.poll(500, MILLISECONDS));
@@ -242,7 +242,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 		Assert.assertNotNull(sinkEvent.poll(500, MILLISECONDS));
@@ -265,7 +265,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 
@@ -291,7 +291,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 
@@ -307,7 +307,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 

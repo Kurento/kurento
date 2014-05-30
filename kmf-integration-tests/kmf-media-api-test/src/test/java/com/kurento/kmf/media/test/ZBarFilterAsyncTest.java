@@ -21,7 +21,7 @@ import java.util.concurrent.*;
 
 import org.junit.*;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.*;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -66,7 +66,7 @@ public class ZBarFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException();
+				throw new KurentoException();
 			}
 		});
 		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));

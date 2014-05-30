@@ -32,7 +32,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.HttpPostEndpoint;
@@ -82,7 +82,7 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
@@ -110,7 +110,7 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoMediaFrameworkException(cause);
+				throw new KurentoException(cause);
 			}
 		});
 
@@ -157,7 +157,7 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoMediaFrameworkException(cause);
+						throw new KurentoException(cause);
 					}
 				});
 
@@ -169,16 +169,16 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
 		} catch (ClientProtocolException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 
 		try {
 			eosLatch.await(500, MILLISECONDS);
 		} catch (InterruptedException e) {
 			player.release();
-			throw new KurentoMediaFrameworkException(e);
+			throw new KurentoException(e);
 		}
 
 	}

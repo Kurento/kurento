@@ -32,7 +32,7 @@ import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemSnippet;
 import com.google.api.services.youtube.model.ResourceId;
 import com.google.common.collect.Lists;
-import com.kurento.kmf.common.exception.KurentoMediaFrameworkException;
+import com.kurento.kmf.common.exception.KurentoException;
 
 /**
  * Logic for handling YouTube playlists.
@@ -62,7 +62,7 @@ public class Playlists {
 			youtube = new YouTube.Builder(HTTP_TRANSPORT, JSON_FACTORY,
 					credential).setApplicationName("kurento-playlist").build();
 		} catch (IOException e) {
-			throw new KurentoMediaFrameworkException();
+			throw new KurentoException();
 		}
 	}
 
