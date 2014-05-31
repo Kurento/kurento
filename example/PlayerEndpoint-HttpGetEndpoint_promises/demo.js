@@ -24,11 +24,9 @@ function onerror(error)
 
 window.addEventListener('load', function()
 {
-  var kwsMedia = KwsMedia(ws_uri);
+  KwsMedia(ws_uri).then(function(kwsMedia){
+    console.log('kwsMedia', kwsMedia);
 
-  kwsMedia
-  .then(function()
-  {
     // Create pipeline
     return kwsMedia.create('MediaPipeline');
   })
@@ -48,7 +46,8 @@ window.addEventListener('load', function()
         });
 
         return player;
-      }),
+      })
+    ,
       pipeline.create('HttpGetEndpoint')
     ])
   })
@@ -62,7 +61,8 @@ window.addEventListener('load', function()
     return Promise.all(
     [
       // Connect media element between them
-      player.connect(httpGet),
+      player.connect(httpGet)
+    ,
       httpGet.getUrl()
       .then(function(url)
       {
