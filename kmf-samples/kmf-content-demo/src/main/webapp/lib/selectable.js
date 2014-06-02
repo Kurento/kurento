@@ -215,7 +215,6 @@ function start(servlet) {
 	switchVideoPosters(true);
 
 	var options = {
-		iceServers : [],
 		localVideoTag : "localVideo",
 		remoteVideoTag : "remoteVideo"
 	};
