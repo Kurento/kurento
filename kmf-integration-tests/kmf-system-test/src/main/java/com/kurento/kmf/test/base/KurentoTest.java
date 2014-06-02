@@ -25,7 +25,7 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
  * Base for tests (Content and Media API).
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -41,12 +41,12 @@ public class KurentoTest {
 	@Rule
 	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
 
-	protected int threshold = 10;
+	protected int threshold = 15;
 
 	/**
 	 * Compares two numbers and return true|false if these number are similar,
 	 * using a threshold in the comparison.
-	 * 
+	 *
 	 * @param i
 	 *            First number to be compared
 	 * @param j
