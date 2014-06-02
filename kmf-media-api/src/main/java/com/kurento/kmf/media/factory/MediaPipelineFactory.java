@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.media.factory;
 
+import javax.annotation.PreDestroy;
+
 import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.media.Continuation;
@@ -62,9 +64,10 @@ public class MediaPipelineFactory {
 			throws KurentoException {
 
 		factory.getFactory(MediaPipeline.Factory.class).create()
-				.buildAsync(cont);
+		.buildAsync(cont);
 	}
 
+	@PreDestroy
 	public void destroy() {
 		factory.destroy();
 	}
