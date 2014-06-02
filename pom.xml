@@ -1,17 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
 	<modelVersion>4.0.0</modelVersion>
-	<packaging>jar</packaging>
-
-	<parent>
-		<groupId>com.kurento</groupId>
-		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.2.3-SNAPSHOT</version>
-	</parent>
 
 	<groupId>com.kurento.kws</groupId>
 	<artifactId>kws-media-api</artifactId>
-	<version>${project.parent.version}</version>
+	<version>4.2.3-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
 	<name>Kurento Web SDK - Media Api</name>
 	<description>
@@ -20,7 +13,12 @@
 		The kws-media-api project contains the implementation
 		of the Kurento client side Media API for web applications.
 	</description>
-	<url>http://www.kurento.com/docs/${project.version}</url>
+	<url>http://www.kurento.org/docs/${project.version}</url>
+
+	<issueManagement>
+		<system>Redmine</system>
+		<url>https://repository.kurento.org/redmine/</url>
+	</issueManagement>
 
 	<licenses>
 		<license>
@@ -30,12 +28,32 @@
 		</license>
 	</licenses>
 
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
 	<scm>
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
 		<tag>develop</tag>
 	</scm>
+
+	<mailingLists>
+		<mailingList>
+			<name>Kurento List</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+		<mailingList>
+			<name>Kurento Core List</name>
+			<subscribe>http://groups.google.com/group/kurento-core/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento-core/post</post>
+			<archive>http://groups.google.com/group/kurento-core/about</archive>
+		</mailingList>
+	</mailingLists>
 
 	<developers>
 		<developer>
@@ -46,24 +64,93 @@
 		</developer>
 	</developers>
 
+	<properties>
+		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
+		<version.release.plugin>2.5</version.release.plugin>
+		<!-- ************** -->
+		<!-- Build settings -->
+		<!-- ************** -->
+
+		<!-- Cross plugins settings -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- maven-compiler-plugin -->
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+
+		<!-- Options to override the compiler arguments directly on the compiler 
+			arument line to separate between what the IDE understands as the source level 
+			and what the Maven compiler actually use. -->
+		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
+		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
+
+		<!-- maven-enforcer-plugin -->
+		<maven.min.version>3.0.3</maven.min.version>
+		<jdk.min.version>${maven.compiler.source}</jdk.min.version>
+
+		<!-- maven-eclipse-plugin -->
+		<downloadSources>true</downloadSources>
+		<downloadJavadocs>true</downloadJavadocs>
+
+		<!-- maven-pmd-plugin -->
+		<targetJdk>${maven.compiler.target}</targetJdk>
+
+		<!-- maven-release-plugin -->
+		<useReleaseProfile>false</useReleaseProfile>
+		<arguments>-Pkurento-release</arguments>
+
+		<!-- maven-assembly-plugin -->
+		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
+	</properties>
+
 	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>${version.release.plugin}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.apache.maven.scm</groupId>
+							<artifactId>maven-scm-provider-gitexe</artifactId>
+							<version>1.8.1</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+						<pushChanges>false</pushChanges>
+					</configuration>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>attached</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>shell-maven-plugin</artifactId>
-				<version>1.0-beta-1</version>
+				<version>${version.shell.plugin}</version>
 				<executions>
 					<execution>
 						<id>stage-sources</id>
 						<phase>process-sources</phase>
-						<goals><goal>shell</goal></goals>
+						<goals>
+							<goal>shell</goal>
+						</goals>
 						<configuration>
 							<workDir>${workDir}</workDir>
 							<chmod>true</chmod>
 							<keepScriptFile>true</keepScriptFile>
 							<script>
-							npm install
-							${basedir}/node_modules/.bin/grunt maven
+								npm install
+								${basedir}/node_modules/.bin/grunt maven
 							</script>
 						</configuration>
 					</execution>
@@ -80,14 +167,7 @@
 					<outputDirectory>${project.build.directory}</outputDirectory>
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>attached</goal>
-						</goals>
-					</execution>
-				</executions>
+
 			</plugin>
 		</plugins>
 	</build>
