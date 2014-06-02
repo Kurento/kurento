@@ -18,7 +18,7 @@ import com.kurento.kmf.test.Shell;
 
 /**
  * Fake cam singleton.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  * @see <a href="https://github.com/umlaeute/v4l2loopback">v4l2loopback</a>
@@ -54,7 +54,7 @@ public class FakeCam {
 	}
 
 	public void launchCam(String video) {
-		Shell.run("sh", "-c", "gst-launch filesrc location=" + video
+		Shell.runAndWait("sh", "-c", "gst-launch filesrc location=" + video
 				+ " ! decodebin2 ! v4l2sink device=/dev/video" + getCam());
 	}
 

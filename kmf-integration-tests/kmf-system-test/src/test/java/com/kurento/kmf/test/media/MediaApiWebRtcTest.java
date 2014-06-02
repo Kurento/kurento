@@ -16,12 +16,17 @@ package com.kurento.kmf.test.media;
 
 import java.awt.Color;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * <strong>Description</strong>: WebRTC in loopback.<br/>

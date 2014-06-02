@@ -15,14 +15,18 @@
 package com.kurento.kmf.test;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.io.CharStreams;
+import com.kurento.kmf.common.exception.KurentoException;
+
 /**
  * Local shell.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -33,18 +37,32 @@ public class Shell {
 	public static void run(final String... command) {
 		log.debug("Running command on the shell: {}", Arrays.toString(command));
 
-		Thread t = new Thread() {
-			@Override
-			public void run() {
-				try {
-					Runtime.getRuntime().exec(command);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		t.setDaemon(true);
-		t.start();
+		try {
+			Runtime.getRuntime().exec(command);
+		} catch (IOException e) {
+			log.error(
+					"Exception while executing command '"
+							+ Arrays.toString(command) + "'", e);
+		}
+	}
+
+	public static String runAndWait(final String... command) {
+		log.debug("Running command on the shell: {}", Arrays.toString(command));
+
+		Process p;
+		try {
+			p = new ProcessBuilder(command).redirectErrorStream(true).start();
+
+			String output = CharStreams.toString(new InputStreamReader(p
+					.getInputStream(), "UTF-8"));
+
+			return output;
+
+		} catch (IOException e) {
+			throw new KurentoException(
+					"Exception executing command on the shell: "
+							+ Arrays.toString(command), e);
+		}
 	}
 
 }

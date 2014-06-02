@@ -38,7 +38,7 @@ import freemarker.template.Template;
 
 /**
  * Initializer/stopper class for Kurento Media Server (KMS).
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -143,8 +143,8 @@ public class KurentoMediaServerManager {
 
 		log.debug("Log file: {}", logFolder);
 
-		Shell.run("sh", "-c", workspace + "kurento.sh > " + logFolder + "/"
-				+ testMethodName + "-kms.log 2>&1");
+		Shell.runAndWait("sh", "-c", workspace + "kurento.sh > " + logFolder
+				+ "/" + testMethodName + "-kms.log 2>&1");
 
 		waitForKurentoMediaServer();
 	}
@@ -221,7 +221,7 @@ public class KurentoMediaServerManager {
 		createFileFromTemplate(cfg, data, "kurento.conf");
 		createFileFromTemplate(cfg, data, "pattern.sdp");
 		createFileFromTemplate(cfg, data, "kurento.sh");
-		Shell.run("chmod", "+x", workspace + "kurento.sh");
+		Shell.runAndWait("chmod", "+x", workspace + "kurento.sh");
 	}
 
 	private void createFileFromTemplate(Configuration cfg,
@@ -272,20 +272,21 @@ public class KurentoMediaServerManager {
 		}
 
 		// Clean-up
-		Shell.run("sh", "-c", "rm " + workspace + "kms-pid");
-		Shell.run("sh", "-c", "rm " + workspace + "kurento.sh");
-		Shell.run("sh", "-c", "rm " + workspace + "kurento.conf");
-		Shell.run("sh", "-c", "rm " + workspace + "pattern.sdp");
+		Shell.runAndWait("sh", "-c", "rm " + workspace + "kms-pid");
+		Shell.runAndWait("sh", "-c", "rm " + workspace + "kurento.sh");
+		Shell.runAndWait("sh", "-c", "rm " + workspace + "kurento.conf");
+		Shell.runAndWait("sh", "-c", "rm " + workspace + "pattern.sdp");
 	}
 
 	private void kmsSigTerm() {
 		log.debug("Sending SIGTERM to KMS process");
-		Shell.run("sh", "-c", "kill `cat " + workspace + "kms-pid`");
+		Shell.runAndWait("sh", "-c", "kill `cat " + workspace + "kms-pid`");
+		// Shell.runAndWait("sh", "-c", "killall -9 kurento");
 	}
 
 	private void kmsSigKill() {
 		log.debug("Sending SIGKILL to KMS process");
-		Shell.run("sh", "-c", "kill -9 `cat " + workspace + "kms-pid`");
+		Shell.runAndWait("sh", "-c", "kill -9 `cat " + workspace + "kms-pid`");
 	}
 
 	public String getDebugOptions() {
