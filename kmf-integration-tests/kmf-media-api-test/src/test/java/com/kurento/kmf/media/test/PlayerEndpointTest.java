@@ -75,6 +75,7 @@ public class PlayerEndpointTest extends MediaPipelineBaseTest {
 	}
 
 	@Test
+	@Ignore
 	public void testEventEndOfStream() throws InterruptedException {
 		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
 				1);
