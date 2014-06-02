@@ -1,6 +1,7 @@
 ---
  name: WebRtcEndpoint-FaceOverlayFilter_2
- description: Detect a face using a WebRTC loopback from your webcam.
+ description: Detect a face using a WebRTC loopback from your webcam and put a
+ hat on top of your head.
  authors:
    - Jesús Leganés Combarro "piranna" <piranna@gmail.com>
  resources:

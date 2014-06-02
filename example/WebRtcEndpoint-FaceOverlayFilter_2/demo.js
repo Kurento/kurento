@@ -15,6 +15,8 @@
 
 const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
 
+const overlayImage = 'http://files.kurento.org/imgs/mario-wings.png';
+
 
 function createOffer(peerConnection, onerror)
 {
@@ -67,11 +69,11 @@ getUserMedia({audio: true, video: true}, function(stream)
         {
           if(error) return onerror(error);
 
-          var uri = 'http://www.clipartbest.com/cliparts/di6/eeL/di6eeLgkT.svg';
-          var offsetXPercent = 0.0;
-          var offsetYPercent = 0.0;
-          var widthPercent   = 1.0;
-          var heightPercent  = 1.0;
+          var uri = overlayImage;
+          var offsetXPercent = -0.4;
+          var offsetYPercent = -1.2;
+          var widthPercent   = 1.8;
+          var heightPercent  = 1.8;
 
           faceOverlay.setOverlayedImage(uri, offsetXPercent, offsetYPercent,
                                         widthPercent, heightPercent,
