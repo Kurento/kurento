@@ -13,26 +13,15 @@
  *
  */
 
-var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
-
-
 function MirrorFilter(id)
 {
-  GStreamerFilter.call(this, id);
+  MirrorFilter.super_.call(this, id);
 };
-MirrorFilter.prototype.__proto__   = GStreamerFilter.prototype;
-MirrorFilter.prototype.constructor = MirrorFilter;
 
 
-MirrorFilter.constructorParams = GStreamerFilter.constructorParams;
-
-
-MirrorFilter.create = function(pipeline, callback)
+MirrorFilter.create = function(params)
 {
-  var params =
-  {
-    command: 'videoflip method=4'
-  };
+  params.command = 'videoflip method=4';
 
-  GStreamerFilter.create.call(this, pipeline, params, callback);
+  return {type: 'GStreamerFilter', params: params};
 };

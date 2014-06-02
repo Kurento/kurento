@@ -13,26 +13,15 @@
  *
  */
 
-var GStreamerFilter = KwsMedia.filters.GStreamerFilter;
-
-
 function RateFilter(id)
 {
-  GStreamerFilter.call(this, id);
+  RateFilter.super_.call(this, id);
 };
-RateFilter.prototype.__proto__   = GStreamerFilter.prototype;
-RateFilter.prototype.constructor = RateFilter;
-
-
-RateFilter.constructorParams = GStreamerFilter.constructorParams;
 
 
 RateFilter.create = function(pipeline, callback)
 {
-  var params =
-  {
-    command: 'videorate max-rate=15 average-period=200000000'
-  };
+  params.command = 'videorate max-rate=15 average-period=200000000';
 
-  GStreamerFilter.create.call(this, pipeline, params, callback);
+  return {type: 'GStreamerFilter', params: params};
 };

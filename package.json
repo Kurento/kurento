@@ -2,26 +2,26 @@
  "name": "kws-media-api",
  "version": "4.3.1-SNAPSHOT",
  "description": "Media API for the Kurento Web SDK",
- "homepage": "http:\/\/www.kurento.com",
+ "homepage": "http://www.kurento.com",
  "license": "LGPL",
- "author": "Kurento <info@kurento.com> (http:\/\/kurento.org)",
+ "author": "Kurento <info@kurento.com> (http://kurento.org)",
  "contributors": [
   {
    "name": "Jesús Leganés Combarro 'piranna'",
    "email": "piranna@gmail.com",
-   "url": "http:\/\/pirannafs.blogspot.com.es"
+   "url": "http://pirannafs.blogspot.com.es"
   }
  ],
  "main": "lib\/KwsMedia.js",
  "scripts": {
-  "test": "qunit-cli -c KwsMedia:. -c node_modules\/qunit-reporter-junit -c wock:node_modules\/wock -c test\/_common.js -c test\/_proxy.js test\/*.js"
+  "test": "qunit-cli -c KwsMedia:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
  },
  "repository": {
   "type": "git",
-  "url": "https:\/\/github.com\/Kurento\/kws-media-api.git"
+  "url": "https://github.com/Kurento/kws-media-api.git"
  },
  "bugs": {
-  "url": "https:\/\/github.com\/Kurento\/kws-media-api\/issues",
+  "url": "https://github.com/Kurento/kws-media-api/issues",
   "email": "info@kurento.com"
  },
  "keywords": [
@@ -52,8 +52,8 @@
   "grunt-curl": "latest",
   "grunt-jsdoc": "latest",
   "minifyify": "~3.0.6",
-  "qunit-cli": "ShareIt-project\/qunit-cli",
-  "qunit-reporter-junit": "piranna\/qunit-reporter-junit",
+  "qunit-cli": "ShareIt-project/qunit-cli",
+  "qunit-reporter-junit": "piranna/qunit-reporter-junit",
   "qunitjs": "~1.14.0",
   "wock": "latest"
  }

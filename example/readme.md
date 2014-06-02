@@ -15,7 +15,7 @@ of them are available as online demos:
 * [PlayerEndpoint HttpGetEndpoint - promises](./PlayerEndpoint-HttpGetEndpoint_promises)
 * [PlayerEndpoint JackVaderFilter WebRtcEndpoint 2](./PlayerEndpoint-JackVaderFilter-WebRtcEndpoint_2)
 * [PlayerEndpoint WebRtcEndpoint 2](./PlayerEndpoint-WebRtcEndpoint_2)
-* [WebRtcEndpoint - 2](./WebRtcEndpoint_2)
+* [WebRtcEndpoint 2](./WebRtcEndpoint_2)
 * [WebRtcEndpoint FaceOverlayFilter 2](./WebRtcEndpoint-FaceOverlayFilter_2)
 * [WebRtcEndpoint PointerDetectorAdvFilter 2](./WebRtcEndpoint-PointerDetectorAdvFilter_2)
 
