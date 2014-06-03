@@ -143,6 +143,50 @@ static GstFlowReturn
 gst_dtls_enc_push (GstDtlsEnc * self, GstBuffer * buffer)
 {
   GstDtlsBase *base = GST_DTLS_BASE (self);
+  GstEvent *segment_event, *caps_event;
+  gchar *stream_id;
+
+  stream_id = gst_pad_get_stream_id (base->srcpad);
+
+  if (stream_id == NULL) {
+    stream_id = gst_pad_get_stream_id (base->sinkpad);
+
+    if (stream_id == NULL) {
+      stream_id = gst_pad_create_stream_id (base->srcpad,
+          GST_ELEMENT (base), NULL);
+    }
+
+    gst_pad_push_event (base->srcpad, gst_event_new_stream_start (stream_id));
+  }
+
+  g_free (stream_id);
+
+  caps_event = gst_pad_get_sticky_event (base->srcpad, GST_EVENT_CAPS, 0);
+
+  if (caps_event == NULL) {
+    GstCaps *caps = gst_caps_from_string ("application/x-dtls");
+
+    caps_event = gst_event_new_caps (caps);
+    gst_caps_unref (caps);
+
+    gst_pad_push_event (base->srcpad, caps_event);
+  } else {
+    gst_event_unref (caps_event);
+  }
+
+  segment_event = gst_pad_get_sticky_event (base->srcpad, GST_EVENT_SEGMENT, 0);
+
+  if (segment_event == NULL) {
+    GstSegment *segment = gst_segment_new ();
+
+    gst_segment_init (segment, GST_FORMAT_BYTES);
+    segment_event = gst_event_new_segment (segment);
+    gst_segment_free (segment);
+
+    gst_pad_push_event (base->srcpad, segment_event);
+  } else {
+    gst_event_unref (segment_event);
+  }
 
   GST_OBJECT_LOCK (self);
   if (self->src_buffer && self->running_thread == g_thread_self ()) {
