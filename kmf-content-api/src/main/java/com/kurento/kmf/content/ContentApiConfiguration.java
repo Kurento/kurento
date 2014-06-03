@@ -80,7 +80,7 @@ public class ContentApiConfiguration {
 	/**
 	 * Timeout (in milliseconds) for Poll operation for WebRTC events.
 	 */
-	private long webRtcEventQueuePollTimeout = 15000L;
+	private long webRtcEventQueuePollTimeout = 5000L;
 
 	/**
 	 * Setter (mutator) for poolCoreSize field.
