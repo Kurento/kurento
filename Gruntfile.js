@@ -18,10 +18,12 @@ module.exports = function(grunt)
 {
   var DIST_DIR = 'dist';
 
+  var pkg = grunt.file.readJSON('package.json');
+
   // Project configuration.
   grunt.initConfig(
   {
-    pkg: grunt.file.readJSON('package.json'),
+    pkg: pkg,
 
     // Plugins configuration
     clean:
@@ -107,6 +109,33 @@ module.exports = function(grunt)
       }
     },
 
+    sync:
+    {
+      all:
+      {
+        options:
+        {
+          sync: [
+            'name', 'description', 'license', 'keywords',
+            'homepage', 'repository'
+          ],
+          overrides: {
+            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || [])
+          }
+        }
+      }
+    },
+
+    shell:
+    {
+      bower: {
+        command: [
+          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= process.env.TOKEN %>"',
+          'bower register <%= pkg.name %> <%= pkg.repository.url %>'
+        ].join('&&')
+      }
+    },
+
     copy:
     {
       maven:
@@ -120,14 +149,16 @@ module.exports = function(grunt)
   });
 
   // Load plugins
+  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-curl');
-
-  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-jsdoc');
+  grunt.loadNpmTasks('grunt-npm2bower-sync');
+  grunt.loadNpmTasks('grunt-shell');
 
   // Default task(s).
   grunt.registerTask('default', ['clean', 'jsdoc', 'curl', 'browserify']);
+  grunt.registerTask('bower',   ['sync', 'shell:bower']);
   grunt.registerTask('maven',   ['default', 'copy']);
 };

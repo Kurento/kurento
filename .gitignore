@@ -6,4 +6,5 @@ node_modules/
 dist/
 src/
 target/
+bower.json
 junitResult.xml
