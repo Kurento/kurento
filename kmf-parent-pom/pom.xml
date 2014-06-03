@@ -122,7 +122,7 @@
 		<version.cobertura.plugin>2.5.2</version.cobertura.plugin>
 		<version.compiler.plugin>3.1</version.compiler.plugin>
 		<version.dependency.plugin>2.8</version.dependency.plugin>
-		<version.deploy.plugin>2.7</version.deploy.plugin>
+		<version.deploy.plugin>2.8</version.deploy.plugin>
 		<version.ear.plugin>2.9</version.ear.plugin>
 		<version.eclipse.plugin>2.9</version.eclipse.plugin>
 		<version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
