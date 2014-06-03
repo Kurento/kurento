@@ -79,9 +79,9 @@ get_caps_codec_name (const gchar * codec_name)
 {
   // TODO: Add more special cases here
 
-  if (g_ascii_strcasecmp ("OPUS", codec_name) == 0)
+  if (g_ascii_strcasecmp (OPUS_ENCONDING_NAME, codec_name) == 0)
     return "X-GST-OPUS-DRAFT-SPITTKA-00";
-  else if (g_ascii_strcasecmp ("VP8", codec_name) == 0)
+  else if (g_ascii_strcasecmp (VP8_ENCONDING_NAME, codec_name) == 0)
     return "VP8-DRAFT-IETF-01";
   else
     return codec_name;

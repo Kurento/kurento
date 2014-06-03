@@ -53,6 +53,10 @@ typedef struct _KmsBaseRtpEndpointPrivate KmsBaseRtpEndpointPrivate;
 #define VIDEO_RTPBIN_SEND_RTCP_SRC "send_rtcp_src_1"
 #define VIDEO_RTPBIN_SEND_RTP_SINK "send_rtp_sink_1"
 
+/* RTP enconding names */
+#define OPUS_ENCONDING_NAME "OPUS"
+#define VP8_ENCONDING_NAME "VP8"
+
 struct _KmsBaseRtpEndpoint
 {
   KmsBaseSdpEndpoint parent;
