@@ -35,6 +35,14 @@ GST_DEBUG_CATEGORY_STATIC (dtls_srtp_enc_debug);
 
 G_DEFINE_TYPE (GstDtlsSrtpEnc, gst_dtls_srtp_enc, GST_TYPE_BIN);
 
+#ifdef GSTREAMER_1_3_FOUND
+#define RTCP_SINK_TEMPLATE "rtcp_sink_%u"
+#define RTP_SINK_TEMPLATE "rtp_sink_%u"
+#else
+#define RTCP_SINK_TEMPLATE "rtcp_sink_%d"
+#define RTP_SINK_TEMPLATE "rtp_sink_%d"
+#endif
+
 enum
 {
   PROP_CHANNEL_ID = 1,
@@ -375,11 +383,11 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
       gst_bin_add (GST_BIN (self), self->srtp_enc);
       self->srtpenc_rtpsink = gst_element_request_pad (self->srtp_enc,
           gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS
-              (self->srtp_enc), "rtp_sink_%d"), "rtp_sink_1", NULL);
+              (self->srtp_enc), RTP_SINK_TEMPLATE), "rtp_sink_1", NULL);
       self->srtpenc_rtcpsink =
           gst_element_request_pad (self->srtp_enc,
           gst_element_class_get_pad_template (GST_ELEMENT_GET_CLASS
-              (self->srtp_enc), "rtcp_sink_%d"), "rtcp_sink_1", NULL);
+              (self->srtp_enc), RTCP_SINK_TEMPLATE), "rtcp_sink_1", NULL);
 
       /* Release the extra ref */
       gst_object_unref (self->srtpenc_rtpsink);
