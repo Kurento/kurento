@@ -230,6 +230,32 @@ sdp_utils_sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
   return rtpmap;
 }
 
+/**
+ * Returns : a string or NULL if any.
+ * The returned string should be freed with g_free() when no longer needed.
+ */
+gchar *
+gst_sdp_media_format_get_encoding_name (const GstSDPMedia * media,
+    const gchar * format)
+{
+  const gchar *rtpmap;
+  gchar *encoding_name;
+  gchar **tokens;
+
+  rtpmap = sdp_utils_sdp_media_get_rtpmap (media, format);
+
+  if (rtpmap == NULL) {
+    GST_WARNING ("rtpmap is NULL");
+    return NULL;
+  }
+
+  tokens = g_strsplit (rtpmap, "/", 2);
+  encoding_name = g_strdup (tokens[0]);
+  g_strfreev (tokens);
+
+  return encoding_name;
+}
+
 static void
 sdp_utils_sdp_media_add_format (GstSDPMedia * media, const gchar * format,
     const gchar * rtpmap)
