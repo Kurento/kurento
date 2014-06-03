@@ -18,12 +18,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.media.*;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlateDetectorFilter;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.PlateDetectedEvent;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
  * <strong>Description</strong>: HTTP Player with PlateDetector Filter.<br/>
@@ -38,13 +46,14 @@ import com.kurento.kmf.test.client.*;
  * <li>EOS event received</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 4.2.3
  */
 public class MediaApiPlayerPlateDetectorBrowserTest extends BrowserMediaApiTest {
 
+	@Ignore
 	@Test
 	public void testPlayerPlateDetector() throws Exception {
 		// Media Pipeline
@@ -69,17 +78,17 @@ public class MediaApiPlayerPlateDetectorBrowserTest extends BrowserMediaApiTest 
 
 		final List<String> platesDetectedEvents = new ArrayList<>();
 		plateDetectorFilter
-		.addPlateDetectedListener(new MediaEventListener<PlateDetectedEvent>() {
-			@Override
-			public void onEvent(PlateDetectedEvent event) {
-				log.info("Plate Detected {}", event.getPlate());
-				platesDetectedEvents.add(event.getPlate());
-			}
-		});
+				.addPlateDetectedListener(new MediaEventListener<PlateDetectedEvent>() {
+					@Override
+					public void onEvent(PlateDetectedEvent event) {
+						log.info("Plate Detected {}", event.getPlate());
+						platesDetectedEvents.add(event.getPlate());
+					}
+				});
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
