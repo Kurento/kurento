@@ -1155,7 +1155,7 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
     return GST_PAD_PROBE_OK;
   }
 
-  GST_DEBUG_OBJECT (pad, "Event: %" GST_PTR_FORMAT, event);
+  GST_TRACE_OBJECT (pad, "Event: %" GST_PTR_FORMAT, event);
 
   self = KMS_AGNOSTIC_BIN2 (user_data);
 
@@ -1171,10 +1171,10 @@ kms_agnostic_bin2_sink_caps_probe (GstPad * pad, GstPadProbeInfo * info,
   self->priv->last_caps = gst_caps_copy (new_caps);
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
-  GST_DEBUG_OBJECT (user_data, "New caps event: %" GST_PTR_FORMAT, event);
+  GST_TRACE_OBJECT (user_data, "New caps event: %" GST_PTR_FORMAT, event);
 
   if (current_caps != NULL) {
-    GST_DEBUG_OBJECT (user_data, "Current caps: %" GST_PTR_FORMAT,
+    GST_TRACE_OBJECT (user_data, "Current caps: %" GST_PTR_FORMAT,
         current_caps);
 
     if (!gst_caps_can_intersect (new_caps, current_caps) &&
