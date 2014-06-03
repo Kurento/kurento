@@ -1138,8 +1138,6 @@ kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
   }
 
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
-
-  gst_pad_push_event (self->priv->sink, gst_event_new_reconfigure ());
 }
 
 static GstPadProbeReturn
@@ -1217,7 +1215,6 @@ kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
         g_object_unref);
     KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
-    gst_pad_push_event (self->priv->sink, gst_event_new_reconfigure ());
     send_force_key_unit_event (self->priv->sink);
 
     return GST_PAD_PROBE_DROP;
