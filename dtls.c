@@ -226,6 +226,7 @@ GST_START_TEST (test_dtlsenc_init_handshake_on_paused)
   gst_bus_remove_signal_watch (bus);
   g_object_unref (bus);
   g_object_unref (pipeline);
+  g_object_unref (dtlsdec_client);
   g_main_loop_unref (loop);
 
   g_remove (cert_key_pem_file);
