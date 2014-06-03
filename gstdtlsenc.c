@@ -20,7 +20,6 @@
  *
  */
 
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -31,7 +30,6 @@ GST_DEBUG_CATEGORY_STATIC (dtls_enc_debug);
 #define GST_CAT_DEFAULT (dtls_enc_debug)
 
 G_DEFINE_TYPE (GstDtlsEnc, gst_dtls_enc, GST_TYPE_DTLS_BASE);
-
 
 static GstStaticPadTemplate gst_dtls_enc_sink_template =
 GST_STATIC_PAD_TEMPLATE ("sink",
@@ -76,8 +74,6 @@ static void
 gst_dtls_enc_init (GstDtlsEnc * enc)
 {
 }
-
-
 
 static GstFlowReturn
 gst_dtls_enc_chain (GstDtlsBase * base, GstBuffer * buffer)
@@ -148,7 +144,6 @@ gst_dtls_enc_push (GstDtlsEnc * self, GstBuffer * buffer)
 {
   GstDtlsBase *base = GST_DTLS_BASE (self);
 
-
   GST_OBJECT_LOCK (self);
   if (self->src_buffer && self->running_thread == g_thread_self ()) {
     g_assert (gst_buffer_get_size (buffer) != 181);
@@ -159,8 +154,6 @@ gst_dtls_enc_push (GstDtlsEnc * self, GstBuffer * buffer)
 
   return gst_pad_push (base->srcpad, buffer);
 }
-
-
 
 static GstStateChangeReturn
 gst_dtls_enc_change_state (GstElement * element, GstStateChange transition)
