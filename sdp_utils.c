@@ -191,7 +191,6 @@ sdp_media_set_direction (GstSDPMedia * media, GstSDPDirection direction)
 
 /**
  * Returns : a string or NULL if any.
- * The returned string should be freed with g_free() when no longer needed.
  */
 const gchar *
 sdp_utils_sdp_media_get_rtpmap (const GstSDPMedia * media, const gchar * format)
