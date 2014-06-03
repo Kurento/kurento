@@ -22,16 +22,24 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.content.*;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.content.ContentEvent;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.test.base.ContentApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
  * Test of a HTTP Player and ZBar filter.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -61,19 +69,19 @@ public class ContentApiPlayerZBarTest extends ContentApiTest {
 			session.start(httpEP);
 			session.setAttribute("eventValue", "");
 			zBarFilter
-			.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
-				@Override
-				public void onEvent(CodeFoundEvent event) {
-					log.info("Code Found " + event.getValue());
-					if (session.getAttribute("eventValue").toString()
-							.equals(event.getValue())) {
-						return;
-					}
-					session.setAttribute("eventValue", event.getValue());
-					session.publishEvent(new ContentEvent(event
-							.getType(), event.getValue()));
-				}
-			});
+					.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
+						@Override
+						public void onEvent(CodeFoundEvent event) {
+							log.info("Code Found " + event.getValue());
+							if (session.getAttribute("eventValue").toString()
+									.equals(event.getValue())) {
+								return;
+							}
+							session.setAttribute("eventValue", event.getValue());
+							session.publishEvent(new ContentEvent(event
+									.getType(), event.getValue()));
+						}
+					});
 
 			terminateLatch = new CountDownLatch(1);
 		}
@@ -95,7 +103,7 @@ public class ContentApiPlayerZBarTest extends ContentApiTest {
 	@Test
 	public void testPlayerZbar() throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
-		.browser(Browser.CHROME).client(Client.PLAYERJSON).build()) {
+				.browser(Browser.CHROME).client(Client.PLAYERJSON).build()) {
 			browser.setURL(HANDLER);
 			browser.subscribeEvents("playing", "ended");
 			browser.start();

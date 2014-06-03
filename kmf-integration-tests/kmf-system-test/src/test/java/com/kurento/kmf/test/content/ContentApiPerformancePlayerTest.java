@@ -17,16 +17,21 @@ package com.kurento.kmf.test.content;
 import java.net.URL;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.content.*;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.content.HttpPlayerHandler;
+import com.kurento.kmf.content.HttpPlayerService;
+import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.JMeterClient;
 
 /**
  * Test of a HTTP Player, using a HttpPlayerHandler in ther server-side.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -60,6 +65,7 @@ public class ContentApiPerformancePlayerTest extends ContentApiTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testPerfPlayer() throws Exception {
 		URL url = new URL("http://localhost:" + getServerPort() + HANDLER);

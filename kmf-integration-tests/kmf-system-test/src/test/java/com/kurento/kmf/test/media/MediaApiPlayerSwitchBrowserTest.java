@@ -15,11 +15,16 @@
 package com.kurento.kmf.test.media;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
  * <strong>Description</strong>: HTTP Player switching videos.<br/>
@@ -39,6 +44,7 @@ import com.kurento.kmf.test.client.*;
  */
 public class MediaApiPlayerSwitchBrowserTest extends BrowserMediaApiTest {
 
+	@Ignore
 	@Test
 	public void testPlayerSwitch() throws Exception {
 		// Media Pipeline

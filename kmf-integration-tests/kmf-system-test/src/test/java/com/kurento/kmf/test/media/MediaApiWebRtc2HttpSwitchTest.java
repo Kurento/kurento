@@ -17,11 +17,17 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * <strong>Description</strong>: WebRTC to HTTP switch. Test KMS is able to
@@ -41,12 +47,13 @@ import com.kurento.kmf.test.client.*;
  * <li>Color received by HttpPlayer should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
 public class MediaApiWebRtc2HttpSwitchTest extends BrowserMediaApiTest {
 
+	@Ignore
 	@Test
 	public void testWebRtc2HttpSwitch() throws Exception {
 		// Media Pipeline
@@ -59,9 +66,9 @@ public class MediaApiWebRtc2HttpSwitchTest extends BrowserMediaApiTest {
 		webRtcEndpoint2.connect(webRtcEndpoint2);
 
 		BrowserClient.Builder builderWebrtc = new BrowserClient.Builder()
-		.browser(Browser.CHROME).client(Client.WEBRTC);
+				.browser(Browser.CHROME).client(Client.WEBRTC);
 		BrowserClient.Builder builderPlayer = new BrowserClient.Builder()
-		.browser(Browser.CHROME).client(Client.PLAYER);
+				.browser(Browser.CHROME).client(Client.PLAYER);
 		try (BrowserClient browser1 = builderWebrtc.build();
 				BrowserClient browser2 = builderWebrtc.build();
 				BrowserClient browser3 = builderPlayer.build()) {

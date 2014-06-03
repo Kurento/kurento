@@ -93,8 +93,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 		public void onSessionTerminated(WebRtcContentSession contentSession,
 				int code, String reason) throws Exception {
 			recorderEndPoint.stop();
-			recorderEndPoint.release();
-			super.onSessionTerminated(contentSession, code, reason);
+			// recorderEndPoint.release();
 
 			terminateLatch.countDown();
 		}

@@ -46,7 +46,7 @@ import com.kurento.kmf.test.client.Client;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public class MediaApiPlayerBrowserTest extends BrowserMediaApiTest {
+public class MediaApiPlayerRabbitTest extends BrowserMediaApiTest {
 
 	private static final long TIMEOUT = 5000;
 

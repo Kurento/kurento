@@ -17,6 +17,7 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.Composite;
@@ -47,11 +48,13 @@ import com.kurento.kmf.test.client.Client;
  */
 public class MediaApiCompositePlayerTest extends BrowserMediaApiTest {
 
+	@Ignore
 	@Test
 	public void testCompositePlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
+	@Ignore
 	@Test
 	public void testCompositePlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);

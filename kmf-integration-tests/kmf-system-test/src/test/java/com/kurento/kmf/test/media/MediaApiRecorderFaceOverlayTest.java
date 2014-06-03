@@ -17,14 +17,21 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.FaceOverlayFilter;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.RecorderEndpoint;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
- *
+ * 
  * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
  * source from a PlayerEndpoint through an HttpGetEndpoint.<br/>
  * <strong>Pipelines</strong>:
@@ -41,7 +48,7 @@ import com.kurento.kmf.test.client.*;
  * </li>
  * <li>Browser ends before default timeout</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -50,11 +57,13 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 	private static final int VIDEO_LENGTH = 29; // seconds
 	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderFaceOverlayTest";
 
+	@Ignore
 	@Test
 	public void testRecorderFaceOverlayChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
+	@Ignore
 	@Test
 	public void testRecorderFaceOverlayFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
@@ -93,9 +102,9 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 
 	private void launchBrowser(Browser browserType, HttpGetEndpoint httpEP,
 			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
-					throws InterruptedException {
+			throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
-		.browser(browserType).client(Client.PLAYER).build()) {
+				.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();

@@ -33,7 +33,7 @@ import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
- *
+ * 
  * <strong>Description</strong>: Test of a Composite Mixer.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
@@ -44,7 +44,7 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * <li>Browser starts before default timeout</li>
  * <li>Color of the video should be the expected (red, green, blue, and white)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -52,13 +52,13 @@ public class MediaApiCompositeWebRtcTest extends BrowserMediaApiTest {
 
 	@Ignore
 	@Test
-	public void testCompositePlayerChrome() throws Exception {
+	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
 	@Ignore
 	@Test
-	public void testCompositePlayerFirefox() throws Exception {
+	public void testCompositeWebRtcFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
 
@@ -87,23 +87,23 @@ public class MediaApiCompositeWebRtcTest extends BrowserMediaApiTest {
 
 		// Test execution
 		try (BrowserClient browserPlayer = new BrowserClient.Builder()
-		.browser(browserType).client(Client.PLAYER).build();
+				.browser(browserType).client(Client.PLAYER).build();
 				BrowserClient browserWebRtc1 = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC)
-				.video(getPathTestFiles() + "/video/10sec/red.y4m")
-				.build();
+						.browser(browserType).client(Client.WEBRTC)
+						.video(getPathTestFiles() + "/video/10sec/red.y4m")
+						.build();
 				BrowserClient browserWebRtc2 = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC)
-				.video(getPathTestFiles() + "/video/10sec/green.y4m")
-				.build();
+						.browser(browserType).client(Client.WEBRTC)
+						.video(getPathTestFiles() + "/video/10sec/green.y4m")
+						.build();
 				BrowserClient browserWebRtc3 = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC)
-				.video(getPathTestFiles() + "/video/10sec/blue.y4m")
-				.build();
+						.browser(browserType).client(Client.WEBRTC)
+						.video(getPathTestFiles() + "/video/10sec/blue.y4m")
+						.build();
 				BrowserClient browserWebRtc4 = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC)
-				.video(getPathTestFiles() + "/video/10sec/white.y4m")
-				.build();) {
+						.browser(browserType).client(Client.WEBRTC)
+						.video(getPathTestFiles() + "/video/10sec/white.y4m")
+						.build();) {
 
 			// WebRTC browsers
 			browserWebRtc1.subscribeEvents("playing");
