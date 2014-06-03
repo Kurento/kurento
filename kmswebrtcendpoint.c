@@ -21,6 +21,7 @@
 #include "kmswebrtcendpoint.h"
 #include "kmsloop.h"
 #include "kmsutils.h"
+#include "sdp_utils.h"
 
 #include <nice/nice.h>
 #include <gio/gio.h>
@@ -514,6 +515,37 @@ add_bundle_funnels (KmsWebrtcEndpoint * webrtc_endpoint)
       bundle_rtcp_funnel);
 }
 
+static void
+sdp_media_set_rtcp_fb_attrs (GstSDPMedia * media)
+{
+  guint i, f_len;
+
+  if (g_strcmp0 (VIDEO_STREAM_NAME, gst_sdp_media_get_media (media)) != 0) {
+    return;
+  }
+
+  f_len = gst_sdp_media_formats_len (media);
+
+  for (i = 0; i < f_len; i++) {
+    const gchar *pt = gst_sdp_media_get_format (media, i);
+    gchar *enconding_name = gst_sdp_media_format_get_encoding_name (media, pt);
+
+    if (g_ascii_strcasecmp (VP8_ENCONDING_NAME, enconding_name) == 0) {
+      gchar *aux;
+
+      aux = g_strconcat (pt, " ccm fir", NULL);
+      gst_sdp_media_add_attribute (media, RTCP_FB, aux);
+      g_free (aux);
+
+      aux = g_strconcat (pt, " nack", NULL);
+      gst_sdp_media_add_attribute (media, RTCP_FB, aux);
+      g_free (aux);
+    }
+
+    g_free (enconding_name);
+  }
+}
+
 static const gchar *
 update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
     const gchar * fingerprint, gboolean use_ipv6)
@@ -675,6 +707,8 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
       g_free (value);
     }
   }
+
+  sdp_media_set_rtcp_fb_attrs (media);
 
   return media_str;
 }

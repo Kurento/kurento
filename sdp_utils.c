@@ -269,6 +269,57 @@ sdp_utils_sdp_media_add_format (GstSDPMedia * media, const gchar * format,
   }
 }
 
+/**
+ * rfc4585 section-4.2
+ */
+static void
+intersect_rtcp_fb_attrs (const GstSDPMedia * offer, const GstSDPMedia * answer,
+    const gchar * offer_format, const gchar * answer_format,
+    GstSDPMedia * offer_result, GstSDPMedia * answer_result)
+{
+  guint offer_attr_len, answer_attr_len, i, j;
+
+  offer_attr_len = gst_sdp_media_attributes_len (offer);
+  for (i = 0; i < offer_attr_len; i++) {
+    const GstSDPAttribute *offer_attr;
+
+    offer_attr = gst_sdp_media_get_attribute (offer, i);
+    if (offer_attr->value == NULL
+        || g_ascii_strcasecmp (RTCP_FB, offer_attr->key) != 0) {
+      continue;
+    }
+
+    answer_attr_len = gst_sdp_media_attributes_len (answer);
+    for (j = 0; j < answer_attr_len; j++) {
+      const GstSDPAttribute *anwer_attr;
+      gchar **offer_tokens, **answer_tokens;
+
+      anwer_attr = gst_sdp_media_get_attribute (answer, j);
+      if (anwer_attr->value == NULL
+          || g_ascii_strcasecmp (RTCP_FB, anwer_attr->key) != 0) {
+        continue;
+      }
+
+      offer_tokens = g_strsplit (offer_attr->value, " ", 2);
+      answer_tokens = g_strsplit (anwer_attr->value, " ", 2);
+
+      if (g_strcmp0 (offer_format, offer_tokens[0]) == 0 &&
+          g_strcmp0 (answer_format, answer_tokens[0]) == 0 &&
+          g_strcmp0 (offer_tokens[1], answer_tokens[1]) == 0) {
+        gchar *aux;
+
+        aux = g_strconcat (offer_format, " ", offer_tokens[1], NULL);
+        gst_sdp_media_add_attribute (offer_result, RTCP_FB, aux);
+        gst_sdp_media_add_attribute (answer_result, RTCP_FB, aux);
+        g_free (aux);
+      }
+
+      g_strfreev (offer_tokens);
+      g_strfreev (answer_tokens);
+    }
+  }
+}
+
 static void
 sdp_media_add_extra_info_from_src (const GstSDPMedia * src,
     GstSDPMedia * result)
@@ -290,8 +341,10 @@ sdp_media_add_extra_info_from_src (const GstSDPMedia * src,
 
     attr = gst_sdp_media_get_attribute (src, i);
     if (sdp_utils_attribute_is_direction (attr, NULL) ||
-        g_ascii_strcasecmp (RTPMAP, attr->key) == 0)
+        g_ascii_strcasecmp (RTPMAP, attr->key) == 0 ||
+        g_ascii_strcasecmp (RTCP_FB, attr->key) == 0) {
       continue;
+    }
 
     gst_sdp_media_add_attribute (result, attr->key, attr->value);
   }
@@ -369,9 +422,13 @@ intersect_sdp_medias (const GstSDPMedia * offer,
       sdp_utils_sdp_media_add_format (*offer_result, offer_format,
           offer_rtpmap);
       sdp_media_set_direction (*offer_result, offer_result_dir);
+
       sdp_utils_sdp_media_add_format (*answer_result, offer_format,
           offer_rtpmap);
       sdp_media_set_direction (*answer_result, answer_result_dir);
+
+      intersect_rtcp_fb_attrs (offer, answer, offer_format, answer_format,
+          *offer_result, *answer_result);
     }
   }
 

@@ -18,6 +18,8 @@
 
 #include <gst/sdp/gstsdpmessage.h>
 
+#define RTCP_FB "rtcp-fb"
+
 typedef enum GstSDPDirection
 {
   SENDONLY,
