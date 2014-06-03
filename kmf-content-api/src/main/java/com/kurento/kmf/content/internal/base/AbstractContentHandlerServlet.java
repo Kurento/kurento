@@ -332,12 +332,12 @@ public abstract class AbstractContentHandlerServlet extends HttpServlet {
 				contentSession = contentSessionManager.get(sessionId);
 				if (contentSession == null) {
 					throw new KurentoMediaFrameworkException(
-							"Cloud not find contentRequest object associated to sessionId "
+							"Could not find contentSession object associated to sessionId "
 									+ sessionId, 10021);
 				}
 			} else {
 				throw new KurentoMediaFrameworkException(
-						"Cloud not find required sessionId field in request",
+						"Could not find required sessionId field in request",
 						10022);
 			}
 

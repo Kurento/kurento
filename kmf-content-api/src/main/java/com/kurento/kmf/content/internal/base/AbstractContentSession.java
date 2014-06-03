@@ -782,9 +782,6 @@ public abstract class AbstractContentSession implements ContentSession {
 			}
 			initialAsyncCtx = null;
 		}
-		if (manager != null) {
-			manager.remove(this.sessionId);
-		}
 
 		if (eventQueue.isEmpty() && currentPollingThread != null) {
 			currentPollingThread.interrupt();
@@ -794,6 +791,16 @@ public abstract class AbstractContentSession implements ContentSession {
 			releaseOwnMediaServerResources();
 		} catch (Throwable e) {
 			getLogger().error(e.getMessage(), e);
+		}
+
+		// FIXME: Dirty hack to avoid polling not receiving onTerminate event
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+		}
+
+		if (manager != null) {
+			manager.remove(this.sessionId);
 		}
 	}
 
