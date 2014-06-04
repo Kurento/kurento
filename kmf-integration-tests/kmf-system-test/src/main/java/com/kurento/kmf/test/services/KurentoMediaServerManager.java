@@ -182,6 +182,13 @@ public class KurentoMediaServerManager {
 
 			log.info("KMS started in {} millis", waitingTime);
 
+		} else {
+			try {
+				Thread.sleep(2000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -310,7 +317,7 @@ public class KurentoMediaServerManager {
 					"sh",
 					"-c",
 					"ps --pid `cat " + workspace
-							+ "kms-pid` --no-headers | wc -l" };
+					+ "kms-pid` --no-headers | wc -l" };
 			Process countKms = Runtime.getRuntime().exec(command);
 
 			String stringFromStream = CharStreams

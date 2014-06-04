@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.internal.runners.model.MultipleFailureException;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
  * Utility class to print KMS log when a test fails.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -44,25 +45,46 @@ public class KmsLogOnFailure extends TestWatcher {
 			String testDir = KurentoServicesTestHelper.getTestDir();
 			String testCaseName = KurentoServicesTestHelper.getTestCaseName();
 			String testName = KurentoServicesTestHelper.getTestName();
-			File file = new File(testDir + "TEST-" + testCaseName + "/"
+			File logFile = new File(testDir + "TEST-" + testCaseName + "/"
 					+ testName + "-kms.log");
 
-			if (file.exists()) {
-				log.info("******************************************************************************");
-				log.info("{}.{} FAILED", description.getClassName(), testName);
-				log.info("\tcaused by: {} ({})", e.getClass()
-						.getCanonicalName(), e.getMessage());
-				log.info("******************************************************************************");
+			if (logFile.exists()) {
+				System.err
+						.println("******************************************************************************");
 
-				try {
-					for (String line : FileUtils.readLines(file)) {
-						log.info(line);
+				System.err.println(description.getClassName() + "." + testName
+						+ " TEST FAILED");
+
+				if (e instanceof org.junit.internal.runners.model.MultipleFailureException) {
+
+					MultipleFailureException multipleEx = (MultipleFailureException) e;
+					for (Throwable failure : multipleEx.getFailures()) {
+						failure.printStackTrace();
 					}
-				} catch (IOException e1) {
-					log.warn("Error reading lines in log file", e1);
+
+				} else {
+					e.printStackTrace();
 				}
 
-				log.info("******************************************************************************");
+				System.err
+						.println("******************************************************************************");
+
+				System.err.println("Log file path: "
+						+ logFile.getAbsolutePath());
+				System.err.println("Content:");
+
+				try {
+					for (String line : FileUtils.readLines(logFile)) {
+						System.err.println(line);
+					}
+				} catch (IOException e1) {
+					System.err.println("Error reading lines in log file");
+					e1.printStackTrace();
+				}
+
+				System.err
+						.println("******************************************************************************");
+
 			}
 		}
 

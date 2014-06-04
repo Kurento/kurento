@@ -2,5 +2,5 @@
 
 export GST_PLUGIN_PATH=$GST_PLUGIN_PATH:${gstPlugins}
 export GST_DEBUG=${debugOptions}
-${serverCommand} -f ${workspace}kurento.conf &
+${serverCommand} --gst-debug-no-color -f ${workspace}kurento.conf &
 echo $! > ${workspace}kms-pid
