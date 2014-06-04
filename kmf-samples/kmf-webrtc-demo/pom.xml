@@ -46,7 +46,7 @@
 			<organizationUrl>http://www.kurento.org</organizationUrl>
 		</developer>
 	</developers>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -66,7 +66,7 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
