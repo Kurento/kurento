@@ -111,7 +111,7 @@ public class MediaApiPlayerRabbitTest extends BrowserMediaApiTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 3 seconds",
+			Assert.assertTrue("Play time must be at least 3 seconds",
 					browser.getCurrentTime() >= 3);
 			Assert.assertTrue("The color of the video should be blue",
 					browser.colorSimilarTo(Color.BLUE));

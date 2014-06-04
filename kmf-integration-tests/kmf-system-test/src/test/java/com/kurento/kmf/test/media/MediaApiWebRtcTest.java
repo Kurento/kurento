@@ -40,7 +40,7 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * <li>Color received by client should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -88,9 +88,10 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 			Thread.sleep(PLAYTIME * 1000);
 
 			// Assert play time
+			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Error in play time of HTTP player (expected: "
-					+ PLAYTIME + " sec, real: " + browser.getCurrentTime()
-					+ " sec)", compare(PLAYTIME, browser.getCurrentTime()));
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 
 			// Assert color
 			if (color != null) {

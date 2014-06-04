@@ -102,7 +102,7 @@ public class MediaApiRecorderPlayerTest extends BrowserMediaApiTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least " + VIDEO_LENGTH
+			Assert.assertTrue("Play time must be at least " + VIDEO_LENGTH
 					+ " seconds", browser.getCurrentTime() >= VIDEO_LENGTH);
 			Assert.assertTrue("The color of the video should be green",
 					browser.colorSimilarTo(Color.GREEN));

@@ -22,11 +22,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.kmf.content.*;
+import com.kurento.kmf.content.WebRtcContentHandler;
+import com.kurento.kmf.content.WebRtcContentService;
+import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.ContentApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
  * <strong>Description</strong>: Back-to-back WebRTC Test<br/>
@@ -34,11 +38,10 @@ import com.kurento.kmf.test.client.*;
  * <strong>Pass criteria</strong>: <br/>
  * <ul>
  * <li>Browser #1 and #2 starts before 60 seconds (default timeout)</li>
- * <li>Remote play time in browser #1 and #2 does not differ in a 10% of the
- * transmitting time</li>
+ * <li>Remote play time in browser #1 and #2 is the expected</li>
  * <li>Browser #1 and #2 stops before 60 seconds (default timeout)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -48,6 +51,8 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 			.getLogger(ContentApiWebRtc2WebRtcTest.class);
 
 	private static final String HANDLER = "/webrtc2webrtc";
+
+	private static int PLAYTIME = 10; // seconds
 
 	@WebRtcContentService(path = HANDLER)
 	public static class WebRtcHandler extends WebRtcContentHandler {
@@ -124,31 +129,27 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 			// First, wait in both browser to start their remote streams
 			Assert.assertTrue("Timeout waiting playing event",
 					browser1.waitForEvent("playing"));
-			final double browser1start = System.nanoTime();
 			Assert.assertTrue("Timeout waiting playing event",
 					browser2.waitForEvent("playing"));
-			final double browser2start = System.nanoTime();
 
 			// Guard time to see the communication
-			Thread.sleep(10000);
+			Thread.sleep(PLAYTIME * 1000);
 
 			// Time receiving remote stream (in seconds)
-			double browser1time = (System.nanoTime() - browser1start) / 1000000000;
-			double browser2time = (System.nanoTime() - browser2start) / 1000000000;
-			log.debug("browser1time: {} sec ; browser2time: {} sec ",
-					browser1time, browser2time);
+			double browser1time = browser1.getCurrentTime();
+			double browser2time = browser2.getCurrentTime();
+
 			log.debug(
 					"browser1.getCurrentTime(): {} sec ; browser2.getCurrentTime(): {} sec ",
-					browser1.getCurrentTime(), browser2.getCurrentTime());
+					browser1time, browser2time);
 
 			// Comparing expected with real play time
-			// Pass criteria: threshold 10 %
 			Assert.assertTrue("Error in play time of #1 browser (expected: "
-					+ browser1time + " sec, real: " + browser1.getCurrentTime()
-					+ " sec)", compare(browser1time, browser1.getCurrentTime()));
+					+ PLAYTIME + " sec, real: " + browser1time + " sec)",
+					browser1time >= PLAYTIME);
 			Assert.assertTrue("Error in play time of #2 browser (expected: "
-					+ browser2time + " sec, real: " + browser2.getCurrentTime()
-					+ " sec)", compare(browser2time, browser2.getCurrentTime()));
+					+ PLAYTIME + " sec, real: " + browser2time + " sec)",
+					browser2time >= PLAYTIME);
 
 			// Ending sessions in both sessions
 			browser1.stop();
@@ -161,5 +162,4 @@ public class ContentApiWebRtc2WebRtcTest extends ContentApiTest {
 							TimeUnit.SECONDS));
 		}
 	}
-
 }

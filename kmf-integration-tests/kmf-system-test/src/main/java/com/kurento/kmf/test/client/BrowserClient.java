@@ -247,8 +247,11 @@ public class BrowserClient implements Closeable {
 	}
 
 	public double getCurrentTime() {
-		return Double.parseDouble(driver.findElement(By.id("currentTime"))
-				.getAttribute("value"));
+		log.debug("getCurrentTime() called");
+		double currentTime = Double.parseDouble(driver.findElement(
+				By.id("currentTime")).getAttribute("value"));
+		log.debug("getCurrentTime() result: {}", currentTime);
+		return currentTime;
 	}
 
 	public boolean color(Color expectedColor, final double seconds, int x, int y) {

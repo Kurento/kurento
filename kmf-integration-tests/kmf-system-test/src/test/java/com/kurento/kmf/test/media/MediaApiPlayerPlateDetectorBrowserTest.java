@@ -97,6 +97,8 @@ public class MediaApiPlayerPlateDetectorBrowserTest extends BrowserMediaApiTest 
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Play time must be at least 12 seconds",
+					browser.getCurrentTime() > 12);
 			Assert.assertTrue(
 					"No plate 2651DLC detected by palte detector filter",
 					platesDetectedEvents.contains("--2651DCL"));
@@ -104,8 +106,6 @@ public class MediaApiPlayerPlateDetectorBrowserTest extends BrowserMediaApiTest 
 					"No plate 3882GKP detected by palte detector filter",
 					platesDetectedEvents.contains("--3882GKP"));
 			Assert.assertFalse("No EOS event", eosEvents.isEmpty());
-			Assert.assertTrue("Playback time must be at least 12 seconds",
-					browser.getCurrentTime() > 12);
 		}
 	}
 

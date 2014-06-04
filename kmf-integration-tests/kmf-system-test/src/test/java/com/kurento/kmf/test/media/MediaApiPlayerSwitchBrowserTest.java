@@ -38,7 +38,7 @@ import com.kurento.kmf.test.client.Client;
  * <li>Play time should be the expected (at least 8 seconds)</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -64,7 +64,7 @@ public class MediaApiPlayerSwitchBrowserTest extends BrowserMediaApiTest {
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 
 			// red
@@ -96,7 +96,7 @@ public class MediaApiPlayerSwitchBrowserTest extends BrowserMediaApiTest {
 			playerBall.play();
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Playback time must be at least 8 seconds",
+			Assert.assertTrue("Play time must be at least 8 seconds",
 					browser.getCurrentTime() >= 8);
 		}
 	}

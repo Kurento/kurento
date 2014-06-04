@@ -125,9 +125,10 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
+			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Play time must be at least " + VIDEO_LENGTH
-					+ " seconds and is " + browser.getCurrentTime(),
-					browser.getCurrentTime() >= VIDEO_LENGTH);
+					+ " seconds and is " + currentTime,
+					currentTime >= VIDEO_LENGTH);
 		}
 	}
 }

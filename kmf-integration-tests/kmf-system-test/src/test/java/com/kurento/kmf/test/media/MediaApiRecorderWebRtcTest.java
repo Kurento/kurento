@@ -23,7 +23,7 @@ import com.kurento.kmf.test.base.BrowserMediaApiTest;
 import com.kurento.kmf.test.client.*;
 
 /**
- *
+ * 
  * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
  * source from a WebRtcEndpoint in loopback.<br/>
  * <strong>Pipelines</strong>:
@@ -38,7 +38,7 @@ import com.kurento.kmf.test.client.*;
  * <li>Color of the video should be the expected</li>
  * <li>Browser ends before default timeout</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -89,9 +89,10 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 			Thread.sleep(PLAYTIME * 1000);
 
 			// Assert play time
+			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Error in play time of HTTP player (expected: "
-					+ PLAYTIME + " sec, real: " + browser.getCurrentTime()
-					+ " sec)", compare(PLAYTIME, browser.getCurrentTime()));
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 
 			// Assert color
 			if (color != null) {
@@ -114,7 +115,7 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 
 		// Test execution #2. Play the recorded video
 		try (BrowserClient browser = new BrowserClient.Builder()
-		.browser(browserType).client(Client.PLAYER).build()) {
+				.browser(browserType).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
@@ -125,9 +126,10 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
+			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Play time must be at least " + PLAYTIME
-					+ " seconds and is " + browser.getCurrentTime()
-					+ " seconds", browser.getCurrentTime() >= PLAYTIME);
+					+ " seconds and is " + currentTime + " seconds",
+					currentTime >= PLAYTIME);
 			if (color != null) {
 				Assert.assertTrue("The color of the video should be " + color,
 						browser.colorSimilarTo(color));

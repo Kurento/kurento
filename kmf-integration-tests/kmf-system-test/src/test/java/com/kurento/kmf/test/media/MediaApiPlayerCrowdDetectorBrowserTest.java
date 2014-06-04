@@ -29,7 +29,7 @@ import com.kurento.kmf.test.client.*;
 
 /**
  * Test of a HTTP Player with CrowdDetector Filter.
- *
+ * 
  * <strong>Description</strong>: HTTP Player with CrowdDetector Filter.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
@@ -43,7 +43,7 @@ import com.kurento.kmf.test.client.*;
  * <li>EOS event received</li>
  * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @author David Fernandez (d.fernandezlop@gmail.com)
  * @since 4.2.3
@@ -101,24 +101,24 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest 
 		final List<CrowdDetectorFluidityEvent> crowdDetectedFluidityEvents = new ArrayList<>();
 
 		crowdDetectorFilter
-		.addCrowdDetectorOccupancyListener(new MediaEventListener<CrowdDetectorOccupancyEvent>() {
-			@Override
-			public void onEvent(CrowdDetectorOccupancyEvent event) {
-				crowdDetectedOccupancyEvents.add(event);
-			}
-		});
+				.addCrowdDetectorOccupancyListener(new MediaEventListener<CrowdDetectorOccupancyEvent>() {
+					@Override
+					public void onEvent(CrowdDetectorOccupancyEvent event) {
+						crowdDetectedOccupancyEvents.add(event);
+					}
+				});
 
 		crowdDetectorFilter
-		.addCrowdDetectorFluidityListener(new MediaEventListener<CrowdDetectorFluidityEvent>() {
-			@Override
-			public void onEvent(CrowdDetectorFluidityEvent event) {
-				crowdDetectedFluidityEvents.add(event);
-			}
-		});
+				.addCrowdDetectorFluidityListener(new MediaEventListener<CrowdDetectorFluidityEvent>() {
+					@Override
+					public void onEvent(CrowdDetectorFluidityEvent event) {
+						crowdDetectedFluidityEvents.add(event);
+					}
+				});
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-		.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
@@ -127,6 +127,8 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest 
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Play time must be at least 10 seconds",
+					browser.getCurrentTime() > 10);
 			Assert.assertFalse(
 					"No occupancy events throw by crowd detector filter",
 					crowdDetectedOccupancyEvents.isEmpty());
@@ -134,8 +136,6 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest 
 					"No fluidity events throw by crowd detector filter",
 					crowdDetectedFluidityEvents.isEmpty());
 			Assert.assertFalse("No EOS event", eosEvents.isEmpty());
-			Assert.assertTrue("Playback time must be at least 10 seconds",
-					browser.getCurrentTime() > 10);
 		}
 	}
 

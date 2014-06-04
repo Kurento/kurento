@@ -73,7 +73,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 				WebRtcContentSession contentSession) throws Exception {
 			MediaPipeline mp = contentSession.getMediaPipelineFactory()
 					.create();
-			contentSession.releaseOnTerminate(mp);
+			// contentSession.releaseOnTerminate(mp);
 			WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 			recorderEndPoint = mp.newRecorderEndpoint(FILE_SCHEMA + RECORDING)
 					.build();
