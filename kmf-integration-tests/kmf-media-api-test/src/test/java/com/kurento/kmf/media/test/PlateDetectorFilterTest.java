@@ -20,7 +20,11 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.PlateDetectorFilter;
@@ -42,6 +46,7 @@ import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
  * @version 2.0.1
  *
  */
+@Ignore
 public class PlateDetectorFilterTest extends MediaPipelineBaseTest {
 
 	private PlateDetectorFilter detector;

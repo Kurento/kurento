@@ -18,12 +18,21 @@ import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_PLATES;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.PlateDetectorFilter;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.PlateDetectedEvent;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
@@ -41,6 +50,7 @@ import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
  * @version 2.0.1
  *
  */
+@Ignore
 public class PlateDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	private PlateDetectorFilter detector;
@@ -49,7 +59,7 @@ public class PlateDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Before
 	public void setupMediaElements() throws KurentoException,
-	InterruptedException {
+			InterruptedException {
 		final BlockingQueue<PlateDetectorFilter> events = new ArrayBlockingQueue<PlateDetectorFilter>(
 				1);
 
