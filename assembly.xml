@@ -13,9 +13,6 @@
 	  <fileSet>
 	    <directory>dist</directory>
 	    <outputDirectory>/js</outputDirectory>
-	    <includes>
-	      <include>*.js</include>
-	    </includes>
 	  </fileSet>
 	</fileSets>
 </assembly>
