@@ -71,7 +71,7 @@ module.exports = function(grunt)
       'require minified':
       {
         src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require_sourcemap.js',
+        dest: DIST_DIR+'/<%= pkg.name %>_require.min.js',
 
         options:
         {
@@ -89,7 +89,7 @@ module.exports = function(grunt)
       'standalone minified':
       {
         src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_sourcemap.js',
+        dest: DIST_DIR+'/<%= pkg.name %>.min.js',
 
         options:
         {
