@@ -74,8 +74,8 @@
 			<kmf-repository-api.version>${project.version}</kmf-repository-api.version> 
 			<kmf-media-connector.version>${project.version}</kmf-media-connector.version> 
 			<kws-content-api.version>${project.version}</kws-content-api.version> <kms-interface.version>${project.version}</kms-interface.version> -->
-		<kms-interface.version>4.2.2</kms-interface.version>
-		<kws.version>4.2.3-SNAPSHOT</kws.version>
+		<kms-interface.version>4.2.2-SNAPSHOT</kms-interface.version>
+		<kws.version>4.2.2-SNAPSHOT</kws.version>
 		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
 		
 
@@ -727,6 +727,7 @@
 						</dependency>
 					</dependencies>
 					<configuration>
+						<preparationGoals>versions:use-releases</preparationGoals>
 						<pushChanges>false</pushChanges>
 					</configuration>
 				</plugin>
