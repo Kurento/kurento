@@ -38,7 +38,7 @@
     "es6-promise": "1.0.0",
     "extend": "~1.2.1",
     "inherits": "~2.0.1",
-    "kws-rpc-builder": "~4.2.4-SNAPSHOT",
+    "kws-rpc-builder": "git://github.com/Kurento/kws-rpc-builder.git#develop",
     "ws": "~0.4.31"
   },
   "devDependencies": {
@@ -49,14 +49,14 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-copy": "~0.5.0",
     "grunt-contrib-jshint": "~0.10.0",
-    "grunt-curl": "latest",
-    "grunt-jsdoc": "latest",
+    "grunt-curl": "~1.5.1",
+    "grunt-jsdoc": "~0.5.4",
     "grunt-npm2bower-sync": "^0.4.0",
     "grunt-shell": "^0.7.0",
     "minifyify": "~3.0.7",
     "qunit-cli": "ShareIt-project/qunit-cli",
     "qunit-reporter-junit": "piranna/qunit-reporter-junit",
     "qunitjs": "~1.14.0",
-    "wock": "latest"
+    "wock": "^0.1.1"
   }
 }
