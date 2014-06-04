@@ -754,14 +754,8 @@ kms_http_endpoint_dispose_GET (KmsHttpEndpoint * self)
 static void
 kms_http_endpoint_dispose_POST (KmsHttpEndpoint * self)
 {
-  GstBus *bus;
-
   if (self->priv->pipeline == NULL)
     return;
-
-  bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
-  gst_bus_remove_signal_watch (bus);
-  g_object_unref (bus);
 
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
   gst_object_unref (GST_OBJECT (self->priv->pipeline));
