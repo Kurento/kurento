@@ -16,7 +16,8 @@ package com.kurento.kmf.media.test;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -54,16 +55,10 @@ public class WebRtcEndpointAsyncTest extends SdpAsyncBaseTest<WebRtcEndpoint> {
 		pipeline.newWebRtcEndpoint().buildAsync(cont);
 		pipeline.newWebRtcEndpoint().buildAsync(cont);
 
-		sdp = creationResults.poll(1, SECONDS);
-		sdp2 = creationResults.poll(1, SECONDS);
+		sdp = creationResults.poll(2, SECONDS);
+		sdp2 = creationResults.poll(2, SECONDS);
 		Assert.assertNotNull(sdp);
 		Assert.assertNotNull(sdp2);
-	}
-
-	@After
-	public void teardownMediaElements() throws InterruptedException {
-		releaseMediaObject(sdp);
-		releaseMediaObject(sdp2);
 	}
 
 }

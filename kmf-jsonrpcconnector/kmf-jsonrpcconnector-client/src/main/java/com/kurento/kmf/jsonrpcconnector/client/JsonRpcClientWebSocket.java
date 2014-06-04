@@ -14,15 +14,25 @@
  */
 package com.kurento.kmf.jsonrpcconnector.client;
 
-import static com.kurento.kmf.jsonrpcconnector.JsonUtils.*;
+import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJson;
+import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
+import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonResponse;
 
 import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
-import org.springframework.web.socket.*;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.client.WebSocketConnectionManager;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -35,7 +45,9 @@ import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcConstants;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.*;
+import com.kurento.kmf.jsonrpcconnector.internal.message.MessageUtils;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.PendingRequests;
 import com.kurento.kmf.jsonrpcconnector.internal.ws.WebSocketResponseSender;
 
@@ -52,7 +64,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private ResponseSender rs;
 
-	private static final long TIMEOUT = 5000;
+	private static final long TIMEOUT = 10000;
 
 	public JsonRpcClientWebSocket(String url) {
 		this(url, new HttpHeaders());

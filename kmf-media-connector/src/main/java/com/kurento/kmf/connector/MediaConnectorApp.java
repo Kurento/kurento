@@ -60,8 +60,8 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 	}
 
 	@Bean
-	public ThriftConnectorJsonRpcHandler2 thriftConnectorJsonRpcHandler() {
-		return new ThriftConnectorJsonRpcHandler2();
+	public ThriftConnectorJsonRpcHandler thriftConnectorJsonRpcHandler() {
+		return new ThriftConnectorJsonRpcHandler();
 	}
 
 	@Bean
