@@ -1,104 +1,65 @@
 function Softphone(wsUrl, videoInput, videoOutput)
 {
-  var client = new JsonRpcClient(wsUrl, onRequest);
+	var client = new JsonRpcClient(wsUrl, onRequest);
 
-  var localPeerConnection;
-
-
-  // Process request messages
-
-  function onRequest(request)
-  {
-    switch(request.method)
-    {
-      case 'incommingCall':
-        onIncommingCall(request);
-      break;
-
-      case 'startCommunication':
-        onStartCommunication(request);
-      break;
-
-      default:
-        console.error('Unrecognized request', request);
-    }
-  };
-
-  function onIncommingCall(request)
-  {
-    function sdpOfferReady(peerConnection, offer)
-    {
-      localPeerConnection = peerConnection;
-
-      var response =
-      {
-        callResponse: 'Accept',
-        sdpOffer: offer.sdp
-      };
-
-      request.reply(null, response);
-    };
-
-    createSendPlayer(sdpOfferReady, setVideoInput);
-  };
-
-  function onStartCommunication(request)
-  {
-    var sdpAnswer = request.params.sdpAnswer;
-
-    createReceivePlayer(localPeerConnection, sdpAnswer, setVideoOutput);
-
-    request.reply(null, {});
-  };
+	var localPeerConnection;
 
 
-  // Set videos
+	// Process request messages
 
-  function setVideoInput(error, stream)
-  {
-    if(error) return onerror(error);
+	function onRequest(request) {
+		switch(request.method) {
+		case 'incommingCall':
+			onIncommingCall(request);
+			break;
 
-    // Set the stream on the video tag
-    videoInput.src = URL.createObjectURL(stream);
-  };
+		case 'startCommunication':
+			onStartCommunication(request);
+			break;
 
-  function setVideoOutput(error, stream)
-  {
-    if(error) return onerror(error);
+		default:
+			console.error('Unrecognized request', request);
+		}
+	};
+	
+	var webRtcPeer;
+	function onIncommingCall(request) {
+		webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
+			var response = {
+					callResponse: 'Accept',
+					sdpOffer: offerSdp
+			};
 
-    // Set the stream on the video tag
-    videoOutput.src = URL.createObjectURL(stream);
-  };
+			request.reply(null, response);
+		});
 
+	};
 
-  // Public API
+	function onStartCommunication(request) {
+		var sdpAnswer = request.params.sdpAnswer;
+		webRtcPeer.processSdpAnswer(sdpAnswer);
+		request.reply(null, {});
+	};
 
-  this.register = function(name)
-  {
-    var params = {name: name};
+	// Public API
 
-    client.sendRequest('register', params, function(error)
-    {
-      if(error) return onerror(error);
+	this.register = function(name) {
+		var params = {name: name};
 
-      console.log('registered');
-    });
-  };
+		client.sendRequest('register', params, function(error) {
+			if(error) return onerror(error);
+			console.log('registered');
+		});
+	};
 
-  this.call = function(peer)
-  {
-    function sdpOfferReady(peerConnection, offer)
-    {
-      var params = {callTo: peer, sdpOffer: offer.sdp};
-
-      client.sendRequest('call', params, function(error, result)
-      {
-        if(error) return onerror(error);
-
-        createReceivePlayer(peerConnection, result.sdpAnswer, setVideoOutput);
-      });	
-    };
-
-    createSendPlayer(sdpOfferReady, setVideoInput);
-  };
-};
+	this.call = function(peer) {
+		kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
+			console.log('Invoking SDP offer callback function');
+			var params = {callTo: peer, sdpOffer: offerSdp};
+			client.sendRequest('call', params, function(error, result) {
+				if(error) return onerror(error);
+				wp.processSdpAnswer(result.sdpAnswer);
+			});
+		});
+	};
+}

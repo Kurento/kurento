@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.jsonrpcconnector.internal.server.config;
 
+import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+
 import java.io.IOException;
 
 import javax.servlet.FilterChain;
@@ -58,7 +60,7 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 		String fullUrl = request.getRequestURL().append('?')
 				.append(request.getQueryString()).toString();
 
-		log.debug("Client trying to stablish new websocket session with {}",
+		log.trace("Client trying to stablish new websocket session with {}",
 				fullUrl);
 
 		if (!Strings.isNullOrEmpty(props.getKeystoneHost())) {
@@ -66,18 +68,18 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 			if (Strings.isNullOrEmpty(accessToken)) {
 				log.warn("Request from {} without OAuth token",
 						request.getRemoteAddr());
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+				response.sendError(SC_UNAUTHORIZED,
 						"Access token not found in request");
 			} else if (isTokenValid(accessToken)) {
-				log.debug("The request from {} was authorized",
+				log.trace("The request from {} was authorized",
 						request.getRemoteAddr());
 				filterChain.doFilter(request, response);
 			} else {
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-						"Unathorized request");
+				response.sendError(SC_UNAUTHORIZED, "Unathorized request");
 			}
 		} else {
-			log.debug("Request from {} authorized: no keystone host configured",
+			log.trace(
+					"Request from {} authorized: no keystone host configured",
 					request.getRemoteAddr());
 			filterChain.doFilter(request, response);
 		}

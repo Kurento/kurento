@@ -1,6 +1,8 @@
 var client = new JsonRpcClient('ws://' + location.host + '/groupcall/ws/websocket',
 		onRequest);
 
+var participants = {};
+
 function onRequest(transaction, message) {
 
 	//TODO no message defined for now. This block will always go through the else clause
@@ -37,8 +39,8 @@ function register() {
 	}, function(error, result) {
 		console.log(name + " registered in room " + room);
 		var participant = new Participant(name);
-		document.getElementById('room').appendChild(participant.getElement());
-		prepareSendPreviewPlayer(participant.getVideoElement(), participant.offerToReceiveVideo.bind(participant));
+		participants[name] = participant;
+		participant.rtcPeer = kwsUtils.WebRtcPeer.startSendOnly(participant.getVideoElement(), participant.offerToReceiveVideo.bind(participant));
 		result.value.forEach(receiveVideo);
 	});
 }
@@ -49,13 +51,14 @@ function onNewParticipant(request) {
 
 function receiveVideo(sender) {
 	var participant = new Participant(sender);
-	document.getElementById('room').appendChild(participant.getElement());
+	participants[sender] = participant;
 	var video = participant.getVideoElement();
-	prepareReceiveOnlyPlayer(video, participant.offerToReceiveVideo.bind(participant));
+	participant.rtcPeer = kwsUtils.WebRtcPeer.startRecvOnly(video, participant.offerToReceiveVideo.bind(participant));
 }
 
 function onParticipantLeft(request) {
 	console.log('Participant ' + request.params.name + ' left');
-	var node = document.getElementById(request.params.name);
-	node.parentNode.removeChild(node);
+	var participant = participants[request.params.name];
+	participant.dispose();
+	delete participants[request.params.name];
 }

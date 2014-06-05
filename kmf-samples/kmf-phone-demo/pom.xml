@@ -73,6 +73,10 @@
 			<artifactId>kmf-media-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.kurento.kws</groupId>
+			<artifactId>kws-utils</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>

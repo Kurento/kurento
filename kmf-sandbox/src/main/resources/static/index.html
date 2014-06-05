@@ -3,11 +3,12 @@
 <head>
 <meta charset="utf-8">
 <title>WebRTC Demo</title>
-<script src="js/adapter.js"></script>
+<script 
+	src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
 <script src="js/console.js"></script>
 <script src="js/rpcbuilder.js"></script>
 <script src="js/jsonrpcclient.js"></script>
-<script src="js/webrtc-utils.js"></script>
+<script src="js/kws-utils.js"></script>
 <script>
 	var client = new JsonRpcClient("ws://" + location.host
 			+ "/webrtc/ws/websocket", onRequest);
@@ -23,17 +24,15 @@
 
 		var videoOutput = document.getElementById('videoOutput');
 		var videoInput = document.getElementById('videoInput');
-		prepareSendAndReceivePlayer(videoOutput, function(offerSdp, callback) {
+		kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
 			console.log('Invoking SDP offer callback function');
 			client.sendRequest("start", {
 				sdpOffer : offerSdp
 			}, function(error, result) {
-				if (error) {
-					return console.error(error);
-				}
-				callback(result.sdpAnswer);
+				if (error) return console.error(error);
+				wp.processSdpAnswer(result.sdpAnswer);
 			});
-		}, videoInput);
+		});
 
 		document.getElementById("start").disabled = true;
 		document.getElementById("stop").disabled = false;

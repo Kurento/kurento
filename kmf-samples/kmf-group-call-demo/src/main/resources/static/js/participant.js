@@ -16,11 +16,13 @@ function Participant(name) {
 	container.id = name;
 	var span = document.createElement('span');
 	var video = document.createElement('video');
+	var rtcPeer;
 
 	container.appendChild(video);
 	container.appendChild(span);
 	container.onclick = switchContainerClass;
-
+	document.getElementById('room').appendChild(container);
+	
 	span.appendChild(document.createTextNode(name));
 
 	video.id = 'video-' + name;
@@ -53,15 +55,22 @@ function Participant(name) {
 		return ((document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)).length != 0);
 	}
 	
-	this.offerToReceiveVideo = function(offerSdp, callback){
+	this.offerToReceiveVideo = function(offerSdp, wp){
 		console.log('Invoking SDP offer callback function');
 		client.sendRequest("receiveVideoFrom", {
 			sender : name,
 			sdpOffer : offerSdp
 		}, function(error, result) {
 			if (error) return console.error(error);
-			callback(result.sdpAnswer);
+			wp.processSdpAnswer(result.sdpAnswer);
 		});
 	}
 
+	Object.defineProperty(this, 'rtcPeer', { writable: true});
+	
+	this.dispose = function() {
+		console.log('Disposing participant ' + this.name);
+		this.rtcPeer.dispose();
+		container.parentNode.removeChild(container);
+	};
 }

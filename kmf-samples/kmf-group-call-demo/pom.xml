@@ -49,7 +49,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.kurento.kmf.phone.GroupCall</mainClass>
+					<mainClass>com.kurento.kmf.demo.group.GroupCall</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
@@ -64,6 +64,10 @@
 	</build>
 
 	<dependencies>
+		<dependency>
+			<groupId>com.kurento.kws</groupId>
+			<artifactId>kws-utils</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector-server</artifactId>
