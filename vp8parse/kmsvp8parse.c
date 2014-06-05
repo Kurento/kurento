@@ -185,7 +185,7 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
   status = vpx_codec_peek_stream_info (&vpx_codec_vp8_dx_algo,
       minfo.data, minfo.size, &stream_info);
 
-  if (status == VPX_CODEC_OK) {
+  if (status == VPX_CODEC_OK && stream_info.is_kf) {
     if (self->priv->height != stream_info.h) {
       self->priv->height = stream_info.h;
       GST_INFO_OBJECT (parse, "Updating height: %d", stream_info.h);
