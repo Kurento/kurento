@@ -11,6 +11,12 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<fileSets>
 	  <fileSet>
+	    <includes>
+		<include>README.md</include>
+		<include>LICENSE</include>
+	    </includes>
+	  </fileSet>
+	  <fileSet>
 	    <directory>dist</directory>
 	    <outputDirectory>/js</outputDirectory>
 	  </fileSet>
