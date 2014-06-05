@@ -1,6 +1,6 @@
 {
   "name": "kws-rpc-builder",
-  "version": "4.2.4-SNAPSHOT",
+  "version": "4.2.4",
   "description": "RPC library for browser and Node.js",
   "main": "lib/index.js",
   "scripts": {
@@ -27,6 +27,7 @@
     "nodeunit": "~0.8.6"
   },
   "dependencies": {
-    "inherits": "^2.0.1"
+    "inherits": "^2.0.1",
+    "kws-rpc-builder": "4.2.4-SNAPSHOT.6"
   }
 }
