@@ -227,7 +227,10 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
       gst_base_parse_set_frame_rate (GST_BASE_PARSE (self),
           self->priv->framerate_num, self->priv->framerate_denom, 0, 0);
 
-    self->priv->started = TRUE;
+    if (!self->priv->started) {
+      self->priv->started = TRUE;
+      frame->flags |= GST_BASE_PARSE_FRAME_FLAG_QUEUE;
+    }
   }
 
   if (!self->priv->started)
