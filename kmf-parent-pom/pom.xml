@@ -65,17 +65,8 @@
 		<!-- ********************* -->
 		<!-- Dependencies versions -->
 		<!-- ********************* -->
-		<!-- <kmf-media-api.version>${project.version}</kmf-media-api.version> 
-			<kmf-jsonrpcconnector.version>kurento-media-framework.version${project.version}</kmf-jsonrpcconnector.version> 
-			<kmf-thrift-interface.version>${project.version}</kmf-thrift-interface.version> 
-			<kms-interface.version>${project.version}</kms-interface.version> <kmf-commons.version>${project.version}</kmf-commons.version> 
-			<kmf-content-api.version>${project.version}</kmf-content-api.version> <kmf-spring.version>${project.version}</kmf-spring.version> 
-			<kmf-content-protocol.version>${project.version}</kmf-content-protocol.version> 
-			<kmf-repository-api.version>${project.version}</kmf-repository-api.version> 
-			<kmf-media-connector.version>${project.version}</kmf-media-connector.version> 
-			<kws-content-api.version>${project.version}</kws-content-api.version> <kms-interface.version>${project.version}</kms-interface.version> -->
-		<kms-interface.version>4.2.1-SNAPSHOT</kms-interface.version>
-		<kws.version>4.2.2-SNAPSHOT</kws.version>
+		<kms-interface.version>4.3.1</kms-interface.version>
+		<kws.version>4.3.7</kws.version>
 		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
 
 
@@ -149,7 +140,7 @@
 		<version.surefire.plugin>2.16</version.surefire.plugin>
 		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
 		<version.thrift.plugin>0.1.11</version.thrift.plugin>
-		<versions.versions.plugin>2.1</versions.versions.plugin>
+		<version.versions.plugin>2.1</version.versions.plugin>
 		<version.wagon.plugin>2.0</version.wagon.plugin>
 		<version.war.plugin>2.3</version.war.plugin>
 
@@ -1057,13 +1048,6 @@
 						<artifactId>maven-deploy-plugin</artifactId>
 						<configuration>
 							<updateReleaseInfo>true</updateReleaseInfo>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-versions-plugin</artifactId>
-						<configuration>
-							<includeProperties>kms-interface.version,kws.version</includeProperties>
 						</configuration>
 					</plugin>
 					<plugin>
