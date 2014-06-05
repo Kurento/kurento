@@ -17,6 +17,7 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.Dispatcher;
@@ -47,6 +48,7 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  */
 public class MediaApiDispatcherWebRtcTest extends BrowserMediaApiTest {
 
+	@Ignore
 	@Test
 	public void testDispatcherWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);

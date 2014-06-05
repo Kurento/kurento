@@ -61,7 +61,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 	private static final String FILE_SCHEMA = "file://";
 	private static final String RECORDING = "/tmp/webrtc";
 
-	private static int PLAYTIME = 5; // seconds
+	private static int PLAYTIME = 10; // seconds
 
 	@WebRtcContentService(path = HANDLER1)
 	public static class WebRtcHandler extends WebRtcContentHandler {

@@ -127,8 +127,8 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest 
 			// Assertions
 			Assert.assertTrue(browser.waitForEvent("playing"));
 			Assert.assertTrue(browser.waitForEvent("ended"));
-			Assert.assertTrue("Play time must be at least 10 seconds",
-					browser.getCurrentTime() > 10);
+			Assert.assertTrue("Play time must be at least 9 seconds",
+					browser.getCurrentTime() > 9);
 			Assert.assertFalse(
 					"No occupancy events throw by crowd detector filter",
 					crowdDetectedOccupancyEvents.isEmpty());

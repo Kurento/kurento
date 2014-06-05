@@ -66,7 +66,8 @@ public class ContentApiIncrementalPlayerTest extends ContentApiTest {
 			if (mp == null) {
 				mp = session.getMediaPipelineFactory().create();
 				playerEP = mp.newPlayerEndpoint(
-						"http://ci.kurento.com/video/sintel.webm").build();
+						"http://files.kurento.org/video/30sec/green.webm")
+						.build();
 				playerEP.play();
 			}
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
