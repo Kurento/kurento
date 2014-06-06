@@ -10,8 +10,8 @@
 	<description>
 		Kurento Web SDK RPC Builder
 
-		The kws-media-api project contains the implementation
-		of the Kurento client side Media API for web applications.
+		The kws-rpc-builder project contains the implementation
+		of a transport and protocol agnostic RPC library fro browser and Node.js
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -149,14 +149,8 @@
 							<chmod>true</chmod>
 							<keepScriptFile>true</keepScriptFile>
 							<script>
-								cd ${basedir}
 								npm install
-								npm install browserify
-								npm install minifyify
-								node_modules/.bin/browserify lib/index.js -s RpcBuilder -p [minifyify --map rpcbuilder.map --output rpcbuilder.map] -o rpcbuilder.js
-								mkdir -p dist
-								mv rpcbuilder.js dist
-								mv rpcbuilder.map dist
+								${basedir}/node_modules/.bin/grunt
 							</script>
 						</configuration>
 					</execution>
