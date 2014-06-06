@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.2.3-SNAPSHOT</version>
+		<version>4.2.3</version>
 		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
@@ -38,7 +38,7 @@
 		<url>${kmf.scm.url}</url>
 		<connection>scm:git:${kmf.scm.connection}</connection>
 		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
-		<tag>develop</tag>
+		<tag>kurento-media-framework-4.2.3</tag>
 	</scm>
 
 	<developers>
@@ -94,7 +94,7 @@
 						<phase>package</phase>
 						<configuration>
 							<tasks>
-								<copy file="${project.build.directory}/target/${project.artifactId}-${project.version}-bin.zip" tofile="${project.build.directory}/target/${project.artifactId}-${project.version}.zip"/>
+								<copy file="${project.build.directory}/target/${project.artifactId}-${project.version}-bin.zip" tofile="${project.build.directory}/target/${project.artifactId}-${project.version}.zip" />
 							</tasks>
 						</configuration>
 					</execution>
