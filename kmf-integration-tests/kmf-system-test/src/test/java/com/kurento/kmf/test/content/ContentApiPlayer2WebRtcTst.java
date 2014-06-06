@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.content.WebRtcContentHandler;
@@ -67,6 +68,7 @@ public class ContentApiPlayer2WebRtcTst extends ContentApiTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testPlayer2WebRtc() throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
