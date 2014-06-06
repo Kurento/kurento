@@ -17,6 +17,8 @@
 	      <include>*.js</include>
 	      <include>*.map</include>
 	    </includes>
+          </fileSet>
+          <fileSet>
 	    <includes>
 	      <include>README.md</include>
 	      <include>LICENSE</include>
