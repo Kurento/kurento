@@ -150,7 +150,9 @@
 							<keepScriptFile>true</keepScriptFile>
 							<script>
 								npm install
-								${basedir}/node_modules/.bin/grunt maven
+								${basedir}/node_modules/.bin/grunt
+                                                                mkdir -p ${basedir}/src/main/resources
+                                                                cp ${basedir}/dist/* ${basedir}/src/main/resources
 							</script>
 						</configuration>
 					</execution>

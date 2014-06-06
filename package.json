@@ -47,8 +47,6 @@
     "grunt-browserify": "~2.1.0",
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
     "grunt-curl": "~1.5.1",
     "grunt-jsdoc": "~0.5.4",
     "grunt-npm2bower-sync": "^0.4.0",
