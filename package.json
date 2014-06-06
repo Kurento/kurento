@@ -24,8 +24,7 @@
   ],
   "license": "LGPL 2.1",
   "dependencies": {
-    "inherits": "^2.0.1",
-    "kws-rpc-builder": "git://github.com/Kurento/kws-rpc-builder.git#develop"
+    "inherits": "^2.0.1"
   },
   "devDependencies": {
     "bower": "~1.3.4",
