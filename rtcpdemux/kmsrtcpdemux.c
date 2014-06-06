@@ -22,6 +22,7 @@
 
 #include <gst/gst.h>
 #include <gst/base/gstbaseparse.h>
+#include <gst/rtp/gstrtcpbuffer.h>
 
 #define PLUGIN_NAME "rtcpdemux"
 
@@ -83,21 +84,9 @@ static GstFlowReturn
 kms_rtcp_demux_chain (GstPad * chain, GstObject * parent, GstBuffer * buffer)
 {
   KmsRtcpDemux *self = KMS_RTCP_DEMUX (parent);
-  GstMapInfo map;
-  guint8 pt;
 
-  if (!gst_buffer_map (buffer, &map, GST_MAP_READ)) {
-    gst_buffer_unref (buffer);
-    GST_ERROR_OBJECT (parent, "Buffer cannot be mapped");
-    return GST_FLOW_ERROR;
-  }
-
-  pt = map.data[1];
-  gst_buffer_unmap (buffer, &map);
-
-  /* 200-204 is the range of valid values for a rtcp pt according to rfc3550 */
-  if (pt >= 200 && pt <= 204) {
-    GST_TRACE ("Buffer is rtcp: %d", pt);
+  if (gst_rtcp_buffer_validate (buffer)) {
+    GST_TRACE_OBJECT (chain, "Buffer is RTCP");
     gst_pad_push (self->priv->rtcp_src, buffer);
   } else {
     gst_pad_push (self->priv->rtp_src, buffer);

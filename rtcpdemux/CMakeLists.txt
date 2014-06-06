@@ -13,6 +13,7 @@ add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES})
 
 target_link_libraries(rtcpdemux
   ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_RTP_LIBRARIES}
 )
 
 install(
