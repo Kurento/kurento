@@ -151,8 +151,8 @@
 							<script>
 								npm install
 								${basedir}/node_modules/.bin/grunt
-								mkdir -p ${basedir}/src/main/resources
-								cp ${basedir}/dist/* ${basedir}/src/main/resources
+								mkdir -p ${basedir}/src/main/resources/META-INF/resources/js/
+								cp ${basedir}/dist/* ${basedir}/src/main/resources/META-INF/resources/js/
 							</script>
 						</configuration>
 					</execution>
