@@ -147,6 +147,13 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 			}
 		}
 
+		// FIXME: Dirty hack to avoid polling not receiving onTerminate event
+		// See kmf-content-api class AbstractContentSession, line 796
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+		}
+
 		if (expectedHandlerFlow != null) {
 			final List<String> actualEventList = EventListener.getEventList();
 			log.info("*** Flow (Handler) *** Actual: "
