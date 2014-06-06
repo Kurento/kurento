@@ -713,6 +713,55 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
   return media_str;
 }
 
+static gchar *
+sdp_media_get_ssrc_str (const GstSDPMedia * media)
+{
+  gchar *ssrc = NULL;
+  const gchar *val;
+  GRegex *regex;
+  GMatchInfo *match_info = NULL;
+
+  val = gst_sdp_media_get_attribute_val (media, "ssrc");
+
+  if (val == NULL)
+    return NULL;
+
+  regex = g_regex_new ("^(?<ssrc>[0-9]+)(.*)?$", 0, 0, NULL);
+  g_regex_match (regex, val, 0, &match_info);
+  g_regex_unref (regex);
+
+  if (g_match_info_matches (match_info)) {
+    ssrc = g_match_info_fetch_named (match_info, "ssrc");
+  }
+  g_match_info_free (match_info);
+
+  return ssrc;
+}
+
+static guint
+sdp_media_get_ssrc (const GstSDPMedia * media)
+{
+  gchar *ssrc_str;
+  guint ssrc = 0;
+  gint64 val;
+
+  ssrc_str = sdp_media_get_ssrc_str (media);
+  if (ssrc_str == NULL) {
+    return 0;
+  }
+
+  val = g_ascii_strtoll (ssrc_str, NULL, 10);
+  if (val > G_MAXUINT32) {
+    GST_ERROR ("SSRC %" G_GINT64_FORMAT " not valid", val);
+  } else {
+    ssrc = val;
+  }
+
+  g_free (ssrc_str);
+
+  return ssrc;
+}
+
 static gboolean
 sdp_message_is_bundle (GstSDPMessage * msg)
 {
@@ -1099,31 +1148,6 @@ process_sdp_media (const GstSDPMedia * media, NiceAgent * agent,
   g_regex_unref (regex);
 }
 
-static gchar *
-sdp_media_get_ssrc (const GstSDPMedia * media)
-{
-  gchar *ssrc = NULL;
-  const gchar *val;
-  GRegex *regex;
-  GMatchInfo *match_info = NULL;
-
-  val = gst_sdp_media_get_attribute_val (media, "ssrc");
-
-  if (val == NULL)
-    return NULL;
-
-  regex = g_regex_new ("^(?<ssrc>[0-9]+)(.*)?$", 0, 0, NULL);
-  g_regex_match (regex, val, 0, &match_info);
-  g_regex_unref (regex);
-
-  if (g_match_info_matches (match_info)) {
-    ssrc = g_match_info_fetch_named (match_info, "ssrc");
-  }
-  g_match_info_free (match_info);
-
-  return ssrc;
-}
-
 static void
 kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     base_sdp_endpoint, const GstSDPMessage * offer,
@@ -1155,20 +1179,9 @@ kms_webrtc_endpoint_start_transport_send (KmsBaseSdpEndpoint *
     const GstSDPMedia *media = gst_sdp_message_get_media (sdp, i);
     const gchar *media_str;
     KmsWebRTCConnection *conn;
-    gchar *ssrc_str;
-    guint ssrc = 0;
+    guint ssrc;
 
-    ssrc_str = sdp_media_get_ssrc (media);
-    if (ssrc_str != NULL) {
-      gint64 val = g_ascii_strtoll (ssrc_str, NULL, 10);
-
-      if (val > G_MAXUINT32)
-        GST_ERROR ("SSRC %" G_GINT64_FORMAT " not valid", val);
-      else
-        ssrc = val;
-      g_free (ssrc_str);
-    }
-
+    ssrc = sdp_media_get_ssrc (media);
     media_str = gst_sdp_media_get_media (media);
 
     if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
