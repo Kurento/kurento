@@ -11,17 +11,17 @@
 	<includeBaseDirectory>false</includeBaseDirectory>
 	<fileSets>
 	  <fileSet>
+	    <includes>
+	      <include>README.md</include>
+	      <include>LICENSE</include>
+	    </includes>
+	  </fileSet>
+	  <fileSet>
 	    <directory>dist</directory>
 	    <outputDirectory>/js</outputDirectory>
 	    <includes>
 	      <include>*.js</include>
 	      <include>*.map</include>
-	    </includes>
-          </fileSet>
-          <fileSet>
-	    <includes>
-	      <include>README.md</include>
-	      <include>LICENSE</include>
 	    </includes>
 	  </fileSet>
 	</fileSets>
