@@ -16,6 +16,8 @@
 
 var nodeunit = require('nodeunit');
 
+var EventTarget = require('eventtarget');
+
 var RpcBuilder = require("..");
 var packer = RpcBuilder.packers.JsonRPC;
 
@@ -385,5 +387,49 @@ exports['encode JsonRPC 2.0'] =
     test.equal(response, undefined);
 
     test.done();
+  },
+
+
+  'transport with message event': function(test)
+  {
+    test.expect(2);
+
+    var self = this;
+
+    var value = {'asdf': 'qwert'};
+
+    var transport = new EventTarget;
+        transport.onmessage = null;
+        transport.send = function(message)
+        {
+          message = JSON.parse(message);
+
+          var event =
+          {
+            type: 'message',
+            data: JSON.stringify(
+            {
+              jsonrpc: '2.0',
+              result: message.params,
+              id: 0
+            })
+          };
+
+          this.dispatchEvent(event);
+        };
+
+    this.rpcBuilder.transport = transport;
+
+    var request = this.rpcBuilder.encode(METHOD, value, function(error, result)
+    {
+      test.ifError(error);
+
+      test.deepEqual(result, value);
+
+      test.done();
+    });
+
+    // Test response as send by reply transport
+    test.equal(request, undefined);
   }
 };

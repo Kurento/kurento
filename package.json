@@ -16,7 +16,9 @@
     "XML-RPC",
     "HTTP",
     "WebP2P",
-    "WebSocket"
+    "WebSocket",
+    "DataChannel",
+    "WebWorker"
   ],
   "author": "Kurento <info@kurento.org> (http://kurento.org)",
   "contributors": [
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "bower": "~1.3.4",
+    "eventtarget": "0.0.1",
     "grunt": "~0.4.5",
     "grunt-browserify": "~2.1.0",
     "grunt-cli": "~0.1.13",
