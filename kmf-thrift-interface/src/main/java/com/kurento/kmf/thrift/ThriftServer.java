@@ -19,7 +19,9 @@ import java.net.InetSocketAddress;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadedSelectorServer.Args;
-import org.apache.thrift.transport.*;
+import org.apache.thrift.transport.TNonblockingServerSocket;
+import org.apache.thrift.transport.TNonblockingServerTransport;
+import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +81,7 @@ public class ThriftServer {
 			throw new ThriftServerException(
 					"Could not start media handler server on "
 							+ addr.toString() + ". Reason: " + e.getMessage(),
-							e);
+					e);
 		}
 
 		log.debug("Thrift server started in {}", addr);
@@ -88,7 +90,7 @@ public class ThriftServer {
 		// or we would need more selector threads.
 		Args args = new Args(transport);
 		args.executorService(executorService.getExecutor())
-		.processor(processor);
+				.processor(processor);
 
 		server = new NonBlockingTThreadedSelectorServer(args);
 		server.serve();
@@ -96,7 +98,9 @@ public class ThriftServer {
 
 	public synchronized void destroy() {
 		if (server != null) {
+			log.debug("Closing Thrift server at {}", addr);
 			server.stop();
+			log.debug("Thrift server closed", addr);
 		}
 	}
 

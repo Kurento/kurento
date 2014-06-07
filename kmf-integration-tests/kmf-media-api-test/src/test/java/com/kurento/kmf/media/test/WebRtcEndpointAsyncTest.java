@@ -55,8 +55,8 @@ public class WebRtcEndpointAsyncTest extends SdpAsyncBaseTest<WebRtcEndpoint> {
 		pipeline.newWebRtcEndpoint().buildAsync(cont);
 		pipeline.newWebRtcEndpoint().buildAsync(cont);
 
-		sdp = creationResults.poll(2, SECONDS);
-		sdp2 = creationResults.poll(2, SECONDS);
+		sdp = creationResults.poll(5, SECONDS);
+		sdp2 = creationResults.poll(5, SECONDS);
 		Assert.assertNotNull(sdp);
 		Assert.assertNotNull(sdp2);
 	}
