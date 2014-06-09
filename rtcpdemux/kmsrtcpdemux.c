@@ -23,6 +23,7 @@
 #include <gst/gst.h>
 #include <gst/base/gstbaseparse.h>
 #include <gst/rtp/gstrtcpbuffer.h>
+#include "kms-marshal.h"
 
 #define PLUGIN_NAME "rtcpdemux"
 
@@ -46,6 +47,15 @@ struct _KmsRtcpDemuxPrivate
 
   GHashTable *rr_ssrcs;         /* remote_ssrc - local_ssrc mapping */
 };
+
+/* Signals and args */
+enum
+{
+  SIGNAL_GET_REMOTE_SSRC_PAIR,
+  LAST_SIGNAL
+};
+
+static guint kms_rtcp_demux_signals[LAST_SIGNAL] = { 0 };
 
 /* pad templates */
 
@@ -83,6 +93,21 @@ G_DEFINE_TYPE_WITH_CODE (KmsRtcpDemux, kms_rtcp_demux,
     GST_TYPE_ELEMENT,
     GST_DEBUG_CATEGORY_INIT (kms_rtcp_demux_debug_category, PLUGIN_NAME,
         0, "debug category for rtcpdemux element"));
+
+static guint32
+kms_rtcp_demux_get_local_rr_ssrc_pair (KmsRtcpDemux * self, guint32 remote_ssrc)
+{
+  gpointer val;
+
+  val =
+      g_hash_table_lookup (self->priv->rr_ssrcs,
+      GUINT_TO_POINTER (remote_ssrc));
+  if (val == NULL) {
+    return 0;
+  }
+
+  return GPOINTER_TO_UINT (val);
+}
 
 static gboolean
 refresh_rtcp_rr_ssrcs_map (KmsRtcpDemux * rtcpdemux, GstBuffer * buffer)
@@ -209,6 +234,15 @@ kms_rtcp_demux_class_init (KmsRtcpDemuxClass * klass)
       "Rtcp/rtp package demuxer", "Demux/Network/RTP",
       "Demuxes rtp and rtcp flows",
       "José Antonio Santos <santoscadenas@kurento.com>");
+
+  klass->get_local_rr_ssrc_pair = kms_rtcp_demux_get_local_rr_ssrc_pair;
+
+  kms_rtcp_demux_signals[SIGNAL_GET_REMOTE_SSRC_PAIR] =
+      g_signal_new ("get-local-rr-ssrc-pair",
+      G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (KmsRtcpDemuxClass, get_local_rr_ssrc_pair), NULL, NULL,
+      __kms_marshal_UINT__UINT, G_TYPE_UINT, 1, G_TYPE_UINT);
 
   g_type_class_add_private (klass, sizeof (KmsRtcpDemuxPrivate));
 }

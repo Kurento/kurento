@@ -39,6 +39,10 @@ struct _KmsRtcpDemux
 struct _KmsRtcpDemuxClass
 {
   GstElementClass element_class;
+
+  /* private */
+  /* actions */
+  guint32 (*get_local_rr_ssrc_pair) (KmsRtcpDemux * self, guint32 remote_ssrc);
 };
 
 GType kms_rtcp_demux_get_type (void);
