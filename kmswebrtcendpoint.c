@@ -57,6 +57,8 @@ enum
   N_PROPERTIES
 };
 
+#define RTCP_DEMUX_PEER "rtcp-demux-peer"
+
 #define IPV4 4
 #define IPV6 6
 
@@ -123,10 +125,12 @@ struct _KmsWebrtcEndpointPrivate
   GstElement *bundle_rtcp_funnel;
   gboolean bundle_funnels_added;
 
+  guint local_audio_ssrc;
   guint remote_audio_ssrc;
   KmsWebRTCConnection *audio_connection;
   gboolean audio_ice_gathering_done;
 
+  guint local_video_ssrc;
   guint remote_video_ssrc;
   KmsWebRTCConnection *video_connection;
   gboolean video_ice_gathering_done;
@@ -864,12 +868,21 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
     const gchar *media_str;
+    guint ssrc;
 
     media_str = update_sdp_media (self, (GstSDPMedia *) media,
         fingerprint, base_sdp_endpoint->use_ipv6);
 
-    if (media_str == NULL)
+    if (media_str == NULL) {
       continue;
+    }
+
+    ssrc = sdp_media_get_ssrc (media);
+    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+      self->priv->local_audio_ssrc = ssrc;
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+      self->priv->local_video_ssrc = ssrc;
+    }
 
     if (self->priv->is_bundle) {
       gchar *tmp;
@@ -936,6 +949,20 @@ add_webrtc_connection_src (KmsWebrtcEndpoint * webrtc_endpoint,
       rtcp_sink_name);
 }
 
+static gboolean
+ssrcs_are_mapped (KmsWebrtcEndpoint * webrtc_endpoint, GstElement * ssrcdemux,
+    guint32 local_ssrc, guint32 remote_ssrc)
+{
+  GstElement *rtcpdemux =
+      g_object_get_data (G_OBJECT (ssrcdemux), RTCP_DEMUX_PEER);
+  guint local_ssrc_pair;
+
+  g_signal_emit_by_name (rtcpdemux, "get-local-rr-ssrc-pair", remote_ssrc,
+      &local_ssrc_pair);
+
+  return ((local_ssrc != 0) && (local_ssrc_pair == local_ssrc));
+}
+
 static void
 rtp_ssrc_demux_new_ssrc_pad (GstElement * ssrcdemux, guint ssrc, GstPad * pad,
     KmsWebrtcEndpoint * webrtc_endpoint)
@@ -950,12 +977,16 @@ rtp_ssrc_demux_new_ssrc_pad (GstElement * ssrcdemux, guint ssrc, GstPad * pad,
 
   KMS_ELEMENT_LOCK (base_rtp_endpoint);
   rtpbin = kms_base_rtp_endpoint_get_rtpbin (base_rtp_endpoint);
-  if (webrtc_endpoint->priv->remote_audio_ssrc == ssrc) {
+  if ((webrtc_endpoint->priv->remote_audio_ssrc == ssrc) ||
+      ssrcs_are_mapped (webrtc_endpoint, ssrcdemux,
+          webrtc_endpoint->priv->local_audio_ssrc, ssrc)) {
     gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad), rtpbin,
         AUDIO_RTPBIN_RECV_RTP_SINK);
     gst_element_link_pads (ssrcdemux, rtcp_pad_name, rtpbin,
         AUDIO_RTPBIN_RECV_RTCP_SINK);
-  } else if (webrtc_endpoint->priv->remote_video_ssrc == ssrc) {
+  } else if (webrtc_endpoint->priv->remote_video_ssrc == ssrc
+      || ssrcs_are_mapped (webrtc_endpoint, ssrcdemux,
+          webrtc_endpoint->priv->local_video_ssrc, ssrc)) {
     gst_element_link_pads (ssrcdemux, GST_OBJECT_NAME (pad), rtpbin,
         VIDEO_RTPBIN_RECV_RTP_SINK);
     gst_element_link_pads (ssrcdemux, rtcp_pad_name, rtpbin,
@@ -995,6 +1026,9 @@ add_webrtc_bundle_connection_src (KmsWebrtcEndpoint * webrtc_endpoint,
       webrtc_endpoint->priv->bundle_connection->rtp_transport;
   GstElement *ssrcdemux = gst_element_factory_make ("rtpssrcdemux", NULL);
   GstElement *rtcpdemux = gst_element_factory_make ("rtcpdemux", NULL);
+
+  g_object_set_data_full (G_OBJECT (ssrcdemux), RTCP_DEMUX_PEER,
+      g_object_ref (rtcpdemux), g_object_unref);
 
   g_signal_connect (ssrcdemux, "new-ssrc-pad",
       G_CALLBACK (rtp_ssrc_demux_new_ssrc_pad), webrtc_endpoint);
