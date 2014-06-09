@@ -9,6 +9,8 @@ set(RTCPDEMUX_SOURCES
   kmsrtcpdemux.h
 )
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
+
 add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES})
 
 target_link_libraries(rtcpdemux
