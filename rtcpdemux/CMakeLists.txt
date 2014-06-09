@@ -1,6 +1,7 @@
 include_directories(
   ${GSTREAMER_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
 )
 
 set(RTCPDEMUX_SOURCES
@@ -8,6 +9,10 @@ set(RTCPDEMUX_SOURCES
   kmsrtcpdemux.c
   kmsrtcpdemux.h
 )
+
+include(GLibHelpers)
+
+add_glib_marshal(RTCPDEMUX_SOURCES kms-marshal __kms_marshal)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
 
