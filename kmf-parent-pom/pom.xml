@@ -1090,6 +1090,22 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+		<id>media-api-test</id>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/media/test/*Test.java</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>		
+		</profile>
 	</profiles>
 
 	<!-- Add Spring repositories for Spring Boot -->
