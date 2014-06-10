@@ -550,14 +550,13 @@ sdp_media_set_rtcp_fb_attrs (GstSDPMedia * media)
   }
 }
 
-static const gchar *
+static gboolean
 update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
-    const gchar * fingerprint, gboolean use_ipv6)
+    const gchar * fingerprint, gboolean use_ipv6, const gchar ** media_str)
 {
   KmsBaseRtpEndpoint *base_rtp_endpoint =
       KMS_BASE_RTP_ENDPOINT (webrtc_endpoint);
   gint is_bundle = g_atomic_int_get (&webrtc_endpoint->priv->is_bundle);
-  const gchar *media_str;
   guint stream_id;
   const gchar *rtpbin_pad_name = NULL;
   NiceAgent *agent = webrtc_endpoint->priv->agent;
@@ -574,28 +573,30 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
   guint conn_len, c;
   gchar *str;
 
-  media_str = gst_sdp_media_get_media (media);
+  *media_str = gst_sdp_media_get_media (media);
 
   if (is_bundle) {
-    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+    if (g_strcmp0 (AUDIO_STREAM_NAME, *media_str) == 0) {
       rtpbin_pad_name = AUDIO_RTPBIN_SEND_RTP_SINK;
-    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, *media_str) == 0) {
       rtpbin_pad_name = VIDEO_RTPBIN_SEND_RTP_SINK;
     } else {
       GST_WARNING_OBJECT (webrtc_endpoint, "Media \"%s\" not supported",
-          media_str);
-      return NULL;
+          *media_str);
+      *media_str = NULL;
+      return TRUE;
     }
     stream_id = webrtc_endpoint->priv->bundle_connection->stream_id;
   } else {
-    if (g_strcmp0 (AUDIO_STREAM_NAME, media_str) == 0) {
+    if (g_strcmp0 (AUDIO_STREAM_NAME, *media_str) == 0) {
       stream_id = webrtc_endpoint->priv->audio_connection->stream_id;
-    } else if (g_strcmp0 (VIDEO_STREAM_NAME, media_str) == 0) {
+    } else if (g_strcmp0 (VIDEO_STREAM_NAME, *media_str) == 0) {
       stream_id = webrtc_endpoint->priv->video_connection->stream_id;
     } else {
       GST_WARNING_OBJECT (webrtc_endpoint, "Media \"%s\" not supported",
-          media_str);
-      return NULL;
+          *media_str);
+      *media_str = NULL;
+      return TRUE;
     }
   }
 
@@ -604,7 +605,8 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
       g_ascii_strcasecmp (SDP_MEDIA_RTP_SAVPF_PROTO, proto_str)) {
     GST_WARNING ("Proto \"%s\" not supported", proto_str);
     ((GstSDPMedia *) media)->port = 0;
-    return NULL;
+    *media_str = NULL;
+    return TRUE;
   }
 
   gst_sdp_media_set_proto (media, SDP_MEDIA_RTP_SAVPF_PROTO);
@@ -623,6 +625,13 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
         NICE_COMPONENT_TYPE_RTCP);
   }
 
+  if (rtcp_default_candidate == NULL || rtcp_default_candidate == NULL) {
+    GST_WARNING_OBJECT (webrtc_endpoint,
+        "Error getting ICE candidates. Network can be unavailable.");
+    *media_str = NULL;
+    return FALSE;
+  }
+
   nice_address_to_string (&rtp_default_candidate->addr, rtp_addr);
   rtp_port = nice_address_get_port (&rtp_default_candidate->addr);
   rtp_is_ipv6 = nice_address_ip_version (&rtp_default_candidate->addr) == IPV6;
@@ -639,7 +648,8 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
 
   if (use_ipv6 != rtp_is_ipv6) {
     GST_WARNING ("No valid rtp address type: %s", rtp_addr_type);
-    return NULL;
+    *media_str = NULL;
+    return TRUE;
   }
 
   ((GstSDPMedia *) media)->port = rtp_port;
@@ -714,7 +724,7 @@ update_sdp_media (KmsWebrtcEndpoint * webrtc_endpoint, GstSDPMedia * media,
 
   sdp_media_set_rtcp_fb_attrs (media);
 
-  return media_str;
+  return TRUE;
 }
 
 static gchar *
@@ -815,6 +825,7 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   gchar *fingerprint;
   guint len, i;
   gchar *bundle_mids = NULL;
+  gboolean ret = TRUE;
 
   KMS_ELEMENT_LOCK (self);
 
@@ -867,11 +878,14 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
   len = gst_sdp_message_medias_len (msg);
   for (i = 0; i < len; i++) {
     const GstSDPMedia *media = gst_sdp_message_get_media (msg, i);
-    const gchar *media_str;
+    const gchar *media_str = NULL;
     guint ssrc;
 
-    media_str = update_sdp_media (self, (GstSDPMedia *) media,
-        fingerprint, base_sdp_endpoint->use_ipv6);
+    if (!update_sdp_media (self, (GstSDPMedia *) media,
+            fingerprint, base_sdp_endpoint->use_ipv6, &media_str)) {
+      ret = FALSE;
+      goto end;
+    }
 
     if (media_str == NULL) {
       continue;
@@ -898,12 +912,13 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
     g_free (bundle_mids);
   }
 
+end:
   KMS_ELEMENT_UNLOCK (self);
 
   if (fingerprint != NULL)
     g_free (fingerprint);
 
-  return TRUE;
+  return ret;
 }
 
 static void
