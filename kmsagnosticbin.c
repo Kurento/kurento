@@ -1128,8 +1128,8 @@ kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
 
   set_configured_flag (tee, fakesink);
 
-  gst_element_link_many (self->priv->main_tee, input_queue, parser, tee, queue,
-      fakesink, NULL);
+  gst_element_link_many (input_queue, parser, tee, queue, fakesink, NULL);
+  gst_element_link (self->priv->main_tee, input_queue);
 
   self->priv->started = FALSE;
 
@@ -1379,7 +1379,8 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   g_object_set (G_OBJECT (fakesink), "async", FALSE, NULL);
 
   gst_bin_add_many (GST_BIN (self), tee, queue, fakesink, NULL);
-  gst_element_link_many (tee, queue, fakesink, NULL);
+  gst_element_link (queue, fakesink);
+  gst_element_link (tee, queue);
 
   target = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
