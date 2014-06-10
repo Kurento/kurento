@@ -23,6 +23,8 @@ Apply JackVaderFilter on a video and send it using WebRTC
 Play a file and send it over WebRTC
 * [testPCchained](./testPCchained):
 WebRTC loopback from your webcam with two pipelines
+* [testPCmultiplexing](./testPCmultiplexing):
+WebRTC loopback from your webcam multiplexing to two pipelines
 * [WebRtcEndpoint 2](./WebRtcEndpoint_2):
 WebRTC loopback from your webcam
 * [WebRtcEndpoint FaceOverlayFilter 2](./WebRtcEndpoint-FaceOverlayFilter_2):
