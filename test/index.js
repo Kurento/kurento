@@ -389,7 +389,6 @@ exports['encode JsonRPC 2.0'] =
     test.done();
   },
 
-
   'transport with message event': function(test)
   {
     test.expect(2);
@@ -431,5 +430,32 @@ exports['encode JsonRPC 2.0'] =
 
     // Test response as send by reply transport
     test.equal(request, undefined);
+  },
+
+  'request event': function(test)
+  {
+    test.expect(1);
+
+    var transport = new EventTarget;
+        transport.onmessage = null;
+
+    this.rpcBuilder.transport = transport;
+    this.rpcBuilder.on('request', function(request)
+    {
+      test.deepEqual(request.method, METHOD);
+
+      test.done();
+    });
+
+    var event =
+    {
+      type: 'message',
+      data: JSON.stringify(
+      {
+        jsonrpc: '2.0',
+        method: METHOD
+      })
+    };
+    transport.dispatchEvent(event);
   }
 };
