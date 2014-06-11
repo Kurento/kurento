@@ -1,0 +1,16 @@
+Source: kms-cmake-utils
+Section: utils
+Priority: optional
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
+Build-Depends: debhelper (>= 8.0.0),
+               cmake
+Standards-Version: 3.9.4
+Homepage: http://kurento.org
+Vcs-Git: git://github.com/Kurento/kms-cmake-utils.git
+Vcs-Browser: https://github.com/Kurento/kms-cmake-utils.git
+
+Package: kms-cmake-utils
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, cmake, cmake-data
+Description: Kurento cmake utils
+ This package contains cmake utilities for building kurento projects
