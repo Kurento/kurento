@@ -458,57 +458,6 @@ create_rate_for_caps (GstCaps * caps)
   return rate;
 }
 
-static GstPadProbeReturn
-sink_block (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
-{
-  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK)
-    return GST_PAD_PROBE_OK;
-
-  if (GST_PAD_PROBE_INFO_TYPE (info) & (GST_PAD_PROBE_TYPE_BUFFER |
-          GST_PAD_PROBE_TYPE_BUFFER_LIST)) {
-    KmsAgnosticBin2 *self = user_data;
-
-    g_mutex_lock (&self->priv->probe_mutex);
-
-    while (self->priv->block_probe) {
-      GST_DEBUG_OBJECT (pad, "Holding a buffer");
-      g_cond_wait (&self->priv->probe_cond, &self->priv->probe_mutex);
-      GST_DEBUG_OBJECT (pad, "Released");
-    }
-
-    g_mutex_unlock (&self->priv->probe_mutex);
-  }
-
-  return GST_PAD_PROBE_OK;
-}
-
-static void
-kms_agnostic_bin2_remove_block_probe (KmsAgnosticBin2 * self)
-{
-  g_mutex_lock (&self->priv->probe_mutex);
-  if (self->priv->block_probe != 0L) {
-    gst_pad_remove_probe (self->priv->sink, self->priv->block_probe);
-    self->priv->block_probe = 0L;
-    g_cond_signal (&self->priv->probe_cond);
-  }
-  g_mutex_unlock (&self->priv->probe_mutex);
-}
-
-static void
-kms_agnostic_bin2_set_block_probe (KmsAgnosticBin2 * self)
-{
-  g_mutex_lock (&self->priv->probe_mutex);
-  if (self->priv->block_probe == 0L) {
-    self->priv->block_probe =
-        gst_pad_add_probe (self->priv->sink,
-        GST_PAD_PROBE_TYPE_BLOCK | GST_PAD_PROBE_TYPE_BUFFER |
-        GST_PAD_PROBE_TYPE_BUFFER_LIST, sink_block, self, NULL);
-    GST_DEBUG_OBJECT (self, "Adding probe %ld while connecting",
-        self->priv->block_probe);
-  }
-  g_mutex_unlock (&self->priv->probe_mutex);
-}
-
 static void
 remove_target_pad (GstPad * pad)
 {
@@ -965,7 +914,6 @@ kms_agnostic_bin2_process_pad_loop (gpointer data)
   }
 
 end:
-  kms_agnostic_bin2_remove_block_probe (self);
   KMS_AGNOSTIC_BIN2_UNLOCK (self);
 
   return FALSE;
@@ -979,7 +927,6 @@ kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self, GstPad * pad)
 
   if (g_queue_index (self->priv->pads_to_link, pad) == -1) {
     GST_DEBUG_OBJECT (pad, "Adding pad to queue");
-    kms_agnostic_bin2_set_block_probe (self);
 
     remove_target_pad (pad);
     g_queue_push_tail (self->priv->pads_to_link, g_object_ref (pad));
@@ -1303,8 +1250,6 @@ kms_agnostic_bin2_finalize (GObject * object)
 
   g_queue_free_full (self->priv->pads_to_link, g_object_unref);
   g_hash_table_unref (self->priv->tees);
-
-  kms_agnostic_bin2_remove_block_probe (self);
 
   g_cond_clear (&self->priv->probe_cond);
   g_mutex_clear (&self->priv->probe_mutex);
