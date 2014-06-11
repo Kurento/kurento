@@ -25,6 +25,7 @@
 #define PLUGIN_NAME "agnosticbin"
 
 #define LINKING_DATA "linking-data"
+#define UNLINKING_DATA "unlinking-data"
 
 static GstStaticCaps static_audio_caps =
 GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS);
@@ -272,14 +273,14 @@ remove_on_unlinked_blocked (GstPad * pad, GstPadProbeInfo * info, gpointer elem)
     return GST_PAD_PROBE_REMOVE;
   }
 
-  GST_DEBUG_OBJECT (pad, "Unlinkig pad");
+  GST_DEBUG_OBJECT (pad, "Unlinking pad");
 
-  if (g_object_get_data (G_OBJECT (pad), "unlinking")) {
+  if (g_object_get_data (G_OBJECT (pad), UNLINKING_DATA)) {
     GST_DEBUG ("Already unlinking");
     return GST_PAD_PROBE_DROP;
   }
 
-  g_object_set_data (G_OBJECT (pad), "unlinking", GINT_TO_POINTER (TRUE));
+  g_object_set_data (G_OBJECT (pad), UNLINKING_DATA, GINT_TO_POINTER (TRUE));
 
   sink = gst_pad_get_peer (pad);
   if (sink != NULL) {
