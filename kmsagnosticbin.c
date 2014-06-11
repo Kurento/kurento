@@ -24,6 +24,8 @@
 
 #define PLUGIN_NAME "agnosticbin"
 
+#define LINKING_DATA "linking-data"
+
 static GstStaticCaps static_audio_caps =
 GST_STATIC_CAPS (KMS_AGNOSTIC_AUDIO_CAPS);
 static GstStaticCaps static_video_caps =
@@ -368,7 +370,7 @@ queue_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
 }
 
 static void
-link_queue_to_tee (GstElement * tee, GstElement * queue)
+link_queue_to_tee_locked (GstElement * tee, GstElement * queue)
 {
   GstPad *tee_src = gst_element_get_request_pad (tee, "src_%u");
   GstPad *queue_sink = gst_element_get_static_pad (queue, "sink");
@@ -402,6 +404,39 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
 
   g_object_unref (queue_sink);
   g_object_unref (tee_src);
+}
+
+static GstPadProbeReturn
+tee_sink_blocked (GstPad * tee_sink, GstPadProbeInfo * info, gpointer queue)
+{
+  GstElement *tee = gst_pad_get_parent_element (tee_sink);
+
+  if (tee == NULL) {
+    return GST_PAD_PROBE_REMOVE;
+  }
+
+  if (g_object_get_data (queue, LINKING_DATA)) {
+    return GST_PAD_PROBE_PASS;
+  }
+
+  g_object_set_data (queue, LINKING_DATA, GINT_TO_POINTER (TRUE));
+
+  link_queue_to_tee_locked (tee, GST_ELEMENT (queue));
+  g_object_unref (tee);
+
+  return GST_PAD_PROBE_REMOVE;
+}
+
+static void
+link_queue_to_tee (GstElement * tee, GstElement * queue)
+{
+  GstPad *sink = gst_element_get_static_pad (tee, "sink");
+
+  if (sink != NULL) {
+    gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_BLOCKING, tee_sink_blocked,
+        g_object_ref (queue), g_object_unref);
+    g_object_unref (sink);
+  }
 }
 
 static GstElement *
