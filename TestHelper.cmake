@@ -15,6 +15,16 @@ function(create_valgrind_target)
 endfunction()
 
 ## This function simplifies tests creation
+##
+## If program TEST_PROPERTIES varible is defined, properties will be
+## passed to the test as environment variables
+##
+## If valgrind is available a valgrind target will be created for the test
+## To add suppression files to valgrind, just define SUPPRESSIONS variable
+## with the files to add to valgrind as suppressions
+##
+## Do not forget to enable test on your top build directory calling enable_testing
+##
 ## Name : add_test_program
 ## Params: test_name, sources
 function(add_test_program test_name sources)
