@@ -14,22 +14,16 @@ The source code of this project can be cloned from the [GitHub repository].
 Installation instructions
 -------------------------
 
-Be sure to have installed the Node.js tools in your system.
-
-In ubuntu:
-
-```bash
-sudo apt-get install nodejs nodejs-legacy npm
-```
-
-It's heavily encourage to use the latest Node.js and NPM versions from the
+Be sure to have installed the Node.js tools in your system. It's heavily
+encouraged to use the latest Node.js and NPM versions from the
 [Node.js project PPA] instead of the packages available on the oficial Ubuntu
 repositories, since due to the fast-moving Node.js community and environment
-these last ones get easily outdated and can lead to incompatibility errors. In
-that case you must not install the ```npm``` package since the tool is included
-by default in the community driven ```nodejs``` Ubuntu package:
+these last ones get easily outdated and can lead to incompatibility errors:
 
 ```bash
+sudo add-apt-repository ppa:chris-lea/node.js
+sudo apt-get update
+
 sudo apt-get install nodejs nodejs-legacy
 ```
 
