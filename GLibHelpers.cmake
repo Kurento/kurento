@@ -16,12 +16,9 @@ macro(add_glib_marshal outfiles name prefix)
   )
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
-#    COMMAND echo "\\#include \\\"${otherinclude}\\\"" > "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
-    COMMAND echo "\\#include \\\"glib-object.h\\\"" >> "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
-    COMMAND echo "\\#include \\\"${name}.h\\\"" >> "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
     COMMAND ${GLIB_GENMARSHAL} --body "--prefix=${prefix}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
-            >> "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
+            > "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
             "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
   )
