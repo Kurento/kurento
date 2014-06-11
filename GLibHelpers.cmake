@@ -3,20 +3,18 @@ if(POLICY CMP0011)
   cmake_policy(SET CMP0011 NEW)
 endif(POLICY CMP0011)
 
-find_program(GLIB_MKENUMS glib-mkenums)
-find_program(GLIB_GENMARSHAL glib-genmarshal)
-
 macro(add_glib_marshal outfiles name prefix)
+  find_package(GLIB-GENMARSHAL REQUIRED)
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
-    COMMAND ${GLIB_GENMARSHAL} --header "--prefix=${prefix}"
+    COMMAND ${GLIB-GENMARSHAL_EXECUTABLE} --header "--prefix=${prefix}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
             > "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
   )
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
-    COMMAND ${GLIB_GENMARSHAL} --body "--prefix=${prefix}"
+    COMMAND ${GLIB-GENMARSHAL_EXECUTABLE} --body "--prefix=${prefix}"
             "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
             > "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
@@ -26,6 +24,7 @@ macro(add_glib_marshal outfiles name prefix)
 endmacro(add_glib_marshal)
 
 macro(add_glib_enumtypes outfiles name includeguard)
+  find_package(GLIB-MKENUMS REQUIRED)
   set (HEADERS "")
   foreach(header ${ARGN})
     set (HEADERS ${HEADERS}\#include \\\"${header}\\\"\\n)
@@ -33,7 +32,7 @@ macro(add_glib_enumtypes outfiles name includeguard)
 
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
-    COMMAND ${GLIB_MKENUMS}
+    COMMAND ${GLIB-MKENUMS_EXECUTABLE}
         --fhead \"\#ifndef __${includeguard}_ENUM_TYPES_H__\\n\#define __${includeguard}_ENUM_TYPES_H__\\n\\n\#include <glib-object.h>\\n\\nG_BEGIN_DECLS\\n\"
         --fprod \"\\n/* enumerations from \\\"@filename@\\\" */\\n\"
         --vhead \"GType @enum_name@_get_type \(void\)\;\\n\#define GST_TYPE_@ENUMSHORT@ \(@enum_name@_get_type\(\)\)\\n\"
@@ -44,7 +43,7 @@ macro(add_glib_enumtypes outfiles name includeguard)
   )
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
-    COMMAND ${GLIB_MKENUMS}
+    COMMAND ${GLIB-MKENUMS_EXECUTABLE}
         --fhead \"\#include \\"${name}.h\\"\\n${HEADERS}\"
         --fprod \"\\n/* enumerations from \\"@filename@\\" */\"
         --vhead \"GType\\n@enum_name@_get_type \(void\)\\n{\\n"  "static volatile gsize g_define_type_id__volatile = 0\;\\n"  "if \(g_once_init_enter \(&g_define_type_id__volatile\)\) {\\n"    "static const G@Type@Value values[] = {\"
