@@ -1,7 +1,3 @@
-cmake_minimum_required(VERSION 2.6)
-if(POLICY CMP0011)
-  cmake_policy(SET CMP0011 NEW)
-endif(POLICY CMP0011)
 
 macro(add_glib_marshal outfiles name prefix)
   find_package(GLIB-GENMARSHAL REQUIRED)
