@@ -1,5 +1,7 @@
 find_program(VALGRIND valgrind)
 
+set (DISABLE_TESTS FALSE CACHE BOOL "Disable \"make check\" target")
+
 function(create_check_target)
   if (NOT TARGET check)
     MESSAGE (STATUS "Enabling check target")
