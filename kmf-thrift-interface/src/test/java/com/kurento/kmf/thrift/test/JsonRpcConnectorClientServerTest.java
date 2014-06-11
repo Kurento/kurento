@@ -46,7 +46,7 @@ public class JsonRpcConnectorClientServerTest {
 			.getLogger(JsonRpcConnectorClientServerTest.class);
 
 	private static class EchoJsonRpcHandler extends
-	DefaultJsonRpcHandler<Params> {
+			DefaultJsonRpcHandler<Params> {
 
 		@Override
 		public void handleRequest(Transaction transaction,
@@ -61,14 +61,14 @@ public class JsonRpcConnectorClientServerTest {
 
 		LOG.info("Starting server");
 		JsonRpcServerThrift server = new JsonRpcServerThrift(
-				new EchoJsonRpcHandler(), "127.0.0.1", 9292);
+				new EchoJsonRpcHandler(), "127.0.0.1", 19292);
 
 		server.start();
 		LOG.info("Server started");
 
 		LOG.info("Starting client");
 
-		JsonRpcClient client = new JsonRpcClientThrift("127.0.0.1", 9292,
+		JsonRpcClient client = new JsonRpcClientThrift("127.0.0.1", 19292,
 				"127.0.0.1", 7979);
 
 		Params params = new Params();

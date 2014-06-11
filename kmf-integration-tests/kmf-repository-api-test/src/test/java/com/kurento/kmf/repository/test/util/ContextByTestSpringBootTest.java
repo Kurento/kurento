@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -27,9 +28,11 @@ import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.kurento.kmf.commons.tests.RepositoryApiTests;
 import com.kurento.kmf.repository.main.BootApplication;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
+@Category(RepositoryApiTests.class)
 public class ContextByTestSpringBootTest {
 
 	private static Logger log = LoggerFactory

@@ -60,7 +60,11 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-connector</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons-testing</artifactId>
+			<scope>compile</scope>
+		</dependency>
 
 		<!-- JUnit -->
 		<dependency>

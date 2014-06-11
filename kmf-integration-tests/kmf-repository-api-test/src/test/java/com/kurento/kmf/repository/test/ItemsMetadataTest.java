@@ -22,9 +22,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.kurento.kmf.commons.tests.RepositoryApiTests;
 import com.kurento.kmf.repository.internal.repoimpl.filesystem.ItemsMetadata;
 
+@Category(RepositoryApiTests.class)
 public class ItemsMetadataTest {
 
 	@Test

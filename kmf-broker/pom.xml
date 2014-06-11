@@ -60,10 +60,6 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-core</artifactId>
-		</dependency> -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-messaging</artifactId>
@@ -76,10 +72,11 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
 		</dependency>
-		<!-- <dependency>
+		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-system-test</artifactId>
-		</dependency> -->
+			<artifactId>kmf-commons-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<properties>

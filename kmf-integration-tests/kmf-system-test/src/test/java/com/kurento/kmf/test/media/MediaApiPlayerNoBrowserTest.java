@@ -21,7 +21,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import com.kurento.kmf.commons.tests.SystemMediaApiTests;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -43,6 +45,7 @@ import com.kurento.kmf.test.base.MediaApiTest;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@Category(SystemMediaApiTests.class)
 public class MediaApiPlayerNoBrowserTest extends MediaApiTest {
 
 	@Test

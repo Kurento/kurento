@@ -121,6 +121,7 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 			// Wait the video to be started (TIMEOUT seconds at the most)
 			(new WebDriverWait(driver, timeout))
 					.until(new ExpectedCondition<Boolean>() {
+						@Override
 						public Boolean apply(WebDriver d) {
 							return d.findElement(By.id("status"))
 									.getAttribute("value").startsWith("play");
@@ -134,6 +135,7 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 		try {
 			(new WebDriverWait(driver, timeout))
 					.until(new ExpectedCondition<Boolean>() {
+						@Override
 						public Boolean apply(WebDriver d) {
 							return d.findElement(By.id("status"))
 									.getAttribute("value").startsWith("end");

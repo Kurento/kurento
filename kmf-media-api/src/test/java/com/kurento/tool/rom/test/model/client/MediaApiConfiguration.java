@@ -35,7 +35,7 @@ public class MediaApiConfiguration {
 	/**
 	 * Port where the local thrift server will be listening.
 	 */
-	private int handlerPort = 9292;
+	private int handlerPort = 19292;
 
 	/**
 	 * Gets the address of the local thrift server, which will be used to

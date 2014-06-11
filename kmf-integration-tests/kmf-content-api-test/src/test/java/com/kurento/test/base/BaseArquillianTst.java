@@ -28,6 +28,9 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.importer.ZipImporter;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.experimental.categories.Category;
+
+import com.kurento.kmf.commons.tests.ContentApiTests;
 
 /**
  * Base class for Arquillian tests; it deploys the WAR in the Kurento
@@ -39,6 +42,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
  * @since 1.0.0
  * @see <a href="http://arquillian.org/">Arquillian</a>
  */
+@Category(ContentApiTests.class)
 public class BaseArquillianTst {
 
 	public static final Log log = LogFactory.getLog(BaseArquillianTst.class);

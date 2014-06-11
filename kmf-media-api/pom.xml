@@ -71,19 +71,10 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector-client</artifactId>
 		</dependency>
-		<!-- <dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-broker</artifactId>
-		</dependency> -->
-		<!-- <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
-			<version>1.0.0.RELEASE</version>
-		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-amqp</artifactId>
-			<version>1.0.0.RELEASE</version>
-		</dependency> -->
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

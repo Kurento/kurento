@@ -63,11 +63,11 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-simple</artifactId>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons-testing</artifactId>
 			<scope>test</scope>
-		</dependency> -->
+		</dependency>	
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-system-test</artifactId>

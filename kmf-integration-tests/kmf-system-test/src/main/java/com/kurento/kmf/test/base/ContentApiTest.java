@@ -18,9 +18,11 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
+import com.kurento.kmf.commons.tests.SystemContentApiTests;
 import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 import com.kurento.kmf.test.ContentApiBootApp;
 
@@ -32,6 +34,7 @@ import com.kurento.kmf.test.ContentApiBootApp;
  * @since 4.2.3
  * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
  */
+@Category(SystemContentApiTests.class)
 public class ContentApiTest extends KurentoTest {
 
 	protected ConfigurableApplicationContext context;
@@ -48,8 +51,8 @@ public class ContentApiTest extends KurentoTest {
 
 		if (context != null) {
 			KurentoApplicationContextUtils
-			.closeAllKurentoApplicationContexts(((WebApplicationContext) context)
-					.getServletContext());
+					.closeAllKurentoApplicationContexts(((WebApplicationContext) context)
+							.getServletContext());
 			context.close();
 		}
 	}

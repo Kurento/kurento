@@ -14,18 +14,28 @@
  */
 package com.kurento.kmf.media.test.base;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.commons.tests.MediaApiTests;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.MediaObject;
+import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.test.base.MediaApiTest;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
  *
  */
+@Category(MediaApiTests.class)
 public abstract class MediaPipelineAsyncBaseTest extends MediaApiTest {
 
 	protected MediaPipeline pipeline;

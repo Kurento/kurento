@@ -86,6 +86,11 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

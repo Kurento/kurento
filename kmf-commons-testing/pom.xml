@@ -1,23 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.2.5-SNAPSHOT</version>
 		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
-	
+
 	<groupId>com.kurento.kmf</groupId>
-	<artifactId>kmf-content-protocol</artifactId>
-	<packaging>jar</packaging>
-
-	<name>Kurento Media Framework - Content Protocol</name>
-	<description>
-			Protocol based on JSON-RPC to manage Kurento Content API
-
-			The kmf-content-protocol is a JSON-RPC protocol to manage Kurento Content API.
-	</description>
+	<artifactId>kmf-commons-testing</artifactId>
+	<name>Kurento Media Framework - Common testing classes</name>
+	<description>TODO</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -27,7 +21,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<organization>
 		<name>Kurento</name>
 		<url>http://www.kurento.org</url>
@@ -51,18 +45,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-commons-testing</artifactId>
-			<scope>test</scope>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

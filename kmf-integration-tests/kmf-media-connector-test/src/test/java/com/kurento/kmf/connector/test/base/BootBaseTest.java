@@ -4,13 +4,14 @@ import java.util.Properties;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
 
+import com.kurento.kmf.commons.tests.MediaConnectorTests;
 import com.kurento.kmf.connector.MediaConnectorApp;
-import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
+@Category(MediaConnectorTests.class)
 public class BootBaseTest {
 
 	protected static ConfigurableApplicationContext context;
@@ -38,7 +39,7 @@ public class BootBaseTest {
 	@AfterClass
 	public static void stop() {
 
-		if(context != null) {
+		if (context != null) {
 			context.close();
 		}
 	}

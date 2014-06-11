@@ -16,7 +16,9 @@
 package com.kurento.kmf.test.base;
 
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
+import com.kurento.kmf.commons.tests.SystemMediaApiTests;
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
@@ -26,6 +28,7 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@Category(SystemMediaApiTests.class)
 public class BrowserMediaApiTest extends MediaApiTest {
 
 	@Before

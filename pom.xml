@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>com.kurento</groupId>
@@ -55,6 +56,7 @@
 			<modules>
 				<module>kmf-spring</module>
 				<module>kmf-commons</module>
+				<module>kmf-commons-testing</module>
 				<module>kmf-parent-pom</module>
 				<module>kmf-thrift-interface</module>
 				<module>kmf-orion-connector</module>
@@ -89,22 +91,22 @@
 				</plugins>
 			</build>
 		</profile>
-                <profile>
-                        <id>deploy</id>
-                        <modules>
-                                <module>kmf-spring</module>
-                                <module>kmf-commons</module>
-                                <module>kmf-parent-pom</module>
-                                <module>kmf-thrift-interface</module>
-                                <module>kmf-orion-connector</module>
-                                <module>kmf-jsonrpcconnector</module>
-                                <module>kmf-media-api</module>
-                                <module>kmf-content-api</module>
-                                <module>kmf-content-protocol</module>
-                                <module>kmf-repository-api</module>
-                                <module>kmf-broker</module>
-                        </modules>
-                </profile>
+		<profile>
+			<id>deploy</id>
+			<modules>
+				<module>kmf-spring</module>
+				<module>kmf-commons</module>
+				<module>kmf-parent-pom</module>
+				<module>kmf-thrift-interface</module>
+				<module>kmf-orion-connector</module>
+				<module>kmf-jsonrpcconnector</module>
+				<module>kmf-media-api</module>
+				<module>kmf-content-api</module>
+				<module>kmf-content-protocol</module>
+				<module>kmf-repository-api</module>
+				<module>kmf-broker</module>
+			</modules>
+		</profile>
 		<profile>
 			<id>integration</id>
 			<activation>
@@ -114,21 +116,5 @@
 				<module>kmf-integration-tests</module>
 			</modules>
 		</profile>
-                <profile>
-                        <id>media-api-test</id>
-                        <build>
-                                <plugins>
-                                        <plugin>
-                                                <groupId>org.apache.maven.plugins</groupId>
-                                                <artifactId>maven-surefire-plugin</artifactId>
-                                                <configuration>
-                                                        <includes>
-                                                                <include>**/media/test/*Test.java</include>
-                                                        </includes>
-                                                </configuration>
-                                        </plugin>
-                                </plugins>
-                        </build>
-                </profile>
 	</profiles>
 </project>

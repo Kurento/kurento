@@ -25,10 +25,12 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.demo.internal.EventListener;
+import com.kurento.kmf.commons.tests.ContentApiTests;
 
 /**
  * Generic test for HTTP Player using <code>HttpClient</code> to connect to
@@ -38,15 +40,16 @@ import com.kurento.demo.internal.EventListener;
  * @since 1.0.0
  * @see <a href="http://hc.apache.org/">Apache HTTP Components</a>
  */
+@Category(ContentApiTests.class)
 public class PlayerTst implements Runnable {
 
 	private static final Logger log = LoggerFactory.getLogger(PlayerTst.class);
 
-	private String url;
-	private int statusCode;
-	private String contentType;
-	private boolean interrupt;
-	private String[] expectedHandlerFlow;
+	private final String url;
+	private final int statusCode;
+	private final String contentType;
+	private final boolean interrupt;
+	private final String[] expectedHandlerFlow;
 
 	public PlayerTst(String handler, String port, int statusCode,
 			String contentType, boolean interrupt, String[] expectedHandlerFlow) {
@@ -58,6 +61,7 @@ public class PlayerTst implements Runnable {
 		this.expectedHandlerFlow = expectedHandlerFlow;
 	}
 
+	@Override
 	public void run() {
 		try {
 			HttpClient client = HttpClientBuilder.create().build();

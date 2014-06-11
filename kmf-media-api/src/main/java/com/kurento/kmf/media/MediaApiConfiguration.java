@@ -14,7 +14,6 @@
  */
 package com.kurento.kmf.media;
 
-
 /**
  * Configuration parameters for Media API. This class is intended to be created
  * as a bean inside an Spring context, and is needed by the Media API to work
@@ -35,7 +34,7 @@ public class MediaApiConfiguration {
 	/**
 	 * Port where the local thrift server will be listening.
 	 */
-	private int handlerPort = 9292;
+	private int handlerPort = 19292;
 
 	// Used in Spring environments
 	public MediaApiConfiguration() {

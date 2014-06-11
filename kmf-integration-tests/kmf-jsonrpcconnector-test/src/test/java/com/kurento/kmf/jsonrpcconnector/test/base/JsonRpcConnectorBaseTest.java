@@ -4,14 +4,17 @@ import java.util.Properties;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.experimental.categories.Category;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpHeaders;
 
+import com.kurento.kmf.commons.tests.JsonRpcConnectorTests;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientHttp;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientWebSocket;
 
+@Category(JsonRpcConnectorTests.class)
 public class JsonRpcConnectorBaseTest {
 
 	protected static ConfigurableApplicationContext context;

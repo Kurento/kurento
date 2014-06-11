@@ -89,6 +89,11 @@
 			<artifactId>gson</artifactId>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.kurento.kmf</groupId>
+			<artifactId>kmf-commons-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

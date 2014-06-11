@@ -27,15 +27,18 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import com.kurento.kmf.commons.tests.RepositoryApiTests;
 import com.kurento.kmf.repository.main.OneRecordingServer;
 import com.kurento.kmf.repository.test.util.TestUtils;
 
+@Category(RepositoryApiTests.class)
 public class OneRecordingServerTest {
 
 	private static final Logger log = LoggerFactory

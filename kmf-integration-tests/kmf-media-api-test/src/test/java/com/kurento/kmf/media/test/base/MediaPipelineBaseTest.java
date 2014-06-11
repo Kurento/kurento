@@ -16,10 +16,13 @@ package com.kurento.kmf.media.test.base;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
+import com.kurento.kmf.commons.tests.MediaApiTests;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.test.base.MediaApiTest;
 
+@Category(MediaApiTests.class)
 public abstract class MediaPipelineBaseTest extends MediaApiTest {
 
 	protected MediaPipeline pipeline;

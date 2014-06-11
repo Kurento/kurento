@@ -17,10 +17,12 @@ package com.kurento.kmf.test.base;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kurento.kmf.commons.tests.IntegrationTests;
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
@@ -30,6 +32,7 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@Category(IntegrationTests.class)
 public class KurentoTest {
 
 	private static final Logger log = LoggerFactory

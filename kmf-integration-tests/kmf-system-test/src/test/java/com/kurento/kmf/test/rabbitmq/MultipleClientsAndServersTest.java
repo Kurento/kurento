@@ -5,9 +5,13 @@ import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kurento.kmf.commons.tests.SystemTests;
+
+@Category(SystemTests.class)
 public class MultipleClientsAndServersTest {
 
 	private static final Logger log = LoggerFactory
