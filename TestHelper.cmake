@@ -1,3 +1,4 @@
+find_program(VALGRIND valgrind)
 
 function(create_check_target)
   if (NOT TARGET check)
