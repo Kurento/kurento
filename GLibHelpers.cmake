@@ -28,43 +28,35 @@ macro(add_glib_marshal outfiles name prefix)
   list(APPEND ${outfiles} "${CMAKE_CURRENT_BINARY_DIR}/${name}.c")
 endmacro(add_glib_marshal)
 
-macro(add_glib_enumtypes_t outfiles name htemplate ctemplate)
+macro(add_glib_enumtypes outfiles name includeguard)
+  set (HEADERS "")
+  foreach(header ${ARGN})
+    set (HEADERS ${HEADERS}\#include \\\"${header}\\\"\\n)
+  endforeach(header)
+
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
     COMMAND ${GLIB_MKENUMS}
-            --template "${htemplate}"
-            ${ARGN} > "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
+        --fhead \"\#ifndef __${includeguard}_ENUM_TYPES_H__\\n\#define __${includeguard}_ENUM_TYPES_H__\\n\\n\#include <glib-object.h>\\n\\nG_BEGIN_DECLS\\n\"
+        --fprod \"\\n/* enumerations from \\\"@filename@\\\" */\\n\"
+        --vhead \"GType @enum_name@_get_type \(void\)\;\\n\#define GST_TYPE_@ENUMSHORT@ \(@enum_name@_get_type\(\)\)\\n\"
+        --ftail \"\\nG_END_DECLS\\n\\n\#endif /* __${includeguard}_ENUM_TYPES_H__ */\"
+        ${ARGN} > "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${ARGN} "${htemplate}"
+    DEPENDS ${ARGN}
   )
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
     COMMAND ${GLIB_MKENUMS}
-            --template "${ctemplate}"
+        --fhead \"\#include \\"${name}.h\\"\\n${HEADERS}\"
+        --fprod \"\\n/* enumerations from \\"@filename@\\" */\"
+        --vhead \"GType\\n@enum_name@_get_type \(void\)\\n{\\n"  "static volatile gsize g_define_type_id__volatile = 0\;\\n"  "if \(g_once_init_enter \(&g_define_type_id__volatile\)\) {\\n"    "static const G@Type@Value values[] = {\"
+        --vprod \""      "{ @VALUENAME@, \\"@VALUENAME@\\", \\"@valuenick@\\" },\"
+        --vtail \""      "{ 0, NULL, NULL }\\n"    "}\;\\n"    "GType g_define_type_id = g_\@type\@_register_static \(\\"@EnumName@\\", values\)\;\\n"    "g_once_init_leave \(&g_define_type_id__volatile, g_define_type_id\)\;\\n"  "}\\n"  "return g_define_type_id__volatile\;\\n}\\n\"
             ${ARGN} > "${CMAKE_CURRENT_BINARY_DIR}/${name}.c"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${ARGN} ${ctemplate}
+    DEPENDS ${ARGN}
             "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
   )
   list(APPEND ${outfiles} "${CMAKE_CURRENT_BINARY_DIR}/${name}.c")
-endmacro(add_glib_enumtypes_t)
-
-macro(add_glib_enumtypes outfiles name includeguard)
-  set(htemplate "${CMAKE_CURRENT_BINARY_DIR}/${name}.h.template")
-  set(ctemplate "${CMAKE_CURRENT_BINARY_DIR}/${name}.c.template")
-
-  # Write the .h template
-  add_custom_command(
-    OUTPUT ${htemplate} ${ctemplate}
-    COMMAND ${CMAKE_COMMAND}
-        "-Dctemplate=${ctemplate}"
-        "-Dhtemplate=${htemplate}"
-        "-Dname=${name}"
-        "-Dincludeguard=${includeguard}"
-        "\"-Dheaders=${ARGN}\""
-        -P "${CMAKE_SOURCE_DIR}/CMake/MakeGLibEnumTemplates.cmake"
-    DEPENDS "${CMAKE_SOURCE_DIR}/CMake/MakeGLibEnumTemplates.cmake" ${headers}
-  )
-
-  add_glib_enumtypes_t(${outfiles} ${name} ${htemplate} ${ctemplate} ${ARGN})
 endmacro(add_glib_enumtypes)
