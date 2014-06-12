@@ -229,7 +229,7 @@ Follow us on Twitter @[kurentoms].
 [grunt]: http://gruntjs.com/
 [JsFiddle]: http://jsfiddle.net/gh/get/library/pure/kurento/kws-media-api/contents/example/PlayerEndpoint-HttpGetEndpoint
 [Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
-[KurentoImage]: https://0.gravatar.com/avatar/b8fffabbe3831731cb4c4c9667bfa439?s=120
+[KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os

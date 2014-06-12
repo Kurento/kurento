@@ -1,3 +1,7 @@
+[![][KurentoImage]][website]
+
+Copyright © 2014 Kurento. Licensed under [LGPL License].
+
 KWS Media API - Tests
 =====================
 Tests are autonomous, only requirement is to exec previously ```npm install```
@@ -174,3 +178,8 @@ Detect a bar code inside the video stream
 ### Assertions
 
 * bar code is found
+
+
+[KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
+[LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
+[website]: http://kurento.org
