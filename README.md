@@ -37,22 +37,17 @@ sudo apt-get install nodejs nodejs-legacy
 To install the library, it's recomended to do that from the [NPM repository] :
 
 ```bash
-npm install kws-media-api
+npm install kws-utils
 ```
 
 Alternatively, you can download the code using git and install manually its
 dependencies:
 
 ```bash
-git clone https://github.com/Kurento/kws-media-api.git
-cd kws-media-api
+git clone https://github.com/Kurento/kws-utils.git
+cd kws-utils
 npm install
 ```
-
-Need to know, currently the library can't be able to talk directly with the
-Kureno Media Server, so it require to use a [Kurento Media Connector] instace.
-You can download the latest release from http://ci.kurento.com/apps/kmf-media-connector.zip.
-When you decompress it you'll find a README file with installation instructions.
 
 ### Browser
 
@@ -230,17 +225,15 @@ News and Website
 Information about Kurento can be found on our [website].
 Follow us on Twitter @[kurentoms].
 
-[example full source code]: https://github.com/Kurento/kws-media-api/tree/develop/example/PlayerEndpoint-HttpGetEndpoint
 [GitHub Kurento group]: https://github.com/kurento
-[GitHub repository]: https://github.com/kurento/kws-media-api
+[GitHub repository]: https://github.com/kurento/kws-utils
 [grunt]: http://gruntjs.com/
-[JsFiddle]: http://jsfiddle.net/gh/get/library/pure/kurento/kws-media-api/contents/example/PlayerEndpoint-HttpGetEndpoint
 [Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
-[NPM repository]: https://www.npmjs.org/package/kws-media-api
+[NPM repository]: https://www.npmjs.org/package/kws-utils
 [QUnit]: http://qunitjs.com
 [QUnit-cli]: https://github.com/devongovett/qunit-cli
 [website]: http://kurento.org
