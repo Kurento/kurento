@@ -107,7 +107,7 @@ public class HttpPostEndpointTest extends MediaPipelineBaseTest {
 		} catch (ClientProtocolException e) {
 			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoException();
+			throw new KurentoException(e);
 		}
 
 		assertNotNull(eosEvents.poll(7, SECONDS));

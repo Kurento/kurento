@@ -55,16 +55,7 @@ public class KmsLogOnFailure extends TestWatcher {
 				System.err.println(description.getClassName() + "." + testName
 						+ " TEST FAILED");
 
-				if (e instanceof org.junit.internal.runners.model.MultipleFailureException) {
-
-					MultipleFailureException multipleEx = (MultipleFailureException) e;
-					for (Throwable failure : multipleEx.getFailures()) {
-						failure.printStackTrace();
-					}
-
-				} else {
-					e.printStackTrace();
-				}
+				// showException(e);
 
 				System.err
 						.println("******************************************************************************");
@@ -88,5 +79,18 @@ public class KmsLogOnFailure extends TestWatcher {
 			}
 		}
 
+	}
+
+	private void showException(Throwable e) {
+		if (e instanceof org.junit.internal.runners.model.MultipleFailureException) {
+
+			MultipleFailureException multipleEx = (MultipleFailureException) e;
+			for (Throwable failure : multipleEx.getFailures()) {
+				failure.printStackTrace();
+			}
+
+		} else {
+			e.printStackTrace();
+		}
 	}
 }

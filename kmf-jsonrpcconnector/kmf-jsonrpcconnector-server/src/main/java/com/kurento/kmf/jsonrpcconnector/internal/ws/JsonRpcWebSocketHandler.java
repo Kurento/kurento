@@ -43,6 +43,8 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		// We send this notification to the JsonRpcHandler when the JsonRpc
 		// session is established, not when websocket session is established
+		log.info("Client connection stablished from {}",
+				session.getRemoteAddress());
 	}
 
 	@Override
@@ -63,7 +65,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 	@Override
 	public void handleTransportError(WebSocketSession session,
 			Throwable exception) throws Exception {
-		// TODO What to do here?
+		log.warn("Transport error", exception);
 	}
 
 	@Override
@@ -72,7 +74,7 @@ public class JsonRpcWebSocketHandler extends TextWebSocketHandler {
 
 		String messageJson = message.getPayload();
 
-		log.trace("Req-> {}", messageJson);
+		log.debug("Req-> {}", messageJson);
 
 		// TODO Ensure only one register message per websocket session.
 		ServerSessionFactory factory = new ServerSessionFactory() {

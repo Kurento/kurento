@@ -173,7 +173,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 		} catch (ClientProtocolException e) {
 			throw new KurentoException();
 		} catch (IOException e) {
-			throw new KurentoException();
+			throw new KurentoException(e);
 		}
 
 		try {

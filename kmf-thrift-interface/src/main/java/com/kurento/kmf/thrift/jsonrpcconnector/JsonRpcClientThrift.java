@@ -160,7 +160,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 						try {
 
-							log.trace("<-Req {}", request.trim());
+							log.debug("<-Req {}", request.trim());
 
 							JsonObject message = JsonUtils.fromJson(request,
 									JsonObject.class);
@@ -206,7 +206,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		try {
 
-			log.trace("Req-> {}", request);
+			log.debug("Req-> {}", request);
 
 			// TODO Remove this hack -----------------------
 			if (request.getMethod().equals("subscribe")) {
@@ -255,7 +255,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
 
-		log.trace("Req-> {}", request);
+		log.debug("Req-> {}", request);
 
 		// TODO Remove this hack -----------------------
 		if (request.getMethod().equals("subscribe")) {
@@ -302,7 +302,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 							try {
 								String response = thriftResponse.getResult();
 
-								log.trace("<-Res {}", response.trim());
+								log.debug("<-Res {}", response.trim());
 
 								continuation.onSuccess(JsonUtils
 										.fromJsonResponse(response, resultClass));
