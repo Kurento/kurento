@@ -83,7 +83,8 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(20, SECONDS));
+		Assert.assertNotNull("EndOfStream event not received in 20s",
+				events.poll(20, SECONDS));
 
 		player.stop();
 		player.release();

@@ -20,7 +20,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -72,7 +75,8 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 		});
 
 		player.play();
-		Assert.assertNotNull(eosEvents.poll(7, SECONDS));
+		Assert.assertNotNull("EndOfStream event not received in 7s",
+				eosEvents.poll(7, SECONDS));
 		filter.release();
 	}
 

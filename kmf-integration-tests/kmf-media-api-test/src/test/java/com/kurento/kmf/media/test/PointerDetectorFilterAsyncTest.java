@@ -20,10 +20,16 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.PointerDetectorFilter;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
@@ -35,6 +41,7 @@ import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
  * @version 1.0.0
  *
  */
+@Ignore
 public class PointerDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	private PlayerEndpoint player;

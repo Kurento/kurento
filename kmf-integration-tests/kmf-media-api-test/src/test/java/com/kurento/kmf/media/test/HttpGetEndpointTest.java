@@ -108,7 +108,8 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		}
 
-		Assert.assertNotNull(eosEvents.poll(60, SECONDS));
+		Assert.assertNotNull("EndOfStreamEvent not sent in 60s",
+				eosEvents.poll(60, SECONDS));
 
 		httpEP.release();
 		player.release();
@@ -154,7 +155,8 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		}
 
-		Assert.assertNotNull(events.poll(20, SECONDS));
+		Assert.assertNotNull("MediaSessionTerminatedEvent not sent in 20s",
+				events.poll(20, SECONDS));
 
 		httpEP.release();
 		player.release();

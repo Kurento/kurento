@@ -20,10 +20,16 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.GStreamerFilter;
+import com.kurento.kmf.media.PlateDetectorFilter;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
@@ -75,7 +81,8 @@ public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 					}
 				});
 		filter = events.poll(7, SECONDS);
-		Assert.assertNotNull(filter);
+		Assert.assertNotNull("GStreamerFilter not created in 7s", filter);
+
 		releaseMediaObject(filter);
 	}
 

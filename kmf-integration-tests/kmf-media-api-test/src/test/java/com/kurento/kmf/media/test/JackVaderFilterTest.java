@@ -22,7 +22,9 @@ import java.util.concurrent.BlockingQueue;
 
 import junit.framework.Assert;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.JackVaderFilter;
@@ -77,7 +79,8 @@ public class JackVaderFilterTest extends MediaPipelineBaseTest {
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(10, SECONDS));
+		Assert.assertNotNull("EndOfStreamEvent not sent in 10s",
+				events.poll(10, SECONDS));
 
 		player.stop();
 		player.release();

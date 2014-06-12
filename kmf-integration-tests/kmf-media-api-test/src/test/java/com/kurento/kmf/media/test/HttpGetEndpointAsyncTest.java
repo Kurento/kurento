@@ -165,8 +165,8 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 					}
 				});
 
-		ListenerRegistration reg = events.poll(500, MILLISECONDS);
-		Assert.assertNotNull(reg);
+		Assert.assertNotNull("MediaSessionStartedEvent not send in 500ms",
+				events.poll(500, MILLISECONDS));
 
 		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
 				.build()) {
@@ -227,8 +227,8 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 					}
 				});
 
-		ListenerRegistration reg = events.poll(500, MILLISECONDS);
-		Assert.assertNotNull(reg);
+		Assert.assertNotNull("Listener not registered in 500ms",
+				events.poll(500, MILLISECONDS));
 
 		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
 				.build()) {

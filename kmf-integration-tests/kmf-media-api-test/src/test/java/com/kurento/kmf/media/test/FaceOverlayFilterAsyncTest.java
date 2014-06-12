@@ -20,10 +20,14 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.FaceOverlayFilter;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
@@ -57,11 +61,13 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoException(cause);
+						cause.printStackTrace();
 					}
 				});
+
 		overlayFilter = events.poll(4, SECONDS);
-		Assert.assertNotNull(overlayFilter);
+		Assert.assertNotNull("FaceOverlayFilter not created in 4s",
+				overlayFilter);
 	}
 
 	@After
@@ -93,7 +99,8 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(20, SECONDS));
+		Assert.assertNotNull("EndOfStream event not received in 20s",
+				events.poll(20, SECONDS));
 	}
 
 }

@@ -165,8 +165,9 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 					}
 				});
 
-		ListenerRegistration reg = events.poll(500, MILLISECONDS);
-		Assert.assertNotNull(reg);
+		Assert.assertNotNull(
+				"MediaSessionStartedListener not registered in 500ms",
+				events.poll(500, MILLISECONDS));
 
 		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
 				.build()) {
