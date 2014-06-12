@@ -417,6 +417,7 @@ tee_sink_blocked (GstPad * tee_sink, GstPadProbeInfo * info, gpointer queue)
   }
 
   if (g_object_get_data (queue, LINKING_DATA)) {
+    g_object_unref (tee);
     return GST_PAD_PROBE_PASS;
   }
 
