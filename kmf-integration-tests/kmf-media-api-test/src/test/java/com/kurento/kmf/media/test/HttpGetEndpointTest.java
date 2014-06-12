@@ -28,7 +28,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -74,9 +73,12 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 	 * Test for {@link MediaSessionStartedEvent}
 	 *
 	 * @throws InterruptedException
+	 * @throws IOException
+	 * @throws ClientProtocolException
 	 */
 	@Test
-	public void testEventMediaSessionStarted() throws InterruptedException {
+	public void testEventMediaSessionStarted() throws InterruptedException,
+			ClientProtocolException, IOException {
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
 		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
@@ -104,10 +106,6 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
-		} catch (ClientProtocolException e) {
-			throw new KurentoException();
-		} catch (IOException e) {
-			throw new KurentoException();
 		}
 
 		Assert.assertNotNull(eosEvents.poll(60, SECONDS));
@@ -120,9 +118,12 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 	 * Test for {@link MediaSessionTerminatedEvent}
 	 *
 	 * @throws InterruptedException
+	 * @throws IOException
+	 * @throws ClientProtocolException
 	 */
 	@Test
-	public void testEventMediaSessionTerminated() throws InterruptedException {
+	public void testEventMediaSessionTerminated() throws InterruptedException,
+			ClientProtocolException, IOException {
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
 		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().terminateOnEOS()
@@ -151,10 +152,6 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
-		} catch (ClientProtocolException e) {
-			throw new KurentoException();
-		} catch (IOException e) {
-			throw new KurentoException();
 		}
 
 		Assert.assertNotNull(events.poll(20, SECONDS));

@@ -85,7 +85,8 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 						throw new KurentoException(cause);
 					}
 				});
-		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
+		Assert.assertTrue("HttpPostEndpoint no created in 500ms",
+				sem.tryAcquire(500, MILLISECONDS));
 	}
 
 	@After
@@ -122,9 +123,12 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	 * Test for {@link MediaSessionStartedEvent}
 	 *
 	 * @throws InterruptedException
+	 * @throws IOException
+	 * @throws ClientProtocolException
 	 */
 	@Test
-	public void testEventMediaSessionStarted() throws InterruptedException {
+	public void testEventMediaSessionStarted() throws InterruptedException,
+			ClientProtocolException, IOException {
 
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
@@ -168,10 +172,6 @@ public class HttpPostEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
-		} catch (ClientProtocolException e) {
-			throw new KurentoException();
-		} catch (IOException e) {
-			throw new KurentoException();
 		}
 
 		try {

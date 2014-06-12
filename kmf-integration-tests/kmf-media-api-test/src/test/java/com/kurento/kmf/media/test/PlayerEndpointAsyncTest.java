@@ -18,12 +18,19 @@ import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.Continuation;
+import com.kurento.kmf.media.ListenerRegistration;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
@@ -70,7 +77,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoException();
+						cause.printStackTrace();
 					}
 				});
 		player = events.poll(500, MILLISECONDS);
@@ -95,7 +102,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				throw new KurentoException();
+				cause.printStackTrace();
 			}
 		});
 

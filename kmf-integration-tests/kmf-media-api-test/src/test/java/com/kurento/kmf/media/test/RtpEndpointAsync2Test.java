@@ -63,10 +63,11 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 						@Override
 						public void onError(Throwable cause) {
-							throw new KurentoException();
+							cause.printStackTrace();
 						}
 					});
-					Assert.assertTrue(semCont.tryAcquire(5000, MILLISECONDS));
+					Assert.assertTrue("RtpEndpoint no created in 5s",
+							semCont.tryAcquire(5000, MILLISECONDS));
 					releaseMediaObject(stream);
 					sem.release();
 				} catch (InterruptedException e) {
@@ -88,10 +89,11 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 								@Override
 								public void onError(Throwable cause) {
-									throw new KurentoException();
+									cause.printStackTrace();
 								}
 							});
-					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
+					Assert.assertTrue("processOffer not responded in 500ms",
+							semCont.tryAcquire(500, MILLISECONDS));
 					releaseMediaObject(stream);
 					sem.release();
 				} catch (InterruptedException e) {
@@ -111,10 +113,11 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 								@Override
 								public void onError(Throwable cause) {
-									throw new KurentoException();
+									cause.printStackTrace();
 								}
 							});
-					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
+					Assert.assertTrue("processAnswer() not responded in 500ms",
+							semCont.tryAcquire(500, MILLISECONDS));
 					releaseMediaObject(stream);
 					sem.release();
 				} catch (InterruptedException e) {
@@ -135,10 +138,12 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 						@Override
 						public void onError(Throwable cause) {
-							throw new KurentoException();
+							cause.printStackTrace();
 						}
 					});
-					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
+					Assert.assertTrue(
+							"getLocalSessionDescriptor() not responded in 500ms",
+							semCont.tryAcquire(500, MILLISECONDS));
 					releaseMediaObject(stream);
 					sem.release();
 				} catch (InterruptedException e) {
@@ -159,10 +164,12 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 						@Override
 						public void onError(Throwable cause) {
-							throw new KurentoException();
+							cause.printStackTrace();
 						}
 					});
-					Assert.assertTrue(semCont.tryAcquire(500, MILLISECONDS));
+					Assert.assertTrue(
+							"getRemoteSessionDescriptor() is not responded in 500ms",
+							semCont.tryAcquire(500, MILLISECONDS));
 					releaseMediaObject(stream);
 					sem.release();
 				} catch (InterruptedException e) {
@@ -182,8 +189,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 	}
 
 	@Test
-	public void testSourceSinks() throws KurentoException,
-			InterruptedException {
+	public void testSourceSinks() throws KurentoException, InterruptedException {
 		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
 
 		final BlockingQueue<Collection<MediaSink>> sinkEvent = new ArrayBlockingQueue<Collection<MediaSink>>(

@@ -20,9 +20,15 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.FaceOverlayFilter;
+import com.kurento.kmf.media.JackVaderFilter;
+import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
@@ -34,6 +40,7 @@ import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
  * @since 2.0.1
  *
  */
+@Ignore
 public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 
 	private FaceOverlayFilter overlayFilter;

@@ -16,9 +16,13 @@ package com.kurento.kmf.media.test.base;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Semaphore;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
@@ -30,7 +34,7 @@ import com.kurento.kmf.media.SdpEndpoint;
  *
  */
 public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
-MediaPipelineAsyncBaseTest {
+		MediaPipelineAsyncBaseTest {
 
 	protected T sdp;
 	protected T sdp2;
@@ -125,12 +129,12 @@ MediaPipelineAsyncBaseTest {
 
 			@Override
 			public void onError(Throwable cause) {
-				// TODO Auto-generated method stub
-
+				cause.printStackTrace();
 			}
 		});
 
-		Assert.assertTrue(sem.tryAcquire(10, SECONDS));
+		Assert.assertTrue("processOffer() not responded in 10s",
+				sem.tryAcquire(10, SECONDS));
 	}
 
 	@Test

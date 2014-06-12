@@ -23,7 +23,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -87,7 +86,8 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 						throw new KurentoException(cause);
 					}
 				});
-		Assert.assertTrue(sem.tryAcquire(500, MILLISECONDS));
+		Assert.assertTrue("HttpGetEndpoint no created in 500ms",
+				sem.tryAcquire(500, MILLISECONDS));
 	}
 
 	@After
@@ -124,9 +124,11 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	 * Test for {@link MediaSessionStartedEvent}
 	 *
 	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	@Test
-	public void testEventMediaSessionStarted() throws InterruptedException {
+	public void testEventMediaSessionStarted() throws InterruptedException,
+			IOException {
 
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
@@ -170,10 +172,6 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
-		} catch (ClientProtocolException e) {
-			throw new KurentoException();
-		} catch (IOException e) {
-			throw new KurentoException(e);
 		}
 
 		try {
@@ -188,10 +186,12 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	 * Test for {@link MediaSessionTerminatedEvent}
 	 * 
 	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	@Ignore
 	@Test
-	public void testEventMediaSessionTerminated() throws InterruptedException {
+	public void testEventMediaSessionTerminated() throws InterruptedException,
+			IOException {
 
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
@@ -234,10 +234,6 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
-		} catch (ClientProtocolException e) {
-			throw new KurentoException();
-		} catch (IOException e) {
-			throw new KurentoException();
 		}
 
 		try {

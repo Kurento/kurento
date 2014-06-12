@@ -29,7 +29,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.HttpPostEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
@@ -74,9 +73,12 @@ public class HttpPostEndpointTest extends MediaPipelineBaseTest {
 	 * Test for {@link MediaSessionStartedEvent}
 	 *
 	 * @throws InterruptedException
+	 * @throws IOException
+	 * @throws ClientProtocolException
 	 */
 	@Test
-	public void testEventMediaSessionStarted() throws InterruptedException {
+	public void testEventMediaSessionStarted() throws InterruptedException,
+			ClientProtocolException, IOException {
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
 		HttpPostEndpoint httpEP = pipeline.newHttpPostEndpoint().build();
@@ -104,13 +106,10 @@ public class HttpPostEndpointTest extends MediaPipelineBaseTest {
 				.build()) {
 			// This should trigger MediaSessionStartedEvent
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
-		} catch (ClientProtocolException e) {
-			throw new KurentoException();
-		} catch (IOException e) {
-			throw new KurentoException(e);
 		}
 
-		assertNotNull(eosEvents.poll(7, SECONDS));
+		assertNotNull("EndOfStreamEvent not fired 7s before closing",
+				eosEvents.poll(7, SECONDS));
 
 		httpEP.release();
 		player.release();

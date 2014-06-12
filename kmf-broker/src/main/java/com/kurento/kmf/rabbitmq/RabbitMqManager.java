@@ -119,7 +119,7 @@ public class RabbitMqManager {
 			template.setReplyTimeout(TIMEOUT);
 		}
 
-		log.trace("Req-> Exchange:'" + exchange + "' RoutingKey:'" + routingKey
+		log.debug("Req-> Exchange:'" + exchange + "' RoutingKey:'" + routingKey
 				+ "' " + message);
 
 		MessageProperties messageProperties = new MessageProperties();

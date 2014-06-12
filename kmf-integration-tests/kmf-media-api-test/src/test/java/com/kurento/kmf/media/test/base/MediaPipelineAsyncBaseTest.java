@@ -85,7 +85,8 @@ public abstract class MediaPipelineAsyncBaseTest extends MediaApiTest {
 					throw new KurentoException(cause);
 				}
 			});
-			Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+			Assert.assertTrue("Timeout of 5s releasing object",
+					latch.await(5, TimeUnit.SECONDS));
 		}
 	}
 

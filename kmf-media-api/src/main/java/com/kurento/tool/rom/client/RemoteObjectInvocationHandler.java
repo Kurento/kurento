@@ -177,8 +177,8 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			((MediaEventListener) listener).onEvent(e);
 
 		} catch (Exception e) {
-			LOG.error("Exception propagating event '{}' with params ",
-					eventType, data, e);
+			LOG.error("Exception while processing event '" + eventType
+					+ "' with params '" + data + "'", e);
 		}
 	}
 

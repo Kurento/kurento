@@ -14,9 +14,14 @@ import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl;
 import com.kurento.kmf.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import com.kurento.kmf.jsonrpcconnector.internal.message.*;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 import com.kurento.kmf.jsonrpcconnector.internal.server.ServerSession;
-import com.kurento.kmf.thrift.*;
+import com.kurento.kmf.thrift.ThriftInterfaceConfiguration;
+import com.kurento.kmf.thrift.ThriftServer;
+import com.kurento.kmf.thrift.ThriftServerException;
 import com.kurento.kmf.thrift.internal.ThriftInterfaceExecutorService;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Iface;
 import com.kurento.kms.thrift.api.KmsMediaServerService.Processor;
@@ -87,18 +92,18 @@ public class JsonRpcServerThrift {
 	@SuppressWarnings("unchecked")
 	public Response<JsonObject> processRequest(Request<?> request) {
 
-		log.trace("Req-> {}", request);
+		log.debug("Req-> {}", request);
 
 		final Response<JsonObject>[] response = new Response[1];
 
 		TransactionImpl t = new TransactionImpl(session, request,
 				new ResponseSender() {
-			@Override
-			public void sendResponse(Message message)
-					throws IOException {
-				response[0] = (Response<JsonObject>) message;
-			}
-		});
+					@Override
+					public void sendResponse(Message message)
+							throws IOException {
+						response[0] = (Response<JsonObject>) message;
+					}
+				});
 
 		try {
 

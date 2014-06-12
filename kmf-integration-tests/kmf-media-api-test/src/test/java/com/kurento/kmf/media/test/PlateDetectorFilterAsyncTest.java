@@ -75,7 +75,7 @@ public class PlateDetectorFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-						throw new KurentoException();
+						cause.printStackTrace();
 					}
 				});
 

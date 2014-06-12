@@ -15,6 +15,7 @@
 package com.kurento.kmf.media.test;
 
 import org.junit.Before;
+import org.junit.Ignore;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.test.base.SdpBaseTest;
@@ -28,6 +29,7 @@ import com.kurento.kmf.media.test.base.SdpBaseTest;
  * @version 1.0.0
  *
  */
+@Ignore
 public class WebRtcEndpointTest extends SdpBaseTest<WebRtcEndpoint> {
 
 	@Before

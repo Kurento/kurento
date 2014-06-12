@@ -98,7 +98,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 	public <P, R> Response<R> internalSendRequestBroker(Request<P> request,
 			Class<R> resultClass) {
 
-		log.trace("Req-> {}", request);
+		log.debug("Req-> {}", request);
 
 		JsonObject paramsJson = (JsonObject) request.getParams();
 

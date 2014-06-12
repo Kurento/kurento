@@ -17,13 +17,23 @@ package com.kurento.kmf.media.test;
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_POINTER_DETECTOR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.*;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.PointerDetectorFilter;
+import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
+import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.events.WindowInEvent;
+import com.kurento.kmf.media.events.WindowOutEvent;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -33,6 +43,7 @@ import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
  * @version 1.0.0
  *
  */
+@Ignore
 public class PointerDetectorFilterTest extends MediaPipelineBaseTest {
 
 	private PointerDetectorFilter filter;
