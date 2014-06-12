@@ -43,11 +43,11 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
  * @since 1.0.0
  *
  */
-public final class ThriftConnectorJsonRpcHandler extends
+public final class MediaConnectorJsonRpcHandler extends
 		DefaultJsonRpcHandler<JsonObject> {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(ThriftConnectorJsonRpcHandler.class);
+			.getLogger(MediaConnectorJsonRpcHandler.class);
 
 	@Autowired
 	private JsonRpcClient client;

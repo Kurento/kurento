@@ -53,7 +53,8 @@ import com.kurento.kmf.jsonrpcconnector.internal.ws.WebSocketResponseSender;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
-	private final Logger log = LoggerFactory.getLogger(JsonRpcClient.class);
+	private final Logger log = LoggerFactory
+			.getLogger(JsonRpcClientWebSocket.class);
 
 	private ExecutorService execService = Executors.newFixedThreadPool(10);
 
@@ -201,14 +202,29 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	private void handleRequestFromServer(JsonObject message) throws IOException {
-		// log.debug("<-- {}", message);
-		handlerManager.handleRequest(session,
-				fromJsonRequest(message, JsonElement.class), rs);
+	private void handleRequestFromServer(final JsonObject message)
+			throws IOException {
+
+		// handleWebSocketTextMessage seems to be sequential. That is, the
+		// message waits to be processed until previous message is being
+		// processed. This behavior doesn't allow made a new request in the
+		// handler of an event. To avoid this problem, we have decided to
+		// process requests from server in a new thread (reused from
+		// ExecutorService).
+		execService.submit(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					handlerManager.handleRequest(session,
+							fromJsonRequest(message, JsonElement.class), rs);
+				} catch (IOException e) {
+					log.warn("Exception processing request " + message, e);
+				}
+			}
+		});
 	}
 
 	private void handleResponseFromServer(JsonObject message) {
-		// log.debug("<-- {}", message);
 
 		Response<JsonElement> response = fromJsonResponse(message,
 				JsonElement.class);
@@ -235,7 +251,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 
 		String jsonMessage = request.toString();
-		// log.info("--> {}", jsonMessage);
+		log.debug("Req-> {}", jsonMessage.trim());
 		synchronized (wsSession) {
 			wsSession.sendMessage(new TextMessage(jsonMessage));
 		}
@@ -248,6 +264,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		try {
 
 			responseJson = responseFuture.get(TIMEOUT, TimeUnit.MILLISECONDS);
+
+			log.debug("<-Res {}", responseJson.toString());
 
 			Response<R> response = MessageUtils.convertResponse(responseJson,
 					resultClass);
