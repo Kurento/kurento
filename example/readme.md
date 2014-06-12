@@ -27,6 +27,8 @@ WebRTC loopback from your webcam with two pipelines
 WebRTC loopback from your webcam multiplexing to two pipelines
 * [WebRtcEndpoint 2](./WebRtcEndpoint_2):
 WebRTC loopback from your webcam
+* [WebRtcEndpoint kwsUtils 2](./WebRtcEndpoint-kwsUtils_2):
+WebRTC loopback from your webcam, using the KWS-Utils library
 * [WebRtcEndpoint FaceOverlayFilter 2](./WebRtcEndpoint-FaceOverlayFilter_2):
 Detect a face using a WebRTC loopback from your webcam and put a hat on top of
 your head
