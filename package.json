@@ -1,6 +1,6 @@
 {
   "name": "kws-utils",
-  "version": "4.3.8-SNAPSHOT",
+  "version": "4.3.12",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.com",
   "license": "LGPL",
@@ -34,7 +34,6 @@
     "grunt-shell": "^0.7.0",
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.5.0",
-    "grunt": "~0.4.5",
     "minifyify": "~3.0.9",
     "browserify": "~4.1.8"
   }
