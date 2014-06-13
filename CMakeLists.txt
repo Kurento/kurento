@@ -1,12 +1,16 @@
 cmake_minimum_required(VERSION 2.8)
 
-#TODO Fix version getting it from git
-set (PACKAGE_VERSION 0.0.1)
+project(kms-cmake-utils)
+
 set (CMAKE_MODULES_INSTALL_DIR
   share/cmake-2.8/Modules
   CACHE STRING
   "Destination (relative to CMAKE_INSTALL_PREFIX) for cmake modules files"
 )
+
+include (CMake/KurentoGitHelpers.cmake)
+
+get_git_version (PACKAGE_VERSION 0.0.1)
 
 configure_file(FindKurentoHelpers.cmake.in
   "${CMAKE_BINARY_DIR}/FindKurentoHelpers.cmake" @ONLY)
