@@ -59,7 +59,7 @@ public class MediaApiPlayerPlateDetectorBrowserTest extends BrowserMediaApiTest 
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/plates.webm").build();
+				"http://files.kurento.org/video/plates.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		PlateDetectorFilter plateDetectorFilter = mp.newPlateDetectorFilter()

@@ -74,7 +74,7 @@ public class WebRtcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 		FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter().build();
 		faceOverlayFilter.setOverlayedImage(
-				"http://ci.kurento.com/imgs/mario-wings.png", -0.35F, -1.2F,
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
 				1.6F, 1.6F);
 		webRtcEndpoint.connect(faceOverlayFilter);
 		faceOverlayFilter.connect(webRtcEndpoint);

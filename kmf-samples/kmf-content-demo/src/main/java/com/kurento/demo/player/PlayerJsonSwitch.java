@@ -36,13 +36,13 @@ public class PlayerJsonSwitch extends HttpPlayerHandler {
 	@Override
 	public void onContentRequest(final HttpPlayerSession contentSession)
 			throws Exception {
-		// contentSession.start("https://ci.kurento.com/video/sintel.webm");
+		// contentSession.start("http://files.kurento.org/video/sintel.webm");
 
 		MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
 		final MediaPipeline mp = mpf.create();
 		contentSession.releaseOnTerminate(mp);
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/sintel.webm").build();
+				"http://files.kurento.org/video/sintel.webm").build();
 		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEndpoint.connect(httpEndpoint);

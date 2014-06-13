@@ -35,22 +35,22 @@ public class VideoURLs {
 	public static final Map<String, String> map;
 	static {
 		map = new HashMap<String, String>();
-		map.put(small[0], "http://ci.kurento.com/video/small.3gp");
-		map.put(small[1], "http://ci.kurento.com/video/small.mkv");
-		map.put(small[2], "http://ci.kurento.com/video/small.mov");
-		map.put(small[3], "http://ci.kurento.com/video/small.mp4");
-		map.put(small[4], "http://ci.kurento.com/video/small.webm");
+		map.put(small[0], "http://files.kurento.org/video/small.3gp");
+		map.put(small[1], "http://files.kurento.org/video/small.mkv");
+		map.put(small[2], "http://files.kurento.org/video/small.mov");
+		map.put(small[3], "http://files.kurento.org/video/small.mp4");
+		map.put(small[4], "http://files.kurento.org/video/small.webm");
 
-		map.put("webm", "http://ci.kurento.com/video/sintel.webm");
-		map.put("mov", "http://ci.kurento.com/video/rabbit.mov");
-		map.put("mkv", "http://ci.kurento.com/video/fiware.mkv");
-		map.put("3gp", "http://ci.kurento.com/video/blackberry.3gp");
-		map.put("ogv", "http://ci.kurento.com/video/pacman.ogv");
-		map.put("mp4", "http://ci.kurento.com/video/chrome.mp4");
-		map.put("avi", "http://ci.kurento.com/video/car.avi");
+		map.put("webm", "http://files.kurento.org/video/sintel.webm");
+		map.put("mov", "http://files.kurento.org/video/rabbit.mov");
+		map.put("mkv", "http://files.kurento.org/video/fiware.mkv");
+		map.put("3gp", "http://files.kurento.org/video/blackberry.3gp");
+		map.put("ogv", "http://files.kurento.org/video/pacman.ogv");
+		map.put("mp4", "http://files.kurento.org/video/chrome.mp4");
+		map.put("avi", "http://files.kurento.org/video/car.avi");
 
-		map.put("jack", "http://ci.kurento.com/video/fiwarecut.webm");
-		map.put("zbar", "http://ci.kurento.com/video/barcodes.webm");
+		map.put("jack", "http://files.kurento.org/video/fiwarecut.webm");
+		map.put("zbar", "http://files.kurento.org/video/barcodes.webm");
 	};
 
 }

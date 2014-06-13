@@ -31,7 +31,7 @@ public class CpPlayerHandler extends HttpPlayerHandler {
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
-				"https://ci.kurento.com/video/fiwarecut.webm").build();
+				"http://files.kurento.org/video/fiwarecut.webm").build();
 		session.setAttribute("player", playerEndpoint);
 		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();

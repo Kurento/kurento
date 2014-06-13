@@ -51,7 +51,7 @@ public class ContentApiPlayer2WebRtcTst extends ContentApiTest {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			session.releaseOnTerminate(mp);
 			PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/sintel.webm").build();
+					"http://files.kurento.org/video/sintel.webm").build();
 			WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 			playerEP.connect(webRtcEndpoint);
 			playerEP.play();

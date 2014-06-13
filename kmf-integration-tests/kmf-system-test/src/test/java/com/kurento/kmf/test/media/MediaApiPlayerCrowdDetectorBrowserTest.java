@@ -55,7 +55,7 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest 
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/crowd.mp4").build();
+				"http://files.kurento.org/video/crowd.mp4").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 

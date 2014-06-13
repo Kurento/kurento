@@ -51,7 +51,7 @@ public class ContentApiPerformancePlayerTest extends ContentApiTest {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			session.releaseOnTerminate(mp);
 			playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/small.webm").build();
+					"http://files.kurento.org/video/small.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);

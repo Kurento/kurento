@@ -80,7 +80,7 @@ public class CrowdDetectorDemo extends WebRtcContentHandler {
 
 				// create PlayerEndpoint
 				playerendpoint = mediaPipeline.newPlayerEndpoint(
-						"https://ci.kurento.com/video/crowd_long.avi").build();
+						"http://files.kurento.org/video/crowd_long.avi").build();
 
 				JsonArray readedRois = gson.fromJson(contentCommand.getData(),
 						JsonArray.class);

@@ -60,7 +60,7 @@ public class ContentApiPlayerZBarTest extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/barcodes.webm").build();
+					"http://files.kurento.org/video/barcodes.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			ZBarFilter zBarFilter = mp.newZBarFilter().build();

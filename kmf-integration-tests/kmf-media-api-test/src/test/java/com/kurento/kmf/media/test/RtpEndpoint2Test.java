@@ -25,11 +25,11 @@ import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
-	public static final String URL_BARCODES = "https://ci.kurento.com/video/barcodes.webm";
-	public static final String URL_FIWARECUT = "https://ci.kurento.com/video/fiwarecut.webm";
-	public static final String URL_SMALL = "https://ci.kurento.com/video/small.webm";
-	public static final String URL_PLATES = "https://ci.kurento.com/video/plates.webm";
-	public static final String URL_POINTER_DETECTOR = "https://ci.kurento.com/video/pointerDetector.mp4";
+	public static final String URL_BARCODES = "http://files.kurento.org/video/barcodes.webm";
+	public static final String URL_FIWARECUT = "http://files.kurento.org/video/fiwarecut.webm";
+	public static final String URL_SMALL = "http://files.kurento.org/video/small.webm";
+	public static final String URL_PLATES = "http://files.kurento.org/video/plates.webm";
+	public static final String URL_POINTER_DETECTOR = "http://files.kurento.org/video/pointerDetector.mp4";
 
 	public void testCampusPartySimulatedPipeline() throws InterruptedException {
 

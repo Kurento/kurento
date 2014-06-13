@@ -40,7 +40,7 @@ public class MyPlayerWithFilter extends HttpPlayerHandler {
 
 		// Media Elements: Player Endpoint, Filter, HTTP Endpoint
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
-				"https://ci.kurento.com/video/fiwarecut.webm").build();
+				"http://files.kurento.org/video/fiwarecut.webm").build();
 		contentSession.setAttribute("player", playerEndpoint);
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS()

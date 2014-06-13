@@ -50,7 +50,7 @@ public class ClientApp {
 
 		MediaPipeline mp = mpf.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"https://ci.kurento.com/video/small.webm").build();
+				"http://files.kurento.org/video/small.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);

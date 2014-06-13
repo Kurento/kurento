@@ -53,7 +53,7 @@ public class ContentApiPlayerTest extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			playerEP = mp.newPlayerEndpoint(
-					"http://ci.kurento.com/video/gst/red.webm").build();
+					"http://files.kurento.org/video/gst/red.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);

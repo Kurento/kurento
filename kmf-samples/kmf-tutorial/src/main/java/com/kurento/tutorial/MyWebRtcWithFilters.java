@@ -50,14 +50,14 @@ public class MyWebRtcWithFilters extends WebRtcContentHandler {
 				.build();
 		PointerDetectorWindowMediaParam start = new PointerDetectorWindowMediaParam(
 				"start", 100, 100, 280, 380);
-		start.setImage("http://ci.kurento.com/imgs/start.png");
+		start.setImage("http://files.kurento.org/imgs/start.png");
 		pointerDetectorFilter.addWindow(start);
 		pointerDetectorFilter
 				.addWindowInListener(new MediaEventListener<WindowInEvent>() {
 					public void onEvent(WindowInEvent event) {
 						// Set overlay image
 						faceOverlayFilter.setOverlayedImage(
-								"http://ci.kurento.com/imgs/mario-wings.png",
+								"http://files.kurento.org/imgs/mario-wings.png",
 								-0.35F, -1.2F, 1.6F, 1.6F);
 					}
 				});

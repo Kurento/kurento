@@ -47,7 +47,7 @@ public class PlayerJsonWithFilterHandler extends HttpPlayerHandler {
 		MediaPipeline mp = mpf.create();
 
 		PlayerEndpoint player = mp.newPlayerEndpoint(
-				"https://ci.kurento.com/video/barcodes.webm").build();
+				"http://files.kurento.org/video/barcodes.webm").build();
 		session.setAttribute("player", player);
 
 		ZBarFilter zBarFilter = mp.newZBarFilter().build();

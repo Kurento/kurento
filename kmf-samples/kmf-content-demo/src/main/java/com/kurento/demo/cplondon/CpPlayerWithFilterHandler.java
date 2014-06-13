@@ -33,7 +33,7 @@ public class CpPlayerWithFilterHandler extends HttpPlayerHandler {
 		session.releaseOnTerminate(mp);
 
 		PlayerEndpoint playerEndPoint = mp.newPlayerEndpoint(
-				"https://ci.kurento.com/video/fiwarecut.webm").build();
+				"http://files.kurento.org/video/fiwarecut.webm").build();
 
 		JackVaderFilter filter = mp.newJackVaderFilter().build();
 		playerEndPoint.connect(filter);

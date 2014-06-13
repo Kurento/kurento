@@ -53,9 +53,9 @@ public class DispatcherOneToManyDemo extends HttpPlayerHandler {
 		mediaPipeline = mpf.create();
 		contentSession.releaseOnTerminate(mediaPipeline);
 		player1 = mediaPipeline.newPlayerEndpoint(
-				"http://ci.kurento.com/video/sintel.webm").build();
+				"http://files.kurento.org/video/sintel.webm").build();
 		player2 = mediaPipeline.newPlayerEndpoint(
-				"http://ci.kurento.com/video/sintel.webm").build();
+				"http://files.kurento.org/video/sintel.webm").build();
 		bn = mediaPipeline.newGStreamerFilter("videobalance saturation=0.0")
 				.build();
 

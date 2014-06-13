@@ -73,13 +73,13 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 		// Media Pipeline #1
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://ci.kurento.com/video/fiwarecut.mp4").build();
+				"http://files.kurento.org/video/fiwarecut.mp4").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(TARGET_RECORDING)
 				.build();
 		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
-		filter.setOverlayedImage("http://ci.kurento.com/imgs/mario-wings.png",
+		filter.setOverlayedImage("http://files.kurento.org/imgs/mario-wings.png",
 				-0.2F, -1.2F, 1.6F, 1.6F);
 
 		playerEP.connect(filter);
