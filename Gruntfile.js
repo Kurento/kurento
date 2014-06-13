@@ -20,10 +20,17 @@ module.exports = function(grunt)
 
   var pkg = grunt.file.readJSON('package.json');
 
+  var bower =
+  {
+    TOKEN:      process.env.TOKEN,
+    repository: 'git://github.com/KurentoReleases/<%= pkg.name %>.git'
+  };
+
   // Project configuration.
   grunt.initConfig(
   {
-    pkg: pkg,
+    pkg:   pkg,
+    bower: bower,
 
     // Plugins configuration
     clean:
@@ -33,6 +40,7 @@ module.exports = function(grunt)
       generated_doc: '<%= jsdoc.all.dest %>'
     },
 
+    // Generate documentation
     jsdoc:
     {
       all:
@@ -42,6 +50,7 @@ module.exports = function(grunt)
       }
     },
 
+    // Generate browser versions and mapping debug file
     browserify:
     {
       require:
@@ -58,7 +67,7 @@ module.exports = function(grunt)
         options:
         {
           bundleOptions: {
-            standalone: 'kwsUtils'
+            standalone: '<%= pkg.name %>'
           }
         }
       },
@@ -90,7 +99,7 @@ module.exports = function(grunt)
         {
           debug: true,
           bundleOptions: {
-            standalone: 'kwsUtils'
+            standalone: '<%= pkg.name %>'
           },
           plugin: [
             ['minifyify',
@@ -104,15 +113,16 @@ module.exports = function(grunt)
       }
     },
 
+    // Generate bower.json file from package.json data
     sync:
     {
-      all:
+      bower:
       {
         options:
         {
           sync: [
-            'name', 'description', 'license', 'keywords',
-            'homepage', 'repository'
+            'name', 'description', 'license', 'keywords', 'homepage',
+            'repository'
           ],
           overrides: {
             authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || [])
@@ -121,16 +131,18 @@ module.exports = function(grunt)
       }
     },
 
+    // Publish / update package info in Bower
     shell:
     {
       bower: {
         command: [
-          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= process.env.TOKEN %>"',
-          'bower register <%= pkg.name %> <%= pkg.repository.url %>'
+          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
+          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
+          'node_modules/.bin/bower cache clean'
         ].join('&&')
       }
     }
-   });
+  });
 
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
@@ -139,7 +151,7 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
-  // Default task(s).
+  // Alias tasks
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
-  grunt.registerTask('bower',   ['sync', 'shell:bower']);
+  grunt.registerTask('bower',   ['sync:bower', 'shell:bower']);
 };

@@ -7,3 +7,4 @@ dist/
 src/
 target/
 junitResult.xml
+bower.json
