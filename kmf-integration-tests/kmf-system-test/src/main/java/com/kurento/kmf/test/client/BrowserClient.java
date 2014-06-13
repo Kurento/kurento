@@ -14,9 +14,13 @@
  */
 package com.kurento.kmf.test.client;
 
+import static com.kurento.kmf.common.PropertiesManager.getProperty;
+
 import java.awt.Color;
 import java.io.Closeable;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,12 +37,16 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
+import com.kurento.kmf.media.factory.KmfMediaApiProperties;
+import com.kurento.kmf.test.base.GridBrowserMediaApiTest;
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
@@ -66,6 +74,7 @@ public class BrowserClient implements Closeable {
 	private Client client;
 	private Browser browser;
 	private boolean usePhysicalCam;
+	private boolean remoteTest;
 
 	private BrowserClient(Builder builder) {
 		this.video = builder.video;
@@ -73,62 +82,103 @@ public class BrowserClient implements Closeable {
 		this.client = builder.client;
 		this.browser = builder.browser;
 		this.usePhysicalCam = builder.usePhysicalCam;
+		this.remoteTest = builder.remoteTest;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
 		maxDistance = 60.0; // default distance (for color comparison)
 
+		String hostAddress = KmfMediaApiProperties.getThriftKmfAddress()
+				.getHost();
+
 		// Setup Selenium
-		initDriver();
+		initDriver(hostAddress);
 
 		// Launch Browser
-		driver.get("http://localhost:" + serverPort + client.toString());
+		driver.manage().timeouts();
+		driver.get("http://" + hostAddress + ":" + serverPort
+				+ client.toString());
 	}
 
-	private void initDriver() {
+	private void initDriver(String hostAddress) {
 		Class<? extends WebDriver> driverClass = browser.getDriverClass();
+		int hubPort = getProperty("test.hub.port",
+				GridBrowserMediaApiTest.DEFAULT_HUB_PORT);
 
-		if (driverClass.equals(FirefoxDriver.class)) {
-			FirefoxProfile profile = new FirefoxProfile();
-			// This flag avoids granting the access to the camera
-			profile.setPreference("media.navigator.permission.disabled", true);
-			driver = new FirefoxDriver(profile);
+		try {
+			if (driverClass.equals(FirefoxDriver.class)) {
+				FirefoxProfile profile = new FirefoxProfile();
+				// This flag avoids granting the access to the camera
+				profile.setPreference("media.navigator.permission.disabled",
+						true);
+				if (remoteTest) {
+					DesiredCapabilities capabilities = new DesiredCapabilities();
+					capabilities.setCapability(FirefoxDriver.PROFILE, profile);
+					capabilities.setBrowserName(DesiredCapabilities.firefox()
+							.getBrowserName());
 
-			if (!usePhysicalCam && video != null) {
-				launchFakeCam();
-			}
-
-		} else if (driverClass.equals(ChromeDriver.class)) {
-			String chromedriver = null;
-			if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
-				chromedriver = "chromedriver";
-			} else if (SystemUtils.IS_OS_WINDOWS) {
-				chromedriver = "chromedriver.exe";
-			}
-			System.setProperty("webdriver.chrome.driver", new File(
-					"target/webdriver/" + chromedriver).getAbsolutePath());
-			ChromeOptions options = new ChromeOptions();
-
-			// This flag avoids grant the camera
-			options.addArguments("--use-fake-ui-for-media-stream");
-
-			if (!usePhysicalCam) {
-				// This flag makes using a synthetic video (green with
-				// spinner) in webrtc. Or it is needed to combine with
-				// use-file-for-fake-video-capture to use a file faking the cam
-				options.addArguments("--use-fake-device-for-media-stream");
-
-				if (video != null) {
-					options.addArguments("--use-file-for-fake-video-capture="
-							+ video);
-
-					// Alternative: lauch fake cam also in Chrome
-					// launchFakeCam();
+					driver = new RemoteWebDriver(new URL("http://"
+							+ hostAddress + ":" + hubPort + "/wd/hub"),
+							capabilities);
+				} else {
+					driver = new FirefoxDriver(profile);
 				}
+
+				if (!usePhysicalCam && video != null) {
+					launchFakeCam();
+				}
+
+			} else if (driverClass.equals(ChromeDriver.class)) {
+				String chromedriver = null;
+				if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
+					chromedriver = "chromedriver";
+				} else if (SystemUtils.IS_OS_WINDOWS) {
+					chromedriver = "chromedriver.exe";
+				}
+				System.setProperty("webdriver.chrome.driver", new File(
+						"target/webdriver/" + chromedriver).getAbsolutePath());
+				ChromeOptions options = new ChromeOptions();
+
+				// This flag avoids grant the camera
+				options.addArguments("--use-fake-ui-for-media-stream");
+
+				if (!usePhysicalCam) {
+					// This flag makes using a synthetic video (green with
+					// spinner) in webrtc. Or it is needed to combine with
+					// use-file-for-fake-video-capture to use a file faking the
+					// cam
+					options.addArguments("--use-fake-device-for-media-stream");
+
+					if (video != null) {
+						options.addArguments("--use-file-for-fake-video-capture="
+								+ video);
+
+						// Alternative: lauch fake cam also in Chrome
+						// launchFakeCam();
+					}
+				}
+
+				if (remoteTest) {
+					DesiredCapabilities capabilities = new DesiredCapabilities();
+					capabilities.setCapability(ChromeOptions.CAPABILITY,
+							options);
+					capabilities.setBrowserName(DesiredCapabilities.chrome()
+							.getBrowserName());
+					driver = new RemoteWebDriver(new URL("http://"
+							+ hostAddress + ":" + hubPort + "/wd/hub"),
+							capabilities);
+
+				} else {
+					driver = new ChromeDriver(options);
+				}
+
 			}
-			driver = new ChromeDriver(options);
+			driver.manage().timeouts()
+					.setScriptTimeout(timeout, TimeUnit.SECONDS);
+
+		} catch (MalformedURLException e) {
+			log.error("MalformedURLException in BrowserClient.initDriver", e);
 		}
-		driver.manage().timeouts().setScriptTimeout(timeout, TimeUnit.SECONDS);
 	}
 
 	private void launchFakeCam() {
@@ -338,6 +388,7 @@ public class BrowserClient implements Closeable {
 		private Client client;
 		private Browser browser;
 		private boolean usePhysicalCam;
+		private boolean remoteTest;
 
 		public Builder() {
 			this.serverPort = KurentoServicesTestHelper.getAppHttpPort();
@@ -345,6 +396,9 @@ public class BrowserClient implements Closeable {
 			// By default physical camera will not be used; instead synthetic
 			// videos will be used for testing
 			this.usePhysicalCam = false;
+
+			// By default is not a remote test
+			this.remoteTest = false;
 		}
 
 		public Builder(int serverPort) {
@@ -368,6 +422,11 @@ public class BrowserClient implements Closeable {
 
 		public Builder usePhysicalCam() {
 			this.usePhysicalCam = true;
+			return this;
+		}
+
+		public Builder remoteTest() {
+			this.remoteTest = true;
 			return this;
 		}
 

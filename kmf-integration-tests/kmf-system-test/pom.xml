@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -19,6 +20,7 @@
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.20</freemarker.version>
+		<overthere>2.4.3</overthere>
 
 		<!-- Webdrivers versions -->
 		<linux32-webdriver.version>2.9</linux32-webdriver.version>
@@ -97,6 +99,11 @@
 			<version>${selenium-java.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-server</artifactId>
+			<version>${selenium-java.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>xml-apis</groupId>
 			<artifactId>xml-apis</artifactId>
 			<version>${xml-apis.version}</version>
@@ -117,6 +124,13 @@
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
 			<version>${freemarker.version}</version>
+		</dependency>
+
+		<!-- OverThere -->
+		<dependency>
+			<groupId>com.xebialabs.overthere</groupId>
+			<artifactId>overthere</artifactId>
+			<version>${overthere}</version>
 		</dependency>
 	</dependencies>
 

@@ -38,7 +38,7 @@ import freemarker.template.Template;
 
 /**
  * Initializer/stopper class for Kurento Media Server (KMS).
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -288,7 +288,6 @@ public class KurentoMediaServerManager {
 	private void kmsSigTerm() {
 		log.debug("Sending SIGTERM to KMS process");
 		Shell.runAndWait("sh", "-c", "kill `cat " + workspace + "kms-pid`");
-		// Shell.runAndWait("sh", "-c", "killall -9 kurento");
 	}
 
 	private void kmsSigKill() {
@@ -317,7 +316,7 @@ public class KurentoMediaServerManager {
 					"sh",
 					"-c",
 					"ps --pid `cat " + workspace
-					+ "kms-pid` --no-headers | wc -l" };
+							+ "kms-pid` --no-headers | wc -l" };
 			Process countKms = Runtime.getRuntime().exec(command);
 
 			String stringFromStream = CharStreams
