@@ -105,6 +105,8 @@ add_glib_marshal(KMS_PLUGIN_SOURCES kms-marshal __kms_marshal)
 
 add_library(kmsplugin MODULE ${KMS_PLUGIN_SOURCES})
 
+add_dependencies(kmsplugin kmsdtls vp8parse)
+
 add_subdirectory(vp8parse)
 add_subdirectory(filters)
 
