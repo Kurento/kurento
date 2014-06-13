@@ -6,7 +6,7 @@ This is an example of Kurento Web SDK, doing a WebRTC loopback from your webcam
 multiplexing to two pipelines, using a Kurento Media Server demo machine.
 
 You can try it just by downloading the code and launching it from a static web
-server, or try it from [JsFiddle](http://jsfiddle.net/gh/get/library/pure/kurento/kws-media-api/contents/example/WebRtcEndpoint_2).
+server, or try it from [JsFiddle](http://jsfiddle.net/gh/get/library/pure/kurento/kws-media-api/contents/example/testPCmultiplexing).
 
 
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
