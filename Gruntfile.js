@@ -20,10 +20,17 @@ module.exports = function(grunt)
 
   var pkg = grunt.file.readJSON('package.json');
 
+  var bower =
+  {
+    TOKEN:      process.env.TOKEN,
+    repository: 'git://github.com/KurentoReleases/<%= pkg.name %>.git'
+  };
+
   // Project configuration.
   grunt.initConfig(
   {
-    pkg: pkg,
+    pkg:   pkg,
+    bower: bower,
 
     // Plugins configuration
     clean:
@@ -114,11 +121,15 @@ module.exports = function(grunt)
         options:
         {
           sync: [
-            'name', 'description', 'license', 'keywords', 'homepage',
-            'repository'
+            'name', 'description', 'license', 'keywords', 'homepage'
           ],
           overrides: {
-            authors: (pkg.author? [pkg.author]: []).concat(pkg.contributors||[])
+            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || []),
+            repository:
+            {
+              type: 'git',
+              url:  bower.repository
+            }
           }
         }
       }
@@ -129,8 +140,9 @@ module.exports = function(grunt)
     {
       bower: {
         command: [
-          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= process.env.TOKEN %>"',
-          'node_modules/.bin/bower register <%= pkg.name %> <%= pkg.repository.url %>'
+          'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
+          'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
+          'node_modules/.bin/bower cache clean'
         ].join('&&')
       }
     }
@@ -143,7 +155,7 @@ module.exports = function(grunt)
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
-  // Default task(s).
+  // Alias tasks
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
   grunt.registerTask('bower',   ['sync', 'shell:bower']);
 };
