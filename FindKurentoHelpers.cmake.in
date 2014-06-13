@@ -5,7 +5,7 @@
 #
 #=============================================================================
 
-set(PACKAGE_VERSION "@PACKAGE_VERSION@")
+set(PACKAGE_VERSION "@PROJECT_VERSION@")
 set(KurentoHelpers_VERSION ${PACKAGE_VERSION})
 
 find_package_handle_standard_args(KurentoHelpers FOUND_VAR KurentoHelpers_FOUND
