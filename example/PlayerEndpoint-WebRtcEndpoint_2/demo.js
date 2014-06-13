@@ -13,9 +13,9 @@
  *
  */
 
-const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
+const ws_uri = 'ws://demo01.kurento.org:8080/thrift/ws/websocket';
 
-const URL_FIWARECUT = "https://ci.kurento.com/video/fiwarecut.webm";
+const URL_FIWARECUT = "http://files.kurento.org/video/fiwarecut.webm";
 
 
 function createOffer(peerConnection, onerror)

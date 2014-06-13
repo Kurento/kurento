@@ -13,7 +13,9 @@
  *
  */
 
-const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
+const ws_uri = 'ws://demo01.kurento.org:8080/thrift/ws/websocket';
+
+const URL_SMALL = "http://files.kurento.org/video/small.webm";
 
 
 function onerror(error)
@@ -35,8 +37,7 @@ window.addEventListener('load', function()
     // Create pipeline media elements (endpoints & filters)
     return Promise.all(
     [
-      pipeline.create('PlayerEndpoint',
-      {uri: "https://ci.kurento.com/video/small.webm"})
+      pipeline.create('PlayerEndpoint', {uri: URL_SMALL})
       .then(function(player)
       {
         // Subscribe to PlayerEndpoint EOS event

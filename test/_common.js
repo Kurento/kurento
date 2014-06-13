@@ -13,11 +13,11 @@
  *
  */
 
-URL_BARCODES         = "https://ci.kurento.com/video/barcodes.webm";
-URL_FIWARECUT        = "https://ci.kurento.com/video/fiwarecut.webm";
-URL_PLATES           = "https://ci.kurento.com/video/plates.webm";
-URL_POINTER_DETECTOR = "https://ci.kurento.com/video/pointerDetector.mp4";
-URL_SMALL            = "https://ci.kurento.com/video/small.webm";
+URL_BARCODES         = "http://files.kurento.org/video/barcodes.webm";
+URL_FIWARECUT        = "http://files.kurento.org/video/fiwarecut.webm";
+URL_PLATES           = "http://files.kurento.org/video/plates.webm";
+URL_POINTER_DETECTOR = "http://files.kurento.org/video/pointerDetector.mp4";
+URL_SMALL            = "http://files.kurento.org/video/small.webm";
 
 
 /**
@@ -115,7 +115,7 @@ QUnit.config.urlConfig.push(
   value:
   {
     'ws://127.0.0.1:8080/thrift/ws/websocket':         'localhost (port 8080)',
-    'ws://kms01.kurento.org:8080/thrift/ws/websocket': 'Kurento test server'
+    'ws://demo01.kurento.org:8080/thrift/ws/websocket': 'Kurento test server'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
@@ -134,7 +134,7 @@ lifecycle =
     {
     //  var WebSocket = wock(proxy);
     //  ws_uri = new WebSocket();
-      ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
+      ws_uri = 'ws://demo01.kurento.org:8080/thrift/ws/websocket';
     };
 
     this.kwsMedia = new KwsMedia(ws_uri);

@@ -4,7 +4,7 @@
  authors:
    - Jesús Leganés Combarro "piranna" <piranna@gmail.com>
  resources:
-   - http://ci.kurento.com/apps/kws-media-api.js
+   - http://builds.kurento.org/release/stable/js/kws-media-api.js
  js_wrap: h
  normalize_css: no
  ...

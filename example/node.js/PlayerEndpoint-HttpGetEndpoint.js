@@ -4,9 +4,9 @@ var http = require('http');
 var KwsMedia = require('../..')
 
 
-const ws_uri = 'ws://kms01.kurento.org:8080/thrift/ws/websocket';
+const ws_uri = 'ws://demo01.kurento.org:8080/thrift/ws/websocket';
 
-const URL_SMALL = "https://ci.kurento.com/video/small.webm";
+const URL_SMALL = "http://files.kurento.org/video/small.webm";
 
 
 function onerror(error)

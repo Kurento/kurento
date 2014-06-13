@@ -4,6 +4,8 @@ var HttpGetEndpoint = KwsMedia.endpoints.HttpGetEndpoint;
 
 const ws_uri = 'ws://193.147.51.35:7788/thrift/ws/websocket';
 
+const URL_SMALL = "http://files.kurento.org/video/small.webm";
+
 
 /**
  * Based on http://css-tricks.com/snippets/javascript/get-url-variables/
@@ -44,9 +46,7 @@ window.addEventListener('load', function()
       if(error) return console.error(error);
 
       // Create pipeline media elements (endpoints & filters)
-      PlayerEndpoint.create(pipeline,
-      {uri: "https://ci.kurento.com/video/small.webm"},
-      function(error, player)
+      PlayerEndpoint.create(pipeline, {uri: URL_SMALL}, function(error, player)
       {
         if(error) return console.error(error);
 
