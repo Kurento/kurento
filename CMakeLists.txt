@@ -10,7 +10,7 @@ set (CMAKE_DIST_FILES
   FindGLIB-GENMARSHAL.cmake
   FindGLIB-MKENUMS.cmake
   GLibHelpers.cmake
-  TestHelper.cmake
+  TestHelpers.cmake
 )
 
 foreach (DIST_FILE ${CMAKE_DIST_FILES})
