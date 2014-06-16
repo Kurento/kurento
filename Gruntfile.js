@@ -116,20 +116,16 @@ module.exports = function(grunt)
     // Generate bower.json file from package.json data
     sync:
     {
-      all:
+      bower:
       {
         options:
         {
           sync: [
-            'name', 'description', 'license', 'keywords', 'homepage'
+            'name', 'description', 'license', 'keywords', 'homepage',
+            'repository'
           ],
           overrides: {
-            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || []),
-            repository:
-            {
-              type: 'git',
-              url:  bower.repository
-            }
+            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || [])
           }
         }
       }
@@ -157,5 +153,5 @@ module.exports = function(grunt)
 
   // Alias tasks
   grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
-  grunt.registerTask('bower',   ['sync', 'shell:bower']);
+  grunt.registerTask('bower',   ['sync:bower', 'shell:bower']);
 };
