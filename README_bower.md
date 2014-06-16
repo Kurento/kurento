@@ -2,7 +2,7 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-KWS Utils for Node.js and browsers
+KWS Utils for Bower
 =========
 Utilities for Kurento Web SDK
 
@@ -15,20 +15,13 @@ The source code of this project can be cloned from the [GitHub repository].
 Installation instructions
 -------------------------
 
-Be sure to have installed the Node.js tools in your system. It's heavily
-encouraged to use the latest Node.js and NPM versions from the
-[Node.js project PPA] instead of the packages available on the oficial Ubuntu
-repositories, since due to the fast-moving Node.js community and environment
-these last ones get easily outdated and can lead to incompatibility errors:
+Be sure to have installed [Bower] in your system:
 
 ```bash
-sudo add-apt-repository ppa:chris-lea/node.js
-sudo apt-get update
-
-sudo apt-get install nodejs nodejs-legacy
+sudo npm install -g bower
 ```
 
-To install the library, it's recomended to do that from the [NPM repository] :
+To install the library, it's recomended to do that from the [Bower repository] :
 
 ```bash
 npm install kws-utils
@@ -38,19 +31,9 @@ Alternatively, you can download the code using git and install manually its
 dependencies:
 
 ```bash
-git clone https://github.com/Kurento/kws-utils.git
+git clone https://github.com/KurentoReleases/kws-utils.git
 cd kws-utils
 npm install
-```
-
-### Browser
-
-To build the browser version of the library you'll only need to exec the [grunt]
-task runner and they will be generated on the ```dist``` folder. Alternatively,
-if you don't have it globally installed, you can run a local copy by executing
-
-```bash
-node_modules/.bin/grunt
 ```
 
 
@@ -86,13 +69,12 @@ News and Website
 Information about Kurento can be found on our [website].
 Follow us on Twitter @[kurentoms].
 
+[Bower]: http://bower.io
+[Bower repository]: https://github.com/KurentoReleases/kws-media-api
 [GitHub Kurento group]: https://github.com/kurento
 [GitHub repository]: https://github.com/kurento/kws-utils
-[grunt]: http://gruntjs.com/
 [Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
-[NPM repository]: https://www.npmjs.org/package/kws-utils
 [website]: http://kurento.org
