@@ -133,11 +133,13 @@
 							<keepScriptFile>true</keepScriptFile>
 							<script>
 								npm install
-								${basedir}/node_modules/.bin/grunt
+								cd ${basedir}
+								node_modules/.bin/grunt
+								node_modules/.bin/grunt sync:bower
 								mkdir -p \
-								${basedir}/src/main/resources/META-INF/resources/js/
-								cp ${basedir}/dist/* \
-								${basedir}/src/main/resources/META-INF/resources/js/
+								src/main/resources/META-INF/resources/js/
+								cp dist/* \
+								src/main/resources/META-INF/resources/js/
 							</script>
 						</configuration>
 					</execution>
