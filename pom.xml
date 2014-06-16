@@ -132,8 +132,8 @@
 							<chmod>true</chmod>
 							<keepScriptFile>true</keepScriptFile>
 							<script>
-								npm install
 								cd ${basedir}
+								npm install
 								node_modules/.bin/grunt
 								node_modules/.bin/grunt sync:bower
 								mkdir -p \
