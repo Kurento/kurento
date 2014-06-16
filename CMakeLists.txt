@@ -20,6 +20,7 @@ set (CMAKE_DIST_FILES
   FindGLIB-MKENUMS.cmake
   GLibHelpers.cmake
   TestHelpers.cmake
+  KurentoGitHelpers.cmake
 )
 
 foreach (DIST_FILE ${CMAKE_DIST_FILES})
