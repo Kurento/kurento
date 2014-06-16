@@ -9,6 +9,10 @@
 
 	<name>KWS Utils</name>
 	<description>
+		Kurento Web SDK Utils
+
+		The kws-utils project contains a set of utilities that have been found
+		useful during the development of applications with the Kurento stack.
 	</description>
 	<url>http://www.kurento.com/docs/${project.version}</url>
 
