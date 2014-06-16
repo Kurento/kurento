@@ -10,7 +10,7 @@ set (CMAKE_MODULES_INSTALL_DIR
 
 include (CMake/KurentoGitHelpers.cmake)
 
-get_git_version (PROJECT_VERSION 0.0.3)
+get_git_version (PROJECT_VERSION 0.0.3-dev)
 
 configure_file(FindKurentoHelpers.cmake.in
   "${CMAKE_BINARY_DIR}/FindKurentoHelpers.cmake" @ONLY)
