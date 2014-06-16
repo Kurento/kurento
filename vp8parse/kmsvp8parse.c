@@ -31,7 +31,15 @@
 #define GST_CAT_DEFAULT kms_vp8_parse_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
-#define KMS_VP8_PARSE_GET_PRIVATE(obj) (   \
+#define KMS_VP8_PARSE_LOCK(obj) (                               \
+  g_rec_mutex_lock (&((KmsVp8Parse *) (obj))->priv->mutex)      \
+)
+
+#define KMS_VP8_PARSE_UNLOCK(obj) (                             \
+  g_rec_mutex_unlock (&((KmsVp8Parse *) (obj))->priv->mutex)    \
+)
+
+#define KMS_VP8_PARSE_GET_PRIVATE(obj) (        \
   G_TYPE_INSTANCE_GET_PRIVATE (                 \
     (obj),                                      \
     KMS_TYPE_VP8_PARSE,                         \
@@ -51,6 +59,8 @@ struct _KmsVp8ParsePrivate
 
   GstClockTime last_pts;
   GstClockTime last_dts;
+
+  GRecMutex mutex;
 };
 
 /* pad templates */
@@ -159,6 +169,23 @@ kms_vp8_parse_force_key_unit_event (GstBaseParse * self)
   gst_pad_push_event (GST_BASE_PARSE_SINK_PAD (self), key_unit_event);
 }
 
+static gboolean
+kms_vp8_parse_sink_event (GstBaseParse * parse, GstEvent * event)
+{
+  if (GST_EVENT_TYPE (event) == GST_EVENT_CAPS) {
+    KmsVp8Parse *self = KMS_VP8_PARSE (parse);
+
+    KMS_VP8_PARSE_LOCK (parse);
+    if (!self->priv->started) {
+      gst_pad_push_event (GST_BASE_PARSE_SRC_PAD (parse),
+          gst_event_ref (event));
+    }
+    KMS_VP8_PARSE_UNLOCK (parse);
+  }
+  return GST_BASE_PARSE_CLASS (kms_vp8_parse_parent_class)->sink_event (parse,
+      event);
+}
+
 static GstFlowReturn
 kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     gint * skipsize)
@@ -213,6 +240,8 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
   if (update_caps && kms_vp8_parse_check_caps_ready (self)) {
     GstCaps *caps;
 
+    KMS_VP8_PARSE_LOCK (self);
+
     caps = gst_caps_new_simple ("video/x-vp8", "width", G_TYPE_INT,
         self->priv->width, "height", G_TYPE_INT, self->priv->height,
         "framerate", GST_TYPE_FRACTION, self->priv->framerate_num,
@@ -223,14 +252,14 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     gst_pad_set_caps (GST_BASE_PARSE_SRC_PAD (parse), caps);
     gst_caps_unref (caps);
 
-    if (!self->priv->started)
+    if (!self->priv->started) {
       gst_base_parse_set_frame_rate (GST_BASE_PARSE (self),
           self->priv->framerate_num, self->priv->framerate_denom, 0, 0);
-
-    if (!self->priv->started) {
       self->priv->started = TRUE;
       frame->flags |= GST_BASE_PARSE_FRAME_FLAG_QUEUE;
     }
+
+    KMS_VP8_PARSE_UNLOCK (self);
   }
 
   if (!self->priv->started)
@@ -250,6 +279,9 @@ void
 kms_vp8_parse_dispose (GObject * object)
 {
   /* clean up as possible.  may be called multiple times */
+  KmsVp8Parse *self = KMS_VP8_PARSE (object);
+
+  g_rec_mutex_clear (&self->priv->mutex);
 
   G_OBJECT_CLASS (kms_vp8_parse_parent_class)->dispose (object);
 }
@@ -264,6 +296,8 @@ static void
 kms_vp8_parse_init (KmsVp8Parse * vp8parse)
 {
   vp8parse->priv = KMS_VP8_PARSE_GET_PRIVATE (vp8parse);
+
+  g_rec_mutex_init (&vp8parse->priv->mutex);
 }
 
 static void
@@ -296,6 +330,7 @@ kms_vp8_parse_class_init (KmsVp8ParseClass * klass)
   base_parse_class->start = GST_DEBUG_FUNCPTR (kms_vp8_parse_start);
   base_parse_class->handle_frame =
       GST_DEBUG_FUNCPTR (kms_vp8_parse_handle_frame);
+  base_parse_class->sink_event = GST_DEBUG_FUNCPTR (kms_vp8_parse_sink_event);
   /* Properties initialization */
 
   g_type_class_add_private (klass, sizeof (KmsVp8ParsePrivate));
