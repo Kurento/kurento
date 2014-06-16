@@ -1,3 +1,22 @@
+kms-cmake-utils (0.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add git ignore file
+  * Move cmake files to CMake folder
+  * Create FindKurentoHelpers to allow determine if the helpers are intalled
+  * Rename TestHelper to TestHelpers
+  * Let Modules installation directory configurable
+  * Add GitHelpers to get version and install hooks
+  * Change version variable name
+  * Prepare development of version 1.0.0
+  * Install KurentoGitHelpers.cmake
+  * Fix function that gets the git directory
+  * Prepare release 0.0.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 16 Jun 2014 16:38:23 +0200
+
 kms-cmake-utils (0.0.1) testing; urgency=medium
 
   * Initial release
