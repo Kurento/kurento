@@ -53,7 +53,7 @@ import freemarker.template.TemplateException;
  */
 public class JMeterClient {
 
-	final static String ROOT = "src/test/jmeter/";
+	final static String ROOT = "src/test/resources/jmeter/";
 	final static String JMXFOLDER = "target/test-classes/";
 	final static String REPORTS = "target/jmeter-reports/";
 	final static String JMXFILE = "player.jmx";

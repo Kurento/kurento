@@ -53,8 +53,8 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 	@Parameters
 	public static Collection<Object[]> data() {
 		List<Node> nodeList = new ArrayList<Node>();
-		nodeList.add(new Node("epsilon01.aulas.gsyc.es", "chrome"));
-		nodeList.add(new Node("epsilon02.aulas.gsyc.es", "chrome"));
+		nodeList.addAll(addNodes(5, Browser.CHROME));
+		log.info("Node list {} ", nodeList);
 
 		Object[][] data = new Object[][] { { nodeList } };
 		return Arrays.asList(data);
@@ -68,11 +68,11 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
 		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
 		List<Future<?>> results = new ArrayList<>();
-		for (int i = 0; i < nodes.size(); i++) {
+		for (final Node n : nodes) {
 			results.add(exec.submit(new Runnable() {
 				@Override
 				public void run() {
-					doTest(Browser.CHROME, null, new Color(0, 135, 0));
+					doTest(n.getBrowser(), null, new Color(0, 135, 0));
 				}
 			}));
 		}

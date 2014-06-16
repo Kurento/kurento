@@ -12,34 +12,21 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.test.client;
+package com.kurento.kmf.test.services;
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import java.util.Random;
 
 /**
- * Browser to perform automated web testing with Selenium WebDriver.
+ * Random number generator.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @since 4.2.5
  */
-public enum Browser {
-	CHROME, FIREFOX;
+public class Randomizer {
 
-	public Class<? extends WebDriver> getDriverClass() {
-		switch (this) {
-		case FIREFOX:
-			return FirefoxDriver.class;
-		case CHROME:
-		default:
-			return ChromeDriver.class;
-		}
-	}
-
-	@Override
-	public String toString() {
-		return super.toString().toLowerCase();
+	public static int getInt(int lowerbound, int upperbound) {
+		Random rand = new Random(System.nanoTime());
+		return rand.nextInt(upperbound - lowerbound) + lowerbound;
 	}
 
 }

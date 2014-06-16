@@ -19,24 +19,34 @@ import static com.kurento.kmf.common.PropertiesManager.getProperty;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.CharStreams;
 import com.kurento.kmf.commons.tests.SystemMediaApiTests;
 import com.kurento.kmf.media.factory.KmfMediaApiProperties;
 import com.kurento.kmf.test.Shell;
+import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.services.Node;
+import com.kurento.kmf.test.services.Randomizer;
 import com.kurento.kmf.test.services.RemoteHost;
 import com.kurento.kmf.test.services.SeleniumGridHub;
 
@@ -65,6 +75,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 	private List<RemoteHost> remoteHostList;
 	private String hubAddress;
 	private int hubPort;
+	private CountDownLatch countDownLatch;
 
 	public List<Node> nodes;
 
@@ -82,71 +93,83 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		seleniumGridHub.start();
 	}
 
-	private void startNodes() throws IOException {
+	private void startNodes() throws InterruptedException {
 		remoteHostList = new ArrayList<RemoteHost>();
+		countDownLatch = new CountDownLatch(nodes.size());
 
-		for (Node n : nodes) {
-			final String chromeDriverSource = getPathTestFiles()
-					+ "/bin/chromedriver/2.9/linux64/chromedriver";
-			final String seleniumJarName = "/selenium-server-standalone-2.42.2.jar";
-			final String seleniumJarSource = getPathTestFiles() + "/jar"
-					+ seleniumJarName;
-
-			RemoteHost remoteHost = new RemoteHost(n.getAddress(),
-					n.getLogin(), n.getPassword());
-			remoteHost.start();
-
-			// OverThere SCP need absolute path, so home path must be known
-			String remoteHome = remoteHost.execAndWaitCommandNoBr("echo", "~");
-			// FIXME: This command sometimes fails due to an OverThere exception
-
-			final String remoteFolder = remoteHome + "/" + REMOTE_FOLDER;
-			final String remoteChromeDriver = remoteFolder + "/chromedriver";
-			final String remoteSeleniumJar = remoteFolder + seleniumJarName;
-			final String remoteScript = remoteFolder + "/" + LAUNCH_SH;
-			final String remotePort = String.valueOf(remoteHost.getFreePort());
-
-			if (!remoteHost.exists(remoteFolder) || n.isOverwrite()) {
-				remoteHost.execAndWaitCommand("mkdir", "-p", remoteFolder);
-			}
-			if (!remoteHost.exists(remoteChromeDriver) || n.isOverwrite()) {
-				remoteHost.scp(chromeDriverSource, remoteChromeDriver);
-				remoteHost
-						.execAndWaitCommand("chmod", "+x", remoteChromeDriver);
-			}
-			if (!remoteHost.exists(remoteSeleniumJar) || n.isOverwrite()) {
-				remoteHost.scp(seleniumJarSource, remoteSeleniumJar);
-			}
-
-			// Script is always overwritten
-			// createRemoteScript(remoteHost, remotePort, remoteScript,
-			// remoteFolder, remoteChromeDriver, remoteSeleniumJar,
-			// n.getBrowser());
-
-			// Launch node
-			// remoteHost.execCommand(remoteScript);
-
-			remoteHost.execCommand(
-					"xvfb-run",
-					"java",
-					"-jar",
-					remoteSeleniumJar,
-					"-port",
-					remotePort,
-					"-role",
-					"node",
-					"-hub",
-					"http://" + hubAddress + ":" + hubPort + "/grid/register",
-					"-browser",
-					"browserName=" + n.getBrowser() + ",maxInstances="
-							+ n.getMaxInstances(), "-Dwebdriver.chrome.driver="
-							+ remoteChromeDriver, "-timeout", "0");
-
-			// Wait to be available for Hub
-			waitForNode(n.getAddress(), remotePort);
-
-			remoteHostList.add(remoteHost);
+		for (final Node n : nodes) {
+			Thread t = new Thread() {
+				public void run() {
+					try {
+						startNode(n);
+					} catch (IOException e) {
+						log.error("Exception starting node {} : {}",
+								n.getAddress(), e.getClass());
+					}
+				}
+			};
+			t.start();
 		}
+
+		if (!countDownLatch.await(TIMEOUT_NODE, TimeUnit.SECONDS)) {
+			Assert.fail("Timeout waiting nodes (" + TIMEOUT_NODE + " seconds)");
+		}
+	}
+
+	private void startNode(Node node) throws IOException {
+		log.info("Launching node {}", node.getAddress());
+
+		final String chromeDriverName = "/chromedriver";
+		final String chromeDriverSource = getPathTestFiles()
+				+ "/bin/chromedriver/2.9/linux64" + chromeDriverName;
+		final String seleniumJarName = "/selenium-server-standalone-2.42.2.jar";
+		final String seleniumJarSource = getPathTestFiles()
+				+ "/bin/selenium-server" + seleniumJarName;
+
+		RemoteHost remoteHost = new RemoteHost(node.getAddress(),
+				node.getLogin(), node.getPassword());
+		remoteHost.start();
+
+		// OverThere SCP need absolute path, so home path must be known
+		String remoteHome = remoteHost.execAndWaitCommandNoBr("echo", "~");
+
+		final String remoteFolder = remoteHome + "/" + REMOTE_FOLDER;
+		final String remoteChromeDriver = remoteFolder + chromeDriverName;
+		final String remoteSeleniumJar = remoteFolder + seleniumJarName;
+		final String remoteScript = remoteFolder + "/" + LAUNCH_SH;
+		final String remotePort = String.valueOf(remoteHost.getFreePort());
+
+		if (!remoteHost.exists(remoteFolder) || node.isOverwrite()) {
+			remoteHost.execAndWaitCommand("mkdir", "-p", remoteFolder);
+		}
+		if (!remoteHost.exists(remoteChromeDriver) || node.isOverwrite()) {
+			remoteHost.scp(chromeDriverSource, remoteChromeDriver);
+			remoteHost.execAndWaitCommand("chmod", "+x", remoteChromeDriver);
+		}
+		if (!remoteHost.exists(remoteSeleniumJar) || node.isOverwrite()) {
+			remoteHost.scp(seleniumJarSource, remoteSeleniumJar);
+		}
+
+		// Script is always overwritten
+		// createRemoteScript(remoteHost, remotePort, remoteScript,
+		// remoteFolder, remoteChromeDriver, remoteSeleniumJar,
+		// n.getBrowser());
+
+		// Launch node
+		// remoteHost.execCommand(remoteScript);
+
+		remoteHost.execCommand("xvfb-run", "java", "-jar", remoteSeleniumJar,
+				"-port", remotePort, "-role", "node", "-hub", "http://"
+						+ hubAddress + ":" + hubPort + "/grid/register",
+				"-browser", "browserName=" + node.getBrowser()
+						+ ",maxInstances=" + node.getMaxInstances(),
+				"-Dwebdriver.chrome.driver=" + remoteChromeDriver, "-timeout",
+				"0");
+
+		// Wait to be available for Hub
+		waitForNode(node.getAddress(), remotePort);
+
+		remoteHostList.add(remoteHost);
 	}
 
 	// FIXME check this method or remove
@@ -190,7 +213,8 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		Shell.run("rm", LAUNCH_SH);
 	}
 
-	private void waitForNode(String node, String port) {
+	private synchronized void waitForNode(String node, String port) {
+		log.info("Waiting for node {} to be ready...", node);
 		int responseStatusCode = 0;
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpGet httpGet = new HttpGet("http://" + node + ":" + port
@@ -208,13 +232,72 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 				} catch (InterruptedException ie) {
 				}
 				if (System.currentTimeMillis() > maxSystemTime) {
-					throw new RuntimeException("Timeout (" + TIMEOUT_NODE
-							+ " sec) waiting for node");
+					log.error("Timeout ({} sec) waiting for node {}",
+							TIMEOUT_NODE, node);
 				}
 			}
-		} while (responseStatusCode != 200);
+		} while (responseStatusCode != HttpStatus.SC_OK);
 
-		log.info("Node responseStatus " + responseStatusCode);
+		if (responseStatusCode == HttpStatus.SC_OK) {
+			log.info("Node {} ready (responseStatus {})", node,
+					responseStatusCode);
+			countDownLatch.countDown();
+		}
+	}
+
+	protected static List<Node> addNodes(int numNodes, Browser browser) {
+		List<Node> nodes = new ArrayList<Node>();
+
+		InputStream inputStream = GridBrowserMediaApiTest.class
+				.getClassLoader().getResourceAsStream("node-list.txt");
+		List<String> nodeList = null;
+		try {
+			nodeList = CharStreams.readLines(new InputStreamReader(inputStream,
+					Charsets.UTF_8));
+		} catch (IOException e) {
+			Assert.fail("Exception reading node-list.txt: " + e.getMessage());
+		}
+
+		String nodeCandidate;
+		long maxSystemTime = System.currentTimeMillis() + 2 * TIMEOUT_NODE
+				* 1000;
+
+		do {
+			nodeCandidate = nodeList.get(Randomizer.getInt(0, nodeList.size()));
+			log.debug("Node candidate {}", nodeCandidate);
+
+			if (RemoteHost.ping(nodeCandidate)) {
+				RemoteHost remoteHost = new RemoteHost(nodeCandidate,
+						getProperty("test.node.login"),
+						getProperty("test.node.passwd"));
+				try {
+					remoteHost.start();
+					int xvfb = remoteHost.runAndWaitCommand("xvfb-run");
+					if (xvfb != 2) {
+						log.debug("Node {} has no Xvfb", nodeCandidate);
+					} else {
+						nodes.add(new Node(nodeCandidate, browser));
+					}
+				} catch (Exception e) {
+					log.debug("Invalid credentials to access node {} ",
+							nodeCandidate);
+				} finally {
+					remoteHost.stop();
+
+				}
+			} else {
+				log.debug("Node {} seems to be down", nodeCandidate);
+			}
+			nodeList.remove(nodeCandidate);
+
+			if (System.currentTimeMillis() > maxSystemTime) {
+				Assert.fail("Timeout (" + 2 * TIMEOUT_NODE + " sec) selecting "
+						+ numNodes + " nodes");
+			}
+
+		} while (nodes.size() < numNodes);
+
+		return nodes;
 	}
 
 	@After
@@ -238,4 +321,5 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 			rh.stop();
 		}
 	}
+
 }

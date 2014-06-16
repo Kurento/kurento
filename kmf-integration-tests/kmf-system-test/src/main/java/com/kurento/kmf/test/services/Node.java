@@ -16,6 +16,8 @@ package com.kurento.kmf.test.services;
 
 import static com.kurento.kmf.common.PropertiesManager.getProperty;
 
+import com.kurento.kmf.test.client.Browser;
+
 /**
  * Nodes in Selenium Grid testing.
  * 
@@ -29,11 +31,11 @@ public class Node {
 	private String address;
 	private String login;
 	private String password;
-	private String browser;
+	private Browser browser;
 	private int maxInstances;
 	private boolean overwrite;
 
-	public Node(String address, String browser) {
+	public Node(String address, Browser browser) {
 		setAddress(address);
 		setMaxInstances(DEFAULT_MAX_INSTANCES);
 		setOverwrite(false);
@@ -82,11 +84,11 @@ public class Node {
 		this.overwrite = overwrite;
 	}
 
-	public String getBrowser() {
+	public Browser getBrowser() {
 		return browser;
 	}
 
-	public void setBrowser(String browser) {
+	public void setBrowser(Browser browser) {
 		this.browser = browser;
 	}
 

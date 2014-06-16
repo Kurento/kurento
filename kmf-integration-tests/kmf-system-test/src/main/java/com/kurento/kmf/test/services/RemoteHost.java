@@ -17,8 +17,12 @@ package com.kurento.kmf.test.services;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.io.CharStreams;
 import com.xebialabs.overthere.CmdLine;
@@ -39,7 +43,10 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
  */
 public class RemoteHost {
 
+	public static Logger log = LoggerFactory.getLogger(RemoteHost.class);
+
 	private static final int NODE_INITIAL_PORT = 5555;
+	private static final int PING_TIMEOUT = 2; // seconds
 
 	private String host;
 	private String login;
@@ -85,6 +92,10 @@ public class RemoteHost {
 		connection.startProcess(CmdLine.build(command));
 	}
 
+	public int runAndWaitCommand(String... command) throws IOException {
+		return connection.execute(CmdLine.build(command));
+	}
+
 	public String execAndWaitCommand(String... command) throws IOException {
 		OverthereProcess process = connection.startProcess(CmdLine
 				.build(command));
@@ -109,5 +120,22 @@ public class RemoteHost {
 			output = execAndWaitCommand("netstat", "-auxn");
 		} while (output.contains(":" + port));
 		return port;
+	}
+
+	public static boolean ping(String ipAddress) {
+		return ping(ipAddress, RemoteHost.PING_TIMEOUT);
+	}
+
+	public static boolean ping(String ipAddress, int timeout) {
+		boolean result = false;
+		InetAddress inet;
+		try {
+			inet = InetAddress.getByName(ipAddress);
+			result = inet.isReachable(timeout * 1000);
+		} catch (Exception e) {
+			log.error("Exception making ping to {} : {}", ipAddress,
+					e.getClass());
+		}
+		return result;
 	}
 }
