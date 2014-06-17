@@ -29,7 +29,7 @@
 #include <string>
 #include <memory>
 
-// namespace kurento {
+namespace kurento {
 
 class JsonSerializer
 {
@@ -278,7 +278,7 @@ private:
   }
 };
 
-// } /* kurento */
+} /* kurento */
 
 //"name value pair", derived from boost::serialization terminology
 #define NVP(name) #name, name
