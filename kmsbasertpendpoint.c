@@ -197,12 +197,15 @@ static void
 kms_base_rtp_endpoint_connect_valve_to_payloader (KmsBaseRtpEndpoint * ep,
     GstElement * valve, GstElement * payloader, const gchar * rtpbin_pad_name)
 {
-  g_object_ref (payloader);
-  gst_bin_add (GST_BIN (ep), payloader);
-  gst_element_sync_state_with_parent (payloader);
+  GstElement *rtprtxqueue = gst_element_factory_make ("rtprtxqueue", NULL);
 
-  gst_element_link (valve, payloader);
-  gst_element_link_pads (payloader, "src", ep->priv->rtpbin, rtpbin_pad_name);
+  g_object_ref (payloader);
+  gst_bin_add_many (GST_BIN (ep), payloader, rtprtxqueue, NULL);
+  gst_element_sync_state_with_parent (payloader);
+  gst_element_sync_state_with_parent (rtprtxqueue);
+
+  gst_element_link_many (valve, payloader, rtprtxqueue, NULL);
+  gst_element_link_pads (rtprtxqueue, "src", ep->priv->rtpbin, rtpbin_pad_name);
 
   g_object_set (valve, "drop", FALSE, NULL);
 }
