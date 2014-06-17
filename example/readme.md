@@ -32,6 +32,9 @@ WebRTC loopback from your webcam, using the KWS-Utils library
 * [WebRtcEndpoint FaceOverlayFilter 2](./WebRtcEndpoint-FaceOverlayFilter_2):
 Detect a face using a WebRTC loopback from your webcam and put a hat on top of
 your head
+* [WebRtcEndpoint FaceOverlayFilter promises 2](./WebRtcEndpoint-FaceOverlayFilter_promises_2):
+Detect a face using a WebRTC loopback from your webcam and put a hat on top of
+your head using promises
 * [WebRtcEndpoint PointerDetectorAdvFilter 2](./WebRtcEndpoint-PointerDetectorAdvFilter_2):
 Pointer detector using a WebRTC loopback from your webcam
 
