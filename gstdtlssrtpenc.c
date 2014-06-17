@@ -344,6 +344,7 @@ tls_status_changed (GTlsConnection * connection, GParamSpec * param,
 
     if (!self->srtp_enc) {
       self->srtp_enc = gst_element_factory_make ("srtpenc", NULL);
+      g_object_set (self->srtp_enc, "allow-repeat-tx", TRUE, NULL);
       add_enc = TRUE;
     }
 
