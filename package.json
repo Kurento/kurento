@@ -1,6 +1,6 @@
 {
   "name": "kws-utils",
-  "version": "4.3.14-SNAPSHOT",
+  "version": "4.3.14",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.com",
   "license": "LGPL",
