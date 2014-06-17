@@ -212,7 +212,7 @@ gst_dtls_dec_loop (gpointer user_data)
     gst_buffer_set_size (outbuf, bytes_read);
   } else if (bytes_read == 0) {
     gst_buffer_unref (outbuf);
-    return;
+    goto end;
   } else if (bytes_read < 0) {
     gst_buffer_unref (outbuf);
 
@@ -220,16 +220,15 @@ gst_dtls_dec_loop (gpointer user_data)
       goto flushing;
     } else if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_NO_SPACE)) {
       /* Let's loop again! */
-      return;
+      goto end;
     } else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_WOULD_BLOCK)) {
       GST_ELEMENT_ERROR (base, STREAM, DECRYPT,
           ("Error decrypting DTLS stream: %s", error->message),
           ("Error decrypting DTLS stream: %s", error->message));
       goto error;
     }
-    g_clear_error (&error);
 
-    return;
+    goto end;
   }
 
   lastbuf = gst_input_stream_get_last_buffer (self->gst_istream);
@@ -242,22 +241,25 @@ gst_dtls_dec_loop (gpointer user_data)
   flow_ret = gst_pad_push (base->srcpad, outbuf);
   g_atomic_int_set (&self->flow_ret, flow_ret);
 
-  return;
+  goto end;
 
 // not_negotiated:
 //   g_atomic_int_set (&self->flow_ret, GST_FLOW_NOT_NEGOTIATED);
 //   gst_pad_pause_task (base->srcpad);
-//   return;
+//   goto end;
 
 flushing:
   g_atomic_int_set (&self->flow_ret, GST_FLOW_FLUSHING);
   gst_pad_pause_task (base->srcpad);
-  return;
+  goto end;
 
 error:
   g_atomic_int_set (&self->flow_ret, GST_FLOW_ERROR);
   gst_pad_pause_task (base->srcpad);
-  return;
+  goto end;
+
+end:
+  g_clear_error (&error);
 }
 
 static void
