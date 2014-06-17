@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper (>= 8.0.0),
                cmake,
+               kms-cmake-utils,
                libjsoncpp-dev,
                libboost-dev
 Standards-Version: 3.9.4
