@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -65,7 +69,6 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 	public static final int DEFAULT_HUB_PORT = 4444;
 
 	private static final int TIMEOUT_NODE = 60; // seconds
-	private static final int MAX_INSTANCES = 5; // seconds
 
 	private static final String LAUNCH_SH = "launch-node.sh";
 	private static final String REMOTE_FOLDER = "kurento-test";
@@ -129,6 +132,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		RemoteHost remoteHost = new RemoteHost(node.getAddress(),
 				node.getLogin(), node.getPassword());
 		remoteHost.start();
+		remoteHostList.add(remoteHost);
 
 		// OverThere SCP need absolute path, so home path must be known
 		String remoteHome = remoteHost.execAndWaitCommandNoBr("echo", "~");
@@ -151,39 +155,28 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		}
 
 		// Script is always overwritten
-		// createRemoteScript(remoteHost, remotePort, remoteScript,
-		// remoteFolder, remoteChromeDriver, remoteSeleniumJar,
-		// n.getBrowser());
+		createRemoteScript(remoteHost, remotePort, remoteScript, remoteFolder,
+				remoteChromeDriver, remoteSeleniumJar, node.getBrowser(),
+				node.getMaxInstances());
 
 		// Launch node
-		// remoteHost.execCommand(remoteScript);
-
-		remoteHost.execCommand("xvfb-run", "java", "-jar", remoteSeleniumJar,
-				"-port", remotePort, "-role", "node", "-hub", "http://"
-						+ hubAddress + ":" + hubPort + "/grid/register",
-				"-browser", "browserName=" + node.getBrowser()
-						+ ",maxInstances=" + node.getMaxInstances(),
-				"-Dwebdriver.chrome.driver=" + remoteChromeDriver, "-timeout",
-				"0");
+		remoteHost.execCommand(remoteScript);
 
 		// Wait to be available for Hub
 		waitForNode(node.getAddress(), remotePort);
-
-		remoteHostList.add(remoteHost);
 	}
 
-	// FIXME check this method or remove
 	private void createRemoteScript(RemoteHost remoteHost, String remotePort,
 			String remoteScript, String remoteFolder,
-			String remoteChromeDriver, String remoteSeleniumJar, String browser)
-			throws IOException {
+			String remoteChromeDriver, String remoteSeleniumJar,
+			Browser browser, int maxInstances) throws IOException {
 
 		// Create script for Node
 		Configuration cfg = new Configuration();
 
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("remotePort", String.valueOf(remotePort));
-		data.put("maxInstances", String.valueOf(MAX_INSTANCES));
+		data.put("maxInstances", String.valueOf(maxInstances));
 		data.put("hubIp", hubAddress);
 		data.put("hubPort", String.valueOf(hubPort));
 		data.put("remoteFolder", remoteFolder);
@@ -245,7 +238,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		}
 	}
 
-	protected static List<Node> addNodes(int numNodes, Browser browser) {
+	protected static List<Node> getRandomNodes(int numNodes, Browser browser) {
 		List<Node> nodes = new ArrayList<Node>();
 
 		InputStream inputStream = GridBrowserMediaApiTest.class
@@ -283,8 +276,8 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 							nodeCandidate);
 				} finally {
 					remoteHost.stop();
-
 				}
+
 			} else {
 				log.debug("Node {} seems to be down", nodeCandidate);
 			}
@@ -305,21 +298,31 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		// Stop Hub
 		seleniumGridHub.stop();
 
-		// FIXME : Despite the fact we know the PID, the problem is that there
-		// are two different process (/bin/sh /usr/bin/xvfb-run java -jar ...
-		// and java -jar selenium-server-standalone-2.42.2.jar)
-		// String remotePid = remoteHost.execAndWaitCommandNoBr("cat",
-		// REMOTE_FOLDER + "/" + REMOTE_PID_FILE);
-		// remoteHost.execCommand("kill", remotePid);
-		// remoteHost.execCommand("rm", REMOTE_FOLDER + "/" + REMOTE_PID_FILE);
-
+		// Stop Nodes
 		for (RemoteHost rh : remoteHostList) {
-			// Stop Nodes
-			rh.execCommand("killall", "java");
-
-			// Close connection with remote host
+			String remotePid = rh.execAndWaitCommandNoBr("cat", REMOTE_FOLDER
+					+ "/" + REMOTE_PID_FILE);
+			rh.execCommand("pkill", "-TERM", "-P", remotePid);
+			rh.execCommand("rm", REMOTE_FOLDER + "/" + REMOTE_PID_FILE);
 			rh.stop();
 		}
 	}
 
+	public void runParallel(Runnable myFunc) throws InterruptedException,
+			ExecutionException {
+		ExecutorService exec = Executors.newFixedThreadPool(1);
+		exec.submit(myFunc).get();
+	}
+
+	public void runParallel(List<Node> nodeList, Runnable myFunc)
+			throws InterruptedException, ExecutionException {
+		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
+		List<Future<?>> results = new ArrayList<>();
+		for (int i = 0; i < nodes.size(); i++) {
+			results.add(exec.submit(myFunc));
+		}
+		for (Future<?> r : results) {
+			r.get();
+		}
+	}
 }

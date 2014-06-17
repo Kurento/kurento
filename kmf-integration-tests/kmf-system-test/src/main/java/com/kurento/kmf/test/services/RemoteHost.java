@@ -46,7 +46,7 @@ public class RemoteHost {
 	public static Logger log = LoggerFactory.getLogger(RemoteHost.class);
 
 	private static final int NODE_INITIAL_PORT = 5555;
-	private static final int PING_TIMEOUT = 2; // seconds
+	private static final int PING_TIMEOUT = 1; // seconds
 
 	private String host;
 	private String login;

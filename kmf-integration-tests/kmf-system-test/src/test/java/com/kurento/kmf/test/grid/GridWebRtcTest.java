@@ -16,19 +16,10 @@ package com.kurento.kmf.test.grid;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
@@ -40,47 +31,39 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 import com.kurento.kmf.test.services.Node;
 
 /**
- * WebRTC test with Selenium Grid.
+ * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browsers start before default timeout</li>
+ * <li>Color received by client should be green (RGB #008700, video test of
+ * Chrome)</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-@RunWith(Parameterized.class)
 public class GridWebRtcTest extends GridBrowserMediaApiTest {
 
-	private static final int PLAYTIME = 5; // seconds to play in HTTP player
+	private static final int PLAYTIME = 5; // seconds to play in WebRTC
 
-	@Parameters
-	public static Collection<Object[]> data() {
-		List<Node> nodeList = new ArrayList<Node>();
-		nodeList.addAll(addNodes(5, Browser.CHROME));
-		log.info("Node list {} ", nodeList);
-
-		Object[][] data = new Object[][] { { nodeList } };
-		return Arrays.asList(data);
-	}
-
-	public GridWebRtcTest(List<Node> nodes) {
-		this.nodes = nodes;
+	public GridWebRtcTest() {
+		nodes = new ArrayList<Node>();
+		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME));
+		// nodes.addAll(getRandomNodes(5, Browser.CHROME));
+		log.info("Node list {} ", nodes);
 	}
 
 	@Test
 	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
-		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
-		List<Future<?>> results = new ArrayList<>();
-		for (final Node n : nodes) {
-			results.add(exec.submit(new Runnable() {
-				@Override
-				public void run() {
-					doTest(n.getBrowser(), null, new Color(0, 135, 0));
-				}
-			}));
-		}
-
-		for (Future<?> r : results) {
-			r.get();
-		}
-
+		runParallel(nodes, new Runnable() {
+			public void run() {
+				doTest(Browser.CHROME, null, new Color(0, 135, 0));
+			}
+		});
 	}
 
 	public void doTest(Browser browserType, String video, Color color) {
@@ -120,7 +103,6 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 		} catch (InterruptedException e) {
 			Assert.fail("InterruptedException " + e.getMessage());
 		}
-
 	}
 
 }
