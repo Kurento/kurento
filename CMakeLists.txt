@@ -1,4 +1,4 @@
-include (TestHelper)
+include (TestHelpers)
 
 set (TEST_PROPERTIES
   GST_PLUGIN_PATH=${CMAKE_BINARY_DIR}
