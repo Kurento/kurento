@@ -6,7 +6,7 @@ find_package(KurentoHelpers REQUIRED)
 
 include (KurentoGitHelpers)
 
-get_git_version (PROJECT_VERSION 0.0.1)
+get_git_version (PROJECT_VERSION 0.0.2-dev)
 
 find_package(PkgConfig)
 
