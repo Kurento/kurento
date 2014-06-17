@@ -1,0 +1,3 @@
+usr/include/kurento/jsonrpc/*.hpp
+usr/lib/*/lib*.so
+usr/lib/*/pkgconfig/libjsonrpc.pc
