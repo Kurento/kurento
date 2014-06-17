@@ -9,6 +9,6 @@ Version: @PROJECT_VERSION@
 URL: https://github.com/Kurento/kms-jsonrpc
 Requires: @requires@
 Requires.private: @requires_private@
-Libs: -L${libdir} -ljsoncpp
+Libs: -L${libdir} -ljsonrpc
 Libs.private: @libs_private@
 CFlags: -I${includedir}
