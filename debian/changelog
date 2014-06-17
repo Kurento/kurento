@@ -1,3 +1,17 @@
+kms-jsonrpc (0.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Add pkgconfig file
+  * Upload version to next development version
+  * Add pre-commit hook to check correct codding style
+  * Add README.md and LICENSE files
+  * Create debian package
+  * Fix project version in pkg-config file
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 17 Jun 2014 18:44:25 +0200
+
 kms-jsonrpc (0.0.1) testing; urgency=medium
 
   * Initial release
