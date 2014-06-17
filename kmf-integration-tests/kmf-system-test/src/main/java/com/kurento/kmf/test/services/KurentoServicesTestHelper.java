@@ -217,7 +217,7 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	private static void teardownHttpServer() {
+	public static void teardownHttpServer() {
 		if (httpServer != null) {
 			try {
 				httpServer.destroy();
