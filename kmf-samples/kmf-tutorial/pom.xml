@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.kurento.kmf</groupId>
 		<artifactId>kmf-samples</artifactId>
-		<version>4.2.5-SNAPSHOT</version>
+		<version>4.2.5</version>
 	</parent>
 
 	<artifactId>kmf-tutorial</artifactId>
@@ -36,7 +36,7 @@
 		<url>${kmf.scm.url}</url>
 		<connection>scm:git:${kmf.scm.connection}</connection>
 		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
-		<tag>develop</tag>
+		<tag>kurento-media-framework-4.2.5</tag>
 	</scm>
 
 	<developers>
