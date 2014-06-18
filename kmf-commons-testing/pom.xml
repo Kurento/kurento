@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
-		<version>4.2.5</version>
+		<version>4.2.6-SNAPSHOT</version>
 		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
@@ -30,7 +30,7 @@
 		<url>${kmf.scm.url}</url>
 		<connection>scm:git:${kmf.scm.connection}</connection>
 		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
-		<tag>kurento-media-framework-4.2.5</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
