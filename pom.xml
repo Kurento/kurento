@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kws</groupId>
 	<artifactId>kws-media-api</artifactId>
-	<version>4.3.15-SNAPSHOT</version>
+	<version>4.3.15</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Web SDK - Media Api</name>
@@ -37,7 +37,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
+		<tag>kws-media-api-4.3.15</tag>
 	</scm>
 
 	<mailingLists>
