@@ -66,9 +66,8 @@
 		<!-- Dependencies versions -->
 		<!-- ********************* -->
 		<kms-interface.version>4.3.1</kms-interface.version>
-		<kws.version>4.3.8-SNAPSHOT</kws.version>
+		<kws.version>4.3.14</kws.version>
 		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
-
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
 		<version.apache.commons-fileupload>1.3</version.apache.commons-fileupload>
@@ -205,6 +204,11 @@
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-system-test</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kws</groupId>
+				<artifactId>kws-rpc-builder</artifactId>
+				<version>${kws.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
@@ -1092,6 +1096,8 @@
 						</configuration>
 						<executions>
 							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
 								<goals>
 									<goal>sign</goal>
 								</goals>
