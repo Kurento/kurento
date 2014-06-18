@@ -95,6 +95,7 @@
 			<modules>
 				<module>kmf-spring</module>
 				<module>kmf-commons</module>
+				<module>kmf-commons-testing</module>
 				<module>kmf-parent-pom</module>
 				<module>kmf-thrift-interface</module>
 				<module>kmf-orion-connector</module>
