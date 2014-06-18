@@ -114,18 +114,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-gpg-plugin</artifactId>
 					<version>${version.gpg.plugin}</version>
-					<configuration>
-						<useAgent>true</useAgent>
-					</configuration>
-					<executions>
-						<execution>
-							<id>sign-artifacts</id>
-							<phase>verify</phase>
-							<goals>
-								<goal>sign</goal>
-							</goals>
-						</execution>
-					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -202,4 +190,94 @@
 		</plugins>
 	</build>
 
+	<profiles>
+		<!-- The profile kurento-release must be active when a project is released. 
+			The configuration in this POM will automatically call this profile if using 
+			the maven-release-plugin. If the maven-release-plugin is not used during 
+			the release, this profile must be manually activated. -->
+		<profile>
+			<id>kurento-release</id>
+			<build>
+				<plugins>
+					<!-- Create a source-release artifact that contains the fully buildable 
+						project directory source structure. This should be released to the Maven 
+						repository for each JBoss project release. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.apache.resources</groupId>
+								<artifactId>apache-source-release-assembly-descriptor</artifactId>
+								<version>1.0.4</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>source-release-assembly</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+									<descriptorRefs>
+										<descriptorRef>${sourceReleaseAssemblyDescriptor}</descriptorRef>
+									</descriptorRefs>
+									<tarLongFileFormat>gnu</tarLongFileFormat>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<configuration>
+							<updateReleaseInfo>true</updateReleaseInfo>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- This profile can be activated to generate gpg signatures for all build 
+			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase" 
+			are available to the current build. -->
+		<profile>
+			<id>gpg-sign</id>
+			<build>
+				<plugins>
+					<!-- This will sign the artifact, the POM, and all attached artifacts -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<configuration>
+							<useAgent>true</useAgent>
+						</configuration>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
