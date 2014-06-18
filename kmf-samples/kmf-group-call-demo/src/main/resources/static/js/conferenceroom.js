@@ -1,4 +1,4 @@
-var client = new JsonRpcClient('ws://' + location.host + '/groupcall/ws/websocket',
+var client = new RpcBuilder.clients.JsonRpcClient('ws://' + location.host + '/groupcall/ws/websocket',
 		onRequest);
 
 var participants = {};
@@ -30,6 +30,7 @@ function register() {
 	var name = document.getElementById("name").value;
 	var room = document.getElementById("roomName").value;
 
+	document.getElementById('room-header').innerText = 'ROOM ' + room;
 	document.getElementById('join').style.display = 'none';
 	document.getElementById('room').style.display = 'block';
 
@@ -47,6 +48,19 @@ function register() {
 
 function onNewParticipant(request) {
 	receiveVideo(request.params.name);
+}
+
+function leaveRoom() {
+	client.sendRequest('leaveRoom', {
+	} , function(error, result) {
+	});
+	
+	for (var key in participants) {
+		participants[key].dispose();
+	}
+	
+	document.getElementById('join').style.display = 'block';
+	document.getElementById('room').style.display = 'none';
 }
 
 function receiveVideo(sender) {

@@ -45,6 +45,9 @@ public class ParticipantHandler extends DefaultJsonRpcHandler<JsonObject> {
 		case "receiveVideoFrom":
 			receiveVideo(transaction, params);
 			break;
+		case "leaveRoom":
+			leaveRoom();
+			break;
 		default:
 			break;
 		}
@@ -53,6 +56,11 @@ public class ParticipantHandler extends DefaultJsonRpcHandler<JsonObject> {
 	@Override
 	public void afterConnectionClosed(Session session, String status)
 			throws Exception {
+		leaveRoom();
+	}
+
+	private void leaveRoom() throws IOException {
+		log.debug("PARTICIPANT {}: Leaving room {}", this.name, this.roomName);
 		roomManager.getRoom(roomName).removeParticipant(name);
 		myself.close();
 		myself = null;

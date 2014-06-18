@@ -202,6 +202,13 @@ input[type=button]:active,input[type=submit]:active {
 
 #room {
 	width: 100%;
+    text-align: center;
+}
+
+#button-leave {
+	text-align: center;
+	position: absolute;
+	bottom:10px;
 }
 
 .participant {
