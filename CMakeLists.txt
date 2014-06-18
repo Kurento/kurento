@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(kms-jsoncpp)
+project(kms-jsonrpc)
 
 find_package(KurentoHelpers REQUIRED)
 
