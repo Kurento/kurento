@@ -1,3 +1,15 @@
+kms-jsonrpc (0.0.5) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Fix project name
+  * Fix pkg-config file, setting library correctly
+  * Prepare release 0.0.5
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 18 Jun 2014 12:15:13 +0200
+
 kms-jsonrpc (0.0.4) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
