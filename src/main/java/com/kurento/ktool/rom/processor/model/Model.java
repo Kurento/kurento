@@ -1,6 +1,7 @@
 package com.kurento.ktool.rom.processor.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,28 +46,37 @@ public class Model {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (obj == null) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Model other = (Model) obj;
 		if (events == null) {
-			if (other.events != null)
+			if (other.events != null) {
 				return false;
-		} else if (!events.equals(other.events))
+			}
+		} else if (!events.equals(other.events)) {
 			return false;
+		}
 		if (remoteClasses == null) {
-			if (other.remoteClasses != null)
+			if (other.remoteClasses != null) {
 				return false;
-		} else if (!remoteClasses.equals(other.remoteClasses))
+			}
+		} else if (!remoteClasses.equals(other.remoteClasses)) {
 			return false;
+		}
 		if (complexTypes == null) {
-			if (other.complexTypes != null)
+			if (other.complexTypes != null) {
 				return false;
-		} else if (!complexTypes.equals(other.complexTypes))
+			}
+		} else if (!complexTypes.equals(other.complexTypes)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -124,7 +134,7 @@ public class Model {
 				+ complexTypes + ", events=" + events + "]";
 	}
 
-	public void populateModel() {
+	public void populateModel(List<Model> dependencyModels) {
 
 		remoteClassesMap = populateNamedElements(this.remoteClasses);
 		eventsMap = populateNamedElements(this.events);
@@ -139,9 +149,23 @@ public class Model {
 		put(types, INT);
 		put(types, FLOAT);
 
-		resolveTypeRefs(remoteClasses, types);
-		resolveTypeRefs(events, types);
-		resolveTypeRefs(complexTypes, types);
+		Map<String, Type> allTypes = new HashMap<String, Type>(types);
+
+		for (Model dependencyModel : dependencyModels) {
+			allTypes.putAll(dependencyModel.getTypes());
+		}
+
+		resolveTypeRefs(remoteClasses, allTypes);
+		resolveTypeRefs(events, allTypes);
+		resolveTypeRefs(complexTypes, allTypes);
+	}
+
+	private Map<String, ? extends Type> getTypes() {
+		return types;
+	}
+
+	public void populateModel() {
+		populateModel(Collections.<Model> emptyList());
 	}
 
 	private void put(Map<String, ? super Type> types, Type t) {
@@ -188,6 +212,12 @@ public class Model {
 
 	public Event getEvent(String eventName) {
 		return eventsMap.get(eventName);
+	}
+
+	public void expandMethodsWithOpsParams() {
+		for (RemoteClass remoteClass : remoteClassesMap.values()) {
+			remoteClass.expandMethodsWithOpsParams();
+		}
 	}
 
 }

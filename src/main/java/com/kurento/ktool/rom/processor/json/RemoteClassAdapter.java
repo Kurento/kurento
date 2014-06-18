@@ -14,6 +14,7 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import com.kurento.ktool.rom.processor.model.Method;
+import com.kurento.ktool.rom.processor.model.Property;
 import com.kurento.ktool.rom.processor.model.RemoteClass;
 import com.kurento.ktool.rom.processor.model.TypeRef;
 
@@ -69,6 +70,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		TypeRef extendsValue = null;
 		List<Method> constructors = new ArrayList<Method>();
 		List<Method> methods = new ArrayList<Method>();
+		List<Property> properties = new ArrayList<Property>();
 		List<TypeRef> events = new ArrayList<TypeRef>();
 
 		if (object.get("name") != null) {
@@ -100,6 +102,12 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 					}.getType());
 		}
 
+		if (object.get("properties") != null) {
+			properties = context.deserialize(object.get("properties"),
+					new TypeToken<List<Property>>() {
+					}.getType());
+		}
+
 		if (object.get("events") != null) {
 			events = context.deserialize(object.get("events"),
 					new TypeToken<List<TypeRef>>() {
@@ -107,7 +115,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		}
 
 		RemoteClass remoteClass = new RemoteClass(name, doc, extendsValue,
-				constructors, methods, events);
+				constructors, methods, properties, events);
 		remoteClass.setAbstract(abstractValue);
 		return remoteClass;
 	}

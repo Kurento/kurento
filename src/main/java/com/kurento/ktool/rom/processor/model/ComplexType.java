@@ -11,11 +11,13 @@ public class ComplexType extends Type {
 		REGISTER, ENUM
 	};
 
+	private TypeFormat typeFormat;
+
 	@SerializedName("extends")
 	private TypeRef extendsProp;
+	private List<Property> properties = new ArrayList<Property>();
+	private List<Property> parentProperties;
 
-	private TypeFormat typeFormat;
-	private List<Property> properties;
 	private List<String> values;
 
 	public ComplexType(String name, String doc, List<Property> properties,
@@ -57,6 +59,26 @@ public class ComplexType extends Type {
 		this.properties = properties;
 	}
 
+	public List<Property> getParentProperties() {
+		if (parentProperties == null) {
+			resolveParentProperties();
+		}
+		return parentProperties;
+	}
+
+	public void setParentProperties(List<Property> parentProperties) {
+		this.parentProperties = parentProperties;
+	}
+
+	private void resolveParentProperties() {
+		this.parentProperties = new ArrayList<Property>();
+		if (this.extendsProp != null) {
+			ComplexType complexType = (ComplexType) extendsProp.getType();
+			this.parentProperties.addAll(complexType.getParentProperties());
+			this.parentProperties.addAll(complexType.getProperties());
+		}
+	}
+
 	public void setValues(List<String> values) {
 		this.values = values;
 	}
@@ -90,30 +112,40 @@ public class ComplexType extends Type {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		ComplexType other = (ComplexType) obj;
 		if (extendsProp == null) {
-			if (other.extendsProp != null)
+			if (other.extendsProp != null) {
 				return false;
-		} else if (!extendsProp.equals(other.extendsProp))
+			}
+		} else if (!extendsProp.equals(other.extendsProp)) {
 			return false;
+		}
 		if (properties == null) {
-			if (other.properties != null)
+			if (other.properties != null) {
 				return false;
-		} else if (!properties.equals(other.properties))
+			}
+		} else if (!properties.equals(other.properties)) {
 			return false;
-		if (typeFormat != other.typeFormat)
+		}
+		if (typeFormat != other.typeFormat) {
 			return false;
+		}
 		if (values == null) {
-			if (other.values != null)
+			if (other.values != null) {
 				return false;
-		} else if (!values.equals(other.values))
+			}
+		} else if (!values.equals(other.values)) {
 			return false;
+		}
 		return true;
 	}
 

@@ -18,7 +18,7 @@ public class Param extends DataItem {
 
 		sb.append("Param [type()=");
 		sb.append(getType());
-		sb.append(", required()=");
+		sb.append(", optional()=");
 		sb.append(isOptional());
 		sb.append(", doc()=");
 		sb.append(getDoc());

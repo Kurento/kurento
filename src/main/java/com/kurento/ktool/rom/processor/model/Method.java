@@ -1,6 +1,7 @@
 package com.kurento.ktool.rom.processor.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
@@ -52,23 +53,30 @@ public class Method extends NamedElement {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (!super.equals(obj))
+		}
+		if (!super.equals(obj)) {
 			return false;
-		if (getClass() != obj.getClass())
+		}
+		if (getClass() != obj.getClass()) {
 			return false;
+		}
 		Method other = (Method) obj;
 		if (params == null) {
-			if (other.params != null)
+			if (other.params != null) {
 				return false;
-		} else if (!params.equals(other.params))
+			}
+		} else if (!params.equals(other.params)) {
 			return false;
+		}
 		if (returnProp == null) {
-			if (other.returnProp != null)
+			if (other.returnProp != null) {
 				return false;
-		} else if (!returnProp.equals(other.returnProp))
+			}
+		} else if (!returnProp.equals(other.returnProp)) {
 			return false;
+		}
 		return true;
 	}
 
@@ -79,6 +87,50 @@ public class Method extends NamedElement {
 			children.add(returnProp);
 		}
 		return children;
+	}
+
+	public List<Method> expandIfOpsParams() {
+
+		boolean optParam = false;
+		for (Param param : this.params) {
+			if (param.isOptional()) {
+				optParam = true;
+				break;
+			}
+		}
+
+		if (optParam) {
+
+			List<Method> expandedMethods = new ArrayList<Method>();
+			for (Param param : this.params) {
+				if (param.isOptional()) {
+
+					List<Param> newParams = sublistUntilParam(params, param);
+					expandedMethods.add(new Method(name, doc, newParams,
+							returnProp));
+				}
+			}
+
+			return expandedMethods;
+
+		} else {
+			return Collections.emptyList();
+		}
+	}
+
+	private List<Param> sublistUntilParam(List<Param> params,
+			Param centinelParam) {
+
+		List<Param> newParams = new ArrayList<Param>();
+
+		for (Param param : params) {
+			if (param != centinelParam) {
+				newParams.add(param);
+			} else {
+				break;
+			}
+		}
+		return newParams;
 	}
 
 }

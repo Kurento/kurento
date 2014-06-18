@@ -18,11 +18,17 @@ import com.kurento.ktool.rom.processor.model.Property;
 import com.kurento.ktool.rom.processor.model.RemoteClass;
 import com.kurento.ktool.rom.processor.model.TypeRef;
 
-public class JsonModel {
+public class JsonModelSaverLoader {
+
+	private static JsonModelSaverLoader INSTANCE = new JsonModelSaverLoader();
+
+	public static JsonModelSaverLoader getInstance() {
+		return INSTANCE;
+	}
 
 	private Gson gson;
 
-	public JsonModel() {
+	private JsonModelSaverLoader() {
 		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
 		gsonBuilder.registerTypeAdapter(TypeRef.class, new TypeRefAdapter());
 		gsonBuilder.registerTypeAdapter(Param.class, new DataItemAdapter());
@@ -46,7 +52,6 @@ public class JsonModel {
 	private Model loadFromInputStream(InputStream is) throws IOException {
 		String modelString = loadTextFromInputStream(is);
 		Model model = gson.fromJson(modelString, Model.class);
-		model.populateModel();
 		return model;
 	}
 

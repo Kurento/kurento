@@ -5,10 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -27,7 +24,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.kurento.ktool.rom.processor.json.JsonModel;
+import com.kurento.ktool.rom.processor.json.JsonModelSaverLoader;
 import com.kurento.ktool.rom.processor.model.Model;
 
 import freemarker.template.TemplateException;
@@ -37,6 +34,7 @@ public class Main {
 	private static final String HELP = "h";
 	private static final String VERBOSE = "v";
 	private static final String ROM = "r";
+	private static final String DEPROM = "dr";
 	private static final String TEMPLATES = "t";
 	private static final String CODEGEN = "c";
 	private static final String DELETE = "d";
@@ -52,20 +50,33 @@ public class Main {
 		Options options = new Options();
 		options.addOption(VERBOSE, "verbose", false,
 				"Prints source code while being generated.");
+
 		options.addOption(HELP, "help", false, "Prints this message.");
+
 		options.addOption(OptionBuilder.withLongOpt("rom")
 				.withDescription("Remote object model description file.")
 				.hasArg().withArgName("ROM_FILE").isRequired().create(ROM));
+
+		options.addOption(OptionBuilder
+				.withLongOpt("deprom")
+				.withDescription(
+						"Remote object model description files used as dependencies.")
+				.hasArg().withArgName("DEP_ROM_FILE").isRequired()
+				.create(DEPROM));
+
 		options.addOption(OptionBuilder.withLongOpt("templates")
 				.withDescription("Directory that contains template files.")
 				.hasArg().withArgName("TEMPLATES_DIR").isRequired()
 				.create(TEMPLATES));
+
 		options.addOption(OptionBuilder.withLongOpt("codegen")
 				.withDescription("Destination directory for generated files.")
 				.hasArg().withArgName("CODEGEN_DIR").isRequired()
 				.create(CODEGEN));
+
 		options.addOption(DELETE, "delete", false,
 				"Delete destination directory before generating files.");
+
 		options.addOption(OptionBuilder.withLongOpt("config")
 				.withDescription("Configuration file.").hasArg()
 				.withArgName("CONFIGURATION_FILE").create(CONFIG));
@@ -87,21 +98,64 @@ public class Main {
 		}
 
 		File romFile = getRomFile(line);
+		List<File> dependencyRomFiles = getDependencyRomFile(line);
 		JsonObject configContent = getConfigContent(line);
 		File templatesDir = getTemplatesDir(line);
 		File codegenDir = getCodegenDir(line);
+		boolean verbose = line.hasOption(VERBOSE);
+		boolean delete = line.hasOption(DELETE);
 
-		deleteIfNecessary(line, configContent, codegenDir);
+		generateCode(delete, verbose, romFile, dependencyRomFiles,
+				configContent, templatesDir, codegenDir);
 
-		Model model = new JsonModel().loadFromFile(romFile);
+	}
 
-		CodeGen codeGen = new CodeGen(templatesDir, codegenDir,
-				line.hasOption(VERBOSE), configContent);
+	public static void generateCode(boolean delete, boolean verbose,
+			File romFile, List<File> dependencyRomFiles,
+			JsonObject configContent, File templatesDir, File codegenDir)
+			throws IOException, FileNotFoundException, TemplateException {
+
+		deleteIfNecessary(delete, configContent, codegenDir);
+
+		List<Model> dependencyModels = new ArrayList<Model>();
+		for (File dependencyRomFile : dependencyRomFiles) {
+			Model depModel = JsonModelSaverLoader.getInstance().loadFromFile(
+					dependencyRomFile);
+			depModel.populateModel();
+			dependencyModels.add(depModel);
+		}
+
+		Model model = JsonModelSaverLoader.getInstance().loadFromFile(romFile);
+		model.populateModel(dependencyModels);
+
+		CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
+				configContent);
+
+		if (configContent.has("expandMethodsWithOpsParams")
+				&& configContent.get("expandMethodsWithOpsParams")
+						.getAsBoolean()) {
+			model.expandMethodsWithOpsParams();
+		}
 
 		codeGen.generateCode(model);
 
 		System.out.println("Generation complete");
+	}
 
+	private static List<File> getDependencyRomFile(CommandLine line) {
+		String[] files = line.getOptionValue(DEPROM).split(",");
+		List<File> depRomFiles = new ArrayList<File>();
+		for (String file : files) {
+			File romFile = new File(file);
+			if (!romFile.exists() || !romFile.canRead()) {
+				System.err.println("Rom file description '" + romFile
+						+ "' does not exist or is not readable");
+				System.exit(1);
+			} else {
+				depRomFiles.add(romFile);
+			}
+		}
+		return depRomFiles;
 	}
 
 	private static JsonObject getConfigContent(CommandLine line)
@@ -180,9 +234,10 @@ public class Main {
 		}
 	}
 
-	private static void deleteIfNecessary(CommandLine line,
+	private static void deleteIfNecessary(boolean delete,
 			JsonObject configContent, File codegenDir) throws IOException {
-		if (line.hasOption(DELETE) && codegenDir.exists()) {
+
+		if (delete && codegenDir.exists()) {
 
 			List<String> noDeleteFiles = new ArrayList<String>();
 			if (configContent != null) {
@@ -221,7 +276,7 @@ public class Main {
 			}
 		}
 
-		if (f.listFiles().length == 0) {
+		if (f.listFiles() == null || f.listFiles().length == 0) {
 			if (!f.delete()) {
 				throw new FileNotFoundException("Failed to delete file: " + f);
 			}
