@@ -13,15 +13,11 @@
 
 # Variables
 SERVICE_NAME=KurentoMediaConnector
+DAEMON_USER=nobody
 
 . /lib/lsb/init-functions
 
-
-
-if [ -z "$KMF_MEDIA_CONNECTOR_HOME" ]; then
-  KMF_MEDIA_CONNECTOR_HOME=/opt/kmf-media-connector
-fi
-export KMF_MEDIA_CONNECTOR_HOME
+export KMF_MEDIA_CONNECTOR_HOME=$(dirname $(dirname $0))
 
 if [ -z "$SHUTDOWN_WAIT" ]; then
   SHUTDOWN_WAIT=30
@@ -40,13 +36,9 @@ fi
 
 # Location to keep the console log
 if [ -z "$CONSOLE_LOG" ]; then
-	CONSOLE_LOG=/var/log/kurento/media-connector/console.log
+	CONSOLE_LOG=/var/log/kurento/media-connector.log
 fi
 export CONSOLE_LOG
-
-#Launch in background 
-LAUNCH_KMF_IN_BACKGROUND=1
-export LAUNCH_KMF_IN_BACKGROUND
 
 start() {
 	log_daemon_msg "$SERVICE_NAME starting"
@@ -58,8 +50,9 @@ start() {
 
 		start-stop-daemon --start \
  		--chdir "$KMF_MEDIA_CONNECTOR_HOME" --pidfile "$PIDFILE" \
-		--exec "$KMF_MEDIA_CONNECTOR_SCRIPT" -- >> $CONSOLE_LOG 2>&1 &
-		log_daemon_msg "$SERVICE_NAME started ..."
+		--chuid $DAEMON_USER --background --no-close --make-pidfile \
+		--exec "$KMF_MEDIA_CONNECTOR_SCRIPT" -- >> $CONSOLE_LOG 2>&1
+		log_end_msg $?
 	else
 		log_action_msg "$SERVICE_NAME is already running ..."
 	fi
@@ -84,7 +77,7 @@ stop () {
 		fi
     		
 		rm -f $PIDFILE
-		log_daemon_msg "$SERVICE_NAME stopped ..."
+		log_end_msg $?
 	else
 		log_failure_msg "$SERVICE_NAME is not running ..."
 	fi
