@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kws</groupId>
 	<artifactId>kws-rpc-builder</artifactId>
-	<version>4.3.16</version>
+	<version>4.3.17-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Web SDK - RPC Builder</name>
@@ -37,7 +37,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kws-rpc-builder-4.3.16</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<mailingLists>
