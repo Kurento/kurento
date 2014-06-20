@@ -63,7 +63,7 @@ Running the server
 
     $ sudo /etc/init.d/kurento start
 
-Logs are written to ``/var/log/kurento/kurento.log``
+Logs are written to ``/var/log/kurento/media-server.log``
 
 Server configuration files:
 
