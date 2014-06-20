@@ -14,8 +14,6 @@
  */
 package com.kurento.kmf.test.sanity;
 
-import static com.kurento.kmf.common.PropertiesManager.getProperty;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -49,7 +47,7 @@ public class KwsBowerTest extends KwsBase {
 	}
 
 	public KwsBowerTest() {
-		kwsUrl = getProperty("kws.release.url", "./");
+		kwsUrl = "./";
 	}
 
 	@Test
