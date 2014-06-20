@@ -68,6 +68,10 @@
 	
 	<dependencies>
 		<dependency>
+			<groupId>com.kurento.kws</groupId>
+			<artifactId>kws-rpc-builder</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
 		</dependency>

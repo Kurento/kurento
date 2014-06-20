@@ -6,11 +6,10 @@
 <script 
 	src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
 <script src="js/console.js"></script>
-<script src="js/rpcbuilder.js"></script>
-<script src="js/jsonrpcclient.js"></script>
+<script src="js/kws-rpc-builder.js"></script>
 <script src="js/kws-utils.js"></script>
 <script>
-	var client = new JsonRpcClient("ws://" + location.host
+	var client = new RpcBuilder.clients.JsonRpcClient("ws://" + location.host
 			+ "/webrtc/ws/websocket", onRequest);
 	var sdpOffer;
 	var localPeerConnection;

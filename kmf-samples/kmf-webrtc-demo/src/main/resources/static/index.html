@@ -3,14 +3,25 @@
 <head>
 <meta charset="utf-8">
 <title>WebRTC Demo</title>
+</head>
+<body>
+	<h1>WebRTC Demo</h1>
+	<video id="videoLoopback" autoplay controls width="480px"
+		height="360px"></video>
+	<video id="videoFromServer" autoplay controls width="480px"
+		height="360px"></video>
+	<br />
+	<input type="button" value="Start" onclick="start(); return false;">
+	<br />
+	<div id="console"></div>
 <script
 	src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
-<script src="js/console.js"></script>
-<script src="js/rpcbuilder.js"></script>
-<script src="js/jsonrpcclient.js"></script>
+<script src="js/kws-rpc-builder.js"></script>
 <script src="js/kws-utils.js"></script>
+<script src="js/console.js"></script>
+<script src="js/index.js"></script>
 <script>
-	var client = new JsonRpcClient('ws://' + location.host
+	var client = new RpcBuilder.clients.JsonRpcClient('ws://' + location.host
 			+ '/webrtc/ws/websocket', function() {
 	});
 
@@ -47,16 +58,5 @@
 		}
 	}
 </script>
-</head>
-<body>
-	<h1>WebRTC Demo</h1>
-	<video id="videoLoopback" autoplay controls width="480px"
-		height="360px"></video>
-	<video id="videoFromServer" autoplay controls width="480px"
-		height="360px"></video>
-	<br />
-	<input type="button" value="Start" onclick="start(); return false;">
-	<br />
-	<div id="console"></div>
 </body>
 </html>

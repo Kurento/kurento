@@ -1,6 +1,6 @@
 function Softphone(wsUrl, videoInput, videoOutput)
 {
-	var client = new JsonRpcClient(wsUrl, onRequest);
+	var client = new RpcBuilder.clients.JsonRpcClient(wsUrl, onRequest);
 
 	var localPeerConnection;
 
@@ -62,4 +62,8 @@ function Softphone(wsUrl, videoInput, videoOutput)
 			});
 		});
 	};
+	
+	function onerror(error) {
+		console.error(error);
+	}
 }
