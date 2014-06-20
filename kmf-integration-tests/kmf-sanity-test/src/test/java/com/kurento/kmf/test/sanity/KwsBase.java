@@ -26,6 +26,8 @@ import org.junit.Before;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 
 import com.kurento.kmf.media.factory.KmfMediaApiProperties;
@@ -42,6 +44,8 @@ import freemarker.template.Template;
  * @since 4.2.5
  */
 public class KwsBase {
+
+	protected static final Logger log = LoggerFactory.getLogger(KwsBase.class);
 
 	protected WebDriver driver;
 	protected String serverAddress;
@@ -98,13 +102,16 @@ public class KwsBase {
 
 	public void doTest() {
 		for (String lib : kwsLibs) {
-			driver.get("http://" + serverAddress + ":" + serverPort + "/" + lib
-					+ ".html");
+			final String urlTest = "http://" + serverAddress + ":" + serverPort
+					+ "/" + lib + ".html";
+			driver.get(urlTest);
+			log.debug("Launching KWS sanity test against {}", urlTest);
+
 			String status = driver.findElement(By.id("status")).getAttribute(
 					"value");
 
-			Assert.assertTrue("Sanity test for " + lib + " failed",
-					status.equals("Ok"));
+			Assert.assertTrue("Sanity test for " + lib + " failed (" + status
+					+ ")", status.equals("Ok"));
 		}
 	}
 

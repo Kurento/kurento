@@ -34,16 +34,23 @@ public class KwsBowerTest extends KwsBase {
 
 	@BeforeClass
 	public static void runBower() throws IOException {
-		Shell.runAndWait("sh", "-c", "bower install kws-media-api");
-		Shell.runAndWait("sh", "-c", "bower install kws-utils");
+		log.debug("Using bower to download kws-media-api\n"
+				+ Shell.runAndWait("sh", "-c", "bower install kws-media-api"));
+		log.debug("Using bower to download kws-utils\n"
+				+ Shell.runAndWait("sh", "-c", "bower install kws-utils"));
 
 		final String outputFolder = new ClassPathResource("static").getFile()
 				.getAbsolutePath() + File.separator;
 
-		Shell.runAndWait("sh", "-c", "cp -r bower_components/kws-utils/js "
-				+ outputFolder);
-		Shell.runAndWait("sh", "-c", "cp -r bower_components/kws-media-api/js "
-				+ outputFolder);
+		log.debug("Copying files from bower_components/kws-utils/js to "
+				+ outputFolder
+				+ Shell.runAndWait("sh", "-c",
+						"cp -r bower_components/kws-utils/js " + outputFolder));
+		log.debug("Copying files from bower_components/kws-media-api/js to "
+				+ outputFolder
+				+ Shell.runAndWait("sh", "-c",
+						"cp -r bower_components/kws-media-api/js "
+								+ outputFolder));
 	}
 
 	public KwsBowerTest() {
