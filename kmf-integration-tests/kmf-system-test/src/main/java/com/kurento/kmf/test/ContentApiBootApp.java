@@ -35,7 +35,7 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
  * Initializer class to allow execute tests with Spring Boot.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  * @see <a href="http://projects.spring.io/spring-boot/">Spring Boot</a>
@@ -74,7 +74,6 @@ public class ContentApiBootApp {
 				ContentApiBootApp.class);
 
 		Properties properties = new Properties();
-		// TODO: Make this configurable with system properties
 		properties.put("server.port",
 				KurentoServicesTestHelper.getAppHttpPort());
 		application.setDefaultProperties(properties);

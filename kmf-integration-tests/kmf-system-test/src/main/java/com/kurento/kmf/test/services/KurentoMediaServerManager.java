@@ -53,6 +53,9 @@ public class KurentoMediaServerManager {
 	private static final String KURENTO_SERVER_COMMAND_PROP = "kms.command";
 	private static final String KURENTO_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento";
 
+	private static final String KURENTO_SERVER_DEBUG_PROP = "kms.debug";
+	private static final String KURENTO_SERVER_DEBUG_DEFAULT = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
+
 	public static Logger log = LoggerFactory
 			.getLogger(KurentoMediaServerManager.class);
 
@@ -108,6 +111,9 @@ public class KurentoMediaServerManager {
 		workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
 				KURENTO_WORKSPACE_DEFAULT);
 
+		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP,
+				KURENTO_SERVER_DEBUG_DEFAULT);
+
 		testDir = "./target/surefire-reports/";
 
 		if (!workspace.endsWith("/")) {
@@ -115,9 +121,6 @@ public class KurentoMediaServerManager {
 		}
 
 		KurentoServicesTestHelper.setTestDir(testDir);
-
-		// Default debug options
-		debugOptions = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
 
 		if (rabbitMqAddress != null) {
 			log.info("Starting KMS with RabbitMQ: RabbitMQAddress:'{}'"
@@ -186,8 +189,7 @@ public class KurentoMediaServerManager {
 			try {
 				Thread.sleep(2000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error("InterruptedException {}", e.getMessage());
 			}
 		}
 	}

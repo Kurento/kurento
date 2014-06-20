@@ -21,21 +21,17 @@ import org.apache.commons.io.FileUtils;
 import org.junit.internal.runners.model.MultipleFailureException;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
  * Utility class to print KMS log when a test fails.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@SuppressWarnings("deprecation")
 public class KmsLogOnFailure extends TestWatcher {
-
-	private static final Logger log = LoggerFactory
-			.getLogger(TestWatcher.class);
 
 	@Override
 	protected void failed(Throwable e, Description description) {
@@ -51,15 +47,11 @@ public class KmsLogOnFailure extends TestWatcher {
 			if (logFile.exists()) {
 				System.err
 						.println("******************************************************************************");
-
 				System.err.println(description.getClassName() + "." + testName
 						+ " TEST FAILED");
-
 				// showException(e);
-
 				System.err
 						.println("******************************************************************************");
-
 				System.err.println("Log file path: "
 						+ logFile.getAbsolutePath());
 				System.err.println("Content:");
@@ -81,6 +73,7 @@ public class KmsLogOnFailure extends TestWatcher {
 
 	}
 
+	@SuppressWarnings({ "unused" })
 	private void showException(Throwable e) {
 		if (e instanceof org.junit.internal.runners.model.MultipleFailureException) {
 
@@ -93,4 +86,5 @@ public class KmsLogOnFailure extends TestWatcher {
 			e.printStackTrace();
 		}
 	}
+
 }
