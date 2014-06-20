@@ -14,7 +14,10 @@
  */
 package com.kurento.kmf.spring;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -65,7 +68,7 @@ public final class KurentoApplicationContextUtils {
 	 * @return the context
 	 *
 	 */
-	public static AnnotationConfigApplicationContext createKurentoApplicationContext(
+	public static synchronized AnnotationConfigApplicationContext createKurentoApplicationContext(
 			ServletContext ctx) {
 		Assert.notNull(ctx,
 				"Cannot recover KurentoApplicationContext from a null ServletContext");
@@ -77,9 +80,9 @@ public final class KurentoApplicationContextUtils {
 		// We can't scan whole com.kurento.kmf package because there are classes
 		// in classpath not designed to work with content-api
 		kurentoApplicationContextInternalReference
-		.scan("com.kurento.kmf.spring");
+				.scan("com.kurento.kmf.spring");
 		kurentoApplicationContextInternalReference
-		.scan("com.kurento.kmf.content");
+				.scan("com.kurento.kmf.content");
 		kurentoApplicationContextInternalReference
 				.scan("com.kurento.kmf.repository");
 
@@ -179,7 +182,7 @@ public final class KurentoApplicationContextUtils {
 		return childAppContext;
 	}
 
-	public static AnnotationConfigApplicationContext createKurentoHandlerServletApplicationContext(
+	public static synchronized AnnotationConfigApplicationContext createKurentoHandlerServletApplicationContext(
 			Class<?> servletClass, String servletName, ServletContext sc,
 			String handlerClassName) {
 		Assert.notNull(sc,
@@ -214,7 +217,8 @@ public final class KurentoApplicationContextUtils {
 		return childContext;
 	}
 
-	public static void closeAllKurentoApplicationContexts(ServletContext ctx) {
+	public static synchronized void closeAllKurentoApplicationContexts(
+			ServletContext ctx) {
 		Assert.notNull(ctx, "Cannot close contexts from a null ServletContext");
 
 		if (childContexts != null) {
@@ -288,7 +292,8 @@ public final class KurentoApplicationContextUtils {
 
 	}
 
-	public static void registerKurentoServletContextListener(ServletContext ctx) {
+	public static synchronized void registerKurentoServletContextListener(
+			ServletContext ctx) {
 		// Add listener for closing Kurento ApplicationContexts on container
 		// shutdown
 
@@ -317,7 +322,7 @@ public final class KurentoApplicationContextUtils {
 		}
 	}
 
-	public static AnnotationConfigApplicationContext debugOnlyCreateKurentoApplicationContext() {
+	public static synchronized AnnotationConfigApplicationContext debugOnlyCreateKurentoApplicationContext() {
 		Assert.isNull(kurentoApplicationContextInternalReference,
 				"Pre-existing Kurento ApplicationContext found. Cannot create a new instance.");
 
