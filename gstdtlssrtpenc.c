@@ -35,13 +35,8 @@ GST_DEBUG_CATEGORY_STATIC (dtls_srtp_enc_debug);
 
 G_DEFINE_TYPE (GstDtlsSrtpEnc, gst_dtls_srtp_enc, GST_TYPE_BIN);
 
-#ifdef GSTREAMER_1_3_FOUND
 #define RTCP_SINK_TEMPLATE "rtcp_sink_%u"
 #define RTP_SINK_TEMPLATE "rtp_sink_%u"
-#else
-#define RTCP_SINK_TEMPLATE "rtcp_sink_%d"
-#define RTP_SINK_TEMPLATE "rtp_sink_%d"
-#endif
 
 enum
 {
