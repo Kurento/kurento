@@ -61,6 +61,8 @@ function leaveRoom() {
 	
 	document.getElementById('join').style.display = 'block';
 	document.getElementById('room').style.display = 'none';
+	
+	client.close();
 }
 
 function receiveVideo(sender) {
