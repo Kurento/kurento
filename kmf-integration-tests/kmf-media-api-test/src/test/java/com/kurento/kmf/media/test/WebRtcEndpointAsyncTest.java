@@ -18,7 +18,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -49,7 +48,6 @@ import com.kurento.kmf.media.test.base.SdpAsyncBaseTest;
  * @version 1.0.0
  *
  */
-@Ignore
 public class WebRtcEndpointAsyncTest extends SdpAsyncBaseTest<WebRtcEndpoint> {
 
 	@Before
