@@ -38,10 +38,22 @@ function register() {
 		name : name,
 		room : room,
 	}, function(error, result) {
+		
+		var constraints = {
+				audio : true,
+				video : {
+					mandatory: {
+						maxWidth: 320,
+						maxFrameRate : 15,
+						minFrameRate: 15
+					}
+				}
+		};
+		
 		console.log(name + " registered in room " + room);
 		var participant = new Participant(name);
 		participants[name] = participant;
-		participant.rtcPeer = kwsUtils.WebRtcPeer.startSendOnly(participant.getVideoElement(), participant.offerToReceiveVideo.bind(participant));
+		participant.rtcPeer = kwsUtils.WebRtcPeer.startSendOnly(participant.getVideoElement(), participant.offerToReceiveVideo.bind(participant), null, constraints);
 		result.value.forEach(receiveVideo);
 	});
 }
