@@ -2,7 +2,11 @@ function onerror(error) {
 	console.error(error);
 };
 
-function prepareSendPlayer(audio, video, sdpOfferReady) {
+function prepareSendPlayer(audio, video, audioUrl, sdpOfferReady) {
+
+	if (audioUrl) {
+		audio = false;
+	}
 
 	getUserMedia({
 		'audio' : audio,
@@ -30,6 +34,16 @@ function prepareSendPlayer(audio, video, sdpOfferReady) {
 				DtlsSrtpKeyAgreement : true
 			} ]
 		});
+
+		if (audioUrl) {
+			var context = new AudioContext();
+			var audioTest = document.getElementById("audioTest");
+			audioTest.src = audioUrl;
+			var audioStream = context.createMediaElementSource(audioTest);
+			var mixedOutput = context.createMediaStreamDestination();
+			audioStream.connect(mixedOutput);
+			peerConnection.addStream(mixedOutput.stream);
+		}
 
 		peerConnection.addStream(stream);
 

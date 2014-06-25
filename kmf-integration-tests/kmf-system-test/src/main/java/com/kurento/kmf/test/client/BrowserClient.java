@@ -70,6 +70,7 @@ public class BrowserClient implements Closeable {
 	private double maxDistance;
 
 	private String video;
+	private String audio;
 	private int serverPort;
 	private Client client;
 	private Browser browser;
@@ -78,6 +79,7 @@ public class BrowserClient implements Closeable {
 
 	private BrowserClient(Builder builder) {
 		this.video = builder.video;
+		this.audio = builder.audio;
 		this.serverPort = builder.serverPort;
 		this.client = builder.client;
 		this.browser = builder.browser;
@@ -358,8 +360,14 @@ public class BrowserClient implements Closeable {
 	public void connectToWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint,
 			WebRtcChannel channel) {
 		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver).executeScript("getSdpOffer("
-					+ channel.getAudio() + "," + channel.getVideo() + ");");
+			String getSdpOffer = "getSdpOffer(" + channel.getAudio() + ","
+					+ channel.getVideo();
+			if (audio != null) {
+				getSdpOffer += ",'" + audio + "');";
+			} else {
+				getSdpOffer += ");";
+			}
+			((JavascriptExecutor) driver).executeScript(getSdpOffer);
 
 			// Wait to valid sdpOffer
 			(new WebDriverWait(driver, timeout))
@@ -384,6 +392,7 @@ public class BrowserClient implements Closeable {
 
 	public static class Builder {
 		private String video;
+		private String audio;
 		private int serverPort;
 		private Client client;
 		private Browser browser;
@@ -407,6 +416,11 @@ public class BrowserClient implements Closeable {
 
 		public Builder video(String video) {
 			this.video = video;
+			return this;
+		}
+
+		public Builder audio(String audio) {
+			this.audio = audio;
 			return this;
 		}
 

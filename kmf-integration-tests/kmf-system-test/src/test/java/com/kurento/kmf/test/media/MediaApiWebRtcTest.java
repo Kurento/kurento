@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.MediaPipeline;
@@ -47,24 +46,16 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 
 public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 
-	private static int PLAYTIME = 5; // seconds to play in HTTP player
+	private static int PLAYTIME = 10; // seconds to play in HTTP player
 
 	@Test
 	public void testWebRtcLoopbackChrome() throws InterruptedException {
-		doTest(Browser.CHROME, null, new Color(0, 135, 0));
-
-		// Other alternative: with custom video
-		// doTest(Browser.CHROME, "/path-to/red.webm", Color.RED);
+		doTest(Browser.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
+				"http://files.kurento.org/audio/10sec/fiware.wav", Color.RED);
 	}
 
-	@Ignore
-	@Test
-	public void testWebRtcLoopbackFirefox() throws InterruptedException {
-		doTest(Browser.FIREFOX, "/path-to/blue.webm", Color.BLUE);
-	}
-
-	public void doTest(Browser browserType, String video, Color color)
-			throws InterruptedException {
+	public void doTest(Browser browserType, String video, String audio,
+			Color color) throws InterruptedException {
 		MediaPipeline mp = pipelineFactory.create();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 		webRtcEndpoint.connect(webRtcEndpoint);
@@ -73,6 +64,9 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 				browserType).client(Client.WEBRTC);
 		if (video != null) {
 			builder = builder.video(video);
+		}
+		if (audio != null) {
+			builder = builder.audio(audio);
 		}
 
 		try (BrowserClient browser = builder.build()) {

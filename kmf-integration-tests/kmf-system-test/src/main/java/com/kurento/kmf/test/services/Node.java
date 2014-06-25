@@ -16,6 +16,12 @@ package com.kurento.kmf.test.services;
 
 import static com.kurento.kmf.common.PropertiesManager.getProperty;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.kurento.kmf.test.client.Browser;
 
 /**
@@ -26,7 +32,11 @@ import com.kurento.kmf.test.client.Browser;
  */
 public class Node {
 
-	private static final int DEFAULT_MAX_INSTANCES = 1;
+	private final int DEFAULT_MAX_INSTANCES = 1;
+	private Logger log = LoggerFactory.getLogger(Node.class);
+
+	public final String REMOTE_FOLDER = "kurento-test";
+	public final String REMOTE_PID_FILE = "node-pid";
 
 	private String address;
 	private String login;
@@ -34,6 +44,14 @@ public class Node {
 	private Browser browser;
 	private int maxInstances;
 	private boolean overwrite;
+	private String video;
+	private RemoteHost remoteHost;
+	private String home;
+
+	public Node(String address, Browser browser, String video) {
+		this(address, browser);
+		setVideo(video);
+	}
 
 	public Node(String address, Browser browser) {
 		setAddress(address);
@@ -90,6 +108,54 @@ public class Node {
 
 	public void setBrowser(Browser browser) {
 		this.browser = browser;
+	}
+
+	public String getVideo() {
+		return video;
+	}
+
+	public String getRemoteVideo() {
+		String remoteVideo = null;
+		if (video != null) {
+			File file = new File(video);
+			remoteVideo = getHome() + "/" + REMOTE_FOLDER + "/"
+					+ file.getName();
+		}
+		return remoteVideo;
+	}
+
+	public void setVideo(String video) {
+		this.video = video;
+	}
+
+	public void startRemoteHost() {
+		remoteHost = new RemoteHost(getAddress(), getLogin(), getPassword());
+		remoteHost.start();
+	}
+
+	public void stopRemoteHost() {
+		remoteHost.stop();
+	}
+
+	public RemoteHost getRemoteHost() {
+		return remoteHost;
+	}
+
+	public String getHome() {
+		if (home == null) {
+			if (getRemoteHost() == null) {
+				startRemoteHost();
+			}
+			// OverThere SCP need absolute path, so home path must be known
+			try {
+				home = getRemoteHost().execAndWaitCommandNoBr("echo", "~");
+			} catch (IOException e) {
+				log.error("Exception reading remote home " + e.getClass()
+						+ " ... returning default home value: ~");
+				home = "~";
+			}
+		}
+		return home;
 	}
 
 }

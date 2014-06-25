@@ -53,17 +53,23 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 	public GridWebRtcTest() {
 		nodes = new ArrayList<Node>();
 		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME));
-		// nodes.addAll(getRandomNodes(5, Browser.CHROME));
+		// nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME,
+		// getPathTestFiles() + "/video/10sec/red.y4m"));
+		// nodes.addAll(getRandomNodes(5, Browser.CHROME, getPathTestFiles()
+		// + "/video/10sec/red.y4m"));
 		log.info("Node list {} ", nodes);
 	}
 
 	@Test
 	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
-		runParallel(nodes, new Runnable() {
-			public void run() {
-				doTest(Browser.CHROME, null, new Color(0, 135, 0));
-			}
-		});
+		for (final Node n : nodes) {
+			runParallel(new Runnable() {
+				public void run() {
+					doTest(n.getBrowser(), null, new Color(0, 135, 0));
+					// doTest(n.getBrowser(), n.getRemoteVideo(), Color.RED);
+				}
+			});
+		}
 	}
 
 	public void doTest(Browser browserType, String video, Color color) {

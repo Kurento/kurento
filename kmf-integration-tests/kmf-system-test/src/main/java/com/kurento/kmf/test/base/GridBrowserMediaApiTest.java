@@ -69,13 +69,9 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 	public static final int DEFAULT_HUB_PORT = 4444;
 
 	private static final int TIMEOUT_NODE = 60; // seconds
-
 	private static final String LAUNCH_SH = "launch-node.sh";
-	private static final String REMOTE_FOLDER = "kurento-test";
-	private static final String REMOTE_PID_FILE = "node-pid";
 
 	private SeleniumGridHub seleniumGridHub;
-	private List<RemoteHost> remoteHostList;
 	private String hubAddress;
 	private int hubPort;
 	private CountDownLatch countDownLatch;
@@ -97,7 +93,6 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 	}
 
 	private void startNodes() throws InterruptedException {
-		remoteHostList = new ArrayList<RemoteHost>();
 		countDownLatch = new CountDownLatch(nodes.size());
 
 		for (final Node n : nodes) {
@@ -129,44 +124,49 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		final String seleniumJarSource = getPathTestFiles()
 				+ "/bin/selenium-server" + seleniumJarName;
 
-		RemoteHost remoteHost = new RemoteHost(node.getAddress(),
-				node.getLogin(), node.getPassword());
-		remoteHost.start();
-		remoteHostList.add(remoteHost);
-
 		// OverThere SCP need absolute path, so home path must be known
-		String remoteHome = remoteHost.execAndWaitCommandNoBr("echo", "~");
+		String remoteHome = node.getHome();
 
-		final String remoteFolder = remoteHome + "/" + REMOTE_FOLDER;
+		final String remoteFolder = remoteHome + "/" + node.REMOTE_FOLDER;
 		final String remoteChromeDriver = remoteFolder + chromeDriverName;
 		final String remoteSeleniumJar = remoteFolder + seleniumJarName;
 		final String remoteScript = remoteFolder + "/" + LAUNCH_SH;
-		final String remotePort = String.valueOf(remoteHost.getFreePort());
+		final String remotePort = String.valueOf(node.getRemoteHost()
+				.getFreePort());
 
-		if (!remoteHost.exists(remoteFolder) || node.isOverwrite()) {
-			remoteHost.execAndWaitCommand("mkdir", "-p", remoteFolder);
+		if (!node.getRemoteHost().exists(remoteFolder) || node.isOverwrite()) {
+			node.getRemoteHost()
+					.execAndWaitCommand("mkdir", "-p", remoteFolder);
 		}
-		if (!remoteHost.exists(remoteChromeDriver) || node.isOverwrite()) {
-			remoteHost.scp(chromeDriverSource, remoteChromeDriver);
-			remoteHost.execAndWaitCommand("chmod", "+x", remoteChromeDriver);
+		if (!node.getRemoteHost().exists(remoteChromeDriver)
+				|| node.isOverwrite()) {
+			node.getRemoteHost().scp(chromeDriverSource, remoteChromeDriver);
+			node.getRemoteHost().execAndWaitCommand("chmod", "+x",
+					remoteChromeDriver);
 		}
-		if (!remoteHost.exists(remoteSeleniumJar) || node.isOverwrite()) {
-			remoteHost.scp(seleniumJarSource, remoteSeleniumJar);
+		if (!node.getRemoteHost().exists(remoteSeleniumJar)
+				|| node.isOverwrite()) {
+			node.getRemoteHost().scp(seleniumJarSource, remoteSeleniumJar);
 		}
 
 		// Script is always overwritten
-		createRemoteScript(remoteHost, remotePort, remoteScript, remoteFolder,
+		createRemoteScript(node, remotePort, remoteScript, remoteFolder,
 				remoteChromeDriver, remoteSeleniumJar, node.getBrowser(),
 				node.getMaxInstances());
 
+		// Copy video in remote host if necessary
+		if (node.getVideo() != null) {
+			node.getRemoteHost().scp(node.getVideo(), node.getRemoteVideo());
+		}
+
 		// Launch node
-		remoteHost.execCommand(remoteScript);
+		node.getRemoteHost().execCommand(remoteScript);
 
 		// Wait to be available for Hub
 		waitForNode(node.getAddress(), remotePort);
 	}
 
-	private void createRemoteScript(RemoteHost remoteHost, String remotePort,
+	private void createRemoteScript(Node node, String remotePort,
 			String remoteScript, String remoteFolder,
 			String remoteChromeDriver, String remoteSeleniumJar,
 			Browser browser, int maxInstances) throws IOException {
@@ -182,7 +182,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		data.put("remoteFolder", remoteFolder);
 		data.put("remoteChromeDriver", remoteChromeDriver);
 		data.put("remoteSeleniumJar", remoteSeleniumJar);
-		data.put("pidFile", REMOTE_PID_FILE);
+		data.put("pidFile", node.REMOTE_PID_FILE);
 		data.put("browser", browser);
 
 		cfg.setClassForTemplateLoading(GridBrowserMediaApiTest.class,
@@ -201,8 +201,8 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		}
 
 		// Copy script to remote node
-		remoteHost.scp(LAUNCH_SH, remoteScript);
-		remoteHost.execAndWaitCommand("chmod", "+x", remoteScript);
+		node.getRemoteHost().scp(LAUNCH_SH, remoteScript);
+		node.getRemoteHost().execAndWaitCommand("chmod", "+x", remoteScript);
 		Shell.run("rm", LAUNCH_SH);
 	}
 
@@ -239,6 +239,11 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 	}
 
 	protected static List<Node> getRandomNodes(int numNodes, Browser browser) {
+		return getRandomNodes(numNodes, browser, null);
+	}
+
+	protected static List<Node> getRandomNodes(int numNodes, Browser browser,
+			String video) {
 		List<Node> nodes = new ArrayList<Node>();
 
 		InputStream inputStream = GridBrowserMediaApiTest.class
@@ -269,7 +274,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 					if (xvfb != 2) {
 						log.debug("Node {} has no Xvfb", nodeCandidate);
 					} else {
-						nodes.add(new Node(nodeCandidate, browser));
+						nodes.add(new Node(nodeCandidate, browser, video));
 					}
 				} catch (Exception e) {
 					log.debug("Invalid credentials to access node {} ",
@@ -299,12 +304,13 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		seleniumGridHub.stop();
 
 		// Stop Nodes
-		for (RemoteHost rh : remoteHostList) {
-			String remotePid = rh.execAndWaitCommandNoBr("cat", REMOTE_FOLDER
-					+ "/" + REMOTE_PID_FILE);
-			rh.execCommand("pkill", "-TERM", "-P", remotePid);
-			rh.execCommand("rm", REMOTE_FOLDER + "/" + REMOTE_PID_FILE);
-			rh.stop();
+		for (Node n : nodes) {
+			String remotePid = n.getRemoteHost().execAndWaitCommandNoBr("cat",
+					n.REMOTE_FOLDER + "/" + n.REMOTE_PID_FILE);
+			n.getRemoteHost().execCommand("pkill", "-TERM", "-P", remotePid);
+			n.getRemoteHost().execCommand("rm",
+					n.REMOTE_FOLDER + "/" + n.REMOTE_PID_FILE);
+			n.stopRemoteHost();
 		}
 	}
 

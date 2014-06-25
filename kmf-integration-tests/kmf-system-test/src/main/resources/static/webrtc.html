@@ -14,8 +14,9 @@
 	var sdpOffer;
 	var peerConn;
 
-	function getSdpOffer(audio, video) {
-		prepareSendPlayer(audio, video, function(peerConnection, offer) {
+	function getSdpOffer(audio, video, audioUrl) {
+		prepareSendPlayer(audio, video, audioUrl, function(peerConnection,
+				offer) {
 			peerConn = peerConnection;
 			sdpOffer = offer.sdp;
 			console.info(sdpOffer);
@@ -117,6 +118,9 @@
 		if (!e) {
 			e = window.event;
 		}
+		if (e.type == "playing") {
+			audioTest.play();
+		}
 		log(e.type);
 	}
 </script>
@@ -137,6 +141,7 @@
 	<label for="y">y</label>
 	<input id="y" style="width: 30px;" value="0" />
 	<br />
+	<audio id="audioTest" loop="loop"></audio>
 	<label for="output">Output</label>
 	<div id="console"></div>
 </body>
