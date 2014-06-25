@@ -386,7 +386,9 @@ link_queue_to_tee_locked (GstElement * tee, GstElement * queue)
   old_func = GST_PAD_CHAINFUNC (queue_sink);
 
   if (old_func != NULL) {
-    g_object_set_data (G_OBJECT (queue_sink), OLD_CHAIN_KEY, old_func);
+    if (old_func != queue_chain) {
+      g_object_set_data (G_OBJECT (queue_sink), OLD_CHAIN_KEY, old_func);
+    }
     gst_pad_set_chain_function (queue_sink, queue_chain);
   }
 
@@ -435,7 +437,7 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
   GstPad *sink = gst_element_get_static_pad (tee, "sink");
 
   if (sink != NULL) {
-    gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_BLOCKING, tee_sink_blocked,
+    gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_BLOCK, tee_sink_blocked,
         g_object_ref (queue), g_object_unref);
     g_object_unref (sink);
   }
