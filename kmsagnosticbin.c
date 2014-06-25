@@ -1344,6 +1344,26 @@ gap_detection_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
   return GST_PAD_PROBE_OK;
 }
 
+static gboolean
+kms_agnostic_bin2_sink_query (GstPad * pad, GstObject * parent,
+    GstQuery * query)
+{
+  gboolean ret;
+
+  ret = gst_pad_query_default (pad, parent, query);
+
+  if (ret && GST_QUERY_TYPE (query) == GST_QUERY_LATENCY) {
+    GstClockTime min_latency;
+    GstClockTime max_latency;
+
+    gst_query_parse_latency (query, NULL, &min_latency, &max_latency);
+
+    gst_query_set_latency (query, TRUE, min_latency, max_latency);
+  }
+
+  return ret;
+}
+
 static void
 kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
 {
@@ -1370,6 +1390,7 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   target = gst_element_get_static_pad (tee, "sink");
   templ = gst_static_pad_template_get (&sink_factory);
   self->priv->sink = gst_ghost_pad_new_from_template ("sink", target, templ);
+  gst_pad_set_query_function (self->priv->sink, kms_agnostic_bin2_sink_query);
   self->priv->current_caps = NULL;
   self->priv->last_caps = NULL;
   gst_pad_add_probe (self->priv->sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
