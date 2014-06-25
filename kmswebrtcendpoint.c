@@ -76,9 +76,8 @@ enum
 
 #define FINGERPRINT_CHECKSUM G_CHECKSUM_SHA256
 
-#define FILE_PERMISIONS (S_IRWXU | S_IRWXG | S_IRWXO)
-#define ROOT_TMP_DIR "/tmp/kms_webrtc_endpoint"
-#define TMP_DIR_TEMPLATE ROOT_TMP_DIR "/XXXXXX"
+#define FILE_PERMISIONS (S_IRWXU)
+#define TMP_DIR_TEMPLATE "/tmp/kms_webrtc_endpoint_XXXXXX"
 #define CERTTOOL_TEMPLATE "certtool.tmpl"
 #define CERT_KEY_PEM_FILE "certkey.pem"
 
@@ -1604,8 +1603,6 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           1, G_MAXUINT16, 3478, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
-
-  g_mkdir_with_parents (ROOT_TMP_DIR, FILE_PERMISIONS);
 }
 
 static void
