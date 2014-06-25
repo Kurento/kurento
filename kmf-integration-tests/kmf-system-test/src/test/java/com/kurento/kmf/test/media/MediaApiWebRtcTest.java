@@ -25,6 +25,7 @@ import com.kurento.kmf.test.base.BrowserMediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.Recorder;
 import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
@@ -66,7 +67,7 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 			builder = builder.video(video);
 		}
 		if (audio != null) {
-			builder = builder.audio(audio);
+			builder = builder.audio(audio).recordAudio(PLAYTIME);
 		}
 
 		try (BrowserClient browser = builder.build()) {
@@ -92,7 +93,18 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 				Assert.assertTrue("The color of the video should be " + color,
 						browser.colorSimilarTo(color));
 			}
+
+			// Assert audio quality
+			if (audio != null) {
+				float minPesqMos = 1.5F;
+				float realPesqMos = Recorder.getPesqMos(audio);
+				Assert.assertTrue(
+						"Bad perceived audio quality: PESQ MOS too low (expected="
+								+ String.valueOf(minPesqMos) + ", real="
+								+ String.valueOf(realPesqMos) + ")",
+						realPesqMos >= minPesqMos);
+			}
+
 		}
 	}
-
 }

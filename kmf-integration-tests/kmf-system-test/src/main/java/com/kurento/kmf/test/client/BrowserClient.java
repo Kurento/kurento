@@ -76,6 +76,7 @@ public class BrowserClient implements Closeable {
 	private Browser browser;
 	private boolean usePhysicalCam;
 	private boolean remoteTest;
+	private int recordAudio;
 
 	private BrowserClient(Builder builder) {
 		this.video = builder.video;
@@ -85,6 +86,7 @@ public class BrowserClient implements Closeable {
 		this.browser = builder.browser;
 		this.usePhysicalCam = builder.usePhysicalCam;
 		this.remoteTest = builder.remoteTest;
+		this.recordAudio = builder.recordAudio;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
@@ -225,6 +227,12 @@ public class BrowserClient implements Closeable {
 
 		boolean result = countDownLatchEvents.get(eventType).await(timeout,
 				TimeUnit.SECONDS);
+
+		// Record local audio when playing event reaches the browser
+		if (eventType.equalsIgnoreCase("playing") && recordAudio > 0) {
+			Recorder.record(recordAudio);
+		}
+
 		countDownLatchEvents.remove(eventType);
 		return result;
 	}
@@ -288,6 +296,7 @@ public class BrowserClient implements Closeable {
 		}
 		driver.quit();
 		driver = null;
+
 	}
 
 	public int getTimeout() {
@@ -398,6 +407,7 @@ public class BrowserClient implements Closeable {
 		private Browser browser;
 		private boolean usePhysicalCam;
 		private boolean remoteTest;
+		private int recordAudio; // seconds
 
 		public Builder() {
 			this.serverPort = KurentoServicesTestHelper.getAppHttpPort();
@@ -408,6 +418,9 @@ public class BrowserClient implements Closeable {
 
 			// By default is not a remote test
 			this.remoteTest = false;
+
+			// By default, not recording audio (0 seconds)
+			this.recordAudio = 0;
 		}
 
 		public Builder(int serverPort) {
@@ -441,6 +454,11 @@ public class BrowserClient implements Closeable {
 
 		public Builder remoteTest() {
 			this.remoteTest = true;
+			return this;
+		}
+
+		public Builder recordAudio(int recordAudio) {
+			this.recordAudio = recordAudio;
 			return this;
 		}
 

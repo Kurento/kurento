@@ -45,6 +45,8 @@ import freemarker.template.Template;
 public class KurentoMediaServerManager {
 
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
+	// FIXME: same temporal folder may cause problems (e.g. parallel execution
+	// in CI server)
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
 	private static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
@@ -59,16 +61,15 @@ public class KurentoMediaServerManager {
 	public static Logger log = LoggerFactory
 			.getLogger(KurentoMediaServerManager.class);
 
+	private static String workspace;
+
 	private Address thriftAddress;
 	private int httpPort;
-
 	private String testClassName;
 	private String testMethodName;
 	private String testDir;
-
 	private String serverCommand;
 	private String gstPlugins;
-	private String workspace;
 	private String debugOptions;
 
 	private Address rabbitMqAddress;
@@ -330,5 +331,9 @@ public class KurentoMediaServerManager {
 		}
 
 		return result;
+	}
+
+	public static String getWorkspace() {
+		return workspace;
 	}
 }
