@@ -274,8 +274,13 @@ typedef struct _ConnectRtcpData
 static void
 connect_rtcp_data_destroy (gpointer data)
 {
+  ConnectRtcpData *d;
+
   if (data == NULL)
     return;
+
+  d = (ConnectRtcpData *) data;
+  g_object_unref (d->webrtc_endpoint);
 
   g_slice_free (ConnectRtcpData, data);
 }
