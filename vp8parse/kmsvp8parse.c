@@ -236,8 +236,9 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     GST_BUFFER_FLAG_UNSET (frame->buffer, GST_BUFFER_FLAG_HEADER);
   }
 
-  if (!self->priv->started)
+  if (!self->priv->started) {
     update_caps |= kms_vp8_parse_detect_framerate (self, frame);
+  }
 
   if (update_caps && kms_vp8_parse_check_caps_ready (self)) {
     GstCaps *caps;
@@ -264,8 +265,9 @@ kms_vp8_parse_handle_frame (GstBaseParse * parse, GstBaseParseFrame * frame,
     KMS_VP8_PARSE_UNLOCK (self);
   }
 
-  if (!self->priv->started)
+  if (!self->priv->started) {
     frame->flags |= GST_BASE_PARSE_FRAME_FLAG_QUEUE;
+  }
 
   self->priv->last_dts = frame->buffer->dts;
   self->priv->last_pts = frame->buffer->pts;
