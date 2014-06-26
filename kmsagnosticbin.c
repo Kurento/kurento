@@ -105,85 +105,6 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
 
 typedef void (*KmsPadIterationAction) (KmsAgnosticBin2 * self, GstPad * pad);
 
-static void kms_agnostic_bin2_add_pad_to_queue (KmsAgnosticBin2 * self,
-    GstPad * pad);
-static gboolean kms_agnostic_bin2_process_pad_loop (gpointer data);
-static void iterate_src_pads (KmsAgnosticBin2 * self,
-    KmsPadIterationAction action);
-
-static void
-add_unlinked_pads_without_target (KmsAgnosticBin2 * self, GstPad * pad)
-{
-  GstPad *target;
-
-  if (!gst_pad_is_linked (pad)) {
-    return;
-  }
-
-  target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
-
-  if (target == NULL) {
-    kms_agnostic_bin2_add_pad_to_queue (self, pad);
-  } else {
-    g_object_unref (target);
-  }
-}
-
-static gboolean
-iterate_pads_on_main_loop (gpointer data)
-{
-  KmsAgnosticBin2 *self = data;
-
-  KMS_AGNOSTIC_BIN2_LOCK (self);
-  iterate_src_pads (self, add_unlinked_pads_without_target);
-  KMS_AGNOSTIC_BIN2_UNLOCK (self);
-  kms_agnostic_bin2_process_pad_loop (self);
-
-  return FALSE;
-}
-
-static GstPadProbeReturn
-get_caps_event (GstPad * pad, GstPadProbeInfo * info, gpointer tee)
-{
-  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (GST_OBJECT_PARENT (tee));
-  GstEvent *event = gst_pad_probe_info_get_event (info);
-
-  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS)
-    return GST_PAD_PROBE_OK;
-
-  GST_OBJECT_LOCK (tee);
-  g_object_set_data (tee, CONFIGURED_KEY, GINT_TO_POINTER (TRUE));
-  GST_OBJECT_UNLOCK (tee);
-
-  kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
-      iterate_pads_on_main_loop, g_object_ref (self), g_object_unref);
-
-  return GST_PAD_PROBE_REMOVE;
-}
-
-static void
-set_configured_flag (GstElement * tee, GstElement * fakesink)
-{
-  GstPad *sink = gst_element_get_static_pad (fakesink, "sink");
-
-  gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
-      get_caps_event, g_object_ref (tee), g_object_unref);
-
-  g_object_unref (sink);
-}
-
-static gboolean
-tee_is_configured (GstElement * tee)
-{
-  gboolean ret;
-
-  GST_OBJECT_LOCK (tee);
-  ret = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (tee), CONFIGURED_KEY));
-  GST_OBJECT_UNLOCK (tee);
-
-  return ret;
-}
-
 static gboolean
 is_raw_caps (GstCaps * caps)
 {
@@ -716,7 +637,6 @@ kms_agnostic_bin2_create_raw_tee (KmsAgnosticBin2 * self, GstCaps * raw_caps)
   gst_element_sync_state_with_parent (fakequeue);
   gst_element_sync_state_with_parent (fakesink);
   gst_element_link_many (queue, decoder, tee, fakequeue, fakesink, NULL);
-  set_configured_flag (tee, fakesink);
 
   link_queue_to_tee (self->priv->current_tee, queue);
 
@@ -806,7 +726,7 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
   GstElement *encoder, *queue, *rate, *convert, *mediator, *fakequeue,
       *fakesink;
 
-  if (raw_tee == NULL || !tee_is_configured (raw_tee)) {
+  if (raw_tee == NULL) {
     return NULL;
   }
 
@@ -842,7 +762,6 @@ kms_agnostic_bin2_create_tee_for_caps (KmsAgnosticBin2 * self, GstCaps * caps)
 
   gst_element_link_many (queue, rate, convert, mediator, encoder, tee,
       fakequeue, fakesink, NULL);
-  set_configured_flag (tee, fakesink);
   link_queue_to_tee (raw_tee, queue);
 
   g_hash_table_insert (self->priv->tees, GST_OBJECT_NAME (tee),
@@ -879,7 +798,7 @@ kms_agnostic_bin2_link_pad (KmsAgnosticBin2 * self, GstPad * pad, GstPad * peer)
     GST_DEBUG_OBJECT (self, "Created tee: %" GST_PTR_FORMAT, tee);
   }
 
-  if (tee != NULL && tee_is_configured (tee)) {
+  if (tee != NULL) {
     kms_agnostic_bin2_link_to_tee (self, pad, tee, caps);
   }
 
@@ -1112,8 +1031,6 @@ kms_agnostic_bin2_configure_input_tee (KmsAgnosticBin2 * self, GstCaps * caps)
   gst_element_sync_state_with_parent (tee);
   gst_element_sync_state_with_parent (queue);
   gst_element_sync_state_with_parent (fakesink);
-
-  set_configured_flag (tee, fakesink);
 
   gst_element_link_many (input_queue, parser, tee, queue, fakesink, NULL);
   gst_element_link (self->priv->main_tee, input_queue);
