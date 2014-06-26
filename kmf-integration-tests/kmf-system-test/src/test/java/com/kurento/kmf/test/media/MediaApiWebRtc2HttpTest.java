@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.HttpGetEndpoint;
@@ -61,7 +60,6 @@ public class MediaApiWebRtc2HttpTest extends BrowserMediaApiTest {
 	// WebRTC source
 
 	@Test
-	@Ignore
 	public void testWebRtc2Http() throws Exception {
 		// Media Pipeline
 		final MediaPipeline mp = pipelineFactory.create();
