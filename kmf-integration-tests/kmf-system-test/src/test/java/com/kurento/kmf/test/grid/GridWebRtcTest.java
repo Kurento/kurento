@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.MediaPipeline;
@@ -60,6 +61,7 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 		log.info("Node list {} ", nodes);
 	}
 
+	@Ignore
 	@Test
 	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
 		for (final Node n : nodes) {
