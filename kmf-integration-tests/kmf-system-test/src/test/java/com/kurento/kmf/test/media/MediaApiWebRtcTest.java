@@ -36,9 +36,10 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browsers start before 60 seconds (default timeout)</li>
- * <li>Color received by client should be green (RGB #008700, video test of
- * Chrome)</li>
+ * <li>Browser should start before default timeout</li>
+ * <li>Play time should be as expected</li>
+ * <li>Color received by client should be as expected</li>
+ * <li>Perceived audio quality should be fair (PESQMOS)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -93,18 +94,17 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 				Assert.assertTrue("The color of the video should be " + color,
 						browser.colorSimilarTo(color));
 			}
+		}
 
-			// Assert audio quality
-			if (audio != null) {
-				float minPesqMos = 1.5F;
-				float realPesqMos = Recorder.getPesqMos(audio);
-				Assert.assertTrue(
-						"Bad perceived audio quality: PESQ MOS too low (expected="
-								+ String.valueOf(minPesqMos) + ", real="
-								+ String.valueOf(realPesqMos) + ")",
-						realPesqMos >= minPesqMos);
-			}
-
+		// Assert audio quality
+		if (audio != null) {
+			float minPesqMos = 1.5F;
+			float realPesqMos = Recorder.getPesqMos(audio);
+			Assert.assertTrue(
+					"Bad perceived audio quality: PESQ MOS too low (expected="
+							+ String.valueOf(minPesqMos) + ", real="
+							+ String.valueOf(realPesqMos) + ")",
+					realPesqMos >= minPesqMos);
 		}
 	}
 }
