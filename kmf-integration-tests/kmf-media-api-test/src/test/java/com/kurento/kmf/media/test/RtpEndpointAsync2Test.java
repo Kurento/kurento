@@ -27,7 +27,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
@@ -42,7 +41,6 @@ import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
-	@Ignore
 	@Test
 	public void testStream() throws InterruptedException {
 		final Semaphore sem = new Semaphore(0);

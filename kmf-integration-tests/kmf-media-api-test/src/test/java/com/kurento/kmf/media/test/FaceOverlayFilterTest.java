@@ -23,7 +23,6 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.FaceOverlayFilter;
@@ -40,7 +39,6 @@ import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
  * @since 2.0.1
  *
  */
-@Ignore
 public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 
 	private FaceOverlayFilter overlayFilter;

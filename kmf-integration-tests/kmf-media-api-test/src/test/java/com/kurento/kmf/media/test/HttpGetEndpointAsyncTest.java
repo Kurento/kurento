@@ -29,7 +29,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
@@ -188,7 +187,6 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	 * @throws InterruptedException
 	 * @throws IOException
 	 */
-	@Ignore
 	@Test
 	public void testEventMediaSessionTerminated() throws InterruptedException,
 			IOException {

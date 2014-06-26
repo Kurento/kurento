@@ -23,7 +23,6 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
@@ -79,7 +78,6 @@ public class PlayerEndpointTest extends MediaPipelineBaseTest {
 	}
 
 	@Test
-	@Ignore
 	public void testEventEndOfStream() throws InterruptedException {
 		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
 				1);
