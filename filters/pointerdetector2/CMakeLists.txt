@@ -13,9 +13,10 @@ set(POINTERDETECTOR2_SOURCES
 
 add_library(pointerdetector2 MODULE ${POINTERDETECTOR2_SOURCES})
 
-add_dependencies(pointerdetector2 kmsplugin)
+add_dependencies(pointerdetector2 kmsplugin kmscommons)
 
 target_link_libraries(pointerdetector2
+  kmscommons
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
   ${OPENCV_LIBRARIES}
