@@ -25,8 +25,9 @@ import com.kurento.kmf.test.base.BrowserMediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.client.Recorder;
 import com.kurento.kmf.test.client.WebRtcChannel;
+import com.kurento.kmf.test.services.AudioChannel;
+import com.kurento.kmf.test.services.Recorder;
 
 /**
  * <strong>Description</strong>: WebRTC in loopback.<br/>
@@ -49,14 +50,17 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 
 	private static int PLAYTIME = 10; // seconds to play in HTTP player
+	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
+	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
 	@Test
 	public void testWebRtcLoopbackChrome() throws InterruptedException {
 		doTest(Browser.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
-				"http://files.kurento.org/audio/10sec/fiware.wav", Color.RED);
+				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
+				Color.RED);
 	}
 
-	public void doTest(Browser browserType, String video, String audio,
+	public void doTest(Browser browserType, String videoPath, String audioUrl,
 			Color color) throws InterruptedException {
 		MediaPipeline mp = pipelineFactory.create();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
@@ -64,11 +68,12 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 
 		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
 				browserType).client(Client.WEBRTC);
-		if (video != null) {
-			builder = builder.video(video);
+		if (videoPath != null) {
+			builder = builder.video(videoPath);
 		}
-		if (audio != null) {
-			builder = builder.audio(audio).recordAudio(PLAYTIME);
+		if (audioUrl != null) {
+			builder = builder.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE,
+					AudioChannel.MONO);
 		}
 
 		try (BrowserClient browser = builder.build()) {
@@ -97,14 +102,13 @@ public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 		}
 
 		// Assert audio quality
-		if (audio != null) {
-			float minPesqMos = 1.5F;
-			float realPesqMos = Recorder.getPesqMos(audio);
+		if (audioUrl != null) {
+			float realPesqMos = Recorder
+					.getPesqMos(audioUrl, AUDIO_SAMPLE_RATE);
 			Assert.assertTrue(
 					"Bad perceived audio quality: PESQ MOS too low (expected="
-							+ String.valueOf(minPesqMos) + ", real="
-							+ String.valueOf(realPesqMos) + ")",
-					realPesqMos >= minPesqMos);
+							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
+					realPesqMos >= MIN_PESQ_MOS);
 		}
 	}
 }

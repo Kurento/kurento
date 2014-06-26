@@ -47,7 +47,9 @@ import org.slf4j.LoggerFactory;
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.factory.KmfMediaApiProperties;
 import com.kurento.kmf.test.base.GridBrowserMediaApiTest;
+import com.kurento.kmf.test.services.AudioChannel;
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
+import com.kurento.kmf.test.services.Recorder;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
@@ -77,6 +79,8 @@ public class BrowserClient implements Closeable {
 	private boolean usePhysicalCam;
 	private boolean remoteTest;
 	private int recordAudio;
+	private int audioSampleRate;
+	private AudioChannel audioChannel;
 
 	private BrowserClient(Builder builder) {
 		this.video = builder.video;
@@ -87,6 +91,8 @@ public class BrowserClient implements Closeable {
 		this.usePhysicalCam = builder.usePhysicalCam;
 		this.remoteTest = builder.remoteTest;
 		this.recordAudio = builder.recordAudio;
+		this.audioSampleRate = builder.audioSampleRate;
+		this.audioChannel = builder.audioChannel;
 
 		countDownLatchEvents = new HashMap<>();
 		timeout = 60; // default (60 seconds)
@@ -230,7 +236,7 @@ public class BrowserClient implements Closeable {
 
 		// Record local audio when playing event reaches the browser
 		if (eventType.equalsIgnoreCase("playing") && recordAudio > 0) {
-			Recorder.record(recordAudio);
+			Recorder.record(recordAudio, audioSampleRate, audioChannel);
 		}
 
 		countDownLatchEvents.remove(eventType);
@@ -408,6 +414,8 @@ public class BrowserClient implements Closeable {
 		private boolean usePhysicalCam;
 		private boolean remoteTest;
 		private int recordAudio; // seconds
+		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
+		private AudioChannel audioChannel; // stereo, mono
 
 		public Builder() {
 			this.serverPort = KurentoServicesTestHelper.getAppHttpPort();
@@ -432,11 +440,6 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder audio(String audio) {
-			this.audio = audio;
-			return this;
-		}
-
 		public Builder client(Client client) {
 			this.client = client;
 			return this;
@@ -457,8 +460,12 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder recordAudio(int recordAudio) {
+		public Builder audio(String audio, int recordAudio,
+				int audioSampleRate, AudioChannel audioChannel) {
+			this.audio = audio;
 			this.recordAudio = recordAudio;
+			this.audioSampleRate = audioSampleRate;
+			this.audioChannel = audioChannel;
 			return this;
 		}
 

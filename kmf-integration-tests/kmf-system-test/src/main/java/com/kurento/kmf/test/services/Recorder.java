@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.kmf.test.client;
+package com.kurento.kmf.test.services;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.test.Shell;
-import com.kurento.kmf.test.services.KurentoMediaServerManager;
-import com.kurento.kmf.test.services.KurentoServicesTestHelper;
 
 /**
  * Audio recorder using AVCONV (formerly FFMPEG) and audio quality assessment
@@ -46,14 +44,16 @@ public class Recorder {
 	private static final String HTTP_TEST_FILES = "http://files.kurento.org";
 	private static final String PESQ_RESULTS = "pesq_results.txt";
 	private static final String RECORDED_WAV = KurentoMediaServerManager
-			.getWorkspace() + "/recorded.wav";
+			.getWorkspace() + "recorded.wav";
 
-	public static void record(int seconds) {
-		Shell.run("sh", "-c", "avconv -t " + seconds
-				+ " -f alsa -i pulse -q:a 0 " + RECORDED_WAV);
+	public static void record(int seconds, int sampleRate,
+			AudioChannel audioChannel) {
+		Shell.run("sh", "-c", "avconv -y -t " + seconds
+				+ " -f alsa -i pulse -q:a 0 -ac " + audioChannel + " -ar "
+				+ sampleRate + " " + RECORDED_WAV);
 	}
 
-	public static float getPesqMos(String audio) {
+	public static float getPesqMos(String audio, int sampleRate) {
 		float pesqmos = 0;
 
 		try {
@@ -74,7 +74,7 @@ public class Recorder {
 				fos.close();
 			}
 
-			Shell.runAndWait(pesq, "+16000", origWav, RECORDED_WAV);
+			Shell.runAndWait(pesq, "+" + sampleRate, origWav, RECORDED_WAV);
 			List<String> lines = FileUtils.readLines(new File(PESQ_RESULTS),
 					"utf-8");
 			pesqmos = Float.parseFloat(lines.get(1).split("\t")[2].trim());
