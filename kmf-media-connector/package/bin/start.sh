@@ -1,6 +1,6 @@
 #!/bin/sh
 
-DIRNAME=`dirname "$0"`
+DIRNAME=$(dirname "$0")
 GREP="grep"
 
 # OS specific support (must be 'true' or 'false').
@@ -20,14 +20,6 @@ case "`uname`" in
         linux=true
         ;;
 esac
-
-# Setup KMF_MEDIA_CONNECTOR_HOME
-RESOLVED_KMF_MEDIA_CONNECTOR_HOME=`cd "$DIRNAME/.."; pwd`
-if [ "x$KMF_MEDIA_CONNECTOR_HOME" = "x" ]; then
-    # get the full path (without any relative bits)
-    KMF_MEDIA_CONNECTOR_HOME=$RESOLVED_KMF_MEDIA_CONNECTOR_HOME
-fi
-export KMF_MEDIA_CONNECTOR_HOME
 
 # Setup the JVM
 if [ "x$JAVA" = "x" ]; then
@@ -84,21 +76,26 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
     JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
 fi
 
-# determine the default log dir, if not set
-if [ "x$KMF_MEDIA_CONNECTOR_LOG_DIR" = "x" ]; then
-   KMF_MEDIA_CONNECTOR_LOG_DIR="$KMF_MEDIA_CONNECTOR_HOME/logs"
+# Find out installation type
+KMC_HOME=$(cd $DIRNAME/..;pwd)
+KMC_BINARY=$KMC_HOME/lib/kmf-media-connector.jar
+KMC_CONFIG=$KMC_HOME/config/application.properties
+if [ ! -f $KMC_BINARY ]; then
+    KMC_HOME=/var/lib/kurento
+    KMC_BINARY=$KMC_HOME/kmf-media-connector.jar
+    KMC_CONFIG="/etc/kurento/media-connector.conf"
+    KMC_OPTS="--spring.config.name=$KMC_CONFIG"
 fi
-# determine the default configuration dir, if not set
-if [ "x$KMF_MEDIA_CONNECTOR_CONFIG_DIR" = "x" ]; then
-   KMF_MEDIA_CONNECTOR_CONFIG_DIR="$KMF_MEDIA_CONNECTOR_HOME/config"
-fi
+
+[ -f $KMC_BINARY ] || { echo "Unable to find KMC binary file"; exit 1; }
+[ -f $KMC_CONFIG ] || { echo "Unable to find configuration file: $KMC_CONFIG"; exit 1; }
 
 # Display our environment
 echo "========================================================================="
 echo ""
 echo "  KMF Media Connector Bootstrap Environment"
 echo ""
-echo "  KMF_MEDIA_CONNECTOR_HOME: $KMF_MEDIA_CONNECTOR_HOME"
+echo "  KMC_BINARY: $KMC_BINARY"
 echo ""
 echo "  JAVA: $JAVA"
 echo ""
@@ -106,61 +103,6 @@ echo "  JAVA_OPTS: $JAVA_OPTS"
 echo ""
 echo "========================================================================="
 echo ""
-if [ -z "$PIDFILE" ]; then
-	PIDFILE=$KMF_MEDIA_CONNECTOR_HOME/kmf-media-connector.pid
-fi
 
-while true; do
-   if [ "x$LAUNCH_KMF_IN_BACKGROUND" = "x" ]; then
-      # Execute the JVM in the foreground
-      eval \"$JAVA\"  $JAVA_OPTS \
-         -jar \"$KMF_MEDIA_CONNECTOR_HOME/lib/kmf-media-connector.jar\"
-      KMF_STATUS=$?
-   else
-      # Execute the JVM in the background
-      eval \"$JAVA\"  $JAVA_OPTS \
-         -jar \"$KMF_MEDIA_CONNECTOR_HOME/lib/kmf-media-connector.jar\" \
-         "&"
-      PID=$!
-
-      if [ "x$PIDFILE" != "x" ]; then
-        echo $PID > $PIDFILE
-      fi
-
-echo "========================================================================="
-echo ""
-      echo "$PID"
-echo "$PIDFILE"
-echo ""
-echo "========================================================================="
-
-      # Wait until the background process exits
-      WAIT_STATUS=128
-      while [ "$WAIT_STATUS" -ge 128 ]; do
-         wait $PID 2>/dev/null
-         WAIT_STATUS=$?
-         if [ "$WAIT_STATUS" -gt 128 ]; then
-            SIGNAL=`expr $WAIT_STATUS - 128`
-            SIGNAL_NAME=`kill -l $SIGNAL`
-            echo -n "*** KMF Media Connector process ($PID) received $SIGNAL_NAME signal ***" >&2
-         fi
-      done
-      if [ "$WAIT_STATUS" -lt 127 ]; then
-         KMF_STATUS=$WAIT_STATUS
-      else
-         KMF_STATUS=0
-      fi
-      if [ "$KMF_STATUS" -ne 10 ]; then
-            # Wait for a complete shudown
-            wait $PID 2>/dev/null
-      fi
-      if [ "x$PIDFILE" != "x" ]; then
-            grep "$PID" $PIDFILE && rm $PIDFILE
-      fi
-   fi
-   if [ "$KMF_STATUS" -eq 10 ]; then
-      echo -n "Restarting Kmf Media Connector..."
-   else
-      exit $KMF_STATUS
-   fi
-done
+cd $KMC_HOME
+exec $JAVA $JAVA_OPTS -jar $KMC_BINARY $KMC_OPTS

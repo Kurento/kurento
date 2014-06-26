@@ -11,89 +11,113 @@
 # processname: 
 ### END INIT INFO
 
-# Variables
-SERVICE_NAME=KurentoMediaConnector
-DAEMON_USER=nobody
-
-. /lib/lsb/init-functions
-
-export KMF_MEDIA_CONNECTOR_HOME=$(dirname $(dirname $0))
-
-if [ -z "$SHUTDOWN_WAIT" ]; then
-  SHUTDOWN_WAIT=30
+if [ -r "/lib/lsb/init-functions" ]; then
+  . /lib/lsb/init-functions
+else
+  echo "E: /lib/lsb/init-functions not found, package lsb-base needed"
+  exit 1
 fi
 
-PIDFILE=/var/run/kurento/kmf-media-connector.pid
-export PIDFILE
+SERVICE_NAME=KurentoMediaConnector
 
-KMF_MEDIA_CONNECTOR_SCRIPT=$KMF_MEDIA_CONNECTOR_HOME/bin/start.sh
+# Find out local or system installation
+KMC_DIR=$(cd $(dirname $(dirname $0)); pwd)
+if [ -f $KMC_DIR/bin/start.sh -a -f $KMC_DIR/lib/kmf-media-connector.jar ]; then
+    KMF_MEDIA_CONNECTOR_SCRIPT=$KMC_DIR/bin/start.sh
+    CONSOLE_LOG=$KMC_DIR/logs/media-connector.log
+    KMC_CONFIG=$KMC_DIR/config/application.properties
+    PIDFILE=$KMC_DIR/kurento-media-connector.pid
+else
+    # Only root can start Kurento in system mode
+    if [ `id -u` -ne 0 ]; then
+        log_failure_msg "Only root can start Kurento"
+        exit 1
+    fi
+    [ -f /etc/default/kurento-media-connector ] && . /etc/default/kurento-media-connector
+    KMF_MEDIA_CONNECTOR_SCRIPT=/usr/bin/kurento-media-connector
+    CONSOLE_LOG=/var/log/kurento/media-connector.log
+    KMC_CONFIG=/etc/kurento/media-connector.conf
+    KMC_CHUID="--chuid $DAEMON_USER"
+    PIDFILE=/var/run/kurento/kurento-media-connector.pid
+fi
+
+[ -z "$DAEMON_USER" ] && DAEMON_USER=nobody
 
 # Check startup file
 if [ ! -x $KMF_MEDIA_CONNECTOR_SCRIPT ]; then
-	log_failure_msg "$KMF_MEDIA_CONNECTOR_SCRIPT is not an executable!"
-	exit 1
+    log_failure_msg "$KMF_MEDIA_CONNECTOR_SCRIPT is not an executable!"
+    exit 1
 fi
 
-# Location to keep the console log
-if [ -z "$CONSOLE_LOG" ]; then
-	CONSOLE_LOG=/var/log/kurento/media-connector.log
+# Check config file
+if [ ! -f $KMC_CONFIG ]; then
+    log_failure_msg "Kurento Media Framework configuration file not found: $KMC_CONFIG"
+    exit 1;
 fi
-export CONSOLE_LOG
+
+# Check log directory
+[ -d $(dirname $CONSOLE_LOG) ] || mkdir -p $(dirname $CONSOLE_LOG)
 
 start() {
 	log_daemon_msg "$SERVICE_NAME starting"
-	if [ ! -f $PIDFILE ]; then
-		mkdir -p $(dirname $PIDFILE)
-		mkdir -p $(dirname $CONSOLE_LOG)
-		#chown $KURENTO_USER $(dirname $PIDFILE) || true
-		cat /dev/null > $CONSOLE_LOG
-
-		start-stop-daemon --start \
- 		--chdir "$KMF_MEDIA_CONNECTOR_HOME" --pidfile "$PIDFILE" \
-		--chuid $DAEMON_USER --background --no-close --make-pidfile \
-		--exec "$KMF_MEDIA_CONNECTOR_SCRIPT" -- >> $CONSOLE_LOG 2>&1
-		log_end_msg $?
-	else
-		log_action_msg "$SERVICE_NAME is already running ..."
-	fi
+        # clean PIDFILE before start
+        if [ -f "$PIDFILE" ]; then
+            if [ -n "$(ps h --pid $(cat $PIDFILE) | awk '{print $1}')" ]; then
+                log_action_msg "$SERVICE_NAME is already running ..."
+                return
+            fi
+            rm -f $PIDFILE
+        fi
+        # KMC instances not identified => Kill them all
+        CURRENT_KMC=$(ps -ef|grep kmf-media-connector.jar |grep -v grep | awk '{print $2}')
+        [ -n "$CURRENT_KMC" ] && kill -9 $CURRENT_KMC > /dev/null 2>&1
+	mkdir -p $(dirname $PIDFILE)
+	mkdir -p $(dirname $CONSOLE_LOG)
+	cat /dev/null > $CONSOLE_LOG
+        # Start daemon
+	start-stop-daemon --start $KMC_CHUID \
+        --make-pidfile --pidfile $PIDFILE \
+	--background --no-close \
+	--exec "$KMF_MEDIA_CONNECTOR_SCRIPT" -- >> $CONSOLE_LOG 2>&1
+	log_end_msg $?
 }
 
 stop () {
 	if [ -f $PIDFILE ]; then
-		read kpid < $PIDFILE
-		kwait=$SHUTDOWN_WAIT
+	    read kpid < $PIDFILE
+	    kwait=15
 		
-		count=0
-		log_daemon_msg "$SERVICE_NAME stopping ..."
-		kill -15 $kpid
-		until [ `ps --pid $kpid 2> /dev/null | grep -c $kpid 2> /dev/null` -eq '0' ] || [ $count -gt $kwait ]
-		do
-			sleep 1
-			coount=$((count+1))
-		done
+	    count=0
+	    log_daemon_msg "$SERVICE_NAME stopping ..."
+	    kill -15 $kpid
+	    until [ `ps --pid $kpid 2> /dev/null | grep -c $kpid 2> /dev/null` -eq '0' ] || [ $count -gt $kwait ]
+	    do
+		sleep 1
+		count=$((count+1))
+	    done
     		
-		if [ $count -gt $kwait ]; then
-			kill -9 $kpid
-		fi
+	    if [ $count -gt $kwait ]; then
+		kill -9 $kpid
+	    fi
     		
-		rm -f $PIDFILE
-		log_end_msg $?
+	    rm -f $PIDFILE
+	    log_end_msg $?
 	else
-		log_failure_msg "$SERVICE_NAME is not running ..."
+	    log_failure_msg "$SERVICE_NAME is not running ..."
 	fi
 }
 
 
 status() {
 	if [ -f $PIDFILE ]; then
-		read ppid < $PIDFILE
-		if [ `ps --pid $ppid 2> /dev/null | grep -c $ppid 2> /dev/null` -eq '1' ]; then
-			log_daemon_msg "$prog is running (pid $ppid)"
-			return 0
-		else
-			log_daemon_msg "$prog dead but pid file exists"
-			return 1
-		fi
+	    read ppid < $PIDFILE
+	    if [ `ps --pid $ppid 2> /dev/null | grep -c $ppid 2> /dev/null` -eq '1' ]; then
+		log_daemon_msg "$prog is running (pid $ppid)"
+		return 0
+	    else
+		log_daemon_msg "$prog dead but pid file exists"
+		return 1
+	    fi
 	fi
 	log_daemon_msg "$SERVICE_NAME is not running"
 	return 3
@@ -101,21 +125,20 @@ status() {
 
 case "$1" in
 	start)
-		start
-		;;
+	    start
+	    ;;
 	stop)
-		stop
-		;;
+	    stop
+	    ;;
 	restart)
-		$0 stop
-		$0 start
-		;;
+	    $0 stop
+	    $0 start
+	    ;;
 	status)
-		status
-		;;
+	    status
+	    ;;
 	*)
-		## If no parameters are given, print which are avaiable.
-		log_daemon_msg "Usage: $0 {start|stop|status|restart|reload}"
-		exit 1
-		;;
+	    ## If no parameters are given, print which are avaiable.
+	    log_daemon_msg "Usage: $0 {start|stop|status|restart|reload}"
+	    ;;
 esac
