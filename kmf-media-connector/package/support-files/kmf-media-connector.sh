@@ -26,19 +26,19 @@ if [ -f $KMC_DIR/bin/start.sh -a -f $KMC_DIR/lib/kmf-media-connector.jar ]; then
     KMF_MEDIA_CONNECTOR_SCRIPT=$KMC_DIR/bin/start.sh
     CONSOLE_LOG=$KMC_DIR/logs/media-connector.log
     KMC_CONFIG=$KMC_DIR/config/application.properties
-    PIDFILE=$KMC_DIR/kurento-media-connector.pid
+    PIDFILE=$KMC_DIR/kmf-media-connector.pid
 else
     # Only root can start Kurento in system mode
     if [ `id -u` -ne 0 ]; then
         log_failure_msg "Only root can start Kurento"
         exit 1
     fi
-    [ -f /etc/default/kurento-media-connector ] && . /etc/default/kurento-media-connector
-    KMF_MEDIA_CONNECTOR_SCRIPT=/usr/bin/kurento-media-connector
+    [ -f /etc/default/kmf-media-connector ] && . /etc/default/kmf-media-connector
+    KMF_MEDIA_CONNECTOR_SCRIPT=/usr/bin/kmf-media-connector
     CONSOLE_LOG=/var/log/kurento/media-connector.log
-    KMC_CONFIG=/etc/kurento/media-connector.conf
+    KMC_CONFIG=/etc/kurento/media-connector.properties
     KMC_CHUID="--chuid $DAEMON_USER"
-    PIDFILE=/var/run/kurento/kurento-media-connector.pid
+    PIDFILE=/var/run/kurento/kmf-media-connector.pid
 fi
 
 [ -z "$DAEMON_USER" ] && DAEMON_USER=nobody

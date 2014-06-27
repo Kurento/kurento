@@ -83,8 +83,8 @@ KMC_CONFIG=$KMC_HOME/config/application.properties
 if [ ! -f $KMC_BINARY ]; then
     KMC_HOME=/var/lib/kurento
     KMC_BINARY=$KMC_HOME/kmf-media-connector.jar
-    KMC_CONFIG="/etc/kurento/media-connector.conf"
-    KMC_OPTS="--spring.config.name=$KMC_CONFIG"
+    KMC_CONFIG="/etc/kurento/media-connector.properties"
+    KMC_OPTS="--spring.config.location=$KMC_CONFIG"
 fi
 
 [ -f $KMC_BINARY ] || { echo "Unable to find KMC binary file"; exit 1; }

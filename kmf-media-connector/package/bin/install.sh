@@ -34,7 +34,7 @@ install -o root -g root -m 755 $KMC_HOME/support-files/kmf-media-connector.sh /e
 mkdir -p /var/lib/kurento
 install -o root -g root $KMC_HOME/lib/kmf-media-connector.jar /var/lib/kurento/
 mkdir -p /etc/kurento/
-install -o root -g root $KMC_HOME/config/application.properties /etc/kurento/media-connector.conf
+install -o root -g root $KMC_HOME/config/application.properties /etc/kurento/media-connector.properties
 
 # start media connector
 /etc/init.d/kmf-media-connector start
