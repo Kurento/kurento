@@ -32,13 +32,13 @@ easy to install the proxy in the same node than Kurento Media Server.
 Assuming that the command 'java' points to a Java 7 JVM executable, the proxy 
 can be executed as:
 
-$ java -jar kmf-media-connector.jar --server.port=8080 
+$ java -jar kmf-media-connector.jar --server.port=8888 
   --thrift.kms.address=127.0.0.1:9090
   --thrift.kmf.address=127.0.0.1:9191
 
 The meaning of configuration properties are:
 * server.port: The http/websocket port of the proxy. This port will be used for 
-  the clients to connect to the port. If not specified, the value 8080 will be 
+  the clients to connect to the port. If not specified, the value 8888 will be 
   used.
 * thrift.kms.address: The IP and port address of the Kurento Media Server. 
   If not specified, the address 127.0.0.1:9090 will be used.
@@ -57,12 +57,12 @@ RabbitMQ documentation for this.
 Assuming that the command 'java' points to a Java 7 JVM executable, the proxy 
 can be executed as:
 
-$ java -jar kmf-media-connector.jar --server.port=8080 --kmf.transport=rabbitmq 
+$ java -jar kmf-media-connector.jar --server.port=8888 --kmf.transport=rabbitmq 
   --rabbitmq.address=127.0.0.1:5672
 
 The meaning of configuration properties are:
 * server.port: The http/websocket port of the proxy. This port will be used for 
-  the clients to connect to the port. If not specified, the value 8080 will be 
+  the clients to connect to the port. If not specified, the value 8888 will be 
   used.
 * rabbitmq.address: Specifies the address of the RabbitMQ broker. The default 
   value is "127.0.0.1:5672".
@@ -87,7 +87,7 @@ configuration properties in a configuration file. The configuration file has to
 be called 'application.properties' and must be placed in the working directory. 
 The file is formated as a plain Java properties file, for example:
 
-server.port=8080
+server.port=8888
 thrift.kms.address=127.0.0.1:9090
 thrift.kmf.address=127.0.0.1:9191
 
