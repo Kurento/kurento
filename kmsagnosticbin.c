@@ -840,6 +840,9 @@ kms_agnostic_bin2_process_pad (KmsAgnosticBin2 * self, GstPad * pad)
   if (pad == NULL)
     return;
 
+  /* We consider that pad is correctly configured now */
+  gst_pad_check_reconfigure (pad);
+
   peer = gst_pad_get_peer (pad);
 
   if (peer == NULL)
@@ -1099,32 +1102,40 @@ static GstPadProbeReturn
 kms_agnostic_bin2_src_reconfigure_probe (GstPad * pad, GstPadProbeInfo * info,
     gpointer user_data)
 {
+  KmsAgnosticBin2 *self = KMS_AGNOSTIC_BIN2 (gst_pad_get_parent_element (pad));
+  GstPadProbeReturn ret = GST_PAD_PROBE_OK;
   GstEvent *event;
 
-  if (~GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_BLOCK) {
-    return GST_PAD_PROBE_OK;
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_BOTH) {
+    event = gst_pad_probe_info_get_event (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
+      KmsAgnosticBin2 *self = user_data;
+
+      GST_DEBUG_OBJECT (pad, "Received reconfigure event");
+
+      KMS_AGNOSTIC_BIN2_LOCK (self);
+      kms_agnostic_bin2_add_pad_to_queue (self, pad);
+      kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
+          kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
+          g_object_unref);
+      KMS_AGNOSTIC_BIN2_UNLOCK (self);
+
+      ret = GST_PAD_PROBE_DROP;
+      goto end;
+    }
+  }
+  // If the pads needs to be reconfigured, we should drop events
+  if (gst_pad_needs_reconfigure (pad)) {
+    ret = GST_PAD_PROBE_DROP;
+  } else {
+    ret = GST_PAD_PROBE_OK;
   }
 
-  event = gst_pad_probe_info_get_event (info);
+end:
+  g_object_unref (self);
 
-  if (GST_EVENT_TYPE (event) == GST_EVENT_RECONFIGURE) {
-    KmsAgnosticBin2 *self = user_data;
-
-    GST_DEBUG_OBJECT (pad, "Received reconfigure event");
-
-    KMS_AGNOSTIC_BIN2_LOCK (self);
-    kms_agnostic_bin2_add_pad_to_queue (self, pad);
-    kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH,
-        kms_agnostic_bin2_process_pad_loop, g_object_ref (self),
-        g_object_unref);
-    KMS_AGNOSTIC_BIN2_UNLOCK (self);
-
-    send_force_key_unit_event (self->priv->sink);
-
-    return GST_PAD_PROBE_DROP;
-  }
-
-  return GST_PAD_PROBE_PASS;
+  return ret;
 }
 
 static void
@@ -1150,8 +1161,7 @@ kms_agnostic_bin2_request_new_pad (GstElement * element,
   pad = gst_ghost_pad_new_no_target_from_template (pad_name, templ);
   g_free (pad_name);
 
-  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BLOCK |
-      GST_PAD_PROBE_TYPE_EVENT_UPSTREAM,
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_EVENT_UPSTREAM,
       kms_agnostic_bin2_src_reconfigure_probe, element, NULL);
 
   g_signal_connect (pad, "unlinked",
