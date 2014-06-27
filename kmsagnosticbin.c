@@ -320,7 +320,7 @@ link_queue_to_tee_locked (GstElement * tee, GstElement * queue)
   gst_pad_add_probe (tee_src, GST_PAD_PROBE_TYPE_EVENT_UPSTREAM, tee_src_probe,
       NULL, NULL);
 
-  ret = gst_pad_link (tee_src, queue_sink);
+  ret = gst_pad_link_full (tee_src, queue_sink, GST_PAD_LINK_CHECK_NOTHING);
 
   if (G_UNLIKELY (GST_PAD_LINK_FAILED (ret)))
     GST_ERROR ("Linking %" GST_PTR_FORMAT " with %" GST_PTR_FORMAT " result %d",
