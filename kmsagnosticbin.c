@@ -50,20 +50,16 @@ G_DEFINE_TYPE (KmsAgnosticBin2, kms_agnostic_bin2, GST_TYPE_BIN);
   )                                          \
 )
 
-#define KMS_AGNOSTIC_BIN2_GET_LOCK(obj) (       \
-  &KMS_AGNOSTIC_BIN2 (obj)->priv->thread_mutex  \
-)
-
 #define KMS_AGNOSTIC_BIN2_GET_COND(obj) (       \
   &KMS_AGNOSTIC_BIN2 (obj)->priv->thread_cond   \
 )
 
-#define KMS_AGNOSTIC_BIN2_LOCK(obj) (                   \
-  g_mutex_lock (KMS_AGNOSTIC_BIN2_GET_LOCK (obj))       \
+#define KMS_AGNOSTIC_BIN2_LOCK(obj) (                           \
+  g_mutex_lock (&KMS_AGNOSTIC_BIN2 (obj)->priv->thread_mutex)   \
 )
 
-#define KMS_AGNOSTIC_BIN2_UNLOCK(obj) (                 \
-  g_mutex_unlock (KMS_AGNOSTIC_BIN2_GET_LOCK (obj))     \
+#define KMS_AGNOSTIC_BIN2_UNLOCK(obj) (                         \
+  g_mutex_unlock (&KMS_AGNOSTIC_BIN2 (obj)->priv->thread_mutex) \
 )
 
 #define OLD_CHAIN_KEY "kms-old-chain-key"
@@ -73,9 +69,6 @@ struct _KmsAgnosticBin2Private
 {
   GHashTable *tees;
   GQueue *pads_to_link;
-  GMutex probe_mutex;
-  GCond probe_cond;
-  gulong block_probe;
 
   GMutex thread_mutex;
 
@@ -1273,9 +1266,6 @@ kms_agnostic_bin2_finalize (GObject * object)
   g_queue_free_full (self->priv->pads_to_link, g_object_unref);
   g_hash_table_unref (self->priv->tees);
 
-  g_cond_clear (&self->priv->probe_cond);
-  g_mutex_clear (&self->priv->probe_mutex);
-
   /* chain up */
   G_OBJECT_CLASS (kms_agnostic_bin2_parent_class)->finalize (object);
 }
@@ -1393,10 +1383,6 @@ kms_agnostic_bin2_init (KmsAgnosticBin2 * self)
   self->priv->started = FALSE;
 
   self->priv->loop = kms_loop_new ();
-
-  g_cond_init (&self->priv->probe_cond);
-  g_mutex_init (&self->priv->probe_mutex);
-  self->priv->block_probe = 0L;
 
   self->priv->tees =
       g_hash_table_new_full (g_str_hash, g_str_equal, NULL, g_object_unref);
