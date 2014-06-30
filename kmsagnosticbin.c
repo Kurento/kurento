@@ -220,7 +220,7 @@ remove_on_unlinked_blocked (GstPad * pad, GstPadProbeInfo * info, gpointer elem)
 static void
 remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
 {
-  GstElement *elem = GST_ELEMENT (GST_OBJECT_PARENT (pad));
+  GstElement *elem = gst_pad_get_parent_element (pad);
   KmsAgnosticBin2 *self;
 
   if (elem == NULL) {
@@ -235,20 +235,22 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
     if (sink != NULL) {
       GstPad *peer = gst_pad_get_peer (sink);
 
+      g_object_unref (sink);
+
       if (peer != NULL) {
         gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_BLOCK,
             remove_on_unlinked_blocked, g_object_ref (elem), g_object_unref);
         gst_object_unref (peer);
-        gst_object_unref (sink);
-        return;
+        goto end;
       }
-
-      g_object_unref (sink);
     }
 
     kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
         remove_on_unlinked_async, g_object_ref (elem), g_object_unref);
   }
+
+end:
+  g_object_unref (elem);
 }
 
 /* Sink name should be static memory */
