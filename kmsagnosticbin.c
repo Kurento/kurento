@@ -105,6 +105,33 @@ static GstStaticPadTemplate src_factory = GST_STATIC_PAD_TEMPLATE ("src_%u",
 
 typedef void (*KmsPadIterationAction) (KmsAgnosticBin2 * self, GstPad * pad);
 
+/*
+ * This function sends a dummy event to force blocked probe to be called
+ */
+static void
+send_dummy_event (GstPad * pad)
+{
+  GstElement *parent = gst_pad_get_parent_element (pad);
+
+  if (parent == NULL) {
+    return;
+  }
+
+  if (GST_PAD_IS_SINK (pad)) {
+    gst_pad_send_event (pad,
+        gst_event_new_custom (GST_EVENT_TYPE_DOWNSTREAM |
+            GST_EVENT_TYPE_SERIALIZED,
+            gst_structure_new_from_string ("dummy")));
+  } else {
+    gst_pad_send_event (pad,
+        gst_event_new_custom (GST_EVENT_TYPE_UPSTREAM |
+            GST_EVENT_TYPE_SERIALIZED,
+            gst_structure_new_from_string ("dummy")));
+  }
+
+  g_object_unref (parent);
+}
+
 static gboolean
 is_raw_caps (GstCaps * caps)
 {
@@ -341,12 +368,38 @@ tee_sink_blocked (GstPad * tee_sink, GstPadProbeInfo * info, gpointer queue)
     return GST_PAD_PROBE_REMOVE;
   }
 
+  /* HACK: Ignore caps event and stream start event that causes negotiation
+   * failures.This is a workaround that should be removed
+   */
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM) {
+    GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_STREAM_START
+        || GST_EVENT_TYPE (event) == GST_EVENT_CAPS) {
+      return GST_PAD_PROBE_PASS;
+    }
+  }
+
+  /* HACK: Ignore query accept caps that causes negotiation errors.
+   * This is a workaround that should be removed
+   */
+  if (GST_PAD_PROBE_INFO_TYPE (info) & GST_PAD_PROBE_TYPE_QUERY_DOWNSTREAM) {
+    GstQuery *query = GST_PAD_PROBE_INFO_QUERY (info);
+
+    if (GST_QUERY_TYPE (query) == GST_QUERY_ACCEPT_CAPS) {
+      return GST_PAD_PROBE_PASS;
+    }
+  }
+
+  GST_OBJECT_LOCK (tee_sink);
   if (g_object_get_data (queue, LINKING_DATA)) {
+    GST_OBJECT_UNLOCK (tee_sink);
     g_object_unref (tee);
     return GST_PAD_PROBE_PASS;
   }
 
   g_object_set_data (queue, LINKING_DATA, GINT_TO_POINTER (TRUE));
+  GST_OBJECT_UNLOCK (tee_sink);
 
   link_queue_to_tee_locked (tee, GST_ELEMENT (queue));
   g_object_unref (tee);
@@ -362,6 +415,7 @@ link_queue_to_tee (GstElement * tee, GstElement * queue)
   if (sink != NULL) {
     gst_pad_add_probe (sink, GST_PAD_PROBE_TYPE_BLOCK, tee_sink_blocked,
         g_object_ref (queue), g_object_unref);
+    send_dummy_event (sink);
     g_object_unref (sink);
   }
 }
