@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.kurento.kmf</groupId>
 		<artifactId>kmf-integration-tests</artifactId>
-		<version>4.3.0</version>
+		<version>4.3.1-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>kmf-media-connector-test</artifactId>
@@ -37,7 +37,7 @@
 		<url>${kmf.scm.url}</url>
 		<connection>scm:git:${kmf.scm.connection}</connection>
 		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
-		<tag>kurento-media-framework-4.3.0</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
