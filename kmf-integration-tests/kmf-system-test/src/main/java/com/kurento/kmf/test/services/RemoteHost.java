@@ -15,6 +15,7 @@
 package com.kurento.kmf.test.services;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -58,6 +59,18 @@ public class RemoteHost {
 		this.host = host;
 		this.login = login;
 		this.passwd = passwd;
+	}
+
+	public void getFile(String targetFile, String origFile) {
+		OverthereFile motd = connection.getFile(origFile);
+		InputStream is = motd.getInputStream();
+		try {
+			Files.copy(is, Paths.get(targetFile));
+			is.close();
+		} catch (IOException e) {
+			log.error("Exception getting file: {} to {} ()", origFile,
+					targetFile, e.getMessage());
+		}
 	}
 
 	public void scp(String origFile, String targetFile) throws IOException {

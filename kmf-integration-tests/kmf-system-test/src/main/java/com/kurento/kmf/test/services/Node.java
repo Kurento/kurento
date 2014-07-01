@@ -45,8 +45,15 @@ public class Node {
 	private int maxInstances;
 	private boolean overwrite;
 	private String video;
+	private String audio;
 	private RemoteHost remoteHost;
 	private String home;
+
+	public Node(String address, Browser browser, String video, String audio) {
+		this(address, browser);
+		setVideo(video);
+		setAudio(audio);
+	}
 
 	public Node(String address, Browser browser, String video) {
 		this(address, browser);
@@ -114,6 +121,10 @@ public class Node {
 		return video;
 	}
 
+	public String getAudio() {
+		return audio;
+	}
+
 	public String getRemoteVideo() {
 		String remoteVideo = null;
 		if (video != null) {
@@ -126,6 +137,10 @@ public class Node {
 
 	public void setVideo(String video) {
 		this.video = video;
+	}
+
+	public void setAudio(String audio) {
+		this.audio = audio;
 	}
 
 	public void startRemoteHost() {

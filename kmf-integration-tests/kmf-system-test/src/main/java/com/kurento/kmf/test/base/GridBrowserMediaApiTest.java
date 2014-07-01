@@ -239,11 +239,11 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 	}
 
 	protected static List<Node> getRandomNodes(int numNodes, Browser browser) {
-		return getRandomNodes(numNodes, browser, null);
+		return getRandomNodes(numNodes, browser, null, null);
 	}
 
 	protected static List<Node> getRandomNodes(int numNodes, Browser browser,
-			String video) {
+			String video, String audio) {
 		List<Node> nodes = new ArrayList<Node>();
 
 		InputStream inputStream = GridBrowserMediaApiTest.class
@@ -274,7 +274,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 					if (xvfb != 2) {
 						log.debug("Node {} has no Xvfb", nodeCandidate);
 					} else {
-						nodes.add(new Node(nodeCandidate, browser, video));
+						nodes.add(new Node(nodeCandidate, browser, video, audio));
 					}
 				} catch (Exception e) {
 					log.debug("Invalid credentials to access node {} ",

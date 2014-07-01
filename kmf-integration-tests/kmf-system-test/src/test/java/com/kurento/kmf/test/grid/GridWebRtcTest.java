@@ -29,7 +29,9 @@ import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.WebRtcChannel;
+import com.kurento.kmf.test.services.AudioChannel;
 import com.kurento.kmf.test.services.Node;
+import com.kurento.kmf.test.services.Recorder;
 
 /**
  * <strong>Description</strong>: WebRTC (in loopback) test with Selenium Grid.<br/>
@@ -39,9 +41,10 @@ import com.kurento.kmf.test.services.Node;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browsers start before default timeout</li>
- * <li>Color received by client should be green (RGB #008700, video test of
- * Chrome)</li>
+ * <li>Browser should start before default timeout</li>
+ * <li>Play time should be as expected</li>
+ * <li>Color received by client should be as expected</li>
+ * <li>Perceived audio quality should be fair (PESQMOS)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -49,40 +52,48 @@ import com.kurento.kmf.test.services.Node;
  */
 public class GridWebRtcTest extends GridBrowserMediaApiTest {
 
-	private static final int PLAYTIME = 5; // seconds to play in WebRTC
+	private static int PLAYTIME = 10; // seconds to play in WebRTC
+	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
+	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
 	public GridWebRtcTest() {
 		nodes = new ArrayList<Node>();
-		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME));
-		// nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME,
-		// getPathTestFiles() + "/video/10sec/red.y4m"));
+		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME,
+				getPathTestFiles() + "/video/10sec/red.y4m",
+				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
+
 		// nodes.addAll(getRandomNodes(5, Browser.CHROME, getPathTestFiles()
-		// + "/video/10sec/red.y4m"));
+		// + "/video/10sec/red.y4m",
+		// "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
 		log.info("Node list {} ", nodes);
 	}
 
 	@Ignore
 	@Test
 	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
-		for (final Node n : nodes) {
+		for (final Node node : nodes) {
 			runParallel(new Runnable() {
 				public void run() {
-					doTest(n.getBrowser(), null, new Color(0, 135, 0));
-					// doTest(n.getBrowser(), n.getRemoteVideo(), Color.RED);
+					doTest(node, Color.RED);
 				}
 			});
 		}
 	}
 
-	public void doTest(Browser browserType, String video, Color color) {
+	public void doTest(Node node, Color color) {
 		MediaPipeline mp = pipelineFactory.create();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		BrowserClient.Builder builder = new BrowserClient.Builder()
-				.browser(browserType).client(Client.WEBRTC).remoteTest();
-		if (video != null) {
-			builder = builder.video(video);
+				.browser(node.getBrowser()).client(Client.WEBRTC)
+				.remoteNode(node);
+		if (node.getVideo() != null) {
+			builder = builder.video(node.getVideo());
+		}
+		if (node.getAudio() != null) {
+			builder = builder.audio(node.getAudio(), PLAYTIME,
+					AUDIO_SAMPLE_RATE, AudioChannel.MONO);
 		}
 
 		try (BrowserClient browser = builder.build()) {
@@ -110,6 +121,16 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 			}
 		} catch (InterruptedException e) {
 			Assert.fail("InterruptedException " + e.getMessage());
+		}
+
+		// Assert audio quality
+		if (node.getAudio() != null) {
+			float realPesqMos = Recorder.getRemotePesqMos(node,
+					AUDIO_SAMPLE_RATE);
+			Assert.assertTrue(
+					"Bad perceived audio quality: PESQ MOS too low (expected="
+							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
+					realPesqMos >= MIN_PESQ_MOS);
 		}
 	}
 

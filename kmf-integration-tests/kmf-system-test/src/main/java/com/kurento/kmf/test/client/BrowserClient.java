@@ -49,6 +49,7 @@ import com.kurento.kmf.media.factory.KmfMediaApiProperties;
 import com.kurento.kmf.test.base.GridBrowserMediaApiTest;
 import com.kurento.kmf.test.services.AudioChannel;
 import com.kurento.kmf.test.services.KurentoServicesTestHelper;
+import com.kurento.kmf.test.services.Node;
 import com.kurento.kmf.test.services.Recorder;
 
 /**
@@ -77,7 +78,7 @@ public class BrowserClient implements Closeable {
 	private Client client;
 	private Browser browser;
 	private boolean usePhysicalCam;
-	private boolean remoteTest;
+	private Node remoteNode;
 	private int recordAudio;
 	private int audioSampleRate;
 	private AudioChannel audioChannel;
@@ -89,7 +90,7 @@ public class BrowserClient implements Closeable {
 		this.client = builder.client;
 		this.browser = builder.browser;
 		this.usePhysicalCam = builder.usePhysicalCam;
-		this.remoteTest = builder.remoteTest;
+		this.remoteNode = builder.remoteNode;
 		this.recordAudio = builder.recordAudio;
 		this.audioSampleRate = builder.audioSampleRate;
 		this.audioChannel = builder.audioChannel;
@@ -121,7 +122,7 @@ public class BrowserClient implements Closeable {
 				// This flag avoids granting the access to the camera
 				profile.setPreference("media.navigator.permission.disabled",
 						true);
-				if (remoteTest) {
+				if (remoteNode != null) {
 					DesiredCapabilities capabilities = new DesiredCapabilities();
 					capabilities.setCapability(FirefoxDriver.PROFILE, profile);
 					capabilities.setBrowserName(DesiredCapabilities.firefox()
@@ -168,7 +169,7 @@ public class BrowserClient implements Closeable {
 					}
 				}
 
-				if (remoteTest) {
+				if (remoteNode != null) {
 					DesiredCapabilities capabilities = new DesiredCapabilities();
 					capabilities.setCapability(ChromeOptions.CAPABILITY,
 							options);
@@ -236,7 +237,12 @@ public class BrowserClient implements Closeable {
 
 		// Record local audio when playing event reaches the browser
 		if (eventType.equalsIgnoreCase("playing") && recordAudio > 0) {
-			Recorder.record(recordAudio, audioSampleRate, audioChannel);
+			if (remoteNode != null) {
+				Recorder.recordRemote(remoteNode, recordAudio, audioSampleRate,
+						audioChannel);
+			} else {
+				Recorder.record(recordAudio, audioSampleRate, audioChannel);
+			}
 		}
 
 		countDownLatchEvents.remove(eventType);
@@ -382,6 +388,7 @@ public class BrowserClient implements Closeable {
 			} else {
 				getSdpOffer += ");";
 			}
+
 			((JavascriptExecutor) driver).executeScript(getSdpOffer);
 
 			// Wait to valid sdpOffer
@@ -412,7 +419,7 @@ public class BrowserClient implements Closeable {
 		private Client client;
 		private Browser browser;
 		private boolean usePhysicalCam;
-		private boolean remoteTest;
+		private Node remoteNode;
 		private int recordAudio; // seconds
 		private int audioSampleRate; // samples per seconds (e.g. 8000, 16000)
 		private AudioChannel audioChannel; // stereo, mono
@@ -425,7 +432,7 @@ public class BrowserClient implements Closeable {
 			this.usePhysicalCam = false;
 
 			// By default is not a remote test
-			this.remoteTest = false;
+			this.remoteNode = null;
 
 			// By default, not recording audio (0 seconds)
 			this.recordAudio = 0;
@@ -455,8 +462,8 @@ public class BrowserClient implements Closeable {
 			return this;
 		}
 
-		public Builder remoteTest() {
-			this.remoteTest = true;
+		public Builder remoteNode(Node remoteNode) {
+			this.remoteNode = remoteNode;
 			return this;
 		}
 

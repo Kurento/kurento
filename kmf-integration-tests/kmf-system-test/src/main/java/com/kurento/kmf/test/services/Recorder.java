@@ -46,11 +46,29 @@ public class Recorder {
 	private static final String RECORDED_WAV = KurentoMediaServerManager
 			.getWorkspace() + "recorded.wav";
 
+	public static void recordRemote(Node node, int seconds, int sampleRate,
+			AudioChannel audioChannel) {
+		try {
+			node.getRemoteHost().execCommand("avconv", "-y", "-t",
+					String.valueOf(seconds), "-f", "alsa", "-i", "pulse",
+					"-q:a", "0", "-ac", audioChannel.toString(), "-ar",
+					String.valueOf(sampleRate), RECORDED_WAV);
+		} catch (IOException e) {
+			log.error("IOException recording audio in remote node "
+					+ node.getAddress());
+		}
+	}
+
 	public static void record(int seconds, int sampleRate,
 			AudioChannel audioChannel) {
 		Shell.run("sh", "-c", "avconv -y -t " + seconds
 				+ " -f alsa -i pulse -q:a 0 -ac " + audioChannel + " -ar "
 				+ sampleRate + " " + RECORDED_WAV);
+	}
+
+	public static float getRemotePesqMos(Node node, int sampleRate) {
+		node.getRemoteHost().getFile(RECORDED_WAV, RECORDED_WAV);
+		return getPesqMos(node.getAudio(), sampleRate);
 	}
 
 	public static float getPesqMos(String audio, int sampleRate) {

@@ -49,7 +49,7 @@ import com.kurento.kmf.test.services.Recorder;
 
 public class MediaApiWebRtcTest extends BrowserMediaApiTest {
 
-	private static int PLAYTIME = 10; // seconds to play in HTTP player
+	private static int PLAYTIME = 10; // seconds to play in WebRTC
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
 	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
