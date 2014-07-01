@@ -216,12 +216,16 @@ remove_on_unlinked_blocked (GstPad * pad, GstPadProbeInfo * info, gpointer elem)
 
   GST_DEBUG_OBJECT (pad, "Unlinking pad");
 
+  GST_OBJECT_LOCK (pad);
   if (g_object_get_data (G_OBJECT (pad), UNLINKING_DATA)) {
     GST_DEBUG ("Already unlinking");
+    GST_OBJECT_UNLOCK (pad);
     return GST_PAD_PROBE_DROP;
   }
 
   g_object_set_data (G_OBJECT (pad), UNLINKING_DATA, GINT_TO_POINTER (TRUE));
+
+  GST_OBJECT_UNLOCK (pad);
 
   sink = gst_pad_get_peer (pad);
   if (sink != NULL) {
@@ -260,6 +264,7 @@ remove_on_unlinked_cb (GstPad * pad, GstPad * peer, gpointer user_data)
       if (peer != NULL) {
         gst_pad_add_probe (peer, GST_PAD_PROBE_TYPE_BLOCK,
             remove_on_unlinked_blocked, g_object_ref (elem), g_object_unref);
+        send_dummy_event (peer);
         gst_object_unref (peer);
         goto end;
       }
@@ -467,11 +472,29 @@ create_rate_for_caps (GstCaps * caps)
   return rate;
 }
 
+static GstPadProbeReturn
+remove_target_pad_block (GstPad * pad, GstPadProbeInfo * info, gpointer gp)
+{
+  GST_DEBUG_OBJECT (pad, "Drop");
+  return GST_PAD_PROBE_DROP;
+}
+
 static void
 remove_target_pad (GstPad * pad)
 {
   GST_DEBUG_OBJECT (pad, "Removing target pad");
+
+  GstPad *target = gst_ghost_pad_get_target (GST_GHOST_PAD (pad));
+
+  if (target == NULL) {
+    return;
+  }
+
+  gst_pad_add_probe (target, GST_PAD_PROBE_TYPE_DATA_DOWNSTREAM,
+      remove_target_pad_block, NULL, NULL);
   gst_ghost_pad_set_target (GST_GHOST_PAD (pad), NULL);
+
+  g_object_unref (target);
 }
 
 static GstPadProbeReturn
