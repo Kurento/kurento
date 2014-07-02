@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Kurento CMake utils
-Source: https://github.com/Kurento/kms-cmake-utils
+Source: https://github.com/Kurento/kms-jsonrpc
 
 Files: *
 Copyright: Copyright 2013 Kurento <kurento@kurento.com>
