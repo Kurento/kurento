@@ -585,7 +585,7 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
     GstElement *videorate_mixer;
 
     videorate_mixer = gst_element_factory_make ("videorate", NULL);
-    self->priv->videomixer = gst_element_factory_make ("videomixer", NULL);
+    self->priv->videomixer = gst_element_factory_make ("compositor", NULL);
     g_object_set (G_OBJECT (self->priv->videomixer), "background", 1, NULL);
     self->priv->mixer_video_agnostic =
         gst_element_factory_make ("agnosticbin", NULL);
