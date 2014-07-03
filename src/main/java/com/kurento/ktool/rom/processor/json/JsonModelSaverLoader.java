@@ -2,13 +2,14 @@ package com.kurento.ktool.rom.processor.json;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,9 +40,9 @@ public class JsonModelSaverLoader {
 		gson = gsonBuilder.create();
 	}
 
-	public Model loadFromFile(File file) throws FileNotFoundException,
+	public Model loadFromFile(Path file) throws FileNotFoundException,
 			IOException {
-		return loadFromInputStream(new FileInputStream(file));
+		return loadFromInputStream(Files.newInputStream(file));
 	}
 
 	public Model loadFromClasspath(String resourceName) throws IOException {

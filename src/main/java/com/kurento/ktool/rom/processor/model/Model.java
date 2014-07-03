@@ -220,4 +220,10 @@ public class Model {
 		}
 	}
 
+	public void addElements(Model model) {
+		this.complexTypes.addAll(model.complexTypes);
+		this.remoteClasses.addAll(model.remoteClasses);
+		this.events.addAll(model.events);
+	}
+
 }

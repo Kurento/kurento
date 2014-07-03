@@ -18,14 +18,10 @@ import org.apache.commons.cli.PosixParser;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.kurento.ktool.rom.processor.json.JsonModelSaverLoader;
-import com.kurento.ktool.rom.processor.model.Model;
 
 import freemarker.template.TemplateException;
 
@@ -33,6 +29,7 @@ public class Main {
 
 	private static final String HELP = "h";
 	private static final String VERBOSE = "v";
+	private static final String LIST_GEN_FILES = "lf";
 	private static final String ROM = "r";
 	private static final String DEPROM = "dr";
 	private static final String TEMPLATES = "t";
@@ -40,11 +37,51 @@ public class Main {
 	private static final String DELETE = "d";
 	private static final String CONFIG = "cf";
 
-	@SuppressWarnings("static-access")
 	public static void main(String[] args) throws IOException,
 			TemplateException {
 
-		CommandLineParser parser = new PosixParser();
+		Options options = configureOptions();
+
+		CommandLine line = null;
+
+		try {
+
+			CommandLineParser parser = new PosixParser();
+			line = parser.parse(options, args);
+
+			if (line.hasOption(HELP) || !line.hasOption(ROM)
+					|| !line.hasOption(TEMPLATES) || !line.hasOption(CODEGEN)) {
+				printHelp(options);
+				System.exit(0);
+			}
+		} catch (ParseException e) {
+			System.err.println(e.getMessage());
+			printHelp(options);
+			System.exit(1);
+		}
+
+		KurentoRomProcessor krp = new KurentoRomProcessor();
+		krp.setDeleteGenDir(line.hasOption(DELETE));
+		krp.setVerbose(line.hasOption(VERBOSE));
+		krp.setListGeneratedFiles(line.hasOption(LIST_GEN_FILES));
+		krp.setTemplatesDir(getTemplatesDir(line));
+		krp.setCodeGenDir(getCodegenDir(line));
+		krp.setConfig(getConfigContent(line));
+		krp.addKmdFile(getKmdFile(line));
+		krp.setDependencyKmdFiles(getDependencyKmdFiles(line));
+
+		Result result = krp.generateCode();
+
+		if (result.isSuccess()) {
+			System.out.println("Generation success");
+		} else {
+			System.out.println("Generation failed");
+			result.showErrorsInConsole();
+		}
+	}
+
+	@SuppressWarnings("static-access")
+	private static Options configureOptions() {
 
 		// create the Options
 		Options options = new Options();
@@ -53,16 +90,17 @@ public class Main {
 
 		options.addOption(HELP, "help", false, "Prints this message.");
 
-		options.addOption(OptionBuilder.withLongOpt("rom")
-				.withDescription("Remote object model description file.")
+		options.addOption(OptionBuilder
+				.withLongOpt("rom")
+				.withDescription(
+						"Kurento Media Element Description (kmd) file.")
 				.hasArg().withArgName("ROM_FILE").isRequired().create(ROM));
 
 		options.addOption(OptionBuilder
 				.withLongOpt("deprom")
 				.withDescription(
-						"Remote object model description files used as dependencies.")
-				.hasArg().withArgName("DEP_ROM_FILE").isRequired()
-				.create(DEPROM));
+						"Kurento Media Element Description files used as dependencies.")
+				.hasArg().withArgName("DEP_ROM_FILE").create(DEPROM));
 
 		options.addOption(OptionBuilder.withLongOpt("templates")
 				.withDescription("Directory that contains template files.")
@@ -77,74 +115,23 @@ public class Main {
 		options.addOption(DELETE, "delete", false,
 				"Delete destination directory before generating files.");
 
+		options.addOption(LIST_GEN_FILES, "list-generated-files", false,
+				"List in the standard output the names of generated files.");
+
 		options.addOption(OptionBuilder.withLongOpt("config")
 				.withDescription("Configuration file.").hasArg()
 				.withArgName("CONFIGURATION_FILE").create(CONFIG));
-
-		CommandLine line = null;
-
-		try {
-			line = parser.parse(options, args);
-
-			if (line.hasOption(HELP) || !line.hasOption(ROM)
-					|| !line.hasOption(TEMPLATES) || !line.hasOption(CODEGEN)) {
-				printHelp(options);
-				System.exit(0);
-			}
-		} catch (ParseException e) {
-			System.err.println(e.getMessage());
-			printHelp(options);
-			System.exit(1);
-		}
-
-		File romFile = getRomFile(line);
-		List<File> dependencyRomFiles = getDependencyRomFile(line);
-		JsonObject configContent = getConfigContent(line);
-		File templatesDir = getTemplatesDir(line);
-		File codegenDir = getCodegenDir(line);
-		boolean verbose = line.hasOption(VERBOSE);
-		boolean delete = line.hasOption(DELETE);
-
-		generateCode(delete, verbose, romFile, dependencyRomFiles,
-				configContent, templatesDir, codegenDir);
-
+		return options;
 	}
 
-	public static void generateCode(boolean delete, boolean verbose,
-			File romFile, List<File> dependencyRomFiles,
-			JsonObject configContent, File templatesDir, File codegenDir)
-			throws IOException, FileNotFoundException, TemplateException {
-
-		deleteIfNecessary(delete, configContent, codegenDir);
-
-		List<Model> dependencyModels = new ArrayList<Model>();
-		for (File dependencyRomFile : dependencyRomFiles) {
-			Model depModel = JsonModelSaverLoader.getInstance().loadFromFile(
-					dependencyRomFile);
-			depModel.populateModel();
-			dependencyModels.add(depModel);
-		}
-
-		Model model = JsonModelSaverLoader.getInstance().loadFromFile(romFile);
-		model.populateModel(dependencyModels);
-
-		CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
-				configContent);
-
-		if (configContent.has("expandMethodsWithOpsParams")
-				&& configContent.get("expandMethodsWithOpsParams")
-						.getAsBoolean()) {
-			model.expandMethodsWithOpsParams();
-		}
-
-		codeGen.generateCode(model);
-
-		System.out.println("Generation complete");
+	public static void printHelp(Options options) {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp("ktool-rom-processor", options);
 	}
 
-	private static List<File> getDependencyRomFile(CommandLine line) {
+	private static List<Path> getDependencyKmdFiles(CommandLine line) {
 		String[] files = line.getOptionValue(DEPROM).split(",");
-		List<File> depRomFiles = new ArrayList<File>();
+		List<Path> depKmdFiles = new ArrayList<Path>();
 		for (String file : files) {
 			File romFile = new File(file);
 			if (!romFile.exists() || !romFile.canRead()) {
@@ -152,14 +139,15 @@ public class Main {
 						+ "' does not exist or is not readable");
 				System.exit(1);
 			} else {
-				depRomFiles.add(romFile);
+				depKmdFiles.add(romFile.toPath());
 			}
 		}
-		return depRomFiles;
+		return depKmdFiles;
 	}
 
 	private static JsonObject getConfigContent(CommandLine line)
 			throws FileNotFoundException {
+
 		JsonObject configContents = null;
 		String configValue = line.getOptionValue(CONFIG);
 		if (configValue != null) {
@@ -174,7 +162,7 @@ public class Main {
 		return configContents;
 	}
 
-	private static File getCodegenDir(CommandLine line) {
+	private static Path getCodegenDir(CommandLine line) {
 		File codegenDir = new File(line.getOptionValue(CODEGEN));
 		if (codegenDir.exists()) {
 			if (!codegenDir.canWrite()) {
@@ -187,10 +175,10 @@ public class Main {
 				System.exit(1);
 			}
 		}
-		return codegenDir;
+		return codegenDir.toPath();
 	}
 
-	private static File getTemplatesDir(CommandLine line) {
+	private static Path getTemplatesDir(CommandLine line) {
 		File templatesDir = new File(line.getOptionValue(TEMPLATES));
 
 		if (templatesDir.exists()) {
@@ -204,17 +192,17 @@ public class Main {
 				System.exit(1);
 			}
 		}
-		return templatesDir;
+		return templatesDir.toPath();
 	}
 
-	private static File getRomFile(CommandLine line) {
+	private static Path getKmdFile(CommandLine line) {
 		File romFile = new File(line.getOptionValue(ROM));
 		if (!romFile.exists() || !romFile.canRead()) {
 			System.err.println("Rom file description '" + romFile
 					+ "' does not exist or is not readable");
 			System.exit(1);
 		}
-		return romFile;
+		return romFile.toPath();
 	}
 
 	private static JsonObject loadConfigFile(File configFile)
@@ -232,59 +220,5 @@ public class Main {
 			System.exit(1);
 			return null;
 		}
-	}
-
-	private static void deleteIfNecessary(boolean delete,
-			JsonObject configContent, File codegenDir) throws IOException {
-
-		if (delete && codegenDir.exists()) {
-
-			List<String> noDeleteFiles = new ArrayList<String>();
-			if (configContent != null) {
-				JsonArray array = configContent.getAsJsonArray("no_delete");
-				if (array != null) {
-					for (JsonElement elem : array) {
-						if (elem instanceof JsonPrimitive) {
-							noDeleteFiles.add(((JsonPrimitive) elem)
-									.getAsString());
-						}
-					}
-				}
-			}
-
-			delete(codegenDir, noDeleteFiles);
-		}
-	}
-
-	public static void delete(File f, List<String> noDeleteFiles)
-			throws IOException {
-		delete(f, f, noDeleteFiles);
-	}
-
-	public static void delete(File basePath, File f, List<String> noDeleteFiles)
-			throws IOException {
-
-		Path relativePath = basePath.toPath().relativize(f.toPath());
-
-		if (noDeleteFiles.contains(relativePath.toString())) {
-			return;
-		}
-
-		if (f.isDirectory()) {
-			for (File c : f.listFiles()) {
-				delete(basePath, c, noDeleteFiles);
-			}
-		}
-
-		if (f.listFiles() == null || f.listFiles().length == 0) {
-			if (!f.delete()) {
-				throw new FileNotFoundException("Failed to delete file: " + f);
-			}
-		}
-	}
-
-	public static void printHelp(Options options) {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("ktool-rom-processor", options);
 	}
 }

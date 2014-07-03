@@ -3,10 +3,12 @@ package com.kurento.ktool.rom.processor.codegen;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -32,17 +34,19 @@ import freemarker.template.TemplateExceptionHandler;
 
 public class CodeGen {
 
-	private final File templatesFolder;
-	private final File outputFolder;
-	private final Configuration cfg;
+	private Path templatesFolder;
+	private Path outputFolder;
+	private Configuration cfg;
 
-	private final boolean verbose;
+	private boolean listGeneratedFiles;
+	private boolean verbose;
 	private JsonObject config;
 
-	public CodeGen(File templatesFolder, File outputFolder, boolean verbose,
-			JsonObject config) throws IOException {
+	public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose,
+			boolean listGeneratedFiles, JsonObject config) throws IOException {
 
 		this.verbose = verbose;
+		this.listGeneratedFiles = listGeneratedFiles;
 		this.templatesFolder = templatesFolder;
 		this.outputFolder = outputFolder;
 		this.config = config;
@@ -52,7 +56,7 @@ public class CodeGen {
 		// Specify the data source where the template files come from. Here I
 		// set a
 		// plain directory for it, but non-file-system are possible too:
-		cfg.setDirectoryForTemplateLoading(templatesFolder);
+		cfg.setTemplateLoader(new PathTemplateLoader(templatesFolder));
 
 		// Specify how templates will see the data-model. This is an advanced
 		// topic...
@@ -80,20 +84,15 @@ public class CodeGen {
 
 	public void generateCode(Model model) throws IOException, TemplateException {
 
-		File[] files = templatesFolder.listFiles(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".ftl");
+		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
+				templatesFolder, "*.ftl")) {
+
+			for (Path path : directoryStream) {
+				String name = path.getFileName().toString();
+				String modelType = name.split("_")[0];
+
+				generateCode(name, model, modelType);
 			}
-		});
-
-		for (File file : files) {
-
-			String name = file.getName();
-			name = name.substring(0, name.length() - 4);
-			String modelType = name.split("_")[0];
-
-			generateCode(file.getName(), model, modelType);
 		}
 	}
 
@@ -129,9 +128,7 @@ public class CodeGen {
 
 		root.put("model", model);
 		if (this.config != null) {
-
 			JsonObjectAsMap mapper = new JsonObjectAsMap();
-
 			root.put("config", mapper.getAsObject(config));
 		} else {
 			root.put("config", Collections.emptyMap());
@@ -152,7 +149,6 @@ public class CodeGen {
 				}
 
 				generateFile(temp, root);
-
 			}
 		}
 	}
@@ -168,7 +164,7 @@ public class CodeGen {
 
 		String fileName = st.nextToken();
 
-		File outputFile = new File(outputFolder, fileName);
+		File outputFile = new File(outputFolder.toFile(), fileName);
 
 		if (!outputFile.getParentFile().exists()) {
 			outputFile.getParentFile().mkdirs();
@@ -177,26 +173,35 @@ public class CodeGen {
 		String sourceCode = tempOutput.substring(fileName.length() + 1,
 				tempOutput.length());
 
+		boolean generateFile = true;
 		if (outputFile.exists()) {
 			String oldContent = readFile(outputFile);
 
 			if (oldContent.equals(sourceCode)) {
-				if (verbose) {
-					System.out.println(fileName + " unchanged");
-				}
-				return;
+				generateFile = false;
 			}
 		}
 
-		Writer writer = new FileWriter(outputFile);
-		writer.write(sourceCode);
-		writer.close();
+		if (generateFile) {
+			Writer writer = new FileWriter(outputFile);
+			writer.write(sourceCode);
+			writer.close();
+		}
 
 		if (verbose) {
 			System.out.println("File: " + fileName);
 			System.out.println();
 			System.out.println(sourceCode);
 			System.out.println("---------------------------------------");
+		}
+
+		if (listGeneratedFiles) {
+			System.out.print("Processed file:\t" + fileName);
+			if (!generateFile) {
+				System.out.println("\t(not generated)");
+			} else {
+				System.out.println();
+			}
 		}
 	}
 

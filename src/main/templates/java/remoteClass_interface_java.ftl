@@ -83,7 +83,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
 	void release(Continuation<Void> continuation);
     </#if>
 
-    <#if !remoteClass.abstract>
+	<#if !remoteClass.abstract && remoteClass.name != "MediaPipeline">
 
     public class Builder extends AbstractBuilder<${remoteClass.name}> {
 
@@ -98,7 +98,9 @@ done. If an error occurs, {@link Continuation#onError} is called.
         	</#if>
         	</#list>
         	<#lt>){
+
 			super(${remoteClass.name}.class,${remoteClass.constructors[0].params[0].name});
+
         	<#list remoteClass.constructors[0].params as param>
         	<#if !param.optional>        	
 			props.add("${param.name}",${param.name});
