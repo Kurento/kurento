@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.HttpGetEndpoint;
@@ -51,16 +50,14 @@ import com.kurento.kmf.test.client.Client;
  */
 public class MediaApiRecorderSwitchTest extends BrowserMediaApiTest {
 
-	private static final int PLAYTIME = 10; // seconds
+	private static final int PLAYTIME = 14; // seconds
 	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderSwitchTest";
 
-	@Ignore
 	@Test
 	public void testRecorderSwitchChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
-	@Ignore
 	@Test
 	public void testRecorderSwitchFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
@@ -99,12 +96,13 @@ public class MediaApiRecorderSwitchTest extends BrowserMediaApiTest {
 			playerGreen.connect(httpEP);
 			playerGreen.connect(recorderEP);
 			playerGreen.play();
-			Thread.sleep(3000);
+			Thread.sleep(6000);
 
 			// blue
 			playerBlue.connect(httpEP);
 			playerBlue.connect(recorderEP);
 			playerBlue.play();
+			Thread.sleep(6000);
 
 			// Assertions
 			Assert.assertTrue("Timeout waiting ended event",
@@ -146,9 +144,9 @@ public class MediaApiRecorderSwitchTest extends BrowserMediaApiTest {
 			Assert.assertTrue("Recorded video first must be red",
 					browser.color(Color.RED, 0, 0, 0));
 			Assert.assertTrue("Recorded video second must be green",
-					browser.color(Color.GREEN, 4, 0, 0));
+					browser.color(Color.GREEN, 5, 0, 0));
 			Assert.assertTrue("Recorded video third must be blue",
-					browser.color(Color.BLUE, 8, 0, 0));
+					browser.color(Color.BLUE, 11, 0, 0));
 
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));

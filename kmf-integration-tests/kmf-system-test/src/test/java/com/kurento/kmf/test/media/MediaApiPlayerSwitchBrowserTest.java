@@ -15,7 +15,6 @@
 package com.kurento.kmf.test.media;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.HttpGetEndpoint;
@@ -44,7 +43,6 @@ import com.kurento.kmf.test.client.Client;
  */
 public class MediaApiPlayerSwitchBrowserTest extends BrowserMediaApiTest {
 
-	@Ignore
 	@Test
 	public void testPlayerSwitch() throws Exception {
 		// Media Pipeline

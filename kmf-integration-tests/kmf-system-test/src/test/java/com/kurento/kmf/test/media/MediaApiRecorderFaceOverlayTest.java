@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.FaceOverlayFilter;
@@ -54,16 +53,14 @@ import com.kurento.kmf.test.client.Client;
  */
 public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 
-	private static final int VIDEO_LENGTH = 29; // seconds
+	private static final int VIDEO_LENGTH = 25; // seconds
 	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderFaceOverlayTest";
 
-	@Ignore
 	@Test
 	public void testRecorderFaceOverlayChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
-	@Ignore
 	@Test
 	public void testRecorderFaceOverlayFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
@@ -79,8 +76,9 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(TARGET_RECORDING)
 				.build();
 		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
-		filter.setOverlayedImage("http://files.kurento.org/imgs/mario-wings.png",
-				-0.2F, -1.2F, 1.6F, 1.6F);
+		filter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.2F, -1.2F,
+				1.6F, 1.6F);
 
 		playerEP.connect(filter);
 		filter.connect(httpEP);
