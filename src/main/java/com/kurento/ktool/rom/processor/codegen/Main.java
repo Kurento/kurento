@@ -182,6 +182,7 @@ public class Main {
 		File templatesDir = new File(line.getOptionValue(TEMPLATES));
 
 		if (templatesDir.exists()) {
+
 			if (!templatesDir.canRead()) {
 				System.err.println("TemplatesDir '" + templatesDir
 						+ "' is not readable");
@@ -191,8 +192,16 @@ public class Main {
 						+ "' is not a directory");
 				System.exit(1);
 			}
+
+			return templatesDir.toPath();
+
+		} else {
+
+			System.err.println("TemplatesDir '" + templatesDir
+					+ "' doesn't exist");
+			System.exit(1);
+			return null;
 		}
-		return templatesDir.toPath();
 	}
 
 	private static Path getKmdFile(CommandLine line) {
