@@ -18,7 +18,7 @@ import com.kurento.ktool.rom.processor.model.Model;
 public class KurentoRomProcessor {
 
 	private Path codegenDir;
-	private JsonObject config;
+	private JsonObject config = new JsonObject();
 	private Path templatesDir;
 	private boolean verbose;
 	private boolean deleteGenDir;

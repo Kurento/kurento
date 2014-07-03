@@ -148,7 +148,7 @@ public class Main {
 	private static JsonObject getConfigContent(CommandLine line)
 			throws FileNotFoundException {
 
-		JsonObject configContents = null;
+		JsonObject configContents = new JsonObject();
 		String configValue = line.getOptionValue(CONFIG);
 		if (configValue != null) {
 			File configFile = new File(configValue);
