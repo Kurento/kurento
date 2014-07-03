@@ -30,7 +30,7 @@ public class RabbitMqManager {
 			.getLogger(RabbitMqManager.class);
 
 	private static final long TIMEOUT = 10000;
-	private static final String EXPIRATION_TIME = "10000";
+	private static final String EXPIRATION_TIME = "25000";
 
 	private CachingConnectionFactory cf;
 	private RabbitAdmin admin;
