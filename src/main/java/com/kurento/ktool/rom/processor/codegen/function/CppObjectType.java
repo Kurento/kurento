@@ -37,8 +37,19 @@ public class CppObjectType implements TemplateMethodModelEx {
 		}
 
 		boolean isParam = true;
+		String prefix = "";
+		String suffix = "";
+
 		if (arguments.size() > 1) {
 			isParam = ((TemplateBooleanModel) arguments.get(1)).getAsBoolean();
+		}
+
+		if (arguments.size() > 2) {
+			prefix = arguments.get(2).toString();
+		}
+
+		if (arguments.size() > 3) {
+			suffix = arguments.get(3).toString();
 		}
 
 		if (type == null) {
@@ -50,19 +61,23 @@ public class CppObjectType implements TemplateMethodModelEx {
 			if (typeRef.isList()) {
 				if (isParam)
 					return "const std::vector<"
-							+ getTypeAsString(typeRef.getName(), false) + ">&";
+							+ getTypeAsString(typeRef.getName(), false, prefix,
+									suffix) + ">&";
 				else
 					return "std::vector<"
-							+ getTypeAsString(typeRef.getName(), false) + ">";
+							+ getTypeAsString(typeRef.getName(), false, prefix,
+									suffix) + ">";
 			} else {
-				return getTypeAsString(typeRef.getName(), isParam);
+				return getTypeAsString(typeRef.getName(), isParam, prefix,
+						suffix);
 			}
 		}
 
-		return getTypeAsString(type.toString(), isParam);
+		return getTypeAsString(type.toString(), isParam, prefix, suffix);
 	}
 
-	private String getTypeAsString(String typeName, boolean isParam) {
+	private String getTypeAsString(String typeName, boolean isParam,
+			String prefix, String suffix) {
 		if (typeName.equals("boolean")) {
 			return "bool";
 		} else if (typeName.equals("String")) {
@@ -74,7 +89,7 @@ public class CppObjectType implements TemplateMethodModelEx {
 		} else if (nativeTypes.contains(typeName)) {
 			return typeName;
 		} else {
-			return "std::shared_ptr<" + typeName + ">";
+			return "std::shared_ptr<" + prefix + typeName + suffix + ">";
 		}
 	}
 }
