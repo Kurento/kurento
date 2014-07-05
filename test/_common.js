@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2013 Kurento (http://kurento.org/)
+ * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -114,8 +114,8 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://127.0.0.1:8080/thrift/ws/websocket':         'localhost (port 8080)',
-    'ws://demo01.kurento.org:8080/thrift/ws/websocket': 'Kurento test server'
+    'ws://127.0.0.1:8888/thrift/ws/websocket':         'localhost (port 8080)',
+    'ws://demo01.kurento.org:8888/thrift/ws/websocket': 'Kurento test server'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
@@ -134,7 +134,7 @@ lifecycle =
     {
     //  var WebSocket = wock(proxy);
     //  ws_uri = new WebSocket();
-      ws_uri = 'ws://demo01.kurento.org:8080/thrift/ws/websocket';
+      ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket';
     };
 
     this.kwsMedia = new KwsMedia(ws_uri);

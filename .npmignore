@@ -1,0 +1,15 @@
+assembly.xml
+example/
+pom.xml
+test/
+bower.json
+Gruntfile.js
+README_bower.md
+README.md
+WebSocket.log
+dist/
+junitResult.xml
+wock_test.js
+dist/
+package.json_sockjs
+shims/
