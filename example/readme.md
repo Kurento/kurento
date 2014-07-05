@@ -15,8 +15,10 @@ Demo showed on CampusParty Brazil 2014, adapted to KWS Media API
 Store a video
 * [PlayerEndpoint HttpGetEndpoint](./PlayerEndpoint-HttpGetEndpoint):
 Play a file from a given URL and streaming it over HTTP
+* [PlayerEndpoint HttpGetEndpoint - generators](./PlayerEndpoint-HttpGetEndpoint_generators):
+Play a file from a given URL and streaming it over HTTP using generators
 * [PlayerEndpoint HttpGetEndpoint - promises](./PlayerEndpoint-HttpGetEndpoint_promises):
-Play a file from a given URL and streaming it over HTTP
+Play a file from a given URL and streaming it over HTTP using promises
 * [PlayerEndpoint JackVaderFilter WebRtcEndpoint 2](./PlayerEndpoint-JackVaderFilter-WebRtcEndpoint_2):
 Apply JackVaderFilter on a video and send it using WebRTC
 * [PlayerEndpoint WebRtcEndpoint 2](./PlayerEndpoint-WebRtcEndpoint_2);
