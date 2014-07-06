@@ -53,7 +53,10 @@ public class CppObjectType implements TemplateMethodModelEx {
 		}
 
 		if (type == null) {
-			return "void";
+			if (isParam)
+				return "void ";
+			else
+				return "void";
 		}
 
 		if (type instanceof TypeRef) {
@@ -62,7 +65,7 @@ public class CppObjectType implements TemplateMethodModelEx {
 				if (isParam)
 					return "const std::vector<"
 							+ getTypeAsString(typeRef.getName(), false, prefix,
-									suffix) + ">&";
+									suffix) + "> &";
 				else
 					return "std::vector<"
 							+ getTypeAsString(typeRef.getName(), false, prefix,
@@ -79,17 +82,26 @@ public class CppObjectType implements TemplateMethodModelEx {
 	private String getTypeAsString(String typeName, boolean isParam,
 			String prefix, String suffix) {
 		if (typeName.equals("boolean")) {
-			return "bool";
+			if (isParam)
+				return "bool ";
+			else
+				return "bool";
 		} else if (typeName.equals("String")) {
 			if (isParam) {
-				return "const std::string&";
+				return "const std::string &";
 			} else {
 				return "std::string";
 			}
 		} else if (nativeTypes.contains(typeName)) {
-			return typeName;
+			if (isParam)
+				return typeName + " ";
+			else
+				return typeName;
 		} else {
-			return "std::shared_ptr<" + prefix + typeName + suffix + ">";
+			if (isParam)
+				return "std::shared_ptr<" + prefix + typeName + suffix + "> ";
+			else
+				return "std::shared_ptr<" + prefix + typeName + suffix + ">";
 		}
 	}
 }
