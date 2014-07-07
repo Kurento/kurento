@@ -10,6 +10,10 @@ package ${config.packageName};
 import com.kurento.tool.rom.server.Param;
 import java.util.List;
 
+<#list config.importedPackages as importedPackage>
+import ${importedPackage}.*;
+</#list>
+
 <#if complexType.typeFormat == "REGISTER">
 <@comment complexType.doc />
 public class ${complexType.name} <#if complexType.extends??>extends ${complexType.extends.name}</#if> {

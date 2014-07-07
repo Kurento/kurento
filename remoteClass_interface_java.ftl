@@ -11,7 +11,10 @@ import com.kurento.tool.rom.server.Param;
 import com.kurento.tool.rom.RemoteClass;
 import com.kurento.tool.rom.server.FactoryMethod;
 import java.util.List;
-import ${config.packageName}.events.*;
+
+<#list config.importedPackages as importedPackage>
+import ${importedPackage}.*;
+</#list>
 
 <@comment remoteClass.doc />
 @RemoteClass

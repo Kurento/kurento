@@ -1,15 +1,18 @@
-${config.subfolder}/events/${event.name}Event.java
+${config.subfolder}/${event.name}Event.java
 <#include "macros.ftm" >
 /**
  * This file is generated with Kurento ktool-rom-processor.
  * Please don't edit. Changes should go to kms-interface-rom and
  * ktool-rom-processor templates.
  */
-package ${config.packageName}.events;
+package ${config.packageName};
 
 import com.kurento.tool.rom.server.Param;
 import java.util.List;
-import ${config.packageName}.*;
+
+<#list config.importedPackages as importedPackage>
+import ${importedPackage}.*;
+</#list>
 
 <@comment "${event.doc}" />
 public class ${event.name}Event <#if event.extends??>extends ${event.extends.name}Event<#else>implements Event</#if> {
