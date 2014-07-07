@@ -287,7 +287,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 
   /* Create appsrc element and link to agnosticbin */
   appsrc = gst_element_factory_make ("appsrc", NULL);
-  g_object_set (G_OBJECT (appsrc), "is-live", FALSE, "do-timestamp", FALSE,
+  g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0),
       "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
       "caps", src_caps, NULL);
