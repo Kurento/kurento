@@ -6,6 +6,7 @@ import java.util.List;
 import com.kurento.ktool.rom.processor.model.ComplexType;
 import com.kurento.ktool.rom.processor.model.Method;
 import com.kurento.ktool.rom.processor.model.Param;
+import com.kurento.ktool.rom.processor.model.Property;
 import com.kurento.ktool.rom.processor.model.RemoteClass;
 import com.kurento.ktool.rom.processor.model.Return;
 import com.kurento.ktool.rom.processor.model.Type;
@@ -35,11 +36,15 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 			RemoteClass remoteClass = (RemoteClass) type;
 
 			for (Method method : remoteClass.getConstructors()) {
-				types.addAll(getMethodTypes(method));
+				addMethodTypes(types, method);
 			}
 
 			for (Method method : remoteClass.getMethods()) {
-				types.addAll(getMethodTypes(method));
+				addMethodTypes(types, method);
+			}
+
+			for (Property property : remoteClass.getProperties()) {
+				addDependency(types, property.getType().getType());
 			}
 
 			if (remoteClass.getExtends() != null)
@@ -53,6 +58,12 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 		return types;
 	}
 
+	private void addDependency(List<Type> dependencies, Type type) {
+		if (type instanceof RemoteClass || type instanceof ComplexType) {
+			dependencies.add(type);
+		}
+	}
+
 	private List<Type> removeDuplicates(List<Type> original) {
 		List<Type> types = new LinkedList<Type>();
 
@@ -64,25 +75,15 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 		return types;
 	}
 
-	private List<Type> getMethodTypes(Method method) {
-		List<Type> types = new LinkedList<Type>();
-
+	private void addMethodTypes(List<Type> dependencies, Method method) {
 		for (Param p : method.getParams()) {
-
-			if (p.getType().getType() instanceof RemoteClass
-					|| p.getType().getType() instanceof ComplexType) {
-				types.add(p.getType().getType());
-			}
-
+			addDependency(dependencies, p.getType().getType());
 		}
 
 		Return ret = method.getReturn();
 
-		if (ret != null
-				&& (ret.getType().getType() instanceof RemoteClass || ret
-						.getType().getType() instanceof ComplexType))
-			types.add(ret.getType().getType());
-
-		return types;
+		if (ret != null) {
+			addDependency(dependencies, ret.getType().getType());
+		}
 	}
 }

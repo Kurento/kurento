@@ -114,6 +114,7 @@ public class RemoteClass extends Type {
 		if (extendsProp != null) {
 			children.add(extendsProp);
 		}
+		children.addAll(properties);
 		children.addAll(constructors);
 		children.addAll(methods);
 		children.addAll(events);
