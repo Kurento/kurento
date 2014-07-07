@@ -105,8 +105,8 @@ public class KurentoRomProcessor {
 		}
 	}
 
-	private static void deleteIfNecessary(boolean delete,
-			JsonObject configContent, Path codegenDir) throws IOException {
+	private void deleteIfNecessary(boolean delete, JsonObject configContent,
+			Path codegenDir) throws IOException {
 
 		if (delete && Files.exists(codegenDir)) {
 
@@ -127,13 +127,16 @@ public class KurentoRomProcessor {
 		}
 	}
 
-	public static void delete(Path f, List<String> noDeleteFiles)
-			throws IOException {
+	public void delete(Path f, List<String> noDeleteFiles) throws IOException {
 		delete(f, f, noDeleteFiles);
 	}
 
-	public static void delete(Path basePath, Path f, List<String> noDeleteFiles)
+	public void delete(Path basePath, Path f, List<String> noDeleteFiles)
 			throws IOException {
+
+		if (verbose) {
+			System.out.println("Evaluating path to delete: " + f);
+		}
 
 		Path relativePath = basePath.relativize(f);
 
