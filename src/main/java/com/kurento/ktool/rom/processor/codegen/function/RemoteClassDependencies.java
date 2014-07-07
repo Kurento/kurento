@@ -35,8 +35,8 @@ public class RemoteClassDependencies implements TemplateMethodModelEx {
 		if (type instanceof RemoteClass) {
 			RemoteClass remoteClass = (RemoteClass) type;
 
-			for (Method method : remoteClass.getConstructors()) {
-				addMethodTypes(types, method);
+			if (remoteClass.getConstructor() != null) {
+				addMethodTypes(types, remoteClass.getConstructor());
 			}
 
 			for (Method method : remoteClass.getMethods()) {

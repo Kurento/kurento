@@ -21,9 +21,9 @@ public class IsFirstConstructorParam implements TemplateMethodModelEx {
 		RemoteClass otherRemoteClass = (RemoteClass) ((StringModel) arguments
 				.get(1)).getWrappedObject();
 
-		if (!otherRemoteClass.getConstructors().isEmpty()) {
+		if (otherRemoteClass.getConstructor() != null) {
 
-			Method method = otherRemoteClass.getConstructors().get(0);
+			Method method = otherRemoteClass.getConstructor();
 
 			List<Param> params = method.getParams();
 

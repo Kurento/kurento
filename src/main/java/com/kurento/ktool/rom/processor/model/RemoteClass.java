@@ -9,7 +9,7 @@ public class RemoteClass extends Type {
 
 	@SerializedName("extends")
 	private TypeRef extendsProp;
-	private List<Method> constructors;
+	private Method constructor;
 	private List<Method> methods;
 	private List<Property> properties;
 	private List<TypeRef> events;
@@ -18,25 +18,24 @@ public class RemoteClass extends Type {
 	public RemoteClass(String name, String doc, TypeRef extendsProp) {
 		super(name, doc);
 		this.extendsProp = extendsProp;
-		this.constructors = new ArrayList<Method>();
 		this.methods = new ArrayList<Method>();
 		this.properties = new ArrayList<Property>();
 		this.events = new ArrayList<TypeRef>();
 	}
 
 	public RemoteClass(String name, String doc, TypeRef extendsProp,
-			List<Method> constructors, List<Method> methods,
+			Method constructor, List<Method> methods,
 			List<Property> properties, List<TypeRef> events) {
 		super(name, doc);
 		this.extendsProp = extendsProp;
-		this.constructors = constructors;
+		this.constructor = constructor;
 		this.methods = methods;
 		this.properties = properties;
 		this.events = events;
 	}
 
-	public List<Method> getConstructors() {
-		return constructors;
+	public Method getConstructor() {
+		return constructor;
 	}
 
 	public List<TypeRef> getEvents() {
@@ -59,10 +58,6 @@ public class RemoteClass extends Type {
 		return properties;
 	}
 
-	public void addConstructor(Method constructor) {
-		this.constructors.add(constructor);
-	}
-
 	public void addMethod(Method method) {
 		this.methods.add(method);
 	}
@@ -75,8 +70,8 @@ public class RemoteClass extends Type {
 		this.abstractClass = abstractModel;
 	}
 
-	public void setConstructors(List<Method> constructors) {
-		this.constructors = constructors;
+	public void setConstructor(Method constructor) {
+		this.constructor = constructor;
 	}
 
 	public void setProperties(List<Property> properties) {
@@ -115,7 +110,9 @@ public class RemoteClass extends Type {
 			children.add(extendsProp);
 		}
 		children.addAll(properties);
-		children.addAll(constructors);
+		if (constructor != null) {
+			children.add(constructor);
+		}
 		children.addAll(methods);
 		children.addAll(events);
 		return children;
@@ -123,8 +120,8 @@ public class RemoteClass extends Type {
 
 	@Override
 	public String toString() {
-		return "RemoteClass [extends=" + extendsProp + ", constructors="
-				+ constructors + ", methods=" + methods + ", doc=" + getDoc()
+		return "RemoteClass [extends=" + extendsProp + ", constructor="
+				+ constructor + ", methods=" + methods + ", doc=" + getDoc()
 				+ ", name=" + getName() + "]";
 	}
 
@@ -134,7 +131,7 @@ public class RemoteClass extends Type {
 		int result = super.hashCode();
 		result = prime * result + (abstractClass ? 1231 : 1237);
 		result = prime * result
-				+ ((constructors == null) ? 0 : constructors.hashCode());
+				+ ((constructor == null) ? 0 : constructor.hashCode());
 		result = prime * result + ((events == null) ? 0 : events.hashCode());
 		result = prime * result
 				+ ((extendsProp == null) ? 0 : extendsProp.hashCode());
@@ -157,11 +154,11 @@ public class RemoteClass extends Type {
 		if (abstractClass != other.abstractClass) {
 			return false;
 		}
-		if (constructors == null) {
-			if (other.constructors != null) {
+		if (constructor == null) {
+			if (other.constructor != null) {
 				return false;
 			}
-		} else if (!constructors.equals(other.constructors)) {
+		} else if (!constructor.equals(other.constructor)) {
 			return false;
 		}
 		if (events == null) {

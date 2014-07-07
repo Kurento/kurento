@@ -43,8 +43,8 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 			object.add("extends", context.serialize(src.getExtends()));
 		}
 
-		if (!src.getConstructors().isEmpty()) {
-			object.add("constructors", context.serialize(src.getConstructors()));
+		if (src.getConstructor() != null) {
+			object.add("constructor", context.serialize(src.getConstructor()));
 		}
 
 		if (!src.getMethods().isEmpty()) {
@@ -68,7 +68,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		String doc = null;
 		boolean abstractValue = false;
 		TypeRef extendsValue = null;
-		List<Method> constructors = new ArrayList<Method>();
+		Method constructor = null;
 		List<Method> methods = new ArrayList<Method>();
 		List<Property> properties = new ArrayList<Property>();
 		List<TypeRef> events = new ArrayList<TypeRef>();
@@ -90,9 +90,9 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 					TypeRef.class);
 		}
 
-		if (object.get("constructors") != null) {
-			constructors = context.deserialize(object.get("constructors"),
-					new TypeToken<List<Method>>() {
+		if (object.get("constructor") != null) {
+			constructor = context.deserialize(object.get("constructor"),
+					new TypeToken<Method>() {
 					}.getType());
 		}
 
@@ -115,7 +115,7 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		}
 
 		RemoteClass remoteClass = new RemoteClass(name, doc, extendsValue,
-				constructors, methods, properties, events);
+				constructor, methods, properties, events);
 		remoteClass.setAbstract(abstractValue);
 		return remoteClass;
 	}
