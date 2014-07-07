@@ -1,10 +1,12 @@
 package com.kurento.ktool.rom.processor.model;
 
 import com.google.gson.JsonElement;
+import com.google.gson.annotations.SerializedName;
 
 public class Property extends DataItem {
 
 	private boolean readOnly = false;
+	@SerializedName("final")
 	private boolean finalProp = false;
 
 	public Property(String name, String doc, TypeRef type, boolean optional) {
