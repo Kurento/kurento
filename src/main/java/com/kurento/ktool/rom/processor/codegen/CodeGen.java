@@ -21,6 +21,7 @@ import com.kurento.ktool.rom.processor.codegen.function.CppObjectType;
 import com.kurento.ktool.rom.processor.codegen.function.IsFirstConstructorParam;
 import com.kurento.ktool.rom.processor.codegen.function.JavaObjectType;
 import com.kurento.ktool.rom.processor.codegen.function.JsNamespace;
+import com.kurento.ktool.rom.processor.codegen.function.JsonCppTypeData;
 import com.kurento.ktool.rom.processor.codegen.function.RemoteClassDependencies;
 import com.kurento.ktool.rom.processor.codegen.function.SphinxLinks;
 import com.kurento.ktool.rom.processor.model.Model;
@@ -120,6 +121,7 @@ public class CodeGen {
 		Map<String, Object> root = new HashMap<String, Object>();
 		root.put("getJavaObjectType", new JavaObjectType());
 		root.put("getCppObjectType", new CppObjectType());
+		root.put("getJsonCppTypeData", new JsonCppTypeData());
 		root.put("camelToUnderscore", new CamelToUnderscore());
 		root.put("remoteClassDependencies", new RemoteClassDependencies());
 		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
