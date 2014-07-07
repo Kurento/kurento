@@ -14,6 +14,19 @@ The source code of this project can be cloned from the [GitHub repository].
 Installation instructions
 -------------------------
 
+These instructions are intended for code contributors or people willing to
+compile the browser version themselves. If you are a browser-only developer,
+it's better that you have a look at the [KWS Media API for Bower] instructions.
+
+This library is currently not able to communicate directly with the Kurento
+Media Server, so it requires the use of a [Kurento Media Connector] instance.
+You can download the latest release from
+http://builds.kurento.org/release/stable//kmf-media-connector.zip. When you
+decompress it you'll find a README file with installation instructions.
+
+
+### Node.js
+
 Be sure to have installed the Node.js tools in your system. It's heavily
 encouraged to use the latest Node.js and NPM versions from the
 [Node.js project PPA] instead of the packages available on the oficial Ubuntu
@@ -33,8 +46,9 @@ To install the library, it's recomended to do that from the [NPM repository] :
 npm install kws-media-api
 ```
 
-Alternatively, you can download the code using git and install manually its
-dependencies:
+Alternatively, or if you want to modify the KWS Media API code or generate
+yourself the browser version of the library, you can download the development
+code files using git and install manually its dependencies:
 
 ```bash
 git clone https://github.com/Kurento/kws-media-api.git
@@ -42,15 +56,11 @@ cd kws-media-api
 npm install
 ```
 
-Need to know, currently the library can't be able to talk directly with the
-Kurento Media Server, so it require to use a [Kurento Media Connector] instace.
-You can download the latest release from http://ci.kurento.com/apps/kmf-media-connector.zip.
-When you decompress it you'll find a README file with installation instructions.
-
 ### Browser
 
-To build the browser version of the library you'll only need to exec the [grunt]
-task runner and they will be generated on the ```dist``` folder. Alternatively,
+To build the browser version of the library, after downloading the development
+code files, you'll only need to exec the [grunt] task runner from the root of
+the project and they will be generated on the ```dist``` folder. Alternatively,
 if you don't have it globally installed, you can run a local copy by executing
 
 ```bash
@@ -108,7 +118,7 @@ file from its URL and stream it over HTTP. You can also download and check this
 
    ```Javascript
    var kwsMedia = kwsMediaApi.KwsMedia(ws_uri);
-   
+
    kwsMedia.then(function(kwsMedia)
    {
      // Connection success
@@ -235,6 +245,7 @@ Follow us on Twitter @[kurentoms].
 [Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
+[KWS Media API for Bower]: https://github.com/KurentoReleases/kws-media-api
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
 [Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
 [NPM repository]: https://www.npmjs.org/package/kws-media-api
