@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="US-ASCII">
+<title>FaceOverlay</title>
+
+<script type="text/javascript" src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
+<script type="text/javascript" src="./bower_components/kws-media-api/js/kws-media-api.js"></script>
+<script type="text/javascript" src="./bower_components/kws-utils/js/kws-utils.js"></script>
+<script type="text/javascript" src="demo.js"></script>
+
+</head>
+
+<body>
+
+	<button id="startButton">Click me to start ...</button>
+	<button id="stopButton">Click me to stop ...</button>
+	<br>
+	<div style="float: left; border: 2px solid black; margin: 5px;">
+		<h1>Local stream</h1>
+		<video id="videoInput" autoplay></video>
+	</div>
+	<div style="float: left; border: 2px solid black; margin: 5px;">
+		<h1>Remote stream</h1>
+		<video id="videoOutput" autoplay></video>
+	</div>
+
+</body>
+</html>

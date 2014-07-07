@@ -1,0 +1,26 @@
+{
+  "name": "WebRtcLoopback",
+  "version": "4.3.17",
+  "description": "KWS demo with WebRTC in loopback",
+  "authors": [
+    "Kurento <info@kurento.org>"
+  ],
+  "main": "demo.html",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "LGPL",
+  "homepage": "http://www.kurento.org/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "kws-utils": "~4.3.17",
+    "kws-media-api": "~4.3.17"
+  }
+}
