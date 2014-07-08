@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,8 +46,6 @@ import freemarker.template.Template;
 public class KurentoMediaServerManager {
 
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
-	// FIXME: same temporal folder may cause problems (e.g. parallel execution
-	// in CI server)
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
 	private static final String KURENTO_GST_PLUGINS_PROP = "kms.gst.plugins";
@@ -109,8 +108,15 @@ public class KurentoMediaServerManager {
 		gstPlugins = PropertiesManager.getProperty(KURENTO_GST_PLUGINS_PROP,
 				KURENTO_GST_PLUGINS_DEFAULT);
 
-		workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
-				KURENTO_WORKSPACE_DEFAULT);
+		try {
+			workspace = Files.createTempDirectory("kmf-system-test").toString();
+		} catch (IOException e) {
+			workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
+					KURENTO_WORKSPACE_DEFAULT);
+			log.error(
+					"Exception loading temporal folder; instead folder {} will be used",
+					workspace, e);
+		}
 
 		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP,
 				KURENTO_SERVER_DEBUG_DEFAULT);
@@ -120,6 +126,7 @@ public class KurentoMediaServerManager {
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
 		}
+		log.debug("Folder to store temporal files: {}", workspace);
 
 		KurentoServicesTestHelper.setTestDir(testDir);
 
@@ -136,14 +143,6 @@ public class KurentoMediaServerManager {
 		createKurentoConf();
 		String logFolder = testDir + "TEST-" + testClassName;
 		createFolder(logFolder);
-
-		// Before to launch a new KMS process, former KMS process should be
-		// terminated. To ensure it, we are going to check whether exists a file
-		// called kms-pid in the workspace. If so, that process will be killed
-		// sending a SigKill. Otherwise the call of this method has no effect.
-		if (countKmsProcesses() > 0) {
-			kmsSigKill();
-		}
 
 		log.debug("Log file: {}", logFolder);
 
@@ -280,12 +279,6 @@ public class KurentoMediaServerManager {
 			// signal to the process
 			kmsSigKill();
 		}
-
-		// Clean-up
-		Shell.runAndWait("sh", "-c", "rm " + workspace + "kms-pid");
-		Shell.runAndWait("sh", "-c", "rm " + workspace + "kurento.sh");
-		Shell.runAndWait("sh", "-c", "rm " + workspace + "kurento.conf");
-		Shell.runAndWait("sh", "-c", "rm " + workspace + "pattern.sdp");
 	}
 
 	private void kmsSigTerm() {
