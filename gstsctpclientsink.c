@@ -78,6 +78,8 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
   g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
   self = GST_SCTP_CLIENT_SINK (object);
 
+  GST_OBJECT_LOCK (self);
+
   switch (prop_id) {
     case PROP_HOST:
       if (g_value_get_string (value) == NULL) {
@@ -103,6 +105,8 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+
+  GST_OBJECT_UNLOCK (self);
 }
 
 static void
@@ -113,6 +117,8 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
 
   g_return_if_fail (GST_IS_SCTP_CLIENT_SINK (object));
   self = GST_SCTP_CLIENT_SINK (object);
+
+  GST_OBJECT_LOCK (self);
 
   switch (prop_id) {
     case PROP_HOST:
@@ -134,32 +140,43 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+
+  GST_OBJECT_UNLOCK (self);
 }
 
 static gboolean
 gst_sctp_client_sink_disconnect (GstBaseSink * bsink)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+  GSocket *socket = NULL;
   GError *err = NULL;
 
-  if (self->priv->socket == NULL)
-    return TRUE;
+  GST_OBJECT_LOCK (self);
 
-  if (g_socket_is_closed (self->priv->socket)) {
+  if (self->priv->socket == NULL) {
+    GST_OBJECT_UNLOCK (self);
+    return TRUE;
+  }
+
+  socket = self->priv->socket;
+  self->priv->socket = NULL;
+
+  GST_OBJECT_UNLOCK (self);
+
+  if (g_socket_is_closed (socket)) {
     GST_DEBUG_OBJECT (self, "Socket is already closed");
     goto end;
   }
 
   GST_DEBUG_OBJECT (self, "Closing socket");
 
-  if (!g_socket_close (self->priv->socket, &err)) {
-    GST_ERROR ("Failed to close socket %p: %s", self->priv->socket,
-        err->message);
+  if (!g_socket_close (socket, &err)) {
+    GST_ERROR ("Failed to close socket %p: %s", socket, err->message);
     g_clear_error (&err);
   }
 
 end:
-  g_clear_object (&self->priv->socket);
+  g_clear_object (&socket);
 
   return TRUE;
 }
@@ -203,21 +220,36 @@ static gboolean
 gst_sctp_client_sink_connect (GstBaseSink * bsink)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+  GSocket *socket = NULL;
   GSocketAddress *saddr;
   GResolver *resolver;
   GInetAddress *addr;
   GError *err = NULL;
+  gchar *host;
+  gint port;
+  guint16 ostr, istr;
 
-  if (self->priv->socket != NULL)
+  GST_OBJECT_LOCK (self);
+
+  if (self->priv->socket != NULL) {
+    GST_OBJECT_UNLOCK (self);
     return TRUE;
+  }
+
+  host = g_strdup (self->priv->host);
+  port = self->priv->port;
+  ostr = self->priv->num_ostreams;
+  istr = self->priv->max_istreams;
+
+  GST_OBJECT_UNLOCK (self);
 
   /* look up name if we need to */
-  addr = g_inet_address_new_from_string (self->priv->host);
+  addr = g_inet_address_new_from_string (host);
   if (addr == NULL) {
     GList *results;
 
     resolver = g_resolver_get_default ();
-    results = g_resolver_lookup_by_name (resolver, self->priv->host,
+    results = g_resolver_lookup_by_name (resolver, host,
         self->priv->cancellable, &err);
 
     if (results == NULL)
@@ -232,21 +264,20 @@ gst_sctp_client_sink_connect (GstBaseSink * bsink)
   if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
     gchar *ip = g_inet_address_to_string (addr);
 
-    GST_DEBUG_OBJECT (self, "IP address for host %s is %s", self->priv->host,
-        ip);
+    GST_DEBUG_OBJECT (self, "IP address for host %s is %s", host, ip);
     g_free (ip);
   }
 
-  saddr = g_inet_socket_address_new (addr, self->priv->port);
+  saddr = g_inet_socket_address_new (addr, port);
   g_object_unref (addr);
 
   /* create sending client socket */
-  GST_DEBUG_OBJECT (self, "opening sending client socket to %s:%d",
-      self->priv->host, self->priv->port);
+  GST_DEBUG_OBJECT (self, "opening sending client socket to %s:%d", host, port);
 
-  self->priv->socket = g_socket_new (g_socket_address_get_family (saddr),
+  socket = g_socket_new (g_socket_address_get_family (saddr),
       G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_SCTP, &err);
-  if (self->priv->socket == NULL)
+
+  if (socket == NULL)
     goto no_socket;
 
   /* TODO: Add support for SCTP Multi-Homing */
@@ -256,10 +287,10 @@ gst_sctp_client_sink_connect (GstBaseSink * bsink)
     struct sctp_initmsg initmsg;
 
     memset (&initmsg, 0, sizeof (initmsg));
-    initmsg.sinit_num_ostreams = self->priv->num_ostreams;
-    initmsg.sinit_max_instreams = self->priv->max_istreams;
+    initmsg.sinit_num_ostreams = ostr;
+    initmsg.sinit_max_instreams = istr;
 
-    if (setsockopt (g_socket_get_fd (self->priv->socket), IPPROTO_SCTP,
+    if (setsockopt (g_socket_get_fd (socket), IPPROTO_SCTP,
             SCTP_INITMSG, &initmsg, sizeof (initmsg)) < 0)
       GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
           ("Could not configure SCTP socket: %s (%d)", g_strerror (errno),
@@ -273,8 +304,7 @@ gst_sctp_client_sink_connect (GstBaseSink * bsink)
   GST_DEBUG_OBJECT (self, "opened sending client socket");
 
   /* connect to server */
-  if (!g_socket_connect (self->priv->socket, saddr, self->priv->cancellable,
-          &err))
+  if (!g_socket_connect (socket, saddr, self->priv->cancellable, &err))
     goto connect_failed;
 
   if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
@@ -282,7 +312,7 @@ gst_sctp_client_sink_connect (GstBaseSink * bsink)
     struct sctp_initmsg initmsg;
     socklen_t optlen;
 
-    if (getsockopt (g_socket_get_fd (self->priv->socket), IPPROTO_SCTP,
+    if (getsockopt (g_socket_get_fd (socket), IPPROTO_SCTP,
             SCTP_INITMSG, &initmsg, &optlen) < 0)
       GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
           ("Could not get SCTP configuration: %s (%d)", g_strerror (errno),
@@ -297,8 +327,19 @@ gst_sctp_client_sink_connect (GstBaseSink * bsink)
   }
 
   g_object_unref (saddr);
+  g_free (host);
 
-  GST_DEBUG ("Created sctp socket");
+  GST_OBJECT_LOCK (self);
+
+  if (self->priv->socket == NULL) {
+    self->priv->socket = socket;
+    GST_OBJECT_UNLOCK (self);
+    GST_DEBUG ("Created sctp socket");
+  } else {
+    GST_OBJECT_UNLOCK (self);
+    g_socket_close (socket, NULL);
+    g_object_unref (socket);
+  }
 
   return TRUE;
 
@@ -308,6 +349,7 @@ no_socket:
         ("Failed to create socket: %s", err->message));
     g_clear_error (&err);
     g_object_unref (saddr);
+    g_free (host);
 
     return FALSE;
   }
@@ -317,10 +359,12 @@ name_resolve:
       GST_DEBUG_OBJECT (self, "Cancelled name resolval");
     } else {
       GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to resolve host '%s': %s", self->priv->host, err->message));
+          ("Failed to resolve host '%s': %s", host, err->message));
     }
+
     g_clear_error (&err);
     g_object_unref (resolver);
+    g_free (host);
 
     return FALSE;
   }
@@ -330,12 +374,13 @@ connect_failed:
       GST_DEBUG_OBJECT (self, "Cancelled connecting");
     } else {
       GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to connect to host '%s:%d': %s", self->priv->host,
-              self->priv->port, err->message));
+          ("Failed to connect to host '%s:%d': %s", host, port, err->message));
     }
+
+    g_free (host);
     g_clear_error (&err);
     g_object_unref (saddr);
-    gst_sctp_client_sink_stop (bsink);
+    g_clear_object (&socket);
 
     return FALSE;
   }
