@@ -8,7 +8,7 @@ if [ `id -u` -ne 0 ]; then
     exit 1
 fi
 
-KMC_HOME=$(cd $(dirname $(dirname $0));pwd)
+KMC_HOME=$(dirname $(dirname $(readlink -f $0)))
 
 # Create defaults
 mkdir -p /etc/default
