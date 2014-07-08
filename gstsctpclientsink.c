@@ -49,6 +49,9 @@ struct _GstSCTPClientSinkPrivate
   guint16 num_ostreams;
   guint16 max_istreams;
   guint32 timetolive;
+
+  GstTask *task;
+  GRecMutex mutex;
 };
 
 enum
@@ -134,7 +137,7 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
 }
 
 static gboolean
-gst_sctp_client_sink_stop (GstBaseSink * bsink)
+gst_sctp_client_sink_disconnect (GstBaseSink * bsink)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
   GError *err = NULL;
@@ -162,7 +165,42 @@ end:
 }
 
 static gboolean
-gst_sctp_client_sink_start (GstBaseSink * bsink)
+gst_sctp_client_sink_stop (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+  GstTask *task;
+
+  GST_DEBUG_OBJECT (self, "stopping");
+
+  gst_sctp_client_sink_disconnect (bsink);
+
+  GST_OBJECT_LOCK (self);
+
+  if ((task = self->priv->task)) {
+    self->priv->task = NULL;
+    GST_OBJECT_UNLOCK (self);
+
+    gst_task_stop (task);
+
+    /* make sure it is not running */
+    g_rec_mutex_lock (&self->priv->mutex);
+    g_rec_mutex_unlock (&self->priv->mutex);
+
+    /* now wait for the task to finish */
+    gst_task_join (task);
+
+    /* and free the task */
+    gst_object_unref (GST_OBJECT (task));
+
+  } else {
+    GST_OBJECT_UNLOCK (self);
+  }
+
+  return TRUE;
+}
+
+static gboolean
+gst_sctp_client_sink_connect (GstBaseSink * bsink)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
   GSocketAddress *saddr;
@@ -303,6 +341,50 @@ connect_failed:
   }
 }
 
+void
+gst_sctp_client_sink_thread (GstSCTPClientSink * self)
+{
+  /* TODO: manage incoming SCTP stuff */
+}
+
+static gboolean
+gst_sctp_client_sink_start (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  GST_DEBUG_OBJECT (self, "starting");
+
+  if (!gst_sctp_client_sink_connect (bsink))
+    return FALSE;
+
+  GST_OBJECT_LOCK (self);
+
+  if (self->priv->task == NULL) {
+    self->priv->task =
+        gst_task_new ((GstTaskFunction) gst_sctp_client_sink_thread, self,
+        NULL);
+    if (self->priv->task == NULL)
+      goto task_error;
+
+    gst_task_set_lock (self->priv->task, &self->priv->mutex);
+  }
+
+  gst_task_start (self->priv->task);
+
+  GST_OBJECT_UNLOCK (self);
+
+  return TRUE;
+
+  /* ERRORS */
+task_error:
+  {
+    GST_OBJECT_UNLOCK (self);
+    GST_ERROR_OBJECT (self, "failed to create task");
+    gst_sctp_client_sink_stop (bsink);
+    return FALSE;
+  }
+}
+
 /* will be called only between calls to start() and stop() */
 static gboolean
 gst_sctp_client_sink_unlock (GstBaseSink * bsink)
@@ -394,6 +476,7 @@ gst_sctp_client_sink_finalize (GObject * gobject)
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (gobject);
 
   g_free (self->priv->host);
+  g_rec_mutex_clear (&self->priv->mutex);
 
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->finalize (gobject);
 }
@@ -461,6 +544,8 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
 {
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
+
+  g_rec_mutex_init (&self->priv->mutex);
 }
 
 gboolean
