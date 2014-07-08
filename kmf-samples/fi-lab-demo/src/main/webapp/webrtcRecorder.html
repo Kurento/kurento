@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Kurento demo - WebRTC</title>
+<title>Kurento demo - WebRTC with Recorder</title>
 <script src="./js/kws-content-api.js"></script>
 <script src="./lib/adapter.js"></script>
 <script src="./lib/Console.js"></script>
@@ -56,20 +56,30 @@
 		});
 	}
 
+	function showSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			var videoTag = document.getElementById(arguments[i]);
+			videoTag.poster = './img/transparent-1px.png';
+			videoTag.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+	}
+
+	function startPlayer() {
+		showSpinner("recordedVideo");
+		var video = document.getElementById("recordedVideo");
+		video.src = "./playerOfRecording";
+		video.play();
+	}
+
 	function start() {
 		// Disable start button
 		document.getElementById("start").disabled = true;
 
 		// Show spinners
-		var localVideo = document.getElementById("localVideo");
-		var remoteVideo = document.getElementById("remoteVideo");
-		localVideo.poster = "./img/transparent-1px.png";
-		localVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
-		remoteVideo.poster = "./img/transparent-1px.png";
-		remoteVideo.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		showSpinner("localVideo", "remoteVideo");
 
 		// Create a new connection
-		var handler = document.getElementById("handler").value;
+		var handler = "./webRtcRecorder";
 		var options = {
 			localVideoTag : "localVideo",
 			remoteVideoTag : "remoteVideo"
@@ -89,19 +99,27 @@
 </script>
 </head>
 <body>
-	<h1>WebRTC Demo</h1>
-	<label for="handler">Handler</label>
-	<select id="handler">
-		<option value="./webRtcLoopback">WebRTC in loopback</option>
-		<option value="./webRtcFaceOverlayFilter">WebRTC in loopback
-			with FaceOverlay Filter</option>
-	</select>
-	<br />
-	<button id="start" onclick="start();">Start</button>
-	<button id="terminate" disabled onclick="terminate();">Terminate</button>
+	<h1>WebRTC Demo with Recorder</h1>
+	<p>Instructions:</p>
+	<ol>
+		<li>Click on 'Start WebRTC'</li>
+		<li>Grant access to camera</li>
+		<li>After a while the loopback should appear</li>
+		<li>Click on 'Terminate WebRTC' to finish loobpack and recording</li>
+		<li>Click on 'Play Recording' to watch the recorded loopback</li>
+	</ol>
+	<button id="start" onclick="start();">Start WebRTC</button>
+	<button id="terminate" disabled onclick="terminate();">Terminate
+		WebRTC</button>
 	<br />
 	<video id="localVideo" autoplay controls width="480px" height="360px"></video>
 	<video id="remoteVideo" autoplay controls width="480px" height="360px"></video>
+	<hr />
+	<button id="startPlayer" onclick="startPlayer();">Play
+		Recording</button>
+	<br />
+	<video id="recordedVideo" autoplay controls width="480px"
+		height="360px"></video>
 	<br />
 	<label for="output">Output</label>
 	<div id="console"></div>

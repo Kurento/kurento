@@ -17,25 +17,30 @@ package com.kurento.demo;
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
-import com.kurento.kmf.media.JackVaderFilter;
+import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.WebRtcEndpoint;
 
 /**
- * WebRTC handler with JackVaderFilter, in loopback.
+ * WebRTC handler with FaceOverlayFilter, in loopback.
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @since 1.0.1
  */
-@WebRtcContentService(path = "/webRtcJackVaderLoopback")
-public class WebRtcJackVaderLoopback extends WebRtcContentHandler {
+@WebRtcContentService(path = "/webRtcFaceOverlayFilter")
+public class WebRtcFaceOverlayLoopback extends WebRtcContentHandler {
 
 	@Override
 	public void onContentRequest(WebRtcContentSession contentSession)
 			throws Exception {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
+
+		FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+		filter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+				1.6F, 1.6F);
+
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 		webRtcEndpoint.connect(filter);
 		filter.connect(webRtcEndpoint);
