@@ -1,15 +1,14 @@
 package com.kurento.ktool.rom.processor.codegen;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -82,6 +81,10 @@ public class KurentoRomProcessor {
 		this.dependencyKmdFiles.add(dependencyKmdFile);
 	}
 
+	public void setListGeneratedFiles(boolean listGeneratedFiles) {
+		this.listGeneratedFiles = listGeneratedFiles;
+	}
+
 	private Path getInternalTemplatesDir(String internalTemplates)
 			throws IOException {
 
@@ -91,8 +94,7 @@ public class KurentoRomProcessor {
 		if (internalTemplatesAsURL != null) {
 
 			try {
-				return ClasspathFileSystemManager
-						.getResourceInJar(internalTemplatesAsURL);
+				return PathUtils.getPathInClasspath(internalTemplatesAsURL);
 
 			} catch (URISyntaxException e) {
 				throw new KurentoRomProcessorException(
@@ -123,23 +125,11 @@ public class KurentoRomProcessor {
 
 		try {
 
-			deleteIfNecessary(deleteGenDir, config, codegenDir);
-
-			Model fusionedDepModel = new Model();
-			for (Path dependencyRomFile : dependencyKmdFiles) {
-				Model depModel = JsonModelSaverLoader.getInstance()
-						.loadFromFile(dependencyRomFile);
-				fusionedDepModel.addElements(depModel);
-			}
-			fusionedDepModel.populateModel();
-
-			Model model = new Model();
-			for (Path kmdFile : kmdFiles) {
-				model.addElements(JsonModelSaverLoader.getInstance()
-						.loadFromFile(kmdFile));
+			if (deleteGenDir) {
+				PathUtils.delete(codegenDir, loadNoDeleteFiles(config));
 			}
 
-			model.populateModel(Arrays.asList(fusionedDepModel));
+			Model model = populateModelWithDependencies();
 
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, config);
@@ -154,89 +144,46 @@ public class KurentoRomProcessor {
 			return new Result();
 
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			return new Result(new Error(e.getClass().getName() + ": "
 					+ e.getMessage()));
-
 		}
 	}
 
-	private static void overrideConfig(JsonObject configContents,
-			JsonObject newConfigContents) {
-
-		for (Entry<String, JsonElement> e : newConfigContents.entrySet()) {
-			configContents.add(e.getKey(), e.getValue());
-		}
-	}
-
-	private void deleteIfNecessary(boolean delete, JsonObject configContent,
-			Path codegenDir) throws IOException {
-
-		if (delete && Files.exists(codegenDir)) {
-
-			List<String> noDeleteFiles = new ArrayList<String>();
-			if (configContent != null) {
-				JsonArray array = configContent.getAsJsonArray("no_delete");
-				if (array != null) {
-					for (JsonElement elem : array) {
-						if (elem instanceof JsonPrimitive) {
-							noDeleteFiles.add(((JsonPrimitive) elem)
-									.getAsString());
-						}
+	private List<String> loadNoDeleteFiles(JsonObject configContent) {
+		List<String> noDeleteFiles = new ArrayList<String>();
+		if (configContent != null) {
+			JsonArray array = configContent.getAsJsonArray("no_delete");
+			if (array != null) {
+				for (JsonElement elem : array) {
+					if (elem instanceof JsonPrimitive) {
+						noDeleteFiles.add(((JsonPrimitive) elem).getAsString());
 					}
 				}
 			}
-
-			delete(codegenDir, noDeleteFiles);
 		}
+		return noDeleteFiles;
 	}
 
-	public void delete(Path f, List<String> noDeleteFiles) throws IOException {
-		delete(f, f, noDeleteFiles);
-	}
+	private Model populateModelWithDependencies() throws FileNotFoundException,
+			IOException {
 
-	public void delete(Path basePath, Path f, List<String> noDeleteFiles)
-			throws IOException {
+		Model fusionedDepModel = new Model();
+		for (Path dependencyRomFile : dependencyKmdFiles) {
+			Model depModel = JsonModelSaverLoader.getInstance().loadFromFile(
+					dependencyRomFile);
+			fusionedDepModel.addElements(depModel);
+		}
+		fusionedDepModel.populateModel();
 
-		if (verbose) {
-			System.out.println("Evaluating path to delete: " + f);
+		Model model = new Model();
+		for (Path kmdFile : kmdFiles) {
+			model.addElements(JsonModelSaverLoader.getInstance().loadFromFile(
+					kmdFile));
 		}
 
-		Path relativePath = basePath.relativize(f);
-
-		if (noDeleteFiles.contains(relativePath.toString())) {
-			return;
-		}
-
-		if (Files.isDirectory(f)) {
-
-			try (DirectoryStream<Path> directoryStream = Files
-					.newDirectoryStream(f)) {
-				for (Path c : directoryStream) {
-					delete(basePath, c, noDeleteFiles);
-				}
-			}
-
-			if (emptyDir(f)) {
-				System.out.println("Deleting folder: " + f);
-				Files.delete(f);
-			}
-		} else {
-			System.out.println("Deleting file: " + f);
-			Files.delete(f);
-		}
-	}
-
-	private static boolean emptyDir(Path path) throws IOException {
-		try (DirectoryStream<Path> ds = Files.newDirectoryStream(path)) {
-			Iterator<Path> files = ds.iterator();
-			return !files.hasNext();
-		}
-	}
-
-	public void setListGeneratedFiles(boolean listGeneratedFiles) {
-		this.listGeneratedFiles = listGeneratedFiles;
+		model.populateModel(Arrays.asList(fusionedDepModel));
+		return model;
 	}
 
 	public static JsonObject loadConfigFile(Path configFile)
@@ -254,6 +201,14 @@ public class KurentoRomProcessor {
 			throw new KurentoRomProcessorException("Config file '" + configFile
 					+ "' has the following formatting error:"
 					+ e.getLocalizedMessage());
+		}
+	}
+
+	private static void overrideConfig(JsonObject configContents,
+			JsonObject newConfigContents) {
+
+		for (Entry<String, JsonElement> e : newConfigContents.entrySet()) {
+			configContents.add(e.getKey(), e.getValue());
 		}
 	}
 }

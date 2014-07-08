@@ -12,15 +12,16 @@ import com.google.gson.JsonPrimitive;
 
 public class JsonObjectAsMap {
 
-	public Map<String, Object> getAsObject(JsonObject jsonObject) {
+	public Map<String, Object> createMapFromJsonObject(JsonObject jsonObject) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		for (Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
-			map.put(entry.getKey(), getAsObject(entry.getValue()));
+			map.put(entry.getKey(),
+					createObjectFromJsonElement(entry.getValue()));
 		}
 		return map;
 	}
 
-	public Object getAsObject(JsonElement value) {
+	public Object createObjectFromJsonElement(JsonElement value) {
 
 		if (value == null) {
 			return null;
@@ -48,14 +49,14 @@ public class JsonObjectAsMap {
 
 			List<Object> values = new ArrayList<Object>();
 			for (JsonElement element : array) {
-				values.add(getAsObject(element));
+				values.add(createObjectFromJsonElement(element));
 			}
 
 			return values;
 		}
 
 		if (value instanceof JsonObject) {
-			return getAsObject(value);
+			return createObjectFromJsonElement(value);
 		}
 
 		throw new RuntimeException("Unrecognized json element: " + value);

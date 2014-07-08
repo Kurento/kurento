@@ -133,7 +133,7 @@ public class CodeGen {
 		root.put("model", model);
 		if (this.config != null) {
 			JsonObjectAsMap mapper = new JsonObjectAsMap();
-			root.put("config", mapper.getAsObject(config));
+			root.put("config", mapper.createMapFromJsonObject(config));
 		} else {
 			root.put("config", Collections.emptyMap());
 		}
