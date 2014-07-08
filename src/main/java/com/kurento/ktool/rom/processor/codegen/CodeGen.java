@@ -18,6 +18,7 @@ import java.util.StringTokenizer;
 import com.google.gson.JsonObject;
 import com.kurento.ktool.rom.processor.codegen.function.CamelToUnderscore;
 import com.kurento.ktool.rom.processor.codegen.function.CppObjectType;
+import com.kurento.ktool.rom.processor.codegen.function.EscapeString;
 import com.kurento.ktool.rom.processor.codegen.function.IsFirstConstructorParam;
 import com.kurento.ktool.rom.processor.codegen.function.JavaObjectType;
 import com.kurento.ktool.rom.processor.codegen.function.JsNamespace;
@@ -122,6 +123,7 @@ public class CodeGen {
 		root.put("getJavaObjectType", new JavaObjectType());
 		root.put("getCppObjectType", new CppObjectType());
 		root.put("getJsonCppTypeData", new JsonCppTypeData());
+		root.put("escapeString", new EscapeString());
 		root.put("camelToUnderscore", new CamelToUnderscore());
 		root.put("remoteClassDependencies", new RemoteClassDependencies());
 		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
