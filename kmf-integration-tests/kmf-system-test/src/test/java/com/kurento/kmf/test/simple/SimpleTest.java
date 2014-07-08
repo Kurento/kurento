@@ -48,6 +48,13 @@ public class SimpleTest {
 		writeFile("Hello world (testCurrentDir)", "./testCurrentDir.txt");
 	}
 
+	@Test
+	public void testAbsoluteDir() throws IOException {
+		final String absoluteDir = "/tmp/testAbsoluteDir.txt";
+		System.out.println("[[ATTACHMENT|" + absoluteDir + "]]");
+		writeFile("Hello world (testAbsoluteDir)", absoluteDir);
+	}
+
 	private void writeFile(String content, String target) throws IOException {
 		Files.write(content, new File(target), Charsets.UTF_8);
 	}
