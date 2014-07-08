@@ -94,7 +94,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
 		<@comment doc param />
 		public Builder(<#rt>
         	<#assign first=true>
-        	<#lt><#list remoteClass.constructors[0].params as param>
+        	<#lt><#list remoteClass.constructor.params as param>
         	<#if !param.optional>
             	<#lt><#if first><#assign first=false><#else>, </#if><#rt>
             	<#lt>${getJavaObjectType(param.type,false)} ${param.name}<#rt>
@@ -102,16 +102,16 @@ done. If an error occurs, {@link Continuation#onError} is called.
         	</#list>
         	<#lt>){
 
-			super(${remoteClass.name}.class,${remoteClass.constructors[0].params[0].name});
+			super(${remoteClass.name}.class,${remoteClass.constructor.params[0].name});
 
-        	<#list remoteClass.constructors[0].params as param>
+        	<#list remoteClass.constructor.params as param>
         	<#if !param.optional>        	
 			props.add("${param.name}",${param.name});
         	</#if>
         	</#list>    
 		}
 
-        <#list remoteClass.constructors[0].params as param>
+        <#list remoteClass.constructor.params as param>
         <#if param.optional>
         <#if param.type.name != "boolean" >
 		<#assign par=[param] />		
