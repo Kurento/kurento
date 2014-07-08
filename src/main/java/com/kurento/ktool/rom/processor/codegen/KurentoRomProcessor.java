@@ -1,21 +1,32 @@
 package com.kurento.ktool.rom.processor.codegen;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.kurento.ktool.rom.processor.json.JsonModelSaverLoader;
 import com.kurento.ktool.rom.processor.model.Model;
 
 public class KurentoRomProcessor {
+
+	private static final String CONFIG_FILE_NAME = "config.json";
 
 	private Path codegenDir;
 	private JsonObject config = new JsonObject();
@@ -25,6 +36,15 @@ public class KurentoRomProcessor {
 	private List<Path> dependencyKmdFiles = new ArrayList<Path>();
 	private List<Path> kmdFiles = new ArrayList<Path>();
 	private boolean listGeneratedFiles = false;
+	private String internalTemplates = null;
+
+	public void setInternalTemplates(String internalTemplates) {
+		this.internalTemplates = internalTemplates;
+	}
+
+	public String getInternalTemplates() {
+		return internalTemplates;
+	}
 
 	public void setKmdFiles(List<Path> kmdFiles) {
 		this.kmdFiles = kmdFiles;
@@ -62,19 +82,56 @@ public class KurentoRomProcessor {
 		this.dependencyKmdFiles.add(dependencyKmdFile);
 	}
 
-	public Result generateCode() {
+	private Path getInternalTemplatesDir(String internalTemplates)
+			throws IOException {
+
+		URL internalTemplatesAsURL = this.getClass().getResource(
+				"/" + internalTemplates);
+
+		if (internalTemplatesAsURL != null) {
+
+			try {
+				return ClasspathFileSystemManager
+						.getResourceInJar(internalTemplatesAsURL);
+
+			} catch (URISyntaxException e) {
+				throw new KurentoRomProcessorException(
+						"Error trying to load internal templates folder '"
+								+ internalTemplates + "'", e);
+			}
+
+		} else {
+			throw new KurentoRomProcessorException(
+					"The internal templates folder '" + internalTemplates
+							+ "' doesn't exist");
+		}
+	}
+
+	public Result generateCode() throws JsonIOException, IOException {
+
+		if (internalTemplates != null) {
+			templatesDir = getInternalTemplatesDir(internalTemplates);
+
+			Path configFile = templatesDir.resolve(CONFIG_FILE_NAME);
+
+			if (Files.exists(configFile)) {
+				JsonObject internalConfig = loadConfigFile(configFile);
+				overrideConfig(internalConfig, config);
+				config = internalConfig;
+			}
+		}
 
 		try {
 
 			deleteIfNecessary(deleteGenDir, config, codegenDir);
 
-			List<Model> dependencyModels = new ArrayList<Model>();
+			Model fusionedDepModel = new Model();
 			for (Path dependencyRomFile : dependencyKmdFiles) {
 				Model depModel = JsonModelSaverLoader.getInstance()
 						.loadFromFile(dependencyRomFile);
-				depModel.populateModel();
-				dependencyModels.add(depModel);
+				fusionedDepModel.addElements(depModel);
 			}
+			fusionedDepModel.populateModel();
 
 			Model model = new Model();
 			for (Path kmdFile : kmdFiles) {
@@ -82,7 +139,7 @@ public class KurentoRomProcessor {
 						.loadFromFile(kmdFile));
 			}
 
-			model.populateModel(dependencyModels);
+			model.populateModel(Arrays.asList(fusionedDepModel));
 
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, config);
@@ -102,6 +159,14 @@ public class KurentoRomProcessor {
 			return new Result(new Error(e.getClass().getName() + ": "
 					+ e.getMessage()));
 
+		}
+	}
+
+	private static void overrideConfig(JsonObject configContents,
+			JsonObject newConfigContents) {
+
+		for (Entry<String, JsonElement> e : newConfigContents.entrySet()) {
+			configContents.add(e.getKey(), e.getValue());
 		}
 	}
 
@@ -172,5 +237,23 @@ public class KurentoRomProcessor {
 
 	public void setListGeneratedFiles(boolean listGeneratedFiles) {
 		this.listGeneratedFiles = listGeneratedFiles;
+	}
+
+	public static JsonObject loadConfigFile(Path configFile)
+			throws JsonIOException, IOException {
+
+		GsonBuilder gsonBuilder = new GsonBuilder();
+		Gson gson = gsonBuilder.create();
+		try {
+			JsonElement element = gson.fromJson(
+					Files.newBufferedReader(configFile,
+							Charset.forName("UTF-8")), JsonElement.class);
+			return element.getAsJsonObject();
+
+		} catch (JsonSyntaxException e) {
+			throw new KurentoRomProcessorException("Config file '" + configFile
+					+ "' has the following formatting error:"
+					+ e.getLocalizedMessage());
+		}
 	}
 }

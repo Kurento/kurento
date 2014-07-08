@@ -176,7 +176,6 @@ public class Model {
 			Map<String, Type> baseTypes) {
 		for (ModelElement modelElement : modelElements) {
 			if (modelElement instanceof TypeRef) {
-				// TODO
 				TypeRef typeRef = (TypeRef) modelElement;
 				Type baseType = baseTypes.get(typeRef.getName());
 				if (baseType == null) {

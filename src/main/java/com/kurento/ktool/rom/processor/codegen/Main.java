@@ -1,10 +1,10 @@
 package com.kurento.ktool.rom.processor.codegen;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,12 +16,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 
 import freemarker.template.TemplateException;
 
@@ -32,10 +28,11 @@ public class Main {
 	private static final String LIST_GEN_FILES = "lf";
 	private static final String ROM = "r";
 	private static final String DEPROM = "dr";
-	private static final String TEMPLATES = "t";
+	private static final String TEMPLATES_DIR = "t";
 	private static final String CODEGEN = "c";
 	private static final String DELETE = "d";
 	private static final String CONFIG = "cf";
+	private static final String INTERNAL_TEMPLATES = "it";
 
 	public static void main(String[] args) throws IOException,
 			TemplateException {
@@ -50,7 +47,7 @@ public class Main {
 			line = parser.parse(options, args);
 
 			if (line.hasOption(HELP) || !line.hasOption(ROM)
-					|| !line.hasOption(TEMPLATES) || !line.hasOption(CODEGEN)) {
+					|| !line.hasOption(CODEGEN)) {
 				printHelp(options);
 				System.exit(0);
 			}
@@ -64,7 +61,19 @@ public class Main {
 		krp.setDeleteGenDir(line.hasOption(DELETE));
 		krp.setVerbose(line.hasOption(VERBOSE));
 		krp.setListGeneratedFiles(line.hasOption(LIST_GEN_FILES));
-		krp.setTemplatesDir(getTemplatesDir(line));
+
+		if (line.hasOption(TEMPLATES_DIR)) {
+			krp.setTemplatesDir(getTemplatesDir(line));
+		} else if (line.hasOption(INTERNAL_TEMPLATES)) {
+			krp.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
+		} else {
+			System.err.println("Templates dir must be specified with -"
+					+ TEMPLATES_DIR + " option or with -" + INTERNAL_TEMPLATES
+					+ " option.");
+			printHelp(options);
+			System.exit(1);
+		}
+
 		krp.setCodeGenDir(getCodegenDir(line));
 		krp.setConfig(getConfigContent(line));
 		krp.addKmdFile(getKmdFile(line));
@@ -104,8 +113,12 @@ public class Main {
 
 		options.addOption(OptionBuilder.withLongOpt("templates")
 				.withDescription("Directory that contains template files.")
-				.hasArg().withArgName("TEMPLATES_DIR").isRequired()
-				.create(TEMPLATES));
+				.hasArg().withArgName("TEMPLATES_DIR").create(TEMPLATES_DIR));
+
+		options.addOption(OptionBuilder.withLongOpt("templates")
+				.withDescription("Directory that contains template files.")
+				.hasArg().withArgName("TEMPLATES_DIR")
+				.create(INTERNAL_TEMPLATES));
 
 		options.addOption(OptionBuilder.withLongOpt("codegen")
 				.withDescription("Destination directory for generated files.")
@@ -146,19 +159,21 @@ public class Main {
 	}
 
 	private static JsonObject getConfigContent(CommandLine line)
-			throws FileNotFoundException {
+			throws JsonIOException, IOException {
 
 		JsonObject configContents = new JsonObject();
+
 		String configValue = line.getOptionValue(CONFIG);
 		if (configValue != null) {
-			File configFile = new File(configValue);
-			if (!configFile.exists() || !configFile.canRead()) {
+			Path configFile = Paths.get(configValue);
+			if (!Files.exists(configFile)) {
 				System.err.println("Config file '" + configFile
 						+ "' does not exist or is not readable");
 				System.exit(1);
 			}
-			configContents = loadConfigFile(configFile);
+			configContents = KurentoRomProcessor.loadConfigFile(configFile);
 		}
+
 		return configContents;
 	}
 
@@ -179,7 +194,7 @@ public class Main {
 	}
 
 	private static Path getTemplatesDir(CommandLine line) {
-		File templatesDir = new File(line.getOptionValue(TEMPLATES));
+		File templatesDir = new File(line.getOptionValue(TEMPLATES_DIR));
 
 		if (templatesDir.exists()) {
 
@@ -214,20 +229,4 @@ public class Main {
 		return romFile.toPath();
 	}
 
-	private static JsonObject loadConfigFile(File configFile)
-			throws JsonIOException, FileNotFoundException {
-		GsonBuilder gsonBuilder = new GsonBuilder();
-		Gson gson = gsonBuilder.create();
-		try {
-			JsonElement element = gson.fromJson(new FileReader(configFile),
-					JsonElement.class);
-			return element.getAsJsonObject();
-		} catch (JsonSyntaxException e) {
-			System.err.println("Config file '" + configFile
-					+ "' has the following formatting error:");
-			System.err.println(e.getLocalizedMessage());
-			System.exit(1);
-			return null;
-		}
-	}
 }

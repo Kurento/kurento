@@ -1,5 +1,6 @@
 {
    "packageName": "com.kurento.kmf.media",
    "subfolder": "com/kurento/kmf/media",
-   "expandMethodsWithOpsParams": true
+   "expandMethodsWithOpsParams": true,
+   "importedPackages": []
 }
