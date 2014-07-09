@@ -129,7 +129,7 @@ public class KurentoRomProcessor {
 				PathUtils.delete(codegenDir, loadNoDeleteFiles(config));
 			}
 
-			Model model = populateModelWithDependencies();
+			Model model = createModelsWithDependencies();
 
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, config);
@@ -165,7 +165,7 @@ public class KurentoRomProcessor {
 		return noDeleteFiles;
 	}
 
-	private Model populateModelWithDependencies() throws FileNotFoundException,
+	private Model createModelsWithDependencies() throws FileNotFoundException,
 			IOException {
 
 		Model fusionedDepModel = new Model();
@@ -178,11 +178,12 @@ public class KurentoRomProcessor {
 
 		Model model = new Model();
 		for (Path kmdFile : kmdFiles) {
-			model.addElements(JsonModelSaverLoader.getInstance().loadFromFile(
-					kmdFile));
+			Model kmdModel = JsonModelSaverLoader.getInstance().loadFromFile(
+					kmdFile);
+			model.addElements(kmdModel);
 		}
-
 		model.populateModel(Arrays.asList(fusionedDepModel));
+
 		return model;
 	}
 

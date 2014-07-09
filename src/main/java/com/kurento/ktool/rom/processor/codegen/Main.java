@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -76,7 +76,7 @@ public class Main {
 
 		krp.setCodeGenDir(getCodegenDir(line));
 		krp.setConfig(getConfigContent(line));
-		krp.addKmdFile(getKmdFile(line));
+		krp.setKmdFiles(getKmdFiles(line));
 		krp.setDependencyKmdFiles(getDependencyKmdFiles(line));
 
 		Result result = krp.generateCode();
@@ -102,20 +102,22 @@ public class Main {
 		options.addOption(OptionBuilder
 				.withLongOpt("rom")
 				.withDescription(
-						"Kurento Media Element Description (kmd) file.")
+						"A space separated list of Kurento Media Element "
+								+ "Description (kmd) files or folders containing this files.")
 				.hasArg().withArgName("ROM_FILE").isRequired().create(ROM));
 
 		options.addOption(OptionBuilder
 				.withLongOpt("deprom")
 				.withDescription(
-						"Kurento Media Element Description files used as dependencies.")
+						"A space separated list of Kurento Media Element "
+								+ "Description (kmd) files used as dependencies or folders containing this files.")
 				.hasArg().withArgName("DEP_ROM_FILE").create(DEPROM));
 
 		options.addOption(OptionBuilder.withLongOpt("templates")
 				.withDescription("Directory that contains template files.")
 				.hasArg().withArgName("TEMPLATES_DIR").create(TEMPLATES_DIR));
 
-		options.addOption(OptionBuilder.withLongOpt("templates")
+		options.addOption(OptionBuilder.withLongOpt("internal-templates")
 				.withDescription("Directory that contains template files.")
 				.hasArg().withArgName("TEMPLATES_DIR")
 				.create(INTERNAL_TEMPLATES));
@@ -142,20 +144,27 @@ public class Main {
 		formatter.printHelp("ktool-rom-processor", options);
 	}
 
-	private static List<Path> getDependencyKmdFiles(CommandLine line) {
-		String[] files = line.getOptionValue(DEPROM).split(",");
-		List<Path> depKmdFiles = new ArrayList<Path>();
-		for (String file : files) {
-			File romFile = new File(file);
-			if (!romFile.exists() || !romFile.canRead()) {
-				System.err.println("Rom file description '" + romFile
-						+ "' does not exist or is not readable");
+	private static List<Path> getDependencyKmdFiles(CommandLine line)
+			throws IOException {
+
+		if (line.hasOption(DEPROM)) {
+
+			String[] kmdPathNames = line.getOptionValues(DEPROM);
+
+			List<Path> kmdFiles = PathUtils
+					.getPaths(kmdPathNames, "*.kmd.json");
+
+			if (kmdFiles.isEmpty()) {
+				System.err.println("No dependency kmd files found in paths: "
+						+ kmdPathNames);
 				System.exit(1);
-			} else {
-				depKmdFiles.add(romFile.toPath());
 			}
+
+			return kmdFiles;
+
+		} else {
+			return Collections.emptyList();
 		}
-		return depKmdFiles;
 	}
 
 	private static JsonObject getConfigContent(CommandLine line)
@@ -219,14 +228,17 @@ public class Main {
 		}
 	}
 
-	private static Path getKmdFile(CommandLine line) {
-		File romFile = new File(line.getOptionValue(ROM));
-		if (!romFile.exists() || !romFile.canRead()) {
-			System.err.println("Rom file description '" + romFile
-					+ "' does not exist or is not readable");
+	private static List<Path> getKmdFiles(CommandLine line) throws IOException {
+
+		String[] kmdPathNames = line.getOptionValues(ROM);
+		List<Path> kmdFiles = PathUtils.getPaths(kmdPathNames, "*.kmd.json");
+
+		if (kmdFiles.isEmpty()) {
+			System.err.println("No kmd files found in paths: " + kmdPathNames);
 			System.exit(1);
 		}
-		return romFile.toPath();
+
+		return kmdFiles;
 	}
 
 }

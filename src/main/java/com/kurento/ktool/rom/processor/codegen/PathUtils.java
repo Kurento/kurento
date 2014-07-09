@@ -1,5 +1,7 @@
 package com.kurento.ktool.rom.processor.codegen;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -7,15 +9,68 @@ import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
 public class PathUtils {
+
+	public static class Finder extends SimpleFileVisitor<Path> {
+
+		private final PathMatcher matcher;
+		private List<Path> paths = new ArrayList<>();
+
+		Finder(String pattern) {
+			matcher = FileSystems.getDefault()
+					.getPathMatcher("glob:" + pattern);
+		}
+
+		// Compares the glob pattern against
+		// the file or directory name.
+		void find(Path file) {
+			Path name = file.getFileName();
+			if (name != null && matcher.matches(name)) {
+				paths.add(file);
+			}
+		}
+
+		// Invoke the pattern matching
+		// method on each file.
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+			find(file);
+			return CONTINUE;
+		}
+
+		// Invoke the pattern matching
+		// method on each directory.
+		@Override
+		public FileVisitResult preVisitDirectory(Path dir,
+				BasicFileAttributes attrs) {
+			find(dir);
+			return CONTINUE;
+		}
+
+		@Override
+		public FileVisitResult visitFileFailed(Path file, IOException exc) {
+			System.err.println(exc);
+			return CONTINUE;
+		}
+
+		public List<Path> getPaths() {
+			return paths;
+		}
+	}
 
 	public static Path getPathInClasspath(URL resource) throws IOException,
 			URISyntaxException {
@@ -47,8 +102,40 @@ public class PathUtils {
 		delete(folder, folder, noDeleteFiles);
 	}
 
-	public static void delete(Path basePath, Path path, List<String> noDeleteFiles)
+	public static List<Path> getPaths(String[] pathNames, String globPattern)
 			throws IOException {
+
+		List<Path> paths = new ArrayList<Path>();
+		for (String pathName : pathNames) {
+			Path path = Paths.get(pathName);
+			if (Files.exists(path)) {
+				paths.addAll(searchFiles(path, globPattern));
+			}
+		}
+		return paths;
+	}
+
+	public static List<Path> searchFiles(Path path, String globPattern)
+			throws IOException {
+
+		if (Files.isDirectory(path)) {
+			Finder finder = new Finder(globPattern);
+			Files.walkFileTree(path, finder);
+			return finder.getPaths();
+		} else {
+			PathMatcher matcher = FileSystems.getDefault().getPathMatcher(
+					"glob:" + globPattern);
+
+			if (matcher.matches(path.getFileName())) {
+				return Arrays.asList(path);
+			} else {
+				return Collections.emptyList();
+			}
+		}
+	}
+
+	public static void delete(Path basePath, Path path,
+			List<String> noDeleteFiles) throws IOException {
 
 		Path relativePath = basePath.relativize(path);
 
