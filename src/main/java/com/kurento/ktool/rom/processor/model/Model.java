@@ -18,6 +18,7 @@ public class Model {
 	public static final PrimitiveType INT = new PrimitiveType("int");
 	public static final PrimitiveType FLOAT = new PrimitiveType("float");
 
+	private String name;
 	private List<RemoteClass> remoteClasses;
 	private List<ComplexType> complexTypes;
 	private List<Event> events;
@@ -126,6 +127,14 @@ public class Model {
 
 	public void setComplexTypes(List<ComplexType> types) {
 		this.complexTypes = types;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
