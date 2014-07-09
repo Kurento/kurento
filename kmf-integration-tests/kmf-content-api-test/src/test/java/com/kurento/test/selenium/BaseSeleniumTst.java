@@ -208,6 +208,11 @@ public class BaseSeleniumTst extends BaseArquillianTst {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
+
+			// This flag avoids a warning in chrome. See:
+			// https://code.google.com/p/chromedriver/issues/detail?id=799
+			options.addArguments("--test-type");
+
 			driver = new ChromeDriver(options);
 		}
 	}

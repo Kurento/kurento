@@ -195,7 +195,8 @@ public class SeleniumFlowsIT extends BaseSeleniumTst {
 		// Handler
 		final String handlerPath = "playerFlowNothing";
 		// Expected flows
-		final String[] expectedHandlerFlow = { HANDLER_ON_CONTENT_REQUEST };
+		final String[] expectedHandlerFlow = { HANDLER_ON_CONTENT_REQUEST,
+				HANDLER_ON_SESSION_ERROR };
 		final String[] expectedJavaScriptFlow = { JS_ON_ERROR };
 		final String[] expectedEvents = {};
 

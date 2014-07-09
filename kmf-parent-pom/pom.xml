@@ -65,7 +65,7 @@
 		<!-- Dependencies versions -->
 		<!-- ********************* -->
 		<kms-interface.version>4.3.1</kms-interface.version>
-		<kws.version>4.3.17</kws.version>
+		<kws.version>4.3.18-SNAPSHOT</kws.version>
 		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
 
 		<version.apache.activemq>5.7.0</version.apache.activemq>
