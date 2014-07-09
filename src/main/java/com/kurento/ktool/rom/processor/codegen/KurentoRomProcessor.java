@@ -8,9 +8,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -24,6 +26,9 @@ import com.kurento.ktool.rom.processor.json.JsonModelSaverLoader;
 import com.kurento.ktool.rom.processor.model.Model;
 
 public class KurentoRomProcessor {
+
+	private static final Logger log = LoggerFactory
+			.getLogger(KurentoRomProcessor.class);
 
 	private static final String CONFIG_FILE_NAME = "config.json";
 
@@ -129,24 +134,28 @@ public class KurentoRomProcessor {
 				PathUtils.delete(codegenDir, loadNoDeleteFiles(config));
 			}
 
-			Model model = createModelsWithDependencies();
-
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, config);
 
-			if (config.has("expandMethodsWithOpsParams")
-					&& config.get("expandMethodsWithOpsParams").getAsBoolean()) {
-				model.expandMethodsWithOpsParams();
-			}
+			ModelManager modelManager = createModelManager();
 
-			codeGen.generateCode(model);
+			for (Model model : modelManager.getModels()) {
+				if (config.has("expandMethodsWithOpsParams")
+						&& config.get("expandMethodsWithOpsParams")
+								.getAsBoolean()) {
+					model.expandMethodsWithOpsParams();
+				}
+				codeGen.generateCode(model);
+			}
 
 			return new Result();
 
+		} catch (KurentoRomProcessorException e) {
+			return new Result(new Error("Error: " + e.getMessage()));
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new Result(new Error(e.getClass().getName() + ": "
-					+ e.getMessage()));
+			return new Result(new Error("Unexpected error: "
+					+ e.getClass().getName() + " " + e.getMessage()));
 		}
 	}
 
@@ -165,26 +174,35 @@ public class KurentoRomProcessor {
 		return noDeleteFiles;
 	}
 
-	private Model createModelsWithDependencies() throws FileNotFoundException,
+	private ModelManager createModelManager() throws FileNotFoundException,
 			IOException {
 
-		Model fusionedDepModel = new Model();
-		for (Path dependencyRomFile : dependencyKmdFiles) {
-			Model depModel = JsonModelSaverLoader.getInstance().loadFromFile(
-					dependencyRomFile);
-			fusionedDepModel.addElements(depModel);
-		}
-		fusionedDepModel.populateModel();
+		log.info("Loading dependencies");
+		ModelManager depModelManager = loadModelsFromPaths(dependencyKmdFiles);
+		depModelManager.resolveModels();
 
-		Model model = new Model();
+		log.info("Loading kmd files to generate code");
+		ModelManager modelManager = loadModelsFromPaths(kmdFiles);
+		modelManager.setDependencies(depModelManager);
+		modelManager.resolveModels();
+
+		return modelManager;
+	}
+
+	private ModelManager loadModelsFromPaths(List<Path> kmdFiles)
+			throws FileNotFoundException, IOException {
+
+		ModelManager manager = new ModelManager();
 		for (Path kmdFile : kmdFiles) {
-			Model kmdModel = JsonModelSaverLoader.getInstance().loadFromFile(
-					kmdFile);
-			model.addElements(kmdModel);
-		}
-		model.populateModel(Arrays.asList(fusionedDepModel));
 
-		return model;
+			log.info("Loading kmdFile " + kmdFile);
+
+			Model model = JsonModelSaverLoader.getInstance().loadFromFile(
+					kmdFile);
+			model.validateModel(kmdFile);
+			manager.addModel(model);
+		}
+		return manager;
 	}
 
 	public static JsonObject loadConfigFile(Path configFile)

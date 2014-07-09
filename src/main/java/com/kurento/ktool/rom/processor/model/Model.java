@@ -1,7 +1,7 @@
 package com.kurento.ktool.rom.processor.model;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,30 +9,73 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
+import com.kurento.ktool.rom.processor.codegen.ModelManager;
+
 public class Model {
 
-	private static Logger LOG = LoggerFactory.getLogger(Model.class);
+	private static Logger log = LoggerFactory.getLogger(Model.class);
+
+	private static enum ResolutionState {
+		NO_RESOLVED, IN_PROCESS, RESOLVED
+	};
+
+	private static class Import {
+
+		private String name;
+		private String version;
+		private Model model;
+
+		public Model getModel() {
+			return model;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public String getVersion() {
+			return version;
+		}
+
+		@Override
+		public String toString() {
+			return name + "(" + version + ")";
+		}
+
+		public void setModel(Model model) {
+			this.model = model;
+		}
+	}
 
 	public static final PrimitiveType STRING = new PrimitiveType("String");
 	public static final PrimitiveType BOOLEAN = new PrimitiveType("boolean");
 	public static final PrimitiveType INT = new PrimitiveType("int");
 	public static final PrimitiveType FLOAT = new PrimitiveType("float");
 
+	/* Kmd file info */
 	private String name;
+	private String version;
+	private List<Import> imports;
 	private List<RemoteClass> remoteClasses;
 	private List<ComplexType> complexTypes;
 	private List<Event> events;
 
+	/* Derived properties */
 	private transient Map<String, RemoteClass> remoteClassesMap;
 	private transient Map<String, Event> eventsMap;
 	private transient Map<String, ComplexType> complexTypesMap;
 
 	private transient Map<String, Type> types;
 
+	private transient ResolutionState resolutionState = ResolutionState.NO_RESOLVED;
+	private Map<String, Type> allTypes;
+
 	public Model() {
-		this.remoteClasses = new ArrayList<RemoteClass>();
-		this.complexTypes = new ArrayList<ComplexType>();
-		this.events = new ArrayList<Event>();
+		this.remoteClasses = new ArrayList<>();
+		this.complexTypes = new ArrayList<>();
+		this.events = new ArrayList<>();
+		this.imports = new ArrayList<>();
 	}
 
 	public Model(List<RemoteClass> remoteClasses, List<ComplexType> types,
@@ -42,7 +85,7 @@ public class Model {
 		this.complexTypes = types;
 		this.events = events;
 
-		populateModel();
+		resolveModel();
 	}
 
 	@Override
@@ -137,77 +180,12 @@ public class Model {
 		this.name = name;
 	}
 
-	@Override
-	public String toString() {
-		return "Model [remoteClasses=" + remoteClasses + ", types="
-				+ complexTypes + ", events=" + events + "]";
+	public String getVersion() {
+		return version;
 	}
 
-	public void populateModel(List<Model> dependencyModels) {
-
-		remoteClassesMap = populateNamedElements(this.remoteClasses);
-		eventsMap = populateNamedElements(this.events);
-		complexTypesMap = populateNamedElements(this.complexTypes);
-
-		types = new HashMap<String, Type>();
-		types.putAll(remoteClassesMap);
-		types.putAll(eventsMap);
-		types.putAll(complexTypesMap);
-		put(types, BOOLEAN);
-		put(types, STRING);
-		put(types, INT);
-		put(types, FLOAT);
-
-		Map<String, Type> allTypes = new HashMap<String, Type>(types);
-
-		for (Model dependencyModel : dependencyModels) {
-			allTypes.putAll(dependencyModel.getTypes());
-		}
-
-		resolveTypeRefs(remoteClasses, allTypes);
-		resolveTypeRefs(events, allTypes);
-		resolveTypeRefs(complexTypes, allTypes);
-	}
-
-	private Map<String, ? extends Type> getTypes() {
-		return types;
-	}
-
-	public void populateModel() {
-		populateModel(Collections.<Model> emptyList());
-	}
-
-	private void put(Map<String, ? super Type> types, Type t) {
-		types.put(t.getName(), t);
-	}
-
-	private void resolveTypeRefs(List<? extends ModelElement> modelElements,
-			Map<String, Type> baseTypes) {
-		for (ModelElement modelElement : modelElements) {
-			if (modelElement instanceof TypeRef) {
-				TypeRef typeRef = (TypeRef) modelElement;
-				Type baseType = baseTypes.get(typeRef.getName());
-				if (baseType == null) {
-					LOG.warn("The type '" + typeRef.getName()
-							+ "' is not defined");
-				} else {
-					typeRef.setType(baseType);
-				}
-
-			} else {
-				resolveTypeRefs(modelElement.getChildren(), baseTypes);
-			}
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T extends NamedElement> Map<String, T> populateNamedElements(
-			List<? extends T> elements) {
-		Map<String, T> elementsMap = new HashMap<String, T>();
-		for (NamedElement element : elements) {
-			elementsMap.put(element.getName(), (T) element);
-		}
-		return elementsMap;
+	public void setVersion(String version) {
+		this.version = version;
 	}
 
 	public RemoteClass getRemoteClass(String remoteClassName) {
@@ -222,13 +200,157 @@ public class Model {
 		return eventsMap.get(eventName);
 	}
 
+	@Override
+	public String toString() {
+		return "Model [remoteClasses=" + remoteClasses + ", types="
+				+ complexTypes + ", events=" + events + "]";
+	}
+
+	public void resolveModel() {
+		resolveModel(null);
+	}
+
+	public void validateModel(Path kmdFile) {
+		if (name == null) {
+			throw new KurentoRomProcessorException("Name is mandatory. File: "
+					+ kmdFile);
+		}
+
+		if (version == null) {
+			throw new KurentoRomProcessorException(
+					"Version is mandatory. File: " + kmdFile);
+		}
+	}
+
+	public void resolveModel(ModelManager modelManager) {
+
+		if (resolutionState == ResolutionState.IN_PROCESS) {
+			throw new KurentoRomProcessorException(
+					"Found a dependency cycle in plugin '" + this.name + "'");
+		}
+
+		if (resolutionState == ResolutionState.RESOLVED) {
+			log.info("Model '" + name + "' yet resolved");
+			return;
+		}
+
+		log.info("Resolving model '" + name + "'");
+
+		this.resolutionState = ResolutionState.IN_PROCESS;
+
+		resolveImports(modelManager);
+		resolveTypes(modelManager);
+
+		log.info("Model '" + name + "' resolved");
+
+		this.resolutionState = ResolutionState.RESOLVED;
+	}
+
+	private void resolveTypes(ModelManager modelManager) {
+		remoteClassesMap = resolveNamedElements(this.remoteClasses);
+		eventsMap = resolveNamedElements(this.events);
+		complexTypesMap = resolveNamedElements(this.complexTypes);
+
+		types = new HashMap<String, Type>();
+		types.putAll(remoteClassesMap);
+		types.putAll(eventsMap);
+		types.putAll(complexTypesMap);
+		put(types, BOOLEAN);
+		put(types, STRING);
+		put(types, INT);
+		put(types, FLOAT);
+
+		allTypes = new HashMap<String, Type>(types);
+
+		for (Import importEntry : this.imports) {
+			allTypes.putAll(importEntry.getModel().getAllTypes());
+		}
+
+		resolveTypeRefs(remoteClasses, allTypes);
+		resolveTypeRefs(events, allTypes);
+		resolveTypeRefs(complexTypes, allTypes);
+	}
+
+	private void resolveImports(ModelManager modelManager) {
+		for (Import importEntry : this.imports) {
+			Model dependencyModel = null;
+
+			if (modelManager != null) {
+				dependencyModel = modelManager.getModel(importEntry.getName(),
+						importEntry.getVersion());
+			}
+
+			if (dependencyModel == null) {
+				throw new KurentoRomProcessorException("Import '"
+						+ importEntry.getName() + "' with version "
+						+ importEntry.getVersion()
+						+ " not found in dependencies");
+			}
+
+			dependencyModel.resolveModel(modelManager);
+			importEntry.setModel(dependencyModel);
+		}
+	}
+
+	private Map<String, ? extends Type> getTypes() {
+		return types;
+	}
+
+	private Map<String, ? extends Type> getAllTypes() {
+		return allTypes;
+	}
+
+	private void put(Map<String, ? super Type> types, Type t) {
+		types.put(t.getName(), t);
+	}
+
+	private void resolveTypeRefs(List<? extends ModelElement> modelElements,
+			Map<String, Type> baseTypes) {
+		for (ModelElement modelElement : modelElements) {
+			if (modelElement instanceof TypeRef) {
+				TypeRef typeRef = (TypeRef) modelElement;
+				Type baseType = baseTypes.get(typeRef.getName());
+				if (baseType == null) {
+					throw new KurentoRomProcessorException("The type '"
+							+ typeRef.getName()
+							+ "' is not defined. Used in plugin: " + name);
+				} else {
+					typeRef.setType(baseType);
+				}
+
+			} else {
+				resolveTypeRefs(modelElement.getChildren(), baseTypes);
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends NamedElement> Map<String, T> resolveNamedElements(
+			List<? extends T> elements) {
+		Map<String, T> elementsMap = new HashMap<String, T>();
+		for (NamedElement element : elements) {
+			elementsMap.put(element.getName(), (T) element);
+		}
+		return elementsMap;
+	}
+
 	public void expandMethodsWithOpsParams() {
 		for (RemoteClass remoteClass : remoteClassesMap.values()) {
 			remoteClass.expandMethodsWithOpsParams();
 		}
 	}
 
-	public void addElements(Model model) {
+	public void fusionModel(Model model) {
+
+		if (this.imports.isEmpty()) {
+			this.imports = model.imports;
+		} else {
+			if (!model.imports.isEmpty()) {
+				throw new KurentoRomProcessorException(
+						"Imports clause can only set in a Model file");
+			}
+		}
+
 		this.complexTypes.addAll(model.complexTypes);
 		this.remoteClasses.addAll(model.remoteClasses);
 		this.events.addAll(model.events);
