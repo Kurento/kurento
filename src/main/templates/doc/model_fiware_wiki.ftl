@@ -19,10 +19,10 @@ MediaAPI.html
     </tr>
     </#if>
 
-    <#if !remoteClass.abstract>
+    <#if !remoteClass.abstract && remoteClass.constructor??>
     <tr>
         <td>Constructor Parameters</td>
-        <td><ul><#list remoteClass.constructors[0].params as param>
+        <td><ul><#list remoteClass.constructor.params as param>
                 <li><font face="Courier New, monospace"><a href="#${param.type.name}">${param.type.name}</a>
                 <#if param.type.list>[]</#if>
                 ${param.name}<#if param.optional>?</#if></font></li>
