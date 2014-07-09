@@ -18,13 +18,6 @@
 		<profile>
 			<id>release</id>
 			<build>
-
-				<resources>
-					<resource>
-						<directory>src/main/templates</directory>
-					</resource>
-				</resources>
-
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -46,6 +39,11 @@
 		</profile>
 	</profiles>
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/templates</directory>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
