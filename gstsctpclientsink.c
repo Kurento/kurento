@@ -26,6 +26,8 @@
 
 #define PLUGIN_NAME "sctpclientsink"
 
+#define MAX_BUFFER_SIZE (1024 * 16)
+
 GST_DEBUG_CATEGORY_STATIC (gst_sctp_client_sink_debug_category);
 #define GST_CAT_DEFAULT gst_sctp_client_sink_debug_category
 
@@ -144,6 +146,27 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
   GST_OBJECT_UNLOCK (self);
 }
 
+/* will be called only between calls to start() and stop() */
+static gboolean
+gst_sctp_client_sink_unlock (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  GST_DEBUG_OBJECT (self, "set to flushing");
+  g_cancellable_cancel (self->priv->cancellable);
+  return TRUE;
+}
+
+static gboolean
+gst_sctp_client_sink_unlock_stop (GstBaseSink * bsink)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  GST_DEBUG_OBJECT (self, "unset flushing");
+  g_cancellable_reset (self->priv->cancellable);
+  return TRUE;
+}
+
 static gboolean
 gst_sctp_client_sink_disconnect (GstBaseSink * bsink)
 {
@@ -168,12 +191,12 @@ gst_sctp_client_sink_disconnect (GstBaseSink * bsink)
     goto end;
   }
 
-  GST_DEBUG_OBJECT (self, "Closing socket");
-
   if (!g_socket_close (socket, &err)) {
     GST_ERROR ("Failed to close socket %p: %s", socket, err->message);
     g_clear_error (&err);
   }
+
+  GST_DEBUG_OBJECT (self, "socket closed");
 
 end:
   g_clear_object (&socket);
@@ -197,6 +220,7 @@ gst_sctp_client_sink_stop (GstBaseSink * bsink)
     self->priv->task = NULL;
     GST_OBJECT_UNLOCK (self);
 
+    gst_sctp_client_sink_unlock (GST_BASE_SINK (self));
     gst_task_stop (task);
 
     /* make sure it is not running */
@@ -389,7 +413,91 @@ connect_failed:
 void
 gst_sctp_client_sink_thread (GstSCTPClientSink * self)
 {
-  /* TODO: manage incoming SCTP stuff */
+  GSocket *socket = NULL;
+  GIOCondition condition;
+  GError *err = NULL;
+  guint streamid;
+  gchar *buf = NULL;
+  gssize rret;
+
+  GST_OBJECT_LOCK (self);
+
+  if (self->priv->socket == NULL) {
+    GST_OBJECT_UNLOCK (self);
+    return;
+  }
+
+  socket = g_object_ref (self->priv->socket);
+
+  GST_OBJECT_UNLOCK (self);
+
+  /* Read from SCTP socket */
+  GST_DEBUG ("Read buffer");
+
+  if (!g_socket_condition_wait (socket,
+          G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP, self->priv->cancellable,
+          &err))
+    goto error;
+
+  condition = g_socket_condition_check (socket,
+      G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP);
+
+  if ((condition & G_IO_ERR)) {
+    GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL), ("Socket in error state"));
+    goto done;
+  } else if ((condition & G_IO_HUP)) {
+    GST_DEBUG_OBJECT (self, "Connection closed");
+    goto done;
+  }
+
+  buf = g_malloc (MAX_BUFFER_SIZE);
+  rret = sctp_socket_receive (socket, buf, MAX_BUFFER_SIZE,
+      self->priv->cancellable, &streamid, &err);
+
+  if (rret == 0) {
+    GST_DEBUG_OBJECT (self, "Connection closed");
+    /* TODO: NOT LINKED */
+    goto error;
+  } else if (rret < 0) {
+    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "Cancelled reading from socket");
+    } else {
+      /* ERROR */
+      GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
+          ("Failed to read from socket: %s", err->message));
+    }
+    goto error;
+  }
+
+  GST_DEBUG_OBJECT (self, "Got buffer on stream %u", streamid);
+
+  g_clear_error (&err);
+  g_free (buf);
+
+done:
+  {
+    g_object_unref (socket);
+    return;
+  }
+error:
+  {
+    g_object_unref (socket);
+
+    if (buf != NULL)
+      g_free (buf);
+
+    if (err != NULL) {
+      GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
+          ("Select failed: %s", err->message));
+      g_error_free (err);
+    }
+
+    /* pause task */
+    GST_OBJECT_LOCK (self);
+    if (self->priv->task != NULL)
+      gst_task_pause (self->priv->task);
+    GST_OBJECT_UNLOCK (self);
+  }
 }
 
 static gboolean
@@ -430,30 +538,12 @@ task_error:
   }
 }
 
-/* will be called only between calls to start() and stop() */
-static gboolean
-gst_sctp_client_sink_unlock (GstBaseSink * bsink)
-{
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
-
-  GST_DEBUG_OBJECT (self, "set to flushing");
-  g_cancellable_cancel (self->priv->cancellable);
-  return TRUE;
-}
-
-static gboolean
-gst_sctp_client_sink_unlock_stop (GstBaseSink * bsink)
-{
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
-
-  GST_DEBUG_OBJECT (self, "unset flushing");
-  g_cancellable_reset (self->priv->cancellable);
-  return TRUE;
-}
-
 static GstFlowReturn
 gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 {
+  /* Ignore buffers so far. Let's focus on events and caps negotiation  */
+  return GST_FLOW_OK;
+#if 0
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
   GstMapInfo map;
   gsize written = 0;
@@ -502,6 +592,7 @@ write_error:
     g_clear_error (&err);
     return ret;
   }
+#endif
 }
 
 static void
