@@ -42,6 +42,7 @@ include_directories(
   ${NICE_INCLUDE_DIRS}
   ${GIO_INCLUDE_DIRS}
   ${SCTP_INCLUDE_DIRS}
+  ${GSTMARSHAL_INCLUDE_DIRS}
   "${CMAKE_CURRENT_BINARY_DIR}/commons/"
   "${CMAKE_CURRENT_SOURCE_DIR}/commons/"
 )
@@ -59,6 +60,7 @@ target_link_libraries(kmsplugin
   ${NICE_LIBRARIES}
   ${GIO_LIBRARIES}
   ${SCTP_LIBRARIES}
+  ${GSTMARSHAL_LIBRARIES}
 )
 
 install(
