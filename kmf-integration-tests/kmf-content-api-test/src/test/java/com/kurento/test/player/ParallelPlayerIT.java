@@ -43,7 +43,7 @@ import com.kurento.test.base.BaseArquillianTst;
 @RunWith(Arquillian.class)
 public class ParallelPlayerIT extends BaseArquillianTst {
 
-	private static final int nThreads = 5;
+	private static final int nThreads = 3;
 
 	@Test
 	public void testParallelPlayRedirect() throws ClientProtocolException,
