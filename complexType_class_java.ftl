@@ -1,17 +1,17 @@
-${config.subfolder}/${complexType.name}.java
+${packageToFolder(model.code.api.java.packageName)}/${complexType.name}.java
 <#include "macros.ftm" >
 /**
  * This file is generated with Kurento ktool-rom-processor.
  * Please don't edit. Changes should go to kms-interface-rom and
  * ktool-rom-processor templates.
  */
-package ${config.packageName};
+package ${model.code.api.java.packageName};
 
 import com.kurento.tool.rom.server.Param;
 import java.util.List;
 
-<#list config.importedPackages as importedPackage>
-import ${importedPackage}.*;
+<#list model.allImports as import>
+import ${import.model.code.api.java.packageName}.*;
 </#list>
 
 <#if complexType.typeFormat == "REGISTER">
