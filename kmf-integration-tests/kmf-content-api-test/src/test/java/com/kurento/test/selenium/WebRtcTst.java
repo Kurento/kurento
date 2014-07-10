@@ -60,6 +60,20 @@ public class WebRtcTst extends BaseArquillianTst {
 			System.setProperty("webdriver.chrome.driver", new File(
 					"target/webdriver/" + chromedriver).getAbsolutePath());
 			ChromeOptions options = new ChromeOptions();
+
+			// This flag avoids a warning in chrome. See:
+			// https://code.google.com/p/chromedriver/issues/detail?id=799
+			options.addArguments("--test-type");
+
+			// This flag avoids grant the camera
+			options.addArguments("--use-fake-ui-for-media-stream");
+
+			// This flag makes using a synthetic video (green with
+			// spinner) in webrtc. Or it is needed to combine with
+			// use-file-for-fake-video-capture to use a file faking the
+			// cam
+			options.addArguments("--use-fake-device-for-media-stream");
+
 			driver = new ChromeDriver(options);
 		}
 	}
