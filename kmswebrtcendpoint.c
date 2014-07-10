@@ -1434,9 +1434,7 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
 
   switch (prop_id) {
     case PROP_CERTIFICATE_PEM_FILE:
-      if (self->priv->certificate_pem_file != NULL)
-        g_free (self->priv->certificate_pem_file);
-
+      g_free (self->priv->certificate_pem_file);
       self->priv->certificate_pem_file = g_value_dup_string (value);
       g_object_set_property (G_OBJECT (self->priv->audio_connection->
               rtp_transport->dtlssrtpdec), "certificate-pem-file", value);
@@ -1554,9 +1552,7 @@ kms_webrtc_endpoint_finalize (GObject * object)
     g_free (self->priv->tmp_dir);
   }
 
-  if (self->priv->certificate_pem_file != NULL) {
-    g_free (self->priv->certificate_pem_file);
-  }
+  g_free (self->priv->certificate_pem_file);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_endpoint_parent_class)->finalize (object);
