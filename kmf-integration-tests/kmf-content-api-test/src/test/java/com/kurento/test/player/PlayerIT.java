@@ -22,7 +22,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.kurento.demo.internal.VideoURLs;
 import com.kurento.test.base.BaseArquillianTst;
 
 /**
@@ -39,17 +38,13 @@ public class PlayerIT extends BaseArquillianTst {
 	@Test
 	public void testPlayRedirect() throws ClientProtocolException, IOException,
 			NoSuchAlgorithmException {
-		for (String video : VideoURLs.small) {
-			testPlay("player-redirect/" + video, 200, "video/webm", false, null);
-		}
+		testPlay("player-redirect/small-webm", 200, "video/webm", false, null);
 	}
 
 	@Test
 	public void testPlayTunnel() throws ClientProtocolException, IOException,
 			NoSuchAlgorithmException {
-		for (String video : VideoURLs.small) {
-			testPlay("player-tunnel/" + video, 200, "video/webm", false, null);
-		}
+		testPlay("player-tunnel/small-mp4", 200, "video/webm", false, null);
 	}
 
 	@Test

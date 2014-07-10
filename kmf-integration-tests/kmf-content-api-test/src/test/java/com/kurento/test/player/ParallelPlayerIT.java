@@ -27,7 +27,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.kurento.demo.internal.VideoURLs;
 import com.kurento.test.base.BaseArquillianTst;
 
 /**
@@ -49,19 +48,15 @@ public class ParallelPlayerIT extends BaseArquillianTst {
 	@Test
 	public void testParallelPlayRedirect() throws ClientProtocolException,
 			IOException, InterruptedException, ExecutionException {
-		for (String video : VideoURLs.small) {
-			testParallelPlay("player-redirect/" + video, 200, "video/webm",
-					false, null);
-		}
+		testParallelPlay("player-redirect/small-webm", 200, "video/webm",
+				false, null);
 	}
 
 	@Test
 	public void testParallelPlayTunnel() throws ClientProtocolException,
 			IOException, InterruptedException, ExecutionException {
-		for (String video : VideoURLs.small) {
-			testParallelPlay("player-tunnel/" + video, 200, "video/webm",
-					false, null);
-		}
+		testParallelPlay("player-tunnel/small-mp4", 200, "video/webm", false,
+				null);
 	}
 
 	@Test
