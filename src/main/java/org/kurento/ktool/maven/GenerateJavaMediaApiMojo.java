@@ -2,11 +2,9 @@ package org.kurento.ktool.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,10 +29,7 @@ import org.codehaus.plexus.compiler.util.scan.mapping.SuffixMapping;
 import org.kurento.ktool.maven.KurentoDependencyManager.KurentoDependency;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
-import com.google.common.base.Joiner;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.kurento.ktool.rom.processor.codegen.Error;
 import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessor;
 import com.kurento.ktool.rom.processor.codegen.Result;
@@ -49,11 +44,6 @@ import com.kurento.ktool.rom.processor.codegen.Result;
 public class GenerateJavaMediaApiMojo extends AbstractMojo {
 
 	private Log log;
-
-	// First, let's deal with the options that the kurento-code-gen (kcg)
-	// itself can be configured by.
-
-	private static final String DEFAULT_MEDIA_PACKAGE = "com.kurento.kmf.media";
 
 	/**
 	 * specify kurento media element definition file encoding; e.g., euc-jp
@@ -133,9 +123,6 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 	@Parameter(defaultValue = "true")
 	private boolean generateCode;
 
-	@Parameter(defaultValue = DEFAULT_MEDIA_PACKAGE)
-	private String javaPackageGeneration;
-
 	public File getSourceDirectory() {
 		return sourceDirectory;
 	}
@@ -206,7 +193,7 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 				}
 
 				addSourceRoot(outputDirectory);
-				generateManifest(kmdFiles, manager);
+				// generateManifest(kmdFiles, manager);
 
 			} catch (MojoExecutionException e) {
 				throw e;
@@ -253,21 +240,8 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 	}
 
 	private JsonObject createConfig(KurentoDependencyManager manager) {
+
 		JsonObject config = new JsonObject();
-		config.addProperty("packageName", this.javaPackageGeneration);
-		config.addProperty("subfolder",
-				this.javaPackageGeneration.replace(".", "/"));
-
-		JsonArray importedPackagesJA = new JsonArray();
-		for (KurentoDependency dependency : manager.getKmdDependencyInfos()) {
-			if (dependency.isGeneratedSources()) {
-				importedPackagesJA.add(new JsonPrimitive(dependency
-						.getPackageName()));
-			}
-		}
-
-		config.add("importedPackages", importedPackagesJA);
-
 		config.addProperty("expandMethodsWithOpsParams", true);
 		return config;
 	}
@@ -351,42 +325,42 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 		buildContext.refresh(newFile.toFile());
 	}
 
-	private void generateManifest(Set<File> kmdFiles,
-			KurentoDependencyManager manager) throws IOException {
-
-		// FIXME: Use Gson to create manifest.json
-
-		List<String> generatedSources = new ArrayList<String>();
-		for (KurentoDependency dependency : manager.getKmdDependencyInfos()) {
-			if (!dependency.isGeneratedSources()) {
-
-				String dependencyInfo = "\n{ id: \"" + dependency.getId()
-						+ "\", packageName: \"" + javaPackageGeneration + "\"}";
-
-				generatedSources.add(dependencyInfo);
-			}
-		}
-
-		for (File kmdFile : kmdFiles) {
-
-			String id = kmdFile.getName();
-			id = id.substring(0, id.length() - ".kmd.json".length());
-			String dependencyInfo = "\n{ id: \"" + id + "\", packageName: \""
-					+ javaPackageGeneration + "\"}";
-
-			generatedSources.add(dependencyInfo);
-		}
-
-		String content = "{ generated-sources:["
-				+ Joiner.on(",").join(generatedSources) + "]}";
-		File manifest = new File(kurentoOutputFolder, "manifest.json");
-
-		manifest.getParentFile().mkdirs();
-
-		try (PrintWriter pw = new PrintWriter(manifest)) {
-			pw.println(content);
-		}
-	}
+	// private void generateManifest(Set<File> kmdFiles,
+	// KurentoDependencyManager manager) throws IOException {
+	//
+	// // FIXME: Use Gson to create manifest.json
+	//
+	// List<String> generatedSources = new ArrayList<String>();
+	// for (KurentoDependency dependency : manager.getKmdDependencyInfos()) {
+	// if (!dependency.isGeneratedSources()) {
+	//
+	// String dependencyInfo = "\n{ id: \"" + dependency.getId()
+	// + "\", packageName: \"" + javaPackageGeneration + "\"}";
+	//
+	// generatedSources.add(dependencyInfo);
+	// }
+	// }
+	//
+	// for (File kmdFile : kmdFiles) {
+	//
+	// String id = kmdFile.getName();
+	// id = id.substring(0, id.length() - ".kmd.json".length());
+	// String dependencyInfo = "\n{ id: \"" + id + "\", packageName: \""
+	// + javaPackageGeneration + "\"}";
+	//
+	// generatedSources.add(dependencyInfo);
+	// }
+	//
+	// String content = "{ generated-sources:["
+	// + Joiner.on(",").join(generatedSources) + "]}";
+	// File manifest = new File(kurentoOutputFolder, "manifest.json");
+	//
+	// manifest.getParentFile().mkdirs();
+	//
+	// try (PrintWriter pw = new PrintWriter(manifest)) {
+	// pw.println(content);
+	// }
+	// }
 
 	/**
 	 *
