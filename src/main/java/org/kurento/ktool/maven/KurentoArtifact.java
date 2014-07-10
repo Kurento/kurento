@@ -2,47 +2,36 @@ package org.kurento.ktool.maven;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
 
 public class KurentoArtifact implements Closeable {
 
-	private static final String MANIFEST_FILE = "/manifest.json";
-	private static final String GENERATED_SOURCES_LIST_PROPERTY = "generated-sources";
-	private static final String META_INF_KURENTO_FOLDER = "META-INF/kurento";
+	private static final int EXTENSION_LENGTH = ".kmd.json".length();
 
-	private static Gson gson = new GsonBuilder().create();
+	private static final String META_INF_KURENTO_FOLDER = "META-INF/kurento";
 
 	private Log log;
 
 	private Artifact artifact;
 	private JarFile jarFile;
-	private boolean kurentoArtifact = false;
-	private JsonObject manifest;
 	private File artifactFile;
-	private List<Path> kmdFiles;
 	private FileSystem jarFS;
-	private List<GeneratedSourcesInfo> kmdGeneratedSourcesList = new ArrayList<>();
+
+	private boolean kurentoArtifact = false;
+	private Path kmdFile;
+	private String moduleName;
 
 	public KurentoArtifact(Log log, Artifact artifact) throws IOException {
 
@@ -60,14 +49,11 @@ public class KurentoArtifact implements Closeable {
 		}
 
 		if (kurentoArtifact) {
-			loadManifest();
 			loadKmdFiles();
 		}
 	}
 
 	private void loadKmdFiles() throws IOException {
-
-		kmdFiles = new ArrayList<>();
 
 		Path kmdFolder = null;
 		if (artifactFile.isDirectory()) {
@@ -84,68 +70,30 @@ public class KurentoArtifact implements Closeable {
 					+ " with filter *.kmd.json");
 
 			for (Path kmdFile : directoryStream) {
-				log.debug("Kmd file " + kmdFile + " found");
-				kmdFiles.add(kmdFile);
-			}
-		}
-	}
 
-	private void loadManifest() throws IOException {
-
-		if (jarFile != null) {
-			JarEntry manifestJE = jarFile.getJarEntry(META_INF_KURENTO_FOLDER
-					+ MANIFEST_FILE);
-
-			if (manifestJE != null) {
-				manifest = (JsonObject) gson.fromJson(new InputStreamReader(
-						jarFile.getInputStream(manifestJE)), JsonElement.class);
-			}
-
-		} else {
-
-			File manifestFile = new File(new File(artifactFile,
-					META_INF_KURENTO_FOLDER), MANIFEST_FILE);
-
-			if (manifestFile.exists()) {
-				manifest = (JsonObject) gson.fromJson(new InputStreamReader(
-						new FileInputStream(manifestFile)), JsonElement.class);
+				if (this.kmdFile == null) {
+					this.kmdFile = kmdFile;
+				} else {
+					throw new KurentoRomProcessorException(
+							"Found two or more kmd files in dependency "
+									+ this.getArtifactCoordinate());
+				}
 			}
 		}
 
-		if (manifest == null) {
-			manifest = new JsonObject();
-		} else {
-			log.debug("Found manifest.json: " + manifest);
-		}
-
-		if (manifest.has(GENERATED_SOURCES_LIST_PROPERTY)) {
-
-			this.kmdGeneratedSourcesList = new ArrayList<>();
-
-			JsonArray array = manifest
-					.getAsJsonArray(GENERATED_SOURCES_LIST_PROPERTY);
-
-			for (JsonElement elem : array) {
-				kmdGeneratedSourcesList.add(gson.fromJson(elem,
-						GeneratedSourcesInfo.class));
-			}
-		}
+		moduleName = removeExtension(kmdFile.getFileName().toString());
 	}
 
 	public Artifact getArtifact() {
 		return artifact;
 	}
 
-	public JsonObject getManifest() {
-		return manifest;
-	}
-
 	public boolean isKurentoArtifact() {
 		return kurentoArtifact;
 	}
 
-	public List<Path> getKmdFiles() {
-		return kmdFiles;
+	public Path getKmdFile() {
+		return kmdFile;
 	}
 
 	public String getArtifactCoordinate() {
@@ -153,12 +101,13 @@ public class KurentoArtifact implements Closeable {
 				+ artifact.getVersion();
 	}
 
-	public Collection<GeneratedSourcesInfo> getKmdGeneratedSourcesList() {
-		return kmdGeneratedSourcesList;
+	public String getName() {
+		return moduleName;
 	}
 
-	public boolean hasCode() {
-		return !kmdGeneratedSourcesList.isEmpty();
+	private String removeExtension(String dependencyId) {
+		return dependencyId.substring(0, dependencyId.length()
+				- EXTENSION_LENGTH);
 	}
 
 	@Override

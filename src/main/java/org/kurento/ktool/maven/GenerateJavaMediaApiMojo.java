@@ -26,12 +26,13 @@ import org.codehaus.plexus.compiler.util.scan.SimpleSourceInclusionScanner;
 import org.codehaus.plexus.compiler.util.scan.SourceInclusionScanner;
 import org.codehaus.plexus.compiler.util.scan.mapping.SourceMapping;
 import org.codehaus.plexus.compiler.util.scan.mapping.SuffixMapping;
-import org.kurento.ktool.maven.KurentoDependencyManager.KurentoDependency;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import com.google.gson.JsonObject;
 import com.kurento.ktool.rom.processor.codegen.Error;
 import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessor;
+import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
+import com.kurento.ktool.rom.processor.codegen.PathUtils;
 import com.kurento.ktool.rom.processor.codegen.Result;
 
 /**
@@ -120,8 +121,8 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 	@Component
 	private BuildContext buildContext;
 
-	@Parameter(defaultValue = "true")
-	private boolean generateCode;
+	@Parameter
+	private List<String> generateCodeForModules = Collections.emptyList();
 
 	public File getSourceDirectory() {
 		return sourceDirectory;
@@ -152,20 +153,19 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 
 		Set<File> kmdFiles = loadKmdFiles();
 
-		if (generateCode) {
+		try {
 
-			prepareOutputDirectories();
+			KurentoDependencyManager manager = new KurentoDependencyManager(log);
 
-			try {
+			manager.loadDependencies(project);
 
-				KurentoDependencyManager manager = new KurentoDependencyManager(
-						log);
+			KurentoRomProcessor krp = new KurentoRomProcessor();
+			addKmdFiles(krp, kmdFiles, manager);
+			krp.loadModels();
 
-				manager.loadDependencies(project);
+			if (krp.hasToGenerateCode()) {
 
 				JsonObject config = createConfig(manager);
-
-				KurentoRomProcessor krp = new KurentoRomProcessor();
 				krp.setDeleteGenDir(true);
 				krp.setVerbose(false);
 				krp.setInternalTemplates("java");
@@ -173,7 +173,7 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 				krp.setConfig(config);
 				krp.setListGeneratedFiles(false);
 
-				addKmdFiles(krp, kmdFiles, manager);
+				prepareOutputDirectories();
 
 				Result result = krp.generateCode();
 
@@ -193,27 +193,24 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 				}
 
 				addSourceRoot(outputDirectory);
-				// generateManifest(kmdFiles, manager);
-
-			} catch (MojoExecutionException e) {
-				throw e;
-			} catch (Exception e) {
-				log.error(
-						"Exception "
-								+ e.getClass().getName()
-								+ ":"
-								+ e.getMessage()
-								+ " in code generation from kmd files. See exception report for details",
-						e);
-				throw new MojoFailureException(
-						"Exception in code generation from kmd files. See exception report for details",
-						e);
 			}
-		} else {
-			log.info("Code generation has been disabled.");
+
+		} catch (MojoExecutionException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error(
+					"Exception "
+							+ e.getClass().getName()
+							+ ":"
+							+ e.getMessage()
+							+ " in code generation from kmd files. See exception report for details",
+					e);
+			throw new MojoFailureException(
+					"Exception in code generation from kmd files. See exception report for details",
+					e);
 		}
 
-		copyKmdFilesToManifest(kmdFiles);
+		copyKmdFiles(kmdFiles);
 	}
 
 	private void addKmdFiles(KurentoRomProcessor krp, Set<File> kmdFiles,
@@ -226,10 +223,18 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 			krp.addKmdFile(kmdFile.toPath());
 		}
 
-		for (KurentoDependency dependency : manager.getKmdDependencyInfos()) {
+		for (String moduleToGenerateCode : this.generateCodeForModules) {
+			if (manager.getDependency(moduleToGenerateCode) == null) {
+				throw new KurentoRomProcessorException(
+						"The module to generate code '" + moduleToGenerateCode
+								+ "' doesn't exist in dependencies");
+			}
+		}
+
+		for (KurentoArtifact dependency : manager.getDependencies()) {
 
 			Path kmdFile = dependency.getKmdFile();
-			if (dependency.isGeneratedSources()) {
+			if (!this.generateCodeForModules.contains(dependency.getName())) {
 				getLog().info("  Adding dependency kmd file: " + kmdFile);
 				krp.addDependencyKmdFile(kmdFile);
 			} else {
@@ -246,11 +251,27 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 		return config;
 	}
 
-	private void copyKmdFilesToManifest(Set<File> kmdFiles)
-			throws MojoFailureException {
+	private void copyKmdFiles(Set<File> kmdFiles) throws MojoFailureException {
+
 		try {
+			Path outputPath = kurentoOutputFolder.toPath();
+
+			if (Files.exists(outputPath)) {
+				PathUtils.deleteRecursive(outputPath);
+			}
+
+			if (!kmdFiles.isEmpty()) {
+				Files.createDirectories(outputPath);
+			}
+
 			for (File kmdFile : kmdFiles) {
-				copyKmdFileToOutput(kmdFile.toPath());
+
+				Path kmdPath = kmdFile.toPath();
+				String kmdFileName = kmdPath.getFileName().toString();
+				Path newFile = outputPath.resolve(kmdFileName);
+				Files.copy(kmdPath, newFile,
+						StandardCopyOption.REPLACE_EXISTING);
+				buildContext.refresh(newFile.toFile());
 			}
 		} catch (IOException e) {
 			throw new MojoFailureException("Exception copying kmd files", e);
@@ -311,56 +332,6 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 
 		return kmdFiles;
 	}
-
-	private void copyKmdFileToOutput(Path kmdFile) throws IOException {
-
-		String kmdFileName = kmdFile.getFileName().toString();
-
-		Files.createDirectories(kurentoOutputFolder.toPath());
-
-		Path newFile = kurentoOutputFolder.toPath().resolve(kmdFileName);
-
-		Files.copy(kmdFile, newFile, StandardCopyOption.REPLACE_EXISTING);
-
-		buildContext.refresh(newFile.toFile());
-	}
-
-	// private void generateManifest(Set<File> kmdFiles,
-	// KurentoDependencyManager manager) throws IOException {
-	//
-	// // FIXME: Use Gson to create manifest.json
-	//
-	// List<String> generatedSources = new ArrayList<String>();
-	// for (KurentoDependency dependency : manager.getKmdDependencyInfos()) {
-	// if (!dependency.isGeneratedSources()) {
-	//
-	// String dependencyInfo = "\n{ id: \"" + dependency.getId()
-	// + "\", packageName: \"" + javaPackageGeneration + "\"}";
-	//
-	// generatedSources.add(dependencyInfo);
-	// }
-	// }
-	//
-	// for (File kmdFile : kmdFiles) {
-	//
-	// String id = kmdFile.getName();
-	// id = id.substring(0, id.length() - ".kmd.json".length());
-	// String dependencyInfo = "\n{ id: \"" + id + "\", packageName: \""
-	// + javaPackageGeneration + "\"}";
-	//
-	// generatedSources.add(dependencyInfo);
-	// }
-	//
-	// String content = "{ generated-sources:["
-	// + Joiner.on(",").join(generatedSources) + "]}";
-	// File manifest = new File(kurentoOutputFolder, "manifest.json");
-	//
-	// manifest.getParentFile().mkdirs();
-	//
-	// try (PrintWriter pw = new PrintWriter(manifest)) {
-	// pw.println(content);
-	// }
-	// }
 
 	/**
 	 *
