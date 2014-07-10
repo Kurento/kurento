@@ -42,6 +42,8 @@ public class KurentoRomProcessor {
 	private boolean listGeneratedFiles = false;
 	private String internalTemplates = null;
 
+	private ModelManager modelManager;
+
 	public void setInternalTemplates(String internalTemplates) {
 		this.internalTemplates = internalTemplates;
 	}
@@ -116,6 +118,10 @@ public class KurentoRomProcessor {
 
 	public Result generateCode() throws JsonIOException, IOException {
 
+		if (modelManager == null) {
+			loadModels();
+		}
+
 		if (internalTemplates != null) {
 			templatesDir = getInternalTemplatesDir(internalTemplates);
 
@@ -140,8 +146,6 @@ public class KurentoRomProcessor {
 
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, config);
-
-			ModelManager modelManager = createModelManager();
 
 			for (Model model : modelManager.getModels()) {
 				if (config.has("expandMethodsWithOpsParams")
@@ -177,21 +181,6 @@ public class KurentoRomProcessor {
 			}
 		}
 		return noDeleteFiles;
-	}
-
-	private ModelManager createModelManager() throws FileNotFoundException,
-			IOException {
-
-		log.info("Loading dependencies");
-		ModelManager depModelManager = loadModelsFromPaths(dependencyKmdFiles);
-		depModelManager.resolveModels();
-
-		log.info("Loading kmd files to generate code");
-		ModelManager modelManager = loadModelsFromPaths(kmdFiles);
-		modelManager.setDependencies(depModelManager);
-		modelManager.resolveModels();
-
-		return modelManager;
 	}
 
 	private ModelManager loadModelsFromPaths(List<Path> kmdFiles)
@@ -235,4 +224,21 @@ public class KurentoRomProcessor {
 			configContents.add(e.getKey(), e.getValue());
 		}
 	}
+
+	public void loadModels() throws FileNotFoundException, IOException {
+
+		log.info("Loading dependencies");
+		ModelManager depModelManager = loadModelsFromPaths(dependencyKmdFiles);
+		depModelManager.resolveModels();
+
+		log.info("Loading kmd files to generate code");
+		modelManager = loadModelsFromPaths(kmdFiles);
+		modelManager.setDependencies(depModelManager);
+		modelManager.resolveModels();
+	}
+
+	public boolean hasToGenerateCode() {
+		return !kmdFiles.isEmpty();
+	}
+
 }
