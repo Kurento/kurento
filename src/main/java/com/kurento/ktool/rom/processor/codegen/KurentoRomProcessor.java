@@ -134,6 +134,10 @@ public class KurentoRomProcessor {
 				PathUtils.delete(codegenDir, loadNoDeleteFiles(config));
 			}
 
+			if (!Files.exists(codegenDir)) {
+				Files.createDirectories(codegenDir);
+			}
+
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, config);
 

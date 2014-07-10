@@ -255,7 +255,7 @@ public class Model {
 		if (this.code == null) {
 			this.code = new Code();
 		}
-		this.code.completeInfo(modelManager);
+		this.code.completeInfo(this, modelManager);
 	}
 
 	private void resolveTypes(ModelManager modelManager) {
