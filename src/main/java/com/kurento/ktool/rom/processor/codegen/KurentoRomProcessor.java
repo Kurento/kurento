@@ -2,6 +2,7 @@ package com.kurento.ktool.rom.processor.codegen;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -9,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -241,4 +243,61 @@ public class KurentoRomProcessor {
 		return !kmdFiles.isEmpty();
 	}
 
+	public void printValues(String[] keys) {
+		try {
+			if (modelManager == null) {
+				loadModels();
+			}
+
+			for (Model model : modelManager.getModels()) {
+				for (String key : keys) {
+					System.out.println("Value: " + key + " = "
+							+ getValue(model, key));
+				}
+			}
+		} catch (Exception e) {
+			log.error("Error: " + e.getMessage());
+		}
+	}
+
+	private static String getValue(Object object, String key) {
+		int index = key.indexOf('.');
+		String currentKey;
+		Object value;
+
+		if (index == -1) {
+			currentKey = key;
+		} else {
+			currentKey = key.substring(0, index);
+		}
+
+		if (object instanceof Map) {
+			value = ((Map<?, ?>) object).get(key);
+			if (value != null) {
+				return value.toString();
+			}
+
+			value = ((Map<?, ?>) object).get(currentKey);
+		} else if (object instanceof List) {
+			value = ((List<?>) object).get(Integer.valueOf(currentKey));
+		} else {
+			try {
+				Method method = object.getClass().getMethod(
+						"get" + Character.toUpperCase(currentKey.charAt(0))
+								+ currentKey.substring(1));
+
+				value = method.invoke(object);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+
+		if (index == -1) {
+			return value.toString();
+		} else {
+			String nextStep = key.substring(index + 1);
+
+			return getValue(value, nextStep);
+		}
+	}
 }

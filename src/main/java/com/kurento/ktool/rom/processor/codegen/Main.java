@@ -33,6 +33,7 @@ public class Main {
 	private static final String DELETE = "d";
 	private static final String CONFIG = "cf";
 	private static final String INTERNAL_TEMPLATES = "it";
+	private static final String SHOW_VALUES = "s";
 
 	public static void main(String[] args) throws IOException,
 			TemplateException {
@@ -46,8 +47,7 @@ public class Main {
 			CommandLineParser parser = new PosixParser();
 			line = parser.parse(options, args);
 
-			if (line.hasOption(HELP) || !line.hasOption(ROM)
-					|| !line.hasOption(CODEGEN)) {
+			if (line.hasOption(HELP) || !line.hasOption(ROM)) {
 				printHelp(options);
 				System.exit(0);
 			}
@@ -66,7 +66,7 @@ public class Main {
 			krp.setTemplatesDir(getTemplatesDir(line));
 		} else if (line.hasOption(INTERNAL_TEMPLATES)) {
 			krp.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
-		} else {
+		} else if (!line.hasOption(SHOW_VALUES)) {
 			System.err.println("Templates dir must be specified with -"
 					+ TEMPLATES_DIR + " option or with -" + INTERNAL_TEMPLATES
 					+ " option.");
@@ -74,10 +74,13 @@ public class Main {
 			System.exit(1);
 		}
 
-		krp.setCodeGenDir(getCodegenDir(line));
 		krp.setConfig(getConfigContent(line));
 		krp.setKmdFiles(getKmdFiles(line));
 		krp.setDependencyKmdFiles(getDependencyKmdFiles(line));
+
+		showValues(krp, line);
+
+		krp.setCodeGenDir(getCodegenDir(line));
 
 		Result result = krp.generateCode();
 
@@ -87,6 +90,17 @@ public class Main {
 			System.out.println("Generation failed");
 			result.showErrorsInConsole();
 		}
+	}
+
+	private static void showValues(KurentoRomProcessor krp, CommandLine line) {
+		if (!line.hasOption(SHOW_VALUES)) {
+			return;
+		}
+
+		String[] keys = line.getOptionValues(SHOW_VALUES);
+
+		krp.printValues(keys);
+		System.exit(0);
 	}
 
 	@SuppressWarnings("static-access")
@@ -122,10 +136,12 @@ public class Main {
 				.hasArg().withArgName("TEMPLATES_DIR")
 				.create(INTERNAL_TEMPLATES));
 
-		options.addOption(OptionBuilder.withLongOpt("codegen")
-				.withDescription("Destination directory for generated files.")
-				.hasArg().withArgName("CODEGEN_DIR").isRequired()
-				.create(CODEGEN));
+		options.addOption(OptionBuilder
+				.withLongOpt("codegen")
+				.withDescription(
+						"Destination directory for generated files "
+								+ "(required if --show-values or -s is not present.")
+				.hasArg().withArgName("CODEGEN_DIR").create(CODEGEN));
 
 		options.addOption(DELETE, "delete", false,
 				"Delete destination directory before generating files.");
@@ -136,6 +152,13 @@ public class Main {
 		options.addOption(OptionBuilder.withLongOpt("config")
 				.withDescription("Configuration file.").hasArg()
 				.withArgName("CONFIGURATION_FILE").create(CONFIG));
+
+		options.addOption(OptionBuilder
+				.withLongOpt("show-values")
+				.withDescription(
+						"Show values for provided keys in kmd.json files.")
+				.hasArgs().withArgName("LIST OF KEYS").create(SHOW_VALUES));
+
 		return options;
 	}
 
@@ -187,6 +210,12 @@ public class Main {
 	}
 
 	private static Path getCodegenDir(CommandLine line) {
+
+		if (!line.hasOption(CODEGEN)) {
+			printHelp(configureOptions());
+			System.exit(1);
+		}
+
 		File codegenDir = new File(line.getOptionValue(CODEGEN));
 		if (codegenDir.exists()) {
 			if (!codegenDir.canWrite()) {
