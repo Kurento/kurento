@@ -54,6 +54,7 @@ enum
   PROP_CERTIFICATE_PEM_FILE,
   PROP_STUN_SERVER_IP,
   PROP_STUN_SERVER_PORT,
+  PROP_TURN_URL,                /* user:password@address:port?transport=[udp|tcp|tls] */
   N_PROPERTIES
 };
 
@@ -135,6 +136,13 @@ struct _KmsWebrtcEndpointPrivate
   gboolean video_ice_gathering_done;
 
   gchar *certificate_pem_file;
+
+  gchar *turn_url;
+  gchar *turn_user;
+  gchar *turn_password;
+  gchar *turn_address;
+  guint turn_port;
+  NiceRelayType turn_transport;
 };
 
 /* KmsWebRTCTransport */
@@ -220,6 +228,22 @@ kms_webrtc_connection_destroy (KmsWebRTCConnection * conn)
   }
 
   g_slice_free (KmsWebRTCConnection, conn);
+}
+
+static void
+kms_webrtc_connection_set_relay_info (KmsWebRTCConnection * conn,
+    KmsWebrtcEndpoint * we)
+{
+  if (we->priv->turn_address == NULL) {
+    return;
+  }
+
+  nice_agent_set_relay_info (we->priv->agent, conn->stream_id,
+      NICE_COMPONENT_TYPE_RTP, we->priv->turn_address, we->priv->turn_port,
+      we->priv->turn_user, we->priv->turn_password, we->priv->turn_transport);
+  nice_agent_set_relay_info (we->priv->agent, conn->stream_id,
+      NICE_COMPONENT_TYPE_RTCP, we->priv->turn_address, we->priv->turn_port,
+      we->priv->turn_user, we->priv->turn_password, we->priv->turn_transport);
 }
 
 static KmsWebRTCConnection *
@@ -405,8 +429,8 @@ generate_fingerprint (KmsWebrtcEndpoint * webrtc_endpoint)
   int i, j;
 
   cert =
-      g_tls_certificate_new_from_file (webrtc_endpoint->priv->
-      certificate_pem_file, &error);
+      g_tls_certificate_new_from_file (webrtc_endpoint->
+      priv->certificate_pem_file, &error);
   if (cert == NULL) {
     if (error != NULL) {
       GST_ELEMENT_ERROR (webrtc_endpoint, RESOURCE, OPEN_READ,
@@ -855,6 +879,7 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
 
   KMS_ELEMENT_LOCK (self);
 
+  kms_webrtc_connection_set_relay_info (self->priv->audio_connection, self);
   if (!nice_agent_gather_candidates (self->priv->agent,
           self->priv->audio_connection->stream_id)) {
     KMS_ELEMENT_UNLOCK (self);
@@ -863,6 +888,7 @@ kms_webrtc_endpoint_set_transport_to_sdp (KmsBaseSdpEndpoint *
     return FALSE;
   }
 
+  kms_webrtc_connection_set_relay_info (self->priv->video_connection, self);
   if (!nice_agent_gather_candidates (self->priv->agent,
           self->priv->video_connection->stream_id)) {
     KMS_ELEMENT_UNLOCK (self);
@@ -1425,6 +1451,68 @@ rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
 }
 
 static void
+kms_webrtc_endpoint_parse_turn_url (KmsWebrtcEndpoint * self)
+{
+  GRegex *regex;
+  GMatchInfo *match_info = NULL;
+
+  g_free (self->priv->turn_user);
+  self->priv->turn_user = NULL;
+  g_free (self->priv->turn_password);
+  self->priv->turn_password = NULL;
+  g_free (self->priv->turn_address);
+  self->priv->turn_address = NULL;
+
+  if ((self->priv->turn_url == NULL)
+      || (g_strcmp0 ("", self->priv->turn_url) == 0)) {
+    GST_INFO_OBJECT (self, "TURN server info cleared");
+    return;
+  }
+
+  regex =
+      g_regex_new
+      ("^(?<user>.+):(?<password>.+)@(?<address>[0-9.]+):(?<port>[0-9]+)(\\?transport=(?<transport>(udp|tcp|tls)))?$",
+      0, 0, NULL);
+  g_regex_match (regex, self->priv->turn_url, 0, &match_info);
+  g_regex_unref (regex);
+
+  if (g_match_info_matches (match_info)) {
+    gchar *port_str;
+    gchar *turn_transport;
+
+    self->priv->turn_user = g_match_info_fetch_named (match_info, "user");
+    self->priv->turn_password =
+        g_match_info_fetch_named (match_info, "password");
+    self->priv->turn_address = g_match_info_fetch_named (match_info, "address");
+
+    port_str = g_match_info_fetch_named (match_info, "port");
+    self->priv->turn_port = g_ascii_strtoll (port_str, NULL, 10);
+    g_free (port_str);
+
+    self->priv->turn_transport = NICE_RELAY_TYPE_TURN_UDP;      /* default */
+    turn_transport = g_match_info_fetch_named (match_info, "transport");
+    if (turn_transport != NULL) {
+      if (g_strcmp0 ("tcp", turn_transport) == 0) {
+        self->priv->turn_transport = NICE_RELAY_TYPE_TURN_TCP;
+      } else if (g_strcmp0 ("tls", turn_transport) == 0) {
+        self->priv->turn_transport = NICE_RELAY_TYPE_TURN_TLS;
+      }
+      g_free (turn_transport);
+    }
+
+    GST_INFO_OBJECT (self, "TURN server info set (%s)", self->priv->turn_url);
+  } else {
+    GST_ELEMENT_ERROR (self, RESOURCE, SETTINGS,
+        ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
+            self->priv->turn_url),
+        ("URL '%s' not allowed. It must have this format: 'user:password@address:port(?transport=[udp|tcp|tls])'",
+            self->priv->turn_url));
+  }
+
+  g_match_info_free (match_info);
+}
+
+static void
 kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
 {
@@ -1463,6 +1551,11 @@ kms_webrtc_endpoint_set_property (GObject * object, guint prop_id,
       g_object_set_property (G_OBJECT (self->priv->agent), "stun-server-port",
           value);
       break;
+    case PROP_TURN_URL:
+      g_free (self->priv->turn_url);
+      self->priv->turn_url = g_value_dup_string (value);
+      kms_webrtc_endpoint_parse_turn_url (self);
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -1500,6 +1593,9 @@ kms_webrtc_endpoint_get_property (GObject * object, guint prop_id,
 
       g_object_get_property (G_OBJECT (self->priv->agent), "stun-server-port",
           value);
+      break;
+    case PROP_TURN_URL:
+      g_value_set_string (value, self->priv->turn_url);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -1553,6 +1649,10 @@ kms_webrtc_endpoint_finalize (GObject * object)
   }
 
   g_free (self->priv->certificate_pem_file);
+  g_free (self->priv->turn_url);
+  g_free (self->priv->turn_user);
+  g_free (self->priv->turn_password);
+  g_free (self->priv->turn_address);
 
   /* chain up */
   G_OBJECT_CLASS (kms_webrtc_endpoint_parent_class)->finalize (object);
@@ -1602,6 +1702,14 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "StunServerPort",
           "Stun Server Port",
           1, G_MAXUINT16, 3478, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_TURN_URL,
+      g_param_spec_string ("turn-url",
+          "TurnUrl",
+          "TURN server URL with this format: 'user:password@address:port(?transport=[udp|tcp|tls])'."
+          "'address' must be an IP (not a domain)."
+          "'transport' is optional (UDP by default",
+          NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
 }
