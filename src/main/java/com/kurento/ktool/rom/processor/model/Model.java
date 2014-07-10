@@ -2,6 +2,7 @@ package com.kurento.ktool.rom.processor.model;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,34 +21,6 @@ public class Model {
 		NO_RESOLVED, IN_PROCESS, RESOLVED
 	};
 
-	private static class Import {
-
-		private String name;
-		private String version;
-		private Model model;
-
-		public Model getModel() {
-			return model;
-		}
-
-		public String getName() {
-			return name;
-		}
-
-		public String getVersion() {
-			return version;
-		}
-
-		@Override
-		public String toString() {
-			return name + "(" + version + ")";
-		}
-
-		public void setModel(Model model) {
-			this.model = model;
-		}
-	}
-
 	public static final PrimitiveType STRING = new PrimitiveType("String");
 	public static final PrimitiveType BOOLEAN = new PrimitiveType("boolean");
 	public static final PrimitiveType INT = new PrimitiveType("int");
@@ -57,6 +30,9 @@ public class Model {
 	private String name;
 	private String version;
 	private List<Import> imports;
+	private String repository;
+	private Code code;
+
 	private List<RemoteClass> remoteClasses;
 	private List<ComplexType> complexTypes;
 	private List<Event> events;
@@ -200,6 +176,34 @@ public class Model {
 		return eventsMap.get(eventName);
 	}
 
+	public String getRepository() {
+		return repository;
+	}
+
+	public Code getCode() {
+		return code;
+	}
+
+	public List<Import> getImports() {
+		return imports;
+	}
+
+	public Collection<Import> getAllImports() {
+
+		Map<String, Import> allImports = new HashMap<String, Import>();
+		getAllImports(allImports);
+		return allImports.values();
+	}
+
+	private void getAllImports(Map<String, Import> allImports) {
+		for (Import importInfo : imports) {
+			if (allImports.get(importInfo.getName()) == null) {
+				allImports.put(importInfo.getName(), importInfo);
+				importInfo.getModel().getAllImports(allImports);
+			}
+		}
+	}
+
 	@Override
 	public String toString() {
 		return "Model [remoteClasses=" + remoteClasses + ", types="
@@ -240,10 +244,18 @@ public class Model {
 
 		resolveImports(modelManager);
 		resolveTypes(modelManager);
+		addInfoForGeneration(modelManager);
 
 		log.info("Model '" + name + "' resolved");
 
 		this.resolutionState = ResolutionState.RESOLVED;
+	}
+
+	private void addInfoForGeneration(ModelManager modelManager) {
+		if (this.code == null) {
+			this.code = new Code();
+		}
+		this.code.completeInfo(modelManager);
 	}
 
 	private void resolveTypes(ModelManager modelManager) {
@@ -290,10 +302,6 @@ public class Model {
 			dependencyModel.resolveModel(modelManager);
 			importEntry.setModel(dependencyModel);
 		}
-	}
-
-	private Map<String, ? extends Type> getTypes() {
-		return types;
 	}
 
 	private Map<String, ? extends Type> getAllTypes() {
@@ -348,6 +356,15 @@ public class Model {
 			if (!model.imports.isEmpty()) {
 				throw new KurentoRomProcessorException(
 						"Imports clause can only set in a Model file");
+			}
+		}
+
+		if (this.code == null) {
+			this.code = model.code;
+		} else {
+			if (model.code != null) {
+				throw new KurentoRomProcessorException(
+						"Code clause can only set in a Model file");
 			}
 		}
 

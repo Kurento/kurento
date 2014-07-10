@@ -145,6 +145,7 @@ public class KurentoRomProcessor {
 								.getAsBoolean()) {
 					model.expandMethodsWithOpsParams();
 				}
+
 				codeGen.generateCode(model);
 			}
 
