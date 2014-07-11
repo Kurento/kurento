@@ -161,7 +161,7 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 
 			KurentoRomProcessor krp = new KurentoRomProcessor();
 			addKmdFiles(krp, kmdFiles, manager);
-			krp.loadModels();
+			krp.loadModelsFromKmdFiles();
 
 			if (krp.hasToGenerateCode()) {
 
@@ -220,7 +220,7 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 
 		for (File kmdFile : kmdFiles) {
 			getLog().info("  Adding kmd file to generate code: " + kmdFile);
-			krp.addKmdFile(kmdFile.toPath());
+			krp.addKmdFileToGen(kmdFile.toPath());
 		}
 
 		for (String moduleToGenerateCode : this.generateCodeForModules) {
@@ -239,7 +239,7 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 				krp.addDependencyKmdFile(kmdFile);
 			} else {
 				getLog().info("  Adding kmd file to generate code: " + kmdFile);
-				krp.addKmdFile(kmdFile);
+				krp.addDependencyKmdFileToGen(kmdFile);
 			}
 		}
 	}

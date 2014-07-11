@@ -41,7 +41,7 @@ public class KurentoDependencyManager {
 
 				Artifact artifact = (Artifact) artObj;
 
-				log.debug("Exploring dependency: " + artifact);
+				log.info("Exploring dependency: " + artifact);
 
 				KurentoArtifact kurentoArtifact = new KurentoArtifact(log,
 						artifact);

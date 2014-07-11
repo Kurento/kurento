@@ -81,6 +81,13 @@ public class KurentoArtifact implements Closeable {
 			}
 		}
 
+		if (kmdFile == null) {
+			throw new KurentoRomProcessorException(
+					"Found /META-INF/kurento folder in dependency "
+							+ getArtifactCoordinate()
+							+ " without .kmd.json file");
+		}
+
 		moduleName = removeExtension(kmdFile.getFileName().toString());
 	}
 
