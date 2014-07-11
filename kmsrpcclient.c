@@ -14,6 +14,7 @@
  */
 
 #include <kurento/gstmarshal/kmsfragmenter.h>
+#include <kurento/gstmarshal/kmsassembler.h>
 #include <gio/gio.h>
 
 #include "kmsrpcclient.h"
@@ -36,6 +37,17 @@ GST_DEBUG_CATEGORY_STATIC (kms_rpc_client_debug);
   g_rec_mutex_unlock (&GST_RPC_CLIENT (obj)->mutex)   \
 )
 
+#define RESP_TIMEOUT 3          /* seconds */
+
+#define KMS_SCTP_CLIENT_ERROR \
+  g_quark_from_static_string("kms-sctp-client-error-quark")
+
+typedef enum
+{
+  KMS_CLIENT_REQUEST_CANCELLED,
+  KMS_CLIENT_REQUEST_TIMEOUT
+} KmsSCTPRequestError;
+
 GType _kms_rpc_client_type = 0;
 
 struct _KmsRPCClient
@@ -57,6 +69,42 @@ struct _KmsRPCClient
   gpointer cb_data;
   GDestroyNotify destroy;
 };
+
+typedef struct _KmsPendingReq
+{
+  GCond cond;
+  GMutex mutex;
+  KmsAssembler *assembler;
+  gboolean done;
+  gboolean timeout;
+} KmsPendingReq;
+
+static void
+destroy_pending_req (KmsPendingReq * preq)
+{
+  if (preq->assembler != NULL)
+    kms_assembler_unref (preq->assembler);
+
+  g_mutex_clear (&preq->mutex);
+  g_cond_clear (&preq->cond);
+
+  g_slice_free (KmsPendingReq, preq);
+}
+
+static KmsPendingReq *
+create_pending_req (KurentoMarshalRules rules)
+{
+  KmsPendingReq *preq;
+
+  preq = g_slice_new0 (KmsPendingReq);
+
+  g_mutex_init (&preq->mutex);
+  g_cond_init (&preq->cond);
+
+  preq->assembler = kms_assembler_new (rules);
+
+  return preq;
+}
 
 GST_DEFINE_MINI_OBJECT_TYPE (KmsRPCClient, kms_rpc_client);
 
@@ -322,28 +370,102 @@ kms_rpc_client_set_eof_function_full (KmsRPCClient * rpc, KmsEOFFunction func,
     destroy (data);
 }
 
-GstQuery *
-kms_rpc_client_query (KmsRPCClient * m, GstQuery * query, GError ** err)
+static void
+kms_rpc_client_wait_resp (KmsRPCClient * rpc, KmsPendingReq * req)
 {
-  KmsFragmenter *f;
+  gint64 end_time;
 
-  f = kms_fragmenter_new (m->rules, m->size);
+  g_mutex_lock (&req->mutex);
 
-  KMS_RPC_CLIENT_LOCK (m);
+  end_time = g_get_monotonic_time () + RESP_TIMEOUT * G_TIME_SPAN_SECOND;
 
-  if (!kms_fragmenter_query (f, m->reqid++, query, err)) {
-    kms_fragmenter_unref (f);
-    m->reqid--;
-    KMS_RPC_CLIENT_UNLOCK (m);
-    return NULL;
+  while (!req->done) {
+    if (!g_cond_wait_until (&req->cond, &req->mutex, end_time))
+      req->timeout = TRUE;
+    g_mutex_unlock (&req->mutex);
+    return;
   }
 
-  KMS_RPC_CLIENT_UNLOCK (m);
+  g_mutex_unlock (&req->mutex);
+}
+
+static KmsAssembler *
+kms_rpc_client_send_request (KmsRPCClient * rpc, KmsFragmenter * f,
+    guint req_id, GError ** err)
+{
+  KmsPendingReq *req;
+  KmsAssembler *assembler = NULL;
+
+  /* TODO: Send frgamented message */
+
   kms_fragmenter_unref (f);
 
-  /* TODO: Send query */
+  req = create_pending_req (rpc->rules);
 
-  return NULL;
+  kms_rpc_client_wait_resp (rpc, req);
+
+  if (req->timeout) {
+    g_set_error (err, KMS_SCTP_CLIENT_ERROR, KMS_CLIENT_REQUEST_TIMEOUT,
+        "Request (%u) timeout", req_id);
+  } else {
+    assembler = kms_assembler_ref (req->assembler);
+  }
+
+  destroy_pending_req (req);
+
+  return assembler;
+}
+
+static gboolean
+unpack_fragmented_query (KmsAssembler * assembler, GstQuery ** query,
+    GError ** err)
+{
+  gchar *buf = NULL;
+  gsize size;
+
+  kms_assembler_compose_buffer (assembler, &buf, &size);
+
+  dec_GstQuery (kms_assembler_get_encoding_rules (assembler), buf, size, query,
+      err);
+
+  g_free (buf);
+
+  return (*err != NULL);
+}
+
+gboolean
+kms_rpc_client_query (KmsRPCClient * rpc, GstQuery * query, GstQuery ** rsp,
+    GError ** err)
+{
+  KmsFragmenter *f;
+  KmsAssembler *a;
+  guint req_id;
+  gboolean ret;
+
+  f = kms_fragmenter_new (rpc->rules, rpc->size);
+
+  KMS_RPC_CLIENT_LOCK (rpc);
+
+  req_id = rpc->reqid++;
+
+  if (!kms_fragmenter_query (f, req_id, query, err)) {
+    kms_fragmenter_unref (f);
+    rpc->reqid--;
+    KMS_RPC_CLIENT_UNLOCK (rpc);
+    return FALSE;
+  }
+
+  KMS_RPC_CLIENT_UNLOCK (rpc);
+
+  a = kms_rpc_client_send_request (rpc, f, req_id, err);
+  if (a == NULL)
+    return FALSE;
+
+  ret = unpack_fragmented_query (a, rsp, err);
+
+  kms_assembler_unref (a);
+
+  return ret;
 }
 
 void

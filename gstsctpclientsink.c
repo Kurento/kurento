@@ -50,7 +50,7 @@ struct _GstSCTPClientSinkPrivate
   guint16 max_istreams;
   guint32 timetolive;
 
-  gboolean abort;
+  gboolean connected;
 };
 
 enum
@@ -186,8 +186,14 @@ gst_sctp_client_sink_start (GstBaseSink * bsink)
   GError *err = NULL;
 
   if (kms_rpc_client_start (self->priv->rpc, self->priv->host, self->priv->port,
-          self->priv->cancellable, &err))
+          self->priv->cancellable, &err)) {
+
+    GST_OBJECT_LOCK (self);
+    self->priv->connected = TRUE;
+    GST_OBJECT_UNLOCK (self);
+
     return TRUE;
+  }
 
   if (err != NULL) {
     GST_ELEMENT_ERROR (self, RESOURCE, FAILED, (NULL),
@@ -208,7 +214,7 @@ gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 
   GST_OBJECT_LOCK (self);
 
-  if (self->priv->abort) {
+  if (!self->priv->connected) {
     GST_OBJECT_UNLOCK (self);
     return GST_FLOW_NOT_LINKED;
   }
@@ -300,9 +306,37 @@ gst_sctp_client_sink_EOF (GstSCTPClientSink * self)
 {
   GST_OBJECT_LOCK (self);
 
-  self->priv->abort = TRUE;
+  self->priv->connected = FALSE;
 
   GST_OBJECT_UNLOCK (self);
+}
+
+gboolean
+gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
+  GstQuery *rsp_query = NULL;
+  GError *err = NULL;
+
+  GST_OBJECT_LOCK (self);
+
+  if (!self->priv->connected) {
+    GST_OBJECT_UNLOCK (self);
+    GST_WARNING ("Received query while not connected: %" GST_PTR_FORMAT, query);
+    return FALSE;
+  }
+
+  GST_OBJECT_UNLOCK (self);
+
+  GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+  if (!kms_rpc_client_query (self->priv->rpc, query, &rsp_query, &err)) {
+    GST_ERROR ("Error: %s", err->message);
+    g_error_free (err);
+    return FALSE;
+  }
+
+  return FALSE;
 }
 
 static void
@@ -359,6 +393,7 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
   gstbasesink_class->render = gst_sctp_client_sink_render;
   gstbasesink_class->unlock = gst_sctp_client_sink_unlock;
   gstbasesink_class->unlock_stop = gst_sctp_client_sink_unlock_stop;
+  gstbasesink_class->query = gst_sctp_client_sink_query;
 
   g_type_class_add_private (klass, sizeof (GstSCTPClientSinkPrivate));
 }
