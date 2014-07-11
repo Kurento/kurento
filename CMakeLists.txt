@@ -24,6 +24,7 @@ set(KMS_PLUGIN_SOURCES
   kmsaudiomixerbin.c kmsaudiomixerbin.h
   kmsselectablemixer.c kmsselectablemixer.h
   kmssctpconnection.c kmssctpconnection.h
+  kmsrpcclient.c kmsrpcclient.h
 )
 
 include(GLibHelpers)

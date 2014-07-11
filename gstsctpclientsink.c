@@ -21,7 +21,7 @@
 
 #include "gstsctp.h"
 #include "gstsctpclientsink.h"
-#include "kmssctpconnection.h"
+#include "kmsrpcclient.h"
 
 #define PLUGIN_NAME "sctpclientsink"
 
@@ -40,6 +40,7 @@ G_DEFINE_TYPE_WITH_CODE (GstSCTPClientSink, gst_sctp_client_sink,
 
 struct _GstSCTPClientSinkPrivate
 {
+  KmsRPCClient *rpc;
   GCancellable *cancellable;
 
   /* server information */
@@ -49,9 +50,7 @@ struct _GstSCTPClientSinkPrivate
   guint16 max_istreams;
   guint32 timetolive;
 
-  GstTask *task;
-  GRecMutex mutex;
-  KmsSCTPConnection *conn;
+  gboolean abort;
 };
 
 enum
@@ -170,217 +169,52 @@ gst_sctp_client_sink_unlock_stop (GstBaseSink * bsink)
 }
 
 static gboolean
-gst_sctp_client_sink_disconnect (GstSCTPClientSink * self)
-{
-  KmsSCTPConnection *conn;
-
-  GST_OBJECT_LOCK (self);
-
-  if (self->priv->conn == NULL) {
-    GST_OBJECT_UNLOCK (self);
-    return TRUE;
-  }
-
-  conn = self->priv->conn;
-  self->priv->conn = NULL;
-
-  GST_OBJECT_UNLOCK (self);
-
-  kms_sctp_connection_close (conn);
-  kms_sctp_connection_unref (conn);
-
-  return TRUE;
-}
-
-static gboolean
 gst_sctp_client_sink_stop (GstBaseSink * bsink)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
-  GstTask *task;
 
-  GST_DEBUG_OBJECT (self, "stopping");
-
-  gst_sctp_client_sink_disconnect (self);
-
-  GST_OBJECT_LOCK (self);
-
-  if ((task = self->priv->task)) {
-    self->priv->task = NULL;
-
-    GST_OBJECT_UNLOCK (self);
-
-    g_cancellable_cancel (self->priv->cancellable);
-    gst_task_stop (task);
-
-    /* make sure it is not running */
-    g_rec_mutex_lock (&self->priv->mutex);
-    g_rec_mutex_unlock (&self->priv->mutex);
-
-    /* now wait for the task to finish */
-    gst_task_join (task);
-
-    /* and free the task */
-    gst_object_unref (GST_OBJECT (task));
-
-  } else {
-    GST_OBJECT_UNLOCK (self);
-  }
+  g_cancellable_cancel (self->priv->cancellable);
+  kms_rpc_client_stop (self->priv->rpc);
 
   return TRUE;
-}
-
-static gboolean
-gst_sctp_client_sink_connect (GstSCTPClientSink * self)
-{
-  GError *err = NULL;
-  KmsSCTPConnection *conn;
-  KmsSCTPResult result;
-
-  GST_OBJECT_LOCK (self);
-
-  if (self->priv->conn != NULL) {
-    GST_OBJECT_UNLOCK (self);
-    return TRUE;
-  }
-
-  GST_OBJECT_UNLOCK (self);
-
-  conn = kms_sctp_connection_new (self->priv->host, self->priv->port,
-      self->priv->cancellable, &err);
-
-  if (conn == NULL) {
-    GST_ERROR_OBJECT (self, "Error creating SCTP socket: %s", err->message);
-    g_error_free (err);
-    return FALSE;
-  }
-
-  if (!kms_sctp_connection_set_init_config (conn, self->priv->num_ostreams,
-          self->priv->max_istreams, 0, self->priv->timetolive)) {
-    kms_sctp_connection_unref (conn);
-    return FALSE;
-  }
-
-  result = kms_sctp_connection_connect (conn, self->priv->cancellable, &err);
-  if (result != KMS_SCTP_OK) {
-    GST_ERROR_OBJECT (self, "Error connecting SCTP socket: %s", err->message);
-    kms_sctp_connection_unref (conn);
-    g_error_free (err);
-    return FALSE;
-  }
-
-  GST_OBJECT_LOCK (self);
-
-  if (self->priv->conn != NULL) {
-    GST_OBJECT_UNLOCK (self);
-    kms_sctp_connection_unref (conn);
-    return TRUE;
-  }
-
-  self->priv->conn = conn;
-
-  GST_OBJECT_UNLOCK (self);
-
-  return TRUE;
-}
-
-void
-gst_sctp_client_sink_thread (GstSCTPClientSink * self)
-{
-  GError *err = NULL;
-  KmsSCTPConnection *conn;
-  KmsSCTPResult result = KMS_SCTP_OK;
-  KmsSCTPMessage msg;
-
-  GST_OBJECT_LOCK (self);
-
-  if (self->priv->conn == NULL) {
-    GST_OBJECT_UNLOCK (self);
-    return;
-  }
-
-  conn = kms_sctp_connection_ref (self->priv->conn);
-
-  GST_OBJECT_UNLOCK (self);
-
-  GST_DEBUG ("Buffer size %u", MAX_BUFFER_SIZE);
-
-  INIT_SCTP_MESSAGE (msg, MAX_BUFFER_SIZE);
-  result = kms_sctp_connection_receive (conn, &msg, self->priv->cancellable,
-      &err);
-
-  if (result != KMS_SCTP_OK)
-    goto error;
-
-  GST_DEBUG_OBJECT (self, "Got buffer!");
-
-  CLEAR_SCTP_MESSAGE (msg);
-
-  kms_sctp_connection_unref (conn);
-
-  return;
-
-error:
-  {
-    if (err != NULL) {
-      GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
-          ("Error code (%u): %s", result, err->message));
-      g_error_free (err);
-    } else {
-      GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
-          ("Failed reading from socket code (%u)", result));
-    }
-
-    kms_sctp_connection_unref (conn);
-
-    /* pause task */
-    GST_OBJECT_LOCK (self);
-    if (self->priv->task != NULL)
-      gst_task_pause (self->priv->task);
-    GST_OBJECT_UNLOCK (self);
-  }
 }
 
 static gboolean
 gst_sctp_client_sink_start (GstBaseSink * bsink)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+  GError *err = NULL;
 
-  GST_DEBUG_OBJECT (self, "starting");
+  if (kms_rpc_client_start (self->priv->rpc, self->priv->host, self->priv->port,
+          self->priv->cancellable, &err))
+    return TRUE;
 
-  if (!gst_sctp_client_sink_connect (self))
-    return FALSE;
-
-  GST_OBJECT_LOCK (self);
-
-  if (self->priv->task == NULL) {
-    self->priv->task =
-        gst_task_new ((GstTaskFunction) gst_sctp_client_sink_thread, self,
-        NULL);
-    if (self->priv->task == NULL)
-      goto task_error;
-
-    gst_task_set_lock (self->priv->task, &self->priv->mutex);
+  if (err != NULL) {
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED, (NULL),
+        ("Error: %s", err->message));
+    g_error_free (err);
+  } else {
+    GST_ELEMENT_ERROR (self, RESOURCE, FAILED, (NULL),
+        ("Error starting RPC subsystem"));
   }
 
-  gst_task_start (self->priv->task);
-
-  GST_OBJECT_UNLOCK (self);
-
-  return TRUE;
-
-  /* ERRORS */
-task_error:
-  {
-    GST_OBJECT_UNLOCK (self);
-    GST_ERROR_OBJECT (self, "failed to create task");
-    gst_sctp_client_sink_stop (bsink);
-    return FALSE;
-  }
+  return FALSE;
 }
 
 static GstFlowReturn
 gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 {
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+
+  GST_OBJECT_LOCK (self);
+
+  if (self->priv->abort) {
+    GST_OBJECT_UNLOCK (self);
+    return GST_FLOW_NOT_LINKED;
+  }
+
+  GST_OBJECT_UNLOCK (self);
+
   /* Ignore buffers so far. Let's focus on events and caps negotiation  */
   return GST_FLOW_OK;
 #if 0
@@ -442,6 +276,11 @@ gst_sctp_client_sink_dispose (GObject * gobject)
 
   gst_sctp_client_sink_stop (GST_BASE_SINK (self));
 
+  if (self->priv->rpc != NULL) {
+    kms_rpc_client_unref (self->priv->rpc);
+    self->priv->rpc = NULL;
+  }
+
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->dispose (gobject);
 }
 
@@ -452,9 +291,18 @@ gst_sctp_client_sink_finalize (GObject * gobject)
 
   g_free (self->priv->host);
   g_clear_object (&self->priv->cancellable);
-  g_rec_mutex_clear (&self->priv->mutex);
 
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->finalize (gobject);
+}
+
+static void
+gst_sctp_client_sink_EOF (GstSCTPClientSink * self)
+{
+  GST_OBJECT_LOCK (self);
+
+  self->priv->abort = TRUE;
+
+  GST_OBJECT_UNLOCK (self);
 }
 
 static void
@@ -520,7 +368,10 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
 {
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
-  g_rec_mutex_init (&self->priv->mutex);
+
+  self->priv->rpc = kms_rpc_client_new (KURENTO_MARSHALL_PER, MAX_BUFFER_SIZE);
+  kms_rpc_client_set_eof_function_full (self->priv->rpc,
+      (KmsEOFFunction) gst_sctp_client_sink_EOF, self, NULL);
 }
 
 gboolean
