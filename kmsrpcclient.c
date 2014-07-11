@@ -45,7 +45,8 @@ GST_DEBUG_CATEGORY_STATIC (kms_rpc_client_debug);
 typedef enum
 {
   KMS_CLIENT_REQUEST_CANCELLED,
-  KMS_CLIENT_REQUEST_TIMEOUT
+  KMS_CLIENT_REQUEST_TIMEOUT,
+  KMS_CLIENT_REQUEST_ERROR
 } KmsSCTPRequestError;
 
 GType _kms_rpc_client_type = 0;
@@ -56,7 +57,7 @@ struct _KmsRPCClient
 
   KmsSCTPConnection *conn;
 
-  guint reqid;
+  guint32 reqid;
   gsize size;
   GHashTable *table;
   KurentoMarshalRules rules;
@@ -70,13 +71,20 @@ struct _KmsRPCClient
   GDestroyNotify destroy;
 };
 
+typedef enum
+{
+  KMS_RSP_SUCCESS,
+  KMS_RSP_TIMEOUT,
+  KMS_RSP_CANCELLED
+} KmsRspStatus;
+
 typedef struct _KmsPendingReq
 {
   GCond cond;
   GMutex mutex;
   KmsAssembler *assembler;
+  KmsRspStatus status;
   gboolean done;
-  gboolean timeout;
 } KmsPendingReq;
 
 static void
@@ -109,6 +117,21 @@ create_pending_req (KurentoMarshalRules rules)
 GST_DEFINE_MINI_OBJECT_TYPE (KmsRPCClient, kms_rpc_client);
 
 static void
+cancel_pending_req (gpointer key, gpointer value, gpointer user_data)
+{
+  guint32 req_id;
+  KmsPendingReq *req = value;
+
+  req_id = GPOINTER_TO_INT (key);
+  GST_DEBUG ("Cancelling  request (%u)", req_id);
+
+  g_mutex_lock (&req->mutex);
+  req->status = KMS_RSP_CANCELLED;
+  g_cond_signal (&req->cond);
+  g_mutex_unlock (&req->mutex);
+}
+
+static void
 _priv_kms_rpc_client_initialize (void)
 {
   _kms_rpc_client_type = kms_rpc_client_get_type ();
@@ -132,15 +155,10 @@ _kms_rpc_client_free (KmsRPCClient * rpc)
   g_rec_mutex_clear (&rpc->mutex);
   g_rec_mutex_clear (&rpc->tmutex);
 
+  g_hash_table_foreach (rpc->table, cancel_pending_req, rpc);
   g_hash_table_unref (rpc->table);
 
   g_slice_free1 (sizeof (KmsRPCClient), rpc);
-}
-
-void
-destroy_hash_value (gpointer data)
-{
-  /* TODO: */
 }
 
 KmsRPCClient *
@@ -160,8 +178,7 @@ kms_rpc_client_new (KurentoMarshalRules rules, gsize max)
   g_rec_mutex_init (&m->mutex);
   g_rec_mutex_init (&m->tmutex);
 
-  m->table = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL,
-      destroy_hash_value);
+  m->table = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, NULL);
 
   return GST_RPC_CLIENT (m);
 }
@@ -305,6 +322,17 @@ task_error:
 }
 
 void
+kms_rpc_client_cancel_pending_requests (KmsRPCClient * rpc)
+{
+  KMS_RPC_CLIENT_LOCK (rpc);
+
+  g_hash_table_foreach (rpc->table, cancel_pending_req, rpc);
+  g_hash_table_remove_all (rpc->table);
+
+  KMS_RPC_CLIENT_UNLOCK (rpc);
+}
+
+void
 kms_rpc_client_stop (KmsRPCClient * rpc)
 {
   KmsSCTPConnection *conn;
@@ -381,7 +409,7 @@ kms_rpc_client_wait_resp (KmsRPCClient * rpc, KmsPendingReq * req)
 
   while (!req->done) {
     if (!g_cond_wait_until (&req->cond, &req->mutex, end_time))
-      req->timeout = TRUE;
+      req->status = KMS_RSP_TIMEOUT;
     g_mutex_unlock (&req->mutex);
     return;
   }
@@ -391,26 +419,53 @@ kms_rpc_client_wait_resp (KmsRPCClient * rpc, KmsPendingReq * req)
 
 static KmsAssembler *
 kms_rpc_client_send_request (KmsRPCClient * rpc, KmsFragmenter * f,
-    guint req_id, GError ** err)
+    guint32 req_id, GError ** err)
 {
   KmsPendingReq *req;
   KmsAssembler *assembler = NULL;
+
+  req = create_pending_req (rpc->rules);
+
+  KMS_RPC_CLIENT_LOCK (rpc);
+
+  if (!g_hash_table_insert (rpc->table, GUINT_TO_POINTER (req_id), req)) {
+    KMS_RPC_CLIENT_UNLOCK (rpc);
+    g_set_error (err, KMS_SCTP_CLIENT_ERROR, KMS_CLIENT_REQUEST_ERROR,
+        "Can't not send request %u", req_id);
+    destroy_pending_req (req);
+    kms_fragmenter_unref (f);
+    return NULL;
+  }
+
+  KMS_RPC_CLIENT_UNLOCK (rpc);
 
   /* TODO: Send frgamented message */
 
   kms_fragmenter_unref (f);
 
-  req = create_pending_req (rpc->rules);
-
   kms_rpc_client_wait_resp (rpc, req);
 
-  if (req->timeout) {
-    g_set_error (err, KMS_SCTP_CLIENT_ERROR, KMS_CLIENT_REQUEST_TIMEOUT,
-        "Request (%u) timeout", req_id);
-  } else {
-    assembler = kms_assembler_ref (req->assembler);
+  switch (req->status) {
+    case KMS_RSP_SUCCESS:
+      assembler = kms_assembler_ref (req->assembler);
+      break;
+    case KMS_RSP_TIMEOUT:
+      g_set_error (err, KMS_SCTP_CLIENT_ERROR, KMS_CLIENT_REQUEST_TIMEOUT,
+          "Request (%u) timeout", req_id);
+      break;
+    case KMS_RSP_CANCELLED:
+      g_set_error (err, KMS_SCTP_CLIENT_ERROR, KMS_CLIENT_REQUEST_CANCELLED,
+          "Request (%u) cancelled", req_id);
+      goto done;;
   }
 
+  KMS_RPC_CLIENT_LOCK (rpc);
+
+  g_hash_table_remove (rpc->table, GUINT_TO_POINTER (req_id));
+
+  KMS_RPC_CLIENT_UNLOCK (rpc);
+
+done:
   destroy_pending_req (req);
 
   return assembler;
@@ -439,7 +494,7 @@ kms_rpc_client_query (KmsRPCClient * rpc, GstQuery * query, GstQuery ** rsp,
 {
   KmsFragmenter *f;
   KmsAssembler *a;
-  guint req_id;
+  guint32 req_id;
   gboolean ret;
 
   f = kms_fragmenter_new (rpc->rules, rpc->size);

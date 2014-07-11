@@ -85,6 +85,7 @@ gboolean kms_rpc_client_start (KmsRPCClient *rpc, gchar *host, gint port,
   GCancellable *cancellable, GError **err);
 
 void kms_rpc_client_stop (KmsRPCClient *rpc);
+void kms_rpc_client_cancel_pending_requests (KmsRPCClient *rpc);
 
 void
 kms_rpc_client_set_eof_function_full (KmsRPCClient *rpc,

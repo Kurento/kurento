@@ -152,6 +152,7 @@ gst_sctp_client_sink_unlock (GstBaseSink * bsink)
   GST_DEBUG_OBJECT (self, "set to flushing");
 
   g_cancellable_cancel (self->priv->cancellable);
+  kms_rpc_client_cancel_pending_requests (self->priv->rpc);
 
   return TRUE;
 }
@@ -309,6 +310,8 @@ gst_sctp_client_sink_EOF (GstSCTPClientSink * self)
   self->priv->connected = FALSE;
 
   GST_OBJECT_UNLOCK (self);
+
+  kms_rpc_client_cancel_pending_requests (self->priv->rpc);
 }
 
 gboolean
