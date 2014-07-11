@@ -186,9 +186,16 @@ public class Main {
 					.getPaths(kmdPathNames, "*.kmd.json");
 
 			if (kmdFiles.isEmpty()) {
+				String paths = null;
+				for (String path : kmdPathNames) {
+					if (paths == null)
+						paths = path;
+					else
+						paths = paths + ":" + path;
+				}
 				System.err.println("No dependency kmd files found in paths: "
-						+ kmdPathNames);
-				System.exit(1);
+						+ paths);
+				return Collections.emptyList();
 			}
 
 			return kmdFiles;
