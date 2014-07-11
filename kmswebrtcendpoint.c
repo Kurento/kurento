@@ -1708,7 +1708,7 @@ kms_webrtc_endpoint_class_init (KmsWebrtcEndpointClass * klass)
           "TurnUrl",
           "TURN server URL with this format: 'user:password@address:port(?transport=[udp|tcp|tls])'."
           "'address' must be an IP (not a domain)."
-          "'transport' is optional (UDP by default",
+          "'transport' is optional (UDP by default).",
           NULL, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_type_class_add_private (klass, sizeof (KmsWebrtcEndpointPrivate));
