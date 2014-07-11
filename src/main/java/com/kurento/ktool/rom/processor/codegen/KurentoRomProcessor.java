@@ -144,7 +144,7 @@ public class KurentoRomProcessor {
 				PathUtils.delete(codegenDir, loadNoDeleteFiles(config));
 			}
 
-			if (!Files.exists(codegenDir)) {
+			if (codegenDir != null && !Files.exists(codegenDir)) {
 				Files.createDirectories(codegenDir);
 			}
 
@@ -158,7 +158,9 @@ public class KurentoRomProcessor {
 					model.expandMethodsWithOpsParams();
 				}
 
-				codeGen.generateCode(model);
+				if (templatesDir != null && codegenDir != null) {
+					codeGen.generateCode(model);
+				}
 
 				if (outputModelFile != null) {
 					JsonModelSaverLoader.getInstance().writeToFile(

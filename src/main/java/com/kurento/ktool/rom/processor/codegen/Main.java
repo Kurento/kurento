@@ -67,12 +67,6 @@ public class Main {
 			krp.setTemplatesDir(getTemplatesDir(line));
 		} else if (line.hasOption(INTERNAL_TEMPLATES)) {
 			krp.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
-		} else if (!line.hasOption(SHOW_VALUES)) {
-			System.err.println("Templates dir must be specified with -"
-					+ TEMPLATES_DIR + " option or with -" + INTERNAL_TEMPLATES
-					+ " option.");
-			printHelp(options);
-			System.exit(1);
 		}
 
 		krp.setConfig(getConfigContent(line));
@@ -142,7 +136,7 @@ public class Main {
 				.withLongOpt("codegen")
 				.withDescription(
 						"Destination directory for generated files "
-								+ "(required if --show-values or -s is not present.")
+								+ "(required if --show-values or --output-model is not present.")
 				.hasArg().withArgName("CODEGEN_DIR").create(CODEGEN));
 
 		options.addOption(DELETE, "delete", false,
@@ -226,24 +220,31 @@ public class Main {
 
 	private static Path getCodegenDir(CommandLine line) {
 
-		if (!line.hasOption(CODEGEN)) {
+		if (!line.hasOption(CODEGEN)
+				&& (!line.hasOption(SHOW_VALUES) && !line
+						.hasOption(OUTPUT_MODEL))) {
 			printHelp(configureOptions());
 			System.exit(1);
 		}
 
-		File codegenDir = new File(line.getOptionValue(CODEGEN));
-		if (codegenDir.exists()) {
-			if (!codegenDir.canWrite()) {
-				System.err.println("Codegen '" + codegenDir
-						+ "' is not writable");
-				System.exit(1);
-			} else if (!codegenDir.isDirectory()) {
-				System.err.println("Codegen '" + codegenDir
-						+ "' is not a directory");
-				System.exit(1);
+		if (line.hasOption(CODEGEN)) {
+
+			File codegenDir = new File(line.getOptionValue(CODEGEN));
+			if (codegenDir.exists()) {
+				if (!codegenDir.canWrite()) {
+					System.err.println("Codegen '" + codegenDir
+							+ "' is not writable");
+					System.exit(1);
+				} else if (!codegenDir.isDirectory()) {
+					System.err.println("Codegen '" + codegenDir
+							+ "' is not a directory");
+					System.exit(1);
+				}
 			}
+			return codegenDir.toPath();
+		} else {
+			return null;
 		}
-		return codegenDir.toPath();
 	}
 
 	private static Path getTemplatesDir(CommandLine line) {
