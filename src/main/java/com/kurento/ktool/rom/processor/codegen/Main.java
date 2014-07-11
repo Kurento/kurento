@@ -34,6 +34,7 @@ public class Main {
 	private static final String CONFIG = "cf";
 	private static final String INTERNAL_TEMPLATES = "it";
 	private static final String SHOW_VALUES = "s";
+	private static final String OUTPUT_MODEL = "o";
 
 	public static void main(String[] args) throws IOException,
 			TemplateException {
@@ -77,6 +78,7 @@ public class Main {
 		krp.setConfig(getConfigContent(line));
 		krp.setKmdFiles(getKmdFiles(line));
 		krp.setDependencyKmdFiles(getDependencyKmdFiles(line));
+		krp.setOutputFile(getOutputModelFile(line));
 
 		showValues(krp, line);
 
@@ -158,6 +160,12 @@ public class Main {
 				.withDescription(
 						"Show values for provided keys in kmd.json files.")
 				.hasArgs().withArgName("LIST OF KEYS").create(SHOW_VALUES));
+
+		options.addOption(OptionBuilder
+				.withLongOpt("output-model")
+				.withDescription(
+						"Directory where the final model will be written.")
+				.hasArgs().withArgName("DIR").create(OUTPUT_MODEL));
 
 		return options;
 	}
@@ -252,6 +260,30 @@ public class Main {
 
 			System.err.println("TemplatesDir '" + templatesDir
 					+ "' doesn't exist");
+			System.exit(1);
+			return null;
+		}
+	}
+
+	private static Path getOutputModelFile(CommandLine line) throws IOException {
+
+		if (!line.hasOption(OUTPUT_MODEL)) {
+			return null;
+		}
+
+		String outputPathName = line.getOptionValue(OUTPUT_MODEL);
+
+		Path outputPath = Paths.get(outputPathName);
+
+		if (!Files.exists(outputPath)) {
+			Files.createDirectories(outputPath);
+		}
+
+		if (Files.isDirectory(outputPath) && Files.isWritable(outputPath)) {
+			return outputPath;
+		} else {
+			System.err
+					.println("Output directory option should be a writable directory");
 			System.exit(1);
 			return null;
 		}

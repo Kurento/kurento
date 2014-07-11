@@ -1,5 +1,6 @@
 package com.kurento.ktool.rom.processor.codegen;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -43,6 +44,7 @@ public class KurentoRomProcessor {
 	private List<Path> kmdFiles = new ArrayList<Path>();
 	private boolean listGeneratedFiles = false;
 	private String internalTemplates = null;
+	private Path outputModelFile = null;
 
 	private ModelManager modelManager;
 
@@ -157,6 +159,13 @@ public class KurentoRomProcessor {
 				}
 
 				codeGen.generateCode(model);
+
+				if (outputModelFile != null) {
+					JsonModelSaverLoader.getInstance().writeToFile(
+							model,
+							new File(outputModelFile.toFile(), model.getName()
+									+ ".kmd.json"));
+				}
 			}
 
 			return new Result();
@@ -306,5 +315,9 @@ public class KurentoRomProcessor {
 
 			return getValue(value, nextStep);
 		}
+	}
+
+	public void setOutputFile(Path outputModelFile) {
+		this.outputModelFile = outputModelFile;
 	}
 }
