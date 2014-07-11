@@ -274,7 +274,7 @@ public class KurentoRomProcessor {
 		if (object instanceof Map) {
 			value = ((Map<?, ?>) object).get(key);
 			if (value != null) {
-				return value.toString();
+				return "" + value;
 			}
 
 			value = ((Map<?, ?>) object).get(currentKey);
@@ -288,12 +288,19 @@ public class KurentoRomProcessor {
 
 				value = method.invoke(object);
 			} catch (Exception e) {
-				return null;
+				try {
+					Method method = object.getClass().getMethod(currentKey);
+
+					value = method.invoke(object);
+				} catch (Exception ex) {
+					e.printStackTrace();
+					return null;
+				}
 			}
 		}
 
 		if (index == -1) {
-			return value.toString();
+			return "" + value;
 		} else {
 			String nextStep = key.substring(index + 1);
 
