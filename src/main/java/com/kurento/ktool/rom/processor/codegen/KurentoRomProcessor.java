@@ -42,12 +42,16 @@ public class KurentoRomProcessor {
 	private boolean deleteGenDir;
 	private boolean overwrite;
 	private List<Path> dependencyKmdFiles = new ArrayList<Path>();
-	private List<Path> kmdFiles = new ArrayList<Path>();
+	private List<Path> dependencyKmdFilesToGen = new ArrayList<Path>();
+	private List<Path> kmdFilesToGen = new ArrayList<Path>();
+
 	private boolean listGeneratedFiles = false;
 	private String internalTemplates = null;
 	private Path outputModelFile = null;
+	private boolean hasToGenerateCode = true;
 
 	private ModelManager modelManager;
+	private ModelManager depModelManager;
 
 	public void setInternalTemplates(String internalTemplates) {
 		this.internalTemplates = internalTemplates;
@@ -57,12 +61,20 @@ public class KurentoRomProcessor {
 		return internalTemplates;
 	}
 
-	public void setKmdFiles(List<Path> kmdFiles) {
-		this.kmdFiles = kmdFiles;
+	public void setKmdFilesToGen(List<Path> kmdFiles) {
+		this.kmdFilesToGen = kmdFiles;
 	}
 
-	public void addKmdFile(Path kmdFile) {
-		this.kmdFiles.add(kmdFile);
+	public void addKmdFileToGen(Path kmdFile) {
+		this.kmdFilesToGen.add(kmdFile);
+	}
+
+	public void setDependencyKmdFilesToGen(List<Path> dependencyFilesToGen) {
+		this.dependencyKmdFilesToGen = dependencyFilesToGen;
+	}
+
+	public void addDependencyKmdFileToGen(Path kmdFile) {
+		this.dependencyKmdFilesToGen.add(kmdFile);
 	}
 
 	public void setConfig(JsonObject config) {
@@ -101,6 +113,10 @@ public class KurentoRomProcessor {
 		this.overwrite = overwrite;
 	}
 
+	public boolean hasToGenerateCode() {
+		return hasToGenerateCode;
+	}
+
 	private Path getInternalTemplatesDir(String internalTemplates)
 			throws IOException {
 
@@ -128,7 +144,7 @@ public class KurentoRomProcessor {
 	public Result generateCode() throws JsonIOException, IOException {
 
 		if (modelManager == null) {
-			loadModels();
+			loadModelsFromKmdFiles();
 		}
 
 		if (internalTemplates != null) {
@@ -201,22 +217,6 @@ public class KurentoRomProcessor {
 		return noDeleteFiles;
 	}
 
-	private ModelManager loadModelsFromPaths(List<Path> kmdFiles)
-			throws FileNotFoundException, IOException {
-
-		ModelManager manager = new ModelManager();
-		for (Path kmdFile : kmdFiles) {
-
-			log.debug("Loading kmdFile " + kmdFile);
-
-			Model model = JsonModelSaverLoader.getInstance().loadFromFile(
-					kmdFile);
-			model.validateModel(kmdFile);
-			manager.addModel(model);
-		}
-		return manager;
-	}
-
 	public static JsonObject loadConfigFile(Path configFile)
 			throws JsonIOException, IOException {
 
@@ -243,26 +243,68 @@ public class KurentoRomProcessor {
 		}
 	}
 
-	public void loadModels() throws FileNotFoundException, IOException {
+	public void loadModelsFromKmdFiles() throws FileNotFoundException,
+			IOException {
 
-		log.debug("Loading dependencies");
-		ModelManager depModelManager = loadModelsFromPaths(dependencyKmdFiles);
+		log.info("Loading dependencies");
+		depModelManager = new ModelManager();
+		depModelManager.addModels(loadModels(dependencyKmdFiles));
 		depModelManager.resolveModels();
 
-		log.debug("Loading kmd files to generate code");
-		modelManager = loadModelsFromPaths(kmdFiles);
+		Model model = fusionModels(loadModels(kmdFilesToGen));
+
+		log.info("Loading dependency kmd files to generate code");
+		modelManager = new ModelManager();
+		modelManager.addModels(loadModels(dependencyKmdFilesToGen));
+		if (model != null) {
+			modelManager.addModel(model);
+		}
 		modelManager.setDependencies(depModelManager);
 		modelManager.resolveModels();
+
+		hasToGenerateCode = (model != null) && !model.hasKmdSection()
+				|| !dependencyKmdFilesToGen.isEmpty();
+
 	}
 
-	public boolean hasToGenerateCode() {
-		return !kmdFiles.isEmpty();
+	private Model fusionModels(List<Model> models) {
+
+		if (models.isEmpty()) {
+			return null;
+		}
+
+		Model model = models.get(0);
+		for (int i = 1; i < models.size(); i++) {
+			model.fusionModel(models.get(i));
+		}
+
+		return model;
+	}
+
+	private List<Model> loadModels(List<Path> kmdFiles)
+			throws FileNotFoundException, IOException {
+
+		List<Model> models = new ArrayList<>();
+
+		for (Path kmdFile : kmdFiles) {
+
+			log.info("Loading kmdFile " + kmdFile);
+
+			Model model = JsonModelSaverLoader.getInstance().loadFromFile(
+					kmdFile);
+
+			model.validateModel(kmdFile);
+
+			models.add(model);
+		}
+
+		return models;
 	}
 
 	public void printValues(String[] keys) {
 		try {
 			if (modelManager == null) {
-				loadModels();
+				loadModelsFromKmdFiles();
 			}
 
 			for (Model model : modelManager.getModels()) {

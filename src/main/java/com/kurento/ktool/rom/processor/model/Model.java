@@ -350,12 +350,32 @@ public class Model {
 
 	public void fusionModel(Model model) {
 
+		// TODO Generalize this
+
+		if (this.name == null) {
+			this.name = model.name;
+		} else {
+			if (model.name != null) {
+				throw new KurentoRomProcessorException(
+						"Name can only be set in one kmd file");
+			}
+		}
+
+		if (this.version == null) {
+			this.version = model.version;
+		} else {
+			if (model.version != null) {
+				throw new KurentoRomProcessorException(
+						"Version can only be set in one kmd file");
+			}
+		}
+
 		if (this.imports.isEmpty()) {
 			this.imports = model.imports;
 		} else {
 			if (!model.imports.isEmpty()) {
 				throw new KurentoRomProcessorException(
-						"Imports clause can only set in a Model file");
+						"Imports section can only be set in one kmd file");
 			}
 		}
 
@@ -364,13 +384,21 @@ public class Model {
 		} else {
 			if (model.code != null) {
 				throw new KurentoRomProcessorException(
-						"Code clause can only set in a Model file");
+						"Code section can only be set in one kmd file");
 			}
 		}
 
 		this.complexTypes.addAll(model.complexTypes);
 		this.remoteClasses.addAll(model.remoteClasses);
 		this.events.addAll(model.events);
+	}
+
+	public boolean hasKmdSection() {
+		if (code == null) {
+			return false;
+		}
+
+		return code.getKmd() != null;
 	}
 
 }

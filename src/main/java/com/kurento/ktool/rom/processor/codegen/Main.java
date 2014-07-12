@@ -72,7 +72,7 @@ public class Main {
 		}
 
 		krp.setConfig(getConfigContent(line));
-		krp.setKmdFiles(getKmdFiles(line));
+		krp.setKmdFilesToGen(getKmdFiles(line));
 		krp.setDependencyKmdFiles(getDependencyKmdFiles(line));
 		krp.setOutputFile(getOutputModelFile(line));
 

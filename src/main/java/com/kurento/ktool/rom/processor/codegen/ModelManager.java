@@ -2,6 +2,7 @@ package com.kurento.ktool.rom.processor.codegen;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.kurento.ktool.rom.processor.model.Model;
@@ -13,25 +14,6 @@ public class ModelManager {
 
 	public ModelManager() {
 		this.models = new HashMap<>();
-	}
-
-	public void addModel(Model model) {
-		String name = model.getName();
-		Model prevModel = this.models.get(name);
-		if (prevModel != null) {
-
-			if (!prevModel.getVersion().equals(model.getVersion())) {
-				throw new KurentoRomProcessorException(
-						"Error: Found plugin '"
-								+ name
-								+ "' with different versions in dependencies. Kurento "
-								+ "Rom Processor doesn't allow several versions for the same plugin at the same time");
-			}
-
-			prevModel.fusionModel(model);
-		} else {
-			this.models.put(name, model);
-		}
 	}
 
 	public void resolveModels() {
@@ -76,7 +58,25 @@ public class ModelManager {
 		}
 	}
 
-	Collection<Model> getModels() {
+	public Collection<Model> getModels() {
 		return models.values();
+	}
+
+	public void addModels(List<Model> models) {
+		for (Model model : models) {
+			addModel(model);
+		}
+	}
+
+	public void addModel(Model model) {
+		this.models.put(model.getName(), model);
+	}
+
+	public void addModelInSeveralKmdFiles(List<Model> models) {
+		Model model = models.get(0);
+		for (int i = 1; i < models.size(); i++) {
+			model.fusionModel(models.get(i));
+		}
+		addModel(model);
 	}
 }
