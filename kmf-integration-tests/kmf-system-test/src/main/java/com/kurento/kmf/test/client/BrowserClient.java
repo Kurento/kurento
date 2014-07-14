@@ -153,6 +153,10 @@ public class BrowserClient implements Closeable {
 				// This flag avoids grant the camera
 				options.addArguments("--use-fake-ui-for-media-stream");
 
+				// This flag avoids warning in chrome. See:
+				// https://code.google.com/p/chromedriver/issues/detail?id=799
+				options.addArguments("--test-type");
+
 				if (!usePhysicalCam) {
 					// This flag makes using a synthetic video (green with
 					// spinner) in webrtc. Or it is needed to combine with
