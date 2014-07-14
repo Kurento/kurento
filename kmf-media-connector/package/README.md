@@ -3,7 +3,7 @@ KMF Media Connector
 
 The KMF Media Connector is a proxy that allows to clients to connect to Kurento
  Media Server through websockets. Kurento Media Server supports two transport 
- technologies: Thrift or RabbitMQ. This proxy made necessary convertions 
+ technologies: Thrift or RabbitMQ. This proxy made necessary conversions
  between websockets and Thrift or RabbitMQ.
 
 Installation instructions
@@ -51,7 +51,7 @@ RabbitMQ transport
 ------------------
 
 If you prefer to use RabbitMQ to connect to Kurento Media Server, the proxy
-has to have access to a previously running RabbitMQ server. Plase refer to 
+has to have access to a previously running RabbitMQ server. Please refer to
 RabbitMQ documentation for this.
 
 Assuming that the command 'java' points to a Java 7 JVM executable, the proxy 
@@ -92,21 +92,23 @@ thrift.kms.address=127.0.0.1:9090
 thrift.kmf.address=127.0.0.1:9191
 
 If you don't like application.properties as the configuration file name you can 
-switch to another by specifying spring.config.name environment property. 
+switch to another by specifying spring.config.location environment property.
 
-$ java -jar kmf-media-connector.jar --spring.config.name=newconfigfilename
+$ java -jar kmf-media-connector.jar --spring.config.location=newconfigfilename
 
 You can also refer to an explicit location using the spring.config.location 
 environment property.
 
-$ java -jar kmf-media-connector.jar 
-  --spring.config.location=/opt/kmfmediaconnector
+$ java -jar kmf-media-connector.jar --spring.config.location=/opt/kmfmediaconnector
+
+Notice that in both cases, the configuration file must be a valid properties file,
+i.e. a file with extension .properties (e.g. application.properties).
 
 It is recommended to wrap the proxy in system service in order to be executed 
 when the system starts. 
 
 The log of the proxy can be configured. You can specify the property 
-'logging.config' pointing to a file configurating the Logback system. The value 
+'logging.config' pointing to a file to configure the Logback system. The value
 of this property can be specified in command line or in the 
 application.properties file. 
 
