@@ -31,6 +31,7 @@ public class Main {
 	private static final String TEMPLATES_DIR = "t";
 	private static final String CODEGEN = "c";
 	private static final String DELETE = "d";
+	private static final String NO_OVERWRITE = "n";
 	private static final String CONFIG = "cf";
 	private static final String INTERNAL_TEMPLATES = "it";
 	private static final String SHOW_VALUES = "s";
@@ -61,6 +62,7 @@ public class Main {
 		KurentoRomProcessor krp = new KurentoRomProcessor();
 		krp.setDeleteGenDir(line.hasOption(DELETE));
 		krp.setVerbose(line.hasOption(VERBOSE));
+		krp.setOverwrite(!line.hasOption(NO_OVERWRITE));
 		krp.setListGeneratedFiles(line.hasOption(LIST_GEN_FILES));
 
 		if (line.hasOption(TEMPLATES_DIR)) {
@@ -160,6 +162,12 @@ public class Main {
 				.withDescription(
 						"Directory where the final model will be written.")
 				.hasArgs().withArgName("DIR").create(OUTPUT_MODEL));
+
+		options.addOption(OptionBuilder
+				.withLongOpt("no-overwrite")
+				.withDescription(
+						"Do not overwrite files if they are already generated.")
+				.create(NO_OVERWRITE));
 
 		return options;
 	}

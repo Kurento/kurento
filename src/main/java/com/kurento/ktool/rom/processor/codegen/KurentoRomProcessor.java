@@ -40,6 +40,7 @@ public class KurentoRomProcessor {
 	private Path templatesDir;
 	private boolean verbose;
 	private boolean deleteGenDir;
+	private boolean overwrite;
 	private List<Path> dependencyKmdFiles = new ArrayList<Path>();
 	private List<Path> kmdFiles = new ArrayList<Path>();
 	private boolean listGeneratedFiles = false;
@@ -96,6 +97,10 @@ public class KurentoRomProcessor {
 		this.listGeneratedFiles = listGeneratedFiles;
 	}
 
+	public void setOverwrite(boolean overwrite) {
+		this.overwrite = overwrite;
+	}
+
 	private Path getInternalTemplatesDir(String internalTemplates)
 			throws IOException {
 
@@ -149,7 +154,7 @@ public class KurentoRomProcessor {
 			}
 
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
-					listGeneratedFiles, config);
+					listGeneratedFiles, overwrite, config);
 
 			for (Model model : modelManager.getModels()) {
 				if (config.has("expandMethodsWithOpsParams")

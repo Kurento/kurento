@@ -43,13 +43,16 @@ public class CodeGen {
 
 	private final boolean listGeneratedFiles;
 	private final boolean verbose;
+	private final boolean overwrite;
 	private final JsonObject config;
 
 	public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose,
-			boolean listGeneratedFiles, JsonObject config) throws IOException {
+			boolean listGeneratedFiles, boolean overwrite, JsonObject config)
+			throws IOException {
 
 		this.verbose = verbose;
 		this.listGeneratedFiles = listGeneratedFiles;
+		this.overwrite = overwrite;
 		this.templatesFolder = templatesFolder;
 		this.outputFolder = outputFolder;
 		this.config = config;
@@ -179,8 +182,9 @@ public class CodeGen {
 		String sourceCode = tempOutput.substring(fileName.length() + 1,
 				tempOutput.length());
 
-		boolean generateFile = true;
-		if (outputFile.exists()) {
+		boolean generateFile = !outputFile.exists();
+		if (outputFile.exists() && overwrite) {
+			generateFile = true;
 			String oldContent = readFile(outputFile);
 
 			if (oldContent.equals(sourceCode)) {
