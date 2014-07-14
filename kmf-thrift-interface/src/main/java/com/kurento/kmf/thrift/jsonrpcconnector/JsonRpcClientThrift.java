@@ -65,12 +65,17 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		@Override
 		public void run() {
+
+			log.debug("KeepAlive thread started");
+
 			while (true) {
 				try {
 					Thread.sleep(KEEP_ALIVE_TIME);
 				} catch (InterruptedException e) {
 					return;
 				}
+
+				log.debug("KeepAlive processing");
 
 				synchronized (keepAliveThread) {
 					if (stopKeepAlive) {
@@ -188,6 +193,33 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				dummyResponseSenderForEvents);
 	}
 
+	private <R> void processResponse(Response<R> response) {
+		String sessionId = response.getSessionId();
+		synchronized (sessions) {
+			if (sessionId != null && !sessions.contains(sessionId)) {
+				log.debug("Adding session {}", sessionId);
+				sessions.add(sessionId);
+			}
+		}
+	}
+
+	private <P> void processRequest(Request<P> request) {
+		// TODO Remove this hack -----------------------
+		if (request.getMethod().equals("subscribe")) {
+
+			log.debug(
+					"Adding local address info to subscription request. ip:{} port:{}",
+					localHandlerAddress.getHostString(),
+					localHandlerAddress.getPort());
+
+			JsonObject params = (JsonObject) request.getParams();
+			params.addProperty("ip", localHandlerAddress.getHostString());
+			params.addProperty("port",
+					Integer.valueOf(localHandlerAddress.getPort()));
+		}
+		// ---------------------------------------------
+	}
+
 	/**
 	 *
 	 * @param request
@@ -208,38 +240,16 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 			log.debug("Req-> {}", request);
 
-			// TODO Remove this hack -----------------------
-			if (request.getMethod().equals("subscribe")) {
+			processRequest(request);
 
-				log.debug(
-						"Adding local address info to subscription request. ip:{} port:{}",
-						localHandlerAddress.getHostString(),
-						localHandlerAddress.getPort());
-
-				JsonObject params = (JsonObject) request.getParams();
-				params.addProperty("ip", localHandlerAddress.getHostString());
-				params.addProperty("port",
-						Integer.valueOf(localHandlerAddress.getPort()));
-			}
-			// ---------------------------------------------
-
-			String responseStr;
-
-			responseStr = client.invokeJsonRpc(request.toString());
+			String responseStr = client.invokeJsonRpc(request.toString());
 
 			log.debug("<-Res {}", responseStr.trim());
 
 			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
 					resultClass);
-			String sessionId = response.getSessionId();
 
-			if (sessionId != null && !sessions.contains(sessionId)) {
-				synchronized (sessions) {
-					if (!sessions.contains(sessionId)) {
-						sessions.add(sessionId);
-					}
-				}
-			}
+			processResponse(response);
 
 			return response;
 
@@ -257,14 +267,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 
 		log.debug("Req-> {}", request);
 
-		// TODO Remove this hack -----------------------
-		if (request.getMethod().equals("subscribe")) {
-			JsonObject params = (JsonObject) request.getParams();
-			params.addProperty("ip", localHandlerAddress.getHostString());
-			params.addProperty("port",
-					Integer.valueOf(localHandlerAddress.getPort()));
-		}
-		// ---------------------------------------------
+		processRequest(request);
 
 		sendRequest(request, resultClass, continuation, true);
 	}
@@ -300,12 +303,17 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 							clientPool.release(client);
 
 							try {
-								String response = thriftResponse.getResult();
+								String responseStr = thriftResponse.getResult();
 
-								log.debug("<-Res {}", response.trim());
+								log.debug("<-Res {}", responseStr.trim());
 
-								continuation.onSuccess(JsonUtils
-										.fromJsonResponse(response, resultClass));
+								Response<JsonElement> response = JsonUtils
+										.fromJsonResponse(responseStr,
+												resultClass);
+
+								processResponse(response);
+
+								continuation.onSuccess(response);
 
 							} catch (TException e) {
 								continuation.onError(e);
