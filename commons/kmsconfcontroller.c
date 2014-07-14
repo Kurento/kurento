@@ -368,6 +368,7 @@ kms_conf_controller_add_appsink (KmsConfController * self,
   g_object_set (appsink, "emit-signals", TRUE, NULL);
   g_object_set (appsink, "async", FALSE, NULL);
   g_object_set (appsink, "sync", FALSE, NULL);
+  g_object_set (appsink, "max-buffers", 1, NULL);
   g_object_set (appsink, "qos", TRUE, NULL);
 
   gst_bin_add (GST_BIN (self->priv->element), appsink);

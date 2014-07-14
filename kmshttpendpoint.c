@@ -428,7 +428,8 @@ post_decodebin_pad_added_handler (GstElement * decodebin, GstPad * pad,
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
   g_object_set (appsink, "sync", TRUE, "enable-last-sample",
-      FALSE, "emit-signals", TRUE, "qos", TRUE, NULL);
+      FALSE, "emit-signals", TRUE, "qos", TRUE, "max-buffers", 1,
+      "async", FALSE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
   gst_element_sync_state_with_parent (appsink);
 
@@ -566,7 +567,7 @@ sink_required_cb (KmsConfController * controller, gpointer httpep)
   self->priv->get->appsink = gst_element_factory_make ("appsink", NULL);
 
   g_object_set (self->priv->get->appsink, "emit-signals", TRUE, "qos", TRUE,
-      NULL);
+      "max-buffers", 1, "async", FALSE, NULL);
   g_signal_connect (self->priv->get->appsink, "new-sample",
       G_CALLBACK (new_sample_emit_signal_handler), self);
   g_signal_connect (self->priv->get->appsink, "eos", G_CALLBACK (eos_handler),
