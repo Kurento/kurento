@@ -238,7 +238,7 @@ public class Model {
 			return;
 		}
 
-		log.info("Resolving model '" + name + "'");
+		log.debug("Resolving model '" + name + "'");
 
 		this.resolutionState = ResolutionState.IN_PROCESS;
 
@@ -246,7 +246,7 @@ public class Model {
 		resolveTypes(modelManager);
 		addInfoForGeneration(modelManager);
 
-		log.info("Model '" + name + "' resolved");
+		log.debug("Model '" + name + "' resolved");
 
 		this.resolutionState = ResolutionState.RESOLVED;
 	}

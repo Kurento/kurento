@@ -202,7 +202,7 @@ public class KurentoRomProcessor {
 		ModelManager manager = new ModelManager();
 		for (Path kmdFile : kmdFiles) {
 
-			log.info("Loading kmdFile " + kmdFile);
+			log.debug("Loading kmdFile " + kmdFile);
 
 			Model model = JsonModelSaverLoader.getInstance().loadFromFile(
 					kmdFile);
@@ -240,11 +240,11 @@ public class KurentoRomProcessor {
 
 	public void loadModels() throws FileNotFoundException, IOException {
 
-		log.info("Loading dependencies");
+		log.debug("Loading dependencies");
 		ModelManager depModelManager = loadModelsFromPaths(dependencyKmdFiles);
 		depModelManager.resolveModels();
 
-		log.info("Loading kmd files to generate code");
+		log.debug("Loading kmd files to generate code");
 		modelManager = loadModelsFromPaths(kmdFiles);
 		modelManager.setDependencies(depModelManager);
 		modelManager.resolveModels();
