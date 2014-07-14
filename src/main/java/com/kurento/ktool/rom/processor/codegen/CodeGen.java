@@ -37,13 +37,13 @@ import freemarker.template.TemplateExceptionHandler;
 
 public class CodeGen {
 
-	private Path templatesFolder;
-	private Path outputFolder;
-	private Configuration cfg;
+	private final Path templatesFolder;
+	private final Path outputFolder;
+	private final Configuration cfg;
 
-	private boolean listGeneratedFiles;
-	private boolean verbose;
-	private JsonObject config;
+	private final boolean listGeneratedFiles;
+	private final boolean verbose;
+	private final JsonObject config;
 
 	public CodeGen(Path templatesFolder, Path outputFolder, boolean verbose,
 			boolean listGeneratedFiles, JsonObject config) throws IOException {
