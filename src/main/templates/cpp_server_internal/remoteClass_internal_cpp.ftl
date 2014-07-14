@@ -143,6 +143,7 @@ Serialize (std::shared_ptr<kurento::${remoteClass.name}> &object, JsonSerializer
   std::shared_ptr<kurento::${remoteClass.name}Impl> aux = std::dynamic_pointer_cast<kurento::${remoteClass.name}Impl> (object);
 
   Serialize (aux, serializer);
+  object = std::dynamic_pointer_cast <kurento::${remoteClass.name}> (aux);
 }
 
 } /* kurento */
