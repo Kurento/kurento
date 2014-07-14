@@ -13,9 +13,10 @@
 *
 */
 
-const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket'; //requires Internet connectivity
+const ws_uri = 'wss://kurentorecorder.naevatec.com:8888/thrift/ws/websocket'; //requires Internet connectivity
+//const ws_uri = 'wss://demo01.kurento.org:8888/thrift/ws/websocket'; //requires Internet connectivity
 const file_storage = 'file:///var/www/html/files/'; //path where to be store media in the server
-const file_uri = file_storage+'recorder_demo.webm'; //file to be stored in media server
+const file_uri = file_storage+'recorderScreen.webm'; //file to be stored in media server
 
 const constraintsWebcam =
 {
@@ -34,8 +35,8 @@ const constraintsDesktop =
 	video : {
 		mandatory: {
 			chromeMediaSource: 'screen',
-			maxFrameRate : 15,
-			minFrameRate: 15
+//			maxFrameRate : 15,
+//			minFrameRate: 15
 		}
 	}
 }
