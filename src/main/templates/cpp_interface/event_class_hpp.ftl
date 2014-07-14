@@ -5,29 +5,23 @@ ${event.name}.hpp
 #define __${camelToUnderscore(event.name)}_HPP__
 
 #include <jsoncpp/json/json.h>
-#include <JsonRpcException.hpp>
 #include <memory>
 
 <#if event.extends??>
 #include "${event.extends.name}.hpp"
 </#if>
 
-class JsonSerializer;
+namespace kurento
+{
 
-namespace kurento {
-class ${event.name};
+class JsonSerializer;
 <#list event.properties as property>
-<#if model.remoteClasses?seq_contains(property.type.type) || 
-  model.complexTypes?seq_contains(property.type.type) || 
+<#if model.remoteClasses?seq_contains(property.type.type) ||
+  model.complexTypes?seq_contains(property.type.type) ||
   model.events?seq_contains(property.type.type)>
 class ${property.type.name};
 </#if>
 </#list>
-} /* kurento */
-
-void Serialize(kurento::${event.name}& event, JsonSerializer& s);
-
-namespace kurento {
 
 class ${event.name}<#if event.extends??> : public virtual ${event.extends.name}</#if>
 {
@@ -40,14 +34,14 @@ public:
       <#lt><#if !property.optional><#rt>
         <#lt><#if !first>, </#if><#rt>
         <#lt><#assign first = false><#rt>
-        <#lt>${getCppObjectType(property.type.name)} ${property.name}<#rt>
+        <#lt>${getCppObjectType(property.type.name)}${property.name}<#rt>
       <#lt></#if><#rt>
     <#lt></#list><#rt>
     <#lt><#list event.parentProperties as property><#rt>
       <#lt><#if !property.optional><#rt>
         <#lt><#if !first>, </#if><#rt>
         <#lt><#assign first = false><#rt>
-        <#lt>${getCppObjectType(property.type.name)} ${property.name}<#rt>
+        <#lt>${getCppObjectType(property.type.name)}${property.name}<#rt>
       <#lt></#if><#rt>
     <#lt></#list>)<#rt>
     <#lt><#assign first = true><#rt>
@@ -69,14 +63,14 @@ public:
   ${event.name} (const Json::Value &value);
 
   <#list event.properties as property>
-  virtual void set${property.name?cap_first} (${getCppObjectType(property.type.name, false)} ${property.name}) {
+  virtual void set${property.name?cap_first} (${getCppObjectType(property.type.name, true)}${property.name}) {
     this->${property.name} = ${property.name};
     <#if property.optional>
     _isSet${property.name?cap_first} = true;
     </#if>
   };
 
-  virtual ${getCppObjectType(property.type.name)} get${property.name?cap_first} () {
+  virtual ${getCppObjectType(property.type.name)}get${property.name?cap_first} () {
     return ${property.name};
   };
 
@@ -91,6 +85,8 @@ public:
     return "${event.name}";
   }
 
+  virtual void Serialize (JsonSerializer &s);
+
 protected:
 
   ${event.name}() {};
@@ -103,7 +99,7 @@ private:
   </#if>
   </#list>
 
-  friend void ::Serialize(${event.name}& event, JsonSerializer& s);
+  friend void Serialize (std::shared_ptr<${event.name}> &event, JsonSerializer &s);
 };
 
 } /* kurento */
