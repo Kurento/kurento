@@ -45,7 +45,7 @@ public class Model {
 	private transient Map<String, Type> types;
 
 	private transient ResolutionState resolutionState = ResolutionState.NO_RESOLVED;
-	private Map<String, Type> allTypes;
+	private transient Map<String, Type> allTypes;
 
 	public Model() {
 		this.remoteClasses = new ArrayList<>();
