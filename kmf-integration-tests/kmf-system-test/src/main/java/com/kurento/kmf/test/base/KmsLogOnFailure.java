@@ -41,8 +41,8 @@ public class KmsLogOnFailure extends TestWatcher {
 			String testDir = KurentoServicesTestHelper.getTestDir();
 			String testCaseName = KurentoServicesTestHelper.getTestCaseName();
 			String testName = KurentoServicesTestHelper.getTestName();
-			File logFile = new File(testDir + "TEST-" + testCaseName + "/"
-					+ testName + "-kms.log");
+			File logFile = new File(testDir + testCaseName + "/" + testName
+					+ "-kms.log");
 
 			if (logFile.exists()) {
 				System.err

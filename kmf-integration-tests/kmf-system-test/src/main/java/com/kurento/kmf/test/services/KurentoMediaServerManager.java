@@ -141,7 +141,7 @@ public class KurentoMediaServerManager {
 		}
 
 		createKurentoConf();
-		String logFolder = testDir + "TEST-" + testClassName;
+		String logFolder = testDir + testClassName;
 		createFolder(logFolder);
 
 		log.debug("Log file: {}", logFolder);
