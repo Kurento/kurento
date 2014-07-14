@@ -91,6 +91,12 @@ Handler::process (const Json::Value &msg, Json::Value &_response)
     Json::Value response;
 
     try {
+
+      /* Execute pre-process function if any */
+      if (preproc && !preproc (msg, _response) ) {
+        return !_response.isMember (JSON_RPC_ERROR);
+      }
+
       method (msg[JSON_RPC_PARAMS], response);
 
       if (!msg.isMember (JSON_RPC_ID) || msg[JSON_RPC_ID] == Json::Value::null) {
@@ -103,6 +109,11 @@ Handler::process (const Json::Value &msg, Json::Value &_response)
         _response = Json::Value::null;
       } else {
         _response[JSON_RPC_RESULT] = response;
+      }
+
+      /* Execute post-process */
+      if (postproc) {
+        postproc (msg, _response);
       }
 
       return true;
@@ -145,12 +156,22 @@ Handler::process (const Json::Value &msg, Json::Value &_response)
       _response[JSON_RPC_ERROR] = error;
     }
 
+    /* Execute post-process */
+    if (postproc) {
+      postproc (msg, _response);
+    }
+
     return false;
   }
 
   error[JSON_RPC_ERROR_CODE] = METHOD_NOT_FOUND;
   error[JSON_RPC_ERROR_MESSAGE] = "Method not found.";
   _response[JSON_RPC_ERROR] = error;
+
+  /* Execute post-process */
+  if (postproc) {
+    postproc (msg, _response);
+  }
 
   return false;
 }
@@ -209,6 +230,20 @@ Handler::process (const std::string &msg, std::string &_responseMsg)
 
     return ret;
   }
+}
+
+void
+Handler::setPreProcess (std::function
+                        < bool (const Json::Value &, Json::Value &) > func)
+{
+  preproc = func;
+}
+
+void
+Handler::setPostProcess (std::function
+                         < void (const Json::Value &, Json::Value &) > func)
+{
+  postproc = func;
 }
 
 } /* JsonRpc */
