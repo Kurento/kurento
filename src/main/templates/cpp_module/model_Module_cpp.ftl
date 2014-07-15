@@ -17,12 +17,12 @@ const kurento::FactoryRegistrar *
 getFactoryRegistrar ()
 {
   static bool loaded = false;
-  static std::list<std::shared_ptr<kurento::Factory>> factories;
+  static std::map<std::string, std::shared_ptr<kurento::Factory>> factories;
 
   if (!loaded) {
 <#list model.remoteClasses as remoteClass>
   <#if !(remoteClass.abstract)>
-    factories.push_back (std::shared_ptr <kurento::Factory> (new kurento::${remoteClass.name}Impl::Factory() ) );
+    factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new kurento::${remoteClass.name}Impl::Factory() );
   </#if>
 </#list>
     loaded = true;
