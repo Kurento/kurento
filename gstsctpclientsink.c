@@ -333,7 +333,8 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
 
   GST_DEBUG (">> %" GST_PTR_FORMAT, query);
 
-  if (!kms_rpc_client_query (self->priv->rpc, query, &rsp_query, &err)) {
+  if (!kms_rpc_client_query (self->priv->rpc, query, self->priv->cancellable,
+          &rsp_query, &err)) {
     GST_ERROR ("Error: %s", err->message);
     g_error_free (err);
     return FALSE;

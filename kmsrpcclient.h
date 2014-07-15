@@ -93,8 +93,8 @@ kms_rpc_client_set_eof_function_full (KmsRPCClient *rpc,
                                  gpointer user_data,
                                  GDestroyNotify notify);
 
-gboolean kms_rpc_client_query (KmsRPCClient *m, GstQuery *query, GstQuery **rsp,
-  GError **err);
+gboolean kms_rpc_client_query (KmsRPCClient *m, GstQuery *query,
+  GCancellable *cancellable, GstQuery **rsp, GError **err);
 void kms_rpc_client_event (KmsRPCClient *m, GstEvent *event, GError **err);
 
 G_END_DECLS

@@ -108,6 +108,8 @@ KmsSCTPResult kms_sctp_connection_connect (KmsSCTPConnection *conn,
   GCancellable *cancellable, GError **err);
 KmsSCTPResult kms_sctp_connection_receive (KmsSCTPConnection *conn,
   KmsSCTPMessage *message, GCancellable *cancellable, GError **err);
+KmsSCTPResult kms_sctp_connection_send (KmsSCTPConnection *conn,
+  const KmsSCTPMessage *message, GCancellable *cancellable, GError **err);
 
 void kms_sctp_connection_close (KmsSCTPConnection *conn);
 

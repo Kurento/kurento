@@ -208,8 +208,6 @@ kms_rpc_client_thread (KmsRPCClient * rpc)
   if (g_cancellable_is_cancelled (cancellable))
     goto pause;
 
-  GST_DEBUG ("Buffer size %" G_GSIZE_FORMAT, rpc->size);
-
   INIT_SCTP_MESSAGE (msg, rpc->size);
   result = kms_sctp_connection_receive (rpc->conn, &msg, cancellable, &err);
 
@@ -226,6 +224,9 @@ kms_rpc_client_thread (KmsRPCClient * rpc)
 
 error:
   {
+    KmsEOFFunction cb;
+    gpointer cb_data;
+
     if (err != NULL) {
       GST_ERROR ("Error code (%u): %s", result, err->message);
       g_error_free (err);
@@ -235,18 +236,13 @@ error:
 
     kms_sctp_connection_unref (conn);
 
-    if (result == KMS_SCTP_EOF) {
-      KmsEOFFunction cb;
-      gpointer cb_data;
+    KMS_RPC_CLIENT_LOCK (rpc);
+    cb = rpc->cb;
+    cb_data = rpc->cb_data;
+    KMS_RPC_CLIENT_UNLOCK (rpc);
 
-      KMS_RPC_CLIENT_LOCK (rpc);
-      cb = rpc->cb;
-      cb_data = rpc->cb_data;
-      KMS_RPC_CLIENT_UNLOCK (rpc);
-
-      if (cb != NULL)
-        cb (cb_data);
-    }
+    if (cb != NULL)
+      cb (cb_data);
 
   pause:
     /* pause task */
@@ -340,8 +336,6 @@ kms_rpc_client_stop (KmsRPCClient * rpc)
 
   g_return_val_if_fail (rpc != NULL, FALSE);
 
-  GST_DEBUG ("stopping");
-
   KMS_RPC_CLIENT_LOCK (rpc);
 
   conn = rpc->conn;
@@ -417,9 +411,35 @@ kms_rpc_client_wait_resp (KmsRPCClient * rpc, KmsPendingReq * req)
   g_mutex_unlock (&req->mutex);
 }
 
+static gboolean
+kms_rpc_client_send_fragments (KmsRPCClient * rpc, KmsFragmenter * f,
+    GCancellable * cancellable, GError ** err)
+{
+  guint n, i = 0;
+
+  n = kms_fragmenter_n_messages (f);
+  for (i = 0; i < n; i++) {
+    KmsSCTPMessage sctpmsg;
+    const KmsMessage *msg;
+    KmsDataType type;
+
+    msg = kms_fragmenter_nth_message (f, i);
+    kms_message_get_data (msg, &type, (const char **) &sctpmsg.buf,
+        &sctpmsg.size);
+    sctpmsg.used = sctpmsg.size;
+
+    if (kms_sctp_connection_send (rpc->conn, &sctpmsg, cancellable, err)
+        != KMS_SCTP_OK) {
+      return FALSE;
+    }
+  }
+
+  return TRUE;
+}
+
 static KmsAssembler *
 kms_rpc_client_send_request (KmsRPCClient * rpc, KmsFragmenter * f,
-    guint32 req_id, GError ** err)
+    guint32 req_id, GCancellable * cancellable, GError ** err)
 {
   KmsPendingReq *req;
   KmsAssembler *assembler = NULL;
@@ -437,9 +457,12 @@ kms_rpc_client_send_request (KmsRPCClient * rpc, KmsFragmenter * f,
     return NULL;
   }
 
-  KMS_RPC_CLIENT_UNLOCK (rpc);
+  if (!kms_rpc_client_send_fragments (rpc, f, cancellable, err)) {
+    KMS_RPC_CLIENT_UNLOCK (rpc);
+    return NULL;
+  }
 
-  /* TODO: Send frgamented message */
+  KMS_RPC_CLIENT_UNLOCK (rpc);
 
   kms_fragmenter_unref (f);
 
@@ -489,8 +512,8 @@ unpack_fragmented_query (KmsAssembler * assembler, GstQuery ** query,
 }
 
 gboolean
-kms_rpc_client_query (KmsRPCClient * rpc, GstQuery * query, GstQuery ** rsp,
-    GError ** err)
+kms_rpc_client_query (KmsRPCClient * rpc, GstQuery * query,
+    GCancellable * cancellable, GstQuery ** rsp, GError ** err)
 {
   KmsFragmenter *f;
   KmsAssembler *a;
@@ -512,7 +535,7 @@ kms_rpc_client_query (KmsRPCClient * rpc, GstQuery * query, GstQuery ** rsp,
 
   KMS_RPC_CLIENT_UNLOCK (rpc);
 
-  a = kms_rpc_client_send_request (rpc, f, req_id, err);
+  a = kms_rpc_client_send_request (rpc, f, req_id, cancellable, err);
   if (a == NULL)
     return FALSE;
 
