@@ -1,6 +1,5 @@
 package com.kurento.kmf.connector;
 
-import java.io.File;
 import java.nio.file.Paths;
 
 import javax.annotation.PostConstruct;
@@ -10,7 +9,6 @@ import org.apache.coyote.http11.Http11NioProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainerFactory;
@@ -20,9 +18,7 @@ import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletCon
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
-import org.springframework.core.io.Resource;
 
 import com.kurento.kmf.common.PropertiesManager;
 import com.kurento.kmf.common.PropertiesManager.PropertyHolder;
@@ -46,7 +42,7 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 
 	@Autowired
 	private Environment env;
-	
+
 	public static void setJsonRpcClient(JsonRpcClient client) {
 		MediaConnectorApp.client = client;
 	}
@@ -77,6 +73,8 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 			log.warn("Property 'server.port' can't be parsed as string. Error: "
 					+ e.getMessage() + ". Defaulting to port 8443");
 		}
+
+		log.debug("Starting KMC with secure sockets in port " + httpsPort);
 
 		return createTomcatCustomizer(keystoreFile, keystorePass, httpsPort);
 	}
