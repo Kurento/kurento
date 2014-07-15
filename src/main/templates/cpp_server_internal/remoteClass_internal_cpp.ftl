@@ -125,15 +125,8 @@ ${remoteClass.name}Impl::Serialize (JsonSerializer &serializer)
     } catch (std::bad_cast &e) {
     }
   } else {
-    try {
-      std::shared_ptr<kurento::MediaObjectImpl> aux;
-      aux = kurento::${remoteClass.name}Impl::Factory::getObject (serializer.JsonValue.asString () );
-      *this = *std::dynamic_pointer_cast<kurento::${remoteClass.name}Impl> (aux).get();
-      return;
-    } catch (KurentoException &ex) {
-      throw KurentoException (MARSHALL_ERROR,
-                              "'${remoteClass.name}Impl' object not found: " + ex.getMessage() );
-    }
+    throw KurentoException (MARSHALL_ERROR,
+                            "'${remoteClass.name}Impl' cannot be deserialized as an object");
   }
 }
 
