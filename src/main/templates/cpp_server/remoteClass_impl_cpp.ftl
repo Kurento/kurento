@@ -10,6 +10,11 @@ ${remoteClass.name}Impl.cpp
 #include "${remoteClass.name}Impl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
+#include <gst/gst.h>
+
+#define GST_CAT_DEFAULT kurento_${camelToUnderscore(remoteClass.name)?lower_case}_impl
+GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
+#define GST_DEFAULT_NAME "Kurento${remoteClass.name}Impl"
 
 namespace kurento
 {
@@ -58,4 +63,12 @@ ${remoteClass.name}Impl::Factory::createObject (<#rt>
 }
 
 </#if>
+${remoteClass.name}Impl::StaticConstructor ${remoteClass.name}Impl::staticConstructor;
+
+${remoteClass.name}Impl::StaticConstructor::StaticConstructor()
+{
+  GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
+                           GST_DEFAULT_NAME);
+}
+
 } /* kurento */
