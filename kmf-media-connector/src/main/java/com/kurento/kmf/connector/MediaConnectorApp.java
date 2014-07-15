@@ -1,17 +1,32 @@
 package com.kurento.kmf.connector;
 
+import java.io.File;
+import java.nio.file.Paths;
+
 import javax.annotation.PostConstruct;
 
+import org.apache.catalina.connector.Connector;
+import org.apache.coyote.http11.Http11NioProtocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.*;
+import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
+import org.springframework.core.io.Resource;
 
 import com.kurento.kmf.common.PropertiesManager;
 import com.kurento.kmf.common.PropertiesManager.PropertyHolder;
+import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
 import com.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcProperties;
@@ -29,12 +44,90 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 
 	private static JsonRpcClient client;
 
+	@Autowired
+	private Environment env;
+	
 	public static void setJsonRpcClient(JsonRpcClient client) {
 		MediaConnectorApp.client = client;
 	}
 
-	@Autowired
-	private Environment env;
+	@Bean
+	public EmbeddedServletContainerCustomizer containerCustomizer()
+			throws Exception {
+
+		final String keystoreFile = env.getProperty("keystore.file");
+
+		if (keystoreFile == null) {
+			return createNoCustomizationCustomizer();
+		}
+
+		final String keystorePass = env.getProperty("keystore.pass");
+		if (keystorePass == null) {
+			throw new KurentoException(
+					"Property 'keystore.pass' is mandatory with keystore.file");
+		}
+
+		int httpsPort = 8443;
+		try {
+			String httpsPortAsStr = env.getProperty("server.port");
+			if (httpsPortAsStr != null) {
+				httpsPort = Integer.parseInt(httpsPortAsStr);
+			}
+		} catch (NumberFormatException e) {
+			log.warn("Property 'server.port' can't be parsed as string. Error: "
+					+ e.getMessage() + ". Defaulting to port 8443");
+		}
+
+		return createTomcatCustomizer(keystoreFile, keystorePass, httpsPort);
+	}
+
+	private EmbeddedServletContainerCustomizer createNoCustomizationCustomizer() {
+		return new EmbeddedServletContainerCustomizer() {
+			@Override
+			public void customize(
+					ConfigurableEmbeddedServletContainerFactory factory) {
+			}
+		};
+	}
+
+	private EmbeddedServletContainerCustomizer createTomcatCustomizer(
+			final String keystoreFile, final String keystorePass,
+			final int httpsPort) {
+
+		return new EmbeddedServletContainerCustomizer() {
+			@Override
+			public void customize(
+					ConfigurableEmbeddedServletContainerFactory factory) {
+
+				TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) factory;
+
+				tomcat.addConnectorCustomizers(new TomcatConnectorCustomizer() {
+
+					@Override
+					public void customize(Connector connector) {
+
+						connector.setPort(httpsPort);
+						connector.setSecure(true);
+						connector.setScheme("https");
+
+						connector.setAttribute("clientAuth", "false");
+						connector.setAttribute("sslProtocol", "TLS");
+						connector.setAttribute("SSLEnabled", true);
+
+						Http11NioProtocol proto = (Http11NioProtocol) connector
+								.getProtocolHandler();
+						proto.setSSLEnabled(true);
+						proto.setKeystoreFile(Paths.get(keystoreFile)
+								.toAbsolutePath().toString());
+						proto.setKeystorePass(keystorePass);
+						proto.setKeystoreType("PKCS12");
+						proto.setKeyAlias("tomcat");
+
+					}
+				});
+			}
+		};
+	}
 
 	@PostConstruct
 	public void initPropertyManager() {

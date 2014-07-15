@@ -77,7 +77,20 @@ There are other common configuration properties regarding to transport used:
   in FI-WARE project. The empty URL can be used to allow all clients to use the 
   proxy (that is, no authentication is enforced). If not specified, 
   the empty URL will be used.
+* keystore.file: The keystore file with the private key with 'tomcat' alias. 
+  If you have a private key and a certificate, you can create the keystore with 
+  command:
+	
+  $ openssl pkcs12 -export -in server.crt -inkey server.key -out keystore 
+  -name tomcat
 
+  We have experimented problems with self-signed certificates in browsers, but
+  if you want to try, you can generate the keystore file with a self-signed 
+  certificate with the command:
+  
+  $ keytool -genkey -alias tomcat -storetype PKCS12 -keystore keystore
+  
+* keystore.pass: The keystore password.
 
 Configuration file
 ------------------

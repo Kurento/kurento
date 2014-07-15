@@ -75,8 +75,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 					return;
 				}
 
-				log.debug("KeepAlive processing");
-
 				synchronized (keepAliveThread) {
 					if (stopKeepAlive) {
 						return;
