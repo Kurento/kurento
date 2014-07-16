@@ -18,7 +18,15 @@ window.addEventListener('load', function() {
 		x = isNumeric(x) ? x : 0;
 		y = isNumeric(y) ? y : 0;
 
-		canvasContext.drawImage(video, x, y, 1, 1, 0, 0, 1, 1);
+		try {
+			canvasContext.drawImage(video, x, y, 1, 1, 0, 0, 1, 1);
+		} catch (e) {
+			// NS_ERROR_NOT_AVAILABLE can happen in Firefox due a bug
+			if (e.name != "NS_ERROR_NOT_AVAILABLE") {
+				throw e;
+			}
+		}
+
 		color.value = Array.prototype.slice.apply(canvasContext.getImageData(0,
 				0, 1, 1).data);
 
