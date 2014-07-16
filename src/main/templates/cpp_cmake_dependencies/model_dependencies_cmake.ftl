@@ -9,10 +9,39 @@ find_package(PkgConfig)
 ###############################################################
 # Dependencies
 ###############################################################
+<#if !model.imports[0]??>
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=1.3.3)
 pkg_check_modules(JSONRPC REQUIRED libjsonrpc>=0.0.6)
 pkg_check_modules(SIGCPP REQUIRED sigc++-2.0>=2.0.10)
 pkg_check_modules(GLIBMM REQUIRED glibmm-2.4>=2.37)
+</#if>
 <#list model.imports as import>
-# Todo look for ${import.name} dependencies
+# looking for ${import.name} dependencies
+pkg_check_modules(${import.model.code.implementation.lib?replace("lib", "")?upper_case} REQUIRED ${import.model.code.implementation.lib?replace("lib", "")}>=${import.version})
 </#list>
+
+set (DEPENDENCIES_LIBRARIES
+<#if !model.imports[0]??>
+  <#noparse>${GSTREAMER_LIBRARIES}</#noparse>
+  <#noparse>${JSONRPC_LIBRARIES}</#noparse>
+  <#noparse>${SIGCPP_LIBRARIES}</#noparse>
+  <#noparse>${GLIBMM_LIBRARIES}</#noparse>
+</#if>
+<#list model.imports as import>
+  <#noparse>${</#noparse>${import.model.code.implementation.lib?replace("lib", "")?upper_case}_LIBRARIES<#noparse>}</#noparse>
+</#list>
+  CACHE INTERNAL "Model library dependencies"
+)
+
+set (DEPENDENCIES_INCLUDE_DIRS
+<#if !model.imports[0]??>
+  <#noparse>${GSTREAMER_INCLUDE_DIRS}</#noparse>
+  <#noparse>${JSONRPC_INCLUDE_DIRS}</#noparse>
+  <#noparse>${SIGCPP_INCLUDE_DIRS}</#noparse>
+  <#noparse>${GLIBMM_INCLUDE_DIRS}</#noparse>
+</#if>
+<#list model.imports as import>
+  <#noparse>${</#noparse>${import.model.code.implementation.lib?replace("lib", "")?upper_case}_INCLUDE_DIRS<#noparse>}</#noparse>
+</#list>
+  CACHE INTERNAL "Model library dependencies"
+)
