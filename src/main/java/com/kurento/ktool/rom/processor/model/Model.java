@@ -1,6 +1,5 @@
 package com.kurento.ktool.rom.processor.model;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -214,15 +213,17 @@ public class Model {
 		resolveModel(null);
 	}
 
-	public void validateModel(Path kmdFile) {
+	public void validateModel() {
 		if (name == null) {
-			throw new KurentoRomProcessorException("Name is mandatory. File: "
-					+ kmdFile);
+			throw new KurentoRomProcessorException(
+					"Name is mandatory at least in one of the files composing "
+							+ "model");
 		}
 
 		if (version == null) {
 			throw new KurentoRomProcessorException(
-					"Version is mandatory. File: " + kmdFile);
+					"Version is mandatory at least in one of the files "
+							+ "composing model " + name);
 		}
 	}
 

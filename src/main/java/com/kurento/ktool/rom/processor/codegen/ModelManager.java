@@ -64,6 +64,7 @@ public class ModelManager {
 
 	public void addModels(List<Model> models) {
 		for (Model model : models) {
+			model.validateModel();
 			addModel(model);
 		}
 	}

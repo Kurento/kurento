@@ -252,6 +252,7 @@ public class KurentoRomProcessor {
 		depModelManager.resolveModels();
 
 		Model model = fusionModels(loadModels(kmdFilesToGen));
+		model.validateModel();
 
 		log.info("Loading dependency kmd files to generate code");
 		modelManager = new ModelManager();
@@ -292,8 +293,6 @@ public class KurentoRomProcessor {
 
 			Model model = JsonModelSaverLoader.getInstance().loadFromFile(
 					kmdFile);
-
-			model.validateModel(kmdFile);
 
 			models.add(model);
 		}
