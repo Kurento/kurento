@@ -19,11 +19,11 @@
 
 #include <gst/gst.h>
 
-#include "kms-marshal.h"
+#include "kms-marshal-commons.h"
 #include "kmsconfcontroller.h"
 #include "kmselement.h"
 #include "kmsrecordingprofile.h"
-#include "kms-enumtypes.h"
+#include "kms-enumtypes-commons.h"
 #include "kmsloop.h"
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM

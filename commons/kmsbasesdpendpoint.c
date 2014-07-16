@@ -20,7 +20,7 @@
 
 #include "kmsbasesdpendpoint.h"
 #include "kmsagnosticcaps.h"
-#include "kms-marshal.h"
+#include "kms-marshal-commons.h"
 #include "sdp_utils.h"
 
 #define PLUGIN_NAME "base_sdp_endpoint"

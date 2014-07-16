@@ -17,7 +17,7 @@
 #include "config.h"
 #endif
 
-#include "kms-marshal.h"
+#include "kms-marshal-commons.h"
 #include "kmsdispatcher.h"
 #include "kmsmixerport.h"
 

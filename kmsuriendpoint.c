@@ -18,7 +18,7 @@
 
 #include <gst/gst.h>
 #include "kmselement.h"
-#include "kms-enumtypes.h"
+#include "kms-enumtypes-commons.h"
 #include "kmsuriendpoint.h"
 
 #define PLUGIN_NAME "uriendpoint"

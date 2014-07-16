@@ -26,7 +26,7 @@
 #include "kmsutils.h"
 #include "kmsloop.h"
 #include "kmsrecordingprofile.h"
-#include "kms-enumtypes.h"
+#include "kms-enumtypes-commons.h"
 #include "kmsconfcontroller.h"
 
 #define PLUGIN_NAME "recorderendpoint"

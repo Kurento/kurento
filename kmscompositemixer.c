@@ -18,7 +18,7 @@
 
 #include "kmscompositemixer.h"
 #include "kmsagnosticcaps.h"
-#include "kms-marshal.h"
+#include "kms-marshal-commons.h"
 #include "kmsmixerport.h"
 #include "kmsloop.h"
 #include "kmsaudiomixer.h"

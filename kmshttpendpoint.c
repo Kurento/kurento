@@ -19,12 +19,12 @@
 #include <gst/gst.h>
 #include <gst/pbutils/encoding-profile.h>
 
-#include "kms-marshal.h"
+#include "kms-marshal-commons.h"
 #include "kmshttpendpoint.h"
 #include "kmsagnosticcaps.h"
 #include "kmshttpendpointmethod.h"
 #include "kmsrecordingprofile.h"
-#include "kms-enumtypes.h"
+#include "kms-enumtypes-commons.h"
 #include "kmsconfcontroller.h"
 #include "kmsutils.h"
 #include "kmsloop.h"

@@ -19,8 +19,8 @@
 #include <stdlib.h>
 #include <gst/gst.h>
 
-#include "kms-enumtypes.h"
-#include "kms-marshal.h"
+#include "kms-enumtypes-commons.h"
+#include "kms-marshal-commons.h"
 #include "kmsbasertpendpoint.h"
 #include "sdp_utils.h"
 
