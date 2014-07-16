@@ -24,7 +24,7 @@ ${remoteClass.name}Impl::${remoteClass.name}Impl (<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>
-     <#lt></#list>)
+     <#lt></#list>)<#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if>
 <#else>
 ${remoteClass.name}Impl::${remoteClass.name}Impl ()
 </#if>
