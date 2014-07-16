@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.Dispatcher;
@@ -33,7 +32,9 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
- * <strong>Description</strong>: Test of a Dispatcher Mixer.<br/>
+ * <strong>Description</strong>: Test of a Dispatcher Mixer. A Chrome browser
+ * opens a WebRtcEndpoint and this stream is connected to an HttpGetEndpoint,
+ * played in another browser.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> Dispatcher -> HttpGetEndpoint</li>
@@ -49,7 +50,6 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  */
 public class MediaApiDispatcherHttpTest extends BrowserMediaApiTest {
 
-	@Ignore
 	@Test
 	public void testDispatcherHttpChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -87,7 +87,8 @@ public class MediaApiDispatcherHttpTest extends BrowserMediaApiTest {
 			// Assertions
 			Assert.assertTrue("Timeout waiting playing event",
 					browser2.waitForEvent("playing"));
-			Assert.assertTrue("The color of the video should be green",
+			Assert.assertTrue(
+					"The color of the video should be green (RGB #008700)",
 					browser2.colorSimilarTo(new Color(0, 135, 0)));
 			Thread.sleep(5000);
 		}
