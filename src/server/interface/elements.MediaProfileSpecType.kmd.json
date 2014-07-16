@@ -1,0 +1,13 @@
+{
+  "complexTypes": [
+    {
+      "name": "MediaProfileSpecType",
+      "doc": "Media Profile.\n\nCurrently WEBM and MP4 are supported.",
+      "typeFormat": "ENUM",
+      "values": [
+        "WEBM",
+        "MP4"
+      ]
+    }
+  ]
+}

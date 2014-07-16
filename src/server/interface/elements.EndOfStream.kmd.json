@@ -1,0 +1,10 @@
+{
+  "events": [
+    {
+      "name": "EndOfStream",
+      "extends": "Media",
+      "doc": "Event raised when the stream that the element sends out is finished.",
+      "properties": []
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "remoteClasses": [
+    {
+      "name": "WebRtcEndpoint",
+      "extends": "SdpEndpoint",
+      "doc": "WebRtcEndpoint interface. This type of ``Endpoint`` offers media streaming using WebRTC.",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`WebRtcEndpoint`",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            }
+          ]
+        }
+    }
+  ]
+}

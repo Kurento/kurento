@@ -1,0 +1,20 @@
+{
+  "remoteClasses": [
+    {
+      "name": "RtpEndpoint",
+      "extends": "SdpEndpoint",
+      "doc": "Endpoint that provides bidirectional content delivery capabilities with remote networked peers through RTP protocol. An :rom:cls:`RtpEndpoint` contains paired sink and source :rom:cls:`MediaPad` for audio and video.",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`RtpEndpoint`",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            }
+          ]
+        }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "remoteClasses": [
+    {
+      "name": "PlayerEndpoint",
+      "extends": "UriEndpoint",
+      "doc": "Retrieves content from seekable sources in reliable\nmode (does not discard media information) and inject \nthem into :term:`KMS`. It\ncontains one :rom:cls:`MediaSource` for each media type detected.",
+      "constructor":
+        {
+          "doc": "Create a PlayerEndpoint",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "The :rom:cls:`MediaPipeline` this PlayerEndpoint belongs to.",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "uri",
+              "doc": "URI that will be played",
+              "type": "String"
+            },
+            {
+              "name": "useEncodedMedia",
+              "doc": "use encoded instead of raw media. If the parameter is false then the\nelement uses raw media. Changing this parameter can affect stability\nseverely, as lost key frames lost will not be regenerated. Changing the media type does not\naffect to the result except in the performance (just in the case where\noriginal media and target media are the same) and in the problem with the\nkey frames. We strongly recommended not to use this parameter because\ncorrect behaviour is not guarantied.",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "play",
+          "doc": "Starts to send data to the endpoint :rom:cls:`MediaSource`",
+          "params": []
+        }
+      ],
+      "events": [
+        "EndOfStream"
+      ]
+    }
+  ]
+}

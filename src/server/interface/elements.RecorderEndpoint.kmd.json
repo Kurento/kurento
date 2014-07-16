@@ -1,0 +1,46 @@
+{
+  "remoteClasses": [
+    {
+      "name": "RecorderEndpoint",
+      "extends": "UriEndpoint",
+      "doc": "Provides function to store contents in reliable mode (doesn't discard data). It contains :rom:cls:`MediaSink` pads for audio and video.",
+      "constructor":
+        {
+          "doc": "",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "uri",
+              "doc": "URI where the recording will be stored",
+              "type": "String"
+            },
+            {
+              "name": "mediaProfile",
+              "doc": "Choose either a :rom:attr:`MediaProfileSpecType.WEBM` or a :rom:attr:`MediaProfileSpecType.MP4` profile for recording",
+              "type": "MediaProfileSpecType",
+              "optional": true,
+              "defaultValue": "WEBM"
+            },
+            {
+              "name": "stopOnEndOfStream",
+              "doc": "Forces the recorder endpoint to finish processing data when an :term:`EOS` is detected in the stream",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "record",
+          "doc": "Starts storing media received through the :rom:cls:`MediaSink` pad",
+          "params": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "remoteClasses": [
+    {
+      "name": "HttpGetEndpoint",
+      "extends": "HttpEndpoint",
+      "doc": "An ``HttpGetEndpoint`` contains SOURCE pads for AUDIO and VIDEO, delivering media using HTML5 pseudo-streaming mechanism.\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSink` is associated with the HTTP GET method",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`HttpGetEndpoint`.",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "terminateOnEOS",
+              "doc": "raise a :rom:evnt:`MediaSessionTerminated` event when the associated player raises a :rom:evnt:`EndOfStream`, and thus terminate the media session",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            },
+            {
+              "name": "mediaProfile",
+              "doc": "the :rom:enum:`MediaProfileSpecType` (WEBM, MP4...) for the endpoint",
+              "type": "MediaProfileSpecType",
+              "optional": true,
+              "defaultValue": "WEBM"
+            },
+            {
+              "name": "disconnectionTimeout",
+              "doc": "disconnection timeout in seconds.\n\nThis is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 2
+            }
+          ]
+        }
+    },
+    {
+      "name": "HttpPostEndpoint",
+      "extends": "HttpEndpoint",
+      "doc": "An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSources <MediaSource>` are accessed through the :term:`HTTP` POST method.",
+      "constructor":
+        {
+          "doc": "Builder for the :rom:cls:`HttpPostEndpoint`.",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "disconnectionTimeout",
+              "doc": "This is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.",
+              "type": "int",
+              "optional": true,
+              "defaultValue": 2
+            },
+            {
+              "name": "useEncodedMedia",
+              "doc": "configures the endpoint to use encoded media instead of raw media. If the parameter is not set then the element uses raw media. Changing this parameter could affect in a severe way to stability because key frames lost will not be generated. Changing the media type does not affect to the result except in the performance (just in the case where original media and target media are the same) and in the problem with the key frames. We strongly recommended not to use this parameter because correct behaviour is not guarantied.",
+              "type": "boolean",
+              "optional": true,
+              "defaultValue": false
+            }
+          ]
+        },
+      "events": [
+        "EndOfStream"
+      ]
+    },
+    {
+      "name": "HttpEndpoint",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "doc": "Endpoint that enables Kurento to work as an HTTP server, allowing peer HTTP clients to access media.",
+      "methods": [
+        {
+          "name": "getUrl",
+          "doc": "Obtains the URL associated to this endpoint",
+          "params": [],
+          "return": {
+            "doc": "The url as a String",
+            "type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}
