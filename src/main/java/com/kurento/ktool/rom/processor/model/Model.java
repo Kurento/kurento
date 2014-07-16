@@ -234,7 +234,7 @@ public class Model {
 		}
 
 		if (resolutionState == ResolutionState.RESOLVED) {
-			log.info("Model '" + name + "' yet resolved");
+			log.debug("Model '" + name + "' yet resolved");
 			return;
 		}
 
