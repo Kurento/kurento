@@ -4,7 +4,7 @@ public class Import {
 
 	private String name;
 	private String version;
-	private Model model;
+	private transient Model model;
 
 	public String getName() {
 		return name;
