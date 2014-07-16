@@ -32,7 +32,9 @@ import com.kurento.kmf.test.client.Client;
 
 /**
  * 
- * <strong>Description</strong>: Test of a Composite Mixer.<br/>
+ * <strong>Description</strong>: Four synthetic videos are played by four
+ * PlayerEndpoint and mixed by a Composite. The resulting video is played in an
+ * HttpGetEndpoint.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>4xPlayerEndpoint -> Composite -> HttpGetEndpoint</li>
@@ -64,17 +66,13 @@ public class MediaApiCompositePlayerTest extends BrowserMediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
-				"file://" + getPathTestFiles() + "/video/60sec/red.webm")
-				.build();
+				"http://files.kurento.org/video/60sec/red.webm").build();
 		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
-				"file://" + getPathTestFiles() + "/video/60sec/green.webm")
-				.build();
+				"http://files.kurento.org/video/60sec/green.webm").build();
 		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
-				"file://" + getPathTestFiles() + "/video/60sec/blue.webm")
-				.build();
+				"http://files.kurento.org/video/60sec/blue.webm").build();
 		PlayerEndpoint playerWhite = mp.newPlayerEndpoint(
-				"file://" + getPathTestFiles() + "/video/60sec/white.webm")
-				.build();
+				"http://files.kurento.org/video/60sec/white.webm").build();
 
 		Composite composite = mp.newComposite().build();
 		HubPort hubPort1 = composite.newHubPort().build();

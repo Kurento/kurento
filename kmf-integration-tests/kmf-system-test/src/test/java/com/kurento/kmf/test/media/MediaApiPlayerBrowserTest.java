@@ -37,10 +37,10 @@ import com.kurento.kmf.test.client.Client;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
- * <li>Play time should be the expected (at least 8 seconds)</li>
- * <li>Color of the video should be the expected (blue)</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Play time should be the expected</li>
+ * <li>Color of the video should be the expected</li>
+ * <li>Browser ends before default timeout</li>
  * </ul>
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
@@ -63,7 +63,7 @@ public class MediaApiPlayerBrowserTest extends BrowserMediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/blue.webm").build();
+				"http://files.kurento.org/video/10sec/blue.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);

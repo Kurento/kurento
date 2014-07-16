@@ -16,11 +16,19 @@ package com.kurento.kmf.test.media;
 
 import java.awt.Color;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.RecorderEndpoint;
+import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
@@ -50,12 +58,6 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 	@Test
 	public void testRecorderWebRtcChrome() throws InterruptedException {
 		doTest(Browser.CHROME, null, new Color(0, 135, 0));
-	}
-
-	@Ignore
-	@Test
-	public void testRecorderWebRtcFirefox() throws InterruptedException {
-		doTest(Browser.FIREFOX, "/path-to/blue.webm", Color.BLUE);
 	}
 
 	public void doTest(Browser browserType, String video, Color color)

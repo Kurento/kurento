@@ -34,7 +34,8 @@ import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
- * <strong>Description</strong>: Back-to-back WebRTC Test<br/>
+ * <strong>Description</strong>: WebRTC in loopback, and connected to this
+ * stream also connected N HttpEndpoint.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
@@ -42,7 +43,7 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browsers starts before 60 seconds (default timeout)</li>
+ * <li>Browsers starts before default timeout</li>
  * <li>HttpPlayer play time does not differ in a 10% of the transmitting time by
  * WebRTC</li>
  * <li>Color received by HttpPlayer should be green (RGB #008700, video test of
@@ -56,8 +57,7 @@ public class MediaApiWebRtc2HttpTest extends BrowserMediaApiTest {
 
 	private static int PLAYTIME = 5; // seconds to play in HTTP player
 	private static int NPLAYERS = 2; // number of HttpEndpoint connected to
-
-	// WebRTC source
+										// WebRTC source
 
 	@Test
 	public void testWebRtc2Http() throws Exception {

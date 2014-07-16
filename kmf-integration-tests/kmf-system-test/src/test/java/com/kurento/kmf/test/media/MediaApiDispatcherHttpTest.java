@@ -32,9 +32,9 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
- * <strong>Description</strong>: Test of a Dispatcher Mixer. A Chrome browser
- * opens a WebRtcEndpoint and this stream is connected to an HttpGetEndpoint,
- * played in another browser.<br/>
+ * <strong>Description</strong>: A Chrome browser opens a WebRtcEndpoint and
+ * this stream is connected through a Dispatcher to an HttpGetEndpoint, played
+ * in another browser.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> Dispatcher -> HttpGetEndpoint</li>

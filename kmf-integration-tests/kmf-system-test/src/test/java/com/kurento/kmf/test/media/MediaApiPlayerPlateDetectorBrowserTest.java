@@ -41,10 +41,10 @@ import com.kurento.kmf.test.client.Client;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Browser ends before default timeout</li>
  * <li>Plates detected (2651DLC and 3882GKP)</li>
  * <li>EOS event received</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -95,15 +95,17 @@ public class MediaApiPlayerPlateDetectorBrowserTest extends BrowserMediaApiTest 
 			browser.start();
 
 			// Assertions
-			Assert.assertTrue(browser.waitForEvent("playing"));
-			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting ended event",
+					browser.waitForEvent("ended"));
 			Assert.assertTrue("Play time must be at least 12 seconds",
 					browser.getCurrentTime() > 12);
 			Assert.assertTrue(
-					"No plate 2651DLC detected by palte detector filter",
+					"No plate 2651DLC detected by plate detector filter",
 					platesDetectedEvents.contains("--2651DCL"));
 			Assert.assertTrue(
-					"No plate 3882GKP detected by palte detector filter",
+					"No plate 3882GKP detected by plate detector filter",
 					platesDetectedEvents.contains("--3882GKP"));
 			Assert.assertFalse("No EOS event", eosEvents.isEmpty());
 		}

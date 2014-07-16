@@ -29,13 +29,13 @@ import com.kurento.kmf.test.client.Client;
  * <strong>Description</strong>: HTTP Player switching videos.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>PlayerEndpoint -> (N) HttpGetEndpoint</li>
+ * <li>5xPlayerEndpoint -> HttpGetEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
- * <li>Play time should be the expected (at least 8 seconds)</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Play time should be the expected</li>
+ * <li>Browser ends before default timeout</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -48,15 +48,15 @@ public class MediaApiPlayerSwitchBrowserTest extends BrowserMediaApiTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/red.webm").build();
+				"http://files.kurento.org/video/10sec/red.webm").build();
 		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/green.webm").build();
+				"http://files.kurento.org/video/10sec/green.webm").build();
 		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/blue.webm").build();
+				"http://files.kurento.org/video/10sec/blue.webm").build();
 		PlayerEndpoint playerSmpte = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/smpte.webm").build();
+				"http://files.kurento.org/video/10sec/smpte.webm").build();
 		PlayerEndpoint playerBall = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/ball.webm").build();
+				"http://files.kurento.org/video/10sec/ball.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 

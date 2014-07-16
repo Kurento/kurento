@@ -67,11 +67,11 @@ public class MediaApiRecorderSwitchTest extends BrowserMediaApiTest {
 		// Media Pipeline #1
 		MediaPipeline mp = pipelineFactory.create();
 		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/red.webm").build();
+				"http://files.kurento.org/video/10sec/red.webm").build();
 		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/green.webm").build();
+				"http://files.kurento.org/video/10sec/green.webm").build();
 		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
-				"http://files.kurento.org/video/gst/blue.webm").build();
+				"http://files.kurento.org/video/10sec/blue.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(TARGET_RECORDING)

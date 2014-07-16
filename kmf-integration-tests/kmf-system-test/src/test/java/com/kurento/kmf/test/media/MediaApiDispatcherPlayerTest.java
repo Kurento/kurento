@@ -32,8 +32,8 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
- * <strong>Description</strong>: Test of a Dispatcher Mixer. A PlayerEndpoint is
- * connected to a WebRtcEndpoint through a Dispatcher.<br/>
+ * <strong>Description</strong>: A PlayerEndpoint is connected to a
+ * WebRtcEndpoint through a Dispatcher.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>PlayerEndpoint -> Dispatcher -> WebRtcEndpoint</li>

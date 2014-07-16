@@ -33,10 +33,10 @@ import com.kurento.kmf.test.client.*;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Browser ends before default timeout</li>
  * <li>CodeFound events received</li>
  * <li>EOS event received</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)

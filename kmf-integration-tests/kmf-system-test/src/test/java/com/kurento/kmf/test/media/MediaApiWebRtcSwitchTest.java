@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.MediaPipeline;
@@ -32,13 +31,15 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * <strong>Description</strong>: Back-To-Back WebRTC switch. Three clients:
  * A,B,C sets up WebRTC send-recv with audio/video. Switch between following
  * scenarios: A<->B, A<->C, B<->C. At least two rounds. <br/>
- * <strong>Pipeline</strong>:
+ * <strong>Pipeline(s)</strong>:
  * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (x3)</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browsers starts before 60 seconds (default timeout)</li>
+ * <li>Browsers starts before default timeout</li>
  * <li>Color received by clients should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
@@ -48,7 +49,6 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  */
 public class MediaApiWebRtcSwitchTest extends BrowserMediaApiTest {
 
-	@Ignore
 	@Test
 	public void testWebRtcSwitch() throws InterruptedException {
 		// Media pipeline
@@ -117,7 +117,6 @@ public class MediaApiWebRtcSwitchTest extends BrowserMediaApiTest {
 
 			// Guard time to see switching #2
 			Thread.sleep(4000);
-
 		}
 	}
 

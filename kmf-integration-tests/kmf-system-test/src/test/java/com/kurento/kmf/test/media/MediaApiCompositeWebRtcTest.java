@@ -34,15 +34,20 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
- * <strong>Description</strong>: Test of a Composite Mixer.<br/>
+ * <strong>Description</strong>: Four synthetic videos are played by four
+ * WebRtcEndpoint and mixed by a Composite. The resulting video is played in an
+ * HttpGetEndpoint. At the end, a B&N filter is connected in one of the
+ * WebRTC's.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>4xWebRtcEndpoint -> Composite -> HttpGetEndpoint</li>
+ * <li>1xWebRtcEndpoint -> GStreamerFilter</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
  * <li>Browser starts before default timeout</li>
  * <li>Color of the video should be the expected (red, green, blue, and white)</li>
+ * <li>At the end, one the videos should gray (the one with the B&N filter).</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -54,12 +59,6 @@ public class MediaApiCompositeWebRtcTest extends BrowserMediaApiTest {
 	@Test
 	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);
-	}
-
-	@Ignore
-	@Test
-	public void testCompositeWebRtcFirefox() throws Exception {
-		doTest(Browser.FIREFOX);
 	}
 
 	public void doTest(Browser browserType) throws Exception {

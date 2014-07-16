@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.HttpGetEndpoint;
@@ -43,7 +42,7 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browsers starts before 60 seconds (default timeout)</li>
+ * <li>Browsers starts before default timeout</li>
  * <li>Color received by HttpPlayer should be green (RGB #008700, video test of
  * Chrome)</li>
  * </ul>
@@ -53,7 +52,6 @@ import com.kurento.kmf.test.client.WebRtcChannel;
  */
 public class MediaApiWebRtc2HttpSwitchTest extends BrowserMediaApiTest {
 
-	@Ignore
 	@Test
 	public void testWebRtc2HttpSwitch() throws Exception {
 		// Media Pipeline

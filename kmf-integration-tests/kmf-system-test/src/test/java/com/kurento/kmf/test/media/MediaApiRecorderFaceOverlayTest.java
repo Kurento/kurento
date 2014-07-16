@@ -32,7 +32,8 @@ import com.kurento.kmf.test.client.Client;
 /**
  * 
  * <strong>Description</strong>: Test of a HTTP Recorder, using the stream
- * source from a PlayerEndpoint through an HttpGetEndpoint.<br/>
+ * source from a PlayerEndpoint with FaceOverlayFilter through an
+ * HttpGetEndpoint.<br/>
  * <strong>Pipelines</strong>:
  * <ol>
  * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & HttpGetEndpoint

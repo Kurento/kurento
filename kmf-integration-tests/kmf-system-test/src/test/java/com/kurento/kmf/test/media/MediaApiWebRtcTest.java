@@ -31,7 +31,8 @@ import com.kurento.kmf.test.services.AudioChannel;
 import com.kurento.kmf.test.services.Recorder;
 
 /**
- * <strong>Description</strong>: WebRTC in loopback.<br/>
+ * <strong>Description</strong>: WebRTC in loopback using custom video and audio
+ * files.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint</li>

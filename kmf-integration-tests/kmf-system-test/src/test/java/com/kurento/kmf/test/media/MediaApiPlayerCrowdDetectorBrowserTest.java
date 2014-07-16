@@ -22,26 +22,37 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.media.*;
-import com.kurento.kmf.media.events.*;
+import com.kurento.kmf.media.CrowdDetectorFilter;
+import com.kurento.kmf.media.HttpGetEndpoint;
+import com.kurento.kmf.media.MediaPipeline;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.RegionOfInterest;
+import com.kurento.kmf.media.RegionOfInterestConfig;
+import com.kurento.kmf.media.RelativePoint;
+import com.kurento.kmf.media.events.CrowdDetectorFluidityEvent;
+import com.kurento.kmf.media.events.CrowdDetectorOccupancyEvent;
+import com.kurento.kmf.media.events.EndOfStreamEvent;
+import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.test.base.BrowserMediaApiTest;
-import com.kurento.kmf.test.client.*;
+import com.kurento.kmf.test.client.Browser;
+import com.kurento.kmf.test.client.BrowserClient;
+import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player with CrowdDetector Filter.
  * 
- * <strong>Description</strong>: HTTP Player with CrowdDetector Filter.<br/>
+ * <strong>Description</strong>: Test of a HTTP Player with CrowdDetector
+ * Filter.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>PlayerEndpoint -> CrowdDetectorFilter -> HttpGetEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before 60 seconds (default timeout)</li>
+ * <li>Browser starts before default timeout</li>
+ * <li>Browser ends before default timeout</li>
  * <li>Occupancy events received</li>
  * <li>Fluidity event received</li>
  * <li>EOS event received</li>
- * <li>Browser ends before 60 seconds (default timeout)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -125,8 +136,10 @@ public class MediaApiPlayerCrowdDetectorBrowserTest extends BrowserMediaApiTest 
 			browser.start();
 
 			// Assertions
-			Assert.assertTrue(browser.waitForEvent("playing"));
-			Assert.assertTrue(browser.waitForEvent("ended"));
+			Assert.assertTrue("Timeout waiting playing event",
+					browser.waitForEvent("playing"));
+			Assert.assertTrue("Timeout waiting ended event",
+					browser.waitForEvent("ended"));
 			Assert.assertTrue("Play time must be at least 9 seconds",
 					browser.getCurrentTime() > 9);
 			Assert.assertFalse(
