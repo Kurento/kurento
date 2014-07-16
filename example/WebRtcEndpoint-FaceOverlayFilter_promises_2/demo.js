@@ -13,7 +13,7 @@
  *
  */
 
-const ws_uri = 'ws://demo01.kurento.org:8080/thrift/ws/websocket';
+const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket';
 
 const overlayImage = 'http://files.kurento.org/imgs/mario-wings.png';
 
