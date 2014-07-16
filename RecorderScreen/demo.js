@@ -18,29 +18,6 @@ const ws_uri = 'wss://kurentorecorder.naevatec.com:8888/thrift/ws/websocket'; //
 const file_storage = 'file:///var/www/html/files/'; //path where to be store media in the server
 const file_uri = file_storage+'recorderScreen.webm'; //file to be stored in media server
 
-const constraintsWebcam =
-{
-	audio : true,
-	video : {
-		mandatory: {
-			maxWidth: 640,
-			maxFrameRate : 15,
-			minFrameRate: 15
-		}
-	}
-}
-
-const constraintsDesktop =
-{
-	video : {
-		mandatory: {
-			chromeMediaSource: 'screen',
-//			maxFrameRate : 15,
-//			minFrameRate: 15
-		}
-	}
-}
-
 
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
@@ -56,11 +33,37 @@ function startRecording() {
 	var videoInput = document.getElementById("videoInput");
 	var videoOutput = document.getElementById("videoOutput");
 
-	var constraints;
-	if(document.getElementById('selectSource').value == 'Desktop')
-		constraints = constraintsDesktop
-	else
-		constraints = constraintsWebcam
+	var width, height;
+	switch(document.getElementById('resolution').value)
+	{
+		case 'VGA':
+			width = 640;
+			height = 480;
+		break;
+		case 'HD':
+			width = 1280;
+			height = 720;
+		break;
+		case 'Full HD':
+			width = 1920;
+			height = 1080;
+		break;
+	}
+
+	var isWebcam = document.getElementById('selectSource').value == 'Desktop'
+	var constraints =
+	{
+		audio : isWebcam,
+		video : {
+			mandatory: {
+				chromeMediaSource : (isWebcam ? undefined : 'screen'),
+				maxWidth: width,
+				maxHeight: height,
+				maxFrameRate : 15,
+				minFrameRate: 15
+			}
+		}
+	};
 
 	webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
 			onOffer, onError, constraints);
