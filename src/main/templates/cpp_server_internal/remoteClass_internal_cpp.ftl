@@ -8,6 +8,7 @@ ${remoteClass.name}ImplInternal.cpp
 </#if>
 </#list>
 #include "${remoteClass.name}Impl.hpp"
+#include "${remoteClass.name}ImplFactory.hpp"
 #include "${remoteClass.name}Internal.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
@@ -16,7 +17,7 @@ namespace kurento
 {
 <#if (!remoteClass.abstract) && remoteClass.constructor??>
 
-MediaObjectImpl *${remoteClass.name}Impl::Factory::createObjectPointer (const Json::Value &params) const
+MediaObjectImpl *${remoteClass.name}ImplFactory::createObjectPointer (const Json::Value &params) const
 {
   kurento::JsonSerializer s (false);
   ${remoteClass.name}Constructor constructor;
@@ -104,7 +105,7 @@ Serialize (std::shared_ptr<kurento::${remoteClass.name}Impl> &object, JsonSerial
   } else {
     try {
       std::shared_ptr<kurento::MediaObjectImpl> aux;
-      aux = kurento::${remoteClass.name}Impl::Factory::getObject (serializer.JsonValue.asString () );
+      aux = kurento::${remoteClass.name}ImplFactory::getObject (serializer.JsonValue.asString () );
       object = std::dynamic_pointer_cast<kurento::${remoteClass.name}Impl> (aux);
       return;
     } catch (KurentoException &ex) {

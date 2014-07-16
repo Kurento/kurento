@@ -4,7 +4,8 @@ Module.cpp
 #include "FactoryRegistrar.hpp"
 
 <#list model.remoteClasses as remoteClass>
-#include "${remoteClass.name}Impl.hpp"
+#include <${remoteClass.name}ImplFactory.hpp>
+#include <${remoteClass.name}.hpp>
 </#list>
 
 extern "C" {
@@ -22,7 +23,7 @@ getFactoryRegistrar ()
   if (!loaded) {
 <#list model.remoteClasses as remoteClass>
   <#if !(remoteClass.abstract)>
-    factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new kurento::${remoteClass.name}Impl::Factory() );
+    factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new kurento::${remoteClass.name}ImplFactory() );
   </#if>
 </#list>
     loaded = true;

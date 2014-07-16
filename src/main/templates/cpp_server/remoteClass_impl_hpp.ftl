@@ -56,6 +56,7 @@ public:
     <#lt><@methodHeader method />
   </#list>
 
+  /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
   <#list remoteClass.events as event>
     <#if event_index = 0 >
@@ -63,32 +64,6 @@ public:
     </#if>
   sigc::signal<void, ${event.name}> signal${event.name};
   </#list>
-
-  class Factory : public virtual <#if remoteClass.extends??>${remoteClass.extends.name}Impl::<#else>kurento::</#if>Factory
-  {
-  public:
-    Factory () {};
-
-    virtual std::string getName () const {
-      return "${remoteClass.name}";
-    };
-
-<#if (remoteClass.constructor)??>
-  private:
-
-</#if>
-<#if (!remoteClass.abstract) && (remoteClass.constructor)??>
-    virtual MediaObjectImpl *createObjectPointer (const Json::Value &params) const;
-
-</#if>
-    <#if remoteClass.constructor??><#rt>
-    MediaObjectImpl *createObject (<#rt>
-     <#lt><#list remoteClass.constructor.params as param><#rt>
-        <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
-     <#lt></#list>) const;
-    </#if>
-  };
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

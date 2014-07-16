@@ -7,6 +7,9 @@ ${remoteClass.name}Impl.cpp
 #include "${dependency.name}.hpp"
 </#if>
 </#list>
+<#if remoteClass.constructor??>
+#include <${remoteClass.name}ImplFactory.hpp>
+</#if>
 #include "${remoteClass.name}Impl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
@@ -49,7 +52,7 @@ ${getCppObjectType(method.return,false)} ${remoteClass.name}Impl::${method.name}
 
 <#if remoteClass.constructor??><#rt>
 MediaObjectImpl *
-${remoteClass.name}Impl::Factory::createObject (<#rt>
+${remoteClass.name}ImplFactory::createObject (<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>
