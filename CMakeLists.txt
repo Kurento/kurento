@@ -25,6 +25,8 @@ set(KMS_PLUGIN_SOURCES
   kmsselectablemixer.c
   kmssctpconnection.c
   kmsrpcclient.c
+  kmssctpbaserpc.c
+  kmssctpclientrpc.c
 )
 
 set(KMS_PLUGIN_HEADERS
@@ -49,7 +51,15 @@ set(KMS_PLUGIN_HEADERS
   kmsselectablemixer.h
   kmssctpconnection.h
   kmsrpcclient.h
+  kmssctpbaserpc.h
+  kmssctpclientrpc.h
 )
+
+set(ENUM_HEADERS
+  kmsencodingrules.h
+)
+
+add_glib_enumtypes(KMS_PLUGIN_SOURCES KMS_PLUGIN_HEADERS kms-enumtypes KMS ${ENUM_HEADERS})
 
 include(GLibHelpers)
 

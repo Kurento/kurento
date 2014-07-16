@@ -21,7 +21,7 @@
 
 #include "gstsctp.h"
 #include "gstsctpclientsink.h"
-#include "kmsrpcclient.h"
+#include "kmssctpclientrpc.h"
 
 #define PLUGIN_NAME "sctpclientsink"
 
@@ -40,7 +40,7 @@ G_DEFINE_TYPE_WITH_CODE (GstSCTPClientSink, gst_sctp_client_sink,
 
 struct _GstSCTPClientSinkPrivate
 {
-  KmsRPCClient *rpc;
+  KmsSCTPClientRPC *clientrpc;
   GCancellable *cancellable;
 
   /* server information */
@@ -152,7 +152,8 @@ gst_sctp_client_sink_unlock (GstBaseSink * bsink)
   GST_DEBUG_OBJECT (self, "set to flushing");
 
   g_cancellable_cancel (self->priv->cancellable);
-  kms_rpc_client_cancel_pending_requests (self->priv->rpc);
+  kms_scp_base_rpc_cancel_pending_requests (KMS_SCTP_BASE_RPC (self->priv->
+          clientrpc));
 
   return TRUE;
 }
@@ -175,7 +176,7 @@ gst_sctp_client_sink_stop (GstBaseSink * bsink)
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
 
   g_cancellable_cancel (self->priv->cancellable);
-  kms_rpc_client_stop (self->priv->rpc);
+  kms_sctp_client_rpc_stop (self->priv->clientrpc);
 
   return TRUE;
 }
@@ -186,8 +187,8 @@ gst_sctp_client_sink_start (GstBaseSink * bsink)
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
   GError *err = NULL;
 
-  if (kms_rpc_client_start (self->priv->rpc, self->priv->host, self->priv->port,
-          self->priv->cancellable, &err)) {
+  if (kms_sctp_client_rpc_start (self->priv->clientrpc, self->priv->host,
+          self->priv->port, self->priv->cancellable, &err)) {
 
     GST_OBJECT_LOCK (self);
     self->priv->connected = TRUE;
@@ -283,10 +284,7 @@ gst_sctp_client_sink_dispose (GObject * gobject)
 
   gst_sctp_client_sink_stop (GST_BASE_SINK (self));
 
-  if (self->priv->rpc != NULL) {
-    kms_rpc_client_unref (self->priv->rpc);
-    self->priv->rpc = NULL;
-  }
+  g_clear_object (&self->priv->clientrpc);
 
   G_OBJECT_CLASS (gst_sctp_client_sink_parent_class)->dispose (gobject);
 }
@@ -303,7 +301,7 @@ gst_sctp_client_sink_finalize (GObject * gobject)
 }
 
 static void
-gst_sctp_client_sink_EOF (GstSCTPClientSink * self)
+gst_sctp_client_sink_error_cb (GstSCTPClientSink * self)
 {
   GST_OBJECT_LOCK (self);
 
@@ -311,7 +309,8 @@ gst_sctp_client_sink_EOF (GstSCTPClientSink * self)
 
   GST_OBJECT_UNLOCK (self);
 
-  kms_rpc_client_cancel_pending_requests (self->priv->rpc);
+  kms_scp_base_rpc_cancel_pending_requests (KMS_SCTP_BASE_RPC (self->priv->
+          clientrpc));
 }
 
 gboolean
@@ -333,9 +332,9 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
 
   GST_DEBUG (">> %" GST_PTR_FORMAT, query);
 
-  if (!kms_rpc_client_query (self->priv->rpc, query, self->priv->cancellable,
-          &rsp_query, &err)) {
-    GST_ERROR ("Error: %s", err->message);
+  if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc), query,
+          self->priv->cancellable, &rsp_query, &err)) {
+    GST_ERROR_OBJECT (self, "Error: %s", err->message);
     g_error_free (err);
     return FALSE;
   }
@@ -408,9 +407,11 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
 
-  self->priv->rpc = kms_rpc_client_new (KURENTO_MARSHALL_PER, MAX_BUFFER_SIZE);
-  kms_rpc_client_set_eof_function_full (self->priv->rpc,
-      (KmsEOFFunction) gst_sctp_client_sink_EOF, self, NULL);
+  self->priv->clientrpc = kms_sctp_client_rpc_new (KMS_SCTP_BASE_RPC_RULES,
+      KURENTO_MARSHALL_BER, KMS_SCTP_BASE_RPC_BUFFER_SIZE, MAX_BUFFER_SIZE,
+      NULL);
+  kms_sctp_client_rpc_set_error_function_full (self->priv->clientrpc,
+      (KmsSocketErrorFunction) gst_sctp_client_sink_error_cb, self, NULL);
 }
 
 gboolean
