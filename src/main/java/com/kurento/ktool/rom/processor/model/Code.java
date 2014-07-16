@@ -35,7 +35,8 @@ public class Code {
 
 		putDefault(implementation, "cpp.namespace",
 				"kurento::plugin::" + model.getName());
-		putDefault(implementation, "lib", "libkms" + model.getName());
+		putDefault(implementation, "lib", "libkms"
+				+ model.getName().toLowerCase());
 	}
 
 	private void putDefault(Map<String, String> section, String key,
