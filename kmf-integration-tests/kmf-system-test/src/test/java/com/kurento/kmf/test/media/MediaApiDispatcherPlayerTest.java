@@ -17,7 +17,6 @@ package com.kurento.kmf.test.media;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.media.Dispatcher;
@@ -33,7 +32,8 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 
 /**
  * 
- * <strong>Description</strong>: Test of a Dispatcher Mixer.<br/>
+ * <strong>Description</strong>: Test of a Dispatcher Mixer. A PlayerEndpoint is
+ * connected to a WebRtcEndpoint through a Dispatcher.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>PlayerEndpoint -> Dispatcher -> WebRtcEndpoint</li>
@@ -54,7 +54,6 @@ public class MediaApiDispatcherPlayerTest extends BrowserMediaApiTest {
 		doTest(Browser.CHROME);
 	}
 
-	@Ignore
 	@Test
 	public void testDispatcherFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
@@ -65,8 +64,7 @@ public class MediaApiDispatcherPlayerTest extends BrowserMediaApiTest {
 		MediaPipeline mp = pipelineFactory.create();
 
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
-				"file://" + getPathTestFiles() + "/video/30sec/red.webm")
-				.build();
+				"http://files.kurento.org/video/30sec/red.webm").build();
 		WebRtcEndpoint webRtcEP = mp.newWebRtcEndpoint().build();
 
 		Dispatcher dispatcher = mp.newDispatcher().build();
@@ -90,9 +88,9 @@ public class MediaApiDispatcherPlayerTest extends BrowserMediaApiTest {
 			// Assertions
 			Assert.assertTrue("Timeout waiting playing event",
 					browser.waitForEvent("playing"));
+			Thread.sleep(10000);
 			Assert.assertTrue("The color of the video should be red",
 					browser.colorSimilarTo(Color.RED));
-			Thread.sleep(5000);
 		}
 	}
 }
