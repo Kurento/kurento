@@ -1,0 +1,10 @@
+{
+  "name": "elements",
+  "version": "0.0.1-dev",
+  "imports": [
+    {
+      "name": "core",
+      "version": "0.0.1-dev"
+    }
+  ]
+}
