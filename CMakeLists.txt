@@ -24,7 +24,6 @@ set(KMS_PLUGIN_SOURCES
   kmsaudiomixerbin.c
   kmsselectablemixer.c
   kmssctpconnection.c
-  kmsrpcclient.c
   kmssctpbaserpc.c
   kmssctpclientrpc.c
 )
@@ -50,7 +49,6 @@ set(KMS_PLUGIN_HEADERS
   kmsaudiomixerbin.h
   kmsselectablemixer.h
   kmssctpconnection.h
-  kmsrpcclient.h
   kmssctpbaserpc.h
   kmssctpclientrpc.h
 )
