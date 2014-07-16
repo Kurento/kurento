@@ -8,7 +8,7 @@ import com.kurento.ktool.rom.processor.model.Model;
 
 public class ModelManager {
 
-	private Map<String, Model> models;
+	private final Map<String, Model> models;
 	private ModelManager dependencies;
 
 	public ModelManager() {
@@ -55,14 +55,23 @@ public class ModelManager {
 		return null;
 	}
 
+	private void removeModel(String name) {
+		Model model = models.get(name);
+		if (model != null) {
+			models.remove(model.getName());
+		}
+
+		if (dependencies != null) {
+			dependencies.removeModel(name);
+		}
+	}
+
 	public void setDependencies(ModelManager dependencies) {
 		this.dependencies = dependencies;
+
 		for (Model model : dependencies.getModels()) {
 			if (models.get(model.getName()) != null) {
-				throw new KurentoRomProcessorException(
-						"The plugin '"
-								+ model.getName()
-								+ "' is defined in an import and in the kmd files to generate code.");
+				this.dependencies.removeModel(model.getName());
 			}
 		}
 	}
