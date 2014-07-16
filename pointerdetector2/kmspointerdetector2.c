@@ -28,7 +28,7 @@
 #include <libsoup/soup.h>
 
 #include "kmspointerdetector2.h"
-#include "kms-marshal.h"
+#include "kms-marshal-commons.h"
 
 #define PLUGIN_NAME "pointerdetector2"
 
