@@ -2,6 +2,7 @@ ${remoteClass.name}ImplFactory.hpp
 #ifndef __${camelToUnderscore(remoteClass.name)}_IMPL_FACTORY_HPP__
 #define __${camelToUnderscore(remoteClass.name)}_IMPL_FACTORY_HPP__
 
+#include "${remoteClass.name}Impl.hpp"
 <#if remoteClass.extends??>
 #include "${remoteClass.extends.name}ImplFactory.hpp"
 </#if>
