@@ -22,8 +22,8 @@ public class Code {
 		}
 
 		putDefault(api, "java", "packageName",
-				"org.kurento.plugin." + model.getName());
-		putDefault(api, "java", "maven.groupId", "org.kurento.plugin");
+				"org.kurento.module." + model.getName());
+		putDefault(api, "java", "maven.groupId", "org.kurento.module");
 		putDefault(api, "java", "maven.artifactId", model.getName());
 		putDefault(api, "java", "maven.version",
 				VersionManager.convertToMaven(model.getVersion()));
