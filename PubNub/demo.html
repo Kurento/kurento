@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <script src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
+
+    <script src="bower_components/kws-media-api/js/kws-media-api.js"></script>
+    <script src="bower_components/kws-rpc-builder/js/kws-rpc-builder.js"></script>
+    <script src="bower_components/kws-utils/js/kws-utils.js"></script>
+    <script src="bower_components/pubnub/web/pubnub.js"></script>
+
+    <script src="softphonePubnub.js"></script>
+
+    <script src="demo.js"></script>
+  </head>
+  <body>
+    <span>
+      <label for="name">Name:</label>
+      <input id="name" type="text" name="name" value="a">
+      <input id="register" type="button" value="Register">
+    </span>
+    <br>
+
+    <span>
+      <label for="peer">Peer:</label>
+      <input id="peer" type="text" name="peer" value="a">
+      <input id="call" type="button" value="Call">
+    </span>
+    <br>
+
+    <video id="videoInput" autoplay></video>
+    <video id="videoOutput" autoplay></video>
+  </body>
+</html>
