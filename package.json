@@ -1,6 +1,6 @@
 {
   "name": "kws-media-api",
-  "version": "4.3.18-SNAPSHOT",
+  "version": "4.3.18",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.org",
   "license": "LGPL",
@@ -38,7 +38,7 @@
     "es6-promise": "1.0.0",
     "extend": "~1.3.0",
     "inherits": "~2.0.1",
-    "kws-rpc-builder": "git://github.com/Kurento/kws-rpc-builder.git#develop",
+    "kws-rpc-builder": "4.3.18",
     "reconnect-ws": "piranna/reconnect-ws"
   },
   "devDependencies": {
