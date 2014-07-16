@@ -1,4 +1,4 @@
-endpoints/index.js
+index.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
@@ -14,24 +14,18 @@ endpoints/index.js
  *
  */
 
-/**
- * Media API for the Kurento Web SDK
- *
- * @module kwsMediaApi/endpoints
- *
- * @copyright 2014 Kurento (http://kurento.org/)
- * @license LGPL
- */
-
 <#list model.remoteClasses?sort_by("name") as remoteClass>
-  <#if getJsNamespace(remoteClass) == "Endpoint" && !remoteClass.abstract>
+  <#if !remoteClass.abstract>
 var ${remoteClass.name} = require('./${remoteClass.name}');
   </#if>
 </#list>
 
 
 <#list model.remoteClasses?sort_by("name") as remoteClass>
-  <#if getJsNamespace(remoteClass) == "Endpoint" && !remoteClass.abstract>
+  <#if !remoteClass.abstract>
 exports.${remoteClass.name} = ${remoteClass.name};
   </#if>
 </#list>
+
+exports.abstracts    = require('./abstracts');
+exports.complexTypes = require('./complexTypes');

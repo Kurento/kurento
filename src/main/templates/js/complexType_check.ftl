@@ -17,7 +17,7 @@ complexTypes/${complexType.name}.js
  *
  */
 
-var checkType = require('../checkType');
+var checkType = require('kws-media-runtime').checkType;
 
 /**
  * Media API for the Kurento Web SDK
