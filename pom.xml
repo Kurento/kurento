@@ -3,7 +3,7 @@
 
 	<groupId>com.kurento.kws</groupId>
 	<artifactId>kws-utils</artifactId>
-	<version>4.3.18</version>
+	<version>4.3.19-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>KWS Utils</name>
@@ -27,7 +27,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kws-utils-4.3.18</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
