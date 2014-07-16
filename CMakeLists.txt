@@ -4,32 +4,56 @@ add_subdirectory(commons)
 
 set(KMS_PLUGIN_SOURCES
   kmsplugin.c
-  kmsagnosticbin.c kmsagnosticbin.h
-  kmsrtpendpoint.c kmsrtpendpoint.h
-  kmsautomuxerbin.c kmsautomuxerbin.h
-  kmsrecorderendpoint.c kmsrecorderendpoint.h
-  kmsfilterelement.c kmsfilterelement.h
-  kmsplayerendpoint.c kmsplayerendpoint.h
-  kmsuriendpoint.c kmsuriendpoint.h
-  kmswebrtcendpoint.c kmswebrtcendpoint.h
-  kmshttpendpoint.c kmshttpendpoint.h
-  kmsdispatcheronetomany.c kmsdispatcheronetomany.h
-  gstsctp.c gstsctp.h
-  gstsctpbasesink.c gstsctpbasesink.h
-  gstsctpclientsink.c gstsctpclientsink.h
-  gstsctpserversrc.c gstsctpserversrc.h
-  kmscompositemixer.c kmscompositemixer.h
-  kmsdispatcher.c kmsdispatcher.h
-  kmsaudiomixer.c kmsaudiomixer.h
-  kmsaudiomixerbin.c kmsaudiomixerbin.h
-  kmsselectablemixer.c kmsselectablemixer.h
-  kmssctpconnection.c kmssctpconnection.h
-  kmsrpcclient.c kmsrpcclient.h
+  kmsagnosticbin.c
+  kmsrtpendpoint.c
+  kmsautomuxerbin.c
+  kmsrecorderendpoint.c
+  kmsfilterelement.c
+  kmsplayerendpoint.c
+  kmsuriendpoint.c
+  kmswebrtcendpoint.c
+  kmshttpendpoint.c
+  kmsdispatcheronetomany.c
+  gstsctp.c
+  gstsctpbasesink.c
+  gstsctpclientsink.c
+  gstsctpserversrc.c
+  kmscompositemixer.c
+  kmsdispatcher.c
+  kmsaudiomixer.c
+  kmsaudiomixerbin.c
+  kmsselectablemixer.c
+  kmssctpconnection.c
+  kmsrpcclient.c
+)
+
+set(KMS_PLUGIN_HEADERS
+  kmsagnosticbin.h
+  kmsrtpendpoint.h
+  kmsautomuxerbin.h
+  kmsrecorderendpoint.h
+  kmsfilterelement.h
+  kmsplayerendpoint.h
+  kmsuriendpoint.h
+  kmswebrtcendpoint.h
+  kmshttpendpoint.h
+  kmsdispatcheronetomany.h
+  gstsctp.h
+  gstsctpbasesink.h
+  gstsctpclientsink.h
+  gstsctpserversrc.h
+  kmscompositemixer.h
+  kmsdispatcher.h
+  kmsaudiomixer.h
+  kmsaudiomixerbin.h
+  kmsselectablemixer.h
+  kmssctpconnection.h
+  kmsrpcclient.h
 )
 
 include(GLibHelpers)
 
-add_library(kmsplugin MODULE ${KMS_PLUGIN_SOURCES})
+add_library(kmsplugin MODULE ${KMS_PLUGIN_SOURCES} ${KMS_PLUGIN_HEADERS})
 
 add_dependencies(kmsplugin kmsdtls vp8parse kmscommons)
 
