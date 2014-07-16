@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -81,9 +81,9 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 
 	private EmbeddedServletContainerCustomizer createNoCustomizationCustomizer() {
 		return new EmbeddedServletContainerCustomizer() {
+
 			@Override
-			public void customize(
-					ConfigurableEmbeddedServletContainerFactory factory) {
+			public void customize(ConfigurableEmbeddedServletContainer container) {
 			}
 		};
 	}
@@ -95,9 +95,9 @@ public class MediaConnectorApp implements JsonRpcConfigurer {
 		return new EmbeddedServletContainerCustomizer() {
 			@Override
 			public void customize(
-					ConfigurableEmbeddedServletContainerFactory factory) {
+					ConfigurableEmbeddedServletContainer container) {
 
-				TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) factory;
+				TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) container;
 
 				tomcat.addConnectorCustomizers(new TomcatConnectorCustomizer() {
 

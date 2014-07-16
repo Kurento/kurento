@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento</groupId>
@@ -90,13 +91,13 @@
 		<version.scribe>1.3.5</version.scribe>
 		<version.servlet-api>3.0.1</version.servlet-api>
 		<version.slf4j>1.7.5</version.slf4j>
-		<version.spring-boot>1.0.0.RC1</version.spring-boot>
-		<version.spring>4.0.1.RELEASE</version.spring>
-		<version.spring-data>1.3.2.RELEASE</version.spring-data>
-		<version.spring-websocket>4.0.1.RELEASE</version.spring-websocket>
-		<version.spring-security>3.2.0.RELEASE</version.spring-security>
-		<version.spring-oauth2>1.0.5.RELEASE</version.spring-oauth2>
+		<version.spring-boot>1.1.4.RELEASE</version.spring-boot>
+		<version.spring>4.0.6.RELEASE</version.spring>
+		<version.spring-data>1.5.1.RELEASE</version.spring-data>
+		<version.spring-security>3.2.4.RELEASE</version.spring-security>
+		<version.spring-oauth2>2.0.2.RELEASE</version.spring-oauth2>
 		<version.tomcat-embed-websocket>7.0.52</version.tomcat-embed-websocket>
+		<version.websocket-api>1.0</version.websocket-api>
 
 		<!-- **************** -->
 		<!-- Plugins versions -->
@@ -343,10 +344,14 @@
 				<artifactId>tomcat-embed-websocket</artifactId>
 				<version>${version.tomcat-embed-websocket}</version>
 			</dependency>
+			<dependency>
+				<groupId>javax.websocket</groupId>
+				<artifactId>javax.websocket-api</artifactId>
+				<version>${version.websocket-api}</version>
+			</dependency>
 
 			<!-- Spring -->
-			<!-- Added to fix dependencies from different Spring versions in Spring 
-				Security -->
+			<!-- POM files to fix compatible dependencies -->
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-framework-bom</artifactId>
@@ -355,61 +360,13 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-mongodb</artifactId>
-				<version>${version.spring-data}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-starter-web</artifactId>
+				<artifactId>spring-boot-dependencies</artifactId>
 				<version>${version.spring-boot}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot</artifactId>
-				<version>${version.spring-boot}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-websocket</artifactId>
-				<version>${version.spring-websocket}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-context-support</artifactId>
-				<version>${version.spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-test</artifactId>
-				<version>${version.spring}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-web</artifactId>
-				<version>${version.spring}</version>
-			</dependency>
-			<!-- Spring Security -->
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-core</artifactId>
-				<version>${version.spring-security}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-web</artifactId>
-				<version>${version.spring-security}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security</groupId>
-				<artifactId>spring-security-config</artifactId>
-				<version>${version.spring-security}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.springframework.security.oauth</groupId>
-				<artifactId>spring-security-oauth2</artifactId>
-				<version>${version.spring-oauth2}</version>
-			</dependency>
+			
 			<dependency>
 				<groupId>org.apache.activemq</groupId>
 				<artifactId>activemq-core</artifactId>
@@ -1108,28 +1065,4 @@
 		</profile>
 	</profiles>
 
-	<!-- Add Spring repositories for Spring Boot -->
-	<repositories>
-		<repository>
-			<id>spring-snapshots</id>
-			<url>http://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>spring-milestones</id>
-			<url>http://repo.spring.io/milestone</url>
-		</repository>
-	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spring-snapshots</id>
-			<url>http://repo.spring.io/snapshot</url>
-		</pluginRepository>
-		<pluginRepository>
-			<id>spring-milestones</id>
-			<url>http://repo.spring.io/milestone</url>
-		</pluginRepository>
-	</pluginRepositories>
 </project>

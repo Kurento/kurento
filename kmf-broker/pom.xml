@@ -54,7 +54,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-amqp</artifactId>
-			<version>${version.spring-boot}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -87,9 +86,6 @@
 		<ApacheJMeter_core.version>2.9</ApacheJMeter_core.version>
 		<jmeter-maven-plugin.version>1.8.1</jmeter-maven-plugin.version>
 		<freemarker.version>2.3.20</freemarker.version>
-
-		<!--<version.spring-boot>1.0.2.RELEASE</version.spring-boot>-->
-		<version.spring-boot>1.0.0.RC1</version.spring-boot>
 	</properties>
 
 	<build>
