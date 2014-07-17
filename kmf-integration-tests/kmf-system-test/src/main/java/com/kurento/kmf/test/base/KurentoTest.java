@@ -14,6 +14,8 @@
  */
 package com.kurento.kmf.test.base;
 
+import java.io.File;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,6 +36,8 @@ import com.kurento.kmf.test.services.KurentoServicesTestHelper;
  */
 @Category(IntegrationTests.class)
 public class KurentoTest {
+
+	public static final String FILE_SCHEMA = "file://";
 
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoTest.class);
@@ -91,6 +95,21 @@ public class KurentoTest {
 	@After
 	public void teardownKurentoServices() throws Exception {
 		KurentoServicesTestHelper.teardownServices();
+	}
+
+	/*
+	 * If not specified, the default file for recording will have ".webm"
+	 * extension.
+	 */
+	public String getDefaultFileForRecording() {
+		return getDefaultFileForRecording(".webm");
+	}
+
+	public String getDefaultFileForRecording(String preffix) {
+		File fileForRecording = new File(KurentoServicesTestHelper.getTestDir()
+				+ "/" + KurentoServicesTestHelper.getTestCaseName());
+		return fileForRecording.getAbsolutePath() + "/"
+				+ KurentoServicesTestHelper.getTestName() + preffix;
 	}
 
 }

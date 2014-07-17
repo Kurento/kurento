@@ -54,8 +54,6 @@ import com.kurento.kmf.test.mediainfo.AssertMedia;
 public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 
 	private static int PLAYTIME = 5; // seconds
-	private static final String FILE_SCHEMA = "file://";
-	private static final String RECORDING = "/tmp/mediaApiRecorderWebRtcTest";
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
@@ -70,7 +68,7 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 		MediaPipeline mp = pipelineFactory.create();
 		WebRtcEndpoint webRtcEP = mp.newWebRtcEndpoint().build();
 		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(
-				FILE_SCHEMA + RECORDING).build();
+				FILE_SCHEMA + getDefaultFileForRecording()).build();
 		webRtcEP.connect(webRtcEP);
 		webRtcEP.connect(recorderEP);
 
@@ -113,8 +111,8 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 		recorderEP.release();
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(FILE_SCHEMA + RECORDING)
-				.build();
+		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+				FILE_SCHEMA + getDefaultFileForRecording()).build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);
@@ -142,8 +140,8 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 			}
 
 			// Assess video/audio codec of the recorded video
-			AssertMedia.assertCodecs(RECORDING, EXPECTED_VIDEO_CODEC,
-					EXPECTED_AUDIO_CODEC);
+			AssertMedia.assertCodecs(getDefaultFileForRecording(),
+					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
 	}
 }

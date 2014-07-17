@@ -56,8 +56,6 @@ import com.kurento.kmf.test.mediainfo.AssertMedia;
 public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 
 	private static final int VIDEO_LENGTH = 25; // seconds
-	private static final String FILE_SCHEMA = "file://";
-	private static final String RECORDING = "/tmp/mediaApiRecorderFaceOverlayTest";
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
@@ -79,7 +77,7 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(
-				FILE_SCHEMA + RECORDING).build();
+				FILE_SCHEMA + getDefaultFileForRecording()).build();
 		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
 		filter.setOverlayedImage(
 				"http://files.kurento.org/imgs/mario-wings.png", -0.2F, -1.2F,
@@ -93,8 +91,8 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 		launchBrowser(browserType, httpEP, playerEP, recorderEP);
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP2 = mp
-				.newPlayerEndpoint(FILE_SCHEMA + RECORDING).build();
+		PlayerEndpoint playerEP2 = mp.newPlayerEndpoint(
+				FILE_SCHEMA + getDefaultFileForRecording()).build();
 		HttpGetEndpoint httpEP2 = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP2.connect(httpEP2);
@@ -134,8 +132,8 @@ public class MediaApiRecorderFaceOverlayTest extends BrowserMediaApiTest {
 					currentTime >= VIDEO_LENGTH);
 
 			// Assess video/audio codec of the recorded video
-			AssertMedia.assertCodecs(RECORDING, EXPECTED_VIDEO_CODEC,
-					EXPECTED_AUDIO_CODEC);
+			AssertMedia.assertCodecs(getDefaultFileForRecording(),
+					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
 	}
 }

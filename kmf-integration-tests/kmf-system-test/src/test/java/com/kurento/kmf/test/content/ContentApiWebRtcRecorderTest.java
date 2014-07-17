@@ -19,6 +19,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.kurento.kmf.content.HttpPlayerHandler;
@@ -60,11 +61,15 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 
 	private static final String HANDLER1 = "/webrtcRecorder";
 	private static final String HANDLER2 = "/webrtcRecorderPlayer";
-	private static final String FILE_SCHEMA = "file://";
-	private static final String RECORDING = "/tmp/webrtc";
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final int PLAYTIME = 10; // seconds
+	private static String recording;
+
+	@Before
+	public void setup() {
+		recording = getDefaultFileForRecording();
+	}
 
 	@WebRtcContentService(path = HANDLER1)
 	public static class WebRtcHandler extends WebRtcContentHandler {
@@ -78,7 +83,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 					.create();
 			// contentSession.releaseOnTerminate(mp);
 			WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
-			recorderEndPoint = mp.newRecorderEndpoint(FILE_SCHEMA + RECORDING)
+			recorderEndPoint = mp.newRecorderEndpoint(FILE_SCHEMA + recording)
 					.build();
 			webRtcEndpoint.connect(webRtcEndpoint);
 			webRtcEndpoint.connect(recorderEndPoint);
@@ -111,7 +116,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 		public void onContentRequest(HttpPlayerSession session)
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
-			playerEP = mp.newPlayerEndpoint(FILE_SCHEMA + RECORDING).build();
+			playerEP = mp.newPlayerEndpoint(FILE_SCHEMA + recording).build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);
@@ -158,7 +163,7 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 		}
 
 		// Step 2: Assess video/audio codec of the recorded video
-		AssertMedia.assertCodecs(RECORDING, EXPECTED_VIDEO_CODEC,
+		AssertMedia.assertCodecs(recording, EXPECTED_VIDEO_CODEC,
 				EXPECTED_AUDIO_CODEC);
 
 		// Step 3: Play recorded video to assess the video duration
