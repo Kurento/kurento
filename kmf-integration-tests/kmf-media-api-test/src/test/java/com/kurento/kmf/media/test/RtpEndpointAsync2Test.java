@@ -41,140 +41,19 @@ import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
+	private static final int TIMEOUT = 5000;
+
 	@Test
 	public void testStream() throws InterruptedException {
+
 		final Semaphore sem = new Semaphore(0);
 
+		final RtpEndpoint[] stream = new RtpEndpoint[1];
 		pipeline.newRtpEndpoint().buildAsync(new Continuation<RtpEndpoint>() {
 			@Override
 			public void onSuccess(RtpEndpoint result) {
-				RtpEndpoint stream = result;
-				final Semaphore semCont = new Semaphore(0);
-
-				try {
-					stream.generateOffer(new Continuation<String>() {
-						@Override
-						public void onSuccess(String result) {
-							Assert.assertFalse(result.isEmpty());
-							semCont.release();
-						}
-
-						@Override
-						public void onError(Throwable cause) {
-							cause.printStackTrace();
-						}
-					});
-					Assert.assertTrue("RtpEndpoint no created in 5s",
-							semCont.tryAcquire(5000, MILLISECONDS));
-					releaseMediaObject(stream);
-					sem.release();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					Assert.fail(e.getMessage());
-				} catch (KurentoException e) {
-					e.printStackTrace();
-					Assert.fail(e.getMessage());
-				}
-
-				try {
-					stream.processOffer("processOffer test",
-							new Continuation<String>() {
-								@Override
-								public void onSuccess(String result) {
-									Assert.assertFalse(result.isEmpty());
-									semCont.release();
-								}
-
-								@Override
-								public void onError(Throwable cause) {
-									cause.printStackTrace();
-								}
-							});
-					Assert.assertTrue("processOffer not responded in 500ms",
-							semCont.tryAcquire(500, MILLISECONDS));
-					releaseMediaObject(stream);
-					sem.release();
-				} catch (InterruptedException e) {
-					Assert.fail(e.getMessage());
-				} catch (KurentoException e) {
-					Assert.fail(e.getMessage());
-				}
-
-				try {
-					stream.processAnswer("processAnswer test",
-							new Continuation<String>() {
-								@Override
-								public void onSuccess(String result) {
-									Assert.assertFalse(result.isEmpty());
-									semCont.release();
-								}
-
-								@Override
-								public void onError(Throwable cause) {
-									cause.printStackTrace();
-								}
-							});
-					Assert.assertTrue("processAnswer() not responded in 500ms",
-							semCont.tryAcquire(500, MILLISECONDS));
-					releaseMediaObject(stream);
-					sem.release();
-				} catch (InterruptedException e) {
-					Assert.fail(e.getMessage());
-				} catch (KurentoException e) {
-					Assert.fail(e.getMessage());
-				}
-
-				try {
-					stream.getLocalSessionDescriptor(new Continuation<String>() {
-						@Override
-						public void onSuccess(String result) {
-							System.out
-									.println("getLocalSessionDescriptor onSuccess. SessionDecriptor: "
-											+ result);
-							semCont.release();
-						}
-
-						@Override
-						public void onError(Throwable cause) {
-							cause.printStackTrace();
-						}
-					});
-					Assert.assertTrue(
-							"getLocalSessionDescriptor() not responded in 500ms",
-							semCont.tryAcquire(500, MILLISECONDS));
-					releaseMediaObject(stream);
-					sem.release();
-				} catch (InterruptedException e) {
-					Assert.fail(e.getMessage());
-				} catch (KurentoException e) {
-					Assert.fail(e.getMessage());
-				}
-
-				try {
-					stream.getRemoteSessionDescriptor(new Continuation<String>() {
-						@Override
-						public void onSuccess(String result) {
-							System.out
-									.println("getRemoteSessionDescriptor onSuccess. SessionDecriptor: "
-											+ result);
-							semCont.release();
-						}
-
-						@Override
-						public void onError(Throwable cause) {
-							cause.printStackTrace();
-						}
-					});
-					Assert.assertTrue(
-							"getRemoteSessionDescriptor() is not responded in 500ms",
-							semCont.tryAcquire(500, MILLISECONDS));
-					releaseMediaObject(stream);
-					sem.release();
-				} catch (InterruptedException e) {
-					Assert.fail(e.getMessage());
-				} catch (KurentoException e) {
-					Assert.fail(e.getMessage());
-				}
+				stream[0] = result;
+				sem.release();
 			}
 
 			@Override
@@ -183,7 +62,107 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 			}
 		});
 
-		Assert.assertTrue(sem.tryAcquire(50000, MILLISECONDS));
+		Assert.assertTrue(sem.tryAcquire(TIMEOUT, MILLISECONDS));
+		RtpEndpoint endPoint = stream[0];
+
+		endPoint.generateOffer(new Continuation<String>() {
+			@Override
+			public void onSuccess(String result) {
+				Assert.assertFalse(result.isEmpty());
+				sem.release();
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				cause.printStackTrace();
+			}
+		});
+
+		log.debug("generateOffer method called");
+
+		Assert.assertTrue("generateOffer is not responded in 5s",
+				sem.tryAcquire(TIMEOUT, MILLISECONDS));
+		sem.release();
+
+		endPoint.processOffer("processOffer test", new Continuation<String>() {
+
+			@Override
+			public void onSuccess(String result) {
+				Assert.assertFalse(result.isEmpty());
+				sem.release();
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				cause.printStackTrace();
+			}
+		});
+		Assert.assertTrue("processOffer not responded in 500ms",
+				sem.tryAcquire(TIMEOUT, MILLISECONDS));
+
+		sem.release();
+
+		endPoint.processAnswer("processAnswer test",
+				new Continuation<String>() {
+
+					@Override
+					public void onSuccess(String result) {
+						Assert.assertFalse(result.isEmpty());
+						sem.release();
+					}
+
+					@Override
+					public void onError(Throwable cause) {
+						cause.printStackTrace();
+					}
+				});
+		Assert.assertTrue("processAnswer() not responded in 500ms",
+				sem.tryAcquire(TIMEOUT, MILLISECONDS));
+
+		sem.release();
+
+		endPoint.getLocalSessionDescriptor(new Continuation<String>() {
+
+			@Override
+			public void onSuccess(String result) {
+				System.out
+						.println("getLocalSessionDescriptor onSuccess. SessionDecriptor: "
+								+ result);
+				sem.release();
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				cause.printStackTrace();
+			}
+		});
+		Assert.assertTrue("getLocalSessionDescriptor() not responded in 500ms",
+				sem.tryAcquire(TIMEOUT, MILLISECONDS));
+
+		sem.release();
+
+		endPoint.getRemoteSessionDescriptor(new Continuation<String>() {
+
+			@Override
+			public void onSuccess(String result) {
+				System.out
+						.println("getRemoteSessionDescriptor onSuccess. SessionDecriptor: "
+								+ result);
+				sem.release();
+			}
+
+			@Override
+			public void onError(Throwable cause) {
+				cause.printStackTrace();
+			}
+		});
+		Assert.assertTrue(
+				"getRemoteSessionDescriptor() is not responded in 500ms",
+				sem.tryAcquire(TIMEOUT, MILLISECONDS));
+
+		sem.release();
+
+		Assert.assertTrue(sem.tryAcquire(TIMEOUT, MILLISECONDS));
 	}
 
 	@Test
