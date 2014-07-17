@@ -210,6 +210,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private void handleRequestFromServer(final JsonObject message)
 			throws IOException {
 
+		// TODO: Think better ways to do this:
 		// handleWebSocketTextMessage seems to be sequential. That is, the
 		// message waits to be processed until previous message is being
 		// processed. This behavior doesn't allow made a new request in the
