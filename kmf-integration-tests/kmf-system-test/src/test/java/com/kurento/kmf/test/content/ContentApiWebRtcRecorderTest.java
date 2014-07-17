@@ -15,7 +15,6 @@
 package com.kurento.kmf.test.content;
 
 import java.awt.Color;
-import java.io.File;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -37,7 +36,7 @@ import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
-import com.kurento.kmf.test.mediainfo.MediaInfo;
+import com.kurento.kmf.test.mediainfo.AssertMedia;
 
 /**
  * 
@@ -158,21 +157,9 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 					terminateLatch.await(browser.getTimeout(), TimeUnit.SECONDS));
 		}
 
-		// Step 2: Assess video/audio codec of the recorder video
-		MediaInfo info = new MediaInfo();
-		info.open(new File(RECORDING));
-		String videoFormat = info.get(MediaInfo.StreamKind.Video, 0, "Format",
-				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
-		String audioFormat = info.get(MediaInfo.StreamKind.Audio, 0, "Format",
-				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
-		info.close();
-
-		Assert.assertEquals("Expected video codec is " + EXPECTED_VIDEO_CODEC
-				+ " and the recorded video is " + videoFormat,
-				EXPECTED_VIDEO_CODEC, videoFormat);
-		Assert.assertEquals("Expected audio codec is " + EXPECTED_AUDIO_CODEC
-				+ " and the recorded video is " + audioFormat,
-				EXPECTED_AUDIO_CODEC, audioFormat);
+		// Step 2: Assess video/audio codec of the recorded video
+		AssertMedia.assertCodecs(RECORDING, EXPECTED_VIDEO_CODEC,
+				EXPECTED_AUDIO_CODEC);
 
 		// Step 3: Play recorded video to assess the video duration
 		try (BrowserClient browser = new BrowserClient.Builder()

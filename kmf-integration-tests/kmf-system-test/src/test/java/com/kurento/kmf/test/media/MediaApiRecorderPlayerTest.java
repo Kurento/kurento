@@ -27,6 +27,7 @@ import com.kurento.kmf.test.base.BrowserMediaApiTest;
 import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
+import com.kurento.kmf.test.mediainfo.AssertMedia;
 
 /**
  * 
@@ -51,7 +52,10 @@ import com.kurento.kmf.test.client.Client;
 public class MediaApiRecorderPlayerTest extends BrowserMediaApiTest {
 
 	private static final int VIDEO_LENGTH = 9; // seconds
-	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderPlayerTest";
+	private static final String FILE_SCHEMA = "file://";
+	private static final String RECORDING = "/tmp/mediaApiRecorderPlayerTest";
+	private static final String EXPECTED_VIDEO_CODEC = "VP8";
+	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
 	@Test
 	public void testRecorderPlayerChrome() throws Exception {
@@ -70,8 +74,8 @@ public class MediaApiRecorderPlayerTest extends BrowserMediaApiTest {
 				"http://files.kurento.org/video/10sec/green.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
-		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(TARGET_RECORDING)
-				.build();
+		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(
+				FILE_SCHEMA + RECORDING).build();
 		playerEP.connect(httpEP);
 		playerEP.connect(recorderEP);
 
@@ -79,8 +83,8 @@ public class MediaApiRecorderPlayerTest extends BrowserMediaApiTest {
 		launchBrowser(browserType, httpEP, playerEP, recorderEP);
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP2 = mp.newPlayerEndpoint(TARGET_RECORDING)
-				.build();
+		PlayerEndpoint playerEP2 = mp
+				.newPlayerEndpoint(FILE_SCHEMA + RECORDING).build();
 		HttpGetEndpoint httpEP2 = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 		playerEP2.connect(httpEP2);
@@ -111,6 +115,10 @@ public class MediaApiRecorderPlayerTest extends BrowserMediaApiTest {
 					+ " seconds", browser.getCurrentTime() >= VIDEO_LENGTH);
 			Assert.assertTrue("The color of the video should be green",
 					browser.colorSimilarTo(Color.GREEN));
+
+			// Assess video/audio codec of the recorded video
+			AssertMedia.assertCodecs(RECORDING, EXPECTED_VIDEO_CODEC,
+					EXPECTED_AUDIO_CODEC);
 		}
 	}
 }

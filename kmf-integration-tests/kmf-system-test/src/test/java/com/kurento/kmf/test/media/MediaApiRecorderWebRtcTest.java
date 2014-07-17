@@ -29,6 +29,7 @@ import com.kurento.kmf.test.client.Browser;
 import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.client.WebRtcChannel;
+import com.kurento.kmf.test.mediainfo.AssertMedia;
 
 /**
  * 
@@ -53,7 +54,10 @@ import com.kurento.kmf.test.client.WebRtcChannel;
 public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 
 	private static int PLAYTIME = 5; // seconds
-	private static final String TARGET_RECORDING = "file:///tmp/mediaApiRecorderWebRtcTest";
+	private static final String FILE_SCHEMA = "file://";
+	private static final String RECORDING = "/tmp/mediaApiRecorderWebRtcTest";
+	private static final String EXPECTED_VIDEO_CODEC = "VP8";
+	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
 	@Test
 	public void testRecorderWebRtcChrome() throws InterruptedException {
@@ -65,8 +69,8 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 		// Media Pipeline #1
 		MediaPipeline mp = pipelineFactory.create();
 		WebRtcEndpoint webRtcEP = mp.newWebRtcEndpoint().build();
-		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(TARGET_RECORDING)
-				.build();
+		RecorderEndpoint recorderEP = mp.newRecorderEndpoint(
+				FILE_SCHEMA + RECORDING).build();
 		webRtcEP.connect(webRtcEP);
 		webRtcEP.connect(recorderEP);
 
@@ -109,7 +113,7 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 		recorderEP.release();
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(TARGET_RECORDING)
+		PlayerEndpoint playerEP = mp.newPlayerEndpoint(FILE_SCHEMA + RECORDING)
 				.build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
@@ -136,6 +140,10 @@ public class MediaApiRecorderWebRtcTest extends BrowserMediaApiTest {
 				Assert.assertTrue("The color of the video should be " + color,
 						browser.colorSimilarTo(color));
 			}
+
+			// Assess video/audio codec of the recorded video
+			AssertMedia.assertCodecs(RECORDING, EXPECTED_VIDEO_CODEC,
+					EXPECTED_AUDIO_CODEC);
 		}
 	}
 }
