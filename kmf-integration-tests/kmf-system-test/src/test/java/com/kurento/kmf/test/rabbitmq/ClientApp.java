@@ -1,3 +1,17 @@
+/*
+ * (C) Copyright 2014 Kurento (http://kurento.org/)
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ */
 package com.kurento.kmf.test.rabbitmq;
 
 import java.util.concurrent.CountDownLatch;
@@ -15,6 +29,13 @@ import com.kurento.kmf.media.factory.MediaPipelineFactory;
 import com.kurento.kmf.rabbitmq.client.JsonRpcClientRabbitMq;
 import com.kurento.kmf.test.client.*;
 
+/**
+ * Client for MultipleClientsAndServersTest.
+ * 
+ * @see {@link MultipleClientsAndServersTest}
+ * @author Micael Gallego (micael.gallego@gmail.com)
+ * @since 4.2.3
+ */
 public class ClientApp {
 
 	private static final Logger log = LoggerFactory.getLogger(ClientApp.class);
@@ -89,9 +110,11 @@ public class ClientApp {
 			playerEP.play();
 			browser.start();
 
-			Assert.assertTrue(startEvent.await(TIMEOUT, TimeUnit.SECONDS));
+			Assert.assertTrue("Timeout waiting playing event",
+					startEvent.await(TIMEOUT, TimeUnit.SECONDS));
 			long startTime = System.currentTimeMillis();
-			Assert.assertTrue(terminationEvent.await(TIMEOUT, TimeUnit.SECONDS));
+			Assert.assertTrue("Timeout waiting ended event",
+					terminationEvent.await(TIMEOUT, TimeUnit.SECONDS));
 			long duration = System.currentTimeMillis() - startTime;
 			log.info("Video duration: " + (duration / 60) + " seconds");
 		}
