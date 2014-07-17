@@ -1,3 +1,4 @@
+<#if model.complexTypes??>
 complexTypes/index.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -23,11 +24,12 @@ complexTypes/index.js
  * @license LGPL
  */
 
-<#list model.complexTypes?sort_by("name") as complexType>
+  <#list model.complexTypes?sort_by("name") as complexType>
 var ${complexType.name} = require('./${complexType.name}');
-</#list>
+  </#list>
 
 
-<#list model.complexTypes?sort_by("name") as complexType>
+  <#list model.complexTypes?sort_by("name") as complexType>
 exports.${complexType.name} = ${complexType.name};
-</#list>
+  </#list>
+</#if>

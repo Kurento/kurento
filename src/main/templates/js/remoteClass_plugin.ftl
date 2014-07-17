@@ -7,10 +7,7 @@
     <#lt>${remoteClass.extends.name}<#rt>
   </#if>
 </#assign>
-<#assign filename>
-  <#lt>${remoteClass.name}.js<#rt>
-</#assign>
-<#if remoteClass.abstract>abstracts/</#if>${filename}
+<#if remoteClass.abstract>abstracts/</#if>${remoteClass.name}
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
  *

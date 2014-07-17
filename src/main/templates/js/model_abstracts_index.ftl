@@ -1,3 +1,10 @@
+<#assign remoteClasses_abstract=[]>
+<#list model.remoteClasses?sort_by("name") as remoteClass>
+  <#if remoteClass.abstract>
+    <#assign remoteClasses_abstract=remoteClasses_abstract+[remoteClass.name]>
+  </#if>
+</#list>
+<#if remoteClasses_abstract??>
 abstracts/index.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
@@ -14,15 +21,12 @@ abstracts/index.js
  *
  */
 
-<#list model.remoteClasses?sort_by("name") as remoteClass>
-  <#if remoteClass.abstract>
-var ${remoteClass.name} = require('./${remoteClass.name}');
-  </#if>
-</#list>
+  <#list remoteClasses_abstract as remoteClass_name>
+var ${remoteClass_name} = require('./${remoteClass_name}');
+  </#list>
 
 
-<#list model.remoteClasses?sort_by("name") as remoteClass>
-  <#if remoteClass.abstract>
-exports.${remoteClass.name} = ${remoteClass.name};
-  </#if>
-</#list>
+  <#list remoteClasses_abstract as remoteClass_name>
+exports.${remoteClass_name} = ${remoteClass_name};
+  </#list>
+</#if>
