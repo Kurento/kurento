@@ -225,6 +225,18 @@ public class Model {
 					"Version is mandatory at least in one of the files "
 							+ "composing model " + name);
 		}
+
+		if (VersionManager.isReleaseVersion(version)) {
+			for (Import importInfo : this.imports) {
+				if (!VersionManager.isReleaseVersion(importInfo.getVersion())) {
+					throw new KurentoRomProcessorException(
+							"All dependencies of a release version must be also release versions. Import '"
+									+ importInfo.getName()
+									+ "' is in non release version "
+									+ importInfo.getVersion());
+				}
+			}
+		}
 	}
 
 	public void resolveModel(ModelManager modelManager) {

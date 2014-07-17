@@ -10,4 +10,8 @@ public class VersionManager {
 		return version;
 	}
 
+	public static boolean isReleaseVersion(String version) {
+		return !version.endsWith("-dev");
+	}
+
 }
