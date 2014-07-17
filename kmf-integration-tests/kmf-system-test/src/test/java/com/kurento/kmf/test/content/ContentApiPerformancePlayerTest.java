@@ -17,7 +17,6 @@ package com.kurento.kmf.test.content;
 import java.net.URL;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.content.HttpPlayerHandler;
@@ -30,7 +29,17 @@ import com.kurento.kmf.test.base.ContentApiTest;
 import com.kurento.kmf.test.client.JMeterClient;
 
 /**
- * Test of a HTTP Player, using a HttpPlayerHandler in ther server-side.
+ * 
+ * <strong>Description</strong>: Performance test of a HTTP Player using JMeter
+ * as client.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>N x (PlayerEndpoint -> HttpGetEndpoint)</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting JMeter ending</li>
+ * </ul>
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -65,7 +74,6 @@ public class ContentApiPerformancePlayerTest extends ContentApiTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void testPerfPlayer() throws Exception {
 		URL url = new URL("http://localhost:" + getServerPort() + HANDLER);

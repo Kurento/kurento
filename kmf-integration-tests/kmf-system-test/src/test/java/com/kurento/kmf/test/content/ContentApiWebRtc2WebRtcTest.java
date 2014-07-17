@@ -33,13 +33,17 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * <strong>Description</strong>: Back-to-back WebRTC Test<br/>
- * <strong>Pipeline</strong>: WebRtcEndpoint -> WebRtcEndpoint<br/>
- * <strong>Pass criteria</strong>: <br/>
+ * 
+ * <strong>Description</strong>: WebRTC browser to browser test.<br/>
+ * <strong>Pipeline</strong>:
  * <ul>
- * <li>Browser #1 and #2 starts before 60 seconds (default timeout)</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser #1 and #2 starts before default timeout</li>
  * <li>Remote play time in browser #1 and #2 is the expected</li>
- * <li>Browser #1 and #2 stops before 60 seconds (default timeout)</li>
+ * <li>Browser #1 and #2 stops before default timeout</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)

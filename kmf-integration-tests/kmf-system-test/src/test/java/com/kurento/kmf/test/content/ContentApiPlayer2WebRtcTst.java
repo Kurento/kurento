@@ -18,7 +18,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kurento.kmf.content.WebRtcContentHandler;
@@ -33,7 +32,17 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a Player to WebRTC
+ * 
+ * <strong>Description</strong>: Test of a Player to WebRTC.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting playing event</li>
+ * <li>Timeout waiting onSessionTerminated</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -68,7 +77,6 @@ public class ContentApiPlayer2WebRtcTst extends ContentApiTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void testPlayer2WebRtc() throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()

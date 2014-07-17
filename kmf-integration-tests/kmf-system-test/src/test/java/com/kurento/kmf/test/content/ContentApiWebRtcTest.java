@@ -31,7 +31,17 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a WebRTC in loopback.
+ * 
+ * <strong>Description</strong>: Test of a WebRTC in loopback.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting playing event</li>
+ * <li>Timeout waiting onSessionTerminated</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

@@ -39,10 +39,19 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player with incremental connection strategies:
+ * 
+ * <strong>Description</strong>: Test of a HTTP Player with incremental
+ * connection strategies: N incremental, each X seconds and with a hold time of
+ * 10 minutes; when N is reached, connect and disconnect elements from the
+ * pipeline.<br/>
+ * <strong>Pipeline</strong>:
  * <ul>
- * <li>N incremental, each X seconds and with a hold time of 10 minutes.</li>
- * <li>When N is reached, connect and disconnect elements from the pipeline</li>
+ * <li>PlayerEndpoint -> N x HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting playing or ended events</li>
+ * <li>Timeout waiting onSessionTerminated</li>
  * </ul>
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)

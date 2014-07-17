@@ -38,7 +38,18 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player and ZBar filter.
+ * 
+ * <strong>Description</strong>: Test of a HTTP Player and ZBar filter.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> ZBarFilter -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting playing event</li>
+ * <li>Timeout waiting ended event</li>
+ * <li>Timeout waiting onSessionTerminated</li>
+ * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

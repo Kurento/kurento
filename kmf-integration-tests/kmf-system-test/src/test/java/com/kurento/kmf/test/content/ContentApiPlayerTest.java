@@ -33,7 +33,19 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of a HTTP Player, using a HttpPlayerHandler in ther server-side.
+ * 
+ * <strong>Description</strong>: Test of an HTTP Player.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>PlayerEndpoint -> HttpGetEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting playing event</li>
+ * <li>Timeout waiting ended event</li>
+ * <li>Play time must be at least 8 seconds</li>
+ * <li>The color of the video should be red</li>
+ * </ul>
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -53,7 +65,7 @@ public class ContentApiPlayerTest extends ContentApiTest {
 				throws Exception {
 			MediaPipeline mp = session.getMediaPipelineFactory().create();
 			playerEP = mp.newPlayerEndpoint(
-					"http://files.kurento.org/video/gst/red.webm").build();
+					"http://files.kurento.org/video/10sec/red.webm").build();
 			HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
 					.build();
 			playerEP.connect(httpEP);

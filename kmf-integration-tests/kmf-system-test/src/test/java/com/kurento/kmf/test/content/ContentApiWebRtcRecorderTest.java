@@ -40,15 +40,18 @@ import com.kurento.kmf.test.client.Client;
 import com.kurento.kmf.test.mediainfo.MediaInfo;
 
 /**
- * <strong>Description</strong>: Record video on WebRTC: Test KMS is able to
- * record video received on WebRTC<br/>
- * <strong>Pipeline</strong>: WebRtcEndpoint -> RecorderEndpoint<br/>
- * <strong>Pass criteria</strong>: <br/>
+ * 
+ * <strong>Description</strong>: Test of recording video of WebRTC.<br/>
+ * <strong>Pipeline</strong>:
  * <ul>
- * <li>Browser #1 and #2 starts before 60 seconds (default timeout)</li>
+ * <li>WebRtcEndpoint -> WebRtcEndpoint & RecorderEndpoint</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Browser #1 and #2 starts before default timeout</li>
  * <li>Video/audio codecs of the recording are correct (VP8/Vorbis)</li>
  * <li>Record play time does not differ in a 10% of the transmitted video</li>
- * <li>Browser #1 and #2 stops before 60 seconds (default timeout)</li>
+ * <li>Browser #1 and #2 stops before default timeout</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -60,8 +63,9 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 	private static final String HANDLER2 = "/webrtcRecorderPlayer";
 	private static final String FILE_SCHEMA = "file://";
 	private static final String RECORDING = "/tmp/webrtc";
-
-	private static int PLAYTIME = 10; // seconds
+	private static final String EXPECTED_VIDEO_CODEC = "VP8";
+	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
+	private static final int PLAYTIME = 10; // seconds
 
 	@WebRtcContentService(path = HANDLER1)
 	public static class WebRtcHandler extends WebRtcContentHandler {
@@ -161,16 +165,14 @@ public class ContentApiWebRtcRecorderTest extends ContentApiTest {
 				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
 		String audioFormat = info.get(MediaInfo.StreamKind.Audio, 0, "Format",
 				MediaInfo.InfoKind.Text, MediaInfo.InfoKind.Name);
-		final String expectedVideoCodec = "VP8";
-		final String expectedAudioCodec = "Vorbis";
 		info.close();
 
-		Assert.assertEquals("Expectec video codec is " + expectedVideoCodec
+		Assert.assertEquals("Expected video codec is " + EXPECTED_VIDEO_CODEC
 				+ " and the recorded video is " + videoFormat,
-				expectedVideoCodec, videoFormat);
-		Assert.assertEquals("Expectec audio codec is " + expectedAudioCodec
+				EXPECTED_VIDEO_CODEC, videoFormat);
+		Assert.assertEquals("Expected audio codec is " + EXPECTED_AUDIO_CODEC
 				+ " and the recorded video is " + audioFormat,
-				expectedAudioCodec, audioFormat);
+				EXPECTED_AUDIO_CODEC, audioFormat);
 
 		// Step 3: Play recorded video to assess the video duration
 		try (BrowserClient browser = new BrowserClient.Builder()

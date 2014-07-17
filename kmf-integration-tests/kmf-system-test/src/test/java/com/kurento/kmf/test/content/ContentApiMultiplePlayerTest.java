@@ -32,7 +32,18 @@ import com.kurento.kmf.test.client.BrowserClient;
 import com.kurento.kmf.test.client.Client;
 
 /**
- * Test of multiple HTTP Players, using directly a MediaPipeline and HttpClient.
+ * 
+ * <strong>Description</strong>: Test of multiple sequential HTTP Players.<br/>
+ * <strong>Pipeline</strong>:
+ * <ul>
+ * <li>N x (PlayerEndpoint -> HttpGetEndpoint)</li>
+ * </ul>
+ * <strong>Pass criteria</strong>:
+ * <ul>
+ * <li>Timeout waiting playing event</li>
+ * <li>Timeout waiting ended event</li>
+ * <li>Timeout waiting onSessionTerminated</li>
+ * </ul>
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -41,6 +52,7 @@ import com.kurento.kmf.test.client.Client;
 public class ContentApiMultiplePlayerTest extends ContentApiTest {
 
 	private static final String HANDLER = "/playerMultiple";
+	private static final int NCLIENTS = 2;
 
 	@HttpPlayerService(path = HANDLER, redirect = true, useControlProtocol = false)
 	public static class PlayerRedirect extends HttpPlayerHandler {
@@ -78,7 +90,7 @@ public class ContentApiMultiplePlayerTest extends ContentApiTest {
 
 	@Test
 	public void testPlayerMultiple() throws InterruptedException {
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < NCLIENTS; i++) {
 			try (BrowserClient browser = new BrowserClient.Builder()
 					.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 				browser.setURL(HANDLER);
