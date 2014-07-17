@@ -34,7 +34,8 @@ function startRecording() {
 	var videoOutput = document.getElementById("videoOutput");
 
 	var width, height;
-	switch(document.getElementById('resolution').value)
+	var resolution = document.getElementById('resolution').value
+	switch(resolution)
 	{
 		case 'VGA':
 			width = 640;
@@ -48,15 +49,18 @@ function startRecording() {
 			width = 1920;
 			height = 1080;
 		break;
+
+		default:
+			return console.error('Unknown resolution',resolution)
 	}
 
-	var isWebcam = document.getElementById('selectSource').value == 'Desktop'
+	var selectSource = document.getElementById('selectSource')
+	var isWebcam = selectSource.value == 'Webcam'
 	var constraints =
 	{
 		audio : isWebcam,
 		video : {
 			mandatory: {
-				chromeMediaSource : (isWebcam ? undefined : 'screen'),
 				maxWidth: width,
 				maxHeight: height,
 				maxFrameRate : 15,
@@ -64,6 +68,8 @@ function startRecording() {
 			}
 		}
 	};
+	if(!isWebcam)
+		constraints.video.mandatory.chromeMediaSource = 'screen'
 
 	webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
 			onOffer, onError, constraints);
@@ -129,56 +135,65 @@ function startPlaying() {
 
 	var videoPlayer = document.getElementById('videoPlayer');
 
-	function onPlayOffer(offer) {
-		KwsMedia(ws_uri, function(kwsMedia) {
-			kwsMedia.create('MediaPipeline', function(error, pipeline) {
+	videoPlayer.src = 'files/recorderScreen.webm';
+
+/*
+	KwsMedia(ws_uri, function(kwsMedia) {
+		kwsMedia.create('MediaPipeline', function(error, pipeline) {
+			if (error) return onError(error);
+
+			pipeline.create("PlayerEndpoint", { uri : file_uri }, function(error, player) {
 				if (error) return onError(error);
 
-				pipeline.create("PlayerEndpoint", { uri : file_uri }, function(error, player) {
+				player.on('EndOfStream', function(event){
+					pipeline.release();
+					videoPlayer.src = "";
+				});
+
+				pipeline.create('HttpGetEndpoint', function(error, httpGet) {
 					if (error) return onError(error);
 
-					player.on('EndOfStream', function(event){
-						pipeline.release();
-						videoPlayer.src = "";
-					});
-
-					pipeline.create('HttpGetEndpoint', function(error, httpGet) {
+					player.connect(httpGet, function(error) {
 						if (error) return onError(error);
 
-						player.connect(httpGet, function(error) {
+						console.log("Player connected");
+					});
+
+					// Set the video on the video tag
+					httpGet.getUrl(function(error, url)
+					{
+						if(error) return onerror(error);
+
+						// [Hack] Modify path for reverse proxy
+						console.log(url)
+						url = new URL(url)
+						url.protocol = 'https:'
+						url.port = 443
+						url.pathname = '/kms'+ url.pathname
+
+						videoPlayer.src = url;
+
+						console.log(url);
+
+						// Start player
+						player.play(function(error)
+						{
 							if (error) return onError(error);
 
-							console.log("Player connected");
-						});
-
-						// Set the video on the video tag
-						httpGet.getUrl(function(error, url)
-						{
-							if(error) return onerror(error);
-
-							videoPlayer.src = url;
-
-							console.log(url);
-
-							// Start player
-							player.play(function(error)
-							{
-								if (error) return onError(error);
-
-								console.log("Playing ...");
-							});
+							console.log("Playing ...");
 						});
 					});
 				});
-
-				document.getElementById("stopPlayButton").addEventListener("click", function(event){
-					pipeline.release();
-
-					videoPlayer.src="";
-				})
 			});
+
+			document.getElementById("stopPlayButton").addEventListener("click", function(event){
+				pipeline.release();
+
+				videoPlayer.src="";
+			})
 		});
-	};
+	});
+*/
 }
 
 function onError(error) {
