@@ -45,6 +45,9 @@ import freemarker.template.Template;
  */
 public class KurentoMediaServerManager {
 
+	private static final String PROJECT_PATH_PROP = "project.path";
+	private static final String PROJECT_PATH_DEFAULT = ".";
+
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
@@ -121,7 +124,8 @@ public class KurentoMediaServerManager {
 		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP,
 				KURENTO_SERVER_DEBUG_DEFAULT);
 
-		testDir = "./target/surefire-reports/";
+		testDir = PropertiesManager.getProperty(PROJECT_PATH_PROP,
+				PROJECT_PATH_DEFAULT) + "/target/surefire-reports/";
 
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
