@@ -26,6 +26,7 @@ set(KMS_PLUGIN_SOURCES
   kmssctpconnection.c
   kmssctpbaserpc.c
   kmssctpclientrpc.c
+  kmssctpserverrpc.c
 )
 
 set(KMS_PLUGIN_HEADERS
@@ -51,6 +52,7 @@ set(KMS_PLUGIN_HEADERS
   kmssctpconnection.h
   kmssctpbaserpc.h
   kmssctpclientrpc.h
+  kmssctpserverrpc.h
 )
 
 set(ENUM_HEADERS

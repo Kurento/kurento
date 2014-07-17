@@ -51,6 +51,9 @@ G_BEGIN_DECLS
   )                                        \
 )
 
+#define SCTP_DEFAULT_NUM_OSTREAMS 1
+#define SCTP_DEFAULT_MAX_INSTREAMS 1
+
 #define KMS_SCTP_BASE_RPC_RULES "rules"
 #define KMS_SCTP_BASE_RPC_BUFFER_SIZE "buffer-size"
 
@@ -75,6 +78,9 @@ struct _KmsSCTPBaseRPC
   gsize buffer_size;
   GHashTable *reqs;
   KmsSCTPConnection *conn;
+
+  GstTask *task;
+  GRecMutex tmutex;
 };
 
 struct _KmsSCTPBaseRPCClass
@@ -84,10 +90,16 @@ struct _KmsSCTPBaseRPCClass
 
 GType kms_sctp_base_rpc_get_type (void);
 
+/* public methods */
 void kms_scp_base_rpc_cancel_pending_requests (KmsSCTPBaseRPC *baserpc);
 
 gboolean kms_scp_base_rpc_query (KmsSCTPBaseRPC *baserpc, GstQuery *query,
   GCancellable *cancellable, GstQuery **rsp, GError **err);
+
+/* protected methods */
+gboolean kms_sctp_base_rpc_start_task(KmsSCTPBaseRPC *baserpc,
+  GstTaskFunction func, gpointer user_data, GDestroyNotify notify);
+void kms_sctp_base_rpc_stop_task(KmsSCTPBaseRPC *baserpc);
 
 G_END_DECLS
 #endif

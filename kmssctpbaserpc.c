@@ -208,6 +208,7 @@ kms_sctp_base_rpc_finalize (GObject * obj)
     kms_sctp_connection_unref (self->conn);
 
   g_rec_mutex_clear (&self->rmutex);
+  g_rec_mutex_clear (&self->tmutex);
 
   G_OBJECT_CLASS (PARENT_CLASS)->finalize (obj);
 }
@@ -238,6 +239,7 @@ static void
 kms_sctp_base_rpc_init (KmsSCTPBaseRPC * self)
 {
   g_rec_mutex_init (&self->rmutex);
+  g_rec_mutex_init (&self->tmutex);
   self->reqs =
       g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, NULL);
 }
@@ -409,4 +411,75 @@ kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
   kms_assembler_unref (a);
 
   return ret;
+}
+
+gboolean
+kms_sctp_base_rpc_start_task (KmsSCTPBaseRPC * baserpc,
+    GstTaskFunction func, gpointer user_data, GDestroyNotify notify)
+{
+  GstTask *task;
+
+  g_return_val_if_fail (baserpc != NULL, FALSE);
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  if (baserpc->task != NULL) {
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+    return FALSE;
+  }
+
+  baserpc->task = gst_task_new (func, user_data, notify);
+  if (baserpc->task == NULL) {
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+    return FALSE;
+  }
+
+  gst_task_set_lock (baserpc->task, &baserpc->tmutex);
+
+  if (gst_task_start (baserpc->task)) {
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+    return TRUE;
+  }
+
+  task = baserpc->task;
+  baserpc->task = NULL;
+
+  KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+  /* Task is not started */
+  gst_task_join (task);
+  gst_object_unref (GST_OBJECT (task));
+
+  return FALSE;
+}
+
+void
+kms_sctp_base_rpc_stop_task (KmsSCTPBaseRPC * baserpc)
+{
+  GstTask *task;
+
+  g_return_if_fail (baserpc != NULL);
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  if ((task = baserpc->task)) {
+    baserpc->task = NULL;
+
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+    gst_task_stop (task);
+
+    /* make sure it is not running */
+    g_rec_mutex_lock (&baserpc->tmutex);
+    g_rec_mutex_unlock (&baserpc->tmutex);
+
+    /* now wait for the task to finish */
+    gst_task_join (task);
+
+    /* and free the task */
+    gst_object_unref (GST_OBJECT (task));
+
+  } else {
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+  }
 }

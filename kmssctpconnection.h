@@ -35,6 +35,18 @@ typedef enum _KmsSCTPResult {
   KMS_SCTP_ERROR         /* some unspecified error occured */
 } KmsSCTPResult;
 
+typedef enum {
+  KMS_SCTP_DATA_IO_EVENT =          (1 << 0),
+  KMS_SCTP_ASSOCIATION_EVENT =      (1 << 1),
+  KMS_SCTP_ADDRESS_EVENT =          (1 << 2),
+  KMS_SCTP_SEND_FAILURE_EVENT =     (1 << 3),
+  KMS_SCTP_PEER_ERROR_EVENT =       (1 << 4),
+  KMS_SCTP_SHUTDOWN_EVENT =         (1 << 5),
+  KMS_SCTP_PARTIAL_DELIVERY_EVENT = (1 << 6),
+  KMS_SCTP_ADAPTATION_LAYER_EVENT = (1 << 7),
+  KMS_SCTP_AUTHENTICATION_EVENT =   (1 << 8)
+} KmsSCTPEventFlags;
+
 typedef struct _KmsSCTPMessage {
   gchar *buf;
   gsize size;
@@ -106,6 +118,10 @@ KmsSCTPConnection * kms_sctp_connection_new (gchar *host, gint port,
 
 KmsSCTPResult kms_sctp_connection_connect (KmsSCTPConnection *conn,
   GCancellable *cancellable, GError **err);
+KmsSCTPResult kms_sctp_connection_bind (KmsSCTPConnection *conn,
+  GCancellable *cancellable, GError **err);
+KmsSCTPResult kms_sctp_connection_accept (KmsSCTPConnection *conn,
+  GCancellable *cancellable, KmsSCTPConnection **client, GError **err);
 KmsSCTPResult kms_sctp_connection_receive (KmsSCTPConnection *conn,
   KmsSCTPMessage *message, GCancellable *cancellable, GError **err);
 KmsSCTPResult kms_sctp_connection_send (KmsSCTPConnection *conn,
@@ -113,9 +129,12 @@ KmsSCTPResult kms_sctp_connection_send (KmsSCTPConnection *conn,
 
 void kms_sctp_connection_close (KmsSCTPConnection *conn);
 
+gboolean kms_sctp_connection_set_event_subscribe (KmsSCTPConnection * conn,
+    KmsSCTPEventFlags events, GError **err);
+
 gboolean kms_sctp_connection_set_init_config (KmsSCTPConnection *conn,
   guint16 num_ostreams, guint16 max_instreams, guint16 max_attempts,
-  guint16 max_init_timeo);
+  guint16 max_init_timeo, GError **err);
 
 G_END_DECLS
 

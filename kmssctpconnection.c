@@ -25,6 +25,7 @@
   g_quark_from_static_string("kms-sctp-connection-error-quark")
 
 #define TIME_TO_LIVE 0
+#define SCTP_BACKLOG 1          /* client connection queue */
 
 typedef enum
 {
@@ -107,9 +108,6 @@ kms_sctp_connection_create_socket (KmsSCTPConnection * conn, gchar * host,
   conn->saddr = g_inet_socket_address_new (addr, port);
   g_object_unref (addr);
 
-  /* create sending client socket */
-  GST_DEBUG ("opening sending client socket to %s:%d", host, port);
-
   conn->socket = g_socket_new (g_socket_address_get_family (conn->saddr),
       G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_SCTP, err);
 
@@ -117,6 +115,9 @@ kms_sctp_connection_create_socket (KmsSCTPConnection * conn, gchar * host,
     g_clear_object (&conn->saddr);
     return FALSE;
   }
+
+  /* create socket */
+  GST_DEBUG ("created SCTP socket for %s:%d", host, port);
 
   return TRUE;
 }
@@ -157,7 +158,7 @@ kms_sctp_connection_close (KmsSCTPConnection * conn)
   }
 
   if (!g_socket_shutdown (conn->socket, TRUE, TRUE, &err)) {
-    GST_ERROR ("Could noty shutdown socket %p: %s", conn->socket, err->message);
+    GST_DEBUG ("%s", err->message);
     g_clear_error (&err);
   }
 
@@ -202,7 +203,93 @@ kms_sctp_connection_connect (KmsSCTPConnection * conn,
 #endif
   }
 
-  GST_DEBUG ("Created sctp socket");
+  GST_DEBUG ("connected sctp socket");
+
+  return KMS_SCTP_OK;
+}
+
+KmsSCTPResult
+kms_sctp_connection_bind (KmsSCTPConnection * conn, GCancellable * cancellable,
+    GError ** err)
+{
+  gint bound_port;
+
+  g_return_val_if_fail (conn != NULL, KMS_SCTP_ERROR);
+  g_return_val_if_fail (conn->socket != NULL, KMS_SCTP_ERROR);
+  g_return_val_if_fail (conn->saddr != NULL, KMS_SCTP_ERROR);
+
+  /* bind it */
+  GST_DEBUG ("binding server socket");
+
+  if (!g_socket_bind (conn->socket, conn->saddr, TRUE, err))
+    return KMS_SCTP_ERROR;
+
+  g_socket_set_listen_backlog (conn->socket, SCTP_BACKLOG);
+
+  if (!g_socket_listen (conn->socket, err))
+    return KMS_SCTP_ERROR;
+
+  bound_port =
+      g_inet_socket_address_get_port ((GInetSocketAddress *) conn->saddr);
+
+  GST_DEBUG ("listening on port %d", bound_port);
+
+//   g_object_notify (G_OBJECT (self), "current-port");
+
+  return KMS_SCTP_OK;
+}
+
+KmsSCTPResult
+kms_sctp_connection_accept (KmsSCTPConnection * conn,
+    GCancellable * cancellable, KmsSCTPConnection ** client, GError ** err)
+{
+  KmsSCTPConnection *ccon;
+  GSocket *socket;
+
+  g_return_val_if_fail (conn != NULL, KMS_SCTP_ERROR);
+  g_return_val_if_fail (conn->socket != NULL, KMS_SCTP_ERROR);
+
+  socket = g_socket_accept (conn->socket, cancellable, err);
+  if (socket == NULL)
+    return KMS_SCTP_ERROR;
+
+  ccon = g_slice_new0 (KmsSCTPConnection);
+
+  gst_mini_object_init (GST_MINI_OBJECT_CAST (ccon), 0,
+      _kms_sctp_connection_type, NULL, NULL,
+      (GstMiniObjectFreeFunction) _kms_sctp_connection_free);
+
+  ccon->socket = socket;
+
+  if (!kms_sctp_connection_set_event_subscribe (ccon, KMS_SCTP_DATA_IO_EVENT,
+          err)) {
+    kms_sctp_connection_unref (ccon);
+    return KMS_SCTP_ERROR;
+  }
+
+  if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min))
+#if defined (SCTP_INITMSG)
+  {
+    struct sctp_initmsg initmsg;
+    socklen_t optlen;
+
+    if (getsockopt (g_socket_get_fd (socket), IPPROTO_SCTP,
+            SCTP_INITMSG, &initmsg, &optlen) < 0) {
+      GST_WARNING ("Could not get SCTP configuration: %s (%d)",
+          g_strerror (errno), errno);
+    } else {
+      GST_DEBUG ("SCTP client socket: ostreams %u, instreams %u",
+          initmsg.sinit_num_ostreams, initmsg.sinit_num_ostreams);
+    }
+  }
+#else
+  {
+    GST_WARNING ("don't know how to get the configuration of the "
+        "SCTP initiation structure on this OS.");
+  }
+#endif
+
+  *client = ccon;
 
   return KMS_SCTP_OK;
 }
@@ -271,9 +358,68 @@ kms_sctp_connection_send (KmsSCTPConnection * conn,
 }
 
 gboolean
+kms_sctp_connection_set_event_subscribe (KmsSCTPConnection * conn,
+    KmsSCTPEventFlags events, GError ** err)
+{
+  g_return_val_if_fail (conn != NULL, FALSE);
+
+#if defined (SCTP_EVENTS)
+  {
+    struct sctp_event_subscribe sctp_events;
+
+    memset (&sctp_events, 0, sizeof (sctp_events));
+    if (events & KMS_SCTP_DATA_IO_EVENT)
+      sctp_events.sctp_data_io_event = 1;
+
+    if (events & KMS_SCTP_ASSOCIATION_EVENT)
+      sctp_events.sctp_association_event = 1;
+
+    if (events & KMS_SCTP_ADDRESS_EVENT)
+      sctp_events.sctp_address_event = 1;
+
+    if (events & KMS_SCTP_SEND_FAILURE_EVENT)
+      sctp_events.sctp_send_failure_event = 1;
+
+    if (events & KMS_SCTP_PEER_ERROR_EVENT)
+      sctp_events.sctp_peer_error_event = 1;
+
+    if (events & KMS_SCTP_SHUTDOWN_EVENT)
+      sctp_events.sctp_shutdown_event = 1;
+
+    if (events & KMS_SCTP_PARTIAL_DELIVERY_EVENT)
+      sctp_events.sctp_partial_delivery_event = 1;
+
+    if (events & KMS_SCTP_ADAPTATION_LAYER_EVENT)
+      sctp_events.sctp_adaptation_layer_event = 1;
+
+    if (events & KMS_SCTP_AUTHENTICATION_EVENT)
+      sctp_events.sctp_authentication_event = 1;
+
+    if (setsockopt (g_socket_get_fd (conn->socket), IPPROTO_SCTP,
+            SCTP_EVENTS, &sctp_events, sizeof (sctp_events)) < 0) {
+      GST_ERROR ("Could not configure SCTP socket: %s (%d)",
+          g_strerror (errno), errno);
+      return FALSE;
+    }
+
+    return TRUE;
+  }
+#else
+  {
+    GST_WARNING ("don't know how to configure SCTP events " "on this OS.");
+
+    g_set_error (err, KMS_SCTP_CONNECTION_ERROR, KMS_CONNECTION_CONFIG_ERROR,
+        "Can not configure SCTP socket");
+
+    return FALSE;
+  }
+#endif
+}
+
+gboolean
 kms_sctp_connection_set_init_config (KmsSCTPConnection * conn,
     guint16 num_ostreams, guint16 max_instreams, guint16 max_attempts,
-    guint16 max_init_timeo)
+    guint16 max_init_timeo, GError ** err)
 {
   g_return_val_if_fail (conn != NULL, FALSE);
 
@@ -300,6 +446,9 @@ kms_sctp_connection_set_init_config (KmsSCTPConnection * conn,
   {
     GST_WARNING ("don't know how to configure the SCTP initiation "
         "parameters on this OS.");
+
+    g_set_error (err, KMS_SCTP_CONNECTION_ERROR, KMS_CONNECTION_CONFIG_ERROR,
+        "Can not configure SCTP socket");
 
     return FALSE;
   }

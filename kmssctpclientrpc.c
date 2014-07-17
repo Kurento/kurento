@@ -24,9 +24,6 @@
 
 #define PARENT_CLASS kms_sctp_client_rpc_parent_class
 
-#define SCTP_NUM_OSTREAMS 1
-#define SCTP_MAX_INSTREAMS 1
-
 #define KMS_SCTP_CLIENT_RPC_CANCELLABLE "kms-sctp-client-rpc-cancellable"
 
 GST_DEBUG_CATEGORY_STATIC (kms_sctp_client_rpc_debug_category);
@@ -197,8 +194,8 @@ kms_sctp_client_rpc_start (KmsSCTPClientRPC * clientrpc, gchar * host,
     return FALSE;
   }
 
-  if (!kms_sctp_connection_set_init_config (conn, SCTP_NUM_OSTREAMS,
-          SCTP_MAX_INSTREAMS, 0, 0)) {
+  if (!kms_sctp_connection_set_init_config (conn, SCTP_DEFAULT_NUM_OSTREAMS,
+          SCTP_DEFAULT_MAX_INSTREAMS, 0, 0, err)) {
     kms_sctp_connection_unref (conn);
     return FALSE;
   }

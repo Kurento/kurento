@@ -23,9 +23,10 @@
 
 #include "gstsctp.h"
 #include "gstsctpserversrc.h"
+#include "kmssctpserverrpc.h"
 
 #define SCTP_BACKLOG 1          /* client connection queue */
-#define MAX_READ_SIZE (4 * 1024)
+#define MAX_BUFFER_SIZE (1024 * 16)
 
 #define PLUGIN_NAME "sctpserversrc"
 
@@ -53,6 +54,8 @@ struct _GstSCTPServerSrcPrivate
   gchar *host;
   guint16 num_ostreams;
   guint16 max_istreams;
+
+  KmsSCTPServerRPC *serverrpc;
 };
 
 enum
@@ -79,6 +82,8 @@ gst_sctp_server_src_set_property (GObject * object, guint prop_id,
   g_return_if_fail (GST_IS_SCTP_SERVER_SRC (object));
   self = GST_SCTP_SERVER_SRC (object);
 
+  GST_OBJECT_LOCK (self);
+
   switch (prop_id) {
     case PROP_HOST:
       if (!g_value_get_string (value)) {
@@ -101,6 +106,8 @@ gst_sctp_server_src_set_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+
+  GST_OBJECT_UNLOCK (self);
 }
 
 static void
@@ -111,6 +118,8 @@ gst_sctp_server_src_get_property (GObject * object, guint prop_id,
 
   g_return_if_fail (GST_IS_SCTP_SERVER_SRC (object));
   self = GST_SCTP_SERVER_SRC (object);
+
+  GST_OBJECT_LOCK (self);
 
   switch (prop_id) {
     case PROP_HOST:
@@ -132,6 +141,8 @@ gst_sctp_server_src_get_property (GObject * object, guint prop_id,
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
   }
+
+  GST_OBJECT_UNLOCK (self);
 }
 
 static void
@@ -140,6 +151,7 @@ gst_sctp_server_src_dispose (GObject * gobject)
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (gobject);
 
   g_clear_object (&self->priv->cancellable);
+  g_clear_object (&self->priv->serverrpc);
 
   G_OBJECT_CLASS (gst_sctp_server_src_parent_class)->dispose (gobject);
 }
@@ -158,32 +170,11 @@ static gboolean
 gst_sctp_server_src_stop (GstBaseSrc * bsrc)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
-  GError *err = NULL;
 
-  if (self->priv->client_socket != NULL) {
-    GST_DEBUG_OBJECT (self, "closing client socket");
+  GST_DEBUG ("stopping");
 
-    if (!g_socket_close (self->priv->client_socket, &err)) {
-      GST_ERROR_OBJECT (self, "Failed to close socket: %s", err->message);
-      g_clear_error (&err);
-    }
-    g_object_unref (self->priv->client_socket);
-    self->priv->client_socket = NULL;
-  }
-
-  if (self->priv->server_socket != NULL) {
-    GST_DEBUG_OBJECT (self, "closing server socket");
-
-    if (!g_socket_close (self->priv->server_socket, &err)) {
-      GST_ERROR_OBJECT (self, "Failed to close socket: %s", err->message);
-      g_clear_error (&err);
-    }
-    g_object_unref (self->priv->server_socket);
-    self->priv->server_socket = NULL;
-
-    g_atomic_int_set (&self->priv->current_port, 0);
-    g_object_notify (G_OBJECT (self), "current-port");
-  }
+  g_cancellable_cancel (self->priv->cancellable);
+  kms_sctp_server_rpc_stop (self->priv->serverrpc);
 
   return TRUE;
 }
@@ -194,151 +185,20 @@ gst_sctp_server_src_start (GstBaseSrc * bsrc)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
   GError *err = NULL;
-  GInetAddress *addr;
-  GSocketAddress *saddr;
-  GResolver *resolver;
-  gint bound_port = 0;
 
-  /* look up name if we need to */
-  addr = g_inet_address_new_from_string (self->priv->host);
-  if (!addr) {
-    GList *results;
+  GST_DEBUG ("starting");
 
-    resolver = g_resolver_get_default ();
-
-    results =
-        g_resolver_lookup_by_name (resolver, self->priv->host,
-        self->priv->cancellable, &err);
-
-    if (!results)
-      goto name_resolve;
-
-    addr = G_INET_ADDRESS (g_object_ref (results->data));
-
-    g_resolver_free_addresses (results);
-    g_object_unref (resolver);
+  if (kms_sctp_server_rpc_start (self->priv->serverrpc, self->priv->host,
+          self->priv->server_port, self->priv->cancellable, &err)) {
+    return TRUE;
   }
 
-  if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
-    gchar *ip = g_inet_address_to_string (addr);
+  GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+      ("Error: %s", err->message));
 
-    GST_DEBUG_OBJECT (self, "IP address for host %s is %s", self->priv->host,
-        ip);
-    g_free (ip);
-  }
+  g_error_free (err);
 
-  saddr = g_inet_socket_address_new (addr, self->priv->server_port);
-  g_object_unref (addr);
-
-  /* create the server listener socket */
-  self->priv->server_socket =
-      g_socket_new (g_socket_address_get_family (saddr), G_SOCKET_TYPE_STREAM,
-      G_SOCKET_PROTOCOL_SCTP, &err);
-
-  if (!self->priv->server_socket)
-    goto no_socket;
-
-  /* TODO: Add support for SCTP Multi-Homing */
-
-#if defined (SCTP_INITMSG)
-  {
-    struct sctp_initmsg initmsg;
-
-    memset (&initmsg, 0, sizeof (initmsg));
-    initmsg.sinit_num_ostreams = self->priv->num_ostreams;
-    initmsg.sinit_max_instreams = self->priv->max_istreams;
-
-    if (setsockopt (g_socket_get_fd (self->priv->server_socket), IPPROTO_SCTP,
-            SCTP_INITMSG, &initmsg, sizeof (initmsg)) < 0)
-      GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
-          ("Could not configure SCTP socket: %s (%d)", g_strerror (errno),
-              errno));
-  }
-#else
-  GST_WARNING_OBJECT (self, "don't know how to configure the SCTP initiation "
-      "parameters on this OS.");
-#endif
-
-  GST_DEBUG_OBJECT (self, "opened receiving server socket");
-
-  /* bind it */
-  GST_DEBUG_OBJECT (self, "binding server socket to address");
-
-  if (!g_socket_bind (self->priv->server_socket, saddr, TRUE, &err))
-    goto bind_failed;
-
-  g_object_unref (saddr);
-
-  GST_DEBUG_OBJECT (self, "listening on server socket");
-
-  g_socket_set_listen_backlog (self->priv->server_socket, SCTP_BACKLOG);
-
-  if (!g_socket_listen (self->priv->server_socket, &err))
-    goto listen_failed;
-
-  if (self->priv->server_port == 0) {
-    saddr = g_socket_get_local_address (self->priv->server_socket, NULL);
-    bound_port = g_inet_socket_address_get_port ((GInetSocketAddress *) saddr);
-    g_object_unref (saddr);
-  } else {
-    bound_port = self->priv->server_port;
-  }
-
-  GST_DEBUG_OBJECT (self, "listening on port %d", bound_port);
-
-  g_atomic_int_set (&self->priv->current_port, bound_port);
-  g_object_notify (G_OBJECT (self), "current-port");
-
-  return TRUE;
-
-  /* ERRORS */
-no_socket:
-  {
-    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-        ("Failed to create socket: %s", err->message));
-    g_clear_error (&err);
-    g_object_unref (saddr);
-    return FALSE;
-  }
-name_resolve:
-  {
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (self, "Cancelled name resolval");
-    } else {
-      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to resolve host '%s': %s", self->priv->host, err->message));
-    }
-    g_clear_error (&err);
-    g_object_unref (resolver);
-    return FALSE;
-  }
-bind_failed:
-  {
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (self, "Cancelled binding");
-    } else {
-      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to bind on host '%s:%d': %s", self->priv->host,
-              self->priv->server_port, err->message));
-    }
-    g_clear_error (&err);
-    g_object_unref (saddr);
-    gst_sctp_server_src_stop (GST_BASE_SRC (self));
-    return FALSE;
-  }
-listen_failed:
-  {
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (self, "Cancelled listening");
-    } else {
-      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to listen on host '%s:%d': %s", self->priv->host,
-              self->priv->server_port, err->message));
-    }
-    g_clear_error (&err);
-    gst_sctp_server_src_stop (GST_BASE_SRC (self));
-    return FALSE;
-  };
+  return FALSE;
 }
 
 /* will be called only between calls to start() and stop() */
@@ -347,6 +207,7 @@ gst_sctp_server_src_unlock (GstBaseSrc * bsrc)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
 
+  GST_DEBUG ("unlock");
   g_cancellable_cancel (self->priv->cancellable);
 
   return TRUE;
@@ -357,6 +218,7 @@ gst_sctp_server_src_unlock_stop (GstBaseSrc * bsrc)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
 
+  GST_DEBUG ("unlock_stop");
   g_cancellable_reset (self->priv->cancellable);
 
   return TRUE;
@@ -365,90 +227,20 @@ gst_sctp_server_src_unlock_stop (GstBaseSrc * bsrc)
 static GstFlowReturn
 gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
 {
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (psrc);
   GstFlowReturn ret = GST_FLOW_OK;
-  GIOCondition condition;
-  GstSCTPServerSrc *self;
   GError *err = NULL;
-  guint streamid;
   GstMapInfo map;
   gssize rret;
 
-  self = GST_SCTP_SERVER_SRC (psrc);
+  GST_DEBUG ("create");
 
-  if (self->priv->server_socket == NULL)
-    goto wrong_state;
-
-  if (self->priv->client_socket == NULL) {
-    /* wait on server socket for connections */
-    self->priv->client_socket =
-        g_socket_accept (self->priv->server_socket, self->priv->cancellable,
-        &err);
-    if (self->priv->client_socket == NULL)
-      goto accept_error;
-#if defined (SCTP_EVENTS)
-    {
-      struct sctp_event_subscribe events;
-
-      memset (&events, 0, sizeof (events));
-      events.sctp_data_io_event = 1;
-      setsockopt (g_socket_get_fd (self->priv->client_socket), SOL_SCTP,
-          SCTP_EVENTS, &events, sizeof (events));
-    }
-#else
-    GST_WARNING_OBJECT (self, "don't know how to configure SCTP events "
-        "on this OS.");
-#endif
-
-    if (G_UNLIKELY (GST_LEVEL_DEBUG <= _gst_debug_min)) {
-#if defined (SCTP_INITMSG)
-      struct sctp_initmsg initmsg;
-      socklen_t optlen;
-
-      if (getsockopt (g_socket_get_fd (self->priv->client_socket), IPPROTO_SCTP,
-              SCTP_INITMSG, &initmsg, &optlen) < 0)
-        GST_ELEMENT_WARNING (self, RESOURCE, SETTINGS, (NULL),
-            ("Could not get SCTP configuration: %s (%d)", g_strerror (errno),
-                errno));
-      else
-        GST_DEBUG_OBJECT (self, "SCTP client socket: ostreams %u, instreams %u",
-            initmsg.sinit_num_ostreams, initmsg.sinit_num_ostreams);
-#else
-      GST_WARNING_OBJECT (self,
-          "don't know how to get the configuration of the "
-          "SCTP initiation structure on this OS.");
-#endif
-    }
-    /* now read from the socket. */
-  }
-
-  /* if we have a client, wait for reading */
-  GST_LOG_OBJECT (self, "asked for a buffer");
-
-  if (!g_socket_condition_wait (self->priv->client_socket,
-          G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP, self->priv->cancellable,
-          &err))
-    goto select_error;
-
-  condition = g_socket_condition_check (self->priv->client_socket,
-      G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP);
-
-  if ((condition & G_IO_ERR)) {
-    GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL), ("Socket in error state"));
-    *outbuf = NULL;
-    ret = GST_FLOW_ERROR;
-    goto done;
-  } else if ((condition & G_IO_HUP)) {
-    GST_DEBUG_OBJECT (self, "Connection closed");
-    *outbuf = NULL;
-    ret = GST_FLOW_EOS;
-    goto done;
-  }
-
-  *outbuf = gst_buffer_new_and_alloc (MAX_READ_SIZE);
+  *outbuf = gst_buffer_new_and_alloc (MAX_BUFFER_SIZE);
   gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
 
-  rret = sctp_socket_receive (self->priv->client_socket, (gchar *) map.data,
-      MAX_READ_SIZE, self->priv->cancellable, &streamid, &err);
+  rret =
+      kms_sctp_server_rpc_get_buffer (self->priv->serverrpc, (gchar *) map.data,
+      MAX_BUFFER_SIZE, &err);
 
   if (rret == 0) {
     GST_DEBUG_OBJECT (self, "Connection closed");
@@ -475,37 +267,11 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
     gst_buffer_unmap (*outbuf, &map);
     gst_buffer_resize (*outbuf, 0, rret);
 
-    GST_LOG_OBJECT (self, "Got buffer %" GST_PTR_FORMAT
-        " on stream %u", *outbuf, streamid);
+    GST_LOG_OBJECT (self, "Got buffer %" GST_PTR_FORMAT, *outbuf);
   }
   g_clear_error (&err);
 
-done:
   return ret;
-
-wrong_state:
-  {
-    GST_DEBUG_OBJECT (self, "connection to closed, cannot read data");
-    return GST_FLOW_FLUSHING;
-  }
-accept_error:
-  {
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      GST_DEBUG_OBJECT (self, "Cancelled accepting of client");
-    } else {
-      GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-          ("Failed to accept client: %s", err->message));
-    }
-    g_clear_error (&err);
-    return GST_FLOW_ERROR;
-  }
-select_error:
-  {
-    GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
-        ("Select failed: %s", err->message));
-    g_clear_error (&err);
-    return GST_FLOW_ERROR;
-  }
 }
 
 static void
@@ -574,6 +340,9 @@ gst_sctp_server_src_init (GstSCTPServerSrc * self)
 {
   self->priv = GST_SCTP_SERVER_SRC_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
+  self->priv->serverrpc = kms_sctp_server_rpc_new (KMS_SCTP_BASE_RPC_RULES,
+      KURENTO_MARSHALL_BER, KMS_SCTP_BASE_RPC_BUFFER_SIZE, MAX_BUFFER_SIZE,
+      NULL);
 }
 
 gboolean

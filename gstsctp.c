@@ -91,7 +91,7 @@ sctp_socket_receive_with_blocking (GSocket * socket, gchar * buffer, gsize size,
 
   while (TRUE) {
     struct sctp_sndrcvinfo sndrcvinfo;
-    int flags;
+    int flags = 0;
 
     if (blocking &&
         !g_socket_condition_wait (socket, G_IO_IN, cancellable, error))
