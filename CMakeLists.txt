@@ -39,6 +39,8 @@ pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_SDP REQUIRED gstreamer-sdp-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_PBUTILS REQUIRED gstreamer-pbutils-1.0>=${GST_REQUIRED})
+pkg_check_modules(KMSGSTCOMMONS REQUIRED kmsgstcommons)
+pkg_check_modules(KMSCORE REQUIRED kmscore)
 
 set (VERSION ${PROJECT_VERSION})
 set (PACKAGE ${PROJECT_NAME})
@@ -49,6 +51,9 @@ set (ENABLE_DEBUGGING_TESTS OFF CACHE BOOL "Enable test that are not yet stable"
 include(GNUInstallDirs)
 
 set (CMAKE_INSTALL_MODULESDIR ${CMAKE_INSTALL_LIBDIR}/kurento/gst-plugins)
+set (KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
+
+set (BINARY_LOCATION "http://files.kurento.org/" CACHE STRING "Local binary directory expressed as an URI ( http:// or file:/// )")
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
@@ -63,4 +68,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 message(STATUS "Compiling : ${PROJECT_NAME}-${PROJECT_VERSION}")
 
 add_subdirectory (src)
-
+add_subdirectory(tests)

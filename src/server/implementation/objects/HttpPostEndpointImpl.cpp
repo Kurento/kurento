@@ -13,7 +13,7 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-HttpPostEndpointImpl::HttpPostEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, int disconnectionTimeout, bool useEncodedMedia) : HttpEndpointImpl (std::dynamic_pointer_cast< MediaObjectImpl > (parent), disconnectionTimeout)
+HttpPostEndpointImpl::HttpPostEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, int disconnectionTimeout, bool useEncodedMedia) : HttpEndpointImpl (std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline), disconnectionTimeout)
 {
   // FIXME: Implement this
 }
