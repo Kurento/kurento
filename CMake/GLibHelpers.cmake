@@ -1,5 +1,5 @@
 
-macro(add_glib_marshal outfiles name prefix)
+macro(add_glib_marshal outsources outincludes name prefix)
   find_package(GLIB-GENMARSHAL REQUIRED)
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
@@ -16,10 +16,11 @@ macro(add_glib_marshal outfiles name prefix)
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${name}.list"
             "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
   )
-  list(APPEND ${outfiles} "${CMAKE_CURRENT_BINARY_DIR}/${name}.c")
+  list(APPEND ${outsources} "${CMAKE_CURRENT_BINARY_DIR}/${name}.c")
+  list(APPEND ${outincludes} "${CMAKE_CURRENT_BINARY_DIR}/${name}.h")
 endmacro(add_glib_marshal)
 
-macro(add_glib_enumtypes outfiles name includeguard)
+macro(add_glib_enumtypes outsources outheaders name includeguard)
   find_package(GLIB-MKENUMS REQUIRED)
   set (HEADERS "")
   foreach(header ${ARGN})
@@ -31,7 +32,7 @@ macro(add_glib_enumtypes outfiles name includeguard)
     COMMAND ${GLIB-MKENUMS_EXECUTABLE}
         --fhead \"\#ifndef __${includeguard}_ENUM_TYPES_H__\\n\#define __${includeguard}_ENUM_TYPES_H__\\n\\n\#include <glib-object.h>\\n\\nG_BEGIN_DECLS\\n\"
         --fprod \"\\n/* enumerations from \\\"@filename@\\\" */\\n\"
-        --vhead \"GType @enum_name@_get_type \(void\)\;\\n\#define GST_TYPE_@ENUMSHORT@ \(@enum_name@_get_type\(\)\)\\n\"
+        --vhead \"GType @enum_name@_get_type \(void\)\;\\n\#define ${includeguard}_TYPE_@ENUMSHORT@ \(@enum_name@_get_type\(\)\)\\n\"
         --ftail \"\\nG_END_DECLS\\n\\n\#endif /* __${includeguard}_ENUM_TYPES_H__ */\"
         ${ARGN} > "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -50,5 +51,6 @@ macro(add_glib_enumtypes outfiles name includeguard)
     DEPENDS ${ARGN}
             "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
   )
-  list(APPEND ${outfiles} "${CMAKE_CURRENT_BINARY_DIR}/${name}.c")
+  list(APPEND ${outsources} "${CMAKE_CURRENT_BINARY_DIR}/${name}.c")
+  list(APPEND ${outheaders} "${CMAKE_CURRENT_BINARY_DIR}/${name}.h")
 endmacro(add_glib_enumtypes)
