@@ -25,7 +25,7 @@ URL_SMALL            = "http://files.kurento.org/video/small.webm";
  */
 function onerror(error)
 {
-  QUnit.ok(false, error.message || error);
+  QUnit.pushFailure(error.message || error, error.stack);
 
   QUnit.start();
 };
@@ -114,7 +114,7 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://127.0.0.1:8888/thrift/ws/websocket':         'localhost (port 8888)',
+    'ws://127.0.0.1:8888/thrift/ws/websocket':          'localhost (port 8888)',
     'ws://demo01.kurento.org:8888/thrift/ws/websocket': 'Kurento test server'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
