@@ -267,15 +267,25 @@ kms_scp_base_rpc_send_fragments (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
   for (i = 0; i < n; i++) {
     KmsSCTPMessage sctpmsg;
     const KmsMessage *msg;
-    KmsDataType type;
+    KmsSCTPResult result;
 
     msg = kms_fragmenter_nth_message (f, i);
-    kms_message_get_data (msg, &type, (const char **) &sctpmsg.buf,
-        &sctpmsg.size);
-    sctpmsg.used = sctpmsg.size;
 
-    if (kms_sctp_connection_send (baserpc->conn, &sctpmsg, cancellable, err)
-        != KMS_SCTP_OK) {
+    INIT_SCTP_MESSAGE (sctpmsg, baserpc->buffer_size);
+
+    sctpmsg.used = enc_KmsMessage (baserpc->rules, msg, sctpmsg.buf,
+        sctpmsg.size, err);
+
+    if (sctpmsg.used < 0) {
+      CLEAR_SCTP_MESSAGE (sctpmsg);
+      return FALSE;
+    }
+
+    result =
+        kms_sctp_connection_send (baserpc->conn, &sctpmsg, cancellable, err);
+    CLEAR_SCTP_MESSAGE (sctpmsg);
+
+    if (result != KMS_SCTP_OK) {
       return FALSE;
     }
   }
