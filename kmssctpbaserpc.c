@@ -201,14 +201,20 @@ kms_sctp_base_rpc_finalize (GObject * obj)
 
   GST_DEBUG_OBJECT (obj, "Finalize");
 
-  g_hash_table_foreach (self->reqs, cancel_pending_req, NULL);
-  g_hash_table_unref (self->reqs);
+  g_hash_table_foreach (self->pending_reqs, cancel_pending_req, NULL);
+  g_hash_table_unref (self->pending_reqs);
+  g_hash_table_unref (self->requests);
 
   if (self->conn != NULL)
     kms_sctp_connection_unref (self->conn);
 
+  if (self->query_notify != NULL)
+    self->query_notify (self->query_data);
+
   g_rec_mutex_clear (&self->rmutex);
   g_rec_mutex_clear (&self->tmutex);
+
+  g_clear_object (&self->cancellable);
 
   G_OBJECT_CLASS (PARENT_CLASS)->finalize (obj);
 }
@@ -240,8 +246,11 @@ kms_sctp_base_rpc_init (KmsSCTPBaseRPC * self)
 {
   g_rec_mutex_init (&self->rmutex);
   g_rec_mutex_init (&self->tmutex);
-  self->reqs =
+  self->cancellable = g_cancellable_new ();
+  self->pending_reqs =
       g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL, NULL);
+  self->requests = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL,
+      (GDestroyNotify) kms_assembler_unref);
 }
 
 void
@@ -251,8 +260,8 @@ kms_scp_base_rpc_cancel_pending_requests (KmsSCTPBaseRPC * baserpc)
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
 
-  g_hash_table_foreach (baserpc->reqs, cancel_pending_req, NULL);
-  g_hash_table_remove_all (baserpc->reqs);
+  g_hash_table_foreach (baserpc->pending_reqs, cancel_pending_req, NULL);
+  g_hash_table_remove_all (baserpc->pending_reqs);
 
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
 }
@@ -323,7 +332,8 @@ kms_scp_base_rpc_send_request (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
 
-  if (!g_hash_table_insert (baserpc->reqs, GUINT_TO_POINTER (req_id), req)) {
+  if (!g_hash_table_insert (baserpc->pending_reqs, GUINT_TO_POINTER (req_id),
+          req)) {
     KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
     g_set_error (err, KMS_SCTP_BASE_RPC_ERROR,
         KMS_SCTP_BASE_RPC_UNEXPECTED_ERROR, "Can't not send request %u",
@@ -355,12 +365,12 @@ kms_scp_base_rpc_send_request (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
     case KMS_RSP_CANCELLED:
       g_set_error (err, KMS_SCTP_BASE_RPC_ERROR, KMS_SCTP_BASE_RPC_CANCELLED,
           "Request (%u) cancelled", req_id);
-      goto done;;
+      goto done;
   }
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
 
-  g_hash_table_remove (baserpc->reqs, GUINT_TO_POINTER (req_id));
+  g_hash_table_remove (baserpc->pending_reqs, GUINT_TO_POINTER (req_id));
 
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
 
@@ -492,4 +502,204 @@ kms_sctp_base_rpc_stop_task (KmsSCTPBaseRPC * baserpc)
   } else {
     KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
   }
+}
+
+void
+kms_sctp_base_rpc_set_query_function (KmsSCTPBaseRPC * baserpc,
+    KmsQueryFunction func, gpointer user_data, GDestroyNotify notify)
+{
+  GDestroyNotify destroy;
+  gpointer data;
+
+  g_return_if_fail (baserpc != NULL);
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  destroy = baserpc->query_notify;
+  data = baserpc->query_data;
+
+  baserpc->query = func;
+  baserpc->query_notify = notify;
+  baserpc->query_data = user_data;
+
+  KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+  if (destroy != NULL)
+    destroy (data);
+}
+
+static GstQuery *
+pack_fragmented_query (KmsAssembler * assembler)
+{
+  GstQuery *query = NULL;
+  GError *err = NULL;
+  gchar *buf = NULL;
+  gsize size;
+
+  kms_assembler_compose_buffer (assembler, &buf, &size);
+
+  dec_GstQuery (kms_assembler_get_encoding_rules (assembler), buf, size, &query,
+      &err);
+
+  if (query != NULL)
+    return query;
+
+  GST_ERROR ("%s", err->message);
+  g_error_free (err);
+  g_free (buf);
+
+  return NULL;
+}
+
+static void
+kms_scp_base_rpc_query_response (KmsSCTPBaseRPC * baserpc, guint req_id,
+    GstQuery * query)
+{
+  KmsFragmenter *f;
+  GError *err = NULL;
+
+  f = kms_fragmenter_new (baserpc->rules, baserpc->buffer_size);
+  kms_fragmenter_set_message_type (f, GST_MARSHALL_RESPONSE);
+  kms_fragmenter_query (f, req_id, query, &err);
+  if (err != NULL) {
+    goto done;
+  }
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+  kms_scp_base_rpc_send_fragments (baserpc, f, baserpc->cancellable, &err);
+  KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+done:
+  if (err != NULL) {
+    GST_ERROR_OBJECT (baserpc, "%s", err->message);
+    g_error_free (err);
+  }
+
+  kms_fragmenter_unref (f);
+}
+
+static void
+kms_sctp_base_rpc_process_ensambled_request (KmsSCTPBaseRPC * baserpc,
+    guint req_id, KmsAssembler * assembler)
+{
+  switch (kms_assembler_get_data_type (assembler)) {
+    case KMS_DATA_TYPE_QUERY:{
+      KmsQueryFunction query_func;
+      gpointer query_data;
+      GstQuery *query;
+
+      query = pack_fragmented_query (assembler);
+      if (query == NULL)
+        return;
+
+      KMS_SCTP_BASE_RPC_LOCK (baserpc);
+      if (baserpc->query == NULL) {
+        KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+        return;
+      }
+
+      query_func = baserpc->query;
+      query_data = baserpc->query_data;
+      KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+      query_func (query, query_data);
+      kms_scp_base_rpc_query_response (baserpc, req_id, query);
+      gst_query_unref (query);
+      break;
+    }
+    case KMS_DATA_TYPE_EVENT:{
+      GST_DEBUG ("TODO: Unpack events");
+      break;
+    }
+    default:{
+      GST_ERROR ("Unknown request received");
+      break;
+    }
+  }
+}
+
+void
+kms_sctp_base_rpc_process_message (KmsSCTPBaseRPC * baserpc,
+    const KmsSCTPMessage * msg)
+{
+  KmsAssembler *assembler = NULL;
+  KmsMessage *message = NULL;
+  GError *err = NULL;
+  guint req_id;
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  dec_KmsMessage (baserpc->rules, msg->buf, msg->used, &message, &err);
+  if (err != NULL) {
+    GST_ERROR_OBJECT (baserpc, "%s", err->message);
+    g_error_free (err);
+    goto done;
+  }
+
+  req_id = kms_message_get_req_id (message);
+  if (!g_hash_table_contains (baserpc->requests, GUINT_TO_POINTER (req_id))) {
+    guint fragment_id;
+
+    fragment_id = kms_message_get_fragment_id (message);
+
+    if (fragment_id != 0) {
+      GST_DEBUG ("Incomplete fragment received (%u/%u). Dropping", req_id,
+          fragment_id);
+      goto done;
+    }
+
+    assembler = kms_assembler_new (baserpc->rules);
+    if (!kms_assembler_append_message (assembler, message)) {
+      GST_ERROR_OBJECT (baserpc, "Error assembling fragments. Dropping");
+      goto done;
+    }
+
+    message = NULL;
+
+    if (kms_assembler_is_completed (assembler)) {
+      KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+      kms_sctp_base_rpc_process_ensambled_request (baserpc, req_id, assembler);
+      kms_assembler_unref (assembler);
+      return;
+    }
+
+    if (!g_hash_table_insert (baserpc->requests, GUINT_TO_POINTER (req_id),
+            assembler)) {
+      goto done;
+    }
+
+    assembler = NULL;
+  } else {
+    assembler = KMS_ASSEMBLER (g_hash_table_lookup (baserpc->requests,
+            GUINT_TO_POINTER (req_id)));
+    if (!kms_assembler_append_message (assembler, message)) {
+      GST_ERROR_OBJECT (baserpc, "Error assembling fragments. Dropping");
+      g_hash_table_remove (baserpc->requests, GUINT_TO_POINTER (req_id));
+      assembler = NULL;
+      goto done;
+    }
+
+    if (kms_assembler_is_completed (assembler)) {
+      kms_assembler_ref (assembler);
+      g_hash_table_remove (baserpc->requests, GUINT_TO_POINTER (req_id));
+      KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+      kms_sctp_base_rpc_process_ensambled_request (baserpc, req_id, assembler);
+      kms_assembler_unref (assembler);
+      return;
+    }
+
+    assembler = NULL;
+    message = NULL;
+  }
+
+done:
+  KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+  if (assembler != NULL)
+    kms_assembler_unref (assembler);
+
+  if (message != NULL)
+    kms_message_unref (message);
+
+  return;
 }

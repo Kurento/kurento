@@ -147,7 +147,7 @@ kms_sctp_sever_rpc_thread (KmsSCTPServerRPC * server)
     goto error;
   }
 
-  /* TODO: Process requests */
+  kms_sctp_base_rpc_process_message (KMS_SCTP_BASE_RPC (server), &msg);
 
   CLEAR_SCTP_MESSAGE (msg);
   kms_sctp_connection_unref (conn);

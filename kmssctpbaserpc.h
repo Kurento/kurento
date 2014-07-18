@@ -65,6 +65,8 @@ typedef struct _KmsSCTPBaseRPCClass KmsSCTPBaseRPCClass;
 #define KMS_SCTP_BASE_RPC_UNLOCK(elem) \
   (g_rec_mutex_unlock (&KMS_SCTP_BASE_RPC ((elem))->rmutex))
 
+typedef void (*KmsQueryFunction) (GstQuery *query, gpointer user_data);
+
 struct _KmsSCTPBaseRPC
 {
   GObject parent;
@@ -72,15 +74,21 @@ struct _KmsSCTPBaseRPC
   /* <private> */
   guint32 req_id;
 
+  KmsQueryFunction query;
+  gpointer query_data;
+  GDestroyNotify query_notify;
+
   /* < protected > */
   GRecMutex rmutex;
   KurentoMarshalRules rules;
   gsize buffer_size;
-  GHashTable *reqs;
+  GHashTable *pending_reqs;
+  GHashTable *requests;
   KmsSCTPConnection *conn;
 
   GstTask *task;
   GRecMutex tmutex;
+  GCancellable *cancellable;
 };
 
 struct _KmsSCTPBaseRPCClass
@@ -96,10 +104,15 @@ void kms_scp_base_rpc_cancel_pending_requests (KmsSCTPBaseRPC *baserpc);
 gboolean kms_scp_base_rpc_query (KmsSCTPBaseRPC *baserpc, GstQuery *query,
   GCancellable *cancellable, GstQuery **rsp, GError **err);
 
+void kms_sctp_base_rpc_set_query_function (KmsSCTPBaseRPC *baserpc,
+  KmsQueryFunction func, gpointer user_data, GDestroyNotify notify);
+
 /* protected methods */
 gboolean kms_sctp_base_rpc_start_task(KmsSCTPBaseRPC *baserpc,
   GstTaskFunction func, gpointer user_data, GDestroyNotify notify);
 void kms_sctp_base_rpc_stop_task(KmsSCTPBaseRPC *baserpc);
+
+void kms_sctp_base_rpc_process_message(KmsSCTPBaseRPC *baserpc, const KmsSCTPMessage *msg);
 
 G_END_DECLS
 #endif

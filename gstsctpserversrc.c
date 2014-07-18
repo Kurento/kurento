@@ -336,12 +336,21 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 }
 
 static void
+gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
+{
+  GST_DEBUG ("QUERY >> %" GST_PTR_FORMAT, query);
+}
+
+static void
 gst_sctp_server_src_init (GstSCTPServerSrc * self)
 {
   self->priv = GST_SCTP_SERVER_SRC_GET_PRIVATE (self);
   self->priv->cancellable = g_cancellable_new ();
   self->priv->serverrpc = kms_sctp_server_rpc_new (KMS_SCTP_BASE_RPC_RULES,
       KURENTO_MARSHALL_BER, KMS_SCTP_BASE_RPC_BUFFER_SIZE, MAX_BUFFER_SIZE,
+      NULL);
+  kms_sctp_base_rpc_set_query_function (KMS_SCTP_BASE_RPC (self->priv->
+          serverrpc), (KmsQueryFunction) gst_sctp_server_src_remote_query, self,
       NULL);
 }
 
