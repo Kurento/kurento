@@ -26,14 +26,16 @@ macro(add_glib_enumtypes outsources outheaders name includeguard)
   foreach(header ${ARGN})
     set (HEADERS ${HEADERS}\#include \\\"${header}\\\"\\n)
   endforeach(header)
+  string(TOUPPER ${name} name_upper)
+  string(REPLACE "-" "_" name_upper ${name_upper})
 
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
     COMMAND ${GLIB-MKENUMS_EXECUTABLE}
-        --fhead \"\#ifndef __${includeguard}_ENUM_TYPES_H__\\n\#define __${includeguard}_ENUM_TYPES_H__\\n\\n\#include <glib-object.h>\\n\\nG_BEGIN_DECLS\\n\"
+        --fhead \"\#ifndef __${includeguard}_${name_upper}_ENUM_TYPES_H__\\n\#define __${includeguard}_${name_upper}_ENUM_TYPES_H__\\n\\n\#include <glib-object.h>\\n\\nG_BEGIN_DECLS\\n\"
         --fprod \"\\n/* enumerations from \\\"@filename@\\\" */\\n\"
         --vhead \"GType @enum_name@_get_type \(void\)\;\\n\#define ${includeguard}_TYPE_@ENUMSHORT@ \(@enum_name@_get_type\(\)\)\\n\"
-        --ftail \"\\nG_END_DECLS\\n\\n\#endif /* __${includeguard}_ENUM_TYPES_H__ */\"
+        --ftail \"\\nG_END_DECLS\\n\\n\#endif /* __${includeguard}_${name_upper}_ENUM_TYPES_H__ */\"
         ${ARGN} > "${CMAKE_CURRENT_BINARY_DIR}/${name}.h"
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS ${ARGN}
