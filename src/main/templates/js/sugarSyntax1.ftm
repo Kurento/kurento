@@ -1,6 +1,6 @@
-<#if remoteClass.name == "MediaPipeline" || remoteClass.name == "Hub">
+<#if remoteClass.name == "Hub" || remoteClass.name == "MediaObject" || remoteClass.name == "MediaPipeline">
 
 var Promise = require('es6-promise').Promise;
 
-var promiseCallback = require('kws-media-runtime').utils.promiseCallback;
+var promiseCallback = require('promisecallback');
 </#if>

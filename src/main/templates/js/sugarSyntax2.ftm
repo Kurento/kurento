@@ -1,4 +1,5 @@
-<#if remoteClass.name == "Hub">
+<#switch remoteClass.name>
+  <#case "Hub">
 
 /**
  * Create a new instance of a {module:kwsMediaApi/core~HubPort} attached to this {module:kwsMediaApi/core~Hub}
@@ -7,8 +8,7 @@
  *
  * @return {module:kwsMediaApi/core~Hub} The hub itself
  */
-Hub.prototype.createHubPort = function(callback)
-{
+Hub.prototype.createHubPort = function(callback){
   var self = this;
 
   var promise = new Promise(function(resolve, reject)
@@ -21,9 +21,7 @@ Hub.prototype.createHubPort = function(callback)
     });
   });
 
-  promiseCallback(promise, callback);
-
-  return promise;
+  return promiseCallback(promise, callback);
 };
 /**
  * @callback module:kwsMediaApi/core~Hub~createHubCallback
@@ -32,7 +30,91 @@ Hub.prototype.createHubPort = function(callback)
  *  The created HubPort
  */
 
-<#elseif remoteClass.name == "MediaPipeline">
+  <#break>
+  <#case "MediaObject">
+
+/**
+ * Send a command to a media object
+ *
+ * @param {external:String} method - Command to be executed by the server
+ * @param {module:kwsMediaApi~MediaObject.constructorParams} [params]
+ * @callback {invokeCallback} callback
+ *
+ * @return {module:kwsMediaApi~MediaObject} The own media object
+ */
+MediaObject.prototype.invoke = function(method, params, callback){
+  var self = this;
+
+  // Fix optional parameters
+  if(params instanceof Function)
+  {
+    if(callback)
+      throw new SyntaxError("Nothing can be defined after the callback");
+
+    callback = params;
+    params = undefined;
+  };
+
+  var promise = new Promise(function(resolve, reject)
+  {
+    // Generate request parameters
+    var params2 =
+    {
+      operation: method
+    };
+
+    if(params)
+      params2.operationParams = params;
+
+    // Do request
+    self.emit('_rpc', 'invoke', params2, function(error, result)
+    {
+      if(error) return reject(error);
+
+      var value = result.value;
+      if(value === undefined) value = self;
+
+      resolve(value);
+    });
+  });
+
+  return promiseCallback(promise, callback);
+};
+/**
+ * @callback invokeCallback
+ * @param {MediaServerError} error
+ */
+
+/**
+ * Explicity release a {@link module:kwsMediaApi~MediaObject MediaObject} from memory
+ *
+ * All its descendants will be also released and collected
+ *
+ * @throws {module:kwsMediaApi~MediaServerError}
+ */
+MediaObject.prototype.release = function(callback){
+  var self = this;
+
+  var promise = new Promise(function(resolve, reject)
+  {
+    self.emit('_rpc', 'release', {}, function(error)
+    {
+      if(error) return reject(error);
+
+      self.emit('release');
+
+      // Remove events on the object and remove object from cache
+      self.removeAllListeners();
+
+      resolve();
+    });
+  });
+
+  return promiseCallback(promise, callback);
+};
+
+  <#break>
+  <#case "MediaPipeline">
 
 /**
  * Create a new instance of a {module:kwsMediaApi/core~MediaObject} attached to this {module:kwsMediaApi/core~MediaPipeline}
@@ -69,9 +151,7 @@ MediaPipeline.prototype.create = function(type, params, callback){
     });
   });
 
-  promiseCallback(promise, callback);
-
-  return promise;
+  return promiseCallback(promise, callback);
 };
 /**
  * @callback module:kwsMediaApi/core~MediaPipeline~createCallback
@@ -80,7 +160,8 @@ MediaPipeline.prototype.create = function(type, params, callback){
  *  The created MediaElement
  */
 
-<#elseif remoteClass.name == "MediaSource">
+  <#break>
+  <#case "MediaSource">
 
 /**
  * Disconnect this source pad from the specified sink pad
@@ -92,8 +173,7 @@ MediaPipeline.prototype.create = function(type, params, callback){
  *
  * @return {module:kwsMediaApi/core~MediaSource} The own {module:kwsMediaApi/core~MediaSource}
  */
-MediaSource.prototype.disconnect = function(sink, callback)
-{
+MediaSource.prototype.disconnect = function(sink, callback){
   checkType('MediaSink', 'sink', sink, {required: true});
 
   var params =
@@ -108,4 +188,5 @@ MediaSource.prototype.disconnect = function(sink, callback)
  * @param {Error} error
  */
 
-</#if>
+  <#break>
+</#switch>

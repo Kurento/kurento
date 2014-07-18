@@ -2,14 +2,14 @@
 <#assign namespace=model.name>
 <#assign extends_name>
   <#if remoteClass.name=="MediaObject">
-    <#lt>_MediaObject<#rt>
+    <#lt>EventEmitter<#rt>
   <#elseif remoteClass.extends??>
     <#lt>${remoteClass.extends.name}<#rt>
   </#if>
 </#assign>
-<#if remoteClass.abstract>abstracts/</#if>${remoteClass.name}
+<#if remoteClass.abstract>abstracts/</#if>${remoteClass.name}.js
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2013-2014 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -27,7 +27,7 @@ var inherits = require('inherits');
 <#include "sugarSyntax1.ftm" >
 <#if remoteClass.methods?has_content>
 
-var checkType = require('kws-media-runtime').checkType;
+var checkType = require('checktype');
 </#if>
 
 
@@ -58,7 +58,7 @@ var ${extends_name} = require('${import_name}').${extends_name};
   </#if>
 <#elseif remoteClass.name=="MediaObject">
 
-var ${extends_name} = require('kws-media-runtime').${extends_name};
+var ${extends_name} = require('events').${extends_name};
 </#if>
 
 
@@ -90,6 +90,7 @@ function ${remoteClass.name}(id)
 <#if extends_name??>
   ${extends_name}.call(this, id);
 </#if>
+<#include "MediaObject_constructor.ftm" >
 };
 <#if extends_name??>
 inherits(${remoteClass.name}, ${extends_name});
