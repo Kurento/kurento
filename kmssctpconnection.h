@@ -50,7 +50,7 @@ typedef enum {
 typedef struct _KmsSCTPMessage {
   gchar *buf;
   gsize size;
-  gint used;
+  gssize used;
 } KmsSCTPMessage;
 
 #define INIT_SCTP_MESSAGE(msg, s) ({ \
