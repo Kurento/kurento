@@ -71,6 +71,17 @@ testRecorderEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <ku
   kurento::MediaSet::getMediaSet()->release(object);
 }
 
+void
+testRtpEndpoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+{
+  kurento::JsonSerializer w (true);
+
+  w.SerializeNVP(mediaPipeline);
+
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("RtpEndpoint")->createObject("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release(object);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -92,10 +103,9 @@ main (int argc, char **argv)
   testHttpPostEndPoint(moduleManager, mediaPipeline);
   testPlayerEndPoint(moduleManager, mediaPipeline);
   testRecorderEndPoint(moduleManager, mediaPipeline);
+  testRtpEndpoint(moduleManager, mediaPipeline);
 
   /*
-  Factory: RecorderEndpoint
-  Factory: RtpEndpoint
   Factory: WebRtcEndpoint
   */
   kurento::MediaSet::getMediaSet()->release(mediaPipeline);
