@@ -22,8 +22,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +39,7 @@ public class CheckNodes {
 
 	public static Logger log = LoggerFactory.getLogger(CheckNodes.class);
 
-	@Ignore
-	@Test
+	// @Test
 	public void test() throws IOException {
 		InputStream inputStream = this.getClass().getClassLoader()
 				.getResourceAsStream("node-list.txt");
