@@ -571,7 +571,7 @@ kms_base_rtp_endpoint_class_init (KmsBaseRtpEndpointClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsBaseRtpEndpointClass, media_start), NULL, NULL,
-      __kms_marshal_VOID__ENUM_BOOLEAN, G_TYPE_NONE, 2, GST_TYPE_MEDIA_TYPE,
+      __kms_marshal_VOID__ENUM_BOOLEAN, G_TYPE_NONE, 2, KMS_TYPE_MEDIA_TYPE,
       G_TYPE_BOOLEAN);
 
   obj_signals[MEDIA_STOP] =
@@ -579,7 +579,7 @@ kms_base_rtp_endpoint_class_init (KmsBaseRtpEndpointClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsBaseRtpEndpointClass, media_stop), NULL, NULL,
-      __kms_marshal_VOID__ENUM_BOOLEAN, G_TYPE_NONE, 2, GST_TYPE_MEDIA_TYPE,
+      __kms_marshal_VOID__ENUM_BOOLEAN, G_TYPE_NONE, 2, KMS_TYPE_MEDIA_TYPE,
       G_TYPE_BOOLEAN);
 
   g_type_class_add_private (klass, sizeof (KmsBaseRtpEndpointPrivate));

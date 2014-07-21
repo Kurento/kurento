@@ -72,8 +72,8 @@ set(ENUM_HEADERS
   kmsmediatype.h
 )
 
-add_glib_enumtypes(KMS_COMMONS_HEADERS kms-enumtypes KMS ${ENUM_HEADERS})
-add_glib_marshal(KMS_COMMONS_HEADERS kms-marshal __kms_marshal)
+add_glib_enumtypes(KMS_COMMONS_SOURCES KMS_COMMONS_HEADERS kms-enumtypes KMS ${ENUM_HEADERS})
+add_glib_marshal(KMS_COMMONS_SOURCES KMS_COMMONS_HEADERS kms-marshal __kms_marshal)
 
 add_library(kmscommons SHARED ${KMS_COMMONS_SOURCES} ${KMS_COMMONS_HEADERS})
 

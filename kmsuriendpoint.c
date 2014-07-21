@@ -206,7 +206,7 @@ kms_uri_endpoint_class_init (KmsUriEndpointClass * klass)
   obj_properties[PROP_STATE] = g_param_spec_enum ("state",
       "Uri end point state",
       "state of the uri end point element",
-      GST_TYPE_URI_ENDPOINT_STATE,
+      KMS_TYPE_URI_ENDPOINT_STATE,
       DEFAULT_URI_ENDPOINT_STATE, G_PARAM_READWRITE);
 
   g_object_class_install_properties (gobject_class,
@@ -218,7 +218,7 @@ kms_uri_endpoint_class_init (KmsUriEndpointClass * klass)
       G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsUriEndpointClass, state_changed), NULL, NULL,
       g_cclosure_marshal_VOID__ENUM, G_TYPE_NONE, 1,
-      GST_TYPE_URI_ENDPOINT_STATE);
+      KMS_TYPE_URI_ENDPOINT_STATE);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsUriEndpointPrivate));

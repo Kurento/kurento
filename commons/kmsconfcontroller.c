@@ -1150,7 +1150,7 @@ kms_conf_controller_class_init (KmsConfControllerClass * klass)
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
       "The profile used for encapsulating the media",
-      GST_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
+      KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
   obj_properties[PROP_SINK] = g_param_spec_object ("sink",
       "Sink element", "Sink element", GST_TYPE_ELEMENT, G_PARAM_WRITABLE);

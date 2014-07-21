@@ -806,7 +806,7 @@ kms_recorder_endpoint_class_init (KmsRecorderEndpointClass * klass)
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
       "The profile used for encapsulating the media",
-      GST_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
+      KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
   g_object_class_install_properties (gobject_class,
       N_PROPERTIES, obj_properties);

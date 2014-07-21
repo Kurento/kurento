@@ -989,7 +989,7 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
   obj_properties[PROP_METHOD] = g_param_spec_enum ("http-method",
       "Http method",
       "Http method used in requests",
-      GST_TYPE_HTTP_ENDPOINT_METHOD,
+      KMS_TYPE_HTTP_ENDPOINT_METHOD,
       KMS_HTTP_ENDPOINT_METHOD_UNDEFINED, G_PARAM_READABLE);
 
   obj_properties[PROP_START] = g_param_spec_boolean ("start",
@@ -999,7 +999,7 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
   obj_properties[PROP_PROFILE] = g_param_spec_enum ("profile",
       "Recording profile",
       "The profile used for encapsulating the media",
-      GST_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
+      KMS_TYPE_RECORDING_PROFILE, DEFAULT_RECORDING_PROFILE, G_PARAM_READWRITE);
 
   obj_properties[PROP_USE_ENCODED_MEDIA] = g_param_spec_boolean
       ("use-encoded-media", "use encoded media",
