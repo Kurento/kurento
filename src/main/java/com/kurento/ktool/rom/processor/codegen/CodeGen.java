@@ -169,6 +169,12 @@ public class CodeGen {
 		temp.process(root, out);
 		String tempOutput = out.toString();
 
+		if (tempOutput.isEmpty()) {
+			System.out.println("No file generation because applying template '"
+					+ temp.getName() + "' is empty");
+			return;
+		}
+
 		StringTokenizer st = new StringTokenizer(tempOutput);
 
 		String fileName = st.nextToken();
