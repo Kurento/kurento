@@ -2,17 +2,22 @@ cmake_minimum_required(VERSION 2.8)
 
 include(GLibHelpers)
 
+set (SOUP_REQUIRED 2.40)
+pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
+
 set(KMS_ELEMENTS_SOURCES
   kmselements.c
   kmshttpendpoint.h
   kmshttpendpoint.c
   kmsplayerendpoint.c
+  kmsrecorderendpoint.c
 )
 
 set(KMS_ELEMENTS_HEADERS
   kmshttpendpoint.h
   kmshttpendpointmethod.h
   kmsplayerendpoint.h
+  kmsrecorderendpoint.h
 )
 
 set(ENUM_HEADERS
@@ -31,6 +36,7 @@ include_directories(
   ${GSTREAMER_PBUTILS_SOURCE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
+  ${SOUP_INCLUDE_DIRS}
 )
 
 target_link_libraries(${LIBRARY_NAME}plugins
@@ -39,6 +45,7 @@ target_link_libraries(${LIBRARY_NAME}plugins
   ${GSTREAMER_BASE_LIBRARIES}
   ${GSTREAMER_SDP_LIBRARIES}
   ${GSTREAMER_PBUTILS_LIBRARIES}
+  ${SOUP_LIBRARIES}
 )
 
 set (CMAKE_INSTALL_MODULESDIR ${CMAKE_INSTALL_LIBDIR}/kurento/gst-plugins)

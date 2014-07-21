@@ -17,6 +17,7 @@
 
 #include "kmshttpendpoint.h"
 #include "kmsplayerendpoint.h"
+#include "kmsrecorderendpoint.h"
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -26,6 +27,10 @@ kurento_init (GstPlugin * kurento)
   }
 
   if (!kms_player_endpoint_plugin_init(kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_recorder_endpoint_plugin_init(kurento)) {
     return FALSE;
   }
 
