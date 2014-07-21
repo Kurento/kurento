@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -190,10 +191,11 @@ public class Main {
 			if (kmdFiles.isEmpty()) {
 				String paths = null;
 				for (String path : kmdPathNames) {
-					if (paths == null)
+					if (paths == null) {
 						paths = path;
-					else
+					} else {
 						paths = paths + ":" + path;
+					}
 				}
 				System.err.println("No dependency kmd files found in paths: "
 						+ paths);
@@ -311,7 +313,8 @@ public class Main {
 		List<Path> kmdFiles = PathUtils.getPaths(kmdPathNames, "*.kmd.json");
 
 		if (kmdFiles.isEmpty()) {
-			System.err.println("No kmd files found in paths: " + kmdPathNames);
+			System.err.println("No kmd files found in paths: "
+					+ Arrays.toString(kmdPathNames));
 			System.exit(1);
 		}
 
