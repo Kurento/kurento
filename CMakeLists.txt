@@ -22,22 +22,25 @@ set(KMS_DTLS_SOURCES
   ext/gio/kmsgioenumtypes.c
   ext/gio/kmsgtlscertificate.c
   ext/gnutls/gtlsbackend-gnutls.c
-  ext/gnutls/gtlsbackend-gnutls.h
   ext/gnutls/gtlscertificate-gnutls.c
-  ext/gnutls/gtlscertificate-gnutls.h
   ext/gnutls/gtlsclientconnection-gnutls.c
-  ext/gnutls/gtlsclientconnection-gnutls.h
   ext/gnutls/gtlsconnection-gnutls.c
-  ext/gnutls/gtlsconnection-gnutls.h
   ext/gnutls/gtlsdatabase-gnutls.c
-  ext/gnutls/gtlsdatabase-gnutls.h
   ext/gnutls/gtlsfiledatabase-gnutls.c
-  ext/gnutls/gtlsfiledatabase-gnutls.h
   ext/gnutls/gtlsinputstream-gnutls.c
-  ext/gnutls/gtlsinputstream-gnutls.h
   ext/gnutls/gtlsoutputstream-gnutls.c
-  ext/gnutls/gtlsoutputstream-gnutls.h
   ext/gnutls/gtlsserverconnection-gnutls.c
+)
+
+set(KMS_DTLS_HEADERS
+  ext/gnutls/gtlsbackend-gnutls.h
+  ext/gnutls/gtlscertificate-gnutls.h
+  ext/gnutls/gtlsclientconnection-gnutls.h
+  ext/gnutls/gtlsconnection-gnutls.h
+  ext/gnutls/gtlsdatabase-gnutls.h
+  ext/gnutls/gtlsfiledatabase-gnutls.h
+  ext/gnutls/gtlsinputstream-gnutls.h
+  ext/gnutls/gtlsoutputstream-gnutls.h
   ext/gnutls/gtlsserverconnection-gnutls.h
 )
 
@@ -47,9 +50,9 @@ set(ENUM_HEADERS
    gstdtlssrtp.h
 )
 
-add_glib_enumtypes(KMS_DTLS_SOURCES gstdtls-enumtypes GST_DTLS ${ENUM_HEADERS})
+add_glib_enumtypes(KMS_DTLS_SOURCES KMS_DTLS_HEADERS gstdtls-enumtypes GST ${ENUM_HEADERS})
 
-add_library(kmsdtls MODULE ${KMS_DTLS_SOURCES})
+add_library(kmsdtls MODULE ${KMS_DTLS_SOURCES} ${KMS_DTLS_HEADERS})
 
 target_link_libraries(kmsdtls
   ${GSTREAMER_LIBRARIES}
