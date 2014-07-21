@@ -1,4 +1,4 @@
-<#if model.complexTypes??>
+<#if model.complexTypes?? && model.complexTypes?has_content>
 complexTypes/index.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)

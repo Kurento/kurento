@@ -21,24 +21,21 @@ var ${remoteClass.name} = require('./${remoteClass.name}');
 </#list>
 
 
-<#list model.remoteClasses?sort_by("name") as remoteClass>
-  <#if !remoteClass.abstract>
-exports.${remoteClass.name} = ${remoteClass.name};
-  </#if>
-</#list>
 <#assign remoteClasses_abstract=false>
 <#list model.remoteClasses?sort_by("name") as remoteClass>
   <#if remoteClass.abstract>
     <#assign remoteClasses_abstract=true>
-    <#break>
+  <#else>
+exports.${remoteClass.name} = ${remoteClass.name};
   </#if>
 </#list>
-<#if remoteClasses_abstract || model.complexTypes??>
+<#assign complexTypes=model.complexTypes?? && model.complexTypes?has_content>
+<#if remoteClasses_abstract || complexTypes>
 
-  <#if remoteClasses_abstract??>
-exports.abstracts    = require('./abstracts');
+  <#if remoteClasses_abstract>
+exports.abstracts <#if complexTypes>   </#if>= require('./abstracts');
   </#if>
-  <#if model.complexTypes??>
+  <#if complexTypes>
 exports.complexTypes = require('./complexTypes');
   </#if>
 </#if>

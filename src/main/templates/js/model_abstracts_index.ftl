@@ -4,7 +4,7 @@
     <#assign remoteClasses_abstract=remoteClasses_abstract+[remoteClass.name]>
   </#if>
 </#list>
-<#if remoteClasses_abstract??>
+<#if remoteClasses_abstract?has_content>
 abstracts/index.js
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
