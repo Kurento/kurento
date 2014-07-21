@@ -15,6 +15,7 @@ set(KMS_ELEMENTS_SOURCES
   kmsplayerendpoint.c
   kmsrecorderendpoint.c
   kmsrtpendpoint.c
+  kmswebrtcendpoint.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -23,6 +24,7 @@ set(KMS_ELEMENTS_HEADERS
   kmsplayerendpoint.h
   kmsrecorderendpoint.h
   kmsrtpendpoint.h
+  kmswebrtcendpoint.h
 )
 
 set(ENUM_HEADERS
