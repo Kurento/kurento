@@ -39,9 +39,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsSCTPClientRPC, kms_sctp_client_rpc,
 
 struct _KmsSCTPClientRPCPrivate
 {
-  GstTask *task;
-  GRecMutex tmutex;
-
   KmsSocketErrorFunction cb;
   gpointer cb_data;
   GDestroyNotify destroy;
@@ -54,8 +51,6 @@ kms_sctp_client_rpc_finalize (GObject * gobject)
 
   if (self->priv->cb_data != NULL && self->priv->destroy != NULL)
     self->priv->destroy (self->priv->cb_data);
-
-  g_rec_mutex_clear (&self->priv->tmutex);
 
   G_OBJECT_CLASS (PARENT_CLASS)->finalize (gobject);
 }
@@ -75,7 +70,6 @@ static void
 kms_sctp_client_rpc_init (KmsSCTPClientRPC * self)
 {
   self->priv = KMS_SCTP_CLIENT_RPC_GET_PRIVATE (self);
-  g_rec_mutex_init (&self->priv->tmutex);
 }
 
 KmsSCTPClientRPC *
@@ -163,8 +157,8 @@ pause:
 
     /* pause task */
     KMS_SCTP_BASE_RPC_LOCK (clientrpc);
-    if (clientrpc->priv->task != NULL)
-      gst_task_pause (clientrpc->priv->task);
+    if (KMS_SCTP_BASE_RPC (clientrpc)->task != NULL)
+      gst_task_pause (KMS_SCTP_BASE_RPC (clientrpc)->task);
     KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
   }
 }
@@ -175,13 +169,13 @@ kms_sctp_client_rpc_start (KmsSCTPClientRPC * clientrpc, gchar * host,
 {
   KmsSCTPConnection *conn = NULL;
   KmsSCTPResult result;
-  GstTask *task;
 
   g_return_val_if_fail (clientrpc != NULL, FALSE);
 
   KMS_SCTP_BASE_RPC_LOCK (clientrpc);
 
   if (KMS_SCTP_BASE_RPC (clientrpc)->conn != NULL) {
+    KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
     goto create_task;
   }
 
@@ -207,40 +201,15 @@ kms_sctp_client_rpc_start (KmsSCTPClientRPC * clientrpc, gchar * host,
     return FALSE;
   }
 
-  KMS_SCTP_BASE_RPC_LOCK (clientrpc);
-
 create_task:
 
-  if (clientrpc->priv->task != NULL) {
-    if (conn != NULL)
-      KMS_SCTP_BASE_RPC (clientrpc)->conn = conn;
-    KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
-    return TRUE;
-  }
-
-  task =
-      gst_task_new ((GstTaskFunction) kms_sctp_client_rpc_thread, clientrpc,
-      NULL);
-  if (task == NULL) {
-    KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
+  if (!kms_sctp_base_rpc_start_task (KMS_SCTP_BASE_RPC (clientrpc),
+          (GstTaskFunction) kms_sctp_client_rpc_thread, clientrpc, NULL)) {
     goto task_error;
   }
-
-  clientrpc->priv->task = task;
-
-  KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
-
-  gst_task_set_lock (task, &clientrpc->priv->tmutex);
 
   g_object_set_data (G_OBJECT (clientrpc), KMS_SCTP_CLIENT_RPC_CANCELLABLE,
       cancellable);
-
-  if (!gst_task_start (task)) {
-    KMS_SCTP_BASE_RPC_LOCK (clientrpc);
-    clientrpc->priv->task = NULL;
-    KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
-    goto task_error;
-  }
 
   if (conn == NULL)
     return TRUE;
@@ -268,10 +237,6 @@ task_error:
       kms_sctp_connection_unref (conn);
     }
 
-    gst_object_unref (task);
-
-    g_object_steal_data (G_OBJECT (clientrpc), KMS_SCTP_CLIENT_RPC_CANCELLABLE);
-
     return FALSE;
   }
 }
@@ -280,7 +245,6 @@ void
 kms_sctp_client_rpc_stop (KmsSCTPClientRPC * clientrpc)
 {
   KmsSCTPConnection *conn;
-  GstTask *task;
 
   g_return_if_fail (clientrpc != NULL);
 
@@ -289,26 +253,9 @@ kms_sctp_client_rpc_stop (KmsSCTPClientRPC * clientrpc)
   conn = KMS_SCTP_BASE_RPC (clientrpc)->conn;
   KMS_SCTP_BASE_RPC (clientrpc)->conn = NULL;
 
-  if ((task = clientrpc->priv->task)) {
-    clientrpc->priv->task = NULL;
+  KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
 
-    KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
-
-    gst_task_stop (task);
-
-    /* make sure it is not running */
-    g_rec_mutex_lock (&clientrpc->priv->tmutex);
-    g_rec_mutex_unlock (&clientrpc->priv->tmutex);
-
-    /* now wait for the task to finish */
-    gst_task_join (task);
-
-    /* and free the task */
-    gst_object_unref (GST_OBJECT (task));
-
-  } else {
-    KMS_SCTP_BASE_RPC_UNLOCK (clientrpc);
-  }
+  kms_sctp_base_rpc_stop_task (KMS_SCTP_BASE_RPC (clientrpc));
 
   if (conn != NULL) {
     kms_sctp_connection_close (conn);
