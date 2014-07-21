@@ -338,7 +338,18 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 static void
 gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
 {
-  GST_DEBUG ("QUERY >> %" GST_PTR_FORMAT, query);
+  GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, query);
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+      gst_pad_peer_query (GST_BASE_SRC_PAD (GST_BASE_SRC (self)), query);
+      break;
+    default:
+      GST_WARNING ("Unsupported query %" GST_PTR_FORMAT, query);
+      return;
+  }
+
+  GST_DEBUG_OBJECT (self, "<< %" GST_PTR_FORMAT, query);
 }
 
 static void

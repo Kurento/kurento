@@ -295,4 +295,6 @@ kms_sctp_server_rpc_stop (KmsSCTPServerRPC * server)
     kms_sctp_connection_close (conn);
     kms_sctp_connection_unref (conn);
   }
+
+  g_cancellable_cancel (KMS_SCTP_BASE_RPC (server)->cancellable);
 }
