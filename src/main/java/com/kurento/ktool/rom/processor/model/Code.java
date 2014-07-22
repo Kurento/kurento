@@ -28,7 +28,7 @@ public class Code {
 		putDefault(api, "java", "maven.version",
 				VersionManager.convertToMaven(model.getVersion()));
 
-		putDefault(api, "js", "node.name", "kws-plugin-" + model.getName());
+		putDefault(api, "js", "node.name", "kurento-module-" + model.getName());
 		putDefault(api, "js", "npm.version",
 				VersionManager.convertToNPM(model.getVersion()));
 		putDefault(api, "js", "npm.description", "");
