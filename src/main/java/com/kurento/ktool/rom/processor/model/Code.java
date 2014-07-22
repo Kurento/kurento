@@ -17,10 +17,6 @@ public class Code {
 			api = new HashMap<>();
 		}
 
-		if (implementation == null) {
-			implementation = new HashMap<>();
-		}
-
 		putDefault(api, "java", "packageName",
 				"org.kurento.module." + model.getName());
 		putDefault(api, "java", "maven.groupId", "org.kurento.module");
@@ -33,10 +29,22 @@ public class Code {
 				VersionManager.convertToNPM(model.getVersion()));
 		putDefault(api, "js", "npm.description", "");
 
+		if (implementation == null) {
+			implementation = new HashMap<>();
+		}
+
 		putDefault(implementation, "cpp.namespace",
 				"kurento::plugin::" + model.getName());
 		putDefault(implementation, "lib", "libkms"
 				+ model.getName().toLowerCase());
+
+		if (kmd != null) {
+			putDefault(kmd, "java", "maven.groupId", "org.kurento.module");
+			putDefault(kmd, "java", "maven.artifactId", model.getName()
+					+ ".kmd");
+			putDefault(kmd, "java", "maven.version",
+					VersionManager.convertToMaven(model.getVersion()));
+		}
 	}
 
 	private void putDefault(Map<String, String> section, String key,

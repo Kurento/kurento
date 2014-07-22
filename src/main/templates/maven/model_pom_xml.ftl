@@ -3,9 +3,15 @@ pom.xml
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+<#if model.code.kmd?? >
+	<groupId>${model.code.kmd.java["maven.groupId"]}</groupId>
+	<artifactId>${model.code.kmd.java["maven.artifactId"]}</artifactId>
+	<version>${model.code.kmd.java["maven.version"]}</version>
+<#else>
 	<groupId>${model.code.api.java["maven.groupId"]}</groupId>
 	<artifactId>${model.code.api.java["maven.artifactId"]}</artifactId>
 	<version>${model.code.api.java["maven.version"]}</version>
+</#if>
 	<packaging>jar</packaging>
 
 	<name>${model.name}</name>

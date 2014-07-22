@@ -357,7 +357,8 @@ public class Model {
 				if (baseType == null) {
 					throw new KurentoRomProcessorException("The type '"
 							+ typeRef.getName()
-							+ "' is not defined. Used in plugin: " + name);
+							+ "' is not defined. Used in plugin: " + name
+							+ ".\nThe types are: " + baseTypes.keySet());
 				} else {
 					typeRef.setType(baseType);
 				}
