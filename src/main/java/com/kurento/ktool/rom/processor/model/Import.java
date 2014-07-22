@@ -6,6 +6,12 @@ public class Import {
 	private String version;
 	private transient Model model;
 
+	public Import(String name, String version) {
+		super();
+		this.name = name;
+		this.version = version;
+	}
+
 	public String getName() {
 		return name;
 	}

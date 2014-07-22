@@ -28,8 +28,10 @@ public class Model {
 	/* Kmd file info */
 	private String name;
 	private String version;
+	private String kurentoVersion;
 	private List<Import> imports;
 	private String repository;
+
 	private Code code;
 
 	private List<RemoteClass> remoteClasses;
@@ -214,16 +216,20 @@ public class Model {
 	}
 
 	public void validateModel() {
+
+		if (kurentoVersion == null) {
+			throw new KurentoRomProcessorException(
+					"Kurento version is mandatory at least in one of the files");
+		}
+
 		if (name == null) {
 			throw new KurentoRomProcessorException(
-					"Name is mandatory at least in one of the files composing "
-							+ "model");
+					"Name is mandatory at least in one of the files");
 		}
 
 		if (version == null) {
 			throw new KurentoRomProcessorException(
-					"Version is mandatory at least in one of the files "
-							+ "composing model " + name);
+					"Version is mandatory at least in one of the files");
 		}
 
 		if (VersionManager.isReleaseVersion(version)) {
@@ -297,6 +303,11 @@ public class Model {
 	}
 
 	private void resolveImports(ModelManager modelManager) {
+
+		if (!"core".equals(this.name)) {
+			this.imports.add(new Import("core", kurentoVersion));
+		}
+
 		for (Import importEntry : this.imports) {
 			Model dependencyModel = null;
 
@@ -371,6 +382,15 @@ public class Model {
 			if (model.name != null) {
 				throw new KurentoRomProcessorException(
 						"Name can only be set in one kmd file");
+			}
+		}
+
+		if (this.kurentoVersion == null) {
+			this.name = model.kurentoVersion;
+		} else {
+			if (model.kurentoVersion != null) {
+				throw new KurentoRomProcessorException(
+						"Kurento version can only be set in one kmd file");
 			}
 		}
 
