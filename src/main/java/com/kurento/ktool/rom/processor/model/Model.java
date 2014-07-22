@@ -221,9 +221,14 @@ public class Model {
 
 	public void validateModel() {
 
-		if (kurentoVersion == null && !"core".equals(name)) {
-			throw new KurentoRomProcessorException(
-					"Kurento version is mandatory at least in one of the files");
+		if (kurentoVersion == null) {
+			if ("core".equals(name)) {
+				kurentoVersion = version;
+			} else {
+				throw new KurentoRomProcessorException(
+						"Kurento version is mandatory at least in one of the files describing: "
+								+ name);
+			}
 		}
 
 		if (name == null) {
