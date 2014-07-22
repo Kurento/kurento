@@ -23,7 +23,7 @@ module.exports = function(grunt)
   var bower =
   {
     TOKEN:      process.env.TOKEN,
-    repository: 'git://github.com/KurentoReleases/<%= pkg.name %>-bower.git'
+    repository: 'git://github.com/Kurento/<%= pkg.name %>-bower.git'
   };
 
   // Project configuration.
