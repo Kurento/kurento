@@ -16,11 +16,16 @@
 #include <gst/gst.h>
 
 #include "kmshttpendpoint.h"
+#include "kmsplayerendpoint.h"
 
 static gboolean
 kurento_init (GstPlugin * kurento)
 {
   if (!kms_http_endpoint_plugin_init(kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_player_endpoint_plugin_init(kurento)) {
     return FALSE;
   }
 

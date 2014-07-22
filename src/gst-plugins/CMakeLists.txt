@@ -6,11 +6,13 @@ set(KMS_ELEMENTS_SOURCES
   kmselements.c
   kmshttpendpoint.h
   kmshttpendpoint.c
+  kmsplayerendpoint.c
 )
 
 set(KMS_ELEMENTS_HEADERS
   kmshttpendpoint.h
   kmshttpendpointmethod.h
+  kmsplayerendpoint.h
 )
 
 set(ENUM_HEADERS

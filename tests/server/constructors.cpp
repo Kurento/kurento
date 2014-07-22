@@ -15,6 +15,7 @@
 
 #include <glibmm/module.h>
 #include <FactoryRegistrar.hpp>
+#include <ModuleManager.hpp>
 #include <MediaObjectImpl.hpp>
 #include <KurentoException.hpp>
 #include <jsonrpc/JsonSerializer.hpp>
@@ -23,80 +24,62 @@
 #include <config.h>
 
 void
-testHttpGetEndPoint (const std::map <std::string, std::shared_ptr <kurento::Factory > > &factories, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testHttpGetEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
   w.SerializeNVP(mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = factories.at ("HttpGetEndpoint")->createObject("", w.JsonValue);
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory ("HttpGetEndpoint")->createObject("", w.JsonValue);
   kurento::MediaSet::getMediaSet()->release(object);
 }
 
 void
-testHttpPostEndPoint (const std::map <std::string, std::shared_ptr <kurento::Factory > > &factories, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testHttpPostEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
   w.SerializeNVP(mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = factories.at ("HttpPostEndpoint")->createObject("", w.JsonValue);
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("HttpPostEndpoint")->createObject("", w.JsonValue);
   kurento::MediaSet::getMediaSet()->release(object);
 }
 
-std::shared_ptr <kurento::MediaObjectImpl>
-createMediaPipeline (Glib::Module &coreModule)
+void
+testPlayerEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
-  const kurento::FactoryRegistrar *registrar;
-  void *registrarFactory;
+  kurento::JsonSerializer w (true);
+  std::string uri ("http://kurento.org");
 
-  if (!coreModule.get_symbol ("getFactoryRegistrar", registrarFactory) ) {
-    std::cerr << "symbol not found" << std::endl;
-    exit(1);
-  }
+  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP(uri);
 
-  registrar = ( (RegistrarFactoryFunc) registrarFactory) ();
-  const std::map <std::string, std::shared_ptr <kurento::Factory > > &factories = registrar->getFactories();
-  return factories.at("MediaPipeline")->createObject("", Json::Value());
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("PlayerEndpoint")->createObject("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release(object);
 }
 
 int
 main (int argc, char **argv)
 {
   std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline;
-  const kurento::FactoryRegistrar *registrar;
-  void *registrarFactory;
+  std::shared_ptr <kurento::Factory> factory;
 
   gst_init (&argc, &argv);
 
+  kurento::ModuleManager moduleManager;
+
   std::string coreModuleName = KURENTO_MODULES_SO_DIR "/libkmscoremodule.so";
 
-  Glib::Module coreModule (coreModuleName);
+  moduleManager.loadModule (coreModuleName);
+  mediaPipeline = moduleManager.getFactory ("MediaPipeline")->createObject("", Json::Value());
 
-  mediaPipeline = createMediaPipeline(coreModule);
+  moduleManager.loadModule ("../../src/server/libkmselementsmodule.so");
 
-  std::string moduleName = "../../src/server/libkmselementsmodule.so";
-
-  Glib::Module module (moduleName);
-
-  if (!module) {
-    std::cerr << "module cannot be loaded: " << Glib::Module::get_last_error() << std::endl;
-    return 1;
-  }
-
-  if (!module.get_symbol ("getFactoryRegistrar", registrarFactory) ) {
-    std::cerr << "symbol not found" << std::endl;
-    return 1;
-  }
-
-  registrar = ( (RegistrarFactoryFunc) registrarFactory) ();
-  const std::map <std::string, std::shared_ptr <kurento::Factory > > &factories = registrar->getFactories();
-
-  testHttpGetEndPoint(factories, mediaPipeline);
-  testHttpPostEndPoint(factories, mediaPipeline);
+  testHttpGetEndPoint(moduleManager, mediaPipeline);
+  testHttpPostEndPoint(moduleManager, mediaPipeline);
+  testPlayerEndPoint(moduleManager, mediaPipeline);
 
   /*
-  Factory: PlayerEndpoint
   Factory: RecorderEndpoint
   Factory: RtpEndpoint
   Factory: WebRtcEndpoint
