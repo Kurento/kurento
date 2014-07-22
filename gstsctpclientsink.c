@@ -341,6 +341,9 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
         g_error_free (err);
         return FALSE;
       }
+
+      /* TODO: Provide resulting query */
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, rsp_query);
       break;
     case GST_QUERY_ACCEPT_CAPS:
       break;

@@ -84,6 +84,7 @@ struct _KmsSCTPBaseRPC
   gsize buffer_size;
   GHashTable *pending_reqs;
   GHashTable *requests;
+  GHashTable *responses;
   KmsSCTPConnection *conn;
 
   GstTask *task;

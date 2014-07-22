@@ -120,7 +120,7 @@ kms_sctp_client_rpc_thread (KmsSCTPClientRPC * clientrpc)
   if (result != KMS_SCTP_OK)
     goto error;
 
-  GST_DEBUG ("Got buffer!");
+  kms_sctp_base_rpc_process_message (KMS_SCTP_BASE_RPC (clientrpc), &msg);
 
   CLEAR_SCTP_MESSAGE (msg);
   kms_sctp_connection_unref (conn);
