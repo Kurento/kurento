@@ -393,7 +393,7 @@ public class Model {
 		}
 
 		if (this.kurentoVersion == null) {
-			this.name = model.kurentoVersion;
+			this.kurentoVersion = model.kurentoVersion;
 		} else {
 			if (model.kurentoVersion != null) {
 				throw new KurentoRomProcessorException(
