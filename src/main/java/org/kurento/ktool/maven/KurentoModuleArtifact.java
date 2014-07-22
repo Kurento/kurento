@@ -16,7 +16,7 @@ import org.apache.maven.plugin.logging.Log;
 
 import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
 
-public class KurentoArtifact implements Closeable {
+public class KurentoModuleArtifact implements Closeable {
 
 	private static final int EXTENSION_LENGTH = ".kmd.json".length();
 
@@ -33,7 +33,7 @@ public class KurentoArtifact implements Closeable {
 	private Path kmdFile;
 	private String moduleName;
 
-	public KurentoArtifact(Log log, Artifact artifact) throws IOException {
+	public KurentoModuleArtifact(Log log, Artifact artifact) throws IOException {
 
 		this.log = log;
 		this.artifact = artifact;
@@ -95,7 +95,7 @@ public class KurentoArtifact implements Closeable {
 		return artifact;
 	}
 
-	public boolean isKurentoArtifact() {
+	public boolean isKurentoModule() {
 		return kurentoArtifact;
 	}
 

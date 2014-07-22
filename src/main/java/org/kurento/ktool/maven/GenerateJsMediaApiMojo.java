@@ -15,23 +15,23 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  *
  * @author micael.gallego@gmail.com
  */
-@Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate-java-media-api", requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
-public class GenerateJavaMediaApiMojo extends AbstractGenerateMediaApiMojo {
+@Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate-js-media-api", requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
+public class GenerateJsMediaApiMojo extends AbstractGenerateMediaApiMojo {
 
 	/**
 	 * The directory where the Kurento Media Element Definition files (
 	 * {@code *.kmd.json}) are located.
 	 */
-	@Parameter(defaultValue = "${basedir}/src/main/kmd")
+	@Parameter(defaultValue = "${basedir}/kmd")
 	private File sourceDirectory;
 
 	/**
-	 * Specify output directory where the Java files are generated.
+	 * Specify output directory where the JavaScript files are generated.
 	 */
-	@Parameter(readonly = true, defaultValue = "${project.build.directory}/generated-sources/kmd")
+	@Parameter(readonly = true, defaultValue = "${basedir}/lib")
 	protected File generatedSourceOutputFolder;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/kurento", readonly = true)
+	@Parameter(defaultValue = "${basedir}/lib/kmd", readonly = true)
 	private File kmdOutputFolder;
 
 	/**
@@ -49,7 +49,7 @@ public class GenerateJavaMediaApiMojo extends AbstractGenerateMediaApiMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-		executeKurentoMavenPlugin("java", sourceDirectory,
+		executeKurentoMavenPlugin("js", sourceDirectory,
 				generatedSourceOutputFolder, kmdOutputFolder);
 	}
 }

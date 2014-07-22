@@ -14,7 +14,7 @@ import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
 
 public class KurentoDependencyManager {
 
-	private Map<String, KurentoArtifact> dependencies = new HashMap<>();
+	private Map<String, KurentoModuleArtifact> dependencies = new HashMap<>();
 
 	private Log log;
 
@@ -22,11 +22,11 @@ public class KurentoDependencyManager {
 		this.log = log;
 	}
 
-	public Collection<KurentoArtifact> getDependencies() {
+	public Collection<KurentoModuleArtifact> getDependencies() {
 		return this.dependencies.values();
 	}
 
-	public KurentoArtifact getDependency(String name) {
+	public KurentoModuleArtifact getDependency(String name) {
 		return this.dependencies.get(name);
 	}
 
@@ -43,15 +43,15 @@ public class KurentoDependencyManager {
 
 				log.info("Exploring dependency: " + artifact);
 
-				KurentoArtifact kurentoArtifact = new KurentoArtifact(log,
+				KurentoModuleArtifact kurentoArtifact = new KurentoModuleArtifact(log,
 						artifact);
 
-				if (kurentoArtifact.isKurentoArtifact()) {
+				if (kurentoArtifact.isKurentoModule()) {
 
 					log.info("  Found kurento dependency "
 							+ kurentoArtifact.getArtifactCoordinate());
 
-					addKurentoArtifact(kurentoArtifact);
+					addKurentoModuleArtifact(kurentoArtifact);
 				}
 
 			} catch (IOException e) {
@@ -61,7 +61,7 @@ public class KurentoDependencyManager {
 		}
 	}
 
-	private void addKurentoArtifact(KurentoArtifact kurentoArtifact) {
+	private void addKurentoModuleArtifact(KurentoModuleArtifact kurentoArtifact) {
 
 		String moduleName = kurentoArtifact.getName();
 

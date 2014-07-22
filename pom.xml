@@ -4,7 +4,7 @@
 
 	<groupId>com.kurento.ktool</groupId>
 	<artifactId>kurento-maven-plugin</artifactId>
-	<version>0.0.17-SNAPSHOT</version>
+	<version>0.0.18-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 
 	<name>kurento-maven-plugin</name>
