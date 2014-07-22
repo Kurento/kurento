@@ -319,7 +319,7 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
   GstQuery *rsp_query = NULL;
   GError *err = NULL;
-  gboolean ret = FALSE;
+  gboolean ret;
 
   GST_OBJECT_LOCK (self);
 
@@ -332,23 +332,32 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
   GST_OBJECT_UNLOCK (self);
 
   switch (GST_QUERY_TYPE (query)) {
-    case GST_QUERY_CAPS:
+    case GST_QUERY_CAPS:{
+      GstCaps *caps, *copy;
+
       GST_DEBUG (">> %" GST_PTR_FORMAT, query);
 
       if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
               query, self->priv->cancellable, &rsp_query, &err)) {
         GST_ERROR_OBJECT (self, "Error: %s", err->message);
         g_error_free (err);
-        return FALSE;
+        ret = FALSE;
+        break;
       }
 
-      /* TODO: Provide resulting query */
-      GST_DEBUG ("<< %" GST_PTR_FORMAT, rsp_query);
+      gst_query_parse_caps_result (rsp_query, &caps);
+      copy = gst_caps_copy (caps);
+
+      gst_query_set_caps_result (query, copy);
+      gst_caps_unref (copy);
+      gst_query_unref (rsp_query);
+
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+
+      ret = TRUE;
       break;
-    case GST_QUERY_ACCEPT_CAPS:
-      break;
+    }
     default:
-      GST_DEBUG ("Not marshalled query %" GST_PTR_FORMAT, query);
       ret =
           GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->query (sink,
           query);
