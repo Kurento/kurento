@@ -105,6 +105,9 @@ void kms_scp_base_rpc_cancel_pending_requests (KmsSCTPBaseRPC *baserpc);
 gboolean kms_scp_base_rpc_query (KmsSCTPBaseRPC *baserpc, GstQuery *query,
   GCancellable *cancellable, GstQuery **rsp, GError **err);
 
+gboolean kms_scp_base_rpc_event (KmsSCTPBaseRPC *baserpc, GstEvent *event,
+  GCancellable *cancellable, GError **err);
+
 void kms_sctp_base_rpc_set_query_function (KmsSCTPBaseRPC *baserpc,
   KmsQueryFunction func, gpointer user_data, GDestroyNotify notify);
 

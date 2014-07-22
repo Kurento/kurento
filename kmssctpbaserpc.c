@@ -439,6 +439,36 @@ kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
 }
 
 gboolean
+kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
+    GCancellable * cancellable, GError ** err)
+{
+  KmsFragmenter *f;
+  guint32 req_id;
+  gboolean ret;
+
+  g_return_val_if_fail (baserpc != NULL, FALSE);
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  f = kms_fragmenter_new (baserpc->rules, baserpc->buffer_size);
+  req_id = baserpc->req_id++;
+
+  if (!kms_fragmenter_event (f, req_id, event, err)) {
+    baserpc->req_id--;
+    ret = FALSE;
+    goto done;
+  }
+
+  ret = kms_scp_base_rpc_send_fragments (baserpc, f, cancellable, err);
+
+done:
+  KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+  kms_fragmenter_unref (f);
+
+  return ret;
+}
+
+gboolean
 kms_sctp_base_rpc_start_task (KmsSCTPBaseRPC * baserpc,
     GstTaskFunction func, gpointer user_data, GDestroyNotify notify)
 {

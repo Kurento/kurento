@@ -367,6 +367,49 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
   return ret;
 }
 
+static gboolean
+gst_sctp_client_sink_event (GstBaseSink * sink, GstEvent * event)
+{
+  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
+  GError *err = NULL;
+  gboolean ret;
+
+  GST_OBJECT_LOCK (self);
+
+  if (!self->priv->connected) {
+    GST_OBJECT_UNLOCK (self);
+    GST_WARNING ("Received event while not connected: %" GST_PTR_FORMAT, event);
+    return FALSE;
+  }
+
+  GST_OBJECT_UNLOCK (self);
+
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_STREAM_START:
+    case GST_EVENT_SEGMENT:
+      GST_DEBUG (">> %" GST_PTR_FORMAT, event);
+
+      if (kms_scp_base_rpc_event (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
+              event, self->priv->cancellable, &err)) {
+        ret = TRUE;
+        break;
+      }
+
+      GST_ERROR_OBJECT (self, "Error: %s", err->message);
+      g_error_free (err);
+      ret = FALSE;
+      break;
+    default:
+      GST_WARNING ("Not propagated event >> %" GST_PTR_FORMAT, event);
+      ret =
+          GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->event (sink,
+          event);
+      break;
+  }
+
+  return ret;
+}
+
 static void
 gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 {
@@ -422,6 +465,7 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
   gstbasesink_class->unlock = gst_sctp_client_sink_unlock;
   gstbasesink_class->unlock_stop = gst_sctp_client_sink_unlock_stop;
   gstbasesink_class->query = gst_sctp_client_sink_query;
+  gstbasesink_class->event = gst_sctp_client_sink_event;
 
   g_type_class_add_private (klass, sizeof (GstSCTPClientSinkPrivate));
 }
