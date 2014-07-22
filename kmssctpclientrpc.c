@@ -94,7 +94,7 @@ kms_sctp_client_rpc_thread (KmsSCTPClientRPC * clientrpc)
   GError *err = NULL;
   KmsSCTPConnection *conn;
   KmsSCTPResult result;
-  KmsSCTPMessage msg;
+  KmsSCTPMessage msg = { 0 };
   gsize size;
 
   KMS_SCTP_BASE_RPC_LOCK (clientrpc);
