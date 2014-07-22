@@ -23,6 +23,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ServletContextInitializer;
 import org.springframework.boot.context.embedded.ServletListenerRegistrationBean;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,6 +67,11 @@ public class ContentApiBootApp {
 	@Bean
 	public MediaPipelineFactory mediaPipelineFactory() {
 		return KmfMediaApi.createMediaPipelineFactoryFromSystemProps();
+	}
+	
+	@Bean
+	public TomcatEmbeddedServletContainerFactory tomcatEmbeddedServletContainerFactory() {
+	    return new TomcatEmbeddedServletContainerFactory();
 	}
 
 	public static ConfigurableApplicationContext start() {

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -16,6 +17,11 @@
 
 		This project implements a simple evaluation of Kurento (KMS, KMF, KWS).
 	</description>
+
+	<properties>
+
+		<jetty-server.vesion>9.1.3.v20140225</jetty-server.vesion>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -40,6 +46,26 @@
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-system-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Jetty -->
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>${jetty-server.vesion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-util</artifactId>
+			<version>${jetty-server.vesion}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<version>${jetty-server.vesion}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
