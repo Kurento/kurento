@@ -66,6 +66,7 @@ typedef struct _KmsSCTPBaseRPCClass KmsSCTPBaseRPCClass;
   (g_rec_mutex_unlock (&KMS_SCTP_BASE_RPC ((elem))->rmutex))
 
 typedef void (*KmsQueryFunction) (GstQuery *query, gpointer user_data);
+typedef void (*KmsEventFunction) (GstEvent *event, gpointer user_data);
 
 struct _KmsSCTPBaseRPC
 {
@@ -77,6 +78,10 @@ struct _KmsSCTPBaseRPC
   KmsQueryFunction query;
   gpointer query_data;
   GDestroyNotify query_notify;
+
+  KmsEventFunction event;
+  gpointer event_data;
+  GDestroyNotify event_notify;
 
   /* < protected > */
   GRecMutex rmutex;
@@ -110,6 +115,9 @@ gboolean kms_scp_base_rpc_event (KmsSCTPBaseRPC *baserpc, GstEvent *event,
 
 void kms_sctp_base_rpc_set_query_function (KmsSCTPBaseRPC *baserpc,
   KmsQueryFunction func, gpointer user_data, GDestroyNotify notify);
+
+void kms_sctp_base_rpc_set_event_function (KmsSCTPBaseRPC *baserpc,
+  KmsEventFunction func, gpointer user_data, GDestroyNotify notify);
 
 /* protected methods */
 gboolean kms_sctp_base_rpc_start_task(KmsSCTPBaseRPC *baserpc,

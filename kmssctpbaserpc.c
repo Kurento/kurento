@@ -215,6 +215,9 @@ kms_sctp_base_rpc_finalize (GObject * obj)
   if (self->query_notify != NULL)
     self->query_notify (self->query_data);
 
+  if (self->event_notify != NULL)
+    self->event_notify (self->event_data);
+
   g_rec_mutex_clear (&self->rmutex);
   g_rec_mutex_clear (&self->tmutex);
 
@@ -563,6 +566,30 @@ kms_sctp_base_rpc_set_query_function (KmsSCTPBaseRPC * baserpc,
     destroy (data);
 }
 
+void
+kms_sctp_base_rpc_set_event_function (KmsSCTPBaseRPC * baserpc,
+    KmsEventFunction func, gpointer user_data, GDestroyNotify notify)
+{
+  GDestroyNotify destroy;
+  gpointer data;
+
+  g_return_if_fail (baserpc != NULL);
+
+  KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  destroy = baserpc->event_notify;
+  data = baserpc->event_data;
+
+  baserpc->event = func;
+  baserpc->event_notify = notify;
+  baserpc->event_data = user_data;
+
+  KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+  if (destroy != NULL)
+    destroy (data);
+}
+
 static GstQuery *
 pack_fragmented_query (KmsAssembler * assembler)
 {
@@ -578,6 +605,29 @@ pack_fragmented_query (KmsAssembler * assembler)
 
   if (query != NULL)
     return query;
+
+  GST_ERROR ("%s", err->message);
+  g_error_free (err);
+  g_free (buf);
+
+  return NULL;
+}
+
+static GstEvent *
+pack_fragmented_event (KmsAssembler * assembler)
+{
+  GstEvent *event = NULL;
+  GError *err = NULL;
+  gchar *buf = NULL;
+  gsize size;
+
+  kms_assembler_compose_buffer (assembler, &buf, &size);
+
+  dec_GstEvent (kms_assembler_get_encoding_rules (assembler), buf, size, &event,
+      &err);
+
+  if (event != NULL)
+    return event;
 
   GST_ERROR ("%s", err->message);
   g_error_free (err);
@@ -643,7 +693,26 @@ kms_sctp_base_rpc_process_ensambled_request (KmsSCTPBaseRPC * baserpc,
       break;
     }
     case KMS_DATA_TYPE_EVENT:{
-      GST_DEBUG ("TODO: Unpack events");
+      KmsEventFunction event_func;
+      gpointer event_data;
+      GstEvent *event;
+
+      event = pack_fragmented_event (assembler);
+      if (event == NULL)
+        return;
+
+      KMS_SCTP_BASE_RPC_LOCK (baserpc);
+      if (baserpc->event == NULL) {
+        KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+        return;
+      }
+
+      event_func = baserpc->event;
+      event_data = baserpc->event_data;
+      KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+      event_func (event, event_data);
+      gst_event_unref (event);
       break;
     }
     default:{

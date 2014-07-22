@@ -353,6 +353,25 @@ gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
 }
 
 static void
+gst_sctp_server_src_remote_event (GstEvent * event, GstSCTPServerSrc * self)
+{
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_STREAM_START:
+    case GST_EVENT_SEGMENT:
+      GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, event);
+
+      gst_event_ref (event);
+      if (!gst_pad_push_event (GST_BASE_SRC_PAD (GST_BASE_SRC (self)), event)) {
+        GST_ERROR_OBJECT (self, "Could not send event %" GST_PTR_FORMAT, event);
+      }
+      break;
+    default:
+      GST_WARNING ("Unsupported event %" GST_PTR_FORMAT, event);
+      return;
+  }
+}
+
+static void
 gst_sctp_server_src_init (GstSCTPServerSrc * self)
 {
   self->priv = GST_SCTP_SERVER_SRC_GET_PRIVATE (self);
@@ -362,6 +381,9 @@ gst_sctp_server_src_init (GstSCTPServerSrc * self)
       NULL);
   kms_sctp_base_rpc_set_query_function (KMS_SCTP_BASE_RPC (self->priv->
           serverrpc), (KmsQueryFunction) gst_sctp_server_src_remote_query, self,
+      NULL);
+  kms_sctp_base_rpc_set_event_function (KMS_SCTP_BASE_RPC (self->priv->
+          serverrpc), (KmsEventFunction) gst_sctp_server_src_remote_event, self,
       NULL);
 }
 
