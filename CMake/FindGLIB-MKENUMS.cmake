@@ -12,7 +12,7 @@
 #=============================================================================
 
 FIND_PROGRAM(GLIB-MKENUMS_EXECUTABLE NAMES glib-mkenums
-        HINTS ENV${GLIB-MKENUMS_ROOT}/asn1c ${GLIB-MKENUMS_ROOT}/asn1c)
+        HINTS ENV${GLIB-MKENUMS_ROOT}/glib-mkenums ${GLIB-MKENUMS_ROOT}/glib-mkenums)
 
 # handle the QUIETLY and REQUIRED arguments and set GLIB-MKENUMS_FOUND to TRUE if
 # all listed variables are TRUE

@@ -12,7 +12,7 @@
 #=============================================================================
 
 FIND_PROGRAM(GLIB-GENMARSHAL_EXECUTABLE NAMES glib-genmarshal
-        HINTS ENV${GLIB-GENMARSHAL_ROOT}/asn1c ${GLIB-GENMARSHAL_ROOT}/asn1c)
+        HINTS ENV${GLIB-GENMARSHAL_ROOT}/glib-genmarshal ${GLIB-GENMARSHAL_ROOT}/glib-genmarshal)
 
 # handle the QUIETLY and REQUIRED arguments and set GLIB-GENMARSHAL_FOUND to TRUE if
 # all listed variables are TRUE
