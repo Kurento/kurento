@@ -45,6 +45,7 @@ import com.xebialabs.overthere.ssh.SshConnectionType;
 public class RemoteHost {
 
 	public static Logger log = LoggerFactory.getLogger(RemoteHost.class);
+	public static final String DEFAULT_TMP_FOLDER = "/tmp";
 
 	private static final int NODE_INITIAL_PORT = 5555;
 	private static final int PING_TIMEOUT = 1; // seconds
@@ -59,6 +60,22 @@ public class RemoteHost {
 		this.host = host;
 		this.login = login;
 		this.passwd = passwd;
+	}
+
+	public String createTmpFolder() {
+		String remoteFolder;
+		try {
+			do {
+				remoteFolder = DEFAULT_TMP_FOLDER + "/" + System.nanoTime();
+			} while (exists(remoteFolder));
+			execAndWaitCommand("mkdir", remoteFolder);
+		} catch (IOException e) {
+			remoteFolder = DEFAULT_TMP_FOLDER;
+		}
+
+		log.debug("Remote folder to store temporal files in node {}: {} ",
+				host, remoteFolder);
+		return remoteFolder;
 	}
 
 	public void getFile(String targetFile, String origFile) {
@@ -93,6 +110,7 @@ public class RemoteHost {
 
 		connection = Overthere.getConnection(SshConnectionBuilder.SSH_PROTOCOL,
 				options);
+
 	}
 
 	public void stop() {

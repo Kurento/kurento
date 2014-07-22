@@ -48,6 +48,7 @@ public class Node {
 	private String audio;
 	private RemoteHost remoteHost;
 	private String home;
+	private String tmpFolder;
 
 	public Node(String address, Browser browser, String video, String audio) {
 		this(address, browser);
@@ -146,6 +147,7 @@ public class Node {
 	public void startRemoteHost() {
 		remoteHost = new RemoteHost(getAddress(), getLogin(), getPassword());
 		remoteHost.start();
+		setTmpFolder(remoteHost.createTmpFolder());
 	}
 
 	public void stopRemoteHost() {
@@ -154,6 +156,14 @@ public class Node {
 
 	public RemoteHost getRemoteHost() {
 		return remoteHost;
+	}
+
+	public String getTmpFolder() {
+		return tmpFolder;
+	}
+
+	public void setTmpFolder(String tmpFolder) {
+		this.tmpFolder = tmpFolder;
 	}
 
 	public String getHome() {

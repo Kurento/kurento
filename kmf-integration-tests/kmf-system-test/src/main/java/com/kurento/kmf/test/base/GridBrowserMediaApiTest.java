@@ -68,7 +68,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 
 	public static final int DEFAULT_HUB_PORT = 4444;
 
-	private static final int TIMEOUT_NODE = 60; // seconds
+	private static final int TIMEOUT_NODE = 120; // seconds
 	private static final String LAUNCH_SH = "launch-node.sh";
 
 	private SeleniumGridHub seleniumGridHub;
@@ -130,7 +130,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		final String remoteFolder = remoteHome + "/" + node.REMOTE_FOLDER;
 		final String remoteChromeDriver = remoteFolder + chromeDriverName;
 		final String remoteSeleniumJar = remoteFolder + seleniumJarName;
-		final String remoteScript = remoteFolder + "/" + LAUNCH_SH;
+		final String remoteScript = node.getTmpFolder() + "/" + LAUNCH_SH;
 		final String remotePort = String.valueOf(node.getRemoteHost()
 				.getFreePort());
 
@@ -179,7 +179,7 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		data.put("maxInstances", String.valueOf(maxInstances));
 		data.put("hubIp", hubAddress);
 		data.put("hubPort", String.valueOf(hubPort));
-		data.put("remoteFolder", remoteFolder);
+		data.put("tmpFolder", node.getTmpFolder());
 		data.put("remoteChromeDriver", remoteChromeDriver);
 		data.put("remoteSeleniumJar", remoteSeleniumJar);
 		data.put("pidFile", node.REMOTE_PID_FILE);
@@ -188,9 +188,10 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		cfg.setClassForTemplateLoading(GridBrowserMediaApiTest.class,
 				"/templates/");
 
+		String tmpScript = node.getTmpFolder() + LAUNCH_SH;
 		try {
 			Template template = cfg.getTemplate(LAUNCH_SH + ".ftl");
-			Writer writer = new FileWriter(new File(LAUNCH_SH));
+			Writer writer = new FileWriter(new File(tmpScript));
 			template.process(data, writer);
 			writer.flush();
 			writer.close();
@@ -201,9 +202,9 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		}
 
 		// Copy script to remote node
-		node.getRemoteHost().scp(LAUNCH_SH, remoteScript);
+		node.getRemoteHost().scp(tmpScript, remoteScript);
 		node.getRemoteHost().execAndWaitCommand("chmod", "+x", remoteScript);
-		Shell.run("rm", LAUNCH_SH);
+		Shell.run("rm", tmpScript);
 	}
 
 	private synchronized void waitForNode(String node, String port) {
@@ -306,18 +307,10 @@ public class GridBrowserMediaApiTest extends BrowserMediaApiTest {
 		// Stop Nodes
 		for (Node n : nodes) {
 			String remotePid = n.getRemoteHost().execAndWaitCommandNoBr("cat",
-					n.REMOTE_FOLDER + "/" + n.REMOTE_PID_FILE);
-			n.getRemoteHost().execCommand("pkill", "-TERM", "-P", remotePid);
-			n.getRemoteHost().execCommand("rm",
-					n.REMOTE_FOLDER + "/" + n.REMOTE_PID_FILE);
+					n.getTmpFolder() + "/" + n.REMOTE_PID_FILE);
+			n.getRemoteHost().execCommand("pkill", "-KILL", "-P", remotePid);
 			n.stopRemoteHost();
 		}
-	}
-
-	public void runParallel(Runnable myFunc) throws InterruptedException,
-			ExecutionException {
-		ExecutorService exec = Executors.newFixedThreadPool(1);
-		exec.submit(myFunc).get();
 	}
 
 	public void runParallel(List<Node> nodeList, Runnable myFunc)

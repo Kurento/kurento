@@ -130,7 +130,7 @@ public class KurentoMediaServerManager {
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
 		}
-		log.debug("Folder to store temporal files: {}", workspace);
+		log.debug("Local folder to store temporal files: {}", workspace);
 
 		KurentoServicesTestHelper.setTestDir(testDir);
 

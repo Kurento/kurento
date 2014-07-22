@@ -16,7 +16,11 @@ package com.kurento.kmf.test.grid;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -58,25 +62,39 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 
 	public GridWebRtcTest() {
 		nodes = new ArrayList<Node>();
-		nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME,
-				getPathTestFiles() + "/video/10sec/red.y4m",
-				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
 
-		// nodes.addAll(getRandomNodes(5, Browser.CHROME, getPathTestFiles()
+		nodes.addAll(getRandomNodes(5, Browser.CHROME));
+
+		// Uncomment these lines to use custom video and audio files:
+		// nodes.addAll(getRandomNodes(3, Browser.CHROME, getPathTestFiles()
 		// + "/video/10sec/red.y4m",
 		// "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
+
+		// ... or specifying a given node:
+		// nodes.add(new Node("epsilon01.aulas.gsyc.es", Browser.CHROME,
+		// getPathTestFiles() + "/video/10sec/red.y4m",
+		// "http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav"));
+
 		log.info("Node list {} ", nodes);
 	}
 
 	@Ignore
 	@Test
 	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
+		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
+		List<Future<?>> results = new ArrayList<>();
 		for (final Node node : nodes) {
-			runParallel(new Runnable() {
+			results.add(exec.submit(new Runnable() {
 				public void run() {
-					doTest(node, Color.RED);
+					doTest(node, new Color(0, 135, 0));
+
+					// Uncomment this line to assess custom color video
+					// doTest(node, Color.RED);
 				}
-			});
+			}));
+		}
+		for (Future<?> r : results) {
+			r.get();
 		}
 	}
 
