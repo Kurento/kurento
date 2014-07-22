@@ -157,6 +157,10 @@ public class Model {
 		this.name = name;
 	}
 
+	public String getKurentoVersion() {
+		return kurentoVersion;
+	}
+
 	public String getVersion() {
 		return version;
 	}
@@ -246,7 +250,6 @@ public class Model {
 	}
 
 	public void resolveModel(ModelManager modelManager) {
-
 		if (resolutionState == ResolutionState.IN_PROCESS) {
 			throw new KurentoRomProcessorException(
 					"Found a dependency cycle in plugin '" + this.name + "'");
@@ -260,6 +263,10 @@ public class Model {
 		log.debug("Resolving model '" + name + "'");
 
 		this.resolutionState = ResolutionState.IN_PROCESS;
+
+		if (kurentoVersion == null && version != null) {
+			kurentoVersion = version;
+		}
 
 		resolveImports(modelManager);
 		resolveTypes(modelManager);
