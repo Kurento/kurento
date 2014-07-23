@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
 Build-Depends: debhelper(>=9),
                cdbs,
-               default-jdk,
+               default-jdk (>=2:1.7),
                maven-debian-helper,
                libmaven-assembly-plugin-java,
                libmaven-compiler-plugin-java,
@@ -17,7 +17,8 @@ Standards-Version: 3.9.4
 
 Package: ktool-rom-processor
 Architecture: all
-Depends: ${maven:Depends},
+Depends: default-jre (>=2:1.7),
+         ${maven:Depends},
          ${misc:Depends}
 Description: Kurento Media Server Remote Object Model Processor
  This tools generates stubs in different languages for communication
