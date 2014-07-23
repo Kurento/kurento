@@ -1,5 +1,24 @@
 {
   "name": "elements",
   "version": "5.0.0-dev",
-  "kurentoVersion": "5.0.0-dev"
+  "kurentoVersion": "5.0.0-dev",
+  "code": {
+    "kmd": {
+      "java": {
+        "maven.groupId": "com.kurento",
+        "maven.artifactId": "kms-media-api-elements"
+      }
+    },
+    "api": {
+      "java": {
+        "packageName": "com.kurento.kmf.media",
+        "maven.groupId": "com.kurento",
+        "maven.artifactId": "kmf-media-api"
+      },
+      "js": {
+        "node.name": "kws-media-api-elements",
+        "npm.description": "Elements implementations for kurento media server"
+      }
+    }
+  }
 }
