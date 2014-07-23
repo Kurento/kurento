@@ -60,6 +60,35 @@ ${remoteClass.name}Impl::invoke (std::shared_ptr<MediaObjectImpl> obj, const std
   }
 
 </#list>
+<#list remoteClass.properties as property>
+  if (methodName == "get${property.name?cap_first}") {
+    ${getCppObjectType (property.type, false)} ret;
+    JsonSerializer responseSerializer (true);
+
+    ret = std::dynamic_pointer_cast<${remoteClass.name}> (obj)->get${property.name?cap_first} ();
+    responseSerializer.SerializeNVP (ret);
+    response = responseSerializer.JsonValue["ret"];
+    return;
+  }
+
+<#if !property.final && !property.readOnly>
+  if (methodName == "set${property.name?cap_first}") {
+    kurento::JsonSerializer s (false);
+    ${getCppObjectType (property.type, false)} ${property.name};
+
+<#assign jsonData = getJsonCppTypeData(property.type)>
+    if (!s.JsonValue.isMember ("${property.name}") || !s.JsonValue["${property.name}"].isConvertibleTo (Json::ValueType::${jsonData.getJsonValueType()}) ) {
+      throw KurentoException (MARSHALL_ERROR,
+                              "'${property.name}' parameter should be a ${jsonData.getTypeDescription()}");
+    }
+
+    s.SerializeNVP (${property.name});
+    std::dynamic_pointer_cast<${remoteClass.name}> (obj)->set${property.name?cap_first} (${property.name});
+    return;
+  }
+
+</#if>
+</#list>
 <#if (remoteClass.extends)??>
   ${remoteClass.extends.name}Impl::invoke (obj, methodName, params, response);
 <#else>
