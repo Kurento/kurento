@@ -1,0 +1,34 @@
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+set(RTCPDEMUX_SOURCES
+  rtcpdemux.c
+  kmsrtcpdemux.c
+)
+
+set(RTCPDEMUX_HEADERS
+  kmsrtcpdemux.h
+)
+
+include(GLibHelpers)
+
+add_glib_marshal(RTCPDEMUX_SOURCES RTCPDEMUX_HEADERS kms-marshal __kms_marshal)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
+
+add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES} ${RTCPDEMUX_HEADERS})
+
+target_link_libraries(rtcpdemux
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_RTP_LIBRARIES}
+)
+
+install(
+  TARGETS rtcpdemux
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_MODULESDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
