@@ -21,7 +21,9 @@ Description: Kurento jsonrpc library
 
 Package: kms-jsonrpc-dev
 Architecture: any
-Depends: kms-jsonrpc (= ${binary:Version}), libboost-dev
+Depends: kms-jsonrpc (= ${binary:Version}),
+         libboost-dev,
+         libjsoncpp-dev
 Description: Kurento jsonrpc library
  Implementation of the jsonRPC protocol in C++
 
