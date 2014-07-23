@@ -4,7 +4,7 @@
 
 	<groupId>com.kurento.ktool</groupId>
 	<artifactId>ktool-rom-processor</artifactId>
-	<version>1.1.2-SNAPSHOT</version>
+	<version>2.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>ktool-rom-processor</name>
