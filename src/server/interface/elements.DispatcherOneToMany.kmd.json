@@ -1,0 +1,38 @@
+{
+  "remoteClasses": [
+    {
+      "name": "DispatcherOneToMany",
+      "extends": "Hub",
+      "doc": "A :rom:cls:`Hub` that sends a given source to all the connected sinks",
+      "constructor":
+        {
+          "doc": "Create a :rom:cls:`DispatcherOneToMany` belonging to the given pipeline.",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
+              "type": "MediaPipeline"
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "setSource",
+          "doc": "Sets the source port that will be connected to the sinks of every :rom:cls:`HubPort` of the dispatcher",
+          "params": [
+            {
+              "name": "source",
+              "doc": "source to be broadcasted",
+              "type": "HubPort"
+            }
+          ]
+        },
+        {
+          "name": "removeSource",
+          "doc": "Remove the source port and stop the media pipeline.",
+          "params": []
+        }
+      ]
+    }
+  ]
+}
