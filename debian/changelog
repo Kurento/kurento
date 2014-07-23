@@ -1,3 +1,16 @@
+kms-cmake-utils (1.0.0) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Improve glibhelpers cmake utility
+  * Avoid name collisions on enum generation
+  * Fix copy paste issue
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Wed, 23 Jul 2014 16:05:31 +0200
+
 kms-cmake-utils (0.0.3) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
