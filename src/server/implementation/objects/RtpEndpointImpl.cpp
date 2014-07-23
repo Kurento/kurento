@@ -17,7 +17,11 @@ namespace kurento
 
 RtpEndpointImpl::RtpEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : SdpEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl>(mediaPipeline), FACTORY_NAME)
 {
-  // FIXME: Implement this
+}
+
+void RtpEndpointImpl::setRtpConfig(MediaServerConfig &config)
+{
+  g_object_set (element, "pattern-sdp", config.getSdpPattern(), NULL);
 }
 
 MediaObjectImpl *

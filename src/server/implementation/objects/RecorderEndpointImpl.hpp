@@ -21,7 +21,7 @@ public:
 
   RecorderEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream);
 
-  virtual ~RecorderEndpointImpl () {};
+  virtual ~RecorderEndpointImpl ();
 
   void record ();
 

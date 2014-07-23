@@ -93,6 +93,50 @@ testWebRTCEndpoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kure
   kurento::MediaSet::getMediaSet()->release(object);
 }
 
+void
+testMixer (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+{
+  kurento::JsonSerializer w (true);
+
+  w.SerializeNVP(mediaPipeline);
+
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("Mixer")->createObject("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release(object);
+}
+
+void
+testDispatcher (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+{
+  kurento::JsonSerializer w (true);
+
+  w.SerializeNVP(mediaPipeline);
+
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("Dispatcher")->createObject("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release(object);
+}
+
+void
+testDispatcherOneToMany (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+{
+  kurento::JsonSerializer w (true);
+
+  w.SerializeNVP(mediaPipeline);
+
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("DispatcherOneToMany")->createObject("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release(object);
+}
+
+void
+testComposite (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+{
+  kurento::JsonSerializer w (true);
+
+  w.SerializeNVP(mediaPipeline);
+
+  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("Composite")->createObject("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release(object);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -116,6 +160,10 @@ main (int argc, char **argv)
   testRecorderEndPoint(moduleManager, mediaPipeline);
   testRtpEndpoint(moduleManager, mediaPipeline);
   testWebRTCEndpoint(moduleManager, mediaPipeline);
+  testMixer(moduleManager, mediaPipeline);
+  testDispatcher(moduleManager, mediaPipeline);
+  testDispatcherOneToMany(moduleManager, mediaPipeline);
+  testComposite(moduleManager, mediaPipeline);
 
   kurento::MediaSet::getMediaSet()->release(mediaPipeline);
 

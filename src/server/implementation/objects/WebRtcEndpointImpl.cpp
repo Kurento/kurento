@@ -17,7 +17,33 @@ namespace kurento
 
 WebRtcEndpointImpl::WebRtcEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : SdpEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl>(mediaPipeline), FACTORY_NAME)
 {
-  // FIXME: Implement this
+}
+
+void WebRtcEndpointImpl::setRtpConfig(MediaServerConfig &config)
+{
+  g_object_set (element, "pattern-sdp", config.getSdpPattern(), NULL);
+
+  //set properties
+  GST_INFO ("stun port %d\n", config.getStunServerPort());
+
+  if (config.getStunServerPort() != 0) {
+    g_object_set ( G_OBJECT (element), "stun-server-port", config.getStunServerPort(), NULL);
+  }
+
+  GST_INFO ("stun address %s\n", config.getStunServerAddress().c_str() );
+  g_object_set ( G_OBJECT (element), "stun-server", config.getStunServerAddress().c_str(),
+                 NULL);
+
+  GST_INFO ("turn info: %s\n", config.getTurnURL().c_str() );
+  g_object_set ( G_OBJECT (element), "turn-url", config.getTurnURL().c_str(), NULL);
+
+  if (config.getPemCertificate().compare ("") == 0) {
+    GST_INFO ("Using default pemCertificate");
+  } else {
+    GST_INFO ("PemCertificate %s\n", config.getPemCertificate().c_str() );
+    g_object_set ( G_OBJECT (element), "certificate-pem-file",
+                   config.getPemCertificate().c_str(), NULL);
+  }
 }
 
 MediaObjectImpl *

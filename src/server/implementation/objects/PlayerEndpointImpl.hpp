@@ -4,6 +4,7 @@
 #include "UriEndpointImpl.hpp"
 #include "PlayerEndpoint.hpp"
 #include <EventHandler.hpp>
+#include <functional>
 
 namespace kurento
 {
@@ -20,7 +21,7 @@ public:
 
   PlayerEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, bool useEncodedMedia);
 
-  virtual ~PlayerEndpointImpl () {};
+  virtual ~PlayerEndpointImpl ();
 
   void play ();
 
@@ -36,6 +37,14 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+
+  int signalEOS;
+  int signalInvalidURI;
+  int signalInvalidMedia;
+
+  std::function<void() > eosLambda;
+  std::function<void() > invalidUriLambda;
+  std::function<void() > invalidMediaLambda;
 
   class StaticConstructor
   {

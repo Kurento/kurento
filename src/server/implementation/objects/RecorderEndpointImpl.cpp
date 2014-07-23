@@ -16,15 +16,67 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
+enum {
+  WEBM = 0,
+  MP4 = 1
+};
+
 RecorderEndpointImpl::RecorderEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream) : UriEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
-  // FIXME: Implement this
+ g_object_ref (getGstreamerElement() );
+
+  g_object_set (G_OBJECT (getGstreamerElement() ), "accept-eos",
+                stopOnEndOfStream, NULL);
+
+  switch (mediaProfile->getValue() ) {
+  case MediaProfileSpecType::WEBM:
+    g_object_set ( G_OBJECT (element), "profile", WEBM, NULL);
+    GST_INFO ("Set WEBM profile");
+    break;
+
+  case MediaProfileSpecType::MP4:
+    g_object_set ( G_OBJECT (element), "profile", MP4, NULL);
+    GST_INFO ("Set MP4 profile");
+    break;
+  }
+}
+
+static void
+dispose_element (GstElement *element)
+{
+  GST_TRACE_OBJECT (element, "Disposing");
+
+  gst_element_set_state (element, GST_STATE_NULL);
+  g_object_unref (element);
+}
+
+static void
+state_changed (GstElement *element, gint state, gpointer data)
+{
+  GST_TRACE_OBJECT (element, "State changed: %d", state);
+  dispose_element (element);
+}
+
+RecorderEndpointImpl::~RecorderEndpointImpl()
+{
+  gint state = -1;
+
+  g_object_get (getGstreamerElement(), "state", &state, NULL);
+
+  if (state == 0 /* stop */) {
+    dispose_element (getGstreamerElement() );
+    return;
+  }
+
+  g_signal_connect (getGstreamerElement(), "state-changed",
+                    G_CALLBACK (state_changed), NULL);
+
+  stop();
 }
 
 void RecorderEndpointImpl::record ()
 {
-  // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED, "RecorderEndpointImpl::record: Not implemented");
+  start();
 }
 
 MediaObjectImpl *

@@ -4,6 +4,7 @@
 #include "SdpEndpointImpl.hpp"
 #include "WebRtcEndpoint.hpp"
 #include <EventHandler.hpp>
+#include <MediaServerConfig.hpp>
 
 namespace kurento
 {
@@ -21,6 +22,8 @@ public:
   WebRtcEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~WebRtcEndpointImpl () {};
+
+  void setRtpConfig (MediaServerConfig &config);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
