@@ -74,14 +74,14 @@ target_link_libraries(test_rtpendpoint_video
                       ${KMSGSTCOMMONS_LIBRARIES}
                       kmstestutils)
 
-# add_test_program (test_webrtcendpoint webrtcendpoint.c)
-# add_dependencies(test_webrtcendpoint kmstestutils kmsplugin)
-# target_include_directories(test_webrtcendpoint PRIVATE
-#                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
-#                            ${GSTREAMER_INCLUDE_DIRS}
-#                            ${GSTREAMER_CHECK_INCLUDE_DIRS})
-# target_link_libraries(test_webrtcendpoint
-#                       ${GSTREAMER_LIBRARIES}
-#                       ${GSTREAMER_CHECK_LIBRARIES}
-#                       ${KMSGSTCOMMONS_LIBRARIES}
-#                       kmstestutils)
+add_test_program (test_webrtcendpoint webrtcendpoint.c)
+add_dependencies(test_webrtcendpoint kmstestutils kmscore kmsdtls ${LIBRARY_NAME}plugins)
+target_include_directories(test_webrtcendpoint PRIVATE
+                           ${KMSGSTCOMMONS_INCLUDE_DIRS}
+                           ${GSTREAMER_INCLUDE_DIRS}
+                           ${GSTREAMER_CHECK_INCLUDE_DIRS})
+target_link_libraries(test_webrtcendpoint
+                      ${GSTREAMER_LIBRARIES}
+                      ${GSTREAMER_CHECK_LIBRARIES}
+                      ${KMSGSTCOMMONS_LIBRARIES}
+                      kmstestutils)
