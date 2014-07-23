@@ -34,6 +34,22 @@ ${remoteClass.name}Impl::${remoteClass.name}Impl ()
 {
   // FIXME: Implement this
 }
+<#list remoteClass.properties as property>
+
+${getCppObjectType (property.type, false)} ${remoteClass.name}Impl::get${property.name?cap_first} ()
+{
+  // FIXME: Implement this
+  throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::get${property.name}: Not implemented");
+}
+<#if !property.final && !property.readOnly>
+
+void ${remoteClass.name}Impl::set${property.name?cap_first} (${getCppObjectType (property.type, true)}${property.name})
+{
+  // FIXME: Implement this
+  throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::set${property.name}: Not implemented");
+}
+</#if>
+</#list>
 <#macro methodStub method>
 
 ${getCppObjectType(method.return,false)} ${remoteClass.name}Impl::${method.name} (<#rt>

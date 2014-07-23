@@ -55,6 +55,13 @@ public:
     </#list>
     <#lt><@methodHeader method />
   </#list>
+<#list remoteClass.properties as property>
+
+  virtual ${getCppObjectType (property.type, false)} get${property.name?cap_first} ();
+  <#if !property.final && !property.readOnly>
+  virtual void set${property.name?cap_first} (${getCppObjectType (property.type, true)}${property.name});
+  </#if>
+</#list>
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
