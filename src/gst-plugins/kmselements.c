@@ -20,6 +20,10 @@
 #include "kmsrecorderendpoint.h"
 #include "kmsrtpendpoint.h"
 #include "kmswebrtcendpoint.h"
+#include "kmsdispatcher.h"
+#include "kmsdispatcheronetomany.h"
+#include "kmsselectablemixer.h"
+#include "kmscompositemixer.h"
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -41,6 +45,22 @@ kurento_init (GstPlugin * kurento)
   }
 
   if (!kms_webrtc_endpoint_plugin_init(kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_dispatcher_plugin_init(kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_dispatcher_one_to_many_plugin_init(kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_selectable_mixer_plugin_init(kurento)) {
+    return FALSE;
+  }
+
+  if (!kms_composite_mixer_plugin_init(kurento)) {
     return FALSE;
   }
 

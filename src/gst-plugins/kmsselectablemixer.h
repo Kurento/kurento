@@ -15,7 +15,16 @@
 #ifndef _KMS_SELECTABLE_MIXER_H_
 #define _KMS_SELECTABLE_MIXER_H_
 
-#include "kmsbasehub.h"
+#include <commons/kmsbasehub.h>
+
+#define AUDIO_SINK_PAD_PREFIX  "sink_"
+#define AUDIO_SRC_PAD_PREFIX  "src_"
+
+#define AUDIO_SINK_PAD AUDIO_SINK_PAD_PREFIX "%u"
+#define AUDIO_SRC_PAD AUDIO_SRC_PAD_PREFIX "%u"
+
+#define LENGTH_AUDIO_SINK_PAD_PREFIX 5  /* sizeof("sink_") */
+#define LENGTH_AUDIO_SRC_PAD_PREFIX 4   /* sizeof("src_") */
 
 G_BEGIN_DECLS
 #define KMS_TYPE_SELECTABLE_MIXER kms_selectable_mixer_get_type()

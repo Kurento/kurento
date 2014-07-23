@@ -17,9 +17,8 @@
 #endif
 
 #include "kmsdispatcheronetomany.h"
-#include "kmsagnosticcaps.h"
-#include "kms-marshal-commons.h"
-#include "kmsmixerport.h"
+#include <commons/kmsagnosticcaps.h>
+#include <commons/kmshubport.h>
 
 #define PLUGIN_NAME "dispatcheronetomany"
 

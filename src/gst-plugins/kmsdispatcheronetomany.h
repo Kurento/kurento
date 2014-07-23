@@ -15,7 +15,7 @@
 #ifndef _KMS_DISPATCHER_ONE_TO_MANY_H_
 #define _KMS_DISPATCHER_ONE_TO_MANY_H_
 
-#include "kmsbasehub.h"
+#include <commons/kmsbasehub.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_DISPATCHER_ONE_TO_MANY                 \

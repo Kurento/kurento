@@ -17,11 +17,9 @@
 #endif
 
 #include "kmscompositemixer.h"
-#include "kmsagnosticcaps.h"
-#include "kms-marshal-commons.h"
-#include "kmsmixerport.h"
-#include "kmsloop.h"
-#include "kmsaudiomixer.h"
+#include <commons/kmsagnosticcaps.h>
+#include <commons/kmshubport.h>
+#include <commons/kmsloop.h>
 
 #define N_ELEMENTS_WIDTH 2
 
@@ -602,7 +600,7 @@ kms_composite_mixer_handle_port (KmsBaseHub * mixer,
   }
 
   if (self->priv->audiomixer == NULL) {
-    self->priv->audiomixer = gst_element_factory_make ("audiomixer", NULL);
+    self->priv->audiomixer = gst_element_factory_make ("kmsaudiomixer", NULL);
 
     gst_bin_add (GST_BIN (mixer), self->priv->audiomixer);
 

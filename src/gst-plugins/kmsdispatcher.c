@@ -17,9 +17,9 @@
 #include "config.h"
 #endif
 
-#include "kms-marshal-commons.h"
+#include <commons/kms-core-marshal.h>
 #include "kmsdispatcher.h"
-#include "kmsmixerport.h"
+#include <commons/kmshubport.h>
 
 #define PLUGIN_NAME "dispatcher"
 
@@ -263,7 +263,7 @@ kms_dispatcher_class_init (KmsDispatcherClass * klass)
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
       G_STRUCT_OFFSET (KmsDispatcherClass, connect), NULL, NULL,
-      __kms_marshal_BOOLEAN__UINT_UINT, G_TYPE_BOOLEAN, 2, G_TYPE_UINT,
+      __kms_core_marshal_BOOLEAN__UINT_UINT, G_TYPE_BOOLEAN, 2, G_TYPE_UINT,
       G_TYPE_UINT);
 
   /* Registers a private structure for the instantiatable type */

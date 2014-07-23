@@ -15,7 +15,7 @@
 #ifndef _KMS_DISPATCHER_H_
 #define _KMS_DISPATCHER_H_
 
-#include "kmsbasehub.h"
+#include <commons/kmsbasehub.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_DISPATCHER kms_dispatcher_get_type()

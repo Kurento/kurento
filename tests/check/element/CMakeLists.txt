@@ -85,3 +85,25 @@ target_link_libraries(test_webrtcendpoint
                       ${GSTREAMER_CHECK_LIBRARIES}
                       ${KMSGSTCOMMONS_LIBRARIES}
                       kmstestutils)
+
+add_test_program (test_compositemixer compositemixer.c)
+add_dependencies(test_compositemixer kmstestutils kmscore kmselements)
+target_include_directories(test_compositemixer PRIVATE
+                           ${KMSGSTCOMMONS_INCLUDE_DIRS}
+                           ${GSTREAMER_INCLUDE_DIRS}
+                           ${GSTREAMER_CHECK_INCLUDE_DIRS})
+target_link_libraries(test_compositemixer
+                      ${GSTREAMER_LIBRARIES}
+                      ${GSTREAMER_CHECK_LIBRARIES}
+                      ${KMSGSTCOMMONS_LIBRARIES})
+
+add_test_program (test_dispatcheronetomany dispatcheronetomany.c)
+add_dependencies(test_dispatcheronetomany kmstestutils kmscore kmselements)
+target_include_directories(test_dispatcheronetomany PRIVATE
+                           ${KMSGSTCOMMONS_INCLUDE_DIRS}
+                           ${GSTREAMER_INCLUDE_DIRS}
+                           ${GSTREAMER_CHECK_INCLUDE_DIRS})
+target_link_libraries(test_dispatcheronetomany
+                      ${GSTREAMER_LIBRARIES}
+                      ${GSTREAMER_CHECK_LIBRARIES}
+                      ${KMSGSTCOMMONS_LIBRARIES})

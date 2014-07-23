@@ -22,6 +22,10 @@ set(KMS_ELEMENTS_SOURCES
   kmsrecorderendpoint.c
   kmsrtpendpoint.c
   kmswebrtcendpoint.c
+  kmsselectablemixer.c
+  kmsdispatcher.c
+  kmsdispatcheronetomany.c
+  kmscompositemixer.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -31,6 +35,10 @@ set(KMS_ELEMENTS_HEADERS
   kmsrecorderendpoint.h
   kmsrtpendpoint.h
   kmswebrtcendpoint.h
+  kmsselectablemixer.h
+  kmsdispatcher.h
+  kmsdispatcheronetomany.h
+  kmscompositemixer.h
 )
 
 set(ENUM_HEADERS
