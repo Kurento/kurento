@@ -26,9 +26,15 @@ pom.xml
 	<dependencies>
 <#list model.imports as import>
 		<dependency>
+<#if model.code.kmd?? >
+			<groupId>${import.model.code.kmd.java["maven.groupId"]}</groupId>
+			<artifactId>${import.model.code.kmd.java["maven.artifactId"]}</artifactId>
+			<version>${import.model.code.kmd.java["maven.version"]}</version>
+<#else>
 			<groupId>${import.model.code.api.java["maven.groupId"]}</groupId>
 			<artifactId>${import.model.code.api.java["maven.artifactId"]}</artifactId>
 			<version>${import.model.code.api.java["maven.version"]}</version>
+</#if>
 		</dependency>
 </#list>
 	</dependencies>
@@ -36,9 +42,9 @@ pom.xml
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>com.kurento.ktool</groupId>
+				<groupId>com.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>0.0.18-SNAPSHOT</version>
+				<version>0.0.19-SNAPSHOT</version>
 				<executions>
 					<execution>
 						<goals>
