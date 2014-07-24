@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.codegen;
+package com.kurento.modulecreator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,13 +25,18 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
+import com.kurento.modulecreator.codegen.CodeGen;
+import com.kurento.modulecreator.codegen.Error;
+import com.kurento.modulecreator.codegen.ModuleManager;
+import com.kurento.modulecreator.codegen.PathUtils;
+import com.kurento.modulecreator.codegen.Result;
 import com.kurento.modulecreator.definition.ModuleDefinition;
 import com.kurento.modulecreator.json.JsonModuleSaverLoader;
 
-public class ModuleDefinitionProcessor {
+public class KurentoModuleCreator {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(ModuleDefinitionProcessor.class);
+			.getLogger(KurentoModuleCreator.class);
 
 	private static final String CONFIG_FILE_NAME = "config.json";
 
@@ -129,13 +134,13 @@ public class ModuleDefinitionProcessor {
 				return PathUtils.getPathInClasspath(internalTemplatesAsURL);
 
 			} catch (URISyntaxException e) {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Error trying to load internal templates folder '"
 								+ internalTemplates + "'", e);
 			}
 
 		} else {
-			throw new ModuleDefinitionProcessorException(
+			throw new KurentoModuleCreatorException(
 					"The internal templates folder '" + internalTemplates
 							+ "' doesn't exist");
 		}
@@ -193,7 +198,7 @@ public class ModuleDefinitionProcessor {
 
 			return new Result();
 
-		} catch (ModuleDefinitionProcessorException e) {
+		} catch (KurentoModuleCreatorException e) {
 			return new Result(new Error("Error: " + e.getMessage()));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -229,7 +234,7 @@ public class ModuleDefinitionProcessor {
 			return element.getAsJsonObject();
 
 		} catch (JsonSyntaxException e) {
-			throw new ModuleDefinitionProcessorException("Config file '" + configFile
+			throw new KurentoModuleCreatorException("Config file '" + configFile
 					+ "' has the following formatting error:"
 					+ e.getLocalizedMessage());
 		}

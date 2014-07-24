@@ -11,7 +11,7 @@ import com.kurento.modulecreator.definition.RemoteClass;
 import com.kurento.modulecreator.definition.Return;
 import com.kurento.modulecreator.definition.TypeRef;
 
-public class ModelPrinter {
+public class ModuleDefinitionPrinter {
 
 	public static String printModel(ModuleDefinition model) {
 

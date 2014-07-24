@@ -65,7 +65,7 @@
 					</descriptorRefs>
 					<archive>
 						<manifestEntries>
-							<Main-Class>com.kurento.ktool.rom.processor.codegen.Main</Main-Class>
+							<Main-Class>com.kurento.modulecreator.Main</Main-Class>
 						</manifestEntries>
 					</archive>
 				</configuration>

@@ -9,7 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.modulecreator.codegen.ModuleDefinitionProcessorException;
+import com.kurento.modulecreator.KurentoModuleCreatorException;
 import com.kurento.modulecreator.codegen.ModuleManager;
 
 public class ModuleDefinition {
@@ -225,26 +225,26 @@ public class ModuleDefinition {
 			if ("core".equals(name)) {
 				kurentoVersion = version;
 			} else {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Kurento version is mandatory at least in one of the files describing: "
 								+ name);
 			}
 		}
 
 		if (name == null) {
-			throw new ModuleDefinitionProcessorException(
+			throw new KurentoModuleCreatorException(
 					"Name is mandatory at least in one of the files");
 		}
 
 		if (version == null) {
-			throw new ModuleDefinitionProcessorException(
+			throw new KurentoModuleCreatorException(
 					"Version is mandatory at least in one of the files");
 		}
 
 		if (VersionManager.isReleaseVersion(version)) {
 			for (Import importInfo : this.imports) {
 				if (!VersionManager.isReleaseVersion(importInfo.getVersion())) {
-					throw new ModuleDefinitionProcessorException(
+					throw new KurentoModuleCreatorException(
 							"All dependencies of a release version must be also release versions. Import '"
 									+ importInfo.getName()
 									+ "' is in non release version "
@@ -256,7 +256,7 @@ public class ModuleDefinition {
 
 	public void resolveModule(ModuleManager moduleManager) {
 		if (resolutionState == ResolutionState.IN_PROCESS) {
-			throw new ModuleDefinitionProcessorException(
+			throw new KurentoModuleCreatorException(
 					"Found a dependency cycle in plugin '" + this.name + "'");
 		}
 
@@ -329,7 +329,7 @@ public class ModuleDefinition {
 			}
 
 			if (dependencyModel == null) {
-				throw new ModuleDefinitionProcessorException("Import '"
+				throw new KurentoModuleCreatorException("Import '"
 						+ importEntry.getName() + "' with version "
 						+ importEntry.getVersion()
 						+ " not found in dependencies");
@@ -355,7 +355,7 @@ public class ModuleDefinition {
 				TypeRef typeRef = (TypeRef) moduleElement;
 				Type baseType = baseTypes.get(typeRef.getName());
 				if (baseType == null) {
-					throw new ModuleDefinitionProcessorException("The type '"
+					throw new KurentoModuleCreatorException("The type '"
 							+ typeRef.getName()
 							+ "' is not defined. Used in plugin: " + name
 							+ ".\nThe types are: " + baseTypes.keySet());
@@ -393,7 +393,7 @@ public class ModuleDefinition {
 			this.name = module.name;
 		} else {
 			if (module.name != null) {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Name can only be set in one kmd file");
 			}
 		}
@@ -402,7 +402,7 @@ public class ModuleDefinition {
 			this.kurentoVersion = module.kurentoVersion;
 		} else {
 			if (module.kurentoVersion != null) {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Kurento version can only be set in one kmd file");
 			}
 		}
@@ -411,7 +411,7 @@ public class ModuleDefinition {
 			this.version = module.version;
 		} else {
 			if (module.version != null) {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Version can only be set in one kmd file");
 			}
 		}
@@ -420,7 +420,7 @@ public class ModuleDefinition {
 			this.imports = module.imports;
 		} else {
 			if (!module.imports.isEmpty()) {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Imports section can only be set in one kmd file");
 			}
 		}
@@ -429,7 +429,7 @@ public class ModuleDefinition {
 			this.code = module.code;
 		} else {
 			if (module.code != null) {
-				throw new ModuleDefinitionProcessorException(
+				throw new KurentoModuleCreatorException(
 						"Code section can only be set in one kmd file");
 			}
 		}

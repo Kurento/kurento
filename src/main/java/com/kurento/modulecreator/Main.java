@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.codegen;
+package com.kurento.modulecreator;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +19,8 @@ import org.apache.commons.cli.PosixParser;
 
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
+import com.kurento.modulecreator.codegen.PathUtils;
+import com.kurento.modulecreator.codegen.Result;
 
 import freemarker.template.TemplateException;
 
@@ -60,7 +62,7 @@ public class Main {
 			System.exit(1);
 		}
 
-		ModuleDefinitionProcessor processor = new ModuleDefinitionProcessor();
+		KurentoModuleCreator processor = new KurentoModuleCreator();
 		processor.setDeleteGenDir(line.hasOption(DELETE));
 		processor.setVerbose(line.hasOption(VERBOSE));
 		processor.setOverwrite(!line.hasOption(NO_OVERWRITE));
@@ -91,7 +93,7 @@ public class Main {
 		}
 	}
 
-	private static void showValues(ModuleDefinitionProcessor krp, CommandLine line) {
+	private static void showValues(KurentoModuleCreator krp, CommandLine line) {
 		if (!line.hasOption(SHOW_VALUES)) {
 			return;
 		}
@@ -222,7 +224,7 @@ public class Main {
 						+ "' does not exist or is not readable");
 				System.exit(1);
 			}
-			configContents = ModuleDefinitionProcessor.loadConfigFile(configFile);
+			configContents = KurentoModuleCreator.loadConfigFile(configFile);
 		}
 
 		return configContents;
