@@ -5,12 +5,14 @@ include(GLibHelpers)
 set (SOUP_REQUIRED 2.40)
 set (NICE_REQUIRED 0.1.4)
 set (GNUTLS_REQUIRED 3.2.0)
+set (GSTMARSHAL_REQUIRED 0.0.1)
 
 pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
 pkg_check_modules(NICE REQUIRED nice>=${NICE_REQUIRED})
 pkg_check_modules(GNUTLS REQUIRED gnutls>=${GNUTLS_REQUIRED})
 pkg_check_modules(GIO REQUIRED gio-2.0>=${GLIB_REQUIRED})
 pkg_check_modules(GSTREAMER_RTP REQUIRED gstreamer-rtp-1.0>=${GST_REQUIRED})
+pkg_check_modules(GSTMARSHAL REQUIRED libgstmarshal>=${GSTMARSHAL_REQUIRED})
 
 add_subdirectory(dtls-plugins)
 
@@ -26,6 +28,13 @@ set(KMS_ELEMENTS_SOURCES
   kmsdispatcher.c
   kmsdispatcheronetomany.c
   kmscompositemixer.c
+  gstsctp.c
+  gstsctpclientsink.c
+  gstsctpserversrc.c
+  kmssctpconnection.c
+  kmssctpbaserpc.c
+  kmssctpclientrpc.c
+  kmssctpserverrpc.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -39,10 +48,18 @@ set(KMS_ELEMENTS_HEADERS
   kmsdispatcher.h
   kmsdispatcheronetomany.h
   kmscompositemixer.h
+  gstsctp.h
+  gstsctpclientsink.h
+  gstsctpserversrc.h
+  kmssctpconnection.h
+  kmssctpbaserpc.h
+  kmssctpclientrpc.h
+  kmssctpserverrpc.h
 )
 
 set(ENUM_HEADERS
   kmshttpendpointmethod.h
+  kmsencodingrules.h
 )
 
 add_glib_enumtypes(KMS_ELEMENTS_SOURCES KMS_ELEMENTS_HEADERS kms-elements-enumtypes KMS ${ENUM_HEADERS})
@@ -61,6 +78,8 @@ include_directories(
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SOUP_INCLUDE_DIRS}
   ${NICE_INCLUDE_DIRS}
+  ${SCTP_INCLUDE_DIRS}
+  ${GSTMARSHAL_INCLUDE_DIRS}
 )
 
 target_link_libraries(${LIBRARY_NAME}plugins
@@ -71,6 +90,8 @@ target_link_libraries(${LIBRARY_NAME}plugins
   ${GSTREAMER_PBUTILS_LIBRARIES}
   ${SOUP_LIBRARIES}
   ${NICE_LIBRARIES}
+  ${SCTP_LIBRARIES}
+  ${GSTMARSHAL_LIBRARIES}
 )
 
 set (CMAKE_INSTALL_MODULESDIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0/)

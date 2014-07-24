@@ -24,6 +24,8 @@
 #include "kmsdispatcheronetomany.h"
 #include "kmsselectablemixer.h"
 #include "kmscompositemixer.h"
+#include <gstsctpclientsink.h>
+#include <gstsctpserversrc.h>
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -63,6 +65,12 @@ kurento_init (GstPlugin * kurento)
   if (!kms_composite_mixer_plugin_init(kurento)) {
     return FALSE;
   }
+
+  if (!gst_sctp_client_sink_plugin_init (kurento))
+    return FALSE;
+
+  if (!gst_sctp_server_src_plugin_init (kurento))
+    return FALSE;
 
   return TRUE;
 }

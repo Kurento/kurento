@@ -5,7 +5,9 @@ project ("kms-elements")
 message ("If KurentoHelpers is not found, then it is necessary to install
           kms-cmake-utils package from the kurento repository")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 find_package(KurentoHelpers REQUIRED)
+find_package(LibSctp REQUIRED)
 
 include (KurentoGitHelpers)
 message ("If CodeGenerator is not found, then it is necessary to install

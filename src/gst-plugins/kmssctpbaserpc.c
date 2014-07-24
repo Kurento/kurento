@@ -23,7 +23,7 @@
 
 #include "kmssctpbaserpc.h"
 #include "kmsencodingrules.h"
-#include "kms-enumtypes.h"
+#include "kms-elements-enumtypes.h"
 
 #define NAME "sctpbaserpc"
 
