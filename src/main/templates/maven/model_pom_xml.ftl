@@ -1,20 +1,20 @@
 pom.xml
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+	<moduleVersion>4.0.0</moduleVersion>
 
-<#if model.code.kmd?? >
-	<groupId>${model.code.kmd.java["maven.groupId"]}</groupId>
-	<artifactId>${model.code.kmd.java["maven.artifactId"]}</artifactId>
-	<version>${model.code.kmd.java["maven.version"]}</version>
+<#if module.code.kmd?? >
+	<groupId>${module.code.kmd.java["maven.groupId"]}</groupId>
+	<artifactId>${module.code.kmd.java["maven.artifactId"]}</artifactId>
+	<version>${module.code.kmd.java["maven.version"]}</version>
 <#else>
-	<groupId>${model.code.api.java["maven.groupId"]}</groupId>
-	<artifactId>${model.code.api.java["maven.artifactId"]}</artifactId>
-	<version>${model.code.api.java["maven.version"]}</version>
+	<groupId>${module.code.api.java["maven.groupId"]}</groupId>
+	<artifactId>${module.code.api.java["maven.artifactId"]}</artifactId>
+	<version>${module.code.api.java["maven.version"]}</version>
 </#if>
 	<packaging>jar</packaging>
 
-	<name>${model.name}</name>
+	<name>${module.name}</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -24,16 +24,16 @@ pom.xml
 	</properties>
 
 	<dependencies>
-<#list model.imports as import>
+<#list module.imports as import>
 		<dependency>
-<#if model.code.kmd?? >
-			<groupId>${import.model.code.kmd.java["maven.groupId"]}</groupId>
-			<artifactId>${import.model.code.kmd.java["maven.artifactId"]}</artifactId>
-			<version>${import.model.code.kmd.java["maven.version"]}</version>
+<#if module.code.kmd?? >
+			<groupId>${import.module.code.kmd.java["maven.groupId"]}</groupId>
+			<artifactId>${import.module.code.kmd.java["maven.artifactId"]}</artifactId>
+			<version>${import.module.code.kmd.java["maven.version"]}</version>
 <#else>
-			<groupId>${import.model.code.api.java["maven.groupId"]}</groupId>
-			<artifactId>${import.model.code.api.java["maven.artifactId"]}</artifactId>
-			<version>${import.model.code.api.java["maven.version"]}</version>
+			<groupId>${import.module.code.api.java["maven.groupId"]}</groupId>
+			<artifactId>${import.module.code.api.java["maven.artifactId"]}</artifactId>
+			<version>${import.module.code.api.java["maven.version"]}</version>
 </#if>
 		</dependency>
 </#list>
