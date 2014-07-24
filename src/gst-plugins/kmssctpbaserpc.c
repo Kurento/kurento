@@ -48,6 +48,7 @@ typedef enum
 {
   KMS_SCTP_BASE_RPC_CANCELLED,
   KMS_SCTP_BASE_RPC_TIMEOUT,
+  KMS_SCTP_BASE_RPC_IO_ERROR,
   KMS_SCTP_BASE_RPC_UNEXPECTED_ERROR
 } KmsSCTPBaseRPCError;
 
@@ -419,6 +420,13 @@ kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
 
+  if (baserpc->conn == NULL) {
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+    g_set_error (err, KMS_SCTP_BASE_RPC_ERROR, KMS_SCTP_BASE_RPC_IO_ERROR,
+          "SCTP connection is not established");
+    return FALSE;
+  }
+
   f = kms_fragmenter_new (baserpc->rules, baserpc->buffer_size);
   req_id = baserpc->req_id++;
 
@@ -452,6 +460,13 @@ kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
   g_return_val_if_fail (baserpc != NULL, FALSE);
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
+
+  if (baserpc->conn == NULL) {
+    KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+    g_set_error (err, KMS_SCTP_BASE_RPC_ERROR, KMS_SCTP_BASE_RPC_IO_ERROR,
+          "SCTP connection is not established");
+    return FALSE;
+  }
 
   f = kms_fragmenter_new (baserpc->rules, baserpc->buffer_size);
   req_id = baserpc->req_id++;

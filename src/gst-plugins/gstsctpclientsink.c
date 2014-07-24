@@ -321,16 +321,6 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
   GError *err = NULL;
   gboolean ret;
 
-  GST_OBJECT_LOCK (self);
-
-  if (!self->priv->connected) {
-    GST_OBJECT_UNLOCK (self);
-    GST_WARNING ("Received query while not connected: %" GST_PTR_FORMAT, query);
-    return FALSE;
-  }
-
-  GST_OBJECT_UNLOCK (self);
-
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:{
       GstCaps *caps, *copy;
@@ -339,7 +329,7 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
 
       if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
               query, self->priv->cancellable, &rsp_query, &err)) {
-        GST_ERROR_OBJECT (self, "Error: %s", err->message);
+        GST_WARNING_OBJECT (self, "Error: %s", err->message);
         g_error_free (err);
         ret = FALSE;
         break;
@@ -395,16 +385,6 @@ gst_sctp_client_sink_event (GstBaseSink * sink, GstEvent * event)
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
   GError *err = NULL;
   gboolean ret;
-
-  GST_OBJECT_LOCK (self);
-
-  if (!self->priv->connected) {
-    GST_OBJECT_UNLOCK (self);
-    GST_WARNING ("Received event while not connected: %" GST_PTR_FORMAT, event);
-    return FALSE;
-  }
-
-  GST_OBJECT_UNLOCK (self);
 
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_SEGMENT:
