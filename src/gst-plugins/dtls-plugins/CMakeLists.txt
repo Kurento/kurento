@@ -54,6 +54,8 @@ add_glib_enumtypes(KMS_DTLS_SOURCES KMS_DTLS_HEADERS gstdtls-enumtypes GST ${ENU
 
 add_library(kmsdtls MODULE ${KMS_DTLS_SOURCES} ${KMS_DTLS_HEADERS})
 
+set (CMAKE_INSTALL_MODULESDIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0/)
+
 target_link_libraries(kmsdtls
   ${GSTREAMER_LIBRARIES}
   ${GNUTLS_LIBRARIES}
