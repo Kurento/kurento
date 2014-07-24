@@ -407,8 +407,17 @@ gst_sctp_client_sink_event (GstBaseSink * sink, GstEvent * event)
   GST_OBJECT_UNLOCK (self);
 
   switch (GST_EVENT_TYPE (event)) {
-    case GST_EVENT_STREAM_START:
     case GST_EVENT_SEGMENT:
+      /* We need to notify the base class that we are ready to receive */
+      /* buffers to avoid internal data flow errors the pipeline.      */
+      ret =
+          GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->event (sink,
+          event);
+
+      if (!ret) {
+        break;
+      }
+    case GST_EVENT_STREAM_START:
     case GST_EVENT_CAPS:
       GST_DEBUG (">> %" GST_PTR_FORMAT, event);
 
