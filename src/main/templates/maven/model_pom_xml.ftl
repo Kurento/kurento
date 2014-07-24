@@ -25,7 +25,7 @@ pom.xml
 
 	<dependencies>
 <#list model.imports as import>
-        <dependency>
+		<dependency>
 			<groupId>${import.model.code.api.java["maven.groupId"]}</groupId>
 			<artifactId>${import.model.code.api.java["maven.artifactId"]}</artifactId>
 			<version>${import.model.code.api.java["maven.version"]}</version>
