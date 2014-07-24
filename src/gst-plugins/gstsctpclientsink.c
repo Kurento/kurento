@@ -313,7 +313,7 @@ gst_sctp_client_sink_error_cb (GstSCTPClientSink * self)
           clientrpc));
 }
 
-gboolean
+static gboolean
 gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
