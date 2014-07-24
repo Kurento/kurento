@@ -342,6 +342,7 @@ gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
 
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:
+    case GST_QUERY_ACCEPT_CAPS:
       gst_pad_peer_query (GST_BASE_SRC_PAD (GST_BASE_SRC (self)), query);
       break;
     default:

@@ -357,6 +357,28 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
       ret = TRUE;
       break;
     }
+    case GST_QUERY_ACCEPT_CAPS:{
+      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
+              query, self->priv->cancellable, &rsp_query, &err)) {
+        GST_ERROR_OBJECT (self, "Error: %s", err->message);
+        g_error_free (err);
+        ret = FALSE;
+      } else {
+        gboolean result;
+
+        gst_query_parse_accept_caps_result (rsp_query, &result);
+        gst_query_set_accept_caps_result (query, result);
+        gst_query_unref (rsp_query);
+
+        ret = TRUE;
+      }
+
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+
+      break;
+    }
     default:
       ret =
           GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->query (sink,
