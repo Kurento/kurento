@@ -22,6 +22,18 @@ public class ModuleManager {
 		}
 	}
 
+	public ModuleDefinition getModule(String name) {
+		ModuleDefinition module = modules.get(name);
+		if (module != null) {
+			return module;
+		} else {
+			if (dependencies != null) {
+				return dependencies.getModule(name);
+			}
+		}
+		return null;
+	}
+
 	public ModuleDefinition getModule(String name, String version) {
 		ModuleDefinition module = modules.get(name);
 		if (module != null) {

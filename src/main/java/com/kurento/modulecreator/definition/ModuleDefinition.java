@@ -322,22 +322,42 @@ public class ModuleDefinition {
 		}
 
 		for (Import importEntry : this.imports) {
-			ModuleDefinition dependencyModel = null;
+			ModuleDefinition dependencyModule = null;
 
 			if (moduleManager != null) {
-				dependencyModel = moduleManager.getModule(
-						importEntry.getName(), importEntry.getVersion());
+				dependencyModule = moduleManager.getModule(importEntry
+						.getName());
+
+				if (!importEntry.getVersion().equals(
+						dependencyModule.getVersion())) {
+
+					if (VersionManager.devCompatibleVersion(
+							importEntry.getVersion(),
+							dependencyModule.getVersion())) {
+
+						log.info("[WARNING] Dependency on module '"
+								+ importEntry.getName() + "' version '"
+								+ importEntry.getVersion()
+								+ "' is satisfied with version '"
+								+ dependencyModule.getVersion() + "'");
+					} else {
+
+						throw new KurentoModuleCreatorException("Import '"
+								+ importEntry.getName() + "' with version "
+								+ importEntry.getVersion()
+								+ " not found in dependencies");
+					}
+				}
 			}
 
-			if (dependencyModel == null) {
+			if (dependencyModule == null) {
 				throw new KurentoModuleCreatorException("Import '"
-						+ importEntry.getName() + "' with version "
-						+ importEntry.getVersion()
-						+ " not found in dependencies");
+						+ importEntry.getName()
+						+ "' not found in dependencies in any version");
 			}
 
-			dependencyModel.resolveModule(moduleManager);
-			importEntry.setModule(dependencyModel);
+			dependencyModule.resolveModule(moduleManager);
+			importEntry.setModule(dependencyModule);
 		}
 	}
 
