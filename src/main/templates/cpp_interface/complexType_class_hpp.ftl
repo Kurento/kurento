@@ -19,9 +19,9 @@ void Serialize (std::shared_ptr<kurento::${complexType.name}> &object, JsonSeria
 <#if childs??>
 
 </#if>
-<#if model.remoteClasses?seq_contains(dependency.type.type) ||
-  model.complexTypes?seq_contains(dependency.type.type) ||
-  model.events?seq_contains(dependency.type.type)><#assign childs=true>
+<#if module.remoteClasses?seq_contains(dependency.type.type) ||
+  module.complexTypes?seq_contains(dependency.type.type) ||
+  module.events?seq_contains(dependency.type.type)><#assign childs=true>
 class ${dependency.type.name};
 </#if>
 </#list>

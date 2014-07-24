@@ -1,5 +1,5 @@
 <#assign remoteClasses_abstract=[]>
-<#list model.remoteClasses?sort_by("name") as remoteClass>
+<#list module.remoteClasses?sort_by("name") as remoteClass>
   <#if remoteClass.abstract>
     <#assign remoteClasses_abstract=remoteClasses_abstract+[remoteClass.name]>
   </#if>

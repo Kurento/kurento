@@ -3,7 +3,7 @@ Module.cpp
 
 #include "FactoryRegistrar.hpp"
 
-<#list model.remoteClasses as remoteClass>
+<#list module.remoteClasses as remoteClass>
 #include <${remoteClass.name}ImplFactory.hpp>
 #include <${remoteClass.name}.hpp>
 </#list>
@@ -21,7 +21,7 @@ getFactoryRegistrar ()
   static std::map<std::string, std::shared_ptr<kurento::Factory>> factories;
 
   if (!loaded) {
-<#list model.remoteClasses as remoteClass>
+<#list module.remoteClasses as remoteClass>
   <#if !(remoteClass.abstract)>
     factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new kurento::${remoteClass.name}ImplFactory() );
   </#if>

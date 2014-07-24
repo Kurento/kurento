@@ -16,9 +16,9 @@ namespace kurento
 
 class JsonSerializer;
 <#list event.properties as property>
-<#if model.remoteClasses?seq_contains(property.type.type) ||
-  model.complexTypes?seq_contains(property.type.type) ||
-  model.events?seq_contains(property.type.type)>
+<#if module.remoteClasses?seq_contains(property.type.type) ||
+  module.complexTypes?seq_contains(property.type.type) ||
+  module.events?seq_contains(property.type.type)>
 class ${property.type.name};
 </#if>
 </#list>

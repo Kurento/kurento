@@ -4,7 +4,7 @@ MediaAPI.html
 <html>
 
 <h1>Remote Classes</h1>
-<#list model.remoteClasses as remoteClass>
+<#list module.remoteClasses as remoteClass>
 
 <table border="1" cellspacing="0" cellpading="0" width="60%">
     <tr>
@@ -65,7 +65,7 @@ MediaAPI.html
 </#list>
 
 <h1>Events</h1>
-<#list model.events as event>
+<#list module.events as event>
 
 <table border="1" cellspacing="0" cellpading="0" width="60%">
     <tr>
@@ -100,7 +100,7 @@ MediaAPI.html
 </#list>
 
 <h1>Types</h1>
-<#list model.complexTypes as type>
+<#list module.complexTypes as type>
 
 <table border="1" cellspacing="0" cellpading="0" width="60%">
     <tr>

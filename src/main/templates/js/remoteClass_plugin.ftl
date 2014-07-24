@@ -1,5 +1,5 @@
 <#include "macros.ftm" >
-<#assign module_name=model.name>
+<#assign module_name=module.name>
 <#assign module_namespace>
   <#lt>${module_name}<#if remoteClass.abstract>/abstracts</#if><#rt>
 </#assign>
@@ -12,8 +12,8 @@
 </#assign>
 <#assign import_name>
   <#if remoteClass.extends??>
-    <#list model.imports as import>
-      <#list import.model.remoteClasses as remoteClass>
+    <#list module.imports as import>
+      <#list import.module.remoteClasses as remoteClass>
         <#if remoteClass.name == extends_name>
           <#lt>${import.name}<#rt>
           <#break>
@@ -23,7 +23,7 @@
   </#if>
 </#assign>
 <#if import_name == ''>
-  <#list model.remoteClasses as remoteClass>
+  <#list module.remoteClasses as remoteClass>
     <#if remoteClass.name == extends_name>
       <#assign import_name=module_name>
       <#break>

@@ -94,7 +94,7 @@ ${getCppObjectType (param.type, false)} ${remoteClass.name}Constructor::get${par
       s.SerializeNVP (${param.name});
       __isSetDefault${param.name?cap_first} = true;
     } catch (std::exception &e) {
-      std::cerr << "Unexpected exception deserializing default value ${param.name} of ${remoteClass.name} constructor, check your model: " << e.what() << std::endl;
+      std::cerr << "Unexpected exception deserializing default value ${param.name} of ${remoteClass.name} constructor, check your module: " << e.what() << std::endl;
     }
   }
 

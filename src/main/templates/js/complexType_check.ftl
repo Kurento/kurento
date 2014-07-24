@@ -1,5 +1,5 @@
 <#include "macros.ftm" >
-<#assign module_name=model.name>
+<#assign module_name=module.name>
 <#assign module_namespace>
   <#lt>${module_name}/complexTypes<#rt>
 </#assign>

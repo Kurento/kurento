@@ -3,7 +3,7 @@ ${remoteClass.name}ImplInternal.cpp
 
 #include <gst/gst.h>
 <#list remoteClassDependencies(remoteClass) as dependency>
-<#if model.remoteClasses?seq_contains(dependency)>
+<#if module.remoteClasses?seq_contains(dependency)>
 #include "${dependency.name}Impl.hpp"
 <#else>
 #include "${dependency.name}.hpp"

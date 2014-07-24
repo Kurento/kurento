@@ -16,7 +16,7 @@ namespace kurento
 {
 
 <#list remoteClassDependencies(remoteClass) as dependency>
-<#if model.remoteClasses?seq_contains(dependency)>
+<#if module.remoteClasses?seq_contains(dependency)>
 class ${dependency.name}Impl;
 <#else>
 class ${dependency.name};

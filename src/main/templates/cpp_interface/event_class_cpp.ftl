@@ -4,9 +4,9 @@ ${event.name}.cpp
 #include "${event.name}.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 <#list event.properties as property>
-<#if model.remoteClasses?seq_contains(property.type.type) ||
-  model.complexTypes?seq_contains(property.type.type) ||
-  model.events?seq_contains(property.type.type)>
+<#if module.remoteClasses?seq_contains(property.type.type) ||
+  module.complexTypes?seq_contains(property.type.type) ||
+  module.events?seq_contains(property.type.type)>
 #include "${property.type.name}.hpp"
 </#if>
 </#list>

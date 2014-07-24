@@ -16,7 +16,7 @@ index.js
  *
  */
 
-<#list model.remoteClasses?sort_by("name") as remoteClass>
+<#list module.remoteClasses?sort_by("name") as remoteClass>
   <#if !remoteClass.abstract>
 var ${remoteClass.name} = require('./${remoteClass.name}');
   </#if>
@@ -24,14 +24,14 @@ var ${remoteClass.name} = require('./${remoteClass.name}');
 
 
 <#assign remoteClasses_abstract=false>
-<#list model.remoteClasses?sort_by("name") as remoteClass>
+<#list module.remoteClasses?sort_by("name") as remoteClass>
   <#if remoteClass.abstract>
     <#assign remoteClasses_abstract=true>
   <#else>
 exports.${remoteClass.name} = ${remoteClass.name};
   </#if>
 </#list>
-<#assign complexTypes=model.complexTypes?? && model.complexTypes?has_content>
+<#assign complexTypes=module.complexTypes?? && module.complexTypes?has_content>
 <#if remoteClasses_abstract || complexTypes>
 
   <#if remoteClasses_abstract>
