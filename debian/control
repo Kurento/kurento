@@ -1,0 +1,33 @@
+Source: kms-elements
+Section: utils
+Priority: optional
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
+Build-Depends: debhelper (>= 8.0.0),
+ cmake,
+ pkg-config,
+ kms-core-dev,
+ kms-cmake-utils (>> 1.0.0),
+ gtk-doc-tools,
+Standards-Version: 3.9.4
+Homepage: http://kurento.org
+Vcs-Git: git://github.com/Kurento/kms-elements.git
+Vcs-Browser: https://github.com/Kurento/kms-elements.git
+
+Package: kms-elements
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: Kurento elements module
+ Kurento elements implementation
+
+Package: kms-elements-dev
+Architecture: any
+Depends: kms-elements (= ${binary:Version}),
+  kms-core-dev
+Description: Kurento elements module
+ Kurento elements implementation
+
+Package: kms-elements-dbg
+Architecture: any
+Depends: kms-elements (= ${binary:Version})
+Description: Kurento elements module
+ Kurento elements implementation
