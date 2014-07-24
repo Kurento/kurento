@@ -1,4 +1,4 @@
-package org.kurento.ktool.maven;
+package org.kurento.maven;
 
 import java.io.Closeable;
 import java.io.File;
@@ -14,7 +14,7 @@ import java.util.jar.JarFile;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 
-import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
+import com.kurento.modulecreator.codegen.KurentoRomProcessorException;
 
 public class KurentoModuleArtifact implements Closeable {
 

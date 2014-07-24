@@ -1,4 +1,4 @@
-package org.kurento.ktool.maven;
+package org.kurento.maven;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,11 +23,11 @@ import org.codehaus.plexus.compiler.util.scan.mapping.SourceMapping;
 import org.codehaus.plexus.compiler.util.scan.mapping.SuffixMapping;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
-import com.kurento.ktool.rom.processor.codegen.Error;
-import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessor;
-import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
-import com.kurento.ktool.rom.processor.codegen.PathUtils;
-import com.kurento.ktool.rom.processor.codegen.Result;
+import com.kurento.modulecreator.codegen.Error;
+import com.kurento.modulecreator.codegen.KurentoRomProcessor;
+import com.kurento.modulecreator.codegen.KurentoRomProcessorException;
+import com.kurento.modulecreator.codegen.PathUtils;
+import com.kurento.modulecreator.codegen.Result;
 
 public abstract class AbstractGenerateMediaApiMojo extends AbstractMojo {
 
@@ -190,7 +190,7 @@ public abstract class AbstractGenerateMediaApiMojo extends AbstractMojo {
 
 			KurentoRomProcessor krp = new KurentoRomProcessor();
 			addKmdFiles(krp, kmdFiles, manager);
-			krp.loadModelsFromKmdFiles();
+			krp.loadModulesFromKmdFiles();
 
 			if (krp.hasToGenerateCode()) {
 

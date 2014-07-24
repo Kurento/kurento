@@ -1,4 +1,4 @@
-package org.kurento.ktool.maven;
+package org.kurento.maven;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -10,7 +10,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
-import com.kurento.ktool.rom.processor.codegen.KurentoRomProcessorException;
+import com.kurento.modulecreator.codegen.KurentoRomProcessorException;
 
 public class KurentoDependencyManager {
 

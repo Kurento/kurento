@@ -1,4 +1,4 @@
-package org.kurento.ktool.maven;
+package org.kurento.maven;
 
 import java.io.File;
 
