@@ -10,7 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kurento.modulecreator.KurentoModuleCreatorException;
-import com.kurento.modulecreator.codegen.ModuleManager;
+import com.kurento.modulecreator.ModuleManager;
+import com.kurento.modulecreator.VersionManager;
 
 public class ModuleDefinition {
 

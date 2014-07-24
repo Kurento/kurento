@@ -3,7 +3,8 @@ package com.kurento.modulecreator.definition;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.kurento.modulecreator.codegen.ModuleManager;
+import com.kurento.modulecreator.ModuleManager;
+import com.kurento.modulecreator.VersionManager;
 
 public class Code {
 

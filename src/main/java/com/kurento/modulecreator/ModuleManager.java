@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.codegen;
+package com.kurento.modulecreator;
 
 import java.util.Collection;
 import java.util.HashMap;

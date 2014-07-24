@@ -19,8 +19,6 @@ import org.apache.commons.cli.PosixParser;
 
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
-import com.kurento.modulecreator.codegen.PathUtils;
-import com.kurento.modulecreator.codegen.Result;
 
 import freemarker.template.TemplateException;
 

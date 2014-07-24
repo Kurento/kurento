@@ -1,7 +1,9 @@
-package com.kurento.modulecreator.codegen;
+package com.kurento.modulecreator;
 
 import java.util.Arrays;
 import java.util.List;
+
+import com.kurento.modulecreator.codegen.Error;
 
 public class Result {
 

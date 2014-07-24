@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.codegen;
+package com.kurento.modulecreator;
 
 import static java.nio.file.FileVisitResult.CONTINUE;
 

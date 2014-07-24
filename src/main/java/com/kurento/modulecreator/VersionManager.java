@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.definition;
+package com.kurento.modulecreator;
 
 public class VersionManager {
 
