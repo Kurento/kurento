@@ -43,6 +43,10 @@
 			<resource>
 				<directory>src/main/templates</directory>
 			</resource>
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/cmake</directory>
+			</resource>
 		</resources>
 		<plugins>
 			<plugin>
