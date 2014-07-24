@@ -359,6 +359,7 @@ gst_sctp_server_src_remote_event (GstEvent * event, GstSCTPServerSrc * self)
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_STREAM_START:
     case GST_EVENT_SEGMENT:
+    case GST_EVENT_CAPS:
       GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, event);
 
       gst_event_ref (event);

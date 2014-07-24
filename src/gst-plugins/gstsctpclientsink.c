@@ -409,6 +409,7 @@ gst_sctp_client_sink_event (GstBaseSink * sink, GstEvent * event)
   switch (GST_EVENT_TYPE (event)) {
     case GST_EVENT_STREAM_START:
     case GST_EVENT_SEGMENT:
+    case GST_EVENT_CAPS:
       GST_DEBUG (">> %" GST_PTR_FORMAT, event);
 
       if (kms_scp_base_rpc_event (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
