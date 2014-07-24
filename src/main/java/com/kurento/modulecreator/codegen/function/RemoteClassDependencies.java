@@ -3,13 +3,13 @@ package com.kurento.modulecreator.codegen.function;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.kurento.modulecreator.descriptor.ComplexType;
-import com.kurento.modulecreator.descriptor.Method;
-import com.kurento.modulecreator.descriptor.Param;
-import com.kurento.modulecreator.descriptor.Property;
-import com.kurento.modulecreator.descriptor.RemoteClass;
-import com.kurento.modulecreator.descriptor.Return;
-import com.kurento.modulecreator.descriptor.Type;
+import com.kurento.modulecreator.definition.ComplexType;
+import com.kurento.modulecreator.definition.Method;
+import com.kurento.modulecreator.definition.Param;
+import com.kurento.modulecreator.definition.Property;
+import com.kurento.modulecreator.definition.RemoteClass;
+import com.kurento.modulecreator.definition.Return;
+import com.kurento.modulecreator.definition.Type;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;

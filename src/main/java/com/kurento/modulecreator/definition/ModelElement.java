@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.descriptor;
+package com.kurento.modulecreator.definition;
 
 import java.util.Collections;
 import java.util.List;

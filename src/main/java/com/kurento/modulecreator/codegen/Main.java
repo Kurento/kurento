@@ -60,28 +60,28 @@ public class Main {
 			System.exit(1);
 		}
 
-		KurentoRomProcessor krp = new KurentoRomProcessor();
-		krp.setDeleteGenDir(line.hasOption(DELETE));
-		krp.setVerbose(line.hasOption(VERBOSE));
-		krp.setOverwrite(!line.hasOption(NO_OVERWRITE));
-		krp.setListGeneratedFiles(line.hasOption(LIST_GEN_FILES));
+		ModuleDefinitionProcessor processor = new ModuleDefinitionProcessor();
+		processor.setDeleteGenDir(line.hasOption(DELETE));
+		processor.setVerbose(line.hasOption(VERBOSE));
+		processor.setOverwrite(!line.hasOption(NO_OVERWRITE));
+		processor.setListGeneratedFiles(line.hasOption(LIST_GEN_FILES));
 
 		if (line.hasOption(TEMPLATES_DIR)) {
-			krp.setTemplatesDir(getTemplatesDir(line));
+			processor.setTemplatesDir(getTemplatesDir(line));
 		} else if (line.hasOption(INTERNAL_TEMPLATES)) {
-			krp.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
+			processor.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
 		}
 
-		krp.setConfig(getConfigContent(line));
-		krp.setKmdFilesToGen(getKmdFiles(line));
-		krp.setDependencyKmdFiles(getDependencyKmdFiles(line));
-		krp.setOutputFile(getOutputModuleFile(line));
+		processor.setConfig(getConfigContent(line));
+		processor.setKmdFilesToGen(getKmdFiles(line));
+		processor.setDependencyKmdFiles(getDependencyKmdFiles(line));
+		processor.setOutputFile(getOutputModuleFile(line));
 
-		showValues(krp, line);
+		showValues(processor, line);
 
-		krp.setCodeGenDir(getCodegenDir(line));
+		processor.setCodeGenDir(getCodegenDir(line));
 
-		Result result = krp.generateCode();
+		Result result = processor.generateCode();
 
 		if (result.isSuccess()) {
 			System.out.println("Generation success");
@@ -91,7 +91,7 @@ public class Main {
 		}
 	}
 
-	private static void showValues(KurentoRomProcessor krp, CommandLine line) {
+	private static void showValues(ModuleDefinitionProcessor krp, CommandLine line) {
 		if (!line.hasOption(SHOW_VALUES)) {
 			return;
 		}
@@ -222,7 +222,7 @@ public class Main {
 						+ "' does not exist or is not readable");
 				System.exit(1);
 			}
-			configContents = KurentoRomProcessor.loadConfigFile(configFile);
+			configContents = ModuleDefinitionProcessor.loadConfigFile(configFile);
 		}
 
 		return configContents;

@@ -13,10 +13,10 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
-import com.kurento.modulecreator.descriptor.Method;
-import com.kurento.modulecreator.descriptor.Property;
-import com.kurento.modulecreator.descriptor.RemoteClass;
-import com.kurento.modulecreator.descriptor.TypeRef;
+import com.kurento.modulecreator.definition.Method;
+import com.kurento.modulecreator.definition.Property;
+import com.kurento.modulecreator.definition.RemoteClass;
+import com.kurento.modulecreator.definition.TypeRef;
 
 public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 		JsonDeserializer<RemoteClass> {

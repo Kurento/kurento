@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.descriptor;
+package com.kurento.modulecreator.definition;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,12 +9,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kurento.modulecreator.codegen.KurentoRomProcessorException;
+import com.kurento.modulecreator.codegen.ModuleDefinitionProcessorException;
 import com.kurento.modulecreator.codegen.ModuleManager;
 
-public class ModuleDescriptor {
+public class ModuleDefinition {
 
-	private static Logger log = LoggerFactory.getLogger(ModuleDescriptor.class);
+	private static Logger log = LoggerFactory.getLogger(ModuleDefinition.class);
 
 	private static enum ResolutionState {
 		NO_RESOLVED, IN_PROCESS, RESOLVED
@@ -48,14 +48,14 @@ public class ModuleDescriptor {
 	private transient ResolutionState resolutionState = ResolutionState.NO_RESOLVED;
 	private transient Map<String, Type> allTypes;
 
-	public ModuleDescriptor() {
+	public ModuleDefinition() {
 		this.remoteClasses = new ArrayList<>();
 		this.complexTypes = new ArrayList<>();
 		this.events = new ArrayList<>();
 		this.imports = new ArrayList<>();
 	}
 
-	public ModuleDescriptor(List<RemoteClass> remoteClasses,
+	public ModuleDefinition(List<RemoteClass> remoteClasses,
 			List<ComplexType> types, List<Event> events) {
 		super();
 		this.remoteClasses = remoteClasses;
@@ -76,7 +76,7 @@ public class ModuleDescriptor {
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		ModuleDescriptor other = (ModuleDescriptor) obj;
+		ModuleDefinition other = (ModuleDefinition) obj;
 		if (events == null) {
 			if (other.events != null) {
 				return false;
@@ -225,26 +225,26 @@ public class ModuleDescriptor {
 			if ("core".equals(name)) {
 				kurentoVersion = version;
 			} else {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Kurento version is mandatory at least in one of the files describing: "
 								+ name);
 			}
 		}
 
 		if (name == null) {
-			throw new KurentoRomProcessorException(
+			throw new ModuleDefinitionProcessorException(
 					"Name is mandatory at least in one of the files");
 		}
 
 		if (version == null) {
-			throw new KurentoRomProcessorException(
+			throw new ModuleDefinitionProcessorException(
 					"Version is mandatory at least in one of the files");
 		}
 
 		if (VersionManager.isReleaseVersion(version)) {
 			for (Import importInfo : this.imports) {
 				if (!VersionManager.isReleaseVersion(importInfo.getVersion())) {
-					throw new KurentoRomProcessorException(
+					throw new ModuleDefinitionProcessorException(
 							"All dependencies of a release version must be also release versions. Import '"
 									+ importInfo.getName()
 									+ "' is in non release version "
@@ -256,7 +256,7 @@ public class ModuleDescriptor {
 
 	public void resolveModule(ModuleManager moduleManager) {
 		if (resolutionState == ResolutionState.IN_PROCESS) {
-			throw new KurentoRomProcessorException(
+			throw new ModuleDefinitionProcessorException(
 					"Found a dependency cycle in plugin '" + this.name + "'");
 		}
 
@@ -321,7 +321,7 @@ public class ModuleDescriptor {
 		}
 
 		for (Import importEntry : this.imports) {
-			ModuleDescriptor dependencyModel = null;
+			ModuleDefinition dependencyModel = null;
 
 			if (moduleManager != null) {
 				dependencyModel = moduleManager.getModule(
@@ -329,7 +329,7 @@ public class ModuleDescriptor {
 			}
 
 			if (dependencyModel == null) {
-				throw new KurentoRomProcessorException("Import '"
+				throw new ModuleDefinitionProcessorException("Import '"
 						+ importEntry.getName() + "' with version "
 						+ importEntry.getVersion()
 						+ " not found in dependencies");
@@ -355,7 +355,7 @@ public class ModuleDescriptor {
 				TypeRef typeRef = (TypeRef) moduleElement;
 				Type baseType = baseTypes.get(typeRef.getName());
 				if (baseType == null) {
-					throw new KurentoRomProcessorException("The type '"
+					throw new ModuleDefinitionProcessorException("The type '"
 							+ typeRef.getName()
 							+ "' is not defined. Used in plugin: " + name
 							+ ".\nThe types are: " + baseTypes.keySet());
@@ -385,7 +385,7 @@ public class ModuleDescriptor {
 		}
 	}
 
-	public void fusionModules(ModuleDescriptor module) {
+	public void fusionModules(ModuleDefinition module) {
 
 		// TODO Generalize this
 
@@ -393,7 +393,7 @@ public class ModuleDescriptor {
 			this.name = module.name;
 		} else {
 			if (module.name != null) {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Name can only be set in one kmd file");
 			}
 		}
@@ -402,7 +402,7 @@ public class ModuleDescriptor {
 			this.kurentoVersion = module.kurentoVersion;
 		} else {
 			if (module.kurentoVersion != null) {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Kurento version can only be set in one kmd file");
 			}
 		}
@@ -411,7 +411,7 @@ public class ModuleDescriptor {
 			this.version = module.version;
 		} else {
 			if (module.version != null) {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Version can only be set in one kmd file");
 			}
 		}
@@ -420,7 +420,7 @@ public class ModuleDescriptor {
 			this.imports = module.imports;
 		} else {
 			if (!module.imports.isEmpty()) {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Imports section can only be set in one kmd file");
 			}
 		}
@@ -429,7 +429,7 @@ public class ModuleDescriptor {
 			this.code = module.code;
 		} else {
 			if (module.code != null) {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Code section can only be set in one kmd file");
 			}
 		}

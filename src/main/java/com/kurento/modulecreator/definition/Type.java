@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.descriptor;
+package com.kurento.modulecreator.definition;
 
 public abstract class Type extends NamedElement {
 

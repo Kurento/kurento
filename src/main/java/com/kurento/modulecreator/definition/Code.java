@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.descriptor;
+package com.kurento.modulecreator.definition;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ public class Code {
 	private Map<String, Map<String, String>> api;
 	private Map<String, String> implementation;
 
-	public void completeInfo(ModuleDescriptor module, ModuleManager moduleManager) {
+	public void completeInfo(ModuleDefinition module, ModuleManager moduleManager) {
 
 		if (api == null) {
 			api = new HashMap<>();

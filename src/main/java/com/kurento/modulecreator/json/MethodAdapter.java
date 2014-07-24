@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.kurento.modulecreator.descriptor.Method;
+import com.kurento.modulecreator.definition.Method;
 
 public class MethodAdapter implements JsonSerializer<Method> {
 

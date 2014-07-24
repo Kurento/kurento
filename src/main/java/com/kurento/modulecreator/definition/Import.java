@@ -1,10 +1,10 @@
-package com.kurento.modulecreator.descriptor;
+package com.kurento.modulecreator.definition;
 
 public class Import {
 
 	private String name;
 	private String version;
-	private transient ModuleDescriptor module;
+	private transient ModuleDefinition module;
 
 	public Import(String name, String version) {
 		super();
@@ -20,11 +20,11 @@ public class Import {
 		return version;
 	}
 
-	public void setModule(ModuleDescriptor module) {
+	public void setModule(ModuleDefinition module) {
 		this.module = module;
 	}
 
-	public ModuleDescriptor getModule() {
+	public ModuleDefinition getModule() {
 		return module;
 	}
 

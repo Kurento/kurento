@@ -2,8 +2,8 @@ package com.kurento.modulecreator.codegen.function;
 
 import java.util.List;
 
-import com.kurento.modulecreator.descriptor.Return;
-import com.kurento.modulecreator.descriptor.TypeRef;
+import com.kurento.modulecreator.definition.Return;
+import com.kurento.modulecreator.definition.TypeRef;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateBooleanModel;

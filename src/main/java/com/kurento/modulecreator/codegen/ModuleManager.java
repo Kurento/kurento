@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.kurento.modulecreator.descriptor.ModuleDescriptor;
+import com.kurento.modulecreator.definition.ModuleDefinition;
 
 public class ModuleManager {
 
-	private final Map<String, ModuleDescriptor> modules;
+	private final Map<String, ModuleDefinition> modules;
 	private ModuleManager dependencies;
 
 	public ModuleManager() {
@@ -17,13 +17,13 @@ public class ModuleManager {
 	}
 
 	public void resolveModules() {
-		for (ModuleDescriptor module : modules.values()) {
+		for (ModuleDefinition module : modules.values()) {
 			module.resolveModule(this);
 		}
 	}
 
-	public ModuleDescriptor getModule(String name, String version) {
-		ModuleDescriptor module = modules.get(name);
+	public ModuleDefinition getModule(String name, String version) {
+		ModuleDefinition module = modules.get(name);
 		if (module != null) {
 			if (module.getVersion().equals(version)) {
 				return module;
@@ -38,7 +38,7 @@ public class ModuleManager {
 	}
 
 	private void removeModule(String name) {
-		ModuleDescriptor module = modules.get(name);
+		ModuleDefinition module = modules.get(name);
 		if (module != null) {
 			modules.remove(module.getName());
 		}
@@ -51,30 +51,30 @@ public class ModuleManager {
 	public void setDependencies(ModuleManager dependencies) {
 		this.dependencies = dependencies;
 
-		for (ModuleDescriptor module : dependencies.getModules()) {
+		for (ModuleDefinition module : dependencies.getModules()) {
 			if (modules.get(module.getName()) != null) {
 				this.dependencies.removeModule(module.getName());
 			}
 		}
 	}
 
-	public Collection<ModuleDescriptor> getModules() {
+	public Collection<ModuleDefinition> getModules() {
 		return modules.values();
 	}
 
-	public void addModules(List<ModuleDescriptor> modules) {
-		for (ModuleDescriptor module : modules) {
+	public void addModules(List<ModuleDefinition> modules) {
+		for (ModuleDefinition module : modules) {
 			module.validateModule();
 			addModule(module);
 		}
 	}
 
-	public void addModule(ModuleDescriptor module) {
+	public void addModule(ModuleDefinition module) {
 		this.modules.put(module.getName(), module);
 	}
 
-	public void addModuleInSeveralKmdFiles(List<ModuleDescriptor> modules) {
-		ModuleDescriptor module = modules.get(0);
+	public void addModuleInSeveralKmdFiles(List<ModuleDefinition> modules) {
+		ModuleDefinition module = modules.get(0);
 		for (int i = 1; i < modules.size(); i++) {
 			module.fusionModules(modules.get(i));
 		}

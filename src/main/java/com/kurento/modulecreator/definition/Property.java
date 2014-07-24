@@ -1,4 +1,4 @@
-package com.kurento.modulecreator.descriptor;
+package com.kurento.modulecreator.definition;
 
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;

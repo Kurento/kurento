@@ -2,18 +2,18 @@ package com.kurento.modulecreator.print;
 
 import java.util.List;
 
-import com.kurento.modulecreator.descriptor.ComplexType;
-import com.kurento.modulecreator.descriptor.DataItem;
-import com.kurento.modulecreator.descriptor.Event;
-import com.kurento.modulecreator.descriptor.Method;
-import com.kurento.modulecreator.descriptor.ModuleDescriptor;
-import com.kurento.modulecreator.descriptor.RemoteClass;
-import com.kurento.modulecreator.descriptor.Return;
-import com.kurento.modulecreator.descriptor.TypeRef;
+import com.kurento.modulecreator.definition.ComplexType;
+import com.kurento.modulecreator.definition.DataItem;
+import com.kurento.modulecreator.definition.Event;
+import com.kurento.modulecreator.definition.Method;
+import com.kurento.modulecreator.definition.ModuleDefinition;
+import com.kurento.modulecreator.definition.RemoteClass;
+import com.kurento.modulecreator.definition.Return;
+import com.kurento.modulecreator.definition.TypeRef;
 
 public class ModelPrinter {
 
-	public static String printModel(ModuleDescriptor model) {
+	public static String printModel(ModuleDefinition model) {
 
 		StringBuilder sb = new StringBuilder();
 

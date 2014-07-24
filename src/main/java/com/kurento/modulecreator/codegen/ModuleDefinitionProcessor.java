@@ -25,13 +25,13 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import com.kurento.modulecreator.descriptor.ModuleDescriptor;
+import com.kurento.modulecreator.definition.ModuleDefinition;
 import com.kurento.modulecreator.json.JsonModuleSaverLoader;
 
-public class KurentoRomProcessor {
+public class ModuleDefinitionProcessor {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(KurentoRomProcessor.class);
+			.getLogger(ModuleDefinitionProcessor.class);
 
 	private static final String CONFIG_FILE_NAME = "config.json";
 
@@ -129,13 +129,13 @@ public class KurentoRomProcessor {
 				return PathUtils.getPathInClasspath(internalTemplatesAsURL);
 
 			} catch (URISyntaxException e) {
-				throw new KurentoRomProcessorException(
+				throw new ModuleDefinitionProcessorException(
 						"Error trying to load internal templates folder '"
 								+ internalTemplates + "'", e);
 			}
 
 		} else {
-			throw new KurentoRomProcessorException(
+			throw new ModuleDefinitionProcessorException(
 					"The internal templates folder '" + internalTemplates
 							+ "' doesn't exist");
 		}
@@ -172,7 +172,7 @@ public class KurentoRomProcessor {
 			CodeGen codeGen = new CodeGen(templatesDir, codegenDir, verbose,
 					listGeneratedFiles, overwrite, config);
 
-			for (ModuleDescriptor module : moduleManager.getModules()) {
+			for (ModuleDefinition module : moduleManager.getModules()) {
 				if (config.has("expandMethodsWithOpsParams")
 						&& config.get("expandMethodsWithOpsParams")
 								.getAsBoolean()) {
@@ -193,7 +193,7 @@ public class KurentoRomProcessor {
 
 			return new Result();
 
-		} catch (KurentoRomProcessorException e) {
+		} catch (ModuleDefinitionProcessorException e) {
 			return new Result(new Error("Error: " + e.getMessage()));
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -229,7 +229,7 @@ public class KurentoRomProcessor {
 			return element.getAsJsonObject();
 
 		} catch (JsonSyntaxException e) {
-			throw new KurentoRomProcessorException("Config file '" + configFile
+			throw new ModuleDefinitionProcessorException("Config file '" + configFile
 					+ "' has the following formatting error:"
 					+ e.getLocalizedMessage());
 		}
@@ -251,7 +251,7 @@ public class KurentoRomProcessor {
 		depModuleManager.addModules(loadModuleDescriptors(dependencyKmdFiles));
 		depModuleManager.resolveModules();
 
-		ModuleDescriptor module = fusionModuleDescriptors(loadModuleDescriptors(kmdFilesToGen));
+		ModuleDefinition module = fusionModuleDescriptors(loadModuleDescriptors(kmdFilesToGen));
 		if (module != null) {
 			module.validateModule();
 		}
@@ -270,13 +270,13 @@ public class KurentoRomProcessor {
 
 	}
 
-	private ModuleDescriptor fusionModuleDescriptors(List<ModuleDescriptor> modules) {
+	private ModuleDefinition fusionModuleDescriptors(List<ModuleDefinition> modules) {
 
 		if (modules.isEmpty()) {
 			return null;
 		}
 
-		ModuleDescriptor module = modules.get(0);
+		ModuleDefinition module = modules.get(0);
 		for (int i = 1; i < modules.size(); i++) {
 			module.fusionModules(modules.get(i));
 		}
@@ -284,16 +284,16 @@ public class KurentoRomProcessor {
 		return module;
 	}
 
-	private List<ModuleDescriptor> loadModuleDescriptors(List<Path> kmdFiles)
+	private List<ModuleDefinition> loadModuleDescriptors(List<Path> kmdFiles)
 			throws FileNotFoundException, IOException {
 
-		List<ModuleDescriptor> modules = new ArrayList<>();
+		List<ModuleDefinition> modules = new ArrayList<>();
 
 		for (Path kmdFile : kmdFiles) {
 
 			log.debug("Loading kmdFile " + kmdFile);
 
-			ModuleDescriptor module = JsonModuleSaverLoader.getInstance().loadFromFile(
+			ModuleDefinition module = JsonModuleSaverLoader.getInstance().loadFromFile(
 					kmdFile);
 
 			modules.add(module);
@@ -308,7 +308,7 @@ public class KurentoRomProcessor {
 				loadModulesFromKmdFiles();
 			}
 
-			for (ModuleDescriptor module : moduleManager.getModules()) {
+			for (ModuleDefinition module : moduleManager.getModules()) {
 				for (String key : keys) {
 					System.out.println("Value: " + key + " = "
 							+ getValue(module, key));

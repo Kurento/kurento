@@ -26,8 +26,8 @@ import com.kurento.modulecreator.codegen.function.JsonCppTypeData;
 import com.kurento.modulecreator.codegen.function.PackageToFolder;
 import com.kurento.modulecreator.codegen.function.RemoteClassDependencies;
 import com.kurento.modulecreator.codegen.function.SphinxLinks;
-import com.kurento.modulecreator.descriptor.ModuleDescriptor;
-import com.kurento.modulecreator.descriptor.Type;
+import com.kurento.modulecreator.definition.ModuleDefinition;
+import com.kurento.modulecreator.definition.Type;
 
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
@@ -88,7 +88,7 @@ public class CodeGen {
 
 	}
 
-	public void generateCode(ModuleDescriptor module) throws IOException,
+	public void generateCode(ModuleDefinition module) throws IOException,
 			TemplateException {
 
 		try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(
@@ -103,7 +103,7 @@ public class CodeGen {
 		}
 	}
 
-	private void generateCode(String templateName, ModuleDescriptor module,
+	private void generateCode(String templateName, ModuleDefinition module,
 			String templateType) throws TemplateException, IOException {
 
 		Template temp = cfg.getTemplate(templateName);

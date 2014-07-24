@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.kurento.modulecreator.descriptor.RemoteClass;
-import com.kurento.modulecreator.descriptor.TypeRef;
+import com.kurento.modulecreator.definition.RemoteClass;
+import com.kurento.modulecreator.definition.TypeRef;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;

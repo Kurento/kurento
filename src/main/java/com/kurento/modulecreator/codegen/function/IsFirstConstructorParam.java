@@ -2,9 +2,9 @@ package com.kurento.modulecreator.codegen.function;
 
 import java.util.List;
 
-import com.kurento.modulecreator.descriptor.Method;
-import com.kurento.modulecreator.descriptor.Param;
-import com.kurento.modulecreator.descriptor.RemoteClass;
+import com.kurento.modulecreator.definition.Method;
+import com.kurento.modulecreator.definition.Param;
+import com.kurento.modulecreator.definition.RemoteClass;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;

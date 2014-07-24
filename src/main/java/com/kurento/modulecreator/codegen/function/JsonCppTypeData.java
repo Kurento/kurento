@@ -2,11 +2,11 @@ package com.kurento.modulecreator.codegen.function;
 
 import java.util.List;
 
-import com.kurento.modulecreator.descriptor.ComplexType;
-import com.kurento.modulecreator.descriptor.RemoteClass;
-import com.kurento.modulecreator.descriptor.Return;
-import com.kurento.modulecreator.descriptor.TypeRef;
-import com.kurento.modulecreator.descriptor.ComplexType.TypeFormat;
+import com.kurento.modulecreator.definition.ComplexType;
+import com.kurento.modulecreator.definition.RemoteClass;
+import com.kurento.modulecreator.definition.Return;
+import com.kurento.modulecreator.definition.TypeRef;
+import com.kurento.modulecreator.definition.ComplexType.TypeFormat;
 
 import freemarker.ext.beans.StringModel;
 import freemarker.template.TemplateMethodModelEx;

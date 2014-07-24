@@ -13,11 +13,11 @@ import java.nio.file.Path;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.kurento.modulecreator.descriptor.ModuleDescriptor;
-import com.kurento.modulecreator.descriptor.Param;
-import com.kurento.modulecreator.descriptor.Property;
-import com.kurento.modulecreator.descriptor.RemoteClass;
-import com.kurento.modulecreator.descriptor.TypeRef;
+import com.kurento.modulecreator.definition.ModuleDefinition;
+import com.kurento.modulecreator.definition.Param;
+import com.kurento.modulecreator.definition.Property;
+import com.kurento.modulecreator.definition.RemoteClass;
+import com.kurento.modulecreator.definition.TypeRef;
 
 public class JsonModuleSaverLoader {
 
@@ -40,19 +40,19 @@ public class JsonModuleSaverLoader {
 		gson = gsonBuilder.create();
 	}
 
-	public ModuleDescriptor loadFromFile(Path file) throws FileNotFoundException,
+	public ModuleDefinition loadFromFile(Path file) throws FileNotFoundException,
 			IOException {
 		return loadFromInputStream(Files.newInputStream(file));
 	}
 
-	public ModuleDescriptor loadFromClasspath(String resourceName) throws IOException {
+	public ModuleDefinition loadFromClasspath(String resourceName) throws IOException {
 		return loadFromInputStream(this.getClass().getResourceAsStream(
 				resourceName));
 	}
 
-	private ModuleDescriptor loadFromInputStream(InputStream is) throws IOException {
+	private ModuleDefinition loadFromInputStream(InputStream is) throws IOException {
 		String moduleString = loadTextFromInputStream(is);
-		ModuleDescriptor module = gson.fromJson(moduleString, ModuleDescriptor.class);
+		ModuleDefinition module = gson.fromJson(moduleString, ModuleDefinition.class);
 		return module;
 	}
 
@@ -67,7 +67,7 @@ public class JsonModuleSaverLoader {
 		return sb.toString();
 	}
 
-	public void writeToFile(ModuleDescriptor module, File file)
+	public void writeToFile(ModuleDefinition module, File file)
 			throws FileNotFoundException {
 
 		String jsonModuleString = gson.toJson(module);

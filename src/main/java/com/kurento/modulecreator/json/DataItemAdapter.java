@@ -6,7 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
-import com.kurento.modulecreator.descriptor.DataItem;
+import com.kurento.modulecreator.definition.DataItem;
 
 public class DataItemAdapter implements JsonSerializer<DataItem> {
 
