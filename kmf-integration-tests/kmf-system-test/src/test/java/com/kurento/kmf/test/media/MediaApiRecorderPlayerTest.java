@@ -51,7 +51,7 @@ import com.kurento.kmf.test.mediainfo.AssertMedia;
  */
 public class MediaApiRecorderPlayerTest extends BrowserMediaApiTest {
 
-	private static final int VIDEO_LENGTH = 9; // seconds
+	private static final int VIDEO_LENGTH = 8; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
