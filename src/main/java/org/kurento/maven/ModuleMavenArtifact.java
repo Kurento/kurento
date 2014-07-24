@@ -14,9 +14,9 @@ import java.util.jar.JarFile;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
 
-import com.kurento.modulecreator.codegen.KurentoRomProcessorException;
+import com.kurento.modulecreator.KurentoModuleCreatorException;
 
-public class KurentoModuleArtifact implements Closeable {
+public class ModuleMavenArtifact implements Closeable {
 
 	private static final int EXTENSION_LENGTH = ".kmd.json".length();
 
@@ -33,7 +33,7 @@ public class KurentoModuleArtifact implements Closeable {
 	private Path kmdFile;
 	private String moduleName;
 
-	public KurentoModuleArtifact(Log log, Artifact artifact) throws IOException {
+	public ModuleMavenArtifact(Log log, Artifact artifact) throws IOException {
 
 		this.log = log;
 		this.artifact = artifact;
@@ -74,7 +74,7 @@ public class KurentoModuleArtifact implements Closeable {
 				if (this.kmdFile == null) {
 					this.kmdFile = kmdFile;
 				} else {
-					throw new KurentoRomProcessorException(
+					throw new KurentoModuleCreatorException(
 							"Found two or more kmd files in dependency "
 									+ this.getArtifactCoordinate());
 				}
@@ -82,7 +82,7 @@ public class KurentoModuleArtifact implements Closeable {
 		}
 
 		if (kmdFile == null) {
-			throw new KurentoRomProcessorException(
+			throw new KurentoModuleCreatorException(
 					"Found /META-INF/kurento folder in dependency "
 							+ getArtifactCoordinate()
 							+ " without .kmd.json file");

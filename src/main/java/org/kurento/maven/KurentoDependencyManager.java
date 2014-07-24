@@ -10,11 +10,11 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
-import com.kurento.modulecreator.codegen.KurentoRomProcessorException;
+import com.kurento.modulecreator.KurentoModuleCreatorException;
 
 public class KurentoDependencyManager {
 
-	private Map<String, KurentoModuleArtifact> dependencies = new HashMap<>();
+	private Map<String, ModuleMavenArtifact> dependencies = new HashMap<>();
 
 	private Log log;
 
@@ -22,11 +22,11 @@ public class KurentoDependencyManager {
 		this.log = log;
 	}
 
-	public Collection<KurentoModuleArtifact> getDependencies() {
+	public Collection<ModuleMavenArtifact> getDependencies() {
 		return this.dependencies.values();
 	}
 
-	public KurentoModuleArtifact getDependency(String name) {
+	public ModuleMavenArtifact getDependency(String name) {
 		return this.dependencies.get(name);
 	}
 
@@ -43,7 +43,7 @@ public class KurentoDependencyManager {
 
 				log.info("Exploring dependency: " + artifact);
 
-				KurentoModuleArtifact kurentoArtifact = new KurentoModuleArtifact(log,
+				ModuleMavenArtifact kurentoArtifact = new ModuleMavenArtifact(log,
 						artifact);
 
 				if (kurentoArtifact.isKurentoModule()) {
@@ -51,7 +51,7 @@ public class KurentoDependencyManager {
 					log.info("  Found kurento dependency "
 							+ kurentoArtifact.getArtifactCoordinate());
 
-					addKurentoModuleArtifact(kurentoArtifact);
+					addModuleMavenArtifact(kurentoArtifact);
 				}
 
 			} catch (IOException e) {
@@ -61,15 +61,15 @@ public class KurentoDependencyManager {
 		}
 	}
 
-	private void addKurentoModuleArtifact(KurentoModuleArtifact kurentoArtifact) {
+	private void addModuleMavenArtifact(ModuleMavenArtifact moduleMavenArtifact) {
 
-		String moduleName = kurentoArtifact.getName();
+		String moduleName = moduleMavenArtifact.getName();
 
 		if (!dependencies.containsKey(moduleName)) {
-			dependencies.put(moduleName, kurentoArtifact);
+			dependencies.put(moduleName, moduleMavenArtifact);
 		} else {
-			throw new KurentoRomProcessorException("Dependency "
-					+ kurentoArtifact.getArtifactCoordinate()
+			throw new KurentoModuleCreatorException("Dependency "
+					+ moduleMavenArtifact.getArtifactCoordinate()
 					+ " has the same module '" + moduleName
 					+ "' that other dependency");
 		}
