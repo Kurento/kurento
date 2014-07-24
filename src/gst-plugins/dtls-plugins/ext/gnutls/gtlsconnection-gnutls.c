@@ -39,7 +39,7 @@
 
 #include <glib/gi18n-lib.h>
 
-#include <src/ext/gio/kmsgioenumtypes.h>
+#include "ext/gio/kmsgioenumtypes.h"
 
 static ssize_t g_tls_connection_gnutls_push_func (gnutls_transport_ptr_t  transport_data,
 						  const void             *buf,

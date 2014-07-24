@@ -1,7 +1,7 @@
 
 #include "kmsgtlscertificate.h"
 
-#include <src/ext/gnutls/gtlscertificate-gnutls.h>
+#include "ext/gnutls/gtlscertificate-gnutls.h"
 #include <string.h>
 
 #define PEM_CERTIFICATE_HEADER     "-----BEGIN CERTIFICATE-----"

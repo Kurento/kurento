@@ -16,7 +16,7 @@
 #include <gio/gio.h>
 #include <gnutls/gnutls.h>
 
-#include <src/ext/gio/kmsgioenums.h>
+#include "ext/gio/kmsgioenums.h"
 
 G_BEGIN_DECLS
 

@@ -1,7 +1,7 @@
 set (SUPRESSIONS "${CMAKE_CURRENT_SOURCE_DIR}/../valgrind.supp")
 
 add_test_program (test_httpendpoint httpendpoint.c)
-add_dependencies(test_httpendpoint kmscore)
+add_dependencies(test_httpendpoint kmscore ${LIBRARY_NAME}plugins)
 target_include_directories(test_httpendpoint PRIVATE
                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
                            ${GSTREAMER_INCLUDE_DIRS}
@@ -14,7 +14,7 @@ target_link_libraries(test_httpendpoint
                       ${KMSGSTCOMMONS_LIBRARIES})
 
 add_test_program (test_recorderendpoint recorderendpoint.c)
-add_dependencies(test_recorderendpoint kmscore)
+add_dependencies(test_recorderendpoint kmscore ${LIBRARY_NAME}plugins)
 target_include_directories(test_recorderendpoint PRIVATE
                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
                            ${GSTREAMER_INCLUDE_DIRS}
@@ -26,7 +26,7 @@ target_link_libraries(test_recorderendpoint
                       ${KMSGSTCOMMONS_LIBRARIES})
 
 add_test_program (test_playerendpoint playerendpoint.c)
-add_dependencies(test_playerendpoint kmstestutils kmscore)
+add_dependencies(test_playerendpoint kmstestutils kmscore ${LIBRARY_NAME}plugins)
 target_include_directories(test_playerendpoint PRIVATE
                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
                            ${GSTREAMER_INCLUDE_DIRS}
@@ -39,7 +39,7 @@ target_link_libraries(test_playerendpoint
                       kmstestutils)
 
 add_test_program (test_rtpendpoint rtpendpoint.c)
-add_dependencies(test_rtpendpoint kmstestutils kmscore)
+add_dependencies(test_rtpendpoint kmstestutils kmscore ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint PRIVATE
                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
                            ${GSTREAMER_INCLUDE_DIRS}
@@ -51,7 +51,7 @@ target_link_libraries(test_rtpendpoint
                       kmstestutils)
 
 add_test_program (test_rtpendpoint_audio rtpendpoint_audio.c)
-add_dependencies(test_rtpendpoint_audio kmstestutils kmscore)
+add_dependencies(test_rtpendpoint_audio kmstestutils kmscore ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint_audio PRIVATE
                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
                            ${GSTREAMER_INCLUDE_DIRS}
@@ -63,7 +63,7 @@ target_link_libraries(test_rtpendpoint_audio
                       kmstestutils)
 
 add_test_program (test_rtpendpoint_video rtpendpoint_video.c)
-add_dependencies(test_rtpendpoint_video kmstestutils kmscore)
+add_dependencies(test_rtpendpoint_video kmstestutils kmscore ${LIBRARY_NAME}plugins)
 target_include_directories(test_rtpendpoint_video PRIVATE
                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
                            ${GSTREAMER_INCLUDE_DIRS}

@@ -23,6 +23,7 @@ add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES} ${RTCPDEMUX_HEADERS})
 
 target_link_libraries(rtcpdemux
   ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_BASE_LIBRARIES}
   ${GSTREAMER_RTP_LIBRARIES}
 )
 

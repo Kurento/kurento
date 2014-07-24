@@ -27,7 +27,7 @@
 #include <gst/gst.h>
 #include <gio/gio.h>
 
-#include <ext/gio/kmsgioenums.h>
+#include "ext/gio/kmsgioenums.h"
 
 #include "gstdtlssrtp.h"
 

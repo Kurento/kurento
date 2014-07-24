@@ -26,8 +26,8 @@
 #endif
 
 #include "gstdtlsconnection.h"
-#include <src/ext/gio/kmsgtlsclientconnection.h>
-#include <src/ext/gio/kmsgtlsserverconnection.h>
+#include "ext/gio/kmsgtlsclientconnection.h"
+#include "ext/gio/kmsgtlsserverconnection.h"
 
 #define GST_DTLS_CONNECTION_LOCK(self)   g_mutex_lock (&self->lock)
 #define GST_DTLS_CONNECTION_UNLOCK(self) g_mutex_unlock (&self->lock)

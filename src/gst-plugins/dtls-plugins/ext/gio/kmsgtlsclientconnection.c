@@ -1,7 +1,7 @@
 
 #include "kmsgtlsclientconnection.h"
 
-#include <src/ext/gnutls/gtlsclientconnection-gnutls.h>
+#include "ext/gnutls/gtlsclientconnection-gnutls.h"
 
 /**
  * g_tls_client_connection_new:

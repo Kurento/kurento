@@ -1,7 +1,7 @@
 
 #include "kmsgtlsconnection.h"
 
-#include <src/ext/gnutls/gtlsconnection-gnutls.h>
+#include "ext/gnutls/gtlsconnection-gnutls.h"
 
 #include <glib.h>
 

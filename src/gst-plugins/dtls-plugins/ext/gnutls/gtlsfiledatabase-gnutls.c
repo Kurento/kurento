@@ -27,7 +27,7 @@
 #include <glib/gi18n-lib.h>
 #include <gnutls/x509.h>
 
-#include <src/ext/gio/kmsgtlscertificate.h>
+#include "ext/gio/kmsgtlscertificate.h"
 
 static void g_tls_file_database_gnutls_file_database_interface_init (GTlsFileDatabaseInterface *iface);
 

@@ -27,7 +27,7 @@
 
 #include "gstdtlsconnection.h"
 
-#include "src/ext/gio/kmsgtlscertificate.h"
+#include "ext/gio/kmsgtlscertificate.h"
 
 GST_DEBUG_CATEGORY_STATIC (dtls_base_debug);
 #define GST_CAT_DEFAULT (dtls_base_debug)
