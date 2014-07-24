@@ -28,9 +28,9 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 import com.kurento.modulecreator.KurentoModuleCreator;
 import com.kurento.modulecreator.KurentoModuleCreatorException;
+import com.kurento.modulecreator.PathUtils;
+import com.kurento.modulecreator.Result;
 import com.kurento.modulecreator.codegen.Error;
-import com.kurento.modulecreator.codegen.PathUtils;
-import com.kurento.modulecreator.codegen.Result;
 
 /**
  * Parses Kurento Media Elements Definition (*.kmd.json) and transforms them
