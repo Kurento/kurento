@@ -274,6 +274,73 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
   return ret;
 }
 
+static gboolean
+gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
+{
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (src);
+  GstQuery *rsp_query = NULL;
+  GError *err = NULL;
+  gboolean ret;
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:{
+      GstCaps *caps, *copy;
+
+      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
+              query, self->priv->cancellable, &rsp_query, &err)) {
+        GST_WARNING_OBJECT (self, "Error: %s", err->message);
+        g_error_free (err);
+        ret = FALSE;
+        break;
+      }
+
+      gst_query_parse_caps_result (rsp_query, &caps);
+      copy = gst_caps_copy (caps);
+
+      gst_query_set_caps_result (query, copy);
+      gst_caps_unref (copy);
+      gst_query_unref (rsp_query);
+
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+
+      ret = FALSE;
+      break;
+    }
+    case GST_QUERY_ACCEPT_CAPS:{
+      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
+              query, self->priv->cancellable, &rsp_query, &err)) {
+        GST_ERROR_OBJECT (self, "Error: %s", err->message);
+        g_error_free (err);
+        ret = FALSE;
+      } else {
+        gboolean result;
+
+        gst_query_parse_accept_caps_result (rsp_query, &result);
+        gst_query_set_accept_caps_result (query, result);
+        gst_query_unref (rsp_query);
+
+        ret = TRUE;
+      }
+
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+
+      break;
+    }
+    default: {
+      ret =
+          GST_BASE_SRC_CLASS (gst_sctp_server_src_parent_class)->query (src,
+          query);
+      break;
+    }
+  }
+
+  return ret;
+}
+
 static void
 gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 {
@@ -328,6 +395,7 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
   gstbasesrc_class->stop = gst_sctp_server_src_stop;
   gstbasesrc_class->unlock = gst_sctp_server_src_unlock;
   gstbasesrc_class->unlock_stop = gst_sctp_server_src_unlock_stop;
+  gstbasesrc_class->query = gst_sctp_server_sink_query;
 
   gstpush_src_class = GST_PUSH_SRC_CLASS (klass);
   gstpush_src_class->create = gst_sctp_server_src_create;
