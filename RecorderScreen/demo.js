@@ -27,11 +27,10 @@ window.addEventListener('load', function(event) {
 
 	startRecordButton.addEventListener('click', startRecording);
 	playButton.addEventListener('click', startPlaying);
-	stopPlayButton.addEventListener("click", function(event){
+	stopPlayButton.addEventListener('click', function(event){
 		videoPlayer.src="";
 	})
 });
-
 
 function startRecording() {
 	console.log("onClick");
@@ -82,7 +81,9 @@ function startRecording() {
 	function onOffer(offer) {
 		console.log("Offer ...");
 
-		KwsMedia(ws_uri, function(kwsMedia) {
+		KwsMedia(ws_uri, function(error, kwsMedia) {
+			if (error) return onError(error);
+			
 			kwsMedia.create('MediaPipeline', function(error, pipeline) {
 				if (error) return onError(error);
 				console.log("Got MediaPipeline");
@@ -118,14 +119,20 @@ function startRecording() {
 							console.log("recording");
 						});
 
-						document.getElementById("stopRecordButton").addEventListener("click", function(event){
+						var stopRecorderButton = document.getElementById("stopRecordButton");
+
+						function stopRecording(event){
 							recorder.stop();
 							pipeline.release();
 							webRtcPeer.dispose();
 
 							videoInput.src = "";
 							videoOutput.src = "";
-						})
+							
+							this.removeEventListener('click', stopRecording);
+						}
+
+						stopRecorderButton.addEventListener("click", stopRecording);
 					});
 				});
 			});
@@ -141,64 +148,6 @@ function startPlaying() {
 	var videoPlayer = document.getElementById('videoPlayer');
 
 	videoPlayer.src = 'files/recorderScreen.webm';
-
-/*
-	KwsMedia(ws_uri, function(kwsMedia) {
-		kwsMedia.create('MediaPipeline', function(error, pipeline) {
-			if (error) return onError(error);
-
-			pipeline.create("PlayerEndpoint", { uri : file_uri }, function(error, player) {
-				if (error) return onError(error);
-
-				player.on('EndOfStream', function(event){
-					pipeline.release();
-					videoPlayer.src = "";
-				});
-
-				pipeline.create('HttpGetEndpoint', function(error, httpGet) {
-					if (error) return onError(error);
-
-					player.connect(httpGet, function(error) {
-						if (error) return onError(error);
-
-						console.log("Player connected");
-					});
-
-					// Set the video on the video tag
-					httpGet.getUrl(function(error, url)
-					{
-						if(error) return onerror(error);
-
-						// [Hack] Modify path for reverse proxy
-						console.log(url)
-						url = new URL(url)
-						url.protocol = 'https:'
-						url.port = 443
-						url.pathname = '/kms'+ url.pathname
-
-						videoPlayer.src = url;
-
-						console.log(url);
-
-						// Start player
-						player.play(function(error)
-						{
-							if (error) return onError(error);
-
-							console.log("Playing ...");
-						});
-					});
-				});
-			});
-
-			document.getElementById("stopPlayButton").addEventListener("click", function(event){
-				pipeline.release();
-
-				videoPlayer.src="";
-			})
-		});
-	});
-*/
 }
 
 function onError(error) {

@@ -1,6 +1,6 @@
 {
   "name": "Recorder_screen",
-  "version": "4.3.17",
+  "version": "4.3.18-SNAPSHOT",
   "description": "KWS Recorder demo with screen support",
   "authors": [
     "Kurento <info@kurento.org>"
@@ -20,7 +20,7 @@
     "tests"
   ],
   "dependencies": {
-    "kws-utils": "~4.3.17",
-    "kws-media-api": "~4.3.17"
+    "kws-utils": "Kurento/kws-utils-bower#develop",
+    "kws-media-api": "Kurento/kws-media-api-bower#develop"
   }
 }
