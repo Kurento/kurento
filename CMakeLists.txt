@@ -52,7 +52,7 @@ set (ENABLE_DEBUGGING_TESTS OFF CACHE BOOL "Enable test that are not yet stable"
 
 include(GNUInstallDirs)
 
-set (CMAKE_INSTALL_MODULESDIR ${CMAKE_INSTALL_LIBDIR}/kurento/gst-plugins)
+set (CMAKE_INSTALL_GST_PLUGINS_DIR ${CMAKE_INSTALL_LIBDIR}/gstreamer-1.0)
 set (KURENTO_MODULES_SO_DIR ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}/${KURENTO_MODULES_DIR_INSTALL_PREFIX})
 
 set (BINARY_LOCATION "http://files.kurento.org/" CACHE STRING "Local binary directory expressed as an URI ( http:// or file:/// )")
