@@ -2,7 +2,6 @@
 
 JAVA_CMD="/usr/bin/java"
 JAVA_OPTS=""
-JAVA_JAR="/usr/bin/ktool-rom-processor-jar-with-dependencies.jar"
+JAVA_JAR="/usr/bin/kurento-module-creator-jar-with-dependencies.jar"
 
 $JAVA_CMD $JAVA_OPTS -jar "$JAVA_JAR" "$@"
-

@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Kurento Media Server IDL interface
-Source: https://github.com/Kurento/ktool-rom-processor
+Source: https://github.com/Kurento/kurento-module-creator
 
 Files: *
 Copyright: Copyright 2014 Kurento <kurento@kurento.com>

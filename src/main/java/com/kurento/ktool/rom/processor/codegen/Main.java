@@ -175,7 +175,7 @@ public class Main {
 
 	public static void printHelp(Options options) {
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("ktool-rom-processor", options);
+		formatter.printHelp("kurento-module-creator", options);
 	}
 
 	private static List<Path> getDependencyKmdFiles(CommandLine line)

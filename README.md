@@ -2,11 +2,11 @@
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
-ktool-rom-processor
+kurento-module-creator
 ===================
 Processor for the Remote Object Model of the Kurento media server
 
-The ktool-rom-processor project contains a processor that will
+The kurento-module-creator project contains a processor that will
 generate code for RPC between the Kurento Media Server and remote
 libraries.
 
@@ -46,8 +46,8 @@ Follow us on Twitter @[kurentoms].
 
 [KurentoImage]: https://0.gravatar.com/avatar/b8fffabbe3831731cb4c4c9667bfa439?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/kurento/ktool-rom-processor
-[GitHub Kurento Group]: https://github.com/kurento
+[GitHub Repository]: https://github.com/kurento/kurento-module-creator
+[GitHub Kurento Group]: https://github.com/Kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
 

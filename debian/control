@@ -1,4 +1,4 @@
-Source: ktool-rom-processor
+Source: kurento-module-creator
 Section: devel
 Priority: optional
 Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
@@ -15,12 +15,12 @@ Build-Depends: debhelper(>=9),
 Standards-Version: 3.9.4
 
 
-Package: ktool-rom-processor
+Package: kurento-module-creator
 Architecture: all
 Depends: default-jre (>=2:1.7),
          ${maven:Depends},
          ${misc:Depends}
-Description: Kurento Media Server Remote Object Model Processor
+Description: Kurento module creator
  This tools generates stubs in different languages for communication
  with the Kurento Media server using a json-rpc model and
  language-dependent templates.

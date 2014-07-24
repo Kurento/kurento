@@ -1,5 +1,0 @@
-Java generation:
-java -jar ktool-rom-processor.jar -c <CODEGEN_DIR> -cf java_gen_config.json -d ../kms-interface-rom/model.json
- -t templates/java -v
-
-JS generation:
