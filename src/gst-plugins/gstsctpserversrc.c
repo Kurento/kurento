@@ -341,6 +341,42 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
   return ret;
 }
 
+static gboolean
+gst_sctp_server_sink_event (GstBaseSrc * src, GstEvent * event)
+{
+  GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (src);
+  GError *err = NULL;
+  gboolean ret;
+
+  switch (GST_EVENT_TYPE (event)) {
+    case GST_EVENT_CUSTOM_UPSTREAM: {
+      /* Propagation of custom events may result in an error if they */
+      /* use a not marshallable value in the internal GstStructure.  */
+      GST_DEBUG (">> %" GST_PTR_FORMAT, event);
+
+      if (kms_scp_base_rpc_event (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
+              event, self->priv->cancellable, &err)) {
+        ret = TRUE;
+        break;
+      }
+
+      GST_ERROR_OBJECT (self, "Error: %s", err->message);
+      g_error_free (err);
+      ret = FALSE;
+      break;
+    }
+    default: {
+      GST_WARNING ("Not propagated event >> %" GST_PTR_FORMAT, event);
+      ret =
+          GST_BASE_SRC_CLASS (gst_sctp_server_src_parent_class)->event (src,
+          event);
+      break;
+    }
+  }
+
+  return ret;
+}
+
 static void
 gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 {
@@ -396,6 +432,7 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
   gstbasesrc_class->unlock = gst_sctp_server_src_unlock;
   gstbasesrc_class->unlock_stop = gst_sctp_server_src_unlock_stop;
   gstbasesrc_class->query = gst_sctp_server_sink_query;
+  gstbasesrc_class->event = gst_sctp_server_sink_event;
 
   gstpush_src_class = GST_PUSH_SRC_CLASS (klass);
   gstpush_src_class->create = gst_sctp_server_src_create;
