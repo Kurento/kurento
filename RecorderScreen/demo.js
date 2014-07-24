@@ -13,8 +13,7 @@
 *
 */
 
-const ws_uri = 'wss://kurentorecorder.naevatec.com:8888/thrift/ws/websocket'; //requires Internet connectivity
-//const ws_uri = 'wss://demo01.kurento.org:8888/thrift/ws/websocket'; //requires Internet connectivity
+const ws_uri = 'wss://' + location.hostname + ':8888/thrift/ws/websocket'; //requires Internet connectivity
 const file_storage = 'file:///var/www/html/files/'; //path where to be store media in the server
 const file_uri = file_storage+'recorderScreen.webm'; //file to be stored in media server
 
@@ -22,9 +21,15 @@ const file_uri = file_storage+'recorderScreen.webm'; //file to be stored in medi
 window.addEventListener('load', function(event) {
 	var startRecordButton = document.getElementById('startRecordButton');
 	var playButton = document.getElementById('startPlayButton');
+	var stopPlayButton = document.getElementById('stopPlayButton');
+
+	var videoPlayer = document.getElementById('videoPlayer');
 
 	startRecordButton.addEventListener('click', startRecording);
 	playButton.addEventListener('click', startPlaying);
+	stopPlayButton.addEventListener("click", function(event){
+		videoPlayer.src="";
+	})
 });
 
 
