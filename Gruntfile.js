@@ -45,7 +45,7 @@ module.exports = function(grunt)
     {
       all:
       {
-        src: ['README.md', 'lib/**/*.js', 'test/*.js'], 
+        src: ['README.md', 'lib/**/*.js', 'test/*.js'],
         dest: 'doc/jsdoc'
       }
     },
@@ -130,7 +130,8 @@ module.exports = function(grunt)
             'repository'
           ],
           overrides: {
-            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || [])
+            authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || []),
+            main: 'js/<%= pkg.name %>.js'
           }
         }
       }
