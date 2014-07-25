@@ -42,10 +42,11 @@ set(GEN_HEADERS
 add_glib_marshal(HTTP_EP_SOURCES HTTP_EP_HEADERS http-marshal http_marshal)
 add_glib_enumtypes(HTTP_EP_SOURCES HTTP_EP_HEADERS http-enumtypes KMS ${ENUM_HEADERS})
 
-add_library(kmshttpep SHARED ${HTTP_EP_SOURCES})
+add_library(kmshttpep ${HTTP_EP_SOURCES})
 
 set_target_properties(kmshttpep PROPERTIES
   PUBLIC_HEADER "${HTTP_EP_HEADERS}"
+  COMPILE_FLAGS "-fPIC"
 )
 
 include_directories(kmshttpep
