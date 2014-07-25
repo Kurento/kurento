@@ -319,86 +319,69 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
   GstQuery *rsp_query = NULL;
   GError *err = NULL;
-  gboolean ret;
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+    case GST_QUERY_ACCEPT_CAPS:
+    case GST_QUERY_URI:
+      break;
+    default:
+      GST_WARNING ("Not propagated query: %" GST_PTR_FORMAT, query);
+
+      return GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->query (sink, query);
+  }
+
+  GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+  if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
+      query, self->priv->cancellable, &rsp_query, &err)) {
+    GST_WARNING_OBJECT (self, "Error: %s", err->message);
+    g_error_free (err);
+    return FALSE;
+  }
 
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:{
       GstCaps *caps, *copy;
-
-      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
-
-      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
-              query, self->priv->cancellable, &rsp_query, &err)) {
-        GST_WARNING_OBJECT (self, "Error: %s", err->message);
-        g_error_free (err);
-        ret = FALSE;
-        break;
-      }
 
       gst_query_parse_caps_result (rsp_query, &caps);
       copy = gst_caps_copy (caps);
 
       gst_query_set_caps_result (query, copy);
       gst_caps_unref (copy);
-      gst_query_unref (rsp_query);
 
-      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
-
-      ret = TRUE;
       break;
     }
     case GST_QUERY_ACCEPT_CAPS:{
-      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+      gboolean result;
 
-      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
-              query, self->priv->cancellable, &rsp_query, &err)) {
-        GST_ERROR_OBJECT (self, "Error: %s", err->message);
-        g_error_free (err);
-        ret = FALSE;
-      } else {
-        gboolean result;
-
-        gst_query_parse_accept_caps_result (rsp_query, &result);
-        gst_query_set_accept_caps_result (query, result);
-        gst_query_unref (rsp_query);
-
-        ret = TRUE;
-      }
-
-      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+      gst_query_parse_accept_caps_result (rsp_query, &result);
+      gst_query_set_accept_caps_result (query, result);
 
       break;
     }
     case GST_QUERY_URI:{
-      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+      gchar *uri;
 
-      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
-              query, self->priv->cancellable, &rsp_query, &err)) {
-        GST_WARNING_OBJECT (self, "Error: %s", err->message);
-        g_error_free (err);
-        ret = FALSE;
-      } else {
-        gchar *uri;
+      gst_query_parse_uri (rsp_query, &uri);
+      gst_query_set_uri (query, uri);
+      g_free (uri);
 
-        gst_query_parse_uri (rsp_query, &uri);
-        gst_query_set_uri (query, uri);
-
-        g_free (uri);
-        ret = TRUE;
-      }
-
-      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+      break;
     }
     default: {
-      GST_WARNING ("Not propagated query >> %" GST_PTR_FORMAT, query);
-      ret =
-          GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->query (sink,
-          query);
-      break;
+      GST_ERROR("Unexpected response %" GST_PTR_FORMAT, query);
+      gst_query_unref (rsp_query);
+
+      return FALSE;
     }
   }
 
-  return ret;
+  gst_query_unref (rsp_query);
+
+  GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+
+  return TRUE;
 }
 
 static gboolean
