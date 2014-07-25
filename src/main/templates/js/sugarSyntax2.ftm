@@ -2,9 +2,9 @@
   <#case "Hub">
 
 /**
- * Create a new instance of a {module:core~HubPort} attached to this {module:kwsMediaApi/core~Hub}
+ * Create a new instance of a {module:core~HubPort} attached to this {module:core~Hub}
  *
- * @callback {createHubCallback} callback
+ * @param {module:core/abstract.Hub~createHubCallback} callback
  *
  * @return {external:Promise}
  */
@@ -24,9 +24,9 @@ Hub.prototype.createHubPort = function(callback){
   return promiseCallback(promise, callback);
 };
 /**
- * @callback module:core~Hub~createHubCallback
- * @param {Error} error
- * @param {module:core~HubPort} result
+ * @callback core/abstract.Hub~createHubCallback
+ * @param {external:Error} error
+ * @param {module:core/abstract.HubPort} result
  *  The created HubPort
  */
 
@@ -37,8 +37,8 @@ Hub.prototype.createHubPort = function(callback){
  * Send a command to a media object
  *
  * @param {external:String} method - Command to be executed by the server
- * @param {module:core~MediaObject.constructorParams} [params]
- * @callback {invokeCallback} callback
+ * @param {module:core/abstract.MediaObject.constructorParams} [params]
+ * @param {module:core/abstract.MediaObject~invokeCallback} callback
  *
  * @return {external:Promise}
  */
@@ -81,14 +81,16 @@ MediaObject.prototype.invoke = function(method, params, callback){
   return promiseCallback(promise, callback);
 };
 /**
- * @callback invokeCallback
- * @param {MediaServerError} error
+ * @callback core/abstract.MediaObject~invokeCallback
+ * @param {external:Error} error
  */
 
 /**
- * Explicity release a {@link module:core~MediaObject MediaObject} from memory
+ * Explicity release a {@link module:core/abstract.MediaObject MediaObject} from memory
  *
  * All its descendants will be also released and collected
+ *
+ * @param {module:core/abstract.MediaObject~releaseCallback} callback
  *
  * @return {external:Promise}
  */
@@ -112,16 +114,20 @@ MediaObject.prototype.release = function(callback){
 
   return promiseCallback(promise, callback);
 };
+/**
+ * @callback core/abstract.MediaObject~releaseCallback
+ * @param {external:Error} error
+ */
 
   <#break>
   <#case "MediaPipeline">
 
 /**
- * Create a new instance of a {module:core~MediaObject} attached to this {module:kwsMediaApi/core~MediaPipeline}
+ * Create a new instance of a {module:core/abstract.MediaObject} attached to this {module:core.MediaPipeline}
  *
- * @param {external:string} type - Type of the {module:core/abstract~MediaObject}
+ * @param {external:string} type - Type of the {module:core/abstract.MediaObject}
  * @param {external:string[]} [params]
- * @callback {module:core~MediaPipeline~createCallback} callback
+ * @param {module:core.MediaPipeline~createCallback} callback
  *
  * @return {external:Promise}
  */
@@ -154,9 +160,9 @@ MediaPipeline.prototype.create = function(type, params, callback){
   return promiseCallback(promise, callback);
 };
 /**
- * @callback module:core~MediaPipeline~createCallback
- * @param {Error} error
- * @param {module:core~MediaElement} result
+ * @callback core.MediaPipeline~createCallback
+ * @param {external:Error} error
+ * @param {module:core/abstract~MediaElement} result
  *  The created MediaElement
  */
 
@@ -168,8 +174,8 @@ MediaPipeline.prototype.create = function(type, params, callback){
  *
  * @public
  *
- * @param {...module:core~MediaSink} sink - Sink to be disconnected
- * @callback {module:core~MediaSource~disconnectCallback} callback
+ * @param {...module:core/abstract.MediaSink} sink - Sink to be disconnected
+ * @param {module:core/abstract.MediaSource~disconnectCallback} callback
  *
  * @return {external:Promise}
  */
@@ -184,8 +190,8 @@ MediaSource.prototype.disconnect = function(sink, callback){
   return sink.invoke('disconnect', params, callback);
 };
 /**
- * @callback module:core~MediaSource~disconnectCallback
- * @param {Error} error
+ * @callback module:core/abstract.MediaSource~disconnectCallback
+ * @param {external:Error} error
  */
 
   <#break>

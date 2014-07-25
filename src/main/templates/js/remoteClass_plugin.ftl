@@ -3,6 +3,9 @@
 <#assign module_namespace>
   <#lt>${module_name}<#if remoteClass.abstract>/abstracts</#if><#rt>
 </#assign>
+<#assign remoteClass_namepath>
+  <#lt>${module_namespace}.${remoteClass.name}<#rt>
+</#assign>
 <#assign extends_name>
   <#if remoteClass.name=="MediaObject">
     <#lt>EventEmitter<#rt>
@@ -46,14 +49,6 @@ var checkType = require('checktype');
 </#if>
 
 
-/**
- * Media API for the Kurento Web SDK
- *
- * @module ${module_namespace}
- *
- * @copyright 2013-2014 Kurento (http://kurento.org/)
- * @license LGPL
- */
 <#if remoteClass.extends??>
 
   <#if import_name == module_name>
@@ -68,29 +63,27 @@ var ${extends_name} = require('events').${extends_name};
 
 
 /**
+<#if remoteClass.constructor?? && remoteClass.constructor.doc??>
+  <#list remoteClass.constructor.doc?split("\n") as line>
+ * ${sphinxLinks(line, remoteClass_namepath)}
+  </#list>
+ *
+</#if>
 <#if remoteClass.doc??>
+ * @classdesc
   <#list remoteClass.doc?split("\n") as line>
- * ${sphinxLinks(line)}
+ *  ${sphinxLinks(line, remoteClass_namepath)}
   </#list>
  *
 </#if>
 <#if remoteClass.abstract>
  * @abstract
 </#if>
- * @class module:${module_namespace}.${remoteClass.name}
 <#if remoteClass.extends??>
  * @extends module:${import_namespace}.${extends_name}
 </#if>
- */
-
-/**
-<#if remoteClass.constructor?? && remoteClass.constructor.doc??>
-  <#list remoteClass.constructor.doc?split("\n") as line>
- * ${sphinxLinks(line)}
-  </#list>
  *
-</#if>
- * @constructor
+ * @constructor module:${remoteClass_namepath}
  *
  * @param {string} id
  */
@@ -110,11 +103,13 @@ inherits(${remoteClass.name}, ${extends_name});
 /**
       <#if property.doc??>
         <#list property.doc?split("\n") as line>
- * ${sphinxLinks(line)}
+ * ${sphinxLinks(line, remoteClass_namepath)}
         </#list>
       </#if>
  *
- * @param {module:${module_namespace}.${remoteClass.name}~${getPropertyName}Callback} [callback]
+ * @alias module:${remoteClass_namepath}#${getPropertyName}
+ *
+ * @param {module:${remoteClass_namepath}~${getPropertyName}Callback} [callback]
  *
  * @return {external:Promise}
  */
@@ -122,7 +117,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
   return this.invoke('${getPropertyName}', callback);
 };
 /**
- * @callback module:${module_namespace}.${remoteClass.name}~${getPropertyName}Callback
+ * @callback module:${remoteClass_namepath}~${getPropertyName}Callback
  * @param {Error} error
  * @param {${property.type.name}} result
  */
@@ -140,20 +135,22 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
 /**
     <#if method.doc??>
       <#list method.doc?split("\n") as line>
- * ${sphinxLinks(line)}
+ * ${sphinxLinks(line, remoteClass_namepath)}
       </#list>
     </#if>
     <#list method.params as param>
  *
+ * @alias module:${remoteClass_namepath}.${method.name}
+ *
  * @param {${param.type.name}}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
       <#if param.doc??>
         <#list param.doc?split("\n") as line>
- *  ${sphinxLinks(line)}
+ *  ${sphinxLinks(line, remoteClass_namepath)}
         </#list>
       </#if>
     </#list>
  *
- * @param {module:${module_namespace}.${remoteClass.name}~${method.name}Callback} [callback]
+ * @param {module:${remoteClass_namepath}~${method.name}Callback} [callback]
  *
  * @return {external:Promise}
  */
@@ -192,12 +189,12 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   return this.invoke('${method.name}'<#if method.params?has_content>, params</#if>, callback);
 };
 /**
- * @callback module:${module_namespace}.${remoteClass.name}~${method.name}Callback
+ * @callback module:${remoteClass_namepath}~${method.name}Callback
  * @param {Error} error
     <#if method.return??>
  * @param {${method.return.type.name}} result
       <#list method.return.doc?split("\n") as line>
- *  ${sphinxLinks(line)}
+ *  ${sphinxLinks(line, remoteClass_namepath)}
       </#list>
     </#if>
  */
@@ -207,14 +204,14 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 <#include "sugarSyntax2.ftm" >
 
 /**
- * @type module:${module_namespace}.${remoteClass.name}.constructorParams
+ * @alias module:${remoteClass_namepath}.constructorParams
 <#if remoteClass.constructor??>
   <#list remoteClass.constructor.params?sort_by("name") as param>
  *
  * @property {${param.type.name}} <#if param.optional>[${param.name}]<#else>${param.name}</#if>
     <#if param.doc??>
       <#list param.doc?split("\n") as line>
- *  ${sphinxLinks(line)}
+ *  ${sphinxLinks(line, remoteClass_namepath)}
       </#list>
     </#if>
   </#list>
@@ -233,7 +230,7 @@ ${remoteClass.name}.constructorParams = {<#list (remoteClass.constructor.params?
 </#list>};
 
 /**
- * @type module:${module_namespace}.${remoteClass.name}.events
+ * @alias module:${remoteClass_namepath}.events
 <#if remoteClass.extends??>
  *
  * @extend module:${import_namespace}.${extends_name}.events
