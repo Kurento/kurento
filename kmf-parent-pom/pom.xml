@@ -282,6 +282,11 @@
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
+				<groupId>com.kurento.kmf</groupId>
+				<artifactId>kmf-orion-connector</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
 				<groupId>com.woorea</groupId>
 				<artifactId>keystone-client</artifactId>
 				<version>${version.keystone-client}</version>

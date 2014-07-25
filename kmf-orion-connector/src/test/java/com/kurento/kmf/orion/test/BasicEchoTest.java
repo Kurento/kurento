@@ -81,4 +81,43 @@ public class BasicEchoTest {
 
 		log.info("Test finished");
 	}
+
+	@Test
+	public void testCrowdDetectorFilter () {
+		final OrionConnector oc = new OrionConnector(
+				new OrionConnectorConfiguration());
+
+		final OrionContextElement fluidityElement = new OrionContextElement();
+		fluidityElement.setId("CAM-ID_FluidityEvent");
+		fluidityElement.setType("FluidityEvent");
+		OrionAttribute<String> oaPercentage = new OrionAttribute<>("fluidityPercentage", "percentile", "0");
+		OrionAttribute<String> oaLevel = new OrionAttribute<>("fluidityLevel", "level", "none");
+		OrionAttribute<String> roiID1 = new OrionAttribute<>("roiID", "text", "-");
+		fluidityElement.getAttributes().add(oaPercentage);
+		fluidityElement.getAttributes().add(oaLevel);
+		fluidityElement.getAttributes().add(roiID1);
+
+		final OrionContextElement directionElement = new OrionContextElement();
+		directionElement.setId("CAM-ID_DirectionEvent");
+		directionElement.setType("DirectionEvent");
+		OrionAttribute<String> oaAngle = new OrionAttribute<>("directionAngle", "degrees", "0");
+		OrionAttribute<String> roiID2 = new OrionAttribute<>("roiID", "text", "-");
+		directionElement.getAttributes().add(oaAngle);
+		directionElement.getAttributes().add(roiID2);
+
+		final OrionContextElement occupancyElement = new OrionContextElement();
+		occupancyElement.setId("CAM-ID_OccupancyEvent");
+		occupancyElement.setType("OccupancyEvent");
+		OrionAttribute<String> oaOcPerc = new OrionAttribute<>("occupancyPercentage", "percentile", "0");
+		OrionAttribute<String> oaOcLevel = new OrionAttribute<>("occupancyLevel", "level", "none");
+		OrionAttribute<String> roiID3 = new OrionAttribute<>("roiID", "text", "-");
+		occupancyElement.getAttributes().add(oaOcPerc);
+		occupancyElement.getAttributes().add(oaOcLevel);
+		occupancyElement.getAttributes().add(roiID3);
+
+		ContextUpdateResponse resp = oc.registerContextElements(fluidityElement, directionElement, occupancyElement);
+
+		log.info("Response: {}", resp);
+
+	}
 }
