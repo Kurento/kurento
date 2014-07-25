@@ -55,11 +55,13 @@ HttpEndPointServer::getHttpEndPointServer()
     GST_DEBUG ("b");
     throw std::runtime_error ("HttpServer not created");
   }
+
   return instance;
 }
 
 std::shared_ptr<HttpEndPointServer>
-HttpEndPointServer::getHttpEndPointServer (uint port, std::string iface, std::string addr)
+HttpEndPointServer::getHttpEndPointServer (uint port, std::string iface,
+    std::string addr)
 {
   RecMutex::Lock lock (mutex);
 
@@ -67,14 +69,14 @@ HttpEndPointServer::getHttpEndPointServer (uint port, std::string iface, std::st
     return instance;
   }
 
-  if (port == 0){
+  if (port == 0) {
     GST_INFO ("HttpService will start on any available port");
   } else {
     try {
-      check_port(port);
+      check_port (port);
     } catch (std::exception &ex) {
       GST_WARNING ("Setting default port %d to http end point server",
-                  DEFAULT_PORT);
+                   DEFAULT_PORT);
       port = DEFAULT_PORT;
     }
   }

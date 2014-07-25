@@ -12,21 +12,26 @@ class MediaPipeline;
 class MediaProfileSpecType;
 class HttpGetEndpointImpl;
 
-void Serialize (std::shared_ptr<HttpGetEndpointImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<HttpGetEndpointImpl> &object,
+                JsonSerializer &serializer);
 
-class HttpGetEndpointImpl : public HttpEndpointImpl, public virtual HttpGetEndpoint
+class HttpGetEndpointImpl : public HttpEndpointImpl,
+  public virtual HttpGetEndpoint
 {
 
 public:
 
-  HttpGetEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile, int disconnectionTimeout);
+  HttpGetEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+                       bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile,
+                       int disconnectionTimeout);
 
   virtual ~HttpGetEndpointImpl () {};
 
-  virtual void setHttpServerConfig(MediaServerConfig& config);
+  virtual void setHttpServerConfig (MediaServerConfig &config);
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

@@ -23,9 +23,12 @@ adaptor_function (GstElement *player, gpointer data)
 }
 
 
-PlayerEndpointImpl::PlayerEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, bool useEncodedMedia) : UriEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
+PlayerEndpointImpl::PlayerEndpointImpl (std::shared_ptr<MediaPipeline>
+                                        mediaPipeline, const std::string &uri,
+                                        bool useEncodedMedia) : UriEndpointImpl (
+                                              std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
- GstElement *element = getGstreamerElement();
+  GstElement *element = getGstreamerElement();
 
   g_object_set (G_OBJECT (element), "use-encoded-media", useEncodedMedia, NULL);
 
@@ -82,7 +85,8 @@ void PlayerEndpointImpl::play ()
 }
 
 MediaObjectImpl *
-PlayerEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, bool useEncodedMedia) const
+PlayerEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+    mediaPipeline, const std::string &uri, bool useEncodedMedia) const
 {
   return new PlayerEndpointImpl (mediaPipeline, uri, useEncodedMedia);
 }

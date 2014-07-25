@@ -21,9 +21,13 @@ enum {
   MP4 = 1
 };
 
-RecorderEndpointImpl::RecorderEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream) : UriEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
+RecorderEndpointImpl::RecorderEndpointImpl (std::shared_ptr<MediaPipeline>
+    mediaPipeline, const std::string &uri,
+    std::shared_ptr<MediaProfileSpecType> mediaProfile,
+    bool stopOnEndOfStream) : UriEndpointImpl (
+        std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
- g_object_ref (getGstreamerElement() );
+  g_object_ref (getGstreamerElement() );
 
   g_object_set (G_OBJECT (getGstreamerElement() ), "accept-eos",
                 stopOnEndOfStream, NULL);
@@ -80,9 +84,13 @@ void RecorderEndpointImpl::record ()
 }
 
 MediaObjectImpl *
-RecorderEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream) const
+RecorderEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+    mediaPipeline, const std::string &uri,
+    std::shared_ptr<MediaProfileSpecType> mediaProfile,
+    bool stopOnEndOfStream) const
 {
-  return new RecorderEndpointImpl (mediaPipeline, uri, mediaProfile, stopOnEndOfStream);
+  return new RecorderEndpointImpl (mediaPipeline, uri, mediaProfile,
+                                   stopOnEndOfStream);
 }
 
 RecorderEndpointImpl::StaticConstructor RecorderEndpointImpl::staticConstructor;

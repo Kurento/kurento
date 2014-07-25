@@ -14,24 +14,30 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-HttpGetEndpointImpl::HttpGetEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile, int disconnectionTimeout) : HttpEndpointImpl (std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline), disconnectionTimeout)
+HttpGetEndpointImpl::HttpGetEndpointImpl (std::shared_ptr<MediaPipeline>
+    mediaPipeline, bool terminateOnEOS,
+    std::shared_ptr<MediaProfileSpecType> mediaProfile,
+    int disconnectionTimeout) : HttpEndpointImpl (
+        std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline),
+        disconnectionTimeout)
 {
   g_object_set ( G_OBJECT (element), "accept-eos", terminateOnEOS,
                  NULL);
-  switch (mediaProfile->getValue() ) {
-    case MediaProfileSpecType::WEBM:
-      GST_INFO ("Set WEBM profile");
-      g_object_set ( G_OBJECT (element), "profile", 0, NULL);
-      break;
 
-    case MediaProfileSpecType::MP4:
-      GST_INFO ("Set MP4 profile");
-      g_object_set ( G_OBJECT (element), "profile", 1, NULL);
-      break;
+  switch (mediaProfile->getValue() ) {
+  case MediaProfileSpecType::WEBM:
+    GST_INFO ("Set WEBM profile");
+    g_object_set ( G_OBJECT (element), "profile", 0, NULL);
+    break;
+
+  case MediaProfileSpecType::MP4:
+    GST_INFO ("Set MP4 profile");
+    g_object_set ( G_OBJECT (element), "profile", 1, NULL);
+    break;
   }
 }
 
-void HttpGetEndpointImpl::setHttpServerConfig(MediaServerConfig& config)
+void HttpGetEndpointImpl::setHttpServerConfig (MediaServerConfig &config)
 {
   this->setConfig (config);
 
@@ -45,9 +51,13 @@ void HttpGetEndpointImpl::setHttpServerConfig(MediaServerConfig& config)
 
 
 MediaObjectImpl *
-HttpGetEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline, bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile, int disconnectionTimeout) const
+HttpGetEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+    mediaPipeline, bool terminateOnEOS,
+    std::shared_ptr<MediaProfileSpecType> mediaProfile,
+    int disconnectionTimeout) const
 {
-  return new HttpGetEndpointImpl (mediaPipeline, terminateOnEOS, mediaProfile, disconnectionTimeout);
+  return new HttpGetEndpointImpl (mediaPipeline, terminateOnEOS, mediaProfile,
+                                  disconnectionTimeout);
 }
 
 HttpGetEndpointImpl::StaticConstructor HttpGetEndpointImpl::staticConstructor;

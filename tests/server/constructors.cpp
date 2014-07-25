@@ -26,130 +26,153 @@
 #include "MediaServerConfig.hpp"
 
 void
-testHttpGetEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
+                     std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
   kurento::MediaServerConfig config;
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory ("HttpGetEndpoint")->createObject("", w.JsonValue);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("HttpGetEndpoint")->createObject ("", w.JsonValue);
 
-  config.setHttpPort(9091);
-  config.setHttpAnnouncedAddr("localhost");
-  config.setHttpInterface("");
+  config.setHttpPort (9091);
+  config.setHttpAnnouncedAddr ("localhost");
+  config.setHttpInterface ("");
 
-  std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl> (object)->setHttpServerConfig(config);
+  std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl>
+  (object)->setHttpServerConfig (config);
 
-  std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl> (object)->getUrl () << std::endl;
+  std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl>
+            (object)->getUrl () << std::endl;
 
-  sleep(5);
+  sleep (5);
 
   std::cout << "destroy endpoint " << std::endl;
-  kurento::MediaSet::getMediaSet()->release(object);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testHttpPostEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testHttpPostEndPoint (kurento::ModuleManager &moduleManager,
+                      std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("HttpPostEndpoint")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("HttpPostEndpoint")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testPlayerEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
-{
-  kurento::JsonSerializer w (true);
-  std::string uri ("http://kurento.org");
-
-  w.SerializeNVP(mediaPipeline);
-  w.SerializeNVP(uri);
-
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("PlayerEndpoint")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
-}
-
-void
-testRecorderEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testPlayerEndPoint (kurento::ModuleManager &moduleManager,
+                    std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
   std::string uri ("http://kurento.org");
 
-  w.SerializeNVP(mediaPipeline);
-  w.SerializeNVP(uri);
+  w.SerializeNVP (mediaPipeline);
+  w.SerializeNVP (uri);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("RecorderEndpoint")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("PlayerEndpoint")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testRtpEndpoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testRecorderEndPoint (kurento::ModuleManager &moduleManager,
+                      std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
+  std::string uri ("http://kurento.org");
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
+  w.SerializeNVP (uri);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("RtpEndpoint")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("RecorderEndpoint")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testWebRTCEndpoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testRtpEndpoint (kurento::ModuleManager &moduleManager,
+                 std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("WebRtcEndpoint")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("RtpEndpoint")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testMixer (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testWebRTCEndpoint (kurento::ModuleManager &moduleManager,
+                    std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("Mixer")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("WebRtcEndpoint")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testDispatcher (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testMixer (kurento::ModuleManager &moduleManager,
+           std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("Dispatcher")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("Mixer")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testDispatcherOneToMany (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testDispatcher (kurento::ModuleManager &moduleManager,
+                std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("DispatcherOneToMany")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("Dispatcher")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 void
-testComposite (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+testDispatcherOneToMany (kurento::ModuleManager &moduleManager,
+                         std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
 
-  w.SerializeNVP(mediaPipeline);
+  w.SerializeNVP (mediaPipeline);
 
-  std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory("Composite")->createObject("", w.JsonValue);
-  kurento::MediaSet::getMediaSet()->release(object);
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("DispatcherOneToMany")->createObject ("",
+        w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
+}
+
+void
+testComposite (kurento::ModuleManager &moduleManager,
+               std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
+{
+  kurento::JsonSerializer w (true);
+
+  w.SerializeNVP (mediaPipeline);
+
+  std::shared_ptr <kurento::MediaObjectImpl >  object =
+    moduleManager.getFactory ("Composite")->createObject ("", w.JsonValue);
+  kurento::MediaSet::getMediaSet()->release (object);
 }
 
 int
@@ -165,22 +188,23 @@ main (int argc, char **argv)
   std::string coreModuleName = KURENTO_MODULES_SO_DIR "/libkmscoremodule.so";
 
   moduleManager.loadModule (coreModuleName);
-  mediaPipeline = moduleManager.getFactory ("MediaPipeline")->createObject("", Json::Value());
+  mediaPipeline = moduleManager.getFactory ("MediaPipeline")->createObject ("",
+                  Json::Value() );
 
   moduleManager.loadModule ("../../src/server/libkmselementsmodule.so");
 
-  testHttpGetEndPoint(moduleManager, mediaPipeline);
-  testHttpPostEndPoint(moduleManager, mediaPipeline);
-  testPlayerEndPoint(moduleManager, mediaPipeline);
-  testRecorderEndPoint(moduleManager, mediaPipeline);
-  testRtpEndpoint(moduleManager, mediaPipeline);
-  testWebRTCEndpoint(moduleManager, mediaPipeline);
-  testMixer(moduleManager, mediaPipeline);
-  testDispatcher(moduleManager, mediaPipeline);
-  testDispatcherOneToMany(moduleManager, mediaPipeline);
-  testComposite(moduleManager, mediaPipeline);
+  testHttpGetEndPoint (moduleManager, mediaPipeline);
+  testHttpPostEndPoint (moduleManager, mediaPipeline);
+  testPlayerEndPoint (moduleManager, mediaPipeline);
+  testRecorderEndPoint (moduleManager, mediaPipeline);
+  testRtpEndpoint (moduleManager, mediaPipeline);
+  testWebRTCEndpoint (moduleManager, mediaPipeline);
+  testMixer (moduleManager, mediaPipeline);
+  testDispatcher (moduleManager, mediaPipeline);
+  testDispatcherOneToMany (moduleManager, mediaPipeline);
+  testComposite (moduleManager, mediaPipeline);
 
-  kurento::MediaSet::getMediaSet()->release(mediaPipeline);
+  kurento::MediaSet::getMediaSet()->release (mediaPipeline);
 
   kurento::MediaSet::destroyMediaSet();
 

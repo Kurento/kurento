@@ -12,7 +12,8 @@ namespace kurento
 class MediaPipeline;
 class RtpEndpointImpl;
 
-void Serialize (std::shared_ptr<RtpEndpointImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<RtpEndpointImpl> &object,
+                JsonSerializer &serializer);
 
 class RtpEndpointImpl : public SdpEndpointImpl, public virtual RtpEndpoint
 {
@@ -23,10 +24,11 @@ public:
 
   virtual ~RtpEndpointImpl () {};
 
-  virtual void setConfig(const MediaServerConfig& config);
+  virtual void setConfig (const MediaServerConfig &config);
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

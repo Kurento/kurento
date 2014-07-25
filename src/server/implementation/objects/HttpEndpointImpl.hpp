@@ -12,22 +12,25 @@ namespace kurento
 
 class HttpEndpointImpl;
 
-void Serialize (std::shared_ptr<HttpEndpointImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<HttpEndpointImpl> &object,
+                JsonSerializer &serializer);
 
 class HttpEndpointImpl : public SessionEndpointImpl, public virtual HttpEndpoint
 {
 
 public:
 
-  HttpEndpointImpl (std::shared_ptr< MediaObjectImpl > parent, int disconnectionTimeout);
+  HttpEndpointImpl (std::shared_ptr< MediaObjectImpl > parent,
+                    int disconnectionTimeout);
 
   virtual ~HttpEndpointImpl ();
 
   std::string getUrl ();
 
-  virtual void setConfig(const MediaServerConfig& config);
+  virtual void setConfig (const MediaServerConfig &config);
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

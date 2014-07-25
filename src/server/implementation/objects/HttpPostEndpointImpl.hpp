@@ -12,20 +12,24 @@ namespace kurento
 class MediaPipeline;
 class HttpPostEndpointImpl;
 
-void Serialize (std::shared_ptr<HttpPostEndpointImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<HttpPostEndpointImpl> &object,
+                JsonSerializer &serializer);
 
-class HttpPostEndpointImpl : public HttpEndpointImpl, public virtual HttpPostEndpoint
+class HttpPostEndpointImpl : public HttpEndpointImpl,
+  public virtual HttpPostEndpoint
 {
 
 public:
 
-  HttpPostEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, int disconnectionTimeout, bool useEncodedMedia);
+  HttpPostEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+                        int disconnectionTimeout, bool useEncodedMedia);
 
   virtual ~HttpPostEndpointImpl () {};
 
-  virtual void setHttpServerConfig(MediaServerConfig& config);
+  virtual void setHttpServerConfig (MediaServerConfig &config);
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   sigc::signal<void, EndOfStream> signalEndOfStream;
 

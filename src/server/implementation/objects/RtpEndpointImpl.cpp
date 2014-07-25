@@ -15,17 +15,20 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-RtpEndpointImpl::RtpEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : SdpEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl>(mediaPipeline), FACTORY_NAME)
+RtpEndpointImpl::RtpEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline)
+  : SdpEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline),
+                     FACTORY_NAME)
 {
 }
 
-void RtpEndpointImpl::setConfig(const MediaServerConfig& config)
+void RtpEndpointImpl::setConfig (const MediaServerConfig &config)
 {
   g_object_set (element, "pattern-sdp", config.getSdpPattern(), NULL);
 }
 
 MediaObjectImpl *
-RtpEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline) const
+RtpEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+                                      mediaPipeline) const
 {
   return new RtpEndpointImpl (mediaPipeline);
 }
