@@ -5,17 +5,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -DHAVE_INTTYPES_H -std=c++0x")
 
-set (GLIB_REQUIRED 2.38)
-
-find_package(PkgConfig)
-pkg_check_modules(GIO REQUIRED gio-2.0>=2.36.0)
-pkg_check_modules(NICE REQUIRED nice>=0.1.3)
-
-# Helpers
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
 include(GLibHelpers)
-
-find_package(LibSoup REQUIRED)
 
 SET(HTTP_EP_SOURCES
   KmsHttpEPServer.cpp
