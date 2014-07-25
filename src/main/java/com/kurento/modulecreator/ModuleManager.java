@@ -1,5 +1,6 @@
 package com.kurento.modulecreator;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -62,11 +63,16 @@ public class ModuleManager {
 
 	public void setDependencies(ModuleManager dependencies) {
 		this.dependencies = dependencies;
+		List<String> toRemove = new ArrayList<String>();
 
 		for (ModuleDefinition module : dependencies.getModules()) {
 			if (modules.get(module.getName()) != null) {
-				this.dependencies.removeModule(module.getName());
+				toRemove.add(module.getName());
 			}
+		}
+
+		for (String name : toRemove) {
+			this.dependencies.removeModule(name);
 		}
 	}
 
