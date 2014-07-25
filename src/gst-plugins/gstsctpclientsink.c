@@ -493,6 +493,25 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 }
 
 static void
+gst_sctp_client_sink_remote_query (GstQuery * query, GstSCTPClientSink * self)
+{
+  GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, query);
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+    case GST_QUERY_ACCEPT_CAPS:
+    case GST_QUERY_URI:
+      gst_pad_peer_query (GST_BASE_SINK_PAD (GST_BASE_SINK (self)), query);
+      break;
+    default:
+      GST_WARNING ("Unsupported query %" GST_PTR_FORMAT, query);
+      return;
+  }
+
+  GST_DEBUG_OBJECT (self, "<< %" GST_PTR_FORMAT, query);
+}
+
+static void
 gst_sctp_client_sink_remote_event (GstEvent * event, GstSCTPClientSink * self)
 {
   switch (GST_EVENT_TYPE (event)) {
@@ -543,6 +562,9 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
       (KmsSocketErrorFunction) gst_sctp_client_sink_error_cb, self, NULL);
 
   /* Manage remote requests */
+  kms_sctp_base_rpc_set_query_function (KMS_SCTP_BASE_RPC (self->priv->
+          clientrpc), (KmsQueryFunction) gst_sctp_client_sink_remote_query, self,
+      NULL);
   kms_sctp_base_rpc_set_event_function (KMS_SCTP_BASE_RPC (self->priv->
           clientrpc), (KmsEventFunction) gst_sctp_client_sink_remote_event, self,
       NULL);
