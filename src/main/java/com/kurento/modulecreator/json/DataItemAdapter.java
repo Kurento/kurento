@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.kurento.modulecreator.definition.DataItem;
+import com.kurento.modulecreator.definition.Property;
 
 public class DataItemAdapter implements JsonSerializer<DataItem> {
 
@@ -32,6 +33,16 @@ public class DataItemAdapter implements JsonSerializer<DataItem> {
 			object.addProperty("optional", src.isOptional());
 			if (src.getDefaultValue() != null) {
 				object.add("defaultValue", src.getDefaultValue());
+			}
+		}
+
+		if (src instanceof Property) {
+			Property prop = (Property) src;
+			if (prop.isReadOnly()) {
+				object.addProperty("readOnly", true);
+			}
+			if (prop.isFinal()) {
+				object.addProperty("final", true);
 			}
 		}
 

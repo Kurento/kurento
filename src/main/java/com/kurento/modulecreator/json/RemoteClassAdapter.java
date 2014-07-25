@@ -47,6 +47,10 @@ public class RemoteClassAdapter implements JsonSerializer<RemoteClass>,
 			object.add("constructor", context.serialize(src.getConstructor()));
 		}
 
+		if (!src.getProperties().isEmpty()) {
+			object.add("properties", context.serialize(src.getProperties()));
+		}
+
 		if (!src.getMethods().isEmpty()) {
 			object.add("methods", context.serialize(src.getMethods()));
 		}
