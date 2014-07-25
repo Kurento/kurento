@@ -19,6 +19,13 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "HttpEndPointServer"
 
+#define HTTP_SERVICE_GROUP "HttpEPServer"
+#define HTTP_SERVICE_ADDRESS "serverAddress"
+#define HTTP_SERVICE_PORT "serverPort"
+#define HTTP_SERVICE_ANNOUNCED_ADDRESS "announcedAddress"
+
+#define DEFAULT_PORT 9091
+
 using namespace Glib::Threads;
 
 namespace kurento
@@ -31,32 +38,55 @@ uint HttpEndPointServer::port;
 std::string HttpEndPointServer::interface;
 std::string HttpEndPointServer::announcedAddr;
 
+static void
+check_port (int port)
+{
+  if (port <= 0 || port > G_MAXUSHORT) {
+    throw std::runtime_error ("Port value not valid");
+  }
+}
+
 std::shared_ptr<HttpEndPointServer>
 HttpEndPointServer::getHttpEndPointServer()
 {
   RecMutex::Lock lock (mutex);
 
   if (!instance) {
-    instance = std::shared_ptr<HttpEndPointServer> (new HttpEndPointServer () );
+    GST_DEBUG ("b");
+    throw std::runtime_error ("HttpServer not created");
   }
-
   return instance;
 }
 
-bool
-HttpEndPointServer::configure (uint port, std::string iface, std::string addr)
+std::shared_ptr<HttpEndPointServer>
+HttpEndPointServer::getHttpEndPointServer (uint port, std::string iface, std::string addr)
 {
   RecMutex::Lock lock (mutex);
 
   if (instance) {
-    return false;
+    return instance;
+  }
+
+  if (port == 0){
+    GST_INFO ("HttpService will start on any available port");
+  } else {
+    try {
+      check_port(port);
+    } catch (std::exception &ex) {
+      GST_WARNING ("Setting default port %d to http end point server",
+                  DEFAULT_PORT);
+      port = DEFAULT_PORT;
+    }
   }
 
   HttpEndPointServer::port = port;
   HttpEndPointServer::interface = iface;
   HttpEndPointServer::announcedAddr = addr;
 
-  return true;
+  instance = std::shared_ptr<HttpEndPointServer> (new HttpEndPointServer () );
+  instance->start();
+
+  return instance;
 }
 
 HttpEndPointServer::HttpEndPointServer ()
@@ -77,20 +107,45 @@ HttpEndPointServer::~HttpEndPointServer()
   g_object_unref (G_OBJECT (server) );
 }
 
-void
-HttpEndPointServer::start (KmsHttpEPServerNotifyCallback start_cb,
-                           gpointer user_data,
-                           GDestroyNotify notify)
+static void
+http_server_handler_cb (KmsHttpEPServer *self, GError *err, gpointer data)
 {
-  kms_http_ep_server_start (server, start_cb, user_data, notify);
+  auto handler =
+    reinterpret_cast < std::function < void (GError *err) > * > (data);
+
+  (*handler) (err);
 }
 
 void
-HttpEndPointServer::stop (KmsHttpEPServerNotifyCallback stop_cb,
-                          gpointer user_data,
-                          GDestroyNotify notify)
+HttpEndPointServer::start ()
 {
-  kms_http_ep_server_stop (server, stop_cb, user_data, notify);
+  std::function <void (GError *err) > startHandler = [&] (GError * err) {
+    bool error = (err != NULL);
+
+    if (error) {
+      GST_ERROR ("Service could not start. (%s)", err->message);
+    } else {
+      GST_INFO ("Service successfully started");
+    }
+  };
+
+  kms_http_ep_server_start (server, http_server_handler_cb, &startHandler, NULL);
+}
+
+void
+HttpEndPointServer::stop ()
+{
+  std::function <void (GError *err) > stopHandler = [&] (GError * err) {
+    bool error = (err != NULL);
+
+    if (error) {
+      GST_ERROR ("Error stopping server. (%s)", err->message);
+    } else {
+      GST_INFO ("Service stopped");
+    }
+  };
+
+  kms_http_ep_server_stop (server, http_server_handler_cb, &stopHandler , NULL);
 }
 
 void

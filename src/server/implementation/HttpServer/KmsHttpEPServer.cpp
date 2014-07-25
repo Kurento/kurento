@@ -23,8 +23,8 @@
 #include "KmsHttpEPServer.h"
 #include "KmsHttpPost.h"
 #include "KmsHttpLoop.h"
-#include "kms-enumtypes.h"
-#include "kms-marshal.h"
+#include "http-enumtypes.h"
+#include "http-marshal.h"
 
 #define OBJECT_NAME "HttpEPServer"
 
@@ -1560,7 +1560,7 @@ kms_http_ep_server_class_init (KmsHttpEPServerClass *klass)
                   G_TYPE_FROM_CLASS (klass),
                   G_SIGNAL_RUN_LAST,
                   G_STRUCT_OFFSET (KmsHttpEPServerClass, action_requested),
-                  NULL, NULL, kms_marshal_VOID__STRING_ENUM, G_TYPE_NONE, 2,
+                  NULL, NULL, http_marshal_VOID__STRING_ENUM, G_TYPE_NONE, 2,
                   G_TYPE_STRING, KMS_TYPE_HTTP_END_POINT_ACTION);
 
   obj_signals[URL_REMOVED] =

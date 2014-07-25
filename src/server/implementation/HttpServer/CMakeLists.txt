@@ -5,6 +5,8 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -DHAVE_INTTYPES_H -std=c++0x")
 
+set (GLIB_REQUIRED 2.38)
+
 find_package(PkgConfig)
 pkg_check_modules(GIO REQUIRED gio-2.0>=2.36.0)
 pkg_check_modules(NICE REQUIRED nice>=0.1.3)
@@ -19,12 +21,14 @@ SET(HTTP_EP_SOURCES
   KmsHttpEPServer.cpp
   KmsHttpPost.cpp
   KmsHttpLoop.cpp
+  HttpEndPointServer.cpp
 )
 
 SET(HTTP_EP_HEADERS
   KmsHttpEPServer.h
   KmsHttpPost.h
   KmsHttpLoop.h
+  HttpEndPointServer.hpp
 )
 
 set(ENUM_HEADERS
@@ -35,16 +39,17 @@ set(GEN_HEADERS
   kms-enumtypes.h
 )
 
-add_glib_marshal(HTTP_EP_SOURCES HTTP_EP_HEADERS kms-marshal kms_marshal)
-add_glib_enumtypes(HTTP_EP_SOURCES HTTP_EP_HEADERS kms-enumtypes KMS ${ENUM_HEADERS})
+add_glib_marshal(HTTP_EP_SOURCES HTTP_EP_HEADERS http-marshal http_marshal)
+add_glib_enumtypes(HTTP_EP_SOURCES HTTP_EP_HEADERS http-enumtypes KMS ${ENUM_HEADERS})
 
-add_library(kmshttpep ${HTTP_EP_SOURCES})
+add_library(kmshttpep SHARED ${HTTP_EP_SOURCES})
 
 set_target_properties(kmshttpep PROPERTIES
   PUBLIC_HEADER "${HTTP_EP_HEADERS}"
 )
 
 include_directories(kmshttpep
+  ${GLIBMM_INCLUDE_DIRS}
   ${GLIB2_INCLUDE_DIRS}
   ${GSTREAMER_INCLUDE_DIRS}
   ${LIBSOUP_INCLUDE_DIRS}
@@ -54,6 +59,7 @@ include_directories(kmshttpep
 )
 
 target_link_libraries(kmshttpep
+  ${GLIBMM_LIBRARIES}
   ${GLIB2_LIBRARIES}
   ${GSTREAMER_LIBRARIES}
   ${LIBSOUP_LIBRARIES}

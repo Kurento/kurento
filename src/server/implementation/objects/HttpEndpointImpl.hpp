@@ -4,6 +4,8 @@
 #include "SessionEndpointImpl.hpp"
 #include "HttpEndpoint.hpp"
 #include <EventHandler.hpp>
+#include "HttpServer/KmsHttpEPServer.h"
+#include "MediaServerConfig.hpp"
 
 namespace kurento
 {
@@ -19,10 +21,11 @@ public:
 
   HttpEndpointImpl (std::shared_ptr< MediaObjectImpl > parent, int disconnectionTimeout);
 
-  virtual ~HttpEndpointImpl () {};
+  virtual ~HttpEndpointImpl ();
 
   std::string getUrl ();
 
+  virtual void setConfig(const MediaServerConfig& config);
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
 
@@ -32,7 +35,16 @@ public:
 
   virtual void Serialize (JsonSerializer &serializer);
 
+protected:
+  void unregister_end_point ();
+  void register_end_point ();
+  bool is_registered();
+
 private:
+
+  std::string url;
+  bool urlSet = false;
+  guint disconnectionTimeout;
 
   class StaticConstructor
   {
@@ -41,6 +53,15 @@ private:
   };
 
   static StaticConstructor staticConstructor;
+
+  gulong actionRequestedHandlerId;
+  gulong urlRemovedHandlerId;
+  gulong urlExpiredHandlerId;
+  gint sessionStarted = 0;
+
+  std::function<void (const gchar *uri, KmsHttpEndPointAction action) >
+  actionRequestedLambda;
+  std::function<void (const gchar *uri) > sessionTerminatedLambda;
 
 };
 

@@ -22,15 +22,30 @@
 #include <MediaSet.hpp>
 #include <gst/gst.h>
 #include <config.h>
+#include "HttpGetEndpointImpl.hpp"
+#include "MediaServerConfig.hpp"
 
 void
 testHttpGetEndPoint (kurento::ModuleManager &moduleManager, std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
+  kurento::MediaServerConfig config;
 
   w.SerializeNVP(mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object = moduleManager.getFactory ("HttpGetEndpoint")->createObject("", w.JsonValue);
+
+  config.setHttpPort(9091);
+  config.setHttpAnnouncedAddr("localhost");
+  config.setHttpInterface("");
+
+  std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl> (object)->setHttpServerConfig(config);
+
+  std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl> (object)->getUrl () << std::endl;
+
+  sleep(5);
+
+  std::cout << "destroy endpoint " << std::endl;
   kurento::MediaSet::getMediaSet()->release(object);
 }
 

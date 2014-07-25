@@ -16,8 +16,33 @@ namespace kurento
 
 HttpGetEndpointImpl::HttpGetEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile, int disconnectionTimeout) : HttpEndpointImpl (std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline), disconnectionTimeout)
 {
-  // FIXME: Implement this
+  g_object_set ( G_OBJECT (element), "accept-eos", terminateOnEOS,
+                 NULL);
+  switch (mediaProfile->getValue() ) {
+    case MediaProfileSpecType::WEBM:
+      GST_INFO ("Set WEBM profile");
+      g_object_set ( G_OBJECT (element), "profile", 0, NULL);
+      break;
+
+    case MediaProfileSpecType::MP4:
+      GST_INFO ("Set MP4 profile");
+      g_object_set ( G_OBJECT (element), "profile", 1, NULL);
+      break;
+  }
 }
+
+void HttpGetEndpointImpl::setHttpServerConfig(MediaServerConfig& config)
+{
+  this->setConfig (config);
+
+  register_end_point();
+
+  if (!is_registered() ) {
+    throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR,
+                            "Cannot register HttpGetEndPoint");
+  }
+}
+
 
 MediaObjectImpl *
 HttpGetEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline, bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile, int disconnectionTimeout) const

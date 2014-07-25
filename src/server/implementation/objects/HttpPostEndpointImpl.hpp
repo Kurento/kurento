@@ -4,6 +4,7 @@
 #include "HttpEndpointImpl.hpp"
 #include "HttpPostEndpoint.hpp"
 #include <EventHandler.hpp>
+#include <functional>
 
 namespace kurento
 {
@@ -22,6 +23,7 @@ public:
 
   virtual ~HttpPostEndpointImpl () {};
 
+  virtual void setHttpServerConfig(MediaServerConfig& config);
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
 
@@ -34,6 +36,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+  std::function<void() > eosLambda;
 
   class StaticConstructor
   {

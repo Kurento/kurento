@@ -41,6 +41,7 @@ pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_SDP REQUIRED gstreamer-sdp-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_PBUTILS REQUIRED gstreamer-pbutils-1.0>=${GST_REQUIRED})
+pkg_check_modules(GLIBMM REQUIRED glibmm-2.4>=2.37)
 pkg_check_modules(KMSGSTCOMMONS REQUIRED kmsgstcommons)
 pkg_check_modules(KMSCORE REQUIRED kmscore)
 

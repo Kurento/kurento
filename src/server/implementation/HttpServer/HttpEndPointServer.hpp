@@ -30,11 +30,9 @@ class HttpEndPointServer
 {
 public:
   static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer();
-  static bool configure (uint port, std::string iface, std::string addr);
-  void start (KmsHttpEPServerNotifyCallback start_cb, gpointer user_data,
-              GDestroyNotify notify);
-  void stop (KmsHttpEPServerNotifyCallback stop_cb, gpointer user_data,
-             GDestroyNotify notify);
+  static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer (uint port, std::string iface, std::string addr);
+  void start ();
+  void stop ();
   void registerEndPoint (GstElement *endpoint, guint timeout,
                          KmsHttpEPRegisterCallback cb, gpointer user_data, GDestroyNotify notify);
   void unregisterEndPoint (std::string uri, KmsHttpEPServerNotifyCallback cb,
