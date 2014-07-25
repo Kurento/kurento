@@ -19,7 +19,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipe
 {
 }
 
-void WebRtcEndpointImpl::setRtpConfig(MediaServerConfig &config)
+void WebRtcEndpointImpl::setConfig(const MediaServerConfig& config)
 {
   g_object_set (element, "pattern-sdp", config.getSdpPattern(), NULL);
 

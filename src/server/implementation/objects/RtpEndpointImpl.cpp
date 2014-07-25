@@ -19,7 +19,7 @@ RtpEndpointImpl::RtpEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline) 
 {
 }
 
-void RtpEndpointImpl::setRtpConfig(MediaServerConfig &config)
+void RtpEndpointImpl::setConfig(const MediaServerConfig& config)
 {
   g_object_set (element, "pattern-sdp", config.getSdpPattern(), NULL);
 }
