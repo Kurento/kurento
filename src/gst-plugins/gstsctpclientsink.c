@@ -369,11 +369,13 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
 
       break;
     }
-    default:
+    default: {
+      GST_WARNING ("Not propagated query >> %" GST_PTR_FORMAT, query);
       ret =
           GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->query (sink,
           query);
       break;
+    }
   }
 
   return ret;
@@ -384,39 +386,44 @@ gst_sctp_client_sink_event (GstBaseSink * sink, GstEvent * event)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (sink);
   GError *err = NULL;
-  gboolean ret;
+  gboolean ret, downstream;
 
   switch (GST_EVENT_TYPE (event)) {
-    case GST_EVENT_SEGMENT:
-      /* We need to notify the base class that we are ready to receive */
-      /* buffers to avoid internal data flow errors the pipeline.      */
-      ret =
-          GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->event (sink,
-          event);
+    /* bidirectional events */
+    case GST_EVENT_FLUSH_START:
+    case GST_EVENT_FLUSH_STOP:
 
-      if (!ret) {
-        break;
-      }
+    /* downstream serialized events */
     case GST_EVENT_STREAM_START:
     case GST_EVENT_CAPS:
-      GST_DEBUG (">> %" GST_PTR_FORMAT, event);
+    case GST_EVENT_SEGMENT:
+    case GST_EVENT_TAG:
+    case GST_EVENT_TOC:
 
-      if (kms_scp_base_rpc_event (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
-              event, self->priv->cancellable, &err)) {
-        ret = TRUE;
-        break;
-      }
-
-      GST_ERROR_OBJECT (self, "Error: %s", err->message);
-      g_error_free (err);
-      ret = FALSE;
+    /* non-sticky downstream serialized */
+    case GST_EVENT_GAP:
+      /* Base class is capable of managing above events for us, but */
+      /* we still need to propagate them to the downstream pipeline */
+      downstream = TRUE;
       break;
     default:
-      GST_WARNING ("Not propagated event >> %" GST_PTR_FORMAT, event);
-      ret =
-          GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->event (sink,
-          event);
+      GST_WARNING ("Not propagated >> %" GST_PTR_FORMAT, event);
+      downstream = FALSE;
       break;
+  }
+
+  ret = GST_BASE_SINK_CLASS (gst_sctp_client_sink_parent_class)->event (sink,
+          event);
+
+  if (!downstream)
+    return ret;
+
+  GST_DEBUG (">> %" GST_PTR_FORMAT, event);
+
+  if (!kms_scp_base_rpc_event (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
+      event, self->priv->cancellable, &err)) {
+    GST_ERROR_OBJECT (self, "Error: %s", err->message);
+    g_error_free (err);
   }
 
   return ret;
@@ -483,6 +490,44 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
 }
 
 static void
+gst_sctp_client_sink_remote_event (GstEvent * event, GstSCTPClientSink * self)
+{
+  switch (GST_EVENT_TYPE (event)) {
+    /* bidirectional events */
+    case GST_EVENT_FLUSH_START:
+    case GST_EVENT_FLUSH_STOP:
+      /* base class will manage above events for us */
+      if (!gst_element_send_event (GST_ELEMENT(self), event)) {
+        GST_WARNING_OBJECT (self, "Could not manage remote event %"
+          GST_PTR_FORMAT, event);
+      }
+
+      break;
+
+    /* upstream events */
+    case GST_EVENT_QOS:
+    case GST_EVENT_SEEK:
+    case GST_EVENT_NAVIGATION:
+    case GST_EVENT_LATENCY:
+    case GST_EVENT_STEP:
+    case GST_EVENT_RECONFIGURE:
+    case GST_EVENT_TOC_SELECT:
+    case GST_EVENT_CUSTOM_UPSTREAM:
+      GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, event);
+
+      gst_event_ref (event);
+      if (!gst_pad_push_event (GST_BASE_SINK_PAD (GST_BASE_SINK (self)), event)) {
+        GST_DEBUG_OBJECT (self, "Upstream elements did not handle %"
+          GST_PTR_FORMAT, event);
+      }
+      break;
+    default:
+      GST_WARNING ("Unsupported event %" GST_PTR_FORMAT, event);
+      return;
+  }
+}
+
+static void
 gst_sctp_client_sink_init (GstSCTPClientSink * self)
 {
   self->priv = GST_SCTP_CLIENT_SINK_GET_PRIVATE (self);
@@ -493,6 +538,11 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
       NULL);
   kms_sctp_client_rpc_set_error_function_full (self->priv->clientrpc,
       (KmsSocketErrorFunction) gst_sctp_client_sink_error_cb, self, NULL);
+
+  /* Manage remote requests */
+  kms_sctp_base_rpc_set_event_function (KMS_SCTP_BASE_RPC (self->priv->
+          clientrpc), (KmsEventFunction) gst_sctp_client_sink_remote_event, self,
+      NULL);
 }
 
 gboolean
