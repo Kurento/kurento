@@ -369,6 +369,26 @@ gst_sctp_client_sink_query (GstBaseSink * sink, GstQuery * query)
 
       break;
     }
+    case GST_QUERY_URI:{
+      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
+              query, self->priv->cancellable, &rsp_query, &err)) {
+        GST_WARNING_OBJECT (self, "Error: %s", err->message);
+        g_error_free (err);
+        ret = FALSE;
+      } else {
+        gchar *uri;
+
+        gst_query_parse_uri (rsp_query, &uri);
+        gst_query_set_uri (query, uri);
+
+        g_free (uri);
+        ret = TRUE;
+      }
+
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+    }
     default: {
       GST_WARNING ("Not propagated query >> %" GST_PTR_FORMAT, query);
       ret =

@@ -330,6 +330,27 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
 
       break;
     }
+    case GST_QUERY_URI:{
+      GST_DEBUG (">> %" GST_PTR_FORMAT, query);
+
+      if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
+              query, self->priv->cancellable, &rsp_query, &err)) {
+        GST_WARNING_OBJECT (self, "Error: %s", err->message);
+        g_error_free (err);
+        ret = FALSE;
+      } else {
+        gchar *uri;
+
+        gst_query_parse_uri (rsp_query, &uri);
+        gst_query_set_uri (query, uri);
+
+        g_free (uri);
+        ret = TRUE;
+      }
+
+      GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
+      break;
+    }
     default: {
       GST_WARNING ("Not propagated query >> %" GST_PTR_FORMAT, query);
       ret =
@@ -470,6 +491,7 @@ gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:
     case GST_QUERY_ACCEPT_CAPS:
+    case GST_QUERY_URI:
       gst_pad_peer_query (GST_BASE_SRC_PAD (GST_BASE_SRC (self)), query);
       break;
     default:
