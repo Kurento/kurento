@@ -16,7 +16,7 @@
         "maven.artifactId": "kmf-media-api"
       },
       "js": {
-        "node.name": "kws-media-api-filter",
+        "node.name": "kws-media-api-filters",
         "npm.description": "Filter implementations for kurento media server"
       }
     }
