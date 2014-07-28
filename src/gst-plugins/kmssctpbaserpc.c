@@ -848,9 +848,9 @@ kms_sctp_base_rpc_process (KmsSCTPBaseRPC * baserpc, KmsMessage * message,
       goto done;
     }
 
-    if (!g_hash_table_insert (table, GUINT_TO_POINTER (req_id), assembler)) {
+    if (g_hash_table_insert (table, GUINT_TO_POINTER (req_id), assembler)) {
       KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
-      goto done;
+      return;
     }
 
   } else {
