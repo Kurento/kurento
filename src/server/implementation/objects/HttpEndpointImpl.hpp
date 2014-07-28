@@ -25,7 +25,7 @@ public:
 
   virtual ~HttpEndpointImpl ();
 
-  std::string getUrl ();
+  virtual std::string getUrl ();
 
   virtual void setConfig (const MediaServerConfig &config);
   /* Next methods are automatically implemented by code generator */

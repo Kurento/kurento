@@ -32,9 +32,9 @@ HttpPostEndpointImpl::HttpPostEndpointImpl (std::shared_ptr<MediaPipeline>
   g_object_set (G_OBJECT (element), USE_ENCODED_MEDIA, useEncodedMedia, NULL);
 }
 
-void HttpPostEndpointImpl::setHttpServerConfig (MediaServerConfig &config)
+void HttpPostEndpointImpl::setConfig (const MediaServerConfig &config)
 {
-  this->setConfig (config);
+  HttpEndpointImpl::setConfig (config);
   eosLambda = [&] () {
     try {
       EndOfStream event (shared_from_this(), EndOfStream::getName() );

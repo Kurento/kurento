@@ -41,10 +41,10 @@ testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
   config.setHttpAnnouncedAddr ("localhost");
   config.setHttpInterface ("");
 
-  std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl>
+  std::dynamic_pointer_cast<kurento::MediaObjectImpl>
   (object)->setConfig (config);
 
-  std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl>
+  std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpEndpoint>
             (object)->getUrl () << std::endl;
 
   sleep (5);
