@@ -822,6 +822,10 @@ kms_sctp_base_rpc_process (KmsSCTPBaseRPC * baserpc, KmsMessage * message,
       return;
   }
 
+  GST_LOG_OBJECT (baserpc, "Request id %d: Fragment %d/%d received",
+      req_id, kms_message_get_fragment_id (message) + 1,
+      kms_message_get_total_fragments (message));
+
   if (!g_hash_table_contains (table, GUINT_TO_POINTER (req_id))) {
     guint fragment_id;
 
