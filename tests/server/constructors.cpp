@@ -37,12 +37,12 @@ testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
   std::shared_ptr <kurento::MediaObjectImpl >  object =
     moduleManager.getFactory ("HttpGetEndpoint")->createObject ("", w.JsonValue);
 
-  config.setHttpPort (9091);
+  config.setHttpPort (0);
   config.setHttpAnnouncedAddr ("localhost");
   config.setHttpInterface ("");
 
   std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl>
-  (object)->setHttpServerConfig (config);
+  (object)->setConfig (config);
 
   std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpGetEndpointImpl>
             (object)->getUrl () << std::endl;
@@ -51,6 +51,7 @@ testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
 
   std::cout << "destroy endpoint " << std::endl;
   kurento::MediaSet::getMediaSet()->release (object);
+  std::cout << "endpoint destroyed" << std::endl;
 }
 
 void

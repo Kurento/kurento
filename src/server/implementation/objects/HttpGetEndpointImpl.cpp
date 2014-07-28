@@ -37,9 +37,9 @@ HttpGetEndpointImpl::HttpGetEndpointImpl (std::shared_ptr<MediaPipeline>
   }
 }
 
-void HttpGetEndpointImpl::setHttpServerConfig (MediaServerConfig &config)
+void HttpGetEndpointImpl::setConfig (MediaServerConfig &config)
 {
-  this->setConfig (config);
+  HttpEndpointImpl::setConfig (config);
 
   register_end_point();
 

@@ -27,7 +27,7 @@ public:
 
   virtual ~HttpGetEndpointImpl () {};
 
-  virtual void setHttpServerConfig (MediaServerConfig &config);
+  virtual void setConfig (MediaServerConfig &config);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
