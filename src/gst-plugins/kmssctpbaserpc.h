@@ -113,6 +113,9 @@ gboolean kms_scp_base_rpc_query (KmsSCTPBaseRPC *baserpc, GstQuery *query,
 gboolean kms_scp_base_rpc_event (KmsSCTPBaseRPC *baserpc, GstEvent *event,
   GCancellable *cancellable, GError **err);
 
+gboolean kms_scp_base_rpc_buffer (KmsSCTPBaseRPC *baserpc, GstBuffer *buffer,
+  GCancellable *cancellable, GError **err);
+
 void kms_sctp_base_rpc_set_query_function (KmsSCTPBaseRPC *baserpc,
   KmsQueryFunction func, gpointer user_data, GDestroyNotify notify);
 
