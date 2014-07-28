@@ -100,6 +100,9 @@ struct _KmsSCTPBaseRPC
 struct _KmsSCTPBaseRPCClass
 {
   GObjectClass parent_class;
+
+  /* virtual methods for subclasses */
+  void (*buffer) (KmsSCTPBaseRPC *baserpc, GstBuffer *buffer);
 };
 
 GType kms_sctp_base_rpc_get_type (void);

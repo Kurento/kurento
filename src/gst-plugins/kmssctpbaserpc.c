@@ -131,6 +131,13 @@ get_kurento_encoding_rules (KurentoMarshalRules rules)
   }
 }
 
+void
+kms_sctp_base_rpc_buffer_default (KmsSCTPBaseRPC * baserpc, GstBuffer * buffer)
+{
+  /* Do nothing with buffers. Children classes must implement this */
+  /* method if they want to manage buffer reception */
+}
+
 static void
 kms_sctp_base_rpc_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec)
@@ -247,6 +254,8 @@ kms_sctp_base_rpc_class_init (KmsSCTPBaseRPCClass * klass)
           "Size of buffer used for transmissions over SCTP",
           0, G_MAXUINT, MAX_BUFFER_SIZE,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
+
+  klass->buffer = kms_sctp_base_rpc_buffer_default;
 }
 
 static void
@@ -688,6 +697,29 @@ pack_fragmented_event (KmsAssembler * assembler)
   return NULL;
 }
 
+static GstBuffer *
+pack_fragmented_buffer (KmsAssembler * assembler)
+{
+  GstBuffer *buffer = NULL;
+  GError *err = NULL;
+  gchar *buf = NULL;
+  gsize size;
+
+  kms_assembler_compose_buffer (assembler, &buf, &size);
+
+  dec_GstBuffer (kms_assembler_get_encoding_rules (assembler), buf, size,
+      &buffer, &err);
+
+  if (buffer != NULL)
+    return buffer;
+
+  GST_ERROR ("%s", err->message);
+  g_error_free (err);
+  g_free (buf);
+
+  return NULL;
+}
+
 static void
 kms_scp_base_rpc_query_response (KmsSCTPBaseRPC * baserpc, guint req_id,
     GstQuery * query)
@@ -765,6 +797,16 @@ kms_sctp_base_rpc_process_ensambled_request (KmsSCTPBaseRPC * baserpc,
 
       event_func (event, event_data);
       gst_event_unref (event);
+      break;
+    }
+    case KMS_DATA_TYPE_BUFFER:{
+      GstBuffer *buffer;
+
+      buffer = pack_fragmented_buffer (assembler);
+      if (buffer == NULL)
+        return;
+
+      KMS_SCTP_BASE_RPC_GET_CLASS (baserpc)->buffer (baserpc, buffer);
       break;
     }
     default:{
