@@ -213,6 +213,8 @@ static GstFlowReturn
 gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 {
   GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
+  GError *err = NULL;
+  GstFlowReturn ret;
 
   GST_OBJECT_LOCK (self);
 
@@ -223,58 +225,23 @@ gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 
   GST_OBJECT_UNLOCK (self);
 
-  /* Ignore buffers so far. Let's focus on events and caps negotiation  */
-  return GST_FLOW_OK;
-#if 0
-  GstSCTPClientSink *self = GST_SCTP_CLIENT_SINK (bsink);
-  GstMapInfo map;
-  gsize written = 0;
-  gssize rret;
-  GError *err = NULL;
+  if (kms_scp_base_rpc_buffer (KMS_SCTP_BASE_RPC (self->priv-> clientrpc), buf,
+    self->priv->cancellable, &err))
+    return GST_FLOW_OK;
 
-  g_return_val_if_fail (g_socket_is_connected (self->priv->socket),
-      GST_FLOW_FLUSHING);
-
-  gst_buffer_map (buf, &map, GST_MAP_READ);
-  GST_LOG_OBJECT (self, "writing %" G_GSIZE_FORMAT " bytes for buffer data",
-      map.size);
-
-  /* write buffer data */
-  while (written < map.size) {
-    rret = sctp_socket_send (self->priv->socket, SCTP_DEFAULT_STREAM,
-        self->priv->timetolive, (gchar *) map.data + written,
-        map.size - written, self->priv->cancellable, &err);
-
-    if (rret < 0)
-      goto write_error;
-
-    written += rret;
-  }
-
-  gst_buffer_unmap (buf, &map);
-
-  return GST_FLOW_OK;
-
-  /* ERRORS */
-write_error:
-  {
-    GstFlowReturn ret;
-
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+  if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_DEBUG_OBJECT (self, "%s", err->message);
       ret = GST_FLOW_FLUSHING;
-      GST_DEBUG_OBJECT (self, "Cancelled reading from socket");
     } else {
       GST_ELEMENT_ERROR (self, RESOURCE, WRITE,
           (("Error while sending data to \"%s:%d\"."), self->priv->host,
-              self->priv->port), ("Only %" G_GSIZE_FORMAT " of %" G_GSIZE_FORMAT
-              " bytes written: %s", written, map.size, err->message));
+              self->priv->port), ("%s", err->message));
       ret = GST_FLOW_ERROR;
     }
-    gst_buffer_unmap (buf, &map);
-    g_clear_error (&err);
-    return ret;
-  }
-#endif
+
+  g_clear_error (&err);
+
+  return ret;
 }
 
 static void
