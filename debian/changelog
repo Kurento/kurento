@@ -1,4 +1,4 @@
-kurento-module-creator (3.0.0-rc1) testing; urgency=medium
+kurento-module-creator (3.0.0~rc1) testing; urgency=medium
 
   * Rename packate to kurento-module-creator
 
