@@ -44,7 +44,7 @@ struct _KmsSCTPServerRPCPrivate
   GMutex data_mutex;
   gboolean err;
   GIOErrorEnum code;
-  GList *buffers;
+  GQueue *buffers;
 };
 
 static void
@@ -55,18 +55,36 @@ kms_sctp_server_rpc_finalize (GObject * gobject)
   if (self->priv->server != NULL)
     kms_sctp_connection_unref (self->priv->server);
 
+  g_queue_free_full (self->priv->buffers, (GDestroyNotify) gst_buffer_unref);
+
   g_mutex_clear (&self->priv->data_mutex);
   g_cond_clear (&self->priv->data_cond);
   G_OBJECT_CLASS (PARENT_CLASS)->finalize (gobject);
 }
 
 static void
+kms_sctp_server_rpc_buffer (KmsSCTPBaseRPC * baserpc, GstBuffer * buffer)
+{
+  KmsSCTPServerRPC *self = KMS_SCTP_SERVER_RPC (baserpc);
+
+  /* Wake stream thread up */
+  g_mutex_lock (&self->priv->data_mutex);
+  g_queue_push_tail (self->priv->buffers, buffer);
+  g_cond_signal (&self->priv->data_cond);
+  g_mutex_unlock (&self->priv->data_mutex);
+}
+
+static void
 kms_sctp_server_rpc_class_init (KmsSCTPServerRPCClass * klass)
 {
   GObjectClass *gobject_class;
+  KmsSCTPBaseRPCClass *sctpbaserpc_class;
 
   gobject_class = G_OBJECT_CLASS (klass);
   gobject_class->finalize = kms_sctp_server_rpc_finalize;
+
+  sctpbaserpc_class = KMS_SCTP_BASE_RPC_CLASS (klass);
+  sctpbaserpc_class->buffer = kms_sctp_server_rpc_buffer;
 
   g_type_class_add_private (klass, sizeof (KmsSCTPServerRPCPrivate));
 }
@@ -75,6 +93,9 @@ static void
 kms_sctp_server_rpc_init (KmsSCTPServerRPC * self)
 {
   self->priv = KMS_SCTP_SERVER_RPC_GET_PRIVATE (self);
+
+  self->priv->buffers = g_queue_new ();
+
   g_mutex_init (&self->priv->data_mutex);
   g_cond_init (&self->priv->data_cond);
 }
@@ -231,26 +252,26 @@ fail:
   return FALSE;
 }
 
-gssize
-kms_sctp_server_rpc_get_buffer (KmsSCTPServerRPC * server, gchar * buffer,
-    gsize size, GError ** err)
+gboolean
+kms_sctp_server_rpc_get_buffer (KmsSCTPServerRPC * server,
+    GstBuffer ** outbuf, GError ** err)
 {
-  g_return_val_if_fail (server != NULL, -1);
-  gssize ret = -1;
+  gboolean ret;
 
-  GST_DEBUG ("GET buffer");
+  g_return_val_if_fail (server != NULL, -1);
+
   g_mutex_lock (&server->priv->data_mutex);
 
-  while (g_list_length (server->priv->buffers) <= 0 && !server->priv->err)
+  while (g_queue_get_length (server->priv->buffers) <= 0 && !server->priv->err)
     g_cond_wait (&server->priv->data_cond, &server->priv->data_mutex);
 
-  if (g_list_length (server->priv->buffers) > 0) {
-    GST_DEBUG ("TODO: Get buffer");
+  if ((ret = g_queue_get_length (server->priv->buffers) > 0)) {
+    *outbuf = GST_BUFFER_CAST (g_queue_pop_head (server->priv->buffers));
   } else {
+    *outbuf = NULL;
     switch (server->priv->code) {
       case G_IO_ERROR_CLOSED:
-        /* EOS */
-        ret = 0;
+        g_set_error (err, G_IO_ERROR, G_IO_ERROR_CLOSED, "Closed");
         break;
       case G_IO_ERROR_CANCELLED:
         g_set_error (err, G_IO_ERROR, G_IO_ERROR_CANCELLED, "Cancelled");

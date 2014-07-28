@@ -228,47 +228,26 @@ static GstFlowReturn
 gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (psrc);
-  GstFlowReturn ret = GST_FLOW_OK;
+  GstFlowReturn ret;
   GError *err = NULL;
-  GstMapInfo map;
-  gssize rret;
 
-  GST_DEBUG ("create");
-
-  *outbuf = gst_buffer_new_and_alloc (MAX_BUFFER_SIZE);
-  gst_buffer_map (*outbuf, &map, GST_MAP_READWRITE);
-
-  rret =
-      kms_sctp_server_rpc_get_buffer (self->priv->serverrpc, (gchar *) map.data,
-      MAX_BUFFER_SIZE, &err);
-
-  if (rret == 0) {
-    GST_DEBUG_OBJECT (self, "Connection closed");
-    ret = GST_FLOW_EOS;
-    if (*outbuf != NULL) {
-      gst_buffer_unmap (*outbuf, &map);
-      gst_buffer_unref (*outbuf);
-    }
-    *outbuf = NULL;
-  } else if (rret < 0) {
-    if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
-      ret = GST_FLOW_FLUSHING;
-      GST_DEBUG_OBJECT (self, "Cancelled reading from socket");
-    } else {
-      ret = GST_FLOW_ERROR;
-      GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
-          ("Failed to read from socket: %s", err->message));
-    }
-    gst_buffer_unmap (*outbuf, &map);
-    gst_buffer_unref (*outbuf);
-    *outbuf = NULL;
-  } else {
-    ret = GST_FLOW_OK;
-    gst_buffer_unmap (*outbuf, &map);
-    gst_buffer_resize (*outbuf, 0, rret);
-
-    GST_LOG_OBJECT (self, "Got buffer %" GST_PTR_FORMAT, *outbuf);
+  if (kms_sctp_server_rpc_get_buffer (self->priv->serverrpc, outbuf, &err)) {
+    GST_DEBUG ("Buffer %" GST_PTR_FORMAT, *outbuf);
+    return GST_FLOW_OK;
   }
+
+  if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CLOSED)) {
+    ret = GST_FLOW_EOS;
+    GST_DEBUG_OBJECT (self, "Connection closed");
+  } else if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+    ret = GST_FLOW_FLUSHING;
+    GST_DEBUG_OBJECT (self, "Cancelled reading from socket");
+  } else {
+    ret = GST_FLOW_ERROR;
+    GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
+          ("Failed to read from socket: %s", err->message));
+  }
+
   g_clear_error (&err);
 
   return ret;

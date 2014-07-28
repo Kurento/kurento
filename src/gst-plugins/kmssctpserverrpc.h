@@ -73,8 +73,8 @@ KmsSCTPServerRPC *kms_sctp_server_rpc_new (const char *optname1, ...);
 gboolean kms_sctp_server_rpc_start (KmsSCTPServerRPC *server, gchar *host,
   gint port, GCancellable *cancellable, GError **err);
 
-gssize kms_sctp_server_rpc_get_buffer (KmsSCTPServerRPC *server, gchar *buffer,
-  gsize size, GError **err);
+gboolean kms_sctp_server_rpc_get_buffer (KmsSCTPServerRPC *server,
+  GstBuffer ** outbuf, GError **err);
 
 void kms_sctp_server_rpc_stop (KmsSCTPServerRPC *server);
 
