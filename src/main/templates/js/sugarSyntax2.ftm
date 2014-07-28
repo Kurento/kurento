@@ -125,8 +125,8 @@ MediaObject.prototype.release = function(callback){
 /**
  * Create a new instance of a {module:core/abstract.MediaObject} attached to this {module:core.MediaPipeline}
  *
- * @param {external:string} type - Type of the {module:core/abstract.MediaObject}
- * @param {external:string[]} [params]
+ * @param {external:String} type - Type of the {module:core/abstract.MediaObject}
+ * @param {external:String[]} [params]
  * @param {module:core.MediaPipeline~createCallback} callback
  *
  * @return {external:Promise}

@@ -18,7 +18,7 @@ var checkType = require('checktype');
  *
  * @memberof module:${module_namespace}
  *
- * @param {String} key
+ * @param {external:String} key
  * @param {module:${complexType_namepath}} value
  */
 function check${complexType.name}(key, value)
@@ -57,7 +57,7 @@ function check${complexType.name}(key, value)
   <#case "REGISTER">
  * @type {Object}
     <#list complexType.properties as property>
- * @property {${property.type.name}} ${property.name}
+ * @property {${namepath(property.type.name)}} ${property.name}
       <#if property.doc??>
         <#list property.doc?split("\n") as line>
  *  ${sphinxLinks(line, complexType_namepath)}

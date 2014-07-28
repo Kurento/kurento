@@ -81,11 +81,13 @@ var ${extends_name} = require('events').${extends_name};
 </#if>
 <#if remoteClass.extends??>
  * @extends module:${import_namespace}.${extends_name}
+<#elseif remoteClass.name=="MediaObject">
+ * @extends external:${extends_name}
 </#if>
  *
  * @constructor module:${remoteClass_namepath}
  *
- * @param {string} id
+ * @param {external:String} id
  */
 function ${remoteClass.name}(id){<#if extends_name??>
   ${extends_name}.call(this, id);
@@ -118,8 +120,8 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
 };
 /**
  * @callback module:${remoteClass_namepath}~${getPropertyName}Callback
- * @param {Error} error
- * @param {${property.type.name}} result
+ * @param {external:Error} error
+ * @param {${namepath(property.type.name)}} result
  */
     </#if>
   </#list>
@@ -142,7 +144,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
  *
  * @alias module:${remoteClass_namepath}.${method.name}
  *
- * @param {${param.type.name}}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
+ * @param {${namepath(param.type.name)}}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
       <#if param.doc??>
         <#list param.doc?split("\n") as line>
  *  ${sphinxLinks(line, remoteClass_namepath)}
@@ -190,9 +192,9 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 };
 /**
  * @callback module:${remoteClass_namepath}~${method.name}Callback
- * @param {Error} error
+ * @param {external:Error} error
     <#if method.return??>
- * @param {${method.return.type.name}} result
+ * @param {${namepath(method.return.type.name)}} result
       <#list method.return.doc?split("\n") as line>
  *  ${sphinxLinks(line, remoteClass_namepath)}
       </#list>
@@ -208,7 +210,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 <#if remoteClass.constructor??>
   <#list remoteClass.constructor.params?sort_by("name") as param>
  *
- * @property {${param.type.name}} <#if param.optional>[${param.name}]<#else>${param.name}</#if>
+ * @property {${namepath(param.type.name)}} <#if param.optional>[${param.name}]<#else>${param.name}</#if>
     <#if param.doc??>
       <#list param.doc?split("\n") as line>
  *  ${sphinxLinks(line, remoteClass_namepath)}

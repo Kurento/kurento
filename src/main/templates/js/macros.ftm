@@ -11,3 +11,54 @@
     <#lt>${empty_vaue}<#rt>
   </#if>
 </#macro>
+
+<#function namepath name>
+  <#list module.remoteClasses as remoteClass>
+    <#if remoteClass.name == name>
+      <#local module_namespace=module_name>
+      <#if remoteClass.abstract>
+        <#local module_namespace=module_namespace+"/abstracts">
+      </#if>
+      <#return "module:"+module_namespace+"."+name>
+    </#if>
+  </#list>
+
+  <#if module.complexTypes??>
+    <#list module.complexTypes as complexType>
+      <#if complexType.name == name>
+        <#local module_namespace=module_name+"/complexTypes">
+        <#return "module:"+module_namespace+"."+name>
+      </#if>
+    </#list>
+  </#if>
+
+  <#if module.imports??>
+    <#list module.imports as import>
+      <#list import.module.remoteClasses as remoteClass>
+        <#if remoteClass.name == name>
+          <#local module_namespace=import.name>
+          <#if remoteClass.abstract>
+            <#local module_namespace=module_namespace+"/abstracts">
+          </#if>
+          <#return "module:"+module_namespace+"."+name>
+        </#if>
+      </#list>
+
+      <#if import.complexTypes??>
+        <#list import.complexTypes as complexType>
+          <#if complexType.name == name>
+            <#local module_namespace=module_name+"/complexTypes">
+            <#return "module:"+module_namespace+"."+name>
+          </#if>
+        </#list>
+      </#if>
+    </#list>
+  </#if>
+
+  <#switch name>
+    <#case "int">
+      <#return "external:Integer">
+  </#switch>
+
+  <#return "external:"+name>
+</#function>
