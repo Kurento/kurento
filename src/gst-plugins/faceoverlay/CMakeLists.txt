@@ -5,22 +5,24 @@ include_directories(
   ${OPENCV_INCLUDE_DIRS}
 )
 
-set(MOVEMENTDETECTOR_SOURCES
-  movementdetector.c
-  kmsmovementdetector.c kmsmovementdetector.h
+set(FACEOVERLAY_SOURCES
+  faceoverlay.c
+  kmsfaceoverlay.c kmsfaceoverlay.h
 )
 
-add_library(movementdetector MODULE ${MOVEMENTDETECTOR_SOURCES})
+add_library(faceoverlay MODULE ${FACEOVERLAY_SOURCES})
 
-target_link_libraries(movementdetector
+add_dependencies(faceoverlay imageoverlay facedetector)
+
+target_link_libraries(faceoverlay
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
   ${OPENCV_LIBRARIES}
 )
 
 install(
-  TARGETS movementdetector
+  TARGETS faceoverlay
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_MODULESDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

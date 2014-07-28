@@ -6,14 +6,15 @@ include_directories(
   ${SOUP_INCLUDE_DIRS}
 )
 
-set(IMAGEOVERLAY_SOURCES
-  imageoverlay.c
-  kmsimageoverlay.c kmsimageoverlay.h
+set(FACEDETECTOR_SOURCES
+  facedetector.c
+  kmsfacedetector.c kmsfacedetector.h
+  classifier.h classifier.cpp
 )
 
-add_library(imageoverlay MODULE ${IMAGEOVERLAY_SOURCES})
+add_library(facedetector MODULE ${FACEDETECTOR_SOURCES})
 
-target_link_libraries(imageoverlay
+target_link_libraries(facedetector
   ${GSTREAMER_LIBRARIES}
   ${GSTREAMER_VIDEO_LIBRARIES}
   ${OPENCV_LIBRARIES}
@@ -21,8 +22,8 @@ target_link_libraries(imageoverlay
 )
 
 install(
-  TARGETS imageoverlay
+  TARGETS facedetector
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_MODULESDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
