@@ -302,9 +302,9 @@ kms_sctp_server_rpc_stop (KmsSCTPServerRPC * server)
   KMS_SCTP_BASE_RPC (server)->conn = NULL;
   server->priv->server = NULL;
 
-  kms_sctp_base_rpc_stop_task (KMS_SCTP_BASE_RPC (server));
-
   KMS_SCTP_BASE_RPC_UNLOCK (server);
+
+  kms_sctp_base_rpc_stop_task (KMS_SCTP_BASE_RPC (server));
 
   if (srv != NULL) {
     kms_sctp_connection_close (srv);
