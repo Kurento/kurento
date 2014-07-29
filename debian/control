@@ -1,0 +1,32 @@
+Source: kms-filters
+Section: utils
+Priority: optional
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
+Build-Depends: debhelper (>= 8.0.0),
+ cmake,
+ pkg-config,
+ kms-core-dev,
+ kms-cmake-utils (>> 1.0.0)
+Standards-Version: 3.9.4
+Homepage: http://kurento.org
+Vcs-Git: git://github.com/Kurento/kms-filters.git
+Vcs-Browser: https://github.com/Kurento/kms-filters.git
+
+Package: kms-filters
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: Kurento filters module
+ Kurento filters implementation
+
+Package: kms-filters-dev
+Architecture: any
+Depends: kms-filters (= ${binary:Version}),
+  kms-core-dev
+Description: Kurento filters module
+ Kurento filters implementation
+
+Package: kms-filters-dbg
+Architecture: any
+Depends: kms-filters (= ${binary:Version})
+Description: Kurento filters module
+ Kurento filters implementation
