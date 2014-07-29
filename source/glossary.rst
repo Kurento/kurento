@@ -419,4 +419,8 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         web browsers with rich Real-Time Communcations capabilities via
         simple Javascript and HTML5 APIs and Components.
 
-        .. seealso:: `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`__
+        .. seealso::
+            `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`_
+                Standard working draft at the W3C site.
+            `WebRTC for newbies <https://www.webrtc-experiment.com/docs/webrtc-for-newbies.html>`_
+                A simple description of the protocol oriented to people coming from web development.
