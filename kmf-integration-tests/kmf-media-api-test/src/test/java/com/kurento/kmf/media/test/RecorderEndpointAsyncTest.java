@@ -15,20 +15,14 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.RecorderEndpoint;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -53,22 +47,15 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Before
 	public void setupMediaElements() throws InterruptedException {
-		final BlockingQueue<RecorderEndpoint> events = new ArrayBlockingQueue<RecorderEndpoint>(
-				1);
+
+		AsyncResultManager<RecorderEndpoint> async = new AsyncResultManager<>(
+				"RecorderEndpoint creation");
+
 		pipeline.newRecorderEndpoint(URL_SMALL).buildAsync(
-				new Continuation<RecorderEndpoint>() {
+				async.getContinuation());
 
-					@Override
-					public void onSuccess(RecorderEndpoint result) {
-						events.add(result);
-					}
+		recorder = async.waitForResult();
 
-					@Override
-					public void onError(Throwable cause) {
-						cause.printStackTrace();
-					}
-				});
-		recorder = events.poll(500, MILLISECONDS);
 		Assert.assertNotNull(recorder);
 	}
 
@@ -79,69 +66,34 @@ public class RecorderEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Test
 	public void testGetUri() throws InterruptedException {
-		final BlockingQueue<String> events = new ArrayBlockingQueue<String>(1);
 
-		recorder.getUri(new Continuation<String>() {
+		AsyncResultManager<String> async = new AsyncResultManager<>(
+				"recorder.getUri() invocation");
 
-			@Override
-			public void onSuccess(String result) {
-				events.add(result);
-			}
+		recorder.getUri(async.getContinuation());
 
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
+		String uri = async.waitForResult();
 
-		String uri = events.poll(500, MILLISECONDS);
 		Assert.assertEquals(URL_SMALL, uri);
 	}
 
 	@Test
 	public void testRecorder() throws InterruptedException {
 
-		final CountDownLatch recordLatch = new CountDownLatch(1);
-		recorder.record(new Continuation<Void>() {
-			@Override
-			public void onSuccess(Void result) {
-				recordLatch.countDown();
-			}
+		AsyncResultManager<Void> asyncRecord = new AsyncResultManager<>(
+				"recorder.record() invocation");
+		recorder.record(asyncRecord.getContinuation());
+		asyncRecord.waitForResult();
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-		Assert.assertTrue(recordLatch.await(500, MILLISECONDS));
+		AsyncResultManager<Void> asyncPause = new AsyncResultManager<>(
+				"recorder.pause() invocation");
+		recorder.pause(asyncPause.getContinuation());
+		asyncPause.waitForResult();
 
-		final CountDownLatch pauseLatch = new CountDownLatch(1);
-		recorder.pause(new Continuation<Void>() {
-			@Override
-			public void onSuccess(Void result) {
-				pauseLatch.countDown();
-			}
+		AsyncResultManager<Void> asyncStop = new AsyncResultManager<>(
+				"recorder.stop() invocation");
+		recorder.pause(asyncStop.getContinuation());
+		asyncStop.waitForResult();
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-		Assert.assertTrue(pauseLatch.await(500, MILLISECONDS));
-
-		final CountDownLatch stopLatch = new CountDownLatch(1);
-		recorder.stop(new Continuation<Void>() {
-			@Override
-			public void onSuccess(Void result) {
-				stopLatch.countDown();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				System.out.println("stop player onError");
-			}
-		});
-		Assert.assertTrue(stopLatch.await(500, MILLISECONDS));
 	}
-
 }

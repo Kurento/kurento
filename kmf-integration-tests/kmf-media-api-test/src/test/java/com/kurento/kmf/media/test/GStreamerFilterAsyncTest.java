@@ -15,21 +15,15 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_PLATES;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -63,23 +57,14 @@ public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Test
 	public void testInstantiation() throws InterruptedException {
-		final BlockingQueue<GStreamerFilter> events = new ArrayBlockingQueue<GStreamerFilter>(
-				1);
+
+		AsyncResultManager<GStreamerFilter> async = new AsyncResultManager<GStreamerFilter>(
+				"GStreamerFilter creation");
+
 		pipeline.newGStreamerFilter("videoflip method=horizontal-flip")
-				.buildAsync(new Continuation<GStreamerFilter>() {
+				.buildAsync(async.getContinuation());
 
-					@Override
-					public void onSuccess(GStreamerFilter result) {
-						events.add(result);
-					}
-
-					@Override
-					public void onError(Throwable cause) {
-						throw new KurentoException(cause);
-					}
-				});
-		filter = events.poll(7, SECONDS);
-		Assert.assertNotNull("GStreamerFilter not created in 7s", filter);
+		filter = async.waitForResult();
 
 		releaseMediaObject(filter);
 	}

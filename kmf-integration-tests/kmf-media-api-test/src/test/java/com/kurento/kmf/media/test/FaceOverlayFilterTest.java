@@ -15,20 +15,15 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_POINTER_DETECTOR;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -68,20 +63,14 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 				.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
 		player.connect(overlayFilter);
 
-		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
-				1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
+				"EndOfStream event");
 
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				events.add(event);
-			}
-		});
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
 		player.play();
 
-		Assert.assertNotNull("EndOfStream event not received in 20s",
-				events.poll(20, SECONDS));
+		async.waitForResult();
 
 		player.stop();
 		player.release();

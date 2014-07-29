@@ -15,21 +15,16 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_POINTER_DETECTOR;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -47,27 +42,15 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Before
 	public void setupMediaElements() throws InterruptedException {
+
 		player = pipeline.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
 
-		final BlockingQueue<FaceOverlayFilter> events = new ArrayBlockingQueue<FaceOverlayFilter>(
-				1);
-		pipeline.newFaceOverlayFilter().buildAsync(
-				new Continuation<FaceOverlayFilter>() {
+		AsyncResultManager<FaceOverlayFilter> async = new AsyncResultManager<>(
+				"FaceOverlayFilter creation");
 
-					@Override
-					public void onSuccess(FaceOverlayFilter result) {
-						events.add(result);
-					}
+		pipeline.newFaceOverlayFilter().buildAsync(async.getContinuation());
 
-					@Override
-					public void onError(Throwable cause) {
-						cause.printStackTrace();
-					}
-				});
-
-		overlayFilter = events.poll(4, SECONDS);
-		Assert.assertNotNull("FaceOverlayFilter not created in 4s",
-				overlayFilter);
+		overlayFilter = async.waitForResult();
 	}
 
 	@After
@@ -86,21 +69,17 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 	 */
 	@Test
 	public void testFaceOverlayFilter() throws InterruptedException {
-		player.connect(overlayFilter);
-		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
-				1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
 
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				events.add(event);
-			}
-		});
+		player.connect(overlayFilter);
+
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
+				"EndOfStream event");
+
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
 		player.play();
 
-		Assert.assertNotNull("EndOfStream event not received in 20s",
-				events.poll(20, SECONDS));
+		async.waitForResult();
 	}
 
 }

@@ -72,7 +72,11 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-system-test</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-social-twitter</artifactId>
+		</dependency>
 	</dependencies>
 
 	<profiles>

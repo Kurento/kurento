@@ -17,242 +17,100 @@ package com.kurento.kmf.media.test;
 import static com.kurento.kmf.media.MediaType.AUDIO;
 import static com.kurento.kmf.media.MediaType.VIDEO;
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.MediaSink;
 import com.kurento.kmf.media.MediaSource;
-import com.kurento.kmf.media.MediaType;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.RtpEndpoint;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
-	private static final int TIMEOUT = 5000;
-
 	@Test
 	public void testStream() throws InterruptedException {
 
-		final Semaphore sem = new Semaphore(0);
+		AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		pipeline.newRtpEndpoint().buildAsync(async.getContinuation());
+		RtpEndpoint rtp = async.waitForResult();
 
-		final RtpEndpoint[] stream = new RtpEndpoint[1];
-		pipeline.newRtpEndpoint().buildAsync(new Continuation<RtpEndpoint>() {
-			@Override
-			public void onSuccess(RtpEndpoint result) {
-				stream[0] = result;
-				sem.release();
-			}
+		AsyncResultManager<String> asyncGenerateOffer = new AsyncResultManager<>(
+				"rtp.generateOffer() invocation");
+		rtp.generateOffer(asyncGenerateOffer.getContinuation());
+		asyncGenerateOffer.waitForResult();
 
-			@Override
-			public void onError(Throwable cause) {
-				System.out.println("getStream onError");
-			}
-		});
+		AsyncResultManager<String> asyncProcessOffer = new AsyncResultManager<>(
+				"rtp.generateOffer() invocation");
+		rtp.processOffer("processOffer test",
+				asyncProcessOffer.getContinuation());
+		asyncProcessOffer.waitForResult();
 
-		Assert.assertTrue(sem.tryAcquire(TIMEOUT, MILLISECONDS));
-		RtpEndpoint endPoint = stream[0];
+		AsyncResultManager<String> asyncProcessAnswer = new AsyncResultManager<>(
+				"rtp.processAnswer() invocation");
+		rtp.processAnswer("processAnswer test",
+				asyncProcessAnswer.getContinuation());
+		asyncProcessAnswer.waitForResult();
 
-		endPoint.generateOffer(new Continuation<String>() {
-			@Override
-			public void onSuccess(String result) {
-				Assert.assertFalse(result.isEmpty());
-				sem.release();
-			}
+		AsyncResultManager<String> asyncGetLocalSessionDescriptor = new AsyncResultManager<>(
+				"rtp.getLocalSessionDescriptor() invocation");
+		rtp.getLocalSessionDescriptor(asyncGetLocalSessionDescriptor
+				.getContinuation());
+		asyncGetLocalSessionDescriptor.waitForResult();
 
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
+		AsyncResultManager<String> asyncGetRemoteSessionDescriptor = new AsyncResultManager<>(
+				"rtp.getRemoteSessionDescriptor() invocation");
 
-		log.debug("generateOffer method called");
-
-		Assert.assertTrue("generateOffer is not responded in 5s",
-				sem.tryAcquire(TIMEOUT, MILLISECONDS));
-		sem.release();
-
-		endPoint.processOffer("processOffer test", new Continuation<String>() {
-
-			@Override
-			public void onSuccess(String result) {
-				Assert.assertFalse(result.isEmpty());
-				sem.release();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
-		Assert.assertTrue("processOffer not responded in 500ms",
-				sem.tryAcquire(TIMEOUT, MILLISECONDS));
-
-		sem.release();
-
-		endPoint.processAnswer("processAnswer test",
-				new Continuation<String>() {
-
-					@Override
-					public void onSuccess(String result) {
-						Assert.assertFalse(result.isEmpty());
-						sem.release();
-					}
-
-					@Override
-					public void onError(Throwable cause) {
-						cause.printStackTrace();
-					}
-				});
-		Assert.assertTrue("processAnswer() not responded in 500ms",
-				sem.tryAcquire(TIMEOUT, MILLISECONDS));
-
-		sem.release();
-
-		endPoint.getLocalSessionDescriptor(new Continuation<String>() {
-
-			@Override
-			public void onSuccess(String result) {
-				System.out
-						.println("getLocalSessionDescriptor onSuccess. SessionDecriptor: "
-								+ result);
-				sem.release();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
-		Assert.assertTrue("getLocalSessionDescriptor() not responded in 500ms",
-				sem.tryAcquire(TIMEOUT, MILLISECONDS));
-
-		sem.release();
-
-		endPoint.getRemoteSessionDescriptor(new Continuation<String>() {
-
-			@Override
-			public void onSuccess(String result) {
-				System.out
-						.println("getRemoteSessionDescriptor onSuccess. SessionDecriptor: "
-								+ result);
-				sem.release();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
-		Assert.assertTrue(
-				"getRemoteSessionDescriptor() is not responded in 500ms",
-				sem.tryAcquire(TIMEOUT, MILLISECONDS));
-
-		sem.release();
-
-		Assert.assertTrue(sem.tryAcquire(TIMEOUT, MILLISECONDS));
+		rtp.getRemoteSessionDescriptor(asyncGetRemoteSessionDescriptor
+				.getContinuation());
+		asyncGetRemoteSessionDescriptor.waitForResult();
 	}
 
 	@Test
 	public void testSourceSinks() throws KurentoException, InterruptedException {
+
 		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
 
-		final BlockingQueue<Collection<MediaSink>> sinkEvent = new ArrayBlockingQueue<Collection<MediaSink>>(
-				1);
-		final BlockingQueue<Collection<MediaSource>> srcEvent = new ArrayBlockingQueue<Collection<MediaSource>>(
-				1);
-		rtp.getMediaSrcs(VIDEO, new Continuation<List<MediaSource>>() {
+		AsyncResultManager<List<MediaSource>> asyncMediaSource = new AsyncResultManager<>(
+				"rtp.getMediaSrcs() invocation");
+		rtp.getMediaSrcs(asyncMediaSource.getContinuation());
+		asyncMediaSource.waitForResult();
 
-			@Override
-			public void onSuccess(List<MediaSource> result) {
-				srcEvent.add(result);
-			}
+		AsyncResultManager<List<MediaSink>> asyncMediaSink = new AsyncResultManager<>(
+				"rtp.getMediaSinks() invocation");
+		rtp.getMediaSinks(asyncMediaSink.getContinuation());
+		asyncMediaSink.waitForResult();
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
+		AsyncResultManager<List<MediaSource>> asyncMediaSourceAudio = new AsyncResultManager<>(
+				"rtp.getMediaSrcs(AUDIO) invocation");
+		rtp.getMediaSrcs(AUDIO, asyncMediaSourceAudio.getContinuation());
+		asyncMediaSourceAudio.waitForResult();
 
-		Assert.assertNotNull(srcEvent.poll(500, MILLISECONDS));
-
-		rtp.getMediaSinks(MediaType.VIDEO, new Continuation<List<MediaSink>>() {
-
-			@Override
-			public void onSuccess(List<MediaSink> result) {
-				sinkEvent.add(result);
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-		Assert.assertNotNull(sinkEvent.poll(500, MILLISECONDS));
-
-		rtp.getMediaSrcs(AUDIO, new Continuation<List<MediaSource>>() {
-
-			@Override
-			public void onSuccess(List<MediaSource> result) {
-				srcEvent.add(result);
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-		Assert.assertNotNull(srcEvent.poll(500, MILLISECONDS));
-
-		rtp.getMediaSinks(AUDIO, new Continuation<List<MediaSink>>() {
-
-			@Override
-			public void onSuccess(List<MediaSink> result) {
-				sinkEvent.add(result);
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-		Assert.assertNotNull(sinkEvent.poll(500, MILLISECONDS));
+		AsyncResultManager<List<MediaSink>> asyncMediaSinkAudio = new AsyncResultManager<>(
+				"rtp.getMediaSinks(AUDIO) invocation");
+		rtp.getMediaSinks(AUDIO, asyncMediaSinkAudio.getContinuation());
+		asyncMediaSinkAudio.waitForResult();
 
 		rtp.release();
 	}
 
 	@Test
 	public void testConnect() throws InterruptedException {
+
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
+
 		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
-		final CountDownLatch latch = new CountDownLatch(1);
-		player.connect(http, new Continuation<Void>() {
-
-			@Override
-			public void onSuccess(Void result) {
-				latch.countDown();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-
-		Assert.assertTrue(latch.await(500, MILLISECONDS));
+		AsyncResultManager<Void> async = new AsyncResultManager<>(
+				"player.connect() invocation");
+		player.connect(http, async.getContinuation());
+		async.waitForResult();
 
 		player.play();
 		http.release();
@@ -264,37 +122,15 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
 		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
 
-		final CountDownLatch audioLatch = new CountDownLatch(1);
-		player.connect(http, AUDIO, new Continuation<Void>() {
+		AsyncResultManager<Void> asyncAudio = new AsyncResultManager<>(
+				"player.connect(AUDIO) invocation");
+		player.connect(http, AUDIO, asyncAudio.getContinuation());
+		asyncAudio.waitForResult();
 
-			@Override
-			public void onSuccess(Void result) {
-				audioLatch.countDown();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-
-		Assert.assertTrue(audioLatch.await(500, MILLISECONDS));
-
-		final CountDownLatch videoLatch = new CountDownLatch(1);
-		player.connect(http, VIDEO, new Continuation<Void>() {
-
-			@Override
-			public void onSuccess(Void result) {
-				videoLatch.countDown();
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-
-		Assert.assertTrue(videoLatch.await(500, MILLISECONDS));
+		AsyncResultManager<Void> asyncVideo = new AsyncResultManager<>(
+				"player.connect() invocation");
+		player.connect(http, VIDEO, asyncVideo.getContinuation());
+		asyncVideo.waitForResult();
 
 		player.play();
 		http.release();

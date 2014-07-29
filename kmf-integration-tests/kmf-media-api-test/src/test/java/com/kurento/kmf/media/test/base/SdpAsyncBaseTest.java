@@ -14,18 +14,10 @@
  */
 package com.kurento.kmf.media.test.base;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Semaphore;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.SdpEndpoint;
 
 /**
@@ -45,60 +37,25 @@ public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
 		releaseMediaObject(sdp2);
 	}
 
-	protected final BlockingQueue<T> creationResults = new ArrayBlockingQueue<T>(
-			2);
-
-	protected Continuation<T> cont = new Continuation<T>() {
-
-		@Override
-		public void onSuccess(T result) {
-			creationResults.add(result);
-		}
-
-		@Override
-		public void onError(Throwable cause) {
-			throw new KurentoException(cause);
-		}
-	};
-
 	// TODO connect a local sdp or fails
 	@Test
 	public void testGetLocalSdpMethod() throws InterruptedException {
-		final Semaphore sem = new Semaphore(0);
-		sdp.generateOffer(new Continuation<String>() {
 
-			@Override
-			public void onSuccess(String result) {
-				sdp.getLocalSessionDescriptor(new Continuation<String>() {
+		AsyncResultManager<String> async = new AsyncResultManager<String>(
+				"sdp.generateOffer() invocation");
+		sdp.generateOffer(async.getContinuation());
+		async.waitForResult();
 
-					@Override
-					public void onSuccess(String result) {
-						if (!result.isEmpty()) {
-							sem.release();
-						}
-					}
-
-					@Override
-					public void onError(Throwable cause) {
-						// TODO Auto-generated method stub
-					}
-				});
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				// TODO Auto-generated method stub
-
-			}
-		});
-
-		Assert.assertTrue(sem.tryAcquire(10, SECONDS));
+		AsyncResultManager<String> async2 = new AsyncResultManager<String>(
+				"sdp.getLocalSessionDescriptor() invocation");
+		sdp.getLocalSessionDescriptor(async2.getContinuation());
+		async2.waitForResult();
 	}
 
 	// TODO connect a remote sdp or fails
 	@Test
 	public void testGetRemoteSdpMethod() throws InterruptedException {
-		final Semaphore sem = new Semaphore(0);
+
 		String offer = "v=0\r\n" + "o=- 12345 12345 IN IP4 95.125.31.136\r\n"
 				+ "s=-\r\n" + "c=IN IP4 95.125.31.136\r\n" + "t=0 0\r\n"
 				+ "m=video 52126 RTP/AVP 96 97 98\r\n"
@@ -106,35 +63,15 @@ public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
 				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
-		sdp.processOffer(offer, new Continuation<String>() {
 
-			@Override
-			public void onSuccess(String result) {
-				sdp.getRemoteSessionDescriptor(new Continuation<String>() {
+		AsyncResultManager<String> async = new AsyncResultManager<String>(
+				"sdp.processOffer() invocation");
 
-					@Override
-					public void onSuccess(String result) {
-						Assert.assertFalse(result.isEmpty());
-						sem.release();
-					}
+		sdp.processOffer(offer, async.getContinuation());
 
-					@Override
-					public void onError(Throwable cause) {
-						// TODO Auto-generated method stub
+		String result = async.waitForResult();
 
-					}
-				});
-
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
-
-		Assert.assertTrue("processOffer() not responded in 10s",
-				sem.tryAcquire(10, SECONDS));
+		Assert.assertFalse(result.isEmpty());
 	}
 
 	@Test
@@ -152,7 +89,9 @@ public abstract class SdpAsyncBaseTest<T extends SdpEndpoint> extends
 				+ "a=rtpmap:97 MP4V-ES/90000\r\n"
 				+ "a=rtpmap:98 H263-1998/90000\r\n" + "a=recvonly\r\n"
 				+ "b=AS:384\r\n";
+
 		String ret = sdp.processOffer(offer);
+
 		Assert.assertFalse(ret.isEmpty());
 	}
 

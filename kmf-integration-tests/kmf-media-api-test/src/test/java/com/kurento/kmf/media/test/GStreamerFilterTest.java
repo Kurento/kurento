@@ -15,10 +15,6 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -28,7 +24,7 @@ import org.junit.Test;
 import com.kurento.kmf.media.GStreamerFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
-import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -64,20 +60,15 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 
 		player.connect(filter);
 
-		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<EndOfStreamEvent>(
-				1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<EndOfStreamEvent>(
+				"EndOfStream event");
 
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosEvents.add(event);
-			}
-		});
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
 		player.play();
-		Assert.assertNotNull("EndOfStream event not received in 7s",
-				eosEvents.poll(7, SECONDS));
+
+		async.waitForResult();
+
 		filter.release();
 	}
-
 }

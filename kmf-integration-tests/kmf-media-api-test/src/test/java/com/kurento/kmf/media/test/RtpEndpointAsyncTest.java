@@ -15,12 +15,16 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_BARCODES;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.MediaType;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.RtpEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.SdpAsyncBaseTest;
 
 /**
@@ -52,12 +56,17 @@ public class RtpEndpointAsyncTest extends SdpAsyncBaseTest<RtpEndpoint> {
 
 	@Before
 	public void setupMediaElements() throws InterruptedException {
-		pipeline.newRtpEndpoint().buildAsync(cont);
-		pipeline.newRtpEndpoint().buildAsync(cont);
 
-		sdp = creationResults.poll(500, MILLISECONDS);
-		sdp2 = creationResults.poll(500, MILLISECONDS);
+		AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		pipeline.newRtpEndpoint().buildAsync(async.getContinuation());
+		sdp = async.waitForResult();
 		Assert.assertNotNull(sdp);
+
+		AsyncResultManager<RtpEndpoint> async2 = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		pipeline.newRtpEndpoint().buildAsync(async2.getContinuation());
+		sdp2 = async2.waitForResult();
 		Assert.assertNotNull(sdp2);
 	}
 

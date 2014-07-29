@@ -34,6 +34,7 @@ import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -79,23 +80,19 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 	@Test
 	public void testEventMediaSessionStarted() throws InterruptedException,
 			ClientProtocolException, IOException {
+
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
+
 		HttpGetEndpoint httpEP = pipeline.newHttpGetEndpoint().build();
 		player.connect(httpEP);
 
-		final BlockingQueue<EndOfStreamEvent> eosEvents = new ArrayBlockingQueue<>(
-				1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
+				"EndOfStream event");
 
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosEvents.add(event);
-			}
-		});
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
 		httpEP.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
-
 			@Override
 			public void onEvent(MediaSessionStartedEvent event) {
 				player.play();
@@ -108,8 +105,7 @@ public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 			httpclient.execute(new HttpGet(httpEP.getUrl()));
 		}
 
-		Assert.assertNotNull("EndOfStreamEvent not sent in 60s",
-				eosEvents.poll(60, SECONDS));
+		async.waitForResult();
 
 		httpEP.release();
 		player.release();

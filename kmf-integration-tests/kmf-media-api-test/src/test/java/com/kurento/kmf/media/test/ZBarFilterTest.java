@@ -16,13 +16,16 @@ package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_BARCODES;
 
-import java.util.concurrent.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import org.junit.*;
-
-import com.kurento.kmf.media.*;
+import com.kurento.kmf.media.HttpEndpoint;
+import com.kurento.kmf.media.PlayerEndpoint;
+import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -67,20 +70,14 @@ public class ZBarFilterTest extends MediaPipelineBaseTest {
 				.build();
 		player.connect(zbar);
 
-		final BlockingQueue<CodeFoundEvent> events = new ArrayBlockingQueue<CodeFoundEvent>(
-				1);
+		AsyncEventManager<CodeFoundEvent> async = new AsyncEventManager<>(
+				"CodeFound event");
 
-		zbar.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
-
-			@Override
-			public void onEvent(CodeFoundEvent event) {
-				events.add(event);
-			}
-		});
+		zbar.addCodeFoundListener(async.getMediaEventListener());
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(10, TimeUnit.SECONDS));
+		async.waitForResult();
 
 		player.stop();
 		player.release();

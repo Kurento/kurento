@@ -15,13 +15,8 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.io.IOException;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
 
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -31,8 +26,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kurento.kmf.common.exception.KurentoException;
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.ListenerRegistration;
 import com.kurento.kmf.media.PlayerEndpoint;
@@ -40,6 +33,8 @@ import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.events.MediaSessionStartedEvent;
 import com.kurento.kmf.media.events.MediaSessionTerminatedEvent;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -70,23 +65,13 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Before
 	public void setupMediaElements() throws InterruptedException {
-		final Semaphore sem = new Semaphore(0);
-		pipeline.newHttpGetEndpoint().buildAsync(
-				new Continuation<HttpGetEndpoint>() {
 
-					@Override
-					public void onSuccess(HttpGetEndpoint result) {
-						httpEp = result;
-						sem.release();
-					}
+		AsyncResultManager<HttpGetEndpoint> async = new AsyncResultManager<>(
+				"HttpGetEndpoint creation");
 
-					@Override
-					public void onError(Throwable cause) {
-						throw new KurentoException(cause);
-					}
-				});
-		Assert.assertTrue("HttpGetEndpoint no created in 500ms",
-				sem.tryAcquire(500, MILLISECONDS));
+		pipeline.newHttpGetEndpoint().buildAsync(async.getContinuation());
+
+		httpEp = async.waitForResult();
 	}
 
 	@After
@@ -101,22 +86,15 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	 */
 	@Test
 	public void testMethodGetUrl() throws InterruptedException {
-		final BlockingQueue<String> events = new ArrayBlockingQueue<>(1);
-		httpEp.getUrl(new Continuation<String>() {
 
-			@Override
-			public void onSuccess(String result) {
-				events.add(result);
-			}
+		AsyncResultManager<String> async = new AsyncResultManager<>(
+				"getUrl() method invocation");
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
+		httpEp.getUrl(async.getContinuation());
 
-		String url = events.poll(500, MILLISECONDS);
-		Assert.assertTrue(!(url == null || url.isEmpty()));
+		String url = async.waitForResult();
+
+		Assert.assertTrue(url != null && !url.isEmpty());
 	}
 
 	/**
@@ -131,41 +109,26 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
+
 		player.connect(httpEp);
 
-		final CountDownLatch eosLatch = new CountDownLatch(1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
+				"EndOfStream event");
 
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				eosLatch.countDown();
-			}
-		});
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
-		final BlockingQueue<ListenerRegistration> events = new ArrayBlockingQueue<>(
-				1);
+		AsyncResultManager<ListenerRegistration> async2 = new AsyncResultManager<ListenerRegistration>(
+				"EventListener subscription");
+
 		httpEp.addMediaSessionStartedListener(
 				new MediaEventListener<MediaSessionStartedEvent>() {
-
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
 						player.play();
 					}
-				}, new Continuation<ListenerRegistration>() {
+				}, async2.getContinuation());
 
-					@Override
-					public void onSuccess(ListenerRegistration result) {
-						events.add(result);
-					}
-
-					@Override
-					public void onError(Throwable cause) {
-						throw new KurentoException(cause);
-					}
-				});
-
-		Assert.assertNotNull("MediaSessionStartedEvent not send in 500ms",
-				events.poll(500, MILLISECONDS));
+		async2.waitForResult();
 
 		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
 				.build()) {
@@ -173,12 +136,8 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
 		}
 
-		try {
-			eosLatch.await(500, MILLISECONDS);
-		} finally {
-			player.release();
-		}
-
+		async.waitForResult();
+		player.release();
 	}
 
 	/**
@@ -193,40 +152,26 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
 				.build();
+
 		player.connect(httpEp);
 
 		httpEp.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
-
 			@Override
 			public void onEvent(MediaSessionStartedEvent event) {
 				player.play();
 			}
 		});
-		final CountDownLatch latch = new CountDownLatch(1);
-		final BlockingQueue<ListenerRegistration> events = new ArrayBlockingQueue<>(
-				1);
+
+		AsyncResultManager<ListenerRegistration> async = new AsyncResultManager<>(
+				"EventListener subscription");
+
+		AsyncEventManager<MediaSessionTerminatedEvent> asyncEvent = new AsyncEventManager<>(
+				"MediaSessionTerminated event");
+
 		httpEp.addMediaSessionTerminatedListener(
-				new MediaEventListener<MediaSessionTerminatedEvent>() {
+				asyncEvent.getMediaEventListener(), async.getContinuation());
 
-					@Override
-					public void onEvent(MediaSessionTerminatedEvent event) {
-						latch.countDown();
-					}
-				}, new Continuation<ListenerRegistration>() {
-
-					@Override
-					public void onSuccess(ListenerRegistration result) {
-						events.add(result);
-					}
-
-					@Override
-					public void onError(Throwable cause) {
-						throw new KurentoException(cause);
-					}
-				});
-
-		Assert.assertNotNull("Listener not registered in 500ms",
-				events.poll(500, MILLISECONDS));
+		async.waitForResult();
 
 		try (CloseableHttpClient httpclient = HttpClientBuilder.create()
 				.build()) {
@@ -234,12 +179,8 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 			httpclient.execute(new HttpGet(httpEp.getUrl()));
 		}
 
-		try {
-			latch.await(500, MILLISECONDS);
-		} finally {
-			player.release();
-		}
+		asyncEvent.waitForResult();
+		player.release();
 
 	}
-
 }

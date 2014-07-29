@@ -14,13 +14,12 @@
  */
 package com.kurento.kmf.media.test;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-
 import org.junit.Assert;
 import org.junit.Before;
 
 import com.kurento.kmf.media.WebRtcEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.SdpAsyncBaseTest;
 
 /**
@@ -52,12 +51,17 @@ public class WebRtcEndpointAsyncTest extends SdpAsyncBaseTest<WebRtcEndpoint> {
 
 	@Before
 	public void setupMediaElements() throws InterruptedException {
-		pipeline.newWebRtcEndpoint().buildAsync(cont);
-		pipeline.newWebRtcEndpoint().buildAsync(cont);
 
-		sdp = creationResults.poll(5, SECONDS);
-		sdp2 = creationResults.poll(5, SECONDS);
+		AsyncResultManager<WebRtcEndpoint> async = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		pipeline.newWebRtcEndpoint().buildAsync(async.getContinuation());
+		sdp = async.waitForResult();
 		Assert.assertNotNull(sdp);
+
+		AsyncResultManager<WebRtcEndpoint> async2 = new AsyncResultManager<>(
+				"RtpEndpoint creation");
+		pipeline.newWebRtcEndpoint().buildAsync(async2.getContinuation());
+		sdp2 = async2.waitForResult();
 		Assert.assertNotNull(sdp2);
 	}
 

@@ -15,11 +15,9 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_BARCODES;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -27,12 +25,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.HttpEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.ZBarFilter;
 import com.kurento.kmf.media.events.CodeFoundEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncResultManager;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
 
 /**
@@ -63,22 +61,13 @@ public class ZBarFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Before
 	public void setupMediaElements() throws InterruptedException {
-		final Semaphore sem = new Semaphore(0);
-		pipeline.newZBarFilter().buildAsync(new Continuation<ZBarFilter>() {
 
-			@Override
-			public void onSuccess(ZBarFilter result) {
-				zbar = result;
-				sem.release();
-			}
+		AsyncResultManager<ZBarFilter> async = new AsyncResultManager<>(
+				"ZBarFilter creation");
 
-			@Override
-			public void onError(Throwable cause) {
-				cause.printStackTrace();
-			}
-		});
-		Assert.assertTrue("Filter not created in 500ms",
-				sem.tryAcquire(500, MILLISECONDS));
+		pipeline.newZBarFilter().buildAsync(async.getContinuation());
+
+		zbar = async.waitForResult();
 
 		player = pipeline.newPlayerEndpoint(URL_BARCODES).build();
 	}

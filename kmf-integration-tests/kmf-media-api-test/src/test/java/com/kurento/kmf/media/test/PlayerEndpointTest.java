@@ -15,10 +15,6 @@
 package com.kurento.kmf.media.test;
 
 import static com.kurento.kmf.media.test.RtpEndpoint2Test.URL_SMALL;
-import static java.util.concurrent.TimeUnit.SECONDS;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -29,6 +25,7 @@ import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
+import com.kurento.kmf.media.test.base.AsyncEventManager;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 /**
@@ -79,19 +76,15 @@ public class PlayerEndpointTest extends MediaPipelineBaseTest {
 
 	@Test
 	public void testEventEndOfStream() throws InterruptedException {
-		final BlockingQueue<EndOfStreamEvent> events = new ArrayBlockingQueue<EndOfStreamEvent>(
-				1);
-		player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
 
-			@Override
-			public void onEvent(EndOfStreamEvent event) {
-				events.add(event);
-			}
-		});
+		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(
+				"EndOfStream event");
+
+		player.addEndOfStreamListener(async.getMediaEventListener());
 
 		player.play();
 
-		Assert.assertNotNull(events.poll(7, SECONDS));
+		async.waitForResult();
 	}
 
 	@Test

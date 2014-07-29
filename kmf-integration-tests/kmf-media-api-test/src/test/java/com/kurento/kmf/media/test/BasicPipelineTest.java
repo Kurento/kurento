@@ -14,18 +14,14 @@
  */
 package com.kurento.kmf.media.test;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kurento.kmf.media.HttpGetEndpoint;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.test.base.MediaPipelineBaseTest;
 
 public class BasicPipelineTest extends MediaPipelineBaseTest {
-
-	private static final Logger log = LoggerFactory
-			.getLogger(BasicPipelineTest.class);
 
 	@Test
 	public void basicPipelineTest() {
@@ -39,10 +35,8 @@ public class BasicPipelineTest extends MediaPipelineBaseTest {
 
 		String url = httpGetEndpoint.getUrl();
 
-		log.info("URL: " + url);
-
 		player.release();
 
+		Assert.assertNotSame("The URL shouldn't be empty", "", url);
 	}
-
 }
