@@ -7,12 +7,13 @@
 Introduction
 ============
 
-This guide describes how to install Kurento. Kurento is composed of two nodes,
-the Kurento Application Server (a.k.a.  :term:`KAS`) and the Kurento Media
-Server (a.k.a :term:`KMS`). These two nodes can be co-located or installed
-on separate machines. This guide focuses on the installation on a single
-machine, but comments are done where appropriate explaining how to modify
-the configuration files for a dual installation.
+This guide describes how to install Kurento. Kurento is composed of three
+nodes, the Kurento Application Server (:term:`KAS`), the Kurento Media
+Server (:term:`KMS`) and the KFM Media Connector (:term:`KMC`). These three
+nodes can be co-located or installed on separate machines. This guide
+focuses on the installation on a single machine, but comments are done
+where appropriate explaining how to modify the configuration files for
+a dual installation.
 
 Prerequisites
 -------------
@@ -35,11 +36,11 @@ Operating system requirements:
 Kurento Application Server (KAS)
 --------------------------------
 
-First, install *Open JDK 7*:
+First, install *Open JDK 7* and  *unzip* packages:
 
 .. sourcecode:: console
 
-    $ sudo apt-get install openjdk-7-jdk
+    $ sudo apt-get install openjdk-7-jdk unzip
 
 Download *JBoss*, uncompress it and move it to */opt/jboss* by
 executing:
@@ -248,6 +249,15 @@ Finally, configure the server to run KMS when booted:
 .. sourcecode:: console
 
     $ sudo update-rc.d kurento defaults
+
+
+KMF Media Connector
+-------------------
+
+The KMF Media Connector is a proxy that allows to clients connect to the
+Kurento Media Server through websockets. The main Kurento Media Server
+interface is based on thrift technology, and this proxy makes the needed
+conversions between websockets and thrift.
 
 Kurento Network Configuration
 -----------------------------

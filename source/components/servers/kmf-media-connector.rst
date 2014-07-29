@@ -1,6 +1,8 @@
 KMF Media Connector
 ===================
 
+.. highlight:: console
+
 The KMF Media Connector is a proxy that allows to clients to connect to
 Kurento Media Server through websockets. The main Kurento Media Server
 interface is based on thrift technology, and this proxy made necessary
@@ -21,10 +23,43 @@ prerequisite of the proxy. There is no need to install additional software.
 The proxy is provided as a .jar Java executable archive, and has an embedded
 Tomcat server.
 
-Assuming that the command ``java`` points to a Java 7 JVM executable,
-the proxy can be executed as::
+Download the KMF Media Connector and move it to
+``/opt/kmf-media-connector`` by executing::
 
-    $ java -jar kmf-media-connector.jar --server.port=8080\
+    sudo wget http://jmaster01-64.kurento.com/apps/kmf-media-connector.zip
+    sudo mkdir /opt/kmf-media-connector
+    sudo mv kmf-media-connector.zip /opt/kmf-media-connector
+
+Unzip the kmf-media-connector.zip file::
+
+    cd /opt/kmf-media-connector
+    sudo unzip kmf-media-connector-|version|.zip
+
+Move the init.d script to the right location and give the correct permission
+to the file::
+
+    sudo cp /opt/kmf-media-connector/support-files/kmf-media-connector.sh\
+        /etc/init.d/kmf-media-connector
+    chmod 755 /etc/init.d/kmf-media-connector
+
+Give the correct permissions to the start.sh file. This file is used by the
+kmf-media-connector.sh service script::
+
+    chmod 755 /opt/kmf-media-connector/bin/start.sh
+
+Finally, configure the server to run kmf-media-connector when booted::
+
+    sudo update-rc.d kmf-media-connector defaults
+
+And run the kmf-media-connector proxy service:
+
+    sudo service kmf-media-connector start
+
+Alternatively, you can run the KMF Media Connector passing the arguments
+directly from the command line. Assuming that the command ``java`` points
+to a Java 7 JVM executable, the proxy can be executed as::
+
+    java -jar kmf-media-connector.jar --server.port=8080\
     > --mediaserver.address=127.0.0.1 --mediaserver.port=9090\
     > --handler.address=127.0.0.1 --handler.port=9900\
     > --oauthserver.url=http://cloud.lab.fi-ware.org 

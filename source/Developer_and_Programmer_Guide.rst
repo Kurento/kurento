@@ -12,9 +12,9 @@ Introduction
 
 *Kurento* is a :term:`multimedia` platform helping
 developers to add multimedia capabilities to their applications. The
-core element is *Kurento Media Server* (:term:`KMS`) a
+core element is the *Kurento Media Server* (or :term:`KMS` for short) a
 `Gstreamer <http://gstreamer.freedesktop.org/>`__ based multimedia
-engine that provides following features:
+engine that provides the following features:
 
 -  Networked streaming protocols, including :term:`HTTP` working as client and
    server, :term:`RTP` and :term:`WebRTC`.
@@ -27,7 +27,8 @@ engine that provides following features:
 
 `Java <http://www.java.com/>`__ and `Javascript
 <http://www.w3.org/standards/webdesign/script>`__ SDKs are
-available for developers to incorporate above features to applications.
+available for developers, to incorporate the above features in their
+applications.
 
 About this guide
 ----------------
@@ -46,12 +47,12 @@ Things you need to know before start programing
 -  *GE Kurento* software is released under `LGPL
    version 2.1 <http://www.gnu.org/licenses/lgpl-2.1.html>`__ license.
    This is quite a convenient license for programmers, but it is still
-   recommended you check if actually fits your application needs.
+   recommended you check if it actually fits your application needs.
 
 -  `Maven <http://maven.apache.org/>`__ is used as dependency
    management tool for *Java* SDKs. Most likely
    `Gradle <http://www.gradle.org/>`__ can also be used, but we still
-   haven't tested. If you don't use any dependency management you can
+   haven't tested it. If you don't use any dependency management you can
    still download the `KMF API
    Bundle <https://forge.fi-ware.org/frs/download.php/819/kmf-api.jar>`__
    and incorporate manually all dependencies to your application, but
@@ -59,9 +60,9 @@ Things you need to know before start programing
 
 -  `Spring framework <http://spring.io/>`__ is extensively used for
    lifecycle management of *Java* components. Developers are not
-   required to develop ''Spring '' applications when using the *Stream
-   Oriented GE Kurento* in :term:`Java EE` environments, but they'll have to in
-   stand-alone *Java* applications.
+   required to develop :term:`Spring` applications when using the *Stream
+   Oriented GE Kurento* in :term:`Java EE` environments, but they'll have
+   to when developing applications with KMF `Media API <kmf-media-api>`_.
 
 Quick start
 -----------
@@ -72,17 +73,17 @@ integrate the *Kurento* framework into applications.
 Basic Setup
 ~~~~~~~~~~~
 
--  **Install and configure KMS**: This piece of software is the actual
-   engine providing media processing and delivery.
+* **Install and configure Kurento Media Server** (:term:`KMS`):
+    This piece of software is the actual engine providing media
+    processing and delivery.
 
--  **Install and configure JBoss 7 Application Server**: This is a
-   :term:`Java EE` container that hosts the server side of applications. Other
-   *Java* enterprise servers can be used, although no support from
-   *Kurento* will be provided. This server will also be called *Kurento
-   Application Server* (:term:`KAS`) through the document.
+* **Install and configure JBoss 7 Application Server** (:term:`KAS`):
+    This is a :term:`Java EE` container that hosts the server side of
+    applications. Other *Java* enterprise servers can be used, although no
+    support from *Kurento* will be provided. This server will also be called
+    *Kurento Application Server* (:term:`KAS`) through the document.
 
-The  :doc:`Kurento Installation and Administration
-Guide <Installation_Guide>`
+The  :doc:`Kurento Installation and Administration Guide <Installation_Guide>`
 provides detailed information on installation and setup of above
 components.
 
@@ -92,12 +93,13 @@ Create your first application
 Server side of your first application
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The *Kurento* server SDK is a *Java* library known as
-*Kurento Media Framework* (:term:`KMF`). Following steps are required to
-create a *Kurento* based application:
+The *Kurento* server SDK is a *Java* library known as *Kurento Media Framework*
+(:term:`KMF`). The following steps are required to create a *Kurento*
+based application:
 
 #. Create a *Maven* web project with your favourite IDE. You can use
-   following ``pom.xml`` template
+   following ``pom.xml`` template. Please notice that '''Java 1.7'''
+   is required to compile KMF-based Java projects.
 
    .. sourcecode:: xml
 
@@ -114,9 +116,16 @@ create a *Kurento* based application:
            <version>0.0.1-SNAPSHOT</version>
            <packaging>war</packaging>
 
+            <properties>
+                <project.build.sourceEncoding>UTF-8 </project.build.sourceEncoding>
+                <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+                <maven.compiler.source>1.7</maven.compiler.source>
+                <maven.compiler.target>1.7</maven.compiler.target>
+            </properties>
+
        </project>
 
-#. Make sure you add *KMF* dependencies to the ``pom.xml`` file
+#. You can add *KMF* dependencies to the ``pom.xml`` file
 
    .. sourcecode:: xml
 
@@ -129,6 +138,28 @@ create a *Kurento* based application:
            </dependency>
            ...
        </dependencies>
+
+   .. note::
+        We are in active development. Be sure that you have the latest
+        Kurento version in your POM. You can find it in at `Maven Central
+        <http://search.maven.org/#search%7Cga%7C1%7Ckurento>`_
+        searching for kurento.
+
+   **KMF** requires that the Application Server container supports the
+   Servlet specification version 3.0. Therefore, ensure that this version
+   is established in ``WEB-INF/web.xml``:
+
+   .. sourcecode:: xml
+
+      <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	      xmlns="http://java.sun.com/xml/ns/javaee"
+          xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+               http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	      version="3.0">
+         <!-- ... -->
+      </web-app>
+
 
 #. Create a properties file named ``kurento.properties`` including
    following configuration keys:
@@ -151,7 +182,7 @@ create a *Kurento* based application:
        # Your can choose the port you want. By default we assume 9100.
        mediaApiConfiguration.handlerPort=9100
 
-   *Kurento* framework will search this file in the following paths (in
+   *Kurento* framework will search this file in the following locations (in
    the specified order):
 
    #. *JBoss* configuration folder defined by property:
@@ -160,8 +191,8 @@ create a *Kurento* based application:
       ``-Dkurento.properties.dir=/home/user/kurento``
    #. *WEB-INF* directory of *WAR* archive
 
-#. Create a *Java* Class that extends ``HttpPlayerHandler`` and add
-   annotation ``@PlayerService``. You'll have to implement method
+#. Create a *Java* Class that extends ``HttpPlayerHandler``, and add the
+   annotation ``@PlayerService``. You'll have to implement the method
    ``onContentRequest()`` to set the media resource to be played::
 
        import com.kurento.kmf.content.HttpPlayerHandler;
@@ -184,6 +215,7 @@ create a *Kurento* based application:
    the one read by the player element. You can replace the ``file:///``
    type URL by another one where a WebM file can be found, such as
    ``http://media.w3.org/2010/05/sintel/trailer.webm``
+#. Package the project into a .war file.
 #. Deploy your project into *JBoss 7* server installed during the basic
    setup and launch it.
 
@@ -229,9 +261,8 @@ Basic streaming concepts
 ------------------------
 
 There are several streaming concepts that might be of interest in order
-to know the precise behaviour that can expected when adding multimedia
-resources to applications. This section is not strictly necessary and
-can be skipped in a first reading.
+to know the precise behaviour that can be expected when adding multimedia
+resources to applications.
 
 Any streaming protocol requires two main components: a *control
 function* to manage connection setup and a *media function*, that
@@ -244,7 +275,7 @@ is a media function like *RTP* and it also requires a control protocol
 that negotiates connection setup.
 
 Streaming over *HTTP* (a.k.a. *HTML5 streaming*) is somehow special
-because *HTTP* is a protocol not designed for media transfer. *HTML5
+because *HTTP* is not a protocol designed for media transfer. *HTML5
 streaming* sessions starts with the browser sending a GET request to the
 server. In this step both: browser and server play the *control
 function* role. The server then maps the URL to the actual resource,
@@ -253,8 +284,8 @@ encapsulates its content in the response and sends it back to the
 server switch to the *media function*. There isn't a clear
 differentiation between control and media functions that are played
 sequentially by the same element in both sides. Apart form this function
-mixup, many people will argue *HTTP* is not really streaming protocol as
-there is no relation at all between media transfer pace an playing pace,
+mixup, many people will argue the *HTTP* is not really a streaming protocol,
+since there is no relation between media transfer pace and playing pace,
 i.e. the network transfer rate is not limited by the media consumption
 rate and you might find situations where the whole content of a 1 hour
 video is already downloaded when still playing the first minute.
@@ -266,20 +297,20 @@ normally called *SEEK* and streams that supports it are called
 *non-seek-able*. There are two conditions a stream must meet in order to
 be *seek-able*. First, the control protocol must provide a *SEEK*
 command and second, the media resource must be completely available
-before stream starts transmission. The reason for the second condition
+before the stream starts transmission. The reason for the second condition
 is because seeks must specify somehow the file position where the stream
 must jump and that requires to know in advance the size or length of the
 media resource and hence the whole resource must be available in
 advance. Streaming protocols like *RTSP* and *HTTP* use header ``Range``
-as a mean to build seek command. When the ``<video>`` component in a
+as a mean to build seek command. When the ``<video>`` component in an
 *HTML5* application request a seek operation, the browser sends a new
 GET request with the appropriate ``Range`` header. But this is only
 available if the server provided the resource size in advance in the
 first request (the one that initiated the stream). If resource size is
 not available at start time, the video component does not show any kind
 of progress bar, switching into *live* mode. *Kurento* is currently
-supporting only *live* mode, independently whether the media resource
-is or not available in advance.
+supporting only *live* mode, independently of the prior availabily of
+the media resource.
 
 When designing streaming services it is also very important to determine
 the type of service that is being offered. There are two main
@@ -288,12 +319,12 @@ classifications for streaming services: *Video on demand* (*VoD*) and
 time scale. In *Broadcast* mode any new client connecting to the
 streaming service assumes the time scale defined by the source, and this
 time scale is shared among all connected clients. In *VoD* service a new
-time scale is build for each client. The client not only selects
-resource, but also the time origin. When many *VoD* clients access the
-same resource, each one has its own time scale, and this time scale is
-reset if the client breaks the connection. *Kurento*
-is currently supporting Broadcast services, but in future versions it
-will also support true *VoD* mode.
+time scale is built for each client. The client not only selects
+resource, but also the starting time. When many *VoD* clients access the
+same resource, each one has its own time scale, and each time scale is
+reset if the client breaks the connection. *Kurento* is currently supporting
+Broadcast services, but in future versions it will also support true
+*VoD* mode.
 
 Kurento API architecture
 ------------------------
@@ -301,10 +332,10 @@ Kurento API architecture
 *Kurento* is a multimedia platform that provides
 streaming capabilities in a very flexible way. As described in the
 :ref:`Architecture Description <architecture>`,
-*Kurento* is a modular system where a set of basic functional blocks,
-called *MediaElements*, that live in containers, called *MediaPipeline*,
-are connected together to build multimedia services. There are two main
-*MediaElements* families:
+Kurento is a modular system where a set of basic functional blocks,
+called :term:`MediaElements  <element, media>`, that live in containers, called :term:`MediaPipelines <pipeline, media>`,
+are connected together to build multimedia services. There are three main
+:rom:cls:`MediaElement` families:
 
 -  **Endpoints**: Endpoints provide transfer capabilities, allowing
    bidirectional communication channels with external systems. Supported
@@ -314,9 +345,13 @@ are connected together to build multimedia services. There are two main
 -  **Filters**: Filters are responsible of media processing, including
    transcodification, computer vision, augmented reality, etc.
 
+-  **Mixers**: Mixers combines the stream from endpoints. They are also
+   known as :rom:cls:`Hub`. The main mixers types are :rom:cls:`Dispatcher`
+   and :rom:cls:`Composite`.
+
 *Kurento* consists of two main software components: Kurento Media
 Server (:term:`KMS`) and Kurento Media Framework
-(:term:`KMF`)
+(:term:`KMF`):
 
 -  **KMS**: *Kurento Media Server* is a stand-alone server responsible
    of the media process and delivery. It is the component that hosts
@@ -327,13 +362,16 @@ Server (:term:`KMS`) and Kurento Media Framework
    services. *KMF* can be incorporated to web applications hosted by
    *Kurento Application Server* (:term:`KAS`) and provides the following APIs:
 
-   -  :ref:`Content API<kmf-content-api>`: High-level middleware layer
-      of services intended to simplify input/output operations.
-   -  :ref:`Media API<kmf-media-api>`: Low-level API that provides
+   -  :ref:`Content API <kmf-content-api>`: High-level middleware layer
+      of services intended to simplify communications with clients.
+      It also offers Open API to clients.
+   -  :ref:`Media API <kmf-media-api>`: Low-level API that provides
       full control of :term:`KMS` elements. It is normally used in
       conjunction with *Content API*.
    -  *HTML5 SDK*: Javascript SDK intended to provide better control of
-      media reproduction in web applications.
+      media playing in web applications. It uses Open API (based on
+      JSON-RPC over http and websockets) to communicate with Content
+      API in the server.
 
 .. _programming-with-kmf-content-api:
 
@@ -342,8 +380,8 @@ Programming with the Kurento Java EE Content API
 
 The *Content API* SDK is intended to simplify setup and management of
 multimedia connections between *KMS* and web applications. Built on top
-of the *JEE Servlet* API, implements a *REST* like interface that
-controls following multimedia services:
+of the *Java Servlet* API, implements a *REST*-like interface based on
+JSON-RPC that controls the following multimedia services:
 
 -  **HTTP services**: Enables download and upload of multimedia
    contents.
@@ -365,7 +403,7 @@ is the reason why the *Content API* defines the concept of *content
 service* as a mechanism to provide a simple and homogeneous interface
 for the creation and management of multimedia connections.
 
-A *content service* consist of a standard *Java bean* implementing the
+A *content service* consists of a standard *Java bean* implementing the
 *service handler* interface. *Service handlers* are identified because
 they are annotated as follows:
 
@@ -380,9 +418,9 @@ they are annotated as follows:
        }
 
 #. ``@HttpRecorderService``: Allows the application to publish a
-   recorder service, enabling media injection into *KMS* through *HTTP
-   file upload* protocol. The recorder *service handler* must extend
-   class ``HttpRecorderHandler``.
+   recorder service, enabling media injection into *KMS* through the
+   *HTTP file upload* protocol. The recorder *service handler* must
+   extend class ``HttpRecorderHandler``.
    ::
 
        @HttpRecorderService(path = "/myRecorderService")
@@ -411,9 +449,9 @@ they are annotated as follows:
 
 At runtime the *Content API* engine searches *content service*
 annotations, instantiating a *service entry point* for each *service
-handler* found. A *service entry point* is basically an *HTTP servlet*
-mapped to a *service URL* where clients can send HTTP request with
-control commands. Developers do not have to care about servlet
+handler* found. Internally a *service entry point* is basically an
+*HTTP servlet* mapped to a *service URL* where clients can send HTTP
+request with control commands. Developers do not have to care about servlet
 configuration or initialization, as the "Content API" takes care of this
 operations. The *service URL* has format below::
 
@@ -421,12 +459,12 @@ operations. The *service URL* has format below::
 
 where
 
--  \ *myserver*\  : is the IP address or hostname of *Kurento
+-  \ *myserver*\  : is the IP address or hostname of the *Kurento
    Application Server*.
--  \ *myApp*\ : is the application context, that use to be the WAR
-   archive name.
--  \ *myServiceName*\  : is the value given to mandatory attribute
-   ``path`` of service annotation.
+-  \ *myApp*\ : is the application context, namely the WAR
+   archive name if not otherwise specified.
+-  \ *myServiceName*\  : is the value given to the
+   ``path`` attribute of service annotation.
 
 As a summary, in order to create a *content service* the application
 must implement a *service handler*, which is a *Java bean* with a common
@@ -436,14 +474,15 @@ point*, and can be reached at the *service URL*. Service operation and
 management is independent of the underlying *KMS* *Endpoint* type. It is
 important to understand that developers do not need to care about
 instantiation of ''service entry points' '' servlets and that these are
-used just for control purposes and no for media delivery.
+used just for control purposes and not for media delivery.
 
 HTTP Player Service
 ^^^^^^^^^^^^^^^^^^^
 
 The *HTTP Player service* instantiates a download service intended for
 *HTML5 streaming*. Method ``onContentRequest()`` is called every time
-the *service entry point* receives a GET request from browser.
+the *service entry point* receives a GET request from a client using Open
+API (directly or with HTML5 SDK).
 
 ::
 
@@ -457,14 +496,14 @@ the *service entry point* receives a GET request from browser.
         @Override
         public void onContentRequest(HttpPlayerSession session) throws Exception {
             
-            session.start("/path/to/myvideo");
+            session.start("file:///path/to/myvideo");
         }
     }
 
 *KMS* instantiates *HTTP Endpoints* on behalf of this service every time
 a new request arrives. *HTTP Endpoints* transform content on the fly to
-*WebM* before encapsulation and delivery, allowing source files to have
-any format supported by *Gstreamer*.
+:term:`WebM` (by default) or :term:`MP4`  before encapsulation and delivery,
+allowing source files to have any format supported by *Gstreamer*.
 
 *HTML5* browsers can access the content by adding the *service URL* as
 source of the tag ``<video>``.
@@ -508,7 +547,7 @@ The receiver *HTTP Endpoint* will search for the first *content part*
 with a supported multimedia format and will send it to the media resource
 specified by the handler (``file:///myfile``). *Recorder service* accepts
 from client any multimedia format supported by *Gstreamer*, but transforms
-content to :term:`WEBM` before writing to file. [#]_
+content to :term:`WEBM` before storing it. [#]_
 
 ::
 
@@ -543,7 +582,7 @@ RTP & WebRTC Service
 *RTP* and *WebRTC* requires a negotiation process where each side sends
 its connection details and supported formats encoded in a *SDP*
 (*Session Description Protocol*) packet. *RTP* and *WebRTC* services
-hide negotiation complexity offering applications the same interface
+hide negotiation complexity, offering applications the same interface
 used for the well-known *HTTP* services. Method ``onContentRequest()``
 is called each time a *POST* request with a connection offer is received
 by the *service entry point*.
@@ -559,20 +598,32 @@ by the *service entry point*.
     import com.kurento.kmf.media.RecorderEndpoint;
 
     @WebRtcContentService(path = "/myWebRtcService")
-    public class MyWebRtpService extends WebRtcContentHandler{
+    public class MyWebRtpService extends WebRtcContentHandler {
 
         @Override
         public void onContentRequest(WebRtcContentSession contentSession)throws Exception {
 
-                   contentSession.start(webRtcEndpoint);
+                   contentSession.start("file:///fileToSend.webm", "file:///fileToRecord.webm");
         }
     }
 
 *RTP* and *WebRTC* are bidirectional protocols that can send and receive
-at the same time. For that reason method start requires both: *source*
-and *sink* elements. The input/ouput stream configuration for a given
-connection can be known thanks to methods ``getVideoConstraints()`` and
-``getAudioConstraints()``, that returns one of following values:
+at the same time. For that reason, ``start`` method requires
+both: *source* and *sink* elements.
+
+In the previous example, the received media from the client will be
+recorded into ``fileToRecord.webm`` and the media to deliver to the
+client is read from ``fileToSend.webm``. The start method it not limited
+to read from files and write to files. More complex media pipelines can 
+be created with Media API as we will see in the following sections
+of this document.
+
+The client starting the communication with the server specifies some
+constraints for media direction in the negotiating phase. The handler
+can access to this constraints individually for video and audio streams
+with methods :java:meth:`SdpContentSession.getVideoConstraints()` and
+:java:meth:`SdpContentSession.getAudioConstraints()`.
+These methods return one of the following values:
 
 -  **SENDONLY**: *KMS* delivers media to remote peer and does not
    receive.
@@ -594,7 +645,7 @@ Content Session & Media lifecycle
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The *content session* is the mechanism offered by the *Content API* to
-manage multimedia transactions. Its state depends on: media events
+manage multimedia transactions. Its state depends on media events
 detected in the *Endpoint*, control events detected in the *service
 entry point* and application commands.
 
@@ -612,17 +663,16 @@ that will be returned to browser.
 
 When the *service handler* wants to accept a request it must provide the
 source and sink media resources that will be connected to the
-*Endpoint*. Method ``start()`` is called for this purpose.
+*Endpoint*. Method :java:meth:`start()` is called for this purpose.
 ::
 
     @Override
     public void onContentRequest(WebRtcContentSession contentSession) throws Exception {
-        //Create appropriate MediaElements using Media API
-        contentSession.start(WebRtcEndpoint);
+        contentSession.start("file:///fileToSend.webm","file:///fileToRecord.webm");
     } 
 
-The *Endpoint* informs applications when media transfer starts by
-calling the optional method ``onContentStart()``.
+The *Endpoint* informs applications when a media transfer starts by
+calling the optional method :java:meth:`onContentStarted()`.
 ::
 
     @Override
@@ -630,7 +680,7 @@ calling the optional method ``onContentStart()``.
         // Execute specific application logic when content (media) starts being served to the client
     }
 
-Optional method ``onSessionTerminate()`` is called when *Endpoint*
+Optional method :java:meth:`onSessionTerminated()` is called when *Endpoint*
 completes media transfer. The *content session* termination code is
 provided in this call.
 ::
@@ -644,7 +694,7 @@ provided in this call.
 The *content session* is terminated automatically if the *Endpoint*
 experiences an unrecoverable error not caused by a direct application
 command. Events like client disconnection, file system access fail, etc.
-are the main error cause . Any of these exception can be handled on
+are the main error cause . Any of these exceptions can be handled on
 :java:meth:`onUncaughtException()`.
 ::
 
@@ -655,7 +705,7 @@ are the main error cause . Any of these exception can be handled on
         // executing this code
     }
 
-If exceptions are not handled, there will be propagated and method
+If exceptions are not handled, they will be propagated and the method
 :java:meth:`onSessionError()` will be called with the error code and description.
 ::
 
@@ -690,16 +740,18 @@ method :java:meth:`getAttribute()` or deleted with method :java:meth:`removeAttr
 
 One important feature of the *content session* is its capability to
 share real time information with clients through a bidirectional
-channel. In order to interchange messages with a browser an
-:doc:`Open API <Open_API_Specification>` client, like the one
-implemented by the HTML5 SDK, has to be used. These messages follows
-a signaling protocol based on :term:`JSON-RPC`. Messages can be
-interchanged between the *service handler* and the client while the
-*content session* is active. Method :java:meth:``publishEvent()``
-is used for this purpose. This capability is quite useful combined with
-computer vision filter, as it allows sending events to clients coming
-from video content analysis (e.g. plate recognized, QR code detected,
-face detected, etc.)
+channel. In order to interchange messages with a client the
+:doc:`Open API <Open_API_Specification>` has to be used. For web browsers 
+ti is recommended to connect to the server with the HTML5 SDK,
+because it fully implements OpenAPI.
+
+The OpenAPI is implemented following a signalling protocol based on
+:term:`JSON-RPC` 2.0. Messages can be interchanged between the *service
+handler* and the client while the *content session* is active. Method
+:java:meth:``publishEvent()`` is used for this purpose. This capability
+is quite useful combined with computer vision filter, as it allows sending
+events to clients coming from video content analysis (e.g. plate recognised,
+QR code detected, face detected, etc.)
 ::
 
     @Override
@@ -716,19 +768,21 @@ method ``onContentCommand()``
 ::
 
     @Override
-    public ContentCommandResult onContentCommand( WebRtcContentSession contentSession, ContentCommand contentCommand) throws Exception {
-        contentCommand.getData();
-        contentCommand.getType();
+    public ContentCommandResult onContentCommand( WebRtcContentSession contentSession,
+                    ContentCommand contentCommand)
+      throws Exception {
+        String data = contentCommand.getData();
+        String type = contentCommand.getType();
             
-        ContentCommandResult result = new ContentCommandResult();
-        result.setResult("OK");
-        return result;  
+        //Process command...
+
+        return new ContentCommandResult("OK");
     }
 
 See the
-:doc:`Open API <Open_API_Specification>` specification for a detailed reference of available commands and
-events that can be exchange between *service handlers* and HTML5 SDK
-clients.
+:doc:`Open API <Open_API_Specification>` specification for a detailed
+reference of available commands and events that can be exchanged between
+*service handlers* and HTML5 SDK clients.
 
 Content identification
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -765,7 +819,7 @@ Content URL: `http://myserver/myApp/myServicePath/{contentId}`
     }
 
 If a different content ID strategy, based in a query string parameter or
-the like, is used, the application can directly access requested URL
+the like, is used, the application can directly access the requested URL
 through method ``getHttpServletRequest()``
 ::
 
@@ -844,6 +898,75 @@ until an explicit release is performed.
                     throws Exception {
         player.release();
     }
+
+
+Content Repository
+~~~~~~~~~~~~~~~~~~
+
+The Stream Oriented GE Java Content API provides a built-in *content
+repository* to store media streams (video and audio files). The elements
+stored in the repository (called *repository items*) can be accessed using
+the method :java:meth:`HttpContentSession.start()` of the
+:java:ref:`HttpContentSession` provided by the Java Content API.
+
+The list of features implemented by the *content repository* are:
+
+* Create repository items
+* Set metadata in the repository items (key-value attributes)
+* Find repository items (by its identifier, attribute value or regular expressions)
+* Remove repository items
+
+Let see a couple of examples to illustrate the way of working of the
+*content repository*. First, the following  example shows how to use the
+*content repository* to store the stream from an :java:type:`HttpRecorderEndpoint`::
+
+    @HttpRecorderService(path = "/recorderRepository")
+    public class RecorderRepository extends HttpRecorderHandler {
+
+	    @Override
+	    public void onContentRequest(HttpRecorderSession contentSession)
+			    throws Exception {
+		    final String itemId = "itemTunnel";
+		    Repository repository = contentSession.getRepository();
+		    RepositoryItem repositoryItem;
+		    try {
+			    repositoryItem = repository.findRepositoryItemById(itemId);
+			    getLogger().info("Deleting existing repository '{}'", itemId);
+			    repository.remove(repositoryItem);
+		    } catch (NoSuchElementException e) {
+			    getLogger().info("Repository item '{}' does not previously exist",
+					    itemId);
+		    }
+		    repositoryItem = contentSession.getRepository().createRepositoryItem(
+				    itemId);
+		    contentSession.start("itemTunnel");
+	    }
+
+    }
+
+This other example shows how to implement an :java:ref:`HttpPlayerHandler`
+to play a *repository item* identified by the ``contentId`` parameter::
+
+    @HttpPlayerService(path = "/playerRepository/*")
+    public class PlayerRepository extends HttpPlayerHandler {
+
+	    @Override
+	    public void onContentRequest(HttpPlayerSession contentSession)
+			    throws Exception {
+		    String contentId = contentSession.getContentId();
+		    RepositoryItem repositoryItem = contentSession.getRepository()
+				    .findRepositoryItemById(contentId);
+		    if (repositoryItem == null) {
+			    String message = "Repository item " + contentId + " does no exist";
+			    getLogger().warn(message);
+			    contentSession.terminate(404, message);
+		    } else {
+			    contentSession.start(repositoryItem);
+		    }
+	    }
+
+    }
+
 
 .. _programming-with-kmf-media-api:
 
@@ -991,38 +1114,21 @@ their values.
         // Do something with media elements
     }
 
-*MediaElements* can be connected with method ``connect()`` of
-owner ``MediaPipeline``.
+*MediaElements* can be connected with method ``connect()``.
+This method creates a directional connection between receiver *source*
+and *sink* provided as parameter. All output streams of the *source*
+element are connected to the input streams of the *sink* element.
+ 
 ::
 
     public void connectElements() {
         MediaPipeline mp = mpf.create();
 
         HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
-            .build();
+            .terminateOnEos().build();
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
-            
-        mp.connect(player, httpEndpoint);
-            
-    }
-
-Method ``connect()`` creates a directional connection between elements
-*source* and *sink* provided as parameters. All output streams of the
-*source* element are connected to the input streams of the *sink*
-element.
-::
-
-    public void connectElements() {
-        MediaPipeline mp = mpf.create();
-
-        HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
-            .build();
-
-        PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
-            .build();
-            
-        mp.connect(player, httpEndpoint);
+        player.connect(httpEndpoint);
     }
 
 In order to create bidirectional connections the application must
@@ -1035,8 +1141,8 @@ perform a connect operation in both directions.
         RtpEndpoint rtpA = mp.newRtpEndpoint().build();
         RtpEndpoint rtpB = mp.newRtpEndpoint().build();
             
-        mp.connect(rtpA, rtpB);
-        mp.connect(rtpB, rtpA);
+        rtpA.connect(rtpB);
+        rtpB.connect(rtpA);
     }
 
 Notice that method ``connect()`` won't do anything when elements without
@@ -1053,11 +1159,8 @@ increase in complexity.
     private MediaPipeline mp;
         
     public void buildAsync () {
-            
         mp = mpf.create();
-                    
         mp.newHttpGetEndpoint().buildAsync( new Continuation<HttpGetEndpoint>() {
-
             @Override
             public void onSuccess(HttpGetEndpoint result) {
                 connectAsync (null, result);
@@ -1066,12 +1169,9 @@ increase in complexity.
             public void onError(Throwable cause) {
                 // log error
             }
-                
         });
-            
         mp.newPlayerEndpoint("file:///myfile.webm").buildAsync( new
             Continuation<PlayerEndpoint>() {
-
             @Override
             public void onSuccess(PlayerEndpoint result) {
                 connectAsync (result, null);
@@ -1080,7 +1180,6 @@ increase in complexity.
             public void onError(Throwable cause) {
                 // log error
             }
-            
         });
     }
         
@@ -1095,93 +1194,112 @@ increase in complexity.
             this.http = http;
         }
         if (player != null && http != null){
-            mp.connect(player, http);
+            player.connect(http);
         }
     }
+
+Let us discuss briefly the different Endpoints offered by kurento:
+
+HttpGetEndpoint
+    An ''HttpGetEndpoint'' contains source ''Media Pads'' for audio
+    and video, delivering media using HTML5 pseudo-streaming mechanism.
+    This type of  endpoint provide unidirectional communications. Its
+    ''Media Sink'' is associated with the HTTP GET method.
+
+    A ''Media Pad'' is an element´s interface with the outside world.
+    The data streams flow from the ''Media Source'' pad to another
+    element's ''Media Sink'' pad.
+HttpPostEndpoint
+    An ''HttpPostEndpoint'' contains sink pads for audio and video,
+    which provide access to an HTTP file upload function This type
+    of endpoint provide unidirectional communications. Its
+    ''Media Sources'' are accessed through the HTTP POST method.
+PlayerEndpoint
+    A ''PlayerEndpoint'' retrieves content from seekable sources in
+    reliable mode (does not discard media information) and inject
+    them into KMS. It contains one ''Media Source'' for each media
+    type detected.
+RecorderEndpoint
+    A ''RecorderEndpoint''  provides function to store contents in
+    reliable mode (doesn't discard data). It contains ''Media Sink''
+    pads for audio and video.
+RtpEndpoint
+    A ''RtpEndpoint'' provides bidirectional content delivery capabilities with remote networked peers through RTP protocol. It contains paired sink and source ''Media Padsource '' for audio and video.
+WebRtcEndpoint
+    A ''WebRtcEndpoint'' provide media streaming for Real Time Communications (RTC) through the web.
+
 
 Filters
 ~~~~~~~
 
-Filters perform media processing, computer vision, augmented reality,
-and so on.
+Filters are MediaElements that perform media processing, computer vision,
+augmented reality, and so on. Let's see some of the filters available:
 
 JackVaderFilter
-^^^^^^^^^^^^^^^
+    JackVaderFilter detects faces in a video feed. Those on the right half
+    of the feed are overlaid with a pirate hat, and those on the left half
+    are covered by a Darth Vader helmet. This is an example filter, intended
+    to demonstrate how to integrate computer vision capabilities into the KMS
+    multimedia infrastructure.
 
-JackVaderFilter detects faces in a video feed. Those on the right half
-of the feed are overlaid with a pirate hat, and those on the left half
-are covered by a Darth Vader helmet. This is an example filter, intended
-to demonstrate how to integrate computer vision capabilities into the KMS
-multimedia infrastructure.
+    .. sourcecode:: java
 
-.. sourcecode:: java
-
-        JackVaderFilter filter = mediaPipeline.newJackVaderFilter().build();
+            JackVaderFilter filter = mediaPipeline.newJackVaderFilter().build();
 
 ZBarFilter
-^^^^^^^^^^
+    This filter detects QR and bar codes in a video feed. When a code is found,
+    the filter raises a :java:type:`CodeFoundEvent`. Clients can add a listener
+    to this event using the method:
 
-This filter detects QR and bar codes in a video feed. When a code is found,
-the filter raises a :java:type:`CodeFoundEvent`. Clients can add a listener
-to this event using the method:
+    .. sourcecode:: java
 
-.. sourcecode:: java
-
-    ZBarFilter zBarFilter = mediaPipeline.newZBarFilter().build();
-    zBarFilter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
-    @Override
-    public void onEvent(CodeFoundEvent event) {
-        log.info("Code Found " + event.getValue());
-        // ...
-        });
-    }
+        ZBarFilter zBarFilter = mediaPipeline.newZBarFilter().build();
+        zBarFilter.addCodeFoundDataListener(new MediaEventListener<CodeFoundEvent>() {
+        @Override
+        public void onEvent(CodeFoundEvent event) {
+            log.info("Code Found " + event.getValue());
+            // ...
+            });
+        }
 
 FaceOverlayFilter
-^^^^^^^^^^^^^^^^^
+    This type of filter detects faces in a video feed. The face is then overlaid with an image.
 
-This type of filter detects faces in a video feed. The face is then overlaid with an image.
+    .. sourcecode:: java
 
-.. sourcecode:: java
-
-    MediaPipeline mp = session.getMediaPipelineFactory().create();
-    FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter().build();
-    // xoffset%, y offset%, width%, height%
-    faceOverlayFilter.setOverlayedImage("/img/masks/mario-wings.png", -0.35F, -1.2F, 1.6F, 1.6F);
+        MediaPipeline mp = session.getMediaPipelineFactory().create();
+        FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter().build();
+        // xoffset%, y offset%, width%, height%
+        faceOverlayFilter.setOverlayedImage("/img/masks/mario-wings.png", -0.35F, -1.2F, 1.6F, 1.6F);
 
 PointerDetectorFilter and PointerDetectorAdvFilter
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    These type of filters detects pointers in a video feed. The difference is
+    in the way of calibration of such pointers.
 
-These type of filters detects pointers in a video feed. The difference is
-in the way of calibration of such pointers.
+    .. sourcecode:: java
 
-.. sourcecode:: java
-
-    PointerDetectorWindowMediaParam start = new PointerDetectorWindowMediaParamBuilder(
-        "start", 100, 100, 280, 380).withImage("/img/buttons/start.png").build();
-    PointerDetectorAdvFilter pointerDetectorAdvFilter = mediaPipeline
-                .newPointerDetectorAdvFilter(new WindowParam(5, 5, 50, 50))
-                .withWindow(start).build();
+        PointerDetectorWindowMediaParam start = new PointerDetectorWindowMediaParamBuilder(
+            "start", 100, 100, 280, 380).withImage("/img/buttons/start.png").build();
+        PointerDetectorAdvFilter pointerDetectorAdvFilter = mediaPipeline
+                    .newPointerDetectorAdvFilter(new WindowParam(5, 5, 50, 50))
+                    .withWindow(start).build();
 
 GStreamerFilter
-^^^^^^^^^^^^^^^
+    This is a generic filter interface, that creates GStreamer filters in the media server.
 
-This is a generic filter interface, that creates GStreamer filters in the media server.
+    .. sourcecode:: java
 
-.. sourcecode:: java
-
-    GStreamerFilter mirrorFilter = mediaPipeline.newGStreamerFilter("videoflip method=4")
-                .build();
+        GStreamerFilter mirrorFilter = mediaPipeline.newGStreamerFilter("videoflip method=4")
+                    .build();
 
 ChromaFilter
-^^^^^^^^^^^^
+    This type of filter makes transparent a colour range in the top layer,
+    revealing another image behind.
 
-This type of filter makes transparent a colour range in the top layer,
-revealing another image behind.
+    .. sourcecode:: java
 
-.. sourcecode:: java
-
-    ChromaFilter chromaFilter = mediaPipeline.newChromaFilter(
-                new WindowParam(100, 10, 500, 400)).build();
+        ChromaFilter chromaFilter = mediaPipeline.newChromaFilter(
+                    new WindowParam(100, 10, 500, 400)).build();
 
 
 .. _programming-with-kws:
@@ -1189,12 +1307,17 @@ revealing another image behind.
 Programming with the Kurento HTML5 SDK
 --------------------------------------
 
-The *Kurento HTML5* SDK is a *Javascript* library
-implementing a *Content APi* client. It has been designed to be
-compatible with *node.js* infrastructure and all its dependencies have
-been included into the *Node Package Modules* (*NPM*). For that reason
-it is required the *NPM* dependency management infrastructure to be
-installed.
+The *Kurento HTML5* SDK is a *Javascript* library implementing a *Content
+API* and a *Media API* client. The following sections provides details
+about these SDK libraries.
+
+KWS Content API
+~~~~~~~~~~~~~~~
+
+It has been designed to be compatible with *node.js* infrastructure and
+all its dependencies have been included into the *Node Package Modules*
+(*NPM*). For that reason it is required the *NPM* dependency management
+infrastructure to be installed.
 
 .. sourcecode:: bash
 
@@ -1209,7 +1332,7 @@ is also available at FI-WARE download page.
 .. sourcecode:: bash
 
     git clone https://github.com/Kurento/kws-content-api.git
-    cd kws-content-api/src/main/resources
+    cd kws-content-api
     npm install
     npm update
     node_modules/.bin/grunt
@@ -1356,18 +1479,122 @@ purpose.
         </body>
     </html>
 
+
+
+KWS Media API
+~~~~~~~~~~~~~
+
+KWS Media API provides the capabilities to create Media Pipelines and
+Media Elements in the KMS without a KAS. In other words, with KWS Media
+API we can create Kurento-based applications directly in JavaScript.
+
+To describe this API, we are going to show how to create a basic pipeline
+that play a video file from its URL and stream it over HTTP. You can also
+download and check this `example full source code
+<https://github.com/Kurento/kws-media-api/tree/develop/example/PlayerEndpoint-HttpGetEndpoint>`_.
+
+* Create an instance of the KwsMedia class that will manage the connection
+  with the Kurento Media Server, so you'll need to provide the URI of its
+  WebSocket endpoint. Alternatively, instead of using a constructor, you
+  can also provide success and error callbacks:
+
+  .. sourcecode:: js
+
+   var kwsMedia = kwsMediaApi.KwsMedia(ws_uri);
+   kwsMedia.onconnect = function(kwsMedia)
+   {
+     //…
+   };
+   kwsMedia.onerror = function(error)
+   {
+     //…
+   };
+   kwsMediaApi.KwsMedia(ws_uri, function(kwsMedia)
+   {
+     //…
+   },
+   function(error)
+   {
+     //…
+   });
+
+* Create a pipeline. This will host and connect the diferent elements. In
+  case of error, it will be notified on the ```error``` parameter of the
+  callback, otherwise this will be null as it's common on Node.js style APIs:
+
+  .. sourcecode:: js
+
+   kwsMedia.createMediaPipeline(function(error, pipeline)
+    {
+     //…
+    });
+
+* Create the elements. The player need an object with the URL of the video,
+  and and we'll also subscribe to the 'EndOfStream' event of the HTTP stream:
+
+  .. sourcecode:: js
+
+   PlayerEndpoint.create(pipeline,
+   {uri: "https://ci.kurento.com/video/small.webm"},
+   function(error, player)
+   {
+     //…
+   });
+
+   HttpGetEndpoint.create(pipeline, function(error, httpGet)
+   {
+     httpGet.on('EndOfStream', function(event)
+     {
+       //…
+     });
+
+     //…
+   });
+
+* Connect the elements, so the media stream can flow between them:
+
+  .. sourcecode:: js
+
+   pipeline.connect(player, httpGet, function(error, pipeline)
+   {
+     //…
+   });
+
+
+* Get the URL where the media stream will be available:
+
+  .. sourcecode:: js
+
+   httpGet.getUrl(function(error, url)
+   {
+     //…
+   });
+
+
+* Start the reproduction of the media:
+
+  .. sourcecode:: js
+
+   player.play(function(error)
+   {
+     //…
+   });
+
+
 Examples
 --------
 
-This section provides two examples of the *Kurento*
-platform. Both examples implement a *MediaPipeline* composed by a
+This section provides several examples of the *Kurento*
+platform. To that aim we are going to use the Java Content and Media API
+in the server-side, and the JavaScript Content API in the client-side.
+The provided examples implement a *MediaPipeline* composed by a
 *PlayerEndpoint* connected to a *Filter* and generating a media flow
 through an *HttpGetEndpoint*. The main difference between these two example
 is the filter. The first example uses the *JackVaderFilter*. This filter
 is an example of augmented reality element, since it recognizes faces in
 media streams adding Jack Sparrow or Darth Vader hat onto these
-faces.The second example uses the *ZBarFilter*. This filter is an
-example of computational vision element, since it recognize bar and QR
+faces.The second example uses the *ZBarFilter*. This filter is an example
+of computational vision element, since it recognize bar and QR
 codes in a media stream generating events with the information of the
 detected codes in the stream. Therefore, the *MediaPipelines* used in
 these examples are the following:
@@ -1416,7 +1643,7 @@ puts a pirate hat in the faces of this video.
 
             //Calling "start" creates the HttpGetEndpoint and connects it to the filter
             session.start(filter);
-            //Create a HttpGetEndpoint and connects it to the filter
+            //Create an HttpGetEndpoint and connect it to the filter
             HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
                             .terminateOnEOS().build();
             filter.connect(httpEndpoint);
@@ -1430,9 +1657,9 @@ puts a pirate hat in the faces of this video.
         public void onContentStarted(HttpPlayerSession session) {
             //Content starts when the client connects to the HttpGetEndpoint
             //At that instant, the player must start reproducing the file
-            PlayerEndpoint playerendPoint = (PlayerEndpoint) session
+            PlayerEndpoint playerEndpoint = (PlayerEndpoint) session
                     .getAttribute("player");
-            playerendPoint.play();
+            playerEndpoint.play();
         }
 
     }
@@ -1559,9 +1786,9 @@ generates media events with the detected codes within the video.
 
         @Override
         public void onContentStarted(HttpPlayerSession session) {
-            PlayerEndpoint playerendPoint = (PlayerEndpoint) session
+            PlayerEndpoint playerEndpoint = (PlayerEndpoint) session
                     .getAttribute("player");
-            playerendPoint.play();
+            playerEndpoint.play();
         }
 
     }
@@ -1632,24 +1859,11 @@ of ``pom.xml`` for this Maven project in shown below.
 
     </project>
 
-kmf-content-demo
-~~~~~~~~~~~~~~~~
-
-These examples and many others are available on `GitHub <https://github.com/Kurento/kmf-content-demo>`_:
+The previous examples and many others are available on `GitHub <https://github.com/Kurento/kmf-content-demo>`_:
 
 .. sourcecode:: bash
 
-    git clone https://github.com/Kurento/kmf-content-demo.git
-
-The list of examples within `kmf-content-demo` is as follows:
-
-    * HTTP Player
-    * HTTP Player with JSON-RPC protocol
-    * HTTP Recorder
-    * HTTP Recorder with JSON-RPC protocol
-    * WebRTC: Loopback, loopback with filters, one to many WebRTC
-    * Campus Party 2013 London demo (HTTP Player and RTP examples)
-    * Campus Party 2014 Brazil demo (computer vision example using WebRTC and different filters)
+    git clone https://github.com/Kurento/kmf-content-demo
 
 .. rubric:: Footnotes
 

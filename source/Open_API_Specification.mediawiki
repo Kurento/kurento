@@ -4,17 +4,18 @@ Please check the [[FI-WARE Open Specifications Legal Notice ]] to understand the
 
 ==Introduction==
 
-The Stream Oriented API is a RESTful resource-oriented API accessed via HTTP/HTTPS that uses JSON-RPC V2.0 based representations for information exchange. This document describes the API exposed by the Application Server as defined in the [[FIWARE.ArchitectureDescription.Data.StreamOriented | GE Architecture Description]].
+The Stream Oriented API is a REST-like resource-oriented API accessed via HTTP/HTTPS that uses JSON-RPC V2.0 based representations for information exchange. This document describes the API exposed by the Application Server as defined in the [[FIWARE.ArchitectureDescription.Data.StreamOriented | GE Architecture Description]].
 
 ==Intended Audience==
 
-This specification is intended for both software developers and implementors of this GE. For developers, this document details the RESTful API to build interactive multimedia applications compliant with the [[FIWARE.ArchitectureDescription.Data.StreamOriented  | GE Architecture Description]]. Implementors can build their GEi APIs based on the information contained in this specification.
+This specification is intended for both software developers and implementors of this GE. For developers, this document details the REST-like API to build interactive multimedia applications compliant with the [[FIWARE.ArchitectureDescription.Data.StreamOriented  | GE Architecture Description]]. Implementors can build their GEi APIs based on the information contained in this specification.
 
-Before reading this document it is recommended to read first the [[FIWARE.ArchitectureDescription.Data.StreamOriented  | GE Architecture Description]] and the [[StreamOriented_-_User_and_Programmers_Guide | Programmers Guide]]. Moreover, the reader should be also familiar with:
+Before reading this document it is recommended to read first the [[FIWARE.ArchitectureDescription.Data.StreamOriented  | GE Architecture Description]] and the [[StreamOriented_-_Users_and_Programmers_Guide(R3.3) | Programmers Guide]]. Moreover, the reader should be also familiar with:
 
-* RESTful web services
+* REST web services
 * [http://www.ietf.org/rfc/rfc2616.txt HTTP/1.1 (RFC2616)]
-* [http://www.ietf.org/rfc/rfc4627.txt?number=4627 JSON] data serialization format.
+* [https://tools.ietf.org/html/rfc6455 WebSockets (RFC6455)]
+* [http://www.ietf.org/rfc/rfc4627.txt JSON] data serialization format.
 
 ==Conventions used in this document==
 
@@ -29,18 +30,21 @@ Some special notations are applied to differentiate some special words or concep
 
 ==Authentication==
 
-Currently, the Steam Oriented GE does not include any kind of authenthication mechanism, being the application responsible of implementing it in case it is necessary.
-<!-- Each HTTP request in an API may require the inclusion of specific authentication credentials. The specific implementation of the API implemented by a given Generic Enabler implementor (GEi) may support multiple authentication schemes (OAuth, Basic Auth, Token) to be determined by the specific provider that implements the GE.-->
+To enable authentication in the [[StreamOriented - Installation and Administration Guide(3.3)#KMF_Media_Connector|KMF Media Connector configuration]], a OAuth server must be specified using the <code>oauthserver.url</code> configuration key or initial parameter (for instance <code>oauthserver.url=http://cloud.lab.fi-ware.org</code>) when starting the server. Currently, the Stream Oriented GE is not using any kind of authentication mechanism in the default configuration.
+
+When authentication is enabled, each HTTP request to the KMF Media Connector, which is described as part of this Open API Specification requires the inclusion of an access token. This access token will be granted to the client browser by the IdM GE, as described in [[FIWARE.OpenSpecification.Security.IdentityManagement#OAuth | the IdM GE Specification]].
+
+To obtain the token, the client application will redirect the client browser to the IdM GE to perform the authentication and authorization steps of OAuth2. The token thus obtained must be passed on instantiation of the Kurento Web SDK Media API library by passing it the <code>access_token</code> key. The Kurento Media Connector will validate the token before handling each request. Coding of an example of such authentication can be seen at [http://github.com/Kurento/kws-media-api/tree/master/example/PlayerEndpoint-HttpGetEndpoint_OAuth2 the Kurento Web SDK code repository].
 
 ==Representation Transport==
 
-Resource representation is transmitted between client and server by using HTTP 1.1 protocol, as defined by IETF RFC-2616. Each time an HTTP request contains payload, a Content-Type header shall be used to specify the MIME type of wrapped representation. In addition, both client and server may use as many HTTP headers as they consider necessary.
+Resource representation may be transmitted between client and server by using directly HTTP 1.1 protocol, as defined by IETF RFC-2616 or through a WebSocket transport, as defined by IETF RFC-6455. Each time an HTTP request contains payload, a Content-Type header shall be used to specify the MIME type of wrapped representation. In addition, both client and server may use as many HTTP headers as they consider necessary.
 
 ==Representation Format==
 
-Stream Oriented RESTful APIs support JSON as representation format for request and response parameters following the recommendations in the proposal [http://www.simple-is-better.org/json-rpc/jsonrpc20-over-http.html JSON-RPC over HTTP].
+Stream Oriented REST-like APIs support JSON as representation format for request and response parameters following the recommendations in the proposal [http://www.simple-is-better.org/json-rpc/jsonrpc20-over-http.html JSON-RPC over HTTP].
 
-The format of the requests is specified by using the ''Content-Type'' header with a value of ''application/json-rpc'' and is required for requests containing a body. The format required for the response is specified in the request by setting the ''Accept'' header to the value ''application/json-rpc'', that is, request and response bodies are serialized using the same format.
+When using HTTP 1.1 transports, the format of the requests is specified by using the ''Content-Type'' header with a value of ''application/json-rpc'' and is required for requests containing a body. The format required for the response is specified in the request by setting the ''Accept'' header to the value ''application/json-rpc'', that is, request and response bodies are serialized using the same format.
 
 ===Request object===
 
@@ -80,11 +84,11 @@ Querying extensions is not supported in current version of the Stream Oriented G
 
 =API Specification=
 
-This section details the actual APIs of each of the managers defined in this GE, namely, the Content Manager API. It is recommended to review the [[StreamOriented_-_User_and_Programmers_Guide | Programmers Guide]] before proceeding with this section.
+This section details the actual APIs of each of the managers defined in this GE, namely, the Content Manager API and the Media Manager API. It is recommended to review the [[StreamOriented_-_Users_and_Programmers_Guide(R3.3) | Programmers Guide]] before proceeding with this section. The Stream Oriented GE API is split into two different sub-APIs, which satisfy different types of requirements: the Content API and the Media API. The following sections introduce both.
 
 ==Content API==
 
-The Content API is exposed in the form of four services: ''HttpPlayer'', ''HttpRecorder'', ''RtpContent'' and ''WebRtcContent'' described in the following subsections.
+The Content API is based on HTTP 1.1. transports and is exposed in the form of four services: ''HttpPlayer'', ''HttpRecorder'', ''RtpContent'' and ''WebRtcContent'' described in the following subsections.
 
 ===HttpPlayer===
 
@@ -405,314 +409,259 @@ These operations work in the same way than ''HttpPlayer'' and ''HttpRecorder''. 
 Conceptually, ''RtpContent'' and ''WebRtcContent'' are very similar, the main difference is the underlying protocol to exchange media, so all the descriptions in the section above apply to ''WebRtcContent''.
 
 == Media API ==
-Media API is a low level Java SDK providing full control of Kurento Media Server. It allows applications to control media server resources. ''Media Elements'' are the building blocks providing a specific media functionality. They are used to send, receive, process and transform media. The Media API provides a toolbox of Media Elements ready to be used. It also provides the capability of creating ''Media Pipelines'' by joining Media Elements of the toolbox.
 
-The Open API provides the capability of accessing directly to the Media API from a client application. An example of client application is shown in the picture above. In this example, a JavaScript application uses the HTML5 SDK API (in the case of Media API is called ''KWS Media API'') to connect Media API using Open API protocol specification. This is just one specific example; in other words, any other application (based on Python, Ruby, etc) could get media access through the Open API.
+The Media API provides full control of Kurento Media Server through ''Media Elements'', which are the building blocks providing a specific media functionality. They are used to send, receive, process and transform media. The Media API provides a toolbox of Media Elements ready to be used. It also provides the capability of creating ''Media Pipelines'' by joining Media Elements of the toolbox. 
 
-[[Image:open-api-sample.jpg|375×186px|center|Open API using Media API Architecture Stack Example]]
+The Media API requires full-duplex communications between client and server infrastructure. For this reason, the Media API is based on WebSocket transports and not on plain HTTP 1.1 transports as the Content API does.
 
-Notice that when accessing Media API using Open API specification, there is not need of using the Kurento Application Server. This situation has pros and cons. On the one hand, the architecture becomes simpler due to the fact only a the Kurento Media Server (KMS) is required. On the other hand, all the signaling plane implemented by Kurento Application Server (KAS) and Content API are no longer present in the picture. Therefore this logic has to be assumed by the client application, and as a result these applications become more complex.
+Previous to issuing commands, the Media API client requires establishing a WebSocket connection with the server infrastructure.
 
-Open API offers six different types of request/response messages:
+{| style="border-collapse: collapse; border-width: 1px; border-style: solid; border-color: #000" cellpadding="2"
+|-
+! style="background: silver; border-style: solid; border-width: 1px"| '''Verb'''
+! style="background: silver; border-style: solid; border-width: 1px"| '''URI'''
+! style="background: silver; border-style: solid; border-width: 1px"| '''Description'''
+|-
+| style="border-style: solid; border-width: 1px"| NA
+| style="border-style: solid; border-width: 1px"| ''ws://{SERVER_IP}:{SERVER_PORT}/thrift/ws/websocket''
+| style="border-style: solid; border-width: 1px"| Establishment of WebSocket connection for the exchange of full-duplex JSON-RPC messages.
+|}
 
-* Create: Instantiates a new pipeline or media element in the media server.
-* Invoke: Calls a method of an existing media element.
-* Subscribe: Creates a subscription to a media event in a media element.
-* Unsubscribe: Removes an existing subscription to a media event.
-* OnEvent: This message is sent as response of a poll event, informing of the occurrence of a media event.
-* Release: Explicit termination of a media element.
 
-=== Examples ===
-This section provides several examples of request and response messages to access Media API using the Open API specification. 
+Once the WebSocket has been established, the Media API offers five different types of request/response messages: 
+*	''create'': Instantiates a new pipeline or media element in the media server. 
+*	''invoke'': Calls a method of an existing media element. 
+*	''subscribe'': Creates a subscription to a media event in a media element. 
+*	''unsubscribe'': Removes an existing subscription to a media event. 
+*	''release'': Explicit termination of a media element.
 
-The responses depicted in these examples are the messages sent when the request operation is performed correctly. If some problem happens there is a generic error response, in which an [http://www.jsonrpc.org/specification#response_object error code] and a description message in sent, as follows:
+The Media API allows to servers send requests to clients:
+*	''onEvent'': This request is sent from server to clients when a media event occurs.
 
-<pre>
+=== Create ===
+
+Create message requests the creation of an element of the MediaAPI toolbox. The parameter ''type'' specifies the type of the object to be created. The parameter ''creationParams'' contains all the information needed to create the object. Each object type needs different ''creationParams'' to create the object. These parameters are defined later in this document. Finally, a ''sessionId'' parameter is included with the identifier of the current session. The value of this parameter is sent by the server to the client in each response to the client. Only the first request from client to server is allowed to not include the ''sessionId'' (because at this point is unknown for the client).
+
+The following example shows a Request object requesting the creation of an object of the type ''PlayerEndPoint'' within the pipeline ''6829986'' and uri ''http://host/app/video.mp4'' in the session ''c93e5bf0-4fd0-4888-9411-765ff5d89b93'': 
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
 {
-   "jsonrpc": "2.0", 
-   "error": 
-   {
-      "code": -32601, 
-      "message": "Error description"
-   }, 
-   "id": 2
+  "jsonrpc": "2.0",
+  "method": "create",
+  "params": {
+    "type": "PlayerEndPoint",
+    "creationParams": {
+      "pipeline": "6829986",
+      "uri": "http://host/app/video.mp4"
+    },
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 1 
+}  
+</pre>
+
+The ''Response object'' contains the object id of the new object in the field ''value''. This object id has to be used in other requests of the protocol (as we will describe later). As stated before, the ''sessionId'' is also returned in each response.
+
+The following example shows a typical response to a create message:
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "value": "442352747",
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 1 
 }
 </pre>
 
-The first example is a Media Pipeline creation. When the pipeline is correctly created in the media server, the response includes an identifier for this pipeline (<code>XXXX</code> in the example). In addition, a session identifier (<code>sessionId</code>) is also sent in the response (<code>YYYY</code> in the example). This identifier is used in next request/response messages to univocally identify the media session. Notice that each response has the same identifier (field <code>id</code>) than the request.
+=== Invoke ===
 
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0", 
-   "method": "create",
-   "params": {
-      "type": "MediaPipeline"
-   },
-   "id": 1
-}
-</pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "value": "XXXX",
-      "sessionId": "YYYY"
-   },
-   "id": 1
-}
-</pre>
-        </td>
-    </tr>
-</table>
+Invoke message requests the invocation of an operation in the specified object. The parameter ''object'' indicates the id of the object in which the operation will be invoked. The parameter ''operation'' carries the name of the operation to be executed. Finally, the parameter ''operationParams'' has the parameters needed to execute the operation. The object specified has to understand the operation name and parameters. Later in this document it is described the valid operations for all object types.
 
-The method create is also used for Media Element creation within a Pipeline. The following example illustrates a PlayerEndPoint creation. The Media Pipeline (<code>XXXX</code> in the example) and session identifier (<code>YYYY</code> in the example) should be included in the request. Additional parameters (in this example, the field uri) depends on the specific Media Element to be created. As a result, the Media Element identifier is returned in the response (<code>AAAA</code> in the example).
+The following example shows a ''Request object'' requesting the invocation of the operation ''connect'' on the object ''442352747'' with parameter sink ''6829986''. The ''sessionId'' is also included as is mandatory for all requests in the session (except the first one).
 
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
 {
-   "jsonrpc": "2.0",
-   "method": "create",
-   "params": {
-      "type": "PlayerEndPoint",
-      "creationParams": {
-         "pipeline": "XXXX",
-         "uri": "http://host/app/video.mp4"
-      },
-      "sessionId": "YYYY"
-   },
-   "id": 2
-}
-</pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "value": "AAAA",
-      "sessionId": "YYYY"
-   },
-   "id": 2
-}
-</pre>
-        </td>
-    </tr>
-</table>
-
-In order to carry out media operations the Media Element invoke is used. In the following example, a connection is made from a source Media Element (<code>AAAA</code> in the example) to a sink Media Element (<code>BBBB</code> in the example). As usual, the session identifier is required in the request (<code>YYYY</code> in the example). In this specific operation (<code>connect</code>), the response does not include any field but the session identifier in order to specify that the operation went correctly.
-
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0", 
-   "method": "invoke",
-   "params": {
-      "object": "AAAA",
-      "operation": "connect",
-      "operationParams": {
-         "sink": "BBBB"
-      },
-      "sessionId": "YYYY"
-   },
-   "id": 3
-}
-</pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "sessionId": "YYYY"
-   },
-   "id": 3
-}
-</pre>
-        </td>
-    </tr>
-</table>
-
-Media Elements are aware to perform a Media Event Subscription. The following examples shows how to perform a subscription to TerminateOnEos event. If the subscription is made correctly in the server, the response includes an identification token as a result (<code>TTTT</code> in the example).
-
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0", 
-   "method": "subscribe",
-   "params": {
-      "object": "AAAA",
-      "type": "TerminateOnEos",
-      "sessionId": "YYYY"
-   },
-   "id": 4
-}
-</pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "value": "TTTT",
-      "sessionId": "YYYY"
-   },
-   "id": 4
-}
-</pre>
-        </td>
-    </tr>
-</table>
-
-
-After a Media Event subscription, it is also possible to perform a Media Event Unsubscription. In this case, the subscription token previously received should be included in the request message.
-
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0", 
-   "method": "unsubscribe",
-   "params": {
-      "object": "AAAA",
-      "token": "TTTT",
-      "sessionId": "YYYY"
-   },
-   "id": 5
-}
-</pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "sessionId": "YYYY"
-   },
-   "id": 5
-}
-</pre>
-        </td>
-    </tr>
-</table>
-
-During a media session, the client sends periodic synchronous requests to the server in order to check media events. This technique is known as ''polling'', and thus the command request method label is poll. When media events are available, the media server responses with onEvent messages in which the event type and data are sent. The following example shows a response for a PointerDetectorFilter, in which events of pointer in and out some regions (called ''windows'') are tracked.
-
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0", 
-   "method": "poll",
-   "params": {
-      "sessionId": "YYYY"
-   },
-   "id": 6
-}
-</pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "method": "onEvent",
-      "params": {
-         "object": "CCCC",
-         "eventType": "WindowOut",
-         "eventData": 
-         {
-            "windowId": "WWWW"
-         }
-      },
-      "sessionId": "YYYY"
-   },
-   "id": 6
+  "jsonrpc": "2.0",
+  "method": "invoke",
+  "params": {
+    "object": "442352747",
+    "operation": "connect",
+    "operationParams": {
+      "sink": "6829986"
+    },
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 2 
 }
 </pre>
 
-        </td>
-    </tr>
-</table>
+The ''Response object'' contains the value returned while executing the operation invoked in the object or nothing if the operation doesn’t return any value.
 
+The following example shows a typical response while invoking the operation ''connect'' (that doesn’t return anything):
 
-Finally, a Media Element Release can be explicit request by the client. As usual, the Media Element should be provided in the request (AAAA in the example).
-
-
-<table border="1" cellspacing="0" cellpading="1" width="60%">
-    <tr>
-        <th>Request</th>
-        <th>Response</th>
-    </tr>
-    <tr>
-        <td width="50%" valign="top">
-<pre>
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
 {
-   "jsonrpc": "2.0", 
-   "method": "release",
-   "params": {
-      "object": "AAAA",
-      "sessionId": "YYYY"
-   },
-   "id": 7
+  "jsonrpc": "2.0",
+  "result": {
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 2
 }
 </pre>
-        </td>
-        <td width="50%" valign="top">
-<pre>
-{
-   "jsonrpc": "2.0",
-   "result": {
-      "sessionId": "YYYY"
-   },
-   "id": 7
+
+=== Release ===
+
+Release message requests the release of the specified object. The parameter ''object'' indicates the id of the object to be released.
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{    
+  "jsonrpc": "2.0",
+  "method": "release",
+  "params": {
+    "object": "442352747",
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 3
 }
 </pre>
-        </td>
-    </tr>
-</table>
 
-=== Complete Specification ===
-The Media Element toolbox provided by Media API is divided in Endpoints and Filters. 
+The ''Response object'' only contains the ''sessionID''. The following example shows the typical response of a release request:
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc":"2.0",
+  "result":
+  {
+    "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id":3
+}
+</pre>
+
+=== Subscribe ===
+
+Subscribe message requests the subscription to a certain kind of events in the specified object. The parameter ''object'' indicates the id of the object to subscribe for events. The parameter ''type'' specifies the type of the events. If a client is subscribed for a certain type of events in an object, each time an event is fired in this object, a request with method ''onEvent'' is sent to the client. This kind of request is described few sections later. 
+
+The following example shows a ''Request object'' requesting the subscription of the event type ''EndOfStream'' on the object ''311861480''. The ''sessionId'' is also included.
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc":"2.0",
+  "method":"subscribe",
+  "params":{
+    "object":"311861480",
+    "type":"EndOfStream",
+    "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id":4
+}
+</pre>
+
+The ''Response object'' contains the subscription identifier. This value can be used later to remove this subscription.
+
+The following example shows the response of subscription request. The ''value'' attribute contains the subscription id:
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc":"2.0",
+  "result":
+  {
+    "value":"353be312-b7f1-4768-9117-5c2f5a087429",
+    "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id":4
+}
+</pre>
+
+=== Unsubscribe ===
+
+Unsubscribe message requests the cancelation of a previous event subscription. The parameter subscription contains the ''subscription'' id received from the server when the subscription was created.
+
+The following example shows a ''Request object'' requesting the cancelation of the subscription ''353be312-b7f1-4768-9117-5c2f5a087429''.
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc":"2.0",
+  "method":"unsubscribe",
+  "params":{
+    "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
+    "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id":5
+}
+</pre>
+
+The ''Response object'' only contains the ''sessionID''. The following example shows the typical response of an unsubscription request:
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc":"2.0",
+  "result":
+  {
+    "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id":5
+}
+</pre>
+
+
+=== onEvent ===
+
+When a client is subscribed to a type of events in an object, the server send an ''onEvent'' notification each time an event of that type is fired in the incumbent object. This is possible because the Media API is implemented with websockets and there is a full duplex channel between client and server. The notification that server send to client has all the information about the event:
+
+*	''data'': Information about this specific of this type of event.
+*	''source'': the object source of the event.
+*	''type'': The type of the event.
+*	''subscription'': subscription id for which the event is fired.
+
+The following example shows a notification sent for server to client to notify an event of type ''EndOfStream'' in the object ''311861480'' with subscription ''353be312-b7f1-4768-9117-5c2f5a087429''.
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc":"2.0",
+  "method":"onEvent",
+  "params":{              
+    "value":{
+      "data":{
+        "source":"311861480",
+        "type":"EndOfStream"
+      },          
+      "object":"311861480",
+      "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
+      "type":"EndOfStream",
+    },
+    "sessionId":"4f5255d5-5695-4e1c-aa2b-722e82db5260"      
+  }
+}
+</pre>
+
+In jsonrpc format, the notifications are different from request in that notifications haven’t got an id field. Also, the notifications cannot be responded. For this reason, in the example before, there is no id in the message.
+
+=== Error responses ===
+
+If errors arise processing a request, there is a generic error response, in which an error code and a description message in sent, as follows: 
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc": "2.0",
+  "error":
+  {
+    "code": -32601,
+    "message": "Error description"
+  },
+  "id": 2 
+}
+</pre>
+
+=== Media Element toolbox ===
+
+The Media Element toolbox provided by Media API is divided into Endpoints, Filters and Hubs.
 
 * Endpoint offers capabilities to work with protocols and codecs ([[#HttpEnpoint|HttpEnpoint]], [[#RtpEndpoint|RtpEndpoint]] and [[#WebRtcEnpoint|WebRtcEnpoint]]) and also media repository handling ([[#PlayerEndpoint|PlayerEndpoint]] and [[#RecorderEnpoint|RecorderEnpoint]]).
 * Filters are responsible of media processing, such as computer vision (Face detection, pointer tracking or bar and QR code reading) and augmented reality (Chroma filtering or face overlay filtering).
+*	Hubs offer capabilities to connect several inputs and outputs and create different types of connections between them ([[#Composite|Composite]], [[#Dispatcher|Dispatcher]], [[#DispatcherOneToMany|DispatcherOneToMany]]).
 
 Therefore, the Open API protocol specification provides capabilities to create and handle these Media Elements. The following table shows a description at a glance of the Media Elements provided by Media API.
 
@@ -895,1550 +844,1049 @@ Therefore, the Open API protocol specification provides capabilities to create a
 			[[#Filter|Filter]] that detects faces in a video feed. Those on the right half of the feed are overlaid with a pirate hat, and those on the left half are covered by a Darth Vader helmet. This is an example filter, intended to demonstrate how to integrate computer vision capabilities into the multimedia infrastructure.
 		</td>
 	</tr>
+	<tr>
+		<td rowspan="3">
+			[[#Hub|Hub]]
+		</td>
+		<td rowspan="3">
+			Media mix and distribution
+		</td>
+		<td>
+			[[#Composite|Composite]]
+		</td>
+		<td>
+			[[Image:Composite.png|120x100px|center|Composite]]
+		</td>
+		<td>
+			A [[#Hub|Hub]] that mixes the audio stream of its connected sources and constructs a grid with the video streams of its connected sources into its sink.
+		</td>
+	</tr>
+	<tr>
+		<td>
+			[[#Dispatcher|Dispatcher]]
+		</td>
+		<td>
+			[[Image:Dispatcher.png|120x100px|center|Dispatcher]]
+		</td>
+		<td>
+			A [[#Hub|Hub]] that allows routing between arbitrary port pairs.
+		</td>
+	</tr>
+	<tr>
+		<td>
+			[[#DispatcherOneToMany|DispatcherOneToMany]]
+		</td>
+		<td>
+			[[Image:DispatcherOneToMany.png|120x100px|center|DispatcherOneToMany]]
+		</td>
+		<td>
+			A [[#Hub|Hub]] that sends a given source to all the connected sinks.
+		</td>
+	</tr>
 </table>
 
+==== Media Element descriptions ====
 
-==== Remote Classes ====
-Note: Parameters ending with "?" are optionals.
+Each Media Element accessible through the Media API has their specific capabilities, which are accessible through the JSON-RPC methods shown above. In this section, we show the specific operations and parameters that each Media Element accepts. Introducing this information directly onto the protocol specification will significantly decrease readability. On the sake of simplicity, we are going to present Media Element descriptions directly as a JavaScript API of Media Elements consuming the JSON-RPC Media API.
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="PlayerEndpoint">PlayerEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#UriEndpoint|UriEndpoint]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]</font></li>
+For example, the following JavaScript code that creates a media element:
 
-                <li><font face="Courier New, monospace">String
-                
-                uri</font></li>
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+  var pipeline = …;
+  PlayerEndpoint.create(pipeline, {uri: "https://ci.kurento.com/video/small.webm"},
+  function(error, player)
+  {
+    …
+  });
+</pre>
 
-                <li><font face="Courier New, monospace">boolean
-                
-                useEncodedMedia?</font></li>
+Is translated to the following create request:
 
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc": "2.0",
+  "method": "create",
+  "params": {
+    "type": "PlayerEndPoint",
+    "creationParams": {
+      "pipeline": "6829986",
+      "uri": "https://ci.kurento.com/video/small.webm"
+    },
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 1 
+}
+</pre>
+
+In the same sense, the following method invocation:
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+  var httpGet = ...;
+  httpGet.getUrl(function(error, url)
+  {
+    …
+  });
+</pre>
+
+Is translated to the following invoke request:
+
+<pre style="white-space: pre-wrap; white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  word-wrap: break-word">
+{
+  "jsonrpc": "2.0",
+  "method": "invoke",
+  "params": {
+    "object": "442352747",
+    "operation": "getUrl",
+    "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
+  },
+  "id": 2 
+}
+</pre>
+
+Mapping from the JavaScript API to the JSON-RPC API is immediate:
+
+* From the JSON-RPC message perspective, ''create'' methods are converted to ''create'' messages specifying in the ''type'' field the type of object to be built. 
+* The parameters of the create methods are converted to ''creationParams'' fields on the message.
+* Method invocations are just ''invoke'' request specifying the method name in the ''operation'' field.
+* The JavaScript API is object oriented. In this sense, if a ''parent'' element has a method, that method is valid for all its children.
+
+Note: Parameters starting with "?" are optionals. <code>=*value*</code> after a parameter indicates the default value.
+
+{| id="PlayerEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>PlayerEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Retrieves content from seekable sources in reliable mode (does not<br />discard media information) and inject  them into [http://www.kurento.org/docs/current/glossary.html#term-kms KMS]. It<br />contains one [[#MediaSource|MediaSource]] for each media type detected.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#UriEndpoint|UriEndpoint]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />The [[#MediaPipeline|MediaPipeline]] this PlayerEndpoint belongs to.</font></li>
+<li><font face="Courier New, monospace"> String uri: <br />URI that will be played</font></li>
+<li><font face="Courier New, monospace"> boolean ?useEncodedMedia=False: <br />use encoded instead of raw media. If the parameter is false then the<br />element uses raw media. Changing this parameter can affect stability<br />severely, as lost key frames lost will not be regenerated. Changing the<br />media type does not affect to the result except in the performance (just<br />in the case where original media and target media are the same) and in<br />the problem with the key frames. We strongly recommended not to use this<br />parameter because correct behaviour is not guarantied.</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void play()
+                </font><br />Starts to send data to the endpoint [[#MediaSource|MediaSource]]
+      
+      </li>
+
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 play()
-                </font></li>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-EndOfStream|EndOfStream]]</font></li></ul>
+|}
+
+
+
+{| id="MediaObject" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>MediaObject</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Base for all objects that can be created in the media server.
+|- style="border: 1px solid #000;" cellpadding="2"
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">MediaPipeline getMediaPipeline()
+                </font><br />Returns the pipeline to which this MediaObject belong, or the pipeline<br />itself if invoked over a [[#MediaPipeline|MediaPipeline]]
+      
+      <br /> returns [[#MediaPipeline|MediaPipeline]]: the MediaPipeline this MediaObject belongs to.  If called on a<br />[[#MediaPipeline|MediaPipeline]] it will return <code>this</code>.
+      </li>
+<li><font face="Courier New, monospace">MediaObject getParent()
+                </font><br />Returns the parent of this media object. The type of the parent depends<br />on the type of the element that this method is called upon:  The parent<br />of a [[#MediaPad|MediaPad]] is its [[#MediaElement|MediaElement]]; the parent of a<br />[[#MediaMixer|MediaMixer]] or a [[#MediaElement|MediaElement]] is its<br />[[#MediaPipeline|MediaPipeline]].  A [[#MediaPipeline|MediaPipeline]] has no parent,<br />i.e. the method returns null
+      
+      <br /> returns [[#MediaObject|MediaObject]]: the parent of this MediaObject or null if called on a MediaPipeline
+      </li>
+
             </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-EndOfStream|EndOfStream]]</font></li>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-Error|Error]]</font></li></ul>
+|}
+
+
+
+{| id="HttpGetEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>HttpGetEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|An <code>HttpGetEndpoint</code> contains SOURCE pads for AUDIO and VIDEO,<br />delivering media using HTML5 pseudo-streaming mechanism.     This type<br />of endpoint provide unidirectional communications. Its<br />[[#MediaSink|MediaSink]] is associated with the HTTP GET method
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#HttpEndpoint|HttpEndpoint]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the endpoint belongs</font></li>
+<li><font face="Courier New, monospace"> boolean ?terminateOnEOS=False: <br />raise a [[#event-MediaSessionTerminated|MediaSessionTerminated]] event when the associated<br />player raises a [[#event-EndOfStream|EndOfStream]], and thus terminate the media<br />session</font></li>
+<li><font face="Courier New, monospace"> MediaProfileSpecType ?mediaProfile=WEBM: <br />the [[#MediaProfileSpecType|MediaProfileSpecType]] (WEBM, MP4...) for the endpoint</font></li>
+<li><font face="Courier New, monospace"> int ?disconnectionTimeout=2: <br />disconnection timeout in seconds.  This is the time that an http<br />endpoint will wait for a reconnection, in case an HTTP connection is<br />lost.</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="WebRtcEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>WebRtcEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|WebRtcEndpoint interface. This type of <code>Endpoint</code> offers media<br />streaming using WebRTC.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#SdpEndpoint|SdpEndpoint]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the endpoint belongs</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="SessionEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>SessionEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Session based endpoint. A session is considered to be started when the<br />media exchange starts. On the other hand, sessions terminate when a<br />timeout, defined by the developer, takes place after the connection is<br />lost.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Endpoint|Endpoint]]
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-MediaSessionTerminated|MediaSessionTerminated]]</font></li><li><font face="Courier New, monospace">[[#event-MediaSessionStarted|MediaSessionStarted]]</font></li></ul>
+|}
+
+
+
+{| id="Hub" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>Hub</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|A Hub is a routing [[#MediaObject|MediaObject]]. It connects several<br />[[#Endpoint|endpoints ]] together
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaObject|MediaObject]]
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="ZBarFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>ZBarFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|This filter detects [http://www.kurento.org/docs/current/glossary.html#term-qr QR] codes in a video feed. When a code is<br />found, the filter raises a [[#event-CodeFound|CodeFound]] event.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-CodeFound|CodeFound]]</font></li></ul>
+|}
+
+
+
+{| id="Filter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>Filter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Base interface for all filters. This is a certain type of<br />[[#MediaElement|MediaElement]], that processes media injected through its<br />[[#MediaSink|MediaSink]], and delivers the outcome through its<br />[[#MediaSource|MediaSource]].
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaElement|MediaElement]]
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="Endpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>Endpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Base interface for all end points. An Endpoint is a<br />[[#MediaElement|MediaElement]] that allow [http://www.kurento.org/docs/current/glossary.html#term-kms KMS] to interchange media<br />contents with external systems, supporting different transport protocols<br />and mechanisms, such as [http://www.kurento.org/docs/current/glossary.html#term-rtp RTP], [http://www.kurento.org/docs/current/glossary.html#term-webrtc WebRTC], [http://www.kurento.org/docs/current/glossary.html#term-http HTTP],<br /><code>file:/</code> URLs... An <code>Endpoint</code> may contain both sources and sinks<br />for different media types, to provide bidirectional communication.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaElement|MediaElement]]
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="HubPort" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>HubPort</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|This [[#MediaElement|MediaElement]] specifies a connection with a<br />[[#Hub|Hub]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaElement|MediaElement]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#Hub|Hub]] hub: <br />[[#Hub|Hub]] to which this port belongs</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="PointerDetectorAdvFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>PointerDetectorAdvFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|This type of [[#Filter|Filter]] detects UI pointers in a video feed.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li>
+<li><font face="Courier New, monospace"> WindowParam calibrationRegion: <br />region to calibrate the filter</font></li>
+<li><font face="Courier New, monospace"> PointerDetectorWindowMediaParam[] ?windows: <br />list of detection windows for the filter.</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void addWindow(window)
+                </font><br /> Adds a new detection window for the filter to detect pointers entering<br />or exiting the window
+      
+      <br /> PointerDetectorWindowMediaParam window: The window to be added
+      </li>
+<li><font face="Courier New, monospace">void clearWindows()
+                </font><br />Removes all pointer detector windows
+      
+      </li>
+<li><font face="Courier New, monospace">void trackColorFromCalibrationRegion()
+                </font><br />This method allows to calibrate the tracking color.  The new tracking<br />color will be the color of the object in the colorCalibrationRegion.
+      
+      </li>
+<li><font face="Courier New, monospace">void removeWindow(windowId)
+                </font><br />Removes a window from the list to be monitored
+      
+      <br /> String windowId: the id of the window to be removed
+      </li>
+
             </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-WindowIn|WindowIn]]</font></li><li><font face="Courier New, monospace">[[#event-WindowOut|WindowOut]]</font></li></ul>
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaObject">MediaObject</b></font></td>
-    </tr>
-    
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaPipeline|MediaPipeline]] getMediaPipeline()
-                </font></li>
+{| id="UriEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>UriEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Interface for endpoints the require a URI to work. An example of this,<br />would be a [[#PlayerEndpoint|PlayerEndpoint]] whose URI property could be used to<br />locate a file to stream through its [[#MediaSource|MediaSource]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Endpoint|Endpoint]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">String getUri()
+                </font><br />Returns the uri for this endpoint.
+      
+      <br /> returns String: the uri as a String
+      </li>
+<li><font face="Courier New, monospace">void pause()
+                </font><br />Pauses the feed
+      
+      </li>
+<li><font face="Courier New, monospace">void stop()
+                </font><br />Stops the feed
+      
+      </li>
 
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaObject|MediaObject]] getParent()
-                </font></li>
             </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-Error|Error]]</font></li>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="HttpPostEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>HttpPostEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|An [[#HttpPostEndpoint|HttpPostEndpoint]] contains SINK pads for AUDIO and VIDEO,<br />which provide access to an HTTP file upload function     This type of<br />endpoint provide unidirectional communications. Its<br />[[#MediaSource|MediaSources ]] are accessed through the<br />[http://www.kurento.org/docs/current/glossary.html#term-http HTTP] POST method.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#HttpEndpoint|HttpEndpoint]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the endpoint belongs</font></li>
+<li><font face="Courier New, monospace"> int ?disconnectionTimeout=2: <br />This is the time that an http endpoint will wait for a reconnection, in<br />case an HTTP connection is lost.</font></li>
+<li><font face="Courier New, monospace"> boolean ?useEncodedMedia=False: <br />configures the endpoint to use encoded media instead of raw media. If<br />the parameter is not set then the element uses raw media. Changing this<br />parameter could affect in a severe way to stability because key frames<br />lost will not be generated. Changing the media type does not affect to<br />the result except in the performance (just in the case where original<br />media and target media are the same) and in the problem with the key<br />frames. We strongly recommended not to use this parameter because<br />correct behaviour is not guarantied.</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-EndOfStream|EndOfStream]]</font></li></ul>
+|}
+
+
+
+{| id="RtpEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>RtpEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Endpoint that provides bidirectional content delivery capabilities with<br />remote networked peers through RTP protocol. An [[#RtpEndpoint|RtpEndpoint]]<br />contains paired sink and source [[#MediaPad|MediaPad]] for audio and video.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#SdpEndpoint|SdpEndpoint]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the endpoint belongs</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="MediaPad" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>MediaPad</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|A [[#MediaPad|MediaPad]] is an element´s interface with the outside world.<br />The data streams flow from the [[#MediaSource|MediaSource]] pad to another<br />element's [[#MediaSink|MediaSink]] pad.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaObject|MediaObject]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">MediaElement getMediaElement()
+                </font><br />Obtains the [[#MediaElement|MediaElement]] that encloses this pad
+      
+      <br /> returns [[#MediaElement|MediaElement]]: the element
+      </li>
+<li><font face="Courier New, monospace">MediaType getMediaType()
+                </font><br />Obtains the type of media that this pad accepts
+      
+      <br /> returns MediaType: One of [[#MediaType.AUDIO|MediaType.AUDIO]], [[#MediaType.DATA|MediaType.DATA]] or<br />[[#MediaType.VIDEO|MediaType.VIDEO]]
+      </li>
+<li><font face="Courier New, monospace">String getMediaDescription()
+                </font><br />Obtains the description for this pad.     This method does not make a<br />request to the media server, and is included to keep the simmetry with<br />the rest of methods from the API.
+      
+      <br /> returns String: The description
+      </li>
+
             </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="HttpGetEndpoint">HttpGetEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#HttpEndpoint|HttpEndpoint]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
+{| id="PointerDetectorFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>PointerDetectorFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|This type of [[#Filter|Filter]] detects pointers in a video feed.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li>
+<li><font face="Courier New, monospace"> PointerDetectorWindowMediaParam[] ?windows: <br />list of detection windows for the filter to detect pointers entering or<br />exiting the window</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void addWindow(window)
+                </font><br />Adds a pointer detector window. When a pointer enters or exits this<br />window, the filter will raise an event indicating so.
+      
+      <br /> PointerDetectorWindowMediaParam window: the detection window
+      </li>
+<li><font face="Courier New, monospace">void clearWindows()
+                </font><br />Removes all pointer detector windows
+      
+      </li>
+<li><font face="Courier New, monospace">void removeWindow(windowId)
+                </font><br />Removes a pointer detector window
+      
+      <br /> String windowId: id of the window to be removed
+      </li>
 
-                <li><font face="Courier New, monospace">boolean
-                
-                terminateOnEOS?</font></li>
-
-                <li><font face="Courier New, monospace">[[#MediaProfileSpecType|MediaProfileSpecType]]
-                
-                mediaProfile?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                disconnectionTimeout?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-WindowIn|WindowIn]]</font></li><li><font face="Courier New, monospace">[[#event-WindowOut|WindowOut]]</font></li></ul>
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="WebRtcEndpoint">WebRtcEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#SdpEndpoint|SdpEndpoint]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
+{| id="MediaSource" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>MediaSource</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Special type of pad, used by a media element to generate a media stream.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaPad|MediaPad]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">MediaSink[] getConnectedSinks()
+                </font><br />Gets all the [[#MediaSink|MediaSinks]] to which this source is<br />connected
+      
+      <br /> returns [[#MediaSink|MediaSink]]![]: the list of sinks that the source is connected to
+      </li>
+<li><font face="Courier New, monospace">void connect(sink)
+                </font><br />Connects the current source with a [[#MediaSink|MediaSink]]
+      
+      <br /> [[#MediaSink|MediaSink]] sink: The sink to connect this source
+      </li>
 
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="SessionEndpoint">SessionEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Endpoint|Endpoint]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-MediaSessionTerminatedint|MediaSessionTerminated]]</font></li>
-                <li><font face="Courier New, monospace">[[#event-MediaSessionStarted|MediaSessionStarted]]</font></li>
+{| id="ChromaFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>ChromaFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|ChromaFilter interface. This type of [[#Filter|Filter]] makes transparent<br />a colour range in the top layer, revealing another image behind
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li>
+<li><font face="Courier New, monospace"> WindowParam window: <br />Window of replacement for the [[#ChromaFilter|ChromaFilter]]</font></li>
+<li><font face="Courier New, monospace"> String ?backgroundImage: <br />url of image to be used to replace the detected background</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void setBackground(uri)
+                </font><br />Sets the image to show on the detected chroma surface.
+      
+      <br /> String uri: URI where the image is located
+      </li>
+<li><font face="Courier New, monospace">void unsetBackground()
+                </font><br />Clears the image used to be shown behind the chroma surface.
+      
+      </li>
+
             </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaMixer">MediaMixer</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaObject|MediaObject]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
+{| id="MediaPipeline" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>MediaPipeline</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|A pipeline is a container for a collection of<br />[[#MediaElement|MediaElements]] and<br />[[#MediaMixer|MediaMixers]]. It offers the methods needed to<br />control the creation and connection of elements inside a certain<br />pipeline.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaObject|MediaObject]]
 
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="MediaSink" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>MediaSink</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Special type of pad, used by a [[#MediaElement|MediaElement]] to receive a<br />media stream.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaPad|MediaPad]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void disconnect(src)
+                </font><br />Disconnects the current sink from the referred [[#MediaSource|MediaSource]]
+      
+      <br /> [[#MediaSource|MediaSource]] src: The source to disconnect
+      </li>
+<li><font face="Courier New, monospace">MediaSource getConnectedSrc()
+                </font><br />Gets the [[#MediaSource|MediaSource]] that is connected to this sink.
+      
+      <br /> returns [[#MediaSource|MediaSource]]: The source connected to this sink
+      </li>
+
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="ZBarFilter">ZBarFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
+{| id="Dispatcher" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>Dispatcher</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|A [[#Hub|Hub]] that allows routing between arbitrary port pairs
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Hub|Hub]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the dispatcher belongs</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void connect(source, sink)
+                </font><br />Connects each corresponding [[#MediaType|MediaType]] of the given source<br />port with the sink port.
+      
+      <br /> [[#HubPort|HubPort]] source: Source port to be connected
+      <br /> [[#HubPort|HubPort]] sink: Sink port to be connected
+      </li>
 
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-CodeFound|CodeFound]]</font></li>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="DispatcherOneToMany" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>DispatcherOneToMany</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|A [[#Hub|Hub]] that sends a given source to all the connected sinks
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Hub|Hub]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the dispatcher belongs</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void setSource(source)
+                </font><br />Sets the source port that will be connected to the sinks of every<br />[[#HubPort|HubPort]] of the dispatcher
+      
+      <br /> [[#HubPort|HubPort]] source: source to be broadcasted
+      </li>
+<li><font face="Courier New, monospace">void removeSource()
+                </font><br />Remove the source port and stop the media pipeline.
+      
+      </li>
+
             </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="Filter">Filter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaElement|MediaElement]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
+{| id="Composite" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>Composite</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|A [[#Hub|Hub]] that mixes the [[#MediaType.AUDIO|MediaType.AUDIO]] stream of<br />its connected sources and constructs a grid with the<br />[[#MediaType.VIDEO|MediaType.VIDEO]] streams of its connected sources into its<br />sink
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Hub|Hub]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the dispatcher belongs</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="Endpoint">Endpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaElement|MediaElement]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
+{| id="JackVaderFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>JackVaderFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Filter that detects faces in a video feed. Those on the right half of<br />the feed are overlaid with a pirate hat, and those on the left half are<br />covered by a Darth Vader helmet. This is an example filter, intended to<br />demonstrate how to integrate computer vision capabilities into the<br />multimedia infrastructure.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="PointerDetectorAdvFilter">PointerDetectorAdvFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
+{| id="HttpEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>HttpEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Endpoint that enables Kurento to work as an HTTP server, allowing peer<br />HTTP clients to access media.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#SessionEndpoint|SessionEndpoint]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">String getUrl()
+                </font><br />Obtains the URL associated to this endpoint
+      
+      <br /> returns String: The url as a String
+      </li>
 
-                <li><font face="Courier New, monospace">[[#WindowParam|WindowParam]]
-                
-                calibrationRegion</font></li>
-
-                <li><font face="Courier New, monospace">[[#PointerDetectorWindowMediaParam|PointerDetectorWindowMediaParam]]
-                
-                window?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 addWindow([[#PointerDetectorWindowMediaParam|PointerDetectorWindowMediaParam]] window)
-                </font></li>
 
-                <li><font face="Courier New, monospace">
-                
-                 clearWindows()
-                </font></li>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
-                <li><font face="Courier New, monospace">
-                
-                 trackcolourFromCalibrationRegion()
-                </font></li>
 
-                <li><font face="Courier New, monospace">
-                
-                 removeWindow(String windowId)
-                </font></li>
+
+{| id="SdpEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>SdpEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Implements an SDP negotiation endpoint able to generate and process<br />offers/responses and that configures resources according to negotiated<br />Session Description
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#SessionEndpoint|SessionEndpoint]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">String generateOffer()
+                </font><br />Request a SessionSpec offer.     This can be used to initiate a<br />connection.
+      
+      <br /> returns String: The SDP offer.
+      </li>
+<li><font face="Courier New, monospace">String processOffer(offer)
+                </font><br />Request the NetworkConnection to process the given SessionSpec offer<br />(from the remote User Agent)
+      
+      <br /> String offer: SessionSpec offer from the remote User Agent
+      <br /> returns String: The chosen configuration from the ones stated in the SDP offer
+      </li>
+<li><font face="Courier New, monospace">String processAnswer(answer)
+                </font><br />Request the NetworkConnection to process the given SessionSpec answer<br />(from the remote User Agent).
+      
+      <br /> String answer: SessionSpec answer from the remote User Agent
+      <br /> returns String: Updated SDP offer, based on the answer received.
+      </li>
+<li><font face="Courier New, monospace">String getLocalSessionDescriptor()
+                </font><br />This method gives access to the SessionSpec offered by this<br />NetworkConnection.  .. note:: This method returns the local MediaSpec,<br />negotiated or not. If no offer has been generated yet, it returns null.<br />It an offer has been generated it returns the offer and if an answer has<br />been processed it returns the negotiated local SessionSpec.
+      
+      <br /> returns String: The last agreed SessionSpec
+      </li>
+<li><font face="Courier New, monospace">String getRemoteSessionDescriptor()
+                </font><br />This method gives access to the remote session description.  .. note::<br />This method returns the media previously agreed after a complete offer-<br />answer exchange. If no media has been agreed yet, it returns null.
+      
+      <br /> returns String: The last agreed User Agent session description
+      </li>
+
             </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-WindowIn|WindowIn]]</font></li>
 
-                <li><font face="Courier New, monospace">[[#event-WindowOut|WindowOut]]</font></li>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="FaceOverlayFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>FaceOverlayFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|FaceOverlayFilter interface. This type of [[#Filter|Filter]] detects<br />faces in a video feed. The face is then overlaid with an image.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />pipeline to which this [[#Filter|Filter]] belons</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void unsetOverlayedImage()
+                </font><br />Clear the image to be shown over each detected face. Stops overlying of<br />the faces.
+      
+      </li>
+<li><font face="Courier New, monospace">void setOverlayedImage(uri, offsetXPercent, offsetYPercent, widthPercent, heightPercent)
+                </font><br />Sets the image to use as overlay on the detected faces.
+      
+      <br /> String uri: URI where the image is located
+      <br /> float offsetXPercent: the offset applied to the image, from the X coordinate of the detected<br />face upper right corner. A positive value indicates right displacement,<br />while a negative value moves the overlaid image to the left. This offset<br />is specified as a percentage of the face width.  For example, to cover<br />the detected face with the overlaid image, the parameter has to be<br /><code>0.0</code>. Values of <code>1.0</code> or <code>-1.0</code> indicate that the image upper<br />right corner will be at the face´s X coord, +- the face´s width.  ..<br />note::      The parameter name is misleading, the value is not a percent<br />but a ratio
+      <br /> float offsetYPercent: the offset applied to the image, from the Y coordinate of the detected<br />face upper right corner. A positive value indicates up displacement,<br />while a negative value moves the overlaid image down. This offset is<br />specified as a percentage of the face width.  For example, to cover the<br />detected face with the overlaid image, the parameter has to be <code>0.0</code>.<br />Values of <code>1.0</code> or <code>-1.0</code> indicate that the image upper right corner<br />will be at the face´s Y coord, +- the face´s width.  .. note::      The<br />parameter name is misleading, the value is not a percent but a ratio
+      <br /> float widthPercent: proportional width of the overlaid image, relative to the width of the<br />detected face. A value of 1.0 implies that the overlaid image will have<br />the same width as the detected face. Values greater than 1.0 are<br />allowed, while negative values are forbidden.  .. note::      The<br />parameter name is misleading, the value is not a percent but a ratio
+      <br /> float heightPercent: proportional height of the overlaid image, relative to the height of the<br />detected face. A value of 1.0 implies that the overlaid image will have<br />the same height as the detected face. Values greater than 1.0 are<br />allowed, while negative values are forbidden.  .. note::      The<br />parameter name is misleading, the value is not a percent but a ratio
+      </li>
+
             </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="UriEndpoint">UriEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Endpoint|Endpoint]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                String getUri()
-                </font></li>
+{| id="PlateDetectorFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>PlateDetectorFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|PlateDetectorFilter interface. This type of [[#Endpoint|Endpoint]] detects<br />vehicle plates in a video feed.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the parent [[#MediaPipeline|MediaPipeline]] of this<br />[[#PlateDetectorFilter|PlateDetectorFilter]]</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-PlateDetected|PlateDetected]]</font></li></ul>
+|}
 
-                <li><font face="Courier New, monospace">
-                
-                 pause()
-                </font></li>
 
-                <li><font face="Courier New, monospace">
-                
-                 stop()
-                </font></li>
+
+{| id="RecorderEndpoint" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>RecorderEndpoint</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Provides function to store contents in reliable mode (doesn't discard<br />data). It contains [[#MediaSink|MediaSink]] pads for audio and video.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#UriEndpoint|UriEndpoint]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the endpoint belongs</font></li>
+<li><font face="Courier New, monospace"> String uri: <br />URI where the recording will be stored</font></li>
+<li><font face="Courier New, monospace"> MediaProfileSpecType ?mediaProfile=WEBM: <br />Choose either a [[#WEBM|WEBM]] or a [[#MP4|MP4]] profile for<br />recording</font></li>
+<li><font face="Courier New, monospace"> boolean ?stopOnEndOfStream=False: <br />Forces the recorder endpoint to finish processing data when an<br />[http://www.kurento.org/docs/current/glossary.html#term-eos EOS] is detected in the stream</font></li></ul>       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">void record()
+                </font><br />Starts storing media received through the [[#MediaSink|MediaSink]] pad
+      
+      </li>
+
             </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
+
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
 
 
 
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="HttpPostEndpoint">HttpPostEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#HttpEndpoint|HttpEndpoint]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
+{| id="MediaElement" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>MediaElement</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Basic building blocks of the media server, that can be interconnected<br />through the API. A [[#MediaElement|MediaElement]] is a module that encapsulates<br />a specific media capability. They can be connected to create media<br />pipelines where those capabilities are applied, in sequence, to the<br />stream going through the pipeline.     [[#MediaElement|MediaElement]] objects<br />are classified by its supported media type (audio, video, etc.) and the<br />flow direction: [[#MediaSource|MediaSource]] pads are intended for media<br />delivery while [[#MediaSink|MediaSinks]]  behave as reception<br />points.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#MediaObject|MediaObject]]
+       
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Methods
+|<ul>
+<li><font face="Courier New, monospace">MediaSource[] getMediaSrcs()
+                </font><br />Get the [[#MediaSource|sources ]] of this element
+      
+      <br /> returns [[#MediaSource|MediaSource]]![]: A list of sources. The list will be empty if no sources are found.
+      </li>
+<li><font face="Courier New, monospace">MediaSource[] getMediaSrcs(mediaType, description)
+                </font><br />Get the media sources of the given type and description
+      
+      <br /> MediaType mediaType: One of [[#MediaType.AUDIO|MediaType.AUDIO]], [[#MediaType.VIDEO|MediaType.VIDEO]] or<br />[[#MediaType.DATA|MediaType.DATA]]
+      <br /> String description: A textual description of the media source. Currently not used, aimed<br />mainly for [[#MediaType.DATA|MediaType.DATA]] sources
+      <br /> returns [[#MediaSource|MediaSource]]![]: A list of sources. The list will be empty if no sources are found.
+      </li>
+<li><font face="Courier New, monospace">MediaSource[] getMediaSrcs(mediaType)
+                </font><br />get media sources of the given type
+      
+      <br /> MediaType mediaType: One of [[#MediaType.AUDIO|MediaType.AUDIO]], [[#MediaType.VIDEO|MediaType.VIDEO]] or<br />[[#MediaType.DATA|MediaType.DATA]]
+      <br /> returns [[#MediaSource|MediaSource]]![]: A list of sources. The list will be empty if no sources are found.
+      </li>
+<li><font face="Courier New, monospace">MediaSink[] getMediaSinks()
+                </font><br />Get the [[#MediaSink|sinks ]] of this element
+      
+      <br /> returns [[#MediaSink|MediaSink]]![]: A list of sinks. The list will be empty if no sinks are found.
+      </li>
+<li><font face="Courier New, monospace">MediaSink[] getMediaSinks(mediaType)
+                </font><br />A list of sinks of the given [[#MediaType|MediaType]]. The list will be<br />empty if no sinks are found.
+      
+      <br /> MediaType mediaType: One of [[#MediaType.AUDIO|MediaType.AUDIO]], [[#MediaType.VIDEO|MediaType.VIDEO]] or<br />[[#MediaType.DATA|MediaType.DATA]]
+      <br /> returns [[#MediaSink|MediaSink]]![]: A list of sinks. The list will be empty if no sinks are found.
+      </li>
+<li><font face="Courier New, monospace">MediaSink[] getMediaSinks(mediaType, description)
+                </font><br />A list of sinks of the given [[#MediaType|MediaType]]. The list will be<br />empty if no sinks are found.
+      
+      <br /> MediaType mediaType: One of [[#MediaType.AUDIO|MediaType.AUDIO]], [[#MediaType.VIDEO|MediaType.VIDEO]] or<br />[[#MediaType.DATA|MediaType.DATA]]
+      <br /> String description: A textual description of the media source. Currently not used, aimed<br />mainly for [[#MediaType.DATA|MediaType.DATA]] sources
+      <br /> returns [[#MediaSink|MediaSink]]![]: A list of sinks. The list will be empty if no sinks are found.
+      </li>
+<li><font face="Courier New, monospace">void connect(sink, mediaType, mediaDescription)
+                </font><br />perform [[#connect(sink,mediaType)|connect(sink,mediaType)]] if there is exactly one sink<br />for the given type, and their mediaDescriptions are the same
+      
+      <br /> [[#MediaElement|MediaElement]] sink: the target [[#MediaElement|MediaElement]]  from which [[#MediaSink|MediaSink]] will<br />be obtained
+      <br /> MediaType mediaType: the [[#MediaType|MediaType]] of the pads that will be connected
+      <br /> String mediaDescription: A textual description of the media source. Currently not used, aimed<br />mainly for [[#MediaType.DATA|MediaType.DATA]] sources
+      </li>
+<li><font face="Courier New, monospace">void connect(sink, mediaType)
+                </font><br />Connects every [[#MediaSource|MediaSource]] of this element belonging to the<br />specified [[#MediaType|MediaType]] to the corresponding<br />[[#MediaSink|MediaSink]] of the target [[#MediaElement|MediaElement]]. This method<br />will throw an exception if any of the following occur:     ..     * The<br />number of sources for the specified [[#MediaType|MediaType]] in this<br />element is different than the number of sinks on the target element.<br />* There are duplicate mediaDescriptions on this' element sources for the<br />specified [[#MediaType|MediaType]].    * There are duplicate<br />mediaDescriptions on target's element sinks for the specified<br />[[#MediaType|MediaType]].    * Target sinks' media descriptions are<br />different form this sources' media descriptions for the specified<br />[[#MediaType|MediaType]]  This method is not transactional. In case of<br />exception some of this element sources may be connected with target<br />sinks.
+      
+      <br /> [[#MediaElement|MediaElement]] sink: the target [[#MediaElement|MediaElement]]  from which [[#MediaSink|MediaSink]] will<br />be obtained
+      <br /> MediaType mediaType: the [[#MediaType|MediaType]] of the pads that will be connected
+      </li>
+<li><font face="Courier New, monospace">void connect(sink)
+                </font><br />perform [[#connect(sink,mediaType)|connect(sink,mediaType)]] for every available<br />[[#MediaType|MediaType]] in this source
+      
+      <br /> [[#MediaElement|MediaElement]] sink: the target [[#MediaElement|MediaElement]]  from which [[#MediaSink|MediaSink]] will<br />be obtained
+      </li>
 
-                <li><font face="Courier New, monospace">int
-                
-                disconnectionTimeout?</font></li>
-
-                <li><font face="Courier New, monospace">boolean
-                
-                useEncodedMedia?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
             </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#EndOfStream|EndOfStream]]</font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
 
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="RtpEndpoint">RtpEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#SdpEndpoint|SdpEndpoint]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaPad">MediaPad</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaObject|MediaObject]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaElement|MediaElement]] getMediaElement()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaType|MediaType]] getMediaType()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                String getMediaDescription()
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="PointerDetectorFilter">PointerDetectorFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">[[#PointerDetectorWindowMediaParam|PointerDetectorWindowMediaParam]]
-                
-                window?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 addWindow([[#PointerDetectorWindowMediaParam|PointerDetectorWindowMediaParam]] window)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 clearWindows()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 removeWindow(String windowId)
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-WindowIn|WindowIn]]</font></li>
-
-                <li><font face="Courier New, monospace">[[#event-WindowOut|WindowOut]]</font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaSource">MediaSource</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaPad|MediaPad]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSink|MediaSink]][] getConnectedSinks()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 connect([[#MediaSink|MediaSink]] sink)
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="ChromaFilter">ChromaFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">[[#WindowParam|WindowParam]]
-                
-                window</font></li>
-
-                <li><font face="Courier New, monospace">String
-                
-                backgroundImage?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 setBackground(String uri)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 unsetBackground()
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaPipeline">MediaPipeline</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaObject|MediaObject]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaSink">MediaSink</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaPad|MediaPad]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 disconnect([[#MediaSource|MediaSource]] src)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSource|MediaSource]] getConnectedSrc()
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="DispatcherMixer">DispatcherMixer</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaMixer|MediaMixer]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="JackVaderFilter">JackVaderFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="HttpEndpoint">HttpEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#SessionEndpoint|SessionEndpoint]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                String getUrl()
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="SdpEndpoint">SdpEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#SessionEndpoint|SessionEndpoint]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                String generateOffer()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                String processOffer(String offer)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                String processAnswer(String answer)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                String getLocalSessionDescriptor()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                String getRemoteSessionDescriptor()
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="FaceOverlayFilter">FaceOverlayFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 unsetOverlayedImage()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 setOverlayedImage(String uri, float offsetXPercent, float offsetYPercent, float widthPercent, float heightPercent)
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="PlateDetectorFilter">PlateDetectorFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#event-PlateDetected|PlateDetected]]</font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="RecorderEndpoint">RecorderEndpoint</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#UriEndpoint|UriEndpoint]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">String
-                
-                uri</font></li>
-
-                <li><font face="Courier New, monospace">[[#MediaProfileSpecType|MediaProfileSpecType]]
-                
-                mediaProfile?</font></li>
-
-                <li><font face="Courier New, monospace">boolean
-                
-                stopOnEndOfStream?</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                 record()
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaElement">MediaElement</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#MediaObject|MediaObject]]</font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSource|MediaSource]][] getMediaSrcs()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSource|MediaSource]][] getMediaSrcs([[#MediaType|MediaType]] mediaType, String description)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSource|MediaSource]][] getMediaSrcs([[#MediaType|MediaType]] mediaType)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSink|MediaSink]][] getMediaSinks()
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSink|MediaSink]][] getMediaSinks([[#MediaType|MediaType]] mediaType)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                [[#MediaSink|MediaSink]][] getMediaSinks([[#MediaType|MediaType]] mediaType, String description)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 connect([[#MediaElement|MediaElement]] sink, [[#MediaType|MediaType]] mediaType, String mediaDescription)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 connect([[#MediaElement|MediaElement]] sink, [[#MediaType|MediaType]] mediaType)
-                </font></li>
-
-                <li><font face="Courier New, monospace">
-                
-                 connect([[#MediaElement|MediaElement]] sink)
-                </font></li>
-            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="GStreamerFilter">GStreamerFilter</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#Filter|Filter]]</font></td>
-    </tr>
-    
-    <tr>        
-        <td>Constructor Parameters</td>
-        <td><ul>
-                <li><font face="Courier New, monospace">[[#MediaPipeline|MediaPipeline]]
-                
-                mediaPipeline</font></li>
-
-                <li><font face="Courier New, monospace">String
-                
-                command</font></li>
-
-                <li><font face="Courier New, monospace">int
-                
-                garbagePeriod?</font></li>
-            </ul>
-        </td>        
-    </tr>
-    
-    <tr>
-        <td width="20%">Declared Methods</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-        
-    <tr>
-        <td>Declared Events</td>
-        <td><ul>            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-==== Events ====
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-PlateDetected">PlateDetected</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                String plate
-            </font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-EndOfStream">EndOfStream</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-CodeFound">CodeFound</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                String codeType
-            </font></li>
-            <li><font face="Courier New, monospace">
-                String value
-            </font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-Error">Error</b></font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                [[#MediaObject|MediaObject]] object
-            </font></li>
-            <li><font face="Courier New, monospace">
-                String description
-            </font></li>
-            <li><font face="Courier New, monospace">
-                int errorCode
-            </font></li>
-            <li><font face="Courier New, monospace">
-                String type
-            </font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-MediaSessionTerminated">MediaSessionTerminated</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-WindowIn">WindowIn</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                String windowId
-            </font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-MediaSessionStarted">MediaSessionStarted</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-WindowOut">WindowOut</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Parent Class</td>
-        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                String windowId
-            </font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="event-Media">Media</b></font></td>
-    </tr>
-    
-    
-    <tr>
-        <td width="20%">Properties</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                [[#MediaObject|MediaObject]] source
-            </font></li>
-            <li><font face="Courier New, monospace">
-                String type
-            </font></li>
-            </ul>
-        </td>
-    </tr>
-    
-</table>
-
-
-==== Types ====
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaProfileSpecType">MediaProfileSpecType</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Enum constants</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                WEBM
-            </font></li>
-            <li><font face="Courier New, monospace">
-                MP4
-            </font></li>
-            </ul>
-        </td>
-    </tr>    
-    
-</table>
-
-
-<table border="1" cellspacing="0" cellpading="0" width="60%">
-    <tr>
-        <td colspan="2"><font face="Courier New, monospace"><b id="MediaType">MediaType</b></font></td>
-    </tr>
-    
-    <tr>
-        <td width="20%">Enum constants</td>
-        <td><ul>
-            <li><font face="Courier New, monospace">
-                AUDIO
-            </font></li>
-            <li><font face="Courier New, monospace">
-                DATA
-            </font></li>
-            <li><font face="Courier New, monospace">
-                VIDEO
-            </font></li>
-            </ul>
-        </td>
-    </tr>    
-    
-</table>
-
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="GStreamerFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>GStreamerFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|This is a generic filter interface, that creates GStreamer filters in<br />the media server.
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li>
+<li><font face="Courier New, monospace"> String command: <br />command that would be used to instantiate the filter, as in [[http://rpm.pbone.net/index.php3/stat/45/idpl/19531544/numer/1/nazwa<br />/gst-launch-1.0|gst-launch]]</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|
+|}
+
+
+
+{| id="CrowdDetectorFilter" style="border-collapse: collapse; border: 1px solid black;" cellpadding="2" width="60%"
+|- style="border: 1px solid #000;" cellpadding="2"
+!colspan="2"|<font face="Courier New, monospace"><b>CrowdDetectorFilter</b></font>
+|- style="border: 1px solid #000;" cellpadding="2"
+|colspan="2"|Filter that detects people agglomeration in video streams
+|- style="border: 1px solid #000;" cellpadding="2"
+|Parent Class
+|[[#Filter|Filter]]
+|- style="border: 1px solid #000;" cellpadding="2"
+|Constructor Parameters
+|<ul>
+<li><font face="Courier New, monospace"> [[#MediaPipeline|MediaPipeline]] mediaPipeline: <br />the [[#MediaPipeline|MediaPipeline]] to which the filter belongs</font></li>
+<li><font face="Courier New, monospace"> RegionOfInterest[] rois: <br />Regions of interest for the filter</font></li></ul>
+|- style="border: 1px solid #000;" cellpadding="2"
+|Declared Events
+|<ul><li><font face="Courier New, monospace">[[#event-CrowdDetectorFluidity|CrowdDetectorFluidity]]</font></li><li><font face="Courier New, monospace">[[#event-CrowdDetectorOccupancy|CrowdDetectorOccupancy]]</font></li><li><font face="Courier New, monospace">[[#event-CrowdDetectorDirection|CrowdDetectorDirection]]</font></li></ul>
+|}
+
+==== Record Types ====
 
 <table border="1" cellspacing="0" cellpading="0" width="60%">
     <tr>
         <td colspan="2"><font face="Courier New, monospace"><b id="PointerDetectorWindowMediaParam">PointerDetectorWindowMediaParam</b></font></td>
     </tr>
-    
+    <tr>
+        <td colspan="2">Data structure for UI Pointer detection in video streams.  All the<br />coordinates are in pixels. X is horizontal, Y is vertical, running from<br />the top of the window. Thus, 0,0 corresponds to the topleft corner.</td>
+    </tr>    
     <tr>
         <td width="20%">Properties</td>
         <td><ul>
             <li><font face="Courier New, monospace">
-                String id
+                String id: id of the window for pointer detection
             </font></li>
             <li><font face="Courier New, monospace">
-                int height
+                int height: height in pixels
             </font></li>
             <li><font face="Courier New, monospace">
-                int width
+                int width: width in pixels
             </font></li>
             <li><font face="Courier New, monospace">
-                int upperRightX
+                int upperRightX: X coordinate in pixels of the upper left corner
             </font></li>
             <li><font face="Courier New, monospace">
-                int upperRightY
+                int upperRightY: Y coordinate in pixels of the upper left corner
             </font></li>
             <li><font face="Courier New, monospace">
-                String activeImage?
+                String activeImage: uri of the image to be used when the pointer is inside the window
             </font></li>
             <li><font face="Courier New, monospace">
-                float imageTransparency?
+                float imageTransparency: transparency ratio of the image
             </font></li>
             <li><font face="Courier New, monospace">
-                String image?
-            </font></li>
-            <li><font face="Courier New, monospace">
-                String inactiveImage?
-            </font></li>
-            </ul>
+                String image: uri of the image to be used for the window.  If [[#activeImage|activeImage]]<br />has been set, it will only be shown when the pointer is outside of the<br />window.
+            </font></li></ul>
         </td>
     </tr>
     
@@ -2449,24 +1897,495 @@ Note: Parameters ending with "?" are optionals.
     <tr>
         <td colspan="2"><font face="Courier New, monospace"><b id="WindowParam">WindowParam</b></font></td>
     </tr>
+    <tr>
+        <td colspan="2">Parameter representing a window in a video stream. It is used in command<br />and constructors for media elements.  All units are in pixels, X runs<br />from left to right, Y from top to bottom.</td>
+    </tr>    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                int topRightCornerX: X coordinate of the left upper point of the window
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int topRightCornerY: Y coordinate of the left upper point of the window
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int width: width in pixels of the window
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int height: height in pixels of the window
+            </font></li></ul>
+        </td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="RegionOfInterestConfig">RegionOfInterestConfig</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2">data structure for configuration of CrowdDetector regions of interest</td>
+    </tr>    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                int occupancyLevelMin: minimun occupancy percentage in the ROI to send occupancy events
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int occupancyLevelMed: send occupancy level = 1 if the occupancy percentage is between<br />occupancy_level_min and this level
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int occupancyLevelMax: send occupancy level = 2 if the occupancy percentage is between<br />occupancy_level_med and this level, and send occupancy level = 3 if the<br />occupancy percentage is between this level and 100
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int occupancyNumFramesToEvent: number of consecutive frames that a new occupancy level has to be<br />detected to recognize it as a occupancy level change. A new occupancy<br />event will be send
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int fluidityLevelMin: minimun fluidity percentage in the ROI to send fluidity events
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int fluidityLevelMed: send fluidity level = 1 if the fluidity percentage is between<br />fluidity_level_min and this level
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int fluidityLevelMax: send fluidity level = 2 if the fluidity percentage is between<br />fluidity_level_med and this level,  and send fluidity level = 3 if the<br />fluidity percentage is between this level and 100
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int fluidityNumFramesToEvent: number of consecutive frames that a new fluidity level has to be<br />detected to recognize it as a fluidity level change.  A new fluidity<br />event will be send
+            </font></li>
+            <li><font face="Courier New, monospace">
+                boolean sendOpticalFlowEvent: Enable/disable the movement direction detection into the ROI
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int opticalFlowNumFramesToEvent: number of consecutive frames that a new direction of movement has to be<br />detected to recognize a new movement direction.   A new direction event<br />will be send
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int opticalFlowNumFramesToReset: number of consecutive frames in order to reset the counter of repeated<br />directions
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int opticalFlowAngleOffset: Direction of the movement. The angle could have four different values:<br />left (0), up (90), right (180) and down (270). This cartesian axis could<br />be rotated adding an angle offset
+            </font></li></ul>
+        </td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="RegionOfInterest">RegionOfInterest</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2">Region of interest for some events in a video processing filter</td>
+    </tr>    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                Point[] points: list of points delimiting the region of interest
+            </font></li>
+            <li><font face="Courier New, monospace">
+                RegionOfInterestConfig regionOfInterestConfig: data structure for configuration of CrowdDetector regions of interest
+            </font></li>
+            <li><font face="Courier New, monospace">
+                String id: identifier of the region of interest
+            </font></li></ul>
+        </td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="Point">Point</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2">Point in a physical screen, coordinates are in pixels with X left to<br />right and Y top to down.</td>
+    </tr>    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                int x: X coordinate in pixels of a point in the screen
+            </font></li>
+            <li><font face="Courier New, monospace">
+                int y: Y coordinate in pixels of a point in the screen
+            </font></li></ul>
+        </td>
+    </tr>
+    
+</table>
+
+==== Enum Types ====
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="MediaProfileSpecType">MediaProfileSpecType</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2">Media Profile.  Currently WEBM and MP4 are supported.</td>
+    </tr>
+    <tr>
+        <td width="20%">Enum constants</td>
+        <td><ul>
+            <li id="MediaProfileSpecType.WEBM"><font face="Courier New, monospace">
+                WEBM
+            </font></li>
+            <li id="MediaProfileSpecType.MP4"><font face="Courier New, monospace">
+                MP4
+            </font></li></ul>
+        </td>
+    </tr>    
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="MediaType">MediaType</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2">Type of media stream to be exchanged. Can take the values AUDIO, DATA or<br />VIDEO.</td>
+    </tr>
+    <tr>
+        <td width="20%">Enum constants</td>
+        <td><ul>
+            <li id="MediaType.AUDIO"><font face="Courier New, monospace">
+                AUDIO
+            </font></li>
+            <li id="MediaType.DATA"><font face="Courier New, monospace">
+                DATA
+            </font></li>
+            <li id="MediaType.VIDEO"><font face="Courier New, monospace">
+                VIDEO
+            </font></li></ul>
+        </td>
+    </tr>    
+    
+</table>
+
+==== Events ====
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-PlateDetected">PlateDetected</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raised by a [[#PlateDetectorFilter|PlateDetectorFilter]] when a plate is found<br />in the data streamed. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
     
     <tr>
         <td width="20%">Properties</td>
         <td><ul>
             <li><font face="Courier New, monospace">
-                int topRightCornerX
+                String plate : Plate identification that was detected by the filter
             </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-EndOfStream">EndOfStream</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raised when the stream that the element sends out is finished. An<br />element receiving this event will generally just process any buffered<br />data, and then forward the event further downstream. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td>---</td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-CodeFound">CodeFound</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raised by a [[#ZBarFilter|ZBarFilter]] when a code is found in the data<br />being streamed. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
             <li><font face="Courier New, monospace">
-                int topRightCornerY
+                String codeType : type of [http://www.kurento.org/docs/current/glossary.html#term-qr QR] code found
             </font></li>
+            </ul><ul>
             <li><font face="Courier New, monospace">
-                int width
+                String value : value contained in the [http://www.kurento.org/docs/current/glossary.html#term-qr QR] code
             </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-Error">Error</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">An error related to the MediaObject has occurred </font> </td>
+    </tr>
+    
+   
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
             <li><font face="Courier New, monospace">
-                int height
+                MediaObject object : [[#MediaObject|MediaObject]] where the error originated
             </font></li>
-            </ul>
-        </td>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                String description : Textual description of the error
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                int errorCode : Server side integer error code
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                String type : Integer code as a String
+            </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-MediaSessionTerminated">MediaSessionTerminated</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raised when a session is terminated. This event has no data. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td>---</td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-WindowIn">WindowIn</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event generated when an object enters a window. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                String windowId : Opaque String indicating the id of the window entered
+            </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-MediaSessionStarted">MediaSessionStarted</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raised when a session starts. This event has no data. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td>---</td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-WindowOut">WindowOut</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event generated when an object exits a window. </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                String windowId : Opaque String indicating the id of the window entered
+            </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-Media">Media</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Base for all events raised by elements in the Kurento media server. </font> </td>
+    </tr>
+    
+   
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                MediaObject source : Object that raised the event
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                String type : Type of event that was raised
+            </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-CrowdDetectorFluidity">CrowdDetectorFluidity</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raise when a level of fluidity is detected in a ROI </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                float fluidityPercentage : Percentage of fluidity in the ROI
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                int fluidityLevel : Level of fluidity in the ROI
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                String roiID : Opaque String indicating the id of the involved ROI
+            </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-CrowdDetectorOccupancy">CrowdDetectorOccupancy</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raise when a level of occupancy is detected in a ROI </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                float occupancyPercentage : Percentage of occupancy in the ROI
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                int occupancyLevel : Level of occupancy in the ROI
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                String roiID : Opaque String indicating the id of the involved ROI
+            </font></li>
+            </ul></td>
+    </tr>
+    
+</table>
+
+
+<table border="1" cellspacing="0" cellpading="0" width="60%">
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace"><b id="event-CrowdDetectorDirection">CrowdDetectorDirection</b></font></td>
+    </tr>
+    <tr>
+        <td colspan="2"><font face="Courier New, monospace">Event raise when a movement direction is detected in a ROI </font> </td>
+    </tr>
+    
+   <tr>
+        <td width="20%">Parent Class </td>
+        <td><font face="Courier New, monospace">[[#event-Media|Media]]</font></td>
+    </tr>
+    
+    <tr>
+        <td width="20%">Properties</td>
+        <td><ul>
+            <li><font face="Courier New, monospace">
+                float directionAngle : Direction angle of the detected movement in the ROI
+            </font></li>
+            </ul><ul>
+            <li><font face="Courier New, monospace">
+                String roiID : Opaque String indicating the id of the involved ROI
+            </font></li>
+            </ul></td>
     </tr>
     
 </table>

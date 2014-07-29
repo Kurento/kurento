@@ -1,10 +1,10 @@
 =Kurento Installation=
 
-This guide describes how to install the Stream-Oriented GE - Kurento. Kurento is composed of two nodes, the Kurento Application Server (a.k.a. KAS) and the Kurento Media Server (a.k.a KMS). These two nodes can be co-located or installed on separate machines. This guide focuses on the installation on a single machine, but comments are done where appropriate explaining how to modify the configuration files for a dual installation.
+This guide describes how to install the Stream-Oriented GE - Kurento. Kurento is composed of two nodes, the Kurento Application Server (a.k.a. KAS), the Kurento Media Server (a.k.a KMS) and KFM Media Connector. These three nodes can be co-located or installed on separate machines. This guide focuses on the installation on a single machine, but comments are done where appropriate explaining how to modify the configuration files for a dual installation.
 
 == Prerequisites ==
 
-Hardware minimal recommended requirements:
+Hardware minimal recommneded requirements:
 * 8GB RAM
 * 16GB HDD (this figure is not taking into account that multimedia streams could be stored in the same machine. If so, HDD size must be increased accordingly)
 
@@ -14,12 +14,12 @@ Operating system requirements:
 
 == Kurento Application Server (KAS) ==
 
-First, install ''Open JDK 7'':
+First, install ''Open JDK 7'' and  "unzip" packages:
 
 <pre style="white-space: pre-wrap; 
 white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
 word-wrap: break-word">
-$ sudo apt-get install openjdk-7-jdk
+$ sudo apt-get install openjdk-7-jdk unzip
 </pre>
 
 Download ''JBoss'', uncompress it and move it to ''/opt/jboss'' by executing:
@@ -223,9 +223,95 @@ word-wrap: break-word">
 $ sudo update-rc.d kurento defaults
 </pre>
 
-== Kurento Network Configuration==
 
-=== Running Kurento Without NAT configuration===
+== KMF Media Connector ==
+
+The KMF Media Connector is a proxy that allows to clients connect to Kurento Media Server through websockets. The main Kurento Media Server interface is based on thrift technology, and this proxy made necessary convertions between websockets and thrift.
+
+Download ''KMF Media Connector'' and move it to ''/opt/kmf-media-connector'' by executing:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+$ sudo wget http://jmaster01-64.kurento.com/apps/kmf-media-connector.zip
+$ sudo mkdir /opt/kmf-media-connector && sudo mv kmf-media-connector.zip /opt/kmf-media-connector
+</pre>
+
+Unzip the kmf-media-connector.zip file:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+$ cd /opt/kmf-media-connector && sudo unzip kmf-media-connector.zip 
+</pre>
+
+Move the init.d script to the right location and give the correct permission to the file:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+$ sudo cp /opt/kmf-media-connector/support-files/kmf-media-connector.sh /etc/init.d/kmf-media-connector && $ chmod 755 /etc/init.d/kmf-media-connector
+</pre>
+
+Give the correct permissions to the start.sh file. This file is used by the kmf-media-connector.sh service script:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+$ chmod 755 /opt/kmf-media-connector/bin/start.sh 
+</pre>
+
+Finally, configure the server to run kmf-media-connector when booted:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+$ sudo update-rc.d kmf-media-connector defaults
+</pre>
+
+And run the kmf-media-connector proxy service:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+$ sudo service kmf-media-connector start
+</pre>
+
+Alternativel, you can run the KMF Media Connector passing the arguments directly from the command line: 
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+java -jar kmf-media-connector.jar --server.port=9090 --mediaserver.address=127.0.0.1 --mediaserver.port=9999 --handler.address=127.0.0.1 --handler.port=9900 --oauthserver.url=
+</pre>
+
+KMF Media Connector understands a number of arguments that can be used to call the application, these arguments are:
+
+* server.port: The http/websocket port of the proxy. This port will be used for the clients to connect to the port. If not specified, the value 8080 will be used.
+* mediaserver.address: The IP or address of the Kurento Media Server. If not specified, the address 127.0.0.1 will be used.
+* mediaserver.port: The port of the thrift interface in Kurento Media Server. If not specified, the port 9090 will be used.
+* handler.address: The IP or address that Kurento Media Server will use to connect to the proxy. If not specified, the address 127.0.0.1 will be used.
+* handler.port: The port that Kurento Media Server will use to connect to the proxy. If not specified, the port 9999 will be used.
+* oauthserver.url: The url of the ouath service used to authenticate the client requests. The url "http://cloud.lab.fi-ware.org" is the official OAuth service in FI-WARE project. The empty URL can be used to allow all clients to use the proxy (that is, no authentication is enforced). If not specified, the empty URL will be used.
+
+Or if you prefer, instead of using the command line parameters, you can specify these properties in a configuration file. The only requirements to use the configuration file is that this file must be called 'application.properties' and it must be placed inside the ''config'' directory in the working directory. 
+
+The file is formated as a plain Java properties file:
+
+<pre style="white-space: pre-wrap; 
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+word-wrap: break-word">
+server.port=9090
+mediaserver.address=127.0.0.1
+mediaserver.port=9999
+handler.address=127.0.0.1
+handler.port=9900
+oauthserver.url=http://cloud.lab.fi-ware.org
+</pre>
+
+== Kurento Network Configuration. ==
+
+=== Running Kurento Without NAT configuration. ===
 
 KMS can receive requests from the Kurento Application Server (KAS) and from final users. KMS uses a easily extensible service abstraction layer
 that enables it to attend application requests from either Thrift or RabbitMQ altough other services can also be deployed on it. The service in charge of attending all those requests is configured in
@@ -346,6 +432,7 @@ white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo /etc/init.d/kurento start
 </pre>
+
 
 = Sanity check procedures =
 The Sanity Check Procedures are the steps that a System Administrator will take to verify that an installation is ready to be tested. This is therefore a preliminary set of tests to ensure that obvious or basic malfunctioning is fixed before proceeding to unit tests, integration tests and user validation.
