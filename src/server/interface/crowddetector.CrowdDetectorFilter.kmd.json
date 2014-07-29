@@ -1,0 +1,224 @@
+{
+  "remoteClasses": [
+    {
+      "name": "CrowdDetectorFilter",
+      "doc": "Filter that detects people agglomeration in video streams",
+      "extends": "Filter",
+      "constructor": {
+        "doc": "Create a :rom:cls:`CrowdDetectorFilter`",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "rois",
+            "doc": "Regions of interest for the filter",
+            "type": "RegionOfInterest[]"
+          }
+        ]
+      },
+      "events": [
+        "CrowdDetectorFluidity",
+        "CrowdDetectorOccupancy",
+        "CrowdDetectorDirection"
+      ]
+    }
+  ],
+  "complexTypes": [
+      {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "x",
+          "doc": "Percentage relative to the image width to calculate the X coordinate of the point [0..1]",
+          "type": "float"
+        },
+        {
+          "name": "y",
+          "doc": "Percentage relative to the image height to calculate the Y coordinate of the point [0..1]",
+          "type": "float"
+        }
+      ],
+      "name": "RelativePoint",
+      "doc": "Relative points in a physical screen, values are a percentage relative to the image dimensions. X left to right and Y top to down."
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "occupancyLevelMin",
+          "doc": "minimun occupancy percentage in the ROI to send occupancy events",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 10
+        },
+        {
+          "name": "occupancyLevelMed",
+          "doc": "send occupancy level = 1 if the occupancy percentage is between occupancy_level_min and this level",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 35
+        },
+        {
+          "name": "occupancyLevelMax",
+          "doc": "send occupancy level = 2 if the occupancy percentage is between occupancy_level_med and this level,\nand send occupancy level = 3 if the occupancy percentage is between this level and 100",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 65
+        },
+        {
+          "name": "occupancyNumFramesToEvent",
+          "doc": "number of consecutive frames that a new occupancy level has to be detected to recognize it as a occupancy level change.\nA new occupancy event will be send",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 5
+        },
+        {
+          "name": "fluidityLevelMin",
+          "doc": "minimun fluidity percentage in the ROI to send fluidity events",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 10
+        },
+        {
+          "name": "fluidityLevelMed",
+          "doc": "send fluidity level = 1 if the fluidity percentage is between fluidity_level_min and this level",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 35
+        },
+        {
+          "name": "fluidityLevelMax",
+          "doc": "send fluidity level = 2 if the fluidity percentage is between fluidity_level_med and this level,\n and send fluidity level = 3 if the fluidity percentage is between this level and 100",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 65
+        },
+        {
+          "name": "fluidityNumFramesToEvent",
+          "doc": "number of consecutive frames that a new fluidity level has to be detected to recognize it as a fluidity level change.\n A new fluidity event will be send",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 5
+        },
+        {
+          "name": "sendOpticalFlowEvent",
+          "doc": "Enable/disable the movement direction detection into the ROI",
+          "type": "boolean",
+          "optional": true,
+          "defaultValue": false
+        },
+        {
+          "name": "opticalFlowNumFramesToEvent",
+          "doc": "number of consecutive frames that a new direction of movement has to be detected to recognize a new movement direction. \n A new direction event will be send",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 3
+        },
+        {
+          "name": "opticalFlowNumFramesToReset",
+          "doc": "number of consecutive frames in order to reset the counter of repeated directions",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 3
+        },
+        {
+          "name": "opticalFlowAngleOffset",
+          "doc": "Direction of the movement. The angle could have four different values: \n left (0), up (90), right (180) and down (270). This cartesian axis could be rotated adding an angle offset",
+          "type": "int",
+          "optional": true,
+          "defaultValue": 0
+        }
+      ],
+      "name": "RegionOfInterestConfig",
+      "doc": "data structure for configuration of CrowdDetector regions of interest"
+    },
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "points",
+          "doc": "list of points delimiting the region of interest",
+          "type": "RelativePoint[]"
+        },
+        {
+          "name": "regionOfInterestConfig",
+          "doc": "data structure for configuration of CrowdDetector regions of interest",
+          "type": "RegionOfInterestConfig"
+        },
+        {
+          "name": "id",
+          "doc": "identifier of the region of interest. The string used for the id must begin \n with a letter followed by an alphanumeric character included (/-_.:+)",
+          "type": "String"
+        }
+      ],
+      "name": "RegionOfInterest",
+      "doc": "Region of interest for some events in a video processing filter"
+    }
+  ],
+  "events": [
+    {
+      "properties": [
+        {
+          "name": "fluidityPercentage",
+          "doc": "Percentage of fluidity in the ROI",
+          "type": "float"
+        },
+        {
+          "name": "fluidityLevel",
+          "doc": "Level of fluidity in the ROI",
+          "type": "int"
+        },
+        {
+          "name": "roiID",
+          "doc": "Opaque String indicating the id of the involved ROI",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "CrowdDetectorFluidity",
+      "doc": "Event raise when a level of fluidity is detected in a ROI"
+    },
+    {
+      "properties": [
+        {
+          "name": "occupancyPercentage",
+          "doc": "Percentage of occupancy in the ROI",
+          "type": "float"
+        },
+        {
+          "name": "occupancyLevel",
+          "doc": "Level of occupancy in the ROI",
+          "type": "int"
+        },
+        {
+          "name": "roiID",
+          "doc": "Opaque String indicating the id of the involved ROI",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "CrowdDetectorOccupancy",
+      "doc": "Event raise when a level of occupancy is detected in a ROI"
+    },
+    {
+      "properties": [
+        {
+          "name": "directionAngle",
+          "doc": "Direction angle of the detected movement in the ROI",
+          "type": "float"
+        },
+        {
+          "name": "roiID",
+          "doc": "Opaque String indicating the id of the involved ROI",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "CrowdDetectorDirection",
+      "doc": "Event raise when a movement direction is detected in a ROI"
+    }
+  ]
+}
