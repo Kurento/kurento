@@ -2,11 +2,11 @@
 
 Copyright © 2013 Kurento. Licensed under [LGPL License].
 
-gst-kurento-plugins
+kms-filters
 ==========
-Gstreamer plugins for media server
+Filter elements for kurento media server
 
-The gst-kurento-plugins project contains gstreamer plugins needed for
+The kms-filters project contains filter elements for
 the Kurento Media Server.
 
 
@@ -46,7 +46,7 @@ Follow us on Twitter @[kurentoms].
 
 [KurentoImage]: https://avatars1.githubusercontent.com/u/5392839?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/kurento/kms-elements
+[GitHub Repository]: https://github.com/kurento/kms-filters
 [GitHub Kurento Group]: https://github.com/kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
