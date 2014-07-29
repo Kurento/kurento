@@ -37,7 +37,7 @@ set (GLIB_REQUIRED 2.38)
 set (SOUP_REQUIRED 2.40)
 set (NICE_REQUIRED 0.1.4)
 set (GNUTLS_REQUIRED 3.2.0)
-set (GSTMARSHAL_REQUIRED 0.0.1)
+set (GSTMARSHAL_REQUIRED 1.0.0)
 
 #gst-plugins dependencies
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
