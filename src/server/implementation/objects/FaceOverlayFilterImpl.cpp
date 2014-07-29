@@ -19,23 +19,46 @@ FaceOverlayFilterImpl::FaceOverlayFilterImpl (std::shared_ptr<MediaPipeline>
     mediaPipeline) : FilterImpl (
         std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
-  // FIXME: Implement this
+  g_object_set (element, "filter-factory", "faceoverlay", NULL);
+
+  g_object_get (G_OBJECT (element), "filter", &faceOverlay, NULL);
+
+  if (faceOverlay == NULL) {
+    throw KurentoException (MEDIA_OBJECT_NOT_AVAILABLE,
+                            "Media Object not available");
+  }
+
+  g_object_unref (faceOverlay);
 }
 
 void FaceOverlayFilterImpl::unsetOverlayedImage ()
 {
-  // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED,
-                          "FaceOverlayFilterImpl::unsetOverlayedImage: Not implemented");
+  GstStructure *imageSt;
+  imageSt = gst_structure_new ("image",
+                               "offsetXPercent", G_TYPE_DOUBLE, 0.0,
+                               "offsetYPercent", G_TYPE_DOUBLE, 0.0,
+                               "widthPercent", G_TYPE_DOUBLE, 0.0,
+                               "heightPercent", G_TYPE_DOUBLE, 0.0,
+                               "url", G_TYPE_STRING, NULL,
+                               NULL);
+  g_object_set (G_OBJECT (faceOverlay), "image-to-overlay", imageSt, NULL);
+  gst_structure_free (imageSt);
 }
 
 void FaceOverlayFilterImpl::setOverlayedImage (const std::string &uri,
     float offsetXPercent, float offsetYPercent, float widthPercent,
     float heightPercent)
 {
-  // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED,
-                          "FaceOverlayFilterImpl::setOverlayedImage: Not implemented");
+  GstStructure *imageSt;
+  imageSt = gst_structure_new ("image",
+                               "offsetXPercent", G_TYPE_DOUBLE, double (offsetXPercent),
+                               "offsetYPercent", G_TYPE_DOUBLE, double (offsetYPercent),
+                               "widthPercent", G_TYPE_DOUBLE, double (widthPercent),
+                               "heightPercent", G_TYPE_DOUBLE, double (heightPercent),
+                               "url", G_TYPE_STRING, uri.c_str(),
+                               NULL);
+  g_object_set (G_OBJECT (faceOverlay), "image-to-overlay", imageSt, NULL);
+  gst_structure_free (imageSt);
 }
 
 MediaObjectImpl *

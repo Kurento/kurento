@@ -41,6 +41,7 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+  GstElement *faceOverlay = NULL;
 
   class StaticConstructor
   {
