@@ -23,7 +23,7 @@ public:
 
   ZBarFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
 
-  virtual ~ZBarFilterImpl () {};
+  virtual ~ZBarFilterImpl ();
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
@@ -38,6 +38,17 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+
+  GstElement *zbar;
+  gulong bus_handler_id;
+
+  guint64 lastTs = G_GUINT64_CONSTANT (0);
+  std::string lastType;
+  std::string lastSymbol;
+
+  std::function<void (GstMessage *) > busMessageLambda;
+
+  void barcodeDetected (guint64 ts, std::string &type, std::string &symbol);
 
   class StaticConstructor
   {
