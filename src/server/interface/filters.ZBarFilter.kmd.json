@@ -1,0 +1,41 @@
+{
+  "remoteClasses": [
+    {
+      "name": "ZBarFilter",
+      "extends": "Filter",
+      "doc": "This filter detects :term:`QR` codes in a video feed. When a code is found, the filter raises a :rom:evnt:`CodeFound` event.",
+      "constructor": {
+        "doc": "Builder for the :rom:cls:`ZBarFilter`.",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+            "type": "MediaPipeline"
+          }
+        ]
+      },
+      "events": [
+        "CodeFound"
+      ]
+    }
+  ],
+  "events": [
+    {
+      "properties": [
+        {
+          "name": "codeType",
+          "doc": "type of :term:`QR` code found",
+          "type": "String"
+        },
+        {
+          "name": "value",
+          "doc": "value contained in the :term:`QR` code",
+          "type": "String"
+        }
+      ],
+      "extends": "Media",
+      "name": "CodeFound",
+      "doc": "Event raised by a :rom:cls:`ZBarFilter` when a code is found in the data being streamed."
+    }
+  ]
+}
