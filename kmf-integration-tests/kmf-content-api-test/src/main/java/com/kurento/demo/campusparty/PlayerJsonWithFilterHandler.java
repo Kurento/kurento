@@ -28,7 +28,7 @@ import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * HTTP Player Handler; tunnel strategy; JSON control protocol; it creates a
- * player end point in the media server with a WEBM video, and a Jack Vader
+ * player end point in the media server with a WEBM video, and a FaceOverlay
  * Filter is connected to this player. This filter detects human faces an put
  * them a pirate hut.
  * 

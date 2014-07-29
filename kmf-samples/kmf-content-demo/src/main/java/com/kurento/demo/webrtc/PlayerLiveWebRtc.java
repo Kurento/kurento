@@ -36,8 +36,6 @@ public class PlayerLiveWebRtc extends HttpPlayerHandler {
 		MediaElement mediaElement = null;
 		if (contentId.equals("faceoverlay")) {
 			mediaElement = WebRtcFaceOverlayLoopback.filter;
-		} else if (contentId.equals("jackvader")) {
-			mediaElement = WebRtcJackVaderLoopback.filter;
 		} else if (contentId.equals("loopback")) {
 			mediaElement = WebRtcLoopback.webRtcEndpoint;
 		}

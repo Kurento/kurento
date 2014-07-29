@@ -52,15 +52,6 @@ public interface MediaPipeline extends MediaObject {
 	public abstract ZBarFilter.Builder newZBarFilter();
 
 	/**
-	 * Get a {@link PointerDetectorAdvFilter}.{@link Builder} for this
-	 * MediaPipeline
-	 * 
-	 **/
-	@FactoryMethod("mediaPipeline")
-	public abstract PointerDetectorAdvFilter.Builder newPointerDetectorAdvFilter(
-			@Param("calibrationRegion") WindowParam calibrationRegion);
-
-	/**
 	 * Get a {@link HttpPostEndpoint}.{@link Builder} for this MediaPipeline
 	 * 
 	 **/
@@ -73,22 +64,6 @@ public interface MediaPipeline extends MediaObject {
 	 **/
 	@FactoryMethod("mediaPipeline")
 	public abstract RtpEndpoint.Builder newRtpEndpoint();
-
-	/**
-	 * Get a {@link PointerDetectorFilter}.{@link Builder} for this
-	 * MediaPipeline
-	 * 
-	 **/
-	@FactoryMethod("mediaPipeline")
-	public abstract PointerDetectorFilter.Builder newPointerDetectorFilter();
-
-	/**
-	 * Get a {@link ChromaFilter}.{@link Builder} for this MediaPipeline
-	 * 
-	 **/
-	@FactoryMethod("mediaPipeline")
-	public abstract ChromaFilter.Builder newChromaFilter(
-			@Param("window") WindowParam window);
 
 	/**
 	 * Get a {@link Dispatcher}.{@link Builder} for this MediaPipeline
@@ -112,25 +87,11 @@ public interface MediaPipeline extends MediaObject {
 	public abstract Composite.Builder newComposite();
 
 	/**
-	 * Get a {@link JackVaderFilter}.{@link Builder} for this MediaPipeline
-	 * 
-	 **/
-	@FactoryMethod("mediaPipeline")
-	public abstract JackVaderFilter.Builder newJackVaderFilter();
-
-	/**
 	 * Get a {@link FaceOverlayFilter}.{@link Builder} for this MediaPipeline
 	 * 
 	 **/
 	@FactoryMethod("mediaPipeline")
 	public abstract FaceOverlayFilter.Builder newFaceOverlayFilter();
-
-	/**
-	 * Get a {@link PlateDetectorFilter}.{@link Builder} for this MediaPipeline
-	 * 
-	 **/
-	@FactoryMethod("mediaPipeline")
-	public abstract PlateDetectorFilter.Builder newPlateDetectorFilter();
 
 	/**
 	 * Get a {@link RecorderEndpoint}.{@link Builder} for this MediaPipeline
@@ -147,14 +108,6 @@ public interface MediaPipeline extends MediaObject {
 	@FactoryMethod("mediaPipeline")
 	public abstract GStreamerFilter.Builder newGStreamerFilter(
 			@Param("command") String command);
-
-	/**
-	 * Get a {@link CrowdDetectorFilter}.{@link Builder} for this MediaPipeline
-	 * 
-	 **/
-	@FactoryMethod("mediaPipeline")
-	public abstract CrowdDetectorFilter.Builder newCrowdDetectorFilter(
-			@Param("rois") List<RegionOfInterest> rois);
 
 	/**
 	 * 

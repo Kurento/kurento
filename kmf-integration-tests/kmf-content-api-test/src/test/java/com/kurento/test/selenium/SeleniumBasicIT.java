@@ -61,13 +61,13 @@ public class SeleniumBasicIT extends BaseSeleniumTst {
 	}
 
 	@Test
-	public void testPlayerJsonJackVaderRedirectChrome() throws Exception {
-		seleniumTest(ChromeDriver.class, "player-json-redirect", "jack");
+	public void testPlayerJsonFaceOverlayRedirectChrome() throws Exception {
+		seleniumTest(ChromeDriver.class, "player-json-redirect", "face");
 	}
 
 	@Test
-	public void testPlayerJsonJackVaderTunnelFirefox() throws Exception {
-		seleniumTest(FirefoxDriver.class, "player-json-tunnel", "jack");
+	public void testPlayerJsonFaceOverlayTunnelFirefox() throws Exception {
+		seleniumTest(FirefoxDriver.class, "player-json-tunnel", "face");
 	}
 
 	public void testPlayerJsonZBar(Class<? extends WebDriver> driverClass,

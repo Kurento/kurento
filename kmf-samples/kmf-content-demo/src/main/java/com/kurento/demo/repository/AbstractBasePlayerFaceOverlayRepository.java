@@ -18,15 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.repository.RepositoryHttpPlayer;
 import com.kurento.kmf.repository.RepositoryItem;
 
-public class AbstractBasePlayerJackVaderRepository extends HttpPlayerHandler {
+public class AbstractBasePlayerFaceOverlayRepository extends HttpPlayerHandler {
 
 	@Autowired
 	private MediaApiConfiguration config;
@@ -58,7 +58,12 @@ public class AbstractBasePlayerJackVaderRepository extends HttpPlayerHandler {
 			contentSession.releaseOnTerminate(mp);
 			PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(mediaUrl)
 					.build();
-			JackVaderFilter filter = mp.newJackVaderFilter().build();
+
+			final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+			filter.setOverlayedImage(
+					"http://files.kurento.org/imgs/mario-wings.png", -0.35F,
+					-1.2F, 1.6F, 1.6F);
+
 			playerEndpoint.connect(filter);
 			contentSession.setAttribute("player", playerEndpoint);
 			HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()

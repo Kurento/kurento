@@ -1,5 +1,5 @@
 /*
- * (C) Copyright 2014 Kurento (http://kurento.org/)
+ * (C) Copyright 2013 Kurento (http://kurento.org/)
  *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public License
@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.demo;
+package com.kurento.demo.webrtc;
 
 import com.kurento.kmf.content.WebRtcContentHandler;
 import com.kurento.kmf.content.WebRtcContentService;
@@ -27,7 +27,7 @@ import com.kurento.kmf.media.WebRtcEndpoint;
  * @author Boni García (bgarcia@gsyc.es)
  * @since 1.0.1
  */
-@WebRtcContentService(path = "/webRtcFaceOverlayFilter")
+@WebRtcContentService(path = "/webRtcFaceOverlayLoopback")
 public class WebRtcFaceOverlayLoopback extends WebRtcContentHandler {
 
 	@Override
@@ -36,7 +36,7 @@ public class WebRtcFaceOverlayLoopback extends WebRtcContentHandler {
 		MediaPipeline mp = contentSession.getMediaPipelineFactory().create();
 		contentSession.releaseOnTerminate(mp);
 
-		FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
 		filter.setOverlayedImage(
 				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
 				1.6F, 1.6F);

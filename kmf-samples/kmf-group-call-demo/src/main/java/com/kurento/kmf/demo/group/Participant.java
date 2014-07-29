@@ -59,7 +59,7 @@ public class Participant implements Closeable {
 	public WebRtcEndpoint receiveVideoFrom(Participant sender) {
 		if (sender.getName().equals(name)) {
 			log.debug("PARTICIPANT {}: configuring loopback", this.name);
-			// Filter filter = this.pipeline.newJackVaderFilter().build();
+			// Filter filter = this.pipeline.newFaceOverlayFilter().build();
 			// outgoingMedia.connect(filter);
 			// filter.connect(outgoingMedia);
 			return outgoingMedia;

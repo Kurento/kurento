@@ -28,7 +28,6 @@ import org.junit.Test;
 import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.kmf.media.GStreamerFilter;
-import com.kurento.kmf.media.PlateDetectorFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.MediaEventListener;
 import com.kurento.kmf.media.test.base.MediaPipelineAsyncBaseTest;
@@ -76,7 +75,6 @@ public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 					@Override
 					public void onError(Throwable cause) {
-
 						throw new KurentoException(cause);
 					}
 				});

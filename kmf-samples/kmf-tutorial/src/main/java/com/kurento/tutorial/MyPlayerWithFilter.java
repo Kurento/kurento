@@ -17,13 +17,13 @@ package com.kurento.tutorial;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 
 /**
- * HTTP Player with JackVader filter.
+ * HTTP Player with FaceOverlay filter.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.2
@@ -42,7 +42,13 @@ public class MyPlayerWithFilter extends HttpPlayerHandler {
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				"http://files.kurento.org/video/fiwarecut.webm").build();
 		contentSession.setAttribute("player", playerEndpoint);
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
+
+		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+
+		filter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+				1.6F, 1.6F);
+
 		HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint().terminateOnEOS()
 				.build();
 

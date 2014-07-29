@@ -17,6 +17,11 @@ package com.kurento.demo.internal;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.kurento.demo.player.PlayerRedirect;
+import com.kurento.demo.player.PlayerTunnel;
+import com.kurento.demo.playerjson.PlayerJsonRedirect;
+import com.kurento.demo.playerjson.PlayerJsonTunnel;
+
 /**
  * Static class which contains a maps of the different URLs to be played in the
  * HTTP Player Handler of this project. For example, in {@link PlayerRedirect},
@@ -61,7 +66,7 @@ public class VideoURLs {
 		map.put("rtsp",
 				"rtsp://r1---sn-cg07luee.c.youtube.com/CiILENy73wIaGQmZ9QK4y4Ih0BMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp");
 
-		map.put("jack", "http://files.kurento.org/video/fiwarecut.webm");
+		map.put("face", "http://files.kurento.org/video/fiwarecut.webm");
 		map.put("zbar", "http://files.kurento.org/video/barcodes.webm");
 		map.put("crowd", "http://files.kurento.org/video/crowd.mp4");
 		map.put("plate", "http://files.kurento.org/video/plates.webm");

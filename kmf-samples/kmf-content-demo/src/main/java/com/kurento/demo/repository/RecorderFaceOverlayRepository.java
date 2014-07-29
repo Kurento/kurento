@@ -21,8 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.kurento.kmf.content.HttpRecorderHandler;
 import com.kurento.kmf.content.HttpRecorderService;
 import com.kurento.kmf.content.HttpRecorderSession;
+import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.HttpPostEndpoint;
-import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaApiConfiguration;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RecorderEndpoint;
@@ -31,15 +31,15 @@ import com.kurento.kmf.repository.RepositoryHttpRecorder;
 import com.kurento.kmf.repository.RepositoryItem;
 
 /**
- * HTTP Recorder in Repository using the JackVader filter previous to recording;
- * tunnel strategy (redirect=false, by default); not using JSON-RPC control
- * protocol (useControlProtocol=false).
+ * HTTP Recorder in Repository using the FaceOverlay filter previous to
+ * recording; tunnel strategy (redirect=false, by default); not using JSON-RPC
+ * control protocol (useControlProtocol=false).
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.1
  */
-@HttpRecorderService(path = "/recorderJackVaderRepository", useControlProtocol = false)
-public class RecorderJackVaderRepository extends HttpRecorderHandler {
+@HttpRecorderService(path = "/recorderFaceOverlayRepository", useControlProtocol = false)
+public class RecorderFaceOverlayRepository extends HttpRecorderHandler {
 
 	@Autowired
 	private MediaApiConfiguration config;
@@ -49,7 +49,7 @@ public class RecorderJackVaderRepository extends HttpRecorderHandler {
 			throws Exception {
 		Repository repository = contentSession.getRepository();
 		RepositoryItem repositoryItem;
-		String itemId = "itemJackVader";
+		String itemId = "itemFaceOverlay";
 		try {
 			repositoryItem = repository.findRepositoryItemById(itemId);
 			getLogger().info("Deleting existing repository '{}'", itemId);
@@ -74,7 +74,11 @@ public class RecorderJackVaderRepository extends HttpRecorderHandler {
 		RecorderEndpoint recorderEndPoint = mp.newRecorderEndpoint(mediaUrl)
 				.build();
 
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
+		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+		filter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+				1.6F, 1.6F);
+
 		filter.connect(recorderEndPoint);
 		contentSession.setAttribute("recorder", recorderEndPoint);
 		HttpPostEndpoint httpEndpoint = mp.newHttpPostEndpoint().build();

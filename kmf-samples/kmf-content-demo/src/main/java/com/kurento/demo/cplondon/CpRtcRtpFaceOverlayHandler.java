@@ -12,40 +12,37 @@
  * Lesser General Public License for more details.
  *
  */
-package com.kurento.demo;
+package com.kurento.demo.cplondon;
 
 import com.kurento.kmf.content.RtpContentHandler;
 import com.kurento.kmf.content.RtpContentService;
 import com.kurento.kmf.content.RtpContentSession;
-import com.kurento.kmf.media.JackVaderFilter;
+import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.RtpEndpoint;
 import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
-/**
- * RTP Content Handler which produces a media pipeline composed by a
- * <code>JackVaderFilter</code>.
- * 
- * @author Luis López (llopez@gsyc.es)
- * @author Boni García (bgarcia@gsyc.es)
- * @since 1.0.0
- * @see PlayerConsumingRtpJackVaderFilter
- */
-@RtpContentService(name = "RtpProducingJackVaderFilter", path = "/rtpJack")
-public class RtpProducingJackVaderFilter extends RtpContentHandler {
+@RtpContentService(name = "CpRtpWithFilter", path = "/cpRtpFaceOverlay")
+public class CpRtcRtpFaceOverlayHandler extends RtpContentHandler {
 
-	public static JackVaderFilter sharedJackVaderReference;
+	public static FaceOverlayFilter sharedFilterReference;
 
 	@Override
 	public void onContentRequest(RtpContentSession session) throws Exception {
 		MediaPipelineFactory mpf = session.getMediaPipelineFactory();
 		MediaPipeline mp = mpf.create();
 		session.releaseOnTerminate(mp);
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
-		RtpEndpoint rtpEP = mp.newRtpEndpoint().build();
-		filter.connect(rtpEP);
-		session.start(rtpEP);
-		sharedJackVaderReference = filter;
+
+		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+		filter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+				1.6F, 1.6F);
+
+		RtpEndpoint rtpEndpoint = mp.newRtpEndpoint().build();
+		rtpEndpoint.connect(filter);
+		rtpEndpoint.connect(rtpEndpoint);
+		session.start(rtpEndpoint);
+		sharedFilterReference = filter;
 	}
 
 }

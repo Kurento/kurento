@@ -49,7 +49,7 @@ public class VideoURLs {
 		map.put("mp4", "http://files.kurento.org/video/chrome.mp4");
 		map.put("avi", "http://files.kurento.org/video/car.avi");
 
-		map.put("jack", "http://files.kurento.org/video/fiwarecut.webm");
+		map.put("face", "http://files.kurento.org/video/fiwarecut.webm");
 		map.put("zbar", "http://files.kurento.org/video/barcodes.webm");
 	};
 

@@ -17,15 +17,15 @@ package com.kurento.demo.campusparty;
 import com.kurento.kmf.content.HttpPlayerHandler;
 import com.kurento.kmf.content.HttpPlayerService;
 import com.kurento.kmf.content.HttpPlayerSession;
+import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.HttpGetEndpoint;
-import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.MediaPipeline;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.factory.MediaPipelineFactory;
 
 /**
  * HTTP Player Handler; tunnel strategy; JSON control protocol; it creates a
- * player end point in the media server with a WEBM video, and a Jack Vader
+ * player end point in the media server with a WEBM video, and a _FaceOverlay
  * Filter is connected to this player. This filter detects human faces an put
  * them a pirate hut.
  * 
@@ -34,7 +34,7 @@ import com.kurento.kmf.media.factory.MediaPipelineFactory;
  * @since 1.0.0
  */
 @HttpPlayerService(name = "PlayerJsonFilter", path = "/playerJsonFilter", redirect = true, useControlProtocol = true)
-public class PlayerJsonJackVader extends HttpPlayerHandler {
+public class PlayerJsonFaceOverlay extends HttpPlayerHandler {
 
 	@Override
 	public void onContentRequest(HttpPlayerSession session) throws Exception {
@@ -43,7 +43,12 @@ public class PlayerJsonJackVader extends HttpPlayerHandler {
 		session.releaseOnTerminate(mp);
 		PlayerEndpoint playerEndpoint = mp.newPlayerEndpoint(
 				"http://files.kurento.org/video/fiwarecut.webm").build();
-		JackVaderFilter filter = mp.newJackVaderFilter().build();
+
+		final FaceOverlayFilter filter = mp.newFaceOverlayFilter().build();
+		filter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+				1.6F, 1.6F);
+
 		playerEndpoint.connect(filter);
 		session.setAttribute("player", playerEndpoint);
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()

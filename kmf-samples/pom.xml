@@ -47,8 +47,7 @@
 	</developers>
 	
 	<modules>
-		<module>kmf-content-demo</module>
-		<module>fi-lab-demo</module>
+		<module>kmf-content-demo</module>		
 		<module>kmf-tutorial</module>
 		<module>kmf-phone-demo</module>
 		<module>kmf-group-call-demo</module>

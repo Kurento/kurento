@@ -19,14 +19,10 @@ import com.kurento.kmf.content.WebRtcContentService;
 import com.kurento.kmf.content.WebRtcContentSession;
 import com.kurento.kmf.media.FaceOverlayFilter;
 import com.kurento.kmf.media.MediaPipeline;
-import com.kurento.kmf.media.PointerDetectorFilter;
-import com.kurento.kmf.media.PointerDetectorWindowMediaParam;
 import com.kurento.kmf.media.WebRtcEndpoint;
-import com.kurento.kmf.media.events.MediaEventListener;
-import com.kurento.kmf.media.events.WindowInEvent;
 
 /**
- * WebRTC with PointerDetector and JackVader filters.
+ * WebRTC with FaceOverlay filters.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.2
@@ -44,27 +40,16 @@ public class MyWebRtcWithFilters extends WebRtcContentHandler {
 
 		// Media Elements: WebRTC Endpoint, Filter
 		final WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
-		final PointerDetectorFilter pointerDetectorFilter = mp
-				.newPointerDetectorFilter().build();
+
 		final FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter()
 				.build();
-		PointerDetectorWindowMediaParam start = new PointerDetectorWindowMediaParam(
-				"start", 100, 100, 280, 380);
-		start.setImage("http://files.kurento.org/imgs/start.png");
-		pointerDetectorFilter.addWindow(start);
-		pointerDetectorFilter
-				.addWindowInListener(new MediaEventListener<WindowInEvent>() {
-					public void onEvent(WindowInEvent event) {
-						// Set overlay image
-						faceOverlayFilter.setOverlayedImage(
-								"http://files.kurento.org/imgs/mario-wings.png",
-								-0.35F, -1.2F, 1.6F, 1.6F);
-					}
-				});
+
+		faceOverlayFilter.setOverlayedImage(
+				"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+				1.6F, 1.6F);
 
 		// Connections
-		webRtcEndpoint.connect(pointerDetectorFilter);
-		pointerDetectorFilter.connect(faceOverlayFilter);
+		webRtcEndpoint.connect(faceOverlayFilter);
 		faceOverlayFilter.connect(webRtcEndpoint);
 
 		// Start content session

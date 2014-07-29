@@ -18,15 +18,15 @@ import com.kurento.kmf.content.HttpPlayerService;
 
 /**
  * HTTP Player of previously recorded contents in Repository (contenId will be
- * the repository item Id) plus a filter (JackVaderFilter); tunnel strategy
- * (redirect=false, by default); not using JSON-RPC control protocol
- * (useControlProtocol=false).
+ * the repository item Id) plus a filter (FaceOverlayFilter); tunnel strategy
+ * (redirect=false, by default); using JSON-RPC control protocol
+ * (useControlProtocol=true).
  * 
  * @author Boni García (bgarcia@gsyc.es)
  * @version 1.0.1
  */
-@HttpPlayerService(path = "/playerJackVaderRepository/*", useControlProtocol = false)
-public class PlayerJackVaderRepository extends
-		AbstractBasePlayerJackVaderRepository {
+@HttpPlayerService(path = "/playerJsonFaceOverlayRepository/*", useControlProtocol = true)
+public class PlayerJsonFaceOverlayRepository extends
+		AbstractBasePlayerFaceOverlayRepository {
 
 }

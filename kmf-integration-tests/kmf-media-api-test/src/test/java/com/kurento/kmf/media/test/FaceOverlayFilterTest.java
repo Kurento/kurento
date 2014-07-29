@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.kurento.kmf.media.FaceOverlayFilter;
-import com.kurento.kmf.media.JackVaderFilter;
 import com.kurento.kmf.media.PlayerEndpoint;
 import com.kurento.kmf.media.events.EndOfStreamEvent;
 import com.kurento.kmf.media.events.MediaEventListener;
@@ -56,7 +55,7 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 	}
 
 	/**
-	 * Test if a {@link JackVaderFilter} can be created in the KMS. The filter
+	 * Test if a {@link FaceOverlayFilter} can be created in the KMS. The filter
 	 * is pipelined with a {@link PlayerEndpoint}, which feeds video to the
 	 * filter. This test depends on the correct behaviour of the player and its
 	 * events.
