@@ -2,12 +2,13 @@
 
 #include <gst/gst.h>
 #include "MediaPipeline.hpp"
+#include "FilterType.hpp"
 #include <GStreamerFilterImplFactory.hpp>
 #include "GStreamerFilterImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 #include <gst/gst.h>
-#include <stdio.h>
+#include <commons/kms-core-enumtypes.h>
 
 #define GST_CAT_DEFAULT kurento_gstreamer_filter_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -17,7 +18,8 @@ namespace kurento
 {
 
 GStreamerFilterImpl::GStreamerFilterImpl (std::shared_ptr<MediaPipeline>
-    mediaPipeline, const std::string &command) : FilterImpl (
+    mediaPipeline, const std::string &command,
+    std::shared_ptr<FilterType> filterType) : FilterImpl (
         std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
   std::string gstreamerElement, rest_token;
@@ -25,6 +27,23 @@ GStreamerFilterImpl::GStreamerFilterImpl (std::shared_ptr<MediaPipeline>
   gstreamerElement = command.substr (0, command.find (' ') );
 
   GST_DEBUG ("Command %s", gstreamerElement.c_str() );
+
+  switch (filterType->getValue() ) {
+  case FilterType::VIDEO:
+    g_object_set (element, "type", 2, NULL);
+    break;
+
+  case FilterType::AUDIO:
+    g_object_set (element, "type", 1, NULL);
+    break;
+
+  case FilterType::AUTODETECT:
+    g_object_set (element, "type", 0, NULL);
+    break;
+
+  default:
+    break;
+  }
 
   g_object_set (element, "filter-factory", gstreamerElement.c_str(), NULL);
 
@@ -50,9 +69,10 @@ GStreamerFilterImpl::GStreamerFilterImpl (std::shared_ptr<MediaPipeline>
 
 MediaObjectImpl *
 GStreamerFilterImplFactory::createObject (std::shared_ptr<MediaPipeline>
-    mediaPipeline, const std::string &command) const
+    mediaPipeline, const std::string &command,
+    std::shared_ptr<FilterType> filterType) const
 {
-  return new GStreamerFilterImpl (mediaPipeline, command);
+  return new GStreamerFilterImpl (mediaPipeline, command, filterType);
 }
 
 void

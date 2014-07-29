@@ -47,3 +47,4 @@ kms-marshal.h
 COPYING
 tests/examples/webrtc_http_server
 build
+obj-x86_64-linux-gnu/

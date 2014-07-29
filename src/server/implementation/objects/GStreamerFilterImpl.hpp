@@ -11,6 +11,7 @@ namespace kurento
 {
 
 class MediaPipeline;
+class FilterType;
 class GStreamerFilterImpl;
 
 void Serialize (std::shared_ptr<GStreamerFilterImpl> &object,
@@ -22,7 +23,7 @@ class GStreamerFilterImpl : public FilterImpl, public virtual GStreamerFilter
 public:
 
   GStreamerFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
-                       const std::string &command);
+                       const std::string &command, std::shared_ptr<FilterType> filterType);
 
   virtual ~GStreamerFilterImpl () {};
 
