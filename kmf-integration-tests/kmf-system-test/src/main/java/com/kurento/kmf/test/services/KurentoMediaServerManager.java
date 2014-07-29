@@ -145,13 +145,18 @@ public class KurentoMediaServerManager {
 		}
 
 		createKurentoConf();
-		String logFolder = testDir + testClassName;
-		createFolder(logFolder);
 
-		log.debug("Log file: {}", logFolder);
+		// String logFolder = testDir + testClassName;
+		// createFolder(logFolder);
 
-		Shell.runAndWait("sh", "-c", workspace + "kurento.sh > " + logFolder
-				+ "/" + testMethodName + "-kms.log 2>&1");
+		File logFile = new File(workspace, "kms.log");
+		KurentoServicesTestHelper.setServerLogFilePath(logFile);
+
+		log.debug("Log file: {}", logFile.getAbsolutePath());
+
+		Shell.runAndWait("sh", "-c",
+				workspace + "kurento.sh > " + logFile.getAbsolutePath()
+						+ " 2>&1");
 
 		waitForKurentoMediaServer();
 	}

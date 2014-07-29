@@ -5,6 +5,8 @@ import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getRabbitMqAdd
 import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getThriftKmfAddress;
 import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getThriftKmsAddress;
 
+import java.io.File;
+
 import org.apache.catalina.LifecycleException;
 
 import com.kurento.kmf.common.PropertiesManager;
@@ -63,6 +65,7 @@ public class KurentoServicesTestHelper {
 	private static String krcAutostart;
 	private static String kmcAutostart;
 	private static String kmsPrintLog;
+	private static File logFile;
 
 	public static void startKurentoServicesIfNeccessary() {
 
@@ -273,5 +276,13 @@ public class KurentoServicesTestHelper {
 	public static String getTestFilesPath() {
 		return PropertiesManager.getProperty(KURENTO_TESTFILES_PROP,
 				KURENTO_TESTFILES_DEFAULT);
+	}
+
+	public static void setServerLogFilePath(File logFile) {
+		KurentoServicesTestHelper.logFile = logFile;
+	}
+
+	public static File getServerLogFile() {
+		return logFile;
 	}
 }
