@@ -4,3 +4,6 @@ build
 source/*/com
 source/langdocs
 npm-debug.log
+.classpath
+.project
+.settings

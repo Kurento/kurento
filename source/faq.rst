@@ -132,7 +132,7 @@ Why do I get the error...
             </configuration>
         </plugin>
 
-    .. seealso:: `This answer 
+    .. seealso:: `This answer
         <http://stackoverflow.com/questions/18186590/webxml-attribute-is-required-with-servlet-3-0>`_
         about the issue.
 
@@ -150,4 +150,4 @@ Why can't I...
     which 13.10 keeps at the 1.2 version. While we are providing `a ppa
     <https://launchpad.net/~kurento/+archive/kurento>`__ with the packages,
     building those against older releases is a difficult task without
-    updating lots of packages. You can also build from sources 
+    updating lots of packages. You can also build from sources

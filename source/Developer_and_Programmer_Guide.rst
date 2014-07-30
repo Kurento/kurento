@@ -495,7 +495,6 @@ API (directly or with HTML5 SDK).
 
         @Override
         public void onContentRequest(HttpPlayerSession session) throws Exception {
-            
             session.start("file:///path/to/myvideo");
         }
     }
@@ -561,7 +560,7 @@ content to :term:`WEBM` before storing it. [#]_
         @Override
         public void onContentRequest(HttpRecorderSession contentSession)
                 throws Exception {
-            
+
             contentSession.start("file:///myfile.webm");
         }
     }
@@ -668,8 +667,9 @@ source and sink media resources that will be connected to the
 
     @Override
     public void onContentRequest(WebRtcContentSession contentSession) throws Exception {
+
         contentSession.start("file:///fileToSend.webm","file:///fileToRecord.webm");
-    } 
+    }
 
 The *Endpoint* informs applications when a media transfer starts by
 calling the optional method :java:meth:`onContentStarted()`.
@@ -701,7 +701,7 @@ are the main error cause . Any of these exceptions can be handled on
     @Override
     public void onUncaughtException(HttpPlayerSession contentSession, Throwable exception) throws Exception {
         // Execute specific application logic if there is an unrecoverable
-        // error on the media infrastructure. Session is destroyed after 
+        // error on the media infrastructure. Session is destroyed after
         // executing this code
     }
 
@@ -712,7 +712,7 @@ If exceptions are not handled, they will be propagated and the method
     @Override
     public void onSessionError(WebRtcContentSession contentSession, int code, String description) throws Exception {
         // Execute specific application logic if there is an unrecoverable
-        // error on the media infrastructure. Session is destroyed after 
+        // error on the media infrastructure. Session is destroyed after
         // executing this code
     }
 
@@ -724,12 +724,12 @@ method :java:meth:`getAttribute()` or deleted with method :java:meth:`removeAttr
 
     @Override
     public void onContentRequest(WebRtcContentSession contentSession) throws Exception {
-            
+
         contentSession.setAttribute("source", "source.avi");
         contentSession.setAttribute("sink", "sink.webm");
         //...
     }
-        
+
     @Override
     public void onContentStarted(WebRtcContentSession contentSession) throws Exception {
         String source = (String) contentSession.getAttribute("source");
@@ -768,6 +768,7 @@ method ``onContentCommand()``
 ::
 
     @Override
+<<<<<<< Updated upstream
     public ContentCommandResult onContentCommand( WebRtcContentSession contentSession,
                     ContentCommand contentCommand)
       throws Exception {
@@ -777,6 +778,15 @@ method ``onContentCommand()``
         //Process command...
 
         return new ContentCommandResult("OK");
+=======
+    public ContentCommandResult onContentCommand( WebRtcContentSession contentSession, ContentCommand contentCommand) throws Exception {
+        contentCommand.getData();
+        contentCommand.getType();
+
+        ContentCommandResult result = new ContentCommandResult();
+        result.setResult("OK");
+        return result;
+>>>>>>> Stashed changes
     }
 
 See the
@@ -814,7 +824,7 @@ Content URL: `http://myserver/myApp/myServicePath/{contentId}`
 
     @Override
     public void onContentRequest(HttpPlayerSession contentSession) throws Exception {
-        String contentId = contentSession.getContentId();   
+        String contentId = contentSession.getContentId();
         contentSession.start("file:///path/to/myrepo/" + contentId);
     }
 
@@ -829,9 +839,9 @@ through method ``getHttpServletRequest()``
         HttpServletRequest request = contentSession.getHttpServletRequest();
         request.getContextPath();
         request.getQueryString();
-        
-        // build content ID from URL 
-            
+
+        // build content ID from URL
+
         contentSession.start("file:///path/to/myrepo/" +contentId);
     }
 
@@ -861,7 +871,7 @@ Method ``releaseOnTerminate()`` can be used for this purpose.
 
     MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
     MediaPipeline mp = mpf.create();
-            
+
     PlayerEndpoint player = mp.createPlayerEndpoint("file:///path/to/myplayed.avi");
     contentSession.releaseOnTerminate(player);
 
@@ -884,15 +894,15 @@ until an explicit release is performed.
 
     @Override
     public void onContentRequest(WebRtcContentSession contentSession) throws Exception {
-                    
+
         MediaPipelineFactory mpf = contentSession.getMediaPipelineFactory();
         MediaPipeline mp = mpf.create();
-        
+
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///d").build();
 
         contentSession.start(player);
     }
-        
+
     @Override
     public void onSessionTerminated(WebRtcContentSession contentSession, int code, String reason)
                     throws Exception {
@@ -1054,7 +1064,7 @@ mechanism provided by Spring.
 
         @Autowired
         MediaPipelineFactory mpf;
-        
+
         // Application code
     }
 
@@ -1065,7 +1075,7 @@ purpose.
 
     public void init() {
         MediaPipeline mp = mpf.create ();
-        
+
         // Other initializations
     }
 
@@ -1102,15 +1112,15 @@ their values.
         RecorderEndpoint recorder = mp.newRecorderEndpoint("file:///myfile.mp4")
             .withMediaProfile(MediaProfileSpecType.MP4)
             .build();
-            
+
         RtpEndpoint rtp = mp.newRtpEndpoint()
             .build();
-            
+
         WebRtcEndpoint webrtc = mp.newWebRtcEndpoint()
             .build();
-            
+
         ZBarFilter zbar = mp.newZBarFilter().build();
-            
+
         // Do something with media elements
     }
 
@@ -1128,7 +1138,31 @@ element are connected to the input streams of the *sink* element.
             .terminateOnEos().build();
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
+<<<<<<< Updated upstream
         player.connect(httpEndpoint);
+=======
+
+        mp.connect(player, httpEndpoint);
+
+    }
+
+Method ``connect()`` creates a directional connection between elements
+*source* and *sink* provided as parameters. All output streams of the
+*source* element are connected to the input streams of the *sink*
+element.
+::
+
+    public void connectElements() {
+        MediaPipeline mp = mpf.create();
+
+        HttpGetEndpoint httpEndpoint = mp.newHttpGetEndpoint()
+            .build();
+
+        PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
+            .build();
+
+        mp.connect(player, httpEndpoint);
+>>>>>>> Stashed changes
     }
 
 In order to create bidirectional connections the application must
@@ -1137,12 +1171,18 @@ perform a connect operation in both directions.
 
     public void back2back () {
         MediaPipeline mp = mpf.create();
-        
+
         RtpEndpoint rtpA = mp.newRtpEndpoint().build();
         RtpEndpoint rtpB = mp.newRtpEndpoint().build();
+<<<<<<< Updated upstream
             
         rtpA.connect(rtpB);
         rtpB.connect(rtpA);
+=======
+
+        mp.connect(rtpA, rtpB);
+        mp.connect(rtpB, rtpA);
+>>>>>>> Stashed changes
     }
 
 Notice that method ``connect()`` won't do anything when elements without
@@ -1157,9 +1197,15 @@ increase in complexity.
 ::
 
     private MediaPipeline mp;
-        
+
     public void buildAsync () {
+<<<<<<< Updated upstream
         mp = mpf.create();
+=======
+
+        mp = mpf.create();
+
+>>>>>>> Stashed changes
         mp.newHttpGetEndpoint().buildAsync( new Continuation<HttpGetEndpoint>() {
             @Override
             public void onSuccess(HttpGetEndpoint result) {
@@ -1169,7 +1215,13 @@ increase in complexity.
             public void onError(Throwable cause) {
                 // log error
             }
+<<<<<<< Updated upstream
         });
+=======
+
+        });
+
+>>>>>>> Stashed changes
         mp.newPlayerEndpoint("file:///myfile.webm").buildAsync( new
             Continuation<PlayerEndpoint>() {
             @Override
@@ -1180,9 +1232,13 @@ increase in complexity.
             public void onError(Throwable cause) {
                 // log error
             }
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         });
     }
-        
+
     private HttpGetEndpoint http;
     private PlayerEndpoint player;
 

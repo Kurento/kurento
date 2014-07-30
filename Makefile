@@ -84,8 +84,15 @@ htmlhelp:
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
 langdoc:
-	- mkdir -p $(BUILDDIR)/langdoc && mkdir -p source/langdocs/jsdoc &&\
-	  for p in $(JAVA_APIS) $(JS_APIS); do \
+	- mkdir -p $(BUILDDIR)/langdoc && mkdir -p source/langdocs/jsdoc
+	  rm -rf $(BUILDDIR)/kurento-media-framework
+	  cd  $(BUILDDIR) && git clone https://github.com/Kurento/kurento-media-framework.git
+	  for p in $(JAVA_APIS); do \
+	      ( rm -rf $(BUILDDIR)/langdoc/$${p});\
+	      ( mv $(BUILDDIR)/kurento-media-framework/$${p} $(BUILDDIR)/langdoc);\
+	      done
+	  for p in $(JS_APIS); do \
+	      ( rm -rf $(BUILDDIR)/langdoc/$${p});\
 	      ( cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/$${p}.git );\
 	      done
 	  for p in $(JAVA_APIS); do {\

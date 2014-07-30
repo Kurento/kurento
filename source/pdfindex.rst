@@ -12,7 +12,7 @@ Welcome to Kurento's documentation!
    Developer_and_Programmer_Guide.rst
    Installation_Guide.rst
    faq.rst
-   glossary.rst 
+   glossary.rst
 
 API Documentation
 =================

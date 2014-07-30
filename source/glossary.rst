@@ -45,8 +45,8 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         they establish.
 
         .. seealso::
-            `enable-cors.org <http://enable-cors.org/>`__ 
-                for information on the relevance of CORS and how and when 
+            `enable-cors.org <http://enable-cors.org/>`__
+                for information on the relevance of CORS and how and when
                 to enable it.
 
     Element, Media
@@ -64,7 +64,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         multimedia framework written in the C programming language.
 
     H.264
-        A Video Compression Format. 
+        A Video Compression Format.
         The H.264 standard can be viewed as a "family of standards" composed
         of a number of profiles.  Each specific decoder deals with at least
         one such profiles, but not necessarily all. See
@@ -79,7 +79,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         The :wikipedia:`Hypertext Transfer Protocol <en,Hypertext_Transfer_Protocol>`
         is an application protocol for distributed, collaborative, hypermedia
         information systems. HTTP is the foundation of data communication for
-        the World Wide Web. 
+        the World Wide Web.
 
         .. seealso:: :rfc:`2616`
 
@@ -126,12 +126,13 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         * Kurento Application Server (:term:`KAS`).
         * Kurento Media Server (:term:`KMS`).
         * Kurento Media Framework (:term:`KMF`).
+        * Kurento Media Connector (:term:`KMC`).
         * Kurento Web SDK (:term:`KWS`).
         * Kurento Android SDK (:term:`KANDS`).
 
     KANDS
     Kurento Android SDK
-        An SDK that integrates audio and video streaming into 
+        An SDK that integrates audio and video streaming into
         Android applications.
 
     KAS
@@ -139,6 +140,10 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         A :term:`Java EE` Application container that hosts the server side
         :term:`signalling plane` of Kurento applications. Currently
         Kurento support the use of `JBoss 7 <http://www.jboss.org/jbossas>`__
+
+    KMC
+    Kurento Media Connector
+        Proxy that allows to clients connect to KMS through :term:`WebSocket`.
 
     KMF
     Kurento Media Framework
@@ -182,13 +187,13 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         information can be represented, stored, transmitted and processed
         digitally.
 
-        There is a temporal relationship between many forms of media, 
+        There is a temporal relationship between many forms of media,
         for instance audio, video and animations. There 2 are forms of problems
-        involved in 
+        involved in
 
             * Sequencing within the media, i.e. playing frames in correct
               order or time frame.
-            * Synchronisation, i.e. inter-media scheduling. For example, 
+            * Synchronisation, i.e. inter-media scheduling. For example,
               keeping video and audio synchronized or displaying captions
               or subtitles in the required intervals.
 
@@ -340,7 +345,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         .. seealso:: :term:`Media Plane`
 
     Sink, Media
-        A :index:`Media Sink <single: Media; Sink>` is a MediaPad that outputs a Media Stream.  
+        A :index:`Media Sink <single: Media; Sink>` is a MediaPad that outputs a Media Stream.
         Data streams from a MediaSource pad to another element’s MediaSink pad.
 
     SIP
@@ -388,7 +393,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
 
     TLS
         :wikipedia:`Transport Layer Security <en,Transport_Layer_Security>`
-        and its prececessor Secure Socket Layer (SSL) 
+        and its prececessor Secure Socket Layer (SSL)
 
         .. seealso::
             :rfc:`5246`
@@ -408,7 +413,7 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
                     VP8 page at Wikipedia
 
     WebM
-        `WebM <http://www.webmproject.org/>`__ is an open media file format 
+        `WebM <http://www.webmproject.org/>`__ is an open media file format
         designed for the web. WebM files consist of video streams compressed
         with the VP8 video codec and audio streams compressed with the
         Vorbis audio codec. The WebM file structure is based on the
@@ -419,8 +424,9 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
         web browsers with rich Real-Time Communcations capabilities via
         simple Javascript and HTML5 APIs and Components.
 
-        .. seealso::
-            `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`_
-                Standard working draft at the W3C site.
-            `WebRTC for newbies <https://www.webrtc-experiment.com/docs/webrtc-for-newbies.html>`_
-                A simple description of the protocol oriented to people coming from web development.
+        .. seealso:: `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`__
+
+    WebSocket
+        `WebSocket <https://www.websocket.org/>`__ specification (developed as
+        part of the HTML5 initiative) defines a full-duplex single socket
+        connection over which messages can be sent between client and server.

@@ -1,31 +1,32 @@
 =Kurento Installation=
 
-This guide describes how to install the Stream-Oriented GE - Kurento. Kurento is composed of two nodes, the Kurento Application Server (a.k.a. KAS), the Kurento Media Server (a.k.a KMS) and KFM Media Connector. These three nodes can be co-located or installed on separate machines. This guide focuses on the installation on a single machine, but comments are done where appropriate explaining how to modify the configuration files for a dual installation.
+This guide describes how to install the Stream-Oriented GE - Kurento. Kurento is composed of different nodes, namely the Kurento Application Server (KAS), the Kurento Media Server (KMS) and the KMF Media Connector (KMC). These three nodes can be installed in the same or different hosts. This guide focuses on the installation on a single machine, but comments are done where appropriate explaining how to modify the configuration files for a dual installation.
 
 == Prerequisites ==
 
-Hardware minimal recommneded requirements:
+Hardware minimal recommended requirements:
 * 8GB RAM
 * 16GB HDD (this figure is not taking into account that multimedia streams could be stored in the same machine. If so, HDD size must be increased accordingly)
 
 Operating system requirements:
-* Currently Kurento Media Server (KMS) only runs on Ubuntu Linux 13.10 64 Bits or newer. This is due to its dependency of the gstreamer 1.2.0 version.	
-* Kurento Application Server (KAS) can run in any platform that supports Open JDK version 7
+* Currently Kurento Media Server (KMS) only runs on Ubuntu Linux (32 or 64 bits). It is highly recommended using version 13.10 or newer due to the dependency of KMS with gstreamer.
+* Kurento Application Server (KAS) and KMF Media Connector (KMC) can run in any platform that supports JDK version 7.
 
 == Kurento Application Server (KAS) ==
 
 First, install ''Open JDK 7'' and  "unzip" packages:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
+$ sudo apt-get update
 $ sudo apt-get install openjdk-7-jdk unzip
 </pre>
 
 Download ''JBoss'', uncompress it and move it to ''/opt/jboss'' by executing:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
 $ sudo tar xfvz jboss-as-7.1.1.Final.tar.gz && sudo mv jboss-as-7.1.1.Final /opt/jboss
@@ -33,8 +34,8 @@ $ sudo tar xfvz jboss-as-7.1.1.Final.tar.gz && sudo mv jboss-as-7.1.1.Final /opt
 
 To avoid running JBoss as root create the user ''jboss'', the group ''jboss'' and make that user the owner of JBoss files and folders:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo adduser --system jboss && sudo addgroup jboss
 $ sudo chown -R jboss:jboss /opt/jboss/
@@ -42,8 +43,8 @@ $ sudo chown -R jboss:jboss /opt/jboss/
 
 Create the startup/stop script by copying the following content to a new file called ''/etc/init.d/jboss7'':
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 #! /bin/sh
 ### BEGIN INIT INFO
@@ -57,20 +58,20 @@ word-wrap: break-word">
 ### END INIT INFO
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-NAME="jboss" 
-JBOSS_HOME="/opt/jboss" 
-DAEMON="$JBOSS_HOME/bin/standalone.sh" 
-SHUTDOWN_CMD="$JBOSS_HOME/bin/jboss-cli.sh" 
+NAME="jboss"
+JBOSS_HOME="/opt/jboss"
+DAEMON="$JBOSS_HOME/bin/standalone.sh"
+SHUTDOWN_CMD="$JBOSS_HOME/bin/jboss-cli.sh"
 DAEMON_USER=jboss
 
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-DESC="JBoss AS Server" 
+DESC="JBoss AS Server"
 
 if [ -r "/lib/lsb/init-functions" ]; then
   . /lib/lsb/init-functions
 else
-  echo "E: /lib/lsb/init-functions not found, package lsb-base needed" 
+  echo "E: /lib/lsb/init-functions not found, package lsb-base needed"
   exit 1
 fi
 
@@ -82,29 +83,29 @@ fi
 verify_user () {
 # Only root can start Kurento
     if [ `id -u` -ne 0 ]; then
-        log_failure_msg "Only root can start JBoss" 
+        log_failure_msg "Only root can start JBoss"
         exit 1
     fi
 }
 
 if [ "$START_JBOSS" != "true" ]; then
-    log_failure_msg "Review activate settings within file /etc/default/jboss7" 
+    log_failure_msg "Review activate settings within file /etc/default/jboss7"
     exit 1
 fi
 
 if [ ! -e $JBOSS_HOME ]; then
-     log_failure_msg "Unable to access JBoss home directory at: $JBOSS_HOME" 
+     log_failure_msg "Unable to access JBoss home directory at: $JBOSS_HOME"
      exit 1
 fi
 
 #[ -z "$BIND_IP" ] && BIND_IP=12.0.0.1
-#[ -n "$DAR_PATH" ] && DAR_PATH="-Djavax.servlet.sip.dar=file://$DAR_PATH" 
+#[ -n "$DAR_PATH" ] && DAR_PATH="-Djavax.servlet.sip.dar=file://$DAR_PATH"
 
-JBOSS_OPTS="$JBOSS_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0" 
+JBOSS_OPTS="$JBOSS_OPTS -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0"
 
 case "$1" in
       start)
-          log_daemon_msg "Starting $DESC" "$NAME" 
+          log_daemon_msg "Starting $DESC" "$NAME"
                 verify_user
 
           # Verify pid file directory exists
@@ -124,7 +125,7 @@ case "$1" in
           ;;
 
        stop)
-            log_daemon_msg "Stopping $DESC" "$NAME" 
+            log_daemon_msg "Stopping $DESC" "$NAME"
             # This will just kill the standalone script. Java process detaches :(
             /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE \
                  --chuid $DAEMON_USER --startas $DAEMON
@@ -137,7 +138,7 @@ case "$1" in
             ;;
 
       restart|force-reload)
-            echo -n "Restarting $DESC: $NAME" 
+            echo -n "Restarting $DESC: $NAME"
             /sbin/start-stop-daemon --stop --quiet --pidfile $PIDFILE \
                     --exec $DAEMON
             rm -f $PIDFILE
@@ -156,16 +157,16 @@ exit 0
 
 Grant ''jboss'' user ''execution'' rights to run the startup/stop script:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo chmod 755 /etc/init.d/jboss7
 </pre>
 
 Create the file ''/etc/default/jboss7'' with the following content (this file is used by the startup/stop script):
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 # Defaults for JBoss7 initscript
 # sourced by /etc/init.d/jboss7
@@ -180,7 +181,7 @@ START_JBOSS=true
 
 # Additional options that are passed to the service.
 BIND_IP=0.0.0.0
-JBOSS_OPTS="" 
+JBOSS_OPTS=""
 
 # whom the daemons should run as
 JBOSS_USER=jboss
@@ -188,8 +189,8 @@ JBOSS_USER=jboss
 
 Finally, configure the server to run JBoss when booted:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo update-rc.d jboss7 defaults
 </pre>
@@ -198,16 +199,16 @@ $ sudo update-rc.d jboss7 defaults
 
 In order to add Personal Package Archive or PPA's repositories, the python-software-properties package must be installed:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo apt-get install python-software-properties
 </pre>
 
 Install KMS by typing the following commands, one at a time and in the same order as listed here. When asked for any kind of confirmation, reply afirmatively:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo add-apt-repository ppa:kurento/kurento
 $ sudo apt-get update
@@ -217,109 +218,111 @@ $ sudo apt-get install libevent-dev kurento
 
 Finally, configure the server to run KMS when booted:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo update-rc.d kurento defaults
 </pre>
 
+== KMF Media Connector (KMC) ==
 
-== KMF Media Connector ==
-
-The KMF Media Connector is a proxy that allows to clients connect to Kurento Media Server through websockets. The main Kurento Media Server interface is based on thrift technology, and this proxy made necessary convertions between websockets and thrift.
+The KMF Media Connector is a proxy that allows to clients connect to Kurento Media Server through websockets. The main Kurento Media Server interface is based on thrift technology, and this proxy made necessary conversions between websockets and thrift.
 
 Download ''KMF Media Connector'' and move it to ''/opt/kmf-media-connector'' by executing:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-$ sudo wget http://jmaster01-64.kurento.com/apps/kmf-media-connector.zip
+$ sudo wget http://builds.kurento.org/release/stable/kmf-media-connector.zip
 $ sudo mkdir /opt/kmf-media-connector && sudo mv kmf-media-connector.zip /opt/kmf-media-connector
 </pre>
 
 Unzip the kmf-media-connector.zip file:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-$ cd /opt/kmf-media-connector && sudo unzip kmf-media-connector.zip 
+$ cd /opt/kmf-media-connector && sudo unzip kmf-media-connector.zip
 </pre>
 
-Move the init.d script to the right location and give the correct permission to the file:
+Install ''KMF Media Connector'' as a service using the following script:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-$ sudo cp /opt/kmf-media-connector/support-files/kmf-media-connector.sh /etc/init.d/kmf-media-connector && $ chmod 755 /etc/init.d/kmf-media-connector
-</pre>
-
-Give the correct permissions to the start.sh file. This file is used by the kmf-media-connector.sh service script:
-
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
-word-wrap: break-word">
-$ chmod 755 /opt/kmf-media-connector/bin/start.sh 
+$ sudo ./bin/install.sh
 </pre>
 
 Finally, configure the server to run kmf-media-connector when booted:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo update-rc.d kmf-media-connector defaults
 </pre>
 
-And run the kmf-media-connector proxy service:
+Now ''KMF Media Connector'' has been installed and started. If you want to stop it, simply execute:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
+word-wrap: break-word">
+$ sudo service kmf-media-connector stop
+</pre>
+
+To start again KMF Media Connector:
+
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo service kmf-media-connector start
 </pre>
 
-Alternativel, you can run the KMF Media Connector passing the arguments directly from the command line: 
+Alternatively, you can run the KMF Media Connector passing the arguments directly from the command line:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-java -jar kmf-media-connector.jar --server.port=9090 --mediaserver.address=127.0.0.1 --mediaserver.port=9999 --handler.address=127.0.0.1 --handler.port=9900 --oauthserver.url=
+$ cd /opt/kmf-media-connector/lib
+$ java -jar kmf-media-connector.jar --server.port=8888 --thrift.kms.address=127.0.0.1:9090 --thrift.kmf.address=127.0.0.1:9900
+</pre>
+
+This can also be launched in background using the following command:
+
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
+word-wrap: break-word">
+$ cd /opt/kmf-media-connector/lib
+$ nohup java -jar kmf-media-connector.jar --server.port=8888 --thrift.kms.address=127.0.0.1:9090 --thrift.kmf.address=127.0.0.1:9900 &
 </pre>
 
 KMF Media Connector understands a number of arguments that can be used to call the application, these arguments are:
 
-* server.port: The http/websocket port of the proxy. This port will be used for the clients to connect to the port. If not specified, the value 8080 will be used.
-* mediaserver.address: The IP or address of the Kurento Media Server. If not specified, the address 127.0.0.1 will be used.
-* mediaserver.port: The port of the thrift interface in Kurento Media Server. If not specified, the port 9090 will be used.
-* handler.address: The IP or address that Kurento Media Server will use to connect to the proxy. If not specified, the address 127.0.0.1 will be used.
-* handler.port: The port that Kurento Media Server will use to connect to the proxy. If not specified, the port 9999 will be used.
-* oauthserver.url: The url of the ouath service used to authenticate the client requests. The url "http://cloud.lab.fi-ware.org" is the official OAuth service in FI-WARE project. The empty URL can be used to allow all clients to use the proxy (that is, no authentication is enforced). If not specified, the empty URL will be used.
+* server.port: The http/websocket port of the proxy. This port will be used for the clients to connect to the port. If not specified, the value 8888 will be used.
+* thrift.kmf.address : The IP address and port of the Kurento Media Server. If not specified, the address 127.0.0.1:9090 will be used.
+* thrift.kmf.address : The IP address and port that Kurento Media Server will use to connect to the proxy. If not specified, the address 127.0.0.1:9900 will be used.
+* oauthserver.url: The url of the ouath service used to authenticate the client requests. The url "http://cloud.lab.fi-ware.org" is the official OAuth service in FI-WARE project. If not specified, all clients can use the proxy (that is, no authentication is enforced).
 
-Or if you prefer, instead of using the command line parameters, you can specify these properties in a configuration file. The only requirements to use the configuration file is that this file must be called 'application.properties' and it must be placed inside the ''config'' directory in the working directory. 
+Or if you prefer, instead of using the command line parameters, you can specify these properties in a configuration file. The only requirements to use the configuration file is that this file must be called 'application.properties' and it must be placed inside the ''config'' directory in the working directory.
 
-The file is formated as a plain Java properties file:
+The file is formatted as a plain Java properties file:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-server.port=9090
-mediaserver.address=127.0.0.1
-mediaserver.port=9999
-handler.address=127.0.0.1
-handler.port=9900
+server.port=8888
+thrift.kms.address=127.0.0.1:9090
+thrift.kmf.address=127.0.0.1:9900
 oauthserver.url=http://cloud.lab.fi-ware.org
 </pre>
 
 == Kurento Network Configuration. ==
 
-=== Running Kurento Without NAT configuration. ===
+=== Running Kurento Without NAT configuration ===
 
-KMS can receive requests from the Kurento Application Server (KAS) and from final users. KMS uses a easily extensible service abstraction layer
-that enables it to attend application requests from either Thrift or RabbitMQ altough other services can also be deployed on it. The service in charge of attending all those requests is configured in
-the configuration file ''/etc/kurento/kurento.conf''.
-After a fresh installation that file looks like this:
+KMS can receive requests from the Kurento Application Server (KAS) and from final users. The IP addresses and ports to receive these requests are configured in the configuration file ''/etc/kurento/kurento.conf''. After a fresh install that file looks like this:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 [Server]
 sdpPattern=pattern.sdp
@@ -343,30 +346,22 @@ serverPort=9091
 
 [Thrift]
 serverPort=9090
-
-[RabbitMQ]
-serverAddress = 127.0.0.1
-serverPort = 5672
-username = "guest"
-password = "guest"
-vhost = "/"
 </pre>
 
-That configuration implies that only requests done through Thrift are accepted. By default Thrift server will be attached in all availables network interfaces. The section ''[Thrift]'' allows to configure the port where KMS will listen to KAS requests. The section ''[HttpEPServer]'' controls the IP address and port to listen to the final users.
+That configuration implies that only requests done through Thrift are accepted. By default Thrift server will be attached in all available network interfaces. The section ''[Thrift]'' allows to configure the port where KMS will listen to KAS requests. The section ''[HttpEPServer]'' controls the IP address and port to listen to the final users.
 
 === Running Kurento With NAT configuration===
 
 [[File:Kurento_nat_deployment.png|center|]]
 
-This network diagram depicts a scenario where a NAT device is present. In this case, the client will access the public IP 130.206.82.56, which will connect him with the external intertface of the NAT device. KMS serves media on a specific address which, by default, is the IP of the server where the service is running. This would have the server announcing that the media served by an Http Endpoint can be consumed in the private IP 172.30.1.122. Since this address is not accessible by external clients, the administrator of the system will have to confgure KMS to announce, as connection addres for clients, the public IP of the NAT device. This is acheived by changing the value of announcedAddress in the filte /etc/kurento/kurento.conf with the appropriate value. The following lines would be the contents of this configuration file for the present scenario.
+This network diagram depicts a scenario where a NAT device is present. In this case, the client will access the public IP 130.206.82.56, which will connect him with the external interface of the NAT device. KMS serves media on a specific address which, by default, is the IP of the server where the service is running. This would have the server announcing that the media served by an Http Endpoint can be consumed in the private IP 172.30.1.122. Since this address is not accessible by external clients, the administrator of the system will have to configure KMS to announce, as connection address for clients, the public IP of the NAT device. This is achieved by changing the value of announcedAddress in the filte /etc/kurento/kurento.conf with the appropriate value. The following lines would be the contents of this configuration file for the present scenario.
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 [Server]
-serverAddress=localhost
-serverPort=9090
 sdpPattern=pattern.sdp
+service=Thrift
 
 [HttpEPServer]
 #serverAddress=localhost
@@ -383,6 +378,9 @@ serverPort=9091
 #stunServerAddress = xxx.xxx.xxx.xxx
 #stunServerPort = xx
 #pemCertificate = file
+
+[Thrift]
+serverPort=9090
 </pre>
 
 == Sample application and videos==
@@ -391,19 +389,19 @@ To test part of the functionality of Kurento, a sample app called fi-lab-demo ca
 
 Download the test video with the following commands:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-$ sudo wget https://ci.kurento.com/video/video.tar.gz --no-check-certificate 
+$ sudo wget http://files.kurento.org/video/video.tar.gz
 $ sudo tar xfvz video.tar.gz && sudo mv video/ /opt/video && sudo chown -R jboss:jboss /opt/video
 </pre>
 
 And downlad the fi-lab-demo.war file using the following command:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-$ sudo wget https://ci.kurento.com/apps/fi-lab-demo.war --no-check-certificate 
+$ sudo wget http://builds.kurento.org/release/stable/fi-lab-demo.war
 $ sudo mv fi-lab-demo.war /opt/jboss/standalone/deployments && sudo chown -R jboss:jboss /opt/jboss/standalone/deployments/fi-lab-demo.war
 </pre>
 
@@ -411,35 +409,42 @@ $ sudo mv fi-lab-demo.war /opt/jboss/standalone/deployments && sudo chown -R jbo
 
 To verify that the installation has finished successfully start JBoss by typing:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo /etc/init.d/jboss7 start
 </pre>
 
 Open a browser and verify that the default root web page work properly:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 http://<Service_IP_address>:8080/
 </pre>
 
 To verify that the installation has finished successfully start KMS by typing:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo /etc/init.d/kurento start
 </pre>
 
+A good way to ensure the state of KAS and KMS is checking out the logs files:
+
+* KMS: /var/log/kurento/media-server.log
+* KMC: /var/log/kurento/media-connector.log
+* KAS: /opt/jboss/standalone/log/server.log
+
+These files consist a very useful tool for developers to trace errors.
 
 = Sanity check procedures =
 The Sanity Check Procedures are the steps that a System Administrator will take to verify that an installation is ready to be tested. This is therefore a preliminary set of tests to ensure that obvious or basic malfunctioning is fixed before proceeding to unit tests, integration tests and user validation.
 
 ==End to End testing==
 
-Open a Chrome or Firefox web browser and type the URL: 
+Open a Chrome or Firefox web browser and type the URL:
 <pre>http://<Replace_with_KMS_IP_Address>:8080/fi-lab-demo/</pre>
 This will show the web page of the fi-lab-demo sample application. From this web page you can view two links:
 
@@ -453,45 +458,40 @@ If you click on this link you can see a drop-down control in the top of the web 
 * 3GP video: After clicking over the "Play" button you can see a short tv ad of Blackberry mobile phones.
 * OGV video:After clicking over the "Play" button you can see a short video of Pacman.
 * MP4 video: After clicking over the "Play" button you can see a short tv ad of Google Chrome.
-* JackVader Filter video: After clicking over the "Play" button you can see a video showing the use of filters, in this video a overlayed "pirate hat" is used when a face is detected in the right side of the screen and "Dark Vader mask" is used when a face is detected in the left side of the screen. 
+* JackVader Filter video: After clicking over the "Play" button you can see a video showing the use of filters, in this video a overlayed "pirate hat" is used when a face is detected in the right side of the screen and "Dark Vader mask" is used when a face is detected in the left side of the screen.
 
 ===HTTP Player with JSON protocol===
 
-This link will load another web page in your browser where you can see the same videos using JSON-based representations for information exchange.The JSON protocol enhances a HTTP Player by implementing a signaling communication between the client (JavaScript API) and the Kurento Application Server (KAS). Using this protocol the client will be able to negotiate the transfer of media using SDP (Session Description Protocol), and also it will be notified with media and flow execution events. 
+This link will load another web page in your browser where you can see the same videos using JSON-based representations for information exchange.The JSON protocol enhances a HTTP Player by implementing a signaling communication between the client (JavaScript API) and the Kurento Application Server (KAS). Using this protocol the client will be able to negotiate the transfer of media using SDP (Session Description Protocol), and also it will be notified with media and flow execution events.
 
-Select one of the videos from the drop-down control located in the top of the web page. 
+Select one of the videos from the drop-down control located in the top of the web page.
 
 * WEBM video: After clicking over the "Play" button you can see a short film of “Sintel”, independently produced by the Blender Foundation.
-
 * MOV video: After clicking over the "Play" button you can see a short film of “Big Buck Bunny”, independently produced by the Blender Foundation.
-
 * MKV video: After clicking over the "Play" button you can see a short film of Japanese animation.
-
 * 3GP video: After clicking over the "Play" button you can see a short tv ad of Blackberry mobile phones.
-
 * OGV video:After clicking over the "Play" button you can see a short video of Pacman.
-
 * MP4 video: After clicking over the "Play" button you can see a short tv ad of Google Chrome.
-
-* JackVader Filter video: After clicking over the "Play" button you can see a video showing the use of filters, in this video a overlayed "pirate hat" is used when a face is detected in the right side of the screen and "Dark Vader mask" is used when a face is detected in the left side of the screen. 
-
+* JackVader Filter video: After clicking over the "Play" button you can see a video showing the use of filters, in this video a overlayed "pirate hat" is used when a face is detected in the right side of the screen and "Dark Vader mask" is used when a face is detected in the left side of the screen.
 * ZBar Filer video:After clicking over the "Play" button you can see a video to show the potential of filters. In this video three QR Codes are shown, in the media event text box you can see how the media server detects the different QR codes.
 
 In the text boxes Status, Flow Events and Media Events you can see the results of the different actions that are interpreted by the media server.
 
+If any problem happens with these Sanity Checks, please take a look to the KMS/KAS logs files to trace the error.
+
 ==List of Running Processes==
 To verify that KAS is up and running type the following:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ ps -ef | grep jboss
 </pre>
 
 The output should be similar to:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 jboss     4115     1  0 15:16 ?        00:00:00 /bin/sh /opt/jboss/bin/standalone.sh -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0
 jboss     4159  4115 30 15:16 ?        00:00:08 java -D[Standalone] -server -XX:+UseCompressedOops -XX:+TieredCompilation -Xms64m -Xmx512m -XX:MaxPermSize=256m -Djava.net.preferIPv4Stack=true -Dorg.jboss.resolver.warning=true -Dsun.rmi.dgc.client.gcInterval=3600000 -Dsun.rmi.dgc.server.gcInterval=3600000 -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true -Djboss.server.default.config=standalone.xml -Dorg.jboss.boot.log.file=/opt/jboss/standalone/log/boot.log -Dlogging.configuration=file:/opt/jboss/standalone/configuration/logging.properties -jar /opt/jboss/jboss-modules.jar -mp /opt/jboss/modules -jaxpmodule javax.xml.jaxp-provider org.jboss.as.standalone -Djboss.home.dir=/opt/jboss -Djboss.bind.address=0.0.0.0 -Djboss.bind.address.management=0.0.0.0
@@ -500,16 +500,16 @@ kuser     4256  2371  0 15:16 pts/0    00:00:00 grep --color=auto jboss
 
 To verify that KMS is up and running use the command:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ ps -ef | grep kurento
 </pre>
 
 The output should be similar to:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 nobody   22527     1  0 13:02 ?        00:00:00 /usr/bin/kurento
 kuser    22711  2326  0 13:10 pts/1    00:00:00 grep --color=auto kurento
@@ -517,43 +517,61 @@ kuser    22711  2326  0 13:10 pts/1    00:00:00 grep --color=auto kurento
 
 ==Network interfaces Up & Open ==
 
-Unless configured otherwise, KAS listens on the port 8080 to receive HTTP requests from final users. It additionally opens port 9990, a handler port which is used by KMS to send events to KAS.
+Unless configured otherwise, KAS listens on the port 8080 to receive HTTP requests from final users. JBoss additionally opens several managemnts ports, namely 4447, 9990, and 9999. If any of those ports is not available in the machine hosting the KAS, it can be changed by editing the following file:
+
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
+word-wrap: break-word">
+$ sudo vim /opt/jboss/standalone/configuration/standalone.xml
+</pre>
+
+Concretely, the configuration to be changed is the following:
+
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
+word-wrap: break-word">
+        <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
+</pre>
 
 To verify the ports opened by KAS execute the following command:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo netstat -putan | grep java
 </pre>
 
 The output should be similar to the following:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      4424/java       
-tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      4424/java       
-tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      4424/java       
-tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      4424/java       
+tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      4424/java
+tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      4424/java
+tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      4424/java
+tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      4424/java
 </pre>
 
 The two additional ports listened are 4447, jBoss remoting port, and 9999, a port for jBoss native management interface.
 
+In addition, if KMS Media Connector has been started, port 8888 will also listening.
+
 Unless configured otherwise, KMS opens the port 9090 to receive HTTP TCP requests from KAS and port 9091 for HTTP TCP requests from final users. To verify the open ports type the command:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
 $ sudo netstat -putan | grep kurento
 </pre>
 
 The output should be similar to the following:
 
-<pre style="white-space: pre-wrap; 
-white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;  
+<pre style="white-space: pre-wrap;
+white-space: -moz-pre-wrap; white-space: -pre-wrap; white-space: -o-pre-wrap;
 word-wrap: break-word">
-tcp        0      0 127.0.0.1:9091          0.0.0.0:*               LISTEN      22527/kurento  
+tcp        0      0 127.0.0.1:9091          0.0.0.0:*               LISTEN      22527/kurento
 tcp6       0      0 :::9090                 :::*                    LISTEN      22527/kurento
 </pre>
 
@@ -565,12 +583,12 @@ The Diagnosis Procedures are the first steps that a System Administrator will ta
 
 ==Resource availability==
 
-To guarantee the right working of the enabler RAM memory and HDD size shoud be at least:
+To guarantee the right working of the enabler RAM memory and HDD size should be at least:
 * 8GB RAM
 * 16GB HDD (this figure is not taking into account that multimedia streams could be stored in the same machine. If so, HDD size must be increased accordingly)
 
 ==Remote Service Access==
-If KMS and KAS are deployed as separate GEs, the admin needs to ensure that the KMS GE can reach the KAS Handler port (default 9990) and that the KAS GE can reach the KMS service port (default 9090)
+If KMS and KAS are deployed as separate GEs, the admin needs to ensure that the KMS GE can reach the KAS Handler port (default 9091) and that the KAS GE can reach the KMS service port (default 9090).
 
 ==Resource consumption==
 
@@ -655,6 +673,8 @@ KMS gave the following result:
 
 Unless configured otherwise, the GE will open the following ports:
 
-* KAS opens the port 8080 to receive HTTP TCP requests from final users and port 9990 to receive HTTP TCP requests from the KMS event callbacks (so called "handler" port).
-* KMS opens the port 9090 to receive HTTP TCP requests from KAS and port 9091 for HTTP TCP requests from final users. Also it needs fully opened UDP port range.
+* KAS opens the port 8080 to receive HTTP TCP requests from final users. KAS also opens port 9191 to receive Thrift TCP requests from the KMS.
+* KMS opens port 9091 to receive HTTP TCP requests from KAS and final users. KMS also opens the port 9090 to receive Thrift TCP requests from KAS.
+* KMC opens the port 8888 to receive HTTP TCP requests from final users. KMC also opens port 9900 to receive Thrift TCP requests from the KMS.
 
+Ports 8080, 9091, and 8888 should be accessible from final users. Therefore these ports should be open and forwarded on existing network elements, such as NAT or Firewall.

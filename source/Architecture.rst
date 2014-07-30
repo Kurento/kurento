@@ -196,7 +196,7 @@ level architecture of kurento.
    *Kurento architecture follows the traditional separation
    between signalling and media planes.*
 
-The right side of the picture shows the Application Server, which is 
+The right side of the picture shows the Application Server, which is
 in charge of the signalling plane and contains the business logic and
 connectors of the particular multimedia application being deployed. It
 is based on Java EE and includes well known and mature technologies such
@@ -241,7 +241,7 @@ levels. This scheme is shown in the picture below:
 
    *Kurento has an onion-like architecture
    with APIs providing different abstraction levels.*
- 
+
 Following this, the role of the different APIs can be summarized in the following way:
 
 -  **Thrift API**: Is a network API exposing the Media Server
@@ -356,7 +356,7 @@ Kurento also respond to the same architecture:
    multimedia capture. It is usually based on specific build-in
    capabilities of the client. For example, when creating a
    browser-based application, the presentation layer will use
-   capabilities such as the <video> tag or the WebRTC PeerConnection 
+   capabilities such as the <video> tag or the WebRTC PeerConnection
    and MediaStreams APIs.
 
 -  **Application logic**: This layer provides the specific multimedia
@@ -562,7 +562,7 @@ can be done creating the server-side application logic.
 
    **Sample Player Pipeline**.
 
-   *Example of pipeline for an HTTP content player session.* 
+   *Example of pipeline for an HTTP content player session.*
 
 HTTP content recording sessions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

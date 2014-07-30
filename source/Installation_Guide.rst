@@ -7,13 +7,13 @@
 Introduction
 ============
 
-This guide describes how to install Kurento. Kurento is composed of three
-nodes, the Kurento Application Server (:term:`KAS`), the Kurento Media
-Server (:term:`KMS`) and the KFM Media Connector (:term:`KMC`). These three
-nodes can be co-located or installed on separate machines. This guide
-focuses on the installation on a single machine, but comments are done
-where appropriate explaining how to modify the configuration files for
-a dual installation.
+This guide describes how to install Kurento. Kurento is composed of different
+nodes, namely the Kurento Application Server (:term:`KAS`), the Kurento Media
+Server (:term:`KMS`), and the Kurento Media Connector (:term:`KMC`). These three
+nodes can be installed in the same or different hosts. This guide focuses on the
+installation on a single machine, but comments are done where appropriate
+explaining how to modify the configuration files for a separate installation.
+
 
 Prerequisites
 -------------
@@ -27,20 +27,72 @@ Hardware minimal recommended requirements:
 
 Operating system requirements:
 
--  Currently Kurento Media Server (KMS) only runs on Ubuntu Linux 13.10
-   64 Bits or newer. This is due to its dependency of the gstreamer
-   1.2.0 version.
--  Kurento Application Server (KAS) can run in any platform that
-   supports Open JDK version 7
+-  Currently Kurento Media Server (KMS) only runs on Ubuntu Linux (32 or 64
+   bits). It is highly recommended using version 13.10 or newer due to the
+   dependency of KMS with gstreamer.
+-  Kurento Application Server (KAS) and Kurento Media Connector (KMC) can run in
+   any platform that supports JDK version 7.
+
+
+Kurento Media Server (KMS)
+--------------------------
+
+In order to add Personal Package Archive or PPA's repositories, the
+software-properties-commons package must be installed. This package is
+part of Ubuntu Desktop, but it might not be included if you are using
+a VM or a server:
+
+.. sourcecode:: console
+
+    $ sudo apt-get install software-properties-common
+
+.. note:: Transient problem with Intel Graphics video
+
+    There is a `packaging bug in libopencv-ocl2.4 Ubuntu 13.10
+    <https://bugs.launchpad.net/ubuntu/+source/opencv/+bug/1245260>`_,
+    which causes some installation problems [#]_. There is a workaround
+    while the bug is fixed. If your computer has not a nvidia chipset,
+    you need to install one package before kurento. Do:
+
+    .. sourcecode:: console
+
+        $ sudo apt-get install ocl-icd-libopencl1
+
+
+Install KMS by typing the following commands, one at a time and in the
+same order as listed here. When asked for any kind of confirmation,
+reply affirmatively:
+
+.. sourcecode:: console
+
+    $ sudo add-apt-repository ppa:kurento/kurento
+    $ sudo apt-get update
+    $ sudo apt-get upgrade
+    $ sudo apt-get install libevent-dev kurento
+
+Finally, configure the server to run KMS when booted:
+
+.. sourcecode:: console
+
+    $ sudo update-rc.d kurento defaults
+
+Now, KMS has been installed and started. Use the following commands to start
+and stop KMS respectively:
+
+.. sourcecode:: console
+
+    $ sudo service kurento start
+    $ sudo service kurento stop
+
 
 Kurento Application Server (KAS)
 --------------------------------
 
-First, install *Open JDK 7* and  *unzip* packages:
+First, install *Open JDK 7*:
 
 .. sourcecode:: console
 
-    sudo apt-get install openjdk-7-jdk unzip
+    $ sudo apt-get install openjdk-7-jdk
 
 Download *JBoss*, uncompress it and move it to */opt/jboss* by
 executing:
@@ -208,56 +260,56 @@ Finally, configure the server to run JBoss when booted:
 
     $ sudo update-rc.d jboss7 defaults
 
-Kurento Media Server (KMS)
---------------------------
-
-In order to add Personal Package Archive or PPA's repositories, the
-software-properties-commons package must be installed. This package is
-part of Ubuntu Desktop, but it might not be included if you are using
-a VM or a server:
+Now, KAS has been installed and started. Use the following commands to start
+and stop KAS respectively:
 
 .. sourcecode:: console
 
-    $ sudo apt-get install software-properties-common
-
-.. note:: Transient problem with Intel Graphics video
-
-    There is a `packaging bug in libopencv-ocl2.4 Ubuntu 13.10
-    <https://bugs.launchpad.net/ubuntu/+source/opencv/+bug/1245260>`_,
-    which causes some installation problems [#]_. There is a workaround
-    while the bug is fixed. If your computer has not a nvidia chipset,
-    you need to install one package before kurento. Do:
-
-    .. sourcecode:: console
-
-        $ sudo apt-get install ocl-icd-libopencl1
+    $ sudo service jboss7 start
+    $ sudo service jboss7 stop
 
 
-Install KMS by typing the following commands, one at a time and in the
-same order as listed here. When asked for any kind of confirmation,
-reply afirmatively:
+Kurento Media Connector (KMC)
+-----------------------------
+
+The *Kurento Media Connector (KMC)* is a proxy that allows to clients connect to KMS through :term:`WebSocket`. The main KMS interface is based on thrift technology, and this proxy made necessary conversions between websockets and thrift.
+
+Download KMC and move it to ``/opt/kmf-media-connector`` by executing:
 
 .. sourcecode:: console
 
-    $ sudo add-apt-repository ppa:kurento/kurento
-    $ sudo apt-get update
-    $ sudo apt-get upgrade
-    $ sudo apt-get install kurento
+	$ sudo wget http://builds.kurento.org/release/stable/kmf-media-connector.zip
+	$ sudo mkdir /opt/kmf-media-connector && sudo mv kmf-media-connector.zip /opt/kmf-media-connector
+	$ sudo apt-get install unzip
+	$ cd /opt/kmf-media-connector && sudo unzip kmf-media-connector.zip
 
-Finally, configure the server to run KMS when booted:
+Install KMC as a service using the following script:
 
 .. sourcecode:: console
 
-    $ sudo update-rc.d kurento defaults
+	$ sudo ./bin/install.sh
 
+Finally, configure the server to run KMC when booted:
 
-KMF Media Connector
--------------------
+.. sourcecode:: console
 
-The KMF Media Connector is a proxy that allows to clients connect to the
-Kurento Media Server through websockets. The main Kurento Media Server
-interface is based on thrift technology, and this proxy makes the needed
-conversions between websockets and thrift.
+	$ sudo update-rc.d kmf-media-connector defaults
+
+Now KMC has been installed and started. Use the following commands to start/stop KMC:
+
+.. sourcecode:: console
+
+	$ sudo service kmf-media-connector start
+	$ sudo service kmf-media-connector stop
+
+KMC can be configured by editing a plain Java properties file located at ``/etc/kurento/media-connector.properties``. The accepted parameters are:
+
+- ``server.port`` : The http/websocket port of the proxy. This port will be used for the clients to connect to the port. If not specified, the value 8888 will be used.
+- ``kmf.transport`` : Transport layer to connect with KMS. Accepted value at this moment: ``thrift``.
+- ``thrift.kmf.address`` : The IP address and port of the KMS. If not specified, the address 127.0.0.1:9090 will be used.
+- ``thrift.kmf.address`` : The IP address and port that KMS will use to connect to the proxy. If not specified, the address 127.0.0.1:9900 will be used.
+- ``oauthserver.url`` : The url of the ouath service used to authenticate the client requests. If not specified, all clients can use the proxy (that is, no authentication is enforced).
+
 
 Kurento Network Configuration
 -----------------------------
@@ -266,19 +318,21 @@ Running Kurento Without NAT configuration
 =========================================
 
 KMS can receive requests from the Kurento Application Server (KAS) and
-from final users. The IP addresses and ports to receive these requests
-are configured in the configuration file ``/etc/kurento/kurento.conf``.
-After a fresh install that file looks like this:
+from final users. KMS uses a easily extensible service abstraction layer
+that enables it to attend application requests from either Thrift or
+RabbitMQ altough other services can also be deployed on it.
+The service in charge of attending all those requests is configured in the
+configuration file ``/etc/kurento/media-server.conf``.
+After a fresh installation that file looks like this:
 
 .. sourcecode:: ini
-
     [Server]
-    serverAddress=localhost
-    serverPort=9090
     sdpPattern=pattern.sdp
+    service=Thrift
 
     [HttpEPServer]
     #serverAddress=localhost
+
     # Announced IP Address may be helpful under situations such as the server needs
     # to provide URLs to clients whose host name is different from the one the
     # server is listening in. If this option is not provided, http server will try
@@ -287,10 +341,26 @@ After a fresh install that file looks like this:
 
     serverPort=9091
 
-That configuration implies that only requests from the localhost are
-accepted. The section ``[Server]`` allows to configure the IP address and
-port where KMS will listen to KAS requests. The section ``[HttpEPServer]``
-controls the IP address and port to listen to the final users.
+    [WebRtcEndPoint]
+    #stunServerAddress = xxx.xxx.xxx.xxx
+    #stunServerPort = xx
+    #pemCertificate = file
+
+    [Thrift]
+    serverPort=9090
+
+    [RabbitMQ]
+    serverAddress = 127.0.0.1
+    serverPort = 5672
+    username = "guest"
+    password = "guest"
+    vhost = "/"
+
+That configuration implies that only requests done through Thrift are
+accepted. By default Thrift server will be attached in all available network
+interfaces. The section ``[Thrift]`` allows to configure the port where KMS
+will listen to KAS requests. The section ``[HttpEPServer]`` controls the IP
+address and port to listen to the final users.
 
 Running Kurento With NAT configuration
 ======================================
@@ -304,15 +374,15 @@ Running Kurento With NAT configuration
 
 This network diagram depicts a scenario where a :term:`NAT` device is
 present. In this case, the client will access the public IP 130.206.82.56,
-which will connect him with the external intertface of the NAT device.
+which will connect him with the external interface of the NAT device.
 KMS serves media on a specific address which, by default, is the IP of
 the server where the service is running. This would have the server
 announcing that the media served by an Http Endpoint can be consumed in
 the private IP 172.30.1.122. Since this address is not accessible by
-external clients, the administrator of the system will have to confgure
-KMS to announce, as connection addres for clients, the public IP of the
-NAT device. This is acheived by changing the value of announcedAddress
-in the file /etc/kurento/kurento.conf with the appropriate value.
+external clients, the administrator of the system will have to configure
+KMS to announce, as connection address for clients, the public IP of the
+NAT device. This is achieved by changing the value of announcedAddress
+in the file /etc/kurento/media-server.conf with the appropriate value.
 The following lines would be the contents of this configuration file for
 the present scenario.
 
@@ -352,17 +422,15 @@ Download the test video with the following commands:
 
 ::
 
-    $ sudo wget https://ci.kurento.com/video/video.tar.gz --no-check-certificate 
-    $ sudo tar xfvz video.tar.gz && sudo mv video/ /opt/video &&\
-    > sudo chown -R jboss:jboss /opt/video
+    $ sudo wget http://files.kurento.org/video/video.tar.gz
+    $ sudo tar xfvz video.tar.gz && sudo mv video/ /opt/video && sudo chown -R jboss:jboss /opt/video
 
 And downlad the fi-lab-demo.war file using the following command:
 
 ::
 
-    $ sudo wget https://ci.kurento.com/apps/fi-lab-demo.war --no-check-certificate 
-    $ sudo mv fi-lab-demo.war /opt/jboss/standalone/deployments &&\
-    > sudo chown -R jboss:jboss /opt/jboss/standalone/deployments/fi-lab-demo.war
+	$ sudo wget http://builds.kurento.org/release/stable/fi-lab-demo.war
+	$ sudo mv fi-lab-demo.war /opt/jboss/standalone/deployments && sudo chown -R jboss:jboss /opt/jboss/standalone/
 
 Verifying and starting the servers
 ----------------------------------
@@ -372,7 +440,7 @@ typing:
 
 ::
 
-    $ sudo /etc/init.d/jboss7 start
+    $ sudo service jboss7 start
 
 Open a browser and verify that the default root web page work properly:
 
@@ -385,7 +453,24 @@ typing:
 
 ::
 
-    $ sudo /etc/init.d/kurento start
+    $ sudo service kurento start
+
+Finally, KMC can be started as follows:
+
+::
+
+    $ sudo service kmf-media-connector start
+
+
+A good way to ensure the state of KMS, KMC, and KAS is checking out their logs
+files:
+
+- KMS: ``/var/log/kurento/media-server.log``
+- KMC: ``/var/log/kurento/media-connector.log``
+- KAS: ``/opt/jboss/standalone/log/server.log``
+
+These files are a very useful tool for developers to trace errors.
+
 
 Sanity check procedures
 =======================
@@ -440,11 +525,11 @@ HTTP Player with JSON protocol
 This link will load another web page in your browser where you can see
 the same videos using JSON-based representations for information
 exchange.The JSON protocol enhances a HTTP Player by implementing
-signaling communications between the client (:term:`JavaScript API <KWS>`) and the
-Kurento Application Server (:term:`KAS`). Using this protocol the client will be
-able to negotiate the transfer of media using :term:`SDP` (Session Description
-Protocol), and also it will be notified with media and flow execution
-events.
+signaling communications between the client (:term:`JavaScript API <KWS>`) and 
+the Kurento Application Server (:term:`KAS`). Using this protocol the client 
+will be able to negotiate the transfer of media using :term:`SDP` (Session 
+Description Protocol), and also it will be notified with media and flow 
+execution events.
 
 Select one of the videos from the drop-down control located in the top
 of the web page.
@@ -469,7 +554,7 @@ of the web page.
    tv ad of Google Chrome.
 
 -  JackVader Filter video: After clicking over the "Play" button you can
-   see a video showing the use of filters, in this video a overlayed
+   see a video showing the use of filters, in this video an overlayed
    "pirate hat" is used when a face is detected in the right side of the
    screen and "Dark Vader mask" is used when a face is detected in the
    left side of the screen.
@@ -509,7 +594,7 @@ The output should be similar to:
     s.management=0.0.0.0
     kuser     4256  2371  0 15:16 pts/0    00:00:00 grep --color=auto jboss
 
-To verify that KMS is up and running use the command:
+To verify that KMS/KMC is up and running use the command:
 
 .. sourcecode:: console
 
@@ -518,7 +603,7 @@ To verify that KMS is up and running use the command:
 The output should be similar to:
 
 .. sourcecode:: console
-
+	nobody    1494     1  0 13:00 ?        00:01:16 java -server -XX:+UseCompressedOops -XX:+TieredCompilation -jar /var/lib/kurento/kmf-media-connector.jar --spring.config.location=/etc/kurento/media-connector.properties
     nobody   22527     1  0 13:02 ?        00:00:00 /usr/bin/kurento
     kuser    22711  2326  0 13:10 pts/1    00:00:00 grep --color=auto kurento
 
@@ -539,16 +624,20 @@ The output should be similar to the following:
 
 .. sourcecode:: console
 
-    tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      4424/java
-    tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      4424/java
-    tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      4424/java
-    tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      4424/java
+	tcp        0      0 0.0.0.0:4447            0.0.0.0:*               LISTEN      23102/java      
+	tcp        0      0 0.0.0.0:9990            0.0.0.0:*               LISTEN      23102/java      
+	tcp        0      0 0.0.0.0:9999            0.0.0.0:*               LISTEN      23102/java      
+	tcp        0      0 0.0.0.0:8080            0.0.0.0:*               LISTEN      23102/java      
+	tcp        0      0 0.0.0.0:8787            0.0.0.0:*               LISTEN      23102/java      
+	tcp6       0      0 :::8888                 :::*                    LISTEN      21243/java      
+	tcp6       0      0 127.0.0.1:9900          :::*                    LISTEN      21243/java    
 
-The two additional ports listened are 4447, jBoss remoting port, and
-9999, a port for jBoss native management interface.
+The two additional ports listened are 4447, jBoss remoting port, and 9999, a 
+port for jBoss native management interface.
 
 Unless configured otherwise, KMS opens the port 9090 to receive HTTP TCP
 requests from KAS and port 9091 for HTTP TCP requests from final users.
+
 To verify the open ports type the command:
 
 .. sourcecode:: console
@@ -559,13 +648,9 @@ The output should be similar to the following:
 
 .. sourcecode:: console
 
-    tcp        0      0 127.0.0.1:9091          0.0.0.0:*               LISTEN      22527/kurento
-    tcp6       0      0 :::9090                 :::*                    LISTEN      22527/kurento
+	tcp        0      0 0.0.0.0:9091            0.0.0.0:*               LISTEN      8752/kurento    
+	tcp6       0      0 :::9090                 :::*                    LISTEN      8752/kurento  
 
-Databases
----------
-
-N/A
 
 Diagnosis Procedures
 ====================
@@ -581,7 +666,7 @@ Resource availability
 ---------------------
 
 To guarantee the right working of the enabler RAM memory and HDD size
-shoud be at least:
+should be at least:
 
 -  8GB RAM
 -  16GB HDD (this figure is not taking into account that multimedia
@@ -592,8 +677,8 @@ Remote Service Access
 ---------------------
 
 If KMS and KAS are deployed as separate GEs, the admin needs to ensure
-that the KMS GE can reach the KAS Handler port (default 9990) and that
-the KAS GE can reach the KMS service port (default 9090)
+that the KMS can reach the KAS Handler port (default 9990) and that
+the KAS can reach the KMS service port (default 9090)
 
 Resource consumption
 --------------------
@@ -649,14 +734,19 @@ results in the hardware described below:
 I/O flows
 ---------
 
-Unless configured otherwise, the GE will open the following ports:
+Unless configured otherwise, Kurento will open the following ports:
 
--  KAS opens the port 8080 to receive HTTP TCP requests from final users
-   and port 9990 to receive HTTP TCP requests from the KMS event
-   callbacks (so called "handler" port).
--  KMS opens the port 9090 to receive HTTP TCP requests from KAS and
-   port 9091 for HTTP TCP requests from final users. Also it needs fully
-   opened UDP port range.
+-  KAS opens the port 8080 to receive HTTP TCP requests from final users. KAS
+   also opens port 9191 to receive Thrift TCP requests from the KMS.
+-  KMS opens port 9091 to receive HTTP TCP requests from KAS and final users.
+   KMS also opens the port 9090 to receive Thrift TCP requests from KAS.
+-  KMC opens the port 8888 to receive HTTP TCP requests from final users.
+   KMC also opens port 9900 to receive Thrift TCP requests from the KMS.
+
+Ports 8080, 9091, and 8888 should be accessible from final users. Therefore
+these ports should be open and forwarded on existing network elements, such as
+NAT or Firewall.
+
 
 .. rubric:: Footnotes
 
