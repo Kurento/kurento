@@ -23,7 +23,8 @@ class CrowdDetectorFilterImpl : public FilterImpl,
 
 public:
 
-  CrowdDetectorFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+  CrowdDetectorFilterImpl (const boost::property_tree::ptree &config,
+                           std::shared_ptr<MediaPipeline> mediaPipeline,
                            const std::vector<std::shared_ptr<RegionOfInterest>> &rois);
 
   virtual ~CrowdDetectorFilterImpl ();

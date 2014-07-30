@@ -46,7 +46,7 @@ Follow us on Twitter @[kurentoms].
 
 [KurentoImage]: https://avatars1.githubusercontent.com/u/5392839?s=120
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/kurento/kms-elements
+[GitHub Repository]: https://github.com/kurento/kms-crowddetector
 [GitHub Kurento Group]: https://github.com/kurento
 [website]: http://kurento.org
 [kurentoms]: http://twitter.com/kurentoms
