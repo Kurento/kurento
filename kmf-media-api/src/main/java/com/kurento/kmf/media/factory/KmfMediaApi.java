@@ -1,6 +1,14 @@
 package com.kurento.kmf.media.factory;
 
-import static com.kurento.kmf.media.factory.KmfMediaApiProperties.*;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.KMF_TRANSPORT_PROP;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.KMF_TRANSPORT_RABBITMQ_VALUE;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.KMF_TRANSPORT_THRIFT_VALUE;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.KMF_TRANSPORT_WS_VALUE;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getKmfTransport;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getRabbitMqAddress;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getThriftKmfAddress;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getThriftKmsAddress;
+import static com.kurento.kmf.media.factory.KmfMediaApiProperties.getWsUri;
 
 import java.lang.reflect.Constructor;
 
@@ -99,7 +107,7 @@ public class KmfMediaApi {
 
 			@SuppressWarnings("unchecked")
 			Class<? extends JsonRpcClient> clazz = (Class<? extends JsonRpcClient>) Class
-			.forName("com.kurento.kmf.rabbitmq.client.JsonRpcClientRabbitMq");
+					.forName("com.kurento.kmf.rabbitmq.client.JsonRpcClientRabbitMq");
 
 			Constructor<? extends JsonRpcClient> constructor = clazz
 					.getConstructor(Address.class);
@@ -111,7 +119,7 @@ public class KmfMediaApi {
 					"MediaPipelineFactory is configured to use RabbitMQ but class "
 							+ "JsonRpcClientRabbitMq is not in the classpath. Plase review "
 							+ "you have correctly configured the dependency with kmf-rabbitmq project.",
-							e);
+					e);
 
 		} catch (Exception e) {
 			throw new RuntimeException(

@@ -14,6 +14,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.kurento.kmf.common.Address;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
 import com.kurento.kmf.jsonrpcconnector.KeepAliveManager;
@@ -54,6 +55,10 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 							+ " not yet implemented", message);
 		}
 	};
+
+	public JsonRpcClientRabbitMq() {
+		this(new Address("127.0.0.1", 5672));
+	}
 
 	public JsonRpcClientRabbitMq(Address rabbitMqAddress) {
 		this(new RabbitMqManager(rabbitMqAddress));
@@ -125,8 +130,14 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 				response = JsonUtils.fromJsonResponse(responseStr, resultClass);
 
-				String mediaPipelineId = ((JsonObject) response.getResult())
-						.get("value").getAsString();
+				String mediaPipelineId;
+				if (response.getResult() instanceof JsonObject) {
+					mediaPipelineId = ((JsonObject) response.getResult()).get(
+							"value").getAsString();
+				} else {
+					mediaPipelineId = ((JsonPrimitive) response.getResult())
+							.getAsString();
+				}
 
 				keepAliveManager.addId(mediaPipelineId);
 

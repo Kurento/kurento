@@ -16,6 +16,8 @@ package com.kurento.kmf.jsonrpcconnector;
 
 import java.io.IOException;
 
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+
 /**
  * A transaction represents a conversation between a client and the server.
  *
@@ -23,6 +25,9 @@ import java.io.IOException;
  *
  */
 public interface Transaction {
+
+	void sendResponseObject(Response<? extends Object> response)
+			throws IOException;
 
 	void sendResponse(Object result) throws IOException;
 

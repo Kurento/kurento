@@ -22,7 +22,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.RequestAlreadyRespondedException;
-import com.kurento.kmf.jsonrpcconnector.internal.message.*;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Message;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 
 public class TransactionImpl implements Transaction {
 
@@ -46,23 +49,7 @@ public class TransactionImpl implements Transaction {
 
 	@Override
 	public void sendResponse(Object result) throws IOException {
-
-		boolean notResponded = setRespondedIfNot();
-
-		if (notResponded) {
-
-			Response<Object> response = new Response<>(request.getId(), result);
-
-			if (INJECT_SESSION_ID) {
-				response.setSessionId(session.getSessionId());
-			}
-
-			responseSender.sendResponse(response);
-
-		} else {
-			throw new RequestAlreadyRespondedException(
-					"This request has already been responded");
-		}
+		internalSendResponse(new Response<>(request.getId(), result));
 	}
 
 	@Override
@@ -87,20 +74,46 @@ public class TransactionImpl implements Transaction {
 	public void sendError(int code, String message, String data)
 			throws IOException {
 
-		responseSender.sendResponse(new Response<>(request.getId(),
-				new ResponseError(code, message, data)));
+		internalSendResponse(new Response<>(request.getId(), new ResponseError(
+				code, message, data)));
 	}
 
 	@Override
 	public void sendError(Throwable e) throws IOException {
 
 		ResponseError error = ResponseError.newFromException(e);
-		responseSender.sendResponse(new Response<>(request.getId(), error));
+		internalSendResponse(new Response<>(request.getId(), error));
 
 	}
 
 	@Override
 	public boolean isNotification() {
 		return request.getId() == null;
+	}
+
+	@Override
+	public void sendResponseObject(Response<? extends Object> response)
+			throws IOException {
+
+		internalSendResponse(response);
+	}
+
+	private void internalSendResponse(Response<? extends Object> response)
+			throws IOException {
+
+		boolean notResponded = setRespondedIfNot();
+
+		if (notResponded) {
+
+			if (response.getSessionId() == null && INJECT_SESSION_ID) {
+				response.setSessionId(session.getSessionId());
+			}
+
+			responseSender.sendResponse(response);
+
+		} else {
+			throw new RequestAlreadyRespondedException(
+					"This request has already been responded");
+		}
 	}
 }

@@ -17,11 +17,12 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 
 public class KeepAliveManager {
 
-	private static final String KEEP_ALIVE_INTERVAL_TIME_PROPERTY = "keepAliveIntervalTime";
+	public static final String KEEP_ALIVE_INTERVAL_TIME_PROPERTY = "keepAliveIntervalTime";
 
 	private static final int KEEP_ALIVE_TIME_DEFAULT_VALUE = 120000;
 
 	private static final Object DUMMY_OBJECT_FOR_MAP = new Object();
+
 	private static Logger log = LoggerFactory.getLogger(KeepAliveManager.class);
 
 	public enum Mode {
@@ -62,10 +63,18 @@ public class KeepAliveManager {
 	}
 
 	public void start() {
+
+		log.debug("Configured keepAliveManager to send keepAlives each "
+				+ keepAliveIntervalTime + " millis");
+
 		executor.scheduleAtFixedRate(new Runnable() {
 			@Override
 			public void run() {
-				sendKeepAlives();
+				try {
+					sendKeepAlives();
+				} catch (Throwable t) {
+					log.warn("Exception sending keepAlive.", t);
+				}
 			}
 		}, keepAliveIntervalTime, keepAliveIntervalTime, TimeUnit.MILLISECONDS);
 	}
@@ -122,6 +131,8 @@ public class KeepAliveManager {
 		} else {
 			throw new KurentoException("Unrecognized keepAlive mode = " + mode);
 		}
+
+		log.debug("Finish sending keepAlives");
 	}
 
 	public void addId(String id) {

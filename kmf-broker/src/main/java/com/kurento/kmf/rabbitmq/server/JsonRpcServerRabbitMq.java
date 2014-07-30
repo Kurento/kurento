@@ -9,11 +9,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import com.google.gson.*;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.kurento.kmf.common.Address;
-import com.kurento.kmf.jsonrpcconnector.*;
+import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
-import com.kurento.kmf.jsonrpcconnector.internal.message.*;
+import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClientLocal;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
+import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 import com.kurento.kmf.rabbitmq.RabbitMqManager;
 import com.kurento.kmf.rabbitmq.RabbitMqManager.BrokerMessageReceiverWithResponse;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants;
@@ -32,6 +41,16 @@ public class JsonRpcServerRabbitMq {
 	private RabbitTemplate template;
 
 	private ObjectIdsConverter converter = new ObjectIdsConverter();
+
+	// TODO: Maybe we need to implement a pure JsonRpcServerRabbitMq with
+	// handler parameter instead of this client > handler communication
+	public JsonRpcServerRabbitMq(JsonRpcHandler<?> handler) {
+		this(new JsonRpcClientLocal(handler));
+	}
+
+	public JsonRpcServerRabbitMq(JsonRpcClient client) {
+		this(client, new Address("127.0.0.1", 5672));
+	}
 
 	public JsonRpcServerRabbitMq(JsonRpcClient client, Address rabbitMqAddress) {
 		this.client = client;
@@ -53,15 +72,15 @@ public class JsonRpcServerRabbitMq {
 				});
 
 		this.client
-		.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
+				.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
 
-			@Override
-			public void handleRequest(Transaction transaction,
-					Request<JsonObject> request) throws Exception {
+					@Override
+					public void handleRequest(Transaction transaction,
+							Request<JsonObject> request) throws Exception {
 
-				processEventFromServer(request);
-			}
-		});
+						processEventFromServer(request);
+					}
+				});
 	}
 
 	private String processRequestFromBroker(String message) {
@@ -192,8 +211,7 @@ public class JsonRpcServerRabbitMq {
 				return release(realPipelineId, brokerPipelineId, request)
 						.toString();
 			default:
-				throw new RuntimeException(
-						"Invalid message in pipeline queue: " + message);
+				return invokeOperation(request).toString();
 			}
 		} catch (Exception e) {
 

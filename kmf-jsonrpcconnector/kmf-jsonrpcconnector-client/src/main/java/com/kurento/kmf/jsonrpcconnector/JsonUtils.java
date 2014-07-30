@@ -158,9 +158,16 @@ public class JsonUtils {
 
 			String sessionId = extractSessionId(jsonObject, RESULT_PROPERTY);
 
-			Response<T> response = JsonUtils.fromJson(jsonObject, $Gson$Types
-					.newParameterizedTypeWithOwner(null, Response.class,
-							resultClass));
+			Response<T> response;
+			if (resultClass != null) {
+				response = JsonUtils.fromJson(jsonObject, $Gson$Types
+						.newParameterizedTypeWithOwner(null, Response.class,
+								resultClass));
+			} else {
+				response = JsonUtils.fromJson(jsonObject, $Gson$Types
+						.newParameterizedTypeWithOwner(null, Response.class,
+								JsonElement.class));
+			}
 
 			response.setSessionId(sessionId);
 			return response;
