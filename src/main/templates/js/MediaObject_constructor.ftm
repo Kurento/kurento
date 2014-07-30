@@ -51,6 +51,11 @@
     || event == '_create')
       return;
 
+    var constructor = this.contructor;
+
+    if(constructor.events.indexOf(event) < 0)
+      throw new SyntaxError(constructor.name+" doesn't accept events of type '"+event+"'")
+
     var count = EventEmitter.listenerCount(this, event);
     if(count) return;
 

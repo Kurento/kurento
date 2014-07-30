@@ -56,6 +56,10 @@
   </#if>
 
   <#switch name>
+    <#case "boolean">
+      <#return "external:Boolean">
+    <#case "float">
+      <#return "external:Number">
     <#case "int">
       <#return "external:Integer">
   </#switch>

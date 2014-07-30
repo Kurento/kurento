@@ -88,6 +88,12 @@ var ${extends_name} = require('events').${extends_name};
  * @constructor module:${remoteClass_namepath}
  *
  * @param {external:String} id
+<#if remoteClass.events?? && remoteClass.events?has_content>
+ *
+  <#list remoteClass.events?sort_by("name") as event>
+ * @fires {@link module:${module_name}#event:${event.name} ${event.name}}
+  </#list>
+</#if>
  */
 function ${remoteClass.name}(id){<#if extends_name??>
   ${extends_name}.call(this, id);
@@ -139,10 +145,10 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
       <#list method.doc?split("\n") as line>
  * ${sphinxLinks(line, remoteClass_namepath)}
       </#list>
-    </#if>
-    <#list method.params as param>
  *
+    </#if>
  * @alias module:${remoteClass_namepath}.${method.name}
+    <#list method.params as param>
  *
  * @param {${namepath(param.type.name)}}<#if param.type.isList()>[]</#if> <#if param.optional>[${param.name}]<#else>${param.name}</#if>
       <#if param.doc??>

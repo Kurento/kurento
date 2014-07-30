@@ -37,6 +37,3 @@ exports.abstracts <#if complexTypes>   </#if>= require('./abstracts');
 exports.complexTypes = require('./complexTypes');
   </#if>
 </#if>
-
-
-<#include "external.ftm" >

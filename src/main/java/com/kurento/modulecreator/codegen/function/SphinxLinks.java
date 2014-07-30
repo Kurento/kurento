@@ -1,11 +1,20 @@
 package com.kurento.modulecreator.codegen.function;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import freemarker.template.TemplateMethodModelEx;
 import freemarker.template.TemplateModelException;
+
+import com.kurento.modulecreator.definition.ComplexType;
+import com.kurento.modulecreator.definition.Event;
+import com.kurento.modulecreator.definition.Import;
+import com.kurento.modulecreator.definition.ModuleDefinition;
+import com.kurento.modulecreator.definition.RemoteClass;
+
 
 /**
  *
@@ -17,6 +26,109 @@ import freemarker.template.TemplateModelException;
  *
  */
 public class SphinxLinks implements TemplateMethodModelEx {
+
+	private static Pattern glossary_term_1 = Pattern.compile(":term:`([^`<]*?)`");
+	private static Pattern glossary_term_2 = Pattern.compile(":term:`([^`<]*?)<([^`]*?)>`");
+
+	private static Pattern rom_cls_1 = Pattern.compile(":rom:cls:`([^`]*?)`");
+	private static Pattern rom_cls_2 = Pattern.compile(":rom:cls:`([^`]*?)<([^`<]*?)>`");
+
+	private static String glossary_href = "<a href=\"http://www.kurento.org/docs/current/glossary.html#term-%s\">%s</a>";
+	// TODO: `<text>`, ** and *, other markup...
+
+	private List<String[]> toReplace = new ArrayList<String[]>(Arrays.asList(new String[][] {
+		// wikipedia
+		{":wikipedia:`(.*?),(.*?)`",        "<a href=\"http://$1.wikipedia.org/wiki/$2\">$2</a>" },
+		{":wikipedia:`(.*?)<(.*?),(.*?)>`", "<a href=\"http://$2.wikipedia.org/wiki/$3\">$1</a>" },
+
+		// java ref
+		{":java:ref:`([^`]*?)<(.*?)>`", "{@link $2 $1}"},
+		{":java:ref:`(.*?)`",           "{@link $1}"},
+
+		// Kurento ROM
+		{":rom:enum:`([^`]*?)`",          "{@link $1}"},
+
+		{":rom:evt:`([^`]*?)<([^`]*?)>`", "{@link $2 $1Event}"},
+		{":rom:evt:`([^`]*?)`",           "{@link $1Event}"},
+
+		// JsDoc tags
+		{":author:", "@author"},
+		{":since:",  "@since"},
+
+		{"``([^`]*?)``",          "<code>$1</code>" },
+		{"\\.\\.\\s+todo::(.*?)", "<hr/><b>TODO</b>$1"},
+		{"\\.\\.\\s+note::(.*?)", "<hr/><b>Note</b>$1"}}
+	));
+
+
+
+	public SphinxLinks(ModuleDefinition module)
+	{
+		super();
+
+		addModule(module);
+
+		for(Import i: module.getImports())
+		{
+			addModule(i.getModule());
+		}
+	}
+
+
+	private void addModule(ModuleDefinition module)
+	{
+		addRemoteClasses(module);
+		addComplexTypes(module);
+		addEvents(module);
+	}
+
+	private void addRemoteClasses(ModuleDefinition module)
+	{
+		for(RemoteClass remoteClass: module.getRemoteClasses())
+		{
+			String className = remoteClass.getName();
+			String namePath = "module:"+module.getName();
+			namePath += remoteClass.isAbstract() ? "/abstracts" : "";
+			namePath += "."+className;
+
+			toReplace.addAll(Arrays.asList(new String[][]
+			{
+				{":rom:cls:`"+className+"`",           "{@link "+namePath+" "+className+"}"},
+				{":rom:cls:`([^`]*?)<"+className+">`", "{@link "+namePath+" $1}"}
+			}));
+		}
+	}
+
+	private void addComplexTypes(ModuleDefinition module)
+	{
+		for(ComplexType complexType: module.getComplexTypes())
+		{
+			String typeName = complexType.getName();
+			String namePath = "module:"+module.getName()+"/complexTypes."+typeName;
+
+			toReplace.addAll(Arrays.asList(new String[][]
+			{
+				{":rom:ref:`"+typeName+"`",           "{@link "+namePath+" "+typeName+"}"},
+				{":rom:ref:`([^`]*?)<"+typeName+">`", "{@link "+namePath+" $1}"}
+			}));
+		}
+	}
+
+	private void addEvents(ModuleDefinition module)
+	{
+		for(Event event: module.getEvents())
+		{
+			String eventName = event.getName();
+			String namePath = "module:"+module.getName()+"#event:"+eventName;
+
+			toReplace.addAll(Arrays.asList(new String[][]
+			{
+				{":rom:evt:`"+eventName+"`",           "{@link "+namePath+" "+eventName+"}"},
+				{":rom:evt:`([^`]*?)<"+eventName+">`", "{@link "+namePath+" $1}"}
+			}));
+		}
+	}
+
 
 	/**
 	 *
@@ -34,57 +146,26 @@ public class SphinxLinks implements TemplateMethodModelEx {
 	@Override
 	public Object exec(List arguments) throws TemplateModelException {
 
-		Pattern glossary_term_1 = Pattern.compile(":term:`([^`<]*?)`");
-		Pattern glossary_term_2 = Pattern.compile(":term:`([^`<]*?)<([^`]*?)>`");
+		// Classes
+		String typeName = arguments.get(0).toString();
+		String res = translate(typeName, toReplace);
 
-		String glossary_href = "<a href=\"http://www.kurento.org/docs/current/glossary.html#term-%s\">%s</a>";
-		// TODO: `<text>`, ** and *, other markup...
+		// Instance properties
+		String classNamePath = arguments.size() > 1
+												 ? "module:"+arguments.get(1).toString() : "";
 
-		String classFullName;
-		if(arguments.size() > 1)
-			classFullName = "module:"+arguments.get(1).toString();
-		else
-			classFullName = "";
+		String instanceProperty    = "{@link "+classNamePath+"#$1}";
+		String instancePropertyAlt = "{@link "+classNamePath+"#$2 $1}";
 
-		String instanceProperty    = "{@link "+classFullName+"#$1}";
-		String instancePropertyAlt = "{@link "+classFullName+"#$2 $1}";
-
-		String[][] toReplace =
+		res = translate(res, Arrays.asList(new String[][]
 		{
-			// wikipedia
-			{":wikipedia:`(.*?),(.*?)`",        "<a href=\"http://$1.wikipedia.org/wiki/$2\">$2</a>" },
-			{":wikipedia:`(.*?)<(.*?),(.*?)>`", "<a href=\"http://$2.wikipedia.org/wiki/$3\">$1</a>" },
-
-			// java ref
-			{":java:ref:`([^`]*?)<(.*?)>`", "{@link $2 $1}"},
-			{":java:ref:`(.*?)`",           "{@link $1}"},
-
-			// Kurento ROM
-			{":rom:enum:`([^`]*?)`",           "{@link $1}"},
-
-			{":rom:cls:`([^`]*?)<([^`<]*?)>`", "{@link $2 $1}"},
-			{":rom:cls:`([^`]*?)`",            "{@link $1}"},
-
 			{":rom:meth:`([^`]*?)<([^`]*?)>`", instancePropertyAlt},
 			{":rom:meth:`([^`]*?)`",           instanceProperty},
 			{":rom:attr:`([^`]*?)<([^`]*?)>`", instancePropertyAlt},
 			{":rom:attr:`([^`]*?)`",           instanceProperty},
+		}));
 
-			{":rom:evt:`([^`]*?)<([^`]*?)>`", "{@link $2 $1Event}"},
-			{":rom:evt:`([^`]*?)`",           "{@link $1Event}"},
-
-			// JsDoc tags
-			{":author:", "@author"},
-			{":since:",  "@since"},
-
-			{"``([^`]*?)``",          "<code>$1</code>" },
-			{"\\.\\.\\s+todo::(.*?)", "<hr/><b>TODO</b>$1"},
-			{"\\.\\.\\s+note::(.*?)", "<hr/><b>Note</b>$1"},
-		};
-
-		String typeName = arguments.get(0).toString();
-		String res = translate(typeName, toReplace);
-
+		// Glosaries
 		Matcher m2 = glossary_term_2.matcher(res);
 		while (m2.find()) {
 			res = res.substring(0, m2.start() - 1)
@@ -114,7 +195,7 @@ public class SphinxLinks implements TemplateMethodModelEx {
 	 * @return The translated string
 	 * @see http://docs.python.org/3/library/stdtypes.html#str.translate
 	 */
-	public String translate(String text, String[][] patterns) {
+	public String translate(String text, List<String[]> patterns) {
 		String res = text;
 
 		for (String[] each : patterns) {
@@ -164,7 +245,7 @@ public class SphinxLinks implements TemplateMethodModelEx {
 	// _non_id_at_ends = re.compile('^[-0-9]+|-+$')
 	String _non_id_at_ends = "^[-0-9]+|-+$";
 
-	String[][] _non_id_translate =
+	List<String[]> _non_id_translate = Arrays.asList(new String[][]
 	{
 		{ "\u00f8", "o" }, // o with stroke
 		{ "\u0111", "d" }, // d with stroke
@@ -199,15 +280,15 @@ public class SphinxLinks implements TemplateMethodModelEx {
 		{ "\u024b", "q" }, // q with hook tail
 		{ "\u024d", "r" }, // r with stroke
 		{ "\u024f", "y" }  // y with stroke
-	};
+	});
 
-	String[][] _non_id_translate_digraphs =
+	List<String[]> _non_id_translate_digraphs = Arrays.asList(new String[][]
 	{
 		{ "\u00df", "sz" }, // ligature sz
 		{ "\u00e6", "ae" }, // ae
 		{ "\u0153", "oe" }, // ligature oe
 		{ "\u0238", "db" }, // db digraph
 		{ "\u0239", "qp" }  // qp digraph
-	};
+	});
 
 }
