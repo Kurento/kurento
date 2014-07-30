@@ -21,6 +21,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 namespace kurento
 {
+namespace module
+{
+namespace pointerdetector
+{
 
 static void
 bus_message_adaptor (GstBus *bus, GstMessage *message, gpointer data)
@@ -64,11 +68,12 @@ get_structure_from_window (std::shared_ptr<PointerDetectorWindowMediaParam>
   return buttonsLayoutAux;
 }
 
-PointerDetectorFilterImpl::PointerDetectorFilterImpl (
-  const boost::property_tree::ptree &config,
-  std::shared_ptr<MediaPipeline> mediaPipeline,
-  std::shared_ptr<WindowParam> calibrationRegion,
-  const std::vector<std::shared_ptr<PointerDetectorWindowMediaParam>> &windows) :
+
+PointerDetectorFilterImpl::PointerDetectorFilterImpl (const
+    boost::property_tree::ptree &config,
+    std::shared_ptr<MediaPipeline> mediaPipeline,
+    std::shared_ptr<WindowParam> calibrationRegion,
+    const std::vector<std::shared_ptr<PointerDetectorWindowMediaParam>> &windows)  :
   FilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl>
               (mediaPipeline) )
 {
@@ -272,4 +277,6 @@ PointerDetectorFilterImpl::StaticConstructor::StaticConstructor()
                            GST_DEFAULT_NAME);
 }
 
+} /* pointerdetector */
+} /* module */
 } /* kurento */

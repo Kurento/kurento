@@ -6,17 +6,49 @@
 #include "FilterImpl.hpp"
 #include "PointerDetectorFilter.hpp"
 #include <EventHandler.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 namespace kurento
 {
+namespace module
+{
+namespace pointerdetector
+{
+class PointerDetectorFilterImpl;
+} /* pointerdetector */
+} /* module */
+} /* kurento */
 
-class MediaPipeline;
+namespace kurento
+{
+void Serialize (
+  std::shared_ptr<kurento::module::pointerdetector::PointerDetectorFilterImpl>
+  &object, JsonSerializer &serializer);
+} /* kurento */
+
+namespace kurento
+{
+namespace module
+{
+namespace pointerdetector
+{
 class WindowParam;
 class PointerDetectorWindowMediaParam;
-class PointerDetectorFilterImpl;
+} /* pointerdetector */
+} /* module */
+} /* kurento */
 
-void Serialize (std::shared_ptr<PointerDetectorFilterImpl> &object,
-                JsonSerializer &serializer);
+namespace kurento
+{
+class MediaPipelineImpl;
+} /* kurento */
+
+namespace kurento
+{
+namespace module
+{
+namespace pointerdetector
+{
 
 class PointerDetectorFilterImpl : public FilterImpl,
   public virtual PointerDetectorFilter
@@ -42,7 +74,6 @@ public:
 
   sigc::signal<void, WindowIn> signalWindowIn;
   sigc::signal<void, WindowOut> signalWindowOut;
-
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
                        Json::Value &response);
@@ -53,7 +84,6 @@ private:
 
   GstElement *pointerDetector;
   gulong bus_handler_id;
-
   std::function<void (GstMessage *) > busMessageLambda;
 
   class StaticConstructor
@@ -66,6 +96,8 @@ private:
 
 };
 
+} /* pointerdetector */
+} /* module */
 } /* kurento */
 
 #endif /*  __POINTER_DETECTOR_FILTER_IMPL_HPP__ */
