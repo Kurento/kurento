@@ -1,0 +1,74 @@
+{
+  "remoteClasses": [
+    {
+      "name": "AlphaBlending",
+      "extends": "Hub",
+      "doc": "A :rom:cls:`Hub` that mixes the :rom:attr:`MediaType.AUDIO` stream of its connected sources and constructs one output with :rom:attr:`MediaType.VIDEO` streams of its connected sources into its sink",
+      "constructor": {
+        "doc": "Create for the given pipeline",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
+            "type": "MediaPipeline",
+            "final": true
+          }
+        ]
+      },
+      "methods": [
+        {
+          "name": "setMaster",
+          "doc": "Sets the source port that will be the master entry to the mixer",
+          "params": [
+            {
+              "name": "source",
+              "doc": "The reference to the HubPort setting as master port",
+              "type": "HubPort"
+            },
+            {
+              "name": "zOrder",
+              "doc": "The order in z to draw the master image",
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "setPortProperties",
+          "doc": "Configure the blending mode of one port.",
+          "params": [
+            {
+              "name": "relativeX",
+              "doc": "The x position relative to the master port. Values from 0 to 1 are accepted. The value 0, indicates the coordinate 0 in the master image.",
+              "type": "float"
+            },
+            {
+              "name": "relativeY",
+              "doc": "The y position relative to the master port. Values from 0 to 1 are accepted. The value 0, indicates the coordinate 0 in the master image.",
+              "type": "float"
+            },
+            {
+              "name": "zOrder",
+              "doc": "The order in z to draw the images. The greatest value of z is in the top.",
+              "type": "int"
+            },
+            {
+              "name": "relativeWidth",
+              "doc": "The image width relative to the master port width. Values from 0 to 1 are accepted.",
+              "type": "float"
+            },
+            {
+              "name": "relativeHeight",
+              "doc": "The image height relative to the master port height. Values from 0 to 1 are accepted.",
+              "type": "float"
+            },
+            {
+              "name": "port",
+              "doc": "The reference to the confingured port.",
+              "type": "HubPort"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

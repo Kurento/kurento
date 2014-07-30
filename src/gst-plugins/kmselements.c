@@ -26,6 +26,7 @@
 #include "kmscompositemixer.h"
 #include <gstsctpclientsink.h>
 #include <gstsctpserversrc.h>
+#include "kmsalphablending.h"
 
 static gboolean
 kurento_init (GstPlugin * kurento)
@@ -70,6 +71,9 @@ kurento_init (GstPlugin * kurento)
     return FALSE;
 
   if (!gst_sctp_server_src_plugin_init (kurento))
+    return FALSE;
+
+  if (!kms_alpha_blending_plugin_init (kurento))
     return FALSE;
 
   return TRUE;
