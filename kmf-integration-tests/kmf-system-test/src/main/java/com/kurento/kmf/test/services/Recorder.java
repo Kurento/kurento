@@ -29,12 +29,11 @@ import org.slf4j.LoggerFactory;
 import com.kurento.kmf.test.Shell;
 
 /**
- * Audio recorder using AVCONV (formerly FFMPEG) and audio quality assessment
- * with PESQ.
+ * Audio recorder using FFMPEG and audio quality assessment with PESQ.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.11
- * @see <a href="https://libav.org/avconv.html">AVCONV</a>
+ * @see <a href="https://www.ffmpeg.org/">FFMPEG</a>
  * @see <a href="http://en.wikipedia.org/wiki/PESQ">PESQ</a>
  */
 public class Recorder {
@@ -49,7 +48,7 @@ public class Recorder {
 	public static void recordRemote(Node node, int seconds, int sampleRate,
 			AudioChannel audioChannel) {
 		try {
-			node.getRemoteHost().execCommand("avconv", "-y", "-t",
+			node.getRemoteHost().execCommand("ffmpeg", "-y", "-t",
 					String.valueOf(seconds), "-f", "alsa", "-i", "pulse",
 					"-q:a", "0", "-ac", audioChannel.toString(), "-ar",
 					String.valueOf(sampleRate), RECORDED_WAV);
@@ -61,7 +60,7 @@ public class Recorder {
 
 	public static void record(int seconds, int sampleRate,
 			AudioChannel audioChannel) {
-		Shell.run("sh", "-c", "avconv -y -t " + seconds
+		Shell.run("sh", "-c", "ffmpeg -y -t " + seconds
 				+ " -f alsa -i pulse -q:a 0 -ac " + audioChannel + " -ar "
 				+ sampleRate + " " + RECORDED_WAV);
 	}
