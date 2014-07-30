@@ -10,14 +10,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
+import com.kurento.kmf.common.PropertiesManager;
 import com.kurento.kmf.common.exception.KurentoException;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 
 public class KeepAliveManager {
 
-	// TODO Make this configurable in config file
-	public static final int KEEP_ALIVE_TIME = 120000;
+	private static final String KEEP_ALIVE_INTERVAL_TIME_PROPERTY = "keepAliveIntervalTime";
+
+	private static final int KEEP_ALIVE_TIME_DEFAULT_VALUE = 120000;
 
 	private static final Object DUMMY_OBJECT_FOR_MAP = new Object();
 	private static Logger log = LoggerFactory.getLogger(KeepAliveManager.class);
@@ -40,11 +42,23 @@ public class KeepAliveManager {
 		this(client, keepAliveIntervalTime, Mode.PER_CLIENT);
 	}
 
+	public KeepAliveManager(JsonRpcClient client, Mode mode) {
+		this(client, -1, mode);
+	}
+
 	public KeepAliveManager(JsonRpcClient client, long keepAliveIntervalTime,
 			Mode mode) {
+
 		this.client = client;
-		this.keepAliveIntervalTime = keepAliveIntervalTime;
 		this.mode = mode;
+
+		if (keepAliveIntervalTime != -1) {
+			this.keepAliveIntervalTime = keepAliveIntervalTime;
+		} else {
+			this.keepAliveIntervalTime = PropertiesManager.getProperty(
+					KEEP_ALIVE_INTERVAL_TIME_PROPERTY,
+					KEEP_ALIVE_TIME_DEFAULT_VALUE);
+		}
 	}
 
 	public void start() {

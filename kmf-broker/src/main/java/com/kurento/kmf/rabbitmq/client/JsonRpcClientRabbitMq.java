@@ -87,7 +87,6 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 		};
 
 		keepAliveManager = new KeepAliveManager(this,
-				KeepAliveManager.KEEP_ALIVE_TIME,
 				KeepAliveManager.Mode.PER_ID_AS_MEDIAPIPELINE);
 
 		keepAliveManager.start();

@@ -121,7 +121,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		server.start();
 
 		keepAliveManager = new KeepAliveManager(this,
-				KeepAliveManager.KEEP_ALIVE_TIME,
 				KeepAliveManager.Mode.PER_CLIENT);
 
 		keepAliveManager.start();

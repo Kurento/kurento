@@ -74,7 +74,6 @@ public final class MediaConnectorJsonRpcHandler extends
 			client.setKeepAliveManager(null);
 
 			keepAliveManager = new KeepAliveManager(client,
-					KeepAliveManager.KEEP_ALIVE_TIME,
 					KeepAliveManager.Mode.PER_ID_AS_SESSION);
 
 			keepAliveManager.start();
