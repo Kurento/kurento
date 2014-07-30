@@ -24,7 +24,8 @@ class PointerDetectorFilterImpl : public FilterImpl,
 
 public:
 
-  PointerDetectorFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+  PointerDetectorFilterImpl (const boost::property_tree::ptree &config,
+                             std::shared_ptr<MediaPipeline> mediaPipeline,
                              std::shared_ptr<WindowParam> calibrationRegion,
                              const std::vector<std::shared_ptr<PointerDetectorWindowMediaParam>> &windows);
 

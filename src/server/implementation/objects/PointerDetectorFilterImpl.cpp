@@ -65,10 +65,12 @@ get_structure_from_window (std::shared_ptr<PointerDetectorWindowMediaParam>
 }
 
 PointerDetectorFilterImpl::PointerDetectorFilterImpl (
+  const boost::property_tree::ptree &config,
   std::shared_ptr<MediaPipeline> mediaPipeline,
   std::shared_ptr<WindowParam> calibrationRegion,
   const std::vector<std::shared_ptr<PointerDetectorWindowMediaParam>> &windows) :
-  FilterImpl (std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
+  FilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl>
+              (mediaPipeline) )
 {
   GstBus *bus;
   std::shared_ptr<MediaPipelineImpl> pipe;
@@ -250,12 +252,14 @@ void PointerDetectorFilterImpl::removeWindow (const std::string &windowId)
 }
 
 MediaObjectImpl *
-PointerDetectorFilterImplFactory::createObject (std::shared_ptr<MediaPipeline>
-    mediaPipeline, std::shared_ptr<WindowParam> calibrationRegion,
+PointerDetectorFilterImplFactory::createObject (const
+    boost::property_tree::ptree &config,
+    std::shared_ptr<MediaPipeline> mediaPipeline,
+    std::shared_ptr<WindowParam> calibrationRegion,
     const std::vector<std::shared_ptr<PointerDetectorWindowMediaParam>> &windows)
 const
 {
-  return new PointerDetectorFilterImpl (mediaPipeline, calibrationRegion,
+  return new PointerDetectorFilterImpl (config, mediaPipeline, calibrationRegion,
                                         windows);
 }
 

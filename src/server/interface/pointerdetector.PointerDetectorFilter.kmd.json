@@ -11,8 +11,7 @@
             {
               "name": "mediaPipeline",
               "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
-              "type": "MediaPipeline",
-              "final": true
+              "type": "MediaPipeline"
             },
             {
               "name": "calibrationRegion",
