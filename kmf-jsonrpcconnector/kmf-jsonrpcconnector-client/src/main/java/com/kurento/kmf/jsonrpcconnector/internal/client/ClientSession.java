@@ -22,6 +22,8 @@ import com.kurento.kmf.jsonrpcconnector.JsonRpcConnectorException;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSender;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
 public class ClientSession extends AbstractSession {
 
@@ -86,10 +88,20 @@ public class ClientSession extends AbstractSession {
 		requestSender.sendNotification(method, params, continuation);
 	}
 
+	public Response<JsonElement> sendRequest(Request<JsonObject> request)
+			throws IOException {
+		return requestSender.sendRequest(request);
+	}
+
+	public void sendRequest(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException {
+		requestSender.sendRequest(request, continuation);
+	}
+
 	@Override
 	public void setReconnectionTimeout(long millis) {
 		throw new JsonRpcConnectorException(
 				"Reconnection timeout can't be configured in the client");
 	}
-
 }

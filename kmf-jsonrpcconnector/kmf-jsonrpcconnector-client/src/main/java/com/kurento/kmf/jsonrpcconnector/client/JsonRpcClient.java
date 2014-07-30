@@ -20,11 +20,14 @@ import java.io.IOException;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.KeepAliveManager;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcHandlerManager;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSender;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.ClientSession;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
 /**
  * This class is used to make request to a server using the JSON-RPC protocol
@@ -56,6 +59,7 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	protected JsonRpcRequestSenderHelper rsHelper;
 	protected Object registerInfo;
 	protected ClientSession session;
+	protected KeepAliveManager keepAliveManager;
 
 	public void setServerRequestHandler(JsonRpcHandler<?> handler) {
 		this.handlerManager.setJsonRpcHandler(handler);
@@ -110,6 +114,17 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 		rsHelper.sendNotification(method, params);
 	}
 
+	public Response<JsonElement> sendRequest(Request<JsonObject> request)
+			throws IOException {
+		return rsHelper.sendRequest(request);
+	}
+
+	public void sendRequest(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException {
+		rsHelper.sendRequest(request, continuation);
+	}
+
 	public Session getSession() {
 		return session;
 	}
@@ -117,6 +132,14 @@ public abstract class JsonRpcClient implements JsonRpcRequestSender, Closeable {
 	public void setSessionId(String sessionId) {
 		this.rsHelper.setSessionId(sessionId);
 		this.session.setSessionId(sessionId);
+	}
+
+	public KeepAliveManager getKeepAliveManager() {
+		return keepAliveManager;
+	}
+
+	public void setKeepAliveManager(KeepAliveManager keepAliveManager) {
+		this.keepAliveManager = keepAliveManager;
 	}
 
 }

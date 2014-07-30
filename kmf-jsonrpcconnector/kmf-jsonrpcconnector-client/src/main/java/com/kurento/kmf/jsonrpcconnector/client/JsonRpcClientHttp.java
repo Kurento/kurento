@@ -62,7 +62,8 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 			}
 
 			@Override
-			protected void internalSendRequest(Request<Object> request,
+			protected void internalSendRequest(
+					Request<? extends Object> request,
 					Class<JsonElement> class1,
 					Continuation<Response<JsonElement>> continuation) {
 				throw new UnsupportedOperationException(

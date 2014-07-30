@@ -16,6 +16,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.common.Address;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.KeepAliveManager;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
@@ -77,12 +78,19 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 			}
 
 			@Override
-			protected void internalSendRequest(Request<Object> request,
+			protected void internalSendRequest(
+					Request<? extends Object> request,
 					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
 				internalSendRequestBroker(request, resultClass, continuation);
 			}
 		};
+
+		keepAliveManager = new KeepAliveManager(this,
+				KeepAliveManager.KEEP_ALIVE_TIME,
+				KeepAliveManager.Mode.PER_ID_AS_MEDIAPIPELINE);
+
+		keepAliveManager.start();
 	}
 
 	private void handleRequestFromServer(String message) {
@@ -104,15 +112,24 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 		try {
 
-			String responseStr = null;
+			Response<R> response;
 
 			if (RomJsonRpcConstants.CREATE_METHOD.equals(request.getMethod())
 					&& "MediaPipeline".equals(paramsJson.get("type")
 							.getAsString())) {
 
-				responseStr = rabbitMqManager.sendAndReceive("",
+				String responseStr = rabbitMqManager.sendAndReceive("",
 						PIPELINE_CREATION_QUEUE, request.toString(),
 						rabbitTemplate);
+
+				log.debug("<-Res {}", responseStr.trim());
+
+				response = JsonUtils.fromJsonResponse(responseStr, resultClass);
+
+				String mediaPipelineId = ((JsonObject) response.getResult())
+						.get("value").getAsString();
+
+				keepAliveManager.addId(mediaPipelineId);
 
 			} else {
 
@@ -146,17 +163,22 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 					if (RomJsonRpcConstants.SUBSCRIBE_METHOD.equals(method)) {
 						processSubscriptionRequest(paramsJson, brokerPipelineId);
+					} else if (RomJsonRpcConstants.RELEASE_METHOD
+							.equals(method)) {
+
+						// Remove from keepAliveManager if the released object
+						// is a MediaPipeline object
+						keepAliveManager.removeId(brokerObjectId);
 					}
 				}
 
-				responseStr = rabbitMqManager.sendAndReceive("",
+				String responseStr = rabbitMqManager.sendAndReceive("",
 						brokerPipelineId, request.toString(), rabbitTemplate);
+
+				log.debug("<-Res {}", responseStr.trim());
+
+				response = JsonUtils.fromJsonResponse(responseStr, resultClass);
 			}
-
-			log.debug("<-Res {}", responseStr.trim());
-
-			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
-					resultClass);
 
 			return response;
 
@@ -189,7 +211,8 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 				});
 	}
 
-	protected void internalSendRequestBroker(final Request<Object> request,
+	protected void internalSendRequestBroker(
+			final Request<? extends Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
 

@@ -5,9 +5,6 @@ import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
@@ -17,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.KeepAliveManager;
 import com.kurento.kmf.jsonrpcconnector.TransportException;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
@@ -41,9 +39,9 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcClientThrift.class);
 
-	public static final int KEEP_ALIVE_TIME = 120000;
-
 	private ThriftClientPoolService clientPool;
+	private ThriftServer server;
+	private InetSocketAddress localHandlerAddress;
 
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
@@ -54,68 +52,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 					message);
 		}
 	};
-
-	private ThriftServer server;
-	private boolean stopKeepAlive;
-	private final Set<String> sessions = new HashSet<>();
-
-	private InetSocketAddress localHandlerAddress;
-
-	private final Thread keepAliveThread = new Thread(new Runnable() {
-
-		@Override
-		public void run() {
-
-			log.debug("KeepAlive thread started");
-
-			while (true) {
-				try {
-					Thread.sleep(KEEP_ALIVE_TIME);
-				} catch (InterruptedException e) {
-					return;
-				}
-
-				synchronized (keepAliveThread) {
-					if (stopKeepAlive) {
-						return;
-					}
-				}
-
-				Set<String> copiedSessions;
-
-				synchronized (sessions) {
-					copiedSessions = new HashSet<>(sessions);
-				}
-
-				/* sendKeepAlives */
-				for (String copiedSession : copiedSessions) {
-					int id = new Random().nextInt();
-					Request<Void> request = new Request<>(copiedSession,
-							Integer.valueOf(id), "keepAlive", null);
-
-					log.info("Sending keep alive for session: {}",
-							copiedSession);
-
-					try {
-						Response<Void> response = internalSendRequestThrift(
-								request, Void.class);
-
-						if (response.isError()) {
-							log.error(
-									"Error on session {} keep alive, removing",
-									copiedSession);
-							synchronized (sessions) {
-								sessions.remove(copiedSession);
-							}
-						}
-					} catch (TransportException e) {
-						log.warn("Could not send keepalive for session {}",
-								copiedSession, e);
-					}
-				}
-			}
-		}
-	});
 
 	public JsonRpcClientThrift(String serverAddress, int serverPort,
 			String localAddress, int localPort) {
@@ -149,7 +85,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			}
 
 			@Override
-			protected void internalSendRequest(Request<Object> request,
+			protected void internalSendRequest(
+					Request<? extends Object> request,
 					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
 				internalSendRequestThrift(request, resultClass, continuation);
@@ -182,23 +119,18 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 				localHandlerAddress);
 
 		server.start();
-		keepAliveThread.start();
+
+		keepAliveManager = new KeepAliveManager(this,
+				KeepAliveManager.KEEP_ALIVE_TIME,
+				KeepAliveManager.Mode.PER_CLIENT);
+
+		keepAliveManager.start();
 	}
 
 	private void handleRequestFromServer(JsonObject message) throws IOException {
 		handlerManager.handleRequest(session,
 				fromJsonRequest(message, JsonElement.class),
 				dummyResponseSenderForEvents);
-	}
-
-	private <R> void processResponse(Response<R> response) {
-		String sessionId = response.getSessionId();
-		synchronized (sessions) {
-			if (sessionId != null && !sessions.contains(sessionId)) {
-				log.debug("Adding session {}", sessionId);
-				sessions.add(sessionId);
-			}
-		}
 	}
 
 	private <P> void processRequest(Request<P> request) {
@@ -247,8 +179,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			Response<R> response = JsonUtils.fromJsonResponse(responseStr,
 					resultClass);
 
-			processResponse(response);
-
 			return response;
 
 		} catch (TException e) {
@@ -259,7 +189,7 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		}
 	}
 
-	protected void internalSendRequestThrift(Request<Object> request,
+	protected void internalSendRequestThrift(Request<? extends Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
 
@@ -270,10 +200,11 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		sendRequest(request, resultClass, continuation, true);
 	}
 
-	private void sendRequest(final Request<Object> request,
+	private void sendRequest(final Request<? extends Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation,
 			final boolean retry) {
+
 		final AsyncClient client = clientPool.acquireAsync();
 
 		try {
@@ -309,8 +240,6 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 										.fromJsonResponse(responseStr,
 												resultClass);
 
-								processResponse(response);
-
 								continuation.onSuccess(response);
 
 							} catch (TException e) {
@@ -331,9 +260,8 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 			server.destroy();
 		}
 
-		synchronized (keepAliveThread) {
-			stopKeepAlive = true;
+		if (keepAliveManager != null) {
+			keepAliveManager.stop();
 		}
-		keepAliveThread.interrupt();
 	}
 }

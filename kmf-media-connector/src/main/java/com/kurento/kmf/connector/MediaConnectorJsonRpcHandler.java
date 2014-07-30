@@ -31,12 +31,14 @@ import com.kurento.kmf.connector.exceptions.MediaConnectorTransportException;
 import com.kurento.kmf.connector.exceptions.ResponsePropagationException;
 import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
 import com.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
+import com.kurento.kmf.jsonrpcconnector.KeepAliveManager;
 import com.kurento.kmf.jsonrpcconnector.Session;
 import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.TransportException;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
@@ -54,6 +56,8 @@ public final class MediaConnectorJsonRpcHandler extends
 
 	private final SubscriptionsManager subsManager = new SubscriptionsManager();
 
+	private KeepAliveManager keepAliveManager;
+
 	@PostConstruct
 	public void init() {
 		client.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
@@ -64,6 +68,17 @@ public final class MediaConnectorJsonRpcHandler extends
 				internalEventJsonRpc(request);
 			}
 		});
+
+		if (client instanceof JsonRpcClientThrift) {
+			client.getKeepAliveManager().stop();
+			client.setKeepAliveManager(null);
+
+			keepAliveManager = new KeepAliveManager(client,
+					KeepAliveManager.KEEP_ALIVE_TIME,
+					KeepAliveManager.Mode.PER_ID_AS_SESSION);
+
+			keepAliveManager.start();
+		}
 	}
 
 	@PreDestroy
@@ -77,12 +92,20 @@ public final class MediaConnectorJsonRpcHandler extends
 	public void afterConnectionEstablished(final Session session)
 			throws Exception {
 
+		if (keepAliveManager != null) {
+			keepAliveManager.addId(session.getSessionId());
+		}
 	}
 
 	@Override
 	public void afterConnectionClosed(Session session, String status)
 			throws Exception {
+
 		subsManager.removeSession(session);
+
+		if (keepAliveManager != null) {
+			keepAliveManager.removeId(session.getSessionId());
+		}
 	}
 
 	@Override

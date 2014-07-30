@@ -1,25 +1,50 @@
 package com.kurento.tool.rom.transport.jsonrpcconnector;
 
-import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.*;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.CREATE_CONSTRUCTOR_PARAMS;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.CREATE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.CREATE_TYPE;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OBJECT;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OPERATION_NAME;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.INVOKE_OPERATION_PARAMS;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_DATA;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_OBJECT;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_SUBSCRIPTION;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.ONEVENT_TYPE;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.RELEASE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.RELEASE_OBJECT;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.SUBSCRIBE_METHOD;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.SUBSCRIBE_OBJECT;
+import static com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants.SUBSCRIBE_TYPE;
 
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
-import com.google.gson.*;
-import com.kurento.kmf.jsonrpcconnector.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
+import com.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
+import com.kurento.kmf.jsonrpcconnector.JsonUtils;
+import com.kurento.kmf.jsonrpcconnector.Props;
+import com.kurento.kmf.jsonrpcconnector.Transaction;
 import com.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.media.Continuation;
 import com.kurento.tool.rom.client.RomClient;
 import com.kurento.tool.rom.client.RomEventHandler;
-import com.kurento.tool.rom.server.*;
+import com.kurento.tool.rom.server.MediaServerException;
+import com.kurento.tool.rom.server.MediaServerTransportException;
+import com.kurento.tool.rom.server.ProtocolException;
 import com.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RomClientJsonRpcClient extends RomClient {
@@ -144,31 +169,17 @@ public class RomClientJsonRpcClient extends RomClient {
 	}
 
 	@Override
-	public void keepAlive(String objectRef) {
-		keepAlive(objectRef, null);
-	}
-
-	@Override
-	public void keepAlive(String objectRef, Continuation<Void> cont) {
-
-		JsonObject params = JsonUtils.toJsonObject(new Props(KEEPALIVE_OBJECT,
-				objectRef));
-
-		sendRequest(KEEPALIVE_METHOD, Void.class, params, null, cont);
-	}
-
-	@Override
 	public void addRomEventHandler(final RomEventHandler eventHandler) {
 
 		this.client
-		.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
+				.setServerRequestHandler(new DefaultJsonRpcHandler<JsonObject>() {
 
-			@Override
-			public void handleRequest(Transaction transaction,
-					Request<JsonObject> request) throws Exception {
-				processEvent(eventHandler, request);
-			}
-		});
+					@Override
+					public void handleRequest(Transaction transaction,
+							Request<JsonObject> request) throws Exception {
+						processEvent(eventHandler, request);
+					}
+				});
 	}
 
 	private void processEvent(RomEventHandler eventHandler,

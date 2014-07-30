@@ -23,11 +23,6 @@ public class MediaConnectorManager {
 		application.setDefaultProperties(properties);
 
 		context = application.run();
-
-		// DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory)
-		// context
-		// .getBeanFactory();
-		// beanFactory.registerSingleton("jsonRpcClient", client);
 	}
 
 	public void destroy() {

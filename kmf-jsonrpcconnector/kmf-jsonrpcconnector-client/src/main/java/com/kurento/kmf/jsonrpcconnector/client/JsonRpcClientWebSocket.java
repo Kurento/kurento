@@ -86,7 +86,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			}
 
 			@Override
-			protected void internalSendRequest(Request<Object> request,
+			protected void internalSendRequest(
+					Request<? extends Object> request,
 					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
 
@@ -97,7 +98,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		this.headers.putAll(headers);
 	}
 
-	protected void internalSendRequestWebSocket(final Request<Object> request,
+	protected void internalSendRequestWebSocket(
+			final Request<? extends Object> request,
 			final Class<JsonElement> resultClass,
 			final Continuation<Response<JsonElement>> continuation) {
 
@@ -235,14 +237,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		Response<JsonElement> response = fromJsonResponse(message,
 				JsonElement.class);
 
-		updateSessionId(response.getSessionId());
+		setSessionId(response.getSessionId());
 
 		pendingRequests.handleResponse(response);
-	}
-
-	private void updateSessionId(String sessionId) {
-		this.session.setSessionId(sessionId);
-		this.rsHelper.setSessionId(sessionId);
 	}
 
 	private <P, R> Response<R> internalSendRequestWebSocket(Request<P> request,

@@ -63,8 +63,9 @@ public abstract class JsonRpcRequestSenderHelper implements
 	public <R> R sendRequest(String method, Object params, Class<R> resultClass)
 			throws IOException {
 
-		Request<Object> request = new Request<>(Integer.valueOf(id
-				.incrementAndGet()), method, params);
+		Request<Object> request = new Request<>(null, method, params);
+
+		setIdIfNecessary(request);
 
 		if (INJECT_SESSION_ID) {
 			request.setSessionId(sessionId);
@@ -171,11 +172,31 @@ public abstract class JsonRpcRequestSenderHelper implements
 		throw new UnsupportedOperationException();
 	}
 
+	public Response<JsonElement> sendRequest(Request<JsonObject> request)
+			throws IOException {
+
+		setIdIfNecessary(request);
+		return internalSendRequest(request, JsonElement.class);
+	}
+
+	private void setIdIfNecessary(Request<? extends Object> request) {
+		if (request.getId() == null) {
+			request.setId(Integer.valueOf(id.incrementAndGet()));
+		}
+	}
+
+	public void sendRequest(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException {
+
+		setIdIfNecessary(request);
+		internalSendRequest(request, JsonElement.class, continuation);
+	}
+
 	protected abstract <P, R> Response<R> internalSendRequest(
 			Request<P> request, Class<R> resultClass) throws IOException;
 
-	protected abstract void internalSendRequest(Request<Object> request,
-			Class<JsonElement> class1,
+	protected abstract void internalSendRequest(
+			Request<? extends Object> request, Class<JsonElement> class1,
 			Continuation<Response<JsonElement>> continuation);
-
 }

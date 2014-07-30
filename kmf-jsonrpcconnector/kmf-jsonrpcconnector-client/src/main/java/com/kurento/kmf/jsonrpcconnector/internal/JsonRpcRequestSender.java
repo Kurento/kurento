@@ -19,6 +19,8 @@ import java.io.IOException;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
 public interface JsonRpcRequestSender {
 
@@ -31,12 +33,19 @@ public interface JsonRpcRequestSender {
 
 	JsonElement sendRequest(String method, Object params) throws IOException;
 
+	Response<JsonElement> sendRequest(Request<JsonObject> request)
+			throws IOException;
+
 	void sendNotification(String method, Object params) throws IOException;
 
 	void sendNotification(String method) throws IOException;
 
 	void sendRequest(String method, JsonObject params,
 			Continuation<JsonElement> continuation);
+
+	void sendRequest(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException;
 
 	void sendNotification(String method, Object params,
 			Continuation<JsonElement> continuation) throws IOException;

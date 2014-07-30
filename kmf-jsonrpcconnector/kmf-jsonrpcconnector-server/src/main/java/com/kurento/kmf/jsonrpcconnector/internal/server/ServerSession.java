@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.kurento.kmf.jsonrpcconnector.client.Continuation;
 import com.kurento.kmf.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
 import com.kurento.kmf.jsonrpcconnector.internal.client.AbstractSession;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 
 public abstract class ServerSession extends AbstractSession {
@@ -106,6 +107,17 @@ public abstract class ServerSession extends AbstractSession {
 	@Override
 	public void sendNotification(String method) throws IOException {
 		rsHelper.sendNotification(method);
+	}
+
+	public Response<JsonElement> sendRequest(Request<JsonObject> request)
+			throws IOException {
+		return rsHelper.sendRequest(request);
+	}
+
+	public void sendRequest(Request<JsonObject> request,
+			Continuation<Response<JsonElement>> continuation)
+			throws IOException {
+		rsHelper.sendRequest(request, continuation);
 	}
 
 	public void setCloseTimerTask(ScheduledFuture<?> closeTimerTask) {

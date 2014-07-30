@@ -58,7 +58,8 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 			}
 
 			@Override
-			protected void internalSendRequest(Request<Object> request,
+			protected void internalSendRequest(
+					Request<? extends Object> request,
 					Class<JsonElement> resultClass,
 					Continuation<Response<JsonElement>> continuation) {
 				Response<JsonElement> result = localSendRequest(request,
@@ -86,7 +87,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 					@Override
 					protected void internalSendRequest(
-							Request<Object> request,
+							Request<? extends Object> request,
 							Class<JsonElement> clazz,
 							final Continuation<Response<JsonElement>> continuation) {
 						try {
