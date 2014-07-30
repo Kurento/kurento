@@ -423,7 +423,7 @@ kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
   if (baserpc->conn == NULL) {
     KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
     g_set_error (err, KMS_SCTP_BASE_RPC_ERROR, KMS_SCTP_BASE_RPC_IO_ERROR,
-          "SCTP connection is not established");
+        "SCTP connection is not established");
     return FALSE;
   }
 
@@ -464,7 +464,7 @@ kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
   if (baserpc->conn == NULL) {
     KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
     g_set_error (err, KMS_SCTP_BASE_RPC_ERROR, KMS_SCTP_BASE_RPC_IO_ERROR,
-          "SCTP connection is not established");
+        "SCTP connection is not established");
     return FALSE;
   }
 
