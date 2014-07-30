@@ -1,0 +1,87 @@
+# G_DEBUG=gc-friendly G_SLICE=always-malloc valgrind -v --leak-check=yes --log-file=valgrind.log --xml-file=valgrind.xml --xml=yes --suppressions=../valgrind.supp sever/kurento <command line options for kurento>
+{
+   Glib type register static
+   Memcheck:Leak
+   ...
+   fun:g_type_register_static
+   ...
+}
+{
+   Glib type interface static registration
+   Memcheck:Leak
+   ...
+   fun:g_type_add_interface_static
+   ...
+}
+{
+   Glib type register fundamental
+   Memcheck:Leak
+   ...
+   fun:g_type_register_fundamental
+   ...
+}
+{
+   Glib type class ref
+   Memcheck:Leak
+   ...
+   fun:g_type_class_ref
+   ...
+}
+{
+   Glib init ctor
+   Memcheck:Leak
+   ...
+   fun:gobject_init_ctor
+   ...
+}
+{
+   Quark from static string
+   Memcheck:Leak
+   ...
+   fun:g_quark_from_static_string
+   ...
+}
+{
+   Static pad Template
+   Memcheck:Leak
+   ...
+   fun:gst_static_pad_template_get
+   ...
+}
+{
+   Gstreamer load plugin
+   Memcheck:Leak
+   ...
+   fun:gst_plugin_feature_load
+   ...
+}
+{
+   Gstreamer load plugin file
+   Memcheck:Leak
+   ...
+   fun:gst_plugin_load_file
+   ...
+}
+{
+   Gstreamer statuc_caps_get
+   Memcheck:Leak
+   ...
+   fun:gst_static_caps_get
+   ...
+}
+{
+   Glib dns lookup
+   Memcheck:Param
+   sendmsg(mmsg[0].msg_hdr)
+   fun:sendmmsg
+   fun:__libc_res_nsend
+   fun:__libc_res_nquery
+   ...
+}
+{
+   Lib orc program_new_from_static
+   Memcheck:Leak
+   ...
+   fun:orc_program_new_from_static_bytecode
+   ...
+}
