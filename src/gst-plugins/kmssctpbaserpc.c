@@ -404,16 +404,17 @@ unpack_fragmented_query (KmsAssembler * assembler, GstQuery ** query,
     GError ** err)
 {
   gchar *buf = NULL;
+  gboolean ret;
   gsize size;
 
   kms_assembler_compose_buffer (assembler, &buf, &size);
 
-  dec_GstQuery (kms_assembler_get_encoding_rules (assembler), buf, size, query,
-      err);
+  ret = dec_GstQuery (kms_assembler_get_encoding_rules (assembler), buf, size,
+      query, err);
 
   g_free (buf);
 
-  return (*err == NULL);
+  return ret;
 }
 
 gboolean
@@ -661,11 +662,10 @@ pack_fragmented_query (KmsAssembler * assembler)
 
   kms_assembler_compose_buffer (assembler, &buf, &size);
 
-  dec_GstQuery (kms_assembler_get_encoding_rules (assembler), buf, size, &query,
-      &err);
-
-  if (query != NULL)
+  if (dec_GstQuery (kms_assembler_get_encoding_rules (assembler), buf, size,
+          &query, &err)) {
     return query;
+  }
 
   GST_ERROR ("%s", err->message);
   g_error_free (err);
@@ -684,11 +684,10 @@ pack_fragmented_event (KmsAssembler * assembler)
 
   kms_assembler_compose_buffer (assembler, &buf, &size);
 
-  dec_GstEvent (kms_assembler_get_encoding_rules (assembler), buf, size, &event,
-      &err);
-
-  if (event != NULL)
+  if (dec_GstEvent (kms_assembler_get_encoding_rules (assembler), buf, size,
+          &event, &err)) {
     return event;
+  }
 
   GST_ERROR ("%s", err->message);
   g_error_free (err);
@@ -707,11 +706,10 @@ pack_fragmented_buffer (KmsAssembler * assembler)
 
   kms_assembler_compose_buffer (assembler, &buf, &size);
 
-  dec_GstBuffer (kms_assembler_get_encoding_rules (assembler), buf, size,
-      &buffer, &err);
-
-  if (buffer != NULL)
+  if (dec_GstBuffer (kms_assembler_get_encoding_rules (assembler), buf, size,
+          &buffer, &err)) {
     return buffer;
+  }
 
   GST_ERROR ("%s", err->message);
   g_error_free (err);
@@ -939,8 +937,7 @@ kms_sctp_base_rpc_process_message (KmsSCTPBaseRPC * baserpc,
   rules = baserpc->rules;
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
 
-  dec_KmsMessage (rules, msg->buf, msg->used, &message, &err);
-  if (err != NULL) {
+  if (!dec_KmsMessage (rules, msg->buf, msg->used, &message, &err)) {
     GST_ERROR_OBJECT (baserpc, "%s", err->message);
     g_error_free (err);
     return;
