@@ -94,6 +94,7 @@ How do I...
         $ sudo apt-get install ocl-icd-libopencl1
 
 Why do I get the error...
+-------------------------
 
 ...Dynamic Web Module 3.0 requires Java 1.6 o newer?
     The error is due to the use of annotations for web service configuration
