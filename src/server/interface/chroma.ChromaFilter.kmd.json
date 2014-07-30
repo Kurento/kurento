@@ -1,0 +1,78 @@
+{
+  "remoteClasses": [
+    {
+      "name": "ChromaFilter",
+      "extends": "Filter",
+      "doc": "ChromaFilter interface. This type of :rom:cls:`Filter` makes transparent a colour\nrange in the top layer, revealing another image behind",
+      "constructor": {
+        "doc": "Create a :rom:cls:`ChromaFilter`",
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "window",
+            "doc": "Window of replacement for the :rom:cls:`ChromaFilter`",
+            "type": "WindowParam"
+          },
+          {
+            "name": "backgroundImage",
+            "doc": "url of image to be used to replace the detected background",
+            "type": "String",
+            "optional": true,
+            "defaultValue": ""
+          }
+        ]
+      },
+      "methods": [
+        {
+          "name": "setBackground",
+          "doc": "Sets the image to show on the detected chroma surface.",
+          "params": [
+            {
+              "name": "uri",
+              "doc": "URI where the image is located",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "unsetBackground",
+          "doc": "Clears the image used to be shown behind the chroma surface.",
+          "params": []
+        }
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "typeFormat": "REGISTER",
+      "properties": [
+        {
+          "name": "topRightCornerX",
+          "doc": "X coordinate of the left upper point of the window",
+          "type": "int"
+        },
+        {
+          "name": "topRightCornerY",
+          "doc": "Y coordinate of the left upper point of the window",
+          "type": "int"
+        },
+        {
+          "name": "width",
+          "doc": "width in pixels of the window",
+          "type": "int"
+        },
+        {
+          "name": "height",
+          "doc": "height in pixels of the window",
+          "type": "int"
+        }
+      ],
+      "name": "WindowParam",
+      "doc": "Parameter representing a window in a video stream.\nIt is used in command and constructor for media elements.\n\nAll units are in pixels, X runs from left to right, Y from top to bottom."
+    }
+  ]
+}
