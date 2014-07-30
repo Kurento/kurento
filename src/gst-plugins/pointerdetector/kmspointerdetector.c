@@ -27,19 +27,19 @@
 #include <errno.h>
 #include <libsoup/soup.h>
 
-#include "kmspointerdetector2.h"
-#include "kms-marshal-commons.h"
+#include "kmspointerdetector.h"
+#include <commons/kms-core-marshal.h>
 
-#define PLUGIN_NAME "pointerdetector2"
+#define PLUGIN_NAME "pointerdetector"
 
-GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector2_debug_category);
-#define GST_CAT_DEFAULT kms_pointer_detector2_debug_category
+GST_DEBUG_CATEGORY_STATIC (kms_pointer_detector_debug_category);
+#define GST_CAT_DEFAULT kms_pointer_detector_debug_category
 
-#define KMS_POINTER_DETECTOR2_GET_PRIVATE(obj) ( \
+#define KMS_POINTER_DETECTOR_GET_PRIVATE(obj) ( \
   G_TYPE_INSTANCE_GET_PRIVATE (                  \
     (obj),                                       \
-    KMS_TYPE_POINTER_DETECTOR2,                  \
-    KmsPointerDetector2Private                   \
+    KMS_TYPE_POINTER_DETECTOR,                  \
+    KmsPointerDetectorPrivate                   \
   )                                              \
 )
 
@@ -75,9 +75,9 @@ enum
   LAST_SIGNAL
 };
 
-static guint kms_pointer_detector2_signals[LAST_SIGNAL] = { 0 };
+static guint kms_pointer_detector_signals[LAST_SIGNAL] = { 0 };
 
-struct _KmsPointerDetector2Private
+struct _KmsPointerDetectorPrivate
 {
   IplImage *cvImage;
   CvPoint finalPointerPosition;
@@ -106,10 +106,10 @@ struct _KmsPointerDetector2Private
 
 /* class initialization */
 
-G_DEFINE_TYPE_WITH_CODE (KmsPointerDetector2, kms_pointer_detector2,
+G_DEFINE_TYPE_WITH_CODE (KmsPointerDetector, kms_pointer_detector,
     GST_TYPE_VIDEO_FILTER,
-    GST_DEBUG_CATEGORY_INIT (kms_pointer_detector2_debug_category, PLUGIN_NAME,
-        0, "debug category for pointerdetector2 element"));
+    GST_DEBUG_CATEGORY_INIT (kms_pointer_detector_debug_category, PLUGIN_NAME,
+        0, "debug category for pointerdetector element"));
 
 static void
 dispose_button_struct (gpointer data)
@@ -129,7 +129,7 @@ dispose_button_struct (gpointer data)
 }
 
 static void
-kms_pointer_detector2_dispose_buttons_layout_list (KmsPointerDetector2 *
+kms_pointer_detector_dispose_buttons_layout_list (KmsPointerDetector *
     pointerdetector)
 {
   g_slist_free_full (pointerdetector->priv->buttonsLayoutList,
@@ -200,14 +200,14 @@ load_image (gchar * uri, gchar * dir, gchar * image_name,
 }
 
 static void
-kms_pointer_detector2_load_buttonsLayout (KmsPointerDetector2 * pointerdetector)
+kms_pointer_detector_load_buttonsLayout (KmsPointerDetector * pointerdetector)
 {
   int aux, len;
   gboolean have_inactive_icon, have_active_icon, have_transparency;
   gchar *inactive_uri, *active_uri;
 
   if (pointerdetector->priv->buttonsLayoutList != NULL) {
-    kms_pointer_detector2_dispose_buttons_layout_list (pointerdetector);
+    kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
   }
 
   len = gst_structure_n_fields (pointerdetector->priv->buttonsLayout);
@@ -308,9 +308,9 @@ kms_pointer_detector2_load_buttonsLayout (KmsPointerDetector2 * pointerdetector)
 }
 
 static void
-kms_pointer_detector2_init (KmsPointerDetector2 * pointerdetector)
+kms_pointer_detector_init (KmsPointerDetector * pointerdetector)
 {
-  pointerdetector->priv = KMS_POINTER_DETECTOR2_GET_PRIVATE (pointerdetector);
+  pointerdetector->priv = KMS_POINTER_DETECTOR_GET_PRIVATE (pointerdetector);
 
   pointerdetector->priv->cvImage = NULL;
   pointerdetector->priv->iteration = 0;
@@ -341,7 +341,7 @@ kms_pointer_detector2_init (KmsPointerDetector2 * pointerdetector)
 }
 
 static void
-kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
+kms_pointer_detector_calibrate_color (KmsPointerDetector * pointerdetector)
 {
   gint h_values[H_VALUES];
   gint s_values[S_VALUES];
@@ -423,10 +423,10 @@ kms_pointer_detector2_calibrate_color (KmsPointerDetector2 * pointerdetector)
 }
 
 void
-kms_pointer_detector2_set_property (GObject * object, guint property_id,
+kms_pointer_detector_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (object);
 
   GST_OBJECT_LOCK (pointerdetector);
   switch (property_id) {
@@ -438,7 +438,7 @@ kms_pointer_detector2_set_property (GObject * object, guint property_id,
         gst_structure_free (pointerdetector->priv->buttonsLayout);
 
       pointerdetector->priv->buttonsLayout = g_value_dup_boxed (value);
-      kms_pointer_detector2_load_buttonsLayout (pointerdetector);
+      kms_pointer_detector_load_buttonsLayout (pointerdetector);
       break;
     case PROP_MESSAGE:
       pointerdetector->priv->putMessage = g_value_get_boolean (value);
@@ -469,10 +469,10 @@ kms_pointer_detector2_set_property (GObject * object, guint property_id,
 }
 
 void
-kms_pointer_detector2_get_property (GObject * object, guint property_id,
+kms_pointer_detector_get_property (GObject * object, guint property_id,
     GValue * value, GParamSpec * pspec)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (object);
 
   switch (property_id) {
     case PROP_SHOW_DEBUG_INFO:
@@ -530,9 +530,9 @@ remove_recursive (const gchar * path)
 }
 
 void
-kms_pointer_detector2_finalize (GObject * object)
+kms_pointer_detector_finalize (GObject * object)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (object);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (object);
 
   cvReleaseImageHeader (&pointerdetector->priv->cvImage);
 
@@ -547,20 +547,20 @@ kms_pointer_detector2_finalize (GObject * object)
   }
 
   if (pointerdetector->priv->buttonsLayoutList != NULL) {
-    kms_pointer_detector2_dispose_buttons_layout_list (pointerdetector);
+    kms_pointer_detector_dispose_buttons_layout_list (pointerdetector);
   }
 
   if (pointerdetector->priv->buttonsLayout != NULL) {
     gst_structure_free (pointerdetector->priv->buttonsLayout);
   }
 
-  G_OBJECT_CLASS (kms_pointer_detector2_parent_class)->finalize (object);
+  G_OBJECT_CLASS (kms_pointer_detector_parent_class)->finalize (object);
 }
 
 static gboolean
-kms_pointer_detector2_start (GstBaseTransform * trans)
+kms_pointer_detector_start (GstBaseTransform * trans)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (trans);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (trans);
 
   GST_DEBUG_OBJECT (pointerdetector, "start");
 
@@ -568,9 +568,9 @@ kms_pointer_detector2_start (GstBaseTransform * trans)
 }
 
 static gboolean
-kms_pointer_detector2_stop (GstBaseTransform * trans)
+kms_pointer_detector_stop (GstBaseTransform * trans)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (trans);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (trans);
 
   GST_DEBUG_OBJECT (pointerdetector, "stop");
 
@@ -578,10 +578,10 @@ kms_pointer_detector2_stop (GstBaseTransform * trans)
 }
 
 static gboolean
-kms_pointer_detector2_set_info (GstVideoFilter * filter, GstCaps * incaps,
+kms_pointer_detector_set_info (GstVideoFilter * filter, GstCaps * incaps,
     GstVideoInfo * in_info, GstCaps * outcaps, GstVideoInfo * out_info)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (filter);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (filter);
 
   GST_DEBUG_OBJECT (pointerdetector, "set_info");
 
@@ -589,7 +589,7 @@ kms_pointer_detector2_set_info (GstVideoFilter * filter, GstCaps * incaps,
 }
 
 static void
-kms_pointer_detector2_initialize_images (KmsPointerDetector2 * pointerdetector,
+kms_pointer_detector_initialize_images (KmsPointerDetector * pointerdetector,
     GstVideoFrame * frame)
 {
   if (pointerdetector->priv->cvImage == NULL) {
@@ -606,7 +606,7 @@ kms_pointer_detector2_initialize_images (KmsPointerDetector2 * pointerdetector,
 }
 
 static gboolean
-kms_pointer_detector2_check_pointer_into_button (CvPoint * pointer_position,
+kms_pointer_detector_check_pointer_into_button (CvPoint * pointer_position,
     ButtonStruct * buttonStruct)
 {
   int downLeftCornerX =
@@ -624,10 +624,10 @@ kms_pointer_detector2_check_pointer_into_button (CvPoint * pointer_position,
 }
 
 static void
-kms_pointer_detector2_overlay_icon (IplImage * icon,
+kms_pointer_detector_overlay_icon (IplImage * icon,
     gint x, gint y,
     gdouble transparency,
-    gboolean saturate, KmsPointerDetector2 * pointerdetector)
+    gboolean saturate, KmsPointerDetector * pointerdetector)
 {
   int w, h;
   uchar *row, *image_row;
@@ -691,7 +691,7 @@ kms_pointer_detector2_overlay_icon (IplImage * icon,
 }
 
 static void
-kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
+kms_pointer_detector_check_pointer_position (KmsPointerDetector *
     pointerdetector)
 {
   ButtonStruct *structAux;
@@ -714,7 +714,7 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
     downLeftCorner.y =
         structAux->cvButtonLayout.y + structAux->cvButtonLayout.height;
 
-    if (kms_pointer_detector2_check_pointer_into_button
+    if (kms_pointer_detector_check_pointer_into_button
         (&pointerdetector->priv->finalPointerPosition, structAux)) {
       buttonClickedCounter++;
 
@@ -729,7 +729,7 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
     if (pointerdetector->priv->show_windows_layout) {
       if (!is_active_window) {
         if (structAux->inactive_icon != NULL) {
-          kms_pointer_detector2_overlay_icon (structAux->inactive_icon,
+          kms_pointer_detector_overlay_icon (structAux->inactive_icon,
               structAux->cvButtonLayout.x,
               structAux->cvButtonLayout.y,
               structAux->transparency, FALSE, pointerdetector);
@@ -739,12 +739,12 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
         }
       } else {
         if (structAux->active_icon != NULL) {
-          kms_pointer_detector2_overlay_icon (structAux->active_icon,
+          kms_pointer_detector_overlay_icon (structAux->active_icon,
               structAux->cvButtonLayout.x,
               structAux->cvButtonLayout.y,
               structAux->transparency, FALSE, pointerdetector);
         } else if (structAux->inactive_icon != NULL) {
-          kms_pointer_detector2_overlay_icon (structAux->inactive_icon,
+          kms_pointer_detector_overlay_icon (structAux->inactive_icon,
               structAux->cvButtonLayout.x,
               structAux->cvButtonLayout.y,
               structAux->transparency, TRUE, pointerdetector);
@@ -796,10 +796,10 @@ kms_pointer_detector2_check_pointer_position (KmsPointerDetector2 *
 }
 
 static GstFlowReturn
-kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
+kms_pointer_detector_transform_frame_ip (GstVideoFilter * filter,
     GstVideoFrame * frame)
 {
-  KmsPointerDetector2 *pointerdetector = KMS_POINTER_DETECTOR2 (filter);
+  KmsPointerDetector *pointerdetector = KMS_POINTER_DETECTOR (filter);
   GstMapInfo info;
   IplImage *color_filter;
   IplImage *hsv_image;
@@ -820,7 +820,7 @@ kms_pointer_detector2_transform_frame_ip (GstVideoFilter * filter,
 
   pointerdetector->priv->frameSize =
       cvSize (frame->info.width, frame->info.height);
-  kms_pointer_detector2_initialize_images (pointerdetector, frame);
+  kms_pointer_detector_initialize_images (pointerdetector, frame);
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
   pointerdetector->priv->cvImage->imageData = (char *) info.data;
 
@@ -908,7 +908,7 @@ checkPoint:
     cvReleaseMemStorage (&storage);
   }
 
-  kms_pointer_detector2_check_pointer_position (pointerdetector);
+  kms_pointer_detector_check_pointer_position (pointerdetector);
 
   GST_OBJECT_LOCK (pointerdetector);
   cvCircle (pointerdetector->priv->cvImage,
@@ -933,7 +933,7 @@ end:
 }
 
 static void
-kms_pointer_detector2_class_init (KmsPointerDetector2Class * klass)
+kms_pointer_detector_class_init (KmsPointerDetectorClass * klass)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   GstBaseTransformClass *base_transform_class =
@@ -955,17 +955,17 @@ kms_pointer_detector2_class_init (KmsPointerDetector2Class * klass)
       "Francisco Rivero <fj.riverog@gmail.com>");
 
   klass->calibrate_color =
-      GST_DEBUG_FUNCPTR (kms_pointer_detector2_calibrate_color);
+      GST_DEBUG_FUNCPTR (kms_pointer_detector_calibrate_color);
 
-  gobject_class->set_property = kms_pointer_detector2_set_property;
-  gobject_class->get_property = kms_pointer_detector2_get_property;
-  gobject_class->finalize = kms_pointer_detector2_finalize;
-  base_transform_class->start = GST_DEBUG_FUNCPTR (kms_pointer_detector2_start);
-  base_transform_class->stop = GST_DEBUG_FUNCPTR (kms_pointer_detector2_stop);
+  gobject_class->set_property = kms_pointer_detector_set_property;
+  gobject_class->get_property = kms_pointer_detector_get_property;
+  gobject_class->finalize = kms_pointer_detector_finalize;
+  base_transform_class->start = GST_DEBUG_FUNCPTR (kms_pointer_detector_start);
+  base_transform_class->stop = GST_DEBUG_FUNCPTR (kms_pointer_detector_stop);
   video_filter_class->set_info =
-      GST_DEBUG_FUNCPTR (kms_pointer_detector2_set_info);
+      GST_DEBUG_FUNCPTR (kms_pointer_detector_set_info);
   video_filter_class->transform_frame_ip =
-      GST_DEBUG_FUNCPTR (kms_pointer_detector2_transform_frame_ip);
+      GST_DEBUG_FUNCPTR (kms_pointer_detector_transform_frame_ip);
 
   /* Properties initialization */
   g_object_class_install_property (gobject_class, PROP_SHOW_DEBUG_INFO,
@@ -991,19 +991,19 @@ kms_pointer_detector2_class_init (KmsPointerDetector2Class * klass)
           "define the window used to calibrate the color to track",
           GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  kms_pointer_detector2_signals[SIGNAL_CALIBRATE_COLOR] =
+  kms_pointer_detector_signals[SIGNAL_CALIBRATE_COLOR] =
       g_signal_new ("calibrate-color",
       G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_ACTION | G_SIGNAL_RUN_LAST,
-      G_STRUCT_OFFSET (KmsPointerDetector2Class, calibrate_color), NULL, NULL,
-      __kms_marshal_VOID__VOID, G_TYPE_NONE, 0);
+      G_STRUCT_OFFSET (KmsPointerDetectorClass, calibrate_color), NULL, NULL,
+      __kms_core_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
-  g_type_class_add_private (klass, sizeof (KmsPointerDetector2Private));
+  g_type_class_add_private (klass, sizeof (KmsPointerDetectorPrivate));
 }
 
 gboolean
-kms_pointer_detector2_plugin_init (GstPlugin * plugin)
+kms_pointer_detector_plugin_init (GstPlugin * plugin)
 {
   return gst_element_register (plugin, PLUGIN_NAME, GST_RANK_NONE,
-      KMS_TYPE_POINTER_DETECTOR2);
+      KMS_TYPE_POINTER_DETECTOR);
 }

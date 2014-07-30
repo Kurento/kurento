@@ -15,12 +15,12 @@
 #include <config.h>
 #include <gst/gst.h>
 
-#include "kmspointerdetector2.h"
+#include "kmspointerdetector.h"
 
 static gboolean
 init (GstPlugin * plugin)
 {
-  if (!kms_pointer_detector2_plugin_init (plugin))
+  if (!kms_pointer_detector_plugin_init (plugin))
     return FALSE;
 
   return TRUE;
@@ -28,6 +28,6 @@ init (GstPlugin * plugin)
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
-    kmspointerdetector2,
+    kmspointerdetector,
     "Kurento pointer detector",
     init, VERSION, "LGPL", "Kurento", "http://kurento.com/")
