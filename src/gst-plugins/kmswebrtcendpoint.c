@@ -594,6 +594,10 @@ sdp_media_set_rtcp_fb_attrs (GstSDPMedia * media)
       aux = g_strconcat (pt, " nack", NULL);
       gst_sdp_media_add_attribute (media, RTCP_FB, aux);
       g_free (aux);
+
+      aux = g_strconcat (pt, " nack pli", NULL);
+      gst_sdp_media_add_attribute (media, RTCP_FB, aux);
+      g_free (aux);
     }
 
     g_free (enconding_name);
