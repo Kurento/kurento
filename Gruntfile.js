@@ -35,7 +35,7 @@ module.exports = function(grunt)
     // Plugins configuration
     clean:
     {
-      generated_code: [DIST_DIR, 'src'],
+      generated_code: DIST_DIR,
 
       generated_doc: '<%= jsdoc.all.dest %>'
     },
@@ -45,7 +45,14 @@ module.exports = function(grunt)
     {
       all:
       {
-        src: ['README.md', 'lib/**/*.js', 'test/*.js'],
+        src: [
+          'README.md',
+          'lib/**/*.js',
+          'node_modules/kws-media-api-core/lib/**/*.js',
+          'node_modules/kws-media-api-elements/lib/**/*.js',
+          'node_modules/kws-media-api-filters/lib/**/*.js',
+          'test/*.js'
+        ], 
         dest: 'doc/jsdoc'
       }
     },
