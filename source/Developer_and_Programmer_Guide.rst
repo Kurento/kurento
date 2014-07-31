@@ -768,7 +768,6 @@ method ``onContentCommand()``
 ::
 
     @Override
-<<<<<<< Updated upstream
     public ContentCommandResult onContentCommand( WebRtcContentSession contentSession,
                     ContentCommand contentCommand)
       throws Exception {
@@ -778,15 +777,6 @@ method ``onContentCommand()``
         //Process command...
 
         return new ContentCommandResult("OK");
-=======
-    public ContentCommandResult onContentCommand( WebRtcContentSession contentSession, ContentCommand contentCommand) throws Exception {
-        contentCommand.getData();
-        contentCommand.getType();
-
-        ContentCommandResult result = new ContentCommandResult();
-        result.setResult("OK");
-        return result;
->>>>>>> Stashed changes
     }
 
 See the
@@ -1138,11 +1128,7 @@ element are connected to the input streams of the *sink* element.
             .terminateOnEos().build();
         PlayerEndpoint player = mp.newPlayerEndpoint("file:///myfile.avi")
             .build();
-<<<<<<< Updated upstream
         player.connect(httpEndpoint);
-=======
-
-        mp.connect(player, httpEndpoint);
 
     }
 
@@ -1174,15 +1160,9 @@ perform a connect operation in both directions.
 
         RtpEndpoint rtpA = mp.newRtpEndpoint().build();
         RtpEndpoint rtpB = mp.newRtpEndpoint().build();
-<<<<<<< Updated upstream
             
         rtpA.connect(rtpB);
         rtpB.connect(rtpA);
-=======
-
-        mp.connect(rtpA, rtpB);
-        mp.connect(rtpB, rtpA);
->>>>>>> Stashed changes
     }
 
 Notice that method ``connect()`` won't do anything when elements without
@@ -1199,13 +1179,7 @@ increase in complexity.
     private MediaPipeline mp;
 
     public void buildAsync () {
-<<<<<<< Updated upstream
         mp = mpf.create();
-=======
-
-        mp = mpf.create();
-
->>>>>>> Stashed changes
         mp.newHttpGetEndpoint().buildAsync( new Continuation<HttpGetEndpoint>() {
             @Override
             public void onSuccess(HttpGetEndpoint result) {
@@ -1215,13 +1189,8 @@ increase in complexity.
             public void onError(Throwable cause) {
                 // log error
             }
-<<<<<<< Updated upstream
-        });
-=======
-
         });
 
->>>>>>> Stashed changes
         mp.newPlayerEndpoint("file:///myfile.webm").buildAsync( new
             Continuation<PlayerEndpoint>() {
             @Override
@@ -1232,10 +1201,7 @@ increase in complexity.
             public void onError(Throwable cause) {
                 // log error
             }
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
         });
     }
 
