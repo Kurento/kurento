@@ -11,6 +11,7 @@ Welcome to Kurento's documentation!
    Architecture.rst
    Developer_and_Programmer_Guide.rst
    Installation_Guide.rst
+   Advanced_Installation_Guide.rst
    faq.rst
    glossary.rst
 
