@@ -291,12 +291,12 @@ public class KurentoMediaServerManager {
 	}
 
 	private void kmsSigTerm() {
-		log.debug("Sending SIGTERM to KMS process");
+		log.trace("Sending SIGTERM to KMS process");
 		Shell.runAndWait("sh", "-c", "kill `cat " + workspace + "kms-pid`");
 	}
 
 	private void kmsSigKill() {
-		log.debug("Sending SIGKILL to KMS process");
+		log.trace("Sending SIGKILL to KMS process");
 		Shell.runAndWait("sh", "-c", "kill -9 `cat " + workspace + "kms-pid`");
 	}
 

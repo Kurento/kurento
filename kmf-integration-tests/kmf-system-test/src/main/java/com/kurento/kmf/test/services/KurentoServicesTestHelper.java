@@ -61,9 +61,9 @@ public class KurentoServicesTestHelper {
 	private static String testCaseName;
 	private static String testName;
 	private static String testDir;
-	private static String kmsAutostart;
-	private static String krcAutostart;
-	private static String kmcAutostart;
+	private static String kmsAutostart = KMS_AUTOSTART_DEFAULT;
+	private static String krcAutostart = KRC_AUTOSTART_DEFAULT;
+	private static String kmcAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kmsPrintLog;
 	private static File logFile;
 

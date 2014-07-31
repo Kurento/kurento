@@ -6,8 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+//import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -25,6 +24,7 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.jsonrpcconnector.internal.message.ResponseError;
 import com.kurento.kmf.rabbitmq.RabbitMqManager;
 import com.kurento.kmf.rabbitmq.RabbitMqManager.BrokerMessageReceiverWithResponse;
+import com.kurento.kmf.rabbitmq.RabbitTemplate;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants;
 
 public class JsonRpcServerRabbitMq {
@@ -32,15 +32,13 @@ public class JsonRpcServerRabbitMq {
 	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcServerRabbitMq.class);
 
-	private Map<String, MediaPipelineInfo> pipelinesByBrokerId = new ConcurrentHashMap<>();
+	private Map<String, MediaPipelineInfo> pipelinesById = new ConcurrentHashMap<>();
 	private Map<String, MediaPipelineInfo> pipelinesBySubscription = new ConcurrentHashMap<>();
 
 	private JsonRpcClient client;
 	private RabbitMqManager rabbitMq;
 
 	private RabbitTemplate template;
-
-	private ObjectIdsConverter converter = new ObjectIdsConverter();
 
 	// TODO: Maybe we need to implement a pure JsonRpcServerRabbitMq with
 	// handler parameter instead of this client > handler communication
@@ -66,8 +64,7 @@ public class JsonRpcServerRabbitMq {
 				new BrokerMessageReceiverWithResponse() {
 					@Override
 					public String onMessage(String message) {
-
-						return processRequestFromBroker(message);
+						return pipelineCreationQueueRequest(message);
 					}
 				});
 
@@ -83,7 +80,7 @@ public class JsonRpcServerRabbitMq {
 				});
 	}
 
-	private String processRequestFromBroker(String message) {
+	private String pipelineCreationQueueRequest(String message) {
 		log.debug("[PCQ] --> {}", message);
 
 		Request<JsonObject> request = JsonUtils.fromJsonRequest(message,
@@ -94,6 +91,43 @@ public class JsonRpcServerRabbitMq {
 		log.debug("[PCQ] <-- {}", response);
 
 		return response;
+	}
+
+	private Response<JsonElement> createMediaPipeline(
+			Request<JsonObject> request) {
+
+		try {
+
+			JsonElement response = client.sendRequest(request.getMethod(),
+					request.getParams());
+
+			final String pipelineId = getValue(response);
+
+			rabbitMq.declarePipelineQueue(pipelineId);
+
+			rabbitMq.addMessageReceiverWithResponse(pipelineId,
+					new BrokerMessageReceiverWithResponse() {
+						@Override
+						public String onMessage(String message) {
+
+							return pipelineQueueRequest(pipelineId, message);
+						}
+					});
+
+			String exchange = rabbitMq.declareEventsExchange(pipelineId);
+
+			MediaPipelineInfo pipeline = new MediaPipelineInfo(pipelineId,
+					pipelineId, exchange);
+
+			this.pipelinesById.put(pipelineId, pipeline);
+
+			return new Response<JsonElement>(request.getId(),
+					new JsonPrimitive(pipelineId));
+
+		} catch (Exception e) {
+			return new Response<JsonElement>(request.getId(),
+					ResponseError.newFromException(request.getId(), e));
+		}
 	}
 
 	private void processEventFromServer(Request<JsonObject> request) {
@@ -108,88 +142,36 @@ public class JsonRpcServerRabbitMq {
 		String subscriptionId = value.get(
 				RomJsonRpcConstants.ONEVENT_SUBSCRIPTION).getAsString();
 
-		MediaPipelineInfo pipelineInfo = pipelinesBySubscription
-				.get(subscriptionId);
-
 		String objectId = value.get(RomJsonRpcConstants.ONEVENT_OBJECT)
 				.getAsString();
 
-		String brokerObjectId = converter.createBrokerObjectId(
-				pipelineInfo.getBrokerPipelineId(), objectId);
-
-		value.addProperty(RomJsonRpcConstants.ONEVENT_OBJECT, brokerObjectId);
+		value.addProperty(RomJsonRpcConstants.ONEVENT_OBJECT, objectId);
 
 		String type = value.get(RomJsonRpcConstants.ONEVENT_TYPE).getAsString();
 
-		final String eventRoutingKey = rabbitMq.createRoutingKey(
-				brokerObjectId, type);
+		final String eventRoutingKey = rabbitMq
+				.createRoutingKey(objectId, type);
+
+		MediaPipelineInfo pipelineInfo = pipelinesBySubscription
+				.get(subscriptionId);
+
+		if (pipelineInfo == null) {
+			log.debug("PipelinesBySubscription: " + pipelinesBySubscription);
+		}
 
 		rabbitMq.send(pipelineInfo.getEventsExchange(), eventRoutingKey,
 				request.toString(), template);
 
 	}
 
-	private Response<JsonElement> createMediaPipeline(
-			Request<JsonObject> request) {
+	private String pipelineQueueRequest(final String pipelineId, String message) {
+		log.debug("[PQ] --> {}", message);
 
-		try {
+		String response = onPipelineMessage(pipelineId, pipelineId, message);
 
-			JsonElement response = client.sendRequest(request.getMethod(),
-					request.getParams());
+		log.debug("[PQ] <-- {}", response);
 
-			final String realPipelineId = getValue(response);
-
-			Queue pipelineEQ = rabbitMq.declarePipelineQueue();
-
-			final String brokerPipelineId = pipelineEQ.getName();
-
-			rabbitMq.addMessageReceiverWithResponse(pipelineEQ.getName(),
-					new BrokerMessageReceiverWithResponse() {
-						@Override
-						public String onMessage(String message) {
-
-							log.debug("[PQ] --> {}", message);
-
-							String response = onPipelineMessage(
-									brokerPipelineId, realPipelineId, message);
-
-							log.debug("[PQ] <-- {}", response);
-
-							return response;
-						}
-					});
-
-			String exchange = rabbitMq.declareEventsExchange(brokerPipelineId);
-
-			MediaPipelineInfo pipeline = new MediaPipelineInfo(
-					brokerPipelineId, realPipelineId, exchange);
-
-			this.pipelinesByBrokerId.put(brokerPipelineId, pipeline);
-
-			return new Response<JsonElement>(request.getId(),
-					new JsonPrimitive(brokerPipelineId));
-
-		} catch (Exception e) {
-			return new Response<JsonElement>(request.getId(),
-					ResponseError.newFromException(request.getId(), e));
-		}
-	}
-
-	private String getValue(JsonElement response) {
-
-		if (response instanceof JsonPrimitive) {
-			return response.getAsString();
-		} else {
-			if (response instanceof JsonObject) {
-				JsonObject json = (JsonObject) response;
-				return getValue(json.entrySet().iterator().next().getValue());
-			} else {
-				throw new RuntimeException(
-						"Can't extract a single value from jsonElement: "
-								+ response);
-			}
-		}
-
+		return response;
 	}
 
 	public String onPipelineMessage(String brokerPipelineId,
@@ -213,6 +195,7 @@ public class JsonRpcServerRabbitMq {
 			default:
 				return invokeOperation(request).toString();
 			}
+
 		} catch (Exception e) {
 
 			log.warn("Exception processing request from client. ", e);
@@ -226,15 +209,13 @@ public class JsonRpcServerRabbitMq {
 	private Object release(String realPipelineId, String brokerPipelineId,
 			Request<JsonObject> request) {
 
-		String brokerObjectId = request.getParams()
+		String objectId = request.getParams()
 				.get(RomJsonRpcConstants.RELEASE_OBJECT).getAsString();
-
-		boolean isPipeline = pipelinesByBrokerId.containsKey(brokerObjectId);
 
 		Response<JsonElement> response = invokeOperation(request);
 
-		if (!response.isError() && isPipeline) {
-			pipelinesByBrokerId.remove(brokerObjectId);
+		if (!response.isError() && pipelinesById.containsKey(objectId)) {
+			pipelinesById.remove(objectId);
 		}
 
 		return response;
@@ -245,19 +226,13 @@ public class JsonRpcServerRabbitMq {
 
 		try {
 
-			converter.convertRefsFromBrokerToReal(request.getMethod(),
-					request.getParams(), pipelinesByBrokerId);
-
 			JsonElement response = client.sendRequest(request.getMethod(),
 					request.getParams());
 
 			String realObjectId = getValue(response);
 
-			String brokerObjectId = converter.createBrokerObjectId(
-					brokerPipelineId, realObjectId);
-
 			return new Response<JsonElement>(request.getId(),
-					new JsonPrimitive(brokerObjectId));
+					new JsonPrimitive(realObjectId));
 
 		} catch (Exception e) {
 			return new Response<JsonElement>(request.getId(),
@@ -267,15 +242,10 @@ public class JsonRpcServerRabbitMq {
 
 	private Response<JsonElement> invokeOperation(Request<JsonObject> request) {
 
-		converter.convertRefsFromBrokerToReal(request.getMethod(),
-				request.getParams(), pipelinesByBrokerId);
-
 		try {
 
 			JsonElement result = client.sendRequest(request.getMethod(),
 					request.getParams());
-
-			converter.convertRefsFromRealToBroker(null, result);
 
 			// TODO: Improve this handling of null responses
 			if (result == null || result instanceof JsonNull) {
@@ -290,16 +260,18 @@ public class JsonRpcServerRabbitMq {
 		}
 	}
 
-	private Response<JsonElement> subscribeMessage(String brokerPipelineId,
+	private Response<JsonElement> subscribeMessage(String pipelineId,
 			Request<JsonObject> request) {
 
 		Response<JsonElement> response = invokeOperation(request);
 
 		if (!response.isError()) {
+
 			String subscriptionId = ((JsonObject) response.getResult()).get(
 					"value").getAsString();
+
 			this.pipelinesBySubscription.put(subscriptionId,
-					pipelinesByBrokerId.get(brokerPipelineId));
+					pipelinesById.get(pipelineId));
 		}
 
 		return response;
@@ -309,6 +281,28 @@ public class JsonRpcServerRabbitMq {
 		if (client != null) {
 			client.close();
 		}
+
+		this.rabbitMq.destroy();
+	}
+
+	private String getValue(JsonElement response) {
+
+		if (response == null) {
+			return null;
+		}
+
+		if (response instanceof JsonPrimitive) {
+			return response.getAsString();
+		}
+
+		if (response instanceof JsonObject) {
+			JsonObject json = (JsonObject) response;
+			return getValue(json.entrySet().iterator().next().getValue());
+		}
+
+		throw new RuntimeException(
+				"Can't extract a single value from jsonElement: " + response);
+
 	}
 
 }

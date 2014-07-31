@@ -53,6 +53,10 @@ public class JsonRpcClientThrift extends JsonRpcClient {
 		}
 	};
 
+	public JsonRpcClientThrift() {
+		this("127.0.0.1", 9090, "127.0.0.1", 9191);
+	}
+
 	public JsonRpcClientThrift(String serverAddress, int serverPort,
 			String localAddress, int localPort) {
 

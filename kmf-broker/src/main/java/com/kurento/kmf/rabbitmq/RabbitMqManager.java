@@ -12,13 +12,18 @@ import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+//import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 
 import com.kurento.kmf.common.Address;
+import com.kurento.kmf.common.PropertiesManager;
+import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 
 public class RabbitMqManager {
+
+	public static final String RETRY_TIMEOUT_PROPERTY = "rabbit.retryTimeout";
+	public static final String NUM_RETRIES_PROPERTY = "rabbit.numRetries";
 
 	public static final String EVENT_QUEUE_PREFIX = "event_";
 	public static final String CLIENT_QUEUE_PREFIX = "client_";
@@ -29,7 +34,9 @@ public class RabbitMqManager {
 	private static final Logger log = LoggerFactory
 			.getLogger(RabbitMqManager.class);
 
-	private static final long TIMEOUT = 1000000;
+	private final long retryTimeOut;
+	private final long numRetries;
+
 	private static final String EXPIRATION_TIME = "25000";
 
 	private CachingConnectionFactory cf;
@@ -48,6 +55,10 @@ public class RabbitMqManager {
 
 	public RabbitMqManager(Address address) {
 		this.address = address;
+		this.retryTimeOut = PropertiesManager.getProperty(
+				RETRY_TIMEOUT_PROPERTY, 500);
+		this.numRetries = PropertiesManager
+				.getProperty(NUM_RETRIES_PROPERTY, 5);
 	}
 
 	public void connect() {
@@ -75,8 +86,10 @@ public class RabbitMqManager {
 				+ "' declared.");
 	}
 
-	public Queue declarePipelineQueue() {
-		return admin.declareQueue();
+	public Queue declarePipelineQueue(String name) {
+		Queue queue = new Queue(name);
+		admin.declareQueue(queue);
+		return queue;
 	}
 
 	public Queue declareClientQueue() {
@@ -89,7 +102,7 @@ public class RabbitMqManager {
 
 		RabbitTemplate template = new RabbitTemplate(cf);
 
-		template.setReplyTimeout(TIMEOUT);
+		template.setReplyTimeout(retryTimeOut);
 		template.setReplyQueue(queue);
 
 		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
@@ -107,35 +120,55 @@ public class RabbitMqManager {
 	}
 
 	public String sendAndReceive(String exchange, String routingKey,
-			String message) {
+			Request<? extends Object> message) {
 		return sendAndReceive(exchange, routingKey, message, null);
 	}
 
 	public String sendAndReceive(String exchange, String routingKey,
-			String message, RabbitTemplate template) {
+			Request<? extends Object> request, RabbitTemplate template) {
 
 		if (template == null) {
 			template = new RabbitTemplate(cf);
-			template.setReplyTimeout(TIMEOUT);
+			template.setReplyTimeout(retryTimeOut);
 		}
 
 		log.debug("Req-> Exchange:'" + exchange + "' RoutingKey:'" + routingKey
-				+ "' " + message);
+				+ "' " + request);
 
 		MessageProperties messageProperties = new MessageProperties();
 		messageProperties.setExpiration(EXPIRATION_TIME);
+		messageProperties.setCorrelationId(calculateCorrelationId(request)
+				.getBytes());
 
-		Message response = template.sendAndReceive(exchange, routingKey,
-				new Message(message.getBytes(), messageProperties));
+		for (int numRequest = 0; numRequest < numRetries + 1; numRequest++) {
 
-		if (response == null) {
-			throw new RabbitMqException("Timeout waiting a reply to message: "
-					+ message);
+			if (numRequest > 0) {
+				log.debug("Retry {} sending message: {}", numRequest, request);
+			}
+
+			Message response = template.sendAndReceive(exchange, routingKey,
+					new Message(request.toString().getBytes(),
+							messageProperties));
+
+			if (response != null) {
+				String responseAsString = new String(response.getBody());
+				log.debug("<-Res " + responseAsString.trim());
+				return responseAsString;
+			}
 		}
 
-		String responseAsString = new String(response.getBody());
-		log.debug("<-Res " + responseAsString.trim());
-		return responseAsString;
+		throw new RabbitMqException("Timeout waiting a reply to message: "
+				+ request);
+	}
+
+	private String calculateCorrelationId(Request<? extends Object> request) {
+
+		if (request.getSessionId() == null) {
+			throw new AssertionError(
+					"request without session can't be send with RabbitMqManager");
+		}
+
+		return request.getSessionId() + "/" + request.getId();
 	}
 
 	public RabbitTemplate createServerTemplate() {
@@ -207,6 +240,7 @@ public class RabbitMqManager {
 
 		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer(
 				cf);
+		container.setConcurrentConsumers(10);
 		MessageListenerAdapter adapter = new MessageListenerAdapter(
 				new Object() {
 					@SuppressWarnings("unused")
@@ -253,8 +287,6 @@ public class RabbitMqManager {
 	public void destroy() {
 
 		for (SimpleMessageListenerContainer container : containers) {
-			// System.out.println("Queues:"
-			// + Arrays.toString(container.getQueueNames()));
 			container.destroy();
 		}
 

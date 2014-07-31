@@ -43,9 +43,9 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 	private JsonRpcHandler<? extends Object> remoteHandler;
 	private final JsonRpcHandlerManager remoteHandlerManager = new JsonRpcHandlerManager();
 
-	public <F> JsonRpcClientLocal(JsonRpcHandler<? extends Object> paramHandler) {
+	public <F> JsonRpcClientLocal(JsonRpcHandler<? extends Object> handler) {
 
-		this.remoteHandler = paramHandler;
+		this.remoteHandler = handler;
 		this.remoteHandlerManager.setJsonRpcHandler(remoteHandler);
 
 		session = new ClientSession("XXX", null, this);
@@ -64,7 +64,9 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 					Continuation<Response<JsonElement>> continuation) {
 				Response<JsonElement> result = localSendRequest(request,
 						resultClass);
-				continuation.onSuccess(result);
+				if (result == null) {
+					continuation.onSuccess(result);
+				}
 			}
 		};
 	}

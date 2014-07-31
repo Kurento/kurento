@@ -4,13 +4,14 @@ import static com.kurento.kmf.jsonrpcconnector.JsonUtils.fromJsonRequest;
 import static com.kurento.kmf.rabbitmq.RabbitMqManager.PIPELINE_CREATION_QUEUE;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
+//import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -27,7 +28,7 @@ import com.kurento.kmf.jsonrpcconnector.internal.message.Request;
 import com.kurento.kmf.jsonrpcconnector.internal.message.Response;
 import com.kurento.kmf.rabbitmq.RabbitMqManager;
 import com.kurento.kmf.rabbitmq.RabbitMqManager.BrokerMessageReceiver;
-import com.kurento.kmf.rabbitmq.server.ObjectIdsConverter;
+import com.kurento.kmf.rabbitmq.RabbitTemplate;
 import com.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants;
 
 public class JsonRpcClientRabbitMq extends JsonRpcClient {
@@ -38,13 +39,13 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 	private final ExecutorService execService = Executors
 			.newFixedThreadPool(10);
 
-	private final ObjectIdsConverter converter = new ObjectIdsConverter();
-
 	private RabbitMqManager rabbitMqManager;
 
 	private String clientId;
 
 	private RabbitTemplate rabbitTemplate;
+
+	private String defaultSessionId = UUID.randomUUID().toString();
 
 	private final ResponseSender dummyResponseSenderForEvents = new ResponseSender() {
 		@Override
@@ -110,9 +111,17 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 	public <P, R> Response<R> internalSendRequestBroker(Request<P> request,
 			Class<R> resultClass) {
 
+		long initTime = System.nanoTime();
+
 		log.debug("Req-> {}", request);
 
 		JsonObject paramsJson = (JsonObject) request.getParams();
+
+		if (request.getSessionId() == null) {
+			// RabbitMQ doesn't allow sending requests without sessionId. It is
+			// used to filter retried requests / responses
+			request.setSessionId(defaultSessionId);
+		}
 
 		try {
 
@@ -123,8 +132,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 							.getAsString())) {
 
 				String responseStr = rabbitMqManager.sendAndReceive("",
-						PIPELINE_CREATION_QUEUE, request.toString(),
-						rabbitTemplate);
+						PIPELINE_CREATION_QUEUE, request, rabbitTemplate);
 
 				log.debug("<-Res {}", responseStr.trim());
 
@@ -145,7 +153,7 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
 				String method = request.getMethod();
 
-				String brokerPipelineId;
+				String pipelineId;
 
 				if (RomJsonRpcConstants.CREATE_METHOD.equals(method)) {
 
@@ -154,47 +162,60 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 							.getAsJsonObject();
 
 					if (constructorParams.has("mediaPipeline")) {
-						brokerPipelineId = constructorParams.get(
-								"mediaPipeline").getAsString();
+						pipelineId = constructorParams.get("mediaPipeline")
+								.getAsString();
 					} else {
-						brokerPipelineId = converter
-								.extractBrokerPipelineFromBrokerObjectId(constructorParams
-										.get("hub").getAsString());
+						pipelineId = extractPipelineFromObjectId(constructorParams
+								.get("hub").getAsString());
 					}
 
 				} else {
 
 					// All messages has the same param name for "object"
-					String brokerObjectId = paramsJson.get(
+					String objectId = paramsJson.get(
 							RomJsonRpcConstants.INVOKE_OBJECT).getAsString();
 
-					brokerPipelineId = converter
-							.extractBrokerPipelineFromBrokerObjectId(brokerObjectId);
+					pipelineId = extractPipelineFromObjectId(objectId);
 
 					if (RomJsonRpcConstants.SUBSCRIBE_METHOD.equals(method)) {
-						processSubscriptionRequest(paramsJson, brokerPipelineId);
+						processSubscriptionRequest(paramsJson, pipelineId);
 					} else if (RomJsonRpcConstants.RELEASE_METHOD
 							.equals(method)) {
 
 						// Remove from keepAliveManager if the released object
 						// is a MediaPipeline object
-						keepAliveManager.removeId(brokerObjectId);
+						keepAliveManager.removeId(objectId);
 					}
 				}
 
 				String responseStr = rabbitMqManager.sendAndReceive("",
-						brokerPipelineId, request.toString(), rabbitTemplate);
+						pipelineId, request, rabbitTemplate);
 
 				log.debug("<-Res {}", responseStr.trim());
 
 				response = JsonUtils.fromJsonResponse(responseStr, resultClass);
 			}
 
+			double duration = (System.nanoTime() - initTime) / (double) 1000000;
+
+			log.debug("RTT Time: {} millis", duration);
+
 			return response;
 
 		} catch (Exception e) {
 			throw new RuntimeException(
 					"Exception while invoking request to server", e);
+		}
+	}
+
+	private String extractPipelineFromObjectId(String brokerObjectId) {
+		int slashIndex = brokerObjectId.indexOf('/');
+		if (slashIndex == -1) {
+			// It is a BrokerPipelineId
+			return brokerObjectId;
+		} else {
+			// It is another object
+			return brokerObjectId.substring(0, slashIndex);
 		}
 	}
 
