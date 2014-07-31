@@ -12,7 +12,7 @@
     "api": {
       "java": {
         "packageName": "com.kurento.kmf.media",
-        "maven.groupId": "com.kurento",
+        "maven.groupId": "com.kurento.kmf",
         "maven.artifactId": "kmf-media-api"
       },
       "js": {
