@@ -201,6 +201,12 @@ kms_sctp_client_rpc_start (KmsSCTPClientRPC * clientrpc, gchar * host,
     return FALSE;
   }
 
+  if (!kms_sctp_connection_set_event_subscribe (conn, KMS_SCTP_DATA_IO_EVENT,
+          err)) {
+    kms_sctp_connection_unref (conn);
+    return FALSE;
+  }
+
 create_task:
 
   if (!kms_sctp_base_rpc_start_task (KMS_SCTP_BASE_RPC (clientrpc),

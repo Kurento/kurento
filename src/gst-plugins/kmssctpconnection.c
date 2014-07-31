@@ -325,6 +325,8 @@ kms_sctp_connection_receive (KmsSCTPConnection * conn, KmsSCTPMessage * message,
   message->used = sctp_socket_receive (conn->socket, message->buf,
       message->size, cancellable, &streamid, err);
 
+  GST_LOG ("Receive data on stream id %d", streamid);
+
   if (message->used == 0)
     return KMS_SCTP_EOF;
   else if (message->used < 0)
@@ -334,7 +336,7 @@ kms_sctp_connection_receive (KmsSCTPConnection * conn, KmsSCTPMessage * message,
 }
 
 KmsSCTPResult
-kms_sctp_connection_send (KmsSCTPConnection * conn,
+kms_sctp_connection_send (KmsSCTPConnection * conn, guint32 stream_id,
     const KmsSCTPMessage * message, GCancellable * cancellable, GError ** err)
 {
   gsize written = 0;
@@ -344,9 +346,8 @@ kms_sctp_connection_send (KmsSCTPConnection * conn,
 
   /* write buffer data */
   while (written < message->used) {
-    rret = sctp_socket_send (conn->socket, SCTP_DEFAULT_STREAM,
-        TIME_TO_LIVE, message->buf + written, message->used - written,
-        cancellable, err);
+    rret = sctp_socket_send (conn->socket, stream_id, TIME_TO_LIVE,
+        message->buf + written, message->used - written, cancellable, err);
 
     if (rret < 0)
       return KMS_SCTP_ERROR;

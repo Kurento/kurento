@@ -51,8 +51,8 @@ G_BEGIN_DECLS
   )                                        \
 )
 
-#define SCTP_DEFAULT_NUM_OSTREAMS 1
-#define SCTP_DEFAULT_MAX_INSTREAMS 1
+#define SCTP_DEFAULT_NUM_OSTREAMS 3
+#define SCTP_DEFAULT_MAX_INSTREAMS 3
 
 #define KMS_SCTP_BASE_RPC_RULES "rules"
 #define KMS_SCTP_BASE_RPC_BUFFER_SIZE "buffer-size"

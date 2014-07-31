@@ -31,6 +31,10 @@
 
 #define DEFAULT_ENCODING_RULES KMS_ENCODING_RULES_BER
 
+#define QUERY_STREAM 0
+#define EVENT_STREAM 1
+#define BUFFER_STREAM 2
+
 GST_DEBUG_CATEGORY_STATIC (kms_sctp_base_rpc_debug_category);
 #define GST_CAT_DEFAULT kms_sctp_base_rpc_debug_category
 
@@ -287,7 +291,7 @@ kms_scp_base_rpc_cancel_pending_requests (KmsSCTPBaseRPC * baserpc)
 
 static gboolean
 kms_scp_base_rpc_send_fragments (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
-    GCancellable * cancellable, GError ** err)
+    guint32 stream_id, GCancellable * cancellable, GError ** err)
 {
   guint n, i = 0;
 
@@ -310,7 +314,8 @@ kms_scp_base_rpc_send_fragments (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
     }
 
     result =
-        kms_sctp_connection_send (baserpc->conn, &sctpmsg, cancellable, err);
+        kms_sctp_connection_send (baserpc->conn, stream_id, &sctpmsg,
+        cancellable, err);
     CLEAR_SCTP_MESSAGE (sctpmsg);
 
     if (result != KMS_SCTP_OK) {
@@ -342,7 +347,8 @@ kms_scp_base_rpc_wait_resp (KmsPendingReq * req)
 
 static KmsAssembler *
 kms_scp_base_rpc_send_request (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
-    guint32 req_id, GCancellable * cancellable, GError ** err)
+    guint32 req_id, guint32 stream_id, GCancellable * cancellable,
+    GError ** err)
 {
   KmsPendingReq *req;
   KmsAssembler *assembler = NULL;
@@ -362,7 +368,8 @@ kms_scp_base_rpc_send_request (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
     return NULL;
   }
 
-  if (!kms_scp_base_rpc_send_fragments (baserpc, f, cancellable, err)) {
+  if (!kms_scp_base_rpc_send_fragments (baserpc, f, stream_id, cancellable,
+          err)) {
     KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
     return NULL;
   }
@@ -449,7 +456,9 @@ kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
 
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
 
-  a = kms_scp_base_rpc_send_request (baserpc, f, req_id, cancellable, err);
+  a = kms_scp_base_rpc_send_request (baserpc, f, req_id, QUERY_STREAM,
+      cancellable, err);
+
   if (a == NULL)
     return FALSE;
 
@@ -487,7 +496,8 @@ kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
     goto done;
   }
 
-  ret = kms_scp_base_rpc_send_fragments (baserpc, f, cancellable, err);
+  ret = kms_scp_base_rpc_send_fragments (baserpc, f, EVENT_STREAM, cancellable,
+      err);
 
 done:
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
@@ -524,7 +534,8 @@ kms_scp_base_rpc_buffer (KmsSCTPBaseRPC * baserpc, GstBuffer * buffer,
     goto done;
   }
 
-  ret = kms_scp_base_rpc_send_fragments (baserpc, f, cancellable, err);
+  ret = kms_scp_base_rpc_send_fragments (baserpc, f, BUFFER_STREAM, cancellable,
+      err);
 
 done:
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
@@ -733,7 +744,8 @@ kms_scp_base_rpc_query_response (KmsSCTPBaseRPC * baserpc, guint req_id,
   }
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
-  kms_scp_base_rpc_send_fragments (baserpc, f, baserpc->cancellable, &err);
+  kms_scp_base_rpc_send_fragments (baserpc, f, QUERY_STREAM,
+      baserpc->cancellable, &err);
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
 
 done:
