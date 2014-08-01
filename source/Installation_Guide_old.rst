@@ -326,6 +326,7 @@ configuration file ``/etc/kurento/media-server.conf``.
 After a fresh installation that file looks like this:
 
 .. sourcecode:: ini
+
     [Server]
     sdpPattern=pattern.sdp
     service=Thrift
