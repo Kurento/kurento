@@ -56,3 +56,8 @@ API Classes
    com/kurento/kmf/media/package-index
    com/kurento/kmf/media/events/package-index
 
+
+API Jsdoc
+=========
+
+This is the standard `jsdoc of the JavaScript Kurento Media API  <../jsdoc/kws-media-api/index.html>`__.
