@@ -193,7 +193,7 @@ kms_webrtc_transport_create (NiceAgent * agent, guint stream_id,
   g_free (str);
 
   g_object_set (G_OBJECT (tr->nicesink), "agent", agent, "stream", stream_id,
-      "component", component_id, "qos", TRUE, "async", FALSE, NULL);
+      "component", component_id, "async", FALSE, NULL);
   g_object_set (G_OBJECT (tr->nicesrc), "agent", agent, "stream", stream_id,
       "component", component_id, NULL);
 
