@@ -24,7 +24,6 @@
 #define KMS_SCTP_CONNECTION_ERROR \
   g_quark_from_static_string("kms-sctp-connection-error-quark")
 
-#define TIME_TO_LIVE 0
 #define SCTP_BACKLOG 1          /* client connection queue */
 
 typedef enum
@@ -337,7 +336,8 @@ kms_sctp_connection_receive (KmsSCTPConnection * conn, KmsSCTPMessage * message,
 
 KmsSCTPResult
 kms_sctp_connection_send (KmsSCTPConnection * conn, guint32 stream_id,
-    const KmsSCTPMessage * message, GCancellable * cancellable, GError ** err)
+    guint32 timetolive, const KmsSCTPMessage * message,
+    GCancellable * cancellable, GError ** err)
 {
   gsize written = 0;
   gssize rret;
@@ -346,7 +346,7 @@ kms_sctp_connection_send (KmsSCTPConnection * conn, guint32 stream_id,
 
   /* write buffer data */
   while (written < message->used) {
-    rret = sctp_socket_send (conn->socket, stream_id, TIME_TO_LIVE,
+    rret = sctp_socket_send (conn->socket, stream_id, timetolive,
         message->buf + written, message->used - written, cancellable, err);
 
     if (rret < 0)

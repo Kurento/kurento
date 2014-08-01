@@ -125,8 +125,8 @@ KmsSCTPResult kms_sctp_connection_accept (KmsSCTPConnection *conn,
 KmsSCTPResult kms_sctp_connection_receive (KmsSCTPConnection *conn,
   KmsSCTPMessage *message, GCancellable *cancellable, GError **err);
 KmsSCTPResult kms_sctp_connection_send (KmsSCTPConnection *conn,
-  guint32 stream_id, const KmsSCTPMessage *message, GCancellable *cancellable,
-  GError **err);
+  guint32 stream_id, guint32 timetolive, const KmsSCTPMessage *message,
+  GCancellable *cancellable, GError **err);
 
 void kms_sctp_connection_close (KmsSCTPConnection *conn);
 

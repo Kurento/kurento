@@ -225,8 +225,8 @@ gst_sctp_client_sink_render (GstBaseSink * bsink, GstBuffer * buf)
 
   GST_OBJECT_UNLOCK (self);
 
-  if (kms_scp_base_rpc_buffer (KMS_SCTP_BASE_RPC (self->priv-> clientrpc), buf,
-    self->priv->cancellable, &err))
+  if (kms_scp_base_rpc_buffer (KMS_SCTP_BASE_RPC (self->priv->clientrpc),
+          self->priv->timetolive, buf, self->priv->cancellable, &err))
     return GST_FLOW_OK;
 
   if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
