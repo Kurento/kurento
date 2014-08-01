@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- Kurento Installation Guide (old)
+Kurento Installation Guide (old)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 .. highlight:: bash
@@ -604,6 +604,7 @@ To verify that KMS/KMC is up and running use the command:
 The output should be similar to:
 
 .. sourcecode:: console
+
 	nobody    1494     1  0 13:00 ?        00:01:16 java -server -XX:+UseCompressedOops -XX:+TieredCompilation -jar /var/lib/kurento/kmf-media-connector.jar --spring.config.location=/etc/kurento/media-connector.properties
     nobody   22527     1  0 13:02 ?        00:00:00 /usr/bin/kurento
     kuser    22711  2326  0 13:10 pts/1    00:00:00 grep --color=auto kurento
