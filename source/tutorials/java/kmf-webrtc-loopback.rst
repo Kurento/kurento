@@ -36,15 +36,15 @@ The main class of this demo is named `LoopbackApp <https://github.com/Kurento/km
     @EnableAutoConfiguration
     public class LoopbackApp {
 
-    	@Bean
-    	MediaPipelineFactory mediaPipelineFactory() {
-		    return KmfMediaApi.createMediaPipelineFactoryFromSystemProps();
-	    }
+        @Bean
+        MediaPipelineFactory mediaPipelineFactory() {
+            return KmfMediaApi.createMediaPipelineFactoryFromSystemProps();
+        }
 
-    	public static void main(String[] args) throws Exception {
-	    	SpringApplication application = new SpringApplication(LoopbackApp.class);
-		    application.run(args);
-	    }
+        public static void main(String[] args) throws Exception {
+            SpringApplication application = new SpringApplication(LoopbackApp.class);
+            application.run(args);
+        }
     }
 
 
@@ -55,33 +55,33 @@ Any media application should have two different channels for media and signaling
     @RestController
     public class LoopbackController {
 
-    	private final Logger log = LoggerFactory.getLogger(LoopbackController.class);
+        private final Logger log = LoggerFactory.getLogger(LoopbackController.class);
 
-	    @Autowired
-	    private MediaPipelineFactory mpf;
+        @Autowired
+        private MediaPipelineFactory mpf;
 
-	    @RequestMapping(value = "/webrtc", method = RequestMethod.POST)
-	    private String processRequest(@RequestBody String sdpOffer)
-	    		throws IOException {
+        @RequestMapping(value = "/webrtc", method = RequestMethod.POST)
+        private String processRequest(@RequestBody String sdpOffer)
+                throws IOException {
 
-		    // Media Logic
-		    MediaPipeline mp = mpf.create();
-		    WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
-		    FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter().build();
-		    faceOverlayFilter.setOverlayedImage(
-			    	"http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
-				    1.6F, 1.6F);
-		    webRtcEndpoint.connect(faceOverlayFilter);
-		    faceOverlayFilter.connect(webRtcEndpoint);
+            // Media Logic
+            MediaPipeline mp = mpf.create();
+            WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+            FaceOverlayFilter faceOverlayFilter = mp.newFaceOverlayFilter().build();
+            faceOverlayFilter.setOverlayedImage(
+                    "http://files.kurento.org/imgs/mario-wings.png", -0.35F, -1.2F,
+                    1.6F, 1.6F);
+            webRtcEndpoint.connect(faceOverlayFilter);
+            faceOverlayFilter.connect(webRtcEndpoint);
 
-		    // SDP negotiation (offer and answer)
-	    	sdpOffer = URLDecoder.decode(sdpOffer, "UTF-8");
-	    	log.debug("Received SDP offer: {}", sdpOffer);
-		    String responseSdp = webRtcEndpoint.processOffer(sdpOffer);
-		    log.debug("Sent SDP response: {}", responseSdp);
+            // SDP negotiation (offer and answer)
+            sdpOffer = URLDecoder.decode(sdpOffer, "UTF-8");
+            log.debug("Received SDP offer: {}", sdpOffer);
+            String responseSdp = webRtcEndpoint.processOffer(sdpOffer);
+            log.debug("Sent SDP response: {}", responseSdp);
 
-		    return responseSdp;
-	    }
+            return responseSdp;
+        }
 
     }
 
@@ -102,25 +102,25 @@ These libraries are linked in the `index.html <https://github.com/Kurento/kmf-tu
 .. sourcecode:: javascript
 
     function start() {
-    	showSpinner(videoInput, videoOutput);
+        showSpinner(videoInput, videoOutput);
 
-    	webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-	    		function(offerSdp, wp) {
-		    		console.log('Invoking SDP offer callback function '
-			    			+ location.host);
-    				$.ajax({
-	    				url : location.protocol + '/webrtc',
-		    			type : 'POST',
-			    		dataType : 'text',
-				    	data : offerSdp,
-					    success : function(data) {
-						    wp.processSdpAnswer(data);
-    					},
-	    				error : function(jqXHR, textStatus, error) {
-		    				console.error(error);
-			    		}
-				    });
-			    });
+        webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
+                function(offerSdp, wp) {
+                    console.log('Invoking SDP offer callback function '
+                            + location.host);
+                    $.ajax({
+                        url : location.protocol + '/webrtc',
+                        type : 'POST',
+                        dataType : 'text',
+                        data : offerSdp,
+                        success : function(data) {
+                            wp.processSdpAnswer(data);
+                        },
+                        error : function(jqXHR, textStatus, error) {
+                            console.error(error);
+                        }
+                    });
+                });
     }
 
 
@@ -131,18 +131,18 @@ How to run this demo
 
 .. sourcecode:: xml
 
-	<dependencies>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-media-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.kurento.kws</groupId>
-			<artifactId>kws-utils</artifactId>
-			<version>${kws.version}</version>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>com.kurento.kmf</groupId>
+            <artifactId>kmf-media-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.kurento.kws</groupId>
+            <artifactId>kws-utils</artifactId>
+            <version>${kws.version}</version>
+        </dependency>
+    </dependencies>
 
 First of all, you should install Kurento Media Server to run this demo. Please visit the `installation guide <../../Installation_Guide.rst>`_ for further information.
 
@@ -150,9 +150,9 @@ This demo is assuming that you have a Kurento Media Server installed and running
 
 .. sourcecode:: bash
 
-	$ git clone https://github.com/Kurento/kmf-tutorial.git
-	$ cd kmf-webrtc-loopback
-	$ mvn exec:java -Dexec.mainClass="com.kurento.kmf.tutorial.loopback.LoopbackApp"
+    $ git clone https://github.com/Kurento/kmf-tutorial.git
+    $ cd kmf-webrtc-loopback
+    $ mvn exec:java -Dexec.mainClass="com.kurento.kmf.tutorial.loopback.LoopbackApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore, open that URL in WebRTC compliant browser (Chrome, Firefox).
 
@@ -165,5 +165,5 @@ In this case, you would need to run the application as follows:
  
 .. sourcecode:: bash
 
-	$ mvn exec:java -Dexec.mainClass="com.kurento.kmf.tutorial.loopback.LoopbackApp" \
-	-Dthrift.kms.address=127.0.0.1:9090 -Dthrift.kmf.address=127.0.0.1:9191
+    $ mvn exec:java -Dexec.mainClass="com.kurento.kmf.tutorial.loopback.LoopbackApp" \
+    -Dthrift.kms.address=127.0.0.1:9090 -Dthrift.kmf.address=127.0.0.1:9191
