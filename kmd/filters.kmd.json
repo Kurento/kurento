@@ -1,0 +1,26 @@
+{  
+  "remoteClasses": [
+    {
+      "name": "GStreamerFilter",
+      "doc": "This is a generic filter interface, that creates GStreamer filters in the media server.",
+      "extends": "Filter",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "command",
+            "doc": "command that would be used to instantiate the filter, as in `gst-launch \u003chttp://rpm.pbone.net/index.php3/stat/45/idpl/19531544/numer/1/nazwa/gst-launch-1.0\u003e`__",
+            "type": "String"
+          }
+        ],
+        "doc": "Create a :rom:cls:`GStreamerFilter`"
+      }
+    }
+  ],
+  "complexTypes": [],
+  "events": []
+}

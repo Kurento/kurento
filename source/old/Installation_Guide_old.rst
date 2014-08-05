@@ -9,10 +9,11 @@ Introduction
 
 This guide describes how to install Kurento. Kurento is composed of different
 nodes, namely the Kurento Application Server (:term:`KAS`), the Kurento Media
-Server (:term:`KMS`), and the Kurento Media Connector (:term:`KMC`). These three
-nodes can be installed in the same or different hosts. This guide focuses on the
-installation on a single machine, but comments are done where appropriate
-explaining how to modify the configuration files for a separate installation.
+Server (:term:`KMS`), and the Kurento Media Connector (:term:`KMC`). These
+three nodes can be installed in the same or different hosts. This guide focuses
+on the installation on a single machine, but comments are done where
+appropriate explaining how to modify the configuration files for a separate
+installation.
 
 
 Prerequisites
@@ -21,26 +22,25 @@ Prerequisites
 Hardware minimal recommended requirements:
 
 -  8GB RAM
--  16GB HDD (this figure is not taking into account that multimedia
-   streams could be stored in the same machine. If so, HDD size must be
-   increased accordingly)
+-  16GB HDD (this figure is not taking into account that multimedia streams
+   could be stored in the same machine. If so, HDD size must be increased
+   accordingly)
 
 Operating system requirements:
 
 -  Currently Kurento Media Server (KMS) only runs on Ubuntu Linux (32 or 64
    bits). It is highly recommended using version 13.10 or newer due to the
    dependency of KMS with gstreamer.
--  Kurento Application Server (KAS) and Kurento Media Connector (KMC) can run in
-   any platform that supports JDK version 7.
+-  Kurento Application Server (KAS) and Kurento Media Connector (KMC) can run
+   in any platform that supports JDK version 7.
 
 
 Kurento Media Server (KMS)
 --------------------------
 
 In order to add Personal Package Archive or PPA's repositories, the
-software-properties-commons package must be installed. This package is
-part of Ubuntu Desktop, but it might not be included if you are using
-a VM or a server:
+software-properties-commons package must be installed. This package is part of
+Ubuntu Desktop, but it might not be included if you are using a VM or a server:
 
 .. sourcecode:: console
 
@@ -59,9 +59,9 @@ a VM or a server:
         $ sudo apt-get install ocl-icd-libopencl1
 
 
-Install KMS by typing the following commands, one at a time and in the
-same order as listed here. When asked for any kind of confirmation,
-reply affirmatively:
+Install KMS by typing the following commands, one at a time and in the same
+order as listed here. When asked for any kind of confirmation, reply
+affirmatively:
 
 .. sourcecode:: console
 
@@ -76,8 +76,8 @@ Finally, configure the server to run KMS when booted:
 
     $ sudo update-rc.d kurento defaults
 
-Now, KMS has been installed and started. Use the following commands to start
-and stop KMS respectively:
+Now, KMS has been installed and started. Use the following commands to start and
+stop KMS respectively:
 
 .. sourcecode:: console
 
@@ -94,24 +94,23 @@ First, install *Open JDK 7*:
 
     $ sudo apt-get install openjdk-7-jdk
 
-Download *JBoss*, uncompress it and move it to */opt/jboss* by
-executing:
+Download *JBoss*, uncompress it and move it to */opt/jboss* by executing:
 
 .. sourcecode:: console
 
     $ sudo wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
     $ sudo tar xfvz jboss-as-7.1.1.Final.tar.gz && sudo mv jboss-as-7.1.1.Final /opt/jboss
 
-To avoid running JBoss as root create the user *jboss*, the group
-*jboss* and make that user the owner of JBoss files and folders:
+To avoid running JBoss as root create the user *jboss*, the group *jboss* and
+make that user the owner of JBoss files and folders:
 
 .. sourcecode:: console
 
     $ sudo adduser --system jboss && sudo addgroup jboss
     $ sudo chown -R jboss:jboss /opt/jboss/
 
-Create the startup/stop script by copying the following content to a new
-file called */etc/init.d/jboss7*:
+Create the startup/stop script by copying the following content to a new file
+called */etc/init.d/jboss7*:
 
 .. sourcecode:: sh
 
@@ -231,8 +230,8 @@ Grant *jboss* user *execution* rights to run the startup/stop script:
 
     $ sudo chmod 755 /etc/init.d/jboss7
 
-Create the file */etc/default/jboss7* with the following content (this
-file is used by the startup/stop script):
+Create the file */etc/default/jboss7* with the following content (this file is
+used by the startup/stop script):
 
 .. sourcecode:: sh
 
@@ -260,8 +259,8 @@ Finally, configure the server to run JBoss when booted:
 
     $ sudo update-rc.d jboss7 defaults
 
-Now, KAS has been installed and started. Use the following commands to start
-and stop KAS respectively:
+Now, KAS has been installed and started. Use the following commands to start and
+stop KAS respectively:
 
 .. sourcecode:: console
 
@@ -272,7 +271,10 @@ and stop KAS respectively:
 Kurento Media Connector (KMC)
 -----------------------------
 
-The *Kurento Media Connector (KMC)* is a proxy that allows to clients connect to KMS through :term:`WebSocket`. The main KMS interface is based on thrift technology, and this proxy made necessary conversions between websockets and thrift.
+The *Kurento Media Connector (KMC)* is a proxy that allows to clients connect to
+KMS through :term:`WebSocket`. The main KMS interface is based on thrift
+technology, and this proxy made necessary conversions between websockets and
+thrift.
 
 Download KMC and move it to ``/opt/kmf-media-connector`` by executing:
 
@@ -295,20 +297,30 @@ Finally, configure the server to run KMC when booted:
 
 	$ sudo update-rc.d kmf-media-connector defaults
 
-Now KMC has been installed and started. Use the following commands to start/stop KMC:
+Now KMC has been installed and started. Use the following commands to start/stop
+KMC:
 
 .. sourcecode:: console
 
 	$ sudo service kmf-media-connector start
 	$ sudo service kmf-media-connector stop
 
-KMC can be configured by editing a plain Java properties file located at ``/etc/kurento/media-connector.properties``. The accepted parameters are:
+KMC can be configured by editing a plain Java properties file located at
+``/etc/kurento/media-connector.properties``. The accepted parameters are:
 
-- ``server.port`` : The http/websocket port of the proxy. This port will be used for the clients to connect to the port. If not specified, the value 8888 will be used.
-- ``kmf.transport`` : Transport layer to connect with KMS. Accepted value at this moment: ``thrift``.
-- ``thrift.kmf.address`` : The IP address and port of the KMS. If not specified, the address 127.0.0.1:9090 will be used.
-- ``thrift.kmf.address`` : The IP address and port that KMS will use to connect to the proxy. If not specified, the address 127.0.0.1:9900 will be used.
-- ``oauthserver.url`` : The url of the ouath service used to authenticate the client requests. If not specified, all clients can use the proxy (that is, no authentication is enforced).
+- ``server.port`` : The http/websocket port of the proxy. This port will be
+  used for the clients to connect to the port. If not specified, the value 8888
+  will be used.
+- ``kmf.transport`` : Transport layer to connect with KMS. Accepted value at
+  this moment: ``thrift``.
+- ``thrift.kmf.address`` : The IP address and port of the KMS. If not
+  specified, the address 127.0.0.1:9090 will be used.
+- ``thrift.kmf.address`` : The IP address and port that KMS will use to
+  connect to the proxy. If not specified, the address 127.0.0.1:9900 will be
+  used.
+- ``oauthserver.url`` : The url of the ouath service used to authenticate the
+  client requests. If not specified, all clients can use the proxy (that is, no
+  authentication is enforced).
 
 
 Kurento Network Configuration
@@ -317,13 +329,13 @@ Kurento Network Configuration
 Running Kurento Without NAT configuration
 =========================================
 
-KMS can receive requests from the Kurento Application Server (KAS) and
-from final users. KMS uses a easily extensible service abstraction layer
-that enables it to attend application requests from either Thrift or
-RabbitMQ altough other services can also be deployed on it.
-The service in charge of attending all those requests is configured in the
-configuration file ``/etc/kurento/media-server.conf``.
-After a fresh installation that file looks like this:
+KMS can receive requests from the Kurento Application Server (KAS) and from
+final users. KMS uses a easily extensible service abstraction layer that
+enables it to attend application requests from either Thrift or RabbitMQ
+altough other services can also be deployed on it. The service in charge of
+attending all those requests is configured in the configuration file
+``/etc/kurento/media-server.conf``. After a fresh installation that file looks
+like this:
 
 .. sourcecode:: ini
 
@@ -357,11 +369,11 @@ After a fresh installation that file looks like this:
     password = "guest"
     vhost = "/"
 
-That configuration implies that only requests done through Thrift are
-accepted. By default Thrift server will be attached in all available network
-interfaces. The section ``[Thrift]`` allows to configure the port where KMS
-will listen to KAS requests. The section ``[HttpEPServer]`` controls the IP
-address and port to listen to the final users.
+That configuration implies that only requests done through Thrift are accepted.
+By default Thrift server will be attached in all available network interfaces.
+The section ``[Thrift]`` allows to configure the port where KMS will listen to
+KAS requests. The section ``[HttpEPServer]`` controls the IP address and port
+to listen to the final users.
 
 Running Kurento With NAT configuration
 ======================================
@@ -373,19 +385,18 @@ Running Kurento With NAT configuration
 
    Kurento deployment in a configuration with NAT
 
-This network diagram depicts a scenario where a :term:`NAT` device is
-present. In this case, the client will access the public IP 130.206.82.56,
-which will connect him with the external interface of the NAT device.
-KMS serves media on a specific address which, by default, is the IP of
-the server where the service is running. This would have the server
-announcing that the media served by an Http Endpoint can be consumed in
-the private IP 172.30.1.122. Since this address is not accessible by
-external clients, the administrator of the system will have to configure
-KMS to announce, as connection address for clients, the public IP of the
-NAT device. This is achieved by changing the value of announcedAddress
-in the file /etc/kurento/media-server.conf with the appropriate value.
-The following lines would be the contents of this configuration file for
-the present scenario.
+This network diagram depicts a scenario where a :term:`NAT` device is present.
+In this case, the client will access the public IP 130.206.82.56, which will
+connect him with the external interface of the NAT device. KMS serves media on
+a specific address which, by default, is the IP of the server where the service
+is running. This would have the server announcing that the media served by an
+Http Endpoint can be consumed in the private IP 172.30.1.122. Since this
+address is not accessible by external clients, the administrator of the system
+will have to configure KMS to announce, as connection address for clients, the
+public IP of the NAT device. This is achieved by changing the value of
+announcedAddress in the file /etc/kurento/media-server.conf with the
+appropriate value. The following lines would be the contents of this
+configuration file for the present scenario.
 
 .. sourcecode:: ini
 
@@ -414,10 +425,9 @@ the present scenario.
 Sample application and videos
 -----------------------------
 
-To test part of the functionality of Kurento, a sample app called
-fi-lab-demo can be used. Next steps in this document focus on how to
-download the sample app and the complementary video files that are
-needed.
+To test part of the functionality of Kurento, a sample app called fi-lab-demo
+can be used. Next steps in this document focus on how to download the sample
+app and the complementary video files that are needed.
 
 Download the test video with the following commands:
 
@@ -436,8 +446,7 @@ And downlad the fi-lab-demo.war file using the following command:
 Verifying and starting the servers
 ----------------------------------
 
-To verify that the installation has finished successfully start JBoss by
-typing:
+To verify that the installation has finished successfully start JBoss by typing:
 
 ::
 
@@ -449,8 +458,7 @@ Open a browser and verify that the default root web page work properly:
 
     http://<Service_IP_address>:8080/
 
-To verify that the installation has finished successfully start KMS by
-typing:
+To verify that the installation has finished successfully start KMS by typing:
 
 ::
 
@@ -476,11 +484,10 @@ These files are a very useful tool for developers to trace errors.
 Sanity check procedures
 =======================
 
-The Sanity Check Procedures are the steps that a System Administrator
-will take to verify that an installation is ready to be tested. This is
-therefore a preliminary set of tests to ensure that obvious or basic
-malfunctioning is fixed before proceeding to unit tests, integration
-tests and user validation.
+The Sanity Check Procedures are the steps that a System Administrator will take
+to verify that an installation is ready to be tested. This is therefore a
+preliminary set of tests to ensure that obvious or basic malfunctioning is
+fixed before proceeding to unit tests, integration tests and user validation.
 
 End to End testing
 ------------------
@@ -491,83 +498,77 @@ Open a Chrome or Firefox web browser and type the URL:
 
     http://<Replace_with_KMS_IP_Address>:8080/fi-lab-demo/
 
-This will show the web page of the fi-lab-demo sample application. From
-this web page you can view two links:
+This will show the web page of the fi-lab-demo sample application. From this web
+page you can view two links:
 
 HTTP Player
 ~~~~~~~~~~~
 
-If you click on this link you can see a drop-down control in the top of
-the web page. This drop-down show you the different media formats used
-in this demo. Please select one and click over the Play button:
+If you click on this link you can see a drop-down control in the top of the web
+page. This drop-down show you the different media formats used in this demo.
+Please select one and click over the Play button:
 
--  WEBM video: After clicking over the "Play" button you can see a short
-   film of “Sintel”, independently produced by the Blender Foundation.
--  MOV video: After clicking over the "Play" button you can see a short
-   film of “Big Buck Bunny”, independently produced by the Blender
-   Foundation.
--  MKV video: After clicking over the "Play" button you can see a short
-   film of Japanese animation.
--  3GP video: After clicking over the "Play" button you can see a short
-   tv ad of Blackberry mobile phones.
--  OGV video:After clicking over the "Play" button you can see a short
-   video of Pacman.
--  MP4 video: After clicking over the "Play" button you can see a short
-   tv ad of Google Chrome.
--  JackVader Filter video: After clicking over the "Play" button you can
-   see a video showing the use of filters, in this video a overlayed
-   "pirate hat" is used when a face is detected in the right side of the
-   screen and "Dark Vader mask" is used when a face is detected in the
-   left side of the screen.
+-  WEBM video: After clicking over the "Play" button you can see a short film
+   of “Sintel”, independently produced by the Blender Foundation.
+-  MOV video: After clicking over the "Play" button you can see a short film
+   of “Big Buck Bunny”, independently produced by the Blender Foundation.
+-  MKV video: After clicking over the "Play" button you can see a short film
+   of Japanese animation.
+-  3GP video: After clicking over the "Play" button you can see a short tv ad
+   of Blackberry mobile phones.
+-  OGV video:After clicking over the "Play" button you can see a short video
+   of Pacman.
+-  MP4 video: After clicking over the "Play" button you can see a short tv ad
+   of Google Chrome.
+-  JackVader Filter video: After clicking over the "Play" button you can see
+   a video showing the use of filters, in this video a overlayed "pirate hat"
+   is used when a face is detected in the right side of the screen and "Dark
+   Vader mask" is used when a face is detected in the left side of the screen.
 
 HTTP Player with JSON protocol
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This link will load another web page in your browser where you can see
-the same videos using JSON-based representations for information
-exchange.The JSON protocol enhances a HTTP Player by implementing
-signaling communications between the client (:term:`JavaScript API <KWS>`) and 
-the Kurento Application Server (:term:`KAS`). Using this protocol the client 
-will be able to negotiate the transfer of media using :term:`SDP` (Session 
-Description Protocol), and also it will be notified with media and flow 
-execution events.
+This link will load another web page in your browser where you can see the same
+videos using JSON-based representations for information exchange.The JSON
+protocol enhances a HTTP Player by implementing signaling communications
+between the client (:term:`JavaScript API <KWS>`) and the Kurento Application
+Server (:term:`KAS`). Using this protocol the client will be able to negotiate
+the transfer of media using :term:`SDP` (Session Description Protocol), and
+also it will be notified with media and flow execution events.
 
-Select one of the videos from the drop-down control located in the top
-of the web page.
+Select one of the videos from the drop-down control located in the top of the
+web page.
 
--  WEBM video: After clicking over the "Play" button you can see a short
-   film of “Sintel”, independently produced by the Blender Foundation.
+-  WEBM video: After clicking over the "Play" button you can see a short film
+   of “Sintel”, independently produced by the Blender Foundation.
 
--  MOV video: After clicking over the "Play" button you can see a short
-   film of “Big Buck Bunny”, independently produced by the Blender
-   Foundation.
+-  MOV video: After clicking over the "Play" button you can see a short film
+   of “Big Buck Bunny”, independently produced by the Blender Foundation.
 
--  MKV video: After clicking over the "Play" button you can see a short
-   film of Japanese animation.
+-  MKV video: After clicking over the "Play" button you can see a short film
+   of Japanese animation.
 
--  3GP video: After clicking over the "Play" button you can see a short
-   tv ad of Blackberry mobile phones.
+-  3GP video: After clicking over the "Play" button you can see a short tv ad
+   of Blackberry mobile phones.
 
--  OGV video:After clicking over the "Play" button you can see a short
-   video of Pacman.
+-  OGV video:After clicking over the "Play" button you can see a short video
+   of Pacman.
 
--  MP4 video: After clicking over the "Play" button you can see a short
-   tv ad of Google Chrome.
+-  MP4 video: After clicking over the "Play" button you can see a short tv ad
+   of Google Chrome.
 
--  JackVader Filter video: After clicking over the "Play" button you can
-   see a video showing the use of filters, in this video an overlayed
-   "pirate hat" is used when a face is detected in the right side of the
-   screen and "Dark Vader mask" is used when a face is detected in the
-   left side of the screen.
+-  JackVader Filter video: After clicking over the "Play" button you can see
+   a video showing the use of filters, in this video an overlayed "pirate hat"
+   is used when a face is detected in the right side of the screen and "Dark
+   Vader mask" is used when a face is detected in the left side of the screen.
 
--  ZBar Filer video:After clicking over the "Play" button you can see a
-   video to show the potential of filters. In this video three QR Codes
-   are shown, in the media event text box you can see how the media
-   server detects the different QR codes.
+-  ZBar Filer video:After clicking over the "Play" button you can see a video
+   to show the potential of filters. In this video three QR Codes are shown, in
+   the media event text box you can see how the media server detects the
+   different QR codes.
 
-In the text boxes Status, Flow Events and Media Events you can see the
-results of the different actions that are interpreted by the media
-server.
+In the text boxes Status, Flow Events and Media Events you can see the results
+of the different actions that are interpreted by the media server.
 
 List of Running Processes
 -------------------------
@@ -612,9 +613,9 @@ The output should be similar to:
 Network interfaces Up & Open
 ----------------------------
 
-Unless configured otherwise, KAS listens on the port 8080 to receive
-HTTP requests from final users. It additionally opens port 9990, a
-handler port which is used by KMS to send events to KAS.
+Unless configured otherwise, KAS listens on the port 8080 to receive HTTP
+requests from final users. It additionally opens port 9990, a handler port
+which is used by KMS to send events to KAS.
 
 To verify the ports opened by KAS execute the following command:
 
@@ -634,7 +635,7 @@ The output should be similar to the following:
 	tcp6       0      0 :::8888                 :::*                    LISTEN      21243/java      
 	tcp6       0      0 127.0.0.1:9900          :::*                    LISTEN      21243/java    
 
-The two additional ports listened are 4447, jBoss remoting port, and 9999, a 
+The two additional ports listened are 4447, jBoss remoting port, and 9999, a
 port for jBoss native management interface.
 
 Unless configured otherwise, KMS opens the port 9090 to receive HTTP TCP
@@ -657,30 +658,29 @@ The output should be similar to the following:
 Diagnosis Procedures
 ====================
 
-The Diagnosis Procedures are the first steps that a System Administrator
-will take to locate the source of an error in a GE. Once the nature of
-the error is identified with these tests, the system admin will very
-often have to resort to more concrete and specific testing to pinpoint
-the exact point of error and a possible solution. Such specific testing
-is out of the scope of this section.
+The Diagnosis Procedures are the first steps that a System Administrator will
+take to locate the source of an error in a GE. Once the nature of the error is
+identified with these tests, the system admin will very often have to resort to
+more concrete and specific testing to pinpoint the exact point of error and a
+possible solution. Such specific testing is out of the scope of this section.
 
 Resource availability
 ---------------------
 
-To guarantee the right working of the enabler RAM memory and HDD size
-should be at least:
+To guarantee the right working of the enabler RAM memory and HDD size should be
+at least:
 
 -  8GB RAM
--  16GB HDD (this figure is not taking into account that multimedia
-   streams could be stored in the same machine. If so, HDD size must be
-   increased accordingly)
+-  16GB HDD (this figure is not taking into account that multimedia streams
+   could be stored in the same machine. If so, HDD size must be increased
+   accordingly)
 
 Remote Service Access
 ---------------------
 
-If KMS and KAS are deployed as separate GEs, the admin needs to ensure
-that the KMS can reach the KAS Handler port (default 9990) and that
-the KAS can reach the KMS service port (default 9090)
+If KMS and KAS are deployed as separate GEs, the admin needs to ensure that the
+KMS can reach the KAS Handler port (default 9990) and that the KAS can reach
+the KMS service port (default 9090)
 
 Resource consumption
 --------------------
@@ -689,11 +689,11 @@ Resource consumption documented in this section has been measured in two
 different scenarios:
 
 -  Low load: all services running, but no stream being served.
--  High load: heavy load scenario where 100 streams are requested at the
-   same time.
+-  High load: heavy load scenario where 100 streams are requested at the same
+   time.
 
-Under the above circumstances, the "top" command showed the following
-results in the hardware described below:
+Under the above circumstances, the "top" command showed the following results in
+the hardware described below:
 
 
 .. table:: Machines used for performance testing
@@ -742,8 +742,8 @@ Unless configured otherwise, Kurento will open the following ports:
    also opens port 9191 to receive Thrift TCP requests from the KMS.
 -  KMS opens port 9091 to receive HTTP TCP requests from KAS and final users.
    KMS also opens the port 9090 to receive Thrift TCP requests from KAS.
--  KMC opens the port 8888 to receive HTTP TCP requests from final users.
-   KMC also opens port 9900 to receive Thrift TCP requests from the KMS.
+-  KMC opens the port 8888 to receive HTTP TCP requests from final users. KMC
+   also opens port 9900 to receive Thrift TCP requests from the KMS.
 
 Ports 8080, 9091, and 8888 should be accessible from final users. Therefore
 these ports should be open and forwarded on existing network elements, such as

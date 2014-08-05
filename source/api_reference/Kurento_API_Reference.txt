@@ -1,0 +1,385 @@
+
+Media Objects
+-------------
+
+Media objects represent all objects that live in Kurento Server and can be 
+controlled with Kurento Clients (or any client using Kurento Protocol).
+
+
+GStreamerFilter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** This is a generic filter interface, that creates GStreamer filters in the media server. 
+    - **Extends:** Filter    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the filter belongs
+         - **String command**: command that would be used to instantiate the filter, as in `gst-launch <http://rpm.pbone.net/index.php3/stat/45/idpl/19531544/numer/1/nazwa/gst-launch-1.0>`__
+    
+----------
+              
+
+MediaObject
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Base for all objects that can be created in the media server. 
+    - **Properties:**
+            - **MediaPipeline mediaPipeline:** :rom:cls:`MediaPipeline` to which this MediaObject belong, or the pipeline itself if invoked over a :rom:cls:`MediaPipeline`
+            - **MediaObject parent:** parent of this media object. The type of the parent depends on the type of the element. The parent of a :rom:cls:`MediaPad` is its :rom:cls:`MediaElement`; the parent of a :rom:cls:`Hub` or a :rom:cls:`MediaElement` is its :rom:cls:`MediaPipeline`. A :rom:cls:`MediaPipeline` has no parent, i.e. the property is null
+            - **String id:** unique identifier of the mediaobject.
+    - **Events:** Error, 
+    
+----------
+              
+
+SessionEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Session based endpoint. A session is considered to be started when the media exchange starts. On the other hand, sessions terminate when a timeout, defined by the developer, takes place after the connection is lost. 
+    - **Extends:** Endpoint    
+    - **Events:** MediaSessionTerminated, MediaSessionStarted, 
+    
+----------
+              
+
+Hub
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A Hub is a routing :rom:cls:`MediaObject`. It connects several :rom:cls:`endpoints <Endpoint>` together 
+    - **Extends:** MediaObject    
+    
+----------
+              
+
+Filter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Base interface for all filters. This is a certain type of :rom:cls:`MediaElement`, that processes media injected through its :rom:cls:`MediaSink`, and delivers the outcome through its :rom:cls:`MediaSource`. 
+    - **Extends:** MediaElement    
+    
+----------
+              
+
+Endpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Base interface for all end points. An Endpoint is a :rom:cls:`MediaElement` that allow :term:`KMS` to interchange media contents with external systems, supporting different transport protocols and mechanisms, such as :term:`RTP`, :term:`WebRTC`, :term:`HTTP`, ``file:/`` URLs... An ``Endpoint`` may contain both sources and sinks for different media types, to provide bidirectional communication. 
+    - **Extends:** MediaElement    
+    
+----------
+              
+
+HubPort
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** This :rom:cls:`MediaElement` specifies a connection with a :rom:cls:`Hub` 
+    - **Extends:** MediaElement    
+    - **Constructor Params:**
+         - **Hub hub**: :rom:cls:`Hub` to which this port belongs
+    
+----------
+              
+
+UriEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Interface for endpoints the require a URI to work. An example of this, would be a :rom:cls:`PlayerEndpoint` whose URI property could be used to locate a file to stream through its :rom:cls:`MediaSource` 
+    - **Extends:** Endpoint    
+    - **Properties:**
+            - **String uri:** The uri for this endpoint.
+    - **Methods:**
+            - **pause():** Pauses the feed
+            - **stop():** Stops the feed
+    
+----------
+              
+
+MediaPad
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A :rom:cls:`MediaPad` is an element´s interface with the outside world. The data streams flow from the :rom:cls:`MediaSource` pad to another element's :rom:cls:`MediaSink` pad. 
+    - **Extends:** MediaObject    
+    - **Properties:**
+            - **MediaElement mediaElement:** The :rom:cls:`MediaElement` that encloses this pad
+            - **MediaType mediaType:** Media that this pad accepts. One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.DATA` or :rom:attr:`MediaType.VIDEO`
+            - **String mediaDescription:** The description for this pad.
+    
+----------
+              
+
+MediaSource
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Special type of pad, used by a media element to generate a media stream. 
+    - **Extends:** MediaPad    
+    - **Methods:**
+            - **MediaSink[] getConnectedSinks():** Gets all the :rom:cls:`MediaSinks<MediaSink>` to which this source is connected
+            - **connect(MediaSink sink):** Connects the current source with a :rom:cls:`MediaSink`
+    
+----------
+              
+
+MediaPipeline
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A pipeline is a container for a collection of :rom:cls:`MediaElements<MediaElement>` and :rom:cls:`MediaMixers<MediaMixer>`. It offers the methods needed to control the creation and connection of elements inside a certain pipeline. 
+    - **Extends:** MediaObject    
+    - **Constructor Params:**
+    
+----------
+              
+
+MediaSink
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Special type of pad, used by a :rom:cls:`MediaElement` to receive a media stream. 
+    - **Extends:** MediaPad    
+    - **Methods:**
+            - **disconnect(MediaSource src):** Disconnects the current sink from the referred :rom:cls:`MediaSource`
+            - **MediaSource getConnectedSrc():** Gets the :rom:cls:`MediaSource` that is connected to this sink.
+    
+----------
+              
+
+SdpEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Implements an SDP negotiation endpoint able to generate and process offers/responses and that configures resources according to negotiated Session Description 
+    - **Extends:** SessionEndpoint    
+    - **Methods:**
+            - **String generateOffer():** Request a SessionSpec offer.     This can be used to initiate a connection.
+            - **String processOffer(String offer):** Request the NetworkConnection to process the given SessionSpec offer (from the remote User Agent)
+            - **String processAnswer(String answer):** Request the NetworkConnection to process the given SessionSpec answer (from the remote User Agent).
+            - **String getLocalSessionDescriptor():** This method gives access to the SessionSpec offered by this NetworkConnection.  .. note:: This method returns the local MediaSpec, negotiated or not. If no offer has been generated yet, it returns null. It an offer has been generated it returns the offer and if an answer has been processed it returns the negotiated local SessionSpec.
+            - **String getRemoteSessionDescriptor():** This method gives access to the remote session description.  .. note:: This method returns the media previously agreed after a complete offer-answer exchange. If no media has been agreed yet, it returns null.
+    
+----------
+              
+
+MediaElement
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Basic building blocks of the media server, that can be interconnected through the API. A :rom:cls:`MediaElement` is a module that encapsulates a specific media capability. They can be connected to create media pipelines where those capabilities are applied, in sequence, to the stream going through the pipeline.     :rom:cls:`MediaElement` objects are classified by its supported media type (audio, video, etc.) and the flow direction: :rom:cls:`MediaSource` pads are intended for media delivery while :rom:cls:`MediaSinks<MediaSink>`  behave as reception points. 
+    - **Extends:** MediaObject    
+    - **Methods:**
+            - **MediaSource[] getMediaSrcs(MediaType mediaType, String description):** Get the media sources of the given type and description
+            - **MediaSink[] getMediaSinks(MediaType mediaType, String description):** A list of sinks of the given :rom:ref:`MediaType`. The list will be empty if no sinks are found.
+            - **connect(MediaElement sink, MediaType mediaType, String mediaDescription):** perform :rom:meth:`connect(sink,mediaType)` if there is exactly one sink for the given type, and their mediaDescriptions are the same
+    
+----------
+              
+
+Mixer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A :rom:cls:`Hub` that allows routing of video between arbitrary port pairs and mixing of audio among several ports 
+    - **Extends:** Hub    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the Mixer belongs
+    - **Methods:**
+            - **connect(MediaType media, HubPort source, HubPort sink):** Connects each corresponding :rom:enum:`MediaType` of the given source port with the sink port.
+            - **disconnect(MediaType media, HubPort source, HubPort sink):** Disonnects each corresponding :rom:enum:`MediaType` of the given source port from the sink port.
+    
+----------
+              
+
+RecorderEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Provides function to store contents in reliable mode (doesn't discard data). It contains :rom:cls:`MediaSink` pads for audio and video. 
+    - **Extends:** UriEndpoint    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the endpoint belongs
+         - **String uri**: URI where the recording will be stored
+         - **MediaProfileSpecType mediaProfile?**: Choose either a :rom:attr:`MediaProfileSpecType.WEBM` or a :rom:attr:`MediaProfileSpecType.MP4` profile for recording
+         - **boolean stopOnEndOfStream?**: Forces the recorder endpoint to finish processing data when an :term:`EOS` is detected in the stream
+    - **Methods:**
+            - **record():** Starts storing media received through the :rom:cls:`MediaSink` pad
+    
+----------
+              
+
+PlayerEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Retrieves content from seekable sources in reliable mode (does not discard media information) and inject  them into :term:`KMS`. It contains one :rom:cls:`MediaSource` for each media type detected. 
+    - **Extends:** UriEndpoint    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: The :rom:cls:`MediaPipeline` this PlayerEndpoint belongs to.
+         - **String uri**: URI that will be played
+         - **boolean useEncodedMedia?**: use encoded instead of raw media. If the parameter is false then the element uses raw media. Changing this parameter can affect stability severely, as lost key frames lost will not be regenerated. Changing the media type does not affect to the result except in the performance (just in the case where original media and target media are the same) and in the problem with the key frames. We strongly recommended not to use this parameter because correct behaviour is not guarantied.
+    - **Methods:**
+            - **play():** Starts to send data to the endpoint :rom:cls:`MediaSource`
+    - **Events:** EndOfStream, 
+    
+----------
+              
+
+RtpEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Endpoint that provides bidirectional content delivery capabilities with remote networked peers through RTP protocol. An :rom:cls:`RtpEndpoint` contains paired sink and source :rom:cls:`MediaPad` for audio and video. 
+    - **Extends:** SdpEndpoint    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the endpoint belongs
+    
+----------
+              
+
+Composite
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A :rom:cls:`Hub` that mixes the :rom:attr:`MediaType.AUDIO` stream of its connected sources and constructs a grid with the :rom:attr:`MediaType.VIDEO` streams of its connected sources into its sink 
+    - **Extends:** Hub    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the dispatcher belongs
+    
+----------
+              
+
+WebRtcEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** WebRtcEndpoint interface. This type of ``Endpoint`` offers media streaming using WebRTC. 
+    - **Extends:** SdpEndpoint    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the endpoint belongs
+    
+----------
+              
+
+Dispatcher
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A :rom:cls:`Hub` that allows routing between arbitrary port pairs 
+    - **Extends:** Hub    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the dispatcher belongs
+    - **Methods:**
+            - **connect(HubPort source, HubPort sink):** Connects each corresponding :rom:enum:`MediaType` of the given source port with the sink port.
+    
+----------
+              
+
+HttpGetEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** An ``HttpGetEndpoint`` contains SOURCE pads for AUDIO and VIDEO, delivering media using HTML5 pseudo-streaming mechanism.     This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSink` is associated with the HTTP GET method 
+    - **Extends:** HttpEndpoint    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the endpoint belongs
+         - **boolean terminateOnEOS?**: raise a :rom:evnt:`MediaSessionTerminated` event when the associated player raises a :rom:evnt:`EndOfStream`, and thus terminate the media session
+         - **MediaProfileSpecType mediaProfile?**: the :rom:enum:`MediaProfileSpecType` (WEBM, MP4...) for the endpoint
+         - **int disconnectionTimeout?**: disconnection timeout in seconds.  This is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.
+    
+----------
+              
+
+HttpPostEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function     This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSources <MediaSource>` are accessed through the :term:`HTTP` POST method. 
+    - **Extends:** HttpEndpoint    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the endpoint belongs
+         - **int disconnectionTimeout?**: This is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.
+         - **boolean useEncodedMedia?**: configures the endpoint to use encoded media instead of raw media. If the parameter is not set then the element uses raw media. Changing this parameter could affect in a severe way to stability because key frames lost will not be generated. Changing the media type does not affect to the result except in the performance (just in the case where original media and target media are the same) and in the problem with the key frames. We strongly recommended not to use this parameter because correct behaviour is not guarantied.
+    - **Events:** EndOfStream, 
+    
+----------
+              
+
+HttpEndpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Endpoint that enables Kurento to work as an HTTP server, allowing peer HTTP clients to access media. 
+    - **Extends:** SessionEndpoint    
+    - **Methods:**
+            - **String getUrl():** Obtains the URL associated to this endpoint
+    
+----------
+              
+
+DispatcherOneToMany
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** A :rom:cls:`Hub` that sends a given source to all the connected sinks 
+    - **Extends:** Hub    
+    - **Constructor Params:**
+         - **MediaPipeline mediaPipeline**: the :rom:cls:`MediaPipeline` to which the dispatcher belongs
+    - **Methods:**
+            - **setSource(HubPort source):** Sets the source port that will be connected to the sinks of every :rom:cls:`HubPort` of the dispatcher
+            - **removeSource():** Remove the source port and stop the media pipeline.
+    
+----------
+              
+
+Events
+------
+
+Events are sent from Kurento Server to apps using Kurento Clients when an event
+occurs in Kurento Server. They carry information about the event. All its 
+information is serialized to be accessible to clients.
+
+
+Error
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** An error related to the MediaObject has occurred 
+    - **Properties:**
+            - **MediaObject object**: :rom:cls:`MediaObject` where the error originated
+            - **String description**: Textual description of the error
+            - **int errorCode**: Server side integer error code
+            - **String type**: Integer code as a String
+    
+----------
+                 
+
+MediaSessionTerminated
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Event raised when a session is terminated. This event has no data. 
+    - **Extends:** Media    
+    
+----------
+                 
+
+MediaSessionStarted
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Event raised when a session starts. This event has no data. 
+    - **Extends:** Media    
+    
+----------
+                 
+
+Media
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Base for all events raised by elements in the Kurento media server. 
+    - **Properties:**
+            - **MediaObject source**: Object that raised the event
+            - **String type**: Type of event that was raised
+    
+----------
+                 
+
+EndOfStream
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Event raised when the stream that the element sends out is finished. 
+    - **Extends:** Media    
+    
+----------
+                 
+
+Types
+-----
+
+Types are used as parameters in constructors and methods. They are also used in
+media object properties or event properties. There are two kinds of types: 
+registers (with properties) and enums (with values). Types are serialized when
+exchanged between client and server.
+
+
+MediaType
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Type of media stream to be exchanged. Can take the values AUDIO, DATA or VIDEO.
+
+
+    - **Enum constants:** AUDIO, DATA, VIDEO, 
+                     
+
+----------
+
+
+FilterType
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Type of filter to be created. Can take the values AUDIO, VIDEO or AUTODETECT.
+
+
+    - **Enum constants:** AUDIO, AUTODETECT, VIDEO, 
+                     
+
+----------
+
+
+MediaProfileSpecType
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - **Description:** Media Profile.  Currently WEBM and MP4 are supported.
+
+
+    - **Enum constants:** WEBM, MP4, 
+                     
+
+----------
+

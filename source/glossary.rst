@@ -1,11 +1,11 @@
-%%%%%%%%%%%%
-  Glossary
-%%%%%%%%%%%%
+%%%%%%%%
+Glossary
+%%%%%%%%
 
-This is a glossary of terms that often appear in discussion about
-multimedia transmissions. Most of the terms are described
-and linked to its wikipedia, RFC or W3C relevant documents.
-Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
+This is a glossary of terms that often appear in discussion about multimedia
+transmissions. Most of the terms are described and linked to its wikipedia, RFC
+or W3C relevant documents. Some of the terms are specific to :term:`gstreamer`
+or :term:`kurento`.
 
 .. glossary::
 
@@ -34,6 +34,20 @@ Some of the terms are specific to :term:`gstreamer` or :term:`kurento`.
                 Wikipedia reference of the AVI format
             :wikipedia:`en,Resource Interchange File Format`
                 Wikipedia reference of the RIFF format
+                
+    Builder Pattern
+        The builder pattern is an object creation software design pattern whose 
+        intention is to find a solution to the telescoping constructor 
+        anti-pattern. The telescoping 
+        constructor anti-pattern occurs when the increase of object constructor 
+        parameter combination leads to an exponential list of constructors. 
+        Instead of using numerous constructors, the builder pattern uses another 
+        object, a builder, that receives each initialization parameter step by 
+        step and then returns the resulting constructed object at once.
+        
+        .. seealso::
+            :wikipedia:`Builder_pattern`
+                Wikipedia reference of the Builder Pattern
 
     CORS
         :wikipedia:`CORS <en,Cross-origin_resource_sharing>`

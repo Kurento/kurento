@@ -1,0 +1,413 @@
+{
+  "name":"core",
+  "version":"0.0.1",
+  "kurentoVersion": "0.0.1",
+  "remoteClasses": [
+    {
+      "name": "MediaObject",
+      "doc": "Base for all objects that can be created in the media server.",
+      "abstract": true,
+      "properties": [
+        {
+          "name": "mediaPipeline",
+          "doc": ":rom:cls:`MediaPipeline` to which this MediaObject belong, or the pipeline itself if invoked over a :rom:cls:`MediaPipeline`",
+          "type": "MediaPipeline",
+          "final": true
+        },
+        {
+          "name": "parent",
+          "doc": "parent of this media object. The type of the parent depends on the type of the element. The parent of a :rom:cls:`MediaPad` is its :rom:cls:`MediaElement`; the parent of a :rom:cls:`Hub` or a :rom:cls:`MediaElement` is its :rom:cls:`MediaPipeline`. A :rom:cls:`MediaPipeline` has no parent, i.e. the property is null",
+          "type": "MediaObject",
+          "final": true
+        },
+        {
+          "name": "id",
+          "doc": "unique identifier of the mediaobject.",
+          "type": "String",
+          "final": true
+        }
+      ],
+      "events": [
+        "Error"
+      ]
+    },
+    {
+      "name": "SessionEndpoint",
+      "doc": "Session based endpoint. A session is considered to be started when the media exchange starts. On the other hand, sessions terminate when a timeout, defined by the developer, takes place after the connection is lost.",
+      "abstract": true,
+      "extends": "Endpoint",
+      "events": [
+        "MediaSessionTerminated",
+        "MediaSessionStarted"
+      ]
+    },
+    {
+      "name": "Hub",
+      "doc": "A Hub is a routing :rom:cls:`MediaObject`. It connects several :rom:cls:`endpoints \u003cEndpoint\u003e` together",
+      "abstract": true,
+      "extends": "MediaObject"
+    },
+    {
+      "name": "Filter",
+      "doc": "Base interface for all filters. This is a certain type of :rom:cls:`MediaElement`, that processes media injected through its :rom:cls:`MediaSink`, and delivers the outcome through its :rom:cls:`MediaSource`.",
+      "abstract": true,
+      "extends": "MediaElement"
+    },
+    {
+      "name": "Endpoint",
+      "doc": "Base interface for all end points. An Endpoint is a :rom:cls:`MediaElement`\nthat allow :term:`KMS` to interchange media contents with external systems,\nsupporting different transport protocols and mechanisms, such as :term:`RTP`,\n:term:`WebRTC`, :term:`HTTP`, ``file:/`` URLs... An ``Endpoint`` may\ncontain both sources and sinks for different media types, to provide\nbidirectional communication.",
+      "abstract": true,
+      "extends": "MediaElement"
+    },
+    {
+      "name": "HubPort",
+      "doc": "This :rom:cls:`MediaElement` specifies a connection with a :rom:cls:`Hub`",
+      "extends": "MediaElement",
+      "constructor": {
+        "params": [
+          {
+            "name": "hub",
+            "doc": ":rom:cls:`Hub` to which this port belongs",
+            "type": "Hub"
+          }
+        ],
+        "doc": "Creates a :rom:cls:`HubPort` for the given :rom:cls:`Hub`"
+      }
+    },
+    {
+      "name": "UriEndpoint",
+      "doc": "Interface for endpoints the require a URI to work. An example of this, would be a :rom:cls:`PlayerEndpoint` whose URI property could be used to locate a file to stream through its :rom:cls:`MediaSource`",
+      "abstract": true,
+      "extends": "Endpoint",
+      "properties": [
+        {
+          "name": "uri",
+          "doc": "The uri for this endpoint.",
+          "type": "String",
+          "final": true
+        }
+      ],
+      "methods": [
+        {
+          "params": [],
+          "name": "pause",
+          "doc": "Pauses the feed"
+        },
+        {
+          "params": [],
+          "name": "stop",
+          "doc": "Stops the feed"
+        }
+      ]
+    },
+    {
+      "name": "MediaPad",
+      "doc": "A :rom:cls:`MediaPad` is an element´s interface with the outside world. The data streams flow from the :rom:cls:`MediaSource` pad to another element\u0027s :rom:cls:`MediaSink` pad.",
+      "abstract": true,
+      "extends": "MediaObject",
+      "properties": [
+        {
+          "name": "mediaElement",
+          "doc": "The :rom:cls:`MediaElement` that encloses this pad",
+          "type": "MediaElement",
+          "final": true
+        },
+        {
+          "name": "mediaType",
+          "doc": "Media that this pad accepts. One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.DATA` or :rom:attr:`MediaType.VIDEO`",
+          "type": "MediaType",
+          "final": true
+        },
+        {
+          "name": "mediaDescription",
+          "doc": "The description for this pad.",
+          "type": "String",
+          "final": true
+        }
+      ]
+    },
+    {
+      "name": "MediaSource",
+      "doc": "Special type of pad, used by a media element to generate a media stream.",
+      "abstract": true,
+      "extends": "MediaPad",
+      "methods": [
+        {
+          "params": [],
+          "return": {
+            "type": "MediaSink[]",
+            "doc": "the list of sinks that the source is connected to"
+          },
+          "name": "getConnectedSinks",
+          "doc": "Gets all the :rom:cls:`MediaSinks\u003cMediaSink\u003e` to which this source is connected"
+        },
+        {
+          "params": [
+            {
+              "name": "sink",
+              "doc": "The sink to connect this source",
+              "type": "MediaSink"
+            }
+          ],
+          "name": "connect",
+          "doc": "Connects the current source with a :rom:cls:`MediaSink`"
+        }
+      ]
+    },
+    {
+      "name": "MediaPipeline",
+      "doc": "A pipeline is a container for a collection of :rom:cls:`MediaElements\u003cMediaElement\u003e` and :rom:cls:`MediaMixers\u003cMediaMixer\u003e`. It offers the methods needed to control the creation and connection of elements inside a certain pipeline.",
+      "extends": "MediaObject",
+      "constructor": {
+        "params": [],
+        "doc": "Create a :rom:cls:`MediaPipeline`"
+      }
+    },
+    {
+      "name": "MediaSink",
+      "doc": "Special type of pad, used by a :rom:cls:`MediaElement` to receive a media stream.",
+      "abstract": true,
+      "extends": "MediaPad",
+      "methods": [
+        {
+          "params": [
+            {
+              "name": "src",
+              "doc": "The source to disconnect",
+              "type": "MediaSource"
+            }
+          ],
+          "name": "disconnect",
+          "doc": "Disconnects the current sink from the referred :rom:cls:`MediaSource`"
+        },
+        {
+          "params": [],
+          "return": {
+            "type": "MediaSource",
+            "doc": "The source connected to this sink"
+          },
+          "name": "getConnectedSrc",
+          "doc": "Gets the :rom:cls:`MediaSource` that is connected to this sink."
+        }
+      ]
+    },
+    {
+      "name": "SdpEndpoint",
+      "doc": "Implements an SDP negotiation endpoint able to generate and process offers/responses and that configures resources according to negotiated Session Description",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "methods": [
+        {
+          "params": [],
+          "return": {
+            "type": "String",
+            "doc": "The SDP offer."
+          },
+          "name": "generateOffer",
+          "doc": "Request a SessionSpec offer.\n\n   This can be used to initiate a connection."
+        },
+        {
+          "params": [
+            {
+              "name": "offer",
+              "doc": "SessionSpec offer from the remote User Agent",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "type": "String",
+            "doc": "The chosen configuration from the ones stated in the SDP offer"
+          },
+          "name": "processOffer",
+          "doc": "Request the NetworkConnection to process the given SessionSpec offer (from the remote User Agent)"
+        },
+        {
+          "params": [
+            {
+              "name": "answer",
+              "doc": "SessionSpec answer from the remote User Agent",
+              "type": "String"
+            }
+          ],
+          "return": {
+            "type": "String",
+            "doc": "Updated SDP offer, based on the answer received."
+          },
+          "name": "processAnswer",
+          "doc": "Request the NetworkConnection to process the given SessionSpec answer (from the remote User Agent)."
+        },
+        {
+          "params": [],
+          "return": {
+            "type": "String",
+            "doc": "The last agreed SessionSpec"
+          },
+          "name": "getLocalSessionDescriptor",
+          "doc": "This method gives access to the SessionSpec offered by this NetworkConnection.\n\n.. note:: This method returns the local MediaSpec, negotiated or not. If no offer has been generated yet, it returns null. It an offer has been generated it returns the offer and if an answer has been processed it returns the negotiated local SessionSpec."
+        },
+        {
+          "params": [],
+          "return": {
+            "type": "String",
+            "doc": "The last agreed User Agent session description"
+          },
+          "name": "getRemoteSessionDescriptor",
+          "doc": "This method gives access to the remote session description.\n\n.. note:: This method returns the media previously agreed after a complete offer-answer exchange. If no media has been agreed yet, it returns null."
+        }
+      ]
+    },
+    {
+      "name": "MediaElement",
+      "doc": "Basic building blocks of the media server, that can be interconnected through the API. A :rom:cls:`MediaElement` is a module that encapsulates a specific media capability. They can be connected to create media pipelines where those capabilities are applied, in sequence, to the stream going through the pipeline.\n\n   :rom:cls:`MediaElement` objects are classified by its supported media type (audio, video, etc.) and the flow direction: :rom:cls:`MediaSource` pads are intended for media delivery while :rom:cls:`MediaSinks\u003cMediaSink\u003e`  behave as reception points.",
+      "abstract": true,
+      "extends": "MediaObject",
+      "methods": [
+        {
+          "params": [
+            {
+              "name": "mediaType",
+              "doc": "One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.VIDEO` or :rom:attr:`MediaType.DATA`",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "description",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ],
+          "return": {
+            "type": "MediaSource[]",
+            "doc": "A list of sources. The list will be empty if no sources are found."
+          },
+          "name": "getMediaSrcs",
+          "doc": "Get the media sources of the given type and description"
+        },
+        {
+          "params": [
+            {
+              "name": "mediaType",
+              "doc": "One of :rom:attr:`MediaType.AUDIO`, :rom:attr:`MediaType.VIDEO` or :rom:attr:`MediaType.DATA`",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "description",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ],
+          "return": {
+            "type": "MediaSink[]",
+            "doc": "A list of sinks. The list will be empty if no sinks are found."
+          },
+          "name": "getMediaSinks",
+          "doc": "A list of sinks of the given :rom:ref:`MediaType`. The list will be empty if no sinks are found."
+        },
+        {
+          "params": [
+            {
+              "name": "sink",
+              "doc": "the target :rom:cls:`MediaElement`  from which :rom:cls:`MediaSink` will be obtained",
+              "type": "MediaElement"
+            },
+            {
+              "name": "mediaType",
+              "doc": "the :rom:enum:`MediaType` of the pads that will be connected",
+              "type": "MediaType",
+              "optional": true
+            },
+            {
+              "name": "mediaDescription",
+              "doc": "A textual description of the media source. Currently not used, aimed mainly for :rom:attr:`MediaType.DATA` sources",
+              "type": "String",
+              "optional": true
+            }
+          ],
+          "name": "connect",
+          "doc": "perform :rom:meth:`connect(sink,mediaType)` if there is exactly one sink for the given type, and their mediaDescriptions are the same"
+        }
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "AUDIO",
+        "DATA",
+        "VIDEO"
+      ],
+      "name": "MediaType",
+      "doc": "Type of media stream to be exchanged.\nCan take the values AUDIO, DATA or VIDEO."
+    },
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "AUDIO",
+        "AUTODETECT",
+        "VIDEO"
+      ],
+      "name": "FilterType",
+      "doc": "Type of filter to be created.\nCan take the values AUDIO, VIDEO or AUTODETECT."
+    }
+  ],
+  "events": [
+    {
+      "properties": [
+        {
+          "name": "object",
+          "doc": ":rom:cls:`MediaObject` where the error originated",
+          "type": "MediaObject"
+        },
+        {
+          "name": "description",
+          "doc": "Textual description of the error",
+          "type": "String"
+        },
+        {
+          "name": "errorCode",
+          "doc": "Server side integer error code",
+          "type": "int"
+        },
+        {
+          "name": "type",
+          "doc": "Integer code as a String",
+          "type": "String"
+        }
+      ],
+      "name": "Error",
+      "doc": "An error related to the MediaObject has occurred"
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "MediaSessionTerminated",
+      "doc": "Event raised when a session is terminated. This event has no data."
+    },
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "MediaSessionStarted",
+      "doc": "Event raised when a session starts. This event has no data."
+    },
+    {
+      "properties": [
+        {
+          "name": "source",
+          "doc": "Object that raised the event",
+          "type": "MediaObject"
+        },
+        {
+          "name": "type",
+          "doc": "Type of event that was raised",
+          "type": "String"
+        }
+      ],
+      "name": "Media",
+      "doc": "Base for all events raised by elements in the Kurento media server."
+    }
+  ]
+}

@@ -1,0 +1,356 @@
+{
+  "remoteClasses": [
+    {
+      "name": "Mixer",
+      "doc": "A :rom:cls:`Hub` that allows routing of video between arbitrary port pairs and mixing of audio among several ports",
+      "extends": "Hub",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the Mixer belongs",
+            "type": "MediaPipeline"
+          }
+        ],
+        "doc": "Create a :rom:cls:`Mixer` belonging to the given pipeline."
+      },
+      "methods": [
+        {
+          "params": [
+            {
+              "name": "media",
+              "doc": "The sort of media stream to be connected",
+              "type": "MediaType"
+            },
+            {
+              "name": "source",
+              "doc": "Video source port to be connected",
+              "type": "HubPort"
+            },
+            {
+              "name": "sink",
+              "doc": "Video sink port to be connected",
+              "type": "HubPort"
+            }
+          ],
+          "name": "connect",
+          "doc": "Connects each corresponding :rom:enum:`MediaType` of the given source port with the sink port."
+        },
+        {
+          "params": [
+            {
+              "name": "media",
+              "doc": "The sort of media stream to be disconnected",
+              "type": "MediaType"
+            },
+            {
+              "name": "source",
+              "doc": "Audio source port to be disconnected",
+              "type": "HubPort"
+            },
+            {
+              "name": "sink",
+              "doc": "Audio sink port to be disconnected",
+              "type": "HubPort"
+            }
+          ],
+          "name": "disconnect",
+          "doc": "Disonnects each corresponding :rom:enum:`MediaType` of the given source port from the sink port."
+        }
+      ]
+    },
+    {
+      "name": "RecorderEndpoint",
+      "doc": "Provides function to store contents in reliable mode (doesn\u0027t discard data). It contains :rom:cls:`MediaSink` pads for audio and video.",
+      "extends": "UriEndpoint",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "uri",
+            "doc": "URI where the recording will be stored",
+            "type": "String"
+          },
+          {
+            "name": "mediaProfile",
+            "doc": "Choose either a :rom:attr:`MediaProfileSpecType.WEBM` or a :rom:attr:`MediaProfileSpecType.MP4` profile for recording",
+            "type": "MediaProfileSpecType",
+            "optional": true,
+            "defaultValue": "WEBM"
+          },
+          {
+            "name": "stopOnEndOfStream",
+            "doc": "Forces the recorder endpoint to finish processing data when an :term:`EOS` is detected in the stream",
+            "type": "boolean",
+            "optional": true,
+            "defaultValue": false
+          }
+        ],
+        "doc": ""
+      },
+      "methods": [
+        {
+          "params": [],
+          "name": "record",
+          "doc": "Starts storing media received through the :rom:cls:`MediaSink` pad"
+        }
+      ]
+    },
+    {
+      "name": "PlayerEndpoint",
+      "doc": "Retrieves content from seekable sources in reliable\nmode (does not discard media information) and inject \nthem into :term:`KMS`. It\ncontains one :rom:cls:`MediaSource` for each media type detected.",
+      "extends": "UriEndpoint",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "The :rom:cls:`MediaPipeline` this PlayerEndpoint belongs to.",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "uri",
+            "doc": "URI that will be played",
+            "type": "String"
+          },
+          {
+            "name": "useEncodedMedia",
+            "doc": "use encoded instead of raw media. If the parameter is false then the\nelement uses raw media. Changing this parameter can affect stability\nseverely, as lost key frames lost will not be regenerated. Changing the media type does not\naffect to the result except in the performance (just in the case where\noriginal media and target media are the same) and in the problem with the\nkey frames. We strongly recommended not to use this parameter because\ncorrect behaviour is not guarantied.",
+            "type": "boolean",
+            "optional": true,
+            "defaultValue": false
+          }
+        ],
+        "doc": "Create a PlayerEndpoint"
+      },
+      "methods": [
+        {
+          "params": [],
+          "name": "play",
+          "doc": "Starts to send data to the endpoint :rom:cls:`MediaSource`"
+        }
+      ],
+      "events": [
+        "EndOfStream"
+      ]
+    },
+    {
+      "name": "RtpEndpoint",
+      "doc": "Endpoint that provides bidirectional content delivery capabilities with remote networked peers through RTP protocol. An :rom:cls:`RtpEndpoint` contains paired sink and source :rom:cls:`MediaPad` for audio and video.",
+      "extends": "SdpEndpoint",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+            "type": "MediaPipeline"
+          }
+        ],
+        "doc": "Builder for the :rom:cls:`RtpEndpoint`"
+      }
+    },
+    {
+      "name": "Composite",
+      "doc": "A :rom:cls:`Hub` that mixes the :rom:attr:`MediaType.AUDIO` stream of its connected sources and constructs a grid with the :rom:attr:`MediaType.VIDEO` streams of its connected sources into its sink",
+      "extends": "Hub",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
+            "type": "MediaPipeline"
+          }
+        ],
+        "doc": "Create for the given pipeline"
+      }
+    },
+    {
+      "name": "WebRtcEndpoint",
+      "doc": "WebRtcEndpoint interface. This type of ``Endpoint`` offers media streaming using WebRTC.",
+      "extends": "SdpEndpoint",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+            "type": "MediaPipeline"
+          }
+        ],
+        "doc": "Builder for the :rom:cls:`WebRtcEndpoint`"
+      }
+    },
+    {
+      "name": "Dispatcher",
+      "doc": "A :rom:cls:`Hub` that allows routing between arbitrary port pairs",
+      "extends": "Hub",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
+            "type": "MediaPipeline"
+          }
+        ],
+        "doc": "Create a :rom:cls:`Dispatcher` belonging to the given pipeline."
+      },
+      "methods": [
+        {
+          "params": [
+            {
+              "name": "source",
+              "doc": "Source port to be connected",
+              "type": "HubPort"
+            },
+            {
+              "name": "sink",
+              "doc": "Sink port to be connected",
+              "type": "HubPort"
+            }
+          ],
+          "name": "connect",
+          "doc": "Connects each corresponding :rom:enum:`MediaType` of the given source port with the sink port."
+        }
+      ]
+    },
+    {
+      "name": "HttpGetEndpoint",
+      "doc": "An ``HttpGetEndpoint`` contains SOURCE pads for AUDIO and VIDEO, delivering media using HTML5 pseudo-streaming mechanism.\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSink` is associated with the HTTP GET method",
+      "extends": "HttpEndpoint",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "terminateOnEOS",
+            "doc": "raise a :rom:evnt:`MediaSessionTerminated` event when the associated player raises a :rom:evnt:`EndOfStream`, and thus terminate the media session",
+            "type": "boolean",
+            "optional": true,
+            "defaultValue": false
+          },
+          {
+            "name": "mediaProfile",
+            "doc": "the :rom:enum:`MediaProfileSpecType` (WEBM, MP4...) for the endpoint",
+            "type": "MediaProfileSpecType",
+            "optional": true,
+            "defaultValue": "WEBM"
+          },
+          {
+            "name": "disconnectionTimeout",
+            "doc": "disconnection timeout in seconds.\n\nThis is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.",
+            "type": "int",
+            "optional": true,
+            "defaultValue": 2
+          }
+        ],
+        "doc": "Builder for the :rom:cls:`HttpGetEndpoint`."
+      }
+    },
+    {
+      "name": "HttpPostEndpoint",
+      "doc": "An :rom:cls:`HttpPostEndpoint` contains SINK pads for AUDIO and VIDEO, which provide access to an HTTP file upload function\n\n   This type of endpoint provide unidirectional communications. Its :rom:cls:`MediaSources \u003cMediaSource\u003e` are accessed through the :term:`HTTP` POST method.",
+      "extends": "HttpEndpoint",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the endpoint belongs",
+            "type": "MediaPipeline"
+          },
+          {
+            "name": "disconnectionTimeout",
+            "doc": "This is the time that an http endpoint will wait for a reconnection, in case an HTTP connection is lost.",
+            "type": "int",
+            "optional": true,
+            "defaultValue": 2
+          },
+          {
+            "name": "useEncodedMedia",
+            "doc": "configures the endpoint to use encoded media instead of raw media. If the parameter is not set then the element uses raw media. Changing this parameter could affect in a severe way to stability because key frames lost will not be generated. Changing the media type does not affect to the result except in the performance (just in the case where original media and target media are the same) and in the problem with the key frames. We strongly recommended not to use this parameter because correct behaviour is not guarantied.",
+            "type": "boolean",
+            "optional": true,
+            "defaultValue": false
+          }
+        ],
+        "doc": "Builder for the :rom:cls:`HttpPostEndpoint`."
+      },
+      "events": [
+        "EndOfStream"
+      ]
+    },
+    {
+      "name": "HttpEndpoint",
+      "doc": "Endpoint that enables Kurento to work as an HTTP server, allowing peer HTTP clients to access media.",
+      "abstract": true,
+      "extends": "SessionEndpoint",
+      "methods": [
+        {
+          "params": [],
+          "return": {
+            "type": "String",
+            "doc": "The url as a String"
+          },
+          "name": "getUrl",
+          "doc": "Obtains the URL associated to this endpoint"
+        }
+      ]
+    },
+    {
+      "name": "DispatcherOneToMany",
+      "doc": "A :rom:cls:`Hub` that sends a given source to all the connected sinks",
+      "extends": "Hub",
+      "constructor": {
+        "params": [
+          {
+            "name": "mediaPipeline",
+            "doc": "the :rom:cls:`MediaPipeline` to which the dispatcher belongs",
+            "type": "MediaPipeline"
+          }
+        ],
+        "doc": "Create a :rom:cls:`DispatcherOneToMany` belonging to the given pipeline."
+      },
+      "methods": [
+        {
+          "params": [
+            {
+              "name": "source",
+              "doc": "source to be broadcasted",
+              "type": "HubPort"
+            }
+          ],
+          "name": "setSource",
+          "doc": "Sets the source port that will be connected to the sinks of every :rom:cls:`HubPort` of the dispatcher"
+        },
+        {
+          "params": [],
+          "name": "removeSource",
+          "doc": "Remove the source port and stop the media pipeline."
+        }
+      ]
+    }
+  ],
+  "complexTypes": [
+    {
+      "typeFormat": "ENUM",
+      "values": [
+        "WEBM",
+        "MP4"
+      ],
+      "name": "MediaProfileSpecType",
+      "doc": "Media Profile.\n\nCurrently WEBM and MP4 are supported."
+    }
+  ],
+  "events": [
+    {
+      "properties": [],
+      "extends": "Media",
+      "name": "EndOfStream",
+      "doc": "Event raised when the stream that the element sends out is finished."
+    }
+  ]
+}

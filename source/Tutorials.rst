@@ -1,24 +1,56 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
- Kurento Tutorials
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
+Kurento Tutorials
+%%%%%%%%%%%%%%%%%
 
-This section shows how to use Kurento by means of working demos. The code of these demos is available on `GitHub <https://github.com/Kurento>`_. These demos are the following:
+This section shows how to use Kurento framework to build different types
+applications with live audio and video. We will show several working
+applications implemented with **Java**, **Node.js** and **Browser JavaScript**.
 
-- Loopback video call with filtering. This web application consists on a WebRTC communication in mirror, i.e., a media loopback.
-- One to one video call. This web application is similar to a phone, but with also with video. It is also based on WebRTC.
-- One to one video call with advanced features (recording and filtering). This is an enhanced version of the previous application. It uses media capabilities provided by the Kurento Media Server: the recording of the video communication, and also an augmented reality filter. Concretely, it is a face overlay filter. This filter detects face in the media, and overlays an image over the detected faces.  
-- Group (many to many) video call. Web application based on WebRTC to communicate several peers.  
-- Group (many to many) video call with advanced features (recording and filtering). Enhanced version of the previous demo, with recording and filtering capabilities.
+Tutorial 1 - Magic Mirror
+=========================
 
-As a developer, you can create applications using Kurento using Java, JavaScript, and Node.js. The following table summarizes these demos for each technology:
+This web application consists on a magic video mirror that add with a funny hat
+over your face. It is implemented using `WebRTC`:term: technology.
 
-===============================================================================  =====================================================================================  ==================================================================================  
-Java                                                                             JavaScript                                                                             Node.js
-===============================================================================  =====================================================================================  ==================================================================================
-:doc:`Loopback video call <tutorials/java/kmf-webrtc-loopback>`                  :doc:`Loopback video call <tutorials/javascript/kws-webrtc-loopback>`                  :doc:`Loopback video call <tutorials/nodejs/kws-webrtc-loopback>`
-:doc:`One to one video call <tutorials/java/kmf-webrtc-call>`                    :doc:`One to one video call <tutorials/javascript/kws-webrtc-call>`                    :doc:`One to one video call <tutorials/nodejs/kws-webrtc-call>`                                    
-:doc:`Advanced one to one video call <tutorials/java/kmf-webrtc-call-advanced>`  :doc:`Advanced one to one video call <tutorials/javascript/kws-webrtc-call-advanced>`  :doc:`Advanced one to one video call <tutorials/nodejs/kws-webrtc-call-advanced>`
-:doc:`Group video call <tutorials/java/kmf-webrtc-group>`                        :doc:`Group video call <tutorials/javascript/kws-webrtc-group>`                        :doc:`Group video call <tutorials/nodejs/kws-webrtc-group>`
-:doc:`Advanced group video call <tutorials/java/kmf-webrtc-group-advanced>`      :doc:`Advanced group video call <tutorials/javascript/kws-webrtc-group-advanced>`      :doc:`Advanced group video call <tutorials/nodejs/kws-webrtc-group-advanced>`
-===============================================================================  =====================================================================================  ==================================================================================   
+.. toctree::
+   :maxdepth: 1
+    
+   Java </tutorials/java/tutorial-1-magicmirror>
+   Node.js </tutorials/node/tutorial-1-magicmirror>
+   Browser JavaScript </tutorials/js/tutorial-1-magicmirror>
 
+Tutorial 2 - One to one video call
+==================================
+
+This web application is a videophone based on `WebRTC`:term: technology.
+
+.. toctree::
+   :maxdepth: 1
+    
+   Java </tutorials/java/tutorial-2-one2one>
+   Node.js </tutorials/node/tutorial-2-one2one>
+   Browser JavaScript </tutorials/js/tutorial-2-one2one>
+
+
+Tutorial 3 - One to one video call with recording and filtering
+===============================================================
+
+This is an enhanced version of the previous application. It uses the following
+Kurento capabilities: the recording of the video communication, and also an
+augmented reality filter.
+
+Tutorial: Java, Node.js, Browser JavaScript
+
+Tutorial 4 - Group video call
+=============================
+
+Web application based on WebRTC to communicate several peers.
+
+Tutorial: Java, Node.js, Browser JavaScript
+
+Tutorial 5 - Group video call with recording and filtering
+==========================================================
+
+Enhanced version of the previous demo, with recording and filtering capabilities.
+
+Tutorial: Java, Node.js, Browser JavaScript
