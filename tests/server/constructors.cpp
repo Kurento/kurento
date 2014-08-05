@@ -207,7 +207,5 @@ main (int argc, char **argv)
 
   kurento::MediaSet::getMediaSet()->release (mediaPipeline);
 
-  kurento::MediaSet::destroyMediaSet();
-
   return 0;
 }
