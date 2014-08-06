@@ -15,7 +15,6 @@ ${remoteClass.name}Impl.cpp
 #include "${remoteClass.name}Impl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
-#include <gst/gst.h>
 
 #define GST_CAT_DEFAULT kurento_${camelToUnderscore(remoteClass.name)?lower_case}_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
