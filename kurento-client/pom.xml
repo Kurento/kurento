@@ -3,19 +3,20 @@
 
 	<parent>
 		<groupId>org.kurento</groupId>
-		<artifactId>kurento-integration-tests</artifactId>
+		<artifactId>kurento-parent-pom</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
+		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<artifactId>kurento-media-api-test</artifactId>
+	<groupId>org.kurento</groupId>
+	<artifactId>kurento-client</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Integration tests - Media API</name>
+	<name>Kurento Java Client</name>
 	<description>
-			Kurento Media Manager API Tests
+			Kurento Java Client
 
-			The Kurento kurento-media-api project allows server applications to control media server resources.
-			This project contains the tests for the kurento-media-api project
+			The Kurento kurento-client project allows server applications to control media server resources.
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -26,7 +27,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<organization>
 		<name>Kurento</name>
 		<url>http://www.kurento.org</url>
@@ -51,8 +52,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-api</artifactId>
-			<scope>test</scope>
+			<artifactId>kurento-thrift-interface</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
@@ -64,48 +64,17 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-jsonrpcconnector-client</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons-testing</artifactId>
 			<scope>test</scope>
-		</dependency>	
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-system-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-social-twitter</artifactId>
 		</dependency>
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<id>default</id>
-			<activation>
-				<property>
-					<name>default</name>
-					<value>true</value>
-				</property>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-failsafe-plugin</artifactId>
-						<configuration>
-							<skipTests>true</skipTests>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

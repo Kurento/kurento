@@ -222,7 +222,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-media-api</artifactId>
+				<artifactId>kurento-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

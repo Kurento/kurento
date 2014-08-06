@@ -12,10 +12,10 @@
 	<artifactId>kurento-repository-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Repository Management</name>
+	<name>Kurento Repository Management</name>
 
 	<description>
-			Kurento Java - Repository Management
+			Kurento Repository Management
 
 			The Kurento kurento-repository-api project is an API allowing access to Kurento Repository.
 	</description>

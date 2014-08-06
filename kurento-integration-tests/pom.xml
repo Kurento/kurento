@@ -13,7 +13,7 @@
 	<artifactId>kurento-integration-tests</artifactId>
 	<packaging>pom</packaging>
 	
-	<name>Kurento Java - Integration tests</name>
+	<name>Kurento Integration tests</name>
 	<description>Integration tests for the Kurento Java. These tests require the existence of a KMS instance.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -49,7 +49,7 @@
 	<modules>
 		<module>kurento-jsonrpcconnector-test</module>
 		<module>kurento-media-connector-test</module>
-		<module>kurento-media-api-test</module>		
+		<module>kurento-client-test</module>		
 		<module>kurento-repository-api-test</module>
 		<module>kurento-system-test</module>
 		<module>kurento-sanity-test</module>

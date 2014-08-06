@@ -60,7 +60,7 @@
 				<module>kurento-orion-connector</module>
 				<module>kurento-jsonrpcconnector</module>
 				<module>kurento-media-connector</module>
-				<module>kurento-media-api</module>
+				<module>kurento-client</module>
 				<module>kurento-repository-api</module>
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>
@@ -95,7 +95,7 @@
 				<module>kurento-thrift-interface</module>
 				<module>kurento-orion-connector</module>
 				<module>kurento-jsonrpcconnector</module>
-				<module>kurento-media-api</module>				
+				<module>kurento-client</module>				
 				<module>kurento-content-protocol</module>
 				<module>kurento-repository-api</module>
 				<module>kurento-broker</module>

@@ -11,7 +11,7 @@
 	<artifactId>kurento-sandbox</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Sandbox</name>
+	<name>Kurento Sandbox</name>
 	<description>
 		Sandbox project to ease Kurento Media Server development and functional evaluation
 	</description>
@@ -73,7 +73,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-api</artifactId>
+			<artifactId>kurento-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kws</groupId>

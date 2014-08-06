@@ -11,7 +11,7 @@
 	<artifactId>kurento-orion-connector</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Orion connector</name>
+	<name>Kurento Orion connector</name>
 	<description>Orion context broker consumer</description>
 
 	<url>http://www.kurento.org/docs/${project.version}</url>

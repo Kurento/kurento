@@ -10,7 +10,7 @@
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-thrift-interface</artifactId>
 	<packaging>jar</packaging>
-	<name>Kurento Java - Thrift interface with KMS</name>
+	<name>Kurento Thrift interface with KMS</name>
 	<description>
 			Kurento Thrift Interface
 

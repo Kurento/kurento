@@ -9,7 +9,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-commons-testing</artifactId>
-	<name>Kurento Java - Common testing classes</name>
+	<name>Kurento Common testing classes</name>
 	<description>TODO</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 

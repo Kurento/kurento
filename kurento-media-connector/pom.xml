@@ -12,7 +12,7 @@
 	<artifactId>kurento-media-connector</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Media Connector</name>
+	<name>Kurento Media Connector</name>
 	<description>
 		Kurento Media Connector
 
@@ -116,7 +116,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-api</artifactId>
+			<artifactId>kurento-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>

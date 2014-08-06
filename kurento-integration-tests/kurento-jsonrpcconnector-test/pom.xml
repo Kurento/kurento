@@ -9,7 +9,7 @@
 	<artifactId>kurento-jsonrpcconnector-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Integration tests - JsonRpc Connector</name>
+	<name>Kurento Integration tests - JsonRpc Connector</name>
 	<description>
 			Tests of a protocol based on JSON-RPC to manage Kurento Content and Media API
 	</description>

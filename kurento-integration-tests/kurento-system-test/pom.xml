@@ -27,9 +27,9 @@
 		<win32-webdriver.version>2.9</win32-webdriver.version>
 	</properties>
 
-	<name>Kurento Java - Integration tests - System Tests</name>
+	<name>Kurento Integration tests - System Tests</name>
 	<description>
-		Kurento Java - System Tests
+		Kurento System Tests
 
 		The kurento-system-test project contains some test cases
 		for testing Kurento Java and Kurento Media Server.
@@ -46,7 +46,7 @@
 		<!-- Kurento Dependencies -->
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-api</artifactId>
+			<artifactId>kurento-client</artifactId>
 		</dependency>		
 		<dependency>
 			<groupId>org.kurento</groupId>

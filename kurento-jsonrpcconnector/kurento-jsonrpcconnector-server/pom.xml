@@ -10,7 +10,7 @@
 	<artifactId>kurento-jsonrpcconnector-server</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - JSON-RPC Protocol Server</name>
+	<name>Kurento JSON-RPC Protocol Server</name>
 	<description>
 			JSON-RPC Protocol with transports based on http and websocket
 	</description>

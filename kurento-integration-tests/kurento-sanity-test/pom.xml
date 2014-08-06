@@ -11,9 +11,9 @@
 	<artifactId>kurento-sanity-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Integration tests - Sanity Tests</name>
+	<name>Kurento Integration tests - Sanity Tests</name>
 	<description>
-		Kurento Java - Sanity Tests
+		Kurento Sanity Tests
 
 		This project implements a simple evaluation of Kurento.
 	</description>
@@ -26,7 +26,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-api</artifactId>
+			<artifactId>kurento-client</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
