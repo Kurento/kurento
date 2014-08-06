@@ -1,6 +1,6 @@
 package org.kurento.tool.rom.client;
 
-import org.kurento.kmf.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Props;
 
 public interface RomEventHandler {
 

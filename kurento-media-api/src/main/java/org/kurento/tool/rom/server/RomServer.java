@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import org.kurento.kmf.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Props;
 import org.kurento.tool.rom.RemoteClass;
 import org.kurento.tool.rom.transport.serialization.ParamsFlattener;
 

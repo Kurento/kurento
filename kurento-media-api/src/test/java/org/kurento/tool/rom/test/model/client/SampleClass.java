@@ -2,7 +2,7 @@ package org.kurento.tool.rom.test.model.client;
 
 import java.util.List;
 
-import org.kurento.kmf.media.Continuation;
+import org.kurento.media.Continuation;
 import org.kurento.tool.rom.RemoteClass;
 import org.kurento.tool.rom.server.Param;
 import org.kurento.tool.rom.test.model.client.events.MediaEventListener;

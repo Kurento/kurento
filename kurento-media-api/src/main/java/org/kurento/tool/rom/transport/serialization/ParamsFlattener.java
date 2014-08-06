@@ -14,9 +14,8 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.kurento.kmf.jsonrpcconnector.Prop;
-import org.kurento.kmf.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Prop;
+import org.kurento.jsonrpcconnector.Props;
 import org.kurento.tool.rom.ParamAnnotationUtils;
 import org.kurento.tool.rom.RemoteClass;
 import org.kurento.tool.rom.client.RemoteObject;

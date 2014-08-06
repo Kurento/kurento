@@ -7,12 +7,11 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClientWebSocket;
-import org.kurento.kmf.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
-import org.kurento.kmf.jsonrpcconnector.server.JsonRpcConfigurer;
-import org.kurento.kmf.jsonrpcconnector.server.JsonRpcHandlerRegistry;
+import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.jsonrpcconnector.client.JsonRpcClientWebSocket;
+import org.kurento.jsonrpcconnector.internal.server.config.JsonRpcConfiguration;
+import org.kurento.jsonrpcconnector.server.JsonRpcConfigurer;
+import org.kurento.jsonrpcconnector.server.JsonRpcHandlerRegistry;
 import org.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 
 public class WebSocketRomTest extends AbstractRomTest {

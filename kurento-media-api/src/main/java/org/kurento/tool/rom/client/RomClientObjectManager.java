@@ -6,7 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.MapMaker;
-import org.kurento.kmf.jsonrpcconnector.Props;
+
+import org.kurento.jsonrpcconnector.Props;
 import org.kurento.tool.rom.transport.serialization.ObjectRefsManager;
 
 public class RomClientObjectManager implements RomEventHandler,

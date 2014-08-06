@@ -9,11 +9,10 @@ import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.kurento.kmf.jsonrpcconnector.Props;
-import org.kurento.kmf.media.Continuation;
-import org.kurento.kmf.media.events.Event;
-import org.kurento.kmf.media.events.MediaEventListener;
+import org.kurento.jsonrpcconnector.Props;
+import org.kurento.media.Continuation;
+import org.kurento.media.events.Event;
+import org.kurento.media.events.MediaEventListener;
 import org.kurento.tool.rom.ParamAnnotationUtils;
 import org.kurento.tool.rom.server.FactoryMethod;
 
@@ -162,7 +161,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 		try {
 
-			Class<?> eventClass = Class.forName("org.kurento.kmf.media.events."
+			Class<?> eventClass = Class.forName("org.kurento.media.events."
 					+ eventType + "Event");
 
 			Constructor<?> constructor = eventClass.getConstructors()[0];

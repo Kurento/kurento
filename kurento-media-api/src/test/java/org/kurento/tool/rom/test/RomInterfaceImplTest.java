@@ -5,8 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClientLocal;
+import org.kurento.jsonrpcconnector.client.JsonRpcClientLocal;
 import org.kurento.tool.rom.client.RemoteObjectFactory;
 import org.kurento.tool.rom.client.RemoteObjectTypedFactory;
 import org.kurento.tool.rom.server.ProtocolException;

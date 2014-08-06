@@ -2,8 +2,7 @@ package org.kurento.tool.rom.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.kurento.kmf.media.Continuation;
+import org.kurento.media.Continuation;
 
 public abstract class DefaultContinuation<F> implements Continuation<F> {
 

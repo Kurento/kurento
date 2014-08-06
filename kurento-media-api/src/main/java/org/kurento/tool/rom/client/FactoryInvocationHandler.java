@@ -3,7 +3,7 @@ package org.kurento.tool.rom.client;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-import org.kurento.kmf.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Props;
 import org.kurento.tool.rom.ParamAnnotationUtils;
 
 public class FactoryInvocationHandler extends DefaultInvocationHandler {

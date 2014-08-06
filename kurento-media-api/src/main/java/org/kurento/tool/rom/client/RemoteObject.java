@@ -6,8 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.*;
-import org.kurento.kmf.jsonrpcconnector.Props;
-import org.kurento.kmf.media.Continuation;
+
+import org.kurento.jsonrpcconnector.Props;
+import org.kurento.media.Continuation;
 import org.kurento.tool.rom.transport.serialization.ParamsFlattener;
 
 public class RemoteObject {

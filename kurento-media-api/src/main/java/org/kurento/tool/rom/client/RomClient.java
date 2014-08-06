@@ -2,8 +2,8 @@ package org.kurento.tool.rom.client;
 
 import java.lang.reflect.Type;
 
-import org.kurento.kmf.jsonrpcconnector.Props;
-import org.kurento.kmf.media.Continuation;
+import org.kurento.jsonrpcconnector.Props;
+import org.kurento.media.Continuation;
 
 public abstract class RomClient {
 

@@ -32,14 +32,15 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import org.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
-import org.kurento.kmf.jsonrpcconnector.JsonRpcErrorException;
-import org.kurento.kmf.jsonrpcconnector.JsonUtils;
-import org.kurento.kmf.jsonrpcconnector.Props;
-import org.kurento.kmf.jsonrpcconnector.Transaction;
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.kmf.jsonrpcconnector.internal.message.Request;
-import org.kurento.kmf.media.Continuation;
+
+import org.kurento.jsonrpcconnector.DefaultJsonRpcHandler;
+import org.kurento.jsonrpcconnector.JsonRpcErrorException;
+import org.kurento.jsonrpcconnector.JsonUtils;
+import org.kurento.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Transaction;
+import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.jsonrpcconnector.internal.message.Request;
+import org.kurento.media.Continuation;
 import org.kurento.tool.rom.client.RomClient;
 import org.kurento.tool.rom.client.RomEventHandler;
 import org.kurento.tool.rom.server.MediaServerException;
@@ -231,7 +232,7 @@ public class RomClientJsonRpcClient extends RomClient {
 			client.sendRequest(
 					method,
 					params,
-					new org.kurento.kmf.jsonrpcconnector.client.Continuation<JsonElement>() {
+					new org.kurento.jsonrpcconnector.client.Continuation<JsonElement>() {
 
 						@SuppressWarnings({ "rawtypes" })
 						@Override

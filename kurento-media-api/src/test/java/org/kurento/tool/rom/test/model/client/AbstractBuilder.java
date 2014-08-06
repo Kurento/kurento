@@ -1,6 +1,6 @@
 package org.kurento.tool.rom.test.model.client;
 
-import org.kurento.kmf.media.Continuation;
+import org.kurento.media.Continuation;
 
 public interface AbstractBuilder<T> {
 

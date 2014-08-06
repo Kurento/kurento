@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>org.kurento.kmf</groupId>
+		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 	</parent>
@@ -34,9 +34,9 @@
 	</organization>
 
 	<scm>
-		<url>${kmf.scm.url}</url>
-		<connection>scm:git:${kmf.scm.connection}</connection>
-		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -51,7 +51,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-media-connector</artifactId>
 		</dependency>
 
@@ -91,7 +91,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>org.kurento.kmf.connector.Main</mainClass>
+					<mainClass>org.kurento.connector.Main</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>

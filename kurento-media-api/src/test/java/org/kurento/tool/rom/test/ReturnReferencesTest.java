@@ -9,9 +9,8 @@ import java.util.concurrent.BlockingQueue;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClientLocal;
-import org.kurento.kmf.media.Continuation;
+import org.kurento.jsonrpcconnector.client.JsonRpcClientLocal;
+import org.kurento.media.Continuation;
 import org.kurento.tool.rom.client.RemoteObjectFactory;
 import org.kurento.tool.rom.client.RemoteObjectTypedFactory;
 import org.kurento.tool.rom.test.model.client.SampleClass;

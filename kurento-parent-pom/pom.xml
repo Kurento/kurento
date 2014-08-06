@@ -7,8 +7,8 @@
 	<version>4.3.1-SNAPSHOT</version>	
 	<packaging>pom</packaging>
 
-	<name>Kurento Application Server Parent POM</name>
-	<description>Parent POM for KAS projects. Provides default project build configuration.</description>
+	<name>Kurento Java Parent POM</name>
+	<description>Parent POM for Kurento Java projects. Provides default project build configuration.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<issueManagement>
@@ -30,9 +30,9 @@
 	</organization>
 
 	<scm>
-		<url>${kmf.scm.url}</url>
-		<connection>scm:git:${kmf.scm.connection}</connection>
-		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -179,8 +179,8 @@
 		<!-- maven-assembly-plugin -->
 		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
 
-		<kmf.scm.url>https://github.com/Kurento/kurento-media-framework</kmf.scm.url>
-		<kmf.scm.connection>git@github.com:Kurento/kurento-media-framework.git</kmf.scm.connection>
+		<kurento-java.scm.url>https://github.com/Kurento/kurento-media-framework</kurento-java.scm.url>
+		<kurento-java.scm.connection>git@github.com:Kurento/kurento-media-framework.git</kurento-java.scm.connection>
 
 	</properties>
 
@@ -191,7 +191,7 @@
 	<dependencyManagement>
 		<dependencies>			
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-system-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -206,43 +206,43 @@
 				<version>${kws.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-broker</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-repository-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-thrift-interface</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-media-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-media-connector</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-jsonrpcconnector</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-jsonrpcconnector-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-jsonrpcconnector-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
@@ -252,17 +252,17 @@
 				<version>${kms-interface.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-commons</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-commons-testing</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
 			<dependency>
-				<groupId>org.kurento.kmf</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-orion-connector</artifactId>
 				<version>${project.version}</version>
 			</dependency>

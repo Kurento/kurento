@@ -19,11 +19,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.kurento.kmf.jsonrpcconnector.DefaultJsonRpcHandler;
-import org.kurento.kmf.jsonrpcconnector.JsonUtils;
-import org.kurento.kmf.jsonrpcconnector.Props;
-import org.kurento.kmf.jsonrpcconnector.Transaction;
-import org.kurento.kmf.jsonrpcconnector.internal.message.Request;
+
+import org.kurento.jsonrpcconnector.DefaultJsonRpcHandler;
+import org.kurento.jsonrpcconnector.JsonUtils;
+import org.kurento.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Transaction;
+import org.kurento.jsonrpcconnector.internal.message.Request;
 import org.kurento.tool.rom.server.ProtocolException;
 import org.kurento.tool.rom.server.RomServer;
 

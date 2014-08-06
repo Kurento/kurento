@@ -8,7 +8,7 @@
     </encoder>
   </appender>
 
-	<logger name="org.kurento.kmf.content.internal.ContentApiWebApplicationInitializer" level="DEBUG"/>
+	<logger name="org.kurento.content.internal.ContentApiWebApplicationInitializer" level="DEBUG"/>
 
   <root level="info">
     <appender-ref ref="STDOUT" />

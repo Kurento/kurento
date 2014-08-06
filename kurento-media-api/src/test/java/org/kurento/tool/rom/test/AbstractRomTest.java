@@ -11,8 +11,7 @@ import java.util.List;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.jsonrpcconnector.client.JsonRpcClient;
 import org.kurento.tool.rom.client.RemoteObjectFactory;
 import org.kurento.tool.rom.client.RemoteObjectTypedFactory;
 import org.kurento.tool.rom.test.model.client.ComplexParam;

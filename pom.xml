@@ -7,7 +7,7 @@
 		<relativePath>kurento-parent-pom</relativePath>
 	</parent>
 
-	<artifactId>kurento-media-framework</artifactId>
+	<artifactId>kurento-java</artifactId>
 	<packaging>pom</packaging>
 	<name>Kurento Java</name>
 	<description>TODO</description>
@@ -27,9 +27,9 @@
 	</organization>
 
 	<scm>
-		<url>${kmf.scm.url}</url>
-		<connection>scm:git:${kmf.scm.connection}</connection>
-		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -60,8 +60,7 @@
 				<module>kurento-orion-connector</module>
 				<module>kurento-jsonrpcconnector</module>
 				<module>kurento-media-connector</module>
-				<module>kurento-media-api</module>				
-				<module>kurento-samples</module>				
+				<module>kurento-media-api</module>
 				<module>kurento-repository-api</module>
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>

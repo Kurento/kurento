@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.kurento.kmf.jsonrpcconnector.Props;
+import org.kurento.jsonrpcconnector.Props;
 import org.kurento.tool.rom.server.Param;
 import org.kurento.tool.rom.server.ProtocolException;
 

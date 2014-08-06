@@ -11,8 +11,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
-import org.kurento.kmf.jsonrpcconnector.JsonUtils;
-import org.kurento.kmf.jsonrpcconnector.Props;
+
+import org.kurento.jsonrpcconnector.JsonUtils;
+import org.kurento.jsonrpcconnector.Props;
 import org.kurento.tool.rom.test.model.client.ComplexParam;
 
 public class RomJsonConverterTest {

@@ -9,12 +9,12 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 	
-	<groupId>org.kurento.kmf</groupId>
+	<groupId>org.kurento</groupId>
 	<artifactId>kurento-assembly</artifactId>
 	<packaging>pom</packaging>
 	
 	<name>Kurento Java - Assembly project</name>
-	<description>The assembly pom packages all KMF projects into a single zip file.</description>
+	<description>The assembly pom packages all Kurento Java projects into a single zip file.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -31,9 +31,9 @@
 	</organization>
 
 	<scm>
-		<url>${kmf.scm.url}</url>
-		<connection>scm:git:${kmf.scm.connection}</connection>
-		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -48,11 +48,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-media-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-media-connector</artifactId>
 		</dependency>
 	</dependencies>

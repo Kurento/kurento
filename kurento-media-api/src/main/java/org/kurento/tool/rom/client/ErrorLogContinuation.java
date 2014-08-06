@@ -2,8 +2,7 @@ package org.kurento.tool.rom.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.kurento.kmf.media.Continuation;
+import org.kurento.media.Continuation;
 
 public class ErrorLogContinuation<E> implements Continuation<E> {
 

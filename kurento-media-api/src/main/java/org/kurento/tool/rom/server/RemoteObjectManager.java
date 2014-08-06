@@ -2,7 +2,8 @@ package org.kurento.tool.rom.server;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.kurento.kmf.common.SecretGenerator;
+
+import org.kurento.common.SecretGenerator;
 import org.kurento.tool.rom.transport.serialization.ObjectRefsManager;
 
 public class RemoteObjectManager implements ObjectRefsManager {

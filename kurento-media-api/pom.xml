@@ -8,7 +8,7 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento.kmf</groupId>
+	<groupId>org.kurento</groupId>
 	<artifactId>kurento-media-api</artifactId>
 	<packaging>jar</packaging>
 
@@ -34,9 +34,9 @@
 	</organization>
 
 	<scm>
-		<url>${kmf.scm.url}</url>
-		<connection>scm:git:${kmf.scm.connection}</connection>
-		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -51,7 +51,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-thrift-interface</artifactId>
 		</dependency>
 		<dependency>
@@ -68,11 +68,11 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-jsonrpcconnector-client</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>

@@ -1,6 +1,6 @@
 package org.kurento.tool.rom.client;
 
-import org.kurento.kmf.media.ListenerRegistration;
+import org.kurento.media.ListenerRegistration;
 import org.kurento.tool.rom.client.RemoteObject.EventListener;
 
 public class ListenerSubscription implements ListenerRegistration {

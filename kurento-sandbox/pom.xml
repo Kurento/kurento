@@ -31,9 +31,9 @@
 	</organization>
 
 	<scm>
-		<url>${kmf.scm.url}</url>
-		<connection>scm:git:${kmf.scm.connection}</connection>
-		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<url>${kurento-java.scm.url}</url>
+		<connection>scm:git:${kurento-java.scm.connection}</connection>
+		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -52,7 +52,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>org.kurento.kmf.composite.WebRtcApp</mainClass>
+					<mainClass>org.kurento.composite.WebRtcApp</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
@@ -72,7 +72,7 @@
 			<artifactId>kws-rpc-builder</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.kurento.kmf</groupId>
+			<groupId>org.kurento</groupId>
 			<artifactId>kurento-media-api</artifactId>
 		</dependency>
 		<dependency>

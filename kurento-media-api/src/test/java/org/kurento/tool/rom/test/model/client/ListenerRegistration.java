@@ -14,8 +14,8 @@
  */
 package org.kurento.tool.rom.test.model.client;
 
-import org.kurento.kmf.media.MediaElement;
-import org.kurento.kmf.media.events.MediaEvent;
+import org.kurento.media.MediaElement;
+import org.kurento.media.events.MediaEvent;
 
 /**
  * Interface to be implemented by objects that represent the registration of a

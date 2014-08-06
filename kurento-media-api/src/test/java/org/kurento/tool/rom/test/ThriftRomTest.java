@@ -1,8 +1,8 @@
 package org.kurento.tool.rom.test;
 
-import org.kurento.kmf.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.kmf.thrift.jsonrpcconnector.JsonRpcClientThrift;
-import org.kurento.kmf.thrift.jsonrpcconnector.JsonRpcServerThrift;
+import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
+import org.kurento.thrift.jsonrpcconnector.JsonRpcServerThrift;
 import org.kurento.tool.rom.transport.jsonrpcconnector.RomServerJsonRpcHandler;
 
 public class ThriftRomTest extends AbstractRomTest {

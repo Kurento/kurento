@@ -14,7 +14,7 @@
  */
 package org.kurento.tool.rom.server;
 
-import org.kurento.kmf.common.exception.KurentoException;
+import org.kurento.common.exception.KurentoException;
 
 
 /**
