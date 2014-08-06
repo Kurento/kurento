@@ -2,15 +2,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.kurento</groupId>
-		<artifactId>kurento-parent-pom</artifactId>
+		<artifactId>kurento-integration-tests</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
-		<relativePath>kurento-parent-pom</relativePath>
 	</parent>
+	
+	<artifactId>kurento-jsonrpc-test</artifactId>
+	<packaging>jar</packaging>
 
-	<artifactId>kurento-java</artifactId>
-	<packaging>pom</packaging>
-	<name>Kurento Java</name>
-	<description>TODO</description>
+	<name>Kurento Integration tests - JSON-RPC</name>
+	<description>
+			Tests of a Kurento JSON-RPC protocol
+	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -20,7 +22,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
+	
 	<organization>
 		<name>Kurento</name>
 		<url>http://www.kurento.org</url>
@@ -42,71 +44,58 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<main.basedir>${basedir}</main.basedir>
-	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-jsonrpc-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-jsonrpc-server</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-websocket</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<profiles>
 		<profile>
 			<id>default</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>default</name>
+					<value>true</value>
+				</property>
 			</activation>
-			<modules>
-				<module>kurento-commons</module>
-				<module>kurento-commons-testing</module>
-				<module>kurento-parent-pom</module>
-				<module>kurento-thrift-interface</module>				
-				<module>kurento-jsonrpc</module>
-				<module>kurento-control-server</module>
-				<module>kurento-client</module>
-				<module>kurento-repository</module>
-				<module>kurento-assembly</module>
-				<module>kurento-integration-tests</module>
-				<module>kurento-rabbitmq</module>
-				<module>kurento-sandbox</module>
-			</modules>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
-							<skipTests>false</skipTests>
+							<skipTests>true</skipTests>
 						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-failsafe-plugin</artifactId>
 						<configuration>
-							<skipTests>false</skipTests>
+							<skipTests>true</skipTests>
 						</configuration>
 					</plugin>
 				</plugins>
 			</build>
-		</profile>
-		<profile>
-			<id>deploy</id>
-			<modules>
-				<module>kurento-commons</module>
-				<module>kurento-commons-testing</module>
-				<module>kurento-parent-pom</module>
-				<module>kurento-thrift-interface</module>				
-				<module>kurento-jsonrpc</module>
-				<module>kurento-client</module>				
-				<module>kurento-content-protocol</module>
-				<module>kurento-repository</module>
-				<module>kurento-rabbitmq</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>integration</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<modules>
-				<module>kurento-integration-tests</module>
-			</modules>
 		</profile>
 	</profiles>
 </project>

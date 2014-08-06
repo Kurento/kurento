@@ -10,11 +10,11 @@
 	<artifactId>kurento-client-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Integration tests - Media API</name>
+	<name>Kurento Integration tests - Kurento Client</name>
 	<description>
-			Kurento Media Manager API Tests
+			Kurento Client Tests
 
-			The Kurento kurento-client project allows server applications to control media server resources.
+			The Kurento Client project allows server applications to control media server resources.
 			This project contains the tests for the kurento-client project
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>

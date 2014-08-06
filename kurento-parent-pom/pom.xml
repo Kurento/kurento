@@ -7,7 +7,7 @@
 	<version>4.3.1-SNAPSHOT</version>	
 	<packaging>pom</packaging>
 
-	<name>Kurento Java Parent POM</name>
+	<name>Kurento Parent POM</name>
 	<description>Parent POM for Kurento Java projects. Provides default project build configuration.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -207,12 +207,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-broker</artifactId>
+				<artifactId>kurento-rabbitmq</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-repository-api</artifactId>
+				<artifactId>kurento-repository</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -227,23 +227,23 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-media-connector</artifactId>
+				<artifactId>kurento-control-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-jsonrpcconnector</artifactId>
+				<artifactId>kurento-jsonrpc</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-jsonrpcconnector-client</artifactId>
+				<artifactId>kurento-jsonrpc-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-jsonrpcconnector-server</artifactId>
+				<artifactId>kurento-jsonrpc-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
 			<dependency>
@@ -263,7 +263,7 @@
 			</dependency>			
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-orion-connector</artifactId>
+				<artifactId>kurento-orion</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

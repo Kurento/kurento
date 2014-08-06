@@ -50,11 +50,11 @@
 		</dependency>		
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-broker</artifactId>
+			<artifactId>kurento-rabbitmq</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-connector</artifactId>
+			<artifactId>kurento-control-server</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>

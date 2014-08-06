@@ -9,14 +9,12 @@
 	</parent>
 
 	<groupId>org.kurento</groupId>
-	<artifactId>kurento-client</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>kurento-jsonrpc</artifactId>
+	<packaging>pom</packaging>
 
-	<name>Kurento Client</name>
+	<name>Kurento JSON-RPC</name>
 	<description>
-			Kurento Client
-
-			The Kurento Client project allows server applications to control media server resources.
+			Kurento JSON-RPC protocol with transports based on http and websocket
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -49,32 +47,17 @@
 		</developer>
 	</developers>
 
+	<modules>
+		<module>kurento-jsonrpc-client</module>
+		<module>kurento-jsonrpc-server</module>
+	</modules>
+
 	<dependencies>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-thrift-interface</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.kurento</groupId>
-			<artifactId>kurento-jsonrpc-client</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 </project>

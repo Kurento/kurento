@@ -13,8 +13,8 @@
 	<artifactId>kurento-assembly</artifactId>
 	<packaging>pom</packaging>
 	
-	<name>Kurento Assembly project</name>
-	<description>The assembly pom packages all Kurento Java projects into a single zip file.</description>
+	<name>Kurento Assembly</name>
+	<description>The assembly project packages all Kurento Java projects into a single zip file.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -53,7 +53,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-media-connector</artifactId>
+			<artifactId>kurento-control-server</artifactId>
 		</dependency>
 	</dependencies>
 	
