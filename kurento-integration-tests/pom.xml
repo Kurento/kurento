@@ -1,16 +1,20 @@
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
-		<relativePath>kurento-parent-pom</relativePath>
+		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<artifactId>kurento-media-framework</artifactId>
+	<groupId>org.kurento.kmf</groupId>
+	<artifactId>kurento-integration-tests</artifactId>
 	<packaging>pom</packaging>
-	<name>Kurento Java</name>
-	<description>TODO</description>
+	
+	<name>Kurento Java - Integration tests</name>
+	<description>Integration tests for the Kurento Java. These tests require the existence of a KMS instance.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -42,74 +46,53 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<main.basedir>${basedir}</main.basedir>
-	</properties>
+	<modules>
+		<module>kurento-jsonrpcconnector-test</module>
+		<module>kurento-media-connector-test</module>
+		<module>kurento-media-api-test</module>		
+		<module>kurento-repository-api-test</module>
+		<module>kurento-system-test</module>
+		<module>kurento-sanity-test</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.kurento.kmf</groupId>
+			<artifactId>kurento-commons-testing</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<profiles>
 		<profile>
 			<id>default</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>default</name>
+					<value>true</value>
+				</property>
 			</activation>
-			<modules>
-				<module>kurento-commons</module>
-				<module>kurento-commons-testing</module>
-				<module>kurento-parent-pom</module>
-				<module>kurento-thrift-interface</module>
-				<module>kurento-orion-connector</module>
-				<module>kurento-jsonrpcconnector</module>
-				<module>kurento-media-connector</module>
-				<module>kurento-media-api</module>				
-				<module>kurento-samples</module>				
-				<module>kurento-repository-api</module>
-				<module>kurento-assembly</module>
-				<module>kurento-integration-tests</module>
-				<module>kurento-broker</module>
-				<module>kurento-sandbox</module>
-			</modules>
 			<build>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
-							<skipTests>false</skipTests>
+							<skipTests>true</skipTests>
 						</configuration>
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-failsafe-plugin</artifactId>
 						<configuration>
-							<skipTests>false</skipTests>
+							<skipTests>true</skipTests>
 						</configuration>
 					</plugin>
 				</plugins>
 			</build>
 		</profile>
-		<profile>
-			<id>deploy</id>
-			<modules>
-				<module>kurento-commons</module>
-				<module>kurento-commons-testing</module>
-				<module>kurento-parent-pom</module>
-				<module>kurento-thrift-interface</module>
-				<module>kurento-orion-connector</module>
-				<module>kurento-jsonrpcconnector</module>
-				<module>kurento-media-api</module>				
-				<module>kurento-content-protocol</module>
-				<module>kurento-repository-api</module>
-				<module>kurento-broker</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>integration</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<modules>
-				<module>kurento-integration-tests</module>
-			</modules>
-		</profile>
 	</profiles>
+
 </project>
+
+

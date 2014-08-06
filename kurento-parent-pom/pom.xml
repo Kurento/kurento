@@ -1,0 +1,1053 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.kurento</groupId>
+	<artifactId>kurento-parent-pom</artifactId>
+	<version>4.3.1-SNAPSHOT</version>	
+	<packaging>pom</packaging>
+
+	<name>Kurento Application Server Parent POM</name>
+	<description>Parent POM for KAS projects. Provides default project build configuration.</description>
+	<url>http://www.kurento.org/docs/${project.version}</url>
+
+	<issueManagement>
+		<system>Redmine</system>
+		<url>https://repository.kurento.org/redmine/</url>
+	</issueManagement>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
+	<scm>
+		<url>${kmf.scm.url}</url>
+		<connection>scm:git:${kmf.scm.connection}</connection>
+		<developerConnection>scm:git:${kmf.scm.connection}</developerConnection>
+		<tag>develop</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
+	<mailingLists>
+		<mailingList>
+			<name>Kurento List</name>
+			<subscribe>http://groups.google.com/group/kurento/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento/post</post>
+			<archive>http://groups.google.com/group/kurento/about</archive>
+		</mailingList>
+		<mailingList>
+			<name>Kurento Core List</name>
+			<subscribe>http://groups.google.com/group/kurento-core/subscribe</subscribe>
+			<post>http://groups.google.com/group/kurento-core/post</post>
+			<archive>http://groups.google.com/group/kurento-core/about</archive>
+		</mailingList>
+	</mailingLists>
+
+	<properties>
+
+		<!-- ********************* -->
+		<!-- Dependencies versions -->
+		<!-- ********************* -->
+		<kms-interface.version>4.3.1</kms-interface.version>
+		<kws.version>4.3.18-SNAPSHOT</kws.version>
+		<kurento-media-framework.version>${project.version}</kurento-media-framework.version>
+
+		<version.apache.activemq>5.7.0</version.apache.activemq>
+		<version.apache.commons-fileupload>1.3</version.apache.commons-fileupload>
+		<version.apache.commons-io>2.4</version.apache.commons-io>
+		<version.apache.commons-lang>2.6</version.apache.commons-lang>
+		<version.apache.commons-pool>2.2</version.apache.commons-pool>
+		<version.apache.fluent-hc>4.3.2</version.apache.fluent-hc>
+		<version.apache.httpclient>4.3.2</version.apache.httpclient>
+		<version.apache.httpcore>4.3.2</version.apache.httpcore>
+		<version.apache.thrift>0.9.0</version.apache.thrift>
+		<version.cglib>2.2.2</version.cglib>
+		<version.cors-filter>1.7.1</version.cors-filter>
+		<version.google.gson>2.2.4</version.google.gson>
+		<version.google.guava>17.0</version.google.guava>
+		<version.junit>4.11</version.junit>
+		<version.keystone-client>3.2.1</version.keystone-client>
+		<version.google.youtube>v3-rev73-1.13.2-beta</version.google.youtube>
+		<version.google.http>1.13.1-beta</version.google.http>
+		<version.google.oauth>1.13.1-beta</version.google.oauth>
+		<version.reflections>0.9.9-RC1</version.reflections>
+		<version.scribe>1.3.5</version.scribe>
+		<version.servlet-api>3.0.1</version.servlet-api>
+		<version.slf4j>1.7.5</version.slf4j>
+		<version.spring-boot>1.1.4.RELEASE</version.spring-boot>
+		<version.spring>4.0.6.RELEASE</version.spring>
+		<version.spring-data>1.5.1.RELEASE</version.spring-data>
+		<version.spring-security>3.2.4.RELEASE</version.spring-security>
+		<version.spring-oauth2>2.0.2.RELEASE</version.spring-oauth2>
+		<version.tomcat-embed-websocket>7.0.52</version.tomcat-embed-websocket>
+		<version.websocket-api>1.0</version.websocket-api>
+
+		<!-- **************** -->
+		<!-- Plugins versions -->
+		<!-- **************** -->
+		<version.antrun.plugin>1.7</version.antrun.plugin>
+		<version.assembly.plugin>2.4</version.assembly.plugin>
+		<version.buildhelper.plugin>1.7</version.buildhelper.plugin>
+		<version.buildnumber.plugin>1.2</version.buildnumber.plugin>
+		<version.checkstyle.plugin>2.10</version.checkstyle.plugin>
+		<version.clean.plugin>2.5</version.clean.plugin>
+		<version.clover2.plugin>3.1.11</version.clover2.plugin>
+		<version.cobertura.plugin>2.5.2</version.cobertura.plugin>
+		<version.compiler.plugin>3.1</version.compiler.plugin>
+		<version.dependency.plugin>2.8</version.dependency.plugin>
+		<version.deploy.plugin>2.8</version.deploy.plugin>
+		<version.ear.plugin>2.9</version.ear.plugin>
+		<version.eclipse.plugin>2.9</version.eclipse.plugin>
+		<version.org.eclipse.m2e.lifecycle-mapping>1.0.0</version.org.eclipse.m2e.lifecycle-mapping>
+		<version.enforcer.plugin>1.3.1</version.enforcer.plugin>
+		<version.findbugs.plugin>2.5.2</version.findbugs.plugin>
+		<version.gpg.plugin>1.4</version.gpg.plugin>
+		<version.help.plugin>2.2</version.help.plugin>
+		<version.install.plugin>2.4</version.install.plugin>
+		<version.jar.plugin>2.4</version.jar.plugin>
+		<version.javadoc.plugin>2.9.1</version.javadoc.plugin>
+		<version.javancss.plugin>2.0</version.javancss.plugin>
+		<version.jdepend.plugin>2.0-beta-2</version.jdepend.plugin>
+		<version.jxr.plugin>2.3</version.jxr.plugin>
+		<version.license.plugin>1.3</version.license.plugin>
+		<version.pir.plugin>2.7</version.pir.plugin><!-- maven-project-info-reports-plugins -->
+		<version.pmd.plugin>3.0.1</version.pmd.plugin>
+		<version.release.plugin>2.5</version.release.plugin>
+		<version.resources.plugin>2.6</version.resources.plugin>
+		<version.site.plugin>3.3</version.site.plugin>
+		<version.shell.plugin>1.0-beta-1</version.shell.plugin>
+		<version.shade.plugin>2.2</version.shade.plugin>
+		<version.sonar.plugin>2.0</version.sonar.plugin>
+		<version.source.plugin>2.2.1</version.source.plugin>
+		<version.surefire.plugin>2.16</version.surefire.plugin>
+		<version.failsafe.plugin>${version.surefire.plugin}</version.failsafe.plugin>
+		<version.thrift.plugin>0.1.11</version.thrift.plugin>
+		<version.versions.plugin>2.1</version.versions.plugin>
+		<version.wagon.plugin>2.0</version.wagon.plugin>
+		<version.war.plugin>2.3</version.war.plugin>
+
+		<!-- ************** -->
+		<!-- Build settings -->
+		<!-- ************** -->
+
+		<!-- Cross plugins settings -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- maven-compiler-plugin -->
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+
+		<!-- Options to override the compiler arguments directly on the compiler 
+			arument line to separate between what the IDE understands as the source level 
+			and what the Maven compiler actually use. -->
+		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
+		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
+
+		<!-- maven-enforcer-plugin -->
+		<maven.min.version>3.0.3</maven.min.version>
+		<jdk.min.version>${maven.compiler.source}</jdk.min.version>
+
+		<!-- maven-eclipse-plugin -->
+		<downloadSources>true</downloadSources>
+		<downloadJavadocs>true</downloadJavadocs>
+
+		<!-- maven-pmd-plugin -->
+		<targetJdk>${maven.compiler.target}</targetJdk>
+
+		<!-- maven-release-plugin -->
+		<useReleaseProfile>false</useReleaseProfile>
+		<arguments>-Pkurento-release</arguments>
+
+		<!-- maven-assembly-plugin -->
+		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
+
+		<kmf.scm.url>https://github.com/Kurento/kurento-media-framework</kmf.scm.url>
+		<kmf.scm.connection>git@github.com:Kurento/kurento-media-framework.git</kmf.scm.connection>
+
+	</properties>
+
+	<prerequisites>
+		<maven>${maven.min.version}</maven>
+	</prerequisites>
+
+	<dependencyManagement>
+		<dependencies>			
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-system-test</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kws</groupId>
+				<artifactId>kws-rpc-builder</artifactId>
+				<version>${kws.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.kurento.kws</groupId>
+				<artifactId>kws-utils</artifactId>
+				<version>${kws.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-broker</artifactId>
+				<version>${project.version}</version>
+			</dependency>			
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-repository-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-thrift-interface</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-media-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-media-connector</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-jsonrpcconnector</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-jsonrpcconnector-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-jsonrpcconnector-server</artifactId>
+				<version>${project.version}</version>
+			</dependency>			
+			<dependency>
+				<groupId>com.kurento.kms</groupId>
+				<artifactId>kms-interface</artifactId>
+				<version>${kms-interface.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-commons</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-commons-testing</artifactId>
+				<version>${project.version}</version>
+			</dependency>			
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
+				<artifactId>kurento-orion-connector</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.woorea</groupId>
+				<artifactId>keystone-client</artifactId>
+				<version>${version.keystone-client}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.woorea</groupId>
+				<artifactId>jersey-connector</artifactId>
+				<version>${version.keystone-client}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.woorea</groupId>
+				<artifactId>jersey2-connector</artifactId>
+				<version>${version.keystone-client}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.woorea</groupId>
+				<artifactId>resteasy-connector</artifactId>
+				<version>${version.keystone-client}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.commons</groupId>
+				<artifactId>commons-pool2</artifactId>
+				<version>${version.apache.commons-pool}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.servlet</groupId>
+				<artifactId>javax.servlet-api</artifactId>
+				<version>${version.servlet-api}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.reflections</groupId>
+				<artifactId>reflections</artifactId>
+				<version>${version.reflections}</version>
+			</dependency>
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>${version.junit}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>cglib</groupId>
+				<artifactId>cglib</artifactId>
+				<version>${version.cglib}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>${version.slf4j}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>${version.slf4j}</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>${version.tomcat-embed-websocket}</version>
+			</dependency>
+			<dependency>
+				<groupId>javax.websocket</groupId>
+				<artifactId>javax.websocket-api</artifactId>
+				<version>${version.websocket-api}</version>
+			</dependency>
+
+			<!-- Spring -->
+			<!-- POM files to fix compatible dependencies -->
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-framework-bom</artifactId>
+				<version>${version.spring}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${version.spring-boot}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			
+			<dependency>
+				<groupId>org.apache.activemq</groupId>
+				<artifactId>activemq-core</artifactId>
+				<version>${version.apache.activemq}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.scribe</groupId>
+				<artifactId>scribe</artifactId>
+				<version>${version.scribe}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.code.gson</groupId>
+				<artifactId>gson</artifactId>
+				<version>${version.google.gson}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.guava</groupId>
+				<artifactId>guava</artifactId>
+				<version>${version.google.guava}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient</artifactId>
+				<version>${version.apache.httpclient}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpcore</artifactId>
+				<version>${version.apache.httpcore}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpmime</artifactId>
+				<version>${version.apache.httpclient}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>${version.apache.commons-fileupload}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${version.apache.commons-io}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-lang</groupId>
+				<artifactId>commons-lang</artifactId>
+				<version>${version.apache.commons-lang}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.thetransactioncompany</groupId>
+				<artifactId>cors-filter</artifactId>
+				<version>${version.cors-filter}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.apis</groupId>
+				<artifactId>google-api-services-youtube</artifactId>
+				<version>${version.google.youtube}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.http-client</groupId>
+				<artifactId>google-http-client-jackson2</artifactId>
+				<version>${version.google.http}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.google.oauth-client</groupId>
+				<artifactId>google-oauth-client-jetty</artifactId>
+				<version>${version.google.oauth}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.thrift</groupId>
+				<artifactId>libthrift</artifactId>
+				<version>${version.apache.thrift}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>fluent-hc</artifactId>
+				<version>${version.apache.fluent-hc}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<!-- All plugins ordered by shortname (antrun, assembly ...) -->
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>${version.antrun.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>${version.assembly.plugin}</version>
+					<configuration>
+						<archive>
+							<index>true</index>
+							<manifest>
+								<addDefaultSpecificationEntries>
+									true
+								</addDefaultSpecificationEntries>
+								<addDefaultImplementationEntries>
+									true
+								</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Implementation-URL>${project.url}</Implementation-URL>
+								<Java-Version>${java.version}</Java-Version>
+								<Java-Vendor>${java.vendor}</Java-Vendor>
+								<Os-Name>${os.name}</Os-Name>
+								<Os-Arch>${os.arch}</Os-Arch>
+								<Os-Version>${os.version}</Os-Version>
+								<Scm-Url>${project.scm.url}</Scm-Url>
+								<Scm-Connection>${project.scm.connection}</Scm-Connection>
+								<Scm-Revision>${buildNumber}</Scm-Revision>
+								<Build-Timestamp>${build.datetime}</Build-Timestamp>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>${version.buildhelper.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>buildnumber-maven-plugin</artifactId>
+					<version>${version.buildnumber.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-checkstyle-plugin</artifactId>
+					<version>${version.checkstyle.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>${version.clean.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>com.atlassian.maven.plugins</groupId>
+					<artifactId>maven-clover2-plugin</artifactId>
+					<version>${version.clover2.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>cobertura-maven-plugin</artifactId>
+					<version>${version.cobertura.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${version.compiler.plugin}</version>
+					<configuration>
+						<showDeprecation>true</showDeprecation>
+						<showWarnings>true</showWarnings>
+						<compilerArguments>
+							<source>${maven.compiler.argument.source}</source>
+							<target>${maven.compiler.argument.target}</target>
+						</compilerArguments>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>${version.dependency.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${version.deploy.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-ear-plugin</artifactId>
+					<version>${version.ear.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-eclipse-plugin</artifactId>
+					<version>${version.eclipse.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>${version.enforcer.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${version.failsafe.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>findbugs-maven-plugin</artifactId>
+					<version>${version.findbugs.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-gpg-plugin</artifactId>
+					<version>${version.gpg.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-help-plugin</artifactId>
+					<version>${version.help.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>${version.install.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${version.jar.plugin}</version>
+					<configuration>
+						<archive>
+							<index>true</index>
+							<manifest>
+								<addDefaultSpecificationEntries>
+									true
+								</addDefaultSpecificationEntries>
+								<addDefaultImplementationEntries>
+									true
+								</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Implementation-URL>${project.url}</Implementation-URL>
+								<Java-Version>${java.version}</Java-Version>
+								<Java-Vendor>${java.vendor}</Java-Vendor>
+								<Os-Name>${os.name}</Os-Name>
+								<Os-Arch>${os.arch}</Os-Arch>
+								<Os-Version>${os.version}</Os-Version>
+								<Scm-Url>${project.scm.url}</Scm-Url>
+								<Scm-Connection>${project.scm.connection}</Scm-Connection>
+								<Scm-Revision>${buildNumber}</Scm-Revision>
+								<Build-Timestamp>${build.datetime}</Build-Timestamp>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${version.javadoc.plugin}</version>
+					<configuration>
+						<header><![CDATA[<b>${project.name} ${project.version}</b>]]></header>
+						<footer><![CDATA[<b>${project.name} ${project.version}</b>]]></footer>
+						<archive>
+							<index>true</index>
+							<manifest>
+								<addDefaultSpecificationEntries>
+									true
+								</addDefaultSpecificationEntries>
+								<addDefaultImplementationEntries>
+									true
+								</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Implementation-URL>${project.url}</Implementation-URL>
+								<Java-Version>${java.version}</Java-Version>
+								<Java-Vendor>${java.vendor}</Java-Vendor>
+								<Os-Name>${os.name}</Os-Name>
+								<Os-Arch>${os.arch}</Os-Arch>
+								<Os-Version>${os.version}</Os-Version>
+								<Scm-Url>${project.scm.url}</Scm-Url>
+								<Scm-Connection>${project.scm.connection}</Scm-Connection>
+								<Scm-Revision>${buildNumber}</Scm-Revision>
+								<Build-Timestamp>${build.datetime}</Build-Timestamp>
+							</manifestEntries>
+						</archive>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>javancss-maven-plugin</artifactId>
+					<version>${version.javancss.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>jdepend-maven-plugin</artifactId>
+					<version>${version.jdepend.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jxr-plugin</artifactId>
+					<version>${version.jxr.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>${version.license.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-pmd-plugin</artifactId>
+					<version>${version.pmd.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-project-info-reports-plugin</artifactId>
+					<version>${version.pir.plugin}</version>
+					<configuration>
+						<dependencyLocationEnabled>false</dependencyLocationEnabled>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>${version.release.plugin}</version>
+					<dependencies>
+						<dependency>
+							<groupId>org.apache.maven.scm</groupId>
+							<artifactId>maven-scm-provider-gitexe</artifactId>
+							<version>1.8.1</version>
+						</dependency>
+					</dependencies>
+					<configuration>
+						<preparationGoals>versions:use-releases</preparationGoals>
+						<pushChanges>false</pushChanges>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${version.resources.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-shade-plugin</artifactId>
+					<version>${version.shade.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-site-plugin</artifactId>
+					<version>${version.site.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>shell-maven-plugin</artifactId>
+					<version>${version.shell.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${version.sonar.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${version.source.plugin}</version>
+					<executions>
+						<execution>
+							<id>bundle-sources</id>
+							<phase>package</phase>
+							<goals>
+								<!-- produce source artifact for main project sources -->
+								<goal>jar-no-fork</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<archive>
+							<index>true</index>
+							<manifest>
+								<addDefaultSpecificationEntries>
+									true
+								</addDefaultSpecificationEntries>
+								<addDefaultImplementationEntries>
+									true
+								</addDefaultImplementationEntries>
+							</manifest>
+							<manifestEntries>
+								<Implementation-URL>${project.url}</Implementation-URL>
+								<Java-Version>${java.version}</Java-Version>
+								<Java-Vendor>${java.vendor}</Java-Vendor>
+								<Os-Name>${os.name}</Os-Name>
+								<Os-Arch>${os.arch}</Os-Arch>
+								<Os-Version>${os.version}</Os-Version>
+								<Scm-Url>${project.scm.url}</Scm-Url>
+								<Scm-Connection>${project.scm.connection}</Scm-Connection>
+								<Scm-Revision>${buildNumber}</Scm-Revision>
+								<Build-Timestamp>${build.datetime}</Build-Timestamp>
+							</manifestEntries>
+						</archive>
+					</configuration>
+					<dependencies>
+						<dependency>
+							<groupId>org.codehaus.plexus</groupId>
+							<artifactId>plexus-io</artifactId>
+							<version>2.0.10</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${version.spring-boot}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${version.surefire.plugin}</version>
+					<configuration>
+						<systemProperties>
+							<java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
+						</systemProperties>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.thrift.tools</groupId>
+					<artifactId>maven-thrift-plugin</artifactId>
+					<version>${version.thrift.plugin}</version>
+					<executions>
+						<execution>
+							<id>thrift-sources</id>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>compile</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>thrift-test-sources</id>
+							<phase>generate-test-sources</phase>
+							<goals>
+								<goal>testCompile</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-versions-plugin</artifactId>
+					<version>${version.versions.plugin}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>${version.war.plugin}</version>
+				</plugin>
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>${version.org.eclipse.m2e.lifecycle-mapping}</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<!-- Configure m2e to execute the manifest goal of the bundle plugin, 
+									if present. -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.felix</groupId>
+										<artifactId>maven-bundle-plugin</artifactId>
+										<versionRange>[2.3.7,)</versionRange>
+										<goals>
+											<goal>manifest</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+								</pluginExecution>
+								<!-- Configure m2e to ignore the Maven enforcer plugin -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-enforcer-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>enforce</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<!-- Configure m2e to ignore the buildnumber-maven-plugin. -->
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.mojo</groupId>
+										<artifactId>buildnumber-maven-plugin</artifactId>
+										<versionRange>[1.0.0,)</versionRange>
+										<goals>
+											<goal>create</goal>
+											<goal>create-timestamp</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+
+			</plugins>
+
+		</pluginManagement>
+
+		<plugins>
+
+			<!-- Check for the minimum version of Java and Maven. Runs during the 
+				validate phase. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-java-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireJavaVersion>
+									<message>To build this project JDK ${jdk.min.version} (or
+										greater) is required. Please install it.</message>
+									<version>${jdk.min.version}</version>
+								</requireJavaVersion>
+							</rules>
+						</configuration>
+					</execution>
+					<execution>
+						<id>enforce-maven-version</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<message>To build this project Maven ${maven.min.version} (or
+										greater) is required. Please install it.</message>
+									<version>${maven.min.version}</version>
+								</requireMavenVersion>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Set properties containing the scm revision and build timestamp -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>get-build-timestamp</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>create-timestamp</goal>
+						</goals>
+						<configuration>
+							<!-- Example date: Wed, 4 Jul 2001 12:08:56 -0700 -->
+							<timestampFormat>EEE, d MMM yyyy HH:mm:ss Z</timestampFormat>
+							<timestampPropertyName>build.datetime</timestampPropertyName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>get-scm-revision</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+						<configuration>
+							<doCheck>false</doCheck>
+							<doUpdate>false</doUpdate>
+							<revisionOnScmFailure>UNKNOWN</revisionOnScmFailure>
+							<getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Attach source jar to all builds. Runs during the package phase. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>${version.wagon.plugin}</version>
+			</extension>
+		</extensions>
+	</build>
+
+	<profiles>
+
+		<!-- The profile kurento-release must be active when a project is released. 
+			The configuration in this POM will automatically call this profile if using 
+			the maven-release-plugin. If the maven-release-plugin is not used during 
+			the release, this profile must be manually activated. -->
+		<profile>
+			<id>kurento-release</id>
+			<build>
+				<plugins>
+					<!-- Create a source-release artifact that contains the fully buildable 
+						project directory source structure. This should be released to the Maven 
+						repository for each JBoss project release. -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<dependencies>
+							<dependency>
+								<groupId>org.apache.apache.resources</groupId>
+								<artifactId>apache-source-release-assembly-descriptor</artifactId>
+								<version>1.0.4</version>
+							</dependency>
+						</dependencies>
+						<executions>
+							<execution>
+								<id>source-release-assembly</id>
+								<phase>package</phase>
+								<goals>
+									<goal>single</goal>
+								</goals>
+								<configuration>
+									<runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+									<descriptorRefs>
+										<descriptorRef>${sourceReleaseAssemblyDescriptor}</descriptorRef>
+									</descriptorRefs>
+									<tarLongFileFormat>gnu</tarLongFileFormat>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-deploy-plugin</artifactId>
+						<configuration>
+							<updateReleaseInfo>true</updateReleaseInfo>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<!-- This profile can be activated to generate gpg signatures for all build 
+			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase" 
+			are available to the current build. -->
+		<profile>
+			<id>gpg-sign</id>
+			<build>
+				<plugins>
+					<!-- This will sign the artifact, the POM, and all attached artifacts -->
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<configuration>
+							<useAgent>true</useAgent>
+						</configuration>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+</project>
