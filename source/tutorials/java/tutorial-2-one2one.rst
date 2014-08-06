@@ -86,6 +86,36 @@ has been developed using **Java** and
    applications with Kurento. For example, a pure Java EE application, SIP
    Servlets, Play, Vertex, etc. We have choose Spring Boot for convenience.
 
+In the following figure you can see a class diagram of the server side code:
+
+.. digraph:: One2OneCall
+   :caption: Class diagram of server side MagicMirror app
+
+   size="12,8";
+   fontname = "Bitstream Vera Sans"
+   fontsize = 8
+
+   node [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        shape = "record"
+        style=filled
+        fillcolor = "#E7F2FA"
+        
+   ]
+
+   edge [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        arrowhead = "vee"
+   ]
+
+   One2OneCallApp -> UserRegistry;
+   One2OneCallApp -> CallHandler;
+   One2OneCallApp -> KurentoClient; 
+   CallHandler -> KurentoClient [constraint = false]
+   UserRegistry -> UserSession [headlabel="*",  labelangle=60]
+
 The main class of this demo is named
 `One2OneCallApp <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-call/src/main/java/com/kurento/kmf/tutorial/call/CallApp.java>`_.
 As you can see, the ``KurentoClient`` is instantiated in this class as a Spring

@@ -59,6 +59,33 @@ thus simplify the development process.
    applications with Kurento. For example, a pure Java EE application, SIP 
    Servlets, Play, Vertex, etc. We have choose Spring Boot for convenience.
 
+In the following figure you can see a class diagram of the server side code:
+
+.. digraph:: MagicMirror
+   :caption: Class diagram of server side MagicMirror app
+
+   size="12,8";
+   fontname = "Bitstream Vera Sans"
+   fontsize = 8
+
+   node [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        shape = "record"
+         style=filled
+        fillcolor = "#E7F2FA"
+   ]
+
+   edge [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        arrowhead = "vee"
+   ]
+
+   MagicMirrorApp -> MagicMirrorController;
+   MagicMirrorApp -> KurentoClient;
+   MagicMirrorController -> KurentoClient [constraint = false]
+
 The main class of this demo is named
 `MagicMirrorApp <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-1-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
 As you can see, the *KurentoClient* is instantiated in this class as a Spring

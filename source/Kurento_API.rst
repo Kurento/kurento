@@ -104,6 +104,8 @@ in the Kurento API.
         fontname = "Bitstream Vera Sans"
         fontsize = 8
         shape = "record"
+         style=filled
+        fillcolor = "#E7F2FA"
    ]
 
    edge [
@@ -212,6 +214,8 @@ The following class diagram shows the relationships of the main endpoint classes
         fontname = "Bitstream Vera Sans"
         fontsize = 8
         shape = "record"
+         style=filled
+        fillcolor = "#E7F2FA"
    ]
 
    edge [
@@ -275,6 +279,8 @@ The following class diagram shows the relationships of the main filter classes.
         fontname = "Bitstream Vera Sans"
         fontsize = 8
         shape = "record"
+         style=filled
+        fillcolor = "#E7F2FA"
    ]
 
    edge [
@@ -325,6 +331,8 @@ Dispatcher
         fontname = "Bitstream Vera Sans"
         fontsize = 8
         shape = "record"
+         style=filled
+        fillcolor = "#E7F2FA"
    ]
 
    edge [
@@ -337,7 +345,7 @@ Dispatcher
     "MediaObject" -> "Hub";
     "MediaObject" -> "MediaElement";
     
-    "Hub" -> "HubPort" [headlabel = "*", constraint=false, dir = normal, arrowhead="vee"]
+    "Hub" -> "HubPort" [headlabel = "*", constraint=false, dir = normal, arrowhead="vee", labelangle=60]
     
     "MediaElement" -> "HubPort";
    
