@@ -9,6 +9,7 @@
 #include <KurentoException.hpp>
 #include <gst/gst.h>
 #include <commons/kms-core-enumtypes.h>
+#include <algorithm>
 
 #define GST_CAT_DEFAULT kurento_gstreamer_filter_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
