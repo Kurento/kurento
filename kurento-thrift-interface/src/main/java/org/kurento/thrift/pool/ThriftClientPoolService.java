@@ -14,7 +14,7 @@
  */
 package org.kurento.thrift.pool;
 
-import org.kurento.common.exception.KurentoException;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.thrift.ThriftInterfaceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

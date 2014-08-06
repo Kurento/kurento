@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import org.kurento.jsonrpcconnector.client.Continuation;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.jsonrpc.client.Continuation;
+import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.thrift.test.util.JsonRpcConnectorBaseTest;
 
 //TODO: This test is a copy of similar test in jsonrpcconnector-test project.

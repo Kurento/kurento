@@ -7,11 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
-import org.kurento.jsonrpcconnector.DefaultJsonRpcHandler;
-import org.kurento.jsonrpcconnector.Transaction;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.jsonrpcconnector.client.JsonRpcClientLocal;
-import org.kurento.jsonrpcconnector.internal.message.Request;
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
+import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.kurento.jsonrpc.client.JsonRpcClientLocal;
+import org.kurento.jsonrpc.message.Request;
 
 public class JsonRpcClientLocalTest {
 

@@ -8,9 +8,9 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.kurento.jsonrpcconnector.JsonUtils;
-import org.kurento.jsonrpcconnector.internal.message.Request;
-import org.kurento.jsonrpcconnector.internal.message.Response;
+import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 
 public class SessionIdMessageTest {
 

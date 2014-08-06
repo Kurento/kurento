@@ -16,7 +16,7 @@ package org.kurento.test.sanity;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.media.MediaPipeline;
+import org.kurento.client.MediaPipeline;
 import org.kurento.test.base.MediaApiTest;
 
 /**

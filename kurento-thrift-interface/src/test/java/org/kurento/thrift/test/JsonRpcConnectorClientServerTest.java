@@ -7,7 +7,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcServerThrift;
 import org.kurento.thrift.test.util.EchoJsonRpcHandler;

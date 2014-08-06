@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonObject;
 
-import org.kurento.jsonrpcconnector.DefaultJsonRpcHandler;
-import org.kurento.jsonrpcconnector.KeepAliveManager;
-import org.kurento.jsonrpcconnector.Transaction;
-import org.kurento.jsonrpcconnector.internal.message.Request;
-import org.kurento.media.MediaPipeline;
-import org.kurento.media.factory.MediaPipelineFactory;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.factory.MediaPipelineFactory;
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
+import org.kurento.jsonrpc.KeepAliveManager;
+import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.message.Request;
 import org.kurento.rabbitmq.client.JsonRpcClientRabbitMq;
 import org.kurento.rabbitmq.server.JsonRpcServerRabbitMq;
 

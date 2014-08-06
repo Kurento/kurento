@@ -22,7 +22,7 @@ import org.apache.commons.pool2.PoolUtils;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.kurento.common.exception.KurentoException;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.thrift.ThriftInterfaceConfiguration;
 
 public abstract class AbstractPool<T> implements Pool<T> {

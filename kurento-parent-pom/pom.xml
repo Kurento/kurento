@@ -192,7 +192,7 @@
 		<dependencies>			
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-system-test</artifactId>
+				<artifactId>kurento-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

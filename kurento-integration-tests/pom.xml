@@ -51,7 +51,7 @@
 		<module>kurento-control-server-test</module>
 		<module>kurento-client-test</module>		
 		<module>kurento-repository-test</module>
-		<module>kurento-system-test</module>
+		<module>kurento-test</module>
 		<module>kurento-sanity-test</module>
 	</modules>
 

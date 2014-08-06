@@ -15,9 +15,9 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 //import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.kurento.common.Address;
-import org.kurento.common.PropertiesManager;
-import org.kurento.jsonrpcconnector.internal.message.Request;
+import org.kurento.commons.Address;
+import org.kurento.commons.PropertiesManager;
+import org.kurento.jsonrpc.message.Request;
 
 public class RabbitMqManager {
 

@@ -45,7 +45,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-system-test</artifactId>
+			<artifactId>kurento-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 

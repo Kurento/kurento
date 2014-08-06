@@ -29,7 +29,7 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.kurento.media.factory.KmfMediaApiProperties;
+import org.kurento.client.factory.KmfMediaApiProperties;
 import org.kurento.test.base.GridBrowserMediaApiTest;
 import org.kurento.test.services.KurentoServicesTestHelper;
 

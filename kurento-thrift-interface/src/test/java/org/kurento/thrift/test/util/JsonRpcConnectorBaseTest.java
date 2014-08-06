@@ -3,8 +3,8 @@ package org.kurento.thrift.test.util;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
-import org.kurento.commons.tests.JsonRpcConnectorTests;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.commons.testing.JsonRpcConnectorTests;
+import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcServerThrift;
 

@@ -1,6 +1,6 @@
 package org.kurento.thrift.jsonrpcconnector;
 
-import static org.kurento.jsonrpcconnector.JsonUtils.fromJsonRequest;
+import static org.kurento.jsonrpc.JsonUtils.fromJsonRequest;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -8,16 +8,16 @@ import java.net.InetSocketAddress;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.kurento.jsonrpcconnector.JsonUtils;
-import org.kurento.jsonrpcconnector.KeepAliveManager;
-import org.kurento.jsonrpcconnector.TransportException;
-import org.kurento.jsonrpcconnector.client.Continuation;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
-import org.kurento.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import org.kurento.jsonrpcconnector.internal.message.Message;
-import org.kurento.jsonrpcconnector.internal.message.Request;
-import org.kurento.jsonrpcconnector.internal.message.Response;
+import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.KeepAliveManager;
+import org.kurento.jsonrpc.TransportException;
+import org.kurento.jsonrpc.client.Continuation;
+import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
+import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
+import org.kurento.jsonrpc.message.Message;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.kurento.thrift.ThriftInterfaceConfiguration;
 import org.kurento.thrift.ThriftServer;
 import org.kurento.thrift.ThriftTransportException;

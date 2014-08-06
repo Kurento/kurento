@@ -4,8 +4,8 @@ import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.common.Address;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
+import org.kurento.commons.Address;
+import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.rabbitmq.RabbitMqException;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
 

@@ -14,7 +14,7 @@
  */
 package org.kurento.test.sanity;
 
-import static org.kurento.common.PropertiesManager.getProperty;
+import static org.kurento.commons.PropertiesManager.getProperty;
 
 import org.junit.Test;
 

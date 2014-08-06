@@ -4,10 +4,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.test.GenericMessageTest;
-import org.kurento.jsonrpcconnector.JsonUtils;
-import org.kurento.jsonrpcconnector.internal.message.Request;
-import org.kurento.jsonrpcconnector.internal.message.Response;
 
 public class GenericMessageTest {
 

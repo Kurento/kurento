@@ -14,7 +14,7 @@
  */
 package org.kurento.thrift;
 
-import org.kurento.common.exception.KurentoException;
+import org.kurento.commons.exception.KurentoException;
 
 /**
  * Exception thrown when the Thrift Server, used to receive events from the

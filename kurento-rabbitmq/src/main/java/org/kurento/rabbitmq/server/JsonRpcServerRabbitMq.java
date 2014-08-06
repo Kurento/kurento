@@ -11,25 +11,30 @@ import org.slf4j.LoggerFactory;
 
 
 
+
+
+
+
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import org.kurento.common.Address;
-import org.kurento.jsonrpcconnector.DefaultJsonRpcHandler;
-import org.kurento.jsonrpcconnector.JsonRpcHandler;
-import org.kurento.jsonrpcconnector.JsonUtils;
-import org.kurento.jsonrpcconnector.Transaction;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.jsonrpcconnector.client.JsonRpcClientLocal;
-import org.kurento.jsonrpcconnector.internal.message.Request;
-import org.kurento.jsonrpcconnector.internal.message.Response;
-import org.kurento.jsonrpcconnector.internal.message.ResponseError;
+import org.kurento.client.internal.transport.jsonrpcconnector.RomJsonRpcConstants;
+import org.kurento.commons.Address;
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
+import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.kurento.jsonrpc.client.JsonRpcClientLocal;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
+import org.kurento.jsonrpc.message.ResponseError;
 import org.kurento.rabbitmq.RabbitMqManager;
 import org.kurento.rabbitmq.RabbitTemplate;
 import org.kurento.rabbitmq.RabbitMqManager.BrokerMessageReceiverWithResponse;
-import org.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants;
 
 public class JsonRpcServerRabbitMq {
 

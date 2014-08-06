@@ -25,7 +25,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
-import org.kurento.common.exception.KurentoException;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.thrift.ThriftInterfaceConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 

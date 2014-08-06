@@ -2,10 +2,10 @@ package org.kurento.jsonrpc.test;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.jsonrpcconnector.DefaultJsonRpcHandler;
-import org.kurento.jsonrpcconnector.Transaction;
-import org.kurento.jsonrpcconnector.internal.JsonRpcHandlerManager;
-import org.kurento.jsonrpcconnector.internal.message.Request;
+import org.kurento.jsonrpc.DefaultJsonRpcHandler;
+import org.kurento.jsonrpc.Transaction;
+import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
+import org.kurento.jsonrpc.message.Request;
 
 public class JsonRpcHandlerTypesTest {
 

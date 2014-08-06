@@ -1,6 +1,6 @@
 package org.kurento.rabbitmq.client;
 
-import static org.kurento.jsonrpcconnector.JsonUtils.fromJsonRequest;
+import static org.kurento.jsonrpc.JsonUtils.fromJsonRequest;
 import static org.kurento.rabbitmq.RabbitMqManager.PIPELINE_CREATION_QUEUE;
 
 import java.io.IOException;
@@ -16,24 +16,29 @@ import org.springframework.amqp.core.Queue;
 
 
 
+
+
+
+
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import org.kurento.common.Address;
-import org.kurento.jsonrpcconnector.JsonUtils;
-import org.kurento.jsonrpcconnector.KeepAliveManager;
-import org.kurento.jsonrpcconnector.client.Continuation;
-import org.kurento.jsonrpcconnector.client.JsonRpcClient;
-import org.kurento.jsonrpcconnector.internal.JsonRpcRequestSenderHelper;
-import org.kurento.jsonrpcconnector.internal.client.TransactionImpl.ResponseSender;
-import org.kurento.jsonrpcconnector.internal.message.Message;
-import org.kurento.jsonrpcconnector.internal.message.Request;
-import org.kurento.jsonrpcconnector.internal.message.Response;
+import org.kurento.client.internal.transport.jsonrpcconnector.RomJsonRpcConstants;
+import org.kurento.commons.Address;
+import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.KeepAliveManager;
+import org.kurento.jsonrpc.client.Continuation;
+import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
+import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
+import org.kurento.jsonrpc.message.Message;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.kurento.rabbitmq.RabbitMqManager;
 import org.kurento.rabbitmq.RabbitTemplate;
 import org.kurento.rabbitmq.RabbitMqManager.BrokerMessageReceiver;
-import org.kurento.tool.rom.transport.jsonrpcconnector.RomJsonRpcConstants;
 
 public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
