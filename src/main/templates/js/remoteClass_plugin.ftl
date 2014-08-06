@@ -47,8 +47,6 @@ var inherits = require('inherits');
 
 var checkType = require('checktype');
 </#if>
-
-
 <#if remoteClass.extends??>
 
   <#if import_name == module_name>
@@ -60,7 +58,6 @@ var ${extends_name} = require('${module.code.api.js["node.name"]}').<#if remoteC
 
 var ${extends_name} = require('events').${extends_name};
 </#if>
-
 
 /**
 <#if remoteClass.constructor?? && remoteClass.constructor.doc??>
@@ -103,7 +100,6 @@ function ${remoteClass.name}(id){<#if extends_name??>
 inherits(${remoteClass.name}, ${extends_name});
 </#if>
 <#if remoteClass.properties?has_content>
-
   <#list remoteClass.properties?sort_by("name") as property>
     <#if property.name != "id">
       <#assign getPropertyName="get${property.name?cap_first}">
@@ -170,7 +166,6 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
            ? Array.prototype.pop.call(arguments)
            : undefined;
 
-//  eval(['<@join sequence=methodParams_name separator="', '"/>'][arguments.length]+'=undefined')
   if(callback)
     switch(arguments.length){
           <#list method.params as param>
@@ -210,7 +205,6 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 </#if>
 
 <#include "sugarSyntax2.ftm" >
-
 /**
  * @alias module:${remoteClass_namepath}.constructorParams
 <#if remoteClass.constructor??>
@@ -253,9 +247,7 @@ ${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator="
 ${remoteClass.name}.events.concat(${extends_name}.events);
 </#if>
 
-
 module.exports = ${remoteClass.name};
-
 
 ${remoteClass.name}.check = function(key, value)
 {
