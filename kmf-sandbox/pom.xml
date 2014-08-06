@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento</groupId>
+		<groupId>org.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 		<relativePath>../kmf-parent-pom</relativePath>
@@ -52,7 +52,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.kurento.kmf.composite.WebRtcApp</mainClass>
+					<mainClass>org.kurento.kmf.composite.WebRtcApp</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
@@ -72,7 +72,7 @@
 			<artifactId>kws-rpc-builder</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
 		</dependency>
 		<dependency>

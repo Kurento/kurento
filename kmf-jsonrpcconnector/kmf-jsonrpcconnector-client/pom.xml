@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento.kmf</groupId>
+		<groupId>org.kurento.kmf</groupId>
 		<artifactId>kmf-jsonrpcconnector</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 	</parent>
@@ -57,7 +57,7 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
 		</dependency>
 		

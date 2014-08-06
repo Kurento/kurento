@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento.kmf</groupId>
+		<groupId>org.kurento.kmf</groupId>
 		<artifactId>kmf-integration-tests</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 	</parent>
@@ -50,7 +50,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
 			<scope>test</scope>
 		</dependency>
@@ -64,12 +64,12 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>	
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-system-test</artifactId>
 			<scope>test</scope>
 		</dependency>

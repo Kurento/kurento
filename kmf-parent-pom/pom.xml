@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.kurento</groupId>
-	<version>4.3.1-SNAPSHOT</version>
+	<groupId>org.kurento</groupId>
 	<artifactId>kmf-parent-pom</artifactId>
+	<version>4.3.1-SNAPSHOT</version>	
 	<packaging>pom</packaging>
 
 	<name>Kurento Application Server Parent POM</name>
@@ -189,19 +189,9 @@
 	</prerequisites>
 
 	<dependencyManagement>
-		<dependencies>
+		<dependencies>			
 			<dependency>
-				<groupId>com.kurento.kws</groupId>
-				<artifactId>kws-content-api</artifactId>
-				<version>${kws.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kws</groupId>
-				<artifactId>kws-utils</artifactId>
-				<version>${kws.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-system-test</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -211,43 +201,48 @@
 				<version>${kws.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>com.kurento.kws</groupId>
+				<artifactId>kws-utils</artifactId>
+				<version>${kws.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-broker</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-repository-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-thrift-interface</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-media-api</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-media-connector</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector-client</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector-server</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
@@ -257,17 +252,17 @@
 				<version>${kms-interface.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-commons</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-commons-testing</artifactId>
 				<version>${project.version}</version>
 			</dependency>			
 			<dependency>
-				<groupId>com.kurento.kmf</groupId>
+				<groupId>org.kurento.kmf</groupId>
 				<artifactId>kmf-orion-connector</artifactId>
 				<version>${project.version}</version>
 			</dependency>

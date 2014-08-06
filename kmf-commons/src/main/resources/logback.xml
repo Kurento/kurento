@@ -17,6 +17,6 @@
 	<logger name="org.apache" level="WARN" />
 	<logger name="org.springframework" level="WARN" />
 	<logger name="org.eclipse.jetty" level="WARN" />
-	<logger name="com.kurento" level="DEBUG" />
+	<logger name="org.kurento" level="DEBUG" />
 		
 </configuration>

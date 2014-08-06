@@ -2,13 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento</groupId>
+		<groupId>org.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
-	<groupId>com.kurento.kmf</groupId>
+	<groupId>org.kurento.kmf</groupId>
 	<artifactId>kmf-media-connector</artifactId>
 	<packaging>jar</packaging>
 
@@ -56,7 +56,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.kurento.kmf.connector.MediaConnectorApp</mainClass>
+					<mainClass>org.kurento.kmf.connector.MediaConnectorApp</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
@@ -107,19 +107,19 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector-server</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-thrift-interface</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-broker</artifactId>
 		</dependency>
 		<dependency>
@@ -128,7 +128,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>

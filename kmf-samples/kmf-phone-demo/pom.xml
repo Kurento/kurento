@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento.kmf</groupId>
+		<groupId>org.kurento.kmf</groupId>
 		<artifactId>kmf-samples</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 	</parent>
@@ -49,7 +49,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.kurento.kmf.phone.PhoneApp</mainClass>
+					<mainClass>org.kurento.kmf.phone.PhoneApp</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
@@ -69,11 +69,11 @@
 			<artifactId>kws-rpc-builder</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-jsonrpcconnector-server</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-media-api</artifactId>
 		</dependency>
 		<dependency>

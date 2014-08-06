@@ -3,15 +3,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.kurento</groupId>
+		<groupId>org.kurento</groupId>
 		<artifactId>kmf-parent-pom</artifactId>
 		<version>4.3.1-SNAPSHOT</version>
 		<relativePath>../kmf-parent-pom</relativePath>
 	</parent>
 
-	<groupId>com.kurento.kmf</groupId>
+	<groupId>org.kurento.kmf</groupId>
 	<artifactId>kmf-integration-tests</artifactId>
 	<packaging>pom</packaging>
+	
 	<name>Kurento Java - Integration tests</name>
 	<description>Integration tests for the Kurento Java. These tests require the existence of a KMS instance.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
@@ -56,7 +57,7 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>com.kurento.kmf</groupId>
+			<groupId>org.kurento.kmf</groupId>
 			<artifactId>kmf-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>
