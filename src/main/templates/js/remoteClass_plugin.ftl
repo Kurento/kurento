@@ -54,7 +54,7 @@ var checkType = require('checktype');
   <#if import_name == module_name>
 var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extends.type.abstract>abstracts/</#if>${extends_name}');
   <#else>
-var ${extends_name} = require('${module.code.js["node.name"]}').<#if remoteClass.extends?? && remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
+var ${extends_name} = require('${module.code.api.js["node.name"]}').<#if remoteClass.extends?? && remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
   </#if>
 <#elseif remoteClass.name=="MediaObject">
 
