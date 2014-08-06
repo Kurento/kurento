@@ -59,7 +59,6 @@ import com.kurento.kmf.repository.RepositoryApiConfiguration;
 import com.kurento.kmf.repository.RepositoryItem;
 import com.kurento.kmf.repository.RepositoryItemAttributes;
 import com.kurento.kmf.repository.internal.RepositoryHttpEndpointImpl;
-import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 @WebServlet(value = "/repository_servlet/*", loadOnStartup = 1)
 public class RepositoryHttpServlet extends HttpServlet {
@@ -143,7 +142,6 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 		super.init(servletConfig);
 
-		configureKurentoAppContext(servletConfig);
 		configureServletMapping(servletConfig);
 		configureWebappPublicURL(servletConfig);
 
@@ -186,18 +184,6 @@ public class RepositoryHttpServlet extends HttpServlet {
 		repoHttpManager.setServletPath(mapping);
 
 		return mapping;
-	}
-
-	private void configureKurentoAppContext(ServletConfig servletConfig) {
-
-		if (KurentoApplicationContextUtils.getKurentoApplicationContext() == null) {
-			KurentoApplicationContextUtils
-					.createKurentoApplicationContext(servletConfig
-							.getServletContext());
-		}
-
-		KurentoApplicationContextUtils
-				.processInjectionBasedOnKurentoApplicationContext(this);
 	}
 
 	@Override

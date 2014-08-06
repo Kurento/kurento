@@ -10,7 +10,7 @@
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-assembly</artifactId>
 	<packaging>pom</packaging>
-	<name>Kurento Media Framework - Assembly project</name>
+	<name>Kurento Java - Assembly project</name>
 	<description>The assembly pom packages all KMF projects into a single zip file.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -46,7 +46,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-content-api</artifactId>
+			<artifactId>kmf-media-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>

@@ -12,11 +12,11 @@
 	<artifactId>kmf-commons</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Common utils</name>
+	<name>Kurento Java - Common utils</name>
 	<description>
-			Common utils and classes for Kurento Media Framework
+			Common utils and classes for Kurento Java
 
-			The kmf-commons project contains common util classes for the Kurento Media Framework.
+			The kmf-commons project contains common util classes for the Kurento Java.
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 

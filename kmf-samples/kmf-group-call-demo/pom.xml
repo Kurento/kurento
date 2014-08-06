@@ -10,7 +10,7 @@
 	<artifactId>kmf-group-call-demo</artifactId>
 	<packaging>jar</packaging>
 	
-	<name>Kurento Media Framework - Goup call application</name>
+	<name>Kurento Java - Goup call application</name>
 	<description>
 		KMF Group call demo
 

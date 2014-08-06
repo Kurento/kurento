@@ -27,12 +27,12 @@
 		<win32-webdriver.version>2.9</win32-webdriver.version>
 	</properties>
 
-	<name>Kurento Media Framework - System Tests</name>
+	<name>Kurento Java - System Tests</name>
 	<description>
-		Kurento Media Framework - System Tests
+		Kurento Java - System Tests
 
 		The kmf-system-test project contains some test cases
-		for testing Kurento Media Framework and Kurento Media Server.
+		for testing Kurento Java and Kurento Media Server.
 	</description>
 
 	<dependencies>
@@ -46,12 +46,8 @@
 		<!-- Kurento Dependencies -->
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-content-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.kurento.kws</groupId>
-			<artifactId>kws-content-api</artifactId>
-		</dependency>
+			<artifactId>kmf-media-api</artifactId>
+		</dependency>		
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-broker</artifactId>

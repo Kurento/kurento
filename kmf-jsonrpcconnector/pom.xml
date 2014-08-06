@@ -12,7 +12,7 @@
 	<artifactId>kmf-jsonrpcconnector</artifactId>
 	<packaging>pom</packaging>
 
-	<name>Kurento Media Framework - JSON-RPC Protocol</name>
+	<name>Kurento Java - JSON-RPC Protocol</name>
 	<description>
 			JSON-RPC Protocol with transports based on http and websocket
 	</description>

@@ -26,11 +26,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.kurento.kmf.commons.tests.RepositoryApiTests;
 import com.kurento.kmf.repository.main.BootApplication;
-import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 @Category(RepositoryApiTests.class)
 public class ContextByTestSpringBootTest {
@@ -49,10 +47,6 @@ public class ContextByTestSpringBootTest {
 	public static void stop() {
 
 		log.info("Closing...");
-
-		KurentoApplicationContextUtils
-				.closeAllKurentoApplicationContexts(((WebApplicationContext) context)
-						.getServletContext());
 
 		context.close();
 

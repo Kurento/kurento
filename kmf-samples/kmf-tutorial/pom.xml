@@ -11,9 +11,9 @@
 	<artifactId>kmf-tutorial</artifactId>
 	<packaging>war</packaging>
 
-	<name>Kurento Media Framework - Tutorial</name>
+	<name>Kurento Java - Tutorial</name>
 	<description>
-		Kurento Media Framework base tutorial
+		Kurento Java base tutorial
 
 		Implements several examples of use of kurento content-api
 		and kurento media-api.
@@ -52,12 +52,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-content-api</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>com.kurento.kws</groupId>
-			<artifactId>kws-content-api</artifactId>
+			<artifactId>kmf-media-api</artifactId>
 		</dependency>
 	</dependencies>
 </project>

@@ -12,7 +12,7 @@
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-samples</artifactId>
 	<packaging>pom</packaging>
-	<name>Kurento Media Framework - Samples</name>
+	<name>Kurento Java - Samples</name>
 	<description>Sample projects</description>
 
 	<url>http://www.kurento.org/docs/${project.version}</url>
@@ -46,8 +46,7 @@
 		</developer>
 	</developers>
 	
-	<modules>
-		<module>kmf-content-demo</module>		
+	<modules>		
 		<module>kmf-tutorial</module>
 		<module>kmf-phone-demo</module>
 		<module>kmf-group-call-demo</module>

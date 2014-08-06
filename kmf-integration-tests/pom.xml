@@ -12,8 +12,8 @@
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-integration-tests</artifactId>
 	<packaging>pom</packaging>
-	<name>Kurento Media Framework - Integration tests</name>
-	<description>Integration tests for the Kurento Media Framework. These tests require the existence of a KMS instance.</description>
+	<name>Kurento Java - Integration tests</name>
+	<description>Integration tests for the Kurento Java. These tests require the existence of a KMS instance.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
 	<licenses>
@@ -48,8 +48,7 @@
 	<modules>
 		<module>kmf-jsonrpcconnector-test</module>
 		<module>kmf-media-connector-test</module>
-		<module>kmf-media-api-test</module>
-		<module>kmf-content-api-test</module>
+		<module>kmf-media-api-test</module>		
 		<module>kmf-repository-api-test</module>
 		<module>kmf-system-test</module>
 		<module>kmf-sanity-test</module>

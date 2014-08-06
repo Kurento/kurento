@@ -10,7 +10,7 @@
 
 	<artifactId>kmf-repository-api-test</artifactId>
 	<packaging>jar</packaging>
-	<name>Kurento Media Framework - Repository API Test</name>
+	<name>Kurento Java - Repository API Test</name>
 	<description>
 			Tests for the Kurento Repository Api project
 

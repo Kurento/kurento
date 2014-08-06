@@ -13,7 +13,7 @@
 	<artifactId>kmf-broker</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Message broker</name>
+	<name>Kurento Java - Message broker</name>
 	
 	<description>
 		Kurento Message Broker

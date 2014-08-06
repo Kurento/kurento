@@ -11,9 +11,9 @@
 	<artifactId>kmf-sanity-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Sanity Tests</name>
+	<name>Kurento Java - Sanity Tests</name>
 	<description>
-		Kurento Media Framework - Sanity Tests
+		Kurento Java - Sanity Tests
 
 		This project implements a simple evaluation of Kurento (KMS, KMF, KWS).
 	</description>

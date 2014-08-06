@@ -10,7 +10,7 @@
 	<artifactId>kmf-media-api-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Media API Tests</name>
+	<name>Kurento Java - Media API Tests</name>
 	<description>
 			Kurento Media Manager API Tests
 

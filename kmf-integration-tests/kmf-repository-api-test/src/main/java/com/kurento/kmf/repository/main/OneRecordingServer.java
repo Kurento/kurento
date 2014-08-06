@@ -20,7 +20,6 @@ import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.kurento.kmf.repository.HttpSessionStartedEvent;
 import com.kurento.kmf.repository.HttpSessionTerminatedEvent;
@@ -30,7 +29,6 @@ import com.kurento.kmf.repository.RepositoryHttpEventListener;
 import com.kurento.kmf.repository.RepositoryHttpPlayer;
 import com.kurento.kmf.repository.RepositoryHttpRecorder;
 import com.kurento.kmf.repository.RepositoryItem;
-import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 public class OneRecordingServer {
 
@@ -60,11 +58,6 @@ public class OneRecordingServer {
 	private synchronized void stopServer() {
 
 		if (context != null) {
-
-			KurentoApplicationContextUtils
-					.closeAllKurentoApplicationContexts(((WebApplicationContext) context)
-							.getServletContext());
-
 			context.close();
 			context = null;
 		}
@@ -138,8 +131,7 @@ public class OneRecordingServer {
 	}
 
 	protected Repository getRepository() {
-		return (Repository) KurentoApplicationContextUtils
-				.getBean("repository");
+		return (Repository) context.getBean("repository");
 	}
 
 	// Convenience static methods and attributes

@@ -10,7 +10,7 @@
 	<artifactId>kmf-media-connector-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Media Connector Tests</name>
+	<name>Kurento Java - Media Connector Tests</name>
 	<description>
 		Kurento Media Connector Tests
 

@@ -10,7 +10,7 @@
 	<artifactId>kmf-webrtc-demo</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - WebRTC Demo</name>
+	<name>Kurento Java - WebRTC Demo</name>
 	<description>
 		Demo of a pipeline composed by a WebRTC connected to a FaceOverlayFilter.
 		It uses SpringBoot to start the application.

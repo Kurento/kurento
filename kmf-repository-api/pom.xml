@@ -12,10 +12,10 @@
 	<artifactId>kmf-repository-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Repository Management</name>
+	<name>Kurento Java - Repository Management</name>
 
 	<description>
-			Kurento Media Framework - Repository Management
+			Kurento Java - Repository Management
 
 			The Kurento kmf-repository-api project is an API allowing access to Kurento Repository.
 	</description>
@@ -60,10 +60,7 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-spring</artifactId>
-		</dependency>
+		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

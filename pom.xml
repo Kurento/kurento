@@ -9,7 +9,7 @@
 
 	<artifactId>kurento-media-framework</artifactId>
 	<packaging>pom</packaging>
-	<name>Kurento Media Framework</name>
+	<name>Kurento Java</name>
 	<description>TODO</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
@@ -53,7 +53,6 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 			<modules>
-				<module>kmf-spring</module>
 				<module>kmf-commons</module>
 				<module>kmf-commons-testing</module>
 				<module>kmf-parent-pom</module>
@@ -61,10 +60,8 @@
 				<module>kmf-orion-connector</module>
 				<module>kmf-jsonrpcconnector</module>
 				<module>kmf-media-connector</module>
-				<module>kmf-media-api</module>
-				<module>kmf-content-api</module>
-				<module>kmf-samples</module>
-				<module>kmf-content-protocol</module>
+				<module>kmf-media-api</module>				
+				<module>kmf-samples</module>				
 				<module>kmf-repository-api</module>
 				<module>kmf-assembly</module>
 				<module>kmf-integration-tests</module>
@@ -93,15 +90,13 @@
 		<profile>
 			<id>deploy</id>
 			<modules>
-				<module>kmf-spring</module>
 				<module>kmf-commons</module>
 				<module>kmf-commons-testing</module>
 				<module>kmf-parent-pom</module>
 				<module>kmf-thrift-interface</module>
 				<module>kmf-orion-connector</module>
 				<module>kmf-jsonrpcconnector</module>
-				<module>kmf-media-api</module>
-				<module>kmf-content-api</module>
+				<module>kmf-media-api</module>				
 				<module>kmf-content-protocol</module>
 				<module>kmf-repository-api</module>
 				<module>kmf-broker</module>

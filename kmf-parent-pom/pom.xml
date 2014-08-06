@@ -214,12 +214,7 @@
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-broker</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kmf</groupId>
-				<artifactId>kmf-content-protocol</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+			</dependency>			
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-repository-api</artifactId>
@@ -255,12 +250,7 @@
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-jsonrpcconnector-server</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kmf</groupId>
-				<artifactId>kmf-content-api</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+			</dependency>			
 			<dependency>
 				<groupId>com.kurento.kms</groupId>
 				<artifactId>kms-interface</artifactId>
@@ -275,12 +265,7 @@
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-commons-testing</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kmf</groupId>
-				<artifactId>kmf-spring</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+			</dependency>			
 			<dependency>
 				<groupId>com.kurento.kmf</groupId>
 				<artifactId>kmf-orion-connector</artifactId>

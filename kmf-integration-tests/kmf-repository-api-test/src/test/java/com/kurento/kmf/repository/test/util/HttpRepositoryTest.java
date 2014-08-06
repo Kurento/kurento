@@ -39,7 +39,6 @@ import com.kurento.kmf.repository.Repository;
 import com.kurento.kmf.repository.RepositoryHttpPlayer;
 import com.kurento.kmf.repository.RepositoryHttpRecorder;
 import com.kurento.kmf.repository.RepositoryItem;
-import com.kurento.kmf.spring.KurentoApplicationContextUtils;
 
 public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 
@@ -60,8 +59,7 @@ public class HttpRepositoryTest extends ContextByTestSpringBootTest {
 	}
 
 	protected Repository getRepository() {
-		return (Repository) KurentoApplicationContextUtils
-				.getBean("repository");
+		return (Repository) context.getBean("repository");
 	}
 
 	protected void downloadFromURL(String urlToDownload, File downloadedFile)

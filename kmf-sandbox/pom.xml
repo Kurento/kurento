@@ -11,7 +11,7 @@
 	<artifactId>kmf-sandbox</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - Sandbox</name>
+	<name>Kurento Java - Sandbox</name>
 	<description>
 		Sandbox project to ease Kurento Media Server development and functional evaluation
 	</description>

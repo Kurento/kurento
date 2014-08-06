@@ -9,7 +9,7 @@
 
 	<groupId>com.kurento.kmf</groupId>
 	<artifactId>kmf-commons-testing</artifactId>
-	<name>Kurento Media Framework - Common testing classes</name>
+	<name>Kurento Java - Common testing classes</name>
 	<description>TODO</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 

@@ -8,7 +8,7 @@
 	<artifactId>kmf-jsonrpcconnector-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - JsonRpc Connector Tests</name>
+	<name>Kurento Java - JsonRpc Connector Tests</name>
 	<description>
 			Tests of a protocol based on JSON-RPC to manage Kurento Content and Media API
 	</description>

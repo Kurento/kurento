@@ -11,7 +11,7 @@
 	<artifactId>kmf-jsonrpcconnector-client</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Media Framework - JSON-RPC Protocol Client</name>
+	<name>Kurento Java - JSON-RPC Protocol Client</name>
 	<description>
 			JSON-RPC Protocol with transports based on http and websocket
 	</description>
@@ -60,10 +60,7 @@
 			<groupId>com.kurento.kmf</groupId>
 			<artifactId>kmf-commons</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.kurento.kmf</groupId>
-			<artifactId>kmf-spring</artifactId>
-		</dependency>
+		
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
