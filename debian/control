@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 8.0.0),
  pkg-config,
  kms-core-dev,
  kms-cmake-utils (>> 1.0.0),
- libgstmarshal (>= 1.0.0)
+ kms-gstmarshal-dev (>= 1.0.0~rc1)
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-elements.git
