@@ -10,7 +10,7 @@
 
 	<artifactId>kurento-repository-api-test</artifactId>
 	<packaging>jar</packaging>
-	<name>Kurento Java - Repository API Test</name>
+	<name>Kurento Java - Integration tests - Repository API</name>
 	<description>
 			Tests for the Kurento Repository Api project
 

@@ -10,7 +10,7 @@
 	<artifactId>kurento-media-connector-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Media Connector Tests</name>
+	<name>Kurento Java - Integration tests - Media Connector</name>
 	<description>
 		Kurento Media Connector Tests
 

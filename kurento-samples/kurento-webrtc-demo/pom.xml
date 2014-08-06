@@ -10,7 +10,7 @@
 	<artifactId>kurento-webrtc-demo</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - WebRTC Demo</name>
+	<name>Kurento Java - Samples - WebRTC</name>
 	<description>
 		Demo of a pipeline composed by a WebRTC connected to a FaceOverlayFilter.
 		It uses SpringBoot to start the application.

@@ -11,7 +11,7 @@
 	<artifactId>kurento-tutorial</artifactId>
 	<packaging>war</packaging>
 
-	<name>Kurento Java - Tutorial</name>
+	<name>Kurento Java - Samples - Tutorial</name>
 	<description>
 		Kurento Java base tutorial
 

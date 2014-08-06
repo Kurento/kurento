@@ -27,7 +27,7 @@
 		<win32-webdriver.version>2.9</win32-webdriver.version>
 	</properties>
 
-	<name>Kurento Java - System Tests</name>
+	<name>Kurento Java - Integration tests - System Tests</name>
 	<description>
 		Kurento Java - System Tests
 

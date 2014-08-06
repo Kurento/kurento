@@ -11,7 +11,7 @@
 	<artifactId>kurento-sanity-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - Sanity Tests</name>
+	<name>Kurento Java - Integration tests - Sanity Tests</name>
 	<description>
 		Kurento Java - Sanity Tests
 

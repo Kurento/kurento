@@ -10,7 +10,7 @@
 	<artifactId>kurento-phone-demo</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java - One 2 One call application</name>
+	<name>Kurento Java - Samples - One 2 One Call</name>
 	<description>
 		KMF Phone Demo
 
