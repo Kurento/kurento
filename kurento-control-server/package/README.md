@@ -19,6 +19,22 @@ by means of RabbitMQ. Thrift is the default choice because it is easier to get
 the whole system working. Please refer to Kurento Media Server documentation 
 for advantages and disadvantages in using Thrift vs RabbitMQ.
 
+Operation instructions
+----------------------
+
+The proxy is prepared to be run as a service. The following steps will make the 
+necessary modifications in the system to achieve this:
+
+* Copy the file <kmf-media-connector-home>/support-files/kmf-media-connector.sh
+in /etc/init.d/kurento-media-connector. This file hods the basic configuration 
+for the proxy. 
+* Start the service as a regular service with sudo service kurento-media-connector start
+* The command update-rc.d kurento-media-connector defaults will start the service 
+automatically during the startup of the machine, 
+
+Starting the proxy this way, the logs will be located in 
+/var/log/kurento/media-connector.
+
 Thrift transport
 ----------------
 
