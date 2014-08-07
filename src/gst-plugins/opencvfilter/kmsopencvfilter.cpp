@@ -25,7 +25,7 @@
 #include <glib/gstdio.h>
 #include <opencv2/opencv.hpp>
 #include <memory>
-#include "../../server/implementation/objects/OpenCVProcess.hpp"
+#include "OpenCVProcess.hpp"
 
 #define PLUGIN_NAME "opencvfilter"
 

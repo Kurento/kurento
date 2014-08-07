@@ -3,6 +3,7 @@ include_directories(
   ${GSTREAMER_VIDEO_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${OPENCV_INCLUDE_DIRS}
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../server/implementation/objects/"
 )
 
 set(OPENCV_FILTER_SOURCES
