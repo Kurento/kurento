@@ -15,6 +15,9 @@ ${remoteClass.name}Impl.cpp
 #include "${remoteClass.name}Impl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
+<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
+#include "MediaPipelineImpl.hpp"
+</#if>
 
 #define GST_CAT_DEFAULT kurento_${camelToUnderscore(remoteClass.name)?lower_case}_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -28,26 +31,37 @@ ${remoteClass.name}Impl::${remoteClass.name}Impl (<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
         <#lt><#if param_has_next>, </#if><#rt>
-     <#lt></#list>)<#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if>
+     <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
+<#else> <#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if> </#if>
 <#else>
 ${remoteClass.name}Impl::${remoteClass.name}Impl ()
 </#if>
 {
+<#if ! ((remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter")))>
   // FIXME: Implement this
+</#if>
 }
 <#list remoteClass.properties as property>
 
 ${getCppObjectType (property.type, false)} ${remoteClass.name}Impl::get${property.name?cap_first} ()
 {
+<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
+  return ${remoteClass.name}OpenCVImpl::get${property.name?cap_first} ();
+<#else>
   // FIXME: Implement this
   throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::get${property.name}: Not implemented");
+</#if>
 }
 <#if !property.final && !property.readOnly>
 
 void ${remoteClass.name}Impl::set${property.name?cap_first} (${getCppObjectType (property.type, true)}${property.name})
 {
+<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
+  ${remoteClass.name}OpenCVImpl::set${property.name?cap_first} (${property.name});
+<#else>
   // FIXME: Implement this
   throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::set${property.name}: Not implemented");
+</#if>
 }
 </#if>
 </#list>
@@ -56,8 +70,13 @@ void ${remoteClass.name}Impl::set${property.name?cap_first} (${getCppObjectType 
 ${getCppObjectType(method.return,false)} ${remoteClass.name}Impl::${method.name} (<#rt>
     <#lt><#list method.params as param>${getCppObjectType(param.type)}${param.name}<#if param_has_next>, </#if></#list>)
 {
+<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
+  ${remoteClass.name}OpenCVImpl::${method.name} (<#rt>
+    <#lt><#list method.params as param>${param.name}<#if param_has_next>, </#if></#list>);
+<#else>
   // FIXME: Implement this
   throw KurentoException (NOT_IMPLEMENTED, "${remoteClass.name}Impl::${method.name}: Not implemented");
+</#if>
 }
 </#macro>
 <#list remoteClass.methods as method><#rt>

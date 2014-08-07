@@ -11,6 +11,9 @@ ${remoteClass.name}Impl.hpp
 </#if>
 #include "${remoteClass.name}.hpp"
 #include <EventHandler.hpp>
+<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
+#include "${remoteClass.name}OpenCVImpl.hpp"
+</#if>
 
 namespace kurento
 {
@@ -28,7 +31,7 @@ void Serialize (std::shared_ptr<${remoteClass.name}Impl> &object, JsonSerializer
 
 class ${remoteClass.name}Impl :<#if remoteClass.extends??><#rt>
    <#lt> public ${remoteClass.extends.name}Impl<#rt>,
-   </#if><#lt> public virtual ${remoteClass.name}
+   </#if><#lt> public virtual ${remoteClass.name}<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))><#lt><#rt>, public virtual ${remoteClass.name}OpenCVImpl</#if>
 {
 
 public:
@@ -67,13 +70,14 @@ public:
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  <#if ! ((remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter")))>
   <#list remoteClass.events as event>
     <#if event_index = 0 >
 
     </#if>
   sigc::signal<void, ${event.name}> signal${event.name};
   </#list>
-
+  </#if>
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
                        Json::Value &response);
