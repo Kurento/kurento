@@ -132,7 +132,7 @@ public class CodeGen {
 		root.put("camelToUnderscore", new CamelToUnderscore());
 		root.put("remoteClassDependencies", new RemoteClassDependencies());
 		root.put("isFirstConstructorParam", new IsFirstConstructorParam());
-		root.put("sphinxLinks", new SphinxLinks());
+		root.put("sphinxLinks", new SphinxLinks(module));
 		root.put("getJsNamespace", new JsNamespace());
 		root.put("packageToFolder", new PackageToFolder());
 
