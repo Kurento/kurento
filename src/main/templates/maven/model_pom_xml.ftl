@@ -42,13 +42,13 @@ pom.xml
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>com.kurento</groupId>
+				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>0.0.20-SNAPSHOT</version>
+				<version>0.0.21-SNAPSHOT</version>
 				<executions>
 					<execution>
 						<goals>
-							<goal>generate-java-media-api</goal>
+							<goal>generate-kurento-client</goal>
 						</goals>
 					</execution>
 				</executions>

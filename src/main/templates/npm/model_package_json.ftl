@@ -31,6 +31,6 @@ package.json
 </#list>
   },
   "peerDependencies": {
-    "kws-media-api": "^${module.kurentoVersion}"
+    "kurento-client": "^${module.kurentoVersion}"
   }
 }
