@@ -66,7 +66,7 @@ public class RomServer {
 		Object remoteObject = manager.getObject(objectRef);
 
 		if (remoteObject == null) {
-			throw new MediaServerException("No object found with reference "
+			throw new KurentoServerException("No object found with reference "
 					+ objectRef);
 		}
 

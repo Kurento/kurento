@@ -21,11 +21,12 @@ import org.springframework.amqp.core.Queue;
 
 
 
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import org.kurento.client.internal.transport.jsonrpcconnector.RomJsonRpcConstants;
+import org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants;
 import org.kurento.commons.Address;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.KeepAliveManager;

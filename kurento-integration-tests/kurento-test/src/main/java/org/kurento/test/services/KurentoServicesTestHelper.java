@@ -1,14 +1,14 @@
 package org.kurento.test.services;
 
-import static org.kurento.client.factory.KmfMediaApiProperties.getRabbitMqAddress;
-import static org.kurento.client.factory.KmfMediaApiProperties.getThriftKmfAddress;
-import static org.kurento.client.factory.KmfMediaApiProperties.getThriftKmsAddress;
+import static org.kurento.client.factory.KurentoProperties.getRabbitMqAddress;
+import static org.kurento.client.factory.KurentoProperties.getThriftKcsAddress;
+import static org.kurento.client.factory.KurentoProperties.getThriftKmsAddress;
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.File;
 
 import org.apache.catalina.LifecycleException;
-import org.kurento.client.factory.KmfMediaApi;
+import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.control.server.ControlServerManager;
 import org.kurento.jsonrpc.client.JsonRpcClient;
@@ -139,14 +139,14 @@ public class KurentoServicesTestHelper {
 
 		rabbitMqConnector = new RabbitMqConnectorManager(
 				getThriftKmsAddress(RABBITMQ_CONNECTOR_PREFIX),
-				getThriftKmfAddress(RABBITMQ_CONNECTOR_PREFIX),
+				getThriftKcsAddress(RABBITMQ_CONNECTOR_PREFIX),
 				getRabbitMqAddress(RABBITMQ_CONNECTOR_PREFIX));
 	}
 
 	private static void startMediaConnector() {
 
-		JsonRpcClient client = KmfMediaApi
-				.createJsonRpcClientFromSystemProperties(MEDIA_CONNECTOR_PREFIX);
+		JsonRpcClient client = KurentoClientFactory
+				.createJsonRpcClient(MEDIA_CONNECTOR_PREFIX);
 
 		mediaConnector = new ControlServerManager(client, getKmcHttpPort());
 	}

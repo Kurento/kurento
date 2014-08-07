@@ -22,8 +22,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
-import org.kurento.client.factory.KmfMediaApi;
-import org.kurento.client.factory.MediaPipelineFactory;
+import org.kurento.client.factory.KurentoClientFactory;
+import org.kurento.client.factory.KurentoClient;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -49,8 +49,8 @@ public class WebRtcApp implements JsonRpcConfigurer {
 	}
 
 	@Bean
-	MediaPipelineFactory mediaPipelineFactory() {
-		return KmfMediaApi.createMediaPipelineFactoryFromSystemProps();
+	KurentoClient mediaPipelineFactory() {
+		return KurentoClientFactory.createKurentoClient();
 	}
 
 	@Bean

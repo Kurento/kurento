@@ -14,7 +14,7 @@
  */
 
 /**
- * Base classes for automated tests of kmf-content-api and kmf-media-api.
+ * Base classes for automated tests of kurento-client.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)

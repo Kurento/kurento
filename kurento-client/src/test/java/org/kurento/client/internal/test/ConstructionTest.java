@@ -7,8 +7,8 @@ import org.junit.Test;
 import org.kurento.client.internal.client.RemoteObjectFactory;
 import org.kurento.client.internal.client.RemoteObjectTypedFactory;
 import org.kurento.client.internal.test.model.Sample2;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomClientJsonRpcClient;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomServerJsonRpcHandler;
+import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
+import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 
 public class ConstructionTest {

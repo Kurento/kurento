@@ -14,7 +14,7 @@
  */
 package org.kurento.test.rabbitmq;
 
-import org.kurento.client.factory.KmfMediaApiProperties;
+import org.kurento.client.factory.KurentoProperties;
 import org.kurento.commons.Address;
 import org.kurento.rabbitmq.server.RabbitMqConnectorManager;
 
@@ -36,12 +36,12 @@ public class MediaServer {
 
 	public void start() {
 
-		Address thriftKmfAddress = KmfMediaApiProperties.getThriftKmfAddress();
-		thriftKmfAddress.setPort(thriftKmfAddress.getPort() + num);
+		Address thriftKcsAddress = KurentoProperties.getThriftKcsAddress();
+		thriftKcsAddress.setPort(thriftKcsAddress.getPort() + num);
 
 		mediaServerBroker = new RabbitMqConnectorManager(
-				KmfMediaApiProperties.getThriftKmsAddress(), thriftKmfAddress,
-				KmfMediaApiProperties.getRabbitMqAddress());
+				KurentoProperties.getThriftKmsAddress(), thriftKcsAddress,
+				KurentoProperties.getRabbitMqAddress());
 
 	}
 

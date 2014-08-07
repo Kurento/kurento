@@ -1,6 +1,6 @@
 package org.kurento.client.internal.test;
 
-import org.kurento.client.internal.transport.jsonrpcconnector.RomServerJsonRpcHandler;
+import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcServerThrift;

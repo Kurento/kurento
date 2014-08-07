@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomServerJsonRpcHandler;
+import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;

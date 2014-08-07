@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import org.kurento.client.*;
 import org.kurento.client.events.EndOfStreamEvent;
 import org.kurento.client.events.MediaEventListener;
-import org.kurento.client.factory.KmfMediaApiProperties;
-import org.kurento.client.factory.MediaPipelineFactory;
+import org.kurento.client.factory.KurentoProperties;
+import org.kurento.client.factory.KurentoClient;
 import org.kurento.rabbitmq.client.JsonRpcClientRabbitMq;
 import org.kurento.test.client.*;
 
@@ -41,15 +41,15 @@ public class ClientApp {
 
 	public final static int TIMEOUT = 60;
 
-	private MediaPipelineFactory mpf;
+	private KurentoClient mpf;
 
 	private CountDownLatch finished = new CountDownLatch(1);
 
 	private String logId;
 
 	public ClientApp(String logId) {
-		this.mpf = new MediaPipelineFactory(new JsonRpcClientRabbitMq(
-				KmfMediaApiProperties.getRabbitMqAddress()));
+		this.mpf = new KurentoClient(new JsonRpcClientRabbitMq(
+				KurentoProperties.getRabbitMqAddress()));
 	}
 
 	public void start() {
@@ -58,7 +58,7 @@ public class ClientApp {
 			@Override
 			public void run() {
 				try {
-					useMediaAPI();
+					kurentoClientUsage();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -66,9 +66,9 @@ public class ClientApp {
 		}.start();
 	}
 
-	private void useMediaAPI() throws InterruptedException {
+	private void kurentoClientUsage() throws InterruptedException {
 
-		MediaPipeline mp = mpf.create();
+		MediaPipeline mp = mpf.createMediaPipeline();
 		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
 				"http://files.kurento.org/video/small.webm").build();
 		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()

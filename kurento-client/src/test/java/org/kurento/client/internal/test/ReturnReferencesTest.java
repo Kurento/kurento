@@ -13,8 +13,8 @@ import org.kurento.client.Continuation;
 import org.kurento.client.internal.client.RemoteObjectFactory;
 import org.kurento.client.internal.client.RemoteObjectTypedFactory;
 import org.kurento.client.internal.test.model.client.SampleClass;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomClientJsonRpcClient;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomServerJsonRpcHandler;
+import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
+import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 
 public class ReturnReferencesTest {

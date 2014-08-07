@@ -25,7 +25,7 @@ import org.kurento.client.Composite;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.client.factory.MediaPipelineFactory;
+import org.kurento.client.factory.KurentoClient;
 import org.kurento.jsonrpc.Session;
 
 /**
@@ -36,7 +36,7 @@ import org.kurento.jsonrpc.Session;
 public class Room {
 	// private final Logger log = LoggerFactory.getLogger(Room.class);
 	@Autowired
-	private MediaPipelineFactory mpf;
+	private KurentoClient mpf;
 
 	private MediaPipeline mp;
 	private Composite composite;
@@ -44,7 +44,7 @@ public class Room {
 
 	@PostConstruct
 	private void init() {
-		mp = mpf.create();
+		mp = mpf.createMediaPipeline();
 		composite = mp.newComposite().build();
 	}
 

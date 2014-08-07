@@ -25,6 +25,13 @@ import javax.servlet.Filter;
 
 import org.apache.catalina.Context;
 import org.apache.tomcat.websocket.server.WsSci;
+import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.jsonrpc.internal.http.JsonRpcHttpRequestHandler;
+import org.kurento.jsonrpc.internal.server.PerSessionJsonRpcHandler;
+import org.kurento.jsonrpc.internal.server.ProtocolManager;
+import org.kurento.jsonrpc.internal.server.SessionsManager;
+import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
+import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.tomcat.TomcatContextCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
@@ -40,13 +47,6 @@ import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
-import org.kurento.jsonrpc.JsonRpcHandler;
-import org.kurento.jsonrpc.internal.http.JsonRpcHttpRequestHandler;
-import org.kurento.jsonrpc.internal.server.PerSessionJsonRpcHandler;
-import org.kurento.jsonrpc.internal.server.ProtocolManager;
-import org.kurento.jsonrpc.internal.server.SessionsManager;
-import org.kurento.jsonrpc.internal.ws.JsonRpcWebSocketHandler;
-import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 
 @Configuration
 @EnableWebSocket
@@ -201,7 +201,7 @@ public class JsonRpcConfiguration implements WebSocketConfigurer {
 
 		for (String path : paths) {
 
-			wsHandlerRegistry.addHandler(wsHandler, path + "/ws").withSockJS();
+			wsHandlerRegistry.addHandler(wsHandler, path);
 		}
 	}
 

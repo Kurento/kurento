@@ -110,13 +110,13 @@ public class OAuthFiWareFilter extends OncePerRequestFilter {
 	}
 
 	private Response validateTokenWithServer(String accessToken) {
-		String kmfAuthToken = props.getAuthToken();
+		String authToken = props.getAuthToken();
 
 		String url = props.getKeystoneHost() + ':' + props.getKeystonePort()
 				+ props.getKeystonePath() + accessToken;
 
 		OAuthRequest oauthReq = new OAuthRequest(Verb.GET, url);
-		oauthReq.addHeader(X_AUTH_HEADER, kmfAuthToken);
+		oauthReq.addHeader(X_AUTH_HEADER, authToken);
 
 		return oauthReq.send();
 	}

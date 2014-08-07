@@ -22,7 +22,7 @@ package org.kurento.client.internal.server;
  * @since 4.2.1
  * 
  */
-public class ProtocolException extends MediaServerException {
+public class ProtocolException extends KurentoServerException {
 
 	private static final long serialVersionUID = -4925041543188451274L;
 

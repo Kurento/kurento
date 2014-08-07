@@ -19,11 +19,11 @@ public class RabbitMqConnectorManager {
 	private JsonRpcClient client;
 
 	public RabbitMqConnectorManager(Address thriftKmsAddress,
-			Address thriftKmfAddress, Address rabbitMqAddress) {
+			Address thriftKcsAddress, Address rabbitMqAddress) {
 
 		this.client = new JsonRpcClientThrift(thriftKmsAddress.getHost(),
-				thriftKmsAddress.getPort(), thriftKmfAddress.getHost(),
-				thriftKmfAddress.getPort());
+				thriftKmsAddress.getPort(), thriftKcsAddress.getHost(),
+				thriftKcsAddress.getPort());
 
 		log.info("Starting RabbitMQ to Thrift Media Connector");
 

@@ -27,15 +27,15 @@ import org.kurento.client.Continuation;
 import org.kurento.client.MediaObject;
 import org.kurento.client.MediaPipeline;
 import org.kurento.commons.exception.KurentoException;
-import org.kurento.commons.testing.MediaApiTests;
-import org.kurento.test.base.MediaApiTest;
+import org.kurento.commons.testing.KurentoClientTests;
+import org.kurento.test.base.KurentoClientTest;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
  *
  */
-@Category(MediaApiTests.class)
-public abstract class MediaPipelineAsyncBaseTest extends MediaApiTest {
+@Category(KurentoClientTests.class)
+public abstract class MediaPipelineAsyncBaseTest extends KurentoClientTest {
 
 	protected MediaPipeline pipeline;
 
@@ -43,7 +43,7 @@ public abstract class MediaPipelineAsyncBaseTest extends MediaApiTest {
 	public void setupPipeline() throws InterruptedException {
 		final BlockingQueue<MediaPipeline> events = new ArrayBlockingQueue<MediaPipeline>(
 				1);
-		pipelineFactory.create(new Continuation<MediaPipeline>() {
+		pipelineFactory.createMediaPipeline(new Continuation<MediaPipeline>() {
 			@Override
 			public void onSuccess(MediaPipeline result) {
 				events.add(result);

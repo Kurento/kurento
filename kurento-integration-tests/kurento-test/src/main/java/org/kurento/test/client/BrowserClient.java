@@ -44,8 +44,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.client.factory.KmfMediaApiProperties;
-import org.kurento.test.base.GridBrowserMediaApiTest;
+import org.kurento.client.factory.KurentoProperties;
+import org.kurento.test.base.GridBrowserKurentoClientTest;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.test.services.Node;
@@ -98,7 +98,7 @@ public class BrowserClient implements Closeable {
 		timeout = 60; // default (60 seconds)
 		maxDistance = 60.0; // default distance (for color comparison)
 
-		String hostAddress = KmfMediaApiProperties.getThriftKmfAddress()
+		String hostAddress = KurentoProperties.getThriftKcsAddress()
 				.getHost();
 
 		// Setup Selenium
@@ -113,7 +113,7 @@ public class BrowserClient implements Closeable {
 	private void initDriver(String hostAddress) {
 		Class<? extends WebDriver> driverClass = browser.getDriverClass();
 		int hubPort = getProperty("test.hub.port",
-				GridBrowserMediaApiTest.DEFAULT_HUB_PORT);
+				GridBrowserKurentoClientTest.DEFAULT_HUB_PORT);
 
 		try {
 			if (driverClass.equals(FirefoxDriver.class)) {

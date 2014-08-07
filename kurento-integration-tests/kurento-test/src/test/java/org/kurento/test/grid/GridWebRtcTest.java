@@ -27,7 +27,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.test.base.GridBrowserMediaApiTest;
+import org.kurento.test.base.GridBrowserKurentoClientTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
@@ -53,7 +53,7 @@ import org.kurento.test.services.Recorder;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
-public class GridWebRtcTest extends GridBrowserMediaApiTest {
+public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
 	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
@@ -98,7 +98,7 @@ public class GridWebRtcTest extends GridBrowserMediaApiTest {
 	}
 
 	public void doTest(Node node, Color color) {
-		MediaPipeline mp = pipelineFactory.create();
+		MediaPipeline mp = pipelineFactory.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 

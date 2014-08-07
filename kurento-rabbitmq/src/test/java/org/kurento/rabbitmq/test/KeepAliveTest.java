@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonObject;
 
 import org.kurento.client.MediaPipeline;
-import org.kurento.client.factory.MediaPipelineFactory;
+import org.kurento.client.factory.KurentoClient;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.Transaction;
@@ -69,8 +69,8 @@ public class KeepAliveTest {
 		log.info("Starting client");
 		JsonRpcClientRabbitMq client = new JsonRpcClientRabbitMq();
 
-		MediaPipelineFactory mpf = new MediaPipelineFactory(client);
-		MediaPipeline pipeline = mpf.create();
+		KurentoClient mpf = new KurentoClient(client);
+		MediaPipeline pipeline = mpf.createMediaPipeline();
 
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000,
 				(NUM_KEEP_ALIVES + 1) * 1000);
@@ -79,7 +79,7 @@ public class KeepAliveTest {
 		// of the time
 		initTime = System.nanoTime();
 		latch = new CountDownLatch(NUM_KEEP_ALIVES);
-		MediaPipeline pipeline2 = mpf.create();
+		MediaPipeline pipeline2 = mpf.createMediaPipeline();
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000 / 2,
 				(NUM_KEEP_ALIVES + 1) * 1000 / 2);
 

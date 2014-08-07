@@ -18,17 +18,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.client.MediaPipeline;
-import org.kurento.commons.testing.MediaApiTests;
-import org.kurento.test.base.MediaApiTest;
+import org.kurento.commons.testing.KurentoClientTests;
+import org.kurento.test.base.KurentoClientTest;
 
-@Category(MediaApiTests.class)
-public abstract class MediaPipelineBaseTest extends MediaApiTest {
+@Category(KurentoClientTests.class)
+public abstract class MediaPipelineBaseTest extends KurentoClientTest {
 
 	protected MediaPipeline pipeline;
 
 	@Before
 	public void setupPipeline() {
-		pipeline = pipelineFactory.create();
+		pipeline = pipelineFactory.createMediaPipeline();
 	}
 
 	@After

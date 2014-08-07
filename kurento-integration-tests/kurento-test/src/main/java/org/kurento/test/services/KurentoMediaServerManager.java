@@ -23,17 +23,16 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.io.CharStreams;
-
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.test.Shell;
 import org.kurento.thrift.ThriftInterfaceConfiguration;
 import org.kurento.thrift.pool.ClientPoolException;
 import org.kurento.thrift.pool.ThriftClientPoolService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.CharStreams;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -113,7 +112,7 @@ public class KurentoMediaServerManager {
 				KURENTO_GST_PLUGINS_DEFAULT);
 
 		try {
-			workspace = Files.createTempDirectory("kmf-system-test").toString();
+			workspace = Files.createTempDirectory("kurento-test").toString();
 		} catch (IOException e) {
 			workspace = PropertiesManager.getProperty(KURENTO_WORKSPACE_PROP,
 					KURENTO_WORKSPACE_DEFAULT);

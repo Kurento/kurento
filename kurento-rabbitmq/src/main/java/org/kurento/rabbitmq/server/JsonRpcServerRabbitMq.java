@@ -16,12 +16,13 @@ import org.slf4j.LoggerFactory;
 
 
 
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import org.kurento.client.internal.transport.jsonrpcconnector.RomJsonRpcConstants;
+import org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants;
 import org.kurento.commons.Address;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcHandler;

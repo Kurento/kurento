@@ -22,13 +22,12 @@ import org.apache.thrift.server.TThreadedSelectorServer.Args;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TNonblockingServerTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.kurento.thrift.internal.ThriftInterfaceExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.thrift.internal.ThriftInterfaceExecutorService;
 
 /**
- * Server handler implementation for the thrift interface. This handler is used
- * by KMS to send events and error to the media-api
+ * Server handler implementation for the thrift interface.
  *
  * @author Ivan Gracia (igracia@gsyc.es)
  * @since 1.0.0

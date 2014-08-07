@@ -27,6 +27,17 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.TransportException;
+import org.kurento.jsonrpc.internal.JsonRpcConstants;
+import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
+import org.kurento.jsonrpc.internal.client.ClientSession;
+import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
+import org.kurento.jsonrpc.internal.ws.PendingRequests;
+import org.kurento.jsonrpc.internal.ws.WebSocketResponseSender;
+import org.kurento.jsonrpc.message.MessageUtils;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -39,18 +50,6 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
-import org.kurento.commons.exception.KurentoException;
-import org.kurento.jsonrpc.TransportException;
-import org.kurento.jsonrpc.internal.JsonRpcConstants;
-import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
-import org.kurento.jsonrpc.internal.client.ClientSession;
-import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
-import org.kurento.jsonrpc.internal.ws.PendingRequests;
-import org.kurento.jsonrpc.internal.ws.WebSocketResponseSender;
-import org.kurento.jsonrpc.message.MessageUtils;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
@@ -74,9 +73,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public JsonRpcClientWebSocket(String url, HttpHeaders headers) {
 
-		// Append /ws to avoid collisions with http
-		// Append /websockets to point to websocket interface in SockJS
-		this.url = url + "/ws/websocket";
+		this.url = url;
 
 		rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override

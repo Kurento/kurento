@@ -6,6 +6,15 @@ import javax.annotation.PostConstruct;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
+import org.kurento.client.factory.KurentoClientFactory;
+import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.PropertiesManager.PropertyHolder;
+import org.kurento.commons.exception.KurentoException;
+import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
+import org.kurento.jsonrpc.internal.server.config.JsonRpcProperties;
+import org.kurento.jsonrpc.server.JsonRpcConfigurer;
+import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +28,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.kurento.client.factory.KmfMediaApi;
-import org.kurento.commons.PropertiesManager;
-import org.kurento.commons.PropertiesManager.PropertyHolder;
-import org.kurento.commons.exception.KurentoException;
-import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
-import org.kurento.jsonrpc.internal.server.config.JsonRpcProperties;
-import org.kurento.jsonrpc.server.JsonRpcConfigurer;
-import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
 
 @Configuration
 @ComponentScan(basePackageClasses = { JsonRpcConfiguration.class })
@@ -93,8 +93,7 @@ public class ControlServerApp implements JsonRpcConfigurer {
 
 		return new EmbeddedServletContainerCustomizer() {
 			@Override
-			public void customize(
-					ConfigurableEmbeddedServletContainer container) {
+			public void customize(ConfigurableEmbeddedServletContainer container) {
 
 				TomcatEmbeddedServletContainerFactory tomcat = (TomcatEmbeddedServletContainerFactory) container;
 
@@ -138,7 +137,7 @@ public class ControlServerApp implements JsonRpcConfigurer {
 
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addHandler(thriftConnectorJsonRpcHandler(), "/thrift");
+		registry.addHandler(thriftConnectorJsonRpcHandler(), "/kurento");
 	}
 
 	@Bean
@@ -160,7 +159,7 @@ public class ControlServerApp implements JsonRpcConfigurer {
 		if (client != null) {
 			return client;
 		} else {
-			return KmfMediaApi.createJsonRpcClientFromSystemProperties();
+			return KurentoClientFactory.createJsonRpcClient();
 		}
 	}
 

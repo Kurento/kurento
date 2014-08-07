@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.factory.MediaPipelineFactory;
+import org.kurento.client.factory.KurentoClient;
 import org.kurento.rabbitmq.client.JsonRpcClientRabbitMq;
 import org.kurento.rabbitmq.server.JsonRpcServerRabbitMq;
 import org.kurento.test.services.KurentoServicesTestHelper;
@@ -18,7 +18,7 @@ public class RabbitClientServer {
 
 		KurentoServicesTestHelper.startKurentoMediaServer();
 
-		MediaPipelineFactory mpf = new MediaPipelineFactory(
+		KurentoClient mpf = new KurentoClient(
 				new JsonRpcClientRabbitMq());
 
 		JsonRpcServerRabbitMq server = new JsonRpcServerRabbitMq(
@@ -26,7 +26,7 @@ public class RabbitClientServer {
 
 		server.start();
 
-		MediaPipeline pipeline = mpf.create();
+		MediaPipeline pipeline = mpf.createMediaPipeline();
 
 		PlayerEndpoint player = pipeline.newPlayerEndpoint(
 				"http://files.kurento.org/video/small.webm").build();

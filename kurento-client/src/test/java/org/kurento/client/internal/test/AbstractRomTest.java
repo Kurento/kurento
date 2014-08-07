@@ -16,8 +16,8 @@ import org.kurento.client.internal.client.RemoteObjectTypedFactory;
 import org.kurento.client.internal.test.model.client.ComplexParam;
 import org.kurento.client.internal.test.model.client.SampleClass;
 import org.kurento.client.internal.test.model.client.SampleEnum;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomClientJsonRpcClient;
-import org.kurento.client.internal.transport.jsonrpcconnector.RomServerJsonRpcHandler;
+import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
+import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 
 public abstract class AbstractRomTest {

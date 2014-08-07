@@ -40,8 +40,8 @@ public class OAuthFilterTest extends JsonRpcConnectorBaseTest {
 			.getLogger(OAuthFilterTest.class);
 
 	@Configuration
-	@ComponentScan("org.kurento.kmf")
-	public static class KmfJsonRpcProperties {
+	@ComponentScan("org.kurento")
+	public static class KurentoJsonRpcProperties {
 
 		@Bean
 		public JsonRpcProperties jsonRpcProperties() {

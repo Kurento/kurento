@@ -14,17 +14,21 @@
  */
 package org.kurento.thrift.internal;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.kurento.thrift.ThriftInterfaceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.thrift.ThriftInterfaceConfiguration;
 
 /**
- * Thread pool within Media-API.
+ * Thread pool within Thrift.
  *
  * @author Luis López (llopez@gsyc.es)
  * @author Ivan Gracia (igracia@gsyc.es)
