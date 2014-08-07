@@ -6,7 +6,8 @@ Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
  kms-core-dev,
- kms-cmake-utils (>> 1.0.0)
+ libsoup2.4-dev,
+ libopencv-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-filters.git
@@ -21,7 +22,8 @@ Description: Kurento filters module
 Package: kms-filters-dev
 Architecture: any
 Depends: kms-filters (= ${binary:Version}),
-  kms-core-dev
+  kms-core-dev,
+  libopencv-dev
 Description: Kurento filters module
  Kurento filters implementation
 
