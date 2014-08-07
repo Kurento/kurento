@@ -48,22 +48,22 @@ done. If an error occurs, {@link Continuation#onError} is called.
     </#list>
 	<#list remoteClass.events as event>
     /**
-     * Add a {@link MediaEventListener} for event {@link ${event.name}Event}. Synchronous call.
+     * Add a {@link EventListener} for event {@link ${event.name}Event}. Synchronous call.
      *
      * @param  listener Listener to be called on ${event.name}Event
-     * @return ListenerRegistration for the given Listener
+     * @return ListenerSubscription for the given Listener
      *
      **/
-    ListenerRegistration add${event.name}Listener(MediaEventListener<${event.name}Event> listener);
+    ListenerSubscription add${event.name}Listener(EventListener<${event.name}Event> listener);
     /**
-     * Add a {@link MediaEventListener} for event {@link ${event.name}Event}. Asynchronous call.
-     * Calls Continuation&lt;ListenerRegistration&gt; when it has been added.
+     * Add a {@link EventListener} for event {@link ${event.name}Event}. Asynchronous call.
+     * Calls Continuation&lt;ListenerSubscription&gt; when it has been added.
      *
      * @param listener Listener to be called on ${event.name}Event
      * @param cont     Continuation to be called when the listener is registered
      *
      **/
-    void add${event.name}Listener(MediaEventListener<${event.name}Event> listener, Continuation<ListenerRegistration> cont);
+    void add${event.name}Listener(EventListener<${event.name}Event> listener, Continuation<ListenerSubscription> cont);
     </#list>
 
 	<#if !remoteClass.extends??>
