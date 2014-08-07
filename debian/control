@@ -6,8 +6,12 @@ Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
  kms-core-dev,
- kms-cmake-utils (>> 1.0.0),
- kms-gstmarshal-dev (>= 1.0.0~rc1)
+ kms-gstmarshal-dev (>= 1.0.0~rc1),
+ libsoup2.4-dev,
+ libgnutls28-dev,
+ libsctp-dev,
+ libnice-dev,
+ uuid-dev
 Standards-Version: 3.9.4
 Homepage: http://kurento.org
 Vcs-Git: git://github.com/Kurento/kms-elements.git
@@ -15,7 +19,11 @@ Vcs-Browser: https://github.com/Kurento/kms-elements.git
 
 Package: kms-elements
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends},
+Depends:
+  ${shlibs:Depends},
+  ${misc:Depends},
+  gstreamer1.0-nice,
+  gnutls-bin
 Description: Kurento elements module
  Kurento elements implementation
 
