@@ -9,8 +9,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
-
-import com.kurento.modulecreator.KurentoModuleCreatorException;
+import org.kurento.modulecreator.KurentoModuleCreatorException;
 
 public class KurentoDependencyManager {
 
@@ -43,8 +42,8 @@ public class KurentoDependencyManager {
 
 				log.info("Exploring dependency: " + artifact);
 
-				ModuleMavenArtifact kurentoArtifact = new ModuleMavenArtifact(log,
-						artifact);
+				ModuleMavenArtifact kurentoArtifact = new ModuleMavenArtifact(
+						log, artifact);
 
 				if (kurentoArtifact.isKurentoModule()) {
 

@@ -24,13 +24,12 @@ import org.codehaus.plexus.compiler.util.scan.SimpleSourceInclusionScanner;
 import org.codehaus.plexus.compiler.util.scan.SourceInclusionScanner;
 import org.codehaus.plexus.compiler.util.scan.mapping.SourceMapping;
 import org.codehaus.plexus.compiler.util.scan.mapping.SuffixMapping;
+import org.kurento.modulecreator.KurentoModuleCreator;
+import org.kurento.modulecreator.KurentoModuleCreatorException;
+import org.kurento.modulecreator.PathUtils;
+import org.kurento.modulecreator.Result;
+import org.kurento.modulecreator.codegen.Error;
 import org.sonatype.plexus.build.incremental.BuildContext;
-
-import com.kurento.modulecreator.KurentoModuleCreator;
-import com.kurento.modulecreator.KurentoModuleCreatorException;
-import com.kurento.modulecreator.PathUtils;
-import com.kurento.modulecreator.Result;
-import com.kurento.modulecreator.codegen.Error;
 
 /**
  * Parses Kurento Media Elements Definition (*.kmd.json) and transforms them
@@ -38,8 +37,8 @@ import com.kurento.modulecreator.codegen.Error;
  *
  * @author micael.gallego@gmail.com
  */
-@Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate-java-media-api", requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
-public class GenerateJavaMediaApiMojo extends AbstractMojo {
+@Mojo(defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "generate-kurento-client", requiresDependencyResolution = ResolutionScope.COMPILE, requiresProject = true)
+public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 
 	/**
 	 * The directory where the Kurento Media Element Definition files (
@@ -77,8 +76,8 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 	@Parameter
 	private List<String> generateCodeForModules = Collections.emptyList();
 
-	protected void addKmdFiles(KurentoModuleCreator krp,
-			Set<File> kmdFiles, KurentoDependencyManager manager) {
+	protected void addKmdFiles(KurentoModuleCreator krp, Set<File> kmdFiles,
+			KurentoDependencyManager manager) {
 
 		log.info("Preparing code generation tool:");
 
@@ -271,8 +270,8 @@ public class GenerateJavaMediaApiMojo extends AbstractMojo {
 
 	/**
 	 * The main entry point for this Mojo, it is responsible for converting
-	 * Kurento Media Element Descriptions into the Java code used by
-	 * kmf-media-api clients.
+	 * Kurento Module Descriptions (kmd) into the Java code used by
+	 * kurento-client users.
 	 *
 	 * @exception MojoExecutionException
 	 *                if a configuration or definition error causes the code

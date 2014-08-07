@@ -13,8 +13,7 @@ import java.util.jar.JarFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.logging.Log;
-
-import com.kurento.modulecreator.KurentoModuleCreatorException;
+import org.kurento.modulecreator.KurentoModuleCreatorException;
 
 public class ModuleMavenArtifact implements Closeable {
 
