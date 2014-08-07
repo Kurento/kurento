@@ -34,14 +34,14 @@ public:
       <#lt><#if !property.optional><#rt>
         <#lt><#if !first>, </#if><#rt>
         <#lt><#assign first = false><#rt>
-        <#lt>${getCppObjectType(property.type.name)}${property.name}<#rt>
+        <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
       <#lt></#if><#rt>
     <#lt></#list><#rt>
     <#lt><#list event.parentProperties as property><#rt>
       <#lt><#if !property.optional><#rt>
         <#lt><#if !first>, </#if><#rt>
         <#lt><#assign first = false><#rt>
-        <#lt>${getCppObjectType(property.type.name)}${property.name}<#rt>
+        <#lt>${getCppObjectType(property.type)}${property.name}<#rt>
       <#lt></#if><#rt>
     <#lt></#list>)<#rt>
     <#lt><#assign first = true><#rt>
@@ -63,14 +63,14 @@ public:
   ${event.name} (const Json::Value &value);
 
   <#list event.properties as property>
-  virtual void set${property.name?cap_first} (${getCppObjectType(property.type.name, true)}${property.name}) {
+  virtual void set${property.name?cap_first} (${getCppObjectType(property.type, true)}${property.name}) {
     this->${property.name} = ${property.name};
     <#if property.optional>
     _isSet${property.name?cap_first} = true;
     </#if>
   };
 
-  virtual ${getCppObjectType(property.type.name)}get${property.name?cap_first} () {
+  virtual ${getCppObjectType(property.type)}get${property.name?cap_first} () {
     return ${property.name};
   };
 
@@ -93,7 +93,7 @@ protected:
 
 private:
   <#list event.properties as property>
-  ${getCppObjectType(property.type.name, false)} ${property.name};
+  ${getCppObjectType(property.type, false)} ${property.name};
   <#if property.optional>
   bool _isSet${property.name?cap_first} = false;
   </#if>
