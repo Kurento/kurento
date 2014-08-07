@@ -20,6 +20,7 @@
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 #include "kmsmovementdetector.h"
+#include <opencv/highgui.h>
 
 #define PLUGIN_NAME "movementdetector"
 

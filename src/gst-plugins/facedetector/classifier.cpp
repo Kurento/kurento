@@ -18,7 +18,6 @@
 #define FACE_CASCADE "/usr/share/opencv/lbpcascades/lbpcascade_frontalface.xml"
 
 #include <opencv2/objdetect/objdetect.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 using namespace cv;

@@ -19,7 +19,6 @@
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
 #include <opencv/cv.h>
-#include <opencv/highgui.h>
 #include <stdio.h>
 
 G_BEGIN_DECLS

@@ -25,8 +25,6 @@
 
 #include <glib/gprintf.h>
 
-#include <opencv/highgui.h>
-
 #define GREEN CV_RGB (0, 255, 0)
 
 #define PLUGIN_NAME "facedetector"
