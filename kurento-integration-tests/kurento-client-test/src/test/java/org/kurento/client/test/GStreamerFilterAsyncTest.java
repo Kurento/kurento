@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kurento.client.GStreamerFilter;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.EventListener;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
 
@@ -30,7 +30,7 @@ import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
  *
  * Events tested:
  * <ul>
- * <li>{@link PlateDetectorFilter#addPlateDetectedListener(MediaEventListener)}
+ * <li>{@link PlateDetectorFilter#addPlateDetectedListener(EventListener)}
  * </ul>
  *
  *
@@ -46,7 +46,7 @@ public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 	@Before
 	public void setupMediaElements() {
-		player = pipeline.newPlayerEndpoint(URL_PLATES).build();
+		player = new PlayerEndpoint.Builder(pipeline,URL_PLATES).build();
 	}
 
 	@After
@@ -60,7 +60,7 @@ public class GStreamerFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<GStreamerFilter> async = new AsyncResultManager<GStreamerFilter>(
 				"GStreamerFilter creation");
 
-		pipeline.newGStreamerFilter("videoflip method=horizontal-flip")
+		new GStreamerFilter.Builder(pipeline,"videoflip method=horizontal-flip")
 				.buildAsync(async.getContinuation());
 
 		filter = async.waitForResult();

@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.kurento.client.HttpEndpoint;
+import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaSink;
 import org.kurento.client.MediaSource;
 import org.kurento.client.PlayerEndpoint;
@@ -37,7 +38,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 		AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>(
 				"RtpEndpoint creation");
-		pipeline.newRtpEndpoint().buildAsync(async.getContinuation());
+		new RtpEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
 		RtpEndpoint rtp = async.waitForResult();
 
 		AsyncResultManager<String> asyncGenerateOffer = new AsyncResultManager<>(
@@ -74,7 +75,7 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 	@Test
 	public void testSourceSinks() throws KurentoException, InterruptedException {
 
-		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
+		RtpEndpoint rtp = new RtpEndpoint.Builder(pipeline).build();
 
 		AsyncResultManager<List<MediaSource>> asyncMediaSource = new AsyncResultManager<>(
 				"rtp.getMediaSrcs() invocation");
@@ -102,9 +103,10 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 	@Test
 	public void testConnect() throws InterruptedException {
 
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_SMALL)
+				.build();
 
-		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
+		HttpEndpoint http = new HttpGetEndpoint.Builder(pipeline).build();
 
 		AsyncResultManager<Void> async = new AsyncResultManager<>(
 				"player.connect() invocation");
@@ -118,8 +120,9 @@ public class RtpEndpointAsync2Test extends MediaPipelineAsyncBaseTest {
 
 	@Test
 	public void testConnectByType() throws InterruptedException {
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline, URL_SMALL)
+				.build();
+		HttpEndpoint http = new HttpGetEndpoint.Builder(pipeline).build();
 
 		AsyncResultManager<Void> asyncAudio = new AsyncResultManager<>(
 				"player.connect(AUDIO) invocation");

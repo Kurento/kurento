@@ -26,12 +26,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.kurento.client.HttpGetEndpoint;
-import org.kurento.client.ListenerRegistration;
+import org.kurento.client.ListenerSubscription;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.events.EndOfStreamEvent;
-import org.kurento.client.events.MediaEventListener;
-import org.kurento.client.events.MediaSessionStartedEvent;
-import org.kurento.client.events.MediaSessionTerminatedEvent;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
+import org.kurento.client.MediaSessionStartedEvent;
+import org.kurento.client.MediaSessionTerminatedEvent;
 import org.kurento.client.test.util.AsyncEventManager;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
@@ -48,9 +48,9 @@ import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
  * Events tested:
  * <ul>
  * <li>
- * {@link HttpGetEndpoint#addMediaSessionStartedListener(MediaEventListener)}
+ * {@link HttpGetEndpoint#addMediaSessionStartedListener(EventListener)}
  * <li>
- * {@link HttpGetEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpGetEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -68,7 +68,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<HttpGetEndpoint> async = new AsyncResultManager<>(
 				"HttpGetEndpoint creation");
 
-		pipeline.newHttpGetEndpoint().buildAsync(async.getContinuation());
+		new HttpGetEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
 
 		httpEp = async.waitForResult();
 	}
@@ -106,7 +106,7 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	public void testEventMediaSessionStarted() throws InterruptedException,
 			IOException {
 
-		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_SMALL)
 				.build();
 
 		player.connect(httpEp);
@@ -116,11 +116,11 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		player.addEndOfStreamListener(async.getMediaEventListener());
 
-		AsyncResultManager<ListenerRegistration> async2 = new AsyncResultManager<ListenerRegistration>(
+		AsyncResultManager<ListenerSubscription> async2 = new AsyncResultManager<ListenerSubscription>(
 				"EventListener subscription");
 
 		httpEp.addMediaSessionStartedListener(
-				new MediaEventListener<MediaSessionStartedEvent>() {
+				new EventListener<MediaSessionStartedEvent>() {
 					@Override
 					public void onEvent(MediaSessionStartedEvent event) {
 						player.play();
@@ -149,19 +149,19 @@ public class HttpGetEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	public void testEventMediaSessionTerminated() throws InterruptedException,
 			IOException {
 
-		final PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL)
+		final PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_SMALL)
 				.build();
 
 		player.connect(httpEp);
 
-		httpEp.addMediaSessionStartedListener(new MediaEventListener<MediaSessionStartedEvent>() {
+		httpEp.addMediaSessionStartedListener(new EventListener<MediaSessionStartedEvent>() {
 			@Override
 			public void onEvent(MediaSessionStartedEvent event) {
 				player.play();
 			}
 		});
 
-		AsyncResultManager<ListenerRegistration> async = new AsyncResultManager<>(
+		AsyncResultManager<ListenerSubscription> async = new AsyncResultManager<>(
 				"EventListener subscription");
 
 		AsyncEventManager<MediaSessionTerminatedEvent> asyncEvent = new AsyncEventManager<>(

@@ -7,14 +7,14 @@ import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kurento.client.Continuation;
-import org.kurento.client.events.Event;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.Event;
+import org.kurento.client.EventListener;
 import org.kurento.client.internal.ParamAnnotationUtils;
 import org.kurento.client.internal.server.FactoryMethod;
 import org.kurento.jsonrpc.Props;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
@@ -116,17 +116,17 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 		String event = methodName.substring(3,
 				methodName.length() - "Listener".length());
 
-		RemoteObject.EventListener listener = new RemoteObject.EventListener() {
+		RemoteObject.RemoteObjectEventListener listener = new RemoteObject.RemoteObjectEventListener() {
 			@Override
 			public void onEvent(String eventType, Props data) {
 				propagateEventTo(proxy, eventType, data,
-						(MediaEventListener<?>) args[0]);
+						(EventListener<?>) args[0]);
 			}
 		};
 
 		if (cont != null) {
 			remoteObject.addEventListener(event,
-					(Continuation<ListenerSubscription>) cont, listener);
+					(Continuation<ListenerSubscriptionImpl>) cont, listener);
 			return null;
 		}
 
@@ -155,13 +155,14 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected void propagateEventTo(Object object, String eventType,
-			Props data, MediaEventListener<?> listener) {
+			Props data, EventListener<?> listener) {
 
-		// TODO Optimise this to create only one event for all listeners
+		// TODO Optimize this to create only one event for all listeners
 
 		try {
 
-			Class<?> eventClass = Class.forName("org.kurento.client.events."
+			// FIXME Discover event package. This doesn't work with modules.
+			Class<?> eventClass = Class.forName("org.kurento.client."
 					+ eventType + "Event");
 
 			Constructor<?> constructor = eventClass.getConstructors()[0];
@@ -173,7 +174,7 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 			Event e = (Event) constructor.newInstance(params);
 
-			((MediaEventListener) listener).onEvent(e);
+			((EventListener) listener).onEvent(e);
 
 		} catch (Exception e) {
 			LOG.error("Exception while processing event '" + eventType
@@ -183,6 +184,10 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 	public RemoteObject getRemoteObject() {
 		return remoteObject;
+	}
+
+	public RemoteObjectFactory getFactory() {
+		return factory;
 	}
 
 	@Override

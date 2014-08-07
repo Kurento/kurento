@@ -23,11 +23,13 @@ public class ReturnReferencesTest {
 
 	@BeforeClass
 	public static void initFactory() {
-		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
-				new RomClientJsonRpcClient(new JsonRpcClientLocal(
-						new RomServerJsonRpcHandler(
-								"org.kurento.client.internal.test.model.server",
-								"Impl")))));
+		factory = new RemoteObjectTypedFactory(
+				new RemoteObjectFactory(
+						new RomClientJsonRpcClient(
+								new JsonRpcClientLocal(
+										new RomServerJsonRpcHandler(
+												"org.kurento.client.internal.test.model.server",
+												"Impl")))));
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package org.kurento.client.internal.test.model.client;
 import java.util.List;
 
 import org.kurento.client.Continuation;
+import org.kurento.client.ListenerSubscription;
 import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.server.Param;
 import org.kurento.client.internal.test.model.client.events.MediaEventListener;
@@ -62,11 +63,11 @@ public interface SampleClass {
 	void echoObjectRefList(@Param("param") List<SampleClass> param,
 			Continuation<List<SampleClass>> cont);
 
-	ListenerRegistration addSampleListener(
+	ListenerSubscription addSampleListener(
 			MediaEventListener<SampleEvent> listener);
 
 	void addSampleListener(MediaEventListener<SampleEvent> listener,
-			Continuation<ListenerRegistration> cont);
+			Continuation<ListenerSubscription> cont);
 
 	void release();
 

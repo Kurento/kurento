@@ -5,6 +5,14 @@
  */
 package org.kurento.client;
 
+import java.lang.reflect.Proxy;
+
+import org.kurento.client.internal.client.DefaultContinuation;
+import org.kurento.client.internal.client.RemoteObject;
+import org.kurento.client.internal.client.RemoteObjectFactory;
+import org.kurento.client.internal.client.RemoteObjectInvocationHandler;
+import org.kurento.jsonrpc.Props;
+
 /**
  * Kurento Media Builder base interface
  * 
@@ -15,7 +23,29 @@ package org.kurento.client;
  *            the type of object to build
  * 
  **/
-public interface AbstractBuilder<T> {
+public class AbstractBuilder<T> {
+
+	protected final Props props;
+	private final RemoteObjectFactory factory;
+	private final Class<?> clazz;
+
+	public AbstractBuilder(Class<?> clazz, MediaObject mediaObject) {
+
+		this.props = new Props();
+		this.clazz = clazz;
+
+		RemoteObjectInvocationHandler handler = (RemoteObjectInvocationHandler) Proxy
+				.getInvocationHandler(mediaObject);
+		this.factory = handler.getFactory();
+	}
+
+	public AbstractBuilder(Class<MediaPipeline> clazz,
+			RemoteObjectFactory factory) {
+
+		this.props = new Props();
+		this.clazz = clazz;
+		this.factory = factory;
+	}
 
 	/**
 	 * Builds an object synchronously using the builder design pattern
@@ -23,7 +53,15 @@ public interface AbstractBuilder<T> {
 	 * @return <T> The type of object
 	 * 
 	 **/
-	public T build();
+	@SuppressWarnings("unchecked")
+	public T build() {
+
+		RemoteObject remoteObject = factory
+				.create(clazz.getSimpleName(), props);
+
+		return (T) RemoteObjectInvocationHandler.newProxy(remoteObject,
+				factory, clazz);
+	}
 
 	/**
 	 * Builds an object asynchronously using the builder design pattern.
@@ -36,6 +74,26 @@ public interface AbstractBuilder<T> {
 	 * 
 	 * 
 	 **/
-	public void buildAsync(Continuation<T> continuation);
+	public void buildAsync(final Continuation<T> continuation) {
+
+		factory.create(clazz.getSimpleName(), props,
+				new DefaultContinuation<RemoteObject>(continuation) {
+					@SuppressWarnings("unchecked")
+					@Override
+					public void onSuccess(RemoteObject remoteObject) {
+						try {
+							continuation
+									.onSuccess((T) RemoteObjectInvocationHandler
+											.newProxy(remoteObject, factory,
+													clazz));
+						} catch (Exception e) {
+							log.warn(
+									"[Continuation] error invoking onSuccess implemented by client",
+									e);
+						}
+					}
+				});
+
+	}
 
 }

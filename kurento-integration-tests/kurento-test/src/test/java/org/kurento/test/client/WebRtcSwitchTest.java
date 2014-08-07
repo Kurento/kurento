@@ -52,9 +52,9 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 	public void testWebRtcSwitch() throws InterruptedException {
 		// Media pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		WebRtcEndpoint webRtcEndpoint1 = mp.newWebRtcEndpoint().build();
-		WebRtcEndpoint webRtcEndpoint2 = mp.newWebRtcEndpoint().build();
-		WebRtcEndpoint webRtcEndpoint3 = mp.newWebRtcEndpoint().build();
+		WebRtcEndpoint webRtcEndpoint1 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEndpoint2 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEndpoint3 = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint1.connect(webRtcEndpoint1);
 		webRtcEndpoint2.connect(webRtcEndpoint2);
 		webRtcEndpoint3.connect(webRtcEndpoint3);

@@ -32,7 +32,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	public void testCampusPartySimulatedPipeline() throws InterruptedException {
 
-		RtpEndpoint rtpEndpoint = pipeline.newRtpEndpoint().build();
+		RtpEndpoint rtpEndpoint = new RtpEndpoint.Builder(pipeline).build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 192.168.1.18\r\n" + "s=-\r\n"
@@ -53,7 +53,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 		// Wait some time simulating the connection to the player app
 		Thread.sleep(1000);
 
-		HttpEndpoint httpEndpoint = pipeline.newHttpGetEndpoint().build();
+		HttpEndpoint httpEndpoint = new HttpGetEndpoint.Builder(pipeline).build();
 
 		rtpEndpoint.connect(httpEndpoint, MediaType.VIDEO);
 	}
@@ -61,7 +61,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 	@Test
 	public void testSourceSinks() {
 
-		RtpEndpoint rtp = pipeline.newRtpEndpoint().build();
+		RtpEndpoint rtp = new RtpEndpoint.Builder(pipeline).build();
 
 		Collection<MediaSource> videoSrcsA = rtp.getMediaSrcs(MediaType.VIDEO);
 		Assert.assertFalse(videoSrcsA.isEmpty());
@@ -80,8 +80,8 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	@Test
 	public void testConnect() throws KurentoException {
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_SMALL).build();
+		HttpEndpoint http = new HttpGetEndpoint.Builder(pipeline).build();
 
 		player.connect(http);
 
@@ -92,8 +92,8 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	@Test
 	public void testConnectByType() throws KurentoException {
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_SMALL).build();
-		HttpEndpoint http = pipeline.newHttpGetEndpoint().build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_SMALL).build();
+		HttpEndpoint http = new HttpGetEndpoint.Builder(pipeline).build();
 
 		player.connect(http, MediaType.AUDIO);
 		player.connect(http, MediaType.VIDEO);

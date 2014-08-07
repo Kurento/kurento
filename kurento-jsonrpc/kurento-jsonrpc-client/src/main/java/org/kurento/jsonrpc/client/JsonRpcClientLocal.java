@@ -18,12 +18,6 @@ import static javax.websocket.CloseReason.CloseCodes.NORMAL_CLOSURE;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
@@ -35,6 +29,11 @@ import org.kurento.jsonrpc.message.Message;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 public class JsonRpcClientLocal extends JsonRpcClient {
 
@@ -65,7 +64,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 					Continuation<Response<JsonElement>> continuation) {
 				Response<JsonElement> result = localSendRequest(request,
 						resultClass);
-				if (result == null) {
+				if (result != null) {
 					continuation.onSuccess(result);
 				}
 			}

@@ -16,18 +16,17 @@ package org.kurento.sandbox.composite;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonObject;
-
 import org.kurento.client.HubPort;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.gson.JsonObject;
 
 /**
  * Composite WebRTC handler (application logic).
@@ -76,9 +75,9 @@ public class WebRtcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		log.debug("Received SDP offer");
 
 		// Media Logic
-		WebRtcEndpoint webRtcEndpoint = room.getPipeline().newWebRtcEndpoint()
-				.build();
-		HubPort port = room.getComposite().newHubPort().build();
+		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(
+				room.getPipeline()).build();
+		HubPort port = new HubPort.Builder(room.getComposite()).build();
 		webRtcEndpoint.connect(port);
 		port.connect(webRtcEndpoint);
 		room.joinParticipant(session, webRtcEndpoint, port);

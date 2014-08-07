@@ -24,10 +24,6 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
 
 /**
  * 
@@ -62,13 +58,13 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
 
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/30sec/red.webm").build();
-		WebRtcEndpoint webRtcEP = mp.newWebRtcEndpoint().build();
+		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
-		Dispatcher dispatcher = mp.newDispatcher().build();
-		HubPort hubPort1 = dispatcher.newHubPort().build();
-		HubPort hubPort2 = dispatcher.newHubPort().build();
+		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
+		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
+		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
 
 		playerEP.connect(hubPort1);
 		hubPort2.connect(webRtcEP);

@@ -20,7 +20,7 @@ package org.kurento.test.client;
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @since 4.2.3
  */
-public interface EventListener {
+public interface BrowserEventListener {
 
 	void onEvent(String event);
 

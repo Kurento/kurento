@@ -20,13 +20,13 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.PostConstruct;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.kurento.client.Composite;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.client.factory.KurentoClient;
 import org.kurento.jsonrpc.Session;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
@@ -45,7 +45,7 @@ public class Room {
 	@PostConstruct
 	private void init() {
 		mp = mpf.createMediaPipeline();
-		composite = mp.newComposite().build();
+		composite = new Composite.Builder(mp).build();
 	}
 
 	public MediaPipeline getPipeline() {

@@ -19,9 +19,9 @@ import static org.kurento.client.test.RtpEndpoint2Test.URL_POINTER_DETECTOR;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.events.EndOfStreamEvent;
 import org.kurento.client.test.util.AsyncEventManager;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 
@@ -39,7 +39,7 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 	@Before
 	public void setupMediaElements() {
 
-		overlayFilter = pipeline.newFaceOverlayFilter().build();
+		overlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
 	}
 
 	@After
@@ -58,8 +58,9 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 	 */
 	@Test
 	public void testFaceOverlayFilter() throws InterruptedException {
-		PlayerEndpoint player = pipeline
-				.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_POINTER_DETECTOR).build();
+
 		player.connect(overlayFilter);
 
 		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<>(

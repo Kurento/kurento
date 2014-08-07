@@ -25,9 +25,6 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 
 /**
  * 
@@ -64,24 +61,24 @@ public class CompositePlayerTest extends BrowserKurentoClientTest {
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
+		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/60sec/red.webm").build();
-		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
+		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/60sec/green.webm").build();
-		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
+		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/60sec/blue.webm").build();
-		PlayerEndpoint playerWhite = mp.newPlayerEndpoint(
+		PlayerEndpoint playerWhite = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/60sec/white.webm").build();
 
-		Composite composite = mp.newComposite().build();
-		HubPort hubPort1 = composite.newHubPort().build();
-		HubPort hubPort2 = composite.newHubPort().build();
-		HubPort hubPort3 = composite.newHubPort().build();
-		HubPort hubPort4 = composite.newHubPort().build();
-		HubPort hubPort5 = composite.newHubPort().build();
+		Composite composite = new Composite.Builder(mp).build();
+		HubPort hubPort1 = new HubPort.Builder(composite).build();
+		HubPort hubPort2 = new HubPort.Builder(composite).build();
+		HubPort hubPort3 = new HubPort.Builder(composite).build();
+		HubPort hubPort4 = new HubPort.Builder(composite).build();
+		HubPort hubPort5 = new HubPort.Builder(composite).build();
 
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
-				.build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 		playerRed.connect(hubPort1);
 		playerGreen.connect(hubPort2);
 		playerBlue.connect(hubPort3);

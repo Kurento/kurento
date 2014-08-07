@@ -76,5 +76,41 @@
 			<artifactId>kurento-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kms-api-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kms-api-elements</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kms-api-filters</artifactId>
+		</dependency>
 	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.kurento</groupId>
+				<artifactId>kurento-maven-plugin</artifactId>
+				<version>${version.kurento.plugin}</version>
+				<configuration>
+					<generateCodeForModules>
+						<param>core</param>
+						<param>elements</param>
+						<param>filters</param>
+					</generateCodeForModules>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate-kurento-client</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

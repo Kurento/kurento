@@ -28,10 +28,10 @@ public class RabbitClientServer {
 
 		MediaPipeline pipeline = mpf.createMediaPipeline();
 
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
 				"http://files.kurento.org/video/small.webm").build();
 
-		HttpGetEndpoint httpGetEndpoint = pipeline.newHttpGetEndpoint().build();
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline).build();
 
 		player.connect(httpGetEndpoint);
 

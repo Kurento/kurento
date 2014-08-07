@@ -218,7 +218,7 @@ public class BrowserClient implements Closeable {
 		for (final String e : eventType) {
 			CountDownLatch latch = new CountDownLatch(1);
 			countDownLatchEvents.put(e, latch);
-			this.addEventListener(e, new EventListener() {
+			this.addEventListener(e, new BrowserEventListener() {
 				@Override
 				public void onEvent(String event) {
 					log.info("Event: {}", event);
@@ -253,7 +253,7 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void addEventListener(final String eventType,
-			final EventListener eventListener) {
+			final BrowserEventListener eventListener) {
 		Thread t = new Thread() {
 			public void run() {
 				((JavascriptExecutor) driver)

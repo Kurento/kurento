@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.kurento.client.MediaType;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RtpEndpoint;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.EventListener;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.SdpAsyncBaseTest;
 
@@ -41,9 +41,9 @@ import org.kurento.client.test.util.SdpAsyncBaseTest;
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link RtpEndpoint#addMediaSessionStartedListener(MediaEventListener)}
+ * <li>{@link RtpEndpoint#addMediaSessionStartedListener(EventListener)}
  * <li>
- * {@link RtpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link RtpEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -58,13 +58,13 @@ public class RtpEndpointAsyncTest extends SdpAsyncBaseTest<RtpEndpoint> {
 
 		AsyncResultManager<RtpEndpoint> async = new AsyncResultManager<>(
 				"RtpEndpoint creation");
-		pipeline.newRtpEndpoint().buildAsync(async.getContinuation());
+		new RtpEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
 		sdp = async.waitForResult();
 		Assert.assertNotNull(sdp);
 
 		AsyncResultManager<RtpEndpoint> async2 = new AsyncResultManager<>(
 				"RtpEndpoint creation");
-		pipeline.newRtpEndpoint().buildAsync(async2.getContinuation());
+		new RtpEndpoint.Builder(pipeline).buildAsync(async2.getContinuation());
 		sdp2 = async2.waitForResult();
 		Assert.assertNotNull(sdp2);
 	}
@@ -73,10 +73,10 @@ public class RtpEndpointAsyncTest extends SdpAsyncBaseTest<RtpEndpoint> {
 	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_BARCODES)
 				.build();
 
-		RtpEndpoint rtpEndpoint = pipeline.newRtpEndpoint().build();
+		RtpEndpoint rtpEndpoint = new RtpEndpoint.Builder(pipeline).build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"

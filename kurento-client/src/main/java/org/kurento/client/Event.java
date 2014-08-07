@@ -7,9 +7,9 @@ package org.kurento.client;
 
 /**
  * 
- * Media Profile. Currently WEBM and MP4 are supported.
+ * Parent interface for Kurento events
  * 
  **/
-public enum MediaProfileSpecType {
-	WEBM, MP4
+public interface Event {
+
 }

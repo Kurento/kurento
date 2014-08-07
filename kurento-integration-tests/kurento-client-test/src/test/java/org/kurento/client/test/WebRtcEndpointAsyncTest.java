@@ -17,7 +17,7 @@ package org.kurento.client.test;
 import org.junit.Assert;
 import org.junit.Before;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.EventListener;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.SdpAsyncBaseTest;
 
@@ -36,9 +36,9 @@ import org.kurento.client.test.util.SdpAsyncBaseTest;
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link WebRtcEndpoint#addMediaSessionStartedListener(MediaEventListener)}
+ * <li>{@link WebRtcEndpoint#addMediaSessionStartedListener(EventListener)}
  * <li>
- * {@link WebRtcEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link WebRtcEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -53,13 +53,13 @@ public class WebRtcEndpointAsyncTest extends SdpAsyncBaseTest<WebRtcEndpoint> {
 
 		AsyncResultManager<WebRtcEndpoint> async = new AsyncResultManager<>(
 				"RtpEndpoint creation");
-		pipeline.newWebRtcEndpoint().buildAsync(async.getContinuation());
+		new WebRtcEndpoint.Builder(pipeline).buildAsync(async.getContinuation());
 		sdp = async.waitForResult();
 		Assert.assertNotNull(sdp);
 
 		AsyncResultManager<WebRtcEndpoint> async2 = new AsyncResultManager<>(
 				"RtpEndpoint creation");
-		pipeline.newWebRtcEndpoint().buildAsync(async2.getContinuation());
+		new WebRtcEndpoint.Builder(pipeline).buildAsync(async2.getContinuation());
 		sdp2 = async2.waitForResult();
 		Assert.assertNotNull(sdp2);
 	}

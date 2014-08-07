@@ -42,7 +42,7 @@ public class RecorderEndpointTest extends MediaPipelineBaseTest {
 
 	@Before
 	public void setupMediaElements() {
-		recorder = pipeline.newRecorderEndpoint(URL_SMALL).build();
+		recorder = new RecorderEndpoint.Builder(pipeline,URL_SMALL).build();
 	}
 
 	@After

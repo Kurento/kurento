@@ -16,10 +16,10 @@ package org.kurento.client.factory;
 
 import javax.annotation.PreDestroy;
 
+import org.kurento.client.AbstractBuilder;
 import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.internal.client.RemoteObjectFactory;
-import org.kurento.client.internal.client.RemoteObjectTypedFactory;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
@@ -33,11 +33,11 @@ import org.kurento.jsonrpc.client.JsonRpcClient;
  */
 public class KurentoClient {
 
-	protected RemoteObjectTypedFactory factory;
+	protected RemoteObjectFactory factory;
 
 	public KurentoClient(JsonRpcClient client) {
-		this.factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
-				new RomClientJsonRpcClient(client)));
+		this.factory = new RemoteObjectFactory(new RomClientJsonRpcClient(
+				client));
 	}
 
 	/**
@@ -46,7 +46,8 @@ public class KurentoClient {
 	 * @return The media pipeline
 	 */
 	public MediaPipeline createMediaPipeline() {
-		return factory.getFactory(MediaPipeline.Factory.class).create().build();
+		return new AbstractBuilder<MediaPipeline>(MediaPipeline.class, factory)
+				.build();
 	}
 
 	/**
@@ -62,9 +63,8 @@ public class KurentoClient {
 	 */
 	public void createMediaPipeline(final Continuation<MediaPipeline> cont)
 			throws KurentoException {
-
-		factory.getFactory(MediaPipeline.Factory.class).create()
-		.buildAsync(cont);
+		new AbstractBuilder<MediaPipeline>(MediaPipeline.class, factory)
+				.buildAsync(cont);
 	}
 
 	@PreDestroy

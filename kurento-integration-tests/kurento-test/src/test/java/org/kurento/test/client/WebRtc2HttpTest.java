@@ -62,7 +62,7 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 	public void testWebRtc2Http() throws Exception {
 		// Media Pipeline
 		final MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		final WebRtcEndpoint webRtcEndpoint = mp.newWebRtcEndpoint().build();
+		final WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		// Test execution
@@ -83,7 +83,7 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 				results.add(exec.submit(new Runnable() {
 					@Override
 					public void run() {
-						HttpGetEndpoint httpEP = mp.newHttpGetEndpoint()
+						HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
 								.build();
 						webRtcEndpoint.connect(httpEP);
 						try {

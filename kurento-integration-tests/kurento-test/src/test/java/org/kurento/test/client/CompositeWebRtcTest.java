@@ -26,10 +26,6 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
 
 /**
  * 
@@ -63,19 +59,19 @@ public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		WebRtcEndpoint webRtcEP1 = mp.newWebRtcEndpoint().build();
-		WebRtcEndpoint webRtcEP2 = mp.newWebRtcEndpoint().build();
-		WebRtcEndpoint webRtcEP3 = mp.newWebRtcEndpoint().build();
-		WebRtcEndpoint webRtcEP4 = mp.newWebRtcEndpoint().build();
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
-				.build();
+		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEP3 = new WebRtcEndpoint.Builder(mp).build();
+		WebRtcEndpoint webRtcEP4 = new WebRtcEndpoint.Builder(mp).build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 
-		Composite composite = mp.newComposite().build();
-		HubPort hubPort1 = composite.newHubPort().build();
-		HubPort hubPort2 = composite.newHubPort().build();
-		HubPort hubPort3 = composite.newHubPort().build();
-		HubPort hubPort4 = composite.newHubPort().build();
-		HubPort hubPort5 = composite.newHubPort().build();
+		Composite composite = new Composite.Builder(mp).build();
+		HubPort hubPort1 = new HubPort.Builder(composite).build();
+		HubPort hubPort2 = new HubPort.Builder(composite).build();
+		HubPort hubPort3 = new HubPort.Builder(composite).build();
+		HubPort hubPort4 = new HubPort.Builder(composite).build();
+		HubPort hubPort5 = new HubPort.Builder(composite).build();
 
 		webRtcEP1.connect(hubPort1);
 		webRtcEP2.connect(hubPort2);
@@ -136,7 +132,7 @@ public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 					browserPlayer.color(Color.WHITE, 18, 450, 450));
 
 			// Finally, a B&N filter is connected in one of the WebRTC's
-			GStreamerFilter bn = mp.newGStreamerFilter(
+			GStreamerFilter bn = new GStreamerFilter.Builder(mp,
 					"videobalance saturation=0.0").build();
 			webRtcEP1.connect(bn);
 			bn.connect(hubPort1);

@@ -20,9 +20,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.GStreamerFilter;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.events.EndOfStreamEvent;
 import org.kurento.client.test.util.AsyncEventManager;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 
@@ -41,7 +41,7 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 
 	@Before
 	public void setupMediaElements() {
-		player = pipeline.newPlayerEndpoint(URL_SMALL).build();
+		player = new PlayerEndpoint.Builder(pipeline, URL_SMALL).build();
 	}
 
 	@After
@@ -52,8 +52,8 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 	@Test
 	public void testInstantiation() throws InterruptedException {
 
-		filter = pipeline
-				.newGStreamerFilter("videoflip method=horizontal-flip").build();
+		filter = new GStreamerFilter.Builder(pipeline,
+				"videoflip method=horizontal-flip").build();
 
 		Assert.assertNotNull(filter);
 

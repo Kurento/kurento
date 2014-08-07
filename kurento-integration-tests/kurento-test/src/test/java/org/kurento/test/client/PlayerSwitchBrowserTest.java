@@ -46,17 +46,17 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 	public void testPlayerSwitch() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		PlayerEndpoint playerRed = mp.newPlayerEndpoint(
+		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/red.webm").build();
-		PlayerEndpoint playerGreen = mp.newPlayerEndpoint(
+		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/green.webm").build();
-		PlayerEndpoint playerBlue = mp.newPlayerEndpoint(
+		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/blue.webm").build();
-		PlayerEndpoint playerSmpte = mp.newPlayerEndpoint(
+		PlayerEndpoint playerSmpte = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/smpte.webm").build();
-		PlayerEndpoint playerBall = mp.newPlayerEndpoint(
+		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/ball.webm").build();
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
 				.build();
 
 		// Test execution

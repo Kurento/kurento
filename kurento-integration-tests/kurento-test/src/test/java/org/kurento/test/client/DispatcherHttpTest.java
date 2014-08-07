@@ -24,10 +24,6 @@ import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
 
 /**
  * 
@@ -57,13 +53,13 @@ public class DispatcherHttpTest extends BrowserKurentoClientTest {
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		WebRtcEndpoint webRtcEP1 = mp.newWebRtcEndpoint().build();
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
-				.build();
+		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 
-		Dispatcher dispatcher = mp.newDispatcher().build();
-		HubPort hubPort1 = dispatcher.newHubPort().build();
-		HubPort hubPort2 = dispatcher.newHubPort().build();
+		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
+		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
+		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
 
 		webRtcEP1.connect(hubPort1);
 		hubPort2.connect(httpEP);

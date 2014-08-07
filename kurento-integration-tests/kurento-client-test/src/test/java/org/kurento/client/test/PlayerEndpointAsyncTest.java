@@ -20,10 +20,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kurento.client.ListenerRegistration;
+import org.kurento.client.ListenerSubscription;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.events.EndOfStreamEvent;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.test.util.AsyncEventManager;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
@@ -42,7 +42,7 @@ import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link PlayerEndpoint#addEndOfStreamListener(MediaEventListener)}
+ * <li>{@link PlayerEndpoint#addEndOfStreamListener(EventListener)}
  * </ul>
  *
  *
@@ -60,7 +60,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<PlayerEndpoint> async = new AsyncResultManager<>(
 				"PlayerEndpoint creation");
 
-		pipeline.newPlayerEndpoint(URL_SMALL).buildAsync(
+		new PlayerEndpoint.Builder(pipeline,URL_SMALL).buildAsync(
 				async.getContinuation());
 
 		player = async.waitForResult();
@@ -112,7 +112,7 @@ public class PlayerEndpointAsyncTest extends MediaPipelineAsyncBaseTest {
 	@Test
 	public void testEventEndOfStream() throws InterruptedException {
 
-		AsyncResultManager<ListenerRegistration> asyncListener = new AsyncResultManager<>(
+		AsyncResultManager<ListenerSubscription> asyncListener = new AsyncResultManager<>(
 				"EndOfStream Listener registration");
 
 		AsyncEventManager<EndOfStreamEvent> asyncEvent = new AsyncEventManager<>(

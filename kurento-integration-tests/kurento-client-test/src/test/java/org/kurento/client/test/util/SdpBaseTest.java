@@ -16,8 +16,12 @@ package org.kurento.client.test.util;
 
 import static org.kurento.client.test.RtpEndpoint2Test.URL_BARCODES;
 
-import org.junit.*;
-import org.kurento.client.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.kurento.client.MediaType;
+import org.kurento.client.PlayerEndpoint;
+import org.kurento.client.SdpEndpoint;
 
 /**
  * @author Ivan Gracia (igracia@gsyc.es)
@@ -25,7 +29,7 @@ import org.kurento.client.*;
  *
  */
 public abstract class SdpBaseTest<T extends SdpEndpoint> extends
-MediaPipelineBaseTest {
+		MediaPipelineBaseTest {
 
 	protected T sdp;
 	protected T sdp2;
@@ -88,8 +92,8 @@ MediaPipelineBaseTest {
 	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndpoint player = pipeline.newPlayerEndpoint(URL_BARCODES)
-				.build();
+		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
+				URL_BARCODES).build();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"

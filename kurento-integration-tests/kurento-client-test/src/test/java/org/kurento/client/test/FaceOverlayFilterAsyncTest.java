@@ -21,7 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.PlayerEndpoint;
-import org.kurento.client.events.EndOfStreamEvent;
+import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.test.util.AsyncEventManager;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
@@ -42,12 +42,12 @@ public class FaceOverlayFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 	@Before
 	public void setupMediaElements() throws InterruptedException {
 
-		player = pipeline.newPlayerEndpoint(URL_POINTER_DETECTOR).build();
+		player = new PlayerEndpoint.Builder(pipeline,URL_POINTER_DETECTOR).build();
 
 		AsyncResultManager<FaceOverlayFilter> async = new AsyncResultManager<>(
 				"FaceOverlayFilter creation");
 
-		pipeline.newFaceOverlayFilter().buildAsync(async.getContinuation());
+		new FaceOverlayFilter.Builder(pipeline).buildAsync(async.getContinuation());
 
 		overlayFilter = async.waitForResult();
 	}

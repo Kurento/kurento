@@ -27,8 +27,8 @@ import org.junit.Test;
 import org.kurento.client.HttpEndpoint;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.ZBarFilter;
-import org.kurento.client.events.CodeFoundEvent;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.CodeFoundEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
 
@@ -43,9 +43,9 @@ import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link HttpEndpoint#addMediaSessionStartListener(MediaEventListener)}
+ * <li>{@link HttpEndpoint#addMediaSessionStartListener(EventListener)}
  * <li>
- * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link HttpEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -64,11 +64,11 @@ public class ZBarFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 		AsyncResultManager<ZBarFilter> async = new AsyncResultManager<>(
 				"ZBarFilter creation");
 
-		pipeline.newZBarFilter().buildAsync(async.getContinuation());
+		new ZBarFilter.Builder(pipeline).buildAsync(async.getContinuation());
 
 		zbar = async.waitForResult();
 
-		player = pipeline.newPlayerEndpoint(URL_BARCODES).build();
+		player = new PlayerEndpoint.Builder(pipeline,URL_BARCODES).build();
 	}
 
 	@After
@@ -83,7 +83,7 @@ public class ZBarFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		final BlockingQueue<CodeFoundEvent> events = new ArrayBlockingQueue<CodeFoundEvent>(
 				1);
-		zbar.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
+		zbar.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
 
 			@Override
 			public void onEvent(CodeFoundEvent event) {

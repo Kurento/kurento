@@ -20,7 +20,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.*;
-import org.kurento.client.events.*;
+import org.kurento.client.*;
 import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.*;
 
@@ -47,16 +47,16 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 	public void testPlayerZBar() throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = pipelineFactory.createMediaPipeline();
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/barcodes.webm").build();
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
 				.build();
-		ZBarFilter zBarFilter = mp.newZBarFilter().build();
+		ZBarFilter zBarFilter = new ZBarFilter.Builder(mp).build();
 		playerEP.connect(zBarFilter);
 		zBarFilter.connect(httpEP);
 
 		final List<EndOfStreamEvent> eosEvents = new ArrayList<>();
-		playerEP.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
 			@Override
 			public void onEvent(EndOfStreamEvent event) {
 				eosEvents.add(event);
@@ -65,7 +65,7 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 
 		final List<CodeFoundEvent> codeFoundEvents = new ArrayList<>();
 		zBarFilter
-				.addCodeFoundListener(new MediaEventListener<CodeFoundEvent>() {
+				.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
 					@Override
 					public void onEvent(CodeFoundEvent event) {
 						log.info("CodeFound {}", event.getValue());

@@ -21,8 +21,8 @@ import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.kurento.client.*;
-import org.kurento.client.events.EndOfStreamEvent;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.factory.KurentoProperties;
 import org.kurento.client.factory.KurentoClient;
 import org.kurento.rabbitmq.client.JsonRpcClientRabbitMq;
@@ -69,16 +69,16 @@ public class ClientApp {
 	private void kurentoClientUsage() throws InterruptedException {
 
 		MediaPipeline mp = mpf.createMediaPipeline();
-		PlayerEndpoint playerEP = mp.newPlayerEndpoint(
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/small.webm").build();
-		HttpGetEndpoint httpEP = mp.newHttpGetEndpoint().terminateOnEOS()
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
 				.build();
 		playerEP.connect(httpEP);
 		String url = httpEP.getUrl();
 		log.info("url: {}", url);
 
 		final CountDownLatch endOfStreamEvent = new CountDownLatch(1);
-		playerEP.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
 			@Override
 			public void onEvent(EndOfStreamEvent event) {
 				endOfStreamEvent.countDown();
@@ -92,14 +92,14 @@ public class ClientApp {
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
 			browser.setURL(url);
-			browser.addEventListener("playing", new EventListener() {
+			browser.addEventListener("playing", new BrowserEventListener() {
 				@Override
 				public void onEvent(String event) {
 					log.info("*** playing ***");
 					startEvent.countDown();
 				}
 			});
-			browser.addEventListener("ended", new EventListener() {
+			browser.addEventListener("ended", new BrowserEventListener() {
 				@Override
 				public void onEvent(String event) {
 					log.info("*** ended ***");

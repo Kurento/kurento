@@ -17,7 +17,7 @@ public class RemoteObject {
 
 	private static ParamsFlattener FLATTENER = ParamsFlattener.getInstance();
 
-	public interface EventListener {
+	public interface RemoteObjectEventListener {
 		public void onEvent(String eventType, Props data);
 	}
 
@@ -32,9 +32,9 @@ public class RemoteObject {
 	// to this value instead of RemoteObject itself.
 	private Object wrapperForUnflatten;
 
-	private final Multimap<String, EventListener> listeners = Multimaps
+	private final Multimap<String, RemoteObjectEventListener> listeners = Multimaps
 			.synchronizedMultimap(ArrayListMultimap
-					.<String, EventListener> create());
+					.<String, RemoteObjectEventListener> create());
 
 	public RemoteObject(String objectRef, String type, RomClient client,
 			RomClientObjectManager manager) {
@@ -117,19 +117,19 @@ public class RemoteObject {
 		});
 	}
 
-	public ListenerSubscription addEventListener(String eventType,
-			EventListener listener) {
+	public ListenerSubscriptionImpl addEventListener(String eventType,
+			RemoteObjectEventListener listener) {
 
 		String subscription = client.subscribe(objectRef, eventType);
 
 		listeners.put(eventType, listener);
 
-		return new ListenerSubscription(subscription, eventType, listener);
+		return new ListenerSubscriptionImpl(subscription, eventType, listener);
 	}
 
 	public void addEventListener(final String eventType,
-			final Continuation<ListenerSubscription> cont,
-			final EventListener listener) {
+			final Continuation<ListenerSubscriptionImpl> cont,
+			final RemoteObjectEventListener listener) {
 
 		client.subscribe(objectRef, eventType, new DefaultContinuation<String>(
 				cont) {
@@ -137,7 +137,7 @@ public class RemoteObject {
 			public void onSuccess(String subscription) {
 				listeners.put(eventType, listener);
 				try {
-					cont.onSuccess(new ListenerSubscription(subscription,
+					cont.onSuccess(new ListenerSubscriptionImpl(subscription,
 							eventType, listener));
 				} catch (Exception e) {
 					log.warn(
@@ -153,7 +153,7 @@ public class RemoteObject {
 	}
 
 	public void fireEvent(String type, Props data) {
-		for (EventListener eventListener : this.listeners.get(type)) {
+		for (RemoteObjectEventListener eventListener : this.listeners.get(type)) {
 			try {
 				eventListener.onEvent(type, data);
 			} catch (Exception e) {

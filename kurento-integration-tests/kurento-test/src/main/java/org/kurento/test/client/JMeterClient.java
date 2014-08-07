@@ -58,7 +58,7 @@ public class JMeterClient {
 	final static String REPORTS = "target/jmeter-reports/";
 	final static String JMXFILE = "player.jmx";
 
-	private EventListener eventListener;
+	private BrowserEventListener eventListener;
 	private URL url;
 	private int concurrentUsers;
 	private CountDownLatch terminationEvent;
@@ -97,7 +97,7 @@ public class JMeterClient {
 
 	public void start() throws Exception {
 		// Subscribe to termination event
-		this.addEventListener(new EventListener() {
+		this.addEventListener(new BrowserEventListener() {
 			@Override
 			public void onEvent(String event) {
 				terminationEvent.countDown();
@@ -177,7 +177,7 @@ public class JMeterClient {
 		return terminationEvent.await(getTimeout(), TimeUnit.SECONDS);
 	}
 
-	public void addEventListener(final EventListener eventListener) {
+	public void addEventListener(final BrowserEventListener eventListener) {
 		this.eventListener = eventListener;
 	}
 

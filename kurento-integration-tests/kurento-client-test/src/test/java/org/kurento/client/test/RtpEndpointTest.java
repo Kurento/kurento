@@ -16,7 +16,7 @@ package org.kurento.client.test;
 
 import org.junit.Before;
 import org.kurento.client.RtpEndpoint;
-import org.kurento.client.events.MediaEventListener;
+import org.kurento.client.EventListener;
 import org.kurento.client.test.util.SdpBaseTest;
 
 /**
@@ -34,9 +34,9 @@ import org.kurento.client.test.util.SdpBaseTest;
  * <p>
  * Events tested:
  * <ul>
- * <li>{@link RtpEndpoint#addMediaSessionStartedListener(MediaEventListener)}
+ * <li>{@link RtpEndpoint#addMediaSessionStartedListener(EventListener)}
  * <li>
- * {@link RtpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
+ * {@link RtpEndpoint#addMediaSessionTerminatedListener(EventListener)}
  * </ul>
  *
  *
@@ -48,8 +48,8 @@ public class RtpEndpointTest extends SdpBaseTest<RtpEndpoint> {
 
 	@Before
 	public void setupMediaElements() {
-		sdp = pipeline.newRtpEndpoint().build();
-		sdp2 = pipeline.newRtpEndpoint().build();
+		sdp = new RtpEndpoint.Builder(pipeline).build();
+		sdp2 = new RtpEndpoint.Builder(pipeline).build();
 	}
 
 }
