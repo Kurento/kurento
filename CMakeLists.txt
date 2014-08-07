@@ -7,7 +7,6 @@ message ("If KurentoHelpers is not found, then it is necessary to install
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 find_package(KurentoHelpers REQUIRED)
-find_package(LibSctp REQUIRED)
 find_package(LibSoup REQUIRED)
 
 include (KurentoGitHelpers)
@@ -34,7 +33,6 @@ find_package(PkgConfig)
 
 set (GST_REQUIRED 1.3.3)
 set (GLIB_REQUIRED 2.38)
-set (SOUP_REQUIRED 2.40)
 set (OPENCV_REQUIRED 2.0.0)
 
 #gst-plugins dependencies
@@ -42,10 +40,7 @@ pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_BASE REQUIRED gstreamer-base-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
-#pkg_check_modules(GSTREAMER_PBUTILS REQUIRED gstreamer-pbutils-1.0>=${GST_REQUIRED})
-#pkg_check_modules(KMSGSTCOMMONS REQUIRED kmsgstcommons)
 pkg_check_modules(KMSCORE REQUIRED kmscore)
-pkg_check_modules(SOUP REQUIRED libsoup-2.4>=${SOUP_REQUIRED})
 pkg_check_modules(OPENCV REQUIRED opencv>=${OPENCV_REQUIRED})
 
 set (VERSION ${PROJECT_VERSION})
