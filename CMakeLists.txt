@@ -55,6 +55,7 @@ pkg_check_modules(GNUTLS REQUIRED gnutls>=${GNUTLS_REQUIRED})
 pkg_check_modules(GIO REQUIRED gio-2.0>=${GLIB_REQUIRED})
 pkg_check_modules(GSTREAMER_RTP REQUIRED gstreamer-rtp-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTMARSHAL REQUIRED libgstmarshal>=${GSTMARSHAL_REQUIRED})
+pkg_check_modules(UUID REQUIRED uuid)
 
 set (VERSION ${PROJECT_VERSION})
 set (PACKAGE ${PROJECT_NAME})
