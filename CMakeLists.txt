@@ -7,7 +7,6 @@ message ("If KurentoHelpers is not found, then it is necessary to install
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 find_package(KurentoHelpers REQUIRED)
-find_package(LibSoup REQUIRED)
 
 include (KurentoGitHelpers)
 message ("If CodeGenerator is not found, then it is necessary to install
@@ -34,6 +33,7 @@ find_package(PkgConfig)
 set (GST_REQUIRED 1.3.3)
 set (GLIB_REQUIRED 2.38)
 set (OPENCV_REQUIRED 2.0.0)
+set (LIBSOUP_REQUIRED 2.40)
 
 #gst-plugins dependencies
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
@@ -42,6 +42,7 @@ pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
 pkg_check_modules(KMSCORE REQUIRED kmscore)
 pkg_check_modules(OPENCV REQUIRED opencv>=${OPENCV_REQUIRED})
+pkg_check_modules(LIBSOUP REQUIRED libsoup-2.4>=${LIBSOUP_REQUIRED})
 
 set (VERSION ${PROJECT_VERSION})
 set (PACKAGE ${PROJECT_NAME})
