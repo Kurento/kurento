@@ -7,7 +7,7 @@ ${packageToFolder(module.code.api.java.packageName)}/${event.name}Event.java
  */
 package ${module.code.api.java.packageName};
 
-import com.kurento.tool.rom.server.Param;
+import org.kurento.client.internal.server.Param;
 import java.util.List;
 
 <#list module.allImports as import>

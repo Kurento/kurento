@@ -7,9 +7,9 @@ ${packageToFolder(module.code.api.java.packageName)}/${remoteClass.name}.java
  */
 package ${module.code.api.java.packageName};
 
-import com.kurento.tool.rom.server.Param;
-import com.kurento.tool.rom.RemoteClass;
-import com.kurento.tool.rom.server.FactoryMethod;
+import org.kurento.client.internal.server.Param;
+import org.kurento.client.internal.RemoteClass;
+import org.kurento.client.internal.server.FactoryMethod;
 import java.util.List;
 
 <#list module.allImports as import>
