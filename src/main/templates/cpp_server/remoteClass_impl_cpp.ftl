@@ -27,14 +27,14 @@ namespace kurento
 {
 
 <#if remoteClass.constructor??>
-${remoteClass.name}Impl::${remoteClass.name}Impl (<#rt>
+${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
+        <#lt>, <#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
 <#else> <#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if> </#if>
 <#else>
-${remoteClass.name}Impl::${remoteClass.name}Impl ()
+${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config)
 </#if>
 {
 <#if ! ((remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter")))>

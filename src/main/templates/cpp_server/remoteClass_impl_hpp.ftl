@@ -11,6 +11,7 @@ ${remoteClass.name}Impl.hpp
 </#if>
 #include "${remoteClass.name}.hpp"
 #include <EventHandler.hpp>
+#include <boost/property_tree/ptree.hpp>
 <#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))>
 #include "${remoteClass.name}OpenCVImpl.hpp"
 </#if>
@@ -37,13 +38,13 @@ class ${remoteClass.name}Impl :<#if remoteClass.extends??><#rt>
 public:
 
 <#if remoteClass.constructor?? >
-  ${remoteClass.name}Impl (<#rt>
+  ${remoteClass.name}Impl (const boost::property_tree::ptree &config<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
+        <#lt>, <#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>);
 <#else>
-  ${remoteClass.name}Impl ();
+  ${remoteClass.name}Impl (const boost::property_tree::ptree &config);
 </#if>
 
   virtual ~${remoteClass.name}Impl () {};

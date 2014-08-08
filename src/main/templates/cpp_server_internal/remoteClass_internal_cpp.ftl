@@ -19,7 +19,7 @@ namespace kurento
 {
 <#if (!remoteClass.abstract) && remoteClass.constructor??>
 
-MediaObjectImpl *${remoteClass.name}ImplFactory::createObjectPointer (const Json::Value &params) const
+MediaObjectImpl *${remoteClass.name}ImplFactory::createObjectPointer (const boost::property_tree::ptree &conf, const Json::Value &params) const
 {
   kurento::JsonSerializer s (false);
   ${remoteClass.name}Constructor constructor;
@@ -27,11 +27,11 @@ MediaObjectImpl *${remoteClass.name}ImplFactory::createObjectPointer (const Json
   s.JsonValue = params;
   constructor.Serialize (s);
 
-  return createObject (<#rt>
+  return createObject (conf<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
+        <#lt>, <#rt>
         <#lt>constructor.get${param.name?cap_first}()<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
-     <#lt></#list> );
+     <#lt></#list><#if remoteClass.constructor.params?size != 0> </#if>);
 }
 </#if>
 

@@ -9,6 +9,7 @@ ${remoteClass.name}ImplFactory.hpp
 #include "${remoteClass.extends.name}ImplFactory.hpp"
 </#if>
 #include <MediaObjectImpl.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 namespace kurento
 {
@@ -27,14 +28,14 @@ private:
 
 </#if>
 <#if (!remoteClass.abstract) && (remoteClass.constructor)??>
-  virtual MediaObjectImpl *createObjectPointer (const Json::Value &params) const;
+  virtual MediaObjectImpl *createObjectPointer (const boost::property_tree::ptree &conf, const Json::Value &params) const;
 
 </#if>
   <#if remoteClass.constructor??><#rt>
-  MediaObjectImpl *createObject (<#rt>
+  MediaObjectImpl *createObject (const boost::property_tree::ptree &conf<#rt>
    <#lt><#list remoteClass.constructor.params as param><#rt>
+      <#lt>, <#rt>
       <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-      <#lt><#if param_has_next>, </#if><#rt>
    <#lt></#list>) const;
   </#if>
 };
