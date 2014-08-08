@@ -22,7 +22,8 @@ class GStreamerFilterImpl : public FilterImpl, public virtual GStreamerFilter
 
 public:
 
-  GStreamerFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+  GStreamerFilterImpl (const boost::property_tree::ptree &conf,
+                       std::shared_ptr<MediaPipeline> mediaPipeline,
                        const std::string &command, std::shared_ptr<FilterType> filterType);
 
   virtual ~GStreamerFilterImpl () {};

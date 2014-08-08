@@ -18,10 +18,11 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-GStreamerFilterImpl::GStreamerFilterImpl (std::shared_ptr<MediaPipeline>
+GStreamerFilterImpl::GStreamerFilterImpl (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, const std::string &command,
-    std::shared_ptr<FilterType> filterType) : FilterImpl (
-        std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
+    std::shared_ptr<FilterType> filterType) : FilterImpl (conf,
+          std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
   std::string gstreamerElement, rest_token;
 
@@ -69,11 +70,12 @@ GStreamerFilterImpl::GStreamerFilterImpl (std::shared_ptr<MediaPipeline>
 }
 
 MediaObjectImpl *
-GStreamerFilterImplFactory::createObject (std::shared_ptr<MediaPipeline>
+GStreamerFilterImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, const std::string &command,
     std::shared_ptr<FilterType> filterType) const
 {
-  return new GStreamerFilterImpl (mediaPipeline, command, filterType);
+  return new GStreamerFilterImpl (conf, mediaPipeline, command, filterType);
 }
 
 void

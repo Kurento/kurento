@@ -22,7 +22,8 @@ class FaceOverlayFilterImpl : public FilterImpl,
 
 public:
 
-  FaceOverlayFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  FaceOverlayFilterImpl (const boost::property_tree::ptree &conf,
+                         std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~FaceOverlayFilterImpl () {};
 

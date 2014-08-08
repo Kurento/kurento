@@ -15,9 +15,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-FaceOverlayFilterImpl::FaceOverlayFilterImpl (std::shared_ptr<MediaPipeline>
-    mediaPipeline) : FilterImpl (
-        std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
+FaceOverlayFilterImpl::FaceOverlayFilterImpl (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
+    mediaPipeline) : FilterImpl ( conf,
+                                    std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
   g_object_set (element, "filter-factory", "faceoverlay", NULL);
 
@@ -62,10 +63,11 @@ void FaceOverlayFilterImpl::setOverlayedImage (const std::string &uri,
 }
 
 MediaObjectImpl *
-FaceOverlayFilterImplFactory::createObject (std::shared_ptr<MediaPipeline>
+FaceOverlayFilterImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline) const
 {
-  return new FaceOverlayFilterImpl (mediaPipeline);
+  return new FaceOverlayFilterImpl (conf, mediaPipeline);
 }
 
 FaceOverlayFilterImpl::StaticConstructor

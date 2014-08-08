@@ -23,7 +23,8 @@ class OpenCVFilterImpl : public FilterImpl, public virtual OpenCVFilter,
 
 public:
 
-  OpenCVFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  OpenCVFilterImpl (const boost::property_tree::ptree &conf,
+                    std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~OpenCVFilterImpl () {};
 

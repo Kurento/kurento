@@ -16,8 +16,9 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-OpenCVFilterImpl::OpenCVFilterImpl (std::shared_ptr<MediaPipeline>
-                                    mediaPipeline) : FilterImpl (std::dynamic_pointer_cast<MediaPipelineImpl>
+OpenCVFilterImpl::OpenCVFilterImpl (const boost::property_tree::ptree &conf,
+                                    std::shared_ptr<MediaPipeline>
+                                    mediaPipeline) : FilterImpl (conf, std::dynamic_pointer_cast<MediaPipelineImpl>
                                           (mediaPipeline) )
 {
   g_object_set (element, "filter-factory", "opencvfilter", NULL);

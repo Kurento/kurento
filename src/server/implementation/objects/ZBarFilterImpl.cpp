@@ -24,8 +24,9 @@ bus_message_adaptor (GstBus *bus, GstMessage *message, gpointer data)
   (*func) (message);
 }
 
-ZBarFilterImpl::ZBarFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline) :
-  FilterImpl (std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
+ZBarFilterImpl::ZBarFilterImpl (const boost::property_tree::ptree &conf,
+                                std::shared_ptr<MediaPipeline> mediaPipeline) :
+  FilterImpl (conf, std::dynamic_pointer_cast<MediaObjectImpl> ( mediaPipeline) )
 {
   GstBus *bus;
   std::shared_ptr<MediaPipelineImpl> pipe;
@@ -101,10 +102,11 @@ ZBarFilterImpl::barcodeDetected (guint64 ts, std::string &type,
 }
 
 MediaObjectImpl *
-ZBarFilterImplFactory::createObject (std::shared_ptr<MediaPipeline>
+ZBarFilterImplFactory::createObject (const boost::property_tree::ptree &conf,
+                                     std::shared_ptr<MediaPipeline>
                                      mediaPipeline) const
 {
-  return new ZBarFilterImpl (mediaPipeline);
+  return new ZBarFilterImpl (conf, mediaPipeline);
 }
 
 ZBarFilterImpl::~ZBarFilterImpl()

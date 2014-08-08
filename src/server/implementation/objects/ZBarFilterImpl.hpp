@@ -21,7 +21,8 @@ class ZBarFilterImpl : public FilterImpl, public virtual ZBarFilter
 
 public:
 
-  ZBarFilterImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  ZBarFilterImpl (const boost::property_tree::ptree &conf,
+                  std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~ZBarFilterImpl ();
 
