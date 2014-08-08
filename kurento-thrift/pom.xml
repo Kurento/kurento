@@ -8,7 +8,7 @@
 	</parent>
 
 	<groupId>org.kurento</groupId>
-	<artifactId>kurento-thrift-interface</artifactId>
+	<artifactId>kurento-thrift</artifactId>
 	<packaging>jar</packaging>
 	<name>Kurento Thrift</name>
 	<description>

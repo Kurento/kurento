@@ -56,7 +56,7 @@
 				<module>kurento-commons</module>
 				<module>kurento-commons-testing</module>
 				<module>kurento-parent-pom</module>
-				<module>kurento-thrift-interface</module>				
+				<module>kurento-thrift</module>				
 				<module>kurento-jsonrpc</module>
 				<module>kurento-control-server</module>
 				<module>kurento-client</module>
@@ -91,7 +91,7 @@
 				<module>kurento-commons</module>
 				<module>kurento-commons-testing</module>
 				<module>kurento-parent-pom</module>
-				<module>kurento-thrift-interface</module>				
+				<module>kurento-thrift</module>				
 				<module>kurento-jsonrpc</module>
 				<module>kurento-client</module>				
 				<module>kurento-content-protocol</module>
