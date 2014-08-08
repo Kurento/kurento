@@ -17,27 +17,33 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-MixerImpl::MixerImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
+MixerImpl::MixerImpl (const boost::property_tree::ptree &conf,
+                      std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (conf,
+                            std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
 {
   // FIXME: Implement this
 }
 
-void MixerImpl::connect (std::shared_ptr<MediaType> media, std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink)
+void MixerImpl::connect (std::shared_ptr<MediaType> media,
+                         std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink)
 {
   // FIXME: Implement this
   throw KurentoException (NOT_IMPLEMENTED, "MixerImpl::connect: Not implemented");
 }
 
-void MixerImpl::disconnect (std::shared_ptr<MediaType> media, std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink)
+void MixerImpl::disconnect (std::shared_ptr<MediaType> media,
+                            std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink)
 {
   // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED, "MixerImpl::disconnect: Not implemented");
+  throw KurentoException (NOT_IMPLEMENTED,
+                          "MixerImpl::disconnect: Not implemented");
 }
 
 MediaObjectImpl *
-MixerImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline) const
+MixerImplFactory::createObject (const boost::property_tree::ptree &conf,
+                                std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
-  return new MixerImpl (mediaPipeline);
+  return new MixerImpl (conf, mediaPipeline);
 }
 
 MixerImpl::StaticConstructor MixerImpl::staticConstructor;

@@ -4,7 +4,6 @@
 #include "SdpEndpointImpl.hpp"
 #include "RtpEndpoint.hpp"
 #include <EventHandler.hpp>
-#include <MediaServerConfig.hpp>
 
 namespace kurento
 {
@@ -20,11 +19,10 @@ class RtpEndpointImpl : public SdpEndpointImpl, public virtual RtpEndpoint
 
 public:
 
-  RtpEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  RtpEndpointImpl (const boost::property_tree::ptree &conf,
+                   std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~RtpEndpointImpl () {};
-
-  virtual void setConfig (const MediaServerConfig &config);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,

@@ -21,12 +21,12 @@ class HttpPostEndpointImpl : public HttpEndpointImpl,
 
 public:
 
-  HttpPostEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+  HttpPostEndpointImpl (const boost::property_tree::ptree &conf,
+                        std::shared_ptr<MediaPipeline> mediaPipeline,
                         int disconnectionTimeout, bool useEncodedMedia);
 
   virtual ~HttpPostEndpointImpl () {};
 
-  virtual void setConfig (const MediaServerConfig &config);
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);

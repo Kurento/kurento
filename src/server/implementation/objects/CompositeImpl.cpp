@@ -15,15 +15,18 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-CompositeImpl::CompositeImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
+CompositeImpl::CompositeImpl (const boost::property_tree::ptree &conf,
+                              std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (conf,
+                                    std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
 {
   // FIXME: Implement this
 }
 
 MediaObjectImpl *
-CompositeImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline) const
+CompositeImplFactory::createObject (const boost::property_tree::ptree &conf,
+                                    std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
-  return new CompositeImpl (mediaPipeline);
+  return new CompositeImpl (conf, mediaPipeline);
 }
 
 CompositeImpl::StaticConstructor CompositeImpl::staticConstructor;

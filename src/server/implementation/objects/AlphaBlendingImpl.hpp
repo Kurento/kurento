@@ -22,7 +22,8 @@ class AlphaBlendingImpl : public HubImpl, public virtual AlphaBlending
 
 public:
 
-  AlphaBlendingImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  AlphaBlendingImpl (const boost::property_tree::ptree &conf,
+                     std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~AlphaBlendingImpl () {};
 

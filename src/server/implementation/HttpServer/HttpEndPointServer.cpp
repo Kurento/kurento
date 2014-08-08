@@ -24,12 +24,12 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define HTTP_SERVICE_PORT "serverPort"
 #define HTTP_SERVICE_ANNOUNCED_ADDRESS "announcedAddress"
 
-#define DEFAULT_PORT 9091
-
 using namespace Glib::Threads;
 
 namespace kurento
 {
+
+static const uint DEFAULT_PORT = 9091;
 
 std::shared_ptr<HttpEndPointServer> HttpEndPointServer::instance = 0;
 RecMutex HttpEndPointServer::mutex;
@@ -60,28 +60,30 @@ HttpEndPointServer::getHttpEndPointServer()
 }
 
 std::shared_ptr<HttpEndPointServer>
-HttpEndPointServer::getHttpEndPointServer (uint port, std::string iface,
-    std::string addr)
+HttpEndPointServer::getHttpEndPointServer (const uint port,
+    const std::string &iface, const std::string &addr)
 {
   RecMutex::Lock lock (mutex);
+  uint finalPort = port;
+
 
   if (instance) {
     return instance;
   }
 
-  if (port == 0) {
+  if (finalPort == 0) {
     GST_INFO ("HttpService will start on any available port");
   } else {
     try {
-      check_port (port);
+      check_port (finalPort);
     } catch (std::exception &ex) {
       GST_WARNING ("Setting default port %d to http end point server",
                    DEFAULT_PORT);
-      port = DEFAULT_PORT;
+      finalPort = DEFAULT_PORT;
     }
   }
 
-  HttpEndPointServer::port = port;
+  HttpEndPointServer::port = finalPort;
   HttpEndPointServer::interface = iface;
   HttpEndPointServer::announcedAddr = addr;
 
@@ -89,6 +91,32 @@ HttpEndPointServer::getHttpEndPointServer (uint port, std::string iface,
   instance->start();
 
   return instance;
+}
+
+std::shared_ptr<HttpEndPointServer>
+HttpEndPointServer::getHttpEndPointServer (const boost::property_tree::ptree
+    &config)
+{
+  int port = DEFAULT_PORT;
+  std::string iface;
+  std::string address;
+
+  try {
+    port = config.get<int> ("kurento.HttpEndpoint.port");
+  } catch (boost::property_tree::ptree_error &e) {
+  }
+
+  try {
+    address = config.get<int> ("kurento.HttpEndpoint.announcedAddress");
+  } catch (boost::property_tree::ptree_error &e) {
+  }
+
+  try {
+    iface = config.get<int> ("kurento.HttpEndpoint.serverAddress");
+  } catch (boost::property_tree::ptree_error &e) {
+  }
+
+  return getHttpEndPointServer (port, iface, address);
 }
 
 HttpEndPointServer::HttpEndPointServer ()

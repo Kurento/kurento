@@ -12,14 +12,17 @@ class MediaPipeline;
 class HubPort;
 class DispatcherOneToManyImpl;
 
-void Serialize (std::shared_ptr<DispatcherOneToManyImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<DispatcherOneToManyImpl> &object,
+                JsonSerializer &serializer);
 
-class DispatcherOneToManyImpl : public HubImpl, public virtual DispatcherOneToMany
+class DispatcherOneToManyImpl : public HubImpl,
+  public virtual DispatcherOneToMany
 {
 
 public:
 
-  DispatcherOneToManyImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  DispatcherOneToManyImpl (const boost::property_tree::ptree &conf,
+                           std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~DispatcherOneToManyImpl () {};
 
@@ -27,7 +30,8 @@ public:
   void removeSource ();
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

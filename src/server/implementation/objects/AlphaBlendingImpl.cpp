@@ -22,8 +22,9 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-AlphaBlendingImpl::AlphaBlendingImpl (std::shared_ptr<MediaPipeline>
-                                      mediaPipeline) : HubImpl (std::dynamic_pointer_cast<MediaPipelineImpl>
+AlphaBlendingImpl::AlphaBlendingImpl (const boost::property_tree::ptree &conf,
+                                      std::shared_ptr<MediaPipeline>
+                                      mediaPipeline) : HubImpl (conf, std::dynamic_pointer_cast<MediaPipelineImpl>
                                             (mediaPipeline), FACTORY_NAME)
 {
 }
@@ -66,10 +67,11 @@ void AlphaBlendingImpl::setPortProperties (float relativeX, float relativeY,
 }
 
 MediaObjectImpl *
-AlphaBlendingImplFactory::createObject (std::shared_ptr<MediaPipeline>
+AlphaBlendingImplFactory::createObject (const boost::property_tree::ptree &conf,
+                                        std::shared_ptr<MediaPipeline>
                                         mediaPipeline) const
 {
-  return new AlphaBlendingImpl (mediaPipeline);
+  return new AlphaBlendingImpl (conf, mediaPipeline);
 }
 
 AlphaBlendingImpl::StaticConstructor AlphaBlendingImpl::staticConstructor;

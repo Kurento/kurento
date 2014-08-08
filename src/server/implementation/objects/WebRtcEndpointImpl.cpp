@@ -15,14 +15,14 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-WebRtcEndpointImpl::WebRtcEndpointImpl (std::shared_ptr<MediaPipeline>
-                                        mediaPipeline) : SdpEndpointImpl (std::dynamic_pointer_cast<MediaObjectImpl>
+WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
+                                        std::shared_ptr<MediaPipeline>
+                                        mediaPipeline) : SdpEndpointImpl (conf,
+                                              std::dynamic_pointer_cast<MediaObjectImpl>
                                               (mediaPipeline), FACTORY_NAME)
 {
-}
-
-void WebRtcEndpointImpl::setConfig (const MediaServerConfig &config)
-{
+  // FIXME: Implement this correctly
+  /*
   g_object_set (element, "pattern-sdp", config.getSdpPattern(), NULL);
 
   //set properties
@@ -49,13 +49,15 @@ void WebRtcEndpointImpl::setConfig (const MediaServerConfig &config)
     g_object_set ( G_OBJECT (element), "certificate-pem-file",
                    config.getPemCertificate().c_str(), NULL);
   }
+  */
 }
 
 MediaObjectImpl *
-WebRtcEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+WebRtcEndpointImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline) const
 {
-  return new WebRtcEndpointImpl (mediaPipeline);
+  return new WebRtcEndpointImpl (conf, mediaPipeline);
 }
 
 WebRtcEndpointImpl::StaticConstructor WebRtcEndpointImpl::staticConstructor;

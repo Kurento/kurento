@@ -16,7 +16,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-DispatcherOneToManyImpl::DispatcherOneToManyImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
+DispatcherOneToManyImpl::DispatcherOneToManyImpl (const
+    boost::property_tree::ptree &conf,
+    std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (conf,
+          std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
 {
   // FIXME: Implement this
 }
@@ -24,22 +27,26 @@ DispatcherOneToManyImpl::DispatcherOneToManyImpl (std::shared_ptr<MediaPipeline>
 void DispatcherOneToManyImpl::setSource (std::shared_ptr<HubPort> source)
 {
   // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED, "DispatcherOneToManyImpl::setSource: Not implemented");
+  throw KurentoException (NOT_IMPLEMENTED,
+                          "DispatcherOneToManyImpl::setSource: Not implemented");
 }
 
 void DispatcherOneToManyImpl::removeSource ()
 {
   // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED, "DispatcherOneToManyImpl::removeSource: Not implemented");
+  throw KurentoException (NOT_IMPLEMENTED,
+                          "DispatcherOneToManyImpl::removeSource: Not implemented");
 }
 
 MediaObjectImpl *
-DispatcherOneToManyImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline) const
+DispatcherOneToManyImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
-  return new DispatcherOneToManyImpl (mediaPipeline);
+  return new DispatcherOneToManyImpl (conf, mediaPipeline);
 }
 
-DispatcherOneToManyImpl::StaticConstructor DispatcherOneToManyImpl::staticConstructor;
+DispatcherOneToManyImpl::StaticConstructor
+DispatcherOneToManyImpl::staticConstructor;
 
 DispatcherOneToManyImpl::StaticConstructor::StaticConstructor()
 {

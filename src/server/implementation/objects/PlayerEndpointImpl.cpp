@@ -23,9 +23,10 @@ adaptor_function (GstElement *player, gpointer data)
 }
 
 
-PlayerEndpointImpl::PlayerEndpointImpl (std::shared_ptr<MediaPipeline>
+PlayerEndpointImpl::PlayerEndpointImpl (const boost::property_tree::ptree &conf,
+                                        std::shared_ptr<MediaPipeline>
                                         mediaPipeline, const std::string &uri,
-                                        bool useEncodedMedia) : UriEndpointImpl (
+                                        bool useEncodedMedia) : UriEndpointImpl (conf,
                                               std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
   GstElement *element = getGstreamerElement();
@@ -85,10 +86,12 @@ void PlayerEndpointImpl::play ()
 }
 
 MediaObjectImpl *
-PlayerEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
-    mediaPipeline, const std::string &uri, bool useEncodedMedia) const
+PlayerEndpointImplFactory::createObject (const boost::property_tree::ptree
+    &conf,
+    std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
+    bool useEncodedMedia) const
 {
-  return new PlayerEndpointImpl (mediaPipeline, uri, useEncodedMedia);
+  return new PlayerEndpointImpl (conf, mediaPipeline, uri, useEncodedMedia);
 }
 
 PlayerEndpointImpl::StaticConstructor PlayerEndpointImpl::staticConstructor;

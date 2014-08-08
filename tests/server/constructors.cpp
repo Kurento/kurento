@@ -23,26 +23,23 @@
 #include <gst/gst.h>
 #include <config.h>
 #include "HttpGetEndpointImpl.hpp"
-#include "MediaServerConfig.hpp"
+
+boost::property_tree::ptree config;
 
 void
 testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
                      std::shared_ptr <kurento::MediaObjectImpl> mediaPipeline)
 {
   kurento::JsonSerializer w (true);
-  kurento::MediaServerConfig config;
 
   w.SerializeNVP (mediaPipeline);
 
+  config.add<std::string> ("kurento.HttpEndpoint.announcedAddress", "localhost");
+  config.add<uint> ("kurento.HttpEndpoint.port", 0);
+
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("HttpGetEndpoint")->createObject ("", w.JsonValue);
-
-  config.setHttpPort (0);
-  config.setHttpAnnouncedAddr ("localhost");
-  config.setHttpInterface ("");
-
-  std::dynamic_pointer_cast<kurento::MediaObjectImpl>
-  (object)->setConfig (config);
+    moduleManager.getFactory ("HttpGetEndpoint")->createObject (config, "",
+        w.JsonValue);
 
   std::cout << "uri " << std::dynamic_pointer_cast<kurento::HttpEndpoint>
             (object)->getUrl () << std::endl;
@@ -63,7 +60,8 @@ testHttpPostEndPoint (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("HttpPostEndpoint")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("HttpPostEndpoint")->createObject (config, "",
+        w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -78,7 +76,8 @@ testPlayerEndPoint (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (uri);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("PlayerEndpoint")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("PlayerEndpoint")->createObject (config, "",
+        w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -93,7 +92,8 @@ testRecorderEndPoint (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (uri);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("RecorderEndpoint")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("RecorderEndpoint")->createObject (config, "",
+        w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -106,7 +106,8 @@ testRtpEndpoint (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("RtpEndpoint")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("RtpEndpoint")->createObject (config, "",
+        w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -119,7 +120,8 @@ testWebRTCEndpoint (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("WebRtcEndpoint")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("WebRtcEndpoint")->createObject (config, "",
+        w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -132,7 +134,7 @@ testMixer (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("Mixer")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("Mixer")->createObject (config, "", w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -145,7 +147,7 @@ testDispatcher (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("Dispatcher")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("Dispatcher")->createObject (config, "", w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -158,7 +160,7 @@ testDispatcherOneToMany (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("DispatcherOneToMany")->createObject ("",
+    moduleManager.getFactory ("DispatcherOneToMany")->createObject (config, "",
         w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
@@ -172,7 +174,7 @@ testComposite (kurento::ModuleManager &moduleManager,
   w.SerializeNVP (mediaPipeline);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
-    moduleManager.getFactory ("Composite")->createObject ("", w.JsonValue);
+    moduleManager.getFactory ("Composite")->createObject (config, "", w.JsonValue);
   kurento::MediaSet::getMediaSet()->release (object);
 }
 
@@ -189,8 +191,9 @@ main (int argc, char **argv)
   std::string coreModuleName = KURENTO_MODULES_SO_DIR "/libkmscoremodule.so";
 
   moduleManager.loadModule (coreModuleName);
-  mediaPipeline = moduleManager.getFactory ("MediaPipeline")->createObject ("",
-                  Json::Value() );
+  mediaPipeline = moduleManager.getFactory ("MediaPipeline")->createObject (
+                    config, "",
+                    Json::Value() );
 
   moduleManager.loadModule ("../../src/server/libkmselementsmodule.so");
 

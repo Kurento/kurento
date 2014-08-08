@@ -196,20 +196,9 @@ HttpEndpointImpl::is_registered()
   return urlSet;
 }
 
-void HttpEndpointImpl::setConfig (const MediaServerConfig &config)
-{
-  std::shared_ptr<HttpEndPointServer> server =
-    HttpEndPointServer::getHttpEndPointServer (config.getHttpPort(),
-        config.getHttpInterface(), config.getHttpAnnouncedAddr() );
-
-  if (server == NULL) {
-    throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR ,
-                            "HttpServer is not created");
-  }
-}
-
-HttpEndpointImpl::HttpEndpointImpl (std::shared_ptr< MediaObjectImpl > parent,
-                                    int disconnectionTimeout) : SessionEndpointImpl (parent, FACTORY_NAME)
+HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
+                                    std::shared_ptr< MediaObjectImpl > parent,
+                                    int disconnectionTimeout) : SessionEndpointImpl (conf, parent, FACTORY_NAME)
 {
   this->disconnectionTimeout = disconnectionTimeout;
   actionRequestedLambda = [&] (const gchar * uri,
@@ -306,6 +295,14 @@ HttpEndpointImpl::HttpEndpointImpl (std::shared_ptr< MediaObjectImpl > parent,
     } catch (std::bad_weak_ptr &e) {
     }
   };
+
+  std::shared_ptr<HttpEndPointServer> server =
+    HttpEndPointServer::getHttpEndPointServer (conf);
+
+  if (server == NULL) {
+    throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR ,
+                            "HttpServer is not created");
+  }
 }
 
 HttpEndpointImpl::~HttpEndpointImpl()

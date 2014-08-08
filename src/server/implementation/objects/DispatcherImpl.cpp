@@ -16,21 +16,26 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-DispatcherImpl::DispatcherImpl (std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
+DispatcherImpl::DispatcherImpl (const boost::property_tree::ptree &conf,
+                                std::shared_ptr<MediaPipeline> mediaPipeline) : HubImpl (conf,
+                                      std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
 {
   // FIXME: Implement this
 }
 
-void DispatcherImpl::connect (std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink)
+void DispatcherImpl::connect (std::shared_ptr<HubPort> source,
+                              std::shared_ptr<HubPort> sink)
 {
   // FIXME: Implement this
-  throw KurentoException (NOT_IMPLEMENTED, "DispatcherImpl::connect: Not implemented");
+  throw KurentoException (NOT_IMPLEMENTED,
+                          "DispatcherImpl::connect: Not implemented");
 }
 
 MediaObjectImpl *
-DispatcherImplFactory::createObject (std::shared_ptr<MediaPipeline> mediaPipeline) const
+DispatcherImplFactory::createObject (const boost::property_tree::ptree &conf,
+                                     std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
-  return new DispatcherImpl (mediaPipeline);
+  return new DispatcherImpl (conf, mediaPipeline);
 }
 
 DispatcherImpl::StaticConstructor DispatcherImpl::staticConstructor;

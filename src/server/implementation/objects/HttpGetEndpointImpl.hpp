@@ -21,13 +21,12 @@ class HttpGetEndpointImpl : public HttpEndpointImpl,
 
 public:
 
-  HttpGetEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline,
+  HttpGetEndpointImpl (const boost::property_tree::ptree &conf,
+                       std::shared_ptr<MediaPipeline> mediaPipeline,
                        bool terminateOnEOS, std::shared_ptr<MediaProfileSpecType> mediaProfile,
                        int disconnectionTimeout);
 
   virtual ~HttpGetEndpointImpl () {};
-
-  virtual void setConfig (const MediaServerConfig &config);
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,

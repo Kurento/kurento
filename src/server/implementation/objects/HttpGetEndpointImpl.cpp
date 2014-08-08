@@ -14,10 +14,11 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
-HttpGetEndpointImpl::HttpGetEndpointImpl (std::shared_ptr<MediaPipeline>
-    mediaPipeline, bool terminateOnEOS,
-    std::shared_ptr<MediaProfileSpecType> mediaProfile,
-    int disconnectionTimeout) : HttpEndpointImpl (
+HttpGetEndpointImpl::HttpGetEndpointImpl (
+  const boost::property_tree::ptree &conf,
+  std::shared_ptr<MediaPipeline> mediaPipeline, bool terminateOnEOS,
+  std::shared_ptr<MediaProfileSpecType> mediaProfile,
+  int disconnectionTimeout) : HttpEndpointImpl (conf,
         std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline),
         disconnectionTimeout)
 {
@@ -35,11 +36,6 @@ HttpGetEndpointImpl::HttpGetEndpointImpl (std::shared_ptr<MediaPipeline>
     g_object_set ( G_OBJECT (element), "profile", 1, NULL);
     break;
   }
-}
-
-void HttpGetEndpointImpl::setConfig (const MediaServerConfig &config)
-{
-  HttpEndpointImpl::setConfig (config);
 
   register_end_point();
 
@@ -51,12 +47,14 @@ void HttpGetEndpointImpl::setConfig (const MediaServerConfig &config)
 
 
 MediaObjectImpl *
-HttpGetEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+HttpGetEndpointImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, bool terminateOnEOS,
     std::shared_ptr<MediaProfileSpecType> mediaProfile,
     int disconnectionTimeout) const
 {
-  return new HttpGetEndpointImpl (mediaPipeline, terminateOnEOS, mediaProfile,
+  return new HttpGetEndpointImpl (conf, mediaPipeline, terminateOnEOS,
+                                  mediaProfile,
                                   disconnectionTimeout);
 }
 

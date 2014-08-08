@@ -23,18 +23,15 @@ adaptor_function (GstElement *player, gpointer data)
   (*handler) ();
 }
 
-HttpPostEndpointImpl::HttpPostEndpointImpl (std::shared_ptr<MediaPipeline>
+HttpPostEndpointImpl::HttpPostEndpointImpl (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, int disconnectionTimeout,
-    bool useEncodedMedia) : HttpEndpointImpl (
-        std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline),
-        disconnectionTimeout)
+    bool useEncodedMedia) : HttpEndpointImpl (conf,
+          std::dynamic_pointer_cast< MediaObjectImpl > (mediaPipeline),
+          disconnectionTimeout)
 {
   g_object_set (G_OBJECT (element), USE_ENCODED_MEDIA, useEncodedMedia, NULL);
-}
 
-void HttpPostEndpointImpl::setConfig (const MediaServerConfig &config)
-{
-  HttpEndpointImpl::setConfig (config);
   eosLambda = [&] () {
     try {
       EndOfStream event (shared_from_this(), EndOfStream::getName() );
@@ -57,10 +54,11 @@ void HttpPostEndpointImpl::setConfig (const MediaServerConfig &config)
 }
 
 MediaObjectImpl *
-HttpPostEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+HttpPostEndpointImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, int disconnectionTimeout, bool useEncodedMedia) const
 {
-  return new HttpPostEndpointImpl (mediaPipeline, disconnectionTimeout,
+  return new HttpPostEndpointImpl (conf, mediaPipeline, disconnectionTimeout,
                                    useEncodedMedia);
 }
 

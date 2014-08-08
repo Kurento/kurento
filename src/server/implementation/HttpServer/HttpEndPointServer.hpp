@@ -20,6 +20,7 @@
 #include <string>
 #include <glibmm.h>
 #include <memory>
+#include <boost/property_tree/ptree.hpp>
 
 #include "KmsHttpEPServer.h"
 
@@ -30,7 +31,10 @@ class HttpEndPointServer
 {
 public:
   static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer();
-  static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer (uint port, std::string iface, std::string addr);
+  static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer (
+    const uint port, const std::string &iface, const std::string &addr);
+  static std::shared_ptr<HttpEndPointServer> getHttpEndPointServer (
+    const boost::property_tree::ptree &config);
   void start ();
   void stop ();
   void registerEndPoint (GstElement *endpoint, guint timeout,

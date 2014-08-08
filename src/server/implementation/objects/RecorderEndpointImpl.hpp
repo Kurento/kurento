@@ -12,21 +12,26 @@ class MediaPipeline;
 class MediaProfileSpecType;
 class RecorderEndpointImpl;
 
-void Serialize (std::shared_ptr<RecorderEndpointImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<RecorderEndpointImpl> &object,
+                JsonSerializer &serializer);
 
-class RecorderEndpointImpl : public UriEndpointImpl, public virtual RecorderEndpoint
+class RecorderEndpointImpl : public UriEndpointImpl,
+  public virtual RecorderEndpoint
 {
 
 public:
 
-  RecorderEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream);
+  RecorderEndpointImpl (const boost::property_tree::ptree &conf,
+                        std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
+                        std::shared_ptr<MediaProfileSpecType> mediaProfile, bool stopOnEndOfStream);
 
   virtual ~RecorderEndpointImpl ();
 
   void record ();
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

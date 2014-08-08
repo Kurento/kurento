@@ -20,15 +20,19 @@ class MixerImpl : public HubImpl, public virtual Mixer
 
 public:
 
-  MixerImpl (std::shared_ptr<MediaPipeline> mediaPipeline);
+  MixerImpl (const boost::property_tree::ptree &conf,
+             std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~MixerImpl () {};
 
-  void connect (std::shared_ptr<MediaType> media, std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink);
-  void disconnect (std::shared_ptr<MediaType> media, std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink);
+  void connect (std::shared_ptr<MediaType> media, std::shared_ptr<HubPort> source,
+                std::shared_ptr<HubPort> sink);
+  void disconnect (std::shared_ptr<MediaType> media,
+                   std::shared_ptr<HubPort> source, std::shared_ptr<HubPort> sink);
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,

@@ -21,11 +21,12 @@ enum {
   MP4 = 1
 };
 
-RecorderEndpointImpl::RecorderEndpointImpl (std::shared_ptr<MediaPipeline>
-    mediaPipeline, const std::string &uri,
+RecorderEndpointImpl::RecorderEndpointImpl (const boost::property_tree::ptree
+    &conf,
+    std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
     std::shared_ptr<MediaProfileSpecType> mediaProfile,
-    bool stopOnEndOfStream) : UriEndpointImpl (
-        std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
+    bool stopOnEndOfStream) : UriEndpointImpl (conf,
+          std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME, uri)
 {
   g_object_ref (getGstreamerElement() );
 
@@ -84,12 +85,13 @@ void RecorderEndpointImpl::record ()
 }
 
 MediaObjectImpl *
-RecorderEndpointImplFactory::createObject (std::shared_ptr<MediaPipeline>
+RecorderEndpointImplFactory::createObject (const boost::property_tree::ptree
+    &conf, std::shared_ptr<MediaPipeline>
     mediaPipeline, const std::string &uri,
     std::shared_ptr<MediaProfileSpecType> mediaProfile,
     bool stopOnEndOfStream) const
 {
-  return new RecorderEndpointImpl (mediaPipeline, uri, mediaProfile,
+  return new RecorderEndpointImpl (conf, mediaPipeline, uri, mediaProfile,
                                    stopOnEndOfStream);
 }
 

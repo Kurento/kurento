@@ -5,7 +5,6 @@
 #include "HttpEndpoint.hpp"
 #include <EventHandler.hpp>
 #include "HttpServer/KmsHttpEPServer.h"
-#include "MediaServerConfig.hpp"
 
 namespace kurento
 {
@@ -20,14 +19,14 @@ class HttpEndpointImpl : public SessionEndpointImpl, public virtual HttpEndpoint
 
 public:
 
-  HttpEndpointImpl (std::shared_ptr< MediaObjectImpl > parent,
+  HttpEndpointImpl (const boost::property_tree::ptree &conf,
+                    std::shared_ptr< MediaObjectImpl > parent,
                     int disconnectionTimeout);
 
   virtual ~HttpEndpointImpl ();
 
   virtual std::string getUrl ();
 
-  virtual void setConfig (const MediaServerConfig &config);
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
                         std::shared_ptr<EventHandler> handler);

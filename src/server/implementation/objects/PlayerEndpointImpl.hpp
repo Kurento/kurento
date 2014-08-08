@@ -12,21 +12,25 @@ namespace kurento
 class MediaPipeline;
 class PlayerEndpointImpl;
 
-void Serialize (std::shared_ptr<PlayerEndpointImpl> &object, JsonSerializer &serializer);
+void Serialize (std::shared_ptr<PlayerEndpointImpl> &object,
+                JsonSerializer &serializer);
 
 class PlayerEndpointImpl : public UriEndpointImpl, public virtual PlayerEndpoint
 {
 
 public:
 
-  PlayerEndpointImpl (std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri, bool useEncodedMedia);
+  PlayerEndpointImpl (const boost::property_tree::ptree &conf,
+                      std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &uri,
+                      bool useEncodedMedia);
 
   virtual ~PlayerEndpointImpl ();
 
   void play ();
 
   /* Next methods are automatically implemented by code generator */
-  virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
+  virtual bool connect (const std::string &eventType,
+                        std::shared_ptr<EventHandler> handler);
 
   sigc::signal<void, EndOfStream> signalEndOfStream;
 
