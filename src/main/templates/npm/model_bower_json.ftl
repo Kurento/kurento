@@ -3,13 +3,16 @@ bower.json
 {
   "name": "${node_name}",
   "description": "${module.code.api.js["npm.description"]}",
+  "homepage": "http://www.kurento.com",
   "main": "dist/${node_name}.js",
-  "license": "LGPL",
-  "ignore": [
-    "doc/",
-    "lib/",
-    "package.json"
+  "authors": [
+    "Kurento <info@kurento.com> (http://kurento.org)"
   ],
+  "license": "LGPL",
+  "repository": {
+    "type": "git",
+    "url": "Kurento/${node_name}-js"
+  },
   "keywords": [
     "API",
     "Kurento",
@@ -18,12 +21,9 @@ bower.json
     "web",
     "WebRTC"
   ],
-  "authors": [
-    "Kurento <info@kurento.com> (http://kurento.org)"
-  ],
-  "homepage": "http://www.kurento.com",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Kurento/${node_name}.git"
-  }
+  "ignore": [
+    "doc/",
+    "lib/",
+    "package.json"
+  ]
 }

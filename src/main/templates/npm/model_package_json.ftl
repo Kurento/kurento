@@ -10,10 +10,10 @@ package.json
   "license": "LGPL",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kurento/${node_name}.git"
+    "url": "Kurento/${node_name}-js"
   },
   "bugs": {
-    "url": "https://github.com/Kurento/${node_name}/issues",
+    "url": "Kurento/${node_name}-js/issues",
     "email": "info@kurento.com"
   },
   "keywords": [
@@ -25,12 +25,17 @@ package.json
     "WebRTC"
   ],
   "dependencies": {
-    "inherits": "^2.0.1"<#if module.imports[0]??>,</#if>
-<#list module.imports as import>
-    "${import.module.code.api.js["node.name"]}":"${import.module.code.api.js["npm.version"]}"<#if import_has_next>,</#if>
-</#list>
-  },
+    "inherits": "^2.0.1"<#if module.imports?has_content>,
+  <#list module.imports as import>
+    <#assign package=import.module.code.api.js>
+    "${package["node.name"]}": "^${package["npm.version"]}"<#if import_has_next>,</#if>
+  </#list>
+</#if>
+  }<#if node_name != "kurento-client-core"
+     && node_name != "kurento-client-elements"
+     && node_name != "kurento-client-filters">,
   "peerDependencies": {
     "kurento-client": "^${module.kurentoVersion}"
   }
+</#if>
 }
