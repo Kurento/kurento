@@ -1,6 +1,6 @@
 {
-  "name": "kws-rpc-builder",
-  "version": "4.3.19-SNAPSHOT",
+  "name": "kurento-jsonrpc",
+  "version": "5.0.0-0",
   "description": "RPC library for browser and Node.js",
   "main": "lib/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "Kurento/kws-rpc-builder"
+    "url": "Kurento/kurento-jsonrpc-js"
   },
   "keywords": [
     "RPC",
