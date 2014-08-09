@@ -47,7 +47,10 @@ doGet = function doGet(url, onsuccess, onerror)
     xhr.open("get", url);
     xhr.send();
 
-    xhr.addEventListener('load', onsuccess);
+    xhr.addEventListener('load', function(event)
+    {
+      onsuccess(xhr.response);
+    });
     xhr.addEventListener('error', onerror);
   };
 };
@@ -114,8 +117,8 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://127.0.0.1:8888/thrift/ws/websocket':          'localhost (port 8888)',
-    'ws://demo01.kurento.org:8888/thrift/ws/websocket': 'Kurento test server'
+    'ws://127.0.0.1:8888/kurento':          'localhost (port 8888)',
+    'ws://demo01.kurento.org:8888/kurento': 'Kurento test server'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
@@ -134,7 +137,7 @@ lifecycle =
     {
     //  var WebSocket = wock(proxy);
     //  ws_uri = new WebSocket();
-      ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket';
+      ws_uri = 'ws://demo01.kurento.org:8888/kurento';
     };
 
     this.kwsMedia = new KwsMedia(ws_uri);

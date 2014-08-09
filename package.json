@@ -1,5 +1,5 @@
 {
-  "name": "kws-media-api",
+  "name": "kurento-client",
   "version": "5.0.0-dev",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.org",
@@ -18,10 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kurento/kws-media-api.git"
+    "url": "Kurento/kurento-client-js"
   },
   "bugs": {
-    "url": "https://github.com/Kurento/kws-media-api/issues",
+    "url": "Kurento/kurento-client-js/issues",
     "email": "info@kurento.com"
   },
   "keywords": [
@@ -39,17 +39,17 @@
     "es6-promise": "1.0.0",
     "extend": "~1.3.0",
     "inherits": "~2.0.1",
-    "kws-media-api-core": "Kurento/kws-media-api-core#develop",
-    "kws-media-api-elements": "Kurento/kws-media-api-elements#develop",
-    "kws-media-api-filters": "Kurento/kws-media-api-filters#develop",
-    "kws-rpc-builder": "Kurento/kws-rpc-builder#develop",
+    "kurento-client-core": "Kurento/kurento-client-core-js#develop",
+    "kurento-client-elements": "Kurento/kurento-client-elements-js#develop",
+    "kurento-client-filters": "Kurento/kurento-client-filters-js#develop",
+    "kurento-jsonrpc": "Kurento/kurento-jsonrpc-js#develop",
     "promisecallback": "0.0.1",
-    "reconnect-ws": "piranna/reconnect-ws"
+    "reconnect-ws": "KurentoForks/reconnect-ws"
   },
   "devDependencies": {
     "bower": "~1.3.8",
     "grunt": "~0.4.5",
-    "grunt-browserify": "~2.1.3",
+    "grunt-browserify": "~2.1.4",
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-copy": "~0.5.0",
