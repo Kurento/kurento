@@ -1,20 +1,21 @@
 {
-  "name": "kws-utils",
-  "version": "4.3.19-SNAPSHOT",
+  "name": "kurento-utils",
+  "version": "5.0.0-0",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.org",
   "license": "LGPL",
   "author": "Kurento <info@kurento.org> (http://kurento.org)",
   "contributors": [
-    "Ivan Gracia <izanmail@gmail.com>"
+    "Ivan Gracia <izanmail@gmail.com>",
+    "Jesús Leganés Combarro 'piranna' <piranna@gmail.com>"
   ],
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Kurento/kws-utils.git"
+    "url": "Kurento/kurento-utils-js"
   },
   "bugs": {
-    "url": "https://github.com/Kurento/kws-utils/issues",
+    "url": "Kurento/kurento-utils-js/issues",
     "email": "info@kurento.com"
   },
   "keywords": [
