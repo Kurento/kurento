@@ -39,6 +39,8 @@ set (NICE_REQUIRED 0.1.4)
 set (GNUTLS_REQUIRED 3.2.0)
 set (GSTMARSHAL_REQUIRED 1.0.0)
 
+find_package(Boost REQUIRED COMPONENTS filesystem)
+
 #gst-plugins dependencies
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
 pkg_check_modules(GSTREAMER_BASE REQUIRED gstreamer-base-1.0>=${GST_REQUIRED})
