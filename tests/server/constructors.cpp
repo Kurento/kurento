@@ -34,8 +34,9 @@ testHttpGetEndPoint (kurento::ModuleManager &moduleManager,
 
   w.SerializeNVP (mediaPipeline);
 
-  config.add<std::string> ("kurento.HttpEndpoint.announcedAddress", "localhost");
-  config.add<uint> ("kurento.HttpEndpoint.port", 0);
+  config.add<std::string> ("modules.kurento.HttpEndpoint.announcedAddress",
+                           "localhost");
+  config.add<uint> ("modules.kurento.HttpEndpoint.port", 0);
 
   std::shared_ptr <kurento::MediaObjectImpl >  object =
     moduleManager.getFactory ("HttpGetEndpoint")->createObject (config, "",
@@ -196,6 +197,9 @@ main (int argc, char **argv)
                     Json::Value() );
 
   moduleManager.loadModule ("../../src/server/libkmselementsmodule.so");
+
+  config.add ("configPath", "../../../tests" );
+  config.add ("modules.kurento.SdpEndpoint.pattern", "sdp_pattern.txt");
 
   testHttpGetEndPoint (moduleManager, mediaPipeline);
   testHttpPostEndPoint (moduleManager, mediaPipeline);

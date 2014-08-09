@@ -102,17 +102,17 @@ HttpEndPointServer::getHttpEndPointServer (const boost::property_tree::ptree
   std::string address;
 
   try {
-    port = config.get<int> ("kurento.HttpEndpoint.port");
+    port = config.get<int> ("modules.kurento.HttpEndpoint.port");
   } catch (boost::property_tree::ptree_error &e) {
   }
 
   try {
-    address = config.get<int> ("kurento.HttpEndpoint.announcedAddress");
+    address = config.get<int> ("modules.kurento.HttpEndpoint.announcedAddress");
   } catch (boost::property_tree::ptree_error &e) {
   }
 
   try {
-    iface = config.get<int> ("kurento.HttpEndpoint.serverAddress");
+    iface = config.get<int> ("modules.kurento.HttpEndpoint.serverAddress");
   } catch (boost::property_tree::ptree_error &e) {
   }
 
