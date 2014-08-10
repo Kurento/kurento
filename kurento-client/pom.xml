@@ -52,7 +52,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.kurento</groupId>
-			<artifactId>kurento-thrift-interface</artifactId>
+			<artifactId>kurento-thrift</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

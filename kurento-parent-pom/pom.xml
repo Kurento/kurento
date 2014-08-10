@@ -223,7 +223,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
-				<artifactId>kurento-thrift-interface</artifactId>
+				<artifactId>kurento-thrift</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
