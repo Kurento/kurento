@@ -23,7 +23,7 @@ package org.kurento.control.server.exceptions;
  * @since 4.2.3
  *
  */
-public class EventPropagationException extends ControlServerException {
+public class EventPropagationException extends KurentoControlServerException {
 
 	/**
 	 * Default serial ID

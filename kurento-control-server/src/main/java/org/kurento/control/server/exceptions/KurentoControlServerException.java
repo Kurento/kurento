@@ -14,6 +14,7 @@
  */
 package org.kurento.control.server.exceptions;
 
+import org.kurento.commons.exception.KurentoException;
 
 /**
  * Exception to be used when an event that has been received form the media
@@ -23,7 +24,7 @@ package org.kurento.control.server.exceptions;
  * @since 4.2.3
  *
  */
-public class ControlServerTransportException extends ControlServerException {
+public class KurentoControlServerException extends KurentoException {
 
 	/**
 	 * Default serial ID
@@ -33,7 +34,7 @@ public class ControlServerTransportException extends ControlServerException {
 	/**
 	 * Default constructor
 	 */
-	public ControlServerTransportException() {
+	public KurentoControlServerException() {
 		super();
 	}
 
@@ -41,7 +42,7 @@ public class ControlServerTransportException extends ControlServerException {
 	 *
 	 * @param msg
 	 */
-	public ControlServerTransportException(String msg) {
+	public KurentoControlServerException(String msg) {
 		super(msg);
 	}
 
@@ -50,7 +51,7 @@ public class ControlServerTransportException extends ControlServerException {
 	 * @param msg
 	 * @param cause
 	 */
-	public ControlServerTransportException(String msg, Throwable cause) {
+	public KurentoControlServerException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 
@@ -58,7 +59,7 @@ public class ControlServerTransportException extends ControlServerException {
 	 *
 	 * @param cause
 	 */
-	public ControlServerTransportException(Throwable cause) {
+	public KurentoControlServerException(Throwable cause) {
 		super(cause);
 	}
 

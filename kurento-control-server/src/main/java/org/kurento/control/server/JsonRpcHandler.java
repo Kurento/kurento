@@ -21,7 +21,7 @@ import java.util.Collection;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.kurento.control.server.exceptions.ControlServerTransportException;
+import org.kurento.control.server.exceptions.KurentoControlServerTransportException;
 import org.kurento.control.server.exceptions.ResponsePropagationException;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcErrorException;
@@ -113,7 +113,7 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		transaction.startAsync();
 		try {
 			sendRequest(transaction, request, true);
-		} catch (ControlServerTransportException e) {
+		} catch (KurentoControlServerTransportException e) {
 			throw new TransportException(e);
 		}
 	}
@@ -172,7 +172,7 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 					});
 
 		} catch (Exception e) {
-			throw new ControlServerTransportException(
+			throw new KurentoControlServerTransportException(
 					"Exception while executing a command"
 							+ " in thrift interface of the MediaServer", e);
 		}
