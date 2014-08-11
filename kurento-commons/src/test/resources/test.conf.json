@@ -1,0 +1,42 @@
+{
+   "prop1" : "value1",
+   "prop2" : {
+       "prop1": "xxx"
+   },
+   "mediaServer":{
+		"netInterface":{
+			/*Uncomment just one of them*/
+			"thrift":{
+				"port":9090
+			}
+			/* "rabbitmq":{
+				"address":"127.0.0.1",
+				"port":5672,
+				"username":"guest",
+				"password":"guest", 
+				"vhost" : "/" } */
+           /* "websocket": { 
+                "port": 9090, 
+                "path": "kurento" 
+           } */
+       }
+    }
+  },
+  "controlServer" : {    
+    "netInterface" : {
+        "websocket" : { 
+            "port": 8888, 
+            "path": "kurento" 
+        },
+        "thriftCallback": { 
+            "port": 9091
+        }
+     },
+     "logConfigFile": "/opt/kurento/logback.xml", 
+     "oauthserverUrl": "",
+     "keystore" : {
+        "file" : "ssss",
+        "pass" : "ssss"
+     }   
+  }
+}
