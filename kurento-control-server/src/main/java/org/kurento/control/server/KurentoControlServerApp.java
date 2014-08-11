@@ -32,10 +32,10 @@ import org.springframework.core.env.Environment;
 @Configuration
 @ComponentScan(basePackageClasses = { JsonRpcConfiguration.class })
 @EnableAutoConfiguration
-public class ControlServerApp implements JsonRpcConfigurer {
+public class KurentoControlServerApp implements JsonRpcConfigurer {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(ControlServerApp.class);
+			.getLogger(KurentoControlServerApp.class);
 
 	private static JsonRpcClient client;
 
@@ -43,7 +43,7 @@ public class ControlServerApp implements JsonRpcConfigurer {
 	private Environment env;
 
 	public static void setJsonRpcClient(JsonRpcClient client) {
-		ControlServerApp.client = client;
+		KurentoControlServerApp.client = client;
 	}
 
 	@Bean
@@ -149,8 +149,8 @@ public class ControlServerApp implements JsonRpcConfigurer {
 	}
 
 	@Bean
-	public ControlServerJsonRpcHandler thriftConnectorJsonRpcHandler() {
-		return new ControlServerJsonRpcHandler();
+	public JsonRpcHandler thriftConnectorJsonRpcHandler() {
+		return new JsonRpcHandler();
 	}
 
 	@Bean
@@ -166,7 +166,7 @@ public class ControlServerApp implements JsonRpcConfigurer {
 	public static void main(String[] args) throws Exception {
 
 		SpringApplication application = new SpringApplication(
-				ControlServerApp.class);
+				KurentoControlServerApp.class);
 
 		application.run(args);
 	}

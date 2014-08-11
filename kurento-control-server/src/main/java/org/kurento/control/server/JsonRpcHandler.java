@@ -21,13 +21,6 @@ import java.util.Collection;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import org.kurento.control.server.exceptions.ControlServerTransportException;
 import org.kurento.control.server.exceptions.ResponsePropagationException;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
@@ -40,17 +33,22 @@ import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 1.0.0
  *
  */
-public final class ControlServerJsonRpcHandler extends
-		DefaultJsonRpcHandler<JsonObject> {
+public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(ControlServerJsonRpcHandler.class);
+			.getLogger(JsonRpcHandler.class);
 
 	@Autowired
 	private JsonRpcClient client;

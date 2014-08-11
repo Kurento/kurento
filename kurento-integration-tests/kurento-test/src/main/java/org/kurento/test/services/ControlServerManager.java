@@ -1,9 +1,10 @@
-package org.kurento.control.server;
+package org.kurento.test.services;
 
 import java.util.Properties;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.kurento.control.server.KurentoControlServerApp;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 
 public class ControlServerManager {
@@ -12,10 +13,10 @@ public class ControlServerManager {
 
 	public ControlServerManager(JsonRpcClient client, int httpPort) {
 
-		ControlServerApp.setJsonRpcClient(client);
+		KurentoControlServerApp.setJsonRpcClient(client);
 
 		SpringApplication application = new SpringApplication(
-				ControlServerApp.class);
+				KurentoControlServerApp.class);
 
 		Properties properties = new Properties();
 		properties.put("server.port", httpPort);

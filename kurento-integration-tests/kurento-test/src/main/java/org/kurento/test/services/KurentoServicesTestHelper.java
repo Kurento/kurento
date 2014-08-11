@@ -10,7 +10,6 @@ import java.io.File;
 import org.apache.catalina.LifecycleException;
 import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.commons.PropertiesManager;
-import org.kurento.control.server.ControlServerManager;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.rabbitmq.server.RabbitMqConnectorManager;
 
@@ -70,10 +69,10 @@ public class KurentoServicesTestHelper {
 
 		startKurentoMediaServerIfNecessary();
 		startRabbitMqConnectorIfNecessary();
-		startMediaConnectorIfNecessary();
+		startKurentoControlServerIfNecessary();
 	}
 
-	private static void startMediaConnectorIfNecessary() {
+	private static void startKurentoControlServerIfNecessary() {
 
 		kmcAutostart = getProperty(KMC_AUTOSTART_PROP, KMC_AUTOSTART_DEFAULT);
 
