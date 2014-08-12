@@ -7,13 +7,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonObject;
-
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
@@ -22,12 +18,16 @@ import org.kurento.rabbitmq.client.JsonRpcClientRabbitMq;
 import org.kurento.rabbitmq.manager.No2xxOKStatusResponseException;
 import org.kurento.rabbitmq.manager.RabbitManager;
 import org.kurento.rabbitmq.server.JsonRpcServerRabbitMq;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonObject;
 
 public class RetryTest {
 
 	private static final int TIMEOUT_RETRY_TIME = 400;
 	private static Logger log = LoggerFactory.getLogger(RetryTest.class);
-	private KurentoClient mpf;
+	private KurentoClient kurento;
 	private JsonRpcServerRabbitMq server;
 	private JsonRpcClientRabbitMq client;
 
@@ -52,7 +52,7 @@ public class RetryTest {
 		log.info("Starting client");
 		client = new JsonRpcClientRabbitMq();
 
-		mpf = new KurentoClient(client);
+		kurento = KurentoClientFactory.createWithJsonRpcClient(client);
 	}
 
 	@After
@@ -90,7 +90,7 @@ public class RetryTest {
 		server.start();
 
 		long initTime = System.nanoTime();
-		MediaPipeline pipeline = mpf.createMediaPipeline();
+		MediaPipeline pipeline = kurento.createMediaPipeline();
 
 		double duration = (System.nanoTime() - initTime) / (double) 1000000;
 
@@ -122,7 +122,7 @@ public class RetryTest {
 		server.start();
 
 		long initTime = System.nanoTime();
-		MediaPipeline pipeline = mpf.createMediaPipeline();
+		MediaPipeline pipeline = kurento.createMediaPipeline();
 
 		double duration = (System.nanoTime() - initTime) / (double) 1000000;
 

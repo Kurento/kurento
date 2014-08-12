@@ -1,0 +1,35 @@
+{
+   "mediaServer":{
+	  "net":{
+		  // Uncomment just one of them
+		  "thrift":{
+			   "port":9090
+		  }
+		  // "rabbitmq":{
+		  //   "host":"127.0.0.1",
+		  //   "port":5672,
+		  //   "username":"guest",
+		  //   "pass":"guest", 
+		  //   "vhost" : "/" 
+		  // }          
+      }
+  },
+  "controlServer" : {    
+    "net" : {
+        "websocket" : { 
+            "port": 8888, 
+            "path": "kurento",
+            //"securePort": 8433
+        },
+        "thriftCallback": { 
+            "port": 9900
+        }
+     },
+     "oauthserverUrl": "",
+     // "logConfigFile": "/opt/kurento/logback.xml",     
+     // "keystore" : {
+     //   "file" : "ssss",
+     //   "pass" : "ssss"
+     //}   
+  }
+}

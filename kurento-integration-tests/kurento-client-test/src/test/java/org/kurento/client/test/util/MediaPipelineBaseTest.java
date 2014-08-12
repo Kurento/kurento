@@ -28,7 +28,7 @@ public abstract class MediaPipelineBaseTest extends KurentoClientTest {
 
 	@Before
 	public void setupPipeline() {
-		pipeline = pipelineFactory.createMediaPipeline();
+		pipeline = kurentoClient.createMediaPipeline();
 	}
 
 	@After

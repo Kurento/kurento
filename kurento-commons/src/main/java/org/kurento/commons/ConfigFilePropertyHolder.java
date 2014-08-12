@@ -7,6 +7,7 @@ import java.nio.file.Path;
 
 import org.kurento.commons.PropertiesManager.PropertyHolder;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -19,11 +20,16 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 
 	private static final Gson gson = new GsonBuilder().create();
 
-	public static void configurePropertiesFromConfigFile(Path file)
+	private JsonObject configFile;
+
+	public static void configurePropertiesFromConfigFile(Path configFilePath)
 			throws JsonSyntaxException, JsonIOException, IOException {
 
-		JsonReader reader = new JsonReader(Files.newBufferedReader(file,
-				StandardCharsets.UTF_8));
+		Preconditions.checkNotNull(configFilePath,
+				"configFilePath paramter must be not null.");
+
+		JsonReader reader = new JsonReader(Files.newBufferedReader(
+				configFilePath, StandardCharsets.UTF_8));
 		reader.setLenient(true);
 
 		JsonObject configFile = gson.fromJson(reader, JsonObject.class);
@@ -31,8 +37,6 @@ public class ConfigFilePropertyHolder implements PropertyHolder {
 		PropertiesManager.setPropertyHolder(new ConfigFilePropertyHolder(
 				configFile));
 	}
-
-	private JsonObject configFile;
 
 	public ConfigFilePropertyHolder(JsonObject configFile) {
 		this.configFile = configFile;

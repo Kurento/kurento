@@ -66,7 +66,7 @@ public class RecorderSwitchTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-		MediaPipeline mp = pipelineFactory.createMediaPipeline();
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/red.webm").build();
 		PlayerEndpoint playerGreen = new PlayerEndpoint.Builder(mp,

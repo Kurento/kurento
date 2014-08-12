@@ -3,6 +3,9 @@ package org.kurento.rabbitmq;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kurento.commons.Address;
+import org.kurento.commons.PropertiesManager;
+import org.kurento.jsonrpc.message.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
@@ -15,9 +18,6 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 //import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
-import org.kurento.commons.Address;
-import org.kurento.commons.PropertiesManager;
-import org.kurento.jsonrpc.message.Request;
 
 public class RabbitMqManager {
 
@@ -43,6 +43,9 @@ public class RabbitMqManager {
 	private final List<SimpleMessageListenerContainer> containers = new ArrayList<>();
 
 	private final Address address;
+	private String username;
+	private String password;
+	private String vhost;
 
 	public interface BrokerMessageReceiverWithResponse {
 		public String onMessage(String message);
@@ -60,9 +63,29 @@ public class RabbitMqManager {
 				.getProperty(NUM_RETRIES_PROPERTY, 5);
 	}
 
+	public RabbitMqManager(String host, String port, String username,
+			String password, String vhost) {
+		this(new Address(host, Integer.parseInt(port)));
+		this.username = username;
+		this.password = password;
+		this.vhost = vhost;
+	}
+
 	public void connect() {
 
 		cf = new CachingConnectionFactory(address.getHost(), address.getPort());
+		if (username != null) {
+			cf.setUsername(username);
+		}
+
+		if (password != null) {
+			cf.setPassword(password);
+		}
+
+		if (vhost != null) {
+			cf.setVirtualHost(vhost);
+		}
+
 		admin = new RabbitAdmin(cf);
 
 		declarePipelineCreationQueue(admin);

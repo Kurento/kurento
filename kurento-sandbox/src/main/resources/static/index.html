@@ -10,7 +10,7 @@
 <script src="js/kws-utils.js"></script>
 <script>
 	var client = new RpcBuilder.clients.JsonRpcClient("ws://" + location.host
-			+ "/webrtc/ws/websocket", onRequest);
+			+ "/webrtc", onRequest);
 	var sdpOffer;
 	var localPeerConnection;
 

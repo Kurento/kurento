@@ -120,7 +120,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		});
 	}
 
-	private synchronized void connectIfNecessary() throws IOException {
+	public synchronized void connectIfNecessary() throws IOException {
 
 		if (wsSession == null) {
 

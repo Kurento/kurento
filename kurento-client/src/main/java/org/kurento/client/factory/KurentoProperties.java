@@ -9,7 +9,7 @@ public class KurentoProperties {
 	public static final String KURENTO_CLIENT_TRANSPORT_THRIFT_VALUE = "thrift";
 	public static final String KURENTO_CLIENT_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
 	public static final String KURENTO_CLIENT_TRANSPORT_WS_VALUE = "ws";
-	public static final String KURENTO_CLIENT_TRANSPORT_DEFAULT = KURENTO_CLIENT_TRANSPORT_THRIFT_VALUE;
+	public static final String KURENTO_CLIENT_TRANSPORT_DEFAULT = KURENTO_CLIENT_TRANSPORT_WS_VALUE;
 
 	public static final String THRIFT_KMS_ADDRESS_PROP = "thrift.kms.address";
 	public static final Address THRIFT_KMS_ADDRESS_DEFAULT = new Address(

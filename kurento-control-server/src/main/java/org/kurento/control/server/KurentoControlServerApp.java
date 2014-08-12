@@ -1,15 +1,18 @@
 package org.kurento.control.server;
 
-import java.nio.file.Paths;
+import static org.kurento.commons.PropertiesManager.getProperty;
+import static org.kurento.commons.PropertiesManager.getPropertyOrException;
 
-import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Properties;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.kurento.client.factory.KurentoClientFactory;
-import org.kurento.commons.PropertiesManager;
-import org.kurento.commons.PropertiesManager.PropertyHolder;
-import org.kurento.commons.exception.KurentoException;
+import org.kurento.commons.ConfigFileFinder;
+import org.kurento.commons.ConfigFilePropertyHolder;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcProperties;
@@ -17,70 +20,92 @@ import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 
 @Configuration
 @ComponentScan(basePackageClasses = { JsonRpcConfiguration.class })
 @EnableAutoConfiguration
 public class KurentoControlServerApp implements JsonRpcConfigurer {
 
+	private static final String OAUTHSERVER_URL_PROPERTY = "controlServer.oauthserverUrl";
+	private static final String OAUTHSERVER_URL_DEFAULT = "";
+
+	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
+
+	public static final String WEBSOCKET_PORT_PROPERTY = "controlServer.net.websocket.port";
+	public static final String WEBSOCKET_SECURE_PORT_PROPERTY = "controlServer.net.websocket.securePort";
+	public static final String WEBSOCKET_PATH_PROPERTY = "controlServer.net.websocket.path";
+	public static final String KEYSTORE_PASS_PROPERTY = "controlServer.keystore.password";
+	public static final String KEYSTORE_FILE_PROPERTY = "controlServer.keystore.file";
+
+	public static final String WEBSOCKET_PORT_DEFAULT = "8888";
+	public static final String WEBSOCKET_PATH_DEFAULT = "kurento";
+
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoControlServerApp.class);
 
 	private static JsonRpcClient client;
-
-	@Autowired
-	private Environment env;
 
 	public static void setJsonRpcClient(JsonRpcClient client) {
 		KurentoControlServerApp.client = client;
 	}
 
 	@Bean
+	public JsonRpcClient client() {
+
+		if (client != null) {
+			return client;
+		} else {
+			return KmsConnectionHelper.createJsonRpcClient();
+		}
+	}
+
+	@Bean
 	public EmbeddedServletContainerCustomizer containerCustomizer()
 			throws Exception {
 
-		final String keystoreFile = env.getProperty("keystore.file");
+		final String securePort = getProperty(WEBSOCKET_SECURE_PORT_PROPERTY);
 
-		if (keystoreFile == null) {
+		if (securePort == null) {
 			return createNoCustomizationCustomizer();
-		}
-
-		final String keystorePass = env.getProperty("keystore.pass");
-		if (keystorePass == null) {
-			throw new KurentoException(
-					"Property 'keystore.pass' is mandatory with keystore.file");
 		}
 
 		int httpsPort = 8443;
 		try {
-			String httpsPortAsStr = env.getProperty("server.port");
-			if (httpsPortAsStr != null) {
-				httpsPort = Integer.parseInt(httpsPortAsStr);
-			}
+			httpsPort = Integer.parseInt(securePort);
 		} catch (NumberFormatException e) {
-			log.warn("Property 'server.port' can't be parsed as string. Error: "
-					+ e.getMessage() + ". Defaulting to port 8443");
+			log.warn("Property '" + WEBSOCKET_PORT_PROPERTY
+					+ "' can't be parsed as integer. Error: " + e.getMessage()
+					+ ". Defaulting to port 8443");
 		}
 
-		log.debug("Starting KMC with secure sockets in port " + httpsPort);
+		final String keystoreFile = getPropertyOrException(
+				KEYSTORE_FILE_PROPERTY, "Property '" + KEYSTORE_FILE_PROPERTY
+						+ "' is mandatory with '"
+						+ WEBSOCKET_SECURE_PORT_PROPERTY + "'");
+
+		final String keystorePass = getPropertyOrException(
+				KEYSTORE_PASS_PROPERTY, "Property '" + KEYSTORE_PASS_PROPERTY
+						+ "' is mandatory with '"
+						+ WEBSOCKET_SECURE_PORT_PROPERTY + "'");
+
+		log.info("Starting Kurento Control Server with secure websockets (wss) in port: "
+				+ httpsPort);
 
 		return createTomcatCustomizer(keystoreFile, keystorePass, httpsPort);
 	}
 
 	private EmbeddedServletContainerCustomizer createNoCustomizationCustomizer() {
 		return new EmbeddedServletContainerCustomizer() {
-
 			@Override
 			public void customize(ConfigurableEmbeddedServletContainer container) {
 			}
@@ -101,6 +126,10 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 
 					@Override
 					public void customize(Connector connector) {
+
+						log.debug("Customizing Tomcat to setup https");
+						log.debug("Https port: " + httpsPort);
+						log.debug("Keystore: " + keystoreFile);
 
 						connector.setPort(httpsPort);
 						connector.setSecure(true);
@@ -125,50 +154,74 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 		};
 	}
 
-	@PostConstruct
-	public void initPropertyManager() {
-		PropertiesManager.setPropertyHolder(new PropertyHolder() {
-			@Override
-			public String getProperty(String property) {
-				return env.getProperty(property);
-			}
-		});
-	}
-
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addHandler(thriftConnectorJsonRpcHandler(), "/kurento");
+		String path = getProperty(WEBSOCKET_PATH_PROPERTY,
+				WEBSOCKET_PATH_DEFAULT);
+
+		registry.addHandler(jsonRpcHandler(), "/" + path);
 	}
 
 	@Bean
 	public JsonRpcProperties jsonRpcProperties() {
 		JsonRpcProperties configuration = new JsonRpcProperties();
-		// Official FI-WARE OAuth server: http://cloud.lab.fi-ware.org
-		configuration.setKeystoneHost(env.getProperty("oauthserver.url", ""));
+
+		configuration.setKeystoneHost(getProperty(OAUTHSERVER_URL_PROPERTY,
+				OAUTHSERVER_URL_DEFAULT));
+
 		return configuration;
 	}
 
 	@Bean
-	public JsonRpcHandler thriftConnectorJsonRpcHandler() {
+	public JsonRpcHandler jsonRpcHandler() {
 		return new JsonRpcHandler();
 	}
 
-	@Bean
-	public JsonRpcClient client() {
-
-		if (client != null) {
-			return client;
-		} else {
-			return KurentoClientFactory.createJsonRpcClient();
-		}
+	public static void main(String[] args) throws Exception {
+		start();
 	}
 
-	public static void main(String[] args) throws Exception {
+	public static ConfigurableApplicationContext start() {
+
+		loadConfigFile();
+
+		String port = getProperty(WEBSOCKET_PORT_PROPERTY,
+				WEBSOCKET_PORT_DEFAULT);
 
 		SpringApplication application = new SpringApplication(
 				KurentoControlServerApp.class);
 
-		application.run(args);
+		Properties properties = new Properties();
+		properties.put("server.port", port);
+		application.setDefaultProperties(properties);
+
+		return application.run();
 	}
 
+	private static void loadConfigFile() {
+
+		try {
+
+			String configFilePath = System
+					.getProperty(CONFIG_FILE_PATH_PROPERTY);
+
+			Path configFile = null;
+
+			if (configFilePath != null) {
+				configFile = Paths.get(configFilePath);
+			} else {
+				configFile = ConfigFileFinder.searchDefaultConfigFile();
+			}
+
+			if (configFile != null && Files.exists(configFile)) {
+				ConfigFilePropertyHolder
+						.configurePropertiesFromConfigFile(configFile);
+			} else {
+				log.warn("Config file not found. Using all default values");
+			}
+
+		} catch (IOException e) {
+			log.warn("Exception loading config file", e);
+		}
+	}
 }

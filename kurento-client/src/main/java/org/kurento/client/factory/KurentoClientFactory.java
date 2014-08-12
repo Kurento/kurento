@@ -24,13 +24,8 @@ public class KurentoClientFactory {
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoClientFactory.class);
 
-	public static KurentoClient createKurentoClient() {
-		return createKurentoClient(null);
-	}
-
-	public static KurentoClient createKurentoClient(String prefix) {
-
-		return new KurentoClient(createJsonRpcClient(prefix));
+	public static KurentoClient createKurentoForTest() {
+		return new KurentoClient(createJsonRpcClient(null));
 	}
 
 	public static JsonRpcClient createJsonRpcClient() {
@@ -86,9 +81,10 @@ public class KurentoClientFactory {
 		default:
 
 			throw new RuntimeException("Invalid transport value in property '"
-					+ KURENTO_CLIENT_TRANSPORT_PROP + "': " + kurentoClientTransport
-					+ ". Valid values are: " + KURENTO_CLIENT_TRANSPORT_THRIFT_VALUE
-					+ ", " + KURENTO_CLIENT_TRANSPORT_RABBITMQ_VALUE + " or "
+					+ KURENTO_CLIENT_TRANSPORT_PROP + "': "
+					+ kurentoClientTransport + ". Valid values are: "
+					+ KURENTO_CLIENT_TRANSPORT_THRIFT_VALUE + ", "
+					+ KURENTO_CLIENT_TRANSPORT_RABBITMQ_VALUE + " or "
 					+ KURENTO_CLIENT_TRANSPORT_WS_VALUE);
 
 		}
@@ -121,6 +117,10 @@ public class KurentoClientFactory {
 			throw new RuntimeException(
 					"Exception creating JsonRpcClientRabbitMq", e);
 		}
+	}
+
+	public static KurentoClient createWithJsonRpcClient(JsonRpcClient client) {
+		return new KurentoClient(client);
 	}
 
 }

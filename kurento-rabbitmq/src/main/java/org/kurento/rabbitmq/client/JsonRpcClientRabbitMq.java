@@ -8,24 +8,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.amqp.core.Queue;
-//import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
-
-
-
-
-
-
-
-
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-
 import org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants;
 import org.kurento.commons.Address;
 import org.kurento.jsonrpc.JsonUtils;
@@ -38,8 +20,16 @@ import org.kurento.jsonrpc.message.Message;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.rabbitmq.RabbitMqManager;
-import org.kurento.rabbitmq.RabbitTemplate;
 import org.kurento.rabbitmq.RabbitMqManager.BrokerMessageReceiver;
+import org.kurento.rabbitmq.RabbitTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Queue;
+//import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class JsonRpcClientRabbitMq extends JsonRpcClient {
 
@@ -66,6 +56,11 @@ public class JsonRpcClientRabbitMq extends JsonRpcClient {
 							+ " not yet implemented", message);
 		}
 	};
+
+	public JsonRpcClientRabbitMq(String host, String port, String username,
+			String password, String vhost) {
+		this(new RabbitMqManager(host, port, username, password, vhost));
+	}
 
 	public JsonRpcClientRabbitMq() {
 		this(new Address("127.0.0.1", 5672));

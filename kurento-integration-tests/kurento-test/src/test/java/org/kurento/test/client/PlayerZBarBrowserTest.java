@@ -46,7 +46,7 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 	@Test
 	public void testPlayerZBar() throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = pipelineFactory.createMediaPipeline();
+		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/barcodes.webm").build();
 		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()

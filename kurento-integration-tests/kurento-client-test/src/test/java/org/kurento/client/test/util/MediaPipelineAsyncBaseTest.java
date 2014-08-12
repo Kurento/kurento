@@ -43,7 +43,7 @@ public abstract class MediaPipelineAsyncBaseTest extends KurentoClientTest {
 	public void setupPipeline() throws InterruptedException {
 		final BlockingQueue<MediaPipeline> events = new ArrayBlockingQueue<MediaPipeline>(
 				1);
-		pipelineFactory.createMediaPipeline(new Continuation<MediaPipeline>() {
+		kurentoClient.createMediaPipeline(new Continuation<MediaPipeline>() {
 			@Override
 			public void onSuccess(MediaPipeline result) {
 				events.add(result);

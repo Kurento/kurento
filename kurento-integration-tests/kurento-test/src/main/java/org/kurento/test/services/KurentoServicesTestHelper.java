@@ -54,7 +54,7 @@ public class KurentoServicesTestHelper {
 	private static HttpServer httpServer;
 	private static KurentoMediaServerManager kms;
 	private static RabbitMqConnectorManager rabbitMqConnector;
-	private static ControlServerManager mediaConnector;
+	private static KurentoControlServerManager mediaConnector;
 
 	private static String testCaseName;
 	private static String testName;
@@ -147,7 +147,7 @@ public class KurentoServicesTestHelper {
 		JsonRpcClient client = KurentoClientFactory
 				.createJsonRpcClient(MEDIA_CONNECTOR_PREFIX);
 
-		mediaConnector = new ControlServerManager(client, getKmcHttpPort());
+		mediaConnector = new KurentoControlServerManager(client, getKmcHttpPort());
 	}
 
 	public static void startKurentoMediaServer() {

@@ -28,7 +28,8 @@ public class BasicPipelineTest extends MediaPipelineBaseTest {
 		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
 				"http://files.kurento.org/video/small.webm").build();
 
-		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline).build();
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
+				.build();
 
 		player.connect(httpGetEndpoint);
 

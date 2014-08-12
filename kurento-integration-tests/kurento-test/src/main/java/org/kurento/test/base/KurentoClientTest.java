@@ -33,19 +33,19 @@ public class KurentoClientTest extends KurentoTest {
 
 	public static Logger log = LoggerFactory.getLogger(KurentoClientTest.class);
 
-	protected KurentoClient pipelineFactory;
+	protected KurentoClient kurentoClient;
 
 	@Before
 	public void setupMediaPipelineFactory() throws Exception {
 
-		pipelineFactory = KurentoClientFactory.createKurentoClient();
+		kurentoClient = KurentoClientFactory.createKurentoForTest();
 	}
 
 	@After
 	public void teardownMediaPipelineFactory() throws Exception {
 
-		if (pipelineFactory != null) {
-			pipelineFactory.destroy();
+		if (kurentoClient != null) {
+			kurentoClient.destroy();
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package org.kurento.commons;
 
+import org.kurento.commons.exception.KurentoException;
+
 public class PropertiesManager {
 
 	public static interface PropertyHolder {
@@ -19,6 +21,18 @@ public class PropertiesManager {
 
 	public static String getProperty(String property) {
 		return propertyHolder.getProperty(property);
+	}
+
+	public static String getPropertyOrException(String property,
+			String exceptionMessage) {
+
+		String value = getProperty(property);
+
+		if (value == null) {
+			throw new KurentoException(exceptionMessage);
+		}
+
+		return value;
 	}
 
 	public static Address getProperty(String property, Address defaultValue) {

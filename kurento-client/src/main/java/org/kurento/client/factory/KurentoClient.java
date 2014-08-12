@@ -23,6 +23,7 @@ import org.kurento.client.internal.client.RemoteObjectFactory;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 
 /**
  * Factory to create {@link MediaPipeline} in the media server.
@@ -35,7 +36,11 @@ public class KurentoClient {
 
 	protected RemoteObjectFactory factory;
 
-	public KurentoClient(JsonRpcClient client) {
+	public static KurentoClient create(String websocketUrl) {
+		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl));
+	}
+
+	KurentoClient(JsonRpcClient client) {
 		this.factory = new RemoteObjectFactory(new RomClientJsonRpcClient(
 				client));
 	}

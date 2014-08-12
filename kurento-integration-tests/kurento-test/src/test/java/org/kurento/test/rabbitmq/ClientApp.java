@@ -18,15 +18,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.kurento.client.*;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
-import org.kurento.client.factory.KurentoProperties;
+import org.kurento.client.HttpGetEndpoint;
+import org.kurento.client.MediaPipeline;
+import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.factory.KurentoClientFactory;
+import org.kurento.client.factory.KurentoProperties;
 import org.kurento.rabbitmq.client.JsonRpcClientRabbitMq;
-import org.kurento.test.client.*;
+import org.kurento.test.client.Browser;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.BrowserEventListener;
+import org.kurento.test.client.Client;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Client for MultipleClientsAndServersTest.
@@ -41,15 +47,16 @@ public class ClientApp {
 
 	public final static int TIMEOUT = 60;
 
-	private KurentoClient mpf;
+	private KurentoClient kurento;
 
 	private CountDownLatch finished = new CountDownLatch(1);
 
 	private String logId;
 
 	public ClientApp(String logId) {
-		this.mpf = new KurentoClient(new JsonRpcClientRabbitMq(
-				KurentoProperties.getRabbitMqAddress()));
+		this.kurento = KurentoClientFactory
+				.createWithJsonRpcClient(new JsonRpcClientRabbitMq(
+						KurentoProperties.getRabbitMqAddress()));
 	}
 
 	public void start() {
@@ -68,11 +75,11 @@ public class ClientApp {
 
 	private void kurentoClientUsage() throws InterruptedException {
 
-		MediaPipeline mp = mpf.createMediaPipeline();
+		MediaPipeline mp = kurento.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/small.webm").build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
-				.build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 		playerEP.connect(httpEP);
 		String url = httpEP.getUrl();
 		log.info("url: {}", url);
