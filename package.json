@@ -12,9 +12,9 @@
       "url": "http://pirannafs.blogspot.com.es"
     }
   ],
-  "main": "lib/KwsMedia.js",
+  "main": "index.js",
   "scripts": {
-    "test": "qunit-cli -c KwsMedia:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
+    "test": "qunit-cli -c kurentoClient:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
   },
   "repository": {
     "type": "git",

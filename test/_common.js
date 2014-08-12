@@ -140,11 +140,11 @@ lifecycle =
       ws_uri = 'ws://demo01.kurento.org:8888/kurento';
     };
 
-    this.kwsMedia = new KwsMedia(ws_uri);
+    this.kurento = new kurentoClient(ws_uri);
 
-    this.kwsMedia.then(function()
+    this.kurento.then(function()
     {
-      self.kwsMedia.create('MediaPipeline', function(error, pipeline)
+      self.kurento.create('MediaPipeline', function(error, pipeline)
       {
         if(error) return onerror(error);
 
@@ -167,7 +167,7 @@ lifecycle =
       {
         if(error) console.error(error);
 
-        self.kwsMedia.close();
+        self.kurento.close();
       });
   }
 };

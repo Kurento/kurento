@@ -16,7 +16,7 @@
 /**
  * Media API for the Kurento Web SDK
  *
- * @module KwsMedia
+ * @module KurentoClient
  *
  * @copyright 2013-2014 Kurento (http://kurento.org/)
  * @license LGPL
@@ -121,10 +121,10 @@ function createPromise(data, func, callback)
  *
  * @param {external:String} ws_uri - Address of the Kurento Media Server
  */
-function KwsMedia(ws_uri, options, callback)
+function KurentoClient(ws_uri, options, callback)
 {
-  if(!(this instanceof KwsMedia))
-    return new KwsMedia(ws_uri, options, callback);
+  if(!(this instanceof KurentoClient))
+    return new KurentoClient(ws_uri, options, callback);
 
   var self = this;
 
@@ -391,7 +391,7 @@ function KwsMedia(ws_uri, options, callback)
    * @param {external:string[]} [params]
    * @callback {createMediaPipelineCallback} callback
    *
-   * @return {module:kwsMediaApi~MediaPipeline} The pipeline itself
+   * @return {module:KurentoClientApi~MediaPipeline} The pipeline itself
    */
   this.create = function(type, params, callback)
   {
@@ -411,7 +411,7 @@ function KwsMedia(ws_uri, options, callback)
     return createPromise(type, createMediaObject, callback)
   };
 };
-inherits(KwsMedia, EventEmitter);
+inherits(KurentoClient, EventEmitter);
 
 
 var checkMediaElement = checkType.bind(null, 'MediaElement', 'media');
@@ -422,11 +422,11 @@ var checkMediaElement = checkType.bind(null, 'MediaElement', 'media');
  * @param {...MediaObject} media - A media to be connected
  * @callback {createMediaObjectCallback} [callback]
  *
- * @return {module:kwsMediaApi~MediaPipeline} The pipeline itself
+ * @return {module:KurentoClientApi~MediaPipeline} The pipeline itself
  *
  * @throws {SyntaxError}
  */
-KwsMedia.prototype.connect = function(media, callback)
+KurentoClient.prototype.connect = function(media, callback)
 {
   // Fix lenght-variable arguments
   media = Array.prototype.slice.call(arguments, 0);
@@ -496,7 +496,7 @@ function registerComplexTypes(complexTypes)
 }
 
 
-KwsMedia.register = function(name, constructor)
+KurentoClient.register = function(name, constructor)
 {
   // Adjust parameters
   if(typeof name != 'string')
@@ -538,23 +538,23 @@ KwsMedia.register = function(name, constructor)
 };
 
 
-KwsMedia.require = function(name)
+KurentoClient.require = function(name)
 {
   var module = require(name)
 
   if(module instanceof Function)
-    KwsMedia.register(module)
+    KurentoClient.register(module)
   else
     for(var name in module)
-      KwsMedia.register(name, module[name])
+      KurentoClient.register(name, module[name])
 };
 
 
-KwsMedia.register(require('kurento-client-core'))
-KwsMedia.register(require('kurento-client-elements'))
-KwsMedia.register(require('kurento-client-filters'))
+KurentoClient.register(require('kurento-client-core'))
+KurentoClient.register(require('kurento-client-elements'))
+KurentoClient.register(require('kurento-client-filters'))
 
 
-module.exports = KwsMedia;
-KwsMedia.KwsMedia = KwsMedia;
+module.exports = KurentoClient;
+KurentoClient.KurentoClient = KurentoClient;
 

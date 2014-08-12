@@ -41,7 +41,7 @@ if(typeof QUnit == 'undefined')
 
   wock = require('wock');
 
-  KwsMedia = require('..');
+  kurentoClient = require('..');
 
   require('./_common');
   require('./_proxy');

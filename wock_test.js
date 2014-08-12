@@ -2,11 +2,11 @@ if(typeof QUnit == 'undefined')
 {
   QUnit = require('qunit-cli');
 
-  var wock = require('wock');
+  wock = require('wock');
 
-//  var RTCPeerConnection = require('wrtc').RTCPeerConnection;
+//  RTCPeerConnection = require('wrtc').RTCPeerConnection;
 
-  var KwsMedia = require('..');
+  KurentoClient = require('..');
 };
 
 
@@ -123,11 +123,11 @@ function proxy(data)
 var WebSocket = require('ws');
 
 
-KwsMedia(new WebSocket('ws://130.206.81.87/thrift/ws/websocket'),
-function(kwsMedia)
+KurentoClient(new WebSocket('ws://130.206.81.87/thrift/ws/websocket'),
+function(kurento)
 {
   // Create pipeline
-  kwsMedia.createMediaPipeline(function(error, pipeline)
+  kurento.createMediaPipeline(function(error, pipeline)
   {
     if(error) return console.error(error);
 

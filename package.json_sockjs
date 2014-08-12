@@ -14,7 +14,7 @@
   ],
   "main": "lib/index.js",
   "scripts": {
-    "test": "qunit-cli -c KwsMedia:. test/*.js"
+    "test": "qunit-cli -c kurentoClient:. test/*.js"
   },
   "repository": {
     "type": "git",

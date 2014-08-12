@@ -47,7 +47,7 @@ module.exports = function(grunt)
       {
         src: [
           'README.md',
-          'lib/**/*.js',
+          'index.js',
           'node_modules/kws-media-api-core/lib/**/*.js',
           'node_modules/kws-media-api-elements/lib/**/*.js',
           'node_modules/kws-media-api-filters/lib/**/*.js',
@@ -79,7 +79,7 @@ module.exports = function(grunt)
         options:
         {
           bundleOptions: {
-            standalone: 'KwsMedia'
+            standalone: '<%= pkg.name %>'
           }
         }
       },
@@ -111,7 +111,7 @@ module.exports = function(grunt)
         {
           debug: true,
           bundleOptions: {
-            standalone: 'KwsMedia'
+            standalone: '<%= pkg.name %>'
           },
           plugin: [
             ['minifyify',

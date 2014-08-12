@@ -23,15 +23,15 @@ sudo npm install -g bower
 To install the library, it's recomended to do that from the [Bower repository] :
 
 ```bash
-bower install kws-media-api
+bower install kurento-client
 ```
 
 Alternatively, you can download the code using git and install manually its
 dependencies:
 
 ```bash
-git clone https://github.com/KurentoReleases/kws-media-api.git
-cd kws-media-api
+git clone https://github.com/Kurento/kurento-client-bower
+cd kurento-client-bower
 bower install
 ```
 
@@ -48,15 +48,15 @@ For tutorial purposes, we are going to create a basic pipeline that play a video
 file from its URL and stream it over HTTP. You can also download and check this
 [example full source code] or run it directly from [JsFiddle] :
 
-1. Create an instance of the KwsMedia class that will manage the connection with
-   the Kurento Media Server, so you'll need to provide the URI of its WebSocket
-   endpoint. Alternatively, instead of using a constructor, you can also provide
-   success and error callbacks:
+1. Create an instance of the KurentoClient class that will manage the connection
+   with the Kurento Media Server, so you'll need to provide the URI of its
+   WebSocket endpoint. Alternatively, instead of using a constructor, you can
+   also provide success and error callbacks:
 
    ```Javascript
-   var kwsMedia = kwsMediaApi.KwsMedia(ws_uri);
+   var kurento = kurentoClient.KurentoClient(ws_uri);
    
-   kwsMedia.then(function(kwsMedia)
+   kurento.then(function(kurento)
    {
      // Connection success
      …
@@ -69,7 +69,7 @@ file from its URL and stream it over HTTP. You can also download and check this
    ```
 
    ```Javascript
-   kwsMediaApi.KwsMedia(ws_uri, function(kwsMedia)
+   kurentoClient.KurentoClient(ws_uri, function(kurento)
    {
      // Connection success
      …
@@ -86,7 +86,7 @@ file from its URL and stream it over HTTP. You can also download and check this
    otherwise this will be null as it's common on Node.js style APIs:
 
    ```Javascript
-   kwsMedia.create('MediaPipeline', function(error, pipeline)
+   kurento.create('MediaPipeline', function(error, pipeline)
    {
      …
    });

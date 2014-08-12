@@ -29,7 +29,7 @@ To exec test in Node.js, you only need to exec ```npm test``` that will launch
 all the tests automatically using [QUnit-cli].
 
 If you need to use a WebSocket endpoint different from the default one, you can exec the underlying test command with
-```node_modules/.bin/qunit-cli -c kwsMediaApi:. -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js``` and append the *ws_uri* parameter.
+```node_modules/.bin/qunit-cli -c kurentoClient:. -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js``` and append the *ws_uri* parameter.
 
 
 # BasicPipeline
