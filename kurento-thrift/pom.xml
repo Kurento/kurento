@@ -7,12 +7,12 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-thrift</artifactId>
 	<packaging>jar</packaging>
+
 	<name>Kurento Thrift</name>
 	<description>
-			Implementation of JSON-RPC with Thrift transport to communicate 
+			Implementation of JSON-RPC with Thrift transport to communicate
 			Kurento Control Server with Kurento Media Server.
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>

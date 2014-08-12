@@ -7,7 +7,6 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-commons-testing</artifactId>
 	<name>Kurento Common testing classes</name>
 	<description>TODO</description>

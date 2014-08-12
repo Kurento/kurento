@@ -9,7 +9,6 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-commons</artifactId>
 	<packaging>jar</packaging>
 
@@ -64,11 +63,11 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>

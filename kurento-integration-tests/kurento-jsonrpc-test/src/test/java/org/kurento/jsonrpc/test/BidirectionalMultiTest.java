@@ -1,18 +1,16 @@
 package org.kurento.jsonrpc.test;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
-import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
 
@@ -48,7 +46,7 @@ public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
 
 				try {
 
-					for(int i=0; i<5;i++){
+					for (int i = 0; i < 5; i++) {
 						Object response = session.sendRequest("method", params);
 						session.sendRequest("method", response);
 					}
@@ -80,7 +78,7 @@ public class BidirectionalMultiTest extends JsonRpcConnectorBaseTest {
 					Request<Integer> request) throws Exception {
 
 				log.info("Reverse request: " + request);
-				transaction.sendResponse(request.getParams()+1);
+				transaction.sendResponse(request.getParams() + 1);
 			}
 		});
 

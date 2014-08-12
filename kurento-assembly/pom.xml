@@ -1,18 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	
+
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-parent-pom</artifactId>
 		<version>5.0.0-SNAPSHOT</version>
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
-	
-	<groupId>org.kurento</groupId>
+
 	<artifactId>kurento-assembly</artifactId>
 	<packaging>pom</packaging>
-	
+
 	<name>Kurento Assembly</name>
 	<description>The assembly project packages all Kurento Java projects into a single zip file.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
@@ -24,7 +23,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<organization>
 		<name>Kurento</name>
 		<url>http://www.kurento.org</url>
@@ -56,7 +55,7 @@
 			<artifactId>kurento-control-server</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>

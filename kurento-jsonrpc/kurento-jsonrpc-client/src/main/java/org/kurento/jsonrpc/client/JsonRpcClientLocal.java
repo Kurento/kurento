@@ -71,7 +71,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		};
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <R, P> Response<R> localSendRequest(Request<P> request,
 			Class<R> resultClass) {
 		// Simulate sending json string for net
@@ -94,12 +94,13 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 							final Continuation<Response<JsonElement>> continuation) {
 						try {
 							handlerManager.handleRequest(session,
-									(Request) request, new ResponseSender() {
+									(Request<JsonElement>) request,
+									new ResponseSender() {
 										@Override
 										public void sendResponse(Message message)
 												throws IOException {
 											continuation
-													.onSuccess((Response) message);
+													.onSuccess((Response<JsonElement>) message);
 										}
 									});
 						} catch (IOException e) {
@@ -108,14 +109,15 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 					}
 
 					@Override
-					protected <P, R> Response<R> internalSendRequest(
-							Request<P> request, Class<R> resultClass)
+					protected <P2, R2> Response<R2> internalSendRequest(
+							Request<P2> request, Class<R2> resultClass)
 							throws IOException {
 
 						final Object[] response = new Object[1];
 						try {
 							handlerManager.handleRequest(session,
-									(Request) request, new ResponseSender() {
+									(Request<JsonElement>) request,
+									new ResponseSender() {
 										@Override
 										public void sendResponse(Message message)
 												throws IOException {
@@ -123,7 +125,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 										}
 									});
 
-							Response<R> response2 = (Response<R>) response[0];
+							Response<R2> response2 = (Response<R2>) response[0];
 							Object result = response2.getResult();
 
 							if (result == null
@@ -131,7 +133,7 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 											.getClass())) {
 								return response2;
 							} else if (resultClass == JsonElement.class) {
-								response2.setResult((R) JsonUtils
+								response2.setResult((R2) JsonUtils
 										.toJsonElement(result));
 								return response2;
 							} else {
@@ -141,8 +143,8 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 							}
 
 						} catch (IOException e) {
-							return new Response(request.getId(), ResponseError
-									.newFromException(e));
+							return new Response<R2>(request.getId(),
+									ResponseError.newFromException(e));
 						}
 					}
 				});

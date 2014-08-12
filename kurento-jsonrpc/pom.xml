@@ -8,7 +8,6 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-jsonrpc</artifactId>
 	<packaging>pom</packaging>
 

@@ -8,7 +8,6 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-repository</artifactId>
 	<packaging>jar</packaging>
 
@@ -60,7 +59,7 @@
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-commons</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

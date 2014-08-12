@@ -9,18 +9,17 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-rabbitmq</artifactId>
 	<packaging>jar</packaging>
 
 	<name>Kurento RabbitMQ</name>
-	
+
 	<description>
 		Kurento RabbitMQ
 	</description>
 
 	<url>http://www.kurento.org/docs/${project.version}</url>
-	
+
 	<licenses>
 		<license>
 			<name>GNU Lesser General Public License</name>
@@ -28,7 +27,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<organization>
 		<name>Kurento</name>
 		<url>http://www.kurento.org</url>

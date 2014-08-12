@@ -9,10 +9,9 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-integration-tests</artifactId>
 	<packaging>pom</packaging>
-	
+
 	<name>Kurento Integration tests</name>
 	<description>Integration tests for the Kurento Java. These tests require the existence of a KMS instance.</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
@@ -47,8 +46,8 @@
 	</developers>
 
 	<modules>
-		<module>kurento-jsonrpc-test</module>		
-		<module>kurento-client-test</module>		
+		<module>kurento-jsonrpc-test</module>
+		<module>kurento-client-test</module>
 		<module>kurento-repository-test</module>
 		<module>kurento-test</module>
 		<module>kurento-control-server-test</module>

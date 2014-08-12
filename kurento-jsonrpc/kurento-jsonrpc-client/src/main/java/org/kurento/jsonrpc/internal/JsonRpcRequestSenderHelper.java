@@ -19,22 +19,16 @@ import static org.kurento.jsonrpc.JsonUtils.INJECT_SESSION_ID;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 import org.kurento.jsonrpc.JsonRpcErrorException;
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 public abstract class JsonRpcRequestSenderHelper implements
 		JsonRpcRequestSender {
-
-	private static final Logger log = LoggerFactory
-			.getLogger(JsonRpcRequestSenderHelper.class);
 
 	protected AtomicInteger id = new AtomicInteger();
 	protected String sessionId;

@@ -7,7 +7,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kurento.client.MediaPipeline;
 import org.kurento.client.factory.KurentoClient;
 import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
@@ -90,7 +89,8 @@ public class RetryTest {
 		server.start();
 
 		long initTime = System.nanoTime();
-		MediaPipeline pipeline = kurento.createMediaPipeline();
+
+		kurento.createMediaPipeline();
 
 		double duration = (System.nanoTime() - initTime) / (double) 1000000;
 
@@ -122,7 +122,8 @@ public class RetryTest {
 		server.start();
 
 		long initTime = System.nanoTime();
-		MediaPipeline pipeline = kurento.createMediaPipeline();
+
+		kurento.createMediaPipeline();
 
 		double duration = (System.nanoTime() - initTime) / (double) 1000000;
 

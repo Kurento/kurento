@@ -14,15 +14,10 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.factory.KurentoClient;
 import org.kurento.commons.testing.KurentoControlServerTests;
 import org.kurento.control.server.KurentoControlServerApp;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @Category(KurentoControlServerTests.class)
 public class KurentoControlServerClientTest {
-
-	private static final Logger log = LoggerFactory
-			.getLogger(KurentoControlServerClientTest.class);
 
 	@Test
 	public void kurentoClientTest() throws IOException, InterruptedException {

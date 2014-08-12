@@ -8,7 +8,6 @@
 		<relativePath>../kurento-parent-pom</relativePath>
 	</parent>
 
-	<groupId>org.kurento</groupId>
 	<artifactId>kurento-client</artifactId>
 	<packaging>jar</packaging>
 
@@ -89,7 +88,7 @@
 			<artifactId>kms-api-filters</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
