@@ -159,7 +159,16 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 		String path = getProperty(WEBSOCKET_PATH_PROPERTY,
 				WEBSOCKET_PATH_DEFAULT);
 
+		if (path.startsWith("/")) {
+			path = path.substring(1);
+		}
+
+		if (path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+
 		registry.addHandler(jsonRpcHandler(), "/" + path);
+		registry.addHandler(jsonRpcHandler(), "/" + path + "/");
 	}
 
 	@Bean
