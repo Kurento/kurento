@@ -252,9 +252,10 @@ ${remoteClass.name}.constructorParams = {<#list (remoteClass.constructor.params?
 <#list remoteClass.events?sort_by("name") as event>
   <#assign remoteClassEvents_name=remoteClassEvents_name+["'"+event.name+"'"]>
 </#list>
-${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator=", "/>];
 <#if remoteClass.extends??>
-${remoteClass.name}.events.concat(${extends_name}.events);
+${remoteClass.name}.events = ${extends_name}.events<#if remoteClassEvents_name?has_content>.concat([<@join sequence=remoteClassEvents_name separator=", "/>])</#if>;
+<#else>
+${remoteClass.name}.events = [<@join sequence=remoteClassEvents_name separator=", "/>];
 </#if>
 
 module.exports = ${remoteClass.name};
