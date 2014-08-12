@@ -51,7 +51,7 @@
     || event == '_create')
       return;
 
-    var constructor = this.contructor;
+    var constructor = this.constructor;
 
     if(constructor.events.indexOf(event) < 0)
       throw new SyntaxError(constructor.name+" doesn't accept events of type '"+event+"'")
