@@ -2,11 +2,11 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-KWS Utils for Bower
-=========
+Kurento Utils for Bower
+=============
 Utilities for Kurento Web SDK
 
-The KWS Utils project contains a set of reusable components that have been
+The Kurento Utils project contains a set of reusable components that have been
 found useful during the development of the Kurento Web SDK, and the different 
 projects that serve as demo.
 
@@ -24,15 +24,15 @@ sudo npm install -g bower
 To install the library, it's recomended to do that from the [Bower repository] :
 
 ```bash
-npm install kws-utils
+bower install kurento-utils
 ```
 
 Alternatively, you can download the code using git and install manually its
 dependencies:
 
 ```bash
-git clone https://github.com/KurentoReleases/kws-utils.git
-cd kws-utils
+git clone https://github.com/Kurento/kurento-utils-bower
+cd kurento-utils-bower
 npm install
 ```
 
@@ -70,9 +70,9 @@ Information about Kurento can be found on our [website].
 Follow us on Twitter @[kurentoms].
 
 [Bower]: http://bower.io
-[Bower repository]: https://github.com/KurentoReleases/kws-media-api
+[Bower repository]: https://github.com/Kurento/kurento-utils-bower
 [GitHub Kurento group]: https://github.com/kurento
-[GitHub repository]: https://github.com/kurento/kws-utils
+[GitHub repository]: https://github.com/kurento/kurento-utils
 [Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms

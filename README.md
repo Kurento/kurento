@@ -2,11 +2,11 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-KWS Utils for Node.js and browsers
-=========
+Kurento Utils for Node.js and browsers
+=============
 Utilities for Kurento Web SDK
 
-The KWS Utils project contains a set of reusable components that have been
+The Kurento Utils project contains a set of reusable components that have been
 found useful during the development of the Kurento Web SDK, and the different 
 projects that serve as demo.
 
@@ -22,8 +22,7 @@ repositories, since due to the fast-moving Node.js community and environment
 these last ones get easily outdated and can lead to incompatibility errors:
 
 ```bash
-sudo add-apt-repository ppa:chris-lea/node.js
-sudo apt-get update
+curl -sL https://deb.nodesource.com/setup | sudo bash -
 
 sudo apt-get install nodejs nodejs-legacy
 ```
@@ -31,15 +30,15 @@ sudo apt-get install nodejs nodejs-legacy
 To install the library, it's recomended to do that from the [NPM repository] :
 
 ```bash
-npm install kws-utils
+npm install kurento-utils
 ```
 
 Alternatively, you can download the code using git and install manually its
 dependencies:
 
 ```bash
-git clone https://github.com/Kurento/kws-utils.git
-cd kws-utils
+git clone https://github.com/Kurento/kurento-utils
+cd kurento-utils
 npm install
 ```
 
@@ -87,12 +86,12 @@ Information about Kurento can be found on our [website].
 Follow us on Twitter @[kurentoms].
 
 [GitHub Kurento group]: https://github.com/kurento
-[GitHub repository]: https://github.com/kurento/kws-utils
+[GitHub repository]: https://github.com/kurento/kurento-utils
 [grunt]: http://gruntjs.com/
 [Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
-[NPM repository]: https://www.npmjs.org/package/kws-utils
+[Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-debian-linux-mint-etc
+[NPM repository]: https://www.npmjs.org/package/kurento-utils
 [website]: http://kurento.org

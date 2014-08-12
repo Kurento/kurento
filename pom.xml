@@ -2,15 +2,15 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento.kws</groupId>
-	<artifactId>kws-utils</artifactId>
+	<artifactId>kurento-utils</artifactId>
 	<version>4.3.19-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>KWS Utils</name>
+	<name>Kurento Utils</name>
 	<description>
 		Kurento Web SDK Utils
 
-		The kws-utils project contains a set of utilities that have been found
+		The kurento-utils project contains a set of utilities that have been found
 		useful during the development of applications with the Kurento stack.
 	</description>
 	<url>http://www.kurento.com/docs/${project.version}</url>
