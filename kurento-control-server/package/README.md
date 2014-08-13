@@ -24,8 +24,8 @@ can be executed as:
 
     java -jar kurento-control-server.jar
 
-All configuration is retrieved from file kurento.conf.json located in config
-folder in the place of executing java command.
+All configuration is retrieved from file 'kurento.conf.json' located in config
+folder in the place you are executing java command.
 
 This file looks like:
 
@@ -74,8 +74,9 @@ The meaning of general configuration properties are:
   authenticate the client requests. The empty URL can be used to allow all
   clients to use KCS (that is, no authentication is enforced). If not specified,
   the empty URL will be used.
-* **controlServer.keystoreFile:** The keystore file with the private key used when
-  securePort is specified. This keystore file has to have a private key with
+* **controlServer.keystore.path:** The path to the keystore file with the private
+  key used when securePort is specified. This keystore file has to have a private
+  key with
   'tomcat' alias. To generate this file it is recommended to have a real private
   key and certificate file (not a self-signed certificate). With this files,
   you can use the following command to generate the needed file:
@@ -89,7 +90,7 @@ The meaning of general configuration properties are:
 
     keytool -genkey -alias tomcat -storetype PKCS12 -keystore keystore
 
-* **controlServer.keystorePass:** The keystore file password. This password is
+* **controlServer.keystore.pass:** The keystore file password. This password is
   specified interactively when executing any of previous commands.
 
 
@@ -156,35 +157,20 @@ With this properties, the configuration file will look like:
 Configuration file
 ------------------
 
-If you prefer, instead of using the command line parameters, you can specify the
-configuration properties in a configuration file. The configuration file has to
-be called 'application.properties' and must be placed in the working directory.
-The file is formated as a plain Java properties file, for example:
+You can change the location and name of the configuration file with the
+following command:
 
-server.port=8888
-thrift.kms.address=127.0.0.1:9090
-thrift.kmf.address=127.0.0.1:9191
+    java -DconfigFilePath=/opt/kurento/config.json -jar kurento-control-server.jar
 
-If you don't like application.properties as the configuration file name you can
-switch to another by specifying spring.config.location environment property.
+Log
+---
 
-$ java -jar kmf-media-connector.jar --spring.config.location=newconfigfilename
+KCS log is based on Logback, a famous log system in Java. I you want to
+configure the log, you have to provide a custom log configuration file and
+specify its location with the 'logback.configurationFile' system property. For
+example, you can execute kurento-control-server.jar with the following command:
 
-You can also refer to an explicit location using the spring.config.location
-environment property.
-
-$ java -jar kmf-media-connector.jar --spring.config.location=/opt/kmfmediaconnector
-
-Notice that in both cases, the configuration file must be a valid properties file,
-i.e. a file with extension .properties (e.g. application.properties).
-
-It is recommended to wrap the proxy in system service in order to be executed
-when the system starts.
-
-The log of the proxy can be configured. You can specify the property
-'logging.config' pointing to a file to configure the Logback system. The value
-of this property can be specified in command line or in the
-application.properties file.
+    java -Dlogback.configurationFile=/path/to/config.xml -jar kurento-control-server.jar
 
 The possible configuration of the Logback system is out of the scope of this
 manual and can be consulted in http://logback.qos.ch/manual/configuration.html.

@@ -9,27 +9,27 @@
 		  //   "host":"127.0.0.1",
 		  //   "port":5672,
 		  //   "username":"guest",
-		  //   "pass":"guest", 
-		  //   "vhost" : "/" 
-		  // }          
+		  //   "pass":"guest",
+		  //   "vhost" : "/"
+		  // }
       }
   },
-  "controlServer" : {    
+  "controlServer" : {
     "net" : {
-        "websocket" : { 
-            "port": 8888, 
+        "websocket" : {
+            "port": 8888,
             "path": "kurento",
             //"securePort": 8433
         },
-        "thriftCallback": { 
+        "thriftCallback": {
             "port": 9900
         }
      },
-     "oauthserverUrl": "",
-     // "logConfigFile": "/opt/kurento/logback.xml",     
+     // "oauthserverUrl": "",
+     // "logConfigFile": "/opt/kurento/logback.xml",
      // "keystore" : {
-     //   "file" : "ssss",
+     //   "path" : "ssss",
      //   "pass" : "ssss"
-     //}   
+     //}
   }
 }

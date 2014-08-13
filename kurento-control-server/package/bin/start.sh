@@ -77,25 +77,25 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
 fi
 
 # Find out installation type
-KMC_HOME=$(cd $DIRNAME/..;pwd)
-KMC_BINARY=$KMC_HOME/lib/kmf-media-connector.jar
-KMC_CONFIG=$KMC_HOME/config/application.properties
-if [ ! -f $KMC_BINARY ]; then
-    KMC_HOME=/var/lib/kurento
-    KMC_BINARY=$KMC_HOME/kmf-media-connector.jar
-    KMC_CONFIG="/etc/kurento/media-connector.properties"
-    KMC_OPTS="--spring.config.location=$KMC_CONFIG"
+KCS_HOME=$(cd $DIRNAME/..;pwd)
+KCS_BINARY=$KCS_HOME/lib/kurento-control-server.jar
+KCS_CONFIG=$KCS_HOME/config/kurento.conf.json
+if [ ! -f $KCS_BINARY ]; then
+    KCS_HOME=/var/lib/kurento
+    KCS_BINARY=$KCS_HOME/kurento-control-server.jar
+    KCS_CONFIG="/etc/kurento/kurento.conf.json"
+    KCS_OPTS="-DconfigFilePath=$KCS_CONFIG"
 fi
 
-[ -f $KMC_BINARY ] || { echo "Unable to find KMC binary file"; exit 1; }
-[ -f $KMC_CONFIG ] || { echo "Unable to find configuration file: $KMC_CONFIG"; exit 1; }
+[ -f $KCS_BINARY ] || { echo "Unable to find KSC binary file"; exit 1; }
+[ -f $KCS_CONFIG ] || { echo "Unable to find configuration file: $KCS_CONFIG"; exit 1; }
 
 # Display our environment
 echo "========================================================================="
 echo ""
-echo "  KMF Media Connector Bootstrap Environment"
+echo "  Kurento Control Server Bootstrap Environment"
 echo ""
-echo "  KMC_BINARY: $KMC_BINARY"
+echo "  KCS_BINARY: $KCS_BINARY"
 echo ""
 echo "  JAVA: $JAVA"
 echo ""
@@ -104,5 +104,5 @@ echo ""
 echo "========================================================================="
 echo ""
 
-cd $KMC_HOME
-exec $JAVA $JAVA_OPTS -jar $KMC_BINARY $KMC_OPTS
+cd $KCS_HOME
+exec $JAVA $JAVA_OPTS -jar $KCS_BINARY $KCS_OPTS

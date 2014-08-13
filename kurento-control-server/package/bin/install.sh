@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Kurento Media Connector installartor for Ubuntu 14.04
+# Kurento Control Server installator for Ubuntu 14.04
 if [ `id -u` -ne 0 ]; then
     echo ""
     echo "Only root can start Kurento"
@@ -8,20 +8,20 @@ if [ `id -u` -ne 0 ]; then
     exit 1
 fi
 
-KMC_HOME=$(dirname $(dirname $(readlink -f $0)))
+KCS_HOME=$(dirname $(dirname $(readlink -f $0)))
 
 # Create defaults
 mkdir -p /etc/default
-cat > /etc/default/kmf-media-connector <<-EOF
-# Defaults for kmf-media-connector initscript
-# sourced by /etc/init.d/kmf-media-connector
-# installed at /etc/default/kmf-media-connector by the maintainer scripts
+cat > /etc/default/kurento-control-server <<-EOF
+# Defaults for kurento-control-server initscript
+# sourced by /etc/init.d/kurento-control-server
+# installed at /etc/default/kurento-control-server by the maintainer scripts
 
 #
 # This is a POSIX shell fragment
 #
 
-# Commment next line to disable kmf-media-connector daemon
+# Commment next line to disable kurento-control-server daemon
 START_DAEMON=true
 
 # Whom the daemons should run as
@@ -29,12 +29,12 @@ DAEMON_USER=nobody
 EOF
 
 # Install binaries
-install -o root -g root -m 755 $KMC_HOME/bin/start.sh /usr/bin/kmf-media-connector
-install -o root -g root -m 755 $KMC_HOME/support-files/kmf-media-connector.sh /etc/init.d/kmf-media-connector
+install -o root -g root -m 755 $KCS_HOME/bin/start.sh /usr/bin/kurento-control-server
+install -o root -g root -m 755 $KCS_HOME/support-files/kurento-control-server.sh /etc/init.d/kurento-control-server
 mkdir -p /var/lib/kurento
-install -o root -g root $KMC_HOME/lib/kmf-media-connector.jar /var/lib/kurento/
+install -o root -g root $KCS_HOME/lib/kurento-control-server.jar /var/lib/kurento/
 mkdir -p /etc/kurento/
-install -o root -g root $KMC_HOME/config/application.properties /etc/kurento/media-connector.properties
+install -o root -g root $KCS_HOME/config/kurento.conf.json /etc/kurento/kurento.conf.json
 
 # start media connector
-/etc/init.d/kmf-media-connector start
+/etc/init.d/kurento-control-server start

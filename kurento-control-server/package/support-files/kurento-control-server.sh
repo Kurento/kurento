@@ -1,14 +1,14 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          kmf-media-connector
+# Provides:          kurento-control-server
 # Required-Start:    $remote_fs $network
 # Required-Stop:     $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Kurento Media Connector daemon.
-# Description: The Kurento kmf-media-connector project is a Webserver frontend for the Thrift API of the Kurento Media Server.
-# processname: 
+# Short-Description: Kurento Control Server daemon.
+# Description: The Kurento Control Server a component of Kurento Server that provides WebSocket net interfaces to Kurento Media Server.
+# processname:
 ### END INIT INFO
 
 if [ -r "/lib/lsb/init-functions" ]; then
@@ -18,40 +18,40 @@ else
   exit 1
 fi
 
-SERVICE_NAME=KurentoMediaConnector
+SERVICE_NAME=KurentoControlServer
 
 # Find out local or system installation
-KMC_DIR=$(cd $(dirname $(dirname $0)); pwd)
-if [ -f $KMC_DIR/bin/start.sh -a -f $KMC_DIR/lib/kmf-media-connector.jar ]; then
-    KMF_MEDIA_CONNECTOR_SCRIPT=$KMC_DIR/bin/start.sh
-    CONSOLE_LOG=$KMC_DIR/logs/media-connector.log
-    KMC_CONFIG=$KMC_DIR/config/application.properties
-    PIDFILE=$KMC_DIR/kmf-media-connector.pid
+KCS_DIR=$(cd $(dirname $(dirname $0)); pwd)
+if [ -f $KCS_DIR/bin/start.sh -a -f $KCS_DIR/lib/kurento-control-server.jar ]; then
+    KCS_SCRIPT=$KCS_DIR/bin/start.sh
+    CONSOLE_LOG=$KCS_DIR/logs/control-server.log
+    KCS_CONFIG=$KCS_DIR/config/kurento.conf.json
+    PIDFILE=$KCS_DIR/kurento-control-server.pid
 else
     # Only root can start Kurento in system mode
     if [ `id -u` -ne 0 ]; then
         log_failure_msg "Only root can start Kurento"
         exit 1
     fi
-    [ -f /etc/default/kmf-media-connector ] && . /etc/default/kmf-media-connector
-    KMF_MEDIA_CONNECTOR_SCRIPT=/usr/bin/kmf-media-connector
-    CONSOLE_LOG=/var/log/kurento/media-connector.log
-    KMC_CONFIG=/etc/kurento/media-connector.properties
+    [ -f /etc/default/kurento-control-server ] && . /etc/default/kurento-control-server
+    KCS_SCRIPT=/usr/bin/kurento-control-server
+    CONSOLE_LOG=/var/log/kurento/control-server.log
+    KCS_CONFIG=/etc/kurento/kurento.json.conf
     KMC_CHUID="--chuid $DAEMON_USER"
-    PIDFILE=/var/run/kurento/kmf-media-connector.pid
+    PIDFILE=/var/run/kurento/kurento-control-server.pid
 fi
 
 [ -z "$DAEMON_USER" ] && DAEMON_USER=nobody
 
 # Check startup file
-if [ ! -x $KMF_MEDIA_CONNECTOR_SCRIPT ]; then
-    log_failure_msg "$KMF_MEDIA_CONNECTOR_SCRIPT is not an executable!"
+if [ ! -x $KCS_SCRIPT ]; then
+    log_failure_msg "$KCS_SCRIPT is not an executable!"
     exit 1
 fi
 
 # Check config file
-if [ ! -f $KMC_CONFIG ]; then
-    log_failure_msg "Kurento Media Framework configuration file not found: $KMC_CONFIG"
+if [ ! -f $KCS_CONFIG ]; then
+    log_failure_msg "Kurento Control Server configuration file not found: $KCS_CONFIG"
     exit 1;
 fi
 
@@ -69,7 +69,7 @@ start() {
             rm -f $PIDFILE
         fi
         # KMC instances not identified => Kill them all
-        CURRENT_KMC=$(ps -ef|grep kmf-media-connector.jar |grep -v grep | awk '{print $2}')
+        CURRENT_KMC=$(ps -ef|grep kurento-control-server.jar |grep -v grep | awk '{print $2}')
         [ -n "$CURRENT_KMC" ] && kill -9 $CURRENT_KMC > /dev/null 2>&1
 	mkdir -p $(dirname $PIDFILE)
 	mkdir -p $(dirname $CONSOLE_LOG)
@@ -78,7 +78,7 @@ start() {
 	start-stop-daemon --start $KMC_CHUID \
         --make-pidfile --pidfile $PIDFILE \
 	--background --no-close \
-	--exec "$KMF_MEDIA_CONNECTOR_SCRIPT" -- >> $CONSOLE_LOG 2>&1
+	--exec "$KCS_SCRIPT" -- >> $CONSOLE_LOG 2>&1
 	log_end_msg $?
 }
 
@@ -86,7 +86,7 @@ stop () {
 	if [ -f $PIDFILE ]; then
 	    read kpid < $PIDFILE
 	    kwait=15
-		
+
 	    count=0
 	    log_daemon_msg "$SERVICE_NAME stopping ..."
 	    kill -15 $kpid
@@ -95,11 +95,11 @@ stop () {
 		sleep 1
 		count=$((count+1))
 	    done
-    		
+
 	    if [ $count -gt $kwait ]; then
 		kill -9 $kpid
 	    fi
-    		
+
 	    rm -f $PIDFILE
 	    log_end_msg $?
 	else
