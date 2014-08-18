@@ -192,7 +192,7 @@ main (int argc, char **argv)
   moduleManager.loadModule ("../../src/server/libkmselementsmodule.so");
 
   config.add ("configPath", "../../../tests" );
-  config.add ("modules.kurento.SdpEndpoint.pattern", "sdp_pattern.txt");
+  config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
 
   testHttpGetEndPoint (moduleManager, mediaPipeline);
   testHttpPostEndPoint (moduleManager, mediaPipeline);
