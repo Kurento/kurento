@@ -16,17 +16,58 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 namespace kurento
 {
 
+static const std::string CERTTOOL_TEMPLATE = "autoCerttool.tmpl";
+static const std::string CERT_KEY_PEM_FILE = "autoCertkey.pem";
+
 static const uint DEFAULT_STUN_PORT = 0;
 static const std::string DEFAULT_STUN_ADDRESS =  "77.72.174.167";
 
 static std::shared_ptr<std::string> pemCertificate;
 static std::mutex mutex;
+static std::shared_ptr<boost::filesystem::path> temporalDirectory;
 
 static void
-remove_certificate (std::string *str)
+remove_certificate (boost::filesystem::path *p)
 {
-  // TODO: Remove generated certificate
-  delete str;
+  boost::filesystem::remove_all (*p);
+  delete p;
+}
+
+static void
+create_pem_certificate ()
+{
+  int ret;
+  boost::filesystem::path p = boost::filesystem::unique_path (
+                                boost::filesystem::temp_directory_path() / "WebRtcEndpoint_%%%%%%%%" );
+  boost::filesystem::create_directories (p);
+  temporalDirectory = std::shared_ptr <boost::filesystem::path>
+                      (new boost::filesystem::path (p), remove_certificate);
+
+  boost::filesystem::path pemFile = p / CERT_KEY_PEM_FILE;
+  std::string pemGenerationCommand =
+    "/bin/sh -c \"certtool --generate-privkey --outfile " + pemFile .string()  +
+    "\"";
+
+  ret = system (pemGenerationCommand.c_str() );
+
+  if (ret == -1) {
+    return;
+  }
+
+  boost::filesystem::path templateFile = p / CERTTOOL_TEMPLATE;
+  std::string certtoolCommand = "/bin/sh -c \"echo 'organization = kurento' > " +
+                                templateFile.string() + " && certtool --generate-self-signed --load-privkey " +
+                                pemFile.string() + " --template " + templateFile.string() +  " >> " +
+                                pemFile.string() + " 2>/dev/null\"";
+
+  ret = system (certtoolCommand.c_str() );
+
+  if (ret == -1) {
+    return;
+  }
+
+  pemCertificate = std::shared_ptr <std::string> (new std::string (
+                     pemFile.string() ) );
 }
 
 static std::shared_ptr<std::string>
@@ -55,9 +96,7 @@ getPemCertificate (const boost::property_tree::ptree &conf)
 
   }
 
-  // TODO: Generate a certificate in /tmp and remove it when server is finished
-  pemCertificate = std::shared_ptr <std::string> (new std::string (),
-                   remove_certificate);
+  create_pem_certificate();
 
   return pemCertificate;
 }
