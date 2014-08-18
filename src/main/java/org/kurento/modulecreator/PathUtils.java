@@ -72,6 +72,11 @@ public class PathUtils {
 		}
 	}
 
+	public static Path getPathInClasspath(String resourceName)
+			throws IOException, URISyntaxException {
+		return getPathInClasspath(PathUtils.class.getResource(resourceName));
+	}
+
 	public static Path getPathInClasspath(URL resource) throws IOException,
 			URISyntaxException {
 

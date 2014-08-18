@@ -1,0 +1,30 @@
+{
+  "name":"moduleA",
+  "version":"1.0.0-dev",
+  "kurentoVersion":"1.0.0",
+  "remoteClasses":[
+    {
+      "name":"ClassA",
+      "constructor":{
+
+      },
+      "methods":[
+        {
+          "name":"method1",
+          "params":[
+            {
+              "name":"param",
+              "type":"CoreClass"
+            }
+          ],
+          "return":{
+            "type":"String"
+          }
+        }
+      ]
+    },
+    {
+      "name":"ClassAB"
+    }
+  ]
+}

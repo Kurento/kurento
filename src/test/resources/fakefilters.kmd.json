@@ -1,0 +1,9 @@
+{
+  "name": "filters",
+  "version": "1.0.0",
+  "remoteClasses":[
+    {
+      "name":"CoreClass"
+    }
+  ]
+}

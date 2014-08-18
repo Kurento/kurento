@@ -1,0 +1,9 @@
+{
+  "name": "elements",
+  "version": "1.0.0",
+  "remoteClasses":[
+    {
+      "name":"CoreClass"
+    }
+  ]
+}

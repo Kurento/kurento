@@ -1,11 +1,14 @@
 package org.kurento.modulecreator.test;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import org.junit.Test;
 import org.kurento.modulecreator.VersionManager;
 
-public class VersionTest extends TestCase {
+public class VersionTest {
 
+	@Test
 	public void testNumericalVersions() {
 
 		assertTrue(VersionManager.versionCompare("1.2.3", "1.2.3") == 0);
@@ -15,6 +18,7 @@ public class VersionTest extends TestCase {
 		assertTrue(VersionManager.versionCompare("1.0", "1.2.4") < 0);
 	}
 
+	@Test
 	public void testCompatibleVersions() {
 
 		assertTrue(VersionManager

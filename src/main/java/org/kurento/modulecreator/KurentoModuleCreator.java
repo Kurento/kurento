@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.kurento.modulecreator.codegen.CodeGen;
+import org.kurento.modulecreator.codegen.Error;
+import org.kurento.modulecreator.definition.ModuleDefinition;
+import org.kurento.modulecreator.json.JsonModuleSaverLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +29,6 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
-import org.kurento.modulecreator.codegen.CodeGen;
-import org.kurento.modulecreator.codegen.Error;
-import org.kurento.modulecreator.definition.ModuleDefinition;
-import org.kurento.modulecreator.json.JsonModuleSaverLoader;
 
 public class KurentoModuleCreator {
 
@@ -54,6 +54,14 @@ public class KurentoModuleCreator {
 
 	private ModuleManager moduleManager;
 	private ModuleManager depModuleManager;
+
+	public ModuleManager getModuleManager() {
+		return moduleManager;
+	}
+
+	public ModuleManager getDepModuleManager() {
+		return depModuleManager;
+	}
 
 	public void setInternalTemplates(String internalTemplates) {
 		this.internalTemplates = internalTemplates;
@@ -188,8 +196,8 @@ public class KurentoModuleCreator {
 				if (outputModuleFile != null) {
 					JsonModuleSaverLoader.getInstance().writeToFile(
 							module,
-							new File(outputModuleFile.toFile(), module.getName()
-									+ ".kmd.json"));
+							new File(outputModuleFile.toFile(), module
+									.getName() + ".kmd.json"));
 				}
 			}
 
@@ -231,8 +239,8 @@ public class KurentoModuleCreator {
 			return element.getAsJsonObject();
 
 		} catch (JsonSyntaxException e) {
-			throw new KurentoModuleCreatorException("Config file '" + configFile
-					+ "' has the following formatting error:"
+			throw new KurentoModuleCreatorException("Config file '"
+					+ configFile + "' has the following formatting error:"
 					+ e.getLocalizedMessage());
 		}
 	}
@@ -260,7 +268,8 @@ public class KurentoModuleCreator {
 
 		log.debug("Loading dependency kmd files to generate code");
 		moduleManager = new ModuleManager();
-		moduleManager.addModules(loadModuleDescriptors(dependencyKmdFilesToGen));
+		moduleManager
+				.addModules(loadModuleDescriptors(dependencyKmdFilesToGen));
 		if (module != null) {
 			moduleManager.addModule(module);
 		}
@@ -272,7 +281,8 @@ public class KurentoModuleCreator {
 
 	}
 
-	private ModuleDefinition fusionModuleDescriptors(List<ModuleDefinition> modules) {
+	private ModuleDefinition fusionModuleDescriptors(
+			List<ModuleDefinition> modules) {
 
 		if (modules.isEmpty()) {
 			return null;
@@ -295,8 +305,8 @@ public class KurentoModuleCreator {
 
 			log.debug("Loading kmdFile " + kmdFile);
 
-			ModuleDefinition module = JsonModuleSaverLoader.getInstance().loadFromFile(
-					kmdFile);
+			ModuleDefinition module = JsonModuleSaverLoader.getInstance()
+					.loadFromFile(kmdFile);
 
 			modules.add(module);
 		}

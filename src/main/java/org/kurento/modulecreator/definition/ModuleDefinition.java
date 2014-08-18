@@ -1,21 +1,28 @@
 package org.kurento.modulecreator.definition;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Set;
 
 import org.kurento.modulecreator.KurentoModuleCreatorException;
 import org.kurento.modulecreator.ModuleManager;
 import org.kurento.modulecreator.VersionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ModuleDefinition {
 
-	private static Logger log = LoggerFactory.getLogger(ModuleDefinition.class);
+	private static final String FILTERS_MODULE = "filters";
+	private static final String ELEMENTS_MODULE = "elements";
+	private static final String CORE_MODULE = "core";
+
+	private static final Set<String> AUTO_IMPORTED_MODULES = new HashSet<>(
+			Arrays.asList(CORE_MODULE, ELEMENTS_MODULE, FILTERS_MODULE));
 
 	private static enum ResolutionState {
 		NO_RESOLVED, IN_PROCESS, RESOLVED
@@ -25,6 +32,8 @@ public class ModuleDefinition {
 	public static final PrimitiveType BOOLEAN = new PrimitiveType("boolean");
 	public static final PrimitiveType INT = new PrimitiveType("int");
 	public static final PrimitiveType FLOAT = new PrimitiveType("float");
+
+	private static Logger log = LoggerFactory.getLogger(ModuleDefinition.class);
 
 	/* Kmd file info */
 	private String name;
@@ -212,18 +221,15 @@ public class ModuleDefinition {
 
 	@Override
 	public String toString() {
-		return "Model [remoteClasses=" + remoteClasses + ", types="
+		return "Model [name=" + name + ", version=" + version
+				+ ", remoteClasses=" + remoteClasses + ", types="
 				+ complexTypes + ", events=" + events + "]";
-	}
-
-	public void resolveModel() {
-		resolveModule(null);
 	}
 
 	public void validateModule() {
 
 		if (kurentoVersion == null) {
-			if ("core".equals(name)) {
+			if (AUTO_IMPORTED_MODULES.contains(name)) {
 				kurentoVersion = version;
 			} else {
 				throw new KurentoModuleCreatorException(
@@ -255,7 +261,14 @@ public class ModuleDefinition {
 		}
 	}
 
+	public void resolveModel() {
+		resolveModule(null);
+	}
+
 	public void resolveModule(ModuleManager moduleManager) {
+
+		setModuleToTypes();
+
 		if (resolutionState == ResolutionState.IN_PROCESS) {
 			throw new KurentoModuleCreatorException(
 					"Found a dependency cycle in plugin '" + this.name + "'");
@@ -283,6 +296,20 @@ public class ModuleDefinition {
 		this.resolutionState = ResolutionState.RESOLVED;
 	}
 
+	private void setModuleToTypes() {
+		for (ComplexType complexType : complexTypes) {
+			complexType.setModule(this);
+		}
+
+		for (RemoteClass remoteClass : remoteClasses) {
+			remoteClass.setModule(this);
+		}
+
+		for (Event event : events) {
+			event.setModule(this);
+		}
+	}
+
 	private void addInfoForGeneration(ModuleManager moduleManager) {
 		if (this.code == null) {
 			this.code = new Code();
@@ -291,6 +318,7 @@ public class ModuleDefinition {
 	}
 
 	private void resolveTypes(ModuleManager moduleManager) {
+
 		remoteClassesMap = resolveNamedElements(this.remoteClasses);
 		eventsMap = resolveNamedElements(this.events);
 		complexTypesMap = resolveNamedElements(this.complexTypes);
@@ -299,6 +327,7 @@ public class ModuleDefinition {
 		types.putAll(remoteClassesMap);
 		types.putAll(eventsMap);
 		types.putAll(complexTypesMap);
+
 		put(types, BOOLEAN);
 		put(types, STRING);
 		put(types, INT);
@@ -317,9 +346,7 @@ public class ModuleDefinition {
 
 	private void resolveImports(ModuleManager moduleManager) {
 
-		if (!"core".equals(this.name)) {
-			this.imports.add(new Import("core", kurentoVersion));
-		}
+		autoImportModules();
 
 		for (Import importEntry : this.imports) {
 			ModuleDefinition dependencyModule = null;
@@ -361,6 +388,21 @@ public class ModuleDefinition {
 		}
 	}
 
+	private void autoImportModules() {
+		if (!CORE_MODULE.equals(this.name)) {
+			this.imports.add(new Import(CORE_MODULE, kurentoVersion));
+
+			if (!ELEMENTS_MODULE.equals(this.name)) {
+				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion));
+
+				if (!FILTERS_MODULE.equals(this.name)) {
+					this.imports
+							.add(new Import(FILTERS_MODULE, kurentoVersion));
+				}
+			}
+		}
+	}
+
 	private Map<String, ? extends Type> getAllTypes() {
 		return allTypes;
 	}
@@ -370,32 +412,66 @@ public class ModuleDefinition {
 	}
 
 	private void resolveTypeRefs(List<? extends ModelElement> moduleElements,
-			Map<String, Type> baseTypes) {
+			Map<String, Type> types) {
+
 		for (ModelElement moduleElement : moduleElements) {
+
 			if (moduleElement instanceof TypeRef) {
-				TypeRef typeRef = (TypeRef) moduleElement;
-				Type baseType = baseTypes.get(typeRef.getName());
-				if (baseType == null) {
+				resolveTypeRef((TypeRef) moduleElement, types);
+			} else {
+				resolveTypeRefs(moduleElement.getChildren(), types);
+			}
+		}
+	}
+
+	private void resolveTypeRef(TypeRef typeRef, Map<String, Type> types) {
+
+		Type type = types.get(typeRef.getQualifiedName());
+
+		if (type == null) {
+
+			if (typeRef.getModuleName() == null) {
+
+				// Maybe this type is declared in this module
+				typeRef.setModuleName(this.name);
+				type = types.get(typeRef.getQualifiedName());
+
+				if (type == null) {
 					throw new KurentoModuleCreatorException("The type '"
-							+ typeRef.getName()
-							+ "' is not defined. Used in plugin: " + name
-							+ ".\nThe types are: " + baseTypes.keySet());
-				} else {
-					typeRef.setType(baseType);
+							+ typeRef.getName() + "' is not defined in module "
+							+ this.name
+							+ " neither in kurento. Used in module: " + name
+							+ ".\nThe available types are: " + types.keySet());
 				}
 
 			} else {
-				resolveTypeRefs(moduleElement.getChildren(), baseTypes);
+
+				throw new KurentoModuleCreatorException("The type '"
+						+ typeRef.getName() + "' is not defined in module "
+						+ typeRef.getModuleName() + ". Used in module: " + name
+						+ ".\nThe available types are: " + types.keySet());
+
 			}
 		}
+
+		typeRef.setType(type);
 	}
 
 	@SuppressWarnings("unchecked")
 	private <T extends NamedElement> Map<String, T> resolveNamedElements(
 			List<? extends T> elements) {
+
 		Map<String, T> elementsMap = new HashMap<String, T>();
 		for (NamedElement element : elements) {
-			elementsMap.put(element.getName(), (T) element);
+
+			if (AUTO_IMPORTED_MODULES.contains(this.name)) {
+				// Only types of imported modules can be referenced without
+				// module name
+				elementsMap.put(element.getName(), (T) element);
+			} else {
+				elementsMap.put(this.name + "." + element.getName(),
+						(T) element);
+			}
 		}
 		return elementsMap;
 	}
