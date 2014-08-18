@@ -1,12 +1,12 @@
 {
   "remoteClasses": [
     { "name": "SampleClass",
-      "constructors": [{ "params": [
+      "constructor": { "params": [
             { "name": "att1", "type": "String" },
             { "name": "att2", "type": "boolean" },
             { "name": "att3", "type": "float", "optional": true, "defaultValue": 5.5 },
-            { "name": "att4", "type": "int", "optional": true, "defaultValue": 120 }            
-         ]}],
+            { "name": "att4", "type": "int", "optional": true, "defaultValue": 120 }
+         ]},
       "methods": [
             { "name": "getAtt1", "params": [], "return": { "type": "String" }},
             { "name": "getAtt2", "params": [], "return": { "type": "boolean" }},
@@ -20,7 +20,7 @@
             { "name": "echoObjectRef", "params": [{ "name": "param", "type": "SampleClass" }], "return": { "type": "SampleClass" }},
             { "name": "echoObjectRefList", "params": [{ "name": "param", "type": "SampleClass[]" }], "return": { "type": "SampleClass[]" }}
          ],
-      "events": [ "Sample" ]   
+      "events": [ "Sample" ]
     }],
   "complexTypes": [
     {
@@ -31,12 +31,12 @@
     {
       "name": "ComplexParam",
       "typeFormat": "REGISTER",
-      "properties": [ 
+      "properties": [
         { "name": "prop1", "type": "String" },
-        { "name": "prop2", "type": "int" },        
+        { "name": "prop2", "type": "int" },
         { "name": "prop3", "type": "String", "optional": true },
         { "name": "prop4", "type": "float", "optional": true }
-      ]      
+      ]
     }],
   "events": [
     {
@@ -48,7 +48,7 @@
     },
     {
       "name": "Base",
-      "properties": [{ "name": "prop2", "type":"String" }]      
+      "properties": [{ "name": "prop2", "type":"String" }]
     }
   ]
 }
