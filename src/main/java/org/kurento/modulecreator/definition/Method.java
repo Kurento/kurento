@@ -85,17 +85,6 @@ public class Method extends NamedElement {
 	public List<ModelElement> getChildren() {
 		List<ModelElement> children = new ArrayList<ModelElement>();
 
-		if (params != null) {
-
-			// TODO Find a better way to filter null values at the end of an
-			// JsonArray
-			if ((params.size() != 0) && (params.get(params.size() - 1) == null)) {
-				params.remove(params.size() - 1);
-			}
-
-			children.addAll(params);
-		}
-
 		if (returnProp != null) {
 			children.add(returnProp);
 		}
