@@ -21,12 +21,12 @@ import ${import.module.code.api.java.packageName}.*;
 public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remoteClass.extends.name}</#if> {
 
    <#list remoteClass.properties as property>
-     ${getJavaObjectType(property.type,false)} get${property.name?cap_first}();   
+     ${getJavaObjectType(property.type,false)} get${property.name?cap_first}();
    </#list>
-   
+
    <#list remoteClass.properties as property>
-     void get${property.name?cap_first}(Continuation<${getJavaObjectType(property.type,false)}> cont);   
-   </#list> 
+     void get${property.name?cap_first}(Continuation<${getJavaObjectType(property.type,true)}> cont);
+   </#list>
 
    <#list remoteClass.methods as method>
 
@@ -105,16 +105,16 @@ done. If an error occurs, {@link Continuation#onError} is called.
 			super(${remoteClass.name}.class,${remoteClass.constructor.params[0].name});
 
         	<#list remoteClass.constructor.params as param>
-        	<#if !param.optional>        	
+        	<#if !param.optional>
 			props.add("${param.name}",${param.name});
         	</#if>
-        	</#list>    
+        	</#list>
 		}
 
         <#list remoteClass.constructor.params as param>
         <#if param.optional>
         <#if param.type.name != "boolean" >
-		<#assign par=[param] />		
+		<#assign par=[param] />
 		<@comment  "Sets a value for ${param.name} in Builder for ${remoteClass.name}." par />
 		public Builder with${param.name?cap_first}(${getJavaObjectType(param.type,false)} ${param.name}){
 			props.add("${param.name}",${param.name});
