@@ -29,14 +29,14 @@ public class KurentoCodeGeneration {
 
 		// updateGitProjects();
 
-		// generateCodeFor("kms-core");
-		// generateCodeFor("kms-elements");
-		// generateCodeFor("kms-filters");
-		//
-		// mvnInstall("/home/mica/Data/Kurento/git/kurento-module-creator");
-		// mvnInstall("/home/mica/Data/Kurento/git/kurento-maven-plugin");
-		//
-		// mvnInstall("/home/mica/Data/Kurento/git/kurento-java/kurento-client");
+		generateCodeFor("kms-core");
+		generateCodeFor("kms-elements");
+		generateCodeFor("kms-filters");
+
+		mvnInstall("/home/mica/Data/Kurento/git/kurento-module-creator");
+		mvnInstall("/home/mica/Data/Kurento/git/kurento-maven-plugin");
+
+		mvnInstall("/home/mica/Data/Kurento/git/kurento-java/kurento-client");
 
 		generateCodeFor("kms-platedetector");
 		generateCodeFor("kms-pointerdetector");
