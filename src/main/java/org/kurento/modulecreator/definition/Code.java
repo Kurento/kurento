@@ -12,7 +12,8 @@ public class Code {
 	private Map<String, Map<String, String>> api;
 	private Map<String, String> implementation;
 
-	public void completeInfo(ModuleDefinition module, ModuleManager moduleManager) {
+	public void completeInfo(ModuleDefinition module,
+			ModuleManager moduleManager) {
 
 		if (api == null) {
 			api = new HashMap<>();
@@ -34,8 +35,8 @@ public class Code {
 			implementation = new HashMap<>();
 		}
 
-		putDefault(implementation, "cpp.namespace",
-				"kurento::plugin::" + module.getName());
+		putDefault(implementation, "cpp.namespace", "kurento::module::"
+				+ module.getName());
 		putDefault(implementation, "lib", "libkms"
 				+ module.getName().toLowerCase());
 
