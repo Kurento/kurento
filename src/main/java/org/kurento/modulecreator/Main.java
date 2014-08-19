@@ -69,7 +69,8 @@ public class Main {
 		if (line.hasOption(TEMPLATES_DIR)) {
 			processor.setTemplatesDir(getTemplatesDir(line));
 		} else if (line.hasOption(INTERNAL_TEMPLATES)) {
-			processor.setInternalTemplates(line.getOptionValue(INTERNAL_TEMPLATES));
+			processor.setInternalTemplates(line
+					.getOptionValue(INTERNAL_TEMPLATES));
 		}
 
 		processor.setConfig(getConfigContent(line));
@@ -283,7 +284,8 @@ public class Main {
 		}
 	}
 
-	private static Path getOutputModuleFile(CommandLine line) throws IOException {
+	private static Path getOutputModuleFile(CommandLine line)
+			throws IOException {
 
 		if (!line.hasOption(OUTPUT_MODEL)) {
 			return null;
