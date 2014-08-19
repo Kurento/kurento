@@ -85,6 +85,10 @@ public class Method extends NamedElement {
 	public List<ModelElement> getChildren() {
 		List<ModelElement> children = new ArrayList<ModelElement>();
 
+		if (params != null) {
+			children.addAll(params);
+		}
+
 		if (returnProp != null) {
 			children.add(returnProp);
 		}

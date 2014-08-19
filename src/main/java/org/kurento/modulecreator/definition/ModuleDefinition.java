@@ -58,21 +58,17 @@ public class ModuleDefinition {
 	private transient ResolutionState resolutionState = ResolutionState.NO_RESOLVED;
 	private transient Map<String, Type> allTypes;
 
+	public ModuleDefinition(String name, String version) {
+		this();
+		this.name = name;
+		this.version = version;
+	}
+
 	public ModuleDefinition() {
 		this.remoteClasses = new ArrayList<>();
 		this.complexTypes = new ArrayList<>();
 		this.events = new ArrayList<>();
 		this.imports = new ArrayList<>();
-	}
-
-	public ModuleDefinition(List<RemoteClass> remoteClasses,
-			List<ComplexType> types, List<Event> events) {
-		super();
-		this.remoteClasses = remoteClasses;
-		this.complexTypes = types;
-		this.events = events;
-
-		resolveModel();
 	}
 
 	@Override
@@ -346,15 +342,28 @@ public class ModuleDefinition {
 
 	private void resolveImports(ModuleManager moduleManager) {
 
-		autoImportModules();
+		autoImportModules(moduleManager);
 
 		for (Import importEntry : this.imports) {
+
+			// The virtual module "kurento" is allways resolved
+			if (importEntry.getModule() != null) {
+				continue;
+			}
+
 			ModuleDefinition dependencyModule = null;
 
 			if (moduleManager != null) {
 				dependencyModule = moduleManager.getModule(importEntry
 						.getName());
 
+			}
+
+			if (dependencyModule == null) {
+				throw new KurentoModuleCreatorException("Import '"
+						+ importEntry.getName()
+						+ "' not found in dependencies in any version");
+			} else {
 				if (!importEntry.getVersion().equals(
 						dependencyModule.getVersion())) {
 
@@ -377,29 +386,51 @@ public class ModuleDefinition {
 				}
 			}
 
-			if (dependencyModule == null) {
-				throw new KurentoModuleCreatorException("Import '"
-						+ importEntry.getName()
-						+ "' not found in dependencies in any version");
-			}
-
 			dependencyModule.resolveModule(moduleManager);
 			importEntry.setModule(dependencyModule);
 		}
 	}
 
-	private void autoImportModules() {
-		if (!CORE_MODULE.equals(this.name)) {
-			this.imports.add(new Import(CORE_MODULE, kurentoVersion));
+	private void autoImportModules(ModuleManager moduleManager) {
 
-			if (!ELEMENTS_MODULE.equals(this.name)) {
-				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion));
+		if (AUTO_IMPORTED_MODULES.contains(this.name)) {
 
-				if (!FILTERS_MODULE.equals(this.name)) {
+			if (!CORE_MODULE.equals(this.name)) {
+				this.imports.add(new Import(CORE_MODULE, kurentoVersion));
+
+				if (!ELEMENTS_MODULE.equals(this.name)) {
 					this.imports
-							.add(new Import(FILTERS_MODULE, kurentoVersion));
+							.add(new Import(ELEMENTS_MODULE, kurentoVersion));
 				}
 			}
+
+		} else if (!"kurento".equals(this.name)) {
+
+			// If this project is a non-kurento module, then auto-import kurento
+			// virtual module. This kurento virtual module depends on core,
+			// elements and filters. It is created to generate only one
+			// dependency in non-kurento modules.
+
+			ModuleDefinition kurentoModule = new ModuleDefinition("kurento",
+					kurentoVersion);
+			kurentoModule.getImports().add(
+					new Import(CORE_MODULE, kurentoVersion));
+			kurentoModule.getImports().add(
+					new Import(ELEMENTS_MODULE, kurentoVersion));
+			kurentoModule.getImports().add(
+					new Import(FILTERS_MODULE, kurentoVersion));
+			kurentoModule.resolveModule(moduleManager);
+
+			kurentoModule
+					.getCode()
+					.getApi()
+					.putAll(moduleManager.getModule(CORE_MODULE).getCode()
+							.getApi());
+
+			Import kurentoImport = new Import("kurento", kurentoVersion);
+			kurentoImport.setModule(kurentoModule);
+
+			this.imports.add(kurentoImport);
 		}
 	}
 
@@ -419,7 +450,11 @@ public class ModuleDefinition {
 			if (moduleElement instanceof TypeRef) {
 				resolveTypeRef((TypeRef) moduleElement, types);
 			} else {
-				resolveTypeRefs(moduleElement.getChildren(), types);
+				// A moduleElement can be null if in original Json there is a
+				// comma in the last element of an array
+				if (moduleElement != null) {
+					resolveTypeRefs(moduleElement.getChildren(), types);
+				}
 			}
 		}
 	}
