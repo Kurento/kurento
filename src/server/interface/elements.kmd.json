@@ -19,6 +19,9 @@
         "node.name": "kurento-client-elements",
         "npm.description": "Elements implementations for kurento media server"
       }
+    },
+    "implementation": {
+      "cpp.namespace": "kurento"
     }
   }
 }
