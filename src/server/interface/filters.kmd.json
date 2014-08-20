@@ -19,6 +19,9 @@
         "node.name": "kurento-client-filters",
         "npm.description": "Filter implementations for kurento media server"
       }
+    },
+    "implementation": {
+      "cpp.namespace": "kurento"
     }
   }
 }
