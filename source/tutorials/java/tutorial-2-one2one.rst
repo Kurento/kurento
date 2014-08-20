@@ -4,50 +4,47 @@ Tutorial 2 - One to one video call
 
 This web application consists on a one to one video call using `WebRTC`:term:
 technology. In other words, this application is similar to a phone but also
-with video.
+with video. The following picture shows an screenshot of this demo running in a
+web browser:
 
-The following picture shows an screenshot of this demo running in a web browser:
-
-.. figure:: ../../images/kmf-webrtc-call-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-2-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
    :width: 600px
 
 The interface of the application (a HTML web page) is composed by two HTML5
-video tags: one for the videocamera stream (the local stream) and other for the
-other peer in the call (the remote stream). If two users, A and B, are using
-the application, the media flows in the following way: The videocamera stream
-of user A is sent to the Kurento Media Server and sent again to the user B. On
-the other hand, user B sends its videocamera stream to Kurento and then it is
-sent to user A.
+video tags: one for the video camera stream (the local stream) and other for
+the other peer in the call (the remote stream). If two users, A and B, are
+using the application, the media flows in the following way: The video camera
+stream of user A is sent to the Kurento Media Server and sent again to the user
+B. On the other hand, user B sends its video camera stream to Kurento and then
+it is sent to user A.
 
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by two WebRtc endpoints connected beetwen them. The media pipeline implemented
+by two WebRtc endpoints connected between them. The media pipeline implemented
 is illustrated in the following picture:
 
-.. figure:: ../../images/kmf-webrtc-call-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-2-one2one-pipeline.png
    :align:   center
    :alt:     One to one video call media pipeline
 
 To communicate the client with the server to manage calls we have designed a
-signaling protocol based on `JSON <http://en.wikipedia.org/wiki/JSON>`_
-messages over `WebSockets <https://www.websocket.org/>`_.
-
+signaling protocol based on `JSON`:term: messages over `WebSocket`:term: 's.
 The normal sequence between client and server would be as follows:
 
-- 1 - User A is registered in the server with his name
+1. User A is registered in the server with his name
 
-- 2 - User B is registered in the server with her name
+2. User B is registered in the server with her name
 
-- 2 - User A wants to call to User B
+3. User A wants to call to User B
 
-- 3 - User B accepts the incoming call
+4. User B accepts the incoming call
 
-- 4 - The communication is established and media is flowing between User A and
-  User B
+5. The communication is established and media is flowing between User A and
+   User B
 
-- 5 - One of the users finishes the video communication
+6. One of the users finishes the video communication
 
 This is very simple protocol designed to show a simple one to one call
 application implemented with Kurento. In a professional application it can be
@@ -55,9 +52,10 @@ improved, for example implementing seeking user, ordered finish, among other
 functions.
 
 Assuming that User A is using Client A and User B is using Client B, we can draw
-the follwing sequence diagram with detailed messages between clients and server:
+the following sequence diagram with detailed messages between clients and
+server:
 
-.. figure:: ../../images/kmf-webrtc-call-signaling.png
+.. figure:: ../../images/kurento-java-tutorial-2-one2one-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px
@@ -71,14 +69,13 @@ The following sections describe in detail the server-side, the client-side, and
 how to run the demo.
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kmf-tutorial/tree/develop/kmf-webrtc-call>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-one2one-call>`_.
 
 Server-Side
 ===========
 
 As in the :doc:`tutorial 1</tutorials/java/tutorial-1-magicmirror>`, this demo
-has been developed using **Java** and
-`Spring Boot <http://projects.spring.io/spring-boot/>`_.
+has been developed using **Java** and `Spring Boot`:term:.
 
 .. note:: 
 
@@ -89,7 +86,7 @@ has been developed using **Java** and
 In the following figure you can see a class diagram of the server side code:
 
 .. digraph:: One2OneCall
-   :caption: Class diagram of server side MagicMirror app
+   :caption: Server-side class diagram of the one to one video call app
 
    size="12,8";
    fontname = "Bitstream Vera Sans"
@@ -117,7 +114,7 @@ In the following figure you can see a class diagram of the server side code:
    UserRegistry -> UserSession [headlabel="*",  labelangle=60]
 
 The main class of this demo is named
-`One2OneCallApp <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-call/src/main/java/com/kurento/kmf/tutorial/call/CallApp.java>`_.
+`One2OneCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/One2OneCallApp.java>`_.
 As you can see, the ``KurentoClient`` is instantiated in this class as a Spring
 Bean.
 
@@ -153,22 +150,22 @@ Bean.
     }
 
 This web application follows *Single Page Application* architecture
-(`SPA <http://en.wikipedia.org/wiki/Representational_state_transfer>`_) and
-uses `WebSockets <https://www.websocket.org/>`_ to communicate client with
-server by means of requests and responses. Specifically, the main app class
-implements the interface ``WebSocketConfigurer`` to register a
-``WebSocketHanlder`` to process web socket requests in the path ``/call``.
+(`SPA`:term:) and uses a `WebSocket`:term: to communicate client with server by
+means of requests and responses. Specifically, the main app class implements
+the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
+process WebSocket requests in the path ``/call``.
 
-`CallHandler <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-call/src/main/java/com/kurento/kmf/tutorial/call/CallHandler.java>`_
-class implements ``TextWebSocketHandler`` to handle text web socket requests.
+`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/CallHandler.java>`_
+class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
 The central piece of this class is the method ``handleTextMessage``. This
 method implements the actions for requests, returning responses through the
 WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kind of incoming messages to
-the *Server* : *register*, *call*, and *incommingCallResponse*. These messages
-are treated in the *switch* clause, taking the proper steps in each case.
+the *Server* : ``register``, ``call``, and ``incommingCallResponse``. These
+messages are treated in the *switch* clause, taking the proper steps in each
+case.
 
 .. sourcecode:: java
 
@@ -300,8 +297,8 @@ message is sent to caller rejecting the call.
 Finally, in the ``incommingCallResponse`` method, if the callee user accepts the
 call, it is established and the media elements are created to connect the
 caller with the callee. Basically, the server creates a ``CallMediaPipeline``
-object, to encapsulate the media pipeline creation and managment. Then, this
-object is used to negotiate multimedia interchange with user's browsers.
+object, to encapsulate the media pipeline creation and management. Then, this
+object is used to negotiate media interchange with user's browsers.
 
 As explained in :doc:`tutorial 1</tutorials/java/tutorial-1-magicmirror>`, the
 negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento
@@ -356,9 +353,9 @@ moment). The methods used to generate SDP are
    }
            
 The media logic in this demo is implemented in the class
-`CallMediaPipeline <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-call/src/main/java/com/kurento/kmf/tutorial/call/CallMediaPipeline.java>`_.
+`CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/CallMediaPipeline.java>`_.
 As you can see, the media pipeline of this demo is quite simple: two
-``WebRtcEndpoint`` elements directly interconnected. Plase take note that the
+``WebRtcEndpoint`` elements directly interconnected. Please take note that the
 WebRtc enpoints needs to be connected twice, one for each media direction.
 
 .. sourcecode:: java
@@ -400,19 +397,19 @@ created WebSocket service in the server-side, we use JavaScript class
 ``WebSocket``. In addition, we use an specific Kurento JavaScript library
 called **kurento-utils.js** to simplify the WebRTC interaction with the server.
 These libraries are linked in the
-`index.html <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-call/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/resources/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-call/src/main/resources/static/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/resources/static/js/index.js>`_.
 
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
-Notice that there are four incoming messages to client: *resgisterResponse*,
-*callResponse*, *incommingCall*, and *startCommunication*. Convenient actions
-are taken to implement each step in the communication. For example, in
-functions *call* and *incommingCall* (for caller and callee respectively), the
-function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to start a
-WebRTC communication.
+Notice that there are four incoming messages to client: ``resgisterResponse``,
+``callResponse``, ``incommingCall``, and ``startCommunication``. Convenient
+actions are taken to implement each step in the communication. For example, in
+functions ``call`` and ``incommingCall`` (for caller and callee respectively),
+the function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to
+start a WebRTC communication.
 
 .. sourcecode:: javascript
 
@@ -485,12 +482,11 @@ WebRTC communication.
 Dependencies
 ============
 
-This Java Spring application is implementad using
-`Maven <http://maven.apache.org/>`_. The relevant part of the *pom.xml* is
-where Kurento dependencies are declared. As the following snippet shows, we
-need two dependencies: the Kurento Client Java dependency (*kurento-client*)
-and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+This Java Spring application is implementad using `Maven`:term:. The relevant
+part of the *pom.xml* is where Kurento dependencies are declared. As the
+following snippet shows, we need two dependencies: the Kurento Client Java
+dependency (*kurento-client*) and the JavaScript Kurento utility library
+(*kurento-utils*) for the client-side:
 
 .. sourcecode:: xml 
 
@@ -522,8 +518,8 @@ project where this demo is hosted, and then run the main class, as follows:
 .. sourcecode:: shell
 
     git clone https://github.com/Kurento/kurento-java-tutorial.git
-    cd tutorial-2-One2OneCall
-    mvn exec:java -Dexec.mainClass="org.kurento.tutorial.one2one.One2OneCallApp"
+    cd kurento-one2one-call
+    mvn exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecall.One2OneCallApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,

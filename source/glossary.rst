@@ -119,6 +119,11 @@ or :term:`kurento`.
                 :wikipedia:`Java Platform Enterprise Edition
                 <en,Java_Platform,_Enterprise_Edition>`
 
+    jQuery
+        `jQuery <http://jquery.com/>`_ is a cross-platform JavaScript library designed
+        to simplify the client-side scripting of HTML.
+
+
     JSON
         `JSON <http://json.org>`__ (JavaScript Object Notation) is a lightweight
         data-interchange format. It is designed to be easy to understand and
@@ -176,6 +181,9 @@ or :term:`kurento`.
         A JavaScript client side API taking advantage of
         HTML5 multimedia features for writing clients that
         interact easy and naturally with KAS.
+
+    Maven
+        `Maven <http://maven.apache.org/>`_ is a build automation tool used primarily for Java projects.
 
     Media Plane
         In the traditional :wikipedia:`3GPP Mobile Carrier Media Framework
@@ -285,7 +293,7 @@ or :term:`kurento`.
                 Definition of the Pad structure in GStreamer
 
             Kurento :java:type:`MediaPad`
-                Kurennto Media API Java interface for the MediaPad
+                Kurento Media API Java interface for the MediaPad
 
     Pipeline, Media
         A :index:`Media Pipeline <single: Media; Pipeline>` is a chain of media elements, where the output
@@ -377,11 +385,22 @@ or :term:`kurento`.
         A :index:`Media Source <single: Media; Source>` is a Media Pad
         that generates a Media Stream.
 
-    sphinx
+    SPA
+    Single-Page Application
+       A single-page application is a web application that fits on a single web page with the goal
+       of providing a more fluid user experience akin to a desktop application.
+
+    Sphinx
         Documentation generation system used for kurento documentation
 
         .. seealso:: `Easy and beautiful documentation with Sphinx\
                 <http://www.ibm.com/developerworks/linux/library/os-sphinx-documentation/index.html?ca=dat>`_
+    Spring Boot
+        `Spring Boot <http://projects.spring.io/spring-boot/>`_ is Spring's convention-over-configuration
+        solution for creating stand-alone, production-grade Spring based applications that can you can "just run".
+        It embeds Tomcat or Jetty directly and so there is no need to deploy WAR files in order to run
+        web applications.
+
 
     SRTCP
         SRTCP provides the same security-related features to RTCP,

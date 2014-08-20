@@ -3,20 +3,19 @@ Java Tutorial 1 - Magic Mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a magic mirror that add with a funny hat over
-your face. It is implemented using `WebRTC`:term: technology.
+your face. It is implemented using `WebRTC`:term: technology. The following
+picture shows an screenshot of this demo running in a web browser:
 
-The following picture shows an screenshot of this demo running in a web browser:
-
-.. figure:: ../../images/kmf-webrtc-loopback-screenshot.png 
+.. figure:: ../../images/kurento-java-tutorial-1-magicmirror-screenshot.png 
    :align:   center
    :alt:     Loopback video call with filtering screenshot :width: 600px
    :width: 600px
 
 The interface of the application (a HTML web page) is composed by two HTML5
-video tags: one for the videocamera stream (the local client-side stream) and
-other for the mirror (the remote stream). The videocamera stream is sent to the
-Kurento Media Server, processed and then is returned to the client as a remote
-stream.
+video tags: one for the video camera stream (the local client-side stream) and
+other for the mirror (the remote stream). The video camera stream is sent to
+the Kurento Media Server, processed and then is returned to the client as a
+remote stream.
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
 by the following `Media Element`:term: s:
@@ -26,14 +25,14 @@ by the following `Media Element`:term: s:
   As suggested by its name, this endpoint is capable to communicate with the
   browser by means of `WebRTC`:term: technology.
 
-- **FaceOverlay filter**: Arificial vision filter that detects a face in the
+- **FaceOverlay filter**: Artificial vision filter that detects a face in the
   video stream and put an image over it. In this demo application, the filter
   is configured to put a
   `Super Mario hat <http://files.kurento.org/imgs/mario-wings.png>`_).
 
 The media pipeline implemented is illustrated in the following picture:
 
-.. figure:: ../../images/kmf-webrtc-loopback-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-1-magicmirror-pipeline.png
    :align:   center
    :alt:     Loopback video call with filtering media pipeline
 
@@ -43,26 +42,25 @@ sections describe in detail the server-side, the client-side, and how to run
 the demo.
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kmf-tutorial/tree/develop/kmf-webrtc-loopback>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-magic-mirror>`_.
 
 Server-Side
 ===========
 
 This demo has been developed using **Java** in the server-side with
-`Spring Boot <http://projects.spring.io/spring-boot/>`_ framework. This
-technology can be used to embed the Tomcat web server in the application and
-thus simplify the development process.
+`Spring Boot`:term: framework. This technology can be used to embed the Tomcat
+web server in the application and thus simplify the development process.
 
 .. note::
 
    You can use whatever Java server side technology you prefer to build web
    applications with Kurento. For example, a pure Java EE application, SIP 
-   Servlets, Play, Vertex, etc. We have choose Spring Boot for convenience.
+   Servlets, Play, Vertex, etc. We chose Spring Boot for convenience.
 
 In the following figure you can see a class diagram of the server side code:
 
 .. digraph:: MagicMirror
-   :caption: Class diagram of server side MagicMirror app
+   :caption: Server-side class diagram of the MagicMirror app
 
    size="12,8";
    fontname = "Bitstream Vera Sans"
@@ -109,11 +107,10 @@ to add media capabilities to your applications.
     }
 
 This web application follows *Single Page Application* architecture
-(`SPA <http://en.wikipedia.org/wiki/Representational_state_transfer>`_) and
-uses `REST <http://en.wikipedia.org/wiki/Single-page_application>`_ to
-communicate client with server by means of requests and responses.
-Specifically, we use the Spring annotation *@RestController* to implement REST
-services in the server-side. Take a look to the
+(`SPA`:term:) and uses `REST`:term: to communicate client with server by means
+of requests and responses. Specifically, we use the Spring annotation
+*@RestController* to implement REST services in the server-side. Take a look to
+the
 `MagicMirrorController <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-1-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorController.java>`_
 class:
 
@@ -173,22 +170,21 @@ Client-Side
 ===========
 
 Let's move now to the client-side of the application. To call the previously
-created REST service, we use the JavaScript library
-`jQuery <http://jquery.com/>`_. In addition, we use a Kurento JavaScript
-utilities library called *kurento-utils.js* to simplify the WebRTC managment in
-the browser.
+created REST service, we use the JavaScript library `jQuery`:term:. In
+addition, we use a Kurento JavaScript utilities library called
+*kurento-utils.js* to simplify the WebRTC management in the browser.
 
 These libraries are linked in the
-`index.html <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-loopback/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/resources/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kmf-tutorial/blob/develop/kmf-webrtc-loopback/src/main/resources/static/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/resources/static/js/index.js>`_.
 The most relevant part of this file is the *start* function. In this function
 we can see how jQuery is used to call the path */magicmirror*, where the REST
 service is listening in the server-side. The function
 *WebRtcPeer.startSendRecv* of *kurento-utils* is used to start a WebRTC
-communciation, using the HTML video tag with id *videoInput* to show the
-videocamera (local stream) and the video tag *videoOutput* to show the video
-processed by kurento server (remote stream).
+communication, using the HTML video tag with id *videoInput* to show the video
+camera (local stream) and the video tag *videoOutput* to show the video
+processed by Kurento server (remote stream).
 
 .. sourcecode:: javascript
 
@@ -218,12 +214,11 @@ processed by kurento server (remote stream).
 Dependencies
 ============
 
-This Java Spring application is implementad using
-`Maven <http://maven.apache.org/>`_. The relevant part of the *pom.xml* is
-where Kurento dependencies are declared. As the following snippet shows, we
-need two dependencies: the Kurento Client Java dependency (*kurento-client*)
-and the JavaScript Kurento utility library (*kurento-utils*) for the
-client-side:
+This Java Spring application is implemented using `Maven`:term:. The relevant
+part of the *pom.xml* is where Kurento dependencies are declared. As the
+following snippet shows, we need two dependencies: the Kurento Client Java
+dependency (*kurento-client*) and the JavaScript Kurento utility library
+(*kurento-utils*) for the client-side:
 
 .. sourcecode:: xml 
 
