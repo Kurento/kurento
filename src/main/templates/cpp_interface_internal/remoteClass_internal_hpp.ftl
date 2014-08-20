@@ -8,10 +8,12 @@ ${remoteClass.name}Internal.hpp
 
 namespace kurento
 {
-
 class JsonSerializer;
-<#list remoteClassDependencies(remoteClass) as dependency>
-class ${dependency.name};
+}
+${organizeDependencies(remoteClassDependencies(remoteClass),false)}
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
 </#list>
 <#list remoteClass.methods as method><#rt>
 
@@ -83,6 +85,8 @@ private:
 };
 </#if>
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(remoteClass.name)}_INTERNAL_HPP__ */

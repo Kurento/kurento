@@ -23,7 +23,7 @@ getFactoryRegistrar ()
   if (!loaded) {
 <#list module.remoteClasses as remoteClass>
   <#if !(remoteClass.abstract)>
-    factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new kurento::${remoteClass.name}ImplFactory() );
+    factories["${remoteClass.name}"] = std::shared_ptr <kurento::Factory> (new ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory() );
   </#if>
 </#list>
     loaded = true;

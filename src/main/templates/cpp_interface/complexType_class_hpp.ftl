@@ -8,13 +8,25 @@ ${complexType.name}.hpp
 #include <jsonrpc/JsonRpcException.hpp>
 #include <memory>
 
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
+</#list>
+class ${complexType.name};
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
+
 namespace kurento
 {
-
 class JsonSerializer;
-class ${complexType.name};
+void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${complexType.name}> &object, JsonSerializer &s);
+} /* kurento */
 
-void Serialize (std::shared_ptr<kurento::${complexType.name}> &object, JsonSerializer &s);
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
+</#list>
 <#list complexType.getChildren() as dependency>
 <#if childs??>
 
@@ -131,10 +143,12 @@ private:
 <#else>
 // TODO: Type format ${complexType.typeFormat} not supported
 </#if>
-  friend void Serialize (std::shared_ptr<kurento::${complexType.name}> &object, JsonSerializer &s);
+  friend void kurento::Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${complexType.name}> &object, JsonSerializer &s);
 
 };
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(complexType.name)}_HPP__ */

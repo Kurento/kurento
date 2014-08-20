@@ -39,7 +39,7 @@ public class Code {
 			implementation = new HashMap<>();
 		}
 
-		putDefault(implementation, "cpp.namespace", "kurento::module::"
+		putDefault(implementation, "cppNamespace", "kurento::module::"
 				+ module.getName());
 		putDefault(implementation, "lib", "libkms"
 				+ module.getName().toLowerCase());

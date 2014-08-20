@@ -11,10 +11,25 @@ ${event.name}.hpp
 #include "${event.extends.name}.hpp"
 </#if>
 
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
+</#list>
+class ${event.name};
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
+
 namespace kurento
 {
-
 class JsonSerializer;
+void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${event.name}> &object, JsonSerializer &s);
+}
+
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
+</#list>
 <#list event.properties as property>
 <#if module.remoteClasses?seq_contains(property.type.type) ||
   module.complexTypes?seq_contains(property.type.type) ||
@@ -99,9 +114,11 @@ private:
   </#if>
   </#list>
 
-  friend void Serialize (std::shared_ptr<${event.name}> &event, JsonSerializer &s);
+  friend void kurento::Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${event.name}> &event, JsonSerializer &s);
 };
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(event.name)}_HPP__ */

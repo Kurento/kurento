@@ -25,6 +25,7 @@ import org.kurento.modulecreator.codegen.function.IsFirstConstructorParam;
 import org.kurento.modulecreator.codegen.function.JavaObjectType;
 import org.kurento.modulecreator.codegen.function.JsNamespace;
 import org.kurento.modulecreator.codegen.function.JsonCppTypeData;
+import org.kurento.modulecreator.codegen.function.OrganizeDependencies;
 import org.kurento.modulecreator.codegen.function.PackageToFolder;
 import org.kurento.modulecreator.codegen.function.RemoteClassDependencies;
 import org.kurento.modulecreator.codegen.function.SphinxLinks;
@@ -147,6 +148,7 @@ public class CodeGen {
 		root.put("sphinxLinks", new SphinxLinks(module));
 		root.put("getJsNamespace", new JsNamespace());
 		root.put("packageToFolder", new PackageToFolder());
+		root.put("organizeDependencies", new OrganizeDependencies());
 
 		root.put("module", module);
 		if (this.config != null) {

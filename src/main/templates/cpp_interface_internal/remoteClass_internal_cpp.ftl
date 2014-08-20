@@ -8,8 +8,10 @@ ${remoteClass.name}Internal.cpp
 #include "${dependency.name}.hpp"
 </#list>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 <#list remoteClass.methods as method><#rt>
 ${getCppObjectType(method.return, false)} ${remoteClass.name}Method${method.name?cap_first}::invoke (std::shared_ptr<${remoteClass.name}> obj)
@@ -148,4 +150,6 @@ void ${remoteClass.name}Constructor::Serialize (JsonSerializer &s)
 }
 
 </#if>
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>

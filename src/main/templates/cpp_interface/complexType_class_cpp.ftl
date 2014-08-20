@@ -12,8 +12,10 @@ ${complexType.name}.cpp
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 <#if complexType.typeFormat == "ENUM">
 
 ${complexType.name}::type ${complexType.name}::getValueFromString (const std::string &value)
@@ -85,11 +87,18 @@ void ${complexType.name}::Serialize (JsonSerializer &s)
 </#if>
 }
 
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
+
+namespace kurento
+{
+
 void
-Serialize (std::shared_ptr<kurento::${complexType.name}> &object, JsonSerializer &s)
+Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${complexType.name}> &object, JsonSerializer &s)
 {
   if (!s.IsWriter && !object) {
-    object.reset (new kurento::${complexType.name}() );
+    object.reset (new ${module.code.implementation["cppNamespace"]}::${complexType.name}() );
   }
 
   if (object) {

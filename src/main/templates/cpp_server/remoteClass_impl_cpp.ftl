@@ -23,15 +23,17 @@ ${remoteClass.name}Impl.cpp
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "Kurento${remoteClass.name}Impl"
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 <#if remoteClass.constructor??>
 ${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
         <#lt>, <#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-     <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
+     <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
 <#else> <#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if> </#if>
 <#else>
 ${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config)<#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if>
@@ -88,16 +90,16 @@ ${getCppObjectType(method.return,false)} ${remoteClass.name}Impl::${method.name}
 
 <#if remoteClass.constructor??><#rt>
 MediaObjectImpl *
-${remoteClass.name}ImplFactory::createObject (<#rt>
+${remoteClass.name}ImplFactory::createObject (const boost::property_tree::ptree &config<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
+        <#lt>, <#rt>
         <#lt>${getCppObjectType(param.type, true)}${param.name}<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>) const
 {
-  return new ${remoteClass.name}Impl (<#rt>
+  return new ${remoteClass.name}Impl (config<#rt>
      <#lt><#list remoteClass.constructor.params as param><#rt>
+        <#lt>, <#rt>
         <#lt>${param.name}<#rt>
-        <#lt><#if param_has_next>, </#if><#rt>
      <#lt></#list>);
 }
 
@@ -110,4 +112,6 @@ ${remoteClass.name}Impl::StaticConstructor::StaticConstructor()
                            GST_DEFAULT_NAME);
 }
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>

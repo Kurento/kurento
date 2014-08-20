@@ -18,17 +18,25 @@ ${remoteClass.name}.hpp
 #include <sigc++/sigc++.h>
 </#if>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
-
-<#list remoteClassDependencies(remoteClass) as dependency>
-class ${dependency.name};
 </#list>
 class ${remoteClass.name};
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
+
+namespace kurento
+{
 class JsonSerializer;
-
-void Serialize (std::shared_ptr<${remoteClass.name}> &object, JsonSerializer &serializer);
-
+void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remoteClass.name}> &object, JsonSerializer &serializer);
+}
+${organizeDependencies(remoteClassDependencies(remoteClass),false)}
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
+</#list>
 class ${remoteClass.name}<#if remoteClass.extends??><#rt>
    <#lt> : public virtual ${remoteClass.extends.name}
    <#else>
@@ -68,6 +76,8 @@ public:
 
 };
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(remoteClass.name)}_HPP__ */

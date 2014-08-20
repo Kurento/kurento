@@ -5,8 +5,10 @@ ${remoteClass.name}OpenCVImpl.cpp
 #include "${remoteClass.name}OpenCVImpl.hpp"
 #include <KurentoException.hpp>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 ${remoteClass.name}OpenCVImpl::${remoteClass.name}OpenCVImpl ()
 {
@@ -56,5 +58,7 @@ ${getCppObjectType(method.return,false)} ${remoteClass.name}OpenCVImpl::${method
   <#lt><@methodStub method />
 </#list>
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 </#if>

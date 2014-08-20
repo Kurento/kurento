@@ -16,19 +16,24 @@ ${remoteClass.name}Impl.hpp
 #include "${remoteClass.name}OpenCVImpl.hpp"
 </#if>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
-
-<#list remoteClassDependencies(remoteClass) as dependency>
-<#if module.remoteClasses?seq_contains(dependency)>
-class ${dependency.name}Impl;
-<#else>
-class ${dependency.name};
-</#if>
 </#list>
 class ${remoteClass.name}Impl;
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
-void Serialize (std::shared_ptr<${remoteClass.name}Impl> &object, JsonSerializer &serializer);
+namespace kurento
+{
+void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> &object, JsonSerializer &serializer);
+} /* kurento */
+${organizeDependencies(remoteClassDependencies(remoteClass),true)}
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
+{
+</#list>
 
 class ${remoteClass.name}Impl :<#if remoteClass.extends??><#rt>
    <#lt> public ${remoteClass.extends.name}Impl<#rt>,
@@ -97,6 +102,8 @@ private:
 
 };
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(remoteClass.name)}_IMPL_HPP__ */

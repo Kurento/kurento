@@ -11,8 +11,10 @@ ${event.name}.cpp
 </#if>
 </#list>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 void
 ${event.name}::Serialize (JsonSerializer &s)
@@ -26,10 +28,17 @@ ${event.name}::Serialize (JsonSerializer &s)
 </#list>
 }
 
-void Serialize (std::shared_ptr<${event.name}> &event, JsonSerializer &s)
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
+
+namespace kurento
+{
+
+void Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${event.name}> &event, JsonSerializer &s)
 {
   if (!s.IsWriter && !event) {
-    event.reset (new kurento::${event.name}() );
+    event.reset (new ${module.code.implementation["cppNamespace"]}::${event.name}() );
   }
 
   if (event) {

@@ -11,8 +11,10 @@ ${remoteClass.name}ImplFactory.hpp
 #include <MediaObjectImpl.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 class ${remoteClass.name}ImplFactory : public virtual <#if remoteClass.extends??>${remoteClass.extends.name}Impl<#else>kurento::</#if>Factory
 {
@@ -40,6 +42,8 @@ private:
   </#if>
 };
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(remoteClass.name)}_IMPL_FACTORY_HPP__ */

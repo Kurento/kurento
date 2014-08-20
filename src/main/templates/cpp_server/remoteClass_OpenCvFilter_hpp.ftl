@@ -9,8 +9,10 @@ ${remoteClass.name}OpenCVImpl.hpp
 #include "${remoteClass.name}.hpp"
 #include <EventHandler.hpp>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 class ${remoteClass.name}OpenCVImpl : public virtual OpenCVProcess
 {
@@ -50,7 +52,9 @@ public:
 
 };
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
 
 #endif /*  __${camelToUnderscore(remoteClass.name)}_OPENCV_IMPL_HPP__ */
 </#if>

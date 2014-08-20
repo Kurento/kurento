@@ -13,8 +13,10 @@ SerializerExpander${module.name?cap_first}.cpp
 
 #include <jsonrpc/JsonSerializer.hpp>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 
 void dummy${module.name?cap_first} ()
 {
@@ -44,4 +46,6 @@ void dummy${module.name?cap_first} ()
 </#list>
 }
 
-} /* kurento */
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>

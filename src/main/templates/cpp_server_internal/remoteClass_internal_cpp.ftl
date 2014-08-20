@@ -15,8 +15,10 @@ ${remoteClass.name}ImplInternal.cpp
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
 
-namespace kurento
+<#list module.code.implementation["cppNamespace"]?split("::") as namespace>
+namespace ${namespace}
 {
+</#list>
 <#if (!remoteClass.abstract) && remoteClass.constructor??>
 
 MediaObjectImpl *${remoteClass.name}ImplFactory::createObjectPointer (const boost::property_tree::ptree &conf, const Json::Value &params) const
@@ -127,26 +129,6 @@ ${remoteClass.name}Impl::connect (const std::string &eventType, std::shared_ptr<
 }
 
 void
-Serialize (std::shared_ptr<kurento::${remoteClass.name}Impl> &object, JsonSerializer &serializer)
-{
-  if (serializer.IsWriter) {
-    if (object) {
-      object->Serialize (serializer);
-    }
-  } else {
-    try {
-      std::shared_ptr<kurento::MediaObjectImpl> aux;
-      aux = kurento::${remoteClass.name}ImplFactory::getObject (serializer.JsonValue.asString () );
-      object = std::dynamic_pointer_cast<kurento::${remoteClass.name}Impl> (aux);
-      return;
-    } catch (KurentoException &ex) {
-      throw KurentoException (MARSHALL_ERROR,
-                              "'${remoteClass.name}Impl' object not found: " + ex.getMessage() );
-    }
-  }
-}
-
-void
 ${remoteClass.name}Impl::Serialize (JsonSerializer &serializer)
 {
   if (serializer.IsWriter) {
@@ -161,14 +143,40 @@ ${remoteClass.name}Impl::Serialize (JsonSerializer &serializer)
                             "'${remoteClass.name}Impl' cannot be deserialized as an object");
   }
 }
+<#list module.code.implementation["cppNamespace"]?split("::")?reverse as namespace>
+} /* ${namespace} */
+</#list>
+
+namespace kurento
+{
 
 void
-Serialize (std::shared_ptr<kurento::${remoteClass.name}> &object, JsonSerializer &serializer)
+Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> &object, JsonSerializer &serializer)
 {
-  std::shared_ptr<kurento::${remoteClass.name}Impl> aux = std::dynamic_pointer_cast<kurento::${remoteClass.name}Impl> (object);
+  if (serializer.IsWriter) {
+    if (object) {
+      object->Serialize (serializer);
+    }
+  } else {
+    try {
+      std::shared_ptr<kurento::MediaObjectImpl> aux;
+      aux = ${module.code.implementation["cppNamespace"]}::${remoteClass.name}ImplFactory::getObject (serializer.JsonValue.asString () );
+      object = std::dynamic_pointer_cast<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> (aux);
+      return;
+    } catch (KurentoException &ex) {
+      throw KurentoException (MARSHALL_ERROR,
+                              "'${remoteClass.name}Impl' object not found: " + ex.getMessage() );
+    }
+  }
+}
+
+void
+Serialize (std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remoteClass.name}> &object, JsonSerializer &serializer)
+{
+  std::shared_ptr<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> aux = std::dynamic_pointer_cast<${module.code.implementation["cppNamespace"]}::${remoteClass.name}Impl> (object);
 
   Serialize (aux, serializer);
-  object = std::dynamic_pointer_cast <kurento::${remoteClass.name}> (aux);
+  object = std::dynamic_pointer_cast <${module.code.implementation["cppNamespace"]}::${remoteClass.name}> (aux);
 }
 
 } /* kurento */
