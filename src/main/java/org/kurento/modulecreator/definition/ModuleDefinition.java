@@ -393,44 +393,17 @@ public class ModuleDefinition {
 
 	private void autoImportModules(ModuleManager moduleManager) {
 
-		if (AUTO_IMPORTED_MODULES.contains(this.name)) {
+		if (!CORE_MODULE.equals(this.name)) {
+			this.imports.add(new Import(CORE_MODULE, kurentoVersion));
 
-			if (!CORE_MODULE.equals(this.name)) {
-				this.imports.add(new Import(CORE_MODULE, kurentoVersion));
+			if (!ELEMENTS_MODULE.equals(this.name)) {
+				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion));
 
-				if (!ELEMENTS_MODULE.equals(this.name)) {
+				if (!FILTERS_MODULE.equals(this.name)) {
 					this.imports
 							.add(new Import(ELEMENTS_MODULE, kurentoVersion));
 				}
 			}
-
-		} else if (!"kurento".equals(this.name)) {
-
-			// If this project is a non-kurento module, then auto-import kurento
-			// virtual module. This kurento virtual module depends on core,
-			// elements and filters. It is created to generate only one
-			// dependency in non-kurento modules.
-
-			ModuleDefinition kurentoModule = new ModuleDefinition("kurento",
-					kurentoVersion);
-			kurentoModule.getImports().add(
-					new Import(CORE_MODULE, kurentoVersion));
-			kurentoModule.getImports().add(
-					new Import(ELEMENTS_MODULE, kurentoVersion));
-			kurentoModule.getImports().add(
-					new Import(FILTERS_MODULE, kurentoVersion));
-			kurentoModule.resolveModule(moduleManager);
-
-			kurentoModule
-					.getCode()
-					.getApi()
-					.putAll(moduleManager.getModule(CORE_MODULE).getCode()
-							.getApi());
-
-			Import kurentoImport = new Import("kurento", kurentoVersion);
-			kurentoImport.setModule(kurentoModule);
-
-			this.imports.add(kurentoImport);
 		}
 	}
 
