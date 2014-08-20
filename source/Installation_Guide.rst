@@ -6,15 +6,15 @@ Kurento Server Installation Guide
 
 Kurento Server has to be installed on **Ubuntu 14.04 LTS** (32 or 64 bits).
 
-In order to Install the latest stable Kurento Server version you have to type
+In order to install the latest stable Kurento Server version you have to type
 the following commands, one at a time and in the same order as listed here.
 When asked for any kind of confirmation, reply affirmatively:
 
 .. sourcecode:: console 
 
    sudo add-apt-repository ppa:kurento/kurento 
-   sudo apt-get update sudo
-   apt-get install kurento-server
+   sudo apt-get update
+   sudo apt-get install kurento-server
 
 Finally, configure the server to run Kurento Server when booted:
 
