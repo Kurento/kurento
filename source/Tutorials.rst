@@ -14,7 +14,7 @@ over your face. It is implemented using `WebRTC`:term: technology.
 
 .. toctree::
    :maxdepth: 1
-    
+
    Java </tutorials/java/tutorial-1-magicmirror>
    Node.js </tutorials/node/tutorial-1-magicmirror>
    Browser JavaScript </tutorials/js/tutorial-1-magicmirror>
@@ -26,7 +26,7 @@ This web application is a videophone based on `WebRTC`:term: technology.
 
 .. toctree::
    :maxdepth: 1
-    
+
    Java </tutorials/java/tutorial-2-one2one>
    Node.js </tutorials/node/tutorial-2-one2one>
    Browser JavaScript </tutorials/js/tutorial-2-one2one>
@@ -46,7 +46,12 @@ Tutorial 4 - Group video call
 
 Web application based on WebRTC to communicate several peers.
 
-Tutorial: Java, Node.js, Browser JavaScript
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/tutorial-4-group>
+   Node.js </tutorials/node/tutorial-4-group>
+   Browser JavaScript </tutorials/js/tutorial-4-group>
 
 Tutorial 5 - Group video call with recording and filtering
 ==========================================================

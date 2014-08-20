@@ -17,6 +17,7 @@ typical real time media web applications:
 
    - :doc:`Tutorial 1 - Magic mirror </tutorials/java/tutorial-1-magicmirror>`
    - :doc:`Tutorial 2 - One to One video call </tutorials/java/tutorial-2-one2one>`
+   - :doc:`Tutorial 4 - Many to many video call </tutorials/java/tutorial-4-group>`
 
 To better understand the concepts showed in this section, it is recommended to
 take a look to :doc:`Kurento API section <Kurento_API>` section. In that
