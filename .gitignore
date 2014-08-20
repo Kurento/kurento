@@ -3,6 +3,7 @@
 build
 source/*/com
 source/langdocs
+.externalToolBuilders/*
 npm-debug.log
 .classpath
 .project
