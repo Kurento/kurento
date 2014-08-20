@@ -24,15 +24,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Function;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-
 import org.kurento.client.Continuation;
 import org.kurento.client.internal.client.RomClient;
 import org.kurento.client.internal.client.RomEventHandler;
@@ -47,6 +38,14 @@ import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Function;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class RomClientJsonRpcClient extends RomClient {
 
@@ -191,7 +190,6 @@ public class RomClientJsonRpcClient extends RomClient {
 		try {
 			params = (JsonObject) params.get("value");
 		} catch (Exception e) {
-			// TODO: Print error?
 		}
 
 		String objectRef = params.get(ONEVENT_OBJECT).getAsString();
@@ -229,9 +227,7 @@ public class RomClientJsonRpcClient extends RomClient {
 
 			}
 
-			client.sendRequest(
-					method,
-					params,
+			client.sendRequest(method, params,
 					new org.kurento.jsonrpc.client.Continuation<JsonElement>() {
 
 						@SuppressWarnings({ "rawtypes" })

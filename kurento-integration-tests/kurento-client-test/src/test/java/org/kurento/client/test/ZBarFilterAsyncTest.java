@@ -24,11 +24,11 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.kurento.client.CodeFoundEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.HttpEndpoint;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.ZBarFilter;
-import org.kurento.client.CodeFoundEvent;
-import org.kurento.client.EventListener;
 import org.kurento.client.test.util.AsyncResultManager;
 import org.kurento.client.test.util.MediaPipelineAsyncBaseTest;
 
@@ -68,7 +68,7 @@ public class ZBarFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 
 		zbar = async.waitForResult();
 
-		player = new PlayerEndpoint.Builder(pipeline,URL_BARCODES).build();
+		player = new PlayerEndpoint.Builder(pipeline, URL_BARCODES).build();
 	}
 
 	@After
@@ -94,6 +94,7 @@ public class ZBarFilterAsyncTest extends MediaPipelineAsyncBaseTest {
 		player.play();
 
 		CodeFoundEvent event = events.poll(10, TimeUnit.SECONDS);
+
 		Assert.assertNotNull(event);
 
 		player.stop();

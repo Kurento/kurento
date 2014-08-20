@@ -11,6 +11,7 @@ import org.kurento.client.Continuation;
 import org.kurento.client.Event;
 import org.kurento.client.EventListener;
 import org.kurento.client.internal.ParamAnnotationUtils;
+import org.kurento.client.internal.server.EventSubscription;
 import org.kurento.client.internal.server.FactoryMethod;
 import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
@@ -69,15 +70,37 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 			return release(cont);
 
-		} else if (methodName.startsWith("add")
-				&& methodName.endsWith("Listener")) {
+		} else if (method.getAnnotation(EventSubscription.class) != null) {
 
-			return subscribeEventListener(proxy, args, methodName, cont);
+			EventSubscription eventSubscription = method
+					.getAnnotation(EventSubscription.class);
+
+			return subscribeEventListener(proxy, args, methodName,
+					eventSubscription.value(), cont);
 
 		} else {
 
 			return invoke(method, args, cont);
 		}
+	}
+
+	private Object createBuilderObject(final Object proxy, Method method,
+			String methodName, Props props) {
+
+		if (props == null) {
+			props = new Props();
+		}
+
+		FactoryMethod annotation = method.getAnnotation(FactoryMethod.class);
+		props.add(annotation.value(), remoteObject.getObjectRef());
+
+		Class<?> builderClass = method.getReturnType();
+
+		return Proxy.newProxyInstance(this.getClass().getClassLoader(),
+				new Class[] { method.getReturnType() },
+				new BuilderInvocationHandler(builderClass.getEnclosingClass(),
+						props, factory));
+
 	}
 
 	private Object invoke(Method method, Object[] args, Continuation<?> cont) {
@@ -111,59 +134,37 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 
 	@SuppressWarnings("unchecked")
 	private Object subscribeEventListener(final Object proxy,
-			final Object[] args, String methodName, Continuation<?> cont) {
+			final Object[] args, String methodName,
+			final Class<? extends Event> eventClass, Continuation<?> cont) {
 
-		String event = methodName.substring(3,
-				methodName.length() - "Listener".length());
+		String eventName = eventClass.getSimpleName().substring(0,
+				eventClass.getSimpleName().length() - "Event".length());
 
 		RemoteObject.RemoteObjectEventListener listener = new RemoteObject.RemoteObjectEventListener() {
 			@Override
 			public void onEvent(String eventType, Props data) {
-				propagateEventTo(proxy, eventType, data,
+				propagateEventTo(proxy, eventClass, data,
 						(EventListener<?>) args[0]);
 			}
 		};
 
 		if (cont != null) {
-			remoteObject.addEventListener(event,
+			remoteObject.addEventListener(eventName,
 					(Continuation<ListenerSubscriptionImpl>) cont, listener);
 			return null;
+		} else {
+			return remoteObject.addEventListener(eventName, listener);
 		}
-
-		return remoteObject.addEventListener(event, listener);
-
-	}
-
-	private Object createBuilderObject(final Object proxy, Method method,
-			String methodName, Props props) {
-
-		if (props == null) {
-			props = new Props();
-		}
-
-		FactoryMethod annotation = method.getAnnotation(FactoryMethod.class);
-		props.add(annotation.value(), remoteObject.getObjectRef());
-
-		Class<?> builderClass = method.getReturnType();
-
-		return Proxy.newProxyInstance(this.getClass().getClassLoader(),
-				new Class[] { method.getReturnType() },
-				new BuilderInvocationHandler(builderClass.getEnclosingClass(),
-						props, factory));
-
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected void propagateEventTo(Object object, String eventType,
-			Props data, EventListener<?> listener) {
+	protected void propagateEventTo(Object object,
+			Class<? extends Event> eventClass, Props data,
+			EventListener<?> listener) {
 
 		// TODO Optimize this to create only one event for all listeners
 
 		try {
-
-			// FIXME Discover event package. This doesn't work with modules.
-			Class<?> eventClass = Class.forName("org.kurento.client."
-					+ eventType + "Event");
 
 			Constructor<?> constructor = eventClass.getConstructors()[0];
 
@@ -177,8 +178,10 @@ public class RemoteObjectInvocationHandler extends DefaultInvocationHandler {
 			((EventListener) listener).onEvent(e);
 
 		} catch (Exception e) {
-			LOG.error("Exception while processing event '" + eventType
-					+ "' with params '" + data + "'", e);
+			LOG.error(
+					"Exception while processing event '"
+							+ eventClass.getSimpleName() + "' with params '"
+							+ data + "'", e);
 		}
 	}
 

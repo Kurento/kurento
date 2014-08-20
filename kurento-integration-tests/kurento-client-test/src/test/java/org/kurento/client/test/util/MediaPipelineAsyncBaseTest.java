@@ -14,8 +14,6 @@
  */
 package org.kurento.client.test.util;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -41,20 +39,13 @@ public abstract class MediaPipelineAsyncBaseTest extends KurentoClientTest {
 
 	@Before
 	public void setupPipeline() throws InterruptedException {
-		final BlockingQueue<MediaPipeline> events = new ArrayBlockingQueue<MediaPipeline>(
-				1);
-		kurentoClient.createMediaPipeline(new Continuation<MediaPipeline>() {
-			@Override
-			public void onSuccess(MediaPipeline result) {
-				events.add(result);
-			}
 
-			@Override
-			public void onError(Throwable cause) {
-				throw new KurentoException(cause);
-			}
-		});
-		pipeline = events.poll(3, TimeUnit.SECONDS);
+		AsyncResultManager<MediaPipeline> async = new AsyncResultManager<>(
+				"MediaPipeline creation");
+
+		kurentoClient.createMediaPipeline(async.getContinuation());
+
+		pipeline = async.waitForResult();
 
 		if (pipeline == null) {
 			Assert.fail();
