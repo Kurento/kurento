@@ -27,7 +27,7 @@ pom.xml
 <#list module.imports as import>
 		<dependency>
 <#if module.code.kmd?? >
-			<groupId>${import.module.code.kmd.java.mavenGroupId}</groupId>
+			<groupId>${import.module.code.api.java.mavenGroupId}</groupId>
 			<artifactId>${import.module.code.kmd.java.mavenArtifactId}</artifactId>
 			<version>${import.mavenVersion}</version>
 <#else>
