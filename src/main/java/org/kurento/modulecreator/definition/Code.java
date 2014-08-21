@@ -21,15 +21,15 @@ public class Code {
 
 		putDefault(api, "java", "packageName",
 				"org.kurento.module." + module.getName());
-		putDefault(api, "java", "maven.groupId", "org.kurento.module");
-		putDefault(api, "java", "maven.artifactId", module.getName());
-		putDefault(api, "java", "maven.version",
+		putDefault(api, "java", "mavenGroupId", "org.kurento.module");
+		putDefault(api, "java", "mavenArtifactId", module.getName());
+		putDefault(api, "java", "mavenVersion",
 				VersionManager.convertToMaven(module.getVersion()));
 
-		putDefault(api, "js", "node.name", "kurento-module-" + module.getName());
-		putDefault(api, "js", "npm.version",
+		putDefault(api, "js", "nodeName", "kurento-module-" + module.getName());
+		putDefault(api, "js", "npmVersion",
 				VersionManager.convertToNPM(module.getVersion()));
-		putDefault(api, "js", "npm.description", "");
+		putDefault(api, "js", "npmDescription", "");
 
 		if (implementation == null) {
 			implementation = new HashMap<>();
@@ -41,10 +41,10 @@ public class Code {
 				+ module.getName().toLowerCase());
 
 		if (kmd != null) {
-			putDefault(kmd, "java", "maven.groupId", "org.kurento.module");
-			putDefault(kmd, "java", "maven.artifactId", module.getName()
+			putDefault(kmd, "java", "mavenGroupId", "org.kurento.module");
+			putDefault(kmd, "java", "mavenArtifactId", module.getName()
 					+ ".kmd");
-			putDefault(kmd, "java", "maven.version",
+			putDefault(kmd, "java", "mavenVersion",
 					VersionManager.convertToMaven(module.getVersion()));
 		}
 	}

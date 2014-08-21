@@ -1,9 +1,9 @@
-<#assign node_name=module.code.api.js["node.name"]>
+<#assign node_name=module.code.api.js["nodeName"]>
 package.json
 {
   "name": "${node_name}",
-  "version": "${module.code.api.js["npm.version"]}",
-  "description": "${module.code.api.js["npm.description"]}",
+  "version": "${module.code.api.js["npmVersion"]}",
+  "description": "${module.code.api.js["npmDescription"]}",
   "homepage": "http://www.kurento.com",
   "main": "lib/index.js",
   "author": "Kurento <info@kurento.com> (http://kurento.org)",
@@ -28,7 +28,7 @@ package.json
     "inherits": "^2.0.1"<#if module.imports?has_content>,
   <#list module.imports as import>
     <#assign package=import.module.code.api.js>
-    "${package["node.name"]}": "^${package["npm.version"]}"<#if import_has_next>,</#if>
+    "${package["nodeName"]}": "^${package["npmVersion"]}"<#if import_has_next>,</#if>
   </#list>
 </#if>
   }<#if node_name != "kurento-client-core"

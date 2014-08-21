@@ -4,13 +4,13 @@ pom.xml
 	<modelVersion>4.0.0</modelVersion>
 
 <#if module.code.kmd?? >
-	<groupId>${module.code.kmd.java["maven.groupId"]}</groupId>
-	<artifactId>${module.code.kmd.java["maven.artifactId"]}</artifactId>
-	<version>${module.code.kmd.java["maven.version"]}</version>
+	<groupId>${module.code.kmd.java["mavenGroupId"]}</groupId>
+	<artifactId>${module.code.kmd.java["mavenArtifactId"]}</artifactId>
+	<version>${module.code.kmd.java["mavenVersion"]}</version>
 <#else>
-	<groupId>${module.code.api.java["maven.groupId"]}</groupId>
-	<artifactId>${module.code.api.java["maven.artifactId"]}</artifactId>
-	<version>${module.code.api.java["maven.version"]}</version>
+	<groupId>${module.code.api.java["mavenGroupId"]}</groupId>
+	<artifactId>${module.code.api.java["mavenArtifactId"]}</artifactId>
+	<version>${module.code.api.java["mavenVersion"]}</version>
 </#if>
 	<packaging>jar</packaging>
 
@@ -27,13 +27,13 @@ pom.xml
 <#list module.imports as import>
 		<dependency>
 <#if module.code.kmd?? >
-			<groupId>${import.module.code.kmd.java["maven.groupId"]}</groupId>
-			<artifactId>${import.module.code.kmd.java["maven.artifactId"]}</artifactId>
-			<version>${import.module.code.kmd.java["maven.version"]}</version>
+			<groupId>${import.module.code.kmd.java["mavenGroupId"]}</groupId>
+			<artifactId>${import.module.code.kmd.java["mavenArtifactId"]}</artifactId>
+			<version>${import.module.code.kmd.java["mavenVersion"]}</version>
 <#else>
-			<groupId>${import.module.code.api.java["maven.groupId"]}</groupId>
-			<artifactId>${import.module.code.api.java["maven.artifactId"]}</artifactId>
-			<version>${import.module.code.api.java["maven.version"]}</version>
+			<groupId>${import.module.code.api.java["mavenGroupId"]}</groupId>
+			<artifactId>${import.module.code.api.java["mavenArtifactId"]}</artifactId>
+			<version>${import.module.code.api.java["mavenVersion"]}</version>
 </#if>
 		</dependency>
 </#list>

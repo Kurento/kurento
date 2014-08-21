@@ -6,7 +6,7 @@ Copyright © 2013-2014 Kurento. Licensed under [LGPL License].
 
 ${node_name}
 ============
-${module.code.api.js["npm.description"]}
+${module.code.api.js["npmDescription"]}
 
 
 What is Kurento
