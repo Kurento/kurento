@@ -1,8 +1,8 @@
-<#assign node_name=module.code.api.js["nodeName"]>
+<#assign node_name=module.code.api.js.nodeName>
 bower.json
 {
   "name": "${node_name}",
-  "description": "${module.code.api.js["npmDescription"]}",
+  "description": "${module.code.api.js.npmDescription}",
   "homepage": "http://www.kurento.com",
   "main": "dist/${node_name}.js",
   "authors": [

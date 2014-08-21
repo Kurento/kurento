@@ -346,17 +346,11 @@ public class ModuleDefinition {
 
 		for (Import importEntry : this.imports) {
 
-			// The virtual module "kurento" is allways resolved
-			if (importEntry.getModule() != null) {
-				continue;
-			}
-
 			ModuleDefinition dependencyModule = null;
 
 			if (moduleManager != null) {
 				dependencyModule = moduleManager.getModule(importEntry
 						.getName());
-
 			}
 
 			if (dependencyModule == null) {
@@ -388,6 +382,16 @@ public class ModuleDefinition {
 
 			dependencyModule.resolveModule(moduleManager);
 			importEntry.setModule(dependencyModule);
+
+			if (importEntry.getMavenVersion() == null) {
+				importEntry.setMavenVersion(dependencyModule.getCode().getApi()
+						.get("java").get("mavenVersion"));
+			}
+
+			if (importEntry.getNpmVersion() == null) {
+				importEntry.setNpmVersion(dependencyModule.getCode().getApi()
+						.get("js").get("npmVersion"));
+			}
 		}
 	}
 

@@ -4,6 +4,9 @@ public class Import {
 
 	private String name;
 	private String version;
+	private String mavenVersion;
+	private String npmVersion;
+
 	private transient ModuleDefinition module;
 
 	public Import(String name, String version) {
@@ -31,5 +34,21 @@ public class Import {
 	@Override
 	public String toString() {
 		return name + "(" + version + ")";
+	}
+
+	public String getMavenVersion() {
+		return mavenVersion;
+	}
+
+	public String getNpmVersion() {
+		return npmVersion;
+	}
+
+	public void setMavenVersion(String mavenVersion) {
+		this.mavenVersion = mavenVersion;
+	}
+
+	public void setNpmVersion(String npmVersion) {
+		this.npmVersion = npmVersion;
 	}
 }

@@ -27,7 +27,7 @@ public class KurentoCodeGeneration {
 
 	public static void main(String[] args) throws JsonIOException, IOException {
 
-		updateGitProjects();
+		// updateGitProjects();
 
 		generateCodeFor("kms-core");
 		generateCodeFor("kms-elements");

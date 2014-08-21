@@ -1,4 +1,4 @@
-<#assign node_name=module.code.api.js["node.name"]>
+<#assign node_name=module.code.api.js.nodeName>
 README.md
 [![][KurentoImage]][website]
 
@@ -6,7 +6,7 @@ Copyright © 2013-2014 Kurento. Licensed under [LGPL License].
 
 ${node_name}
 ============
-${module.code.api.js["npmDescription"]}
+${module.code.api.js.npmDescription}
 
 
 What is Kurento
