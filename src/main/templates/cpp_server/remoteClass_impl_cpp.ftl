@@ -34,7 +34,7 @@ ${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::pt
      <#lt></#list>)<#if (remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter"))> : OpenCVFilterImpl (std::dynamic_pointer_cast<MediaPipelineImpl> (mediaPipeline) )
 <#else> <#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if> </#if>
 <#else>
-${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config)
+${remoteClass.name}Impl::${remoteClass.name}Impl (const boost::property_tree::ptree &config)<#if remoteClass.extends??> : ${remoteClass.extends.name}Impl (/* FIXME: Add parent class constructor params here */)</#if>
 </#if>
 {
 <#if ! ((remoteClass.extends??) && (remoteClass.extends.type.name?ends_with("OpenCVFilter")))>
