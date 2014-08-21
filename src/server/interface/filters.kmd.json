@@ -5,19 +5,19 @@
   "code": {
     "kmd": {
       "java": {
-        "maven.groupId": "org.kurento",
-        "maven.artifactId": "kms-api-filters"
+        "mavenGroupId": "org.kurento",
+        "mavenArtifactId": "kms-api-filters"
       }
     },
     "api": {
       "java": {
         "packageName": "org.kurento.client",
-        "maven.groupId": "org.kurento",
-        "maven.artifactId": "kurento-client"
+        "mavenGroupId": "org.kurento",
+        "mavenArtifactId": "kurento-client"
       },
       "js": {
-        "node.name": "kurento-client-filters",
-        "npm.description": "Filter implementations for kurento media server"
+        "nodeName": "kurento-client-filters",
+        "npmDescription": "Filter implementations for kurento media server"
       }
     },
     "implementation": {
