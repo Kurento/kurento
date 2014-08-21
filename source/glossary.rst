@@ -7,6 +7,10 @@ transmissions. Most of the terms are described and linked to its wikipedia, RFC
 or W3C relevant documents. Some of the terms are specific to :term:`gstreamer`
 or :term:`kurento`.
 
+
+.. todo:: Remove deprecated entries (e.g. KAS, KWS, ...)
+
+
 .. glossary::
 
     Agnostic, Media
@@ -34,7 +38,13 @@ or :term:`kurento`.
                 Wikipedia reference of the AVI format
             :wikipedia:`en,Resource Interchange File Format`
                 Wikipedia reference of the RIFF format
-                
+
+    Bower
+        `Bower <http://http://bower.io/>`_ is a package manager for the web.
+        It offers a generic solution to the problem of front-end package management,
+        while exposing the package dependency model via an API that can be consumed by
+        a build stack.
+
     Builder Pattern
         The builder pattern is an object creation software design pattern whose 
         intention is to find a solution to the telescoping constructor 
@@ -62,6 +72,11 @@ or :term:`kurento`.
             `enable-cors.org <http://enable-cors.org/>`__
                 for information on the relevance of CORS and how and when
                 to enable it.
+
+    DOM
+    Document Object Model
+        Document Object Model is a cross-platform and language-independent convention
+        for representing and interacting with objects in HTML, XHTML and XML documents.
 
     Element, Media
         A :java:type:`MediaElement` is a module that encapsulates a specific
@@ -268,6 +283,15 @@ or :term:`kurento`.
                 White paper on NAT-T and solutions for end-to-end
                 connectivity in its presence
 
+    Node.js
+        `Node.js <http://www.nodejs.org/>`_ is a cross-platform runtime environment for server-side
+        and networking applications. Node.js applications are written in
+        JavaScript, and can be run within the Node.js runtime on OS X,
+        Microsoft Windows and Linux with no changes.
+
+    npm
+        `npm <https://www.npmjs.org/>`_ is the official package manager for `Node.js`:term:.
+
     OpenCL
         `OpenCL <http://www.khronos.org/opencl/>`__\ ™ is standard
         framework for  cross-platform, parallel programming of
@@ -338,6 +362,12 @@ or :term:`kurento`.
         the media streams.
 
         .. seealso:: :rfc:`3550`
+
+    Same-origin policy
+        The :wikipedia:`Same-origin policy <en,Same-origin_policy>` is web application
+        security model. The policy permits scripts running on pages originating from the
+        same site to access each other's `DOM`:term: with no specific restrictions, but prevents
+        access to `DOM`:term: on different sites.
 
     SDP
     Session Description Protocol

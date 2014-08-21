@@ -14,8 +14,12 @@ play a video file from its URL and stream it over HTTP. You can also download
 and check this
 `example full source code <https://github.com/Kurento/kws-media-api/tree/develop/example/PlayerEndpoint-HttpGetEndpoint>`_.
 
-* Create an instance of the KurentoClient class that will manage the connection
-  with the Kurento Server, so you'll need to provide the URI of its
+There are several demos showing the typical real time media web applications:
+
+- :doc:`Tutorial 1 - Magic mirror </tutorials/js/tutorial-1-magicmirror>`
+
+* Create an instance of the KurentoClient class that will manage the
+  connection with the Kurento Server, so you'll need to provide the URI of its
   WebSocket endpoint. Alternatively, instead of using a constructor, you can
   also provide success and error callbacks:
 

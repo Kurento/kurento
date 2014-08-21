@@ -80,8 +80,7 @@ Creating media pipelines
 ========================
 
 A ``MediaPipeline`` object is required to build media services. Method
-``newMediaPipeline()`` can be used in the ``KurentoClient`` for this
-purpose.
+``newMediaPipeline()`` can be used in the ``KurentoClient`` for this purpose.
 
 .. sourcecode:: java
 
