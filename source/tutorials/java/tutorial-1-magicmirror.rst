@@ -32,7 +32,7 @@ by the following `Media Element`:term: s:
 
 The media pipeline implemented is illustrated in the following picture:
 
-.. figure:: ../../images/kmf-webrtc-call-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-1-magicmirror-pipeline.png
    :align:   center
    :alt:     Loopback video call with filtering media pipeline
 
