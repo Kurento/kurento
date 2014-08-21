@@ -18,21 +18,21 @@ import org.kurento.modulecreator.definition.Param;
 import org.kurento.modulecreator.definition.RemoteClass;
 import org.kurento.modulecreator.definition.TypeRef;
 
-public class ModuleLoadTest {
+public class NamespacesTest {
 
 	@Test
-	public void enforceNamespaceTest() throws IOException, URISyntaxException {
+	public void test() throws IOException, URISyntaxException {
 
 		KurentoModuleCreator modCreator = new KurentoModuleCreator();
 
 		modCreator.addKmdFileToGen(PathUtils
-				.getPathInClasspath("/moduleC.kmd.json"));
+				.getPathInClasspath("/namespaces/moduleC.kmd.json"));
 
 		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/moduleB.kmd.json"));
+				.getPathInClasspath("/namespaces/moduleB.kmd.json"));
 
 		modCreator.addDependencyKmdFile(PathUtils
-				.getPathInClasspath("/moduleA.kmd.json"));
+				.getPathInClasspath("/namespaces/moduleA.kmd.json"));
 
 		modCreator.addDependencyKmdFile(PathUtils
 				.getPathInClasspath("/fakecore.kmd.json"));
