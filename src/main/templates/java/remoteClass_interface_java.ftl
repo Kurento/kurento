@@ -8,8 +8,10 @@ ${packageToFolder(module.code.api.java.packageName)}/${remoteClass.name}.java
 package ${module.code.api.java.packageName};
 
 import org.kurento.client.internal.server.Param;
-import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.server.FactoryMethod;
+import org.kurento.client.internal.server.EventSubscription;
+import org.kurento.client.internal.RemoteClass;
+
 import java.util.List;
 
 <#list module.allImports as import>
@@ -54,6 +56,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
      * @return ListenerSubscription for the given Listener
      *
      **/
+    @EventSubscription(${event.name}Event.class)
     ListenerSubscription add${event.name}Listener(EventListener<${event.name}Event> listener);
     /**
      * Add a {@link EventListener} for event {@link ${event.name}Event}. Asynchronous call.
@@ -63,6 +66,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
      * @param cont     Continuation to be called when the listener is registered
      *
      **/
+    @EventSubscription(${event.name}Event.class)
     void add${event.name}Listener(EventListener<${event.name}Event> listener, Continuation<ListenerSubscription> cont);
     </#list>
 
