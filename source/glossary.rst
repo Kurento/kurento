@@ -326,6 +326,14 @@ or :term:`kurento`.
         represents a “machine” capable of performing a sequence of
         operations over a stream.
 
+    PubNub
+        `PubNub <http://www.pubnub.com/>`__ is a publish/subscribe cloud service for sending and routing data.
+        It streams data to global audiences on any device using persistent socket connections. PubNub has been
+        designed to deliver data with low latencies to end-user devices. These devices can be behind firewalls,
+        NAT environments, and other hard-to-reach network environments. PubNub provices message caching for
+        retransmission of lost signals over unreliable network environments. This is accomplished by maintaining
+        an always open socket connection to every device.
+
     QR
         QR code (Quick Response Code) is a type of two-dimensional barcode.
         that became popular in the mobile phone industry due to its fast
