@@ -7,13 +7,6 @@ ${packageToFolder(module.code.api.java.packageName)}/${complexType.name}.java
  */
 package ${module.code.api.java.packageName};
 
-import org.kurento.client.internal.server.Param;
-import java.util.List;
-
-<#list module.allImports as import>
-import ${import.module.code.api.java.packageName}.*;
-</#list>
-
 <#if complexType.typeFormat == "REGISTER">
 <@comment complexType.doc />
 public class ${complexType.name} <#if complexType.extends??>extends ${complexType.extends.name}</#if> {
@@ -28,21 +21,21 @@ public class ${complexType.name} <#if complexType.extends??>extends ${complexTyp
      <#assign first=true>
      <#lt><#list complexType.parentProperties as property><#rt>
     	<#if !property.optional>
-    		<#lt><#if first><#assign first=false><#else>, </#if>@Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
+    		<#lt><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
     	</#if>
     </#list>
     <#lt><#list complexType.properties as property>
     	<#if !property.optional>
-    		<#lt><#if first><#assign first=false><#else>, </#if>@Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
+    		<#lt><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}<#rt>
     	</#if>
     <#lt></#list>) {
-	
+
 	super(<#list complexType.parentProperties as property>
 		<#if !property.optional>
 			<#lt>${property.name}<#if property_has_next>, </#if><#rt>
-		</#if>	
+		</#if>
 	<#lt></#list>);
-     
+
      <#list complexType.properties as property>
         <#if !property.optional>
         this.${property.name} = ${property.name};

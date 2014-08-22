@@ -7,13 +7,7 @@ ${packageToFolder(module.code.api.java.packageName)}/${event.name}Event.java
  */
 package ${module.code.api.java.packageName};
 
-import org.kurento.client.internal.server.Param;
-import java.util.List;
-
-<#list module.allImports as import>
-import ${import.module.code.api.java.packageName}.*;
-</#list>
-
+import org.kurento.client.*;
 
 <@comment "${event.doc}" />
 public class ${event.name}Event <#if event.extends??>extends ${event.extends.name}Event<#else>implements Event</#if> {
@@ -23,16 +17,16 @@ public class ${event.name}Event <#if event.extends??>extends ${event.extends.nam
 	private ${property.type.name} ${property.name};
 </#list>
 
-		<@comment event.doc event.parentProperties + event.properties />
-	public ${event.name}Event(<#rt>
+  <@comment event.doc event.parentProperties + event.properties />
+  public ${event.name}Event(<#rt>
      <#assign first=true>
-     <#lt><#list event.parentProperties as property><#if first><#assign first=false><#else>, </#if>@Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}</#list><#rt>
-     <#lt><#list event.properties as property><#if first><#assign first=false><#else>, </#if>@Param("${property.name}") ${getJavaObjectType(property.type,false)} ${property.name}</#list>) {
-		super(<#list event.parentProperties as property>${property.name}<#if property_has_next>, </#if></#list>);
+     <#lt><#list event.parentProperties as property><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type, false)} ${property.name}</#list><#rt>
+     <#lt><#list event.properties as property><#if first><#assign first=false><#else>, </#if>@org.kurento.client.internal.server.Param("${property.name}") ${getJavaObjectType(property.type, false)} ${property.name}</#list>) {
+    super(<#list event.parentProperties as property>${property.name}<#if property_has_next>, </#if></#list>);
      <#list event.properties as property>
-		this.${property.name} = ${property.name};
+    this.${property.name} = ${property.name};
      </#list>
-	}
+  }
 
 	<#list event.properties as property>
 	<#assign par=[] />
