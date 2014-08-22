@@ -6,16 +6,48 @@
 #include "FilterImpl.hpp"
 #include "CrowdDetectorFilter.hpp"
 #include <EventHandler.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 namespace kurento
 {
-
-class MediaPipeline;
-class RegionOfInterest;
+namespace module
+{
+namespace crowddetector
+{
 class CrowdDetectorFilterImpl;
+} /* crowddetector */
+} /* module */
+} /* kurento */
 
-void Serialize (std::shared_ptr<CrowdDetectorFilterImpl> &object,
-                JsonSerializer &serializer);
+namespace kurento
+{
+void Serialize (
+  std::shared_ptr<kurento::module::crowddetector::CrowdDetectorFilterImpl>
+  &object, JsonSerializer &serializer);
+} /* kurento */
+
+namespace kurento
+{
+namespace module
+{
+namespace crowddetector
+{
+class RegionOfInterest;
+} /* crowddetector */
+} /* module */
+} /* kurento */
+
+namespace kurento
+{
+class MediaPipelineImpl;
+} /* kurento */
+
+namespace kurento
+{
+namespace module
+{
+namespace crowddetector
+{
 
 class CrowdDetectorFilterImpl : public FilterImpl,
   public virtual CrowdDetectorFilter
@@ -36,7 +68,6 @@ public:
   sigc::signal<void, CrowdDetectorFluidity> signalCrowdDetectorFluidity;
   sigc::signal<void, CrowdDetectorOccupancy> signalCrowdDetectorOccupancy;
   sigc::signal<void, CrowdDetectorDirection> signalCrowdDetectorDirection;
-
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
                        const std::string &methodName, const Json::Value &params,
                        Json::Value &response);
@@ -60,6 +91,8 @@ private:
 
 };
 
+} /* crowddetector */
+} /* module */
 } /* kurento */
 
 #endif /*  __CROWD_DETECTOR_FILTER_IMPL_HPP__ */

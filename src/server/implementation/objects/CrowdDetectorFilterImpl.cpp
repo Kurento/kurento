@@ -4,13 +4,12 @@
 #include "MediaPipeline.hpp"
 #include "MediaPipelineImpl.hpp"
 #include "RegionOfInterest.hpp"
-#include "RegionOfInterestConfig.hpp"
 #include "RelativePoint.hpp"
+#include "RegionOfInterestConfig.hpp"
 #include <CrowdDetectorFilterImplFactory.hpp>
 #include "CrowdDetectorFilterImpl.hpp"
 #include <jsonrpc/JsonSerializer.hpp>
 #include <KurentoException.hpp>
-#include <gst/gst.h>
 
 #define GST_CAT_DEFAULT kurento_crowd_detector_filter_impl
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -19,6 +18,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define ROIS_PARAM "rois"
 
 namespace kurento
+{
+namespace module
+{
+namespace crowddetector
 {
 
 static void
@@ -92,9 +95,9 @@ get_structure_from_roi (std::shared_ptr<RegionOfInterest> roi)
 CrowdDetectorFilterImpl::CrowdDetectorFilterImpl (const
     boost::property_tree::ptree &config,
     std::shared_ptr<MediaPipeline> mediaPipeline,
-    const std::vector<std::shared_ptr<RegionOfInterest>> &rois) :
-  FilterImpl (config, std::dynamic_pointer_cast<MediaPipelineImpl>
-              (mediaPipeline) )
+    const std::vector<std::shared_ptr<RegionOfInterest>> &rois)  : FilterImpl (
+        config, std::dynamic_pointer_cast<MediaPipelineImpl>
+        (mediaPipeline) )
 {
   GstBus *bus;
   std::shared_ptr<MediaPipelineImpl> pipe;
@@ -244,8 +247,7 @@ CrowdDetectorFilterImpl::~CrowdDetectorFilterImpl()
 
 MediaObjectImpl *
 CrowdDetectorFilterImplFactory::createObject (const boost::property_tree::ptree
-    &config,
-    std::shared_ptr<MediaPipeline> mediaPipeline,
+    &config, std::shared_ptr<MediaPipeline> mediaPipeline,
     const std::vector<std::shared_ptr<RegionOfInterest>> &rois) const
 {
   return new CrowdDetectorFilterImpl (config, mediaPipeline, rois);
@@ -260,4 +262,6 @@ CrowdDetectorFilterImpl::StaticConstructor::StaticConstructor()
                            GST_DEFAULT_NAME);
 }
 
+} /* crowddetector */
+} /* module */
 } /* kurento */
