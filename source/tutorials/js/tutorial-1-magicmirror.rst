@@ -1,6 +1,6 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Browser JavaScript Tutorial 1 - Magic Mirror
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+JavaScript Tutorial 1 - Magic Mirror
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 .. todo:: This section has been early documented using kws-tutorial.
  This project has to be refactored to kurento-tutorial-js. So, corrections in
@@ -55,7 +55,7 @@ JavaScript Logic
 As introduced before, the interface of this demo is implemented in an HTML web
 page:
 `demo.html <https://github.com/Kurento/kws-tutorial/blob/develop/FaceOverlay/demo.html>`_.
-As you can see, this page uses several JavaScrip libraries:
+As you can see, this page uses several JavaScript libraries:
 
 - `adpater.js <https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js>`_:
   JavaScript library by Google to provide WebRTC interoperation between
@@ -166,10 +166,10 @@ hosted. Then you have to resolve the dependencies using Bower, as follows:
     cd FaceOverlay
     bower install
 
-Due to `Same-origin policy`:term:, this demo has to be served by an HTTP
-server. A very simple way of doing this is by means of a HTTP Node.js server
-which can be installed using npm. Then, this HTTP has to be started in the
-folder where the demo is located:
+Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
+A very simple way of doing this is by means of a HTTP Node.js server which can
+be installed using npm. Then, this HTTP has to be started in the folder where
+the demo is located:
 
 .. sourcecode:: shell
 
