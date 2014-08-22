@@ -55,6 +55,10 @@ public class KurentoModuleCreator {
 	private ModuleManager moduleManager;
 	private ModuleManager depModuleManager;
 
+	private boolean generateMavenPom = false;
+	private boolean generateNpmPackage = false;
+	private boolean generateBowerPackage = false;
+
 	public ModuleManager getModuleManager() {
 		return moduleManager;
 	}
@@ -199,6 +203,24 @@ public class KurentoModuleCreator {
 							new File(outputModuleFile.toFile(), module
 									.getName() + ".kmd.json"));
 				}
+
+				if (generateMavenPom) {
+					codeGen.setTemplatesDir(getInternalTemplatesDir("maven"));
+					codeGen.generateMavenPom(module,
+							searchFiles(this.kmdFilesToGen, "pom.xml"));
+				}
+
+				if (generateNpmPackage) {
+					codeGen.setTemplatesDir(getInternalTemplatesDir("npm"));
+					codeGen.generateNpmPackage(module,
+							searchFiles(this.kmdFilesToGen, "package.json"));
+				}
+
+				if (generateBowerPackage) {
+					codeGen.setTemplatesDir(getInternalTemplatesDir("bower"));
+					codeGen.generateBowerPackage(module,
+							searchFiles(this.kmdFilesToGen, "bower.json"));
+				}
 			}
 
 			return new Result();
@@ -209,6 +231,26 @@ public class KurentoModuleCreator {
 			e.printStackTrace();
 			return new Result(new Error("Unexpected error: "
 					+ e.getClass().getName() + " " + e.getMessage()));
+		}
+	}
+
+	private Path searchFiles(List<Path> kmdFiles, String fileName)
+			throws IOException {
+
+		List<Path> pomFiles = new ArrayList<Path>();
+		for (Path kmdFile : kmdFiles) {
+			pomFiles.addAll(PathUtils.searchFiles(kmdFile.getParent(), fileName));
+		}
+
+		if (pomFiles.isEmpty()) {
+			return null;
+		} else {
+			if (pomFiles.size() > 1) {
+				log.warn("There are several '" + fileName
+						+ "' files in kmd.json folders."
+						+ " Picking the first one");
+			}
+			return pomFiles.get(0);
 		}
 	}
 
@@ -381,5 +423,17 @@ public class KurentoModuleCreator {
 
 	public void setOutputFile(Path outputModuleFile) {
 		this.outputModuleFile = outputModuleFile;
+	}
+
+	public void setGenerateMavenPom(boolean hasOption) {
+		this.generateMavenPom = hasOption;
+	}
+
+	public void setGenerateNpmPackage(boolean hasOption) {
+		this.generateNpmPackage = hasOption;
+	}
+
+	public void setGenerateBowerPackage(boolean hasOption) {
+		this.generateBowerPackage = hasOption;
 	}
 }

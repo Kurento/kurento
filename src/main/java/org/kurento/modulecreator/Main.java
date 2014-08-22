@@ -38,6 +38,10 @@ public class Main {
 	private static final String SHOW_VALUES = "s";
 	private static final String OUTPUT_MODEL = "o";
 
+	private static final String GENERATE_MAVEN = "maven";
+	private static final String GENERATE_NPM = "npm";
+	private static final String GENERATE_BOWER = "bower";
+
 	public static void main(String[] args) throws IOException,
 			TemplateException {
 
@@ -77,6 +81,10 @@ public class Main {
 		processor.setKmdFilesToGen(getKmdFiles(line));
 		processor.setDependencyKmdFiles(getDependencyKmdFiles(line));
 		processor.setOutputFile(getOutputModuleFile(line));
+
+		processor.setGenerateMavenPom(line.hasOption(GENERATE_MAVEN));
+		processor.setGenerateNpmPackage(line.hasOption(GENERATE_NPM));
+		processor.setGenerateBowerPackage(line.hasOption(GENERATE_BOWER));
 
 		showValues(processor, line);
 
@@ -170,6 +178,15 @@ public class Main {
 				.withDescription(
 						"Do not overwrite files if they are already generated.")
 				.create(NO_OVERWRITE));
+
+		options.addOption(GENERATE_MAVEN, "maven-pom", false,
+				"Generate pom.xml file based on base file or template.");
+
+		options.addOption(GENERATE_NPM, "npm-package", false,
+				"Generate package.json file based on base file or template.");
+
+		options.addOption(GENERATE_BOWER, "bower-package", false,
+				"Generate package.json file based on base file or template.");
 
 		return options;
 	}

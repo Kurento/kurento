@@ -1,11 +1,11 @@
 package org.kurento.modulecreator.codegen;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-import com.google.gson.JsonObject;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+
 import org.kurento.modulecreator.codegen.function.CamelToUnderscore;
 import org.kurento.modulecreator.codegen.function.CppObjectType;
 import org.kurento.modulecreator.codegen.function.EscapeString;
@@ -28,6 +30,9 @@ import org.kurento.modulecreator.codegen.function.RemoteClassDependencies;
 import org.kurento.modulecreator.codegen.function.SphinxLinks;
 import org.kurento.modulecreator.definition.ModuleDefinition;
 import org.kurento.modulecreator.definition.Type;
+import org.xml.sax.SAXException;
+
+import com.google.gson.JsonObject;
 
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
@@ -37,9 +42,10 @@ import freemarker.template.TemplateExceptionHandler;
 
 public class CodeGen {
 
-	private final Path templatesFolder;
+	private Path templatesFolder;
+	private Configuration cfg;
+
 	private final Path outputFolder;
-	private final Configuration cfg;
 
 	private final boolean listGeneratedFiles;
 	private final boolean verbose;
@@ -53,9 +59,16 @@ public class CodeGen {
 		this.verbose = verbose;
 		this.listGeneratedFiles = listGeneratedFiles;
 		this.overwrite = overwrite;
-		this.templatesFolder = templatesFolder;
 		this.outputFolder = outputFolder;
 		this.config = config;
+
+		if (templatesFolder != null) {
+			setTemplatesDir(templatesFolder);
+		}
+	}
+
+	public void setTemplatesDir(Path templatesFolder) throws IOException {
+		this.templatesFolder = templatesFolder;
 
 		cfg = new Configuration();
 
@@ -85,7 +98,6 @@ public class CodeGen {
 		// 1st and 2nd version number remains):
 		// cfg.setIncompatibleImprovements(new Version(2, 3, 19)); // FreeMarker
 		// 2.3.19
-
 	}
 
 	public void generateCode(ModuleDefinition module) throws IOException,
@@ -223,17 +235,70 @@ public class CodeGen {
 	}
 
 	public static String readFile(File file) throws IOException {
-		int len;
-		char[] chr = new char[1024];
-		final StringBuffer buffer = new StringBuffer();
-		final FileReader reader = new FileReader(file);
-		try {
-			while ((len = reader.read(chr)) > 0) {
-				buffer.append(chr, 0, len);
-			}
-		} finally {
-			reader.close();
-		}
-		return buffer.toString();
+		return new String(Files.readAllBytes(file.toPath()),
+				StandardCharsets.UTF_8.name());
 	}
+
+	public void generateMavenPom(ModuleDefinition module, Path templatePomXml)
+			throws IOException, TemplateException,
+			ParserConfigurationException, SAXException, TransformerException {
+
+		this.generateCode(module);
+
+		if (templatePomXml != null) {
+
+			String[] addTags = { "/dependencies", "/build/plugins" };
+			String[] replaceTags = { "/properties" };
+
+			Path outputPomXml = outputFolder.resolve("pom.xml");
+
+			XmlFusioner fusioner = new XmlFusioner(outputPomXml,
+					templatePomXml, outputPomXml, addTags, replaceTags);
+
+			fusioner.fusionXmls();
+		}
+	}
+
+	public void generateNpmPackage(ModuleDefinition module,
+			Path templatePackJson) throws IOException, TemplateException,
+			ParserConfigurationException, SAXException, TransformerException {
+
+		this.generateCode(module);
+
+		if (templatePackJson != null) {
+
+			String[] addTags = { "/keywords", "/dependencies",
+					"/peerDependencies" };
+			String[] replaceTags = { "/repository", "/bugs" };
+
+			Path outputPackJson = outputFolder.resolve("package.json");
+
+			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
+					templatePackJson, outputPackJson, addTags, replaceTags);
+
+			fusioner.fusionJsons();
+		}
+	}
+
+	public void generateBowerPackage(ModuleDefinition module,
+			Path templateBowerJson) throws IOException, TemplateException,
+			ParserConfigurationException, SAXException, TransformerException {
+
+		this.generateCode(module);
+
+		if (templateBowerJson != null) {
+
+			String[] addTags = { "/keywords", "/dependencies",
+					"/peerDependencies" };
+			String[] replaceTags = { "/repository", "/bugs" };
+
+			Path outputPackJson = outputFolder.resolve("bower.json");
+
+			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
+					templateBowerJson, outputPackJson, addTags, replaceTags);
+
+			fusioner.fusionJsons();
+		}
+	}
+
 }

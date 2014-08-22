@@ -1,0 +1,31 @@
+{
+  "name": "npmName",
+  "version": "1.0.0",
+  "description": "xxxxxxx",
+  "homepage": "http://www.kurento.com",
+  "main": "lib/index.js",
+  "author": "Kurento <info@kurento.com> (http://kurento.org)",
+  "license": "LGPL",
+  "repository": {
+    "type": "git",
+    "url": "Kurento/npmName-js"
+  },
+  "bugs": {
+    "url": "Kurento/npmName-js/issues",
+    "email": "info@kurento.com"
+  },
+  "keywords": [
+    "API",
+    "Kurento",
+    "KWS",
+    "SDK",
+    "web",
+    "WebRTC"
+  ],
+  "dependencies": {
+    "inherits": "^2.0.1"
+  },
+  "peerDependencies": {
+    "kurento-client": "^5.0.0"
+  }
+}

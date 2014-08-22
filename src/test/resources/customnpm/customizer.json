@@ -1,0 +1,21 @@
+{
+  "homepage": "http://new.home.page",
+  "newProp": "newValue",
+  "repository": {
+    "type": "http",
+    "url": "http://wwwww"
+  },
+  "bugs": {
+    "url": "Kurento/npmName-js/issues",
+    "email": "info@kurento.com"
+  },
+  "keywords": [
+    "NewKeyword"
+  ],
+  "dependencies": {
+    "custom": "2222"
+  },
+  "peerDependencies": {
+    "customPeer": "1111"
+  }
+}
