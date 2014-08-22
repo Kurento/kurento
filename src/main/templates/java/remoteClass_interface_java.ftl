@@ -7,19 +7,10 @@ ${packageToFolder(module.code.api.java.packageName)}/${remoteClass.name}.java
  */
 package ${module.code.api.java.packageName};
 
-import org.kurento.client.internal.server.Param;
-import org.kurento.client.internal.server.FactoryMethod;
-import org.kurento.client.internal.server.EventSubscription;
-import org.kurento.client.internal.RemoteClass;
-
-import java.util.List;
-
-<#list module.allImports as import>
-import ${import.module.code.api.java.packageName}.*;
-</#list>
+import org.kurento.client.*;
 
 <@comment remoteClass.doc />
-@RemoteClass
+@org.kurento.client.internal.RemoteClass
 public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remoteClass.extends.name}</#if> {
 
    <#list remoteClass.properties as property>
@@ -34,7 +25,7 @@ public interface ${remoteClass.name} <#if remoteClass.extends??>extends ${remote
 
 	<@comment method.doc method.params method.return />
 	${getJavaObjectType(method.return,false)} ${method.name}(<#rt>
-		<#lt><#list method.params as param>@Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}<#if param_has_next>, </#if></#list>);
+		<#lt><#list method.params as param>@org.kurento.client.internal.server.Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}<#if param_has_next>, </#if></#list>);
 
 	<#assign doc>
 Asynchronous version of ${method.name}:
@@ -45,7 +36,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
     </#assign>
     <@comment doc method.params />
     void ${method.name}(<#rt>
-		<#lt><#list method.params as param>@Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}, </#list>Continuation<${getJavaObjectType(method.return)}> cont);
+		<#lt><#list method.params as param>@org.kurento.client.internal.server.Param("${param.name}") ${getJavaObjectType(param.type,false)} ${param.name}, </#list>Continuation<${getJavaObjectType(method.return)}> cont);
 
     </#list>
 	<#list remoteClass.events as event>
@@ -56,7 +47,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
      * @return ListenerSubscription for the given Listener
      *
      **/
-    @EventSubscription(${event.name}Event.class)
+    @org.kurento.client.internal.server.EventSubscription(${event.name}Event.class)
     ListenerSubscription add${event.name}Listener(EventListener<${event.name}Event> listener);
     /**
      * Add a {@link EventListener} for event {@link ${event.name}Event}. Asynchronous call.
@@ -66,7 +57,7 @@ done. If an error occurs, {@link Continuation#onError} is called.
      * @param cont     Continuation to be called when the listener is registered
      *
      **/
-    @EventSubscription(${event.name}Event.class)
+    @org.kurento.client.internal.server.EventSubscription(${event.name}Event.class)
     void add${event.name}Listener(EventListener<${event.name}Event> listener, Continuation<ListenerSubscription> cont);
     </#list>
 
