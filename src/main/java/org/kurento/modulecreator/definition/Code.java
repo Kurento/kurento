@@ -27,8 +27,12 @@ public class Code {
 				VersionManager.convertToMaven(module.getVersion()));
 
 		putDefault(api, "js", "nodeName", "kurento-module-" + module.getName());
+
+		String npmGit = module.getCode().getApi().get("js").get("npmGit");
+
 		putDefault(api, "js", "npmVersion",
-				VersionManager.convertToNPM(module.getVersion()));
+				VersionManager.convertToNPM(npmGit, module.getVersion()));
+
 		putDefault(api, "js", "npmDescription", "");
 
 		if (implementation == null) {

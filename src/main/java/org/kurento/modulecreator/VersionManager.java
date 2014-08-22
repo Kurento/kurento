@@ -12,9 +12,14 @@ public class VersionManager {
 		return version;
 	}
 
-	public static String convertToNPM(String version) {
+	public static String convertToNPM(String gitRepo, String version) {
 		if (isDevelopmentVersion(version)) {
-			version = removeDevSuffix(version);
+
+			if (gitRepo == null) {
+				version = removeDevSuffix(version);
+			} else {
+				version = gitRepo + "#develop";
+			}
 		}
 		return version;
 	}
@@ -33,12 +38,12 @@ public class VersionManager {
 
 	/**
 	 * Compares two version strings.
-	 * 
+	 *
 	 * Use this instead of String.compareTo() for a non-lexicographical
 	 * comparison that works for version strings. e.g. "1.10".compareTo("1.6").
-	 * 
+	 *
 	 * @note It does not work if "1.10" is supposed to be equal to "1.10.0".
-	 * 
+	 *
 	 * @param str1
 	 *            a string of ordinal numbers separated by decimal points.
 	 * @param str2
