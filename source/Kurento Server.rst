@@ -37,8 +37,8 @@ stream to a face recognition media element implemented to read raw RGB format,
 a transcoding is necessary.
 
 Developers, specially during the initial phases of application development,
-might want to simplify development and abstract this heterogeneneity, so
-kurento provides an automatic converter of media formats called the
+might want to simplify development and abstract this heterogeneity, so Kurento
+provides an automatic converter of media formats called the
 :term:`agnostic media adaptor <agnostic, media>`. Whenever a media element is
 connected to another media element’s, Kurento verifies if media adaption and
 transcoding is necessary and, in case it is, it transparently incorporates the
@@ -71,7 +71,6 @@ Kurento Control Server
 ----------------------
 
 .. todo:: Complete information about Kurento Control Server. 
-
 
 
 

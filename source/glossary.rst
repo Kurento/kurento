@@ -8,9 +8,6 @@ or W3C relevant documents. Some of the terms are specific to :term:`gstreamer`
 or :term:`kurento`.
 
 
-.. todo:: Remove deprecated entries (e.g. KAS, KWS, ...)
-
-
 .. glossary::
 
     Agnostic, Media
@@ -84,7 +81,7 @@ or :term:`kurento`.
         a Video :java:type:`PlayerEndpoint`
 
     EOS
-        Acronym of End Of Stream. In kurento some elements will raise an
+        Acronym of End Of Stream. In Kurento some elements will raise an
         :rom:evnt:`EndOfStream` event when the media they are processing is
         finished.
 
@@ -151,51 +148,25 @@ or :term:`kurento`.
         answered out of order.
 
     Kurento
-        `Kurento <http://kurento.org>`__ is a platform for the
-        development of multimedia enabled aplications.
-        Kurento is open source, released under LGPL 2.1, and has
-        several components, providing solutions to most multimedia
-        common services requirements. Those components include:
+        `Kurento <http://kurento.org>`__ is a platform for the development of multimedia
+        enabled applications. Kurento is the Esperanto term for the English word
+        'stream'. We chose this name because we believe the Esperanto principles are
+        inspiring for what the multimedia community needs: simplicity, openness and
+        universality. Kurento is open source, released under LGPL 2.1, and has several
+        components, providing solutions to most multimedia common services
+        requirements. Those components include:
 
-        * Kurento Application Server (:term:`KAS`).
-        * Kurento Media Server (:term:`KMS`).
-        * Kurento Media Framework (:term:`KMF`).
-        * Kurento Media Connector (:term:`KMC`).
-        * Kurento Web SDK (:term:`KWS`).
-        * Kurento Android SDK (:term:`KANDS`).
+         * Kurento Server. Server which provides rich media capabilities. Composed by the
+           Kurento Media Server (KMS) and the Kurento Control Server (KCS).
 
-    KANDS
-    Kurento Android SDK
-        An SDK that integrates audio and video streaming into
-        Android applications.
+         * Kurento API. Interface to Kurento Server. It can be used from the Kurento
+           Protocol or from Kurento Clients.
 
-    KAS
-    Kurento Application Server
-        A :term:`Java EE` Application container that hosts the server side
-        :term:`signalling plane` of Kurento applications. Currently
-        Kurento support the use of `JBoss 7 <http://www.jboss.org/jbossas>`__
+         * Kurento Protocol. Communication between KMS and clients by means of
+           :term:`JSON-RPC` messages.
 
-    KMC
-    Kurento Media Connector
-        Proxy that allows to clients connect to KMS through :term:`WebSocket`.
-
-    KMF
-    Kurento Media Framework
-        Framework for the development of rich media based applications
-        using Java EE technologies. It exposes APIs for accessing and
-        controlling KMS capabilities from Java applications.
-
-    KMS
-    Kurento Media Server
-        A media server that provides low-level multimedia capabilities.
-        Kurento Media Server processes and runs the :term:`Media
-        Pipeline <pipeline, media>` of Kurento applications.
-
-    KWS
-    Kurento Web SDK
-        A JavaScript client side API taking advantage of
-        HTML5 multimedia features for writing clients that
-        interact easy and naturally with KAS.
+         * Kurento Client. Library (Java or JavaScript) to access to media capabilities
+           provided by Kurento Server.
 
     Maven
         `Maven <http://maven.apache.org/>`_ is a build automation tool used primarily for Java projects.
@@ -327,12 +298,14 @@ or :term:`kurento`.
         operations over a stream.
 
     PubNub
-        `PubNub <http://www.pubnub.com/>`__ is a publish/subscribe cloud service for sending and routing data.
-        It streams data to global audiences on any device using persistent socket connections. PubNub has been
-        designed to deliver data with low latencies to end-user devices. These devices can be behind firewalls,
-        NAT environments, and other hard-to-reach network environments. PubNub provices message caching for
-        retransmission of lost signals over unreliable network environments. This is accomplished by maintaining
-        an always open socket connection to every device.
+        `PubNub <http://www.pubnub.com/>`__ is a publish/subscribe cloud service for
+        sending and routing data. It streams data to global audiences on any device
+        using persistent socket connections. PubNub has been designed to deliver data
+        with low latencies to end-user devices. These devices can be behind firewalls,
+        NAT environments, and other hard-to-reach network environments. PubNub provides
+        message caching for retransmission of lost signals over unreliable network
+        environments. This is accomplished by maintaining an always open socket
+        connection to every device.
 
     QR
         QR code (Quick Response Code) is a type of two-dimensional barcode.
