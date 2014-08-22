@@ -519,7 +519,7 @@ project where this demo is hosted, and then run the main class, as follows:
 
     git clone https://github.com/Kurento/kurento-java-tutorial.git
     cd kurento-one2one-call
-    mvn exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecall.One2OneCallApp"
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecall.One2OneCallApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,

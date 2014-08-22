@@ -250,8 +250,8 @@ project where this demo is hosted, and then run the main class, as follows:
 .. sourcecode:: shell
 
     git clone https://github.com/Kurento/kurento-java-tutorial.git
-    cd tutorial-1-MagicMirror
-    mvn exec:java -Dexec.mainClass="org.kurento.tutorial.magicmirror.MagicMirrorApp"
+    cd kurento-magic-mirror
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.magicmirror.MagicMirrorApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore,
 open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
