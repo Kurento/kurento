@@ -38,7 +38,11 @@ public class ModuleDefinition {
 	/* Kmd file info */
 	private String name;
 	private String version;
+
 	private String kurentoVersion;
+	private String kurentoMavenVersion;
+	private String kurentoNpmVersion;
+
 	private List<Import> imports;
 	private String repository;
 
@@ -398,14 +402,17 @@ public class ModuleDefinition {
 	private void autoImportModules(ModuleManager moduleManager) {
 
 		if (!CORE_MODULE.equals(this.name)) {
-			this.imports.add(new Import(CORE_MODULE, kurentoVersion));
+			this.imports.add(new Import(CORE_MODULE, kurentoVersion,
+					kurentoMavenVersion, kurentoNpmVersion));
 
 			if (!ELEMENTS_MODULE.equals(this.name)) {
-				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion));
+				this.imports.add(new Import(ELEMENTS_MODULE, kurentoVersion,
+						kurentoMavenVersion, kurentoNpmVersion));
 
 				if (!FILTERS_MODULE.equals(this.name)) {
-					this.imports
-							.add(new Import(ELEMENTS_MODULE, kurentoVersion));
+					this.imports.add(new Import(ELEMENTS_MODULE,
+							kurentoVersion, kurentoMavenVersion,
+							kurentoNpmVersion));
 				}
 			}
 		}

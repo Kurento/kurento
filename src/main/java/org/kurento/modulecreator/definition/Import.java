@@ -15,6 +15,15 @@ public class Import {
 		this.version = version;
 	}
 
+	public Import(String name, String version, String mavenVersion,
+			String npmVersion) {
+		super();
+		this.name = name;
+		this.version = version;
+		this.mavenVersion = mavenVersion;
+		this.npmVersion = npmVersion;
+	}
+
 	public String getName() {
 		return name;
 	}

@@ -45,10 +45,16 @@ public class ImportModulesTest {
 		ModuleDefinition moduleC = moduleManager.getModule("moduleC");
 
 		String impModAFromModB = moduleB.getImports().get(0).getMavenVersion();
-		assertThat(impModAFromModB, is("1.0.0-SNAPSHOT"));
+		assertThat(impModAFromModB, is("0.0.1-SNAPSHOT"));
 
 		String impModAFromModC = moduleC.getImports().get(0).getMavenVersion();
-		assertThat(impModAFromModC, is("0.0.1-SNAPSHOT"));
+		assertThat(impModAFromModC, is("1.0.0-SNAPSHOT"));
 
+		String impCoreFromModB = moduleB.getImports().get(1).getMavenVersion();
+		assertThat(impCoreFromModB, is("1.0.0"));
+
+		String impCoreFromModC = moduleC.getImports().get(1).getMavenVersion();
+		assertThat(impCoreFromModC, is("[1.0,2.0)"));
 	}
+
 }
