@@ -31,7 +31,9 @@ function startVideo(){
 
 	function onOffer(offer){
 		console.log("Creating KwsMedia ...");
-		KwsMedia(ws_uri, function(kwsMedia){
+		KwsMedia(ws_uri, function(error, kwsMedia){
+			if(error) return onError(error);
+
 			kwsMedia.create("MediaPipeline", function(error, pipeline){
 				if(error) return onError(error);
 

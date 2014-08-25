@@ -36,40 +36,34 @@ function startRecording() {
 
 	function onOffer(offer) {
 		console.log("Offer ...");
-		KwsMedia(ws_uri, function(kwsMedia) {
+		KwsMedia(ws_uri, function(error, kwsMedia) {
+			if (error) return onError(error);
 
 			kwsMedia.create('MediaPipeline', function(error, pipeline) {
-				if (error)
-					onError(error);
+				if (error) return onError(error);
 				console.log("Got MediaPipeline");
 				pipeline.create('RecorderEndpoint', {uri : file_uri}, function(error, recorder) {
-					if (error)
-						onError(error);
+					if (error) return onError(error);
 
 					console.log("Got RecorderEndpoint");
 					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
-						if (error)
-							onError(error);
+						if (error) return onError(error);
 						console.log("Got WebRtcEndpoint");
 						webRtc.connect(recorder, function(error) {
-							if (error)
-								onError(error);
+							if (error) return onError(error);
 							console.log("Connected");
 							recorder.record(function(error) {
-								if (error)
-									onError(error);
+								if (error) return onError(error);
 								console.log("record");
 
 								webRtc.connect(webRtc, function(error) {
-									if (error)
-										onError(error);
+									if (error) return onError(error);
 									console.log("Second connect");
 								});
 
 								webRtc.processOffer(offer, function(error,
 										answer) {
-									if (error)
-										onError(error);
+									if (error) return onError(error);
 									console.log("offer");
 									webRtcPeer.processSdpAnswer(answer);
 								});
@@ -100,7 +94,8 @@ function startPlaying() {
 			onPlayOffer, onError);
 
 	function onPlayOffer(offer) {
-		KwsMedia(ws_uri, function(kwsMedia) {
+		KwsMedia(ws_uri, function(error, kwsMedia) {
+			if (error) return onError(error);
 			kwsMedia.create('MediaPipeline', function(error, pipeline) {
 				pipeline.create('WebRtcEndpoint', function(error, webRtc) {
 					webRtc.processOffer(offer, function(error, answer) {
@@ -116,11 +111,9 @@ function startPlaying() {
 							});
 
 							player.connect(webRtc, function(error) {
-								if (error)
-									onError(error);
+								if (error) return onError(error);
 								player.play(function(error) {
-									if (error)
-										onError(error);
+									if (error) return onError(error);
 									console.log("Playing ...");
 								});
 							});

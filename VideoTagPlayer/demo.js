@@ -13,7 +13,6 @@
 *
 */
 
-
 const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket'; //requires Internet connectivity
 
 const file_uri = "http://files.kurento.org/video/sintel.webm"; //requires Internet connectivity
@@ -27,9 +26,11 @@ function startPlaying() {
 	console.log("Strarting video playing ...");
 	var videoInput = document.getElementById("videoInput");
 
-	KwsMedia(ws_uri, function(kwsMedia){
+	KwsMedia(ws_uri, function(error, kwsMedia){
+		if(error) return onError(error);
+
 		kwsMedia.create("MediaPipeline", function(error, pipeline){
-			if(error) onError(error);
+			if(error) return onError(error);
 
 			document.getElementById("stopButton").addEventListener("click", function(event){
 				pipeline.release();
@@ -37,14 +38,14 @@ function startPlaying() {
 			});
 
 			pipeline.create("HttpGetEndpoint", function(error, httpGetEndpoint){
-				if(error) onError(error);
+				if(error) return onError(error);
 
 				pipeline.create("PlayerEndpoint", {uri : file_uri}, function(error, playerEndpoint){
-					if(error) onError(error);
+					if(error) return onError(error);
 					playerEndpoint.connect(httpGetEndpoint, function(error){
-						if(error) onError(error);
+						if(error) return onError(error);
 						httpGetEndpoint.getUrl(function(error, url){
-							if(error) onError(error);
+							if(error) return onError(error);
 							videoInput.src = url;
 						});
 
@@ -54,7 +55,7 @@ function startPlaying() {
 						});
 
 						playerEndpoint.play(function(error){
-							if(error) onError(error);
+							if(error) return onError(error);
 						});
 					});
 				});

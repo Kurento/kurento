@@ -21,7 +21,7 @@
 
 const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket'; // requires Internet connectivity
 
-const hat_uri =	"http://cdn1.iconfinder.com/data/icons/ColoBrush_Pack/128/santa-hat.png"; //requires Internet connectivity
+const hat_uri =	"http://files.kurento.org/imgs/santa-hat.png"; //requires Internet connectivity
 
 
 window.addEventListener("load", function(event){

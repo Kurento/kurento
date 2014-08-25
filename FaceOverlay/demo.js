@@ -34,11 +34,11 @@ function startVideo() {
 
 	function onOffer(offer) {
 		console.log("onOffer");
-		KwsMedia(ws_uri, function(kwsMedia) {
+		KwsMedia(ws_uri, function(error, kwsMedia) {
+			if (error) return onError(error);
 
 			kwsMedia.create("MediaPipeline", function(error, pipeline) {
-				if (error)
-					onError(error);
+				if (error) return onError(error);
 
 				console.log("Got MediaPipeline");
 
@@ -50,60 +50,49 @@ function startVideo() {
 				});
 
 				pipeline.create("WebRtcEndpoint", function(error, webRtc) {
-					if (error)
-						onError(error);
+					if (error) return onError(error);
 
 					console.log("Got WebRtcEndpoint");
 
-					pipeline.create("FaceOverlayFilter",
-							function(error, filter) {
-								if (error)
-									onError(error);
+					pipeline.create("FaceOverlayFilter", function(error, filter) {
+						if (error) return onError(error);
 
-								console.log("Got FaceOverlayFilter");
-								var offsetXPercent = -0.4;
-								var offsetYPercent = -1;
-								var widthPercent = 1.5;
-								var heightPercent = 1.5;
+						console.log("Got FaceOverlayFilter");
+						var offsetXPercent = -0.4;
+						var offsetYPercent = -1;
+						var widthPercent = 1.5;
+						var heightPercent = 1.5;
 
-								console.log("Setting overlay image");
-								filter.setOverlayedImage(hat_uri, offsetXPercent,
-										offsetYPercent, widthPercent,
-										heightPercent, function(error) {
-											if (error)
-												onError(error);
-											console.log("Set overlay image");
-										});
-
-								console.log("Connecting ...");
-								webRtc.connect(filter, function(error) {
-									if (error)
-										onError(error);
-
-									console.log("WebRtcEndpoint --> filter");
-
-									filter.connect(webRtc, function(error) {
-										if (error)
-											onError(error);
-
-										console.log("Filter --> WebRtcEndpoint");
-									});
-								});
-
-								webRtc.processOffer(offer, function(error,
-										answer) {
-									if (error)
-										onError(error);
-
-									console.log("SDP answer obtained. Processing ...");
-									webRtcPeer.processSdpAnswer(answer);
-
-								});
-
+						console.log("Setting overlay image");
+						filter.setOverlayedImage(hat_uri, offsetXPercent,
+							offsetYPercent, widthPercent,
+							heightPercent, function(error) {
+								if (error) return onError(error);
+								console.log("Set overlay image");
 							});
+
+						console.log("Connecting ...");
+						webRtc.connect(filter, function(error) {
+							if (error) return onError(error);
+
+							console.log("WebRtcEndpoint --> filter");
+
+							filter.connect(webRtc, function(error) {
+								if (error) return onError(error);
+
+								console.log("Filter --> WebRtcEndpoint");
+							});
+						});
+
+						webRtc.processOffer(offer, function(error, answer) {
+							if (error) return onError(error);
+
+							console.log("SDP answer obtained. Processing ...");
+							webRtcPeer.processSdpAnswer(answer);
+						});
+					});
 				});
 			});
-
 		});
 	};
 };

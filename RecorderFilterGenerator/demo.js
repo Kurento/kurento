@@ -17,9 +17,9 @@ const ws_uri =	'ws://demo01.kurento.org:8888/thrift/ws/websocket'; //requires In
 
 const file_uri = 'file:///tmp/recorder_demo.webm'; //file to be stored in media server
 
-const hat_uri = "https://cdn1.iconfinder.com/data/icons/IconsLandVistaHalloween/PNG/128x128/Hat.png";
+const hat_uri = "http://files.kurento.org/imgs/Hat.png";
 
-const window_uri = "http://files.kurento.org/imgs//Brown_Monsters_40-01.png";
+const window_uri = "http://files.kurento.org/imgs/Brown_Monsters_40-01.png";
 
 const hover_window_uri = "http://files.kurento.org/imgs/Brown_Monsters_25-01.png";
 

@@ -45,8 +45,10 @@ function createPeer(callback)
   {
     console.log('Invoking SDP offer callback function');
 
-    KwsMedia(ws_uri, function(kwsMedia)
+    KwsMedia(ws_uri, function(error, kwsMedia)
     {
+      if(error) return callback(error);
+
       // Create pipeline
       kwsMedia.create('MediaPipeline', function(error, pipeline)
       {
