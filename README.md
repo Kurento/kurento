@@ -2,19 +2,26 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-KWS Tutorial
-============
-Kurento Web SDK demos
+Kurento JavaScript Tutorial
+===========================
+Kurento Client JavaScript demos
 
-This project contains a set of simple applications built with KWS APIs
-(kws-media-api and kws-utils).
+This project contains a set of simple applications built with JavaScript
+Kurento Client APIs (kurento-client-js and kurento-utils-js).
 
 The source code of this project can be cloned from the [GitHub repository].
 
 Installation instructions
 -------------------------
 
-Be sure to have installed [Bower] in your system:
+Be sure to have installed [Node.js] in your system:
+
+```bash
+sudo add-apt-repository ppa:chris-lea/node.js
+sudo apt-get update
+sudo apt-get install nodejs
+```
+Also be sure to have installed [Bower] in your system:
 
 ```bash
 sudo npm install -g bower
@@ -64,13 +71,10 @@ requirements of multimedia content application developers. These include:
 
 * Kurento Media Server (KMS). A full featured media server providing the
 capability to create and manage dynamic multimedia pipelines.
-* Kurento Media Framework (KMF). A Java server-side API providing the required
-abstractions for creating applications that manage multimedia content, calls
-and conferences involving audio, video and data information.
-* Kurento Web SDK (KWS). A client-side HTML5 and Javascript SDK for accessing
-KMF capabilities
-* Kurento Android SDK (KAS). A Java and native SDK allowing easy integration of
-KMF into any kind of Android application.
+* Kurento Control Server (KCS). Signaling server for KMS. It provides extra
+capabilities such as security, load balance, and so on.
+* Kurento Clients. Libraries to create applications with media capabilities.
+Kurento provides libraries for Java, browser JavaScript, and Node.js.
 
 Downloads
 ---------
@@ -90,4 +94,5 @@ Follow us on Twitter @[kurentoms].
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
+[Node.js]: http://nodejs.org/
 [website]: http://kurento.org
