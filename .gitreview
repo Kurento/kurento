@@ -1,5 +1,5 @@
 [gerrit]
 host=repository.kurento.com
 port=12345
-project=kws-tutorial.git
+project=kurento-tutorial-js.git
 defaultbranch=develop
