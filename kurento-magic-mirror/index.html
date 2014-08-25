@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<META http-equiv="Cache-Control" content="no-cache">
+<META http-equiv="Pragma" content="no-cache">
+<META http-equiv="Expires" content="0">
+<title>Kurento Demo: WebRTC in loopback (mirror) with filter</title>
+</head>
+<body>
+	<h1>Kurento Demo: WebRTC in loopback (mirror) with filter</h1>
+	<p>Instructions:</p>
+	<ol>
+		<li>Open this page with a browser compliant with WebRTC (Chrome,
+			Firefox).</li>
+		<li>Click on <i>Start</i> button.
+		</li>
+		<li>Grant the access to the camera and microphone. After the SDP
+			negotiation the loopback should start.</li>
+		<li>Click on <i>Stop</i> to finish the communication.
+		</li>
+	</ol>
+
+	<div style="float: left; margin: 5px;">
+		<h2>Local stream</h2>
+		<video id="videoInput" autoplay controls width="480px" height="360px"></video>
+	</div>
+	<div style="float: left; margin: 5px;">
+		<h2>Remote stream</h2>
+		<video id="videoOutput" autoplay controls width="480px" height="360px"></video>
+	</div>
+
+	<div style="clear: both;">
+		<input type="button" value="Start" onclick="start(); return false;">
+		<input type="button" value="Stop" onclick="stop(); return false;">
+	</div>
+	<div id="console"></div>
+
+	<script
+		src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
+	<script src="./bower_components/kws-media-api/js/kws-media-api.js"></script>
+	<script src="./bower_components/kws-utils/js/kws-utils.js"></script>
+	<script src="./console.js"></script>
+	<script src="./index.js"></script>
+
+</body>
+</html>
