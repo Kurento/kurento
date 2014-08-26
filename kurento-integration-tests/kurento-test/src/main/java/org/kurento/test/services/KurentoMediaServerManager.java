@@ -45,9 +45,6 @@ import freemarker.template.Template;
  */
 public class KurentoMediaServerManager {
 
-	private static final String PROJECT_PATH_PROP = "project.path";
-	private static final String PROJECT_PATH_DEFAULT = ".";
-
 	private static final String KURENTO_WORKSPACE_PROP = "kurento.workspace";
 	private static final String KURENTO_WORKSPACE_DEFAULT = "/tmp";
 
@@ -95,6 +92,10 @@ public class KurentoMediaServerManager {
 	private KurentoMediaServerManager() {
 	}
 
+	public void setTestDir(String testDir) {
+		this.testDir = testDir;
+	}
+
 	public void setTestClassName(String testClassName) {
 		this.testClassName = testClassName;
 	}
@@ -124,15 +125,10 @@ public class KurentoMediaServerManager {
 		debugOptions = PropertiesManager.getProperty(KURENTO_SERVER_DEBUG_PROP,
 				KURENTO_SERVER_DEBUG_DEFAULT);
 
-		testDir = PropertiesManager.getProperty(PROJECT_PATH_PROP,
-				PROJECT_PATH_DEFAULT) + "/target/surefire-reports/";
-
 		if (!workspace.endsWith("/")) {
 			workspace += "/";
 		}
 		log.debug("Local folder to store temporal files: {}", workspace);
-
-		KurentoServicesTestHelper.setTestDir(testDir);
 
 		if (rabbitMqAddress != null) {
 			log.info("Starting KMS with RabbitMQ: RabbitMQAddress:'{}'"
@@ -146,10 +142,8 @@ public class KurentoMediaServerManager {
 
 		createKurentoConf();
 
-		// String logFolder = testDir + testClassName;
-		// createFolder(logFolder);
-
-		File logFile = new File(workspace, "kms.log");
+		File logFile = new File(testDir + testClassName, testMethodName
+				+ "-kms.log");
 		KurentoServicesTestHelper.setServerLogFilePath(logFile);
 
 		log.debug("Log file: {}", logFile.getAbsolutePath());
@@ -200,13 +194,6 @@ public class KurentoMediaServerManager {
 			} catch (InterruptedException e) {
 				log.error("InterruptedException {}", e.getMessage());
 			}
-		}
-	}
-
-	private void createFolder(String folder) {
-		File folderFile = new File(folder);
-		if (!folderFile.exists()) {
-			folderFile.mkdirs();
 		}
 	}
 

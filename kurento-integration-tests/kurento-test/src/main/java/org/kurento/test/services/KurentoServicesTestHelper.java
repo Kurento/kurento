@@ -12,6 +12,7 @@ import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.rabbitmq.server.RabbitMqConnectorManager;
+import org.kurento.test.Shell;
 
 public class KurentoServicesTestHelper {
 
@@ -50,6 +51,9 @@ public class KurentoServicesTestHelper {
 
 	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";
 	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
+
+	private static final String PROJECT_PATH_PROP = "project.path";
+	private static final String PROJECT_PATH_DEFAULT = ".";
 
 	private static HttpServer httpServer;
 	private static KurentoMediaServerManager kms;
@@ -116,6 +120,11 @@ public class KurentoServicesTestHelper {
 	private static void startKurentoMediaServerIfNecessary() {
 		kmsAutostart = getProperty(KMS_AUTOSTART_PROP, KMS_AUTOSTART_DEFAULT);
 		kmsPrintLog = getProperty(KMS_PRINT_LOG_PROP, KMS_PRINT_LOG_DEFAULT);
+		testDir = getProperty(PROJECT_PATH_PROP, PROJECT_PATH_DEFAULT)
+				+ "/target/surefire-reports/";
+
+		String logFolder = testDir + testCaseName;
+		createFolder(logFolder);
 
 		switch (kmsAutostart) {
 		case AUTOSTART_FALSE_VALUE:
@@ -147,7 +156,8 @@ public class KurentoServicesTestHelper {
 		JsonRpcClient client = KurentoClientFactory
 				.createJsonRpcClient(MEDIA_CONNECTOR_PREFIX);
 
-		mediaConnector = new KurentoControlServerManager(client, getKmcHttpPort());
+		mediaConnector = new KurentoControlServerManager(client,
+				getKmcHttpPort());
 	}
 
 	public static void startKurentoMediaServer() {
@@ -176,6 +186,7 @@ public class KurentoServicesTestHelper {
 
 		kms.setTestClassName(testCaseName);
 		kms.setTestMethodName(testName);
+		kms.setTestDir(testDir);
 		kms.start();
 	}
 
@@ -282,5 +293,13 @@ public class KurentoServicesTestHelper {
 
 	public static File getServerLogFile() {
 		return logFile;
+	}
+
+	private static void createFolder(String folder) {
+		File folderFile = new File(folder);
+		if (!folderFile.exists()) {
+			folderFile.mkdirs();
+		}
+		Shell.run("chmod", "a+w", folder);
 	}
 }
