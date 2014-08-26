@@ -428,12 +428,12 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>0.9.0</version>
+         <version>5.0.0</version>
       </dependency> 
       <dependency> 
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId> 
-         <version>0.9.0</version>
+         <version>5.0.0</version>
       </dependency> 
    </dependencies>
 
