@@ -1,9 +1,194 @@
 package org.kurento.modulecreator;
 
+import com.github.zafarkhaja.semver.Parser;
+import com.github.zafarkhaja.semver.Version;
+import com.github.zafarkhaja.semver.expr.And;
+import com.github.zafarkhaja.semver.expr.Equal;
+import com.github.zafarkhaja.semver.expr.Expression;
+import com.github.zafarkhaja.semver.expr.ExpressionParser;
+import com.github.zafarkhaja.semver.expr.Greater;
+import com.github.zafarkhaja.semver.expr.GreaterOrEqual;
+import com.github.zafarkhaja.semver.expr.Less;
+import com.github.zafarkhaja.semver.expr.LessOrEqual;
+import com.github.zafarkhaja.semver.expr.Or;
+
 public class VersionManager {
 
 	private static final String DEV_SUFFIX = "-dev";
 	private static final int DEV_SUFFIX_LENGTH = DEV_SUFFIX.length();
+
+	public static String convertToMavenImport(String version) {
+
+		if (isDevelopmentVersion(version)) {
+			return removeDevSuffix(version) + "-SNAPSHOT";
+		}
+
+		Parser<Expression> parser = ExpressionParser.newInstance();
+
+		Expression expression = parser.parse(version);
+
+		String mavenVersion = convertToMavenExpression(expression);
+
+		if (mavenVersion == null) {
+			throw new KurentoModuleCreatorException("Version '" + version
+					+ "' in import not supported");
+		}
+
+		return mavenVersion;
+	}
+
+	private static String convertToMavenExpression(Expression expression) {
+
+		if (expression instanceof Equal) {
+			return ((Equal) expression).getParsedVersion().toString();
+		} else if (expression instanceof Less) {
+			return "(," + ((Less) expression).getParsedVersion() + ")";
+		} else if (expression instanceof LessOrEqual) {
+			return "(," + ((LessOrEqual) expression).getParsedVersion() + "]";
+		} else if (expression instanceof Greater) {
+			return "(" + ((Greater) expression).getParsedVersion() + ",)";
+		} else if (expression instanceof GreaterOrEqual) {
+			return "[" + ((GreaterOrEqual) expression).getParsedVersion()
+					+ ",)";
+		} else if (expression instanceof And) {
+
+			And and = (And) expression;
+			Expression left = and.getLeft();
+			Expression right = and.getRight();
+
+			Expression greater = getGreater(left, right);
+			Expression less = getLess(left, right);
+
+			if (greater == null || less == null) {
+				return null;
+			}
+
+			StringBuilder mavenVersion = new StringBuilder();
+			Version greaterVersion = null;
+			if (greater instanceof Greater) {
+				mavenVersion.append("(");
+				greaterVersion = ((Greater) greater).getParsedVersion();
+			} else {
+				mavenVersion.append("[");
+				greaterVersion = ((GreaterOrEqual) greater).getParsedVersion();
+			}
+			mavenVersion.append(greaterVersion).append(",");
+
+			Version lessVersion = null;
+			String postFix;
+			if (less instanceof Less) {
+				postFix = ")";
+				lessVersion = ((Less) less).getParsedVersion();
+			} else {
+				postFix = "]";
+				lessVersion = ((LessOrEqual) less).getParsedVersion();
+			}
+			mavenVersion.append(lessVersion);
+			mavenVersion.append(postFix);
+
+			return mavenVersion.toString();
+
+		} else if (expression instanceof Or) {
+			String left = convertToMavenExpression(((Or) expression).getLeft());
+			String right = convertToMavenExpression(((Or) expression)
+					.getRight());
+
+			if (left != null && right != null) {
+				return left + "," + right;
+			}
+		}
+
+		return null;
+	}
+
+	private static Expression getLess(Expression left, Expression right) {
+		if (left instanceof Less || left instanceof LessOrEqual) {
+			return left;
+		}
+
+		if (right instanceof Less || right instanceof LessOrEqual) {
+			return right;
+		}
+
+		return null;
+	}
+
+	private static Expression getGreater(Expression left, Expression right) {
+		if (left instanceof Greater || left instanceof GreaterOrEqual) {
+			return left;
+		}
+
+		if (right instanceof Greater || right instanceof GreaterOrEqual) {
+			return right;
+		}
+
+		return null;
+	}
+
+	public static String convertToNpmImport(String gitRepo, String version) {
+		if (isDevelopmentVersion(version)) {
+
+			if (gitRepo == null) {
+				version = removeDevSuffix(version);
+			} else {
+				version = gitRepo + "#develop";
+			}
+		}
+
+		Parser<Expression> parser = ExpressionParser.newInstance();
+
+		Expression expression = parser.parse(version);
+
+		String npmVersion = convertToNpmExpression(expression);
+
+		if (npmVersion == null) {
+			throw new KurentoModuleCreatorException("Version '" + version
+					+ "' in import not supported");
+		}
+
+		return npmVersion;
+	}
+
+	private static String convertToNpmExpression(Expression expression) {
+
+		if (expression instanceof Equal) {
+			return ((Equal) expression).getParsedVersion().toString();
+		} else if (expression instanceof Less) {
+			return "<" + ((Less) expression).getParsedVersion();
+		} else if (expression instanceof LessOrEqual) {
+			return "<=" + ((LessOrEqual) expression).getParsedVersion();
+		} else if (expression instanceof Greater) {
+			return ">" + ((Greater) expression).getParsedVersion();
+		} else if (expression instanceof GreaterOrEqual) {
+			return ">=" + ((GreaterOrEqual) expression).getParsedVersion();
+
+		} else if (expression instanceof And) {
+
+			And and = (And) expression;
+			String left = convertToNpmExpression(and.getLeft());
+			String right = convertToNpmExpression(and.getRight());
+
+			if (left != null && right != null) {
+				return left + " " + right;
+			}
+
+			return null;
+
+		} else if (expression instanceof Or) {
+
+			Or or = (Or) expression;
+			String left = convertToNpmExpression(or.getLeft());
+			String right = convertToNpmExpression(or.getRight());
+
+			if (left != null && right != null) {
+				return left + " || " + right;
+			}
+
+			return null;
+		}
+
+		return null;
+	}
 
 	public static String convertToMaven(String version) {
 		if (isDevelopmentVersion(version)) {
@@ -12,7 +197,7 @@ public class VersionManager {
 		return version;
 	}
 
-	public static String convertToNPM(String gitRepo, String version) {
+	public static String convertToNpm(String gitRepo, String version) {
 		if (isDevelopmentVersion(version)) {
 
 			if (gitRepo == null) {
@@ -78,23 +263,23 @@ public class VersionManager {
 		}
 	}
 
-	public static boolean devCompatibleVersion(String requiredVersion,
-			String providedVersion) {
+	public static boolean devCompatibleVersion(String importVersion,
+			String depVersion) {
 
-		if (requiredVersion.equals(providedVersion)) {
+		if (importVersion.equals(depVersion)) {
 			return true;
 		}
 
-		if (isReleaseVersion(requiredVersion)) {
+		if (isReleaseVersion(importVersion)) {
 			return false;
 		} else {
-			requiredVersion = removeDevSuffix(requiredVersion);
-			if (isDevelopmentVersion(providedVersion)) {
-				providedVersion = removeDevSuffix(providedVersion);
+			importVersion = removeDevSuffix(importVersion);
+			if (isDevelopmentVersion(depVersion)) {
+				depVersion = removeDevSuffix(depVersion);
 			}
-			return versionCompare(requiredVersion, providedVersion) <= 0
-					&& versionCompare(providedVersion,
-							incMayorVersion(requiredVersion)) < 0;
+			return versionCompare(importVersion, depVersion) <= 0
+					&& versionCompare(depVersion,
+							incMayorVersion(importVersion)) < 0;
 		}
 	}
 
@@ -107,5 +292,23 @@ public class VersionManager {
 			sb.append(".0");
 		}
 		return sb.toString();
+	}
+
+	public static boolean compatibleVersion(String importVersion,
+			String depVersion) {
+
+		if (importVersion.equals(depVersion)) {
+			return true;
+		}
+
+		if (isDevelopmentVersion(importVersion)) {
+			return false;
+
+		} else {
+
+			Version depVersionV = Version.valueOf(depVersion);
+
+			return depVersionV.satisfies(importVersion);
+		}
 	}
 }

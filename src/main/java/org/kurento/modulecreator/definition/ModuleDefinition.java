@@ -362,7 +362,8 @@ public class ModuleDefinition {
 						+ importEntry.getName()
 						+ "' not found in dependencies in any version");
 			} else {
-				if (!importEntry.getVersion().equals(
+
+				if (!VersionManager.compatibleVersion(importEntry.getVersion(),
 						dependencyModule.getVersion())) {
 
 					if (VersionManager.devCompatibleVersion(
@@ -388,13 +389,14 @@ public class ModuleDefinition {
 			importEntry.setModule(dependencyModule);
 
 			if (importEntry.getMavenVersion() == null) {
-				importEntry.setMavenVersion(dependencyModule.getCode().getApi()
-						.get("java").get("mavenVersion"));
+				importEntry.setMavenVersion(VersionManager
+						.convertToMavenImport(importEntry.getVersion()));
 			}
 
 			if (importEntry.getNpmVersion() == null) {
-				importEntry.setNpmVersion(dependencyModule.getCode().getApi()
-						.get("js").get("npmVersion"));
+				importEntry.setNpmVersion(VersionManager.convertToNpmImport(
+						dependencyModule.getCode().getApi().get("js")
+								.get("npmGit"), importEntry.getVersion()));
 			}
 		}
 	}

@@ -31,7 +31,7 @@ public class Code {
 		String npmGit = module.getCode().getApi().get("js").get("npmGit");
 
 		putDefault(api, "js", "npmVersion",
-				VersionManager.convertToNPM(npmGit, module.getVersion()));
+				VersionManager.convertToNpm(npmGit, module.getVersion()));
 
 		putDefault(api, "js", "npmDescription", "");
 
