@@ -140,6 +140,9 @@ function KurentoClient(ws_uri, options, callback)
 
   options = options || {};
 
+  var failAfter = options.failAfter
+  if(failAfter == undefined) failAfter = 5
+
 
   var objects = {};
 
@@ -207,7 +210,7 @@ function KurentoClient(ws_uri, options, callback)
 
   // Reconnect websockets
 
-  var re = reconnect(function(ws_stream)
+  var re = reconnect({failAfter: failAfter}, function(ws_stream)
   {
     rpc.transport = ws_stream;
   })
