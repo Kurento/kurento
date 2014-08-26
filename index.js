@@ -227,8 +227,16 @@ function KurentoClient(ws_uri, options, callback)
   {
     return new Promise(function(resolve, reject)
     {
+      function removeListeners()
+      {
+        re.removeListener('connection', success);
+        re.removeListener('fail',       failure);
+      }
+
       function success()
       {
+        removeListeners()
+
         var result;
 
         if(onFulfilled)
@@ -245,6 +253,8 @@ function KurentoClient(ws_uri, options, callback)
       };
       function failure()
       {
+        removeListeners()
+
         var result;
 
         if(onRejected)
@@ -560,4 +570,3 @@ KurentoClient.register(require('kurento-client-filters'))
 
 module.exports = KurentoClient;
 KurentoClient.KurentoClient = KurentoClient;
-
