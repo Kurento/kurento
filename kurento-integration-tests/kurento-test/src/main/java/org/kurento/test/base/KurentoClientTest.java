@@ -12,7 +12,6 @@
  * Lesser General Public License for more details.
  *
  */
-
 package org.kurento.test.base;
 
 import org.junit.After;
@@ -24,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Base for tests using kurento-client.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

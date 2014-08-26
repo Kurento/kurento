@@ -24,10 +24,6 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
@@ -110,10 +106,10 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 		recorderEP.release();
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				FILE_SCHEMA + getDefaultFileForRecording()).build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
-				.build();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, FILE_SCHEMA
+				+ getDefaultFileForRecording()).build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 		playerEP.connect(httpEP);
 
 		// Test execution #2. Play the recorded video

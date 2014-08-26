@@ -23,9 +23,6 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
@@ -69,8 +66,8 @@ public class RecorderPlayerTest extends BrowserKurentoClientTest {
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/green.webm").build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
-				.build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
 				FILE_SCHEMA + getDefaultFileForRecording()).build();
 		playerEP.connect(httpEP);
@@ -80,10 +77,10 @@ public class RecorderPlayerTest extends BrowserKurentoClientTest {
 		launchBrowser(browserType, httpEP, playerEP, recorderEP);
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp,
-				FILE_SCHEMA + getDefaultFileForRecording()).build();
-		HttpGetEndpoint httpEP2 = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
-				.build();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp, FILE_SCHEMA
+				+ getDefaultFileForRecording()).build();
+		HttpGetEndpoint httpEP2 = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 		playerEP2.connect(httpEP2);
 
 		// Test execution #2. Play the recorded video

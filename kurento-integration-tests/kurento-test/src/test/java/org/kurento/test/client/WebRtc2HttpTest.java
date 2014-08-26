@@ -27,10 +27,6 @@ import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
 
 /**
  * <strong>Description</strong>: WebRTC in loopback, and connected to this
@@ -62,7 +58,8 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 	public void testWebRtc2Http() throws Exception {
 		// Media Pipeline
 		final MediaPipeline mp = kurentoClient.createMediaPipeline();
-		final WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+		final WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp)
+				.build();
 		webRtcEndpoint.connect(webRtcEndpoint);
 
 		// Test execution

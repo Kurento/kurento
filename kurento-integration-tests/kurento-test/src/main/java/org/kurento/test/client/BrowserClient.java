@@ -30,6 +30,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.SystemUtils;
+import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.factory.KurentoProperties;
+import org.kurento.test.base.GridBrowserKurentoClientTest;
+import org.kurento.test.services.AudioChannel;
+import org.kurento.test.services.KurentoServicesTestHelper;
+import org.kurento.test.services.Node;
+import org.kurento.test.services.Recorder;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -43,13 +50,6 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.client.WebRtcEndpoint;
-import org.kurento.client.factory.KurentoProperties;
-import org.kurento.test.base.GridBrowserKurentoClientTest;
-import org.kurento.test.services.AudioChannel;
-import org.kurento.test.services.KurentoServicesTestHelper;
-import org.kurento.test.services.Node;
-import org.kurento.test.services.Recorder;
 
 /**
  * Class that models the video tag (HTML5) in a web browser; it uses Selenium to
@@ -98,8 +98,7 @@ public class BrowserClient implements Closeable {
 		timeout = 60; // default (60 seconds)
 		maxDistance = 60.0; // default distance (for color comparison)
 
-		String hostAddress = KurentoProperties.getThriftKcsAddress()
-				.getHost();
+		String hostAddress = KurentoProperties.getThriftKcsAddress().getHost();
 
 		// Setup Selenium
 		initDriver(hostAddress);

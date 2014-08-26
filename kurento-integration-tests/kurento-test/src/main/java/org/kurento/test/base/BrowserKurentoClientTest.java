@@ -12,7 +12,6 @@
  * Lesser General Public License for more details.
  *
  */
-
 package org.kurento.test.base;
 
 import org.junit.Before;
@@ -22,7 +21,7 @@ import org.kurento.test.services.KurentoServicesTestHelper;
 
 /**
  * Base for tests using kurento-client and Jetty Http Server.
- *
+ * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3

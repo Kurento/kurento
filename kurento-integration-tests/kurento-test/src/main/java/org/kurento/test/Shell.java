@@ -18,16 +18,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 
+import org.kurento.commons.exception.KurentoException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.io.CharStreams;
 
-import org.kurento.commons.exception.KurentoException;
-
 /**
  * Local shell.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */

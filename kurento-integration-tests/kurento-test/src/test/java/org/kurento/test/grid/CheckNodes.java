@@ -1,5 +1,3 @@
-package org.kurento.test.grid;
-
 /*
  * (C) Copyright 2014 Kurento (http://kurento.org/)
  *
@@ -14,6 +12,8 @@ package org.kurento.test.grid;
  * Lesser General Public License for more details.
  *
  */
+package org.kurento.test.grid;
+
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.IOException;
@@ -22,13 +22,12 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.kurento.test.services.RemoteHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.CharStreams;
-
-import org.kurento.test.services.RemoteHost;
 
 /**
  * Meta test for assessing the state of hosts for nodes in Selenium Grid.

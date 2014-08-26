@@ -18,7 +18,7 @@ import org.kurento.test.Shell;
 
 /**
  * Fake cam singleton.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  * @see <a href="https://github.com/umlaeute/v4l2loopback">v4l2loopback</a>

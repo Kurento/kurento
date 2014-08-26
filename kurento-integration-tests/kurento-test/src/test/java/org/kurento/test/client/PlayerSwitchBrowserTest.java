@@ -20,9 +20,6 @@ import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
 
 /**
  * <strong>Description</strong>: HTTP Player switching videos.<br/>
@@ -56,8 +53,8 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 				"http://files.kurento.org/video/10sec/smpte.webm").build();
 		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/ball.webm").build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp).terminateOnEOS()
-				.build();
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+				.terminateOnEOS().build();
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()

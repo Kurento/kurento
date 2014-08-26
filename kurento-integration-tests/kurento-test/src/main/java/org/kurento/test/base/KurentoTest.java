@@ -21,10 +21,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kurento.commons.testing.IntegrationTests;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base for tests (Content and Media API).

@@ -22,10 +22,6 @@ import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.client.Browser;
-import org.kurento.test.client.BrowserClient;
-import org.kurento.test.client.Client;
-import org.kurento.test.client.WebRtcChannel;
 
 /**
  * <strong>Description</strong>: WebRTC to HTTP switch. Test KMS is able to
@@ -57,7 +53,8 @@ public class WebRtc2HttpSwitchTest extends BrowserKurentoClientTest {
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint1 = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEndpoint2 = new WebRtcEndpoint.Builder(mp).build();
-		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(mp).build();
+		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(mp)
+				.build();
 
 		webRtcEndpoint1.connect(webRtcEndpoint1);
 		webRtcEndpoint2.connect(webRtcEndpoint2);
