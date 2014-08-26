@@ -69,12 +69,13 @@ standards.
 This platform has several APIs and components which provide solutions to the
 requirements of multimedia content application developers. These include:
 
-* Kurento Media Server (KMS). A full featured media server providing the
-capability to create and manage dynamic multimedia pipelines.
-* Kurento Control Server (KCS). Signaling server for KMS. It provides extra
-capabilities such as security, load balance, and so on.
-* Kurento Clients. Libraries to create applications with media capabilities.
-Kurento provides libraries for Java, browser JavaScript, and Node.js.
+  * Kurento Media Server (KMS). A full featured media server providing
+    the capability to create and manage dynamic multimedia pipelines.
+  * Kurento Control Server (KCS). Signaling server for KMS. It provides
+    extra capabilities such as security, load balance, and so on.
+  * Kurento Clients. Libraries to create applications with media
+    capabilities. Kurento provides libraries for Java, browser JavaScript,
+    and Node.js.
 
 Downloads
 ---------
@@ -90,7 +91,7 @@ Follow us on Twitter @[kurentoms].
 [Bower]: http://bower.io
 [co]: https://github.com/visionmedia/co
 [GitHub Kurento group]: https://github.com/kurento
-[GitHub repository]: https://github.com/kurento/kws-tutorial
+[GitHub repository]: https://github.com/Kurento/kurento-tutorial-js
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
