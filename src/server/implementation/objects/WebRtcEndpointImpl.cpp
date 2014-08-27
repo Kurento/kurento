@@ -84,8 +84,8 @@ getPemCertificate (const boost::property_tree::ptree &conf)
       conf.get<std::string> ("modules.kurento.WebRtcEndpoint.pemCertificate") );
 
     if (pem_certificate_file_name.is_relative() ) {
-      pem_certificate_file_name = pem_certificate_file_name /
-                                  boost::filesystem::path (conf.get<std::string> ("configPath") );
+      pem_certificate_file_name = boost::filesystem::path (
+                                    conf.get<std::string> ("configPath") ) / pem_certificate_file_name;
     }
 
     pemCertificate = std::shared_ptr <std::string> (new std::string (
