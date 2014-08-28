@@ -31,7 +31,6 @@ This web application is a videophone based on `WebRTC`:term: technology.
    Node.js </tutorials/node/tutorial-2-one2one>
    Browser JavaScript </tutorials/js/tutorial-2-one2one>
 
-
 Tutorial 3 - One to one video call with recording and filtering
 ===============================================================
 
@@ -39,7 +38,12 @@ This is an enhanced version of the previous application. It uses the following
 Kurento capabilities: the recording of the video communication, and also an
 augmented reality filter.
 
-Tutorial: Java, Node.js, Browser JavaScript
+.. toctree::
+   :maxdepth: 1
+
+   Java </tutorials/java/tutorial-3-one2one-adv>
+   Node.js </tutorials/node/tutorial-3-one2one-adv>
+   Browser JavaScript </tutorials/js/tutorial-3-one2one-adv>
 
 Tutorial 4 - Group video call
 =============================
