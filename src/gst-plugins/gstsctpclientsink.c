@@ -535,6 +535,12 @@ gst_sctp_client_sink_init (GstSCTPClientSink * self)
   kms_sctp_base_rpc_set_event_function (KMS_SCTP_BASE_RPC (self->priv->
           clientrpc), (KmsEventFunction) gst_sctp_client_sink_remote_event, self,
       NULL);
+
+  /* render buffers as fast as possible without using timestamps */
+  gst_base_sink_set_sync (GST_BASE_SINK (self), FALSE);
+
+  /* Do not send QOS event so they will be sent from original sink */
+  gst_base_sink_set_qos_enabled (GST_BASE_SINK (self), FALSE);
 }
 
 gboolean
