@@ -2,7 +2,7 @@
 Tutorial 2 - One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on a one to one video call using `WebRTC`:term:
+This web application consists on an one to one video call using `WebRTC`:term:
 technology. In other words, this application is similar to a phone but also
 with video. The following picture shows an screenshot of this demo running in a
 web browser:
@@ -12,7 +12,7 @@ web browser:
    :alt:     One to one video call screenshot
    :width: 600px
 
-The interface of the application (a HTML web page) is composed by two HTML5
+The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local stream) and other for
 the other peer in the call (the remote stream). If two users, A and B, are
 using the application, the media flows in the following way: The video camera
@@ -110,6 +110,7 @@ In the following figure you can see a class diagram of the server side code:
    One2OneCallApp -> UserRegistry;
    One2OneCallApp -> CallHandler;
    One2OneCallApp -> KurentoClient; 
+   One2OneCallApp -> CallMediaPipeline;
    CallHandler -> KurentoClient [constraint = false]
    UserRegistry -> UserSession [headlabel="*",  labelangle=60]
 
@@ -120,34 +121,35 @@ Bean.
 
 .. sourcecode:: java
 
-    @Configuration
-    @EnableWebSocket
-    @EnableAutoConfiguration
-    public class One2OneCallApp implements WebSocketConfigurer {
+   @Configuration
+   @EnableWebSocket
+   @EnableAutoConfiguration
+   public class One2OneCallApp implements WebSocketConfigurer {
 
-        public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-            registry.addHandler(callHandler(), "/call");
-        }
-        
-        @Bean
-        public CallHandler callHandler() {
-            return new CallHandler();
-        }
-        
-        @Bean
-        public UserRegistry registry() {
-            return new UserRegistry();
-        }
+      @Bean
+      public CallHandler callHandler() {
+         return new CallHandler();
+      }
 
-        @Bean
-        public KurentoClient kurentoClient() {
-            return KurentoClient.create("ws://localhost:8888");
-        }
+      @Bean
+      public UserRegistry registry() {
+         return new UserRegistry();
+      }
 
-        public static void main(String[] args) throws Exception {
-            new SpringApplication(One2OneCallApp.class).run(args);
-        }
-    }
+      @Bean
+      public KurentoClient kurentoClient() {
+         return KurentoClient.create("ws://localhost:8888/kurento");
+      }
+
+      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+         registry.addHandler(callHandler(), "/call");
+      }
+
+      public static void main(String[] args) throws Exception {
+         new SpringApplication(One2OneCallApp.class).run(args);
+      }
+
+   }
 
 This web application follows *Single Page Application* architecture
 (`SPA`:term:) and uses a `WebSocket`:term: to communicate client with server by
@@ -241,25 +243,24 @@ acceptance message is sent to it.
 .. sourcecode :: java
 
    private void register(WebSocketSession session, JsonObject jsonMessage)
-                throws IOException {
+         throws IOException {
+      String name = jsonMessage.getAsJsonPrimitive("name").getAsString();
 
-            String name = jsonMessage.getAsJsonPrimitive("name").getAsString();
+      UserSession caller = new UserSession(session, name);
+      String responseMsg = "accepted";
+      if (name.isEmpty()) {
+         responseMsg = "rejected: empty user name";
+      } else if (registry.exists(name)) {
+         responseMsg = "rejected: user '" + name + "' already registered";
+      } else {
+         registry.register(caller);
+      }
 
-            UserSession caller = new UserSession(session, name);
-            String responseMsg = "accepted";
-            if (name.isEmpty()) {
-                responseMsg = "rejected: empty user name";
-            } else if (registry.exists(name)) {
-                responseMsg = "rejected: user '" + name + "' already registered";
-            } else {
-                registry.register(caller);
-            }
-
-            JsonObject response = new JsonObject();
-            response.addProperty("id", "resgisterResponse");
-            response.addProperty("response", responseMsg);
-            caller.sendMessage(response);
-        }
+      JsonObject response = new JsonObject();
+      response.addProperty("id", "resgisterResponse");
+      response.addProperty("response", responseMsg);
+      caller.sendMessage(response);
+   }
            
 In the ``call`` method, the server checks if there are a registered user with
 the name specified in ``to`` message attribute and send an ``incommingCall``
@@ -356,7 +357,7 @@ The media logic in this demo is implemented in the class
 `CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/CallMediaPipeline.java>`_.
 As you can see, the media pipeline of this demo is quite simple: two
 ``WebRtcEndpoint`` elements directly interconnected. Please take note that the
-WebRtc enpoints needs to be connected twice, one for each media direction.
+WebRtc endpoints needs to be connected twice, one for each media direction.
 
 .. sourcecode:: java
 
@@ -393,10 +394,10 @@ Client-Side
 ===========
 
 Let's move now to the client-side of the application. To call the previously
-created WebSocket service in the server-side, we use JavaScript class
-``WebSocket``. In addition, we use an specific Kurento JavaScript library
-called **kurento-utils.js** to simplify the WebRTC interaction with the server.
-These libraries are linked in the
+created WebSocket service in the server-side, we use the JavaScript class
+``WebSocket``. We use an specific Kurento JavaScript library called
+**kurento-utils.js** to simplify the WebRTC interaction with the server. These
+libraries are linked in the
 `index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/resources/static/index.html>`_
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/resources/static/js/index.js>`_.

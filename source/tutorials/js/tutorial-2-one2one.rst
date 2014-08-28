@@ -16,7 +16,7 @@ web browser:
    :alt:     One to one video call screenshot
    :width: 600px
 
-The interface of the application (a HTML web page) is composed by two HTML5
+The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local stream) and other for
 the other peer in the call (the remote stream). If two users, A and B, are
 using the application, the media flows in the following way: The video camera

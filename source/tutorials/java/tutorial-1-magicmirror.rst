@@ -11,7 +11,7 @@ picture shows an screenshot of this demo running in a web browser:
    :alt:     Loopback video call with filtering screenshot :width: 600px
    :width: 600px
 
-The interface of the application (a HTML web page) is composed by two HTML5
+The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local client-side stream) and
 other for the mirror (the remote stream). The video camera stream is sent to
 the Kurento Media Server, processed and then is returned to the client as a
