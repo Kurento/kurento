@@ -352,6 +352,7 @@ kms_scp_base_rpc_send_query_request (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f
     guint32 req_id, GCancellable * cancellable,
     GError ** err)
 {
+  guint32 stream_id;
   KmsPendingReq *req;
   KmsAssembler *assembler = NULL;
 
@@ -370,7 +371,9 @@ kms_scp_base_rpc_send_query_request (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f
     return NULL;
   }
 
-  if (!kms_scp_base_rpc_send_fragments (baserpc, f, QUERY_STREAM,
+  stream_id = (kms_fragmenter_is_serialized (f)) ? BUFFER_STREAM : QUERY_STREAM;
+
+  if (!kms_scp_base_rpc_send_fragments (baserpc, f, stream_id,
           DEFAULT_TIMEOUT, cancellable, err)) {
     KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
     return NULL;
@@ -474,7 +477,7 @@ kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
     GCancellable * cancellable, GError ** err)
 {
   KmsFragmenter *f;
-  guint32 req_id;
+  guint32 req_id, stream_id;
   gboolean ret;
 
   g_return_val_if_fail (baserpc != NULL, FALSE);
@@ -497,7 +500,9 @@ kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
     goto done;
   }
 
-  ret = kms_scp_base_rpc_send_fragments (baserpc, f, EVENT_STREAM,
+  stream_id = (kms_fragmenter_is_serialized (f)) ? BUFFER_STREAM : EVENT_STREAM;
+
+  ret = kms_scp_base_rpc_send_fragments (baserpc, f, stream_id,
       DEFAULT_TIMEOUT, cancellable, err);
 
 done:
