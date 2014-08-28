@@ -276,6 +276,7 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (src);
   GstQuery *rsp_query = NULL;
   GError *err = NULL;
+  gboolean ret;
 
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:
@@ -308,6 +309,7 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
       gst_query_set_caps_result (query, copy);
       gst_caps_unref (copy);
 
+      ret = TRUE;
       break;
     }
     case GST_QUERY_ACCEPT_CAPS:{
@@ -316,15 +318,23 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
       gst_query_parse_accept_caps_result (rsp_query, &result);
       gst_query_set_accept_caps_result (query, result);
 
+      ret = TRUE;
       break;
     }
     case GST_QUERY_URI:{
       gchar *uri;
 
       gst_query_parse_uri (rsp_query, &uri);
+
+      if (uri == NULL) {
+        ret = FALSE;
+        break;
+      }
+
       gst_query_set_uri (query, uri);
       g_free (uri);
 
+      ret = TRUE;
       break;
     }
     default: {
@@ -339,7 +349,7 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
 
   GST_DEBUG ("<< %" GST_PTR_FORMAT, query);
 
-  return TRUE;
+  return ret;
 }
 
 static gboolean
