@@ -40,6 +40,9 @@ struct _KmsSCTPServerRPCPrivate
 {
   KmsSCTPConnection *server;
 
+  KmsSCTPClientConnected notif;
+  gpointer notif_data;
+
   GCond data_cond;
   GMutex data_mutex;
   gboolean err;
@@ -139,15 +142,19 @@ kms_sctp_sever_rpc_thread (KmsSCTPServerRPC * server)
     result = kms_sctp_connection_accept (server->priv->server, cancellable,
         &KMS_SCTP_BASE_RPC (server)->conn, &err);
 
+    if (server->priv->notif != NULL) {
+      server->priv->notif (server->priv->notif_data, err);
+    }
+
     if (result != KMS_SCTP_OK) {
       if (g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
         code = G_IO_ERROR_CANCELLED;
       }
+
       g_error_free (err);
       goto error;
     }
 
-    /* TODO: Notify client connection */
     KMS_SCTP_BASE_RPC_LOCK (server);
   }
 
@@ -201,7 +208,8 @@ error:
 
 gboolean
 kms_sctp_server_rpc_start (KmsSCTPServerRPC * server, gchar * host,
-    gint port, GCancellable * cancellable, GError ** err)
+    gint port, KmsSCTPClientConnected cb, gpointer data,
+    GCancellable * cancellable, GError ** err)
 {
   KmsSCTPConnection *conn = NULL;
 
@@ -237,6 +245,8 @@ create_task:
           (GstTaskFunction) kms_sctp_sever_rpc_thread, server, NULL)) {
     g_object_set_data (G_OBJECT (server), KMS_SCTP_SERVER_RPC_CANCELLABLE,
         cancellable);
+    server->priv->notif = cb;
+    server->priv->notif_data = data;
     KMS_SCTP_BASE_RPC_UNLOCK (server);
     return TRUE;
   }

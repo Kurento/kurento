@@ -180,6 +180,22 @@ gst_sctp_server_src_stop (GstBaseSrc * bsrc)
 }
 
 /* set up server */
+static void
+gst_sctp_server_src_client_connected (gpointer data, const GError * err)
+{
+  GstFlowReturn ret;
+
+  if (err != NULL) {
+    GST_ERROR_OBJECT (GST_BASE_SRC (data), "%s", err->message);
+    ret = GST_FLOW_NOT_LINKED;
+  } else {
+    GST_INFO ("SCTP Client connected");
+    ret = GST_FLOW_OK;
+  }
+
+  gst_base_src_start_complete (GST_BASE_SRC (data), ret);
+}
+
 static gboolean
 gst_sctp_server_src_start (GstBaseSrc * bsrc)
 {
@@ -189,8 +205,9 @@ gst_sctp_server_src_start (GstBaseSrc * bsrc)
   GST_DEBUG ("starting");
 
   if (kms_sctp_server_rpc_start (self->priv->serverrpc, self->priv->host,
-          self->priv->server_port, self->priv->cancellable, &err)) {
-    return TRUE;
+          self->priv->server_port, gst_sctp_server_src_client_connected, self,
+          self->priv->cancellable, &err)) {
+    return gst_base_src_start_wait (bsrc) == GST_FLOW_OK;
   }
 
   GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
@@ -516,6 +533,8 @@ gst_sctp_server_src_init (GstSCTPServerSrc * self)
   kms_sctp_base_rpc_set_event_function (KMS_SCTP_BASE_RPC (self->priv->
           serverrpc), (KmsEventFunction) gst_sctp_server_src_remote_event, self,
       NULL);
+
+  gst_base_src_set_async (GST_BASE_SRC (self), TRUE);
 }
 
 gboolean
