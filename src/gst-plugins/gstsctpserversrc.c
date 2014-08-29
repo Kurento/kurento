@@ -271,7 +271,7 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
 }
 
 static gboolean
-gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
+gst_sctp_server_src_query (GstBaseSrc * src, GstQuery * query)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (src);
   GstQuery *rsp_query = NULL;
@@ -359,7 +359,7 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
 }
 
 static gboolean
-gst_sctp_server_sink_event (GstBaseSrc * src, GstEvent * event)
+gst_sctp_server_src_event (GstBaseSrc * src, GstEvent * event)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (src);
   GError *err = NULL;
@@ -469,8 +469,8 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
   gstbasesrc_class->stop = gst_sctp_server_src_stop;
   gstbasesrc_class->unlock = gst_sctp_server_src_unlock;
   gstbasesrc_class->unlock_stop = gst_sctp_server_src_unlock_stop;
-  gstbasesrc_class->query = gst_sctp_server_sink_query;
-  gstbasesrc_class->event = gst_sctp_server_sink_event;
+  gstbasesrc_class->query = gst_sctp_server_src_query;
+  gstbasesrc_class->event = gst_sctp_server_src_event;
 
   gstpush_src_class = GST_PUSH_SRC_CLASS (klass);
   gstpush_src_class->create = gst_sctp_server_src_create;
