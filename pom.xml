@@ -88,23 +88,6 @@
 		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
 		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
 
-		<!-- maven-enforcer-plugin -->
-		<maven.min.version>3.0.3</maven.min.version>
-		<jdk.min.version>${maven.compiler.source}</jdk.min.version>
-
-		<!-- maven-eclipse-plugin -->
-		<downloadSources>true</downloadSources>
-		<downloadJavadocs>true</downloadJavadocs>
-
-		<!-- maven-pmd-plugin -->
-		<targetJdk>${maven.compiler.target}</targetJdk>
-
-		<!-- maven-release-plugin -->
-		<useReleaseProfile>false</useReleaseProfile>
-		<arguments>-Pkurento-release</arguments>
-
-		<!-- maven-assembly-plugin -->
-		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
 	</properties>
 
 	<build>
@@ -200,36 +183,6 @@
 			<id>kurento-release</id>
 			<build>
 				<plugins>
-					<!-- Create a source-release artifact that contains the fully buildable
-						project directory source structure. This should be released to the Maven
-						repository for each JBoss project release. -->
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-assembly-plugin</artifactId>
-						<dependencies>
-							<dependency>
-								<groupId>org.apache.apache.resources</groupId>
-								<artifactId>apache-source-release-assembly-descriptor</artifactId>
-								<version>1.0.4</version>
-							</dependency>
-						</dependencies>
-						<executions>
-							<execution>
-								<id>source-release-assembly</id>
-								<phase>package</phase>
-								<goals>
-									<goal>single</goal>
-								</goals>
-								<configuration>
-									<runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
-									<descriptorRefs>
-										<descriptorRef>${sourceReleaseAssemblyDescriptor}</descriptorRef>
-									</descriptorRefs>
-									<tarLongFileFormat>gnu</tarLongFileFormat>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-deploy-plugin</artifactId>
