@@ -551,6 +551,8 @@ gst_sctp_server_src_init (GstSCTPServerSrc * self)
       NULL);
 
   gst_base_src_set_async (GST_BASE_SRC (self), TRUE);
+  gst_base_src_set_live (GST_BASE_SRC (self), TRUE);
+  gst_base_src_set_do_timestamp (GST_BASE_SRC (self), TRUE);
 }
 
 gboolean
