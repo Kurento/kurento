@@ -1,17 +1,19 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.kurento.kws</groupId>
-	<artifactId>kurento-utils</artifactId>
-	<version>4.3.19-SNAPSHOT</version>
+	<groupId>org.kurento</groupId>
+	<artifactId>kurento-utils-js</artifactId>
+	<version>5.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Kurento Utils</name>
+	<name>Kurento Utils JS</name>
 	<description>
-		Kurento Web SDK Utils
+		Kurento Utils JS
 
-		The kurento-utils project contains a set of utilities that have been found
-		useful during the development of applications with the Kurento stack.
+		The kurento-utils-js project contains a set of utilities that have been
+		found useful during the development of applications with kurento-client-js
+		in the web browser.
 	</description>
 	<url>http://www.kurento.com/docs/${project.version}</url>
 
@@ -57,8 +59,8 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<maven.compiler.source>1.7</maven.compiler.source>
 
-		<!-- Options to override the compiler arguments directly on the compiler 
-			arument line to separate between what the IDE understands as the source level 
+		<!-- Options to override the compiler arguments directly on the compiler
+			arument line to separate between what the IDE understands as the source level
 			and what the Maven compiler actually use. -->
 		<maven.compiler.argument.target>${maven.compiler.target}</maven.compiler.argument.target>
 		<maven.compiler.argument.source>${maven.compiler.source}</maven.compiler.argument.source>
@@ -167,16 +169,16 @@
 	</build>
 
 	<profiles>
-		<!-- The profile kurento-release must be active when a project is released. 
-			The configuration in this POM will automatically call this profile if using 
-			the maven-release-plugin. If the maven-release-plugin is not used during 
+		<!-- The profile kurento-release must be active when a project is released.
+			The configuration in this POM will automatically call this profile if using
+			the maven-release-plugin. If the maven-release-plugin is not used during
 			the release, this profile must be manually activated. -->
 		<profile>
 			<id>kurento-release</id>
 			<build>
 				<plugins>
-					<!-- Create a source-release artifact that contains the fully buildable 
-						project directory source structure. This should be released to the Maven 
+					<!-- Create a source-release artifact that contains the fully buildable
+						project directory source structure. This should be released to the Maven
 						repository for each JBoss project release. -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
@@ -228,8 +230,8 @@
 			</build>
 		</profile>
 
-		<!-- This profile can be activated to generate gpg signatures for all build 
-			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase" 
+		<!-- This profile can be activated to generate gpg signatures for all build
+			artifacts. This profile requires that the properties "gpg.keyname" and "gpg.passphrase"
 			are available to the current build. -->
 		<profile>
 			<id>gpg-sign</id>
