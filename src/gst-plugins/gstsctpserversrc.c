@@ -304,6 +304,12 @@ gst_sctp_server_sink_query (GstBaseSrc * src, GstQuery * query)
       GstCaps *caps, *copy;
 
       gst_query_parse_caps_result (rsp_query, &caps);
+
+      if (caps == NULL) {
+        ret = FALSE;
+        break;
+      }
+
       copy = gst_caps_copy (caps);
 
       gst_query_set_caps_result (query, copy);
