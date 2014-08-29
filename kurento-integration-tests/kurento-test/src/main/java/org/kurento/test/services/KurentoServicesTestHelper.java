@@ -43,7 +43,7 @@ public class KurentoServicesTestHelper {
 	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
 
 	public static final String KMS_AUTOSTART_PROP = "kms.autostart";
-	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_TEST_VALUE;
+	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
 
 	public static final String KMC_AUTOSTART_PROP = "kmc.autostart";
 	public static final String KMC_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
