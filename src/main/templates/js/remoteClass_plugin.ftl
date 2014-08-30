@@ -56,7 +56,7 @@ var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extend
       <#list module.imports as import>
         <#list import.module.remoteClasses as remoteClass>
           <#if remoteClass.name == extends_name>
-            <#lt>${import.module.code.api.js["node.name"]}<#rt>
+            <#lt>${import.module.code.api.js.nodeName}<#rt>
             <#break>
           </#if>
         </#list>
