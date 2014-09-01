@@ -47,7 +47,7 @@ struct _KmsSCTPServerRPCPrivate
   GMutex data_mutex;
   gboolean err;
   GIOErrorEnum code;
-  GQueue *buffers;
+  GstBuffer *buffer;
 };
 
 static void
@@ -58,7 +58,9 @@ kms_sctp_server_rpc_finalize (GObject * gobject)
   if (self->priv->server != NULL)
     kms_sctp_connection_unref (self->priv->server);
 
-  g_queue_free_full (self->priv->buffers, (GDestroyNotify) gst_buffer_unref);
+  if (self->priv->buffer != NULL) {
+    gst_buffer_unref (self->priv->buffer);
+  }
 
   g_mutex_clear (&self->priv->data_mutex);
   g_cond_clear (&self->priv->data_cond);
@@ -72,7 +74,19 @@ kms_sctp_server_rpc_buffer (KmsSCTPBaseRPC * baserpc, GstBuffer * buffer)
 
   /* Wake stream thread up */
   g_mutex_lock (&self->priv->data_mutex);
-  g_queue_push_tail (self->priv->buffers, buffer);
+
+  while (self->priv->buffer != NULL && !self->priv->err)
+    g_cond_wait (&self->priv->data_cond, &self->priv->data_mutex);
+
+  if (self->priv->buffer == NULL) {
+    self->priv->buffer = buffer;
+  } else {
+    /* There was an error. Drop buffer */
+    GST_ERROR_OBJECT (self, "Dropping buffer because of an internal error (%d)",
+        self->priv->code);
+    gst_buffer_unref (buffer);
+  }
+
   g_cond_signal (&self->priv->data_cond);
   g_mutex_unlock (&self->priv->data_mutex);
 }
@@ -96,8 +110,6 @@ static void
 kms_sctp_server_rpc_init (KmsSCTPServerRPC * self)
 {
   self->priv = KMS_SCTP_SERVER_RPC_GET_PRIVATE (self);
-
-  self->priv->buffers = g_queue_new ();
 
   g_mutex_init (&self->priv->data_mutex);
   g_cond_init (&self->priv->data_cond);
@@ -272,11 +284,12 @@ kms_sctp_server_rpc_get_buffer (KmsSCTPServerRPC * server,
 
   g_mutex_lock (&server->priv->data_mutex);
 
-  while (g_queue_get_length (server->priv->buffers) <= 0 && !server->priv->err)
+  while (server->priv->buffer == NULL && !server->priv->err)
     g_cond_wait (&server->priv->data_cond, &server->priv->data_mutex);
 
-  if ((ret = g_queue_get_length (server->priv->buffers) > 0)) {
-    *outbuf = GST_BUFFER_CAST (g_queue_pop_head (server->priv->buffers));
+  if ((ret = server->priv->buffer != NULL)) {
+    *outbuf = server->priv->buffer;
+    server->priv->buffer = NULL;
   } else {
     *outbuf = NULL;
     switch (server->priv->code) {
@@ -292,6 +305,7 @@ kms_sctp_server_rpc_get_buffer (KmsSCTPServerRPC * server,
     }
   }
 
+  g_cond_signal (&server->priv->data_cond);
   g_mutex_unlock (&server->priv->data_mutex);
 
   return ret;
