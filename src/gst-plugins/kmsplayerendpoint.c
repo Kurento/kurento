@@ -200,6 +200,13 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
     GST_DEBUG ("Setting base time to: %" G_GUINT64_FORMAT, *base_time);
   }
 
+  if (GST_BUFFER_PTS_IS_VALID (buffer))
+    buffer->pts += *base_time;
+  if (GST_BUFFER_DTS_IS_VALID (buffer))
+    buffer->dts += *base_time;
+
+  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsrc));
+
   src = gst_element_get_static_pad (appsrc, "src");
   sink = gst_pad_get_peer (src);
 
@@ -213,13 +220,6 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   }
 
   g_object_unref (src);
-
-  if (GST_BUFFER_PTS_IS_VALID (buffer))
-    buffer->pts += *base_time;
-  if (GST_BUFFER_DTS_IS_VALID (buffer))
-    buffer->dts += *base_time;
-
-  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsrc));
 
   // TODO: Do something to fix a possible previous EOS event
   g_signal_emit_by_name (appsrc, "push-buffer", buffer, &ret);
