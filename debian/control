@@ -17,6 +17,7 @@ Vcs-Browser: https://github.com/Kurento/kms-filters.git
 Package: kms-filters
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
+ opencv-data
 Description: Kurento filters module
  Kurento filters implementation
 
