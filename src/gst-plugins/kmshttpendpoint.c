@@ -512,7 +512,7 @@ kms_http_endpoint_init_post_pipeline (KmsHttpEndpoint * self)
   GstBus *bus;
   GstCaps *deco_caps;
 
-  self->priv->method = KMS_HTTP_ENDPOINT_METHOD_POST;
+  g_atomic_int_set (&self->priv->method, KMS_HTTP_ENDPOINT_METHOD_POST);
   self->priv->post = g_slice_new0 (PostData);
 
   self->priv->pipeline = gst_pipeline_new (POST_PIPELINE);
@@ -581,7 +581,7 @@ sink_required_cb (KmsConfController * controller, gpointer httpep)
 static void
 kms_http_endpoint_init_get_pipeline (KmsHttpEndpoint * self)
 {
-  self->priv->method = KMS_HTTP_ENDPOINT_METHOD_GET;
+  g_atomic_int_set (&self->priv->method, KMS_HTTP_ENDPOINT_METHOD_GET);
   self->priv->get = g_slice_new0 (GetData);
 
   self->priv->pipeline = gst_pipeline_new (GET_PIPELINE);
@@ -605,16 +605,11 @@ kms_http_endpoint_pull_sample_action (KmsHttpEndpoint * self)
 {
   GstSample *sample;
 
-  KMS_ELEMENT_LOCK (self);
-
-  if (self->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET) {
-    KMS_ELEMENT_UNLOCK (self);
+  if (g_atomic_int_get (&self->priv->method) != KMS_HTTP_ENDPOINT_METHOD_GET) {
     GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
         ("Trying to get data from a non-GET HttpEndpoint"), GST_ERROR_SYSTEM);
     return NULL;
   }
-
-  KMS_ELEMENT_UNLOCK (self);
 
   g_signal_emit_by_name (self->priv->get->appsink, "pull-sample", &sample);
 
@@ -627,15 +622,16 @@ kms_http_endpoint_push_buffer_action (KmsHttpEndpoint * self,
 {
   GstFlowReturn ret;
 
-  KMS_ELEMENT_LOCK (self);
-
-  if (self->priv->method != KMS_HTTP_ENDPOINT_METHOD_UNDEFINED &&
-      self->priv->method != KMS_HTTP_ENDPOINT_METHOD_POST) {
-    KMS_ELEMENT_UNLOCK (self);
+  if (g_atomic_int_get (&self->priv->method) !=
+      KMS_HTTP_ENDPOINT_METHOD_UNDEFINED
+      && g_atomic_int_get (&self->priv->method) !=
+      KMS_HTTP_ENDPOINT_METHOD_POST) {
     GST_ELEMENT_ERROR (self, RESOURCE, FAILED,
         ("Trying to push data in a non-POST HttpEndpoint"), GST_ERROR_SYSTEM);
     return GST_FLOW_ERROR;
   }
+
+  KMS_ELEMENT_LOCK (self);
 
   if (self->priv->pipeline == NULL)
     kms_http_endpoint_init_post_pipeline (self);
@@ -674,8 +670,10 @@ kms_recorder_endpoint_valve_added (KmsHttpEndpoint * self,
 {
   gboolean initialized = FALSE;
 
-  if (self->priv->method != KMS_HTTP_ENDPOINT_METHOD_UNDEFINED &&
-      self->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET) {
+  if (g_atomic_int_get (&self->priv->method) !=
+      KMS_HTTP_ENDPOINT_METHOD_UNDEFINED
+      && g_atomic_int_get (&self->priv->method) !=
+      KMS_HTTP_ENDPOINT_METHOD_GET) {
     GST_ERROR ("Trying to get data from a non-GET HttpEndpoint");
     return;
   }
@@ -716,7 +714,7 @@ kms_http_endpoint_audio_valve_removed (KmsElement * self, GstElement * valve)
 {
   KmsHttpEndpoint *httpep = KMS_HTTP_ENDPOINT (self);
 
-  if (httpep->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET)
+  if (g_atomic_int_get (&httpep->priv->method) != KMS_HTTP_ENDPOINT_METHOD_GET)
     return;
 
   GST_INFO ("TODO: Implement this");
@@ -734,7 +732,7 @@ kms_http_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
 {
   KmsHttpEndpoint *httpep = KMS_HTTP_ENDPOINT (self);
 
-  if (httpep->priv->method != KMS_HTTP_ENDPOINT_METHOD_GET)
+  if (g_atomic_int_get (&httpep->priv->method) != KMS_HTTP_ENDPOINT_METHOD_GET)
     return;
 
   GST_INFO ("TODO: Implement this");
@@ -773,7 +771,7 @@ kms_http_endpoint_dispose (GObject * object)
 
   g_clear_object (&self->priv->loop);
 
-  switch (self->priv->method) {
+  switch (g_atomic_int_get (&self->priv->method)) {
     case KMS_HTTP_ENDPOINT_METHOD_GET:
       kms_http_endpoint_dispose_GET (self);
       break;
@@ -796,7 +794,7 @@ kms_http_endpoint_finalize (GObject * object)
 
   GST_DEBUG_OBJECT (self, "finalize");
 
-  switch (self->priv->method) {
+  switch (g_atomic_int_get (&self->priv->method)) {
     case KMS_HTTP_ENDPOINT_METHOD_GET:
       g_slice_free (GetData, self->priv->get);
       break;
@@ -894,7 +892,8 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_DVR:
       self->priv->use_dvr = g_value_get_boolean (value);
-      if (self->priv->method == KMS_HTTP_ENDPOINT_METHOD_GET)
+      if (g_atomic_int_get (&self->priv->method) ==
+          KMS_HTTP_ENDPOINT_METHOD_GET)
         g_object_set (G_OBJECT (self->priv->get->controller), "live-DVR",
             self->priv->use_dvr, NULL);
       break;
@@ -914,7 +913,8 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
     }
     case PROP_PROFILE:
       self->priv->profile = g_value_get_enum (value);
-      if (self->priv->method == KMS_HTTP_ENDPOINT_METHOD_GET)
+      if (g_atomic_int_get (&self->priv->method) ==
+          KMS_HTTP_ENDPOINT_METHOD_GET)
         g_object_set (G_OBJECT (self->priv->get->controller), "profile",
             self->priv->profile, NULL);
       break;
@@ -940,7 +940,7 @@ kms_http_endpoint_get_property (GObject * object, guint property_id,
       g_value_set_boolean (value, self->priv->use_dvr);
       break;
     case PROP_METHOD:
-      g_value_set_enum (value, self->priv->method);
+      g_value_set_enum (value, g_atomic_int_get (&self->priv->method));
       break;
     case PROP_START:
       g_value_set_boolean (value, self->priv->start);
@@ -1030,7 +1030,8 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
       g_signal_new ("pull-sample", G_TYPE_FROM_CLASS (klass),
       G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
       G_STRUCT_OFFSET (KmsHttpEndpointClass, pull_sample),
-      NULL, NULL, __kms_core_marshal_BOXED__VOID, GST_TYPE_SAMPLE, 0, G_TYPE_NONE);
+      NULL, NULL, __kms_core_marshal_BOXED__VOID, GST_TYPE_SAMPLE, 0,
+      G_TYPE_NONE);
 
   http_ep_signals[SIGNAL_PUSH_BUFFER] =
       g_signal_new ("push-buffer", G_TYPE_FROM_CLASS (klass),
@@ -1060,7 +1061,7 @@ kms_http_endpoint_init (KmsHttpEndpoint * self)
   self->priv = KMS_HTTP_ENDPOINT_GET_PRIVATE (self);
 
   self->priv->loop = kms_loop_new ();
-  self->priv->method = KMS_HTTP_ENDPOINT_METHOD_UNDEFINED;
+  g_atomic_int_set (&self->priv->method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
   self->priv->pipeline = NULL;
   self->priv->start = FALSE;
 }
