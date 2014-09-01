@@ -24,6 +24,7 @@ set(KMS_ELEMENTS_SOURCES
   kmssctpclientrpc.c
   kmssctpserverrpc.c
   kmsalphablending.c
+  kmsplumberendpoint.c
 )
 
 set(KMS_ELEMENTS_HEADERS
@@ -45,6 +46,7 @@ set(KMS_ELEMENTS_HEADERS
   kmssctpclientrpc.h
   kmssctpserverrpc.h
   kmsalphablending.h
+  kmsplumberendpoint.h
 )
 
 set(ENUM_HEADERS
