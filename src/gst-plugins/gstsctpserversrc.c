@@ -262,7 +262,7 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
   } else {
     ret = GST_FLOW_ERROR;
     GST_ELEMENT_ERROR (self, RESOURCE, READ, (NULL),
-          ("Failed to read from socket: %s", err->message));
+        ("Failed to read from socket: %s", err->message));
   }
 
   g_clear_error (&err);
@@ -293,7 +293,7 @@ gst_sctp_server_src_query (GstBaseSrc * src, GstQuery * query)
   GST_LOG_OBJECT (src, "<< %" GST_PTR_FORMAT, query);
 
   if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
-      query, self->priv->cancellable, &rsp_query, &err)) {
+          query, self->priv->cancellable, &rsp_query, &err)) {
     GST_WARNING_OBJECT (self, "Error: %s", err->message);
     g_error_free (err);
     return FALSE;
@@ -343,8 +343,8 @@ gst_sctp_server_src_query (GstBaseSrc * src, GstQuery * query)
       ret = TRUE;
       break;
     }
-    default: {
-      GST_ERROR("Unexpected response %" GST_PTR_FORMAT, query);
+    default:{
+      GST_ERROR ("Unexpected response %" GST_PTR_FORMAT, query);
       gst_query_unref (rsp_query);
 
       return FALSE;
@@ -366,11 +366,11 @@ gst_sctp_server_src_event (GstBaseSrc * src, GstEvent * event)
   gboolean ret, upstream;
 
   switch (GST_EVENT_TYPE (event)) {
-    /* bidirectional events */
+      /* bidirectional events */
     case GST_EVENT_FLUSH_START:
     case GST_EVENT_FLUSH_STOP:
 
-    /* upstream events */
+      /* upstream events */
     case GST_EVENT_QOS:
     case GST_EVENT_SEEK:
     case GST_EVENT_NAVIGATION:
@@ -385,21 +385,21 @@ gst_sctp_server_src_event (GstBaseSrc * src, GstEvent * event)
       /* Base class is capable of managing above events for us, but */
       /* we still need to propagate them to the downstream pipeline */
     case GST_EVENT_TOC_SELECT:
-    case GST_EVENT_CUSTOM_UPSTREAM: {
+    case GST_EVENT_CUSTOM_UPSTREAM:{
       /* Propagation of custom events may result in an error if they */
       /* use a not marshallable value in the internal GstStructure.  */
       upstream = TRUE;
       break;
     }
-    default: {
+    default:{
       GST_WARNING ("Not propagated event >> %" GST_PTR_FORMAT, event);
       upstream = FALSE;
       break;
     }
   }
 
-  ret =  GST_BASE_SRC_CLASS (gst_sctp_server_src_parent_class)->event (src,
-          event);
+  ret = GST_BASE_SRC_CLASS (gst_sctp_server_src_parent_class)->event (src,
+      event);
 
   if (!upstream)
     return ret;
@@ -501,32 +501,32 @@ static void
 gst_sctp_server_src_remote_event (GstEvent * event, GstSCTPServerSrc * self)
 {
   switch (GST_EVENT_TYPE (event)) {
-    /* bidirectional events */
+      /* bidirectional events */
     case GST_EVENT_FLUSH_START:
     case GST_EVENT_FLUSH_STOP:
       /* base class will manage above events for us */
-      if (!gst_element_send_event (GST_ELEMENT(self), event)) {
+      if (!gst_element_send_event (GST_ELEMENT (self), event)) {
         GST_WARNING_OBJECT (self, "Could not manage remote event %"
-          GST_PTR_FORMAT, event);
+            GST_PTR_FORMAT, event);
       }
 
       break;
 
-    /* downstream events */
+      /* downstream events */
     case GST_EVENT_STREAM_START:
     case GST_EVENT_CAPS:
     case GST_EVENT_SEGMENT:
     case GST_EVENT_TAG:
     case GST_EVENT_TOC:
 
-    /* non-sticky downstream serialized */
+      /* non-sticky downstream serialized */
     case GST_EVENT_GAP:
       GST_LOG_OBJECT (self, ">> %" GST_PTR_FORMAT, event);
 
       gst_event_ref (event);
       if (!gst_pad_push_event (GST_BASE_SRC_PAD (GST_BASE_SRC (self)), event)) {
         GST_DEBUG_OBJECT (self, "Downstream elements did not handle %"
-          GST_PTR_FORMAT, event);
+            GST_PTR_FORMAT, event);
       }
       break;
     default:
