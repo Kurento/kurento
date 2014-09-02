@@ -42,6 +42,8 @@
 #define HYPOTENUSE_THRESHOLD ((float) 3.0)
 #define RADIAN_TO_DEGREE ((float) 57.3)
 
+#define MAX_WIDTH 320
+
 GST_DEBUG_CATEGORY_STATIC (kms_crowd_detector_debug_category);
 #define GST_CAT_DEFAULT kms_crowd_detector_debug_category
 
@@ -84,16 +86,20 @@ typedef struct _RoiData
 struct _KmsCrowdDetectorPrivate
 {
   IplImage *actual_image, *previous_lbp, *frame_previous_gray, *background,
-      *acumulated_edges, *acumulated_lbp, *previous_image;
+      *acumulated_edges, *acumulated_lbp, *previous_image, *original_image;
   gboolean show_debug_info;
   int num_rois;
   CvPoint **curves;
+  CvPoint **curves_original;
   int *n_points;
   RoiData *rois_data;
   GstStructure *rois;
   gboolean pixels_rois_counted;
   int image_width;
   int image_height;
+  gdouble resize_factor;
+  int original_image_width;
+  int original_image_height;
 };
 
 enum
@@ -346,6 +352,12 @@ kms_crowd_detector_release_data (KmsCrowdDetector * crowddetector)
     }
     g_free (crowddetector->priv->curves);
     crowddetector->priv->curves = NULL;
+
+    for (it = 0; it < crowddetector->priv->num_rois; it++) {
+      g_free (crowddetector->priv->curves_original[it]);
+    }
+    g_free (crowddetector->priv->curves_original);
+    crowddetector->priv->curves_original = NULL;
   }
 
   if (crowddetector->priv->rois != NULL) {
@@ -397,6 +409,8 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
   self->priv->num_rois = gst_structure_n_fields (self->priv->rois);
   if (self->priv->num_rois != 0) {
     self->priv->curves = g_malloc0 (sizeof (CvPoint *) * self->priv->num_rois);
+    self->priv->curves_original =
+        g_malloc0 (sizeof (CvPoint *) * self->priv->num_rois);
     self->priv->n_points = g_malloc (sizeof (int) * self->priv->num_rois);
     self->priv->rois_data = g_malloc0 (sizeof (RoiData) * self->priv->num_rois);
   }
@@ -420,6 +434,7 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
       continue;
     } else {
       self->priv->curves[it] = g_malloc (sizeof (CvPoint) * len);
+      self->priv->curves_original[it] = g_malloc (sizeof (CvPoint) * len);
     }
 
     for (it2 = 0; it2 < len; it2++) {
@@ -438,6 +453,11 @@ kms_crowd_detector_extract_rois (KmsCrowdDetector * self)
 
         self->priv->curves[it][it2].x = percentageX * self->priv->image_width;
         self->priv->curves[it][it2].y = percentageY * self->priv->image_height;
+
+        self->priv->curves_original[it][it2].x =
+            percentageX * self->priv->original_image_width;
+        self->priv->curves_original[it][it2].y =
+            percentageY * self->priv->original_image_height;
       }
       gst_structure_free (point);
     }
@@ -567,6 +587,7 @@ kms_crowd_detector_dispose (GObject * object)
 static void
 kms_crowd_detector_release_images (KmsCrowdDetector * crowddetector)
 {
+  cvReleaseImage (&crowddetector->priv->original_image);
   cvReleaseImage (&crowddetector->priv->actual_image);
   cvReleaseImage (&crowddetector->priv->previous_lbp);
   cvReleaseImage (&crowddetector->priv->frame_previous_gray);
@@ -624,41 +645,55 @@ static void
 kms_crowd_detector_create_images (KmsCrowdDetector * crowddetector,
     GstVideoFrame * frame)
 {
-  crowddetector->priv->image_width = frame->info.width;
-  crowddetector->priv->image_height = frame->info.height;
-  crowddetector->priv->actual_image =
+  int target_width =
+      frame->info.width <= MAX_WIDTH ? frame->info.width : MAX_WIDTH;
+
+  crowddetector->priv->resize_factor = frame->info.width / target_width;
+
+  crowddetector->priv->image_width = target_width;
+  crowddetector->priv->image_height =
+      frame->info.height / crowddetector->priv->resize_factor;
+
+  crowddetector->priv->original_image_width = frame->info.width;
+  crowddetector->priv->original_image_height = frame->info.height;
+
+  crowddetector->priv->original_image =
       cvCreateImage (cvSize (frame->info.width, frame->info.height),
       IPL_DEPTH_8U, 3);
+
+  crowddetector->priv->actual_image =
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 3);
   cvSet (crowddetector->priv->actual_image, CV_RGB (0, 0, 0), 0);
 
   crowddetector->priv->previous_lbp =
-      cvCreateImage (cvSize (frame->info.width, frame->info.height),
-      IPL_DEPTH_8U, 1);
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 1);
   cvZero (crowddetector->priv->previous_lbp);
 
   crowddetector->priv->frame_previous_gray =
-      cvCreateImage (cvSize (frame->info.width, frame->info.height),
-      IPL_DEPTH_8U, 1);
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 1);
   cvZero (crowddetector->priv->frame_previous_gray);
 
   crowddetector->priv->background =
-      cvCreateImage (cvSize (frame->info.width, frame->info.height),
-      IPL_DEPTH_8U, 1);
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 1);
   cvZero (crowddetector->priv->background);
 
   crowddetector->priv->acumulated_edges =
-      cvCreateImage (cvSize (frame->info.width, frame->info.height),
-      IPL_DEPTH_8U, 1);
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 1);
   cvZero (crowddetector->priv->acumulated_edges);
 
   crowddetector->priv->acumulated_lbp =
-      cvCreateImage (cvSize (frame->info.width, frame->info.height),
-      IPL_DEPTH_8U, 1);
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 1);
   cvZero (crowddetector->priv->acumulated_lbp);
 
   crowddetector->priv->previous_image =
-      cvCreateImage (cvSize (frame->info.width, frame->info.height),
-      IPL_DEPTH_8U, 3);
+      cvCreateImage (cvSize (crowddetector->priv->image_width,
+          crowddetector->priv->image_height), IPL_DEPTH_8U, 3);
   cvSet (crowddetector->priv->previous_image, CV_RGB (0, 0, 0), 0);
 }
 
@@ -668,8 +703,8 @@ kms_crowd_detector_initialize_images (KmsCrowdDetector * crowddetector,
 {
   if (crowddetector->priv->actual_image == NULL) {
     kms_crowd_detector_create_images (crowddetector, frame);
-  } else if ((crowddetector->priv->actual_image->width != frame->info.width)
-      || (crowddetector->priv->actual_image->height != frame->info.height)) {
+  } else if ((crowddetector->priv->original_image->width != frame->info.width)
+      || (crowddetector->priv->original_image->height != frame->info.height)) {
     kms_crowd_detector_release_images (crowddetector);
     kms_crowd_detector_create_images (crowddetector, frame);
   }
@@ -823,49 +858,51 @@ kms_crowd_detector_roi_occup_analysis (KmsCrowdDetector * crowddetector,
   if (occupation_percentage > occupancy_level_max) {
     if (crowddetector->priv->rois_data[curve].potential_occupation_level != 3) {
       crowddetector->priv->rois_data[curve].potential_occupation_level = 3;
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level = 1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level = 1;
     } else {
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level++;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level++;
     }
   } else if (occupation_percentage > occupancy_level_med) {
     if (crowddetector->priv->rois_data[curve].potential_occupation_level != 2) {
       crowddetector->priv->rois_data[curve].potential_occupation_level = 2;
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level = 1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level = 1;
     } else {
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level++;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level++;
     }
   } else if (occupation_percentage > occupancy_level_min) {
     if (crowddetector->priv->rois_data[curve].potential_occupation_level != 1) {
       crowddetector->priv->rois_data[curve].potential_occupation_level = 1;
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level = 1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level = 1;
     } else {
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level++;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level++;
     }
   } else {
     if (crowddetector->priv->rois_data[curve].potential_occupation_level != 0) {
       crowddetector->priv->rois_data[curve].potential_occupation_level = 0;
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level = 1;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level = 1;
     } else {
-      crowddetector->priv->rois_data[curve].
-          num_frames_potential_occupancy_level++;
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_occupancy_level++;
     }
   }
 
-  if (crowddetector->priv->rois_data[curve].
-      num_frames_potential_occupancy_level > occupancy_num_frames_to_event) {
+  if (crowddetector->priv->
+      rois_data[curve].num_frames_potential_occupancy_level >
+      occupancy_num_frames_to_event) {
     crowddetector->priv->rois_data[curve].num_frames_potential_occupancy_level =
         occupancy_num_frames_to_event;
   }
 
-  if (crowddetector->priv->rois_data[curve].
-      num_frames_potential_occupancy_level == occupancy_num_frames_to_event
+  if (crowddetector->priv->
+      rois_data[curve].num_frames_potential_occupancy_level ==
+      occupancy_num_frames_to_event
       && crowddetector->priv->rois_data[curve].actual_occupation_level !=
       crowddetector->priv->rois_data[curve].potential_occupation_level) {
     crowddetector->priv->rois_data[curve].actual_occupation_level =
@@ -895,50 +932,50 @@ kms_crowd_detector_roi_fluidity_analysis (KmsCrowdDetector * crowddetector,
   if (fluidity_percentage >= fluidity_level_max) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 3) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 3;
-      crowddetector->priv->
-          rois_data[curve].num_frames_potential_fluidity_level = 1;
-    } else {
       crowddetector->priv->rois_data[curve].
-          num_frames_potential_fluidity_level++;
+          num_frames_potential_fluidity_level = 1;
+    } else {
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level++;
     }
   } else if (fluidity_percentage > fluidity_level_med) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 2) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 2;
-      crowddetector->priv->
-          rois_data[curve].num_frames_potential_fluidity_level = 1;
-    } else {
       crowddetector->priv->rois_data[curve].
-          num_frames_potential_fluidity_level++;
+          num_frames_potential_fluidity_level = 1;
+    } else {
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level++;
     }
   } else if (fluidity_percentage > fluidity_level_min) {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 1) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 1;
-      crowddetector->priv->
-          rois_data[curve].num_frames_potential_fluidity_level = 1;
-    } else {
       crowddetector->priv->rois_data[curve].
-          num_frames_potential_fluidity_level++;
+          num_frames_potential_fluidity_level = 1;
+    } else {
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level++;
     }
   } else {
     if (crowddetector->priv->rois_data[curve].potential_fluidity_level != 0) {
       crowddetector->priv->rois_data[curve].potential_fluidity_level = 0;
-      crowddetector->priv->
-          rois_data[curve].num_frames_potential_fluidity_level = 1;
-    } else {
       crowddetector->priv->rois_data[curve].
-          num_frames_potential_fluidity_level++;
+          num_frames_potential_fluidity_level = 1;
+    } else {
+      crowddetector->priv->
+          rois_data[curve].num_frames_potential_fluidity_level++;
     }
   }
 
-  if (crowddetector->priv->
-      rois_data[curve].num_frames_potential_fluidity_level >
-      fluid_num_frames_to_event) {
+  if (crowddetector->priv->rois_data[curve].
+      num_frames_potential_fluidity_level > fluid_num_frames_to_event) {
     crowddetector->priv->rois_data[curve].num_frames_potential_fluidity_level =
         fluid_num_frames_to_event;
   }
 
-  if (crowddetector->priv->rois_data[curve].
-      num_frames_potential_fluidity_level == fluid_num_frames_to_event
+  if (crowddetector->priv->
+      rois_data[curve].num_frames_potential_fluidity_level ==
+      fluid_num_frames_to_event
       && crowddetector->priv->rois_data[curve].actual_fluidity_level !=
       crowddetector->priv->rois_data[curve].potential_fluidity_level) {
     crowddetector->priv->rois_data[curve].actual_fluidity_level =
@@ -1037,6 +1074,7 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
   GstMapInfo info;
 
   kms_crowd_detector_initialize_images (crowddetector, frame);
+
   if ((crowddetector->priv->num_rois == 0)
       && (crowddetector->priv->rois != NULL)) {
     kms_crowd_detector_extract_rois (crowddetector);
@@ -1047,7 +1085,10 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     crowddetector->priv->pixels_rois_counted = FALSE;
   }
   gst_buffer_map (frame->buffer, &info, GST_MAP_READ);
-  crowddetector->priv->actual_image->imageData = (char *) info.data;
+  crowddetector->priv->original_image->imageData = (char *) info.data;
+
+  cvResize (crowddetector->priv->original_image,
+      crowddetector->priv->actual_image, CV_INTER_LINEAR);
 
   IplImage *frame_actual_gray =
       cvCreateImage (cvSize (crowddetector->priv->actual_image->width,
@@ -1254,36 +1295,48 @@ kms_crowd_detector_transform_frame_ip (GstVideoFilter * filter,
     }
   }
 
+  //drawing blur/red mask over rois regions
   {
-    uint8_t *orig_row_pointer =
-        (uint8_t *) crowddetector->priv->actual_image->imageData;
-    uint8_t *overlay_row_pointer = (uint8_t *) actual_motion->imageData;
+    uint8_t *orig_row_pointer;
+    uint8_t *overlay_row_pointer;
+    IplImage *actual_motion_original =
+        cvCreateImage (cvSize (crowddetector->priv->original_image->width,
+            crowddetector->priv->original_image->height),
+        IPL_DEPTH_8U, 3);
 
-    for (h = 0; h < crowddetector->priv->actual_image->height; h++) {
+    cvResize (actual_motion, actual_motion_original, CV_INTER_LINEAR);
+
+    orig_row_pointer =
+        (uint8_t *) crowddetector->priv->original_image->imageData;
+    overlay_row_pointer = (uint8_t *) actual_motion_original->imageData;
+
+    for (h = 0; h < crowddetector->priv->original_image->height; h++) {
       uint8_t *orig_column_pointer = orig_row_pointer;
       uint8_t *overlay_column_pointer = overlay_row_pointer;
 
-      for (w = 0; w < crowddetector->priv->actual_image->width; w++) {
+      for (w = 0; w < crowddetector->priv->original_image->width; w++) {
         int c;
 
-        for (c = 0; c < crowddetector->priv->actual_image->nChannels; c++) {
+        for (c = 0; c < crowddetector->priv->original_image->nChannels; c++) {
           if (overlay_column_pointer[c] != 0) {
             orig_column_pointer[c] = overlay_column_pointer[c];
           }
         }
 
-        orig_column_pointer += crowddetector->priv->actual_image->nChannels;
-        overlay_column_pointer += actual_motion->nChannels;
+        orig_column_pointer += crowddetector->priv->original_image->nChannels;
+        overlay_column_pointer += actual_motion_original->nChannels;
       }
-      orig_row_pointer += crowddetector->priv->actual_image->widthStep;
-      overlay_row_pointer += actual_motion->widthStep;
+      orig_row_pointer += crowddetector->priv->original_image->widthStep;
+      overlay_row_pointer += actual_motion_original->widthStep;
     }
+
+    cvReleaseImage (&actual_motion_original);
   }
 
   if (crowddetector->priv->num_rois != 0) {
-    cvPolyLine (crowddetector->priv->actual_image, crowddetector->priv->curves,
-        crowddetector->priv->n_points, crowddetector->priv->num_rois, 1,
-        cvScalar (255, 255, 255, 0), 1, 8, 0);
+    cvPolyLine (crowddetector->priv->original_image,
+        crowddetector->priv->curves_original, crowddetector->priv->n_points,
+        crowddetector->priv->num_rois, 1, cvScalar (255, 255, 255, 0), 1, 8, 0);
   }
 
   cvNot (high_speed_map, high_speed_map);
@@ -1362,6 +1415,7 @@ kms_crowd_detector_init (KmsCrowdDetector * crowddetector)
   crowddetector->priv->frame_previous_gray = NULL;
   crowddetector->priv->num_rois = 0;
   crowddetector->priv->curves = NULL;
+  crowddetector->priv->curves_original = NULL;
   crowddetector->priv->n_points = NULL;
   crowddetector->priv->rois = NULL;
   crowddetector->priv->rois_data = NULL;
