@@ -58,8 +58,6 @@ enum
   PROP_0,
   PROP_HOST,
   PROP_PORT,
-  PROP_NUM_OSTREAMS,
-  PROP_MAX_INSTREAMS,
   PROP_TIMETOLIVE
 };
 
@@ -91,12 +89,6 @@ gst_sctp_client_sink_set_property (GObject * object, guint prop_id,
     case PROP_PORT:
       self->priv->port = g_value_get_int (value);
       break;
-    case PROP_NUM_OSTREAMS:
-      self->priv->num_ostreams = g_value_get_int (value);
-      break;
-    case PROP_MAX_INSTREAMS:
-      self->priv->max_istreams = g_value_get_int (value);
-      break;
     case PROP_TIMETOLIVE:
       self->priv->timetolive = g_value_get_uint (value);
       break;
@@ -125,12 +117,6 @@ gst_sctp_client_sink_get_property (GObject * object, guint prop_id,
       break;
     case PROP_PORT:
       g_value_set_int (value, self->priv->port);
-      break;
-    case PROP_NUM_OSTREAMS:
-      g_value_set_int (value, self->priv->num_ostreams);
-      break;
-    case PROP_MAX_INSTREAMS:
-      g_value_set_int (value, self->priv->max_istreams);
       break;
     case PROP_TIMETOLIVE:
       g_value_set_uint (value, self->priv->timetolive);
@@ -423,16 +409,6 @@ gst_sctp_client_sink_class_init (GstSCTPClientSinkClass * klass)
   g_object_class_install_property (gobject_class, PROP_PORT,
       g_param_spec_int ("port", "Port", "The port to send the packets to",
           0, G_MAXUINT16, SCTP_DEFAULT_PORT,
-          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
-  g_object_class_install_property (gobject_class, PROP_NUM_OSTREAMS,
-      g_param_spec_int ("num-ostreams", "Output streams",
-          "This is the number of streams that the application wishes to be "
-          "able to send to", 0, G_MAXUINT16, 1,
-          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
-  g_object_class_install_property (gobject_class, PROP_MAX_INSTREAMS,
-      g_param_spec_int ("max-instreams", "Inputput streams",
-          "This value represents the maximum number of inbound streams the "
-          "application is prepared to support", 0, G_MAXUINT16, 1,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_TIMETOLIVE,
       g_param_spec_uint ("timetolive", "Time to live",
