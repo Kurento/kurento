@@ -15,13 +15,13 @@ applications that use Kurento Java Client please visit to
 :doc:`Tutorials section</Tutorials>`. There are several demos showing the
 typical real time media web applications:
 
-   - :doc:`Tutorial 1 - Magic mirror </tutorials/java/tutorial-1-magicmirror>`
+   - :doc:`Tutorial 2 - Magic mirror </tutorials/java/tutorial-2-magicmirror>`
 
-   - :doc:`Tutorial 2 - One to One video call </tutorials/java/tutorial-2-one2one>`
+   - :doc:`Tutorial 3 - One to One video call </tutorials/java/tutorial-3-one2one>`
 
-   - :doc:`Tutorial 3 - Advanced One to One video call </tutorials/java/tutorial-3-one2one-adv>`
+   - :doc:`Tutorial 4 - Advanced One to One video call </tutorials/java/tutorial-4-one2one-adv>`
 
-   - :doc:`Tutorial 4 - Many to many video call </tutorials/java/tutorial-4-group>`
+   - :doc:`Tutorial 5 - Many to many video call </tutorials/java/tutorial-5-group>`
 
 
 To better understand the concepts showed in this section, it is recommended to

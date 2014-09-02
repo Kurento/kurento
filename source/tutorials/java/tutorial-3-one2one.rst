@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Tutorial 2 - One to one video call
+Tutorial 3 - One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on an one to one video call using `WebRTC`:term:
@@ -7,7 +7,7 @@ technology. In other words, this application is similar to a phone but also
 with video. The following picture shows an screenshot of this demo running in a
 web browser:
 
-.. figure:: ../../images/kurento-java-tutorial-2-one2one-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-3-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
    :width: 600px
@@ -25,7 +25,7 @@ To implement this behavior we have to create a `Media Pipeline`:term: composed
 by two WebRtc endpoints connected between them. The media pipeline implemented
 is illustrated in the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-2-one2one-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-3-one2one-pipeline.png
    :align:   center
    :alt:     One to one video call media pipeline
 
@@ -55,7 +55,7 @@ Assuming that User A is using Client A and User B is using Client B, we can draw
 the following sequence diagram with detailed messages between clients and
 server:
 
-.. figure:: ../../images/kurento-java-tutorial-2-one2one-signaling.png
+.. figure:: ../../images/kurento-java-tutorial-3-one2one-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px
@@ -74,7 +74,7 @@ The complete source code of this demo can be found in
 Server-Side
 ===========
 
-As in the :doc:`tutorial 1</tutorials/java/tutorial-1-magicmirror>`, this demo
+As in the :doc:`tutorial 2</tutorials/java/tutorial-2-magicmirror>`, this demo
 has been developed using **Java** and `Spring Boot`:term:.
 
 .. note:: 
@@ -301,7 +301,7 @@ caller with the callee. Basically, the server creates a ``CallMediaPipeline``
 object, to encapsulate the media pipeline creation and management. Then, this
 object is used to negotiate media interchange with user's browsers.
 
-As explained in :doc:`tutorial 1</tutorials/java/tutorial-1-magicmirror>`, the
+As explained in :doc:`tutorial 2</tutorials/java/tutorial-2-magicmirror>`, the
 negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento
 Server is made by means of `SDP`:term: generation at the client (offer) and SDP
 generation at the server (answer). The SDP answers are generated with the

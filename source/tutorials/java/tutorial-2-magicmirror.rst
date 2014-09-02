@@ -1,12 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Java Tutorial 1 - Magic Mirror
+Java Tutorial 2 - Magic Mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a magic mirror that add with a funny hat over
 your face. It is implemented using `WebRTC`:term: technology. The following
 picture shows an screenshot of this demo running in a web browser:
 
-.. figure:: ../../images/kurento-java-tutorial-1-magicmirror-screenshot.png 
+.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png 
    :align:   center
    :alt:     Loopback video call with filtering screenshot :width: 600px
    :width: 600px
@@ -32,7 +32,7 @@ by the following `Media Element`:term: s:
 
 The media pipeline implemented is illustrated in the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-1-magicmirror-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
    :alt:     Loopback video call with filtering media pipeline
 
@@ -85,7 +85,7 @@ In the following figure you can see a class diagram of the server side code:
    MagicMirrorController -> KurentoClient [constraint = false]
 
 The main class of this demo is named
-`MagicMirrorApp <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-1-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
+`MagicMirrorApp <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-2-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to your applications.
@@ -111,7 +111,7 @@ This web application follows *Single Page Application* architecture
 of requests and responses. Specifically, we use the Spring annotation
 *@RestController* to implement REST services in the server-side. Take a look to
 the
-`MagicMirrorController <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-1-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorController.java>`_
+`MagicMirrorController <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-2-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorController.java>`_
 class:
 
 .. sourcecode:: java

@@ -1,12 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Tutorial 4 - Many to many video call
+Tutorial 5 - Many to many video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a many to many video call using `WebRTC`:term:.
 In other words, this application is a video group communication service. The
 following picture shows an screenshot of this demo running in a web browser:
 
-.. figure:: ../../images/kurento-java-tutorial-4-group-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-5-group-screenshot.png
    :align:   center
    :alt:     Many to many video call screenshot
    :width: 600px
@@ -23,7 +23,7 @@ new WebRtc endpoints are added when new users enter the room. Each WebRtc
 endpoint in interconnected to the existing ones. This media pipeline is
 illustrated in the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-4-group-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-5-group-pipeline.png
    :align:   center
    :alt:     Many to many video call media pipeline
 
@@ -33,7 +33,7 @@ protocol has to two parts: when a user enters the room and when a user leaves
 that room. The following sequence diagram illustrates the interchange of
 `JSON`:term: messages for both stages:
 
-.. figure:: ../../images/kurento-java-tutorial-4-group-signaling.png
+.. figure:: ../../images/kurento-java-tutorial-5-group-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px
@@ -52,7 +52,7 @@ The complete source code of this demo can be found in
 Server-Side
 ===========
 
-As in the :doc:`tutorial 1</tutorials/java/tutorial-1-magicmirror>`, this demo
+As in the :doc:`tutorial 2</tutorials/java/tutorial-2-magicmirror>`, this demo
 has been developed using **Java** and
 `Spring Boot <http://projects.spring.io/spring-boot/>`_.
 

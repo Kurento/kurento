@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-JavaScript Tutorial 1 - Magic Mirror
+JavaScript Tutorial 2 - Magic Mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 .. todo:: This section has been early documented using kws-tutorial.
@@ -10,7 +10,7 @@ This web application consists on a magic mirror that add with a funny hat over
 your face. It is implemented using `WebRTC`:term: technology. The following
 picture shows an screenshot of this demo running in a web browser:
 
-.. figure:: ../../images/kurento-js-tutorial-1-magicmirror-screenshot.png
+.. figure:: ../../images/kurento-js-tutorial-2-magicmirror-screenshot.png
    :align:   center
    :alt:     Loopback video call with filtering screenshot :width: 600px
    :width: 600px
@@ -36,7 +36,7 @@ by the following `Media Element`:term: s:
 
 The media pipeline implemented is illustrated in the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-1-magicmirror-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
    :alt:     Loopback video call with filtering media pipeline
 

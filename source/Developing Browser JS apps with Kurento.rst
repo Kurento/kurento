@@ -16,7 +16,7 @@ and check this
 
 There are several demos showing the typical real time media web applications:
 
-- :doc:`Tutorial 1 - Magic mirror </tutorials/js/tutorial-1-magicmirror>`
+- :doc:`Tutorial 2 - Magic mirror </tutorials/js/tutorial-2-magicmirror>`
 
 * Create an instance of the KurentoClient class that will manage the
   connection with the Kurento Server, so you'll need to provide the URI of its
