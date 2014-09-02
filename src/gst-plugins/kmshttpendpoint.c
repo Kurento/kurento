@@ -516,6 +516,7 @@ kms_http_endpoint_init_post_pipeline (KmsHttpEndpoint * self)
   self->priv->post = g_slice_new0 (PostData);
 
   self->priv->pipeline = gst_pipeline_new (POST_PIPELINE);
+  g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   self->priv->post->appsrc = gst_element_factory_make ("appsrc", NULL);
   decodebin = gst_element_factory_make ("decodebin", NULL);
 

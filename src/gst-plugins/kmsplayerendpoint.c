@@ -543,6 +543,7 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   self->priv->uridecodebin =
       gst_element_factory_make ("uridecodebin", URIDECODEBIN);
 
+  g_object_set (self->priv->pipeline, "async-handling", TRUE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->uridecodebin);
 
   bus = gst_pipeline_get_bus (GST_PIPELINE (self->priv->pipeline));
