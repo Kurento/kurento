@@ -48,6 +48,10 @@ struct _KmsPlumberEndpointPrivate
   /* SCTP server elements */
   GstElement *audiosrc;
   GstElement *videosrc;
+
+  /* SCTP client elements */
+  GstElement *audiosink;
+  GstElement *videosink;
 };
 
 enum
@@ -164,9 +168,69 @@ kms_plumber_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
   GST_INFO ("TODO: Implement this");
 }
 
+static GstStateChangeReturn
+kms_plumber_endpoint_change_state (GstElement * element,
+    GstStateChange transition)
+{
+  GstStateChangeReturn ret;
+  KmsPlumberEndpoint *self = KMS_PLUMBER_ENDPOINT (element);
+
+  switch (transition) {
+    case GST_STATE_CHANGE_NULL_TO_READY:{
+      GstElement *agnosticbin;
+
+      /* Audio sctp server will be listening in the port number provided */
+      /* as parameter and video sctp server will be bound to the same */
+      /* port number plus one. */
+      /* TODO: Bind ports in free available port using port number 0 and */
+      /* propagate this information to the other side by using a specific */
+      /* protocol to manage multiple channels on demand */
+
+      agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+      self->priv->audiosrc = gst_element_factory_make ("sctpserversrc", NULL);
+      g_object_set (G_OBJECT (self->priv->audiosrc), "bind-address",
+          self->priv->local_addr, "port", self->priv->local_port, NULL);
+
+      gst_bin_add (GST_BIN (self), self->priv->audiosrc);
+      gst_element_sync_state_with_parent (self->priv->audiosrc);
+
+      if (!gst_element_link (self->priv->audiosrc, agnosticbin)) {
+        GST_ERROR ("Could not link %s to element %s",
+            GST_ELEMENT_NAME (self->priv->audiosrc),
+            GST_ELEMENT_NAME (agnosticbin));
+        return GST_STATE_CHANGE_FAILURE;
+      }
+
+      agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
+      self->priv->videosrc = gst_element_factory_make ("sctpserversrc", NULL);
+      g_object_set (G_OBJECT (self->priv->videosrc), "bind-address",
+          self->priv->local_addr, "port", self->priv->local_port + 1, NULL);
+
+      gst_bin_add (GST_BIN (self), self->priv->videosrc);
+      gst_element_sync_state_with_parent (self->priv->videosrc);
+
+      if (!gst_element_link (self->priv->videosrc, agnosticbin)) {
+        GST_ERROR ("Could not link %s to element %s",
+            GST_ELEMENT_NAME (self->priv->videosrc),
+            GST_ELEMENT_NAME (agnosticbin));
+        return GST_STATE_CHANGE_FAILURE;
+      }
+
+      break;
+    }
+    default:
+      break;
+  }
+
+  ret = GST_ELEMENT_CLASS (parent_class)->change_state (element, transition);
+
+  return ret;
+}
+
 static void
 kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
 {
+  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   KmsElementClass *kms_element_class = KMS_ELEMENT_CLASS (klass);
 
@@ -215,6 +279,9 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_plumber_endpoint_video_valve_removed);
 
+  gstelement_class->change_state =
+      GST_DEBUG_FUNCPTR (kms_plumber_endpoint_change_state);
+
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsPlumberEndpointPrivate));
 }
@@ -222,23 +289,7 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
 static void
 kms_plumber_endpoint_init (KmsPlumberEndpoint * self)
 {
-  GstElement *agnosticbin;
-
   self->priv = KMS_PLUMBER_ENDPOINT_GET_PRIVATE (self);
-
-  agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
-  self->priv->videosrc = gst_element_factory_make ("sctpserversrc", NULL);
-  g_object_set (G_OBJECT (self->priv->videosrc), "bind-address",
-      self->priv->local_addr, "port", self->priv->local_port, NULL);
-
-  gst_bin_add (GST_BIN (self), self->priv->videosrc);
-  gst_element_sync_state_with_parent (self->priv->videosrc);
-
-  if (!gst_element_link (self->priv->videosrc, agnosticbin)) {
-    GST_ERROR ("Could not link %s to element %s",
-        GST_ELEMENT_NAME (self->priv->videosrc),
-        GST_ELEMENT_NAME (agnosticbin));
-  }
 }
 
 gboolean
