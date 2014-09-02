@@ -23,7 +23,7 @@ In the following sections, we will describe in detail this two components.
 Kurento Media Server
 --------------------
 
-.. todo:: Complete information about Kurento Media Server. 
+.. todo:: Complete information about Kurento Media Server.
 
 Agnostic media adaptor
 ======================
@@ -54,7 +54,7 @@ elements in a way that unnecessarily alternate codecs (e.g. going from H.264,
 to raw, to H.264 to raw again) will lead to very poor performance of
 applications.
 
-.. figure:: images/AgnosticMediaAdaptor.png
+.. figure:: ../images/AgnosticMediaAdaptor.png
    :height: 215px
    :width:  599px
    :align:  center
@@ -70,10 +70,4 @@ applications.
 Kurento Control Server
 ----------------------
 
-.. todo:: Complete information about Kurento Control Server. 
-
-
-
-
-
-
+.. todo:: Complete information about Kurento Control Server.

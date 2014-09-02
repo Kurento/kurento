@@ -13,11 +13,11 @@ developed with very different technologies.
 
   * **Kurento Media Server:** This is the core component of Kurento. It is
     implemented using C/C++ and GStreamer platform.
-  * **Kurento Control Server** This server component is responsible to control
-    clients that use Kurento. It speaks web sockets with the clients and
-    translate it to another internal protocol to communicate with Kurento Media
-    Server. It is implemented in Java and uses Maven, Spring Boot and Tomcat
-    technologies.
+  * **Kurento Control Server** This server component is responsible to
+    control clients that use Kurento. It speaks web sockets with the clients
+    and translate it to another internal protocol to communicate with Kurento
+    Media Server. It is implemented in Java and uses Maven, Spring Boot and
+    Tomcat technologies.
 
 * **Kurento Java Client:** This Kurento Client is implemented in Java with
   Maven and Sprint.
@@ -48,7 +48,7 @@ Using development versions is not the recommended way to use Kurento, but it can
 be useful to try brand new features.
 
 .. warning:: You have to use this versions with caution, because them can be
-   broken. Usually they have bugs and incomplete functionalities. **Never** use 
+   broken. Usually they have bugs and incomplete functionalities. **Never** use
    development versions in production.
 
 Kurento Server
@@ -59,13 +59,13 @@ http://ubuntu.kurento.org.
 
 The following procedure is needed to setup Ubuntu to automatically get latest
 package from the development repository. This needs to be done only once::
-      
+
     sudo add-apt-repository ppa:kurento/kurento
     echo "deb http://ubuntu.kurento.org repo/" | sudo tee -a /etc/apt/sources.list > /dev/null
-    
+
 Every time you want to install the latest development version, you have to
-execute the following commandos:: 
-    
+execute the following commands::
+
     sudo apt-get update
     sudo apt-get install kurento-server
 
@@ -90,8 +90,8 @@ Kurento Java Client
 The development builds of Kurento Java Client Maven artifacts hosted in
 http://maven.kurento.org.
 
-To use development versions, first you have to add this repository in your
-Maven installation as a valid snapshot repository. To do this, add following
+To use development versions, first you have to add this repository in your Maven
+installation as a valid snapshot repository. To do this, add following
 configuration repository to the repositories section to file
 ``~/.m2/settings.xml``:
 
@@ -111,9 +111,9 @@ configuration repository to the repositories section to file
 
 Then, you have to change the dependency in your application's ``pom.xml`` to
 point to a development version. There is no way in Maven to use the latest
-development version of an artifact. You have to specify the concrete development
-version you want to depend on. To know what is the current Kurento Java Client
-development version, you can take a look to its
+development version of an artifact. You have to specify the concrete
+development version you want to depend on. To know what is the current Kurento
+Java Client development version, you can take a look to its
 `pom.xml <https://github.com/Kurento/kurento-java/blob/develop/kmf-media-api/pom.xml>`_
 and search for the version tag. For example, if you see something like:
 
@@ -136,7 +136,6 @@ application's pom.xml the following dependency:
        <artifactId>kurento-client</artifactId>
        <version>0.9.0-SNAPSHOT</version>
    </dependency>
-   
 
 Kurento JavaScript Client
 =========================
@@ -149,8 +148,8 @@ applications.
 Node.js development
 ~~~~~~~~~~~~~~~~~~~
 
-If you are using Kurento JavaScript Client from a Node.js application and want to
-use the latest development version of this library, you have to change the
+If you are using Kurento JavaScript Client from a Node.js application and want
+to use the latest development version of this library, you have to change the
 ``dependencies`` section in the application's ``package.json``. You have to
 point directly to the development repository, that is:
 
@@ -186,24 +185,24 @@ Build Kurento from sources
 --------------------------
 
 As Kurento has several components implemented with very different technologies,
-build it from source can be a challenging task. In the following subsections
-we will explain the building process in detail for each component.
+build it from source can be a challenging task. In the following subsections we
+will explain the building process in detail for each component.
 
 .. todo:: We need to explain in some place how to generate code from Kurento
-   Modules and how to build the Kurento Module Creator. If we don't do so, we 
-   are explaining only the half of the history to build from sources. 
+   Modules and how to build the Kurento Module Creator. If we don't do so, we
+   are explaining only the half of the history to build from sources.
 
 Kurento Media Server
 ====================
 
 To build Kurento Media Server you need an **Ubuntu 14.04 LTS** operating system.
 
-First you have to install all needed development tools and dependendencies
+First you have to install all needed development tools and dependencies
 executing the following commands::
 
      sudo add-apt-repository ppa:kurento/kurento
      sudo apt-get update
-     sudo apt-get install git     
+     sudo apt-get install git
      sudo apt-get install libthrift-dev thrift-compiler libjsoncpp-dev
      sudo apt-get install gstreamer1.0* libgstreamer1.0-dev
      sudo apt-get install libgstreamer-plugins-base1.0-dev libnice-dev gtk-doc-tools
@@ -214,11 +213,10 @@ executing the following commands::
      sudo apt-get install libtool libsoup2.4-dev tesseract-ocr-dev tesseract-ocr-eng
      sudo apt-get install libgnutls28-dev gnutls-bin libvpx-dev
 
-Plase take care that the list of dependencies changes as dependencies change and new
-features are added, you can check the actual packages that the Ubuntu
-PPA needs for building from sources in the ``Build-Depends`` of the
-latest release `debian/control file
-<https://github.com/Kurento/kurento-media-server/blob/master/debian/control>`__.
+Plase take care that the list of dependencies changes as dependencies change and
+new features are added, you can check the actual packages that the Ubuntu PPA
+needs for building from sources in the ``Build-Depends`` of the latest release
+`debian/control file <https://github.com/Kurento/kurento-media-server/blob/master/debian/control>`__.
 
 Second you have to get the source code clonning git repository::
 
@@ -278,8 +276,8 @@ And start and stop it::
 Kurento Java Client
 ===================
 
-To build Kurento Java Client, be sure you have Java, Maven and Git installed.
-If not, install it with::
+To build Kurento Java Client, be sure you have Java, Maven and Git installed. If
+not, install it with::
 
     sudo apt-get install openjdk-7-jdk
     sudo apt-get install git
@@ -318,6 +316,6 @@ Then, you compile, package and install the project ``kurento-client``::
 
    cd kurento-client-js
    npm install
-    
-.. todo:: Explain how to use this newly created library from app's code. 
+
+.. todo:: Explain how to use this newly created library from app's code.
    Also explain how to compile all Kurento dependencies (kurento-jsonrpc-js).

@@ -154,19 +154,31 @@ or :term:`kurento`.
         inspiring for what the multimedia community needs: simplicity, openness and
         universality. Kurento is open source, released under LGPL 2.1, and has several
         components, providing solutions to most multimedia common services
-        requirements. Those components include:
+        requirements. Those components include: term:`Kurento Server <Kurento Server>,
+        term:`Kurento API <Kurento API>, term:`Kurento Protocol <Kurento Protocol>, and
+        term:`Kurento Client <Kurento Client>.
 
-         * Kurento Server. Server which provides rich media capabilities. Composed by the
-           Kurento Media Server (KMS) and the Kurento Control Server (KCS).
+    Kurento API
+         **Kurento API** is an object oriented API to create media pipelines to control
+         media. It can be seen as and unterface to Kurento Server. It can be used from the
+         Kurento Protocol or from Kurento Clients.
 
-         * Kurento API. Interface to Kurento Server. It can be used from the Kurento
-           Protocol or from Kurento Clients.
+    Kurento Client
+         A **Kurento Client** is a programming library (Java or JavaScript) used to control
+         **Kurento Server** from an application. For example, with this library, any developer
+         can create a web application that uses Kurento Server to receive audio and video from
+         the user web browser, process it and send it back again over Internet. Kurento Client
+         exposes the :term:`Kurento API <Kurento API>` to app developers.
 
-         * Kurento Protocol. Communication between KMS and clients by means of
-           :term:`JSON-RPC` messages.
+    Kurento Protocol
+         Communication between KMS and clients by means of :term:`JSON-RPC` messages.
+         It is based on :term:`WebSocket` that uses :term:`JSON-RPC` V2.0 messages for making
+         requests and sending responses.
 
-         * Kurento Client. Library (Java or JavaScript) to access to media capabilities
-           provided by Kurento Server.
+    Kurento Server
+         **Kurento Server** is the core element of Kurento since it responsible for media
+         transmission, processing, loading and recording. It is composed by two
+         componets: the Kurento Media Server (KMS) and the Kurento Control Server (KCS).
 
     Maven
         `Maven <http://maven.apache.org/>`_ is a build automation tool used primarily for Java projects.

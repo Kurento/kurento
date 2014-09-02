@@ -10,9 +10,9 @@ In order to install the latest stable Kurento Server version you have to type
 the following commands, one at a time and in the same order as listed here.
 When asked for any kind of confirmation, reply affirmatively:
 
-.. sourcecode:: console 
+.. sourcecode:: console
 
-   sudo add-apt-repository ppa:kurento/kurento 
+   sudo add-apt-repository ppa:kurento/kurento
    sudo apt-get update
    sudo apt-get install kurento-server
 

@@ -25,9 +25,9 @@ communication systems:
 The following figure shows a conceptual representation of the high level
 architecture of kurento.
 
-.. figure:: images/Architecture.png
+.. figure:: ../images/Architecture.png
    :align:  center
-   :width:  670px 
+   :width:  670px
    :alt:    Kurento Architecture
 
    **Kurento Architecture**. *Kurento architecture follows the traditional separation
@@ -61,8 +61,8 @@ The capabilities of the media plane (Kurento Server) and signalling plane
 (Application) are exposed through a number of APIs, which provide increasing
 abstraction levels.
 
-Following this, the role of the different APIs can be
-summarized in the following way:
+Following this, the role of the different APIs can be summarized in the
+following way:
 
 - **Kurento Protocol**: Is a network protocol exposing the Kurento Server
   capabilities through `WebSocket`:term: (read more in
@@ -147,12 +147,12 @@ client side and the Service layer at the server side. However, the Application
 Logic layer, in both cases, can be located at either of the sides or even
 distributed between them. This idea is represented in the following picture:
 
-.. figure:: images/Applications_Layered_Architecture.png
+.. figure:: ../images/Applications_Layered_Architecture.png
    :width:  500px
    :align:  center
    :alt:    Layered architecture of web and multimedia applications
-   
-   **Layered architecture of web and multimedia applications**. 
+
+   **Layered architecture of web and multimedia applications**.
    *Applications created using Kurento (right) can be similar
    to standard WWW applications (left). Both types
    of applications may choose to place the application logic at the client
@@ -169,12 +169,12 @@ tend to maintain client side code as simple as possible, bringing most of their
 application logic to the server. Reproducing this kind of development
 experience is the most usual way of using Kurento. That is, by locating the
 multimedia application logic at the server side, so that the specific media
-pipelines are created using the Kurento Client for your favority language.
+pipelines are created using the Kurento Client for your favorite language.
 
 .. note:: In the following sections it is considered that all Kurento handling
-   is done at the server side. Although this is the most common way of using 
+   is done at the server side. Although this is the most common way of using
    Kurento, is important to note that all multimedia logic can be implemented at
-   the client with **Kurento JavaScript Client**. 
+   the client with **Kurento JavaScript Client**.
 
 Communicating client, server and Kurento
 ----------------------------------------
@@ -200,7 +200,7 @@ The interactions maintained among these modules depend on the specificities of
 each application. However, in general, for most applications they can be
 reduced to the following conceptual scheme:
 
-.. figure:: images/Generic_interactions.png
+.. figure:: ../images/Generic_interactions.png
    :width:  670px
    :align:  center
    :alt:    Main interactions between architectural modules
@@ -283,7 +283,7 @@ offered SDP. When the answer SDP is obtained, it is given back to the client
 and the media exchange can be started. The interactions among the different
 modules are summarized in the following picture
 
-.. figure:: images/RTC_session.png
+.. figure:: ../images/RTC_session.png
    :width: 670px
    :align: center
    :alt:   Main interactions in a RTC session
@@ -304,12 +304,12 @@ of it. This pipeline is schematically shown in the figure below, where we
 assume that the Filter element is capable of detecting the face and adding the
 hat to it.
 
-.. figure:: images/RTC_session_pipeline.png
+.. figure:: ../images/RTC_session_pipeline.png
    :width: 670px
    :align: center
    :alt:   Example pipeline for a WebRTC session
-   
-   **Example pipeline for a WebRTC session**. 
+
+   **Example pipeline for a WebRTC session**.
    *During the negotiation phase, the application developer can create a
    pipeline providing the desired specific functionality. For example, this
    pipeline uses a WebRtcEndpoint for communicating with the client, which
@@ -319,7 +319,7 @@ hat to it.
    filtered (e.g. with a hat added onto her head) and the stream will be
    recorded and made available for further recovery into a repository (e.g.
    a file).*
-   
+
 Kurento Design Principles
 -------------------------
 

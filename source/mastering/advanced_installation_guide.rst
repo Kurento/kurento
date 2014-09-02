@@ -4,9 +4,9 @@ Kurento Server Advanced Installation guide
 
 .. highlight:: bash
 
-.. todo:: We have to explain all configuration options for Kurento Server in 
-   some place in the documentation. Maybe this section have to be renamed to 
-   "Kurento Server configuration" to include this information. 
+.. todo:: We have to explain all configuration options for Kurento Server in
+   some place in the documentation. Maybe this section have to be renamed to
+   "Kurento Server configuration" to include this information.
 
 Monolithic Kurento Server Installation
 ======================================
@@ -78,9 +78,9 @@ file looks like this:
 .. sourcecode:: properties
 
     server.port=8888
-    kmf.transport=thrift 
+    kmf.transport=thrift
     thrift.kms.address=127.0.0.1:9090
-    thrift.kmf.address=127.0.0.1:9900 
+    thrift.kmf.address=127.0.0.1:9900
     oauthserver.url=
 
 This configuration implies that KCS use Thrift protocol to communicate with KMS
@@ -90,8 +90,7 @@ KCS will open the port 9900 in all interfaces and inform to KMS that it will be
 reachable in IP 127.0.0.1 (from the point of view of KMS) to recevie incomming
 Thrift requests.
 
-Finally, all web socket requests must to be made to 8888 port (in any
-interface).
+Finally, all web socket requests must to be made to 8888 port (in any interface).
 
 Distributed Kurento Server Installation
 =======================================
@@ -103,7 +102,7 @@ possible to put all nodes in a private network behind a router with :term:`NAT`.
 For example, the following picture shows a typical distributed installation
 scenario:
 
-.. figure:: images/Kurento_nat_deployment.png
+.. figure:: ../images/Kurento_nat_deployment.png
    :width: 400px
    :align:   center
    :alt:     Network with NAT
@@ -192,8 +191,8 @@ The output should be similar to the following:
 
 .. sourcecode:: shell
 
-   tcp        0      0 0.0.0.0:9091            0.0.0.0:*               LISTEN      8752/kurento    
-   tcp6       0      0 :::9090                 :::*                    LISTEN      8752/kurento 
+   tcp        0      0 0.0.0.0:9091            0.0.0.0:*               LISTEN      8752/kurento
+   tcp6       0      0 :::9090                 :::*                    LISTEN      8752/kurento
 
 To verify the ports opened by KCS execute the following command:
 
@@ -205,10 +204,5 @@ The output should be similar to the following:
 
 .. sourcecode:: shell
 
-   tcp6       0      0 :::8888                 :::*                    LISTEN      21243/java      
-   tcp6       0      0 127.0.0.1:9900          :::*                    LISTEN      21243/java   
-
-
-
-
-
+   tcp6       0      0 :::8888                 :::*                    LISTEN      21243/java
+   tcp6       0      0 127.0.0.1:9900          :::*                    LISTEN      21243/java

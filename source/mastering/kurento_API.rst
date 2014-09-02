@@ -54,7 +54,7 @@ developers:
       stream out of the pipeline. Again, there are several types of output
       endpoints specialized in files, network, screen, etc.
 
-.. figure:: images/Media_element.png
+.. figure:: ../images/Media_element.png
    :height: 100px
    :width:  180px
    :align:  center
@@ -71,7 +71,7 @@ developers:
    other elements input streams (sinks). Hence, the pipeline represents a
    “machine” capable of performing a sequence of operations over a stream.
 
-.. figure:: images/Media_pipeline_example.png
+.. figure:: ../images/Media_pipeline_example.png
    :height: 450px
    :width:  600px
    :align:  center
@@ -130,13 +130,13 @@ in the Kurento API.
                 "+ getMediaSrcs(...) : MediaSource[]\l}"
         urllabel = "MediaElement"
         href = "com/kurento/kmf/media/MediaElement.html"
-   ]   
+   ]
 
-   
+
    MediaObject -> MediaPipeline;
-   MediaObject -> MediaElement;   
+   MediaObject -> MediaElement;
    MediaObject -> Hub;
-   
+
    MediaObject -> MediaObject [label = "parent", constraint=false, dir = normal, arrowhead="vee"]
 
    MediaObject -> MediaPipeline [label = "pipeline", constraint=false, dir = normal, arrowhead="vee"]
@@ -146,7 +146,7 @@ in the Kurento API.
    MediaElement -> Endpoint;
    MediaElement -> Filter;
    MediaElement -> HubPort;
-   
+
    "Hub" -> "HubPort" [headlabel = "*", constraint=false, dir = normal, arrowhead="vee"]
 
 Endpoints
@@ -158,31 +158,31 @@ HttpGetEndpoint
     An ''HttpGetEndpoint'' is an output endpoint that delivers media using
     HTML5 pseudo-streaming mechanism by means of http GET requests.
 
-.. image:: images/http.jpg
+.. image:: ../images/http.jpg
    :align:  center
 
 HttpPostEndpoint
     An ''HttpPostEndpoint'' is an input endpoint that accepts media using
     http POST requests like HTTP file upload function.
 
-.. image:: images/http2.jpg
+.. image:: ../images/http2.jpg
    :align:  center
-   
+
 PlayerEndpoint
     A ''PlayerEndpoint'' is an input endpoint that retrieves content from
     file system, http URL or RTSP url and inject it into the media pipeline.
 
-.. image:: images/player.jpg
+.. image:: ../images/player.jpg
    :align:  center
-   
+
 RecorderEndpoint
     A ''RecorderEndpoint'' is an output endpoint that  provides function to
     store contents in reliable mode (doesn't discard data). It contains ''Media
     Sink'' pads for audio and video.
 
-.. image:: images/recorder.jpg
+.. image:: ../images/recorder.jpg
    :align:  center
-   
+
 RtpEndpoint
     A ''RtpEndpoint'' is an output and input endpoint. That is, provides
     bidirectional content delivery capabilities with remote networked peers
@@ -190,15 +190,15 @@ RtpEndpoint
     the network it uses :term:`RTP` protocol and :term:`SDP` for media
     negotiation.
 
-.. image:: images/rtp.jpg
+.. image:: ../images/rtp.jpg
    :align:  center
-   
+
 WebRtcEndpoint
     A ''WebRtcEndpoint'' is an output and input endpoint that provides media
     streaming for Real Time Communications (RTC) through the web. It implements
     :term:`WebRTC` technology to communicate with browsers.
 
-.. image:: images/webrtc.jpg
+.. image:: ../images/webrtc.jpg
    :align:  center
 
 The following class diagram shows the relationships of the main endpoint classes.
@@ -224,20 +224,20 @@ The following class diagram shows the relationships of the main endpoint classes
         arrowtail = "empty"
         dir = back;
    ]
-   
+
    "MediaElement" -> "Endpoint";
    Endpoint -> SessionEndpoint;
    Endpoint -> UriEndpoint;
-   
+
    SessionEndpoint -> HttpEndpoint;
    SessionEndpoint -> SdpEndpoint;
-   
+
    HttpEndpoint -> HttpGetEndpoint;
    HttpEndpoint -> HttpPostEndpoint;
-   
+
    SdpEndpoint -> RtpEndpoint;
    SdpEndpoint -> WebRtcEndpoint;
-   
+
    UriEndpoint -> PlayerEndpoint;
    UriEndpoint -> RecorderEndpoint;
 
@@ -252,16 +252,16 @@ ZBarFilter
     found, the filter raises a ``CodeFoundEvent``. Clients can add a listener
     to this event to execute some action.
 
-.. image:: images/bar.jpg
+.. image:: ../images/bar.jpg
    :align:  center
-   
+
 FaceOverlayFilter
     This type of filter detects faces in a video stream and overlaid it with
     a configurable image.
 
-.. image:: images/face.jpg
+.. image:: ../images/face.jpg
    :align:  center
-   
+
 GStreamerFilter
     This is a generic filter interface that allow use GStreamer filter in
     Kurento Media Pipelines.
@@ -289,7 +289,7 @@ The following class diagram shows the relationships of the main filter classes.
         arrowtail = "empty"
         dir = back;
    ]
-   
+
     "MediaElement" -> "Filter";
     "Filter" -> "ZBarFilter";
     "Filter" -> "FaceOverlayFilter";
@@ -305,21 +305,21 @@ Composite
     A Hub that mixes the audio stream of its connected inputs and constructs
     a grid with the video streams of them.
 
-.. image:: images/Composite.png
+.. image:: ../images/Composite.png
    :align:  center
-   
+
 DispatcherOneToMany
     A Hub that sends a given input to all the connected output HubPorts.
 
-.. image:: images/OneToMany.png
+.. image:: ../images/OneToMany.png
    :align:  center
-   
+
 Dispatcher
     A Hub that allows routing between arbitrary input-output HubPort pairs.
 
-.. image:: images/Dispatcher.png
+.. image:: ../images/Dispatcher.png
    :align:  center
-   
+
 .. digraph:: Hubs
    :caption: Class diagram of Hubs in Kurento API
 
@@ -341,14 +341,14 @@ Dispatcher
         arrowtail = "empty"
         dir = back;
    ]
-   
+
     "MediaObject" -> "Hub";
     "MediaObject" -> "MediaElement";
-    
+
     "Hub" -> "HubPort" [headlabel = "*", constraint=false, dir = normal, arrowhead="vee", labelangle=60]
-    
+
     "MediaElement" -> "HubPort";
-   
+
     "Hub" -> "Composite";
     "Hub" -> "Dispatcher";
     "Hub" -> "DispatcherOneToMany";

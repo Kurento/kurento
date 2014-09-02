@@ -15,7 +15,8 @@ How do I...
 
 .. todo:: Document KMS building guide
 
-...know how many :rom:cls:`pipelines <MediaPipeline>` do I need for my Application?
+...know how many :rom:cls:`pipelines <MediaPipeline>` do I need for my
+Application?
     :rom:cls:`Media elements <MediaElement>` can only communicate with each
     other when they are part of the same pipeline. Different MediaPipelines in
     the server are independent do not share audio, video, data or events.
@@ -54,12 +55,8 @@ How do I...
         * nvidia-319
         * nvidia-319-updates
 
-    Further, ocl-icd-libopencl1 conflicts with all the nvidia-* packages.
-    As the Ubuntu 13.10, when none of those packages are installed,
-    the package manager chooses nvidia-319-updates, which breaks OpenGL
-    acceleration for Intel graphics cards. To check for the problem,
-    if you install kurento or need to install libopencv-dev on a Intel
-    graphics computer, please do:
+    Further, ocl-icd-libopencl1 conflicts with all the
+    nvidia-* packages. As the Ubuntu 13.10, when none of those packages are installed, the package manager chooses nvidia-319-updates, which breaks OpenGL acceleration for Intel graphics cards. To check for the problem, if you install kurento or need to install libopencv-dev on a Intel graphics computer, please do:
 
     .. sourcecode:: console
 

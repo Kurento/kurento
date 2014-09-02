@@ -6,9 +6,16 @@ Kurento Protocol
 
 .. highlight:: json
 
-Kurento Protocol is the Kurento Server protocol based on :term:`WebSocket`
+**Kurento Protocol** is the Kurento Server protocol based on :term:`WebSocket`
 that uses :term:`JSON-RPC` V2.0 messages for making requests and sending
 responses.
+
+Currently there are two :term:`Kurento Client <Kurento Client>` out of the box:
+Java and JavaScript. If you have another favorite language, you can still use
+Kurento by means of :doc:`Kurento Protocol <Kurento_Protocol>`. This protocol
+allows to control Kurento Server and it is based on Internet standards like
+:term:`WebSocket` and :term:`Json-RPC`.
+
 
 JSON-RPC Messages format
 ========================
@@ -59,10 +66,11 @@ members:
    must be exactly "2.0".
 -  **id**: this member is mandatory and it must match the value of the *id*
    member in the *Request object*.
--  **result**: its value is determined by the method invoked on the server. In
-   case the connection is rejected, it's returned an object with a *rejected*
-   attribute containing an object with a *code* and *message* attributes with
-   the reason why the session was not accepted, and no sessionId is defined.
+-  **result**: its value is determined by the method invoked on the server.
+   In case the connection is rejected, it's returned an object with a
+   *rejected* attribute containing an object with a *code* and *message*
+   attributes with the reason why the session was not accepted, and no
+   sessionId is defined.
 
 The following example shows a typical successful response::
 
@@ -119,11 +127,13 @@ communications between client and server infrastructure. For this reason, the
 Kurento Protocol is based on WebSocket transports.
 
 Previous to issuing commands, the Kurento Client requires establishing a
-WebSocket connection with Kurento Server to the URL: ``ws://hostname:port/kurento``
+WebSocket connection with Kurento Server to the URL:
+``ws://hostname:port/kurento``
 
-Once the WebSocket has been established, the Kurento Protocol offers five different
-types of request/response messages:
- - **create**: Instantiates a new media object, that is, a pipeline or media element.
+Once the WebSocket has been established, the Kurento Protocol offers five
+different types of request/response messages:
+ - **create**: Instantiates a new media object, that is, a pipeline or media
+   element.
  - **invoke**: Calls a method of an existing media object.
  - **subscribe**: Creates a subscription to an event in a object.
  - **unsubscribe**: Removes an existing subscription to an event.
@@ -131,7 +141,8 @@ types of request/response messages:
 
 The Kurento Protocol allows to Kurento Server send requests to clients:
 
- - **onEvent**: This request is sent from kurento server to clients when an event occurs.
+ - **onEvent**: This request is sent from kurento server to clients when an
+   event occurs.
 
 Create messages
 ~~~~~~~~~~~~~~~
@@ -140,17 +151,18 @@ Create message requests the creation of an object of the Kurento API. The
 parameter ``type`` specifies the type of the object to be created. The
 parameter ``creationParams`` contains all the information needed to create the
 object. Each object type needs different ``creationParams`` to create the
-object. These parameters are defined in :doc:`Kurento API section <Kurento_API>`.
+object. These parameters are defined in
+:doc:`Kurento API section <Kurento_API>`.
 
-Finally, a ``sessionId`` parameter is included with the identifier of the current session.
-The value of this parameter is sent by Kurento server to the client in each
-response. Only the first request from client to server is allowed
-to not include the ''sessionId'' (because at this point is unknown for the
-client).
+Finally, a ``sessionId`` parameter is included with the identifier of the
+current session. The value of this parameter is sent by Kurento server to the
+client in each response. Only the first request from client to server is
+allowed to not include the ''sessionId'' (because at this point is unknown for
+the client).
 
 The following example shows a Request object requesting the creation of an
-object of the type ``PlayerEndpoint`` within the pipeline ``6829986``
-and the parameter ``uri: http://host/app/video.mp4`` in the session
+object of the type ``PlayerEndpoint`` within the pipeline ``6829986`` and the
+parameter ``uri: http://host/app/video.mp4`` in the session
 ``c93e5bf0-4fd0-4888-9411-765ff5d89b93``::
 
     {
@@ -196,18 +208,18 @@ is described the valid operations for all object types.
 
 The following example shows a ``Request`` object requesting the invocation of
 the operation ``connect`` on the object ``442352747`` with parameter sink
-``6829986``. The ``sessionId`` is also included as is mandatory for
-all requests in the session (except the first one)::
+``6829986``. The ``sessionId`` is also included as is mandatory for all
+requests in the session (except the first one)::
 
     {
       "jsonrpc": "2.0",
-      "id": 2, 
-      "method": "invoke", 
+      "id": 2,
+      "method": "invoke",
       "params": {
         "object": "442352747", "operation": "connect",
         "operationParams": {
           "sink": "6829986"
-        }, 
+        },
         "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
       }
     }
@@ -234,11 +246,11 @@ Release message requests the release of the specified object. The parameter
 ``object`` indicates the id of the object to be released::
 
     {
-      "jsonrpc": "2.0", 
+      "jsonrpc": "2.0",
       "id": 3,
-      "method": "release", 
+      "method": "release",
       "params": {
-        "object": "442352747", 
+        "object": "442352747",
         "sessionId": "c93e5bf0-4fd0-4888-9411-765ff5d89b93"
       }
     }
@@ -261,19 +273,20 @@ Subscribe message requests the subscription to a certain kind of events in the
 specified object. The parameter ``object`` indicates the id of the object to
 subscribe for events. The parameter ``type`` specifies the type of the events.
 If a client is subscribed for a certain type of events in an object, each time
-an event is fired in this object, a request with method ``onEvent`` is sent from
-kurento Server to the client. This kind of request is described few sections later.
+an event is fired in this object, a request with method ``onEvent`` is sent
+from kurento Server to the client. This kind of request is described few
+sections later.
 
 The following example shows a ``Request`` object requesting the subscription of
-the event type ``EndOfStream`` on the object ``311861480``.
-The ``sessionId`` is also included::
+the event type ``EndOfStream`` on the object ``311861480``. The ``sessionId``
+is also included::
 
     {
       "jsonrpc":"2.0",
-      "id":4, 
-      "method":"subscribe", 
+      "id":4,
+      "method":"subscribe",
       "params":{
-        "object":"311861480", 
+        "object":"311861480",
         "type":"EndOfStream",
         "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
       }
@@ -291,7 +304,7 @@ attribute contains the subscription id::
       "result": {
         "value":"353be312-b7f1-4768-9117-5c2f5a087429",
         "sessionId":"c93e5bf0-4fd0-4888-9411-765ff5d89b93"
-      } 
+      }
     }
 
 Unsubscribe messages
@@ -330,10 +343,10 @@ OnEvent Message
 ~~~~~~~~~~~~~~~
 
 When a client is subscribed to a type of events in an object, the server send an
-``onEvent`` request each time an event of that type is fired in the
-object. This is possible because the Kurento Protocol is implemented with
-websockets and there is a full duplex channel between client and server. The
-request that server send to client has all the information about the event:
+``onEvent`` request each time an event of that type is fired in the object.
+This is possible because the Kurento Protocol is implemented with websockets
+and there is a full duplex channel between client and server. The request that
+server send to client has all the information about the event:
 
   - **data**: Information about this specific of this type of event.
   - **source**: the object source of the event.
@@ -345,19 +358,19 @@ an event of type ``EndOfStream`` in the object ``311861480`` with subscription
 ``353be312-b7f1-4768-9117-5c2f5a087429``::
 
     {
-      "jsonrpc": "2.0", 
+      "jsonrpc": "2.0",
       "id": 6,
-      "method": "onEvent", 
+      "method": "onEvent",
       "params": {
         "value": {
            "data":{
-              "source":"311861480", 
+              "source":"311861480",
               "type":"EndOfStream"
-          }, 
+          },
           "object":"311861480",
           "subscription":"353be312-b7f1-4768-9117-5c2f5a087429",
           "type":"EndOfStream",
-        }, 
+        },
         "sessionId":"4f5255d5-5695-4e1c-aa2b-722e82db5260"
       }
     }
@@ -371,4 +384,5 @@ onEvent request::
       "id":6,
       "result": ""
     }
-   
+
+
