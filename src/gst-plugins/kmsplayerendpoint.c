@@ -43,6 +43,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_player_endpoint_debug_category);
   )                                             \
 )
 
+#define BASE_TIME_LOCK(obj) (                                           \
+  g_mutex_lock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_lock)        \
+)
+
+#define BASE_TIME_UNLOCK(obj) (                                         \
+  g_mutex_unlock (&KMS_PLAYER_ENDPOINT(obj)->priv->base_time_lock)      \
+)
+
 typedef void (*KmsActionFunc) (gpointer user_data);
 
 struct _KmsPlayerEndpointPrivate
@@ -51,6 +59,7 @@ struct _KmsPlayerEndpointPrivate
   GstElement *uridecodebin;
   KmsLoop *loop;
   gboolean use_encoded_media;
+  GMutex base_time_lock;
 };
 
 enum
@@ -144,6 +153,8 @@ kms_player_endpoint_dispose (GObject * object)
     self->priv->pipeline = NULL;
   }
 
+  g_mutex_clear (&self->priv->base_time_lock);
+
   /* clean up as possible. May be called multiple times */
 
   G_OBJECT_CLASS (kms_player_endpoint_parent_class)->dispose (object);
@@ -181,7 +192,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
 
   buffer = gst_buffer_make_writable (buffer);
 
-  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsrc));
+  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsrc));
 
   base_time =
       g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
@@ -205,7 +216,7 @@ new_sample_cb (GstElement * appsink, gpointer user_data)
   if (GST_BUFFER_DTS_IS_VALID (buffer))
     buffer->dts += *base_time;
 
-  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsrc));
+  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsrc));
 
   src = gst_element_get_static_pad (appsrc, "src");
   sink = gst_pad_get_peer (src);
@@ -374,9 +385,9 @@ kms_player_endpoint_stopped (KmsUriEndpoint * obj)
 
   /* Set internal pipeline to NULL */
   gst_element_set_state (self->priv->pipeline, GST_STATE_NULL);
-  KMS_ELEMENT_LOCK (self);
+  BASE_TIME_LOCK (self);
   g_object_set_data (G_OBJECT (self), BASE_TIME_DATA, NULL);
-  KMS_ELEMENT_UNLOCK (self);
+  BASE_TIME_UNLOCK (self);
 
   KMS_URI_ENDPOINT_GET_CLASS (self)->change_state (KMS_URI_ENDPOINT (self),
       KMS_URI_ENDPOINT_STATE_STOP);
@@ -537,6 +548,8 @@ kms_player_endpoint_init (KmsPlayerEndpoint * self)
   GstBus *bus;
 
   self->priv = KMS_PLAYER_ENDPOINT_GET_PRIVATE (self);
+
+  g_mutex_init (&self->priv->base_time_lock);
 
   self->priv->loop = kms_loop_new ();
   self->priv->pipeline = gst_pipeline_new ("pipeline");

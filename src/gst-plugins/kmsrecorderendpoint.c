@@ -59,6 +59,14 @@ GST_DEBUG_CATEGORY_STATIC (kms_recorder_endpoint_debug_category);
   )                                               \
 )
 
+#define BASE_TIME_LOCK(obj) (                                           \
+  g_mutex_lock (&KMS_RECORDER_ENDPOINT(obj)->priv->base_time_lock)      \
+)
+
+#define BASE_TIME_UNLOCK(obj) (                                         \
+  g_mutex_unlock (&KMS_RECORDER_ENDPOINT(obj)->priv->base_time_lock)    \
+)
+
 enum
 {
   PROP_0,
@@ -86,6 +94,7 @@ struct _KmsRecorderEndpointPrivate
   struct state_controller state_manager;
   KmsLoop *loop;
   KmsConfController *controller;
+  GMutex base_time_lock;
 };
 
 /* class initialization */
@@ -183,7 +192,7 @@ recv_sample (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsink));
+  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsink));
 
   base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
 
@@ -218,6 +227,11 @@ recv_sample (GstElement * appsink, gpointer user_data)
     buffer->dts -= base_time->dts + self->priv->paused_time;
     buffer->pts = buffer->dts;
   }
+
+  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
+
+  // TODO: Find a way to avoid getting KMS_ELEMENT_LOCK
+  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsink));
 
   g_object_set (self->priv->controller, "has_data", TRUE, NULL);
 
@@ -355,6 +369,8 @@ kms_recorder_endpoint_dispose (GObject * object)
     g_object_unref (self->priv->pipeline);
     self->priv->pipeline = NULL;
   }
+
+  g_mutex_clear (&self->priv->base_time_lock);
 
   /* clean up as possible.  may be called multiple times */
 
@@ -587,7 +603,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   video_src =
       gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
 
-  KMS_ELEMENT_LOCK (self);
+  BASE_TIME_LOCK (self);
 
   if (audio_src != NULL) {
     g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
@@ -602,7 +618,7 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;
 
-  KMS_ELEMENT_UNLOCK (self);
+  BASE_TIME_UNLOCK (self);
 
   if (GST_STATE (self->priv->pipeline) >= GST_STATE_PAUSED) {
     kms_recorder_endpoint_send_eos_to_appsrcs (self);
@@ -622,7 +638,7 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
   /* Set internal pipeline to playing */
   gst_element_set_state (self->priv->pipeline, GST_STATE_PLAYING);
 
-  KMS_ELEMENT_LOCK (self);
+  BASE_TIME_LOCK (self);
 
   if (GST_CLOCK_TIME_IS_VALID (self->priv->paused_start)) {
     self->priv->paused_time +=
@@ -631,7 +647,7 @@ kms_recorder_endpoint_started (KmsUriEndpoint * obj)
     self->priv->paused_start = GST_CLOCK_TIME_NONE;
   }
 
-  KMS_ELEMENT_UNLOCK (self);
+  BASE_TIME_UNLOCK (self);
 
   /* Open valves */
   kms_recorder_endpoint_open_valves (self);
@@ -919,6 +935,8 @@ kms_recorder_endpoint_init (KmsRecorderEndpoint * self)
   GstBus *bus;
 
   self->priv = KMS_RECORDER_ENDPOINT_GET_PRIVATE (self);
+
+  g_mutex_init (&self->priv->base_time_lock);
 
   self->priv->loop = kms_loop_new ();
 

@@ -57,6 +57,14 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
   )                                           \
 )
 
+#define BASE_TIME_LOCK(obj) (                                           \
+  g_mutex_lock (&KMS_HTTP_ENDPOINT(obj)->priv->base_time_lock)          \
+)
+
+#define BASE_TIME_UNLOCK(obj) (                                         \
+  g_mutex_unlock (&KMS_HTTP_ENDPOINT(obj)->priv->base_time_lock)        \
+)
+
 typedef void (*KmsActionFunc) (gpointer user_data);
 
 typedef struct _GetData GetData;
@@ -93,6 +101,7 @@ struct _KmsHttpEndpointPrivate
     GetData *get;
     PostData *post;
   };
+  GMutex base_time_lock;
 };
 
 /* Object properties */
@@ -235,7 +244,7 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsink));
+  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsink));
 
   base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
 
@@ -270,6 +279,11 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
     buffer->dts -= base_time->dts;
     buffer->pts = buffer->dts;
   }
+
+  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
+
+  // TODO: Think about a way to remove this lock
+  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsink));
 
   g_object_set (self->priv->get->controller, "has_data", TRUE, NULL);
 
@@ -321,7 +335,7 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  KMS_ELEMENT_LOCK (GST_OBJECT_PARENT (appsrc));
+  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsrc));
 
   base_time =
       g_object_get_data (G_OBJECT (GST_OBJECT_PARENT (appsrc)), BASE_TIME_DATA);
@@ -345,7 +359,7 @@ new_sample_post_handler (GstElement * appsink, gpointer user_data)
   if (GST_BUFFER_DTS_IS_VALID (buffer))
     buffer->dts += *base_time;
 
-  KMS_ELEMENT_UNLOCK (GST_OBJECT_PARENT (appsrc));
+  BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsrc));
 
   /* Pass the buffer through appsrc element which is */
   /* placed in a different pipeline */
@@ -783,6 +797,8 @@ kms_http_endpoint_dispose (GObject * object)
       break;
   }
 
+  g_mutex_clear (&self->priv->base_time_lock);
+
   /* clean up as possible. May be called multiple times */
 
   G_OBJECT_CLASS (kms_http_endpoint_parent_class)->dispose (object);
@@ -853,16 +869,22 @@ kms_change_internal_pipeline_state (KmsHttpEndpoint * self, gboolean start)
         gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
 
     if (audio_src != NULL) {
+      BASE_TIME_LOCK (self);
       g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
+      BASE_TIME_UNLOCK (self);
       g_object_unref (audio_src);
     }
 
     if (video_src != NULL) {
+      BASE_TIME_LOCK (self);
       g_object_set_data_full (G_OBJECT (video_src), BASE_TIME_DATA, NULL, NULL);
+      BASE_TIME_UNLOCK (self);
       g_object_unref (video_src);
     }
 
+    BASE_TIME_LOCK (self);
     g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
+    BASE_TIME_UNLOCK (self);
   }
 
   self->priv->start = start;
@@ -1060,6 +1082,8 @@ static void
 kms_http_endpoint_init (KmsHttpEndpoint * self)
 {
   self->priv = KMS_HTTP_ENDPOINT_GET_PRIVATE (self);
+
+  g_mutex_init (&self->priv->base_time_lock);
 
   self->priv->loop = kms_loop_new ();
   g_atomic_int_set (&self->priv->method, KMS_HTTP_ENDPOINT_METHOD_UNDEFINED);
