@@ -13,7 +13,7 @@
 *
 */
 
-const ws_uri = 'ws://' + location.hostname + ':8888/thrift/ws/websocket';
+const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
 const hat_uri = 'http://files.kurento.org/imgs/santa-hat.png'; //requires Internet connectivity
 
 var videoInput;
@@ -28,7 +28,7 @@ window.onload = function() {
 
 function start() {
 	showSpinner(videoInput, videoOutput);
-	webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
 }
 
 function stop() {
@@ -41,10 +41,10 @@ function stop() {
 }
 
 function onOffer(offer) {
-	KwsMedia(ws_uri, function(error, kwsMedia) {
+	kurentoClient(ws_uri, function(error, kurentoClient) {
 		if (error) return onError(error);
 
-		kwsMedia.create('MediaPipeline', function(error, pipeline) {
+		kurentoClient.create('MediaPipeline', function(error, pipeline) {
 			if (error) return onError(error);
 
 			pipeline.create('WebRtcEndpoint', function(error, webRtc) {

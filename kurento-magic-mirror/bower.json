@@ -1,7 +1,7 @@
 {
   "name": "kurento-magic-mirror",
-  "version": "4.3.17",
-  "description": "Kurento Browser JavaScript Tutorial 1: Magic Mirror",
+  "version": "5.0.0",
+  "description": "Kurento Browser JavaScript Tutorial 2: Magic Mirror",
   "authors": [
     "Kurento <info@kurento.org>"
   ],
@@ -20,7 +20,7 @@
     "tests"
   ],
   "dependencies": {
-    "kws-utils": "~4.3.17",
-    "kws-media-api": "~4.3.17"
+    "kurento-client": "develop",
+    "kurento-utils": "develop"
   }
 }
