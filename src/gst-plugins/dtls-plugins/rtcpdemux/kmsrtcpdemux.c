@@ -153,12 +153,30 @@ end:
   return ret;
 }
 
+static gboolean
+buffer_is_rtcp (GstBuffer * buffer)
+{
+  GstMapInfo map;
+  guint8 pt;
+
+  if (!gst_buffer_map (buffer, &map, GST_MAP_READ)) {
+    gst_buffer_unref (buffer);
+    GST_ERROR_OBJECT (buffer, "Buffer cannot be mapped");
+    return GST_FLOW_ERROR;
+  }
+
+  pt = map.data[1];
+  gst_buffer_unmap (buffer, &map);
+
+  return (pt >= GST_RTCP_TYPE_SR && pt <= GST_RTCP_TYPE_PSFB);
+}
+
 static GstFlowReturn
 kms_rtcp_demux_chain (GstPad * chain, GstObject * parent, GstBuffer * buffer)
 {
   KmsRtcpDemux *self = KMS_RTCP_DEMUX (parent);
 
-  if (!gst_rtcp_buffer_validate (buffer)) {
+  if (!buffer_is_rtcp (buffer)) {
     gst_pad_push (self->priv->rtp_src, buffer);
     return GST_FLOW_OK;
   }
