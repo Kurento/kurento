@@ -7,7 +7,8 @@
   },
   "dependencies": {
     "express": "~3.2.6",
-    "kws-media-api": "~4.3.20",
-    "ws": "~0.4.32"
+    "ws": "~0.4.32",
+    "kurento-client": "Kurento/kurento-client-js#develop",
+    "express-session": "~1.7.6"
   }
 }
