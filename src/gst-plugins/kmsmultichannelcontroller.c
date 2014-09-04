@@ -14,6 +14,7 @@
  */
 
 #include "kmsmultichannelcontroller.h"
+#include "kmsmccp.h"
 
 GST_DEBUG_CATEGORY_STATIC (kms_multi_channel_controller_debug);
 #define GST_CAT_DEFAULT kms_multi_channel_controller_debug

@@ -49,6 +49,7 @@ set(KMS_ELEMENTS_HEADERS
   kmsalphablending.h
   kmsplumberendpoint.h
   kmsmultichannelcontroller.h
+  kmsmccp.h
 )
 
 set(ENUM_HEADERS
