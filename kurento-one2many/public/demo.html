@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="US-ASCII">
+<title>Insert title here</title>
+
+<script type="text/javascript" src="https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js"></script>
+<script type="text/javascript" src="./bower_components/kws-utils/js/kws-utils.js"></script>
+<script type="text/javascript" src="./bower_components/socket.io-client/socket.io.js"></script>
+<script type="text/javascript" src="demo.js"></script>
+
+</head>
+<body>
+	<button id="addSenderButton">Join as sender</button>
+	<button id="removeSenderButton">Cancel sending </button>
+	<button id="addReceiverButton">Join as receiver</button>
+	<button id="removeReceiverButton">Cancell receiving</button>
+	
+	<br>
+	<video id="localVideo" autoplay></video>
+	<video id="remoteVideo" autoplay></video>
+</body>
+</html>
