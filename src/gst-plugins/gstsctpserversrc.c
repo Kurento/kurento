@@ -259,7 +259,7 @@ gst_sctp_server_src_query (GstBaseSrc * src, GstQuery * query)
           query);
   }
 
-  GST_LOG_OBJECT (src, "<< %" GST_PTR_FORMAT, query);
+  GST_DEBUG_OBJECT (src, "<< %" GST_PTR_FORMAT, query);
 
   if (!kms_scp_base_rpc_query (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
           query, self->priv->cancellable, &rsp_query, &err)) {
@@ -322,7 +322,7 @@ gst_sctp_server_src_query (GstBaseSrc * src, GstQuery * query)
 
   gst_query_unref (rsp_query);
 
-  GST_LOG_OBJECT (src, ">> %" GST_PTR_FORMAT, query);
+  GST_DEBUG_OBJECT (src, ">> %" GST_PTR_FORMAT, query);
 
   return ret;
 }
@@ -373,7 +373,7 @@ gst_sctp_server_src_event (GstBaseSrc * src, GstEvent * event)
   if (!upstream)
     return ret;
 
-  GST_LOG_OBJECT (src, "<< %" GST_PTR_FORMAT, event);
+  GST_DEBUG_OBJECT (src, "<< %" GST_PTR_FORMAT, event);
 
   if (!kms_scp_base_rpc_event (KMS_SCTP_BASE_RPC (self->priv->serverrpc),
           event, self->priv->cancellable, &err)) {
@@ -440,7 +440,7 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
 static void
 gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
 {
-  GST_LOG_OBJECT (self, ">> %" GST_PTR_FORMAT, query);
+  GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, query);
 
   switch (GST_QUERY_TYPE (query)) {
     case GST_QUERY_CAPS:
@@ -453,7 +453,7 @@ gst_sctp_server_src_remote_query (GstQuery * query, GstSCTPServerSrc * self)
       return;
   }
 
-  GST_LOG_OBJECT (self, "<< %" GST_PTR_FORMAT, query);
+  GST_DEBUG_OBJECT (self, "<< %" GST_PTR_FORMAT, query);
 }
 
 static void
@@ -480,7 +480,7 @@ gst_sctp_server_src_remote_event (GstEvent * event, GstSCTPServerSrc * self)
 
       /* non-sticky downstream serialized */
     case GST_EVENT_GAP:
-      GST_LOG_OBJECT (self, ">> %" GST_PTR_FORMAT, event);
+      GST_DEBUG_OBJECT (self, ">> %" GST_PTR_FORMAT, event);
 
       gst_event_ref (event);
       if (!gst_pad_push_event (GST_BASE_SRC_PAD (GST_BASE_SRC (self)), event)) {
