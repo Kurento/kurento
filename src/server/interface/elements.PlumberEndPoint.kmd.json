@@ -1,0 +1,40 @@
+{
+  "remoteClasses": [
+    {
+      "name": "PlumberEndpoint",
+      "extends": "Endpoint",
+      "doc": "Endpoint that allows remote pipelines to negotiate the format of the media as well as to send data over SCTP. A :rom:cls:`PlumberEndpoint` contains paired sink and source :rom:cls:`MediaPad` for audio and video. This API is still under development so it might change without requiring a version change.",
+      "constructor":
+        {
+          "doc": "Create a PlumberEndpoint",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "The :rom:cls:`MediaPipeline` this PlumberEndpoint belongs to.",
+              "type": "MediaPipeline"
+            },
+            {
+              "name": "localAddres",
+              "doc": "IP Address where this endpoint will be waiting for incoming connections",
+              "type": "String"
+            },
+            {
+              "name": "localPort",
+              "doc": "Port to listen to",
+              "type": "int"
+            },
+            {
+              "name": "remoteAddres",
+              "doc": "IP Address where this end point will connect to",
+              "type": "String"
+            },
+            {
+              "name": "remotePort",
+              "doc": "Port to listen to",
+              "type": "int"
+            }
+          ]
+        }
+    }
+  ]
+}
