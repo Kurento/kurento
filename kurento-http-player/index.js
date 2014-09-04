@@ -40,23 +40,23 @@ window.onload = function() {
 
 					console.log('Setting overlay image');
 					filter.setOverlayedImage(hat_uri, offsetXPercent, offsetYPercent, widthPercent,	heightPercent, function(error) {
-							if (error) return onError(error);
+						if (error) return onError(error);
 					});
 
 					filter.connect(httpGetEndpoint, function(error) {
 						pipeline.create('PlayerEndpoint', {uri : file_uri}, function(error, playerEndpoint) {
 							if(error) return onError(error);
 
-							playerEndpoint.connect(filter, function(error){
+							playerEndpoint.connect(filter, function(error) {
 								if(error) return onError(error);
 
-								httpGetEndpoint.getUrl(function(error, url){
+								httpGetEndpoint.getUrl(function(error, url) {
 									if(error) return onError(error);
 
 									videoInput.src = url;
 								});
 
-								playerEndpoint.on('EndOfStream', function(event){
+								playerEndpoint.on('EndOfStream', function(event) {
 									pipeline.release();
 									videoInput.src = '';
 								});

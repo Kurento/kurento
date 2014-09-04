@@ -1,7 +1,7 @@
 {
   "name": "kurento-hello-world",
   "version": "5.0.0",
-  "description": "Kurento Browser JavaScript Tutorial 1: Hello World",
+  "description": "Kurento Browser JavaScript Tutorial 7: HTTP Player",
   "authors": [
     "Kurento <info@kurento.org>"
   ],
