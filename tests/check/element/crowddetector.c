@@ -19,7 +19,7 @@
 #include <gst/check/gstcheck.h>
 #include <gst/gst.h>
 #include <glib.h>
-#include "kmsuriendpointstate.h"
+#include <commons/kmsuriendpointstate.h>
 
 #include <kmstestutils.h>
 
