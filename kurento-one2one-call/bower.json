@@ -1,0 +1,28 @@
+{
+  "name": "kurento-one2one-call",
+  "version": "5.0.0",
+  "description": "Kurento Browser JavaScript Tutorial 3: One to one video call",
+  "authors": [
+    "Kurento <info@kurento.org>"
+  ],
+  "main": "index.html",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "LGPL",
+  "homepage": "http://www.kurento.org/",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "kurento-client": "develop",
+    "kurento-utils": "develop",
+    "kws-rpc-builder": "~4.3.18",
+    "pubnub": "~3.6.4"
+  }
+}
