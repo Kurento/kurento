@@ -54,7 +54,6 @@
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-copy": "~0.5.0",
     "grunt-contrib-jshint": "~0.10.0",
-    "grunt-curl": "~2.0.2",
     "grunt-jsdoc": "~0.5.6",
     "grunt-npm2bower-sync": "^0.4.0",
     "grunt-shell": "^0.7.0",

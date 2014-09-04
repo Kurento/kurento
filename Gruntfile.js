@@ -57,11 +57,6 @@ module.exports = function(grunt)
       }
     },
 
-    curl:
-    {
-      'shims/sockjs-0.3.js': 'http://cdn.sockjs.org/sockjs-0.3.js'
-    },
-
     // Generate browser versions and mapping debug file
     browserify:
     {
@@ -160,12 +155,11 @@ module.exports = function(grunt)
   // Load plugins
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-clean');
-  grunt.loadNpmTasks('grunt-curl');
   grunt.loadNpmTasks('grunt-jsdoc');
   grunt.loadNpmTasks('grunt-npm2bower-sync');
   grunt.loadNpmTasks('grunt-shell');
 
   // Alias tasks
-  grunt.registerTask('default', ['clean', 'jsdoc', 'curl', 'browserify']);
+  grunt.registerTask('default', ['clean', 'jsdoc', 'browserify']);
   grunt.registerTask('bower',   ['sync:bower', 'shell:bower']);
 };
