@@ -13,7 +13,7 @@
  *
  */
 
-const pubNubOptions = {
+const options = {
 	channel : 'kurento-videophone-test',
 	publish_key : 'pub-c-25965aa1-5d65-410b-b21d-fd90159adf0e',
 	subscribe_key : 'sub-c-cb63e056-f08c-11e3-a672-02ee2ddab7fe'
@@ -23,29 +23,78 @@ const ws_uri = 'ws://localhost:8888/kurento';
 var videoInput;
 var videoOutput;
 var webRtcPeer;
-var softphone;
+var rpc;
 
 window.onload = function() {
 	console = new Console('console', console);
 	dragDrop.initElement('videoSmall');
 	videoInput = document.getElementById('videoInput');
 	videoOutput = document.getElementById('videoOutput');
-	softphone = new SoftphonePubnub(videoInput, videoOutput, pubNubOptions);
 
 	document.getElementById('name').focus();
 }
 
 function register() {
 	var name = document.getElementById('name').value;
-	softphone.register(name);
+	var channel = options.channel;
+	var rpcOptions = {
+		peerID : name,
+		request_timeout : 10 * 1000
+	}
+
+	rpc = new RpcBuilder(RpcBuilder.packers.JsonRPC, rpcOptions);
+	var pubnub = PUBNUB.init(options);
+
+	pubnub.subscribe({
+		channel : channel,
+		message : function(message) {
+			var request = rpc.decode(message);
+			if (request) onRequest(request, name);
+		}
+	});
+
+	rpc.transport = function(message) {
+		pubnub.publish({
+			channel : channel,
+			message : message
+		});
+	}
 	console.info("User '" + name + "' registered");
+}
+
+function onRequest(request, peerID) {
+	if (request.params.dest != peerID)
+		return;
+
+	switch (request.method) {
+	case 'call':
+		onIncommingCall(request);
+		break;
+
+	default:
+		console.error('Unrecognized request', request);
+	}
 }
 
 function call() {
 	showSpinner(videoInput, videoOutput);
 	
 	var peer = document.getElementById('peer').value;
-	softphone.call(peer);
+	createPeer(function(error, kurentoClient, src) {
+		if (error) return onError(error);
+
+		var params = {
+			dest : peer,
+			endpoint : src.id
+		}
+
+		rpc.encode('call', params, function(error, result) {
+			if (error) return onError(error);
+
+			var sinkId = result.endpoint;
+			connectEndpoints(kurentoClient, src, sinkId);
+		});
+	});
 	console.info("Calling user '" + peer + "'");
 }
 
@@ -58,7 +107,6 @@ function stop() {
 	hideSpinner(videoInput, videoOutput);
 }
 
-// Process request messages
 function onIncommingCall(request) {
 	var params = request.params;
 	var from = params.from;
@@ -81,7 +129,6 @@ function onIncommingCall(request) {
 	}
 }
 
-// Private functions
 function createPeer(callback) {
 	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offer) {
 		console.log('Invoking SDP offer callback function');
@@ -121,72 +168,6 @@ function connectEndpoints(kurentoClient, src, sinkId) {
 			console.log('Connection established');
 		});
 	})
-}
-
-function SoftphonePubnub(videoInput, videoOutput, options) {
-	self.options = options
-	var rpc;
-
-	this.register = function(peerID, options) {
-		function onRequest(request) {
-			if (request.params.dest != peerID)
-				return;
-
-			switch (request.method) {
-			case 'call':
-				onIncommingCall(request);
-				break;
-
-			default:
-				console.error('Unrecognized request', request);
-			}
-		}
-
-		options = options || self.options;
-		var channel = options.channel;
-		var rpcOptions = {
-			peerID : peerID,
-			request_timeout : 10 * 1000
-		}
-
-		rpc = new RpcBuilder(RpcBuilder.packers.JsonRPC, rpcOptions);
-		var pubnub = PUBNUB.init(options);
-
-		pubnub.subscribe({
-			channel : channel,
-			message : function(message) {
-				var request = rpc.decode(message);
-				if (request) onRequest(request);
-			}
-		});
-
-		rpc.transport = function(message) {
-			pubnub.publish({
-				channel : channel,
-				message : message
-			});
-		}
-	}
-
-	this.call = function(dest) {
-		createPeer(function(error, kurentoClient, src) {
-			if (error) return onError(error);
-
-			var params = {
-				dest : dest,
-				endpoint : src.id
-			}
-
-			rpc.encode('call', params, function(error, result) {
-				if (error) return onError(error);
-
-				var sinkId = result.endpoint;
-
-				// Send our video to the callee
-				connectEndpoints(kurentoClient, src, sinkId);
-			});
-		});
-	}
 }
 
 function onError(error) {
