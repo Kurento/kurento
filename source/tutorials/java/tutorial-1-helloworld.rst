@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Java Tutorial 1 - Hello World
+Java Tutorial 1 - Hello world
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application has been designed to introduce the principles of

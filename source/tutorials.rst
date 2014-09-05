@@ -6,7 +6,7 @@ This section shows how to use Kurento framework to build different types
 applications with live audio and video. We will show several working
 applications implemented with **Java**, **Browser JavaScript** and **Node.js**.
 
-Tutorial 1 - Hello World
+Tutorial 1 - Hello world
 ========================
 
 This is one the simplest application you can create with Kurento. It is a web
@@ -20,8 +20,8 @@ application in which there is an `WebRTC`:term: video communication in mirror
    Browser JavaScript </tutorials/js/tutorial-1-helloworld>
    Node.js </tutorials/node/tutorial-1-helloworld>
 
-Tutorial 2 - Magic Mirror
-=========================
+Tutorial 2 - WebRTC magic mirror
+================================
 
 This web application consists on a `WebRTC`:term: video communication in mirror
 adding a funny hat over your face. This is an example of augmented reality

@@ -1,6 +1,6 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Java Tutorial 2 - Magic Mirror
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Java Tutorial 2 - WebRTC magic mirror
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a magic mirror that add with a funny hat over
 your face. It is implemented using `WebRTC`:term: technology. The following
