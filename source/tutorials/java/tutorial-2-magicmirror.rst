@@ -8,7 +8,7 @@ picture shows an screenshot of this demo running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png 
    :align:   center
-   :alt:     Loopback video call with filtering screenshot :width: 600px
+   :alt:     Loopback video call with filtering screenshot
    :width: 600px
 
 The interface of the application (an HTML web page) is composed by two HTML5
@@ -36,12 +36,46 @@ The media pipeline implemented is illustrated in the following picture:
    :align:   center
    :alt:     Loopback video call with filtering media pipeline
 
-This demo is an example of a quite simple application developed with Kurento.
-You can see it as the *Hello World* application for Kurento. The following
-sections describe in detail the server-side, the client-side, and how to run
-the demo.
+This is a web application, and therefore it follows a client-server
+architecture. In the client-side, the logic is implemented in **JavaScript**.
+In the server-side we use the **Kurento Java Client** in order to reach the
+**Kurento Server**. All in all, the high level architecture of this demo is
+three-tier. To communicate these entities two WebSockets are used. First, a
+WebSocket is created between client and server-side to implement a custom
+signaling protocol. Second, another WebSocket is used to perform the
+communication between the Kurento Java Client and the Kurento Server. This
+communication is implemented by the **Kurento Protocol**. For further
+information, please see this :doc:`page <../../mastering/kurento_protocol>` of
+the documentation.
 
-The complete source code of this demo can be found in
+.. figure:: ../../images/websocket.png
+   :align:   center
+   :alt:     Communication architecture
+   :width: 500px
+
+To communicate the client with the server we have designed a signaling protocol
+based on `JSON`:term: messages over `WebSocket`:term: 's. The normal sequence
+between client and server would be as follows:
+
+1. Client starts the Magic Mirror
+
+2. Client stops the Magic Mirror
+
+3. If any exception happens, server sends an error message to the client
+
+We can draw the following sequence diagram with detailed messages between
+clients and server:
+
+.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-signaling.png
+   :align:   center
+   :alt:     One to one video call signaling protocol
+   :width: 400px
+
+As you can see in the diagram, `SDP`:term: needs to be interchanged between
+client and server to establish the `WebRTC`:term: connection between the
+browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
+in the browser with the WebRtcEndpoint in the server. The complete source code
+of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-magic-mirror>`_.
 
 Server-Side
@@ -80,136 +114,230 @@ In the following figure you can see a class diagram of the server side code:
         arrowhead = "vee"
    ]
 
-   MagicMirrorApp -> MagicMirrorController;
+   MagicMirrorApp -> MagicMirrorHandler;
    MagicMirrorApp -> KurentoClient;
-   MagicMirrorController -> KurentoClient [constraint = false]
+   MagicMirrorHandler -> KurentoClient [constraint = false]
 
 The main class of this demo is named
-`MagicMirrorApp <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-2-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
+`MagicMirrorApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
-to add media capabilities to your applications.
+to add media capabilities to your applications. In this instantiation we see
+that a WebSocket is used to connect with Kurento Server, by default in the
+*localhost* and listening in the port 8888.
 
 .. sourcecode:: java
 
-    @ComponentScan
-    @EnableAutoConfiguration
-    public class MagicMirrorApp {
-
-        @Bean
-        public KurentoClient kurentoClient() {
-            return KurentoClient.create("ws://localhost:8888");
-        }
-
-        public static void main(String[] args) throws Exception {
-            new SpringApplication(MagicMirrorApp.class).run(args);
-        }
-    }
+   @Configuration
+   @EnableWebSocket
+   @EnableAutoConfiguration
+   public class MagicMirrorApp implements WebSocketConfigurer {
+   
+      @Bean
+      public MagicMirrorHandler handler() {
+         return new MagicMirrorHandler();
+      }
+   
+      @Bean
+      public KurentoClient kurentoClient() {
+         return KurentoClient.create("ws://localhost:8888/kurento");
+      }
+   
+      public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+         registry.addHandler(handler(), "/magicmirror");
+      }
+   
+      public static void main(String[] args) throws Exception {
+         new SpringApplication(MagicMirrorApp.class).run(args);
+      }
+   }
 
 This web application follows *Single Page Application* architecture
-(`SPA`:term:) and uses `REST`:term: to communicate client with server by means
-of requests and responses. Specifically, we use the Spring annotation
-*@RestController* to implement REST services in the server-side. Take a look to
-the
-`MagicMirrorController <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-2-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorController.java>`_
-class:
+(`SPA`:term:) and uses a `WebSocket`:term: to communicate client with server by
+means of requests and responses. Specifically, the main app class implements
+the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
+process WebSocket requests in the path ``/magicmirror``.
+
+
+`MagicMirrorHandler <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorHandler.java>`_
+class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
+The central piece of this class is the method ``handleTextMessage``. This
+method implements the actions for requests, returning responses through the
+WebSocket. In other words, it implements the server part of the signaling
+protocol depicted in the previous sequence diagram.
+
+In the designed protocol there are three different kind of incoming messages to
+the *Server* : ``start`` and ``stop``. These messages are treated in the
+*switch* clause, taking the proper steps in each case.
 
 .. sourcecode:: java
 
-    @RestController
-    public class MagicMirrorController {
+   public class MagicMirrorHandler extends TextWebSocketHandler {
+   
+      private final Logger log = LoggerFactory
+            .getLogger(MagicMirrorHandler.class);
+      private static final Gson gson = new GsonBuilder().create();
+   
+      private ConcurrentHashMap<String, MediaPipeline> pipelines = new ConcurrentHashMap<String, MediaPipeline>();
+   
+      @Autowired
+      private KurentoClient kurento;
+   
+      @Override
+      public void handleTextMessage(WebSocketSession session, TextMessage message)
+            throws Exception {
+         JsonObject jsonMessage = gson.fromJson(message.getPayload(),
+               JsonObject.class);
+   
+         log.debug("Incoming message: {}", jsonMessage);
+   
+         switch (jsonMessage.get("id").getAsString()) {
+         case "start":
+            start(session, jsonMessage);
+            break;
+   
+         case "stop":
+            String sessionId = session.getId();
+            if (pipelines.containsKey(sessionId)) {
+               pipelines.get(sessionId).release();
+               pipelines.remove(sessionId);
+            }
+            break;
+   
+         default:
+            sendError(session,
+                  "Invalid message with id "
+                        + jsonMessage.get("id").getAsString());
+            break;
+         }
+      }
+   
+      private void start(WebSocketSession session, JsonObject jsonMessage) {
+         ...
+      }
+   
+      private void sendError(WebSocketSession session, String message) {
+         ...
+      }
+   }
 
-        private final Logger log = LoggerFactory.getLogger(MagicMirrorController.class);
+In the following snippet, we can see the ``start`` method. It creates a Media
+Pipeline, creates the Media Elements (``WebRtcEndpoint`` and
+``FaceOverlayFilter``) and make the connections among them. A ``startResponse``
+message is sent back to the client with the SDP answer.
 
-        @Autowired
-        private KurentoClient kurento;
+.. sourcecode:: java
 
-        @RequestMapping(value = "/magicmirror", method = RequestMethod.POST)
-        private String processRequest(@RequestBody String sdpOffer)
-                throws IOException {
+   private void start(WebSocketSession session, JsonObject jsonMessage) {
+      try {
+         // Media Logic (Media Pipeline and Elements)
+         MediaPipeline pipeline = kurento.createMediaPipeline();
+         pipelines.put(session.getId(), pipeline);
 
-            // Configure media processing logic
-            MediaPipeline pipeline = kurento.newMediaPipeline();
-            WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
-            FaceOverlayFilter filter = new FaceOverlayFilter(pipeline).build();
-            filter.setCompleteOverlayedImage("http://localhost:8080/imgs/mario-wings.png");                    
-            webRtcEndpoint.connect(filter);
-            filter.connect(webRtcEndpoint);
+         WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
+               .build();
+         FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(
+               pipeline).build();
+         faceOverlayFilter.setOverlayedImage(
+               "http://files.kurento.org/imgs/mario-wings.png", -0.35F,
+               -1.2F, 1.6F, 1.6F);
 
-            // WebRtc SDP negotiation
-            sdpOffer = URLDecoder.decode(sdpOffer, "UTF-8");
-            log.debug("Received SDP offer: {}", sdpOffer);
-            String responseSdp = webRtcEndpoint.processOffer(sdpOffer);
-            log.debug("Sent SDP response: {}", responseSdp);
+         webRtcEndpoint.connect(faceOverlayFilter);
+         faceOverlayFilter.connect(webRtcEndpoint);
 
-            return responseSdp;
-        }
+         // SDP negotiation (offer and answer)
+         String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
+         String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
 
-    }
+         // Sending response back to client
+         JsonObject response = new JsonObject();
+         response.addProperty("id", "startResponse");
+         response.addProperty("sdpAnswer", sdpAnswer);
+         session.sendMessage(new TextMessage(response.toString()));
+      } catch (Throwable t) {
+         sendError(session, t.getMessage());
+      }
+   }
 
-This app exposes a REST service which is requested by the client-side. This
-service is implemented in the method *processRequest*. Requests to the path
-*/magicmirror* using POST will be attended by this method. In the body of the
-method *processRequest* we can see two main parts:
+The ``sendError`` method is quite simple: it sends an ``error`` message to the
+client when an exception is caught in the server-side.
 
- - **Configure media processing logic**: This is the part in which the
-   application configures how Kurento has to process the media. In other words,
-   the media pipeline is implemented here. To that aim, the object
-   *KurentoClient* is used to create a *MediaPipeline*. Using this
-   *MediaPipeline*, the media elements are created and connected.
+.. sourcecode:: java
 
- - **WebRTC SDP negotiation**: In WebRTC, `SDP`:term: (Session Description
-   protocol) is used for negotiating media interchange between apps. Such
-   negotiation happens based on the SDP offer and answer exchange mechanism.
-   This negotiation is implemented in the second part of the method
-   *processRequest*, using the SDP offer obtained from the browser client, and
-   returning a SDP answer returned by WebRtcEndpoint.
+   private void sendError(WebSocketSession session, String message) {
+      try {
+         JsonObject response = new JsonObject();
+         response.addProperty("id", "error");
+         response.addProperty("message", message);
+         session.sendMessage(new TextMessage(response.toString()));
+      } catch (IOException e) {
+         log.error("Exception sending message", e);
+      }
+   }
 
 
 Client-Side
 ===========
 
 Let's move now to the client-side of the application. To call the previously
-created REST service, we use the JavaScript library `jQuery`:term:. In
-addition, we use a Kurento JavaScript utilities library called
-*kurento-utils.js* to simplify the WebRTC management in the browser.
-
-These libraries are linked in the
+created WebSocket service in the server-side, we use the JavaScript class
+``WebSocket``. We use an specific Kurento JavaScript library called
+**kurento-utils.js** to simplify the WebRTC interaction with the server. These
+libraries are linked in the
 `index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/resources/static/index.html>`_
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/resources/static/js/index.js>`_.
-The most relevant part of this file is the *start* function. In this function
-we can see how jQuery is used to call the path */magicmirror*, where the REST
-service is listening in the server-side. The function
-*WebRtcPeer.startSendRecv* of *kurento-utils* is used to start a WebRTC
-communication, using the HTML video tag with id *videoInput* to show the video
-camera (local stream) and the video tag *videoOutput* to show the video
-processed by Kurento server (remote stream).
+In the following snippet we can see the creation of the WebSocket (variable
+``ws``) in the path ``/magicmirror``. Then, the ``onmessage`` listener of the
+WebSocket is used to implement the JSON signaling protocol in the client-side.
+Notice that there are four incoming messages to client: ``startResponse`` and
+``error``. Convenient actions are taken to implement each step in the
+communication. For example, in functions ``start`` the function
+``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to start a WebRTC
+communication.
 
 .. sourcecode:: javascript
 
-    function start() {
-        showSpinner(videoInput, videoOutput);
+   var ws = new WebSocket('ws://' + location.host + '/magicmirror');
+   
+   ws.onmessage = function(message) {
+      var parsedMessage = JSON.parse(message.data);
+      console.info('Received message: ' + message.data);
+   
+      switch (parsedMessage.id) {
+      case 'startResponse':
+         startResponse(parsedMessage);
+         break;
+      case 'error':
+         if (state == I_AM_STARTING) {
+            setState(I_CAN_START);
+         }
+         console.error("Error message from server: " + parsedMessage.message);
+         break;
+      default:
+         if (state == I_AM_STARTING) {
+            setState(I_CAN_START);
+         }
+         console.error('Unrecognized message', parsedMessage);
+      }
+   }
 
-        webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-                function(offerSdp) {
-                    
-                    console.log('Invoking SDP offer callback function '+ location.host);
-                    
-                    $.ajax({
-                        url : location.protocol + '/magicmirror',
-                        type : 'POST',
-                        dataType : 'text',
-                        data : offerSdp,
-                        success : function(data) {
-                            wp.processSdpAnswer(data);
-                        },
-                        error : function(jqXHR, textStatus, error) {
-                            console.error(error);
-                        }
-                    });
-                });
-    }
+   function start() {
+      console.log("Starting video call ...")
+      // Disable start button
+      setState(I_AM_STARTING);
+      showSpinner(videoInput, videoOutput);
+   
+      console.log("Creating WebRtcPeer and generating local sdp offer ...");
+      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
+         console.info('Invoking SDP offer callback function ' + location.host);
+         var message = {
+            id : 'start',
+            sdpOffer : offerSdp
+         }
+         sendMessage(message);
+      });
+   }
 
 Dependencies
 ============
@@ -226,15 +354,29 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>5.0.0</version>
+         <version>|version|</version>
       </dependency> 
       <dependency> 
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId> 
-         <version>5.0.0</version>
+         <version>|version|</version>
       </dependency> 
    </dependencies>
 
+.. note::
+
+   We are in active development. Be sure that you have the latest version of Kurento 
+   Java Client your POM. You can find it at Maven Central searching for 
+   ``kurento-client``.
+
+Kurento Java Client has a minimum requirement of **Java 7**. To configure the
+application to use Java 7, we have to include the following properties in the
+properties section:
+
+.. sourcecode:: xml 
+
+   <maven.compiler.target>1.7</maven.compiler.target>
+   <maven.compiler.source>1.7</maven.compiler.source>
 
 How to run this application
 ===========================

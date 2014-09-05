@@ -77,6 +77,7 @@ three-tier. To communicate these entities the following technologies are used:
 .. figure:: ../../images/rest.png
    :align:   center
    :alt:     Communication architecture
+   :width: 500px
 
 .. note::
 
