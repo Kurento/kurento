@@ -92,6 +92,9 @@ kms_multi_channel_controller_replace (KmsMultiChannelController **old_multi_chan
 KmsMultiChannelController * kms_multi_channel_controller_new (const gchar *host,
   guint16 port);
 
+gboolean kms_multi_channel_controller_connect (KmsMultiChannelController *mcc,
+  gchar *host, guint16 port, GError **err);
+
 gboolean kms_multi_channel_controller_start (KmsMultiChannelController *mccp);
 void kms_multi_channel_controller_stop (KmsMultiChannelController *mcc);
 
