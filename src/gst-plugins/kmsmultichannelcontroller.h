@@ -88,7 +88,12 @@ kms_multi_channel_controller_replace (KmsMultiChannelController **old_multi_chan
  *
  * Returns: (transfer full): the new #KmsMultiChannelController.
  */
-KmsMultiChannelController * kms_multi_channel_controller_new ();
+
+KmsMultiChannelController * kms_multi_channel_controller_new (const gchar *host,
+  guint16 port);
+
+gboolean kms_multi_channel_controller_start (KmsMultiChannelController *mccp);
+void kms_multi_channel_controller_stop (KmsMultiChannelController *mcc);
 
 G_END_DECLS
 
