@@ -1,5 +1,5 @@
 {
-  "name": "kurento-one2many-call",
+  "name": "kurento-one2one-call",
   "version": "0.0.1",
   "private": true,
   "scripts": {
