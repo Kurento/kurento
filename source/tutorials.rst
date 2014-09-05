@@ -17,7 +17,7 @@ application in which there is an `WebRTC`:term: video communication in mirror
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-1-helloworld>
-   Browser JavaScript </tutorials/js/tutorial-1-helloworld>
+..   Browser JavaScript </tutorials/js/tutorial-1-helloworld>
    Node.js </tutorials/node/tutorial-1-helloworld>
 
 Tutorial 2 - WebRTC magic mirror
@@ -31,7 +31,7 @@ using a filter.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-2-magicmirror>
-   Browser JavaScript </tutorials/js/tutorial-2-magicmirror>
+..   Browser JavaScript </tutorials/js/tutorial-2-magicmirror>
    Node.js </tutorials/node/tutorial-2-magicmirror>
 
 Tutorial 3 - One to many video call
@@ -44,7 +44,7 @@ transmit a video stream and N peers receives that video.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-3-one2many>
-   Browser JavaScript </tutorials/js/tutorial-3-one2many>
+..   Browser JavaScript </tutorials/js/tutorial-3-one2many>
    Node.js </tutorials/node/tutorial-3-one2many>
 
 Tutorial 4 - One to one video call
@@ -57,7 +57,7 @@ technology.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-4-one2one>
-   Browser JavaScript </tutorials/js/tutorial-4-one2one>
+..   Browser JavaScript </tutorials/js/tutorial-4-one2one>
    Node.js </tutorials/node/tutorial-4-one2one>
 
 Tutorial 5 - One to one video call with recording and filtering

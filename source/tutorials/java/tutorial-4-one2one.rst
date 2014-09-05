@@ -20,7 +20,6 @@ stream of user A is sent to the Kurento Media Server and sent again to the user
 B. On the other hand, user B sends its video camera stream to Kurento and then
 it is sent to user A.
 
-
 To implement this behavior we have to create a `Media Pipeline`:term: composed
 by two WebRtc endpoints connected between them. The media pipeline implemented
 is illustrated in the following picture:
@@ -66,9 +65,7 @@ browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
 in the browser with the WebRtcEndpoint in the server.
 
 The following sections describe in detail the server-side, the client-side, and
-how to run the demo.
-
-The complete source code of this demo can be found in
+how to run the demo. The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-one2one-call>`_.
 
 Server-Side
