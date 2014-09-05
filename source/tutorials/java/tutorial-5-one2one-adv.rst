@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Tutorial 4 - Advanced One to one video call
+Tutorial 5 - Advanced One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on an advanced one to one video call using
@@ -10,7 +10,7 @@ Kurento Media Server. In addition, a filter element (*FaceOverlayFilter*) in
 placed between the *WebRtcEndpoints* of the Media Pipeline. The following
 picture shows an screenshot of this demo running in a web browser:
 
-.. figure:: ../../images/kurento-java-tutorial-4-one2one-adv-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-screenshot.png
    :align:   center
    :alt:     Advanced one to one video call screenshot
    :width: 600px
@@ -31,7 +31,7 @@ them. In addition and a *RecorderEndpoint* is used to store both streams in the
 file system of the Kurento Media Server. This media pipeline is illustrated in
 the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-4-one2one-adv-pipeline_1.png
+.. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_1.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (1)
 
@@ -41,7 +41,7 @@ Kurento Media Server. This media element injects the media in a
 *WebRtcEndpoint* which is charge to transport the media to the HTML5 video tag
 in the browser:
 
-.. figure:: ../../images/kurento-java-tutorial-4-one2one-adv-pipeline_2.png
+.. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_2.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (2)
 
@@ -83,7 +83,7 @@ server. The following diagram shows the two parts of the signaling protocol:
 first the enhanced real-time communication is performed, and then the playback
 of the recorded file is carried out.
 
-.. figure:: ../../images/kurento-java-tutorial-4-one2one-adv-signaling.png
+.. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-signaling.png
    :align:   center
    :alt:     Advanced one to one video call signaling protocol
    :width: 600px

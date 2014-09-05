@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-JavaScript Tutorial 3 - One to one video call
+JavaScript Tutorial 4 - One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 .. todo:: This section has been early documented using kws-tutorial. This
@@ -11,7 +11,7 @@ technology. In other words, this application is similar to a phone but also
 with video. The following picture shows an screenshot of this demo running in a
 web browser:
 
-.. figure:: ../../images/kurento-js-tutorial-3-one2one-screenshot.png
+.. figure:: ../../images/kurento-js-tutorial-4-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
    :width: 600px
@@ -28,7 +28,7 @@ To implement this behavior we have to create a `Media Pipeline`:term: composed
 by two WebRtc endpoints connected between them. The media pipeline implemented
 is illustrated in the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-3-one2one-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-4-one2one-pipeline.png
    :align:   center
    :alt:     One to one video call media pipeline
 
@@ -63,7 +63,7 @@ Assuming that User A is using Client A and User B is using Client B, we can draw
 the following sequence diagram with detailed messages between clients and
 server:
 
-.. figure:: ../../images/kurento-js-tutorial-3-one2one-signaling.png
+.. figure:: ../../images/kurento-js-tutorial-4-one2one-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px

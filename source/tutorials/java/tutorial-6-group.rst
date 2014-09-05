@@ -1,12 +1,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Tutorial 5 - Many to many video call
+Tutorial 6 - Many to many video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on a many to many video call using `WebRTC`:term:.
 In other words, this application is a video group communication service. The
 following picture shows an screenshot of this demo running in a web browser:
 
-.. figure:: ../../images/kurento-java-tutorial-5-group-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-6-group-screenshot.png
    :align:   center
    :alt:     Many to many video call screenshot
    :width: 600px
@@ -23,7 +23,7 @@ new WebRtc endpoints are added when new users enter the room. Each WebRtc
 endpoint in interconnected to the existing ones. This media pipeline is
 illustrated in the following picture:
 
-.. figure:: ../../images/kurento-java-tutorial-5-group-pipeline.png
+.. figure:: ../../images/kurento-java-tutorial-6-group-pipeline.png
    :align:   center
    :alt:     Many to many video call media pipeline
 
@@ -33,7 +33,7 @@ protocol has to two parts: when a user enters the room and when a user leaves
 that room. The following sequence diagram illustrates the interchange of
 `JSON`:term: messages for both stages:
 
-.. figure:: ../../images/kurento-java-tutorial-5-group-signaling.png
+.. figure:: ../../images/kurento-java-tutorial-6-group-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px
