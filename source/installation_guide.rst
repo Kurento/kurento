@@ -16,12 +16,6 @@ When asked for any kind of confirmation, reply affirmatively:
    sudo apt-get update
    sudo apt-get install kurento-server
 
-Finally, configure the server to run Kurento Server when booted:
-
-.. sourcecode:: console
-
-    sudo update-rc.d kurento-server defaults
-
 Now, Kurento Server has been installed and started. Use the following commands
 to start and stop it respectively:
 
