@@ -1,60 +1,290 @@
-.. Developing Java apps with Kurento
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Java Tutorial 1 - Hello World
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Developing Java apps with Kurento
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This web application has been designed to introduce the principles of
+programming with Kurento for Java developers. It consists on a `WebRTC`:term:
+video communication in mirror (*loopback*).
 
-Kurento team provides to developers a Kurento Client for :term:`Java` to control
+Kurento provides to developers a **Kurento Java Client** to control
 **Kurento Server**. This client library can be used in any kind of Java
 application: Server Side Web, Desktop, Android, etc. It is compatible with any
 framework like Java EE, Spring, Play, Vert.x, Swing, JavaFX, etc.
 
-In this section, we provide detailed information about using
-**Kurento Java Client** to build Java applications. If you want to see working
-applications that use Kurento Java Client please visit to
-:doc:`Tutorials section</Tutorials>`. There are several demos showing the
-typical real time media web applications:
 
-   - :doc:`Tutorial 2 - Magic mirror </tutorials/java/tutorial-2-magicmirror>`
+Kurento in a nutshell
+=====================
 
-   - :doc:`Tutorial 3 - One to One video call </tutorials/java/tutorial-3-one2one>`
+At the heart of the Kurento architecture there is a piece of software called
+**Kurento Server**, based on pluggable media processing capabilities. Those
+capabilities are exposed by the **Kurento Clients** to application developers
+as black boxes called **Media Elements**. Each Media Element holds a specific
+media capability, whose details are fully hidden to application developers.
+From the application developer perspective, Media Elements are like *Lego*
+pieces: one just needs to take the elements needed for an application and
+connect them following the desired topology. In Kurento jargon, a graph of
+connected media elements is called a **Media Pipeline**.
 
-   - :doc:`Tutorial 4 - Advanced One to One video call </tutorials/java/tutorial-4-one2one-adv>`
-
-   - :doc:`Tutorial 5 - Many to many video call </tutorials/java/tutorial-5-group>`
-
-
-To better understand the concepts showed in this section, it is recommended to
-take a look to :doc:`Kurento API section <Kurento_API>` section. In that
-section, general aspects of media managment in Kurento are presented. In the
-following subsections, we will see how this general aspects are materialized
-when using Kurento Java Client.
+To better understand theses concepts it is recommended to take a look to
+:doc:`Kurento API section <../../mastering/kurento_API>` section.
 
 
-Maven and JavaDoc
+Let's get started
 =================
 
-The Kurento Java Client is provided as :term:`Maven` dependency in
-:term:`Maven Central` repository. To use it in a Maven application you have to
-include the following dependency in dependencies section of your application's
-pom.xml:
+We are going to learn how to create Kurento applications with examples. The
+*hello world* demo is one of the simplest web application you can create with
+Kurento. It is a `WebRTC`:term: communication in mirror. The following picture
+shows an screenshot of this demo running in a web browser:
+
+.. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
+   :align:   center
+   :alt:     WebRTC loopback video call
+   :width: 600px
+
+The interface of the application (an HTML web page) is composed by two HTML5
+video tags: one for the video camera stream (the local client-side stream) and
+other for the mirror (the remote stream). The video camera stream is sent to
+the Kurento Server, processed and then is returned to the client as a remote
+stream.
+
+To implement this behavior we have to create a `Media Pipeline`:term: composed
+by a single  `Media Element`:term:, i.e. a **WebRtcEndpoint**, which is
+bidirectional media element to receive a media stream (audio and video) from
+the browser and send another media stream back to it. As suggested by its name,
+this endpoint is capable to communicate with the browser by means of
+`WebRTC`:term: technology. Therefore, the media pipeline implemented is
+illustrated in the following picture:
+
+.. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
+   :align:   center
+   :alt:     Loopback video call media pipeline
+
+This is a web application, and therefore it follows a client-server
+architecture. In the client-side, the logic is implemented in **JavaScript**.
+In the server-side we use the **Kurento Java Client** in order to reach the
+**Kurento Server**. All in all, the high level architecture of this demo is
+three-tier. To communicate these entities the following technologies are used:
+
+* `REST`:term:: Communication between JavaScript client-side and Java
+  server-side.
+
+* `WebSocket`:term:: Communication between the Kurento Java Client and the
+  Kurento Server. This communication is implemented by the
+  **Kurento Protocol**. For further information, please see this
+  :doc:`page <../../mastering/kurento_protocol>` of the documentation.
+
+.. figure:: ../../images/rest.png
+   :align:   center
+   :alt:     Communication architecture
+
+.. note::
+
+   The communication between client and server-side is not mandatory to be
+   REST. This demo is extremely simple, and so REST has been used. In the
+   next examples a more complex signaling between client and server has been
+   implement, and for that reason WebSocket has also been employed to communicate
+   client and server. Please see the following tutorials for further information.
+
+The following sections analyze in deep the server (Java) and client-side
+(JavaScript) code of this application. The complete source code can be found in
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-hello-world>`_.
+
+
+Server-Side
+===========
+
+This demo has been developed using **Java** in the server-side with
+`Spring Boot`:term: framework. This technology can be used to embed the Tomcat
+web server in the application and thus simplify the development process.
+
+.. note::
+
+   You can use whatever Java server side technology you prefer to build web
+   applications with Kurento. For example, a pure Java EE application, SIP 
+   Servlets, Play, Vertex, etc. We chose Spring Boot for convenience.
+
+
+In the following figure you can see a class diagram of the server side code:
+
+.. digraph:: HelloWorld
+   :caption: Server-side class diagram of the HelloWorld app
+
+   size="12,8";
+   fontname = "Bitstream Vera Sans"
+   fontsize = 8
+
+   node [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        shape = "record"
+         style=filled
+        fillcolor = "#E7F2FA"
+   ]
+
+   edge [
+        fontname = "Bitstream Vera Sans"
+        fontsize = 8
+        arrowhead = "vee"
+   ]
+
+   HelloWorldApp -> HelloWorldController;
+   HelloWorldApp -> KurentoClient;
+   HelloWorldController -> KurentoClient [constraint = false]
+
+The main class of this demo is named
+`HelloWorldApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldApp.java>`_.
+As you can see, the *KurentoClient* is instantiated in this class as a Spring
+Bean. This bean is used to create **Kurento Media Pipelines**, which are used
+to add media capabilities to your applications. In this instantiation we see
+that a WebSocket is used to connect with Kurento Server, by default in the
+*localhost* and listening in the port 8888.
+
+.. sourcecode:: java
+
+   @ComponentScan
+   @EnableAutoConfiguration
+   public class HelloWorldApp {
+   
+      @Bean
+      public KurentoClient kurentoClient() {
+         return KurentoClient.create("ws://localhost:8888/kurento");
+      }
+   
+      public static void main(String[] args) throws Exception {
+         new SpringApplication(HelloWorldApp.class).run(args);
+      }
+   }
+
+As introduced before, it uses `REST`:term: to communicate client with server by
+means of requests and responses. Specifically, we use the Spring annotation
+*@RestController* to implement REST services in the server-side. Take a look to
+the
+`HelloWorldController <https://github.com/Kurento/kurento-java-tutorial/blob/develop/tutorial-1-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldController.java>`_
+class:
+
+.. sourcecode:: java
+
+   @RestController
+   public class HelloWorldController {
+   
+      @Autowired
+      private KurentoClient kurento;
+   
+      @RequestMapping(value = "/helloworld", method = RequestMethod.POST)
+      private String processRequest(@RequestBody String sdpOffer)
+            throws IOException {
+   
+         // Media Logic
+         MediaPipeline pipeline = kurento.createMediaPipeline();
+         WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline)
+               .build();
+         webRtcEndpoint.connect(webRtcEndpoint);
+   
+         // SDP negotiation (offer and answer)
+         String responseSdp = webRtcEndpoint.processOffer(sdpOffer);
+         return responseSdp;
+      }
+   
+   }
+
+This demo exposes a REST service which is requested by the client-side. This
+service is implemented in the method *processRequest*. Requests to the path
+*/helloworld* using POST will be attended by this method. In the body of the
+method *processRequest* we can see two main parts:
+
+ - **Configure media processing logic**: This is the part in which the
+   application configures how Kurento has to process the media. In other words,
+   the media pipeline is implemented here. To that aim, the object
+   *KurentoClient* is used to create a *MediaPipeline*. Using this
+   *MediaPipeline*, the media elements are created and connected.
+
+ - **WebRTC SDP negotiation**: In WebRTC, `SDP`:term: (Session Description
+   protocol) is used for negotiating media interchange between apps. Such
+   negotiation happens based on the SDP offer and answer exchange mechanism.
+   This negotiation is implemented in the second part of the method
+   *processRequest*, using the SDP offer obtained from the browser client, and
+   returning a SDP answer returned by WebRtcEndpoint.
+
+
+Client-Side
+===========
+
+Let's move now to the client-side of the application, which follows
+*Single Page Application* architecture (`SPA`:term:). To call the previously
+created REST service, we use the JavaScript library `jQuery`:term:. In
+addition, we use a Kurento JavaScript utilities library called
+*kurento-utils.js* to simplify the WebRTC management in the browser.
+
+These libraries are linked in the
+`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-hello-world/src/main/resources/static/index.html>`_
+web page, and are used in the
+`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-hello-world/src/main/resources/static/js/index.js>`_.
+The most relevant part of this file is the *start* function. In this function
+we can see how jQuery is used to call the path */helloworld*, where the REST
+service is listening in the server-side. The function
+*WebRtcPeer.startSendRecv* of *kurento-utils* is used to start a WebRTC
+communication, using the HTML video tag with id *videoInput* to show the video
+camera (local stream) and the video tag *videoOutput* to show the video
+processed by Kurento server (remote stream).
+
+.. sourcecode:: javascript
+
+   function start() {
+      console.log("Starting video call ...");
+      showSpinner(videoInput, videoOutput);
+   
+      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
+         console.info('Invoking SDP offer callback function ' + location.host);
+         $.ajax({
+            url : location.protocol + '/helloworld',
+            type : 'POST',
+            dataType : 'text',
+            contentType : 'application/sdp',
+            data : offerSdp,
+            success : function(data) {
+               console.log("Received sdpAnswer from server. Processing ...");
+               wp.processSdpAnswer(data);
+            },
+            error : function(jqXHR, textStatus, error) {
+               console.error(error);
+            }
+         });
+      });
+   }
+
+Dependencies
+============
+
+This Java Spring application is implemented using `Maven`:term:. The relevant
+part of the *pom.xml* is where Kurento dependencies are declared. As the
+following snippet shows, we need two dependencies: the Kurento Client Java
+dependency (*kurento-client*) and the JavaScript Kurento utility library
+(*kurento-utils*) for the client-side:
 
 .. sourcecode:: xml 
 
+   <dependencies> 
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
          <version>|version|</version>
-      </dependency>
-   
+      </dependency> 
+      <dependency> 
+         <groupId>org.kurento</groupId>
+         <artifactId>kurento-utils-js</artifactId> 
+         <version>|version|</version>
+      </dependency> 
+   </dependencies>
+
 .. note::
-    
+
    We are in active development. Be sure that you have the latest version of Kurento 
    Java Client your POM. You can find it at Maven Central searching for 
    ``kurento-client``.
    
-Kurento Java Client has a minimum requirement of **Java 7**. To configure your
-maven app to use Java 7, you have to include the following properties in the
+Kurento Java Client has a minimum requirement of **Java 7**. To configure the
+application to use Java 7, we have to include the following properties in the
 properties section:
 
 .. sourcecode:: xml 
@@ -62,239 +292,24 @@ properties section:
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
 
-The reference documentation of the Kurento Java Client can be browsed in its
-`JavaDoc page <../javadoc/index.html?com/kurento/kmf/media/package-summary.html>`__.
+How to run this application
+===========================
 
-Connecting to Kurento Server
-============================
+First of all, you should install Kurento Server to run this demo. Please visit
+the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
 
-``KuerentoClient`` is the main class used to connect to Kurento server. This
-class has several static factory methods to create instances from it. In the
-following code snippet you can see how to create a ``KurentoClient`` instance
-to connect a Kurento Server installed in the same host than Java app with all
-default installation values:
+This demo is assuming that you have a Kurento Server installed and running in
+your local machine. If so, to launch the app you need to clone the GitHub
+project where this demo is hosted, and then run the main class, as follows:
 
-.. sourcecode:: java
+.. sourcecode:: shell
 
-   KurentoClient kurento = KurentoClient.create("ws://localhost:8888");
-   
-Objects of ``KurentoClient`` class are used to create ``MediaPipeline`` objects
-responsible to media managment in Kurento server.
+    git clone https://github.com/Kurento/kurento-java-tutorial.git
+    cd kurento-hello-world
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.helloworld.HelloWorldApp"
 
-Creating media pipelines
-========================
-
-A ``MediaPipeline`` object is required to build media services. Method
-``newMediaPipeline()`` can be used in the ``KurentoClient`` for this purpose.
-
-.. sourcecode:: java
-
-    MediaPipeline pipeline = kurento.newMediaPipeline();
-
-*Media elements* have to be created inside *media pipelines*. *Media elements*
-within a pipeline can be connected to build services, but they are isolated
-from the rest of the system. As introduced in the
-:doc:`Kurento API section <Kurento_API>`, the main types of *MediaElements* are
-*Endpoints* and *Filters*.
-
-*Media elements* are created using the :term:`Builder Pattern` allowing a
-flexible initialization. Mandatory parameters must be provided in the builder
-constructor. Optional parameters are set to defaults unless the application
-overrides their values using setter methods in the builder object. When the
-builder is configured, the object can be created using its ``build()`` method.
-In the following snippet, several `media elements` are created:
-
-.. sourcecode:: java
-
-        PlayerEndpoint player = 
-            new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/fiwarecut.mp4")
-                .build();
-
-        FaceOverlayFilter filter = 
-            new FaceOverlayFilter.Builder(pipeline)
-               .withFaceOverlayedImage("http://files.kurento.org/imgs/mario-wings.png")
-               .build();
-
-        HttpGetEndpoint http = 
-            new HttpGetEndpoint.Builder(pipeline)
-               .build();
-
-Now that all media elements are created, we have to connect them from input
-endpoints to output endpoints through media filters.
-
-.. sourcecode:: java
-
-        player.connect(filter);
-        filter.connect(http);
-
-*Media elements* can be connected with ``connect()`` method. This method creates
-a directional connection between the element in which ``connect()`` method is
-invoked and the element passed as parameter.
-
-In the previous steps we have created the media pipeline with a player endpoint
-(to read the video from a file), a face overlay filter (to put a hat over the
-faces in the video) and an http endpoint (to send the processed video to
-browsers by means of http).
-
-This media pipeline can be shown in the following figure:
-
-.. figure:: images/Player_session_pipeline.png   
-   :align: center
-   :alt:   Media Pipeline playing and processing a video file and sending by http
-
-   **Media Pipeline playing and processing a video file and sending it by http**.
-
-To finalize this basic app, we last two important steps. First, we have to press
-"play" button on the player endpoint to start reading file:
-
-.. sourcecode:: java
-
-        player.play();
-
-And second, we have to open a web browser pointing to the URL in which we can
-see the processed video.
-
-.. sourcecode:: java
-
-   String videoUrl = http.getUrl();
-
-To make easier the execution of the demo, we can use a Java 7 useful utility to
-open the default browser at a specific URL:
-
-.. sourcecode:: java 
-
-   Desktop.getDesktop().browse(new URI(videoUrl));
-
-Let's put all above code together in a complete Java class:
-
-.. sourcecode:: java
-
-   import java.awt.Desktop;
-   import java.io.IOException; 
-   import java.net.URI; 
-   import java.net.URISyntaxException;
-
-   import org.kurento.client.KurentoClient;
-   import org.kurento.client.MediaPipeline;
-   import org.kurento.client.PlayerEndpoint;
-   import org.kurento.client.FaceOverlayFilter;
-   import org.kurento.client.HttpGetEndpoint;      
-      
-   public class KurentoHelloWorld {
-      
-      public static void main(String[] args) throws IOException,
-         URISyntaxException {
-      
-         KurentoClient kurento = KurentoClient.create("ws://localhost:8888");
-      
-         MediaPipeline pipeline = kurento.newMediaPipeline();
-          
-         PlayerEndpoint player = 
-            new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/fiwarecut.mp4")
-               .build();
-      
-         FaceOverlayFilter filter = 
-            new FaceOverlayFilter.Builder(pipeline)
-               .withFaceOverlayedImage("http://files.kurento.org/imgs/mario-wings.png")
-               .build();
-       
-         HttpGetEndpoint http = 
-            new HttpGetEndpoint.Builder(pipeline)
-               .build();
-      
-         player.connect(filter);
-         filter.connect(http);
-      
-         player.play();
-         
-         String videoUrl = http.getUrl();
-         Desktop.getDesktop().browse(new URI(videoUrl));
-      }
-   }
-   
-.. todo:: Upload this example to a GitHub project or to a Gist
-   
-Now, if you compile and execute the above class you will see a video in your
-browser with a person with a red hat over his face. This media processing is
-performing in real time, when you see the video.
-
-Of course, this is a very minimal app that demonstrates what you can do with
-Kurento, but you can build more interesting apps with this framework. If you
-didn't take a look to :doc:`Tutorials section <Tutorials>`, please do it now to
-see powerful multimedia web applications that can be built with Kurento.
-
-Connecting media elements
-=========================
-
-*Media elements* can be connected with ``connect()`` method. This method creates
-a directional connection between the element in which ``connect()`` method is
-invoked and the element passed as parameter.
-
-In order to create bidirectional connections the application must perform a
-connect operation in both directions. The bidirectional connection is only
-valid for bidirectional media elements like, for example, ``RtpEndppoint``.
-
-.. sourcecode:: java
-
-        RtpEndpoint rtpA = new RtpEndpoint.Builder(pipeline).build(); 
-        RtpEndpoint rtpB = new RtpEndpoint.Builder(pipeline).build();
-
-        rtpA.connect(rtpB); 
-        rtpB.connect(rtpA);      
-
-Reacting to events
-==================
-
-One of the most powerful functionalities provided by Kurento is that application
-developers can subscribe to events happening in the media elements. This allow
-to create rich multimedia applications with a high level language, letting
-Kurento filters and endpoints do the low level work.
-
-Event subscription in Kurento Java Client is inspired in frameworks to create
-interactive applications like Swing. In order to execute a code fragment when
-an event if fired, you have to register a ``listener`` in the object. For
-example, the following code snippet shows how to execute some code when player
-finishes the file is reading.
-
-.. sourcecode:: java
-
-    PlayerEndpoint player = 
-       new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/fiwarecut.mp4")
-          .build();
-               
-    player.addEndOfStreamListener(new MediaEventListener<EndOfStreamEvent>() {
-       @Override public void onEvent(EndOfStreamEvent event) {
-         System.out.println("The playing has finished"); 
-       }
-    });
-
-
-Non blocking reactive API
-=========================
-
-Kurento Java Client provides a non blocking, reactive, asynchronous interface
-for those applications that cannot afford to block their calls until Kurento
-Server responds. The asynchronous interface improves performance at a cost of
-increase in complexity.
-
-In the following snippet, we show how to create a PlayerEndpoint with the
-asynchronous interface:
-
-.. sourcecode:: java
-
-        new PlayerEndpoint.Builder(pipeline, "http://files.kurento.org/video/fiwarecut.mp4")
-           .buildAsync(new Continuation<PlayerEndpoint>() {
-              @Override public void onSuccess(PlayerEndpoint player) {
-                  // Use player
-              }                
-              @Override public void onError(Throwable cause) { 
-                  // log error
-              }
-           });
-
-
-
-
-
-
+The web application starts on port 8080 in the localhost by default. Therefore,
+open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
+Firefox).
 

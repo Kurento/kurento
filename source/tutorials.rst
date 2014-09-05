@@ -10,9 +10,8 @@ Tutorial 1 - Hello World
 ========================
 
 This is one the simplest application you can create with Kurento. It is a web
-application in which there is an `WebRTC`:term: video communication in
-*loopback* (mirror).
-
+application in which there is an `WebRTC`:term: video communication in mirror
+(*loopback*).
 
 .. toctree::
    :maxdepth: 1
