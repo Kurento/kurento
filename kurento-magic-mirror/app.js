@@ -41,7 +41,7 @@ app.set('port', process.env.PORT || 3000);
  */
 
 const
-ws_uri = "ws://192.168.56.101:8888/kurento"; // TODO: set to localhost.
+ws_uri = "ws://localhost:8888/kurento";
 
 /*
  * Definition of global variables.
@@ -152,11 +152,10 @@ function start(sessionId, sdpOffer, callback) {
 	if (!sessionId) {
 		return callback("Cannot use undefined sessionId");
 	}
-	
-	//Check if session is already transmitting
-	if(pipelines[sessionId]){
-		pipelines[sessionId].release();
-		delete pipelines[sessionId];
+
+	// Check if session is already transmitting
+	if (pipelines[sessionId]) {
+		return callback("You already have an magic mirror with this session. Close current session before starting a new one or use another browser to open a new magic mirror.")
 	}
 
 	getKurentoClient(function(error, kurentoClient) {
