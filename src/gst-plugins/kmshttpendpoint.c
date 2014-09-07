@@ -26,7 +26,7 @@
 #include "kms-elements-enumtypes.h"
 #include <commons/kms-core-enumtypes.h>
 #include <commons/kmsrecordingprofile.h>
-#include <commons/kmsconfcontroller.h>
+#include "kmsconfcontroller.h"
 #include "commons/kmsutils.h"
 #include <commons/kmsloop.h>
 
