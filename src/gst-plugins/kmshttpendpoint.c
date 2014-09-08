@@ -160,15 +160,6 @@ G_DEFINE_TYPE_WITH_CODE (KmsHttpEndpoint, kms_http_endpoint,
 
 static void kms_change_internal_pipeline_state (KmsHttpEndpoint *, gboolean);
 
-static void
-destroy_cb_data (gpointer data)
-{
-  struct cb_data *cb_data = data;
-
-  g_object_unref (cb_data->self);
-  g_slice_free (struct cb_data, data);
-}
-
 static GstFlowReturn
 new_sample_emit_signal_handler (GstElement * appsink, gpointer user_data)
 {
@@ -868,21 +859,6 @@ kms_change_internal_pipeline_state (KmsHttpEndpoint * self, gboolean start)
   self->priv->start = start;
 }
 
-static gboolean
-change_state_cb (gpointer user_data)
-{
-  struct cb_data *tmp_data = (struct cb_data *) user_data;
-
-  KMS_ELEMENT_LOCK (tmp_data->self);
-
-  if (tmp_data->self->priv->start != tmp_data->start)
-    kms_change_internal_pipeline_state (tmp_data->self, tmp_data->start);
-
-  KMS_ELEMENT_UNLOCK (tmp_data->self);
-
-  return G_SOURCE_REMOVE;
-}
-
 static void
 kms_http_endpoint_set_property (GObject * object, guint property_id,
     const GValue * value, GParamSpec * pspec)
@@ -900,15 +876,7 @@ kms_http_endpoint_set_property (GObject * object, guint property_id,
       break;
     case PROP_START:{
       if (self->priv->start != g_value_get_boolean (value)) {
-        struct cb_data *tmp_data;
-
-        tmp_data = g_slice_new0 (struct cb_data);
-
-        tmp_data->self = g_object_ref (self);
-        tmp_data->start = g_value_get_boolean (value);
-
-        kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_HIGH_IDLE,
-            change_state_cb, tmp_data, destroy_cb_data);
+        kms_change_internal_pipeline_state (self, g_value_get_boolean (value));
       }
       break;
     }
