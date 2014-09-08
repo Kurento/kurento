@@ -17,6 +17,7 @@ package org.kurento.test.client;
 import java.awt.Color;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.Dispatcher;
 import org.kurento.client.HubPort;
@@ -49,6 +50,7 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 		doTest(Browser.CHROME);
 	}
 
+	@Ignore
 	@Test
 	public void testDispatcherFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
