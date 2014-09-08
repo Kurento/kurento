@@ -71,7 +71,7 @@ static const char *const state_str[] = {
 
 #define STATE_STR(state) ({                         \
   const gchar *_state = NULL;                       \
-  if (state > 0 && state < G_N_ELEMENTS(state_str)) \
+  if (state >= 0 && state < G_N_ELEMENTS(state_str)) \
     _state = state_str[state];                      \
   _state;                                           \
 })
