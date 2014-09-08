@@ -108,6 +108,17 @@ _kms_multi_channel_controller_free (KmsMultiChannelController * mcc)
   g_slice_free1 (sizeof (KmsMultiChannelController), mcc);
 }
 
+static void
+kms_multi_channel_controller_change_state (KmsMultiChannelController * mcc,
+    MCLState new)
+{
+  if (mcc->state != new) {
+    GST_INFO_OBJECT (mcc, "State change from %s to %s", STATE_STR (mcc->state),
+        STATE_STR (new));
+    mcc->state = new;
+  }
+}
+
 KmsMultiChannelController *
 kms_multi_channel_controller_new (const gchar * host, guint16 port)
 {
@@ -171,7 +182,7 @@ kms_multi_channel_controller_accept (KmsMultiChannelController * mcc)
     return;
   }
 
-  mcc->state = MCL_CONNECTED;
+  kms_multi_channel_controller_change_state (mcc, MCL_CONNECTED);
   mcc->role = MCL_ACCEPTOR;
   mcc->mcl = client;
   KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
@@ -191,23 +202,65 @@ fail:
 }
 
 static void
-kms_multi_channel_controller_read_cmd (KmsMultiChannelController * mcc)
+kms_multi_channel_controller_proc_message (KmsMultiChannelController * mcc,
+    KmsSCTPMessage * msg)
 {
-  /* TODO: Read multi-channel control protocol command */
+  /* Process mccp command */
 }
 
 static void
 kms_multi_channel_controller_thread (KmsMultiChannelController * mcc)
 {
-  GST_DEBUG ("THREAD EXECUTED");
   KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
 
   if (mcc->state == MCL_IDLE) {
     KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
     kms_multi_channel_controller_accept (mcc);
   } else {
+    KmsSCTPConnection *conn = NULL;
+    KmsSCTPMessage msg = { 0 };
+    KmsSCTPResult result;
+    GError *err = NULL;
+
+    if (mcc->mcl != NULL)
+      conn = kms_sctp_connection_ref (mcc->mcl);
+
     KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
-    kms_multi_channel_controller_read_cmd (mcc);
+
+    if (conn == NULL)
+      return;
+
+    if (mcc->state == MCL_CONNECTED && mcc->role == MCL_INITIATOR &&
+        g_cancellable_is_cancelled (mcc->cancellable)) {
+      /* The accept operation was cancelled during the transition */
+      /* from IDLE to CONNECTED. Restore the cancellable object. */
+      g_cancellable_reset (mcc->cancellable);
+    }
+
+    INIT_SCTP_MESSAGE (msg, MCCP_MTU);
+
+    result = kms_sctp_connection_receive (conn, &msg, mcc->cancellable, &err);
+
+    switch (result) {
+      case KMS_SCTP_OK:
+        kms_multi_channel_controller_proc_message (mcc, &msg);
+        break;
+      case KMS_SCTP_EOF:
+        KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+        kms_multi_channel_controller_change_state (mcc, MCL_IDLE);
+        KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+        break;
+      default:
+        GST_ERROR ("Error reading from SCTP socket (%d)", result);
+    }
+
+    if (err != NULL) {
+      GST_ERROR_OBJECT (mcc, "%s", err->message);
+      g_error_free (err);
+    }
+
+    CLEAR_SCTP_MESSAGE (msg);
+    kms_sctp_connection_unref (conn);
   }
 }
 
@@ -259,7 +312,7 @@ kms_multi_channel_controller_connect (KmsMultiChannelController * mcc,
 
   mcc->mcl = conn;
   mcc->role = MCL_INITIATOR;
-  mcc->state = MCL_CONNECTED;
+  kms_multi_channel_controller_change_state (mcc, MCL_CONNECTED);
 
   KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
 

@@ -15,6 +15,9 @@
 
 /* The multi-channel controller protocol (MCCP) */
 
+/* maximum transmission unit for control channels */
+#define MCCP_MTU	48
+
 /* Standard Op Codes */
 #define MCCP_ERROR_RSP			0x00
 #define MCCP_CREATE_CHANNEL_REQ		0x01
