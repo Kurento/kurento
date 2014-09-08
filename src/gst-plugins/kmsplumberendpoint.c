@@ -284,8 +284,7 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
   g_object_class_install_property (gobject_class, PROP_REMOTE_ADDR,
       g_param_spec_string ("remote-address", "Remote Address",
           "The remote address to connect the socket to",
-          SCTP_DEFAULT_ADDR,
-          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
+          NULL, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
           G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_LOCAL_PORT,
@@ -298,8 +297,7 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
   g_object_class_install_property (gobject_class, PROP_REMOTE_PORT,
       g_param_spec_int ("remote-port", "Remote port",
           "The port to send the packets to", 0, G_MAXUINT16,
-          SCTP_DEFAULT_REMOTE_PORT,
-          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
+          0, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
           G_PARAM_STATIC_STRINGS));
 
   kms_element_class->audio_valve_added =
