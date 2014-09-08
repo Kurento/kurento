@@ -184,7 +184,9 @@ recv_sample (GstElement * appsink, gpointer user_data)
 
   g_object_get (G_OBJECT (self), "state", &state, NULL);
   if (state != KMS_URI_ENDPOINT_STATE_START) {
-    GST_DEBUG ("Dropping buffer %" GST_PTR_FORMAT, buffer);
+    GST_WARNING ("Dropping buffer received in invalid state %" GST_PTR_FORMAT,
+        buffer);
+    // TODO: Add a flag to discard buffers until keyframe
     ret = GST_FLOW_OK;
     goto end;
   }
@@ -192,15 +194,17 @@ recv_sample (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsink));
+  BASE_TIME_LOCK (self);
 
-  base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
+  base_time = g_object_get_data (G_OBJECT (self), BASE_TIME_DATA);
 
   if (base_time == NULL) {
     base_time = g_slice_new0 (BaseTimeType);
-    base_time->pts = GST_CLOCK_TIME_NONE;
+    base_time->pts = buffer->pts;
     base_time->dts = GST_CLOCK_TIME_NONE;
-    g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
+    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
+        base_time->pts);
+    g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, base_time,
         release_base_time_type);
   }
 
@@ -209,24 +213,22 @@ recv_sample (GstElement * appsink, gpointer user_data)
     base_time->pts = buffer->pts;
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
+    base_time->dts = GST_CLOCK_TIME_NONE;
   }
 
-  if (!GST_CLOCK_TIME_IS_VALID (base_time->dts)
-      && GST_BUFFER_DTS_IS_VALID (buffer)) {
-    base_time->dts = buffer->dts;
-    GST_DEBUG_OBJECT (appsrc, "Setting dts base time to: %" G_GUINT64_FORMAT,
-        base_time->dts);
+  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
+    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
+      if (base_time->pts > buffer->pts) {
+        buffer->pts = self->priv->paused_time;
+      } else {
+        buffer->pts -= base_time->pts + self->priv->paused_time;
+      }
+    }
+  } else {
+    buffer->pts = G_GUINT64_CONSTANT (0);
   }
 
-  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
-      && GST_BUFFER_PTS_IS_VALID (buffer)) {
-    buffer->pts -= base_time->pts + self->priv->paused_time;
-    buffer->dts = buffer->pts;
-  } else if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
-      && GST_BUFFER_DTS_IS_VALID (buffer)) {
-    buffer->dts -= base_time->dts + self->priv->paused_time;
-    buffer->pts = buffer->dts;
-  }
+  buffer->dts = buffer->pts;
 
   BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
 
@@ -590,7 +592,6 @@ static void
 kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
 {
   KmsRecorderEndpoint *self = KMS_RECORDER_ENDPOINT (obj);
-  GstElement *audio_src, *video_src;
 
   kms_recorder_endpoint_change_state (self);
 
@@ -598,22 +599,9 @@ kms_recorder_endpoint_stopped (KmsUriEndpoint * obj)
   kms_recorder_endpoint_close_valves (self);
 
   // Reset base time data
-  audio_src =
-      gst_bin_get_by_name (GST_BIN (self->priv->pipeline), AUDIO_APPSRC);
-  video_src =
-      gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
-
   BASE_TIME_LOCK (self);
 
-  if (audio_src != NULL) {
-    g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
-    g_object_unref (audio_src);
-  }
-
-  if (video_src != NULL) {
-    g_object_set_data_full (G_OBJECT (video_src), BASE_TIME_DATA, NULL, NULL);
-    g_object_unref (video_src);
-  }
+  g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
 
   self->priv->paused_time = G_GUINT64_CONSTANT (0);
   self->priv->paused_start = GST_CLOCK_TIME_NONE;

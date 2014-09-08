@@ -25,6 +25,7 @@
 #include <commons/kmsrecordingprofile.h>
 #include <commons/kms-core-enumtypes.h>
 #include <commons/kmsloop.h>
+#include <commons/kmsagnosticcaps.h>
 
 #define DEFAULT_RECORDING_PROFILE KMS_RECORDING_PROFILE_WEBM
 #define DEFAULT_HAS_DATA_VALUE FALSE
@@ -38,6 +39,8 @@
 #define KEY_APP_SINK "kms-key_app_sink"
 
 #define NAME "confcontroller"
+
+#define DROPPING_UNTIL_KEY_FRAME "dropping_until_key_frame"
 
 GST_DEBUG_CATEGORY_STATIC (kms_conf_controller_debug_category);
 #define GST_CAT_DEFAULT kms_conf_controller_debug_category
@@ -374,6 +377,100 @@ kms_conf_controller_add_appsink (KmsConfController * self,
   gst_element_sync_state_with_parent (appsink);
 }
 
+static gboolean
+is_raw_caps (GstCaps * caps)
+{
+  gboolean ret;
+  GstCaps *raw_caps = gst_caps_from_string (KMS_AGNOSTIC_RAW_CAPS);
+
+  ret = gst_caps_is_always_compatible (caps, raw_caps);
+
+  gst_caps_unref (raw_caps);
+  return ret;
+}
+
+static void
+send_force_key_unit_event (GstPad * pad)
+{
+  GstStructure *s;
+  GstEvent *force_key_unit_event;
+  GstCaps *caps = gst_pad_get_current_caps (pad);
+
+  if (caps == NULL)
+    caps = gst_pad_get_allowed_caps (pad);
+
+  if (caps == NULL)
+    return;
+
+  if (is_raw_caps (caps))
+    goto end;
+
+  s = gst_structure_new ("GstForceKeyUnit",
+      "all-headers", G_TYPE_BOOLEAN, TRUE, NULL);
+  force_key_unit_event = gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM, s);
+
+  if (GST_PAD_DIRECTION (pad) == GST_PAD_SRC) {
+    gst_pad_send_event (pad, force_key_unit_event);
+  } else {
+    gst_pad_push_event (pad, force_key_unit_event);
+  }
+
+end:
+  gst_caps_unref (caps);
+}
+
+static GstPadProbeReturn
+drop_until_keyframe (GstPad * pad, GstPadProbeInfo * info, gpointer user_data)
+{
+  GstBuffer *buffer;
+
+  buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+
+  if (GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DELTA_UNIT)) {
+    /* Drop buffer until a keyframe is received */
+    GST_WARNING_OBJECT (pad, "Dropping buffer");
+
+    send_force_key_unit_event (pad);
+    return GST_PAD_PROBE_DROP;
+  }
+
+  GST_OBJECT_LOCK (pad);
+  g_object_set_data (G_OBJECT (pad), DROPPING_UNTIL_KEY_FRAME,
+      GINT_TO_POINTER (FALSE));
+  GST_OBJECT_UNLOCK (pad);
+
+  GST_DEBUG_OBJECT (pad, "Finish dropping buffers until key frame");
+
+  /* So this buffer is a keyframe we don't need this probe any more */
+  return GST_PAD_PROBE_REMOVE;
+}
+
+static GstPadProbeReturn
+gap_detection_probe (GstPad * pad, GstPadProbeInfo * info, gpointer data)
+{
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+
+  if (GST_EVENT_TYPE (event) == GST_EVENT_GAP) {
+    GST_TRACE_OBJECT (pad, "Gap detected, request key frame");
+
+    GST_OBJECT_LOCK (pad);
+    if (g_object_get_data (G_OBJECT (pad), DROPPING_UNTIL_KEY_FRAME)) {
+      GST_DEBUG_OBJECT (pad, "Already dropping buffers until key frame");
+      GST_OBJECT_UNLOCK (pad);
+    } else {
+      GST_DEBUG_OBJECT (pad, "Start dropping buffers until key frame");
+      g_object_set_data (G_OBJECT (pad), DROPPING_UNTIL_KEY_FRAME,
+          GINT_TO_POINTER (TRUE));
+      GST_OBJECT_UNLOCK (pad);
+      gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, drop_until_keyframe,
+          NULL, NULL);
+      send_force_key_unit_event (pad);
+    }
+  }
+
+  return GST_PAD_PROBE_OK;
+}
+
 static void
 kms_conf_controller_connect_valve_to_appsink (KmsConfController * self,
     struct config_valve *conf)
@@ -392,6 +489,18 @@ kms_conf_controller_connect_valve_to_appsink (KmsConfController * self,
   if (!gst_element_link (conf->valve, appsink)) {
     GST_ERROR ("Could not link %s to %s", GST_ELEMENT_NAME (conf->valve),
         GST_ELEMENT_NAME (appsink));
+  }
+
+  if (g_str_has_prefix (conf->sinkname, "video")) {
+    GstPad *pad = gst_element_get_static_pad (appsink, "sink");
+
+    GST_INFO ("Connecting video, adding probe to drop until key frame");
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, drop_until_keyframe,
+        NULL, NULL);
+    gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER, gap_detection_probe,
+        NULL, NULL);
+
+    g_object_unref (pad);
   }
 
   g_object_unref (appsink);

@@ -244,15 +244,17 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
   gst_buffer_ref (buffer);
   buffer = gst_buffer_make_writable (buffer);
 
-  BASE_TIME_LOCK (GST_OBJECT_PARENT (appsink));
+  BASE_TIME_LOCK (self);
 
-  base_time = g_object_get_data (G_OBJECT (appsrc), BASE_TIME_DATA);
+  base_time = g_object_get_data (G_OBJECT (self), BASE_TIME_DATA);
 
   if (base_time == NULL) {
     base_time = g_slice_new0 (BaseTimeType);
-    base_time->pts = GST_CLOCK_TIME_NONE;
+    base_time->pts = buffer->pts;
     base_time->dts = GST_CLOCK_TIME_NONE;
-    g_object_set_data_full (G_OBJECT (appsrc), BASE_TIME_DATA, base_time,
+    GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
+        base_time->pts);
+    g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, base_time,
         release_base_time_type);
   }
 
@@ -261,24 +263,22 @@ new_sample_get_handler (GstElement * appsink, gpointer user_data)
     base_time->pts = buffer->pts;
     GST_DEBUG_OBJECT (appsrc, "Setting pts base time to: %" G_GUINT64_FORMAT,
         base_time->pts);
+    base_time->dts = GST_CLOCK_TIME_NONE;
   }
 
-  if (!GST_CLOCK_TIME_IS_VALID (base_time->dts)
-      && GST_BUFFER_DTS_IS_VALID (buffer)) {
-    base_time->dts = buffer->dts;
-    GST_DEBUG_OBJECT (appsrc, "Setting dts base time to: %" G_GUINT64_FORMAT,
-        base_time->dts);
+  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)) {
+    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
+      if (base_time->pts > buffer->pts) {
+        buffer->pts = G_GUINT64_CONSTANT (0);
+      } else {
+        buffer->pts -= base_time->pts;
+      }
+    }
+  } else {
+    buffer->pts = G_GUINT64_CONSTANT (0);
   }
 
-  if (GST_CLOCK_TIME_IS_VALID (base_time->pts)
-      && GST_BUFFER_PTS_IS_VALID (buffer)) {
-    buffer->pts -= base_time->pts;
-    buffer->dts = buffer->pts;
-  } else if (GST_CLOCK_TIME_IS_VALID (base_time->dts)
-      && GST_BUFFER_DTS_IS_VALID (buffer)) {
-    buffer->dts -= base_time->dts;
-    buffer->pts = buffer->dts;
-  }
+  buffer->dts = buffer->pts;
 
   BASE_TIME_UNLOCK (GST_OBJECT_PARENT (appsink));
 
@@ -853,9 +853,6 @@ kms_change_internal_pipeline_state (KmsHttpEndpoint * self, gboolean start)
         GST_STATE_CHANGE_ASYNC)
       GST_DEBUG ("Change to PLAYING will be asynchronous");
   } else {
-    GstElement *audio_src;
-    GstElement *video_src;
-
     /* Set pipeline to READY */
     GST_DEBUG ("Setting pipeline to READY.");
     if (gst_element_set_state (self->priv->pipeline, GST_STATE_READY) ==
@@ -863,25 +860,6 @@ kms_change_internal_pipeline_state (KmsHttpEndpoint * self, gboolean start)
       GST_DEBUG ("Change to READY will be asynchronous");
 
     // Reset base time data
-    audio_src =
-        gst_bin_get_by_name (GST_BIN (self->priv->pipeline), AUDIO_APPSRC);
-    video_src =
-        gst_bin_get_by_name (GST_BIN (self->priv->pipeline), VIDEO_APPSRC);
-
-    if (audio_src != NULL) {
-      BASE_TIME_LOCK (self);
-      g_object_set_data_full (G_OBJECT (audio_src), BASE_TIME_DATA, NULL, NULL);
-      BASE_TIME_UNLOCK (self);
-      g_object_unref (audio_src);
-    }
-
-    if (video_src != NULL) {
-      BASE_TIME_LOCK (self);
-      g_object_set_data_full (G_OBJECT (video_src), BASE_TIME_DATA, NULL, NULL);
-      BASE_TIME_UNLOCK (self);
-      g_object_unref (video_src);
-    }
-
     BASE_TIME_LOCK (self);
     g_object_set_data_full (G_OBJECT (self), BASE_TIME_DATA, NULL, NULL);
     BASE_TIME_UNLOCK (self);
