@@ -17,7 +17,7 @@ application in which there is an `WebRTC`:term: video communication in mirror
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-1-helloworld>
-..   Browser JavaScript </tutorials/js/tutorial-1-helloworld>
+   Browser JavaScript </tutorials/js/tutorial-1-helloworld>
    Node.js </tutorials/node/tutorial-1-helloworld>
 
 Tutorial 2 - WebRTC magic mirror

@@ -6,11 +6,6 @@ This web application has been designed to introduce the principles of
 programming with Kurento for Java developers. It consists on a `WebRTC`:term:
 video communication in mirror (*loopback*).
 
-Kurento provides to developers a **Kurento Java Client** to control
-**Kurento Server**. This client library can be used in any kind of Java
-application: Server Side Web, Desktop, Android, etc. It is compatible with any
-framework like Java EE, Spring, Play, Vert.x, Swing, JavaFX, etc.
-
 
 Kurento in a nutshell
 =====================
@@ -32,7 +27,12 @@ To better understand theses concepts it is recommended to take a look to
 Let's get started
 =================
 
-We are going to learn how to create Kurento applications with examples. The
+Kurento provides to developers a **Kurento Java Client** to control
+**Kurento Server**. This client library can be used in any kind of Java
+application: Server Side Web, Desktop, Android, etc. It is compatible with any
+framework like Java EE, Spring, Play, Vert.x, Swing, JavaFX, etc.
+
+We are going to learn how to use the Kurento Java Client with examples. The
 *hello world* demo is one of the simplest web application you can create with
 Kurento. It is a `WebRTC`:term: communication in mirror. The following picture
 shows an screenshot of this demo running in a web browser:
