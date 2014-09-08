@@ -39,7 +39,7 @@ function stop() {
 	hideSpinner(videoInput, videoOutput);
 }
 
-function onOffer(offer){
+function onOffer(sdpOffer){
 	kurentoClient(ws_uri, function(error, kurentoClient) {
 		if(error) return onError(error);
 
@@ -49,10 +49,10 @@ function onOffer(offer){
 			pipeline.create("WebRtcEndpoint", function(error, webRtc){
 				if(error) return onError(error);
 
-				webRtc.processOffer(offer, function(error, answer){
+				webRtc.processOffer(sdpOffer, function(error, sdpAnswer){
 					if(error) return onError(error);
 
-					webRtcPeer.processSdpAnswer(answer);
+					webRtcPeer.processSdpAnswer(sdpAnswer);
 				});
 
 				webRtc.connect(webRtc, function(error){
