@@ -19,6 +19,7 @@
 #include <gst/gst.h>
 #include "commons/kmsutils.h"
 #include "kmsplumberendpoint.h"
+#include "kmsmultichannelcontroller.h"
 
 #define parent_class kms_plumber_endpoint_parent_class
 
@@ -40,6 +41,8 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 struct _KmsPlumberEndpointPrivate
 {
+  KmsMultiChannelController *mcc;
+
   gchar *local_addr;
   gchar *remote_addr;
 
@@ -208,53 +211,38 @@ kms_plumber_endpoint_change_state (GstElement * element,
   KmsPlumberEndpoint *self = KMS_PLUMBER_ENDPOINT (element);
 
   switch (transition) {
-    case GST_STATE_CHANGE_NULL_TO_READY:{
-      GstElement *agnosticbin;
+    case GST_STATE_CHANGE_NULL_TO_READY:
+      self->priv->mcc =
+          kms_multi_channel_controller_new (self->priv->local_addr,
+          self->priv->local_port);
+      kms_multi_channel_controller_start (self->priv->mcc);
 
-      /* Audio sctp server will be listening in the port number provided */
-      /* as parameter and video sctp server will be bound to the same */
-      /* port number plus one. */
-      /* TODO: Bind ports in free available port using port number 0 and */
-      /* propagate this information to the other side by using a specific */
-      /* protocol to manage multiple channels on demand */
+      /* Try to connect control link if remote address is provided */
+      if (self->priv->remote_addr != NULL) {
+        GError *err = NULL;
 
-      agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
-      self->priv->audiosrc = gst_element_factory_make ("sctpserversrc", NULL);
-      g_object_set (G_OBJECT (self->priv->audiosrc), "bind-address",
-          self->priv->local_addr, "port", self->priv->local_port, NULL);
-
-      gst_bin_add (GST_BIN (self), self->priv->audiosrc);
-      gst_element_sync_state_with_parent (self->priv->audiosrc);
-
-      if (!gst_element_link (self->priv->audiosrc, agnosticbin)) {
-        GST_ERROR ("Could not link %s to element %s",
-            GST_ELEMENT_NAME (self->priv->audiosrc),
-            GST_ELEMENT_NAME (agnosticbin));
-        return GST_STATE_CHANGE_FAILURE;
+        if (!kms_multi_channel_controller_connect (self->priv->mcc,
+                self->priv->remote_addr, self->priv->remote_port, &err)) {
+          GST_ERROR_OBJECT (self, "%s", err->message);
+          g_error_free (err);
+        }
       }
-
-      agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
-      self->priv->videosrc = gst_element_factory_make ("sctpserversrc", NULL);
-      g_object_set (G_OBJECT (self->priv->videosrc), "bind-address",
-          self->priv->local_addr, "port", self->priv->local_port + 1, NULL);
-
-      gst_bin_add (GST_BIN (self), self->priv->videosrc);
-      gst_element_sync_state_with_parent (self->priv->videosrc);
-
-      if (!gst_element_link (self->priv->videosrc, agnosticbin)) {
-        GST_ERROR ("Could not link %s to element %s",
-            GST_ELEMENT_NAME (self->priv->videosrc),
-            GST_ELEMENT_NAME (agnosticbin));
-        return GST_STATE_CHANGE_FAILURE;
-      }
-
       break;
-    }
     default:
       break;
   }
 
   ret = GST_ELEMENT_CLASS (parent_class)->change_state (element, transition);
+
+  switch (transition) {
+    case GST_STATE_CHANGE_READY_TO_NULL:{
+      kms_multi_channel_controller_stop (self->priv->mcc);
+      kms_multi_channel_controller_unref (self->priv->mcc);
+      break;
+    }
+    default:
+      break;
+  }
 
   return ret;
 }
