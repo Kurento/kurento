@@ -15,8 +15,8 @@
 
 #include <gio/gio.h>
 
-#include "kmsmultichannelcontroller.h"
 #include "kmsmccp.h"
+#include "kmsmultichannelcontroller.h"
 #include "kmssctpconnection.h"
 
 GST_DEBUG_CATEGORY_STATIC (kms_multi_channel_controller_debug);
@@ -29,15 +29,26 @@ GType _kms_multi_channel_controller_type = 0;
 #define KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK(elem) \
   (g_rec_mutex_unlock (&KMS_MULTI_CHANNEL_CONTROLLER ((elem))->rmutex))
 
+#define KMS_MULTI_CHANNEL_CONTROLLER_SET_PENDING(elem) ({         \
+  g_mutex_lock (&KMS_MULTI_CHANNEL_CONTROLLER ((elem))->mutex);   \
+  KMS_MULTI_CHANNEL_CONTROLLER ((elem))->pending =TRUE;           \
+  g_mutex_unlock (&KMS_MULTI_CHANNEL_CONTROLLER ((elem))->mutex); \
+})
+
 #define MCC_SCTP_DEFAULT_NUM_OSTREAMS 1
 #define MCC_SCTP_DEFAULT_MAX_INSTREAMS 1
+
+#define KMS_MCC_TIMEOUT 5       /*seconds */
 
 #define KMS_MCC_ERROR \
   g_quark_from_static_string("kms-multi-channel-controller-error-quark")
 
 typedef enum
 {
-  KMS_MCC_INVALID_STATE
+  KMS_MCC_INVALID_STATE,
+  KMS_MCC_REQUEST_TIMEOUT,
+  KMS_MCC_BUSY,
+  KMS_MCC_UNEXPECTED_ERROR
 } KmsMCCError;
 
 struct _KmsMultiChannelController
@@ -57,6 +68,13 @@ struct _KmsMultiChannelController
 
   GstTask *task;
   GRecMutex tmutex;
+
+  GCond cond;
+  GMutex mutex;
+  gboolean pending;
+
+  gboolean waiting_rsp;
+  KmsSCTPMessage msg_rsp;
 };
 
 GST_DEFINE_MINI_OBJECT_TYPE (KmsMultiChannelController,
@@ -103,6 +121,9 @@ _kms_multi_channel_controller_free (KmsMultiChannelController * mcc)
   g_rec_mutex_clear (&mcc->rmutex);
   g_rec_mutex_clear (&mcc->tmutex);
 
+  g_mutex_clear (&mcc->mutex);
+  g_cond_clear (&mcc->cond);
+
   g_clear_object (&mcc->cancellable);
 
   g_slice_free1 (sizeof (KmsMultiChannelController), mcc);
@@ -119,6 +140,48 @@ kms_multi_channel_controller_change_state (KmsMultiChannelController * mcc,
   }
 }
 
+static gboolean
+kms_multi_channel_controller_wait_rsp (KmsMultiChannelController * mcc,
+    GError ** err)
+{
+  gint64 end_time;
+  gboolean ret;
+
+  g_mutex_lock (&mcc->mutex);
+
+  end_time = g_get_monotonic_time () + KMS_MCC_TIMEOUT * G_TIME_SPAN_SECOND;
+
+  while (mcc->pending) {
+    if (!g_cond_wait_until (&mcc->cond, &mcc->mutex, end_time)) {
+      g_set_error (err, KMS_MCC_ERROR, KMS_MCC_REQUEST_TIMEOUT,
+          "Response timed out");
+      mcc->pending = FALSE;
+      ret = FALSE;
+      goto end;
+    }
+  }
+
+  ret = TRUE;
+
+  /* take message */
+
+end:
+  g_mutex_unlock (&mcc->mutex);
+
+  return ret;
+}
+
+static void
+kms_multi_channel_controller_wake_up (KmsMultiChannelController * mcc)
+{
+  g_mutex_lock (&mcc->mutex);
+
+  mcc->pending = FALSE;
+
+  g_cond_signal (&mcc->cond);
+  g_mutex_unlock (&mcc->mutex);
+}
+
 KmsMultiChannelController *
 kms_multi_channel_controller_new (const gchar * host, guint16 port)
 {
@@ -133,6 +196,9 @@ kms_multi_channel_controller_new (const gchar * host, guint16 port)
   g_rec_mutex_init (&mcc->rmutex);
   g_rec_mutex_init (&mcc->tmutex);
   mcc->cancellable = g_cancellable_new ();
+
+  g_mutex_init (&mcc->mutex);
+  g_cond_init (&mcc->cond);
 
   mcc->local_host = g_strdup (host);
   mcc->local_port = port;
@@ -190,15 +256,32 @@ kms_multi_channel_controller_accept (KmsMultiChannelController * mcc)
   return;
 
 fail:
-  if (err != NULL) {
-    GST_ERROR_OBJECT (mcc, "%s", err->message);
-    g_error_free (err);
+  {
+    KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+
+    if (mcc->state == MCL_CONNECTED && mcc->role == MCL_INITIATOR &&
+        g_cancellable_is_cancelled (mcc->cancellable)) {
+      /* The accept operation was cancelled during the transition */
+      /* from IDLE to CONNECTED. Restore the cancellable object. */
+      g_cancellable_reset (mcc->cancellable);
+      KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+      kms_multi_channel_controller_wake_up (mcc);
+    } else {
+      KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+    }
+
+    if (err != NULL && !g_error_matches (err, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+      GST_ERROR_OBJECT (mcc, "%s", err->message);
+    }
+
+    g_clear_error (&err);
+
+    if (conn != NULL)
+      kms_sctp_connection_unref (conn);
+
+    return;
   }
-
-  if (conn != NULL)
-    kms_sctp_connection_unref (conn);
-
-  return;
 }
 
 static void
@@ -206,6 +289,7 @@ kms_multi_channel_controller_proc_message (KmsMultiChannelController * mcc,
     KmsSCTPMessage * msg)
 {
   /* Process mccp command */
+  GST_DEBUG ("Process message");
 }
 
 static void
@@ -229,13 +313,6 @@ kms_multi_channel_controller_thread (KmsMultiChannelController * mcc)
 
     if (conn == NULL)
       return;
-
-    if (mcc->state == MCL_CONNECTED && mcc->role == MCL_INITIATOR &&
-        g_cancellable_is_cancelled (mcc->cancellable)) {
-      /* The accept operation was cancelled during the transition */
-      /* from IDLE to CONNECTED. Restore the cancellable object. */
-      g_cancellable_reset (mcc->cancellable);
-    }
 
     INIT_SCTP_MESSAGE (msg, MCCP_MTU);
 
@@ -316,8 +393,13 @@ kms_multi_channel_controller_connect (KmsMultiChannelController * mcc,
 
   KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
 
+  KMS_MULTI_CHANNEL_CONTROLLER_SET_PENDING (mcc);
+
   /* Stop accepting connections */
   g_cancellable_cancel (mcc->cancellable);
+
+  /* Wait to go to CONNECTED state */
+  kms_multi_channel_controller_wait_rsp (mcc, NULL);
 
   return TRUE;
 
