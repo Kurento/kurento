@@ -2,16 +2,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.kurento.kws</groupId>
-	<artifactId>kws-rpc-builder</artifactId>
-	<version>4.3.19-SNAPSHOT</version>
+	<artifactId>kurento-jsonrpc-js</artifactId>
+	<version>5.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Web SDK - RPC Builder</name>
 	<description>
 		Kurento Web SDK RPC Builder
 
-		The kws-rpc-builder project contains the implementation
-		of a transport and protocol agnostic RPC library fro browser and Node.js
+		The kurento-jsonrpc-js project contains the implementation
+		of a transport and protocol agnostic RPC library for browser and Node.js
 	</description>
 	<url>http://www.kurento.org/docs/${project.version}</url>
 
