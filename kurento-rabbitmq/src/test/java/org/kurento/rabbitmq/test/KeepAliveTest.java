@@ -84,7 +84,7 @@ public class KeepAliveTest {
 		kurento.createMediaPipeline();
 
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000 / 2,
-				(NUM_KEEP_ALIVES + 1) * 1000 / 2);
+				(NUM_KEEP_ALIVES + 2) * 1000 / 2);
 
 		client.close();
 
