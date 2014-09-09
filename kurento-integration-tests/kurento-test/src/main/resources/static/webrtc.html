@@ -3,13 +3,11 @@
 <head>
 <meta charset="utf-8">
 <title>WebRTC</title>
-<script src="./js/kws-content-api.js"></script>
 <script src="./lib/adapter.js"></script>
 <script src="./lib/Console.js"></script>
 <script src="./lib/color.js"></script>
 <script src="./lib/webrtc-utils.js"></script>
 <script>
-	var conn;
 	var video;
 	var sdpOffer;
 	var peerConn;
@@ -38,66 +36,6 @@
 
 	function updateCurrentTime() {
 		document.getElementById("currentTime").value = video.currentTime;
-	}
-
-	function terminate() {
-		conn.terminate();
-	}
-
-	function initConnection(conn) {
-		// Set connection success and error events
-		conn.on("start", function(event) {
-			console.info("Connection started");
-		});
-		conn.on("terminate", function(event) {
-			console.info("Connection terminated");
-		});
-		conn.on("localstream", function(event) {
-			console.info("LocalStream set");
-		});
-		conn.on("remotestream", function(event) {
-			console.info("RemoteStream set");
-		});
-		conn.on("mediaevent", function(event) {
-			console.info("MediaEvent: " + JSON.stringify(event.data));
-		});
-		conn.on("error", function(error) {
-			console.info("Error " + error.message);
-		});
-	}
-
-	function start(url) {
-		play(url, false)
-	}
-
-	function play(url, recvOnly) {
-		// Show spinners (and options configuration)
-		var localVideo = document.getElementById("local");
-		var remoteVideo = document.getElementById("video");
-		var options = {
-			localVideoTag : "local",
-			remoteVideoTag : "video"
-		};
-		if (recvOnly) {
-			options = {
-				remoteVideoTag : "video",
-				audio : "recvonly",
-				video : "recvonly"
-			};
-		} else {
-			showSpinner("local");
-		}
-		showSpinner("video");
-
-		// Create a new connection
-		try {
-			conn = new kwsContentApi.KwsWebRtcContent(url, options);
-			console.info("Creating connection to " + url);
-			initConnection(conn);
-		} catch (error) {
-			// Log the error
-			console.error(error.message);
-		}
 	}
 
 	function showSpinner(tagId) {

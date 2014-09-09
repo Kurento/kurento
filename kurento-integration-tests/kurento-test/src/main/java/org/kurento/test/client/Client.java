@@ -21,14 +21,12 @@ package org.kurento.test.client;
  * @since 4.2.3
  */
 public enum Client {
-	PLAYER, PLAYERJSON, WEBRTC;
+	PLAYER, WEBRTC;
 
 	public String toString() {
 		switch (this) {
 		case PLAYER:
 			return "/player.html";
-		case PLAYERJSON:
-			return "/playerJson.html";
 		case WEBRTC:
 		default:
 			return "/webrtc.html";

@@ -296,13 +296,6 @@ public class BrowserClient implements Closeable {
 		}
 	}
 
-	public void startRcvOnly() {
-		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver).executeScript("play('" + videoUrl
-					+ "', true);");
-		}
-	}
-
 	@SuppressWarnings("deprecation")
 	public void close() {
 		for (Thread t : callbackThreads) {
