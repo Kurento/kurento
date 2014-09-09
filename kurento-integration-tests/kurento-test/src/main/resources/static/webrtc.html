@@ -61,10 +61,15 @@
 		}
 		log(e.type);
 	}
+
+	function addTestName(testName) {
+		document.getElementById("testName").innerHTML = testName;
+	}
 </script>
 </head>
 <body>
 	<h1>WebRTC</h1>
+	<h2 id="testName"></h2>
 	<video id="local" autoplay controls width="480px" height="360px"></video>
 	<video id="video" autoplay controls width="480px" height="360px"></video>
 	<br />

@@ -41,10 +41,15 @@
 	function terminate() {
 		// Player without control protocol does not need to terminate
 	}
+
+	function addTestName(testName) {
+		document.getElementById("testName").innerHTML = testName;
+	}
 </script>
 </head>
 <body>
-	<h1>Player</h1>
+	<h1>HTTP Player</h1>
+	<h2 id="testName"></h2>
 	<video id="video" autoplay controls width="480px" height="360px">
 	</video>
 	<br />

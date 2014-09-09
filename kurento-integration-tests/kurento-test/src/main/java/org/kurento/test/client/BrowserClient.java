@@ -107,6 +107,9 @@ public class BrowserClient implements Closeable {
 		driver.manage().timeouts();
 		driver.get("http://" + hostAddress + ":" + serverPort
 				+ client.toString());
+
+		addTestName(KurentoServicesTestHelper.getTestCaseName() + "."
+				+ KurentoServicesTestHelper.getTestName());
 	}
 
 	private void initDriver(String hostAddress) {
@@ -293,6 +296,13 @@ public class BrowserClient implements Closeable {
 	public void stop() {
 		if (driver instanceof JavascriptExecutor) {
 			((JavascriptExecutor) driver).executeScript("terminate();");
+		}
+	}
+
+	public void addTestName(String testName) {
+		if (driver instanceof JavascriptExecutor) {
+			((JavascriptExecutor) driver).executeScript("addTestName('"
+					+ testName + "');");
 		}
 	}
 
