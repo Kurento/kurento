@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.factory.KurentoClient;
 import org.kurento.client.factory.KurentoClientFactory;
@@ -50,6 +51,7 @@ public class KeepAliveTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void test() throws TException, IOException, InterruptedException {
 
