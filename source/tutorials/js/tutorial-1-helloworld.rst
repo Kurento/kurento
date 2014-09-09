@@ -4,52 +4,78 @@ JavaScript Tutorial 1 - Hello world
 
 This web application has been designed to introduce the principles of
 programming with Kurento for JavaScript developers. It consists on a
-`WebRTC`:term: video communication in mirror (*loopback*).
+`WebRTC`:term: video communication in mirror (*loopback*). This tutorial 
+assumes you have basic knowledge on JavaScript, HTML and WebRTC.
+We also recommend reading the :doc:`Introducing Kurento <../../introducing_kurento>` 
+section before starting this tutorial.
 
-Kurento in a nutshell
-=====================
+For the impatient: running this example
+=======================================
 
-At the heart of the Kurento architecture there is a piece of software called
-**Kurento Server**, based on pluggable media processing capabilities. Those
-capabilities are exposed by the **Kurento Clients** to application developers
-as black boxes called **Media Elements**. Each Media Element holds a specific
-media capability, whose details are fully hidden to application developers.
-From the application developer perspective, Media Elements are like *Lego*
-pieces: one just needs to take the elements needed for an application and
-connect them following the desired topology. In Kurento jargon, a graph of
-connected media elements is called a **Media Pipeline**.
+You need to have installed the Kurento Media Server before running this example
+read the `installation guide <../../Installation_Guide.rst>`_ for further information.
 
-To better understand theses concepts it is recommended to take a look to
-:doc:`Kurento API section <../../mastering/kurento_API>` section.
+Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
+you can install it with:
 
-Let's get started
-=================
+.. sourcecode:: sh
 
-**Kurento JavaScript Client** provides the capabilities to control Kurento
-Server from JavaScript. We are going to learn how to use the Kurento JavaScript
-Client by means of tutorials. The *hello world* demo is one of the simplest web
-application you can create with Kurento. It is a `WebRTC`:term: communication
-in mirror. The following picture shows an screenshot of this demo running in a
-web browser:
+   sudo add-apt-repository ppa:chris-lea/node.js
+   sudo apt-get update
+   sudo apt-get install nodejs
+
+Also be sure to have installed `Bower`:term: in your system:
+
+.. sourcecode:: sh
+
+   sudo npm install -g bower
+
+An HTTP server is required for running this tutorial. A very simple way of doing this is
+by means of a Node.js server. This server can be installed as follows:
+
+.. sourcecode:: sh
+
+   sudo npm install http-server -g
+
+Finally we need the source code of this demo. You can get it from github:
+
+.. sourcecode:: shell
+
+    git clone https://github.com/Kurento/kurento-js-tutorial.git
+    cd kurento-hello-world
+    bower install
+    http-server
+
+Access the application connecting to the URL http://localhost:8080/ through a WebRTC
+capable browser (Chrome, Firefox).
+
+Understanding this example
+==========================
+
+Kurento provides developers a **Kurento JavaScript Client** to control
+**Kurento Media Server**.  This client library can be used in any kind of
+JavaScript application including desktop and mobile browsers.
+
+This *hello world* demo is one of the simplest web application you can create with
+Kurento. The following picture shows an screenshot of this demo running:
 
 .. figure:: ../../images/kurento-js-tutorial-1-helloworld-screenshot.png 
    :align:   center
    :alt:     WebRTC loopback video call
    :width: 600px
 
-The interface of the application (an HTML web page) is composed by two HTML5
-video tags: one for the video camera stream (the local client-side stream) and
-other for the mirror (the remote stream). The video camera stream is sent to
-the Kurento Server, processed and then is returned to the client as a remote
-stream.
 
-To implement this behavior we have to create a `Media Pipeline`:term: composed
-by a single `Media Element`:term:, i.e. a **WebRtcEndpoint**, which is
-bidirectional media element to receive a media stream (audio and video) from
-the browser and send another media stream back to it. As suggested by its name,
-this endpoint is capable to communicate with the browser by means of
-`WebRTC`:term: technology. All in all, the media pipeline to be implemented in
-this demo is illustrated in the following picture:
+
+The interface of the application (an HTML web page) is composed by two HTML5
+video tags: one showing the local stream (as captured by the device webcam)
+and the other showing the remote stream sent by the media server back to the 
+client. 
+
+The logic of the application is quite simple: the local stream is sent to the 
+Kurento Media Server, which returns it back to the client without modifications. To implement this behavior we need to create a `Media Pipeline`:term: composed by a single `Media Element`:term:, i.e. a **WebRtcEndpoint**, which holds the capability of exchanging 
+full-duplex (bidirectional) WebRTC media flows. This media element is connected to
+itself so that the media it receives (from browser) is send back (to browser). 
+This media pipeline is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
@@ -57,10 +83,10 @@ this demo is illustrated in the following picture:
    
 This is a web application, and therefore it follows a client-server
 architecture. Nevertheless, due to the fact that we are using the Kurento
-JavaScript client, there is not need to implement any server-side code since
-all the application logic is coded in JavaScript in the client-side. Kurento
-JavaScript Client is used directly to control Kurento Server by means of a
-WebSocket bidirectional connection:
+JavaScript client, there is not need to use an application server since
+all the application logic is held by the browser. The Kurento JavaScript Client 
+is used directly to control Kurento Media Server by means of a WebSocket 
+bidirectional connection:
 
 .. figure:: ../../images/websocket_js.png
    :align:   center
@@ -72,8 +98,8 @@ application, the dependencies, and how to run the demo. The complete source
 code can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/develop/kurento-hello-world>`_.
 
-Client-Side
------------
+Client-Side Logic
+=================
 
 The Kurento *hello-world* demo follows a *Single Page Application* architecture
 (`SPA`:term:). The interface is the following HTML page:
@@ -82,38 +108,37 @@ This web page links two Kurento JavaScript libraries:
 
 * **kurento-client.js** : Implementation of the Kurento JavaScript Client.
 
-* **kurento-utils.js** : Kurento utily library aimed to to simplify the WebRTC
+* **kurento-utils.js** : Kurento utility library aimed to simplify the WebRTC
   management in the browser.
 
 The specific logic of the *Hello World* JavaScript demo is coded in the
-following JavaScript page:
+following JavaScript file:
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-hello-world/js/index.js>`_.
-In this file, there is an ``start`` function which is called when the green
+In this file, there is a ``start`` function which is called when the green
 button labeled as *Start* in the GUI is clicked.
 
 .. sourcecode:: js
 
    function start() {
-      showSpinner(videoInput, videoOutput);
+      [...]
       webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
-As you can seen, the function *WebRtcPeer.startSendRecv* of *kurento-utils* is
-used to start a WebRTC communication, using the HTML video tag with id
-*videoInput* to show the video camera (local stream) and the video tag
-*videoOutput* to show the video processed by Kurento server (remote stream).
-Two callback functions are used here:
+The function
+*WebRtcPeer.startSendRecv* abstracts the WebRTC internal details (i.e. PeerConnection and
+getUserStream) and makes possible to start a full-duplex WebRTC communication, using the 
+HTML video tag with id *videoInput* to show the video camera (local stream) and the video tag *videoOutput* to show the remote stream provided by the Kurento Media Server.
+Two callback functions are used for managing application logic:
 
-* ``onOffer`` : Callback executed if the SDP negotiation is carried out
-  correctly.
+* ``onOffer`` : Callback executed if the local SDP offer is generated succesfully.
 
-* ``onError`` : Callback executed if something wrong happens.
+* ``onError`` : Callback executed if something wrong happens when obtaining the SDP offer.
 
 
-In ``onOffer`` we can found the most interesting code from a Kurento JavaScript
-Client point of view. First, we have create an instance of the *KurentoClient*
-class that will manage the connection with the Kurento Server. So, we need to
-provide the URI of its WebSocket endpoint:
+In the ``onOffer`` callback we create an instance of the *KurentoClient* class 
+that will manage communications with the Kurento Media Server. So, we need to 
+provide the URI of its WebSocket endpoint. In this example, we assume it's 
+listening in port 8888 at the same host than the HTTP serving the application.
 
 .. sourcecode:: js
 
@@ -123,7 +148,7 @@ provide the URI of its WebSocket endpoint:
      ...
    }; 
    
-Once we have an instance of ``kurentoClient``, the following step is to create a
+Once we have an instance of ``kurentoClient``, we need to create a
 *Media Pipeline*, as follows:
 
 .. sourcecode:: js
@@ -133,15 +158,14 @@ Once we have an instance of ``kurentoClient``, the following step is to create a
    });
 
 If everything works correctly, we will have an instance of a media pipeline
-(variable ``pipeline`` in this example). With this instance, we are able to
+(variable ``pipeline`` in this example). With it, we are able to
 create *Media Elements*. In this example we just need a single *WebRtcEndpoint*.
 
-In WebRTC, `SDP`:term: (Session Description protocol) is used for negotiating
-media interchange between apps. Such negotiation happens based on the SDP offer
-and answer exchange mechanism. This negotiation is implemented in the second
-part of the method *processSdpAnswer*, using the SDP offer obtained from the
-browser client (using *kurentoUtils.WebRtcPeer*), and returning a SDP answer
-returned by *WebRtcEndpoint*.
+In WebRTC, an `SDP`:term: (Session Description protocol) is used for negotiating media exchanges between apps. Such negotiation happens based on the SDP offer and answer 
+exchange mechanism. In this example we assume the SDP offer and answer contain 
+all WebRTC ICE candidates. This negotiation is implemented in the second part of the
+method * processSdpAnswer*, using the SDP offer obtained from the browser client 
+and returning a SDP answer generated by WebRtcEndpoint.
 
 .. sourcecode:: js
 
@@ -158,8 +182,7 @@ returned by *WebRtcEndpoint*.
 
    });
 
-Finally, the *WebRtcEndpoint* is connected to itself (i.e., in loopback) and the
-application will be done:
+Finally, the *WebRtcEndpoint* is connected to itself (i.e., in loopback):
 
 .. sourcecode:: js
 
@@ -172,62 +195,22 @@ application will be done:
 Dependencies
 ============
 
-The dependencies of this demo has to be obtained using `Bower`:term:. The
-definition of these dependencies are defined in the
+All dependencies of this demo can to be obtained using `Bower`:term:. The
+list of these dependencies are defined in the
 `bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-hello-world/bower.json>`_
 file, as follows:
 
 .. sourcecode:: json
 
    "dependencies": {
-      "kurento-client": "develop",
-      "kurento-utils": "develop"
+      "kurento-client": <kurento_latest_version>,
+      "kurento-utils": <kurento_latest_version>
    }
 
-To get these dependencies, just run the following command in the shell:
+To get these dependencies, just run the following shell command:
 
 .. sourcecode:: sh
 
    bower install
 
-How to run this application
-===========================
 
-First of all, you should install Kurento Server to run this demo. Please visit
-the `installation guide <../../Installation_Guide.rst>`_ for further
-information.
-
-Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
-install it with the following commands:
-
-.. sourcecode:: sh
-
-   sudo add-apt-repository ppa:chris-lea/node.js
-   sudo apt-get update
-   sudo apt-get install nodejs
-
-Also be sure to have installed `Bower`:term: in your system:
-
-.. sourcecode:: sh
-
-   sudo npm install -g bower
-
-An HTTP server is required for these demos. A very simple way of doing this is
-by means of a Node.js server. This server can be installed as follows:
-
-.. sourcecode:: sh
-
-   sudo npm install http-server -g
-
-Finally we need the GitHub project where this demo is hosted. At this moment we
-can fit all pieces together:
-
-.. sourcecode:: shell
-
-    git clone https://github.com/Kurento/kurento-js-tutorial.git
-    cd kurento-hello-world
-    bower install
-    http-server
-
-The web application starts on port 8080 in the localhost by default. Open the
-URL http://localhost:8080/ in a WebRTC compliant browser (Chrome, Firefox).

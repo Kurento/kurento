@@ -9,21 +9,32 @@
 What's Kurento?
 %%%%%%%%%%%%%%%
 
-**Kurento** is a development framework aimed to create rich multimedia
-applications in Internet with real time audio and video.
+**Kurento** is a WebRTC media server and a set of client APIs making
+simple the development of advanced video applications for WWW and smartphone
+platforms. Kurento features include group communications, transcoding,
+recording, mixing, broadcasting and routing of audiovisual flows. 
 
-The core element is **Kurento Server**, responsible for media transmission,
-processing, loading and recording. It is implemented in low level technologies
-based on :term:`GStreamer` to optimize the resource consumption. It provides
-the following features:
+Kurento also provides advanced media processing capabilities involving
+computer vision, video indexing, augmented reality and speech analysis. 
+Kurento modular architecture makes simple the integration of third party
+media processing algorithms (i.e. speech recognition, sentiment analysis,
+face recognition, etc.), which can be transparently used by application
+developers as the rest of Kurento built-in features.
+
+Kurento's core element is **Kurento Media Server**, responsible for media
+transmission, processing, loading and recording. It is implemented in low
+level technologies based on :term:`GStreamer` to optimize the resource consumption.
+It provides the following features:
 
 -  Networked streaming protocols, including :term:`HTTP` (working as client
    and server), :term:`RTP` and :term:`WebRTC`.
+-  Group communications (MCUs and SFUs functionality) supporting both media
+   mixing and media routing/dispatching.
 -  Generic support for computational vision and augmented reality filters.
 -  Media storage supporting writing operations for :term:`WebM` and
-   :term:`MP4` and reading operations for any of *Gstreamer's* muxers.
+   :term:`MP4` and playing in all formats supported by *GStreamer*.
 -  Automatic media transcodification between any of the codecs supported by
-   Gstreamer.
+   GStreamer including VP8, H.264, H.263, AMR, OPUS, Speex, G.711, etc.
 
 There are available :term:`Kurento Client` libraries in
 `Java <http://www.java.com/>`__ and
@@ -42,16 +53,5 @@ If you want to put your hands on quickly, the best way is
 choose your favorite technology to build multimedia applications: **Java**,
 **Browser JavaScript** or **Node.js**.
 
-If you want to want to make the most of Kurento, please take a look to the
-:doc:`advanced documentation<mastering_kurento>`. There you find information
-about the :doc:`Kurento Archicture<mastering/kurento_architecture>`,
-:doc:`Kurento Media Elements<mastering/kurento_media_elements>`,
-:doc:`Kurento Protocol<mastering/kurento_protocol>`,
-:doc:`Kurento Server Advanced Installation Guide<mastering/advanced_installation_guide>`,
-:doc:`Kurento API<mastering/kurento_API>`,
-:doc:`how to develop Kurento Modules<mastering/kurento_server>`, and
-:doc:`how to get nightly Kurento nersions<mastering/kurento_development>`.
-
-Finally, if you would like to contribute to Kurento take a look to the
-:doc:`repository structure<contribute/repository>` and also
-:doc:`how to build Kurento Media Server<contribute/building_kms>`.
+If you want to make the most of Kurento, please take a look to the
+:doc:`advanced documentation<mastering_kurento>`.

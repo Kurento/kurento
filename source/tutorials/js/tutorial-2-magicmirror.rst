@@ -6,9 +6,10 @@ JavaScript Tutorial 2 - Magic Mirror
  This project has to be refactored to kurento-tutorial-js. So, corrections in
  this document has to be done accordingly (links, terms, and so on).
 
-This web application consists on a magic mirror that add with a funny hat over
-your face. It is implemented using `WebRTC`:term: technology. The following
-picture shows an screenshot of this demo running in a web browser:
+This web application extends Tutorial 1 adding media processing to a basic
+`WebRTC`:term: loopback. This processing uses computer vision and augmented reality
+techniques to add a funny hat on top of faces. The following picture shows a 
+screenshot of the demo running in a web browser:
 
 .. figure:: ../../images/kurento-js-tutorial-2-magicmirror-screenshot.png
    :align:   center
@@ -21,17 +22,15 @@ other for the mirror (the remote stream). The video camera stream is sent to
 the Kurento Media Server, processed and then is returned to the client as a
 remote stream.
 
-To implement this behavior we have to create a `Media Pipeline`:term: composed
+To implement this, we need to create a `Media Pipeline`:term: composed
 by the following `Media Element`:term: s:
 
-- **WebRtc endpoint**: Bidirectional media element to receive a media stream
-  (audio and video) from the browser and send another media stream back to it.
-  As suggested by its name, this endpoint is capable to communicate with the
-  browser by means of `WebRTC`:term: technology.
+- **WebRtcEndpoint**: Provides full-duplex (bidirectional) `WebRTC`:term:
+capabilities.
 
-- **FaceOverlay filter**: Artificial vision filter that detects a face in the
-  video stream and put an image over it. In this demo application, the filter
-  is configured to put a
+- **FaceOverlay filter**: Computer vision filter that detects faces in the
+  video stream and puts an image on top of them. In this demo 
+  the filter is configured to put a
   `Super Mario hat <http://files.kurento.org/imgs/mario-wings.png>`_).
 
 The media pipeline implemented is illustrated in the following picture:
