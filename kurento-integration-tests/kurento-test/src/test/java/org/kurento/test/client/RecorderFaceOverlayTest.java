@@ -79,7 +79,7 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 		final FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp)
 				.build();
 		filter.setOverlayedImage(
-				"http://files.kurento.org/imgs/mario-wings.png", -0.2F, -1.2F,
+				"http://files.kurento.org/imgs/red-square.png", -0.2F, -1.2F,
 				1.6F, 1.6F);
 
 		playerEP.connect(filter);
@@ -117,11 +117,11 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 			Assert.assertTrue("Timeout waiting playing event",
 					browser.waitForEvent("playing"));
 
-			// Color in the video at second 10, in the position 420x15 must be
-			// red (R=200;G=0;B=0)
+			// Color in the video at second 15, in the position 420x45 must be
+			// red
 			Assert.assertTrue(
 					"Color above the head must be red (FaceOverlayFilter)",
-					browser.color(new Color(200, 0, 0), 10, 420, 45));
+					browser.color(Color.RED, 15, 420, 45));
 
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
