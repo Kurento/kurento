@@ -46,6 +46,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class PlayerBrowserTest extends BrowserKurentoClientTest {
 
+	private static final int PLAYTIME = 10; // seconds
+
 	@Test
 	public void testPlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -79,11 +81,16 @@ public class PlayerBrowserTest extends BrowserKurentoClientTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Play time must be at least 8 seconds",
-					browser.getCurrentTime() >= 8);
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 			Assert.assertTrue("The color of the video should be blue",
 					browser.colorSimilarTo(Color.BLUE));
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

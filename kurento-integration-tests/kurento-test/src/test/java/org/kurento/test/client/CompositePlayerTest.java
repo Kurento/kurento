@@ -109,6 +109,9 @@ public class CompositePlayerTest extends BrowserKurentoClientTest {
 			Assert.assertTrue("Lower right part of the video must be white",
 					browser.color(Color.WHITE, 13, 450, 450));
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

@@ -141,6 +141,9 @@ public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 					"When connecting the filter, the upper left part of the video must be gray",
 					browserPlayer.color(new Color(75, 75, 75), 25, 0, 0));
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

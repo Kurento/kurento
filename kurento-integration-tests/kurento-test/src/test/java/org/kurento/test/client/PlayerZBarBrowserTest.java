@@ -47,6 +47,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 
+	private static final int PLAYTIME = 13; // seconds
+
 	@Test
 	public void testPlayerZBar() throws Exception {
 		// Media Pipeline
@@ -89,12 +91,17 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Play time must be at least 12 seconds",
-					browser.getCurrentTime() > 12);
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 			Assert.assertFalse("No code found by ZBar filter",
 					codeFoundEvents.isEmpty());
 			Assert.assertFalse("No EOS event", eosEvents.isEmpty());
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

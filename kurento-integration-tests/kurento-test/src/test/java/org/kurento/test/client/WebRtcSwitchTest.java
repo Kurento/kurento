@@ -46,7 +46,7 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 
 	@Test
 	public void testWebRtcSwitch() throws InterruptedException {
-		// Media pipeline
+		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint1 = new WebRtcEndpoint.Builder(mp).build();
 		WebRtcEndpoint webRtcEndpoint2 = new WebRtcEndpoint.Builder(mp).build();
@@ -113,6 +113,9 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 			// Guard time to see switching #2
 			Thread.sleep(4000);
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 	public void assertColor(BrowserClient... browsers) {

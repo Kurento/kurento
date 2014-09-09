@@ -60,6 +60,7 @@ public class WebRtcTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType, String videoPath, String audioUrl,
 			Color color) throws InterruptedException {
+		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
@@ -108,5 +109,8 @@ public class WebRtcTest extends BrowserKurentoClientTest {
 							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
 					realPesqMos >= MIN_PESQ_MOS);
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 }

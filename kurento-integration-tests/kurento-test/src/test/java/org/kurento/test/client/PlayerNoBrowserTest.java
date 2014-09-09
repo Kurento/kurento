@@ -67,6 +67,9 @@ public class PlayerNoBrowserTest extends KurentoClientTest {
 		// Assertions
 		Assert.assertEquals("Response content-type must be video/webm",
 				"video/webm", resEntity.getContentType().getValue());
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

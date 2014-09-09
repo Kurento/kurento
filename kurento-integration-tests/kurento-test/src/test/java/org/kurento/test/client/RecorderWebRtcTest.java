@@ -100,15 +100,14 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 			}
 		}
 
-		// Stop and release media elements
-		recorderEP.stop();
-		webRtcEP.release();
-		recorderEP.release();
+		// Release Media Pipeline #1
+		mp.release();
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp, FILE_SCHEMA
+		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp2, FILE_SCHEMA
 				+ getDefaultFileForRecording()).build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
+		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp2)
 				.terminateOnEOS().build();
 		playerEP.connect(httpEP);
 
@@ -126,9 +125,9 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
 			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Play time must be at least " + PLAYTIME
-					+ " seconds and is " + currentTime + " seconds",
-					currentTime >= PLAYTIME);
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 			if (color != null) {
 				Assert.assertTrue("The color of the video should be " + color,
 						browser.colorSimilarTo(color));
@@ -138,5 +137,8 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 			AssertMedia.assertCodecs(getDefaultFileForRecording(),
 					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
+
+		// Release Media Pipeline #2
+		mp2.release();
 	}
 }

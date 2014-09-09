@@ -84,5 +84,8 @@ public class DispatcherWebRtcTest extends BrowserKurentoClientTest {
 					browser2.colorSimilarTo(new Color(0, 135, 0)));
 			Thread.sleep(5000);
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 }

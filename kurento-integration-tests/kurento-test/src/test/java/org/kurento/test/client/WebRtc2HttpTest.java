@@ -96,6 +96,9 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 				r.get();
 			}
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 	private void createPlayer(String url) throws InterruptedException {

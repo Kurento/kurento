@@ -104,5 +104,8 @@ public class WebRtc2HttpSwitchTest extends BrowserKurentoClientTest {
 					"The color of the video should be green (RGB #008700)",
 					browser3.colorSimilarTo(new Color(0, 135, 0)));
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 }

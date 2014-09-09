@@ -39,6 +39,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 
+	private static final int PLAYTIME = 20; // seconds
+
 	@Test
 	public void testPlayerSwitch() throws Exception {
 		// Media Pipeline
@@ -90,9 +92,14 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 			playerBall.play();
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Play time must be at least 8 seconds",
-					browser.getCurrentTime() >= 8);
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

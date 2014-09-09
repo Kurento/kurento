@@ -48,7 +48,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderSwitchTest extends BrowserKurentoClientTest {
 
-	private static final int PLAYTIME = 14; // seconds
+	private static final int PLAYTIME = 20; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
@@ -107,25 +107,20 @@ public class RecorderSwitchTest extends BrowserKurentoClientTest {
 			// Assertions
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Play time must be at least " + PLAYTIME
-					+ " seconds", browser.getCurrentTime() >= PLAYTIME);
-
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 		}
 
-		// Stop and release media elements
-		recorderEP.stop();
-		playerRed.stop();
-		playerGreen.stop();
-		playerBlue.stop();
-		recorderEP.release();
-		playerRed.release();
-		playerGreen.release();
-		playerBlue.release();
+		// Release Media Pipeline #1
+		mp.release();
 
 		// Media Pipeline #2
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp, FILE_SCHEMA
+		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2, FILE_SCHEMA
 				+ getDefaultFileForRecording()).build();
-		HttpGetEndpoint httpEP2 = new HttpGetEndpoint.Builder(mp)
+		HttpGetEndpoint httpEP2 = new HttpGetEndpoint.Builder(mp2)
 				.terminateOnEOS().build();
 		playerEP2.connect(httpEP2);
 
@@ -150,12 +145,17 @@ public class RecorderSwitchTest extends BrowserKurentoClientTest {
 
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
-			Assert.assertTrue("Play time must be at least " + PLAYTIME
-					+ " seconds", browser.getCurrentTime() >= PLAYTIME);
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 
 			// Assess video/audio codec of the recorded video
 			AssertMedia.assertCodecs(getDefaultFileForRecording(),
 					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
+
+		// Release Media Pipeline #2
+		mp2.release();
 	}
 }

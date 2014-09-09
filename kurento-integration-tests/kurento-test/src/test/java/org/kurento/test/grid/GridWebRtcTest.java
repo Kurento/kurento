@@ -98,6 +98,7 @@ public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 	}
 
 	public void doTest(Node node, Color color) {
+		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 		webRtcEndpoint.connect(webRtcEndpoint);
@@ -149,6 +150,9 @@ public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
 					realPesqMos >= MIN_PESQ_MOS);
 		}
+
+		// Release Media Pipeline
+		mp.release();
 	}
 
 }

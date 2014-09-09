@@ -52,7 +52,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 
-	private static final int VIDEO_LENGTH = 25; // seconds
+	private static final int PLAYTIME = 30; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
@@ -89,15 +89,22 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 		// Test execution #1. Play and record
 		launchBrowser(browserType, httpEP, playerEP, recorderEP);
 
+		// Release Media Pipeline #1
+		mp.release();
+
 		// Media Pipeline #2
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp, FILE_SCHEMA
+		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
+		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2, FILE_SCHEMA
 				+ getDefaultFileForRecording()).build();
-		HttpGetEndpoint httpEP2 = new HttpGetEndpoint.Builder(mp)
+		HttpGetEndpoint httpEP2 = new HttpGetEndpoint.Builder(mp2)
 				.terminateOnEOS().build();
 		playerEP2.connect(httpEP2);
 
 		// Test execution #2. Play the recorded video
 		launchBrowser(browserType, httpEP2, playerEP2, null);
+
+		// Release Media Pipeline #2
+		mp2.release();
 	}
 
 	private void launchBrowser(Browser browserType, HttpGetEndpoint httpEP,
@@ -126,9 +133,9 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));
 			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Play time must be at least " + VIDEO_LENGTH
-					+ " seconds and is " + currentTime,
-					currentTime >= VIDEO_LENGTH);
+			Assert.assertTrue("Error in play time of HTTP player (expected: "
+					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 
 			// Assess video/audio codec of the recorded video
 			AssertMedia.assertCodecs(getDefaultFileForRecording(),
