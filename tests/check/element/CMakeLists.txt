@@ -38,41 +38,41 @@ target_link_libraries(test_playerendpoint
                       ${KMSGSTCOMMONS_LIBRARIES}
                       kmstestutils)
 
-add_test_program (test_rtpendpoint rtpendpoint.c)
-add_dependencies(test_rtpendpoint kmstestutils kmscore ${LIBRARY_NAME}plugins)
-target_include_directories(test_rtpendpoint PRIVATE
-                           ${KMSGSTCOMMONS_INCLUDE_DIRS}
-                           ${GSTREAMER_INCLUDE_DIRS}
-                           ${GSTREAMER_CHECK_INCLUDE_DIRS})
-target_link_libraries(test_rtpendpoint
-                      ${GSTREAMER_LIBRARIES}
-                      ${GSTREAMER_CHECK_LIBRARIES}
-                      ${KMSGSTCOMMONS_LIBRARIES}
-                      kmstestutils)
-
-add_test_program (test_rtpendpoint_audio rtpendpoint_audio.c)
-add_dependencies(test_rtpendpoint_audio kmstestutils kmscore ${LIBRARY_NAME}plugins)
-target_include_directories(test_rtpendpoint_audio PRIVATE
-                           ${KMSGSTCOMMONS_INCLUDE_DIRS}
-                           ${GSTREAMER_INCLUDE_DIRS}
-                           ${GSTREAMER_CHECK_INCLUDE_DIRS})
-target_link_libraries(test_rtpendpoint_audio
-                      ${GSTREAMER_LIBRARIES}
-                      ${GSTREAMER_CHECK_LIBRARIES}
-                      ${KMSGSTCOMMONS_LIBRARIES}
-                      kmstestutils)
-
-add_test_program (test_rtpendpoint_video rtpendpoint_video.c)
-add_dependencies(test_rtpendpoint_video kmstestutils kmscore ${LIBRARY_NAME}plugins)
-target_include_directories(test_rtpendpoint_video PRIVATE
-                           ${KMSGSTCOMMONS_INCLUDE_DIRS}
-                           ${GSTREAMER_INCLUDE_DIRS}
-                           ${GSTREAMER_CHECK_INCLUDE_DIRS})
-target_link_libraries(test_rtpendpoint_video
-                      ${GSTREAMER_LIBRARIES}
-                      ${GSTREAMER_CHECK_LIBRARIES}
-                      ${KMSGSTCOMMONS_LIBRARIES}
-                      kmstestutils)
+# add_test_program (test_rtpendpoint rtpendpoint.c)
+# add_dependencies(test_rtpendpoint kmstestutils kmscore ${LIBRARY_NAME}plugins)
+# target_include_directories(test_rtpendpoint PRIVATE
+#                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
+#                            ${GSTREAMER_INCLUDE_DIRS}
+#                            ${GSTREAMER_CHECK_INCLUDE_DIRS})
+# target_link_libraries(test_rtpendpoint
+#                       ${GSTREAMER_LIBRARIES}
+#                       ${GSTREAMER_CHECK_LIBRARIES}
+#                       ${KMSGSTCOMMONS_LIBRARIES}
+#                       kmstestutils)
+#
+# add_test_program (test_rtpendpoint_audio rtpendpoint_audio.c)
+# add_dependencies(test_rtpendpoint_audio kmstestutils kmscore ${LIBRARY_NAME}plugins)
+# target_include_directories(test_rtpendpoint_audio PRIVATE
+#                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
+#                            ${GSTREAMER_INCLUDE_DIRS}
+#                            ${GSTREAMER_CHECK_INCLUDE_DIRS})
+# target_link_libraries(test_rtpendpoint_audio
+#                       ${GSTREAMER_LIBRARIES}
+#                       ${GSTREAMER_CHECK_LIBRARIES}
+#                       ${KMSGSTCOMMONS_LIBRARIES}
+#                       kmstestutils)
+#
+# add_test_program (test_rtpendpoint_video rtpendpoint_video.c)
+# add_dependencies(test_rtpendpoint_video kmstestutils kmscore ${LIBRARY_NAME}plugins)
+# target_include_directories(test_rtpendpoint_video PRIVATE
+#                            ${KMSGSTCOMMONS_INCLUDE_DIRS}
+#                            ${GSTREAMER_INCLUDE_DIRS}
+#                            ${GSTREAMER_CHECK_INCLUDE_DIRS})
+# target_link_libraries(test_rtpendpoint_video
+#                       ${GSTREAMER_LIBRARIES}
+#                       ${GSTREAMER_CHECK_LIBRARIES}
+#                       ${KMSGSTCOMMONS_LIBRARIES}
+#                       kmstestutils)
 
 add_test_program (test_webrtcendpoint webrtcendpoint.c)
 add_dependencies(test_webrtcendpoint kmstestutils kmscore kmsdtls ${LIBRARY_NAME}plugins)
