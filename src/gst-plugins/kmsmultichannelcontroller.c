@@ -14,8 +14,8 @@
  */
 
 #include <gio/gio.h>
+#include <arpa/inet.h>
 
-#include "kmsmccp.h"
 #include "kmsmultichannelcontroller.h"
 #include "kmssctpconnection.h"
 
@@ -86,6 +86,21 @@ static const char *const state_str[] = {
   "ACTIVE",
   "IDLE"
 };
+
+static const char *const error_str[] = {
+  NULL,
+  "Invalid operation code",
+  "Invalid parameter",
+  "Unspecified error",
+  "Request not supported"
+};
+
+#define ERROR_STR(code) ({                         \
+  const gchar *_strt = NULL;                       \
+  if (code > 0 && code < G_N_ELEMENTS(error_str))  \
+    _strt = error_str[code];                       \
+  _strt;                                           \
+})
 
 #define STATE_STR(state) ({                         \
   const gchar *_state = NULL;                       \
@@ -180,6 +195,29 @@ kms_multi_channel_controller_wake_up (KmsMultiChannelController * mcc)
 
   g_cond_signal (&mcc->cond);
   g_mutex_unlock (&mcc->mutex);
+}
+
+static gboolean
+kms_multi_channel_controller_send_message (KmsMultiChannelController * mcc,
+    KmsSCTPMessage * msg, GError ** err)
+{
+  KmsSCTPResult result;
+
+  KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+
+  if (mcc->mcl == NULL) {
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
+        "No control link established");
+    return FALSE;
+  }
+
+  result =
+      kms_sctp_connection_send (mcc->mcl, 0, 0, msg, mcc->cancellable, err);
+
+  KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+  return result == KMS_SCTP_OK;
 }
 
 KmsMultiChannelController *
@@ -498,6 +536,123 @@ kms_multi_channel_controller_stop (KmsMultiChannelController * mcc)
   } else {
     KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
   }
+}
+
+static int
+kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
+    * mcc, StreamType type, guint16 chanid, GError ** err)
+{
+  mccp_rsp *rsp;
+  guint16 id, data;
+  int port = -1;
+
+  KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+
+  if (mcc->msg_rsp.used < (sizeof (mccp_rsp) + sizeof (guint16))) {
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
+        "Response error");
+    goto end;
+  }
+
+  rsp = (mccp_rsp *) mcc->msg_rsp.buf;
+
+  if (rsp->op != MCCP_CREATE_CHANNEL_RSP) {
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
+        "Invalid response");
+    goto end;
+  }
+
+  if (rsp->rc != MCCP_SUCCESS) {
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR, "Error %s",
+        ERROR_STR (rsp->rc));
+    goto end;
+  }
+
+  id = ntohs (rsp->chanid);
+
+  if (id != chanid) {
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
+        "Protocol error");
+    goto end;
+  }
+
+  data = *((guint16 *) rsp->data);
+  port = ntohs (data);
+
+end:
+  KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+  return port;
+}
+
+int
+kms_multi_channel_controller_create_media_stream (KmsMultiChannelController *
+    mcc, StreamType type, guint16 chanid, GError ** err)
+{
+  mccp_create_channel_req *req;
+  KmsSCTPMessage msg = { 0 };
+  MCLState old;
+  int port = -1;
+
+  KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+
+  if (mcc->waiting_rsp) {
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_BUSY,
+        "Other operation is taking place");
+    return FALSE;
+  }
+
+  if (mcc->state != MCL_CONNECTED && mcc->state != MCL_ACTIVE) {
+    const gchar *state = STATE_STR (mcc->state);
+
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_INVALID_STATE,
+        "Operation is not allowed in %s", state);
+    return FALSE;
+  }
+
+  mcc->waiting_rsp = TRUE;
+  old = mcc->state;
+  kms_multi_channel_controller_change_state (mcc, MCL_ACTIVE);
+
+  KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+  req = g_new0 (mccp_create_channel_req, 1);
+  req->op = MCCP_CREATE_CHANNEL_REQ;
+  req->ct = (type == STREAM_TYPE_AUDIO) ? MCCP_STREAM_TYPE_AUDIO :
+      MCCP_STREAM_TYPE_VIDEO;
+  req->chanid = htons (chanid);
+
+  msg.buf = (gchar *) req;
+  msg.size = msg.used = sizeof (mccp_create_channel_req);
+
+  KMS_MULTI_CHANNEL_CONTROLLER_SET_PENDING (mcc);
+
+  if (!kms_multi_channel_controller_send_message (mcc, &msg, err)) {
+    /* Restore preious state */
+    KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+    kms_multi_channel_controller_change_state (mcc, old);
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+    goto end;
+  }
+
+  if (!kms_multi_channel_controller_wait_rsp (mcc, err)) {
+    goto end;
+  }
+
+  port = kms_multi_channel_controller_create_media_stream_rsp (mcc, type,
+      chanid, err);
+
+end:
+  CLEAR_SCTP_MESSAGE (msg);
+
+  KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+  mcc->waiting_rsp = FALSE;
+  KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+  return port;
 }
 
 static void _priv_kms_multi_channel_controller_initialize (void)

@@ -66,3 +66,8 @@ typedef enum {
   MCL_ACCEPTOR,
   MCL_INITIATOR
 } MCLRole;
+
+typedef enum {
+  STREAM_TYPE_AUDIO,
+  STREAM_TYPE_VIDEO
+} StreamType;

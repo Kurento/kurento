@@ -17,6 +17,7 @@
 #define __KMS_MULTI_CHANNEL_CONTROLLER_H__
 
 #include <gst/gst.h>
+#include "kmsmccp.h"
 
 G_BEGIN_DECLS
 
@@ -97,6 +98,9 @@ gboolean kms_multi_channel_controller_connect (KmsMultiChannelController *mcc,
 
 gboolean kms_multi_channel_controller_start (KmsMultiChannelController *mccp);
 void kms_multi_channel_controller_stop (KmsMultiChannelController *mcc);
+
+int kms_multi_channel_controller_create_media_stream (KmsMultiChannelController *
+    mcc, StreamType type, guint16 chanid, GError ** err);
 
 G_END_DECLS
 
