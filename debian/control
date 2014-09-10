@@ -1,0 +1,33 @@
+Source: kms-crowddetector
+Section: utils
+Priority: optional
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
+Build-Depends: debhelper (>= 8.0.0),
+ cmake,
+ pkg-config,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libopencv-dev
+Standards-Version: 3.9.4
+Homepage: http://kurento.org
+Vcs-Git: git://github.com/Kurento/kms-crowddetector.git
+Vcs-Browser: https://github.com/Kurento/kms-crowddetector.git
+
+Package: kms-crowddetector
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: Kurento Crowd Detector Filter
+
+Package: kms-crowddetector-dev
+Architecture: any
+Depends: kms-crowddetector (= ${binary:Version}),
+  kms-core-dev,
+  kms-elements-dev,
+  kms-filters-dev
+Description: Kurento Crowd Detector Filter development files
+
+Package: kms-crowddetector-dbg
+Architecture: any
+Depends: kms-crowddetector (= ${binary:Version})
+Description: Kurento Crowd Detector Filter debug symbols
