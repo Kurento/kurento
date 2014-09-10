@@ -51,7 +51,7 @@ and augmented reality using a filter.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-2-magicmirror>
-..   Browser JavaScript </tutorials/js/tutorial-2-magicmirror>
+   Browser JavaScript </tutorials/js/tutorial-2-magicmirror>
    Node.js </tutorials/node/tutorial-2-magicmirror>
 
 Tutorial 3 - WebRTC one-to-many broadcast

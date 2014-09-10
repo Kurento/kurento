@@ -2,10 +2,6 @@
 JavaScript Tutorial 2 - Magic Mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-.. todo:: This section has been early documented using kws-tutorial.
- This project has to be refactored to kurento-tutorial-js. So, corrections in
- this document has to be done accordingly (links, terms, and so on).
-
 This web application extends Tutorial 1 adding media processing to a basic
 `WebRTC`:term: loopback. This processing uses computer vision and augmented reality
 techniques to add a funny hat on top of faces. The following picture shows a 
@@ -39,107 +35,132 @@ The media pipeline implemented is illustrated in the following picture:
    :align:   center
    :alt:     Loopback video call with filtering media pipeline
 
-This demo is an example of a quite simple application developed with Kurento.
-You can see it as the *Hello World* application for Kurento. The following
-sections describe in detail the logic and how to run the demo.
-
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kws-tutorial/tree/develop/FaceOverlay>`_.
-
-.. todo:: Change GitHub URLs (in the entire document)
+`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/develop/kurento-magic-mirror>`_.
 
 JavaScript Logic
 ================
 
-As introduced before, the interface of this demo is implemented in an HTML web
-page:
-`demo.html <https://github.com/Kurento/kws-tutorial/blob/develop/FaceOverlay/demo.html>`_.
-As you can see, this page uses several JavaScript libraries:
+This demo follows a *Single Page Application* architecture (`SPA`:term:). The
+interface is the following HTML page:
+`index.html <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-magic-mirror/index.html>`_.
+This web page links two Kurento JavaScript libraries:
 
-- `adpater.js <https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js>`_:
-  JavaScript library by Google to provide WebRTC interoperation between
-  different browsers.
+* **kurento-client.js** : Implementation of the Kurento JavaScript Client.
 
-- *kws-media-api.js*: Kurento client for JavaScript applications.
+* **kurento-utils.js** : Kurento utily library aimed to simplify the WebRTC
+  management in the browser.
 
-- *kws-utils.js*: Reusable components useful for Kurento development in the
-  client-side.
+The specific logic of this demo is coded in the following JavaScript page:
+`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-magic-mirror/js/index.js>`_.
+In this file, there is an ``start`` function which is called when the green
+button labeled as *Start* in the GUI is clicked.
 
-- `demo.js <https://github.com/Kurento/kws-tutorial/blob/develop/FaceOverlay/demo.js>`_:
-  Specific JavaScript logic for this demo.
+.. sourcecode:: js
 
-.. todo:: Update dependencies (KWS cannot be present anymore) in the entire document
+   function start() {
+      showSpinner(videoInput, videoOutput);
+      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+   }
 
-The most relevant part of
-`demo.js <https://github.com/Kurento/kws-tutorial/blob/develop/FaceOverlay/demo.js>`_
-is the *startVideo* function. In this function we can see how the function
-*WebRtcPeer.startSendRecv* of *kws-utils.js* is used to start a WebRTC
-communication, using the HTML video tag with id *videoInput* to show the video
-camera (local stream) and the video tag *videoOutput* to show the video
-processed by Kurento server (remote stream). Then, in the *onOffer* function
-the media pipeline is created by connecting the *WebRtcEndpoint* to the
-*FaceOverlayFilter*.
+As you can see, the function *WebRtcPeer.startSendRecv* of *kurento-utils* is
+used to start a WebRTC communication, using the HTML video tag with id
+*videoInput* to show the video camera (local stream) and the video tag
+*videoOutput* to show the video processed by Kurento server (remote stream).
+Then, two callback functions are used:
 
-.. sourcecode:: javascript
+* ``onOffer`` : Callback executed if the SDP negotiation is carried out
+  correctly.
 
-   function startVideo() {
-      ...
-      var webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
-      function onOffer(offer) {
-         KwsMedia(ws_uri, function(error, kwsMedia) {
-            ...
-            kwsMedia.create("MediaPipeline", function(error, pipeline) {
-               ...
-               pipeline.create("WebRtcEndpoint", function(error, webRtc) {
-                  ...
-                  pipeline.create("FaceOverlayFilter", function(error, filter) {
-                     ...
-                     webRtc.connect(filter, function(error) {
-                        ...
-                        filter.connect(webRtc, function(error) {
-                           ...
-                        });
-                     });
-                     webRtc.processOffer(offer, function(error, answer) {
-                        ...
-                        webRtcPeer.processSdpAnswer(answer);
-                     });
-                  });
-               });
-            });
-         });
-      };
+* ``onError`` : Callback executed if something wrong happens.
+
+In ``onOffer`` we can found the most interesting code from a Kurento JavaScript
+Client point of view. First, we have create an instance of the *KurentoClient*
+class that will manage the connection with the Kurento Server. So, we need to
+provide the URI of its WebSocket endpoint:
+
+.. sourcecode:: js
+
+   const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+
+   kurentoClient(ws_uri, function(error, kurentoClient) {
+     ...
    };
 
+Once we have an instance of ``kurentoClient``, the following step is to create a
+*Media Pipeline*, as follows:
 
-Kurento Server
-==============
+.. sourcecode:: js
 
-This demo is using a remote Kurento Server located on ``demo01.kurento.org``. If
-you want to use another instance of Kurento Server, please visit first the
-`installation guide <../../Installation_Guide.rst>`_ for further information.
-Then, you should change the following line of
-`demo.js <https://github.com/Kurento/kws-tutorial/blob/develop/FaceOverlay/demo.js>`_:
+   kurentoClient.create("MediaPipeline", function(error, pipeline) {
+      ...
+   });
 
-.. sourcecode:: javascript
+If everything works correctly, we have an instance of a media pipeline (variable
+``pipeline`` in this example). With this instance, we are able to create
+*Media Elements*. In this example we just need a *WebRtcEndpoint* and a
+*FaceOverlayFilter*. Then, these media elements are interconnected:
 
-   const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket'; //requires Internet connectivity
+.. sourcecode:: js
+
+   pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+      if (error) return onError(error);
+
+      pipeline.create('FaceOverlayFilter', function(error, filter) {
+         if (error) return onError(error);
+
+         var offsetXPercent = -0.4;
+         var offsetYPercent = -1;
+         var widthPercent = 1.5;
+         var heightPercent = 1.5;
+         filter.setOverlayedImage(hat_uri, offsetXPercent,
+            offsetYPercent, widthPercent,
+            heightPercent, function(error) {
+               if (error) return onError(error);
+            });
+
+         webRtc.connect(filter, function(error) {
+            if (error) return onError(error);
+
+            filter.connect(webRtc, function(error) {
+               if (error) return onError(error);
+            });
+         });
+
+         ...
+
+      });
+   });
+
+In WebRTC, `SDP`:term: (Session Description protocol) is used for negotiating
+media interchange between apps. Such negotiation happens based on the SDP offer
+and answer exchange mechanism. This negotiation is implemented in the second
+part of the method *processSdpAnswer*, using the SDP offer obtained from the
+browser client (using *kurentoUtils.WebRtcPeer*), and returning a SDP answer
+returned by *WebRtcEndpoint*.
+
+.. sourcecode:: js
+
+   webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+      if (error) return onError(error);
+
+      webRtcPeer.processSdpAnswer(sdpAnswer);
+   });
 
 Dependencies
 ============
 
-This application is implemented using `Bower`:term:. The relevant part of the
-*bower.json* is where Kurento dependencies are declared. As the following
-snippet shows, we need two dependencies: the Kurento Client JavaScript
-dependency (*kws-media-api*) and the Kurento JavaScript utility library
-(*kws-utils*):
+The dependencies of this demo has to be obtained using `Bower`:term:. The
+definition of these dependencies are defined in the
+`bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-magic-mirror/bower.json>`_
+file, as follows:
 
 .. sourcecode:: json
 
-     "dependencies": {
-       "kws-utils": "~4.3.17",
-       "kws-media-api": "~4.3.17"
-     }
+   "dependencies": {
+      "kurento-client": "develop",
+      "kurento-utils": "develop"
+   }
 
 
 How to run this application
@@ -149,7 +170,7 @@ To run this application, first you need to install Bower, and so you also need
 to install `npm`:term:. The following snippet shows how to install npm (by
 installing `Node.js`:term: package) and Bower in an Ubuntu machine:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
    sudo add-apt-repository ppa:chris-lea/node.js
    sudo apt-get update
@@ -159,10 +180,10 @@ installing `Node.js`:term: package) and Bower in an Ubuntu machine:
 Once Bower is installed, you need to clone the GitHub project where this demo is
 hosted. Then you have to resolve the dependencies using Bower, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
-    git clone https://github.com/Kurento/kws-tutorial.git
-    cd FaceOverlay
+    git clone https://github.com/Kurento/kurento-tutorial-js.git
+    cd kurento-magic-mirror
     bower install
 
 Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
@@ -170,7 +191,7 @@ A very simple way of doing this is by means of a HTTP Node.js server which can
 be installed using npm. Then, this HTTP has to be started in the folder where
 the demo is located:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
    sudo npm install http-server -g
    http-server
