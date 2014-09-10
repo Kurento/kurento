@@ -11,7 +11,7 @@ technology. In other words, this application is similar to a phone but also
 with video. The following picture shows an screenshot of this demo running in a
 web browser:
 
-.. figure:: ../../images/kurento-js-tutorial-4-one2one-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-4-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
    :width: 600px

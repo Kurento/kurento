@@ -3,11 +3,11 @@ JavaScript Tutorial 2 - Magic Mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application extends Tutorial 1 adding media processing to a basic
-`WebRTC`:term: loopback. This processing uses computer vision and augmented reality
-techniques to add a funny hat on top of faces. The following picture shows a 
-screenshot of the demo running in a web browser:
+`WebRTC`:term: loopback. This processing uses computer vision and augmented
+reality techniques to add a funny hat on top of faces. The following picture
+shows a screenshot of the demo running in a web browser:
 
-.. figure:: ../../images/kurento-js-tutorial-2-magicmirror-screenshot.png
+.. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png
    :align:   center
    :alt:     Loopback video call with filtering screenshot :width: 600px
    :width: 600px
@@ -18,15 +18,15 @@ other for the mirror (the remote stream). The video camera stream is sent to
 the Kurento Media Server, processed and then is returned to the client as a
 remote stream.
 
-To implement this, we need to create a `Media Pipeline`:term: composed
-by the following `Media Element`:term: s:
+To implement this, we need to create a `Media Pipeline`:term: composed by the
+following `Media Element`:term: s:
 
 - **WebRtcEndpoint**: Provides full-duplex (bidirectional) `WebRTC`:term:
-capabilities.
+  capabilities.
 
 - **FaceOverlay filter**: Computer vision filter that detects faces in the
-  video stream and puts an image on top of them. In this demo 
-  the filter is configured to put a
+  video stream and puts an image on top of them. In this demo the filter is
+  configured to put a
   `Super Mario hat <http://files.kurento.org/imgs/mario-wings.png>`_).
 
 The media pipeline implemented is illustrated in the following picture:

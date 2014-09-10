@@ -4,16 +4,17 @@ JavaScript Tutorial 1 - Hello world
 
 This web application has been designed to introduce the principles of
 programming with Kurento for JavaScript developers. It consists on a
-`WebRTC`:term: video communication in mirror (*loopback*). This tutorial 
-assumes you have basic knowledge on JavaScript, HTML and WebRTC.
-We also recommend reading the :doc:`Introducing Kurento <../../introducing_kurento>` 
+`WebRTC`:term: video communication in mirror (*loopback*). This tutorial
+assumes you have basic knowledge on JavaScript, HTML and WebRTC. We also
+recommend reading the :doc:`Introducing Kurento <../../introducing_kurento>`
 section before starting this tutorial.
 
 For the impatient: running this example
 =======================================
 
 You need to have installed the Kurento Media Server before running this example
-read the `installation guide <../../Installation_Guide.rst>`_ for further information.
+read the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
 
 Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
 you can install it with:
@@ -30,8 +31,8 @@ Also be sure to have installed `Bower`:term: in your system:
 
    sudo npm install -g bower
 
-An HTTP server is required for running this tutorial. A very simple way of doing this is
-by means of a Node.js server. This server can be installed as follows:
+An HTTP server is required for running this tutorial. A very simple way of doing
+this is by means of a Node.js server. This server can be installed as follows:
 
 .. sourcecode:: sh
 
@@ -46,8 +47,8 @@ Finally we need the source code of this demo. You can get it from github:
     bower install
     http-server
 
-Access the application connecting to the URL http://localhost:8080/ through a WebRTC
-capable browser (Chrome, Firefox).
+Access the application connecting to the URL http://localhost:8080/ through a
+WebRTC capable browser (Chrome, Firefox).
 
 Understanding this example
 ==========================
@@ -56,10 +57,10 @@ Kurento provides developers a **Kurento JavaScript Client** to control
 **Kurento Media Server**.  This client library can be used in any kind of
 JavaScript application including desktop and mobile browsers.
 
-This *hello world* demo is one of the simplest web application you can create with
-Kurento. The following picture shows an screenshot of this demo running:
+This *hello world* demo is one of the simplest web application you can create
+with Kurento. The following picture shows an screenshot of this demo running:
 
-.. figure:: ../../images/kurento-js-tutorial-1-helloworld-screenshot.png 
+.. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
    :align:   center
    :alt:     WebRTC loopback video call
    :width: 600px
@@ -67,15 +68,18 @@ Kurento. The following picture shows an screenshot of this demo running:
 
 
 The interface of the application (an HTML web page) is composed by two HTML5
-video tags: one showing the local stream (as captured by the device webcam)
-and the other showing the remote stream sent by the media server back to the 
-client. 
+video tags: one showing the local stream (as captured by the device webcam) and
+the other showing the remote stream sent by the media server back to the
+client.
 
-The logic of the application is quite simple: the local stream is sent to the 
-Kurento Media Server, which returns it back to the client without modifications. To implement this behavior we need to create a `Media Pipeline`:term: composed by a single `Media Element`:term:, i.e. a **WebRtcEndpoint**, which holds the capability of exchanging 
-full-duplex (bidirectional) WebRTC media flows. This media element is connected to
-itself so that the media it receives (from browser) is send back (to browser). 
-This media pipeline is illustrated in the following picture:
+The logic of the application is quite simple: the local stream is sent to the
+Kurento Media Server, which returns it back to the client without
+modifications. To implement this behavior we need to create a
+`Media Pipeline`:term: composed by a single `Media Element`:term:, i.e. a
+**WebRtcEndpoint**, which holds the capability of exchanging full-duplex
+(bidirectional) WebRTC media flows. This media element is connected to itself
+so that the media it receives (from browser) is send back (to browser). This
+media pipeline is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
@@ -83,10 +87,10 @@ This media pipeline is illustrated in the following picture:
    
 This is a web application, and therefore it follows a client-server
 architecture. Nevertheless, due to the fact that we are using the Kurento
-JavaScript client, there is not need to use an application server since
-all the application logic is held by the browser. The Kurento JavaScript Client 
-is used directly to control Kurento Media Server by means of a WebSocket 
-bidirectional connection:
+JavaScript client, there is not need to use an application server since all the
+application logic is held by the browser. The Kurento JavaScript Client is used
+directly to control Kurento Media Server by means of a WebSocket bidirectional
+connection:
 
 .. figure:: ../../images/websocket_js.png
    :align:   center
@@ -124,20 +128,23 @@ button labeled as *Start* in the GUI is clicked.
       webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
    }
 
-The function
-*WebRtcPeer.startSendRecv* abstracts the WebRTC internal details (i.e. PeerConnection and
-getUserStream) and makes possible to start a full-duplex WebRTC communication, using the 
-HTML video tag with id *videoInput* to show the video camera (local stream) and the video tag *videoOutput* to show the remote stream provided by the Kurento Media Server.
-Two callback functions are used for managing application logic:
+The function *WebRtcPeer.startSendRecv* abstracts the WebRTC internal details
+(i.e. PeerConnection and getUserStream) and makes possible to start a
+full-duplex WebRTC communication, using the HTML video tag with id *videoInput*
+to show the video camera (local stream) and the video tag *videoOutput* to show
+the remote stream provided by the Kurento Media Server. Two callback functions
+are used for managing application logic:
 
-* ``onOffer`` : Callback executed if the local SDP offer is generated succesfully.
+* ``onOffer`` : Callback executed if the local SDP offer is generated
+  succesfully.
 
-* ``onError`` : Callback executed if something wrong happens when obtaining the SDP offer.
+* ``onError`` : Callback executed if something wrong happens when obtaining
+  the SDP offer.
 
 
-In the ``onOffer`` callback we create an instance of the *KurentoClient* class 
-that will manage communications with the Kurento Media Server. So, we need to 
-provide the URI of its WebSocket endpoint. In this example, we assume it's 
+In the ``onOffer`` callback we create an instance of the *KurentoClient* class
+that will manage communications with the Kurento Media Server. So, we need to
+provide the URI of its WebSocket endpoint. In this example, we assume it's
 listening in port 8888 at the same host than the HTTP serving the application.
 
 .. sourcecode:: js
@@ -158,14 +165,15 @@ Once we have an instance of ``kurentoClient``, we need to create a
    });
 
 If everything works correctly, we will have an instance of a media pipeline
-(variable ``pipeline`` in this example). With it, we are able to
-create *Media Elements*. In this example we just need a single *WebRtcEndpoint*.
+(variable ``pipeline`` in this example). With it, we are able to create
+*Media Elements*. In this example we just need a single *WebRtcEndpoint*.
 
-In WebRTC, an `SDP`:term: (Session Description protocol) is used for negotiating media exchanges between apps. Such negotiation happens based on the SDP offer and answer 
-exchange mechanism. In this example we assume the SDP offer and answer contain 
-all WebRTC ICE candidates. This negotiation is implemented in the second part of the
-method * processSdpAnswer*, using the SDP offer obtained from the browser client 
-and returning a SDP answer generated by WebRtcEndpoint.
+In WebRTC, an `SDP`:term: (Session Description protocol) is used for negotiating
+media exchanges between apps. Such negotiation happens based on the SDP offer
+and answer exchange mechanism. In this example we assume the SDP offer and
+answer contain all WebRTC ICE candidates. This negotiation is implemented in
+the second part of the method * processSdpAnswer*, using the SDP offer obtained
+from the browser client and returning a SDP answer generated by WebRtcEndpoint.
 
 .. sourcecode:: js
 
@@ -195,8 +203,8 @@ Finally, the *WebRtcEndpoint* is connected to itself (i.e., in loopback):
 Dependencies
 ============
 
-All dependencies of this demo can to be obtained using `Bower`:term:. The
-list of these dependencies are defined in the
+All dependencies of this demo can to be obtained using `Bower`:term:. The list
+of these dependencies are defined in the
 `bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-hello-world/bower.json>`_
 file, as follows:
 
