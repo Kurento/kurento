@@ -15,6 +15,7 @@
 
 #include <gio/gio.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 #include "kmsmultichannelcontroller.h"
 #include "kmssctpconnection.h"
@@ -108,6 +109,21 @@ static const char *const error_str[] = {
     _state = state_str[state];                      \
   _state;                                           \
 })
+
+/* MCCP finite state machine functions */
+static void
+kms_multi_channel_controller_req_connected (KmsMultiChannelController * mcc,
+    gchar * cmd, guint32 l);
+static void kms_multi_channel_controller_req_pending (KmsMultiChannelController
+    * mcc, gchar * cmd, guint32 l);
+static void kms_multi_channel_controller_req_active (KmsMultiChannelController *
+    mcc, gchar * cmd, guint32 l);
+
+static void (*proc_req[]) (KmsMultiChannelController * mcc, gchar * cmd,
+    guint32 l) = {
+kms_multi_channel_controller_req_connected,
+      kms_multi_channel_controller_req_pending,
+      kms_multi_channel_controller_req_active};
 
 static void
 _priv_kms_multi_channel_controller_initialize (void)
@@ -322,12 +338,154 @@ fail:
   }
 }
 
+static gboolean
+kms_multi_channel_controller_send_rsp (KmsMultiChannelController * mcc,
+    guint8 oc, guint8 rc, guint16 chanid, gchar * buff, gsize len)
+{
+  KmsSCTPMessage msg = { 0 };
+  GError *err = NULL;
+  mccp_rsp *cmd;
+  gboolean ret;
+
+  cmd = g_malloc (sizeof (mccp_rsp) + len);
+  cmd->op = oc;
+  cmd->rc = rc;
+  cmd->chanid = htons (chanid);
+
+  if (buff && len > 0)
+    memcpy (cmd->data, buff, len);
+
+  msg.buf = (gchar *) cmd;
+  msg.size = msg.used = sizeof (mccp_rsp) + len;
+
+  if (!(ret = kms_multi_channel_controller_send_message (mcc, &msg, &err))) {
+    GST_ERROR ("%s", err->message);
+    g_error_free (err);
+  }
+
+  CLEAR_SCTP_MESSAGE (msg);
+
+  return ret;
+}
+
+static gboolean
+kms_multi_channel_controller_create_channel_req (KmsMultiChannelController *
+    mcc, gchar * cmd, guint32 l)
+{
+  mccp_create_channel_req *req;
+  guint16 port;
+  gchar *data = NULL;
+  gsize len = 0;
+  guint16 chanid = 0;
+  guint8 oc, rc;
+  gboolean success = FALSE;
+
+  oc = MCCP_CREATE_CHANNEL_RSP;
+
+  if (l < sizeof (mccp_create_channel_req)) {
+    rc = MCAP_UNSPECIFIED_ERROR;
+    goto send_msg;
+  }
+
+  req = (mccp_create_channel_req *) cmd;
+  if (req->ct != MCCP_STREAM_TYPE_AUDIO && req->ct != MCCP_STREAM_TYPE_VIDEO) {
+    rc = MCCP_INVALID_PARAM_VALUE;
+    goto send_msg;
+  }
+
+  chanid = ntohs (req->chanid);
+  rc = MCCP_SUCCESS;
+
+  // TODO: get port using a callback
+
+  port = 12345;
+  data = (gchar *) & port;
+
+  port = htons (port);
+  len = sizeof (guint16);
+  success = TRUE;
+
+send_msg:
+  kms_multi_channel_controller_send_rsp (mcc, oc, rc, chanid, data, len);
+
+  return success;
+}
+
+static void
+kms_multi_channel_controller_req_connected (KmsMultiChannelController * mcc,
+    gchar * cmd, guint32 l)
+{
+  switch (cmd[0]) {
+    case MCCP_CREATE_CHANNEL_REQ:
+      if (kms_multi_channel_controller_create_channel_req (mcc, cmd, l))
+        kms_multi_channel_controller_change_state (mcc, MCL_ACTIVE);
+      break;
+    default:
+
+      break;
+  }
+}
+
+static void
+kms_multi_channel_controller_req_pending (KmsMultiChannelController * mcc,
+    gchar * cmd, guint32 l)
+{
+  GST_DEBUG ("TODO: len %d", l);
+}
+
+static void
+kms_multi_channel_controller_req_active (KmsMultiChannelController * mcc,
+    gchar * cmd, guint32 l)
+{
+  switch (cmd[0]) {
+    case MCCP_CREATE_CHANNEL_REQ:
+      if (kms_multi_channel_controller_create_channel_req (mcc, cmd, l))
+        kms_multi_channel_controller_change_state (mcc, MCL_ACTIVE);
+      break;
+    default:
+      break;
+  }
+}
+
 static void
 kms_multi_channel_controller_proc_message (KmsMultiChannelController * mcc,
     KmsSCTPMessage * msg)
 {
-  /* Process mccp command */
-  GST_DEBUG ("Process message");
+  if (msg->used <= 0) {
+    GST_DEBUG ("Ignored request");
+  }
+
+  KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+
+  if (mcc->waiting_rsp) {
+    if (msg->buf[0] & 0x01) {
+      /* Request arrived when when response is expected */
+      if (mcc->role == MCL_INITIATOR) {
+        /* ignore */
+        KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+        return;
+      }
+      /* Acceptor should proccess request as normal */
+      proc_req[mcc->state] (mcc, msg->buf, msg->used);
+      KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+      return;
+    }
+
+    /* Process response */
+    CLEAR_SCTP_MESSAGE (mcc->msg_rsp);
+    mcc->msg_rsp.buf = msg->buf;
+    mcc->msg_rsp.size = msg->size;
+    mcc->msg_rsp.used = msg->used;
+    msg->size = msg->used = 0;
+    msg->buf = NULL;
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+    /* wake up process */
+    kms_multi_channel_controller_wake_up (mcc);
+  } else if (msg->buf[0] & 0x01) {
+    proc_req[mcc->state] (mcc, msg->buf, msg->used);
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+  }
 }
 
 static void
