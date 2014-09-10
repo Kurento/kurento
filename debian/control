@@ -1,0 +1,35 @@
+Source: kms-pointerdetector
+Section: utils
+Priority: optional
+Maintainer: Kurento Maintenance Team <kurento@googlegroups.com>
+Build-Depends: debhelper (>= 8.0.0),
+ cmake,
+ pkg-config,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libopencv-dev,
+ libsoup2.4-dev
+Standards-Version: 3.9.4
+Homepage: http://kurento.org
+Vcs-Git: git://github.com/Kurento/kms-pointerdetector.git
+Vcs-Browser: https://github.com/Kurento/kms-pointerdetector.git
+
+Package: kms-pointerdetector
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: Kurento Pointer Detector Filter
+
+Package: kms-pointerdetector-dev
+Architecture: any
+Depends: kms-pointerdetector (= ${binary:Version}),
+  kms-core-dev,
+  kms-elements-dev,
+  kms-filters-dev,
+  libopencv-dev
+Description: Kurento Pointer Detector Filter development files
+
+Package: kms-pointerdetector-dbg
+Architecture: any
+Depends: kms-pointerdetector (= ${binary:Version})
+Description: Kurento Pointer Detector Filter debug symbols
