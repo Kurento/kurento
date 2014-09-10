@@ -16,9 +16,9 @@
 #include "config.h"
 #endif
 #include <gst/gst.h>
-#include <gst/video/video.h>
-#include <gst/video/gstvideofilter.h>
 #include "kmscrowddetector.h"
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
 
 #define PLUGIN_NAME "crowddetector"
 #define LBPS_ADD_RATIO ((float) 0.4)
