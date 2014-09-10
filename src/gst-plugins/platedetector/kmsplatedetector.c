@@ -16,10 +16,11 @@
 #include "config.h"
 #endif
 #include <gst/gst.h>
-#include <gst/video/video.h>
-#include <gst/video/gstvideofilter.h>
 #include "kmsplatedetector.h"
 #include <locale.h>
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include <tesseract/capi.h>
 
 #define PLUGIN_NAME "platedetector"
 #define GREEN CV_RGB (0, 255, 0)

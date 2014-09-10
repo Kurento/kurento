@@ -17,9 +17,6 @@
 
 #include <gst/video/video.h>
 #include <gst/video/gstvideofilter.h>
-#include <opencv/cv.h>
-#include <opencv/highgui.h>
-#include <tesseract/capi.h>
 
 G_BEGIN_DECLS
 #define KMS_TYPE_PLATE_DETECTOR   (kms_plate_detector_get_type())
