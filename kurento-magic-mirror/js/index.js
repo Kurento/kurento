@@ -14,7 +14,7 @@
 */
 
 const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
-const hat_uri = 'http://files.kurento.org/imgs/santa-hat.png'; //requires Internet connectivity
+const hat_uri = 'http://files.kurento.org/imgs/mario-wings.png'; //requires Internet connectivity
 
 var videoInput;
 var videoOutput;
@@ -53,10 +53,10 @@ function onOffer(sdpOffer) {
 				pipeline.create('FaceOverlayFilter', function(error, filter) {
 					if (error) return onError(error);
 
-					var offsetXPercent = -0.4;
-					var offsetYPercent = -1;
-					var widthPercent = 1.5;
-					var heightPercent = 1.5;
+					var offsetXPercent = -0.35;
+					var offsetYPercent = -1.2;
+					var widthPercent = 1.6;
+					var heightPercent = 1.6;
 					filter.setOverlayedImage(hat_uri, offsetXPercent,
 						offsetYPercent, widthPercent,
 						heightPercent, function(error) {
