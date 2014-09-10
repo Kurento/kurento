@@ -182,14 +182,11 @@ main (int argc, char **argv)
 
   kurento::ModuleManager moduleManager;
 
-  std::string coreModuleName = KURENTO_MODULES_SO_DIR "/libkmscoremodule.so";
+  moduleManager.loadModulesFromDirectories ("../../src/server");
 
-  moduleManager.loadModule (coreModuleName);
   mediaPipeline = moduleManager.getFactory ("MediaPipeline")->createObject (
                     config, "",
                     Json::Value() );
-
-  moduleManager.loadModule ("../../src/server/libkmselementsmodule.so");
 
   config.add ("configPath", "../../../tests" );
   config.add ("modules.kurento.SdpEndpoint.sdpPattern", "sdp_pattern.txt");
