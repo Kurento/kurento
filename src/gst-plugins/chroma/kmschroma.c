@@ -22,12 +22,13 @@
 
 #include <gst/gst.h>
 #include <gst/video/video.h>
-#include <gst/video/gstvideofilter.h>
 #include <glib/gstdio.h>
 #include <ftw.h>
 #include <string.h>
 #include <errno.h>
 
+#include <opencv/cv.h>
+#include <opencv/cxcore.h>
 #include <opencv/highgui.h>
 #include <gstreamer-1.0/gst/video/gstvideofilter.h>
 #include <libsoup/soup.h>

@@ -17,9 +17,6 @@
 #define _KMS_CHROMA_H_
 
 #include <gst/video/gstvideofilter.h>
-#include <opencv/cv.h>
-#include <opencv/cxcore.h>
-#include <opencv/highgui.h>
 
 G_BEGIN_DECLS
 
