@@ -411,7 +411,7 @@ gst_sctp_server_src_class_init (GstSCTPServerSrcClass * klass)
   g_object_class_install_property (gobject_class, PROP_PORT,
       g_param_spec_int ("port", "Port",
           "The port to listen to (0=random available port)",
-          0, G_MAXUINT16, SCTP_DEFAULT_PORT,
+          0, G_MAXUINT16, 0,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_CURRENT_PORT,
       g_param_spec_int ("current-port", "current-port",
