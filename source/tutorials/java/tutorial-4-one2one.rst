@@ -353,7 +353,7 @@ release the Media Pipeline and ends the video communication:
    }
 
 The negotiation between WebRTC peer in the browser and WebRtcEndpoint in
-Kurento Server is made by means of `SDP`:term: generation at the client (offer)
+Kurento Media Server is made by means of `SDP`:term: generation at the client (offer)
 and SDP generation at the server (answer). The SDP answers are generated with
 the Kurento Java Client inside the class ``CallMediaPipeline`` (as we see in a
 moment). The methods used to generate SDP are
@@ -648,11 +648,11 @@ properties section:
 How to run this application
 ===========================
 
-First of all, you should install Kurento Server to run this demo. Please visit
+First of all, you should install Kurento Media Server to run this demo. Please visit
 the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-This demo is assuming that you have a Kurento Server installed and running in
+This demo is assuming that you have a Kurento Media Server installed and running in
 your local machine. If so, to launch the app you need to clone the GitHub
 project where this demo is hosted, and then run the main class, as follows:
 

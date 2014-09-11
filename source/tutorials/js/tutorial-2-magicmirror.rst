@@ -66,7 +66,7 @@ button labeled as *Start* in the GUI is clicked.
 As you can see, the function *WebRtcPeer.startSendRecv* of *kurento-utils* is
 used to start a WebRTC communication, using the HTML video tag with id
 *videoInput* to show the video camera (local stream) and the video tag
-*videoOutput* to show the video processed by Kurento server (remote stream).
+*videoOutput* to show the video processed by Kurento Media Server (remote stream).
 Then, two callback functions are used:
 
 * ``onOffer`` : Callback executed if the SDP negotiation is carried out
@@ -76,7 +76,7 @@ Then, two callback functions are used:
 
 In ``onOffer`` we can found the most interesting code from a Kurento JavaScript
 Client point of view. First, we have create an instance of the *KurentoClient*
-class that will manage the connection with the Kurento Server. So, we need to
+class that will manage the connection with the Kurento Media Server. So, we need to
 provide the URI of its WebSocket endpoint:
 
 .. sourcecode:: js

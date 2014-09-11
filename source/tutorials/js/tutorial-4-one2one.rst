@@ -20,7 +20,7 @@ The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local stream) and other for
 the other peer in the call (the remote stream). If two users, A and B, are
 using the application, the media flows in the following way: The video camera
-stream of user A is sent to the Kurento Server and sent again to the user B. On
+stream of user A is sent to the Kurento Media Server and sent again to the user B. On
 the other hand, user B sends its video camera stream to Kurento and then it is
 sent to user A.
 
@@ -223,11 +223,11 @@ method), and the media pipeline connection (``connectEndpoints`` method).
    }
 
 
-Kurento Server
+Kurento Media Server
 ==============
 
-This demo is using a remote Kurento Server located on ``demo01.kurento.org``. If
-you want to use another instance of Kurento Server, please visit first the
+This demo is using a remote Kurento Media Server located on ``demo01.kurento.org``. If
+you want to use another instance of Kurento Media Server, please visit first the
 `installation guide <../../Installation_Guide.rst>`_ for further information.
 Then, you should change the following line of
 `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_:
