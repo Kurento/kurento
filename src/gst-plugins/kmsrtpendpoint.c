@@ -353,22 +353,23 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
         rtp_endpoint->priv->audio_rtp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtp_sink");
         g_object_set (rtp_endpoint->priv->audio_rtp_udpsink, "socket",
-            rtp_endpoint->priv->audio_rtp_socket, "qos", TRUE, "async", FALSE,
-            NULL);
+            rtp_endpoint->priv->audio_rtp_socket, "qos", TRUE, "sync", FALSE,
+            "async", FALSE, NULL);
 
         rtp_endpoint->priv->audio_rtcp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtcp_sink");
         g_object_set (rtp_endpoint->priv->audio_rtcp_udpsink, "socket",
-            rtp_endpoint->priv->audio_rtcp_socket, "async", FALSE, NULL);
+            rtp_endpoint->priv->audio_rtcp_socket, "sync", FALSE, "async",
+            FALSE, NULL);
 
         gst_bin_add_many (GST_BIN (rtp_endpoint),
             rtp_endpoint->priv->audio_rtp_udpsink,
             rtp_endpoint->priv->audio_rtcp_udpsink, NULL);
 
         g_object_set (rtp_endpoint->priv->audio_rtp_udpsink, "host",
-            media_con->address, "port", media->port, "async", FALSE, NULL);
+            media_con->address, "port", NULL);
         g_object_set (rtp_endpoint->priv->audio_rtcp_udpsink, "host",
-            media_con->address, "port", media->port + 1, "async", FALSE, NULL);
+            media_con->address, "port", media->port + 1, NULL);
 
         gst_element_sync_state_with_parent (rtp_endpoint->
             priv->audio_rtp_udpsink);
@@ -386,13 +387,14 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
         rtp_endpoint->priv->video_rtp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtp_sink");
         g_object_set (rtp_endpoint->priv->video_rtp_udpsink, "socket",
-            rtp_endpoint->priv->video_rtp_socket, "qos", TRUE, "async", FALSE,
-            NULL);
+            rtp_endpoint->priv->video_rtp_socket, "qos", TRUE, "sync", FALSE,
+            "async", FALSE, NULL);
 
         rtp_endpoint->priv->video_rtcp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtcp_sink");
         g_object_set (rtp_endpoint->priv->video_rtcp_udpsink, "socket",
-            rtp_endpoint->priv->video_rtcp_socket, "async", FALSE, NULL);
+            rtp_endpoint->priv->video_rtcp_socket, "sync", FALSE, "async",
+            FALSE, NULL);
 
         gst_bin_add_many (GST_BIN (rtp_endpoint),
             rtp_endpoint->priv->video_rtp_udpsink,
