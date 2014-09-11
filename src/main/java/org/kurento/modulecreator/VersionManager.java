@@ -132,6 +132,7 @@ public class VersionManager {
 				version = removeDevSuffix(version);
 			} else {
 				version = gitRepo + "#develop";
+				return version;
 			}
 		}
 
