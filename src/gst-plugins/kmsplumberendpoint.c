@@ -60,6 +60,14 @@ struct _KmsPlumberEndpointPrivate
   GstElement *videosink;
 };
 
+typedef struct _SyncCurrentPortData
+{
+  GCond cond;
+  GMutex mutex;
+  gboolean done;
+  gint port;
+} SyncCurrentPortData;
+
 enum
 {
   PROP_0,
@@ -151,6 +159,106 @@ kms_plumber_endpoint_finalize (GObject * object)
 }
 
 static void
+sctp_server_notify_current_port (GObject * object, GParamSpec * pspec,
+    SyncCurrentPortData * syncdata)
+{
+  gint port;
+
+  g_object_get (G_OBJECT (object), "current-port", &port, NULL);
+
+  /* Wake up cause we got bound port */
+
+  g_mutex_lock (&syncdata->mutex);
+  syncdata->done = TRUE;
+  syncdata->port = port;
+  g_cond_signal (&syncdata->cond);
+  g_mutex_unlock (&syncdata->mutex);
+}
+
+static int
+kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
+    KmsPlumberEndpoint * self)
+{
+  SyncCurrentPortData syncdata;
+  GstElement *agnosticbin;
+  GstElement **element;
+  gint port = -1;
+  gulong sig_id;
+
+  switch (type) {
+    case STREAM_TYPE_AUDIO:
+      if (self->priv->audiosrc != NULL) {
+        GST_WARNING ("Audio src is already created");
+        return -1;
+      }
+      agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
+      self->priv->audiosrc = gst_element_factory_make ("sctpserversrc", NULL);
+      element = &self->priv->audiosrc;
+      break;
+    case STREAM_TYPE_VIDEO:
+      if (self->priv->videosrc != NULL) {
+        GST_WARNING ("Video src is already created");
+        return -1;
+      }
+      agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
+      self->priv->videosrc = gst_element_factory_make ("sctpserversrc", NULL);
+      element = &self->priv->videosrc;
+      break;
+    default:
+      GST_WARNING_OBJECT (self, "Invalid stream type requested");
+      return -1;
+  }
+
+  g_object_set (G_OBJECT (*element), "bind-address", self->priv->local_addr,
+      NULL);
+
+  g_cond_init (&syncdata.cond);
+  g_mutex_init (&syncdata.mutex);
+  syncdata.done = FALSE;
+  syncdata.port = -1;
+
+  sig_id = g_signal_connect (G_OBJECT (*element), "notify::current-port",
+      (GCallback) sctp_server_notify_current_port, &syncdata);
+
+  gst_bin_add (GST_BIN (self), *element);
+  gst_element_sync_state_with_parent (*element);
+
+  if (!gst_element_link (*element, agnosticbin)) {
+    GST_ERROR ("Could not link %s to element %s",
+        GST_ELEMENT_NAME (*element), GST_ELEMENT_NAME (agnosticbin));
+    gst_element_set_state (*element, GST_STATE_NULL);
+    gst_bin_remove (GST_BIN (self), *element);
+    *element = NULL;
+
+    goto end;
+  }
+
+  {
+    gint64 end_time;
+
+    /* wait for the signal emission to get the bound port */
+    g_mutex_lock (&syncdata.mutex);
+    end_time = g_get_monotonic_time () + KMS_WAIT_TIMEOUT * G_TIME_SPAN_SECOND;
+    while (!syncdata.done) {
+      if (!g_cond_wait_until (&syncdata.cond, &syncdata.mutex, end_time)) {
+        GST_ERROR ("Time out expired while waiting for current-port signal");
+      }
+    }
+    g_mutex_unlock (&syncdata.mutex);
+  }
+
+  port = syncdata.port;
+
+end:
+  g_signal_handler_disconnect (G_OBJECT (*element), sig_id);
+
+  g_cond_clear (&syncdata.cond);
+  g_mutex_clear (&syncdata.mutex);
+
+  return port;
+}
+
+static void
 kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
     GstElement ** sctpsink, gchar * remote_addr, guint16 remote_port)
 {
@@ -190,7 +298,9 @@ kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
   self->priv->mcc = kms_multi_channel_controller_new (self->priv->local_addr,
       self->priv->local_port);
 
-  /* TODO: Set callback to provide port */
+  kms_multi_channel_controller_set_create_stream_callback (self->priv->mcc,
+      (KmsCreateStreamFunction) kms_plumber_endpoint_create_sctp_src, self,
+      NULL);
 
   kms_multi_channel_controller_start (self->priv->mcc);
 
