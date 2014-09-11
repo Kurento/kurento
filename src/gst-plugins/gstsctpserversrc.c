@@ -171,20 +171,25 @@ gst_sctp_server_src_start (GstBaseSrc * bsrc)
 {
   GstSCTPServerSrc *self = GST_SCTP_SERVER_SRC (bsrc);
   GError *err = NULL;
+  gint port;
 
   GST_DEBUG ("starting");
 
-  if (kms_sctp_server_rpc_start (self->priv->serverrpc, self->priv->host,
-          &self->priv->server_port, self->priv->cancellable, &err)) {
-    return TRUE;
+  port = self->priv->server_port;
+  if (!kms_sctp_server_rpc_start (self->priv->serverrpc, self->priv->host,
+          &port, self->priv->cancellable, &err)) {
+    GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
+        ("Error: %s", err->message));
+    g_error_free (err);
+    return FALSE;
   }
 
-  GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ, (NULL),
-      ("Error: %s", err->message));
+  if (self->priv->server_port != port) {
+    g_atomic_int_set (&self->priv->current_port, port);
+    g_object_notify (G_OBJECT (self), "current-port");
+  }
 
-  g_error_free (err);
-
-  return FALSE;
+  return TRUE;
 }
 
 /* will be called only between calls to start() and stop() */
