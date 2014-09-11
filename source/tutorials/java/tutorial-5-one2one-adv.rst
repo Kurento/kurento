@@ -97,7 +97,7 @@ The following sections describe in detail the server-side, the client-side, and
 how to run the demo.
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-one2one-call-advanced>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2one-call-advanced>`_.
 
 Server-Side
 ===========
@@ -143,7 +143,7 @@ In the following figure you can see a class diagram of the server side code:
    UserRegistry -> UserSession [headlabel="*",  labelangle=60]
 
 The main class of this demo is named
-`One2OneCallAdvApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/One2OneCallApp.java>`_.
+`One2OneCallAdvApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/One2OneCallApp.java>`_.
 As you can see, the ``KurentoClient`` is instantiated in this class as a Spring
 Bean.
 
@@ -185,7 +185,7 @@ means of requests and responses. Specifically, the main app class implements
 the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
 process WebSocket requests in the path ``/call``.
 
-`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/CallHandler.java>`_
+`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/CallHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
 The central piece of this class is the method ``handleTextMessage``. This
 method implements the actions for requests, returning responses through the
@@ -414,9 +414,9 @@ streams in the Kurento Media Server.
    }
 
 The media logic in this demo is implemented in the classes
-`CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/CallMediaPipeline.java>`_
+`CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/CallMediaPipeline.java>`_
 and
-`PlayMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/PlayMediaPipeline.java>`_.
+`PlayMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/java/org/kurento/tutorial/one2onecalladv/PlayMediaPipeline.java>`_.
 The first media pipeline consists on two ``WebRtcEndpoint`` elements
 interconnected with a ``FaceOverlayFilter`` in between, and also with and
 ``RecorderEndpoint`` to carry out the recording of the WebRTC communication.
@@ -559,9 +559,9 @@ created WebSocket service in the server-side, we use the JavaScript class
 ``WebSocket``. We use an specific Kurento JavaScript library called
 **kurento-utils.js** to simplify the WebRTC interaction with the server. These
 libraries are linked in the
-`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call-advanced/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/resources/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-one2one-call-advanced/src/main/resources/static/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call-advanced/src/main/resources/static/js/index.js>`_.
 
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the

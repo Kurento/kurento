@@ -47,7 +47,7 @@ The following sections describe in detail the server-side, the client-side, and
 how to run the demo.
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-group-call>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-group-call>`_.
 
 Server-Side
 ===========
@@ -96,7 +96,7 @@ In the following figure you can see a class diagram of the server side code:
    RoomManager -> Room [headlabel="*"]
 
 The main class of this demo is named
-`GroupCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/GroupCallApp.java>`_.
+`GroupCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/GroupCallApp.java>`_.
 The classes ``KurentoClient``, ``UserRegistry``, ``RoomManager`` and
 ``CallHandler`` are instantiated as a Spring Beans.
 
@@ -140,13 +140,13 @@ The classes ``KurentoClient``, ``UserRegistry``, ``RoomManager`` and
 As mentioned before, this web application uses a `WebSocket`:term: to
 communicate client with server by means of requests and responses.
 Specifically, the
-`GroupCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/GroupCallApp.java>`_
+`GroupCallApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/GroupCallApp.java>`_
 class implements the interface ``WebSocketConfigurer`` to register a
 ``WebSocketHanlder`` to process web socket requests in the path ``/groupcall``.
 
 
 We should now take a look to the
-`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/CallHandler.java>`_
+`CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/CallHandler.java>`_
 class, which implements ``TextWebSocketHandler`` to handle text WebSocket
 requests. In our signaling protocol there are three different kind of incoming
 messages to the *Server* : ``joinRoom``, ``receiveVideoFrom``, and
@@ -228,7 +228,7 @@ protocol, i.e., when a new user enters a room. The ``joinRoom`` method of the
 ``CallHandler`` class obtains the ``name`` and ``roomName`` attribute from the
 message. Then the ``RoomManager`` is used to get the room (creating a new one
 if necessary). The method ``join`` of class
-`Room <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/Room.java>`_
+`Room <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/java/org/kurento/tutorial/groupcall/Room.java>`_
 is used to notify to the rest of participant that a new user has entered
 (``newParticipantArrived`` message), and also to inform the the incoming user
 the list of existing users in the room (``existingParticipants`` message):
@@ -308,9 +308,9 @@ previously created WebSocket in the server-side, we use the JavaScript class
 ``WebSocket``. In addition, we use an specific Kurento JavaScript library
 called **kurento-utils.js** to simplify the WebRTC interaction with the server.
 These libraries are linked in the
-`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/resources/static/index.html>`_
 web page, and are used in
-`conferenceroom.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/resources/static/js/conferenceroom.js>`_.
+`conferenceroom.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/resources/static/js/conferenceroom.js>`_.
 
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/groupcall``. Then, the ``onmessage`` listener of the
@@ -388,7 +388,7 @@ The negotiation of SDP is started in the client-side after receiving the message
 The function ``WebRtcPeer.startSendOnly`` and ``WebRtcPeer.startRecvOnly`` of
 *kurento-utils.js* are used to start a WebRTC communication. In the method
 ``offerToReceiveVideo`` of the JavaScript class
-`participant.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-group-call/src/main/resources/static/js/participant.js>`_
+`participant.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/resources/static/js/participant.js>`_
 we can see how the ``receiveVideoFrom`` message is sent to the server with the
 generated SDP offer:
 

@@ -73,7 +73,7 @@ server:
 The following sections describe in detail the logic and how to run the demo.
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kws-tutorial/tree/develop/PubNub>`_.
+`GitHub <https://github.com/Kurento/kws-tutorial/tree/master/PubNub>`_.
 
 .. todo:: Change GitHub URLs (in the entire document)
 
@@ -82,7 +82,7 @@ JavaScript Logic
 
 As introduced before, the interface of this demo is implemented in an HTML web
 page:
-`demo.html <https://github.com/Kurento/kws-tutorial/blob/develop/PubNub/demo.html>`_.
+`demo.html <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/demo.html>`_.
 As you can see, this page uses several JavaScript libraries:
 
 - `adpater.js <https://rawgit.com/GoogleChrome/webrtc/master/samples/web/js/adapter.js>`_:
@@ -97,13 +97,13 @@ As you can see, this page uses several JavaScript libraries:
 - *kws-utils.js*: Reusable components useful for Kurento development in the
   client-side.
 
-- `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/develop/PubNub/softphonePubnub.js>`_:
+- `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_:
   Specific JavaScript logic for this demo.
 
 .. todo:: Update dependencies (KWS cannot be present anymore) in the entire document
 
 The most relevant part of this demo can be foun on
-`softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/develop/PubNub/softphonePubnub.js>`_.
+`softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_.
 In this library we can found the PubNub publish/subscribe procedure
 (``SoftphonePubnub`` class), the incoming call logic (``onIncommingCall``
 method), the SDP negotiation and start of WebRTC communication (``createPeer``
@@ -230,7 +230,7 @@ This demo is using a remote Kurento Server located on ``demo01.kurento.org``. If
 you want to use another instance of Kurento Server, please visit first the
 `installation guide <../../Installation_Guide.rst>`_ for further information.
 Then, you should change the following line of
-`softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/develop/PubNub/softphonePubnub.js>`_:
+`softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_:
 
 .. sourcecode:: javascript
 

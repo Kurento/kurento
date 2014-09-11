@@ -76,7 +76,7 @@ client and server to establish the `WebRTC`:term: session between the
 browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
 at the browser with the WebRtcEndpoint at the server. The complete source code
 of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/develop/kurento-magic-mirror>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-magic-mirror>`_.
 
 Application Server Side
 ===========
@@ -119,7 +119,7 @@ In the following figure you can see a class diagram of the server side code:
    MagicMirrorHandler -> KurentoClient [constraint = false]
 
 The main class of this demo is named
-`MagicMirrorApp <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
+`MagicMirrorApp <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorApp.java>`_.
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to your applications. In this instantiation we see
@@ -161,7 +161,7 @@ the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
 process WebSocket requests in the path ``/magicmirror``.
 
 
-`MagicMirrorHandler <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorHandler.java>`_
+`MagicMirrorHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
 The central piece of this class is the method ``handleTextMessage``. This
 method implements the actions for requests, returning responses through the
@@ -286,9 +286,9 @@ created WebSocket service in the server-side, we use the JavaScript class
 ``WebSocket``. We use an specific Kurento JavaScript library called
 **kurento-utils.js** to simplify the WebRTC interaction with the server. These
 libraries are linked in the
-`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/resources/static/index.html>`_
+`index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/src/main/resources/static/index.html>`_
 web page, and are used in the
-`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/develop/kurento-magic-mirror/src/main/resources/static/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/src/main/resources/static/js/index.js>`_.
 In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/magicmirror``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.

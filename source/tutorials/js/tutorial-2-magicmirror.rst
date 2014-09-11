@@ -36,14 +36,14 @@ The media pipeline implemented is illustrated in the following picture:
    :alt:     Loopback video call with filtering media pipeline
 
 The complete source code of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/develop/kurento-magic-mirror>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-magic-mirror>`_.
 
 JavaScript Logic
 ================
 
 This demo follows a *Single Page Application* architecture (`SPA`:term:). The
 interface is the following HTML page:
-`index.html <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-magic-mirror/index.html>`_.
+`index.html <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/index.html>`_.
 This web page links two Kurento JavaScript libraries:
 
 * **kurento-client.js** : Implementation of the Kurento JavaScript Client.
@@ -52,7 +52,7 @@ This web page links two Kurento JavaScript libraries:
   management in the browser.
 
 The specific logic of this demo is coded in the following JavaScript page:
-`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-magic-mirror/js/index.js>`_.
+`index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/js/index.js>`_.
 In this file, there is an ``start`` function which is called when the green
 button labeled as *Start* in the GUI is clicked.
 
@@ -152,7 +152,7 @@ Dependencies
 
 The dependencies of this demo has to be obtained using `Bower`:term:. The
 definition of these dependencies are defined in the
-`bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/develop/kurento-magic-mirror/bower.json>`_
+`bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/bower.json>`_
 file, as follows:
 
 .. sourcecode:: json
