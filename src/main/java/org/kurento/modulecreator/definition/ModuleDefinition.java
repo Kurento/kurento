@@ -412,9 +412,8 @@ public class ModuleDefinition {
 						kurentoMavenVersion, kurentoNpmVersion));
 
 				if (!FILTERS_MODULE.equals(this.name)) {
-					this.imports.add(new Import(ELEMENTS_MODULE,
-							kurentoVersion, kurentoMavenVersion,
-							kurentoNpmVersion));
+					this.imports.add(new Import(FILTERS_MODULE, kurentoVersion,
+							kurentoMavenVersion, kurentoNpmVersion));
 				}
 			}
 		}
