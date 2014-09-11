@@ -407,14 +407,13 @@ destroy_port_data (gpointer data)
 static GstPadProbeReturn
 cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
 {
+  KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) data;
+  KmsAlphaBlending *self = port_data->mixer;
   GstEvent *event;
 
   if (GST_EVENT_TYPE (GST_PAD_PROBE_INFO_EVENT (info)) != GST_EVENT_EOS) {
     return GST_PAD_PROBE_PASS;
   }
-
-  KmsAlphaBlendingPortData *port_data = (KmsAlphaBlendingPortData *) data;
-  KmsAlphaBlending *self = port_data->mixer;
 
   KMS_ALPHA_BLENDING_LOCK (self);
 

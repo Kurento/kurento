@@ -273,11 +273,12 @@ eos_cb (GstElement * appsink, gpointer user_data)
 static void
 pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
-  GST_DEBUG ("Pad added");
   GstElement *appsrc, *agnosticbin, *appsink;
   GstPad *sinkpad;
   GstCaps *audio_caps, *video_caps;
   GstCaps *src_caps;
+
+  GST_DEBUG_OBJECT (pad, "Pad added");
 
   /* Create and link appsrc--agnosticbin with proper caps */
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
@@ -345,8 +346,9 @@ end:
 static void
 pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
-  GST_DEBUG ("Pad removed");
   GstElement *appsink, *appsrc;
+
+  GST_DEBUG_OBJECT (pad, "Pad removed");
 
   if (GST_PAD_IS_SINK (pad))
     return;
