@@ -198,6 +198,7 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
           pFaceRectSeq->total : 0); i++) {
     CvRect *r;
     GstStructure *face;
+    gchar *id = NULL;
 
     r = (CvRect *) cvGetSeqElem (facedetector->priv->pFaceRectSeq, i);
     face = gst_structure_new ("face",
@@ -207,7 +208,6 @@ kms_face_detector_send_event (KmsFaceDetector * facedetector,
         (guint) (r->width * facedetector->priv->resize_factor), "height",
         G_TYPE_UINT, (guint) (r->height * facedetector->priv->resize_factor),
         NULL);
-    gchar *id = NULL;
 
     id = g_strdup_printf ("%d", i);
     gst_structure_set (faces, id, GST_TYPE_STRUCTURE, face, NULL);
@@ -332,10 +332,11 @@ kms_face_detector_src_eventfunc (GstBaseTransform * trans, GstEvent * event)
       GstClockTimeDiff diff;
       GstClockTime timestamp;
       GstQOSType type;
+      gfloat difference;
 
       gst_event_parse_qos (event, &type, &proportion, &diff, &timestamp);
       gst_base_transform_update_qos (trans, proportion, diff, timestamp);
-      gfloat difference = (((gfloat) (gint) diff) / (gfloat) GST_SECOND);
+      difference = (((gfloat) (gint) diff) / (gfloat) GST_SECOND);
 
       g_mutex_lock (&facedetector->priv->mutex);
 
