@@ -27,6 +27,8 @@
 #define SCTP_DEFAULT_LOCAL_PORT 0
 #define SCTP_DEFAULT_REMOTE_PORT 9999
 
+#define KMS_WAIT_TIMEOUT 5
+
 #define PLUGIN_NAME "plumberendpoint"
 #define GST_CAT_DEFAULT kms_plumber_endpoint_debug_category
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
@@ -174,6 +176,41 @@ kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
 }
 
 static void
+kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
+{
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->mcc != NULL) {
+    KMS_ELEMENT_UNLOCK (self);
+    return;
+  }
+
+  GST_DEBUG ("Creating multi-channel control link");
+
+  self->priv->mcc = kms_multi_channel_controller_new (self->priv->local_addr,
+      self->priv->local_port);
+
+  /* TODO: Set callback to provide port */
+
+  kms_multi_channel_controller_start (self->priv->mcc);
+
+  /* Try to connect control link if remote address is provided */
+  if (self->priv->remote_addr != NULL) {
+    GError *err = NULL;
+
+    GST_DEBUG ("Connecting remote control link");
+
+    if (!kms_multi_channel_controller_connect (self->priv->mcc,
+            self->priv->remote_addr, self->priv->remote_port, &err)) {
+      GST_DEBUG_OBJECT (self, "%s", err->message);
+      g_error_free (err);
+    }
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+}
+
+static void
 kms_plumber_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   KmsPlumberEndpoint *plumber = KMS_PLUMBER_ENDPOINT (self);
@@ -192,9 +229,23 @@ static void
 kms_plumber_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
 {
   KmsPlumberEndpoint *plumber = KMS_PLUMBER_ENDPOINT (self);
+  GError *err = NULL;
+  gint port;
 
-  kms_plumber_endpoint_link_valve (plumber, valve, &plumber->priv->videosink,
-      plumber->priv->remote_addr, plumber->priv->remote_port + 1);
+  kms_plumber_endpoint_create_mcc (plumber);
+  port = kms_multi_channel_controller_create_media_stream (plumber->priv->mcc,
+      STREAM_TYPE_VIDEO, 0, &err);
+
+  if (port < 0) {
+    GST_ERROR_OBJECT (plumber, "%s", err->message);
+    g_error_free (err);
+    return;
+  }
+
+  GST_DEBUG ("Got port %d", port);
+
+  /* TODO: Create an sctp sink element with the remote port got from */
+  /* this request and link it to the valve  */
 }
 
 static void
@@ -212,21 +263,7 @@ kms_plumber_endpoint_change_state (GstElement * element,
 
   switch (transition) {
     case GST_STATE_CHANGE_NULL_TO_READY:
-      self->priv->mcc =
-          kms_multi_channel_controller_new (self->priv->local_addr,
-          self->priv->local_port);
-      kms_multi_channel_controller_start (self->priv->mcc);
-
-      /* Try to connect control link if remote address is provided */
-      if (self->priv->remote_addr != NULL) {
-        GError *err = NULL;
-
-        if (!kms_multi_channel_controller_connect (self->priv->mcc,
-                self->priv->remote_addr, self->priv->remote_port, &err)) {
-          GST_ERROR_OBJECT (self, "%s", err->message);
-          g_error_free (err);
-        }
-      }
+      kms_plumber_endpoint_create_mcc (self);
       break;
     default:
       break;
