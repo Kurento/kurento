@@ -1,5 +1,14 @@
 {
   "name": "pointerdetector",
   "version": "0.0.1-dev",
-  "kurentoVersion": "5.0.0-dev"
+  "kurentoVersion": "5.0.0-dev",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "kurento-module-pointerdetector",
+        "npmDescription": "Pointer Detector Filter",
+        "npmGit": "Kurento/kurento-module-pointerdetector-js"
+      }
+    }
+  }
 }
