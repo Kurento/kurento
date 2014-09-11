@@ -30,6 +30,8 @@ typedef struct _KmsMultiChannelController KmsMultiChannelController;
 
 GType kms_multi_channel_controller_get_type (void);
 
+typedef int (*KmsCreateStreamFunction) (StreamType type, guint16 chanid, gpointer user_data);
+
 #ifdef _FOOL_GTK_DOC_
 G_INLINE_FUNC KmsMultiChannelController * kms_multi_channel_controller_ref (KmsMultiChannelController * m);
 #endif
@@ -92,6 +94,9 @@ kms_multi_channel_controller_replace (KmsMultiChannelController **old_multi_chan
 
 KmsMultiChannelController * kms_multi_channel_controller_new (const gchar *host,
   guint16 port);
+
+void kms_multi_channel_controller_set_create_stream_callback (KmsMultiChannelController *
+    mcc, KmsCreateStreamFunction func, gpointer user_data, GDestroyNotify notify);
 
 gboolean kms_multi_channel_controller_connect (KmsMultiChannelController *mcc,
   gchar *host, guint16 port, GError **err);

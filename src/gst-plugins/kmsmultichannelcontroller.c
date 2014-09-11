@@ -76,6 +76,10 @@ struct _KmsMultiChannelController
 
   gboolean waiting_rsp;
   KmsSCTPMessage msg_rsp;
+
+  KmsCreateStreamFunction create_func;
+  gpointer create_data;
+  GDestroyNotify create_notify;
 };
 
 GST_DEFINE_MINI_OBJECT_TYPE (KmsMultiChannelController,
@@ -148,6 +152,10 @@ _kms_multi_channel_controller_free (KmsMultiChannelController * mcc)
 
   if (mcc->local_host != NULL)
     g_free (mcc->local_host);
+
+  if (mcc->create_notify != NULL) {
+    mcc->create_notify (mcc->create_data);
+  }
 
   g_rec_mutex_clear (&mcc->rmutex);
   g_rec_mutex_clear (&mcc->tmutex);
@@ -379,6 +387,7 @@ kms_multi_channel_controller_create_channel_req (KmsMultiChannelController *
   guint16 chanid = 0;
   guint8 oc, rc;
   gboolean success = FALSE;
+  StreamType type;
 
   oc = MCCP_CREATE_CHANNEL_RSP;
 
@@ -388,17 +397,46 @@ kms_multi_channel_controller_create_channel_req (KmsMultiChannelController *
   }
 
   req = (mccp_create_channel_req *) cmd;
-  if (req->ct != MCCP_STREAM_TYPE_AUDIO && req->ct != MCCP_STREAM_TYPE_VIDEO) {
-    rc = MCCP_INVALID_PARAM_VALUE;
+
+  switch (req->ct) {
+    case MCCP_STREAM_TYPE_AUDIO:
+      type = STREAM_TYPE_AUDIO;
+      break;
+    case MCCP_STREAM_TYPE_VIDEO:
+      type = STREAM_TYPE_VIDEO;
+      break;
+    default:
+      rc = MCCP_INVALID_PARAM_VALUE;
+      goto send_msg;
+  }
+
+  if (mcc->create_func != NULL) {
+    MCLState old;
+    gint p;
+
+    old = mcc->state;
+    kms_multi_channel_controller_change_state (mcc, MCL_PENDING);
+
+    /* Get port provided from callback request */
+    KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+    if ((p = mcc->create_func (type, chanid, mcc->create_data)) < 0) {
+      KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+      kms_multi_channel_controller_change_state (mcc, old);
+      rc = MCAP_UNSPECIFIED_ERROR;
+      goto send_msg;
+    }
+
+    KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+    port = p;
+  } else {
+    rc = MCAP_REQUEST_NOT_SUPPORTED;
     goto send_msg;
   }
 
-  chanid = ntohs (req->chanid);
   rc = MCCP_SUCCESS;
+  chanid = ntohs (req->chanid);
 
-  // TODO: get port using a callback
-
-  port = 12345;
   data = (gchar *) & port;
 
   port = htons (port);
@@ -706,7 +744,7 @@ kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
 
   KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
 
-  if (mcc->msg_rsp.used < (sizeof (mccp_rsp) + sizeof (guint16))) {
+  if (mcc->msg_rsp.used < (sizeof (mccp_rsp))) {
     g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
         "Response error");
     goto end;
@@ -731,6 +769,12 @@ kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
   if (id != chanid) {
     g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
         "Protocol error");
+    goto end;
+  }
+
+  if (mcc->msg_rsp.used < (sizeof (mccp_rsp) + sizeof (guint16))) {
+    g_set_error (err, KMS_MCC_ERROR, KMS_MCC_UNEXPECTED_ERROR,
+        "Port not provided");
     goto end;
   }
 
@@ -811,6 +855,31 @@ end:
   KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
 
   return port;
+}
+
+void kms_multi_channel_controller_set_create_stream_callback
+    (KmsMultiChannelController * mcc, KmsCreateStreamFunction func,
+    gpointer user_data, GDestroyNotify notify)
+{
+  GDestroyNotify destroy;
+  gpointer data;
+
+  g_return_if_fail (mcc != NULL);
+
+  KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
+
+  destroy = mcc->create_notify;
+  data = mcc->create_data;
+
+  mcc->create_notify = notify;
+  mcc->create_data = user_data;
+  mcc->create_func = func;
+
+  KMS_MULTI_CHANNEL_CONTROLLER_UNLOCK (mcc);
+
+  if (destroy != NULL) {
+    destroy (data);
+  }
 }
 
 static void _priv_kms_multi_channel_controller_initialize (void)
