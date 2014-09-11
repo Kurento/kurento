@@ -24,26 +24,35 @@ static const std::string DEFAULT_STUN_ADDRESS =  "77.72.174.167";
 
 static std::shared_ptr<std::string> pemCertificate;
 static std::mutex mutex;
-static std::shared_ptr<boost::filesystem::path> temporalDirectory;
 
-static void
-remove_certificate (boost::filesystem::path *p)
+class TemporalDirectory
 {
-  boost::filesystem::remove_all (*p);
-  delete p;
-}
+public:
+  ~TemporalDirectory() {
+    if (!dir.string ().empty() ) {
+      boost::filesystem::remove_all (dir);
+    }
+  }
+
+  void setDir (boost::filesystem::path &dir) {
+    this->dir = dir;
+  }
+private:
+  boost::filesystem::path dir;
+};
+
+static TemporalDirectory tmpDir;
 
 static void
 create_pem_certificate ()
 {
   int ret;
-  boost::filesystem::path p = boost::filesystem::unique_path (
-                                boost::filesystem::temp_directory_path() / "WebRtcEndpoint_%%%%%%%%" );
-  boost::filesystem::create_directories (p);
-  temporalDirectory = std::shared_ptr <boost::filesystem::path>
-                      (new boost::filesystem::path (p), remove_certificate);
+  boost::filesystem::path temporalDirectory = boost::filesystem::unique_path (
+        boost::filesystem::temp_directory_path() / "WebRtcEndpoint_%%%%%%%%" );
+  boost::filesystem::create_directories (temporalDirectory);
+  tmpDir.setDir (temporalDirectory);
 
-  boost::filesystem::path pemFile = p / CERT_KEY_PEM_FILE;
+  boost::filesystem::path pemFile = temporalDirectory / CERT_KEY_PEM_FILE;
   std::string pemGenerationCommand =
     "/bin/sh -c \"certtool --generate-privkey --outfile " + pemFile .string()  +
     "\"";
@@ -54,7 +63,7 @@ create_pem_certificate ()
     return;
   }
 
-  boost::filesystem::path templateFile = p / CERTTOOL_TEMPLATE;
+  boost::filesystem::path templateFile = temporalDirectory / CERTTOOL_TEMPLATE;
   std::string certtoolCommand = "/bin/sh -c \"echo 'organization = kurento' > " +
                                 templateFile.string() + " && certtool --generate-self-signed --load-privkey " +
                                 pemFile.string() + " --template " + templateFile.string() +  " >> " +
