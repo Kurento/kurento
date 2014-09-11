@@ -27,7 +27,7 @@ package.json
   "dependencies": {
     "inherits": "^2.0.1"<#if module.imports?has_content>,
   <#list module.imports as import>
-    "${import.module.code.api.js.nodeName}": "^${import.npmVersion}"<#if import_has_next>,</#if>
+    "${import.module.code.api.js.nodeName}": "${import.npmVersion}"<#if import_has_next>,</#if>
   </#list>
 </#if>
   }<#if node_name != "kurento-client-core"
@@ -35,7 +35,7 @@ package.json
      && node_name != "kurento-client-filters">,
   "peerDependencies": {
     <#list module.imports as import><#if import.name = "core">
-    "kurento-client": "^${import.npmVersion}"
+    "kurento-client": "${import.npmVersion}"
     </#if></#list>
   }
 </#if>
