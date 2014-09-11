@@ -175,7 +175,7 @@ gst_sctp_server_src_start (GstBaseSrc * bsrc)
   GST_DEBUG ("starting");
 
   if (kms_sctp_server_rpc_start (self->priv->serverrpc, self->priv->host,
-          self->priv->server_port, self->priv->cancellable, &err)) {
+          &self->priv->server_port, self->priv->cancellable, &err)) {
     return TRUE;
   }
 

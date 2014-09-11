@@ -214,7 +214,7 @@ error:
 
 gboolean
 kms_sctp_server_rpc_start (KmsSCTPServerRPC * server, gchar * host,
-    gint port, GCancellable * cancellable, GError ** err)
+    gint * port, GCancellable * cancellable, GError ** err)
 {
   KmsSCTPConnection *conn = NULL;
 
@@ -226,7 +226,7 @@ kms_sctp_server_rpc_start (KmsSCTPServerRPC * server, gchar * host,
     goto create_task;
   }
 
-  conn = kms_sctp_connection_new (host, port, cancellable, err);
+  conn = kms_sctp_connection_new (host, *port, cancellable, err);
 
   if (conn == NULL) {
     GST_ERROR_OBJECT (server, "Error creating SCTP server socket");
@@ -250,6 +250,7 @@ create_task:
           (GstTaskFunction) kms_sctp_sever_rpc_thread, server, NULL)) {
     g_object_set_data (G_OBJECT (server), KMS_SCTP_SERVER_RPC_CANCELLABLE,
         cancellable);
+    *port = kms_sctp_connection_get_bound_port (server->priv->server);
     KMS_SCTP_BASE_RPC_UNLOCK (server);
     return TRUE;
   }
