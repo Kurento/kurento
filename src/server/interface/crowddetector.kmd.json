@@ -1,5 +1,14 @@
 {
   "name": "crowddetector",
   "version": "0.0.1-dev",
-  "kurentoVersion": "5.0.0-dev"
+  "kurentoVersion": "5.0.0-dev",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "kurento-module-crowddetector",
+        "npmDescription": "Crowd Detector Filter",
+        "npmGit": "Kurento/kurento-module-crowddetector-js"
+      }
+    }
+  }
 }
