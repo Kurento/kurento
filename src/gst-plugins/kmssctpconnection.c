@@ -116,7 +116,7 @@ kms_sctp_connection_create_socket (KmsSCTPConnection * conn, gchar * host,
   }
 
   /* create socket */
-  GST_DEBUG ("created SCTP socket for %s:%d", host, port);
+  GST_DEBUG ("created SCTP socket for %s", host);
 
   return TRUE;
 }
@@ -228,12 +228,11 @@ kms_sctp_connection_bind (KmsSCTPConnection * conn, GCancellable * cancellable,
   if (!g_socket_listen (conn->socket, err))
     return KMS_SCTP_ERROR;
 
-  bound_port =
-      g_inet_socket_address_get_port ((GInetSocketAddress *) conn->saddr);
+  bound_port = kms_sctp_connection_get_bound_port (conn);
 
-  GST_DEBUG ("listening on port %d", bound_port);
-
-//   g_object_notify (G_OBJECT (self), "current-port");
+  if (bound_port > 0) {
+    GST_DEBUG ("listening on port %d", bound_port);
+  }
 
   return KMS_SCTP_OK;
 }
@@ -454,6 +453,24 @@ kms_sctp_connection_set_init_config (KmsSCTPConnection * conn,
     return FALSE;
   }
 #endif
+}
+
+int
+kms_sctp_connection_get_bound_port (KmsSCTPConnection * conn)
+{
+  GSocketAddress *addr;
+  gint bound_port = -1;
+
+  g_return_val_if_fail (conn != NULL, bound_port);
+
+  addr = g_socket_get_local_address (conn->socket, NULL);
+
+  if (addr != NULL) {
+    bound_port = g_inet_socket_address_get_port ((GInetSocketAddress *) addr);
+    g_object_unref (addr);
+  }
+
+  return bound_port;
 }
 
 static void _priv_kms_sctp_connection_initialize (void)

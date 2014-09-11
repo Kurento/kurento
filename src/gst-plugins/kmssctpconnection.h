@@ -137,6 +137,8 @@ gboolean kms_sctp_connection_set_init_config (KmsSCTPConnection *conn,
   guint16 num_ostreams, guint16 max_instreams, guint16 max_attempts,
   guint16 max_init_timeo, GError **err);
 
+int kms_sctp_connection_get_bound_port (KmsSCTPConnection *conn);
+
 G_END_DECLS
 
 #endif /* __KMS_SCTP_CONNECTION_H__ */
