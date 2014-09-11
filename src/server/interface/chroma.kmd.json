@@ -1,5 +1,14 @@
 {
   "name": "chroma",
   "version": "0.0.1-dev",
-  "kurentoVersion": "5.0.0-dev"
+  "kurentoVersion": "5.0.0-dev",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "kurento-module-chroma",
+        "npmDescription": "Chroma Detector Filter",
+        "npmGit": "Kurento/kurento-module-chroma-js"
+      }
+    }
+  }
 }
