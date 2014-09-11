@@ -352,10 +352,20 @@ kms_plumber_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
     return;
   }
 
-  GST_DEBUG ("Got port %d", port);
+  plumber->priv->videosink = gst_element_factory_make ("sctpclientsink", NULL);
+  g_object_set (G_OBJECT (plumber->priv->videosink), "host",
+      plumber->priv->remote_addr, "port", port, NULL);
 
-  /* TODO: Create an sctp sink element with the remote port got from */
-  /* this request and link it to the valve  */
+  gst_bin_add (GST_BIN (self), plumber->priv->videosink);
+  gst_element_sync_state_with_parent (plumber->priv->videosink);
+
+  if (!gst_element_link (valve, plumber->priv->videosink)) {
+    GST_ERROR_OBJECT (self, "Could not link %s to element %s",
+        GST_ELEMENT_NAME (valve), GST_ELEMENT_NAME (plumber->priv->videosink));
+  } else {
+    /* Open valve so that buffers and events can pass throug it */
+    kms_utils_set_valve_drop (valve, FALSE);
+  }
 }
 
 static void
