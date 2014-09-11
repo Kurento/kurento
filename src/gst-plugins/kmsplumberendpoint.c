@@ -259,31 +259,6 @@ end:
 }
 
 static void
-kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
-    GstElement ** sctpsink, gchar * remote_addr, guint16 remote_port)
-{
-  if (*sctpsink != NULL) {
-    GST_ERROR_OBJECT (self, "Stream is already connected");
-    return;
-  }
-
-  *sctpsink = gst_element_factory_make ("sctpclientsink", NULL);
-  g_object_set (G_OBJECT (*sctpsink), "host", remote_addr, "port", remote_port,
-      NULL);
-
-  gst_bin_add (GST_BIN (self), *sctpsink);
-  gst_element_sync_state_with_parent (*sctpsink);
-
-  if (!gst_element_link (valve, *sctpsink)) {
-    GST_ERROR_OBJECT (self, "Could not link %s to element %s",
-        GST_ELEMENT_NAME (valve), GST_ELEMENT_NAME (*sctpsink));
-  } else {
-    /* Open valve so that buffers and events can pass throug it */
-    kms_utils_set_valve_drop (valve, FALSE);
-  }
-}
-
-static void
 kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
 {
   KMS_ELEMENT_LOCK (self);
@@ -321,12 +296,46 @@ kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
 }
 
 static void
+kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
+    GstElement ** sctpsink, StreamType type)
+{
+  GError *err = NULL;
+  gint port;
+
+  kms_plumber_endpoint_create_mcc (self);
+
+  port = kms_multi_channel_controller_create_media_stream (self->priv->mcc,
+      type, 0, &err);
+
+  if (port < 0) {
+    GST_ERROR_OBJECT (self, "%s", err->message);
+    g_error_free (err);
+    return;
+  }
+
+  *sctpsink = gst_element_factory_make ("sctpclientsink", NULL);
+  g_object_set (G_OBJECT (*sctpsink), "host",
+      self->priv->remote_addr, "port", port, NULL);
+
+  gst_bin_add (GST_BIN (self), *sctpsink);
+  gst_element_sync_state_with_parent (*sctpsink);
+
+  if (!gst_element_link (valve, *sctpsink)) {
+    GST_ERROR_OBJECT (self, "Could not link %s to element %s",
+        GST_ELEMENT_NAME (valve), GST_ELEMENT_NAME (*sctpsink));
+  } else {
+    /* Open valve so that buffers and events can pass throug it */
+    kms_utils_set_valve_drop (valve, FALSE);
+  }
+}
+
+static void
 kms_plumber_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
 {
   KmsPlumberEndpoint *plumber = KMS_PLUMBER_ENDPOINT (self);
 
   kms_plumber_endpoint_link_valve (plumber, valve, &plumber->priv->audiosink,
-      plumber->priv->remote_addr, plumber->priv->remote_port);
+      STREAM_TYPE_AUDIO);
 }
 
 static void
@@ -339,33 +348,9 @@ static void
 kms_plumber_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
 {
   KmsPlumberEndpoint *plumber = KMS_PLUMBER_ENDPOINT (self);
-  GError *err = NULL;
-  gint port;
 
-  kms_plumber_endpoint_create_mcc (plumber);
-  port = kms_multi_channel_controller_create_media_stream (plumber->priv->mcc,
-      STREAM_TYPE_VIDEO, 0, &err);
-
-  if (port < 0) {
-    GST_ERROR_OBJECT (plumber, "%s", err->message);
-    g_error_free (err);
-    return;
-  }
-
-  plumber->priv->videosink = gst_element_factory_make ("sctpclientsink", NULL);
-  g_object_set (G_OBJECT (plumber->priv->videosink), "host",
-      plumber->priv->remote_addr, "port", port, NULL);
-
-  gst_bin_add (GST_BIN (self), plumber->priv->videosink);
-  gst_element_sync_state_with_parent (plumber->priv->videosink);
-
-  if (!gst_element_link (valve, plumber->priv->videosink)) {
-    GST_ERROR_OBJECT (self, "Could not link %s to element %s",
-        GST_ELEMENT_NAME (valve), GST_ELEMENT_NAME (plumber->priv->videosink));
-  } else {
-    /* Open valve so that buffers and events can pass throug it */
-    kms_utils_set_valve_drop (valve, FALSE);
-  }
+  kms_plumber_endpoint_link_valve (plumber, valve, &plumber->priv->videosink,
+      STREAM_TYPE_VIDEO);
 }
 
 static void
