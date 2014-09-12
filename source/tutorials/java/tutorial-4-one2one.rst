@@ -4,13 +4,39 @@ Tutorial 4 - One to one video call
 
 This web application consists on an one to one video call using `WebRTC`:term:
 technology. In other words, this application is similar to a phone but also
-with video. The following picture shows an screenshot of this demo running in a
-web browser:
+with video.
+
+For the impatient: running this example
+=======================================
+
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
+
+To launch the application you need to clone the GitHub project where this demo
+is hosted and then run the main class, as follows:
+
+.. sourcecode:: shell
+
+    git clone https://github.com/Kurento/kurento-java-tutorial.git
+    cd kurento-one2one-call
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecall.One2OneCallApp"
+
+The web application starts on port 8080 in the localhost by default. Therefore,
+open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
+Firefox).
+
+Understanding this example
+==========================
+
+The following picture shows an screenshot of this demo running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-screenshot.png
    :align:   center
    :alt:     One to one video call screenshot
    :width: 600px
+
+   *One to one video call screenshot*
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local stream) and other for
@@ -27,6 +53,9 @@ is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-pipeline.png
    :align:   center
    :alt:     One to one video call media pipeline
+   :width: 400px
+
+   *One to one video call Media Pipeline*
 
 To communicate the client with the server to manage calls we have designed a
 signaling protocol based on `JSON`:term: messages over `WebSocket`:term: 's.
@@ -58,6 +87,8 @@ server:
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px
+
+   *One to many one call signaling protocol*
 
 As you can see in the diagram, `SDP`:term: needs to be interchanged between
 client and server to establish the `WebRTC`:term: connection between the
@@ -645,23 +676,3 @@ properties section:
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
 
-How to run this application
-===========================
-
-First of all, you should install Kurento Media Server to run this demo. Please
-visit the `installation guide <../../Installation_Guide.rst>`_ for further
-information.
-
-This demo is assuming that you have a Kurento Media Server installed and running
-in your local machine. If so, to launch the app you need to clone the GitHub
-project where this demo is hosted, and then run the main class, as follows:
-
-.. sourcecode:: shell
-
-    git clone https://github.com/Kurento/kurento-java-tutorial.git
-    cd kurento-one2one-call
-    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecall.One2OneCallApp"
-
-The web application starts on port 8080 in the localhost by default. Therefore,
-open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
-Firefox).
