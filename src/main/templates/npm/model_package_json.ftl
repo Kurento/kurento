@@ -8,10 +8,12 @@ package.json
   "main": "lib/index.js",
   "author": "Kurento <info@kurento.com> (http://kurento.org)",
   "license": "LGPL",
+<#if module.code.api.js.npmGit??>
   "repository": {
     "type": "git",
-    "url": "Kurento/${node_name}-js"
+    "url": "${module.code.api.js.npmGit}"
   },
+</#if>
   "bugs": {
     "url": "Kurento/${node_name}-js/issues",
     "email": "info@kurento.com"
