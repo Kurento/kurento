@@ -2,7 +2,7 @@
 package.json
 {
   "name": "${node_name}",
-  "version": "${module.code.api.js.npmVersion}",
+  "version": "${module.version}",
   "description": "${module.code.api.js.npmDescription}",
   "homepage": "http://www.kurento.com",
   "main": "lib/index.js",

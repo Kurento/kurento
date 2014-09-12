@@ -122,7 +122,7 @@ public class CustomNpmPackTest {
 
 		// Original properties
 		assertTagValue(doc, "/name", "kurento-module-moduleA");
-		assertTagValue(doc, "/version", "1.0.0");
+		assertTagValue(doc, "/version", "1.0.0-dev");
 		assertTagValue(doc, "/description", "");
 
 		// Add properties
