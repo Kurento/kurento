@@ -2,15 +2,60 @@
 JavaScript Tutorial 2 - Magic Mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application extends Tutorial 1 adding media processing to a basic
-`WebRTC`:term: loopback. This processing uses computer vision and augmented
-reality techniques to add a funny hat on top of faces. The following picture
-shows a screenshot of the demo running in a web browser:
+This web application extends :doc:`Tutorial 1 <./tutorial-1-helloworld>` adding
+media processing to the basic `WebRTC`:term: loopback.
+
+For the impatient: running this example
+=======================================
+
+You need to have installed the Kurento Media Server before running this example
+read the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
+
+Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
+an Ubuntu machine, you can install both as follows:
+
+.. sourcecode:: sh
+
+   sudo add-apt-repository ppa:chris-lea/node.js
+   sudo apt-get update
+   sudo apt-get install nodejs
+   sudo npm install -g bower
+
+Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
+A very simple way of doing this is by means of a HTTP Node.js server which can
+be installed using `npm`:term: :
+
+.. sourcecode:: sh
+
+   sudo npm install http-server -g
+
+You also need the source code of this demo. You can clone it from GitHub. Then
+start the HTTP server:
+
+.. sourcecode:: shell
+
+    git clone https://github.com/Kurento/kurento-tutorial-js.git
+    cd kurento-magic-mirror
+    bower install
+    http-server
+
+Finally access the application connecting to the URL http://localhost:8080/
+through a WebRTC capable browser (Chrome, Firefox).
+
+Understanding this example
+==========================
+
+This application uses computer vision and augmented reality techniques to add a
+funny hat on top of faces. The following picture shows a screenshot of the demo
+running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png
    :align:   center
-   :alt:     Loopback video call with filtering screenshot :width: 600px
+   :alt:     Kurento Magic Mirror Screenshot: WebRTC with filter in loopback
    :width: 600px
+
+   *Kurento Magic Mirror Screenshot: WebRTC with filter in loopback*
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local client-side stream) and
@@ -33,7 +78,10 @@ The media pipeline implemented is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
-   :alt:     Loopback video call with filtering media pipeline
+   :alt:     WebRTC with filter in loopback Media Pipeline
+   :width: 400px
+
+   *WebRTC with filter in loopback Media Pipeline*
 
 The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-js/tree/master/kurento-magic-mirror>`_.
@@ -66,8 +114,8 @@ button labeled as *Start* in the GUI is clicked.
 As you can see, the function *WebRtcPeer.startSendRecv* of *kurento-utils* is
 used to start a WebRTC communication, using the HTML video tag with id
 *videoInput* to show the video camera (local stream) and the video tag
-*videoOutput* to show the video processed by Kurento Media Server (remote stream).
-Then, two callback functions are used:
+*videoOutput* to show the video processed by Kurento Media Server (remote
+stream). Then, two callback functions are used:
 
 * ``onOffer`` : Callback executed if the SDP negotiation is carried out
   correctly.
@@ -76,8 +124,8 @@ Then, two callback functions are used:
 
 In ``onOffer`` we can found the most interesting code from a Kurento JavaScript
 Client point of view. First, we have create an instance of the *KurentoClient*
-class that will manage the connection with the Kurento Media Server. So, we need to
-provide the URI of its WebSocket endpoint:
+class that will manage the connection with the Kurento Media Server. So, we
+need to provide the URI of its WebSocket endpoint:
 
 .. sourcecode:: js
 
@@ -158,44 +206,13 @@ file, as follows:
 .. sourcecode:: json
 
    "dependencies": {
-      "kurento-client": "develop",
-      "kurento-utils": "develop"
+      "kurento-client": "|version|",
+      "kurento-utils": "|version|"
    }
 
+.. note::
 
-How to run this application
-===========================
-
-To run this application, first you need to install Bower, and so you also need
-to install `npm`:term:. The following snippet shows how to install npm (by
-installing `Node.js`:term: package) and Bower in an Ubuntu machine:
-
-.. sourcecode:: sh
-
-   sudo add-apt-repository ppa:chris-lea/node.js
-   sudo apt-get update
-   sudo apt-get install nodejs
-   sudo npm install -g bower
-
-Once Bower is installed, you need to clone the GitHub project where this demo is
-hosted. Then you have to resolve the dependencies using Bower, as follows:
-
-.. sourcecode:: sh
-
-    git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-magic-mirror
-    bower install
-
-Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
-A very simple way of doing this is by means of a HTTP Node.js server which can
-be installed using npm. Then, this HTTP has to be started in the folder where
-the demo is located:
-
-.. sourcecode:: sh
-
-   sudo npm install http-server -g
-   http-server
-
-The web application starts on port 8080 in the localhost. Therefore, to run the
-demo, open the URL http://localhost:8080/demo.html in a WebRTC compliant
-browser (Chrome, Firefox).
+   We are in active development. Be sure that you have the latest version of
+   Kurento Java Client in your bower.json. You can find it at
+   `Bower <http://bower.io/search/?q=kurento-client>`_ searching for
+   ``kurento-client``.
