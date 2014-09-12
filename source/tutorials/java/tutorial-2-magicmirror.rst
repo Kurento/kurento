@@ -2,24 +2,49 @@
 Java Tutorial 2 - WebRTC magic mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application extends Tutorial 1 adding media processing to the basic
-`WebRTC`:term: loopback. This processing uses computer vision and augmented
-reality techniques to add a funny hat on top of faces. The following picture
-shows a screenshot of the demo running in a web browser:
+This web application extends :doc:`Tutorial 1 <./tutorial-1-helloworld>` adding
+media processing to the basic `WebRTC`:term: loopback.
+
+For the impatient: running this example
+=======================================
+
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
+
+To launch the application you need to clone the GitHub project where this demo
+is hosted and then run the main class, as follows:
+
+.. sourcecode:: shell
+
+    git clone https://github.com/Kurento/kurento-java-tutorial.git
+    cd kurento-magic-mirror
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.magicmirror.MagicMirrorApp"
+
+The web application starts on port 8080 in the localhost by default. Therefore,
+open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
+Firefox).
+
+Understanding this example
+==========================
+
+This application uses computer vision and augmented reality techniques to add a
+funny hat on top of faces. The following picture shows a screenshot of the demo
+running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png 
    :align:   center
-   :alt:     Loopback video call with filtering screenshot
+   :alt:     Kurento Magic Mirror Screenshot: WebRTC with filter in loopback
    :width: 600px
+
+   *Kurento Magic Mirror Screenshot: WebRTC with filter in loopback*
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local client-side stream) and
 other for the mirror (the remote stream). The video camera stream is sent to
 Kurento Media Server, which processes and sends it back to the client as a
-remote stream.
-
-To implement this, we need to create a `Media Pipeline`:term: composed by the
-following `Media Element`:term: s:
+remote stream. To implement this, we need to create a `Media Pipeline`:term:
+composed by the following `Media Element`:term: s:
 
 - **WebRtcEndpoint**: Provides full-duplex (bidirectional) `WebRTC`:term:
   capabilities.
@@ -29,11 +54,12 @@ following `Media Element`:term: s:
   configured to put a
   `Super Mario hat <http://files.kurento.org/imgs/mario-wings.png>`_).
 
-The media pipeline implemented is illustrated in the following picture:
-
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-pipeline.png
    :align:   center
-   :alt:     Loopback video call with filtering media pipeline
+   :alt:     WebRTC with filter in loopback Media Pipeline
+   :width: 400px
+
+   *WebRTC with filter in loopback Media Pipeline*
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
@@ -48,28 +74,21 @@ communication takes place using the **Kurento Protocol**. For further
 information on it, please see this
 :doc:`page <../../mastering/kurento_protocol>` of the documentation.
 
-.. figure:: ../../images/websocket.png
-   :align:   center
-   :alt:     Communication architecture
-   :width: 500px
-
 To communicate the client with the Java EE application server we have designed a
 simple signaling protocol based on `JSON`:term: messages over `WebSocket`:term:
-'s. The normal sequence between client and server is as follows:
+'s. The normal sequence between client and server is as follows: i) Client
+starts the Magic Mirror. ii) Client stops the Magic Mirror.
 
-1. Client starts the Magic Mirror
-
-2. Client stops the Magic Mirror
-
-3. If any exception happens, server sends an error message to the client
-
-The detailed message sequence between client and application server is depicted
-in the following picture:
+If any exception happens, server sends an error message to the client. The
+detailed message sequence between client and application server is depicted in
+the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
    :width: 600px
+
+   *One to one video call signaling protocol*
 
 As you can see in the diagram, an `SDP`:term: needs to be exchanged between
 client and server to establish the `WebRTC`:term: session between the browser
@@ -81,9 +100,9 @@ demo can be found in
 Application Server Side
 =======================
 
-This demo has been developed using a **Java EE ** application server based on
-the `Spring Boot`:term: framework. This technology can be used to embed the
-Tomcat web server in the application and thus simplify the development process.
+This demo has been developed using a **Java EE** application server based on the
+`Spring Boot`:term: framework. This technology can be used to embed the Tomcat
+web server in the application and thus simplify the development process.
 
 .. note::
 
@@ -331,14 +350,20 @@ communication.
       showSpinner(videoInput, videoOutput);
    
       console.log("Creating WebRtcPeer and generating local sdp offer ...");
-      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
-         console.info('Invoking SDP offer callback function ' + location.host);
-         var message = {
-            id : 'start',
-            sdpOffer : offerSdp
-         }
-         sendMessage(message);
-      });
+      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+   }
+
+   function onOffer(offerSdp) {
+      console.info('Invoking SDP offer callback function ' + location.host);
+      var message = {
+         id : 'start',
+         sdpOffer : offerSdp
+      }
+      sendMessage(message);
+   }
+
+   function onError(error) {
+      console.error(error);
    }
 
 Dependencies
@@ -379,24 +404,3 @@ properties section:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-How to run this application
-===========================
-
-First of all, you should install Kurento Media Server to run this demo. Please
-visit the `installation guide <../../Installation_Guide.rst>`_ for further
-information.
-
-This demo is assuming that you have a Kurento Media Server installed and running
-in your local machine. If so, to launch the app you need to clone the GitHub
-project where this demo is hosted, and then run the main class, as follows:
-
-.. sourcecode:: shell
-
-    git clone https://github.com/Kurento/kurento-java-tutorial.git
-    cd kurento-magic-mirror
-    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.magicmirror.MagicMirrorApp"
-
-The web application starts on port 8080 in the localhost by default. Therefore,
-open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
-Firefox).
