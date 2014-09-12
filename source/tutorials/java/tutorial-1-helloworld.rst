@@ -64,6 +64,7 @@ media pipeline is illustrated in the following picture:
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
    :alt:     Kurento Hello World Media Pipeline in context
+   :width: 600px
 
    *Kurento Hello World Media Pipeline in context*
 
