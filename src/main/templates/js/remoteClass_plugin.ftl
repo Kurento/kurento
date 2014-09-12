@@ -43,9 +43,13 @@
 
 var inherits = require('inherits');
 <#include "sugarSyntax1.ftm" >
-<#if remoteClass.methods?has_content>
 
+<#if remoteClass.methods?has_content>
 var checkType = require('checktype');
+
+var ChecktypeError = checkType.ChecktypeError;
+<#else>
+var ChecktypeError = require('checktype').ChecktypeError;
 </#if>
 <#if remoteClass.extends??>
 
@@ -263,5 +267,5 @@ module.exports = ${remoteClass.name};
 ${remoteClass.name}.check = function(key, value)
 {
   if(!(value instanceof ${remoteClass.name}))
-    throw SyntaxError(key+' param should be a ${remoteClass.name}, not '+typeof value);
+    throw ChecktypeError(key, ${remoteClass.name}, value);
 };

@@ -26,6 +26,7 @@ package.json
     "WebRTC"
   ],
   "dependencies": {
+    "checktype": "^0.0.4",
     "inherits": "^2.0.1"<#if module.imports?has_content>,</#if>
   <#list module.imports as import>
     "${import.module.code.api.js.nodeName}": "${import.npmVersion}"<#if import_has_next>,</#if>
