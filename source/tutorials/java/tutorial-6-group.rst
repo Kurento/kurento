@@ -428,25 +428,30 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
       <dependency>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-client</artifactId>
-         <version>5.0.0</version>
+         <version>|version|</version>
       </dependency> 
       <dependency> 
          <groupId>org.kurento</groupId>
          <artifactId>kurento-utils-js</artifactId> 
-         <version>5.0.0</version>
+         <version>|version|</version>
       </dependency> 
    </dependencies>
 
+.. note::
+
+   We are in active development. Be sure that you have the latest version of
+   Kurento Java Client in your pom.xml. You can find it at Maven Central searching
+   for ``kurento-client``.
 
 How to run this application
 ===========================
 
-First of all, you should install Kurento Media Server to run this demo. Please visit
-the `installation guide <../../Installation_Guide.rst>`_ for further
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-This demo is assuming that you have a Kurento Media Server installed and running in
-your local machine. If so, to launch the app you need to clone the GitHub
+This demo is assuming that you have a Kurento Media Server installed and running
+in your local machine. If so, to launch the app you need to clone the GitHub
 project where this demo is hosted, and then run the main class, as follows:
 
 .. sourcecode:: shell

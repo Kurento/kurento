@@ -352,8 +352,8 @@ release the Media Pipeline and ends the video communication:
       }
    }
 
-The negotiation between WebRTC peer in the browser and WebRtcEndpoint in
-Kurento Media Server is made by means of `SDP`:term: generation at the client (offer)
+The negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento
+Media Server is made by means of `SDP`:term: generation at the client (offer)
 and SDP generation at the server (answer). The SDP answers are generated with
 the Kurento Java Client inside the class ``CallMediaPipeline`` (as we see in a
 moment). The methods used to generate SDP are
@@ -632,9 +632,9 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
 
 .. note::
 
-   We are in active development. Be sure that you have the latest version of Kurento
-   Java Client your POM. You can find it at Maven Central searching for
-   ``kurento-client``.
+   We are in active development. Be sure that you have the latest version of
+   Kurento Java Client in your pom.xml. You can find it at Maven Central searching
+   for ``kurento-client``.
 
 Kurento Java Client has a minimum requirement of **Java 7**. To configure the
 application to use Java 7, we have to include the following properties in the
@@ -648,12 +648,12 @@ properties section:
 How to run this application
 ===========================
 
-First of all, you should install Kurento Media Server to run this demo. Please visit
-the `installation guide <../../Installation_Guide.rst>`_ for further
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-This demo is assuming that you have a Kurento Media Server installed and running in
-your local machine. If so, to launch the app you need to clone the GitHub
+This demo is assuming that you have a Kurento Media Server installed and running
+in your local machine. If so, to launch the app you need to clone the GitHub
 project where this demo is hosted, and then run the main class, as follows:
 
 .. sourcecode:: shell

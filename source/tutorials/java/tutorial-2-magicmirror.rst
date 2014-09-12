@@ -367,9 +367,9 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
 
 .. note::
 
-   We are in active development. Be sure that you have the latest version of Kurento 
-   Java Client your POM. You can find it at Maven Central searching for 
-   ``kurento-client``.
+   We are in active development. Be sure that you have the latest version of
+   Kurento Java Client in your pom.xml. You can find it at Maven Central searching
+   for ``kurento-client``.
 
 Kurento Java Client has a minimum requirement of **Java 7**. To configure the
 application to use Java 7, we have to include the following properties in the
