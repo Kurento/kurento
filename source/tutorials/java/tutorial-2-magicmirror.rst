@@ -3,9 +3,9 @@ Java Tutorial 2 - WebRTC magic mirror
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application extends Tutorial 1 adding media processing to the basic
-`WebRTC`:term: loopback. This processing uses computer vision and augmented reality
-techniques to add a funny hat on top of faces. The following picture shows a 
-screenshot of the demo running in a web browser:
+`WebRTC`:term: loopback. This processing uses computer vision and augmented
+reality techniques to add a funny hat on top of faces. The following picture
+shows a screenshot of the demo running in a web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-screenshot.png 
    :align:   center
@@ -15,18 +15,18 @@ screenshot of the demo running in a web browser:
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local client-side stream) and
 other for the mirror (the remote stream). The video camera stream is sent to
-Kurento Media Server, which processes and sends it back to the client as a 
+Kurento Media Server, which processes and sends it back to the client as a
 remote stream.
 
-To implement this, we need to create a `Media Pipeline`:term: composed
-by the following `Media Element`:term: s:
+To implement this, we need to create a `Media Pipeline`:term: composed by the
+following `Media Element`:term: s:
 
 - **WebRtcEndpoint**: Provides full-duplex (bidirectional) `WebRTC`:term:
-capabilities.
+  capabilities.
 
 - **FaceOverlay filter**: Computer vision filter that detects faces in the
-  video stream and puts an image on top of them. In this demo 
-  the filter is configured to put a
+  video stream and puts an image on top of them. In this demo the filter is
+  configured to put a
   `Super Mario hat <http://files.kurento.org/imgs/mario-wings.png>`_).
 
 The media pipeline implemented is illustrated in the following picture:
@@ -39,14 +39,14 @@ This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
 At the server-side we use a Java EE application server consuming the
 **Kurento Java Client** API to control **Kurento Media Server** capabilities.
-All in all, the high level architecture of this demo is
-three-tier. To communicate these entities, two WebSockets are used. First, a
-WebSocket is created between client and application server to implement a custom
-signaling protocol. Second, another WebSocket is used to perform the
-communication between the Kurento Java Client and the Kurento Media Server. This
+All in all, the high level architecture of this demo is three-tier. To
+communicate these entities, two WebSockets are used. First, a WebSocket is
+created between client and application server to implement a custom signaling
+protocol. Second, another WebSocket is used to perform the communication
+between the Kurento Java Client and the Kurento Media Server. This
 communication takes place using the **Kurento Protocol**. For further
-information on it, please see this :doc:`page <../../mastering/kurento_protocol>` of
-the documentation.
+information on it, please see this
+:doc:`page <../../mastering/kurento_protocol>` of the documentation.
 
 .. figure:: ../../images/websocket.png
    :align:   center
@@ -54,8 +54,8 @@ the documentation.
    :width: 500px
 
 To communicate the client with the Java EE application server we have designed a
-simple signaling protocol based on `JSON`:term: messages over `WebSocket`:term: 's.
-The normal sequence between client and server is as follows:
+simple signaling protocol based on `JSON`:term: messages over `WebSocket`:term:
+'s. The normal sequence between client and server is as follows:
 
 1. Client starts the Magic Mirror
 
@@ -63,27 +63,27 @@ The normal sequence between client and server is as follows:
 
 3. If any exception happens, server sends an error message to the client
 
-The detailed message sequence between client and application server is
-depicted in the following picture:
+The detailed message sequence between client and application server is depicted
+in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-2-magicmirror-signaling.png
    :align:   center
    :alt:     One to one video call signaling protocol
-   :width: 400px
+   :width: 600px
 
 As you can see in the diagram, an `SDP`:term: needs to be exchanged between
-client and server to establish the `WebRTC`:term: session between the
-browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
-at the browser with the WebRtcEndpoint at the server. The complete source code
-of this demo can be found in
+client and server to establish the `WebRTC`:term: session between the browser
+and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer at the
+browser with the WebRtcEndpoint at the server. The complete source code of this
+demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-magic-mirror>`_.
 
 Application Server Side
-===========
+=======================
 
-This demo has been developed using a **Java EE ** application server based on the
-`Spring Boot`:term: framework. This technology can be used to embed the Tomcat
-web server in the application and thus simplify the development process.
+This demo has been developed using a **Java EE ** application server based on
+the `Spring Boot`:term: framework. This technology can be used to embed the
+Tomcat web server in the application and thus simplify the development process.
 
 .. note::
 
@@ -123,9 +123,9 @@ The main class of this demo is named
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to your applications. In this instantiation we see
-that we need to specify to the client library the location of the Kurento
-Media Server. In this example, we assume it's located at *localhost* listening
-in port 8888. If you reproduce this tutorial you'll need to insert the specific
+that we need to specify to the client library the location of the Kurento Media
+Server. In this example, we assume it's located at *localhost* listening in
+port 8888. If you reproduce this tutorial you'll need to insert the specific
 location of your Kurento Media Server instance there.
 
 .. sourcecode:: java
@@ -155,10 +155,10 @@ location of your Kurento Media Server instance there.
    }
 
 This web application follows *Single Page Application* architecture
-(`SPA`:term:) and uses a `WebSocket`:term: to communicate client with application server
-by means of requests and responses. Specifically, the main app class implements
-the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
-process WebSocket requests in the path ``/magicmirror``.
+(`SPA`:term:) and uses a `WebSocket`:term: to communicate client with
+application server by means of requests and responses. Specifically, the main
+app class implements the interface ``WebSocketConfigurer`` to register a
+``WebSocketHanlder`` to process WebSocket requests in the path ``/magicmirror``.
 
 
 `MagicMirrorHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-magic-mirror/src/main/java/org/kurento/tutorial/magicmirror/MagicMirrorHandler.java>`_
@@ -383,12 +383,12 @@ properties section:
 How to run this application
 ===========================
 
-First of all, you should install Kurento Media Server to run this demo. Please visit
-the `installation guide <../../Installation_Guide.rst>`_ for further
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-This demo is assuming that you have a Kurento Media Server installed and running in
-your local machine. If so, to launch the app you need to clone the GitHub
+This demo is assuming that you have a Kurento Media Server installed and running
+in your local machine. If so, to launch the app you need to clone the GitHub
 project where this demo is hosted, and then run the main class, as follows:
 
 .. sourcecode:: shell
