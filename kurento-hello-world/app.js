@@ -19,7 +19,7 @@ var app = express();
 var bodyParser = require('body-parser');
 app.use(bodyParser.text({type : 'application/sdp'}));
 var path = require('path');
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 8080);
 
 /*
  * Definition of constants
