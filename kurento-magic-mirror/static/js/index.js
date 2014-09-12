@@ -17,39 +17,11 @@ var ws = new WebSocket('ws://' + location.host + '/magicmirror');
 var videoInput;
 var videoOutput;
 var webRtcPeer;
-
-const
-I_CAN_START = 0;
-const
-I_CAN_STOP = 1;
-const
-I_AM_STARTING = 2;
-
 var state = null;
 
-function setState(nextState) {
-	switch (nextState) {
-	case I_CAN_START:
-		$('#start').attr('disabled', false);
-		$('#stop').attr('disabled', true);
-		break;
-
-	case I_CAN_STOP:
-		$('#start').attr('disabled', true);
-		$('#stop').attr('disabled', false);
-		break;
-
-	case I_AM_STARTING:
-		$('#start').attr('disabled', true);
-		$('#stop').attr('disabled', true);
-		break;
-
-	default:
-		console.error("Unknown state " + nextState);
-		return;
-	}
-	state = nextState;
-}
+const I_CAN_START = 0;
+const I_CAN_STOP = 1;
+const I_AM_STARTING = 2;
 
 window.onload = function() {
 	console.log("Page loaded ...");
@@ -75,13 +47,13 @@ ws.onmessage = function(message) {
 		if (state == I_AM_STARTING) {
 			setState(I_CAN_START);
 		}
-		console.error("Error message from server: " + parsedMessage.message);
+		onError("Error message from server: " + parsedMessage.message);
 		break;
 	default:
 		if (state == I_AM_STARTING) {
 			setState(I_CAN_START);
 		}
-		console.error('Unrecognized message', parsedMessage);
+		onError('Unrecognized message', parsedMessage);
 	}
 }
 
@@ -92,17 +64,20 @@ function start() {
 	showSpinner(videoInput, videoOutput);
 
 	console.log("Creating WebRtcPeer and generating local sdp offer ...");
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-			function(offerSdp, wp) {
-				console.info('Invoking SDP offer callback function '
-						+ location.host);
+	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+}
 
-				var message = {
-					id : 'start',
-					sdpOffer : offerSdp
-				}
-				sendMessage(message);
-			});
+function onOffer(offerSdp) {
+	console.info('Invoking SDP offer callback function ' + location.host);
+	var message = {
+		id : 'start',
+		sdpOffer : offerSdp
+	}
+	sendMessage(message);
+}
+
+function onError(error) {
+	console.error(error);
 }
 
 function startResponse(message) {
@@ -116,15 +91,38 @@ function stop() {
 	setState(I_CAN_START);
 	if (webRtcPeer) {
 		webRtcPeer.dispose();
+		webRtcPeer = null;
 
 		var message = {
 			id : 'stop'
 		}
 		sendMessage(message);
 	}
-	videoInput.src = '';
-	videoOutput.src = '';
 	hideSpinner(videoInput, videoOutput);
+}
+
+function setState(nextState) {
+	switch (nextState) {
+	case I_CAN_START:
+		$('#start').attr('disabled', false);
+		$('#stop').attr('disabled', true);
+		break;
+
+	case I_CAN_STOP:
+		$('#start').attr('disabled', true);
+		$('#stop').attr('disabled', false);
+		break;
+
+	case I_AM_STARTING:
+		$('#start').attr('disabled', true);
+		$('#stop').attr('disabled', true);
+		break;
+
+	default:
+		onError("Unknown state " + nextState);
+		return;
+	}
+	state = nextState;
 }
 
 function sendMessage(message) {
@@ -142,11 +140,15 @@ function showSpinner() {
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
 		arguments[i].poster = './img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
 
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
 	event.preventDefault();
 	$(this).ekkoLightbox();

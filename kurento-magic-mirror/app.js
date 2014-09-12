@@ -34,7 +34,7 @@ var sessionHandler = session({
 
 app.use(sessionHandler);
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 8080);
 
 /*
  * Defintion of constants
