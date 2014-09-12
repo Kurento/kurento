@@ -27,11 +27,11 @@ Also be sure to have installed [Bower] in your system:
 sudo npm install -g bower
 ```
 
-Each demo is located in a single folder (e.g. FaceOverlay, Recorder, and so
-on). For example, to launch the FaceOverlay demo, run:
+Each demo is located in a single folder (e.g. kurento-hello-world, kurento-magic-mirror,
+and so on). For example, to launch the kurento-hello-world demo, run:
 
 ```bash
-cd FaceOverlay
+cd kurento-hello-world
 bower install
 ```
 
@@ -48,7 +48,7 @@ Then, in each demo folder execute this command:
 http-server
 ```
 
-Finally, open this URL in your browser: http://localhost:8080/demo.html
+Finally, open this URL in your browser: http://localhost:8080/
 
 Take into account that demos with Generators (FaceOverlayGenerator,
 RecorderFilterGenerator, and so on) require [co] (generator based
