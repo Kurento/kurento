@@ -10,12 +10,6 @@ Kurento Protocol
 that uses :term:`JSON-RPC` V2.0 messages for making requests and sending
 responses.
 
-Currently there are two :term:`Kurento Client <Kurento Client>` out of the box:
-Java and JavaScript. If you have another favorite language, you can still use
-Kurento by means of :doc:`Kurento Protocol <Kurento_Protocol>`. This protocol
-allows to control Kurento Server and it is based on Internet standards like
-:term:`WebSocket` and :term:`Json-RPC`.
-
 
 JSON-RPC Messages format
 ========================

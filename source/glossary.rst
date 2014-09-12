@@ -476,9 +476,10 @@ or :term:`kurento`.
         Matroska media container.
 
     WebRTC
-        `WebRTC <http://www.webrtc.org/>`__ is a project that tries to enable
-        web browsers with rich Real-Time Communcations capabilities via
-        simple Javascript and HTML5 APIs and Components.
+        `WebRTC <http://www.webrtc.org/>`__ is an open source project that
+        provides rich Real-Time Communcations capabilities to web browsers
+        via Javascript and HTML5 APIs and components. These APIs are being
+        drafted by the World Wide Web Consortium (W3C).
 
         .. seealso:: `WebRTC Working Draft <http://www.w3.org/TR/webrtc/>`__
 
