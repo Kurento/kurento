@@ -4,16 +4,43 @@ Tutorial 3 - One to many video call
 
 This web application consists on an one to one video call using `WebRTC`:term:
 technology. In other words, it is an implementation of a video broadcasting web
-application. There will be two types of users in this application: 1 peer
-sending media (let's call it *Master*) and N peers receiving the media of the
-*Master* (let's call them *Viewers*). Thus, the Media Pipeline is composed by
-1+N interconnected *WebRtcEndpoints*. The following picture shows an screenshot
-of this demo running in a web browser (concretely of the *Master* peer):
+application.
+
+For the impatient: running this example
+=======================================
+
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
+
+To launch the application you need to clone the GitHub project
+where this demo is hosted and then run the main class, as follows:
+
+.. sourcecode:: shell
+
+    git clone https://github.com/Kurento/kurento-java-tutorial.git
+    cd kurento-one2many-call
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2manycall.One2ManyCallApp"
+
+The web application starts on port 8080 in the localhost by default. Therefore,
+open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
+Firefox).
+
+Understanding this example
+==========================
+
+There will be two types of users in this application: 1 peer sending media
+(let's call it *Master*) and N peers receiving the media of the *Master* (let's
+call them *Viewers*). Thus, the Media Pipeline is composed by 1+N
+interconnected *WebRtcEndpoints*. The following picture shows an screenshot of
+this demo running in a web browser (concretely of the *Master* peer):
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
    :align:   center
-   :alt:     One to many video call with filtering screenshot
+   :alt:     One to many video call screenshot
    :width: 600px
+
+   *One to many video call screenshot*
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
 by 1+N **WebRtcEndpoints**. The *Master* peer sends its stream in mirror, and
@@ -23,7 +50,10 @@ illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-pipeline.png
    :align:   center
-   :alt:     Loopback video call with filtering media pipeline
+   :alt:     One to many video call Media Pipeline
+   :width: 400px
+
+   *One to many video call Media Pipeline*
 
 This is a web application, and therefore it follows a client-server
 architecture. In the client-side, the logic is implemented in **JavaScript**.
@@ -37,11 +67,6 @@ communication is implemented by the **Kurento Protocol**. For further
 information, please see this :doc:`page <../../mastering/kurento_protocol>` of
 the documentation.
 
-.. figure:: ../../images/websocket.png
-   :align:   center
-   :alt:     Communication architecture
-   :width: 500px
-
 To communicate the client with the server we have designed a signaling protocol
 based on `JSON`:term: messages over `WebSocket`:term: 's. The normal sequence
 between client and server would be as follows:
@@ -53,10 +78,11 @@ when another user tries to become the *Master*.
 2. N *Viewers* connects to the master. If no *Master* is present, then an error
 is sent to the *Viewer* which tries to see the *Master* stream.
 
-3. *Viewers* can leave the communication at any time.
+3. The *Viewers* can leave the communication at any time.
 
 4. When a *Master* finishes the communication, then each connected *Viewer*
 receives an *stopCommunication* message to finish also the video broadcasting.
+
 
 We can draw the following sequence diagram with detailed messages between
 clients and server:
@@ -65,6 +91,8 @@ clients and server:
    :align:   center
    :alt:     One to many video call signaling protocol
    :width: 600px
+
+   *One to many video call signaling protocol*
 
 As you can see in the diagram, `SDP`:term: needs to be interchanged between
 client and server to establish the `WebRTC`:term: connection between the
@@ -153,7 +181,6 @@ This web application follows *Single Page Application* architecture
 means of requests and responses. Specifically, the main app class implements
 the interface ``WebSocketConfigurer`` to register a ``WebSocketHanlder`` to
 process WebSocket requests in the path ``/call``.
-
 
 `CallHandler <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2many-call/src/main/java/org/kurento/tutorial/one2manycall/CallHandler.java>`_
 class implements ``TextWebSocketHandler`` to handle text WebSocket requests.
@@ -248,8 +275,7 @@ treated in the *switch* clause, taking the proper steps in each case.
    }
 
 In the following snippet, we can see the ``master`` method. It creates a Media
-Pipeline and the ``WebRtcEndpoint`` for master, which is set in loopback
-(connected to itself):
+Pipeline and the ``WebRtcEndpoint`` for master:
 
 .. sourcecode:: java
 
@@ -262,13 +288,9 @@ Pipeline and the ``WebRtcEndpoint`` for master, which is set in loopback
          masterUserSession.setWebRtcEndpoint(new WebRtcEndpoint.Builder(
                pipeline).build());
 
-         // Loopback
          WebRtcEndpoint masterWebRtc = masterUserSession.getWebRtcEndpoint();
-         masterWebRtc.connect(masterWebRtc);
-
          String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer")
                .getAsString();
-
          String sdpAnswer = masterWebRtc.processOffer(sdpOffer);
 
          JsonObject response = new JsonObject();
@@ -410,8 +432,7 @@ used in the ``viewer`` function.
       if (!webRtcPeer) {
          showSpinner(videoInput, videoOutput);
 
-         kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp, wp) {
-            webRtcPeer = wp;
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
             var message = {
                id : 'master',
                sdpOffer : offerSdp
@@ -426,8 +447,7 @@ used in the ``viewer`` function.
          document.getElementById('videoSmall').style.display = 'none';
          showSpinner(videoOutput);
 
-         kurentoUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp, wp) {
-            webRtcPeer = wp;
+         webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp) {
             var message = {
                id : 'viewer',
                sdpOffer : offerSdp
@@ -475,24 +495,3 @@ properties section:
 
    <maven.compiler.target>1.7</maven.compiler.target>
    <maven.compiler.source>1.7</maven.compiler.source>
-
-How to run this application
-===========================
-
-First of all, you should install Kurento Server to run this demo. Please visit
-the `installation guide <../../Installation_Guide.rst>`_ for further
-information.
-
-This demo is assuming that you have a Kurento Server installed and running in
-your local machine. If so, to launch the app you need to clone the GitHub
-project where this demo is hosted, and then run the main class, as follows:
-
-.. sourcecode:: shell
-
-    git clone https://github.com/Kurento/kurento-java-tutorial.git
-    cd kurento-one2many-call
-    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2manycall.One2ManyCallApp"
-
-The web application starts on port 8080 in the localhost by default. Therefore,
-open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
-Firefox).
