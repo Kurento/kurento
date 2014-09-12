@@ -34,11 +34,7 @@ package.json
      && node_name != "kurento-client-elements"
      && node_name != "kurento-client-filters">,
   "peerDependencies": {
-    <#if module.kurentoVersion?ends_with("-dev")>
-    "kurento-client": "Kurento/kurento-client-js#develop"
-    <#else>
     "kurento-client": "${module.kurentoVersion}"
-    </#if>
   }
 <#else>
 
