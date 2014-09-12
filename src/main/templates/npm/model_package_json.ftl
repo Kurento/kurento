@@ -15,8 +15,7 @@ package.json
   },
 </#if>
   "bugs": {
-    "url": "Kurento/${node_name}-js/issues",
-    "email": "info@kurento.com"
+    "email": "kurento@googlegroups.com"
   },
   "keywords": [
     "API",
