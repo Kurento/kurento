@@ -440,8 +440,8 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
 .. note::
 
    We are in active development. Be sure that you have the latest version of
-   Kurento Java Client in your pom.xml. You can find it at Maven Central searching
-   for ``kurento-client``.
+   Kurento Java Client in your pom.xml. You can find it at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_
+   searching for ``kurento-client``.
 
 How to run this application
 ===========================
