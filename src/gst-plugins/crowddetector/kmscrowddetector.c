@@ -1064,6 +1064,7 @@ kms_crowd_detector_roi_analysis (KmsCrowdDetector * crowddetector,
         crowddetector->priv->rois_data[curve].fluidity_level_med,
         crowddetector->priv->rois_data[curve].fluidity_level_max, curve);
   }
+
 }
 
 static GstFlowReturn
