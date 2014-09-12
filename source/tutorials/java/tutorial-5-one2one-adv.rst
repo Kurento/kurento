@@ -3,17 +3,44 @@ Tutorial 5 - Advanced One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application consists on an advanced one to one video call using
-`WebRTC`:term: technology. It is an improved version of the tutorial 3
-(:doc:`one to one video call </tutorials/java/tutorial-3-one2one>`). This
-enhanced application incorporates also the recording capability provided by the
-Kurento Media Server. In addition, a filter element (*FaceOverlayFilter*) in
-placed between the *WebRtcEndpoints* of the Media Pipeline. The following
-picture shows an screenshot of this demo running in a web browser:
+`WebRTC`:term: technology. It is an improved version of the
+:doc:`tutorial 4 <./tutorial-4-one2one>`).
+
+For the impatient: running this example
+=======================================
+
+First of all, you should install Kurento Media Server to run this demo. Please
+visit the `installation guide <../../Installation_Guide.rst>`_ for further
+information.
+
+To launch the application you need to clone the GitHub project where this demo
+is hosted and then run the main class, as follows:
+
+.. sourcecode:: shell
+
+    git clone https://github.com/Kurento/kurento-java-tutorial.git
+    cd kurento-one2one-call-advanced
+    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp"
+
+The web application starts on port 8080 in the localhost by default. Therefore,
+open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
+Firefox).
+
+Understanding this example
+==========================
+
+This application incorporates the recording capability provided by the Kurento
+Media Server in a one to one video communication. In addition, a filter element
+(*FaceOverlayFilter*) in placed between the *WebRtcEndpoints* of the Media
+Pipeline. The following picture shows an screenshot of this demo running in a
+web browser:
 
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-screenshot.png
    :align:   center
    :alt:     Advanced one to one video call screenshot
    :width: 600px
+
+   *Advanced one to one video call screenshot*
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the local video camera stream (the caller stream, the
@@ -34,6 +61,9 @@ the following picture:
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_1.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (1)
+   :width: 500px
+
+   *Advanced one to one video call media pipeline (1)*
 
 A second media pipeline is needed to play the previously recorded media. This
 pipeline is composed by a *PlayerEndpoint* which reads the files stored in the
@@ -44,6 +74,9 @@ in the browser:
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_2.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (2)
+   :width: 500px
+
+   *Advanced one to one video call media pipeline (2)*
 
 .. note::
 
@@ -88,19 +121,19 @@ of the recorded file is carried out.
    :alt:     Advanced one to one video call signaling protocol
    :width: 600px
 
+   *Advanced one to one video call signaling protocol*
+
 As you can see in the diagram, `SDP`:term: needs to be interchanged between
 client and server to establish the `WebRTC`:term: connection between the
 browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
 in the browser with the WebRtcEndpoint in the server.
 
 The following sections describe in detail the server-side, the client-side, and
-how to run the demo.
-
-The complete source code of this demo can be found in
+how to run the demo. The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2one-call-advanced>`_.
 
-Server-Side
-===========
+Application Server Logic
+========================
 
 As in the :doc:`tutorial 2</tutorials/java/tutorial-2-magicmirror>`, this demo
 has been developed using **Java** and `Spring Boot`:term:.
@@ -695,23 +728,11 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
    Kurento Java Client in your pom.xml. You can find it at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_
    searching for ``kurento-client``.
 
-How to run this application
-===========================
+Kurento Java Client has a minimum requirement of **Java 7**. To configure the
+application to use Java 7, we have to include the following properties in the
+properties section:
 
-First of all, you should install Kurento Media Server to run this demo. Please
-visit the `installation guide <../../Installation_Guide.rst>`_ for further
-information.
+.. sourcecode:: xml
 
-This demo is assuming that you have a Kurento Media Server installed and running
-in your local machine. If so, to launch the app you need to clone the GitHub
-project where this demo is hosted, and then run the main class, as follows:
-
-.. sourcecode:: shell
-
-    git clone https://github.com/Kurento/kurento-java-tutorial.git
-    cd kurento-one2one-call-advanced
-    mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp"
-
-The web application starts on port 8080 in the localhost by default. Therefore,
-open the URL http://localhost:8080/ in a WebRTC compliant browser (Chrome,
-Firefox).
+   <maven.compiler.target>1.7</maven.compiler.target>
+   <maven.compiler.source>1.7</maven.compiler.source>

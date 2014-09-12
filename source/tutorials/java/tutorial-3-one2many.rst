@@ -13,8 +13,8 @@ First of all, you should install Kurento Media Server to run this demo. Please
 visit the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-To launch the application you need to clone the GitHub project
-where this demo is hosted and then run the main class, as follows:
+To launch the application you need to clone the GitHub project where this demo
+is hosted and then run the main class, as follows:
 
 .. sourcecode:: shell
 
@@ -101,8 +101,8 @@ in the browser with the WebRtcEndpoint in the server. The complete source code
 of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-magic-mirror>`_.
 
-Server-Side
-===========
+Application Server Logic
+========================
 
 This demo has been developed using **Java** in the server-side with
 `Spring Boot`:term: framework. This technology can be used to embed the Tomcat

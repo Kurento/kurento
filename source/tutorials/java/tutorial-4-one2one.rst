@@ -99,8 +99,8 @@ The following sections describe in detail the server-side, the client-side, and
 how to run the demo. The complete source code of this demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2one-call>`_.
 
-Server-Side
-===========
+Application Server Logic
+========================
 
 This demo has been developed using **Java** in the server-side with
 `Spring Boot`:term: framework. This technology can be used to embed the Tomcat
