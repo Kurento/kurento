@@ -16,39 +16,36 @@ You need to have installed the Kurento Media Server before running this example
 read the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
-you can install it with:
+Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
+an Ubuntu machine, you can install both as follows:
 
 .. sourcecode:: sh
 
    sudo add-apt-repository ppa:chris-lea/node.js
    sudo apt-get update
    sudo apt-get install nodejs
-
-Also be sure to have installed `Bower`:term: in your system:
-
-.. sourcecode:: sh
-
    sudo npm install -g bower
 
-An HTTP server is required for running this tutorial. A very simple way of doing
-this is by means of a Node.js server. This server can be installed as follows:
+Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.
+A very simple way of doing this is by means of a HTTP Node.js server which can
+be installed using `npm`:term: :
 
 .. sourcecode:: sh
 
    sudo npm install http-server -g
 
-Finally we need the source code of this demo. You can get it from github:
+You also need the source code of this demo. You can clone it from GitHub. Then
+start the HTTP server:
 
 .. sourcecode:: shell
 
-    git clone https://github.com/Kurento/kurento-js-tutorial.git
+    git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-hello-world
     bower install
     http-server
 
-Access the application connecting to the URL http://localhost:8080/ through a
-WebRTC capable browser (Chrome, Firefox).
+Finally access the application connecting to the URL http://localhost:8080/
+through a WebRTC capable browser (Chrome, Firefox).
 
 Understanding this example
 ==========================
