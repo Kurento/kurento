@@ -62,15 +62,14 @@ with Kurento. The following picture shows an screenshot of this demo running:
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-screenshot.png 
    :align:   center
-   :alt:     WebRTC loopback video call
+   :alt:     Kurento Hello World Screenshot: WebRTC in loopback
    :width: 600px
 
-
+   *Kurento Hello World Screenshot: WebRTC in loopback*
 
 The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one showing the local stream (as captured by the device webcam) and
-the other showing the remote stream sent by the media server back to the
-client.
+the other showing the remote stream sent by the media server back to the client.
 
 The logic of the application is quite simple: the local stream is sent to the
 Kurento Media Server, which returns it back to the client without
@@ -83,8 +82,11 @@ media pipeline is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-1-helloworld-pipeline.png
    :align:   center
-   :alt:     Loopback video call media pipeline
-   
+   :alt:     Kurento Hello World Media Pipeline in context
+   :width: 600px
+
+   *Kurento Hello World Media Pipeline in context*
+
 This is a web application, and therefore it follows a client-server
 architecture. Nevertheless, due to the fact that we are using the Kurento
 JavaScript client, there is not need to use an application server since all the
@@ -92,10 +94,10 @@ application logic is held by the browser. The Kurento JavaScript Client is used
 directly to control Kurento Media Server by means of a WebSocket bidirectional
 connection:
 
-.. figure:: ../../images/websocket_js.png
+.. figure:: ../../images/kurento-js-tutorial-1-helloworld-signaling.png
    :align:   center
-   :alt:     Communication architecture
-   :width: 350px
+   :alt:     Complete sequence diagram of Kurento Hello World (WebRTC in loopbak) demo
+   :width: 400px
 
 The following sections analyze in deep the client-side (JavaScript) code of this
 application, the dependencies, and how to run the demo. The complete source
@@ -140,7 +142,6 @@ are used for managing application logic:
 
 * ``onError`` : Callback executed if something wrong happens when obtaining
   the SDP offer.
-
 
 In the ``onOffer`` callback we create an instance of the *KurentoClient* class
 that will manage communications with the Kurento Media Server. So, we need to
@@ -211,8 +212,8 @@ file, as follows:
 .. sourcecode:: json
 
    "dependencies": {
-      "kurento-client": <kurento_latest_version>,
-      "kurento-utils": <kurento_latest_version>
+      "kurento-client": |version|,
+      "kurento-utils": |version|
    }
 
 To get these dependencies, just run the following shell command:
@@ -221,4 +222,8 @@ To get these dependencies, just run the following shell command:
 
    bower install
 
+.. note::
 
+   We are in active development. Be sure that you have the latest version of
+   Kurento Java Client in your bower.json. You can find it at `Bower <http://bower.io/search/?q=kurento-client>`_
+   searching for ``kurento-client``.
