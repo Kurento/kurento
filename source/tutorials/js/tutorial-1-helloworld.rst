@@ -212,8 +212,8 @@ file, as follows:
 .. sourcecode:: json
 
    "dependencies": {
-      "kurento-client": |version|,
-      "kurento-utils": |version|
+      "kurento-client": "|version|",
+      "kurento-utils": "|version|"
    }
 
 To get these dependencies, just run the following shell command:

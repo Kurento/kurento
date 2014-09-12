@@ -273,7 +273,7 @@ Kurento Client JavaScript (*kurento-client*). The relevant part of the
 
   "dependencies": {
      ...
-     "kurento-client" : |version|
+     "kurento-client" : "|version|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -282,7 +282,7 @@ At the client side, dependencies are managed using Bower. Take a look to the
 .. sourcecode:: json
 
   "dependencies": {
-     "kurento-utils" : |version|
+     "kurento-utils" : "|version|"
    }
 
 .. note::
