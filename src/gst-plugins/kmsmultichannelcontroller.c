@@ -82,6 +82,15 @@ struct _KmsMultiChannelController
   GDestroyNotify create_notify;
 };
 
+#define CONVERT(data, type) ({   \
+  union _ConversionData          \
+  {                              \
+    guint8 *uint8;               \
+    gpointer *buff;              \
+  } _conv = { .uint8 = (data) }; \
+  (* (type *) _conv.buff);       \
+})
+
 GST_DEFINE_MINI_OBJECT_TYPE (KmsMultiChannelController,
     kms_multi_channel_controller);
 
@@ -734,12 +743,6 @@ kms_multi_channel_controller_stop (KmsMultiChannelController * mcc)
   }
 }
 
-typedef union
-{
-  guint8 *data8;
-  guint16 *data16;
-} ConversionData;
-
 static int
 kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
     * mcc, StreamType type, guint16 chanid, GError ** err)
@@ -747,7 +750,6 @@ kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
   mccp_rsp *rsp;
   guint16 id, data;
   int port = -1;
-  ConversionData conv;
 
   KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
 
@@ -785,8 +787,9 @@ kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
     goto end;
   }
 
-  conv.data8 = rsp->data;
-  data = *conv.data16;
+  /* create channel response has an unsigned int16 packet in it */
+  /* so we make the proper conversion */
+  data = CONVERT (rsp->data, guint16);
   port = ntohs (data);
 
 end:
