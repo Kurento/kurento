@@ -734,6 +734,12 @@ kms_multi_channel_controller_stop (KmsMultiChannelController * mcc)
   }
 }
 
+typedef union
+{
+  guint8 *data8;
+  guint16 *data16;
+} ConversionData;
+
 static int
 kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
     * mcc, StreamType type, guint16 chanid, GError ** err)
@@ -741,6 +747,7 @@ kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
   mccp_rsp *rsp;
   guint16 id, data;
   int port = -1;
+  ConversionData conv;
 
   KMS_MULTI_CHANNEL_CONTROLLER_LOCK (mcc);
 
@@ -778,7 +785,8 @@ kms_multi_channel_controller_create_media_stream_rsp (KmsMultiChannelController
     goto end;
   }
 
-  data = *((guint16 *) rsp->data);
+  conv.data8 = rsp->data;
+  data = *conv.data16;
   port = ntohs (data);
 
 end:
