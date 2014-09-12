@@ -26,11 +26,10 @@ package.json
     "WebRTC"
   ],
   "dependencies": {
-    "inherits": "^2.0.1"<#if module.imports?has_content>,
+    "inherits": "^2.0.1"<#if module.imports?has_content>,</#if>
   <#list module.imports as import>
     "${import.module.code.api.js.nodeName}": "${import.npmVersion}"<#if import_has_next>,</#if>
   </#list>
-</#if>
   }<#if node_name != "kurento-client-core"
      && node_name != "kurento-client-elements"
      && node_name != "kurento-client-filters">,
@@ -39,5 +38,7 @@ package.json
     "kurento-client": "${import.npmVersion}"
     </#if></#list>
   }
+<#else>
+
 </#if>
 }
