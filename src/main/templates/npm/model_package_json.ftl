@@ -34,9 +34,11 @@ package.json
      && node_name != "kurento-client-elements"
      && node_name != "kurento-client-filters">,
   "peerDependencies": {
-    <#list module.imports as import><#if import.name = "core">
-    "kurento-client": "${import.npmVersion}"
-    </#if></#list>
+    <#if module.kurentoVersion?ends_with("-dev")>
+    "kurento-client": "Kurento/kurento-client-js#develop"
+    <#else>
+    "kurento-client": "${module.kurentoVersion}"
+    </#if>
   }
 <#else>
 
