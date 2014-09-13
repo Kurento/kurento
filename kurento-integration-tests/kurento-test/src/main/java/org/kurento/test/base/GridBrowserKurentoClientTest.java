@@ -42,7 +42,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
-import org.kurento.client.factory.KurentoProperties;
 import org.kurento.commons.testing.SystemKurentoClientTests;
 import org.kurento.test.Shell;
 import org.kurento.test.client.Browser;
@@ -59,7 +58,7 @@ import freemarker.template.Template;
 
 /**
  * Base for tests using kurento-client, Jetty Http Server and Selenium Grid.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -85,7 +84,7 @@ public class GridBrowserKurentoClientTest extends BrowserKurentoClientTest {
 	}
 
 	private void startHub() throws Exception {
-		hubAddress = KurentoProperties.getThriftKcsAddress().getHost();
+		hubAddress = "127.0.0.1";
 		hubPort = getProperty("test.hub.port", DEFAULT_HUB_PORT);
 
 		seleniumGridHub = new SeleniumGridHub(hubAddress, hubPort);

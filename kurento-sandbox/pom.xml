@@ -73,6 +73,10 @@
 			<artifactId>kurento-client</artifactId>
 		</dependency>
 		<dependency>
+      <groupId>org.kurento</groupId>
+      <artifactId>kurento-control-server</artifactId>
+    </dependency>
+		<dependency>
 			<groupId>com.kurento.kws</groupId>
 			<artifactId>kws-rpc-builder</artifactId>
 		</dependency>

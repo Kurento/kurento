@@ -19,16 +19,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.test.Shell;
-import org.kurento.thrift.ThriftInterfaceConfiguration;
-import org.kurento.thrift.pool.ClientPoolException;
-import org.kurento.thrift.pool.ThriftClientPoolService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ import freemarker.template.Template;
 
 /**
  * Initializer/stopper class for Kurento Media Server (KMS).
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -52,7 +52,7 @@ public class KurentoMediaServerManager {
 	private static final String KURENTO_GST_PLUGINS_DEFAULT = "";
 
 	private static final String KURENTO_SERVER_COMMAND_PROP = "kms.command";
-	private static final String KURENTO_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento";
+	private static final String KURENTO_SERVER_COMMAND_DEFAULT = "/usr/bin/kurento-media-server";
 
 	private static final String KURENTO_SERVER_DEBUG_PROP = "kms.debug";
 	private static final String KURENTO_SERVER_DEBUG_DEFAULT = "2,*media_server*:5,*Kurento*:5,KurentoMediaServerServiceHandler:7";
@@ -62,7 +62,6 @@ public class KurentoMediaServerManager {
 
 	private static String workspace;
 
-	private Address thriftAddress;
 	private int httpPort;
 	private String testClassName;
 	private String testMethodName;
@@ -72,12 +71,13 @@ public class KurentoMediaServerManager {
 	private String debugOptions;
 
 	private Address rabbitMqAddress;
+	private String wsUri;
 
-	public static KurentoMediaServerManager createWithThriftTransport(
-			Address thriftAddress, int httpPort) {
+	public static KurentoMediaServerManager createWithWsTransport(String wsUri,
+			int httpPort) {
+
 		KurentoMediaServerManager manager = new KurentoMediaServerManager();
-		manager.thriftAddress = thriftAddress;
-		manager.httpPort = httpPort;
+		manager.wsUri = wsUri;
 		return manager;
 	}
 
@@ -135,9 +135,9 @@ public class KurentoMediaServerManager {
 					+ " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'",
 					rabbitMqAddress, serverCommand, gstPlugins, workspace);
 		} else {
-			log.info("Starting KMS with Thrift: thriftAddress:'{}'"
+			log.info("Starting KMS with Ws uri: '{}'"
 					+ " serverCommand:'{}' gstPlugins:'{}' workspace: '{}'",
-					thriftAddress, serverCommand, gstPlugins, workspace);
+					wsUri, serverCommand, gstPlugins, workspace);
 		}
 
 		createKurentoConf();
@@ -157,43 +157,11 @@ public class KurentoMediaServerManager {
 
 	private void waitForKurentoMediaServer() {
 
-		// Only wait if KMS uses Thrift
-		if (thriftAddress != null) {
-
-			long startWaiting = System.currentTimeMillis();
-
-			ThriftClientPoolService clientPool = new ThriftClientPoolService(
-					new ThriftInterfaceConfiguration(thriftAddress.getHost(),
-							thriftAddress.getPort()));
-
-			// Wait for a max of 20 seconds
-			long timeout = System.currentTimeMillis() + 20000;
-			while (true) {
-				try {
-					clientPool.acquireSync();
-					break;
-				} catch (ClientPoolException e) {
-					try {
-						Thread.sleep(100);
-						if (System.currentTimeMillis() > timeout) {
-							throw new RuntimeException(
-									"Timeout (20 sec) waiting for ThriftClientPoolService");
-						}
-					} catch (InterruptedException e1) {
-					}
-				}
-			}
-
-			long waitingTime = System.currentTimeMillis() - startWaiting;
-
-			log.info("KMS started in {} millis", waitingTime);
-
-		} else {
-			try {
-				Thread.sleep(2000);
-			} catch (InterruptedException e) {
-				log.error("InterruptedException {}", e.getMessage());
-			}
+		// TODO Wait until KMS is ready instead of 2s
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			log.error("InterruptedException {}", e.getMessage());
 		}
 	}
 
@@ -201,17 +169,29 @@ public class KurentoMediaServerManager {
 
 		Configuration cfg = new Configuration();
 
+		// TODO Create new format config file
+
 		// Data-model
 		Map<String, Object> data = new HashMap<String, Object>();
 
 		if (rabbitMqAddress != null) {
-			data.put("transport", "RabbitMQ");
-			data.put("serverAddress", rabbitMqAddress.getHost());
-			data.put("serverPort", String.valueOf(rabbitMqAddress.getPort()));
+			data.put("transport", "rabbitmq");
+			data.put("rabbitAddress", rabbitMqAddress.getHost());
+			data.put("rabbitPort", String.valueOf(rabbitMqAddress.getPort()));
 		} else {
-			data.put("transport", "Thrift");
-			data.put("serverAddress", thriftAddress.getHost());
-			data.put("serverPort", String.valueOf(thriftAddress.getPort()));
+
+			URI wsAsUri;
+			try {
+				wsAsUri = new URI(wsUri);
+				int port = wsAsUri.getPort();
+				String path = wsAsUri.getPath();
+				data.put("transport", "ws");
+				data.put("wsPort", String.valueOf(port));
+				data.put("wsPath", path.substring(1));
+
+			} catch (URISyntaxException e) {
+				throw new KurentoException("Invalid ws uri: " + wsUri);
+			}
 		}
 
 		data.put("gstPlugins", gstPlugins);
@@ -223,7 +203,7 @@ public class KurentoMediaServerManager {
 		cfg.setClassForTemplateLoading(KurentoMediaServerManager.class,
 				"/templates/");
 
-		createFileFromTemplate(cfg, data, "kurento.conf");
+		createFileFromTemplate(cfg, data, "kurento.conf.json");
 		createFileFromTemplate(cfg, data, "pattern.sdp");
 		createFileFromTemplate(cfg, data, "kurento.sh");
 		Shell.runAndWait("chmod", "+x", workspace + "kurento.sh");
@@ -235,10 +215,13 @@ public class KurentoMediaServerManager {
 		try {
 
 			Template template = cfg.getTemplate(filename + ".ftl");
-			Writer writer = new FileWriter(new File(workspace + filename));
+			File file = new File(workspace + filename);
+			Writer writer = new FileWriter(file);
 			template.process(data, writer);
 			writer.flush();
 			writer.close();
+
+			log.debug("Created file '" + file.getAbsolutePath() + "'");
 
 		} catch (Exception e) {
 			throw new RuntimeException(
@@ -325,4 +308,5 @@ public class KurentoMediaServerManager {
 	public static String getWorkspace() {
 		return workspace;
 	}
+
 }

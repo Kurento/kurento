@@ -14,54 +14,22 @@
  */
 package org.kurento.test.services;
 
-import static org.kurento.client.factory.KurentoProperties.getRabbitMqAddress;
-import static org.kurento.client.factory.KurentoProperties.getThriftKcsAddress;
-import static org.kurento.client.factory.KurentoProperties.getThriftKmsAddress;
 import static org.kurento.commons.PropertiesManager.getProperty;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.apache.catalina.LifecycleException;
-import org.kurento.client.factory.KurentoClientFactory;
+import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
+import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.rabbitmq.server.RabbitMqConnectorManager;
 import org.kurento.test.Shell;
 
 public class KurentoServicesTestHelper {
 
-	public static final String KMS_TRANSPORT_PROP = "kms.transport";
-	public static final String KMS_TRANSPORT_THRIFT_VALUE = "thrift";
-	public static final String KMS_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
-	public static final String KMS_TRANSPORT_DEFAULT = KMS_TRANSPORT_THRIFT_VALUE;
-
-	public static final String KMS_PRINT_LOG_PROP = "kms.print.log";
-	public static final String KMS_PRINT_LOG_DEFAULT = "true";
-
-	public static final String AUTOSTART_FALSE_VALUE = "false";
-	public static final String AUTOSTART_TEST_VALUE = "test";
-	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
-
-	public static final String KMS_AUTOSTART_PROP = "kms.autostart";
-	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
-
-	public static final String KMC_AUTOSTART_PROP = "kmc.autostart";
-	public static final String KMC_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
-
-	public static final String KRC_AUTOSTART_PROP = "krc.autostart";
-	public static final String KRC_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
-
-	public static final String KMS_HTTP_PORT_PROP = "kms.http.port";
-	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
-
-	public static final String APP_HTTP_PORT_PROP = "app.http.port";
-	public static final int APP_HTTP_PORT_DEFAULT = 7779;
-
-	public static final String KMC_HTTP_PORT_PROP = "kmc.http.port";
-	public static final int KMC_HTTP_PORT_DEFAULT = 7788;
-
-	public static final String MEDIA_CONNECTOR_PREFIX = "kmc";
-	public static final String RABBITMQ_CONNECTOR_PREFIX = "krc";
+	// Test properties
 
 	public static final String KURENTO_TESTFILES_PROP = "kurento.test.files";
 	public static final String KURENTO_TESTFILES_DEFAULT = "/var/lib/jenkins/test-files";
@@ -69,65 +37,86 @@ public class KurentoServicesTestHelper {
 	private static final String PROJECT_PATH_PROP = "project.path";
 	private static final String PROJECT_PATH_DEFAULT = ".";
 
+	// Autostart properties
+
+	public static final String AUTOSTART_FALSE_VALUE = "false";
+	public static final String AUTOSTART_TEST_VALUE = "test";
+	public static final String AUTOSTART_TEST_SUITE_VALUE = "testsuite";
+
+	public static final String KMS_AUTOSTART_PROP = "kms.autostart";
+	public static final String KMS_AUTOSTART_DEFAULT = AUTOSTART_TEST_VALUE;
+
+	public static final String KCS_AUTOSTART_PROP = "kcs.autostart";
+	public static final String KCS_AUTOSTART_DEFAULT = AUTOSTART_FALSE_VALUE;
+
+	// Kms properties
+
+	public static final String KMS_TRANSPORT_PROP = "kms.transport";
+	public static final String KMS_TRANSPORT_WS_VALUE = "ws";
+	public static final String KMS_TRANSPORT_RABBITMQ_VALUE = "rabbitmq";
+	public static final String KMS_TRANSPORT_DEFAULT = KMS_TRANSPORT_WS_VALUE;
+
+	public static final String KMS_PRINT_LOG_PROP = "kms.print.log";
+	public static final String KMS_PRINT_LOG_DEFAULT = "true";
+
+	public static final String KMS_HTTP_PORT_PROP = "kms.http.port";
+	public static final int KMS_HTTP_PORT_DEFAULT = 9091;
+
+	public static final String KMS_RABBITMQ_ADDRESS_PROP = "kms.rabbitmq.address";
+	public static final Address KMS_RABBITMQ_ADDRESS_DEFAULT = new Address(
+			"127.0.0.1", 5672);
+
+	public static final String KMS_WS_URI_PROP = "kms.ws.uri";
+	public static final String KMS_WS_URI_DEFAULT = "ws://localhost:8888/kurento";
+
+	// Kcs properties
+
+	public static final String KCS_WS_URI_PROP = "kcs.ws.uri";
+	public static final String KCS_WS_URI_DEFAULT = "ws://localhost:8889/kurento";
+
+	// App properties
+
+	public static final String APP_HTTP_PORT_PROP = "app.http.port";
+	public static final int APP_HTTP_PORT_DEFAULT = 7779;
+
+	// Attributes
+
 	private static HttpServer httpServer;
 	private static KurentoMediaServerManager kms;
-	private static RabbitMqConnectorManager rabbitMqConnector;
 	private static KurentoControlServerManager mediaConnector;
 
 	private static String testCaseName;
 	private static String testName;
 	private static String testDir;
 	private static String kmsAutostart = KMS_AUTOSTART_DEFAULT;
-	private static String krcAutostart = KRC_AUTOSTART_DEFAULT;
-	private static String kmcAutostart = KMS_AUTOSTART_DEFAULT;
+	private static String kcsAutostart = KMS_AUTOSTART_DEFAULT;
 	private static String kmsPrintLog;
 	private static File logFile;
 
 	public static void startKurentoServicesIfNeccessary() {
 
 		startKurentoMediaServerIfNecessary();
-		startRabbitMqConnectorIfNecessary();
 		startKurentoControlServerIfNecessary();
 	}
 
 	private static void startKurentoControlServerIfNecessary() {
 
-		kmcAutostart = getProperty(KMC_AUTOSTART_PROP, KMC_AUTOSTART_DEFAULT);
+		kcsAutostart = getProperty(KCS_AUTOSTART_PROP, KCS_AUTOSTART_DEFAULT);
 
-		switch (kmcAutostart) {
+		switch (kcsAutostart) {
 		case AUTOSTART_FALSE_VALUE:
 			break;
 		case AUTOSTART_TEST_VALUE:
-			startMediaConnector();
+			startKurentoControlServer();
 			break;
 		case AUTOSTART_TEST_SUITE_VALUE:
 			if (mediaConnector == null) {
-				startMediaConnector();
+				startKurentoControlServer();
 			}
 			break;
 		default:
-			throw new IllegalArgumentException("The value '" + kmcAutostart
-					+ "' is not valid for property " + KMC_AUTOSTART_PROP);
-		}
-	}
-
-	private static void startRabbitMqConnectorIfNecessary() {
-		krcAutostart = getProperty(KRC_AUTOSTART_PROP, KRC_AUTOSTART_DEFAULT);
-
-		switch (krcAutostart) {
-		case AUTOSTART_FALSE_VALUE:
-			break;
-		case AUTOSTART_TEST_VALUE:
-			startRabbitMqConnector();
-			break;
-		case AUTOSTART_TEST_SUITE_VALUE:
-			if (mediaConnector == null) {
-				startRabbitMqConnector();
-			}
-			break;
-		default:
-			throw new IllegalArgumentException("The value '" + krcAutostart
-					+ "' is not valid for property " + KRC_AUTOSTART_PROP);
+			throw new IllegalArgumentException("The value '" + kcsAutostart
+					+ "' is not valid for property " + KCS_AUTOSTART_PROP);
 		}
 	}
 
@@ -157,23 +146,6 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	private static void startRabbitMqConnector() {
-
-		rabbitMqConnector = new RabbitMqConnectorManager(
-				getThriftKmsAddress(RABBITMQ_CONNECTOR_PREFIX),
-				getThriftKcsAddress(RABBITMQ_CONNECTOR_PREFIX),
-				getRabbitMqAddress(RABBITMQ_CONNECTOR_PREFIX));
-	}
-
-	private static void startMediaConnector() {
-
-		JsonRpcClient client = KurentoClientFactory
-				.createJsonRpcClient(MEDIA_CONNECTOR_PREFIX);
-
-		mediaConnector = new KurentoControlServerManager(client,
-				getKmcHttpPort());
-	}
-
 	public static void startKurentoMediaServer() {
 
 		String transport = PropertiesManager.getProperty(KMS_TRANSPORT_PROP,
@@ -182,10 +154,10 @@ public class KurentoServicesTestHelper {
 		int httpPort = getKmsHttpPort();
 
 		switch (transport) {
-		case KMS_TRANSPORT_THRIFT_VALUE:
+		case KMS_TRANSPORT_WS_VALUE:
 
-			kms = KurentoMediaServerManager.createWithThriftTransport(
-					getThriftKmsAddress(), httpPort);
+			kms = KurentoMediaServerManager.createWithWsTransport(getWsUri(),
+					httpPort);
 			break;
 		case KMS_TRANSPORT_RABBITMQ_VALUE:
 
@@ -204,6 +176,26 @@ public class KurentoServicesTestHelper {
 		kms.start();
 	}
 
+	private static void startKurentoControlServer() {
+
+		JsonRpcClient client = KurentoClientTestFactory
+				.createJsonRpcClient("kcs");
+
+		String wsUriProp = getProperty(KCS_WS_URI_PROP, KCS_WS_URI_DEFAULT);
+
+		try {
+
+			URI wsUri = new URI(wsUriProp);
+			int port = wsUri.getPort();
+			String path = wsUri.getPath();
+			mediaConnector = new KurentoControlServerManager(client, port, path);
+
+		} catch (URISyntaxException e) {
+			throw new KurentoException(KCS_WS_URI_PROP + " invalid format: "
+					+ wsUriProp);
+		}
+	}
+
 	public static void startHttpServer() {
 		try {
 			httpServer = new HttpServer(getAppHttpPort());
@@ -216,27 +208,18 @@ public class KurentoServicesTestHelper {
 	public static void teardownServices() {
 
 		teardownHttpServer();
-		teardownMediaServer();
-		teardownMediaConnector();
-		teardownRabbitMediaConnector();
+		teardownKurentoMediaServer();
+		teardownKurentoControlServer();
 	}
 
-	private static void teardownMediaConnector() {
-		if (mediaConnector != null && kmcAutostart.equals(AUTOSTART_TEST_VALUE)) {
+	private static void teardownKurentoControlServer() {
+		if (mediaConnector != null && kcsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			mediaConnector.destroy();
 			mediaConnector = null;
 		}
 	}
 
-	private static void teardownRabbitMediaConnector() {
-		if (rabbitMqConnector != null
-				&& krcAutostart.equals(AUTOSTART_TEST_VALUE)) {
-			rabbitMqConnector.destroy();
-			rabbitMqConnector = null;
-		}
-	}
-
-	private static void teardownMediaServer() {
+	private static void teardownKurentoMediaServer() {
 		if (kms != null && kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			kms.stop();
 			kms = null;
@@ -291,14 +274,27 @@ public class KurentoServicesTestHelper {
 				APP_HTTP_PORT_DEFAULT);
 	}
 
-	public static int getKmcHttpPort() {
-		return PropertiesManager.getProperty(KMC_HTTP_PORT_PROP,
-				KMC_HTTP_PORT_DEFAULT);
-	}
-
 	public static String getTestFilesPath() {
 		return PropertiesManager.getProperty(KURENTO_TESTFILES_PROP,
 				KURENTO_TESTFILES_DEFAULT);
+	}
+
+	public static Address getRabbitMqAddress() {
+		return getRabbitMqAddress(null);
+	}
+
+	public static Address getRabbitMqAddress(String prefix) {
+		return PropertiesManager.getProperty(prefix, KMS_RABBITMQ_ADDRESS_PROP,
+				KMS_RABBITMQ_ADDRESS_DEFAULT);
+	}
+
+	public static String getWsUri() {
+		return getWsUri(null);
+	}
+
+	public static String getWsUri(String prefix) {
+		return PropertiesManager.getProperty(prefix, KMS_WS_URI_PROP,
+				KMS_WS_URI_DEFAULT);
 	}
 
 	public static void setServerLogFilePath(File logFile) {

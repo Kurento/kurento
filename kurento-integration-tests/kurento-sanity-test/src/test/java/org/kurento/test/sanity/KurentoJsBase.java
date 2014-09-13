@@ -23,7 +23,6 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.kurento.client.factory.KurentoProperties;
 import org.kurento.test.base.GridBrowserKurentoClientTest;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
@@ -38,7 +37,7 @@ import freemarker.template.Template;
 
 /**
  * Base for kurento-js sanity tests.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -59,7 +58,7 @@ public class KurentoJsBase {
 	@Before
 	public void setup() {
 		driver = new FirefoxDriver();
-		serverAddress = KurentoProperties.getThriftKcsAddress().getHost();
+		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();
 
 		createHtmlPages();

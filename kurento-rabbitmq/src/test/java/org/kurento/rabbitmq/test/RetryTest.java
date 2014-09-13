@@ -2,13 +2,11 @@ package org.kurento.rabbitmq.test;
 
 import java.io.IOException;
 
-import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.kurento.client.factory.KurentoClient;
-import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
@@ -51,7 +49,7 @@ public class RetryTest {
 		log.info("Starting client");
 		client = new JsonRpcClientRabbitMq();
 
-		kurento = KurentoClientFactory.createWithJsonRpcClient(client);
+		kurento = KurentoClient.createFromJsonRpcClient(client);
 	}
 
 	@After
@@ -64,8 +62,7 @@ public class RetryTest {
 	}
 
 	@Test
-	public void simpleRetryTest() throws TException, IOException,
-			InterruptedException {
+	public void simpleRetryTest() throws IOException, InterruptedException {
 
 		server = new JsonRpcServerRabbitMq(
 				new DefaultJsonRpcHandler<JsonObject>() {
@@ -102,8 +99,7 @@ public class RetryTest {
 	}
 
 	@Test
-	public void replyBeforeNextRetry() throws TException, IOException,
-			InterruptedException {
+	public void replyBeforeNextRetry() throws IOException, InterruptedException {
 
 		server = new JsonRpcServerRabbitMq(
 				new DefaultJsonRpcHandler<JsonObject>() {

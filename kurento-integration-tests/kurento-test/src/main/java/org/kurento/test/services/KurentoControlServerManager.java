@@ -22,12 +22,16 @@ public class KurentoControlServerManager {
 
 	private ConfigurableApplicationContext context;
 
-	public KurentoControlServerManager(JsonRpcClient client, int httpPort) {
+	public KurentoControlServerManager(JsonRpcClient client, int httpPort,
+			String path) {
 
 		KurentoControlServerApp.setJsonRpcClient(client);
 
 		System.setProperty(KurentoControlServerApp.WEBSOCKET_PORT_PROPERTY,
 				Integer.toString(httpPort));
+
+		System.setProperty(KurentoControlServerApp.WEBSOCKET_PATH_PROPERTY,
+				path);
 
 		context = KurentoControlServerApp.start();
 	}

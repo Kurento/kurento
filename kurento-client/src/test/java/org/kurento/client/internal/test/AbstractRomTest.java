@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kurento.client.internal.client.RemoteObjectFactory;
 import org.kurento.client.internal.client.RemoteObjectTypedFactory;
 import org.kurento.client.internal.test.model.client.ComplexParam;
@@ -19,10 +17,12 @@ import org.kurento.client.internal.test.model.client.SampleEnum;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
 import org.kurento.jsonrpc.client.JsonRpcClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractRomTest {
 
-	private static Logger LOG = LoggerFactory.getLogger(ThriftRomTest.class);
+	private static Logger LOG = LoggerFactory.getLogger(AbstractRomTest.class);
 
 	@Test
 	public void test() throws IOException {

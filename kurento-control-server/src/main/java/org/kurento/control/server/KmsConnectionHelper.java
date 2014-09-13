@@ -5,23 +5,14 @@ import static org.kurento.commons.PropertiesManager.getProperty;
 import java.lang.reflect.Constructor;
 
 import org.kurento.jsonrpc.client.JsonRpcClient;
-import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
+import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KmsConnectionHelper {
 
-	public static final String THRIFT_CALLBACK_PORT_PROPERTY = "controlServer.netInterface.thriftCallback.port";
-	public static final String THRIFT_CALLBACK_HOST_PROPERTY = "controlServer.netInterface.thriftCallback.host";
-
-	public static final String MEDIA_SERVER_THRIFT_PORT_PROPERTY = "mediaServer.netInterface.thrift.port";
-	public static final String MEDIA_SERVER_THRIFT_HOST_PROPERTY = "mediaServer.netInterface.thrift.host";
-
-	public static final String THRIFT_CALLBACK_PORT_DEFAULT = "9900";
-	public static final String THRIFT_CALLBACK_HOST_DEFAULT = "127.0.0.1";
-
-	public static final String MEDIA_SERVER_THRIFT_PORT_DEFAULT = "9090";
-	public static final String MEDIA_SERVER_THRIFT_HOST_DEFAULT = "127.0.0.1";
+	public static final String MEDIA_SERVER_WS_URI_PROPERTY = "mediaServer.netInterface.ws.uri";
+	public static final String MEDIA_SERVER_WS_URI_DEFAULT = "ws://127.0.0.1:8888/kurento";
 
 	public static final String RABBITMQ_PORT_PROPERTY = "mediaServer.netInterface.rabbitmq.port";
 	public static final String RABBITMQ_HOST_PROPERTY = "mediaServer.netInterface.rabbitmq.host";
@@ -60,25 +51,13 @@ public class KmsConnectionHelper {
 					vhost);
 		}
 
-		String kmsThriftPort = getProperty(MEDIA_SERVER_THRIFT_PORT_PROPERTY,
-				MEDIA_SERVER_THRIFT_PORT_DEFAULT);
+		String wsUri = getProperty(MEDIA_SERVER_WS_URI_PROPERTY,
+				MEDIA_SERVER_WS_URI_DEFAULT);
 
-		String kmsThriftHost = getProperty(MEDIA_SERVER_THRIFT_PORT_PROPERTY,
-				MEDIA_SERVER_THRIFT_HOST_DEFAULT);
+		log.info("Kurento Control Server using ws to communicate wiht Kurento Media Server.");
+		log.info("KMS ws uri: " + wsUri);
 
-		String kcsThriftCallbackHost = getProperty(
-				THRIFT_CALLBACK_HOST_PROPERTY, THRIFT_CALLBACK_HOST_DEFAULT);
-		String kcsThriftCallbackPort = getProperty(
-				THRIFT_CALLBACK_PORT_PROPERTY, THRIFT_CALLBACK_PORT_DEFAULT);
-
-		log.info("Kurento Control Server using thrift to communicate wiht Kurento Media Server.");
-		log.info("KMS: " + kmsThriftHost + ":" + kmsThriftPort);
-		log.info("KCS (Callback): " + kcsThriftCallbackHost + ":"
-				+ kcsThriftCallbackPort);
-
-		return new JsonRpcClientThrift(kmsThriftHost,
-				Integer.parseInt(kmsThriftPort), kcsThriftCallbackHost,
-				Integer.parseInt(kcsThriftCallbackPort));
+		return new JsonRpcClientWebSocket(wsUri);
 
 	}
 

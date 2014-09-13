@@ -77,4 +77,9 @@ public class KurentoClient {
 		factory.destroy();
 	}
 
+	public static KurentoClient createFromJsonRpcClient(
+			JsonRpcClient jsonRpcClient) {
+		return new KurentoClient(jsonRpcClient);
+	}
+
 }

@@ -32,7 +32,6 @@ import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
-import org.kurento.thrift.jsonrpcconnector.JsonRpcClientThrift;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,16 +66,6 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 				internalEventJsonRpc(request);
 			}
 		});
-
-		if (client instanceof JsonRpcClientThrift) {
-			client.getKeepAliveManager().stop();
-			client.setKeepAliveManager(null);
-
-			keepAliveManager = new KeepAliveManager(client,
-					KeepAliveManager.Mode.PER_ID_AS_SESSION);
-
-			keepAliveManager.start();
-		}
 	}
 
 	@PreDestroy

@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.factory.KurentoClient;
-import org.kurento.client.factory.KurentoClientFactory;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.Transaction;
@@ -53,7 +51,7 @@ public class KeepAliveTest {
 
 	@Ignore
 	@Test
-	public void test() throws TException, IOException, InterruptedException {
+	public void test() throws IOException, InterruptedException {
 
 		System.setProperty(KeepAliveManager.KEEP_ALIVE_INTERVAL_TIME_PROPERTY,
 				"1000");
@@ -70,8 +68,7 @@ public class KeepAliveTest {
 		log.info("Starting client");
 		JsonRpcClientRabbitMq client = new JsonRpcClientRabbitMq();
 
-		KurentoClient kurento = KurentoClientFactory
-				.createWithJsonRpcClient(client);
+		KurentoClient kurento = KurentoClient.createFromJsonRpcClient(client);
 
 		kurento.createMediaPipeline();
 
