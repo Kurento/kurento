@@ -33,7 +33,7 @@
     </#list>
   </#if>
   <#assign import_namespace>
-    <#lt>${import_name}<#if remoteClass.extends?? && remoteClass.extends.type.abstract>/abstracts</#if><#rt>
+    <#lt>${import_name}<#if remoteClass.extends.type.abstract>/abstracts</#if><#rt>
   </#assign>
 </#if>
 <#if remoteClass.abstract>abstracts/</#if>${remoteClass.name}.js
@@ -56,17 +56,7 @@ var ChecktypeError = require('checktype').ChecktypeError;
   <#if import_name == module_name>
 var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extends.type.abstract>abstracts/</#if>${extends_name}');
   <#else>
-    <#assign import_package>
-      <#list module.imports as import>
-        <#list import.module.remoteClasses as remoteClass>
-          <#if remoteClass.name == extends_name>
-            <#lt>${import.module.code.api.js.nodeName}<#rt>
-            <#break>
-          </#if>
-        </#list>
-      </#list>
-    </#assign>
-var ${extends_name} = require('${import_package}').<#if remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
+var ${extends_name} = require('kurento-client').register.<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
   </#if>
 <#elseif remoteClass.name=="MediaObject">
 
@@ -107,7 +97,7 @@ var ${extends_name} = require('events').${extends_name};
 </#if>
  */
 function ${remoteClass.name}(id){<#if extends_name??>
-  ${extends_name}.call(this, id);
+  ${remoteClass.name}.super_.call(this, id);
 </#if>
 <#include "MediaObject_constructor.ftm" >};
 <#if extends_name??>
