@@ -1,6 +1,6 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Node.js Tutorial 2 - WebRTC magic mirror
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 This web application extends :doc:`Tutorial 1 <./tutorial-1-helloworld>` adding
 media processing to the basic `WebRTC`:term: loopback.
@@ -12,19 +12,14 @@ First of all, you should install Kurento Media Server to run this demo. Please
 visit the `installation guide <../../Installation_Guide.rst>`_ for further
 information.
 
-Be sure to have installed `Node.js`:term: in your system. In an Ubuntu machine,
-you can install it with:
+Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In
+an Ubuntu machine, you can install both as follows:
 
 .. sourcecode:: sh
 
    sudo add-apt-repository ppa:chris-lea/node.js
    sudo apt-get update
    sudo apt-get install nodejs
-
-Also be sure to have installed `Bower`:term: in your system:
-
-.. sourcecode:: sh
-
    sudo npm install -g bower
 
 To launch the application you need to clone the GitHub project where this demo
@@ -82,14 +77,14 @@ composed by the following `Media Element`:term: s:
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
 At the server-side we use a Node.js application server consuming the
-**Kurento JavaScript Client** API to control **Kurento Media Server** capabilities.
-All in all, the high level architecture of this demo is three-tier. To
-communicate these entities, two WebSockets are used. First, a WebSocket is
-created between client and application server to implement a custom signaling
-protocol. Second, another WebSocket is used to perform the communication
-between the Kurento JavaScript Client and the Kurento Media Server. This
-communication takes place using the **Kurento Protocol**. For further
-information on it, please see this
+**Kurento JavaScript Client** API to control **Kurento Media Server**
+capabilities. All in all, the high level architecture of this demo is
+three-tier. To communicate these entities, two WebSockets are used. First, a
+WebSocket is created between client and application server to implement a
+custom signaling protocol. Second, another WebSocket is used to perform the
+communication between the Kurento JavaScript Client and the Kurento Media
+Server. This communication takes place using the **Kurento Protocol**. For
+further information on it, please see this
 :doc:`page <../../mastering/kurento_protocol>` of the documentation.
 
 To communicate the client with the Node.js application server we have designed a
@@ -138,54 +133,47 @@ with Kurento Media Server and controlling its multimedia capabilities.
    //...
 
    kurento(ws_uri, function(error, _kurentoClient) {
-                if (error) {
-                        console.log("Coult not find media server at address " + ws_uri);
-                        return callback("Could not find media server at address" + ws_uri
-                                        + ". Exiting with error " + error);
-                }
+      if (error) {
+         console.log("Coult not find media server at address " + ws_uri);
+         return callback("Could not find media server at address" + ws_uri
+            + ". Exiting with error " + error);
+      }
 
-                kurentoClient = _kurentoClient;
-                callback(null, kurentoClient);
-        });
-
+      kurentoClient = _kurentoClient;
+      callback(null, kurentoClient);
+   });
 
 
 This web application follows *Single Page Application* architecture
-(`SPA`:term:) and uses a `WebSocket`:term: in the path ``/magicmirror``
-to communicate client with application server by means of requests and 
-responses.
+(`SPA`:term:) and uses a `WebSocket`:term: in the path ``/magicmirror`` to
+communicate client with application server by means of requests and responses.
 
-
-The following code snippet implements the server part of the signaling
-protocol depicted in the previous sequence diagram.
+The following code snippet implements the server part of the signaling protocol
+depicted in the previous sequence diagram.
 
 .. sourcecode:: js
 
-  ws.on('message', function(_message) {
-	var message = JSON.parse(_message);
-	switch (message.id) {
-		case 'start':
-			start(sessionId, message.sdpOffer, function(error, sdpAnswer) {
-                                if (error) {
-                                        return ws.send(JSON.stringify({
-                                                id : 'error',
-                                                message : error
-                                        }));
-                                }
-                                ws.send(JSON.stringify({
-                                        id : 'startResponse',
-                                        sdpAnswer : sdpAnswer
-                                }));
-                        });
-                        break;
+   ws.on('message', function(_message) {
+      var message = JSON.parse(_message); switch (message.id) {
 
-                case 'stop':
-                        stop(sessionId);
-                        break;
+      case 'start':
+         start(sessionId, message.sdpOffer, function(error, sdpAnswer) {
+            if (error) {
+               return ws.send(JSON.stringify({
+                  id : 'error', message : error
+               }));
+            }
+            ws.send(JSON.stringify({
+               id : 'startResponse', sdpAnswer : sdpAnswer
+            }));
+         });
+         break;
 
-		//...
-  });
+      case 'stop':
+         stop(sessionId); break;
 
+      //...
+   });
 
 In the designed protocol there are three different kinds of incoming messages to
 the *Server* : ``start`` and ``stop``. These messages are treated in the
@@ -198,53 +186,39 @@ message is sent back to the client with the SDP answer.
 
 .. sourcecode:: js
 
-function start(sessionId, sdpOffer, callback) {
+   function start(sessionId, sdpOffer, callback) {
+     getKurentoClient(function(error, kurentoClient) {
+       kurentoClient.create('MediaPipeline', function(error, pipeline) {
+         createMediaElements(pipeline, function(error, webRtcEndpoint, faceOverlayFilter) {
+           connectMediaElements(webRtcEndpoint, faceOverlayFilter, function(error) {
+             webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
+               pipelines[sessionId] = pipeline; return callback(null, sdpAnswer);
+             });
+           });
+         });
+       });
+     });
+   }
 
-  getKurentoClient(function(error, kurentoClient) {
+   function createMediaElements(pipeline, callback) {
+     pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+       pipeline.create('FaceOverlayFilter', function(error, faceOverlayFilter) {
+         faceOverlayFilter.setOverlayedImage(
+             "http://files.kurento.org/imgs/mario-wings.png",
+             -0.35, -1.2, 1.6, 1.6, function(error) {
+           return callback(null, webRtcEndpoint, faceOverlayFilter);
+         });
+       });
+     });
+   }
 
-    kurentoClient.create('MediaPipeline', function(error, pipeline) {
-
-      createMediaElements(pipeline, function(error, webRtcEndpoint, faceOverlayFilter) {
-
-        connectMediaElements(webRtcEndpoint, faceOverlayFilter, function(error) {
-
-          webRtcEndpoint.processOffer(sdpOffer, function(error, sdpAnswer) {
-
-            pipelines[sessionId] = pipeline;
-            return callback(null, sdpAnswer);
-          });
-        });
-      });
-    });
-  });
-}
-
-
-function createMediaElements(pipeline, callback) {
-
-  pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
-
-    pipeline.create('FaceOverlayFilter', function(error, faceOverlayFilter) {
-      faceOverlayFilter.setOverlayedImage(
-                                          "http://files.kurento.org/imgs/mario-wings.png",
-                                           -0.35, -1.2, 1.6, 1.6, function(error) {
-
-                                              return callback(null, webRtcEndpoint, faceOverlayFilter);
-
-                                          });
-    });
-  });
-}
-
-
-function connectMediaElements(webRtcEndpoint, faceOverlayFilter, callback) {
-
-  webRtcEndpoint.connect(faceOverlayFilter, function(error) {
-    faceOverlayFilter.connect(webRtcEndpoint, function(error) {
-      return callback(null);
-    });
-  });
-}
+   function connectMediaElements(webRtcEndpoint, faceOverlayFilter, callback) {
+     webRtcEndpoint.connect(faceOverlayFilter, function(error) {
+       faceOverlayFilter.connect(webRtcEndpoint, function(error) {
+         return callback(null);
+       });
+     });
+   }
 
 Client-Side
 ===========
@@ -320,25 +294,28 @@ Dependencies
 
 Dependencies of this demo are managed using npm. Our main dependency is the
 Kurento Client JavaScript (*kurento-client*). The relevant part of the
-`package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/package.json>` file for managing this dependency is:
+`package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/package.json>`_
+file for managing this dependency is:
 
 .. sourcecode:: json
 
-  "dependencies": {
+   "dependencies": {
      ...
      "kurento-client" : "|version|"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
-`bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/js/bower.js>` file and pay attention to the following section:
+`bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/js/bower.js>`_
+file and pay attention to the following section:
 
 .. sourcecode:: json
 
-  "dependencies": {
+   "dependencies": {
      "kurento-utils" : "|version|"
    }
 
 .. note::
 
-   We are in active development. Be sure that you have the latest version of Kurento 
-   JavaScript Client in your POM. You can find it at nom searching for ``kurento-client``.
+   We are in active development. Be sure that you have the latest version of
+   Kurento Java Client in your bower.json. You can find it at `Bower <http://bower.io/search/?q=kurento-client>`_
+   searching for ``kurento-client``.

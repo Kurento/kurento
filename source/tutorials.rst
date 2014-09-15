@@ -4,7 +4,12 @@ Kurento Tutorials
 
 This section contains tutorials showing how to use Kurento framework to build
 different types of `WebRTC`:term: and multimedia applications. Turorials come
-in three flavours:
+in three flavors:
+
+- **Java**: These show applications where clients interact with an application
+  server based on Java EE technology. The application server hold the logic
+  orchestrating the communication among the clients and controlling Kurento
+  Server capabilities for them.
 
 - **Browser JavaScript**: These show applications executing at the browser and
   communicating directly with the Kurento Media Server. In these tutorial, all
@@ -13,14 +18,8 @@ in three flavours:
 
 - **Node.js**: These show applications where clients interact with an
   application server based on Node.js technology. The application server holds
-  the logic orchestrating the communication among the clients and controling
+  the logic orchestrating the communication among the clients and controlling
   Kurento Server capabilities for them.
-
-- **Java**: These show applications where clients interact with an application
-  server based on Java EE technology. The application server hold the logic
-  orchestrating the communication among the clients and controling Kurento
-  Server capabilities for them.
-
 
 .. note::
 
