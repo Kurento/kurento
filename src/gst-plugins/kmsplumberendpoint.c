@@ -269,14 +269,20 @@ end:
   return port;
 }
 
-static void
+static gboolean
 kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
 {
   KMS_ELEMENT_LOCK (self);
 
   if (self->priv->mcc != NULL) {
     KMS_ELEMENT_UNLOCK (self);
-    return;
+    return TRUE;
+  }
+
+  if (self->priv->local_addr == NULL) {
+    GST_WARNING ("Property local address can not be NULL");
+    KMS_ELEMENT_UNLOCK (self);
+    return FALSE;
   }
 
   GST_DEBUG ("Creating multi-channel control link");
@@ -288,22 +294,42 @@ kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
       (KmsCreateStreamFunction) kms_plumber_endpoint_create_sctp_src, self,
       NULL);
 
-  kms_multi_channel_controller_start (self->priv->mcc);
-
-  /* Try to connect control link if remote address is provided */
-  if (self->priv->remote_addr != NULL) {
-    GError *err = NULL;
-
-    GST_DEBUG ("Connecting remote control link");
-
-    if (!kms_multi_channel_controller_connect (self->priv->mcc,
-            self->priv->remote_addr, self->priv->remote_port, &err)) {
-      GST_DEBUG_OBJECT (self, "%s", err->message);
-      g_error_free (err);
-    }
+  if (!kms_multi_channel_controller_start (self->priv->mcc)) {
+    return FALSE;
   }
 
   KMS_ELEMENT_UNLOCK (self);
+
+  return TRUE;
+}
+
+static gboolean
+kms_plumber_endpoint_connect_mcc (KmsPlumberEndpoint * self, gchar * host,
+    guint port)
+{
+  GError *err = NULL;
+  gboolean ret;
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (host == NULL) {
+    KMS_ELEMENT_UNLOCK (self);
+    return FALSE;
+  }
+
+  GST_DEBUG ("Connecting remote control link to %s:%d", host, port);
+
+  if (!kms_multi_channel_controller_connect (self->priv->mcc, host, port, &err)) {
+    GST_DEBUG_OBJECT (self, "%s", err->message);
+    g_error_free (err);
+    ret = FALSE;
+  } else {
+    ret = TRUE;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  return ret;
 }
 
 static void
@@ -313,7 +339,10 @@ kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
   GError *err = NULL;
   gint port;
 
-  kms_plumber_endpoint_create_mcc (self);
+  if (self->priv->mcc == NULL) {
+    GST_WARNING_OBJECT (self, "Control channel is not connected");
+    return;
+  }
 
   port = kms_multi_channel_controller_create_media_stream (self->priv->mcc,
       type, 0, &err);
@@ -370,54 +399,35 @@ kms_plumber_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
   GST_INFO ("TODO: Implement this");
 }
 
-static GstStateChangeReturn
-kms_plumber_endpoint_change_state (GstElement * element,
-    GstStateChange transition)
-{
-  GstStateChangeReturn ret;
-  KmsPlumberEndpoint *self = KMS_PLUMBER_ENDPOINT (element);
-
-  switch (transition) {
-    case GST_STATE_CHANGE_NULL_TO_READY:
-      kms_plumber_endpoint_create_mcc (self);
-      break;
-    default:
-      break;
-  }
-
-  ret = GST_ELEMENT_CLASS (parent_class)->change_state (element, transition);
-
-  switch (transition) {
-    case GST_STATE_CHANGE_READY_TO_NULL:{
-      kms_multi_channel_controller_stop (self->priv->mcc);
-      kms_multi_channel_controller_unref (self->priv->mcc);
-      break;
-    }
-    default:
-      break;
-  }
-
-  return ret;
-}
-
 static gboolean
 kms_plumber_endpoint_accept (KmsPlumberEndpoint * self)
 {
-  /* TODO: Implement this */
-  return FALSE;
+  GST_DEBUG ("Accept multi channel control link.");
+
+  return kms_plumber_endpoint_create_mcc (self);
 }
 
 static gboolean
-kms_plumber_endpoint_connect (KmsPlumberEndpoint * self, gchar *host, guint port)
+kms_plumber_endpoint_connect (KmsPlumberEndpoint * self, gchar * host,
+    guint port)
 {
-  /* TODO: Implement this */
-  return FALSE;
+  GST_DEBUG ("Connect multi channel control link. %s:%d", host, port);
+
+  KMS_ELEMENT_LOCK (self);
+
+  if (self->priv->mcc == NULL) {
+    KMS_ELEMENT_UNLOCK (self);
+    return FALSE;
+  }
+
+  KMS_ELEMENT_UNLOCK (self);
+
+  return kms_plumber_endpoint_connect_mcc (self, host, port);
 }
 
 static void
 kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
 {
-  GstElementClass *gstelement_class = GST_ELEMENT_CLASS (klass);
   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
   KmsElementClass *kms_element_class = KMS_ELEMENT_CLASS (klass);
 
@@ -478,9 +488,6 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
       GST_DEBUG_FUNCPTR (kms_plumber_endpoint_audio_valve_removed);
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_plumber_endpoint_video_valve_removed);
-
-  gstelement_class->change_state =
-      GST_DEBUG_FUNCPTR (kms_plumber_endpoint_change_state);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsPlumberEndpointPrivate));
