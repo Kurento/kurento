@@ -1,8 +1,8 @@
 .. basic_media_concepts
 
-%%%%%%%%%%%%%%%%%%%%
-Basic media concepts
-%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%
+Media Concepts
+%%%%%%%%%%%%%%
 
 Streaming
 =========

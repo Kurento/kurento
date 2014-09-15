@@ -10,13 +10,13 @@ Kurento Architecture
 
    Kurento Architecture <mastering/kurento_architecture>
 
-Kurento Media Elements
-======================
+Kurento API Reference
+=====================
 
 .. toctree::
    :maxdepth: 1
 
-   Kurento Media Elements <mastering/kurento_media_elements>
+   Kurento API Reference <mastering/kurento_API>
 
 Kurento Protocol
 ================
@@ -34,27 +34,35 @@ Advanced Installation Guide
 
    Advanced Installation Guide <mastering/advanced_installation_guide>
 
-Kurento API reference
-=====================
+Media Concepts
+==============
 
 .. toctree::
    :maxdepth: 1
 
-   Kurento API reference <mastering/kurento_API>
+   Media Concepts <mastering/media_concepts>
 
-Developing Kurento Modules
-==========================
-
-.. toctree::
-   :maxdepth: 1
-
-   Developing Kurento Modules <mastering/kurento_server>
-
-
-Getting Nightly Versions
-========================
+Kurento Server
+==============
 
 .. toctree::
    :maxdepth: 1
 
-   Getting nightly versions <mastering/kurento_development>
+   Kurento Server <mastering/kurento_server>
+
+Kurento Development
+===================
+
+.. toctree::
+   :maxdepth: 1
+
+   Kurento Development <mastering/kurento_development>
+
+Kurento Modules
+===============
+
+.. toctree::
+   :maxdepth: 1
+
+   Kurento Modules <mastering/kurento_modules>
+

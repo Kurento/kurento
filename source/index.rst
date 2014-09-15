@@ -10,7 +10,6 @@ Table of Contents
    installation_guide.rst
    tutorials.rst
    mastering_kurento.rst
-   contribute.rst
    faq.rst
    glossary.rst
 
