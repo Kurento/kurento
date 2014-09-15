@@ -163,7 +163,7 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		} catch (Exception e) {
 			throw new KurentoControlServerTransportException(
 					"Exception while executing a command"
-							+ " in thrift interface of the MediaServer", e);
+							+ " in Kurento Media Server", e);
 		}
 	}
 

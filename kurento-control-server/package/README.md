@@ -2,10 +2,8 @@ Kurento Control Server
 ======================
 
 The Kurento Control Server (KCS) is a Kurento Server component depicted to allow
-clients to connect to Kurento Media Server (KMS) through web sockets.
-Kurento Media Server supports two transport technologies: Thrift or RabbitMQ.
-This component made necessary conversions between websockets and Thrift or
-RabbitMQ.
+clients to connect to a distributed Kurento Media Server (KMS) through RabbitMQ
+message broker.
 
 Installation instructions
 -------------------------
@@ -13,11 +11,6 @@ Installation instructions
 KCS is implemented with Java 7 technology and Java 7 is the only
 prerequisite. The KCS is provided as a .zip containing a Java executable archive
 (.jar).
-
-KCS can be configured to connect to KMS with Thrift or
-by means of RabbitMQ. Thrift is the default choice because it is easier to get
-the whole system working. Please refer to Kurento Media Server documentation
-for advantages and disadvantages in using Thrift vs RabbitMQ.
 
 Assuming that the command 'java' points to a Java 7 JRE executable, KCS
 can be executed as:
@@ -32,34 +25,37 @@ This file looks like:
     {
       "mediaServer":{
         "net":{
-          "thrift":{
-            "port":9090
+          "rabbitmq":{
+            "host":"127.0.0.1",
+            "port":5672,
+            "username":"guest",
+            "pass":"guest",
+            "vhost" : "/"
           }
-	      }
-	    },
-	    "controlServer":{
-	      "net": {
-	        "websocket" : {
-	          "port": 8888,
-	          "path": "kurento"
-	        },
-	        "thriftCallback": {
-	          "port": 9900
+        }
+      },
+      "controlServer":{
+        "net": {
+          "websocket" : {
+            "port": 8888,
+            "path": "kurento"
           }
         }
       }
     }
 
 Also, the configuration keys can be overridden with Java system properties. For
-example, if you want to override 'thriftCallback' 'port', you have to execute
+example, if you want to override 'controlServer.net.websocket.port', you have to execute
 the following command:
 
-    java -DcontrolServer.net.thriftCallback.port=7777 -jar kurento-control-server.jar
+    java -DcontrolServer.net.websocket.port=8888 -jar kurento-control-server.jar
 
-Generical configuration options
--------------------------------
+Configuration options
+----
 
 The meaning of general configuration properties are:
+
+**WebSocket interface**
 
 * **controlServer.net.websocket.port:** The http/websocket port of KCS. This port
   will be used for clients to connect to Kurento Server. If not specified, the
@@ -93,30 +89,7 @@ The meaning of general configuration properties are:
 * **controlServer.keystore.pass:** The keystore file password. This password is
   specified interactively when executing any of previous commands.
 
-
-Thrift transport
-----------------
-
-With Thrift transport KCS has to be installed in a node with full network
-connectivity with the KMS. That is, KMS
-has to be installed in a node with a network address and port reachable from
-KCS and KCS has to be installed in a node with a network address and
-port reachable from the KMS. For this restrictions, it is more
-easy to install KCS and KMS in the same host.
-
-* **mediaServer.net.thrift.host:** The host of KMS. If not specified, the host will
-  be 'localhost'.
-* **mediaServer.net.thrift.port:** The port of thrift interface of KMS. If not
-  specified, the port will be 9090.
-* **controlServer.net.thriftCallback.host:** The host name that KMS will use
-  to connect KCS. If not specified, the host name will be 'localhost'.
-* **controlServer.net.thriftCallback.port:** The port that KCS will open to receive
-  thrift callbacks from KMS. If not specified, 9900 will be used.
-
-RabbitMQ transport
-------------------
-
-The meaning of configuration properties are:
+**RabbitMQ interface**
 
 * **mediaServer.net.rabbitmq.host:** Specifies the host name of the RabbitMQ broker.
   The default value is 'localhost'.
@@ -128,31 +101,6 @@ The meaning of configuration properties are:
   RabbitMQ broker. The default value is 'guest'.
 * **mediaServer.net.rabbitmq.vhost:** Specifies the virtual host used in RabbitMQ
   broker. The default value is '/'.
-
-With this properties, the configuration file will look like:
-
-    {
-      "mediaServer":{
-        "net":{
-          "rabbitmq":{
-            "host":"127.0.0.1",
-            "port":5672,
-            "username":"guest",
-            "pass":"guest",
-            "vhost" : "/"
-          }
-        }
-      },
-      "controlServer":{
-        "net": {
-          "websocket" : {
-            "port": 8888,
-            "path": "kurento"
-          }
-        }
-      }
-    }
-
 
 Configuration file
 ------------------
