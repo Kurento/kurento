@@ -46,10 +46,15 @@ class PlumberEndpointImpl : public EndpointImpl, public virtual PlumberEndpoint
 public:
 
   PlumberEndpointImpl (const boost::property_tree::ptree &config,
-                       std::shared_ptr<MediaPipeline> mediaPipeline, const std::string &localAddres,
-                       int localPort, const std::string &remoteAddres, int remotePort);
+                       std::shared_ptr<MediaPipeline> mediaPipeline);
 
   virtual ~PlumberEndpointImpl () {};
+
+  bool connect (const std::string &address, int port);
+
+  virtual std::string getAddress ();
+
+  virtual int getPort ();
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType,
@@ -61,6 +66,9 @@ public:
   virtual void Serialize (JsonSerializer &serializer);
 
 private:
+
+  std::string address;
+  uint port;
 
   class StaticConstructor
   {

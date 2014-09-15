@@ -24,32 +24,74 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "KurentoPlumberEndpointImpl"
 
+#define DEFAULT_PLUMBER_ADDRESS "localhost"
+
 #define FACTORY_NAME "plumberendpoint"
 
 namespace kurento
 {
 
 PlumberEndpointImpl::PlumberEndpointImpl (const boost::property_tree::ptree
-    &config, std::shared_ptr<MediaPipeline> mediaPipeline,
-    const std::string &localAddres, int localPort, const std::string &remoteAddres,
-    int remotePort)  : EndpointImpl (config,
-                                       std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
+    &config, std::shared_ptr<MediaPipeline> mediaPipeline)  : EndpointImpl (config,
+          std::dynamic_pointer_cast<MediaObjectImpl> (mediaPipeline), FACTORY_NAME)
 {
   GstElement *element = getGstreamerElement();
+  bool success;
 
-  g_object_set (G_OBJECT (element), "local-address", localAddres.c_str(),
-                "local-port", localPort, "remote-address", remoteAddres.c_str(),
-                "remote-port", remotePort, NULL);
+  /* set properties */
+  try {
+    address = config.get<std::string> ("modules.PlumberEndpoint.bindAddress");
+  } catch (boost::property_tree::ptree_error &e) {
+    GST_DEBUG ("Setting default address %s to %" GST_PTR_FORMAT,
+               DEFAULT_PLUMBER_ADDRESS, element);
+    address = DEFAULT_PLUMBER_ADDRESS;
+  }
+
+  g_object_set (G_OBJECT (element), "local-address", address.c_str(),
+                "local-port", 0, NULL);
+  g_signal_emit_by_name (G_OBJECT (element), "accept", &success);
+
+  if (!success) {
+    throw KurentoException (CONNECT_ERROR, "PlumberEndpointImpl binding error");
+  }
+
+  try {
+    address = config.get<std::string> ("modules.PlumberEndpoint.announcedAddress");
+  } catch (boost::property_tree::ptree_error &e) {
+    GST_DEBUG ("Announced address is not provided. Using binding address %s",
+               address.c_str() );
+  }
+
+  /* Get bound port */
+  g_object_get (G_OBJECT (element), "local-port", &port, NULL);
+}
+
+std::string PlumberEndpointImpl::getAddress ()
+{
+  return address;
+}
+
+int PlumberEndpointImpl::getPort ()
+{
+  return port;
+}
+
+bool PlumberEndpointImpl::connect (const std::string &address, int port)
+{
+  GstElement *element = getGstreamerElement();
+  bool success;
+
+  g_signal_emit_by_name (G_OBJECT (element), "connect", address.c_str(), port,
+                         &success);
+
+  return success;
 }
 
 MediaObjectImpl *
 PlumberEndpointImplFactory::createObject (const boost::property_tree::ptree
-    &config, std::shared_ptr<MediaPipeline> mediaPipeline,
-    const std::string &localAddres, int localPort, const std::string &remoteAddres,
-    int remotePort) const
+    &config, std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
-  return new PlumberEndpointImpl (config, mediaPipeline, localAddres, localPort,
-                                  remoteAddres, remotePort);
+  return new PlumberEndpointImpl (config, mediaPipeline);
 }
 
 PlumberEndpointImpl::StaticConstructor PlumberEndpointImpl::staticConstructor;
