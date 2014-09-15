@@ -52,7 +52,7 @@ module.exports = function(grunt)
           'node_modules/kurento-client-elements/lib/**/*.js',
           'node_modules/kurento-client-filters/lib/**/*.js',
           'test/*.js'
-        ], 
+        ],
         dest: 'doc/jsdoc'
       }
     },
