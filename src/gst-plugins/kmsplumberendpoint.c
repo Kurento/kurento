@@ -20,6 +20,7 @@
 #include "commons/kmsutils.h"
 #include "kmsplumberendpoint.h"
 #include "kmsmultichannelcontroller.h"
+#include "kms-elements-marshal.h"
 
 #define parent_class kms_plumber_endpoint_parent_class
 
@@ -77,6 +78,16 @@ enum
   PROP_REMOTE_PORT,
   N_PROPERTIES
 };
+
+enum
+{
+  /* actions */
+  ACTION_ACCEPT,
+  ACTION_CONNECT,
+  LAST_SIGNAL
+};
+
+static guint plumberEndPoint_signals[LAST_SIGNAL] = { 0 };
 
 /* class initialization */
 
@@ -389,6 +400,20 @@ kms_plumber_endpoint_change_state (GstElement * element,
   return ret;
 }
 
+static gboolean
+kms_plumber_endpoint_accept (KmsPlumberEndpoint * self)
+{
+  /* TODO: Implement this */
+  return FALSE;
+}
+
+static gboolean
+kms_plumber_endpoint_connect (KmsPlumberEndpoint * self, gchar *host, guint port)
+{
+  /* TODO: Implement this */
+  return FALSE;
+}
+
 static void
 kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
 {
@@ -407,28 +432,43 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
   g_object_class_install_property (gobject_class, PROP_LOCAL_ADDR,
       g_param_spec_string ("local-address", "Local Address",
           "The local address to bind the socket to",
-          SCTP_DEFAULT_ADDR,
-          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
-          G_PARAM_STATIC_STRINGS));
+          "localhost",
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_REMOTE_ADDR,
       g_param_spec_string ("remote-address", "Remote Address",
           "The remote address to connect the socket to",
-          NULL, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
+          NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
           G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_LOCAL_PORT,
       g_param_spec_int ("local-port", "Local-port",
           "The port to listen to (0=random available port)", 0, G_MAXUINT16,
           SCTP_DEFAULT_LOCAL_PORT,
-          G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
-          G_PARAM_STATIC_STRINGS));
+          G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_REMOTE_PORT,
       g_param_spec_int ("remote-port", "Remote port",
           "The port to send the packets to", 0, G_MAXUINT16,
-          0, G_PARAM_READWRITE | GST_PARAM_MUTABLE_READY |
-          G_PARAM_STATIC_STRINGS));
+          0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+
+  /* set actions */
+  plumberEndPoint_signals[ACTION_ACCEPT] =
+      g_signal_new ("accept", G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsPlumberEndpointClass, accept),
+      NULL, NULL, __kms_elements_marshal_BOOLEAN__VOID, G_TYPE_BOOLEAN,
+      0, G_TYPE_NONE);
+
+  plumberEndPoint_signals[ACTION_CONNECT] =
+      g_signal_new ("connect", G_TYPE_FROM_CLASS (klass),
+      G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+      G_STRUCT_OFFSET (KmsPlumberEndpointClass, connect),
+      NULL, NULL, __kms_elements_marshal_BOOLEAN__STRING_UINT, G_TYPE_BOOLEAN,
+      2, G_TYPE_STRING, G_TYPE_UINT);
+
+  klass->accept = kms_plumber_endpoint_accept;
+  klass->connect = kms_plumber_endpoint_connect;
 
   kms_element_class->audio_valve_added =
       GST_DEBUG_FUNCPTR (kms_plumber_endpoint_audio_valve_added);

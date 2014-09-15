@@ -61,6 +61,10 @@ struct _KmsPlumberEndpoint
 struct _KmsPlumberEndpointClass
 {
   KmsElementClass parent_class;
+
+  /* actions */
+  gboolean (*accept) (KmsPlumberEndpoint * self);
+  gboolean (*connect) (KmsPlumberEndpoint * self, gchar *host, guint port);
 };
 
 GType kms_plumber_endpoint_get_type (void);
