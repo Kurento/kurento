@@ -56,7 +56,23 @@ var ChecktypeError = require('checktype').ChecktypeError;
   <#if import_name == module_name>
 var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extends.type.abstract>abstracts/</#if>${extends_name}');
   <#else>
+    <#assign import_package>
+      <#list module.imports as import>
+        <#list import.module.remoteClasses as remoteClass>
+          <#if remoteClass.name == extends_name>
+            <#lt>${import.module.code.api.js.nodeName}<#rt>
+            <#break>
+          </#if>
+        </#list>
+      </#list>
+    </#assign>
+    <#if import_package=='kurento-client-core'
+     || import_package=='kurento-client-elements'
+     || import_package=='kurento-client-filters'>
+var ${extends_name} = require('${import_package}').<#if remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
+    <#else>
 var ${extends_name} = require('kurento-client').register.<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
+    </#if>
   </#if>
 <#elseif remoteClass.name=="MediaObject">
 
