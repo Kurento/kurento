@@ -71,9 +71,8 @@ module.exports = function(grunt)
         src:  '<%= pkg.main %>',
         dest: DIST_DIR+'/<%= pkg.name %>.js',
 
-        options:
-        {
-          bundleOptions: {
+        options: {
+          browserifyOptions: {
             standalone: '<%= pkg.name %>'
           }
         }
@@ -86,7 +85,9 @@ module.exports = function(grunt)
 
         options:
         {
-          debug: true,
+          browserifyOptions: {
+            debug: true
+          },
           plugin: [
             ['minifyify',
              {
@@ -104,8 +105,8 @@ module.exports = function(grunt)
 
         options:
         {
-          debug: true,
-          bundleOptions: {
+          browserifyOptions: {
+            debug: true,
             standalone: '<%= pkg.name %>'
           },
           plugin: [
