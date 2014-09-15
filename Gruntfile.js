@@ -47,10 +47,10 @@ module.exports = function(grunt)
       {
         src: [
           'README.md',
-          'index.js',
-          'node_modules/kws-media-api-core/lib/**/*.js',
-          'node_modules/kws-media-api-elements/lib/**/*.js',
-          'node_modules/kws-media-api-filters/lib/**/*.js',
+          'lib/**/*.js',
+          'node_modules/kurento-client-core/lib/**/*.js',
+          'node_modules/kurento-client-elements/lib/**/*.js',
+          'node_modules/kurento-client-filters/lib/**/*.js',
           'test/*.js'
         ], 
         dest: 'doc/jsdoc'
