@@ -63,7 +63,7 @@ PlumberEndpointImpl::PlumberEndpointImpl (const boost::property_tree::ptree
   }
 
   /* Get bound port */
-  g_object_get (G_OBJECT (element), "local-port", &port, NULL);
+  g_object_get (G_OBJECT (element), "bound-port", &port, NULL);
 }
 
 std::string PlumberEndpointImpl::getAddress ()

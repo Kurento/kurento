@@ -74,8 +74,7 @@ enum
   PROP_0,
   PROP_LOCAL_ADDR,
   PROP_LOCAL_PORT,
-  PROP_REMOTE_ADDR,
-  PROP_REMOTE_PORT,
+  PROP_BOUND_PORT,
   N_PROPERTIES
 };
 
@@ -115,18 +114,6 @@ kms_plumber_endpoint_set_property (GObject * object, guint property_id,
     case PROP_LOCAL_PORT:
       plumberendpoint->priv->local_port = g_value_get_int (value);
       break;
-    case PROP_REMOTE_ADDR:
-      if (!g_value_get_string (value)) {
-        GST_WARNING ("remote-address property cannot be NULL");
-        break;
-      }
-
-      g_free (plumberendpoint->priv->remote_addr);
-      plumberendpoint->priv->remote_addr = g_value_dup_string (value);
-      break;
-    case PROP_REMOTE_PORT:
-      plumberendpoint->priv->remote_port = g_value_get_int (value);
-      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -146,12 +133,20 @@ kms_plumber_endpoint_get_property (GObject * object, guint property_id,
     case PROP_LOCAL_PORT:
       g_value_set_int (value, plumberendpoint->priv->local_port);
       break;
-    case PROP_REMOTE_ADDR:
-      g_value_set_string (value, plumberendpoint->priv->remote_addr);
+    case PROP_BOUND_PORT:{
+      gint port;
+
+      if (plumberendpoint->priv->mcc == NULL) {
+        port = -1;
+      } else {
+        port =
+            kms_multi_channel_controller_get_bound_port (plumberendpoint->priv->
+            mcc);
+      }
+
+      g_value_set_int (value, port);
       break;
-    case PROP_REMOTE_PORT:
-      g_value_set_int (value, plumberendpoint->priv->remote_port);
-      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
       break;
@@ -445,22 +440,16 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
           "localhost",
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_property (gobject_class, PROP_REMOTE_ADDR,
-      g_param_spec_string ("remote-address", "Remote Address",
-          "The remote address to connect the socket to",
-          NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT |
-          G_PARAM_STATIC_STRINGS));
-
   g_object_class_install_property (gobject_class, PROP_LOCAL_PORT,
       g_param_spec_int ("local-port", "Local-port",
           "The port to listen to (0=random available port)", 0, G_MAXUINT16,
           SCTP_DEFAULT_LOCAL_PORT,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_property (gobject_class, PROP_REMOTE_PORT,
-      g_param_spec_int ("remote-port", "Remote port",
-          "The port to send the packets to", 0, G_MAXUINT16,
-          0, G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_BOUND_PORT,
+      g_param_spec_int ("bound-port", "Bound port",
+          "The port where this endpoint is attached", 0, G_MAXUINT16,
+          0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   /* set actions */
   plumberEndPoint_signals[ACTION_ACCEPT] =

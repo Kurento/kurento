@@ -65,6 +65,11 @@ struct _KmsMultiChannelController
   gchar *local_host;
   guint16 local_port;
 
+  GCond bound_cond;
+  GMutex bound_mutex;
+  gboolean bound;
+  guint16 bound_port;
+
   GCancellable *cancellable;
 
   GstTask *task;
@@ -172,6 +177,9 @@ _kms_multi_channel_controller_free (KmsMultiChannelController * mcc)
   g_mutex_clear (&mcc->mutex);
   g_cond_clear (&mcc->cond);
 
+  g_mutex_clear (&mcc->bound_mutex);
+  g_cond_clear (&mcc->bound_cond);
+
   g_clear_object (&mcc->cancellable);
 
   g_slice_free1 (sizeof (KmsMultiChannelController), mcc);
@@ -271,6 +279,9 @@ kms_multi_channel_controller_new (const gchar * host, guint16 port)
   g_mutex_init (&mcc->mutex);
   g_cond_init (&mcc->cond);
 
+  g_mutex_init (&mcc->bound_mutex);
+  g_cond_init (&mcc->bound_cond);
+
   mcc->local_host = g_strdup (host);
   mcc->local_port = port;
 
@@ -298,6 +309,12 @@ kms_multi_channel_controller_accept (KmsMultiChannelController * mcc)
 
   if (kms_sctp_connection_bind (conn, mcc->cancellable, &err) != KMS_SCTP_OK)
     goto fail;
+
+  g_mutex_lock (&mcc->bound_mutex);
+  mcc->bound = TRUE;
+  mcc->bound_port = kms_sctp_connection_get_bound_port (conn);
+  g_cond_signal (&mcc->bound_cond);
+  g_mutex_unlock (&mcc->bound_mutex);
 
   /* wait on server socket for connections */
   result = kms_sctp_connection_accept (conn, mcc->cancellable, &client, &err);
@@ -891,6 +908,35 @@ void kms_multi_channel_controller_set_create_stream_callback
   if (destroy != NULL) {
     destroy (data);
   }
+}
+
+int
+kms_multi_channel_controller_get_bound_port (KmsMultiChannelController * mcc)
+{
+  gint64 end_time;
+  gint port;
+
+  g_return_val_if_fail (mcc != NULL, -1);
+
+  g_mutex_lock (&mcc->bound_mutex);
+
+  end_time = g_get_monotonic_time () + 2 * G_TIME_SPAN_SECOND;
+
+  while (!mcc->bound) {
+    if (!g_cond_wait_until (&mcc->bound_cond, &mcc->bound_mutex, end_time)) {
+      /* Error */
+      port = -1;
+      goto end;
+    }
+  }
+
+  port = mcc->bound_port;
+
+end:
+  g_cond_signal (&mcc->bound_cond);
+  g_mutex_unlock (&mcc->bound_mutex);
+
+  return port;
 }
 
 static void _priv_kms_multi_channel_controller_initialize (void)
