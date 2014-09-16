@@ -19,7 +19,7 @@ var app = express();
 var path = require('path');
 var wsm = require('ws');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 8080);
 
 /*
  * Definition of constants
@@ -83,20 +83,20 @@ wss.on('connection', function(ws) {
 		switch (message.id) {
 		case 'master':
 			startMaster(sessionId, message.sdpOffer,
-					function(error, sdpAnswer) {
-						if (error) {
-							return ws.send(JSON.stringify({
-								id : 'masterResponse',
-								response : 'rejected',
-								message : error
-							}));
-						}
-						ws.send(JSON.stringify({
+				function(error, sdpAnswer) {
+					if (error) {
+						return ws.send(JSON.stringify({
 							id : 'masterResponse',
-							response : 'accepted',
-							sdpAnswer : sdpAnswer
+							response : 'rejected',
+							message : error
 						}));
-					});
+					}
+					ws.send(JSON.stringify({
+						id : 'masterResponse',
+						response : 'accepted',
+						sdpAnswer : sdpAnswer
+					}));
+				});
 			break;
 
 		case 'viewer':
@@ -115,7 +115,6 @@ wss.on('connection', function(ws) {
 					response : 'accepted',
 					sdpAnswer : sdpAnswer
 				}));
-
 			});
 			break;
 
@@ -130,7 +129,6 @@ wss.on('connection', function(ws) {
 			}));
 			break;
 		}
-
 	});
 });
 
@@ -180,72 +178,42 @@ function startMaster(id, sdp, callback) {
 			return callback('Request was cancelled by the user. You will not be sending any longer');
 		}
 
-		pipeline = kurentoClient
-				.create(
-						'MediaPipeline',
-						function(error, _pipeline) {
-							if (error) {
-								return callback(error);
-							}
+		pipeline = kurentoClient.create('MediaPipeline', function(error, _pipeline) {
+			if (error) {
+				return callback(error);
+			}
 
-							if (master === null) {
-								return callback('Request was cancelled by the user. You will not be sending any longer');
-							}
+			if (master === null) {
+				return callback('Request was cancelled by the user. You will not be sending any longer');
+			}
 
-							pipeline = _pipeline;
+			pipeline = _pipeline;
+			pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+				if (error) {
+					stop(id);
+					return callback(error);
+				}
 
-							pipeline
-									.create(
-											'WebRtcEndpoint',
-											function(error, webRtcEndpoint) {
-												if (error) {
-													stop(id);
-													return callback(error);
-												}
+				if (master === null) {
+					return callback('Request was cancelled by the user. You will not be sending any longer');
+				}
 
-												if (master === null) {
-													return callback('Request was cancelled by the user. You will not be sending any longer');
-												}
+				master.webRtcEndpoint = webRtcEndpoint;
 
-												master.webRtcEndpoint = webRtcEndpoint;
+				webRtcEndpoint.processOffer(sdp, function(error, sdpAnswer) {
+					if (error) {
+						stop(id)
+						return callback(error);
+					}
 
-												webRtcEndpoint
-														.processOffer(
-																sdp,
-																function(error,
-																		sdpAnswer) {
-																	if (error) {
-																		stop(id)
-																		return callback(error);
-																	}
+					if (master === null) {
+						return callback('Request was cancelled by the user. You will not be sending any longer');
+					}
 
-																	if (master === null) {
-																		return callback('Request was cancelled by the user. You will not be sending any longer');
-																	}
-
-																	webRtcEndpoint
-																			.connect(
-																					webRtcEndpoint,
-																					function(
-																							error) {
-																						if (error) {
-																							stop(id);
-																							return callback(error);
-																						}
-
-																						if (master === null) {
-																							return callback('Request was cancelled by the user. You will not be sending any longer');
-																						}
-
-																						callback(
-																								null,
-																								sdpAnswer);
-																					});
-																});
-											});
-
-						});
-
+					callback( null, sdpAnswer);
+				});
+			});
+		});
 	});
 }
 
@@ -258,62 +226,49 @@ function startViewer(id, sdp, ws, callback) {
 		return callback("You are already viewing in this session. Use a different browser to add additional viewers.")
 	}
 
-	pipeline
-			.create(
-					'WebRtcEndpoint',
-					function(error, webRtcEndpoint) {
-						if (error) {
-							return callback(error);
-						}
+	pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint) {
+		if (error) {
+			return callback(error);
+		}
 
-						if (master === null) {
-							stop(id);
-							return callback("No active sender now. Become sender or . Try again later ...");
-						}
+		if (master === null) {
+			stop(id);
+			return callback("No active sender now. Become sender or . Try again later ...");
+		}
 
-						webRtcEndpoint
-								.processOffer(
-										sdp,
-										function(error, sdpAnswer) {
-											if (error) {
-												stop(id);
-												return callback(error);
-											}
+		webRtcEndpoint.processOffer(sdp, function(error, sdpAnswer) {
+			if (error) {
+				stop(id);
+				return callback(error);
+			}
 
-											if (master === null) {
-												stop(id);
-												return callback("No active sender now. Become sender or . Try again later ...");
-											}
+			if (master === null) {
+				stop(id);
+				return callback("No active sender now. Become sender or . Try again later ...");
+			}
 
-											master.webRtcEndpoint
-													.connect(
-															webRtcEndpoint,
-															function(error) {
-																if (error) {
-																	stop(id);
-																	return callback(
-																			error,
-																			getState4Client());
-																}
+			master.webRtcEndpoint.connect(webRtcEndpoint, function(error) {
+				if (error) {
+					stop(id);
+					return callback(error, getState4Client());
+				}
 
-																if (master === null) {
-																	stop(id);
-																	return callback("No active sender now. Become sender or . Try again later ...");
-																}
+				if (master === null) {
+					stop(id);
+					return callback("No active sender now. Become sender or . Try again later ...");
+				}
 
-																var viewer = {
-																	id : id,
-																	ws : ws,
-																	webRtcEndpoint : webRtcEndpoint
-																};
-																viewers[viewer.id] = viewer;
+				var viewer = {
+					id : id,
+					ws : ws,
+					webRtcEndpoint : webRtcEndpoint
+				};
+				viewers[viewer.id] = viewer;
 
-																return callback(
-																		null,
-																		sdpAnswer);
-															});
-										});
-					});
+				return callback(null, sdpAnswer);
+			});
+		});
+	});
 }
 
 function removeReceiver(id) {

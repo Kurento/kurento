@@ -14,15 +14,12 @@
  */
 
 var ws = new WebSocket('ws://' + location.host + '/call');
-var videoInput;
-var videoOutput;
+var video;
 var webRtcPeer;
 
 window.onload = function() {
 	console = new Console('console', console);
-	dragDrop.initElement('videoSmall');
-	videoInput = document.getElementById('videoInput');
-	videoOutput = document.getElementById('videoOutput');
+	video = document.getElementById('video');
 }
 
 window.onbeforeunload = function() {
@@ -70,28 +67,23 @@ function viewerResponse(message) {
 
 function master() {
 	if (!webRtcPeer) {
-		showSpinner(videoInput, videoOutput);
+		showSpinner(video);
 
-		kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-				function(offerSdp, wp) {
-					webRtcPeer = wp;
-					var message = {
-						id : 'master',
-						sdpOffer : offerSdp
-					};
-					sendMessage(message);
-				});
+		webRtcPeer = kurentoUtils.WebRtcPeer.startSendOnly(video, function(offerSdp) {
+			var message = {
+				id : 'master',
+				sdpOffer : offerSdp
+			};
+			sendMessage(message);
+		});
 	}
 }
 
 function viewer() {
 	if (!webRtcPeer) {
-		document.getElementById('videoSmall').style.display = 'none';
-		showSpinner(videoOutput);
+		showSpinner(video);
 
-		kurentoUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp,
-				wp) {
-			webRtcPeer = wp;
+		webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(video, function(offerSdp) {
 			var message = {
 				id : 'viewer',
 				sdpOffer : offerSdp
@@ -114,10 +106,7 @@ function dispose() {
 		webRtcPeer.dispose();
 		webRtcPeer = null;
 	}
-	videoInput.src = '';
-	videoOutput.src = '';
-	hideSpinner(videoInput, videoOutput);
-	document.getElementById('videoSmall').style.display = 'block';
+	hideSpinner(video);
 }
 
 function sendMessage(message) {
@@ -135,11 +124,15 @@ function showSpinner() {
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].src = '';
 		arguments[i].poster = './img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
 
+/**
+ * Lightbox utility (to display media pipeline image in a modal dialog)
+ */
 $(document).delegate('*[data-toggle="lightbox"]', 'click', function(event) {
 	event.preventDefault();
 	$(this).ekkoLightbox();

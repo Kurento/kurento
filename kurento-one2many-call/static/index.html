@@ -29,7 +29,6 @@
 
 <script src="./bower_components/kurento-utils/js/kurento-utils.js"></script>
 <script src="./js/console.js"></script>
-<script src="./js/dragDrop.js"></script>
 <script src="./js/index.js"></script>
 <title>Kurento Tutorial 3: Video Call 1 to N with WebRTC</title>
 </head>
@@ -46,7 +45,7 @@
 					id="bs-example-navbar-collapse-1">
 					<ul class="nav navbar-nav navbar-right">
 						<li><a
-							href="https://github.com/Kurento/kurento-tutorial-node/tree/develop/kurento-one2many-call"><span
+							href="https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-one2many-call"><span
 								class="glyphicon glyphicon-file"></span> Source Code</a></li>
 					</ul>
 				</div>
@@ -60,12 +59,12 @@
 				This web application consists on an one to many video call using <a
 					href="http://www.webrtc.org/">WebRTC</a>. In other words, this is
 				an implementation of a video broadcasting application. There are two
-				types of kinds in this application: 1 peer sending media (let's call
+				types of users in this application: 1 peer sending media (let's call
 				it <i>Master</i>) and N peers receiving the media of the <i>Master</i>
 				(let's call them <i>Viewers</i>). Thus, the <a
 					href="./img/pipeline.png" data-toggle="lightbox"
 					data-title="Video Call 1 to N Media Pipeline"
-					data-footer="N interconnected WebRtcEnpoints Media Elements.">Media
+					data-footer="1 WebRtcEnpoint (Master) is set in SendOnly mode, and its stream is sent to N WebRtcEnpoints (Viewers), whics are set in RecvOnly mode.">Media
 					Pipeline</a> is composed by 1+N interconnected <i>WebRtcEndpoints</i>.
 				To run this demo follow these steps:
 			</p>
@@ -78,11 +77,7 @@
 					present, the application returns an error (see the the console).
 				</li>
 				<li>Grant the access to the camera and microphone. After the
-					SDP negotiation the communication should start. <i>Master</i> peer
-					will be set in loopback, i.e. he/she can see its local stream
-					(small video tag) and also the remote stream (big video tag). This
-					remote stream will also be sent to the <i>Viewers</i>.
-				</li>
+					SDP negotiation the communication should start.</li>
 				<li>In a different machine (or a different tab in the same
 					browser) click on <i>Viewer</i> button to see the <i>Master</i>
 					stream.
@@ -112,11 +107,7 @@
 			</div>
 			<div class="col-md-7">
 				<div id="videoBig">
-					<video id="videoOutput" autoplay width="640px" height="480px"
-						poster="./img/webrtc.png"></video>
-				</div>
-				<div id="videoSmall">
-					<video id="videoInput" autoplay width="240px" height="180px"
+					<video id="video" autoplay width="640px" height="480px"
 						poster="./img/webrtc.png"></video>
 				</div>
 			</div>
