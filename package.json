@@ -26,10 +26,6 @@
   "keywords": [
     "API",
     "Kurento",
-    "KWS",
-    "media",
-    "SDK",
-    "web",
     "WebRTC"
   ],
   "dependencies": {

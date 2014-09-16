@@ -2,8 +2,8 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-KWS Media API - Tests
-=====================
+JavaScript Kurento Client - Tests
+=================================
 Tests are autonomous, only requirement is to exec previously ```npm install```
 to have installed all the dev dependencies.
 

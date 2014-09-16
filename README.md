@@ -2,12 +2,11 @@
 
 Copyright © 2014 Kurento. Licensed under [LGPL License].
 
-KWS Media API for Node.js and browsers
-=============
-Media API for Kurento Web SDK
+JavaScript Kurento Client
+=========================
 
-The KWS Media API project contains the implementation of the Kurento client
-side Media API for web applications and Node.js.
+The project contains the implementation of the JavaScript Kurento Client
+for web applications and Node.js.
 
 The source code of this project can be cloned from the [GitHub repository].
 
@@ -16,38 +15,28 @@ Installation instructions
 
 These instructions are intended for code contributors or people willing to
 compile the browser version themselves. If you are a browser-only developer,
-it's better that you have a look at the [KWS Media API for Bower] instructions.
-
-This library is currently not able to communicate directly with the Kurento
-Media Server, so it requires the use of a [Kurento Media Connector] instance.
-You can download the latest release from
-http://builds.kurento.org/release/stable//kmf-media-connector.zip. When you
-decompress it you'll find a README file with installation instructions.
-
+it's better that you have a look at the [JavaScript Kurento Client for Bower]
+instructions.
 
 ### Node.js
 
-Be sure to have installed the Node.js tools in your system. It's heavily
-encouraged to use the latest Node.js and NPM versions from the
-[Node.js project PPA] instead of the packages available on the oficial Ubuntu
-repositories, since due to the fast-moving Node.js community and environment
-these last ones get easily outdated and can lead to incompatibility errors:
+Be sure to have installed [Node.js] in your system:
 
 ```bash
-curl -sL https://deb.nodesource.com/setup | sudo bash -
-
-sudo apt-get install nodejs nodejs-legacy
+sudo add-apt-repository ppa:chris-lea/node.js
+sudo apt-get update
+sudo apt-get install nodejs
 ```
 
-To install the library, it's recomended to do that from the [NPM repository] :
+To install the library, it's recommended to do that from the [NPM repository] :
 
 ```bash
 npm install kurento-client
 ```
 
-Alternatively, or if you want to modify the KWS Media API code or generate
-yourself the browser version of the library, you can download the development
-code files using git and install manually its dependencies:
+Alternatively, or if you want to modify the JavaScript Kurento Client code or
+generate yourself the browser version of the library, you can download the
+development code files using git and install manually its dependencies:
 
 ```bash
 git clone https://github.com/Kurento/kurento-client-js
@@ -107,8 +96,7 @@ How to create a basic pipeline
 ------------------------------
 
 For tutorial purposes, we are going to create a basic pipeline that play a video
-file from its URL and stream it over HTTP. You can also download and check this
-[example full source code] or run it directly from [JsFiddle] :
+file from its URL and stream it over HTTP :
 
 1. Create an instance of the KurentoClient class that will manage the connection
    with the Kurento Media Server, so you'll need to provide the URI of its
@@ -215,15 +203,11 @@ standards.
 This platform has several APIs and components which provide solutions to the
 requirements of multimedia content application developers. These include:
 
-* Kurento Media Server (KMS). A full featured media server providing the
-capability to create and manage dynamic multimedia pipelines.
-* Kurento Media Framework (KMF). A Java server-side API providing the required
-abstractions for creating applications that manage multimedia content, calls
-and conferences involving audio, video and data information.
-* Kurento Web SDK (KWS). A client-side HTML5 and Javascript SDK for accessing
-KMF capabilities
-* Kurento Android SDK (KAS). A Java and native SDK allowing easy integration of
-KMF into any kind of Android application.
+  * Kurento Media Server (KMS). A full featured media server providing
+    the capability to create and manage dynamic multimedia pipelines.
+  * Kurento Clients. Libraries to create applications with media
+    capabilities. Kurento provides libraries for Java, browser JavaScript,
+    and Node.js.
 
 Downloads
 ---------
@@ -236,17 +220,14 @@ News and Website
 Information about Kurento can be found on our [website].
 Follow us on Twitter @[kurentoms].
 
-[example full source code]: https://github.com/Kurento/kurento-client/tree/develop/example/PlayerEndpoint-HttpGetEndpoint
 [GitHub Kurento group]: https://github.com/kurento
-[GitHub repository]: https://github.com/kurento/kurento-client
+[GitHub repository]: https://github.com/kurento/kurento-client-js
 [grunt]: http://gruntjs.com/
-[JsFiddle]: http://jsfiddle.net/gh/get/library/pure/kurento/kurento-client/contents/example/PlayerEndpoint-HttpGetEndpoint
-[Kurento Media Connector]: https://github.com/Kurento/kmf-media-connector
 [KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
-[KWS Media API for Bower]: https://github.com/Kurento/kurento-client-bower
+[JavaScript Kurento Client for Bower]: https://github.com/Kurento/kurento-client-bower
 [LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[Node.js project PPA]: https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-debian-linux-mint-etc
+[Node.js]: http://nodejs.org/
 [NPM repository]: https://www.npmjs.org/package/kurento-client
 [QUnit]: http://qunitjs.com
 [QUnit-cli]: https://github.com/devongovett/qunit-cli
