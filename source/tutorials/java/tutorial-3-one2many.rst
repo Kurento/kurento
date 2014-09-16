@@ -30,10 +30,10 @@ Understanding this example
 ==========================
 
 There will be two types of users in this application: 1 peer sending media
-(let's call it *Master*) and N peers receiving the media of the *Master* (let's
+(let's call it *Master*) and N peers receiving the media from the *Master* (let's
 call them *Viewers*). Thus, the Media Pipeline is composed by 1+N
 interconnected *WebRtcEndpoints*. The following picture shows an screenshot of
-this demo running in a web browser (concretely of the *Master* peer):
+the Master's web GUI:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-screenshot.png
    :align:   center
@@ -43,10 +43,9 @@ this demo running in a web browser (concretely of the *Master* peer):
    *One to many video call screenshot*
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by 1+N **WebRtcEndpoints**. The *Master* peer sends its stream in mirror, and
-also to the rest of the *Viewers*. *Viewers* are configured in receive-only
-mode, while *Master* is in send-receive mode. The media pipeline implemented is
-illustrated in the following picture:
+by 1+N **WebRtcEndpoints**. The *Master* peer sends its stream
+to the rest of the *Viewers*. *Viewers* are configured in receive-only
+mode. The implemented media pipeline is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-pipeline.png
    :align:   center
@@ -56,32 +55,31 @@ illustrated in the following picture:
    *One to many video call Media Pipeline*
 
 This is a web application, and therefore it follows a client-server
-architecture. In the client-side, the logic is implemented in **JavaScript**.
-In the server-side we use the **Kurento Java Client** in order to reach the
+architecture. At the client-side, the logic is implemented in **JavaScript**.
+At the server-side we use the **Kurento Java Client** in order to reach the
 **Kurento Server**. All in all, the high level architecture of this demo is
 three-tier. To communicate these entities two WebSockets are used. First, a
 WebSocket is created between client and server-side to implement a custom
 signaling protocol. Second, another WebSocket is used to perform the
-communication between the Kurento Java Client and the Kurento Server. This
+communication between the Kurento Java Client and the Kurento Media Server. This
 communication is implemented by the **Kurento Protocol**. For further
-information, please see this :doc:`page <../../mastering/kurento_protocol>` of
-the documentation.
+information, please see this :doc:`page <../../mastering/kurento_protocol>`.
 
-To communicate the client with the server we have designed a signaling protocol
+Client and application server communicate using a signaling protocol
 based on `JSON`:term: messages over `WebSocket`:term: 's. The normal sequence
-between client and server would be as follows:
+between client and server is as follows:
 
-1. A *Master* enters in the system. There must be one and only one *Master* each
-time. For that, if a *Master* has already entered, an error message is sent
-when another user tries to become the *Master*.
+1. A *Master* enters in the system. There must be one and only one *Master* at
+any time. For that, if a *Master* has already present, an error message is sent
+if another user tries to become *Master*.
 
-2. N *Viewers* connects to the master. If no *Master* is present, then an error
-is sent to the *Viewer* which tries to see the *Master* stream.
+2. N *Viewers* connect to the master. If no *Master* is present, then an error
+is sent to the corresponding *Viewer*.
 
-3. The *Viewers* can leave the communication at any time.
+3. *Viewers* can leave the communication at any time.
 
-4. When a *Master* finishes the communication, then each connected *Viewer*
-receives an *stopCommunication* message to finish also the video broadcasting.
+4. When the *Master* finishes the session each connected *Viewer*
+receives an *stopCommunication* message and also terminates its session.
 
 
 We can draw the following sequence diagram with detailed messages between
@@ -94,12 +92,12 @@ clients and server:
 
    *One to many video call signaling protocol*
 
-As you can see in the diagram, `SDP`:term: needs to be interchanged between
+As you can see in the diagram, `SDP`:term: needs to be exchanged between
 client and server to establish the `WebRTC`:term: connection between the
 browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
 in the browser with the WebRtcEndpoint in the server. The complete source code
 of this demo can be found in
-`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-magic-mirror>`_.
+`GitHub <https://github.com/Kurento/kurento-tutorial-java/tree/master/kurento-one2many-call>`_.
 
 Application Server Logic
 ========================
@@ -309,8 +307,8 @@ Pipeline and the ``WebRtcEndpoint`` for master:
       }
    }
 
-The ``viewer`` method is similar, but the other way round: it must be an
-existing *Master* in the pipeline to connect to, otherwise an error is sent
+The ``viewer`` method is similar, but not he *Master* WebRtcEndpoint is
+connected to each of the viewers WebRtcEndpoints, otherwise an error is sent
 back to the client.
 
 .. sourcecode:: java
@@ -355,7 +353,7 @@ back to the client.
       }
    }
 
-Finally, the ``stop`` finish the communication. If this message is sent by the
+Finally, the ``stop`` message finishes the communication. If this message is sent by the
 *Master*, a ``stopCommunication`` message is sent to each connected *Viewer*:
 
 .. sourcecode:: java
