@@ -16,9 +16,6 @@ bower.json
   "keywords": [
     "API",
     "Kurento",
-    "KWS",
-    "SDK",
-    "web",
     "WebRTC"
   ],
   "ignore": [

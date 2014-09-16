@@ -16,18 +16,13 @@ based on standards.
 
 This platform has several APIs and components which provide solutions
 to the requirements of multimedia content application developers.
-These include
+These include:
 
-* Kurento Media Server (KMS). A full featured media server providing
-the capability to create and manage dynamic multimedia pipelines.
-* Kurento Media Framework (KMF). A Java server-side API providing
-the required abstractions for creating applications that manage
-multimedia content, calls and conferences involving audio, video
-and data information.
-* Kurento Web SDK (KWS). A client-side HTML5 and Javascript SDK for
-accessing KMF capabilities
-* Kurento Android SDK (KAS). A Java and native SDK allowing easy
-integration of KMF into any kind of Android application.
+  * Kurento Media Server (KMS). A full featured media server providing
+    the capability to create and manage dynamic multimedia pipelines.
+  * Kurento Clients. Libraries to create applications with media
+    capabilities. Kurento provides libraries for Java, browser JavaScript,
+    and Node.js.
 
 Downloads
 ---------

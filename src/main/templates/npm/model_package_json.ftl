@@ -20,9 +20,6 @@ package.json
   "keywords": [
     "API",
     "Kurento",
-    "KWS",
-    "SDK",
-    "web",
     "WebRTC"
   ],
   "dependencies": {
