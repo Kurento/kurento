@@ -10,6 +10,39 @@
 	<name>kurento-maven-plugin</name>
 	<url>http://maven.apache.org</url>
 
+        <organization>
+                <name>Kurento</name>
+                <url>http://www.kurento.org</url>
+        </organization>
+
+        <issueManagement>
+                <system>Redmine</system>
+                <url>https://repository.kurento.org/redmine/</url>
+        </issueManagement>
+
+        <licenses>
+                <license>
+                        <name>GNU Lesser General Public License</name>
+                        <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+                        <distribution>repo</distribution>
+                </license>
+        </licenses>
+
+        <scm>
+                <url>https://github.com/Kurento/kurento-maven-plugin</url>
+                <connection>git@github.com:Kurento/kurento-maven-plugin.git</connection>
+                <developerConnection>git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
+        </scm>
+
+        <developers>
+                <developer>
+                        <id>kurento.org</id>
+                        <name>-kurento.org Community</name>
+                        <organization>Kurento.org</organization>
+                        <organizationUrl>http://www.kurento.org</organizationUrl>
+                </developer>
+        </developers>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
