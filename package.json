@@ -21,9 +21,6 @@
   "keywords": [
     "API",
     "Kurento",
-    "KWS",
-    "SDK",
-    "web",
     "WebRTC"
   ],
   "devDependencies": {
