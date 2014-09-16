@@ -30,8 +30,8 @@
 
         <scm>
                 <url>https://github.com/Kurento/kurento-maven-plugin</url>
-                <connection>git@github.com:Kurento/kurento-maven-plugin.git</connection>
-                <developerConnection>git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
+                <connection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</connection>
+                <developerConnection>scm:git:git@github.com:Kurento/kurento-maven-plugin.git</developerConnection>
         </scm>
 
         <developers>
