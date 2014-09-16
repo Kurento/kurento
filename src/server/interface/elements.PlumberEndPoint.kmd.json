@@ -31,7 +31,7 @@
       ],
       "methods": [
         {
-          "name": "connect",
+          "name": "link",
           "doc": "Connect a control channel to the remote :rom:cls:`PlumberEndpoint`",
           "params": [
             {

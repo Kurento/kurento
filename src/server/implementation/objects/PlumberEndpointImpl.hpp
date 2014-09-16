@@ -50,7 +50,7 @@ public:
 
   virtual ~PlumberEndpointImpl () {};
 
-  bool connect (const std::string &address, int port);
+  bool link (const std::string &address, int port);
 
   virtual std::string getAddress ();
 

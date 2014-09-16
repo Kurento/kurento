@@ -76,7 +76,7 @@ int PlumberEndpointImpl::getPort ()
   return port;
 }
 
-bool PlumberEndpointImpl::connect (const std::string &address, int port)
+bool PlumberEndpointImpl::link (const std::string &address, int port)
 {
   GstElement *element = getGstreamerElement();
   bool success;
