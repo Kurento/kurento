@@ -1,7 +1,7 @@
 {
   "remoteClasses": [
     {
-            "name": "PlateDetectorFilter",
+      "name": "PlateDetectorFilter",
       "extends": "Filter",
       "doc": "PlateDetectorFilter interface. This type of :rom:cls:`Endpoint` detects\nvehicle plates in a video feed.",
       "constructor":
