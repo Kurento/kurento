@@ -109,7 +109,19 @@ media elements as part of its APIs.
 
 To better understand theses concepts it is recommended to take a look to
 :doc:`Kurento API <./mastering/kurento_API>` and
-:doc:`Kurento Protocol <./mastering/kurento_protocol>` sections.
+:doc:`Kurento Protocol <./mastering/kurento_protocol>` sections. You can also
+take a loot to the JavaDoc and JsDoc:
+
+- `kurento-client-java <./langdoc/javadoc/index.html>`_ : JavaDoc of Kurento
+  Java Client.
+
+- `kurento-client-js <./langdoc/jsdoc/kurento-client-js/index.html>`_ : JsDoc
+  of Kurento JavaScript Client.
+
+- `kurento-utils-js <./langdoc/jsdoc/kurento-utils-js/index.html>`_ : JsDoc of
+  an utility JavaScript library aimed to simplify the development of WebRTC
+  applications.
+
 
 Creating applications with Kurento
 ==================================

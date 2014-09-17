@@ -6,8 +6,8 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-JAVA_APIS     = kmf-media-api kmf-content-api kmf-repository-api
-JS_APIS       = kws-media-api kws-content-api
+JAVA_APIS     = kurento-client
+JS_APIS       = kurento-client-js kurento-utils-js
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -16,15 +16,13 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) sou
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp javadoc qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext dist
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp langdoc qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext dist
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  javadoc    to make javadocs of the kurento APIs into"
-	@echo "             source/kmf-*-api, source/langdocs/javadoc to be "
-	@echo "             deployed from build/html/javadoc"
+	@echo "  langdoc    to make javadocs and jsdocs of the Kurento Clients"
 	@echo "  html       to make standalone HTML files"
-	@echo "  dist       to make javadoc html epub latexpdf and then copy"
+	@echo "  dist       to make langdoc html epub latexpdf and then copy"
 	@echo "             Kurento.{pdf,epub} in build/html and make a tgz"
 	@echo "             as kurento-docs-$${VERSION}.tgz"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
@@ -85,37 +83,32 @@ htmlhelp:
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
 
 langdoc:
-	- mkdir -p $(BUILDDIR)/langdoc && mkdir -p source/langdocs/jsdoc
-	  rm -rf $(BUILDDIR)/kurento-media-framework
-	  cd  $(BUILDDIR) && git clone https://github.com/Kurento/kurento-media-framework.git
+	  mkdir -p $(BUILDDIR)/langdoc
+	  rm -rf $(BUILDDIR)/langdoc/kurento-java
+	  mkdir -p $(BUILDDIR)/html/langdoc/jsdoc && mkdir -p $(BUILDDIR)/html/langdoc/javadoc 
+
+	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
+	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
+	  echo CHECK=$${CHECK} ... VERSION=$${VERSION}
+
+	  cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-java.git
 	  for p in $(JAVA_APIS); do \
-	      ( rm -rf $(BUILDDIR)/langdoc/$${p});\
-	      ( mv $(BUILDDIR)/kurento-media-framework/$${p} $(BUILDDIR)/langdoc);\
+	      ( rm -rf $(BUILDDIR)/langdoc/$${p} );\
+	      ( mv $(BUILDDIR)/langdoc/kurento-java/$${p} $(BUILDDIR)/langdoc );\
+	      ( cd $(BUILDDIR)/langdoc/$${p} && mvn clean package );\
+	      ( rsync -av $(BUILDDIR)/langdoc/$${p}/target/generated-sources/kmd/* $(BUILDDIR)/langdoc/$${p}/src/main/java/ );\
 	      done
+	  rm -rf $(BUILDDIR)/langdoc/kurento-java
+	  javadoc -d $(BUILDDIR)/html/langdoc/javadoc -sourcepath $(BUILDDIR)/langdoc/*/src/main/java/ \
+			org.kurento.client org.kurento.client.factory
+
 	  for p in $(JS_APIS); do \
-	      ( rm -rf $(BUILDDIR)/langdoc/$${p});\
-	      ( cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/$${p}.git );\
-	      done
-	  for p in $(JAVA_APIS); do {\
-	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
-	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
-	      ( cd $(BUILDDIR)/langdoc/$${p} &&\
-	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop ) &&\
-	      javasphinx-apidoc -c /tmp -u -T --no-member-headers -o source/$${p}\
-	                                 "$$(cd $(BUILDDIR)/langdoc && pwd)/$${p}/src/main/java" \
-	                                 $$(find $$(cd $(BUILDDIR)/langdoc && pwd)/$${p}\
-	                                         -name internal -print -or -name tool -print  2>/dev/null);\
-	      } done
-		  javadoc -d source/langdocs/javadoc -sourcepath $$(echo $(BUILDDIR)/langdoc/k*/src/main/java | sed -e "s@ @:@g")\
-		          -link http://tomcat.apache.org/tomcat-7.0-doc/servletapi \
-		             com.kurento.kmf.media com.kurento.kmf.media.events com.kurento.kmf.media.params com.kurento.kmf.content com.kurento.kmf.repository
-	  for p in $(JS_APIS); do {\
-	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
-	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
+	      ( rm -rf $(BUILDDIR)/langdoc/$${p} );\
+	      ( cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/$${p}.git );\
 	      ( cd $(BUILDDIR)/langdoc/$${p} &&\
 	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop  &&\
-	         npm install && node_modules/.bin/grunt --force jsdoc ) && cp -r $(BUILDDIR)/langdoc/$${p}/doc/jsdoc source/langdocs/jsdoc/$${p} ;\
-	      } done
+	         npm install && node_modules/.bin/grunt --force jsdoc ) && cp -r $(BUILDDIR)/langdoc/$${p}/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/$${p} ;\
+	      done
 
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
