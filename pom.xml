@@ -8,6 +8,7 @@
 
 	<name>kurento-maven-plugin</name>
 	<url>http://maven.apache.org</url>
+	<description>Generates Java and Javascript client code of Kurento Media Server modules</description>
 
         <organization>
                 <name>Kurento</name>
