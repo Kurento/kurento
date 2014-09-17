@@ -23,11 +23,11 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.kurento.test.base.GridBrowserKurentoClientTest;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -37,7 +37,7 @@ import freemarker.template.Template;
 
 /**
  * Base for kurento-js sanity tests.
- *
+ * 
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
@@ -57,7 +57,18 @@ public class KurentoJsBase {
 
 	@Before
 	public void setup() {
-		driver = new FirefoxDriver();
+		// ChromeDriver
+		String chromeDriver = KurentoServicesTestHelper.getTestFilesPath()
+				+ "/bin/chromedriver/2.9/linux64/chromedriver";
+		System.setProperty("webdriver.chrome.driver", chromeDriver);
+
+		ChromeOptions options = new ChromeOptions();
+		// This flag avoids warning in Chrome. See:
+		// https://code.google.com/p/chromedriver/issues/detail?id=799
+		options.addArguments("--test-type");
+
+		driver = new ChromeDriver(options);
+
 		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();
 
@@ -71,8 +82,7 @@ public class KurentoJsBase {
 					.getFile().getAbsolutePath() + File.separator;
 
 			Configuration cfg = new Configuration();
-			cfg.setClassForTemplateLoading(GridBrowserKurentoClientTest.class,
-					"/templates/");
+			cfg.setClassForTemplateLoading(KurentoJsBase.class, "/templates/");
 			Template template = cfg.getTemplate("kurento-client.html.ftl");
 
 			Map<String, Object> data = new HashMap<String, Object>();
