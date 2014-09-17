@@ -4,24 +4,16 @@ package.json
   "name": "${node_name}",
   "version": "${module.version}",
   "description": "${module.code.api.js.npmDescription}",
-  "homepage": "http://www.kurento.com",
   "main": "lib/index.js",
-  "author": "Kurento <info@kurento.com> (http://kurento.org)",
-  "license": "LGPL",
+  "keywords": [
+    "Kurento"
+  ],
 <#if module.code.api.js.npmGit??>
   "repository": {
     "type": "git",
     "url": "${module.code.api.js.npmGit}"
   },
 </#if>
-  "bugs": {
-    "email": "kurento@googlegroups.com"
-  },
-  "keywords": [
-    "API",
-    "Kurento",
-    "WebRTC"
-  ],
   "dependencies": {
     "checktype": "^0.0.4",
     "inherits": "^2.0.1"
