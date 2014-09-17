@@ -23,6 +23,7 @@ pom.xml
 		<maven.compiler.source>1.7</maven.compiler.source>
 	</properties>
 
+<#if module.imports[0]??>
 	<dependencies>
 <#list module.imports as import>
 		<dependency>
@@ -38,6 +39,7 @@ pom.xml
 		</dependency>
 </#list>
 	</dependencies>
+</#if>
 
 	<build>
 		<plugins>
