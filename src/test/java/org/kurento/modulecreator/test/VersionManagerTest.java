@@ -36,7 +36,11 @@ public class VersionManagerTest {
 	@Test
 	public void mavenConversionTest() {
 
+		assertThat(convertToMavenImport("^1.2.3"), is("[1.2.3,2.0.0)"));
 		assertThat(convertToMavenImport("1.0.0-dev"), is("1.0.0-SNAPSHOT"));
+		assertThat(convertToMavenImport("~1.2.3"), is("[1.2.3,1.3.0)"));
+		assertThat(convertToMavenImport("~1.2"), is("[1.2.0,2.0.0)"));
+		assertThat(convertToMavenImport("~1"), is("[1.0.0,)"));
 		assertThat(convertToMavenImport("1.0.0"), is("1.0.0"));
 		assertThat(convertToMavenImport("<1.0.0"), is("(,1.0.0)"));
 		assertThat(convertToMavenImport(">1.0.0"), is("(1.0.0,)"));
@@ -51,7 +55,11 @@ public class VersionManagerTest {
 	@Test
 	public void npmConversionTest() {
 
+		assertThat(convertToNpmImport(null, "^1.2.3"), is(">=1.2.3 <2.0.0"));
 		assertThat(convertToNpmImport(null, "1.0.0"), is("1.0.0"));
+		assertThat(convertToNpmImport(null, "~1.2.3"), is(">=1.2.3 <1.3.0"));
+		assertThat(convertToNpmImport(null, "~1.2"), is(">=1.2.0 <2.0.0"));
+		assertThat(convertToNpmImport(null, "~1"), is(">=1.0.0"));
 		assertThat(convertToNpmImport(null, "<1.0.0"), is("<1.0.0"));
 		assertThat(convertToNpmImport(null, ">1.0.0"), is(">1.0.0"));
 		assertThat(convertToNpmImport(null, "<=1.0.0"), is("<=1.0.0"));

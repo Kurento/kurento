@@ -23,9 +23,7 @@ public class VersionManager {
 			return removeDevSuffix(version) + "-SNAPSHOT";
 		}
 
-		Parser<Expression> parser = ExpressionParser.newInstance();
-
-		Expression expression = parser.parse(version);
+		Expression expression = parseVersion(version);
 
 		String mavenVersion = convertToMavenExpression(expression);
 
@@ -136,9 +134,7 @@ public class VersionManager {
 			}
 		}
 
-		Parser<Expression> parser = ExpressionParser.newInstance();
-
-		Expression expression = parser.parse(version);
+		Expression expression = parseVersion(version);
 
 		String npmVersion = convertToNpmExpression(expression);
 
@@ -148,6 +144,24 @@ public class VersionManager {
 		}
 
 		return npmVersion;
+	}
+
+	private static Expression parseVersion(String version) {
+		Parser<Expression> parser = ExpressionParser.newInstance();
+		Expression expression = parser.parse(processCaretRanges(version));
+		return expression;
+	}
+
+	private static String processCaretRanges(String version) {
+
+		if (version.startsWith("^")) {
+			String plainVersion = version.substring(1);
+			return ">=" + plainVersion + " & <"
+					+ (Version.valueOf(plainVersion).getMajorVersion() + 1)
+					+ ".0.0";
+		}
+
+		return version;
 	}
 
 	private static String convertToNpmExpression(Expression expression) {
