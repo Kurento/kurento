@@ -42,7 +42,7 @@ public class KurentoClientTestFactory {
 				String wsUri = getProperty(KCS_WS_URI_PROP);
 
 				log.info(
-						"Connecting kurento client to kcs with websockets to uri '{}'",
+						"Connecting kurento client with websockets to uri '{}'",
 						wsUri);
 
 				return new JsonRpcClientWebSocket(wsUri);
@@ -61,8 +61,7 @@ public class KurentoClientTestFactory {
 
 				String wsUri = getProperty(KMS_WS_URI_PROP, KMS_WS_URI_DEFAULT);
 
-				log.info("Connecting kcs to kms with websockets to uri '{}'",
-						wsUri);
+				log.info("Connecting to kms with websockets to uri '{}'", wsUri);
 
 				return new JsonRpcClientWebSocket(wsUri);
 
@@ -71,7 +70,7 @@ public class KurentoClientTestFactory {
 				Address rabbitAddress = getProperty(KMS_RABBITMQ_ADDRESS_PROP,
 						KMS_RABBITMQ_ADDRESS_DEFAULT);
 
-				log.info("Connecting kcs to kms with RabbitMQ in address '{}'",
+				log.info("Connecting to kms with RabbitMQ in address '{}'",
 						rabbitAddress);
 
 				return newJsonRpcClientRabbitMq(rabbitAddress);
