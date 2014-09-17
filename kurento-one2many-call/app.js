@@ -178,7 +178,7 @@ function startMaster(id, sdp, callback) {
 			return callback('Request was cancelled by the user. You will not be sending any longer');
 		}
 
-		pipeline = kurentoClient.create('MediaPipeline', function(error, _pipeline) {
+		kurentoClient.create('MediaPipeline', function(error, _pipeline) {
 			if (error) {
 				return callback(error);
 			}

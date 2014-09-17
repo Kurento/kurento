@@ -137,7 +137,7 @@ function getKurentoClient(callback) {
 
 	kurento(ws_uri, function(error, _kurentoClient) {
 		if (error) {
-			console.log("Coult not find media server at address " + ws_uri);
+			console.log("Could not find media server at address " + ws_uri);
 			return callback("Could not find media server at address" + ws_uri
 					+ ". Exiting with error " + error);
 		}
