@@ -3,7 +3,7 @@
 .. image:: images/kurento-rect-logo3.png
    :alt:    Creating client applications through Kurento APIs
    :align:  center
-   :scale: 50 %
+   :width: 350px
 
 %%%%%%%%%%%%%%%
 What's Kurento?
