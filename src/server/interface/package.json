@@ -1,0 +1,8 @@
+{
+  "license": "LGPL",
+  "homepage": "http://www.kurento.com",
+  "author": "Kurento <info@kurento.com> (http://kurento.org)",
+  "bugs": {
+    "email": "kurento@googlegroups.com"
+  }
+}
