@@ -350,20 +350,17 @@ public class KurentoModuleCreator {
 		return modules;
 	}
 
-	public void printValues(String[] keys) {
-		try {
-			if (moduleManager == null) {
-				loadModulesFromKmdFiles();
-			}
+	public void printValues(String[] keys) throws FileNotFoundException,
+			IOException {
+		if (moduleManager == null) {
+			loadModulesFromKmdFiles();
+		}
 
-			for (ModuleDefinition module : moduleManager.getModules()) {
-				for (String key : keys) {
-					System.out.println("Value: " + key + " = "
-							+ getValue(module, key));
-				}
+		for (ModuleDefinition module : moduleManager.getModules()) {
+			for (String key : keys) {
+				System.out.println("Value: " + key + " = "
+						+ getValue(module, key));
 			}
-		} catch (Exception e) {
-			log.error("Error: " + e.getMessage());
 		}
 	}
 

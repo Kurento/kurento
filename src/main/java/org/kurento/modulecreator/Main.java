@@ -1,6 +1,7 @@
 package org.kurento.modulecreator;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -95,10 +96,12 @@ public class Main {
 		} else {
 			System.out.println("Generation failed");
 			result.showErrorsInConsole();
+			System.exit(1);
 		}
 	}
 
-	private static void showValues(KurentoModuleCreator krp, CommandLine line) {
+	private static void showValues(KurentoModuleCreator krp, CommandLine line)
+			throws FileNotFoundException, IOException {
 		if (!line.hasOption(SHOW_VALUES)) {
 			return;
 		}
