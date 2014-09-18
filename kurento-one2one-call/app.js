@@ -19,15 +19,14 @@ var app = express();
 var path = require('path');
 var wsm = require('ws');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 8080);
 
 /*
  * Definition of constants
  */
 
 const
-//ws_uri = "ws://localhost:8888/kurento";
-ws_uri = "ws://192.168.56.101:8888/kurento";
+ws_uri = "ws://localhost:8888/kurento";
 /*
  * Definition of global variables.
  */
@@ -161,7 +160,6 @@ CallMediaPipeline.prototype.release = function(){
 	if(this._pipeline) this._pipeline.release();
 	this._pipeline = null;
 }
-
 
 /*
  * Server startup
@@ -335,9 +333,9 @@ function call(callerId, to, from, sdpOffer){
 		callee.peer = from;
 		caller.peer = to;
 		var message = {
-				id: 'incomingCall',
-				from: from
-				};
+			id: 'incomingCall',
+			from: from
+		};
 		try{
 			return callee.sendMessage(message);
 		} catch(exception){
