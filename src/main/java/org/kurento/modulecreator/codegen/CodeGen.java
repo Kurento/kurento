@@ -262,8 +262,9 @@ public class CodeGen {
 	}
 
 	public void generateNpmPackage(ModuleDefinition module,
-			Path templatePackJson) throws IOException, TemplateException,
-			ParserConfigurationException, SAXException, TransformerException {
+			Path templatePackJson, Path templateBowerJson) throws IOException,
+			TemplateException, ParserConfigurationException, SAXException,
+			TransformerException {
 
 		this.generateCode(module);
 
@@ -280,13 +281,6 @@ public class CodeGen {
 
 			fusioner.fusionJsons();
 		}
-	}
-
-	public void generateBowerPackage(ModuleDefinition module,
-			Path templateBowerJson) throws IOException, TemplateException,
-			ParserConfigurationException, SAXException, TransformerException {
-
-		this.generateCode(module);
 
 		if (templateBowerJson != null) {
 
@@ -302,5 +296,4 @@ public class CodeGen {
 			fusioner.fusionJsons();
 		}
 	}
-
 }

@@ -57,7 +57,6 @@ public class KurentoModuleCreator {
 
 	private boolean generateMavenPom = false;
 	private boolean generateNpmPackage = false;
-	private boolean generateBowerPackage = false;
 
 	public ModuleManager getModuleManager() {
 		return moduleManager;
@@ -213,12 +212,7 @@ public class KurentoModuleCreator {
 				if (generateNpmPackage) {
 					codeGen.setTemplatesDir(getInternalTemplatesDir("npm"));
 					codeGen.generateNpmPackage(module,
-							searchFiles(this.kmdFilesToGen, "package.json"));
-				}
-
-				if (generateBowerPackage) {
-					codeGen.setTemplatesDir(getInternalTemplatesDir("bower"));
-					codeGen.generateBowerPackage(module,
+							searchFiles(this.kmdFilesToGen, "package.json"),
 							searchFiles(this.kmdFilesToGen, "bower.json"));
 				}
 			}
@@ -431,9 +425,5 @@ public class KurentoModuleCreator {
 
 	public void setGenerateNpmPackage(boolean hasOption) {
 		this.generateNpmPackage = hasOption;
-	}
-
-	public void setGenerateBowerPackage(boolean hasOption) {
-		this.generateBowerPackage = hasOption;
 	}
 }
