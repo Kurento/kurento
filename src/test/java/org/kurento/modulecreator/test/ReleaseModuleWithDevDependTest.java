@@ -1,10 +1,8 @@
 package org.kurento.modulecreator.test;
 
-import static org.junit.Assert.assertThat;
 import junit.framework.Assert;
 
 import org.junit.Test;
-import org.junit.internal.matchers.StringContains;
 import org.kurento.modulecreator.KurentoModuleCreator;
 import org.kurento.modulecreator.KurentoModuleCreatorException;
 import org.kurento.modulecreator.PathUtils;
@@ -39,11 +37,14 @@ public class ReleaseModuleWithDevDependTest {
 
 		} catch (KurentoModuleCreatorException e) {
 
-			assertThat(
-					e.getMessage(),
-					StringContains
-							.containsString("All dependencies of a release version must be also release versions"));
+			Assert.assertTrue(
+					"Exception message should be: "
+							+ "\"All dependencies of a release version must be also release versions\""
+							+ " but it is: \"" + e.getMessage() + "\"",
+					e.getMessage()
+							.contains(
+									"All dependencies of a release version must be also release versions"));
+
 		}
 	}
-
 }
