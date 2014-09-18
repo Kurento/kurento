@@ -2,9 +2,9 @@
 Tutorial 4 - One to one video call
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-This web application consists on an one to one video call using `WebRTC`:term:
-technology. In other words, this application is similar to a phone but also
-with video.
+This web application consists on a one-to-one video call using `WebRTC`:term:
+technology. In other words, this application provides a simple video softphone.
+
 
 For the impatient: running this example
 =======================================
@@ -39,16 +39,17 @@ The following picture shows an screenshot of this demo running in a web browser:
    *One to one video call screenshot*
 
 The interface of the application (an HTML web page) is composed by two HTML5
-video tags: one for the video camera stream (the local stream) and other for
-the other peer in the call (the remote stream). If two users, A and B, are
-using the application, the media flows in the following way: The video camera
-stream of user A is sent to the Kurento Media Server and sent again to the user
-B. On the other hand, user B sends its video camera stream to Kurento and then
-it is sent to user A.
+video tags: one for the local stream and other for the remote peer stream). 
+If two users, A and B, are using the application, the media flows in the 
+following way: The video camera stream of user A is sent to the Kurento Media 
+Server, which sends it to user B. In the same way, B send to Kurento Media 
+Server, which forwards it to A. This means that KMS is providing a B2B
+(back-to-back) call service.
 
-To implement this behavior we have to create a `Media Pipeline`:term: composed
-by two WebRtc endpoints connected between them. The media pipeline implemented
+To implement this behavior create a `Media Pipeline`:term: composed
+by two WebRtC endpoints connected in B2B. The implemented media pipeline
 is illustrated in the following picture:
+
 
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-pipeline.png
    :align:   center
@@ -57,8 +58,8 @@ is illustrated in the following picture:
 
    *One to one video call Media Pipeline*
 
-To communicate the client with the server to manage calls we have designed a
-signaling protocol based on `JSON`:term: messages over `WebSocket`:term: 's.
+The client and the server communicate through a signaling protocol based on 
+`JSON`:term: messages over `WebSocket`:term: 's.
 The normal sequence between client and server would be as follows:
 
 1. User A is registered in the server with his name
@@ -74,14 +75,7 @@ The normal sequence between client and server would be as follows:
 
 6. One of the users finishes the video communication
 
-This is very simple protocol designed to show a simple one to one call
-application implemented with Kurento. In a professional application it can be
-improved, for example implementing seeking user, ordered finish, among other
-functions.
-
-Assuming that User A is using Client A and User B is using Client B, we can draw
-the following sequence diagram with detailed messages between clients and
-server:
+The detailed message flow in a call are shown in the picture below:
 
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-signaling.png
    :align:   center
@@ -194,7 +188,7 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kind of incoming messages to
-the *Server* : ``register``, ``call``, ``incommingCallResponse`` and ``stop``.
+the application server: ``register``, ``call``, ``incommingCallResponse`` and ``stop``.
 These messages are treated in the *switch* clause, taking the proper steps in
 each case.
 
@@ -351,13 +345,7 @@ message is sent to caller rejecting the call.
       }
    }
 
-In the ``incommingCallResponse`` method, if the callee user accepts the call, it
-is established and the media elements are created to connect the caller with
-the callee. Basically, the server creates a ``CallMediaPipeline`` object, to
-encapsulate the media pipeline creation and management. Then, this object is
-used to negotiate media interchange with user's browsers.
-
-Finally, the ``stop`` method finish the video call. This procedure can be called
+The ``stop`` method finish the video call. This procedure can be called
 both by caller and callee in the communication. The result is that both peers
 release the Media Pipeline and ends the video communication:
 
@@ -382,6 +370,14 @@ release the Media Pipeline and ends the video communication:
          stoppedUser.sendMessage(message);
       }
    }
+
+
+In the ``incommingCallResponse`` method, if the callee user accepts the call, it
+is established and the media elements are created to connect the caller with
+the callee in a B2B manner. Basically, the server creates a ``CallMediaPipeline`` 
+object, to encapsulate the media pipeline creation and management. Then, this
+object is used to negotiate media interchange with user's browsers.
+
 
 The negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento
 Media Server is made by means of `SDP`:term: generation at the client (offer)
@@ -462,7 +458,7 @@ The media logic in this demo is implemented in the class
 `CallMediaPipeline <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/src/main/java/org/kurento/tutorial/one2onecall/CallMediaPipeline.java>`_.
 As you can see, the media pipeline of this demo is quite simple: two
 ``WebRtcEndpoint`` elements directly interconnected. Please take note that the
-WebRtc endpoints needs to be connected twice, one for each media direction.
+WebRtcEndpoints need to be connected twice, one for each media direction.
 
 .. sourcecode:: java
 
