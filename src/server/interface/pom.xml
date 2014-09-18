@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
+
+        <description>Kurento Media Server filters module</description>
+        <url>http://www.kurento.org/</url>
+
+        <licenses>
+          <license>
+              <name>GNU Lesser General Public License</name>
+              <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+              <distribution>repo</distribution>
+          </license>
+        </licenses>
+
+        <developers>
+          <developer>
+              <id>kurento.org</id>
+              <name>Kurento Community</name>
+              <organization>kurento.org</organization>
+              <organizationUrl>http://www.kurento.org</organizationUrl>
+          </developer>
+        </developers>
+
+        <scm>
+          <url>https://github.com/Kurento/kms-filters</url>
+          <connection>scm:git:https://github.com/Kurento/kms-filters.git</connection>
+          <developerConnection>scm:git:ssh://git@github.com:Kurento/kms-filters.git</developerConnection>
+        </scm>
+
+</project>
