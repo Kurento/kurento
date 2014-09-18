@@ -64,7 +64,6 @@
 
 		<!-- Kurento versions -->
 		<version.kurento-java>${project.version}</version.kurento-java>
-		<version.kms-interface>4.3.1</version.kms-interface>
 		<version.kurento-js>4.3.18-SNAPSHOT</version.kurento-js>
 		<version.kms-api-core>5.0.0-SNAPSHOT</version.kms-api-core>
 		<version.kms-api-elements>5.0.0-SNAPSHOT</version.kms-api-elements>
@@ -180,8 +179,8 @@
 		<!-- maven-assembly-plugin -->
 		<sourceReleaseAssemblyDescriptor>source-release</sourceReleaseAssemblyDescriptor>
 
-		<kurento-java.scm.url>https://github.com/Kurento/kurento-media-framework</kurento-java.scm.url>
-		<kurento-java.scm.connection>git@github.com:Kurento/kurento-media-framework.git</kurento-java.scm.connection>
+		<kurento-java.scm.url>https://github.com/Kurento/kurento-java</kurento-java.scm.url>
+		<kurento-java.scm.connection>git@github.com:Kurento/kurento-java.git</kurento-java.scm.connection>
 
 	</properties>
 
@@ -194,16 +193,6 @@
 
 			<!-- Kurento dependencies -->
 
-			<dependency>
-				<groupId>com.kurento.kws</groupId>
-				<artifactId>kws-rpc-builder</artifactId>
-				<version>${version.kurento-js}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kws</groupId>
-				<artifactId>kws-utils</artifactId>
-				<version>${version.kurento-js}</version>
-			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-test</artifactId>
@@ -244,11 +233,6 @@
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-jsonrpc-server</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.kurento.kms</groupId>
-				<artifactId>kms-interface</artifactId>
-				<version>${version.kms-interface}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.kurento</groupId>
