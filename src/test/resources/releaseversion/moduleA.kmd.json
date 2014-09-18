@@ -1,0 +1,10 @@
+{
+  "name":"moduleA",
+  "version":"1.0.0-dev",
+  "kurentoVersion":"1.0.0",
+  "remoteClasses":[
+    {
+      "name":"ClassA"
+    }
+  ]
+}
