@@ -1,7 +1,7 @@
 package org.kurento.modulecreator.codegen;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,11 +11,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
-import org.xml.sax.SAXException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -28,24 +23,25 @@ import com.google.gson.JsonSyntaxException;
 public class JsonFusioner {
 
 	private static final Gson gson = new GsonBuilder().setPrettyPrinting()
-			.create();
+			.disableHtmlEscaping().create();
 
-	private Path generatedXml;
-	private Path customizerXml;
-	private Path outputFile;
+	private final Path generatedJson;
+	private final Path customizerJson;
+	private final Path outputFile;
 
-	private Set<String> addChildrenTags;
-	private Set<String> replaceChildrenTags;
+	private final Set<String> addChildrenTags;
+	private final Set<String> replaceChildrenTags;
 
-	public JsonFusioner(Path generatedXml, Path customizerXml, Path outputFile) {
-		this(generatedXml, customizerXml, outputFile, null, null);
+	public JsonFusioner(Path generatedJson, Path customizerJson, Path outputFile) {
+		this(generatedJson, customizerJson, outputFile, null, null);
 	}
 
-	public JsonFusioner(Path generatedXml, Path customizerXml, Path outputFile,
-			String[] addChildrenTags, String[] replaceChildrenTags) {
+	public JsonFusioner(Path generatedJson, Path customizerJson,
+			Path outputFile, String[] addChildrenTags,
+			String[] replaceChildrenTags) {
 		super();
-		this.generatedXml = generatedXml;
-		this.customizerXml = customizerXml;
+		this.generatedJson = generatedJson;
+		this.customizerJson = customizerJson;
 		this.outputFile = outputFile;
 		this.addChildrenTags = new HashSet<String>(
 				Arrays.asList(addChildrenTags));
@@ -53,15 +49,14 @@ public class JsonFusioner {
 				Arrays.asList(replaceChildrenTags));
 	}
 
-	public void fusionJsons() throws ParserConfigurationException,
-			SAXException, IOException, TransformerException {
+	public void fusionJsons() throws IOException {
 
-		JsonObject generatedXmlDoc = loadJson(generatedXml);
-		JsonObject customizedXmlDoc = loadJson(customizerXml);
+		JsonObject generatedJsonDoc = loadJson(generatedJson);
+		JsonObject customizedJsonDoc = loadJson(customizerJson);
 
-		merge(generatedXmlDoc, customizedXmlDoc, new ArrayList<String>());
+		merge(generatedJsonDoc, customizedJsonDoc, new ArrayList<String>());
 
-		writeJson(generatedXmlDoc);
+		writeJson(generatedJsonDoc);
 	}
 
 	private void merge(JsonObject genNode, JsonObject custNode,
@@ -179,9 +174,9 @@ public class JsonFusioner {
 	private void writeJson(JsonObject doc) throws IOException {
 
 		String json = gson.toJson(doc);
-		try (OutputStream os = Files.newOutputStream(outputFile)) {
-			os.write(json.getBytes(StandardCharsets.UTF_8));
+		try (Writer os = Files.newBufferedWriter(outputFile,
+				StandardCharsets.UTF_8)) {
+			os.write(json);
 		}
 	}
-
 }
