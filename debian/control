@@ -11,6 +11,7 @@ Build-Depends: debhelper(>=9),
                libfreemarker-java,
                libgoogle-gson-java,
                libslf4j-java,
+               junit4,
                libcommons-cli-java
 Standards-Version: 3.9.4
 
