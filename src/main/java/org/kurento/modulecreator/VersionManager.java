@@ -320,10 +320,9 @@ public class VersionManager {
 			return false;
 
 		} else {
+			Expression expression = parseVersion(importVersion);
 
-			Version depVersionV = Version.valueOf(depVersion);
-
-			return depVersionV.satisfies(importVersion);
+			return expression.interpret(Version.valueOf(depVersion));
 		}
 	}
 }
