@@ -1,208 +1,219 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Kurento Server Advanced Installation guide
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Kurento Media Server Advanced Installation guide
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-.. highlight:: bash
+Kurento Media Server Configuration
+==================================
 
-.. todo:: We have to explain all configuration options for Kurento Server in
-   some place in the documentation. Maybe this section have to be renamed to
-   "Kurento Server configuration" to include this information.
+The KMS configuration file is located in ``/etc/kurento/kurento.conf.json``.
+After a fresh installation this file is the following:
 
-Monolithic Kurento Server Installation
-======================================
+.. sourcecode:: js
 
-Kurento Server is composed by two components: Kurento Media Server and Kurento
-Control Server. To configure Kurento Server, both components have to be
-configured independently.
+   {
+     "mediaServer" : {
+       "net" : {
+         // Uncomment just one of them
+         /*
+         "rabbitmq": {
+           "address" : "127.0.0.1",
+           "port" : 5672,
+           "username" : "guest",
+           "password" : "guest",
+           "vhost" : "/"
+         }
+         */
+         "websocket": {
+           "port": 8888,
+           //"secure": {
+           //  "port": 8433,
+           //  "certificate": "defaultCertificate.pem",
+           //  "password": ""
+           //},
+           "path": "kurento",
+           "threads": 10
+         }
+       }
+     },
+     "modules": {
+       "kurento": {
+         "SdpEndpoint" : {
+           "sdpPattern" : "sdp_pattern.txt"
+         },
+         "HttpEndpoint" : {
+           // "serverAddress" : "localhost",
+           /*
+             Announced IP Addess may be helpful under situations such as the server needs
+             to provide URLs to clients whose host name is different from the one the
+             server is listening in. If this option is not provided, http server will try
+             to look for any available address in your system.
+           */
+           // "announcedAddress" : "localhost"
+         },
+         "WebRtcEndpoint" : {
+           // "stunServerAddress" : "stun ip address",
+           // "stunServerPort" : 3478,
+           // turnURL gives the necessary info to configure TURN for WebRTC.
+           //    'address' must be an IP (not a domain).
+           //    'transport' is optional (UDP by default).
+           // "turnURL" : "user:password@address:port(?transport=[udp|tcp|tls])",
+           // "pemCertificate" : "file"
+         },
+         "PlumberEndpoint" : {
+           // "bindAddress" : "localhost",
+           /*
+             Announced IP Address may be helpful under situations such as the endpoint needs
+             to provide an IP address to clients whose host name is different from the one
+             that the element is listening in. If this option is not provided, the bindAddress
+             will be used instead.
+           */
+           // "announcedAddress" : "localhost"
+         }
+       }
+       //"module1": { …. }
+       //"module2": { …. }
+     }
+   }
 
-Kurento Media Server
---------------------
 
-The KMS configuration file allows configure several details about the server.
-The configuration file is located in ``/etc/kurento/media-server.conf``. After
-a fresh installation that file looks like this:
+Kurento Media Server behind a NAT
+=================================
 
-.. sourcecode:: ini
-
-    [Server]
-    sdpPattern=pattern.sdp
-    service=Thrift
-
-    [HttpEPServer]
-    #serverAddress=localhost
-
-    # Announced IP Address may be helpful under situations such as the server needs
-    # to provide URLs to clients whose host name is different from the one the
-    # server is listening in. If this option is not provided, http server will try
-    # to look for any available address in your system.
-    # announcedAddress=localhost
-
-    serverPort=9091
-
-    [WebRtcEndPoint]
-    #stunServerAddress = xxx.xxx.xxx.xxx
-    #stunServerPort = xx
-    #pemCertificate = file
-
-    [Thrift]
-    serverPort=9090
-
-    [RabbitMQ]
-    serverAddress = 127.0.0.1
-    serverPort = 5672
-    username = "guest"
-    password = "guest"
-    vhost = "/"
-
-This configuration implies that KCS have to use Thrift protocol to communicate
-with KMS. Thrift server will be attached in all available network interfaces.
-The section ``[Thrift]`` allows to configure the port where KMS will listen to
-KCS requests.
-
-The section ``[HttpEPServer]`` controls the IP address and port to listen to the
-final users making GET http requests to Kurento Media Server.
-
-With the default configuration file, KMS will be listen Thrift requests from KSC
-in the port 9090 of all interfaces and http requests from users in the port
-9091 of all interfaces.
-
-
-Kurento Control Server
-----------------------
-
-The KCS configuration file allows configure several details about the server.
-The configuration file is located in
-``/etc/kurento/media-connector.properties``. After a fresh installation that
-file looks like this:
-
-.. sourcecode:: properties
-
-    server.port=8888
-    kmf.transport=thrift
-    thrift.kms.address=127.0.0.1:9090
-    thrift.kmf.address=127.0.0.1:9900
-    oauthserver.url=
-
-This configuration implies that KCS use Thrift protocol to communicate with KMS
-in localhost (127.0.0.1) and port 9090.
-
-KCS will open the port 9900 in all interfaces and inform to KMS that it will be
-reachable in IP 127.0.0.1 (from the point of view of KMS) to recevie incomming
-Thrift requests.
-
-Finally, all web socket requests must to be made to 8888 port (in any interface).
-
-Distributed Kurento Server Installation
-=======================================
-
-Kurento Server can be installed in a distributed environment, installing Kurento
-Media Server in a node and Kurento Control Server in another node. Also, it is
-possible to put all nodes in a private network behind a router with :term:`NAT`.
-
-For example, the following picture shows a typical distributed installation
-scenario:
+KMS can be installed on a private network behind a router with :term:`NAT`. The
+picture below shows the typical scenario.
 
 .. figure:: ../images/Kurento_nat_deployment.png
-   :width: 400px
-   :align:   center
-   :alt:     Network with NAT
+   :align: center
+   :alt: Typical scenario of Kurento Media Server behind a NAT
 
-   Kurento deployment in a configuration with NAT
+   *Typical scenario of Kurento Media Server behind a NAT*
 
-This network diagram depicts a scenario where a :term:`NAT` device is present
-and KMS and KCS are installed in different nodes in the private network. In
-this case, the client will access the public IP 130.206.82.56, which will
-connect him with the external interface of the NAT device.
 
-KMS serves media on a specific address which, by default, is the IP of the
-server where the service is running. This would have the server announcing that
-the media served by an HttpEndpoint can be consumed in the private IP
-172.30.1.122. Since this address is not accessible by external clients, the
-administrator of the system will have to configure KMS to announce, as
-connection address for clients, the public IP of the NAT device. This is
-achieved by changing the value of announcedAddress in the file
-``/etc/kurento/media-server.conf`` with the appropriate value. The following
-lines would be the contents of this configuration file for the present scenario.
+In this case, KMS should announce the router public IP in order to be reachable
+from the outside. In the example example, sections ``HttpEndpoint`` and
+``PlumberEndpoint`` within ``/etc/kurento/kurento.conf.json`` should be
+configured as follows:
 
-.. sourcecode:: ini
+.. sourcecode:: js
 
-    [Server]
-    serverAddress=localhost
-    serverPort=9090
-    sdpPattern=pattern.sdp
+   {
+     "mediaServer" : {
+       "net" : {
+         // Uncomment just one of them
+         /*
+         "rabbitmq": {
+           "address" : "127.0.0.1",
+           "port" : 5672,
+           "username" : "guest",
+           "password" : "guest",
+           "vhost" : "/"
+         }
+         */
+         "websocket": {
+           "port": 8888,
+           //"secure": {
+           //  "port": 8433,
+           //  "certificate": "defaultCertificate.pem",
+           //  "password": ""
+           //},
+           "path": "kurento",
+           "threads": 10
+         }
+       }
+     },
+     "modules": {
+       "kurento": {
+         "SdpEndpoint" : {
+           "sdpPattern" : "sdp_pattern.txt"
+         },
+         "HttpEndpoint" : {
+           // "serverAddress" : "localhost",
+           /*
+             Announced IP Addess may be helpful under situations such as the server needs
+             to provide URLs to clients whose host name is different from the one the
+             server is listening in. If this option is not provided, http server will try
+             to look for any available address in your system.
+           */
+           "announcedAddress" : "130.206.82.56"
+         },
+         "WebRtcEndpoint" : {
+           // "stunServerAddress" : "stun ip address",
+           // "stunServerPort" : 3478,
+           // turnURL gives the necessary info to configure TURN for WebRTC.
+           //    'address' must be an IP (not a domain).
+           //    'transport' is optional (UDP by default).
+           // "turnURL" : "user:password@address:port(?transport=[udp|tcp|tls])",
+           // "pemCertificate" : "file"
+         },
+         "PlumberEndpoint" : {
+           // "bindAddress" : "localhost",
+           /*
+             Announced IP Address may be helpful under situations such as the endpoint needs
+             to provide an IP address to clients whose host name is different from the one
+             that the element is listening in. If this option is not provided, the bindAddress
+             will be used instead.
+           */
+           "announcedAddress" : "130.206.82.56"
+         }
+       }
+       //"module1": { …. }
+       //"module2": { …. }
+     }
+   }
 
-    [HttpEPServer]
-    #serverAddress=localhost
 
-    # Announced IP Address may be helpful under situations such as the server needs
-    # to provide URLs to clients whose host name is different from the one the
-    # server is listening in. If this option is not provided, http server will try
-    # to look for any available address in your system.
-    announcedAddress=130.206.82.56
+Verifying Kurento Media Server installation
+===========================================
 
-    serverPort=9091
+Kurento Media Server Process
+----------------------------
 
-    [WebRtcEndPoint]
-    #stunServerAddress = xxx.xxx.xxx.xxx
-    #stunServerPort = xx
-    #pemCertificate = file
+To verify that KMS is up and running use the command:
 
-Verifying Kurento Server installation
-=====================================
-
-List of Running Processes
--------------------------
-
-To verify that Kurento Server is up and running use the command:
-
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     ps -ef | grep kurento
 
-The output should be similar to:
+The output should include the ``kurento-media-server`` process:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
-   nobody    1494     1  0 13:00 ?        00:01:16 java -server -XX:+UseCompressedOops -XX:+TieredCompilation -jar /var/lib/kurento/kmf-media-connector.jar --spring.config.location=/etc/kurento/media-connector.properties
-   nobody   22527     1  0 13:02 ?        00:00:00 /usr/bin/kurento
-   kuser    22711  2326  0 13:10 pts/1    00:00:00 grep --color=auto kurento
+   nobody    1270     1  0 08:52 ?        00:01:00 /usr/bin/kurento-media-server
 
-Network interfaces Up & Open
-----------------------------
 
-Unless configured otherwise, Kurento Server will open the following ports:
+WebSocket Port
+--------------
 
--  KMS opens port 9091 to receive HTTP TCP requests from final users. KMS
-   also opens the port 9090 to receive Thrift TCP requests from KCS.
--  KCS opens the port 8888 to receive websocket TCP requests from final
-   users. KCS also opens port 9900 to receive Thrift TCP requests from the KMS.
+Unless configured otherwise, KMS will open the port **8888** to receive requests
+and send responses to/from by means of the
+:doc:`Kurento Protocol<kurento_protocol>`. To verify if this port is listening
+execute the following command:
 
-Ports 9091, and 8888 should be accessible from final users. Therefore these
-ports should be open and forwarded on existing network elements, such as NAT or
-Firewall.
-
-To verify the ports opened by KMS execute the following command:
-
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     sudo netstat -putan | grep kurento
 
 The output should be similar to the following:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
-   tcp        0      0 0.0.0.0:9091            0.0.0.0:*               LISTEN      8752/kurento
-   tcp6       0      0 :::9090                 :::*                    LISTEN      8752/kurento
+   tcp6       0      0 :::8888                 :::*                    LISTEN      1270/kurento-media-server
 
-To verify the ports opened by KCS execute the following command:
 
-.. sourcecode:: shell
+Kurento Media Server Log
+------------------------
 
-    $ sudo netstat -putan | grep java
+KMS has a log file located at
+``/var/log/kurento-media-server/media-server.log``. You can check it for
+example as follows:
 
-The output should be similar to the following:
+.. sourcecode:: sh
 
-.. sourcecode:: shell
+   tail -f /var/log/kurento-media-server/media-server.log
 
-   tcp6       0      0 :::8888                 :::*                    LISTEN      21243/java
-   tcp6       0      0 127.0.0.1:9900          :::*                    LISTEN      21243/java
+When KMS starts correctly, this trace is written in the log file:
+
+.. sourcecode:: sh
+
+   0:00:00.401153244  8003      0x26cb130 INFO      KurentoMediaServer   /.../main.cpp:194:main:   Mediaserver started
+
