@@ -21,6 +21,9 @@ changelink "#advanced-installation-guide" "mastering/advanced_installation_guide
 changelink "#kurento-development" "mastering/kurento_development.html" "./build/html/mastering_kurento.html"
 changelink "#kurento-modules" "mastering/kurento_modules.html" "./build/html/mastering_kurento.html"
 changelink "#media-concepts" "mastering/media_concepts.html" "./build/html/mastering_kurento.html"
+changelink "#java-kurento-client-javadoc" "langdoc/javadoc/index.html" "./build/html/mastering_kurento.html"
+changelink "#javascript-kurento-client-jsdoc" "langdoc/jsdoc/kurento-client-js/index.html" "./build/html/mastering_kurento.html"
+changelink "#javascript-kurento-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering_kurento.html"
 
 # ./build/html/mastering/*.html
 files=(kurento_architecture kurento_API kurento_protocol advanced_installation_guide kurento_development kurento_modules media_concepts)

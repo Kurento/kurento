@@ -59,3 +59,18 @@ Media Concepts
 
    Media Concepts <mastering/media_concepts>
 
+
+Java Kurento Client JavaDoc
+===========================
+
+* `kurento-client-java <./langdoc/javadoc/index.html>`_
+
+JavaScript Kurento Client JsDoc
+===============================
+
+* `kurento-client-js <./langdoc/jsdoc/kurento-client-js/index.html>`_
+
+JavaScript Kurento Utils JsDoc
+==============================
+
+* `kurento-utils-js <./langdoc/jsdoc/kurento-utils-js/index.html>`_
