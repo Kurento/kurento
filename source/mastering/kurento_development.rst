@@ -104,7 +104,7 @@ point to a development version. There is no way in Maven to use the latest
 development version of an artifact. You have to specify the concrete
 development version you want to depend on. To know what is the current Kurento
 Java Client development version, you can take a look to its
-`pom.xml <https://github.com/Kurento/kurento-java/blob/develop/kmf-media-api/pom.xml>`_
+`pom.xml <https://github.com/Kurento/kurento-java/blob/develop/kurento-client/pom.xml>`_
 and search for the version tag. For example, if you see something like:
 
 .. sourcecode:: xml
@@ -112,11 +112,11 @@ and search for the version tag. For example, if you see something like:
       <parent>
          <groupId>org.kurento</groupId>
          <artifactId>kurento-java-parent</artifactId>
-         <version>0.9.0-SNAPSHOT</version>
+         <version>|version_dev|</version>
          <relativePath>../kurento-java-parent</relativePath>
       </parent>
 
-The development version is ``0.9.0-SNAPSHOT``, and you have to include in your
+The development version is ``|version_dev|`` and you have to include in your
 application's pom.xml the following dependency:
 
 .. sourcecode:: xml
@@ -124,7 +124,7 @@ application's pom.xml the following dependency:
    <dependency>
        <groupId>org.kurento</groupId>
        <artifactId>kurento-client</artifactId>
-       <version>0.9.0-SNAPSHOT</version>
+       <version>|version_dev|</version>
    </dependency>
 
 Kurento JavaScript Client
@@ -273,6 +273,3 @@ Then, you compile, package and install the project ``kurento-client``::
 
    cd kurento-client-js
    npm install
-
-.. todo:: Explain how to use this newly created library from app's code.
-   Also explain how to compile all Kurento dependencies (kurento-jsonrpc-js).

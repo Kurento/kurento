@@ -52,6 +52,7 @@ copyright = u'2014, kurento doc team'
 #
 # The short X.Y version.
 version = '5.0.0'
+version_dev = '5.0.1-SNAPSHOT'
 # The full version, including alpha/beta/rc tags.
 release = '5.0.0-dev'
 

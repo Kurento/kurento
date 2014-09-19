@@ -52,6 +52,7 @@ clean:
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@"); find build/html -name "*.html" -exec sed -i -e "s@|version|@$$ver@" {} \;
+	export ver_dev=$$(grep -E '^version_dev =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@"); find build/html -name "*.html" -exec sed -i -e "s@|version_dev|@$$ver_dev@" {} \;
 	./fixlinks.sh
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
