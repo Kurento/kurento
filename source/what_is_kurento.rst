@@ -39,7 +39,7 @@ It provides the following features:
 There are available :term:`Kurento Client` libraries in
 `Java <http://www.java.com/>`__ and
 `Javascript <http://www.w3.org/standards/webdesign/script>`__ to control
-Kurento Server from applications. If you prefer another programming language,
+Kurento Media Server from applications. If you prefer another programming language,
 you can use the :term:`Kurento Protocol`, based on :term:`WebSocket` and
 :term:`JSON-RPC`.
 
@@ -48,7 +48,7 @@ Kurento is open source, released under the terms of
 source code is hosted on `GitHub <https://github.com/Kurento>`__.
 
 If you want to put your hands on quickly, the best way is
-:doc:`installing the Kurento Server<installation_guide>` and take a look to our
+:doc:`installing the Kurento Media Server<installation_guide>` and take a look to our
 :doc:`tutorials<tutorials>` in form of working demo applications. You can
 choose your favorite technology to build multimedia applications: **Java**,
 **Browser JavaScript** or **Node.js**.

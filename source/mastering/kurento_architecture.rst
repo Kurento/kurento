@@ -47,25 +47,25 @@ their desired characteristics on their behalf. Hence, this is the part of the
 architecture, which is in contact with application developers and, for this
 reason, it needs to be designed pursuing simplicity and flexibility.
 
-On the **left side**, we have the Kurento Server, which implements the media
-plane capabilities providing access to the low-level media features: media
-transport, media encoding/decoding, media transcoding, media mixing, media
-processing, etc. The Kurento Server must be capable of managing the multimedia
-streams with minimal latency and maximum throughput. Hence the Kurento Server
-must be optimized for efficiency.
+On the **left side**, we have the Kurento Media Server, which implements the
+media plane capabilities providing access to the low-level media features:
+media transport, media encoding/decoding, media transcoding, media mixing,
+media processing, etc. The Kurento Media Server must be capable of managing the
+multimedia streams with minimal latency and maximum throughput. Hence the
+Kurento Media Server must be optimized for efficiency.
 
 Kurento APIs and interfaces
 ---------------------------
 
-The capabilities of the media plane (Kurento Server) and signalling plane
+The capabilities of the media plane (Kurento Media Server) and signalling plane
 (Application) are exposed through a number of APIs, which provide increasing
 abstraction levels.
 
 Following this, the role of the different APIs can be summarized in the
 following way:
 
-- **Kurento Protocol**: Is a network protocol exposing the Kurento Server
-  capabilities through `WebSocket`:term: (read more in
+- **Kurento Protocol**: Is a network protocol exposing the Kurento Media
+  Server capabilities through `WebSocket`:term: (read more in
   :doc:`Kurento Protocol section <kurento_protocol>`).
 
 - **Kurento API**: Is the object oriented view of the Kurento Protocol. This
@@ -140,8 +140,9 @@ also be implemented with the same architecture:
 
 -  **Service layer**: This layer provides the multimedia services that
    support the application logic such as media recording, media ciphering, etc.
-   The Kurento Server (i.e. the specific :term:`pipeline <Media Pipeline>` of
-   :term:`media elements<Media Element>`) is in charge of this layer.
+   The Kurento Media Server (i.e. the specific
+   :term:`pipeline <Media Pipeline>` of :term:`media elements<Media Element>`)
+   is in charge of this layer.
 
 The interesting aspect of this discussion is that, as happens with WWW
 development, Kurento applications can place the Presentation layer at the
@@ -194,7 +195,7 @@ among three main modules:
    platforms (for example, Kurento Java Client for Java EE and Kurento
    JavaScript Client for Node.js).
 
--  **Kurento Server**: which receives commands for creating specific
+-  **Kurento Media Server**: which receives commands for creating specific
    multimedia capabilities (i.e. specific pipelines adapted to the needs of
    specific applications)
 
@@ -213,7 +214,7 @@ reduced to the following conceptual scheme:
    the architectural figures presented above, so that, for example, orange
    arrows show exchanges belonging to the signaling plane, blue arrows show
    exchanges belonging to the Kurento Protocol, red boxes are associated to the
-   Kurento Server and green boxes with the application.*
+   Kurento Media Server and green boxes with the application.*
 
 1. Media negotiation phase (signalling)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -230,11 +231,12 @@ Authorization and Accounting (AAA), CDR generation, consuming some type of web
 service, etc.
 
 After that, the application processes the request and, according to the specific
-instructions programmed by the developer, commands Kurento Server to
+instructions programmed by the developer, commands Kurento Media Server to
 instantiate the suitable media elements and to chain them in an appropriate
-media pipeline. Once the pipeline has been created successfully, kurento server
-responds accordingly and the application forwards the successful response to
-the client, showing it how and where the media service can be reached.
+media pipeline. Once the pipeline has been created successfully, kurento Media
+server responds accordingly and the application forwards the successful
+response to the client, showing it how and where the media service can be
+reached.
 
 During the above mentioned steps no media data is really exchanged. All the
 interactions have the objective of negotiating the whats, hows, wheres and
@@ -245,11 +247,12 @@ Clearly, during this phase only signalling protocols are involved.
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 After that, a new phase starts devoted to producing the actual media exchange.
-The client addresses a request for the media to the Kurento Server using the
-information gathered during the negotiation phase. Following with the
+The client addresses a request for the media to the Kurento Media Server using
+the information gathered during the negotiation phase. Following with the
 video-clip visualization example mentioned above, the browser will send a GET
-request to the IP address and port of the Kurento Server where the clip can be
-obtained and, as a result, an HTTP reponse with the media will be received.
+request to the IP address and port of the Kurento Media Server where the clip
+can be obtained and, as a result, an HTTP reponse with the media will be
+received.
 
 Following the discussion with that simple example, one may wonder why such a
 complex scheme for just playing a video, when in most usual scenarios clients
@@ -270,12 +273,12 @@ Real time WebRTC applications with Kurento
 ------------------------------------------
 
 Kurento allows the establishment of real time multimedia session between a
-browser and the Kurento Server directly through the use of `WebRTC`:term:. In
-addition, Kurento Server can be used to act as media proxy for making possible
-the communication among different clients, which are mediated by the kurento
-infrastructure. Hence, Kurento Server can act as a conference bridge
-(Multi-Conference Unit, MCU), as a machine-to-machine communication system, as
-a video call recording system, etc.
+browser and the Kurento Media Server directly through the use of
+`WebRTC`:term:. In addition, Kurento Media Server can be used to act as media
+proxy for making possible the communication among different clients, which are
+mediated by the kurento infrastructure. Hence, Kurento Media Server can act as
+a conference bridge (Multi-Conference Unit, MCU), as a machine-to-machine
+communication system, as a video call recording system, etc.
 
 As shown in the picture, the client exposes its media capabilities through an
 `SDP`:term: (Session Description Protocol) sent in a request. Hence, the
@@ -294,7 +297,7 @@ modules are summarized in the following picture
    *Interactions taking place in a Real Time Communications (RTC)
    session. During the negotiation phase, a Session Description Protocol
    (SDP) message is exchanged offering the capabilities of the client. As a
-   result, Kurento Server generates an SDP answer that can be used by the
+   result, Kurento Media Server generates an SDP answer that can be used by the
    client for extablishing the media exchange.*
 
 The application developer is able to create the desired pipeline during the
@@ -334,12 +337,12 @@ Kurento is designed based on the following main principles:
         multimedia processing.
 
     **Distribution of Media and Application Services**
-        Kurento Server and applications can be collocated, scalated or
-        distributed among different machines.
+        Kurento Media Server and applications can be collocated,
+        scalated or distributed among different machines.
 
         A single application can invoke the services of more than one
-        Kurento Server. The opposite also applies, that is, a Kurento Server
-        can attend the requests of more than one application.
+        Kurento Media Server. The opposite also applies, that is, a Kurento
+        Media Server can attend the requests of more than one application.
 
     **Suitable for the Cloud**
         Kurento is suitable to be integrated into cloud environments to
@@ -351,10 +354,10 @@ Kurento is designed based on the following main principles:
         challenge the complexity of multimedia processing.
 
     **Application development**
-        Developers do not need to be aware of internal Kurento Server
-        complexities, all the applications can deployed in any technology or
-        framework the developer like, from client to server. From browsers to
-        cloud services.
+        Developers do not need to be aware of internal Kurento Media
+        Server complexities, all the applications can deployed in any
+        technology or framework the developer like, from client to server. From
+        browsers to cloud services.
 
     **End-to-end Communication Capability**
         Kurento provides end-to-end communication capabilities so

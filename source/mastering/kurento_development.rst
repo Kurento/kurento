@@ -4,26 +4,18 @@
 Kurento Development
 %%%%%%%%%%%%%%%%%%%
 
-Kurento framework is composed by several components. Each component is being
-developed with very different technologies.
+Kurento is composed by several components. Each component is being developed
+with very different technologies.
 
-* **Kurento Server:** The server side of Kurento is composed by two components:
-
-  * **Kurento Media Server:** This is the core component of Kurento. It is
-    implemented using C/C++ and GStreamer platform.
-  * **Kurento Control Server** This server component is responsible to
-    control clients that use Kurento. It speaks web sockets with the clients
-    and translate it to another internal protocol to communicate with Kurento
-    Media Server. It is implemented in Java and uses Maven, Spring Boot and
-    Tomcat technologies.
-
+* **Kurento Media Server:** This is the core component of Kurento. It is
+  implemented using C/C++ and GStreamer platform.
 * **Kurento Java Client:** This Kurento Client is implemented in Java with
   Maven and Sprint.
 * **Kurento JavaScript Client:** This Kurento Client is implemented in
   JavaScript with Node.js and NPM.
 
 In this section, we will see how to use nightly compiled versions of Kurento
-code base. This is not the recommended way to use kurento, but can be useful if
+code base. This is not the recommended way to use Kurento, but can be useful if
 you are testing brand new features.
 
 We'll also explain in detail how Kurento can be built from sources. This is a
@@ -49,10 +41,10 @@ be useful to try brand new features.
    broken. Usually they have bugs and incomplete functionalities. **Never** use
    development versions in production.
 
-Kurento Server
-==============
+Kurento Media Server
+====================
 
-The development builds of Kurento Server are .deb packages hosted in
+The development builds of Kurento Media Server are .deb packages hosted in
 http://ubuntu.kurento.org.
 
 The following procedure is needed to setup Ubuntu to automatically get latest
@@ -65,7 +57,7 @@ Every time you want to install the latest development version, you have to
 execute the following commands::
 
     sudo apt-get update
-    sudo apt-get install kurento-server
+    sudo apt-get install kurento-media-server
 
 As you can imagine, it is not possible to have installed at the same time latest
 stable version and latest development version of Kurento Media Server.
@@ -237,39 +229,6 @@ And start and stop it::
 
     sudo service kurento-media-server start
     sudo service kurento-media-server stop
-
-Kurento Control Server
-======================
-
-To build Kurento Control Server, be sure you have Java, Maven and Git installed.
-If not, install it with::
-
-    sudo apt-get install openjdk-7-jdk
-    sudo apt-get install git
-    sudo apt-get install maven
-
-First, you have to get the source code clonning git repository::
-
-    git clone https://github.com/Kurento/kurento-java.git
-
-Then, you compile and package the project ``kurento-control-server``::
-
-    cd kurento-java/kurento-control-server
-    mvn package -DskipTests
-
-Finally, install it into the system as a service::
-
-    sudo mkdir /opt/kurento-control-server
-    sudo mv target/kurento-control-server.zip /opt/kurento-control-server
-    cd /opt/kurento-control-server
-    sudo unzip kurento-control-server.zip
-    sudo ./bin/install.sh
-    sudo update-rc.d kurento-control-server defaults
-
-And start and stop it::
-
-    sudo service kurento-control-server stop
-    sudo service kurento-control-server start
 
 Kurento Java Client
 ===================

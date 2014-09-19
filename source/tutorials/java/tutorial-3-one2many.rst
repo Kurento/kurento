@@ -57,8 +57,8 @@ media pipeline is illustrated in the following picture:
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
 At the server-side we use the **Kurento Java Client** in order to reach the
-**Kurento Server**. All in all, the high level architecture of this demo is
-three-tier. To communicate these entities two WebSockets are used. First, a
+**Kurento Media Server**. All in all, the high level architecture of this demo
+is three-tier. To communicate these entities two WebSockets are used. First, a
 WebSocket is created between client and server-side to implement a custom
 signaling protocol. Second, another WebSocket is used to perform the
 communication between the Kurento Java Client and the Kurento Media Server.
@@ -144,8 +144,8 @@ The main class of this demo is named
 As you can see, the *KurentoClient* is instantiated in this class as a Spring
 Bean. This bean is used to create **Kurento Media Pipelines**, which are used
 to add media capabilities to your applications. In this instantiation we see
-that a WebSocket is used to connect with Kurento Server, by default in the
-*localhost* and listening in the port 8888.
+that a WebSocket is used to connect with Kurento Media Server, by default in
+the *localhost* and listening in the port 8888.
 
 .. sourcecode:: java
 

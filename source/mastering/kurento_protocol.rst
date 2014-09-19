@@ -6,9 +6,9 @@ Kurento Protocol
 
 .. highlight:: json
 
-**Kurento Protocol** is the Kurento Server protocol based on :term:`WebSocket`
-that uses :term:`JSON-RPC` V2.0 messages for making requests and sending
-responses.
+**Kurento Protocol** is the Kurento Media Server protocol based on
+:term:`WebSocket` that uses :term:`JSON-RPC` V2.0 messages for making requests
+and sending responses.
 
 
 JSON-RPC Messages format
@@ -113,7 +113,7 @@ The following example shows a typical error response::
 Kurento API over JSON-RPC
 =========================
 
-As explained in :doc:``Kurento API section <kurento_API>``, Kurento Server
+As explained in :doc:``Kurento API section <kurento_API>``, Kurento Media Server
 exposes a full fledged API to let applications to process media in several ways.
 
 To allow this rich API, Kurento Clients require requires full-duplex
@@ -121,7 +121,7 @@ communications between client and server infrastructure. For this reason, the
 Kurento Protocol is based on WebSocket transports.
 
 Previous to issuing commands, the Kurento Client requires establishing a
-WebSocket connection with Kurento Server to the URL:
+WebSocket connection with Kurento Media Server to the URL:
 ``ws://hostname:port/kurento``
 
 Once the WebSocket has been established, the Kurento Protocol offers five
@@ -134,10 +134,10 @@ different types of request/response messages:
  - **unsubscribe**: Removes an existing subscription to an event.
  - **release**: Deletes the object and release resources used by it.
 
-The Kurento Protocol allows to Kurento Server send requests to clients:
+The Kurento Protocol allows to Kurento Media Server send requests to clients:
 
- - **onEvent**: This request is sent from kurento server to clients when an
-   event occurs.
+ - **onEvent**: This request is sent from kurento Media server to clients
+   when an event occurs.
 
 Create messages
 ~~~~~~~~~~~~~~~
@@ -150,8 +150,8 @@ object. These parameters are defined in
 :doc:`Kurento API section <kurento_API>`.
 
 Finally, a ``sessionId`` parameter is included with the identifier of the
-current session. The value of this parameter is sent by Kurento server to the
-client in each response. Only the first request from client to server is
+current session. The value of this parameter is sent by Kurento Media Server to
+the client in each response. Only the first request from client to server is
 allowed to not include the ''sessionId'' (because at this point is unknown for
 the client).
 
@@ -269,7 +269,7 @@ specified object. The parameter ``object`` indicates the id of the object to
 subscribe for events. The parameter ``type`` specifies the type of the events.
 If a client is subscribed for a certain type of events in an object, each time
 an event is fired in this object, a request with method ``onEvent`` is sent
-from kurento Server to the client. This kind of request is described few
+from kurento Media Server to the client. This kind of request is described few
 sections later.
 
 The following example shows a ``Request`` object requesting the subscription of
@@ -379,5 +379,3 @@ onEvent request::
       "id":6,
       "result": ""
     }
-
-

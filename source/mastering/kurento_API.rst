@@ -4,16 +4,16 @@
 Kurento API Reference
 %%%%%%%%%%%%%%%%%%%%%
 
-**Kurento Server** exposes an API to high level languages that allow application
-programmers to control it. This high level API can be used with a
+**Kurento Media Server** exposes an API to high level languages that allow
+application programmers to control it. This high level API can be used with a
 **Kurento Client** for **Java** or **JavaScript**. If you prefer another
 programming language, you can use the
 :doc:`Kurento Protocol<kurento_protocol>`, based on :term:`WebSocket` and
 :term:`JSON-RPC`.
 
 In the following sections we will describe the Kurento API in a high level way.
-We will show the media capabilities exposed by Kurento Server to clients. If
-you want see working demos using Kurento, please refer to
+We will show the media capabilities exposed by Kurento Media Server to clients.
+If you want see working demos using Kurento, please refer to
 :doc:`Tutorials section<../tutorials>`.
 
 .. index::

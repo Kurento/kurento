@@ -19,7 +19,7 @@ in three flavors:
 - **Node.js**: These show applications where clients interact with an
   application server based on Node.js technology. The application server holds
   the logic orchestrating the communication among the clients and controlling
-  Kurento Server capabilities for them.
+  Kurento Media Server capabilities for them.
 
 .. note::
 

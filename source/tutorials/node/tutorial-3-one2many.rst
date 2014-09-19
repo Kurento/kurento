@@ -70,9 +70,9 @@ media pipeline is illustrated in the following picture:
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
 At the server-side we use the **Kurento JavaScript Client** in order to reach
-the **Kurento Server**. All in all, the high level architecture of this demo is
-three-tier. To communicate these entities two WebSockets are used. The first is
-created between the client browser and a Node.js application server to
+the **Kurento Media Server**. All in all, the high level architecture of this
+demo is three-tier. To communicate these entities two WebSockets are used. The
+first is created between the client browser and a Node.js application server to
 transport signaling messages. The second is used to communicate the Kurento
 JavaScript Client executing at Node.js and the Kurento Media Server. This
 communication is implemented by the **Kurento Protocol**. For further
