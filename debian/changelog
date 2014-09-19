@@ -1,3 +1,190 @@
+kms-elements (5.0.1) testing; urgency=medium
+
+  [ David Fernandez ]
+  * Addapt implementations to new way to use MediaServerConfig
+  * HttpServer: Add implementations to use HttpServer
+  * Add pre-commit hook and format the code
+
+  [ Jose Antonio Santos Cadenas ]
+  * Make kmshttpep a static library
+
+  [ David Fernandez ]
+  * cmake: Put all dependencies together in CMake
+  * HttpGetEndpoint: Implement setConfig method
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update debian package version to 5.0.0 prerelease
+  * Fix HttpEndpoint problems with config method
+
+  [ Santiago Carot-Nemesio ]
+  * Management of events
+  * Manage uri queries
+  * Refactorized query management function
+  * Allow full duplex caps negotiation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Disable dtlssrtp test that causes problems in computers with ipv6
+  * constructor: Do not release mediaSet
+
+  [ Santiago Carot-Nemesio ]
+  * kmssctpbaserpc: fix indent issues
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/control: Remove gtk-doc-tools build dependency
+
+  [ Santiago Carot-Nemesio ]
+  * Add libgstmarshal (>> 1.0.0) dependancy
+  * kmssctpbaserpc: provide support for sending buffers
+  * gstsctpclientsink: Send fragmented data buffers
+  * kmssctpbaserpc: Fix assembler function
+  * kmssctpbaserpc: Add log message
+  * kmssctpbaserpc: Assemble fragmented buffers
+
+  [ Jose Antonio Santos Cadenas ]
+  * debian/control: Fix build dependencies
+
+  [ Santiago Carot-Nemesio ]
+  * gstsctpserversrc: Put received buffer in the pipeline
+  * kmssctpserverrpc: Fix deadlock
+  * Check returned value when decoding KmsMessages
+
+  [ David Fernandez ]
+  * Add AlphaBlending element
+  * Fix README.md file
+  * elements.kmd: Fix missed kmf in maven.groupId
+  * webrtcendpoint: Remove qos event property from nicesink
+
+  [ Jose Antonio Santos Cadenas ]
+  * Rename generated js and java projects
+  * Add uuid library as a dependency
+  * Fix debian dependencies
+  * Add configuration to objects
+  * Fix configuration process
+  * Get configuration for webrtcendpoint from config file
+  * WebRtcEndpoint: Create a temporal pem certificate is none is provided
+  * Cleanup tests
+  * constructors tests: Fix sdp configuration
+
+  [ David Fernandez ]
+  * Add kurento namespace to kmd file
+
+  [ mgallego ]
+  * Refactor kmd properties to make easier Json Java parsing
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: support for "nack pli"
+
+  [ Jose Antonio Santos Cadenas ]
+  * webrtcendpoint: Fix getting certificate path from config
+
+  [ Miguel París Díaz ]
+  * kmswebrtcendpoint: always connect transport for RTCP sending
+  * kmswebrtcendpoint: improve transport connection for RTCP sending for bundle mode
+
+  [ Santiago Carot-Nemesio ]
+  * SCTP: Create a separate stream channel for either queries events and buffers
+  * SCTP: Allow configurtation of timetolive parameter
+  * gstsctpclientsink: Configure sync and async properties
+  * kmssctpbaserpc: Serialize queries and events with the data flow
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix cppNamespace on kmd
+  * DispatcherImpl: Add implementation
+
+  [ Santiago Carot-Nemesio ]
+  * gstsctpserversrc: Block until the client is connected before going to PLAYING
+  * gstsctpserversrc: Fix erroneous management of uri queries
+  * gstsctpserversrc: Do not copy caps if they are NULL
+  * gstsctpserversrc: Configure as a live source
+  * ssctp: Change log severity
+  * gstsctpserversrc: Fix function names
+
+  [ Jose Antonio Santos Cadenas ]
+  * playerendpoint: Reduce critial region to avoid deadlocks
+  * httpendpoint: Reduce critical region using atomic variables
+  * Set internal pipelines "async-handling" property to true
+
+  [ Santiago Carot-Nemesio ]
+  * kmssctpserverrpc: Fix delivery of serialized events and queries.
+  * Fix indentation issues
+
+  [ Jose Antonio Santos Cadenas ]
+  * Use a different lock for base time
+
+  [ Santiago Carot-Nemesio ]
+  * Add plumberendpoint skelleton class
+  * Remove useless properties
+  * Start sctpserversrc elements when going from NULL to READY state
+  * revert commit 16ce2787d8000cc95be506d978b8ba5825cc329a
+  * plumberendpoint: Link valves to sctp client elements
+  * sctp: Change log severity for queries and events interchanged
+  * Add initial PlumberEndpoint class implementation
+
+  [ Miguel París Díaz ]
+  * kmsrtcpdemux: fix SRTP/SRTCP demuxing
+
+  [ Santiago Carot-Nemesio ]
+  * Add multichannelcontroller skelleton class
+  * Add Multi-Channel Controller Protocol definition
+  * multichannelcontroller: manage working task life cycle
+  * multichannelcontroller: Provide operations to stablish control link
+
+  [ Jose Antonio Santos Cadenas ]
+  * Move confcontroller from kms-core
+  * Fix timestamps of recorded/http streamed videos
+  * httpendpoint: Do not perform state changes on a different thread
+  * confcontroller: Remove requesting of keyframes
+  * Disable tests related to rtp
+  * WebRtcEndpoint: Perform a correct management of temporal directory
+  * Add npmGit to module descriptor
+  * Constructor test: Make test work even if CMAKE_INSTALL_PREFIX is not set
+
+  [ Miguel París Díaz ]
+  * Manage declaration-after-statement as error for C
+  * kmswebrtcendpoint: nicesink with "sync" as FALSE
+  * kmsrtpendpoint: udpsink with "sync" as FALSE
+
+  [ Santiago Carot-Nemesio ]
+  * kmsmultichannelcontroller: Fix state to string macro
+  * kmsmultichannelcontroller: Read data from control channel
+  * kmsplumberendpoint: Change default values for remote addres and remote port properties
+  * kmsplumberendpoint: Connect control link if remote address and port is provided
+  * kmsmultichannelcontroller: Fix transition from idle to CONNECTED
+  * kmsmultichannelcontroller: Send request to create a stream channel
+  * kmsmultichannelcontroller: Process request in working thread
+  * kmssctpconnection: Provide a method to get the bound port
+  * kmssctpserverrpc: Set port as an input/output parameter
+  * gstsctpserversrc: Emit notify signal to provide bounded port
+  * gstsctpserversrc: If no port number is provided use an available one
+  * kmsmultichannelcontroller: Provide a callback mechanism to create SctP src elements
+  * kmsplumberendpoint: Send request to create video channel when valve is added
+  * kmsplumberendpoint: Create a new sctpserversrc when it is requested
+  * kmsplumberendpoint: Connect video sctpclientsink element to valve
+  * kmsplumberendpoint: Connect audio sctpclientsink element to valve
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix compilation problem on debian package generation
+
+  [ Santiago Carot-Nemesio ]
+  * kmsmultichannelcontroller: Create a generic conversion macro
+  * kmsplumberendpoint: Add actions to connect and accept connections
+  * kmsplumberendpoint: Implment accept and connect actions
+  * PlumberEndpointImpl: new API specification
+  * PlumberEndpointImpl: Provide bound port used to accept control channel connections
+  * PlumberEndpointImpl: Change method name from connect to link
+
+  [ David Fernandez ]
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * Increse version to 5.0.1-dev
+  * Fix dependencies
+  * Prepare release 5.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- David Fernandez <d.fernandezlop@gmail.com>  Fri, 19 Sep 2014 12:00:46 +0200
+
 kms-elements (5.0.0~rc1) testing; urgency=medium
 
   * Initial release.
