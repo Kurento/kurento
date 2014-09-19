@@ -1,3 +1,37 @@
+kurento-module-creator (3.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom.xml: Do not add dependencies tag if there are no dependencies
+  * pom.xml: Version range for maven plugin
+  * js: Remove kurento specifics from js templates
+
+  [ mgallego ]
+  * Allow caret ranges in kurento module versions
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix generation of bower.json using a template to merge field
+  * JsonFusioner: Write json using bufferedWriter + rename xml variables
+
+  [ mgallego ]
+  * Test verification of non-dev versions in release version module
+  * Fix check of dependencies versions
+
+  [ Jose Antonio Santos Cadenas ]
+  * Return error correctly while reading kmd.json values
+
+  [ mgallego ]
+  * Include junit4 in debian descriptor file
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove StingContains from tests that does not work with debian
+  * Improve exception description when finding module dependencies
+  * Prepare release 3.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 19 Sep 2014 10:56:03 +0200
+
 kurento-module-creator (3.0.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
