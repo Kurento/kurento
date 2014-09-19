@@ -1,3 +1,14 @@
+kurento-module-creator (3.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * pom.xml: Add fields required by maven central
+  * Prepare release 3.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Fri, 19 Sep 2014 15:44:42 +0200
+
 kurento-module-creator (3.0.2) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
