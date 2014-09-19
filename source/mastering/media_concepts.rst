@@ -65,4 +65,48 @@ by the source, and this time scale is shared among all connected clients. In
 selects resource, but also the starting time. When many *VoD* clients access
 the same resource, each one has its own time scale, and each time scale is
 reset if the client breaks the connection. *Kurento* is currently supporting
-Broadcast services, but in future versions it will also support true *VoD* mode.
+Broadcast services, but in future versions it will also support true *VoD*
+mode.
+
+
+Agnostic media adaptor
+======================
+
+Using the Kurento Clients, developers are able to compose the available media
+elements, getting the desired pipeline. There is a challenge in this scheme, as
+different media elements might require different input media formats than the
+output produced by their preceding element in the chain. For example, if we
+want to connect a WebRTC (VP8 encoded) or a RTP (H.264/H.263 encoded) video
+stream to a face recognition media element implemented to read raw RGB format,
+a transcoding is necessary.
+
+Developers, specially during the initial phases of application development,
+might want to simplify development and abstract this heterogeneity, so Kurento
+provides an automatic converter of media formats called the
+:term:`agnostic media adaptor <agnostic, media>`. Whenever a media element is
+connected to another media element’s, Kurento verifies if media adaption and
+transcoding is necessary and, in case it is, it transparently incorporates the
+appropriate transformations making possible the chaining of the two elements
+into the resulting pipeline.
+
+Hence, this *agnostic media adaptor* capability fully abstracts all the
+complexities of media codecs and formats. This may significantly accelerate the
+development process, specially when developers are not multimedia technology
+experts. However, there is a price to pay. Transcoding may be a very CPU
+expensive operation. The inappropriate design of pipelines that chain media
+elements in a way that unnecessarily alternate codecs (e.g. going from H.264,
+to raw, to H.264 to raw again) will lead to very poor performance of
+applications.
+
+.. figure:: ../images/AgnosticMediaAdaptor.png
+   :height: 215px
+   :width:  599px
+   :align:  center
+   :alt:    Media Adaptor
+   :figwidth: 600px
+
+   **Media Adaptor**.
+
+   *The agnostic media capability adapts formats between heterogeneous
+   media elements making transparent for application developers all
+   complexities of media representation and encoding.*

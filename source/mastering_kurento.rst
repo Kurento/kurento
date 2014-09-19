@@ -34,22 +34,6 @@ Advanced Installation Guide
 
    Advanced Installation Guide <mastering/advanced_installation_guide>
 
-Media Concepts
-==============
-
-.. toctree::
-   :maxdepth: 1
-
-   Media Concepts <mastering/media_concepts>
-
-Kurento Server
-==============
-
-.. toctree::
-   :maxdepth: 1
-
-   Kurento Server <mastering/kurento_server>
-
 Kurento Development
 ===================
 
@@ -65,4 +49,12 @@ Kurento Modules
    :maxdepth: 1
 
    Kurento Modules <mastering/kurento_modules>
+
+Media Concepts
+==============
+
+.. toctree::
+   :maxdepth: 1
+
+   Media Concepts <mastering/media_concepts>
 
