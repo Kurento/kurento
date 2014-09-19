@@ -42,13 +42,14 @@ Kurento Development
 
    Kurento Development <mastering/kurento_development>
 
-Kurento Modules
-===============
+..
+   Kurento Modules
+   ===============
 
-.. toctree::
-   :maxdepth: 1
+   .. toctree::
+      :maxdepth: 1
 
-   Kurento Modules <mastering/kurento_modules>
+      Kurento Modules <mastering/kurento_modules>
 
 Media Concepts
 ==============
