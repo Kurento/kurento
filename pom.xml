@@ -4,7 +4,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-module-creator</artifactId>
-	<version>3.0.2</version>
+	<version>3.0.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>kurento-module-creator</name>
