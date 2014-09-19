@@ -8,7 +8,17 @@
 	<packaging>jar</packaging>
 
 	<name>kurento-module-creator</name>
-	<url>http://maven.apache.org</url>
+	<description>Kurento Module Creator</description>
+	<url>http://www.kurento.org</url>
+
+	<developers>
+		<developer>
+			<id>kurento</id>
+			<name>Kurento Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -134,9 +144,9 @@
 	</dependencies>
 
 	<scm>
-		<url>https://github.com/Kurento/${project.artifactId}</url>
-		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
+		<url>https://github.com/Kurento/kurento-module-creator</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-module-creator</connection>
+		<developerConnection>scm:git:git@github.com:Kurento/kurento-module-creator.git</developerConnection>
 		<tag>develop</tag>
 	</scm>
 </project>
