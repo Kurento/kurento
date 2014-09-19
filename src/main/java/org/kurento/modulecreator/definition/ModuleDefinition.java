@@ -380,7 +380,8 @@ public class ModuleDefinition {
 						throw new KurentoModuleCreatorException("Import '"
 								+ importEntry.getName() + "' with version "
 								+ importEntry.getVersion()
-								+ " not found in dependencies");
+								+ " not found in dependencies, found version: "
+								+ dependencyModule.getVersion());
 					}
 				}
 			}
