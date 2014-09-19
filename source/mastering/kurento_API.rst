@@ -14,7 +14,7 @@ programming language, you can use the
 In the following sections we will describe the Kurento API in a high level way.
 We will show the media capabilities exposed by Kurento Server to clients. If
 you want see working demos using Kurento, please refer to
-:doc:`Tutorials section<Tutorials>`.
+:doc:`Tutorials section<../tutorials>`.
 
 .. index::
     single: Media; Element
@@ -353,8 +353,4 @@ Dispatcher
     "Hub" -> "Dispatcher";
     "Hub" -> "DispatcherOneToMany";
 
-Kurento API Reference
-=====================
-
-.. include:: ../api_reference/Kurento_API_Reference.txt
 

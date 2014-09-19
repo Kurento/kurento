@@ -113,7 +113,7 @@ The following example shows a typical error response::
 Kurento API over JSON-RPC
 =========================
 
-As explained in :doc:``Kurento API section <Kurento_API>``, Kurento Server
+As explained in :doc:``Kurento API section <kurento_API>``, Kurento Server
 exposes a full fledged API to let applications to process media in several ways.
 
 To allow this rich API, Kurento Clients require requires full-duplex
@@ -126,6 +126,7 @@ WebSocket connection with Kurento Server to the URL:
 
 Once the WebSocket has been established, the Kurento Protocol offers five
 different types of request/response messages:
+
  - **create**: Instantiates a new media object, that is, a pipeline or media
    element.
  - **invoke**: Calls a method of an existing media object.
@@ -146,7 +147,7 @@ parameter ``type`` specifies the type of the object to be created. The
 parameter ``creationParams`` contains all the information needed to create the
 object. Each object type needs different ``creationParams`` to create the
 object. These parameters are defined in
-:doc:`Kurento API section <Kurento_API>`.
+:doc:`Kurento API section <kurento_API>`.
 
 Finally, a ``sessionId`` parameter is included with the identifier of the
 current session. The value of this parameter is sent by Kurento server to the
@@ -197,7 +198,7 @@ The parameter ``object`` indicates the id of the object in which the operation
 will be invoked. The parameter ``operation`` carries the name of the operation
 to be executed. Finally, the parameter ``operationParams`` has the parameters
 needed to execute the operation. The object specified has to understand the
-operation name and parameters. In the :doc:`Kurento API section <Kurento_API>`
+operation name and parameters. In the :doc:`Kurento API section <kurento_API>`
 is described the valid operations for all object types.
 
 The following example shows a ``Request`` object requesting the invocation of

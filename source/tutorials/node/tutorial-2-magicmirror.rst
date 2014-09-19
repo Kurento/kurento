@@ -25,7 +25,7 @@ an Ubuntu machine, you can install both as follows:
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-magic-mirror
@@ -297,7 +297,7 @@ Kurento Client JavaScript (*kurento-client*). The relevant part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/package.json>`_
 file for managing this dependency is:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
      ...
@@ -308,7 +308,7 @@ At the client side, dependencies are managed using Bower. Take a look to the
 `bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/js/bower.js>`_
 file and pay attention to the following section:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
      "kurento-utils" : "|version|"

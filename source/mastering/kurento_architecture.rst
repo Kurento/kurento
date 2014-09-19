@@ -66,12 +66,14 @@ following way:
 
 - **Kurento Protocol**: Is a network protocol exposing the Kurento Server
   capabilities through `WebSocket`:term: (read more in
-  :doc:`Kurento Protocol section <Kurento_Protocol>`).
+  :doc:`Kurento Protocol section <kurento_protocol>`).
+
 - **Kurento API**: Is the object oriented view of the Kurento Protocol. This
   API makes possible the creation and management of media elements and
   pipelines by using references (ids). Accessing the Kurento API is possible
   from any of the computer languages and frameworks implementing Kurento
-  Protocol. (read more in :doc:`Kurento API section <Kurento_API>`)
+  Protocol. (read more in :doc:`Kurento API section <kurento_API>`)
+
 -  **Kurento Java Client**: Is a Java SE layer which consumes the Kurento API
    and exposes its capabilities through a simple-to-use modularity based on
    Java POJOs representing media elements and media pipelines. This API is
@@ -83,13 +85,13 @@ following way:
    It is important to remark that the Kurento Java Client is a media-plane
    control API. In other words, its objective is to expose the capability of
    managing media objects, but it does not provide any signalling plane
-   capabilities. (read more in :doc:`Kurento Clients section <Kurento_Clients>`)
+   capabilities.
+
 -  **Kurento JavaScript Client**: Is a JavaScript layer which consumes the
    Kurento API and exposes its capabilities to JavaScript developers. It allow
    to build node.js and browser based applications. In the future, further
    Kurento Clients can be created exposing the same kind of modularity in other
-   languages such as Python, C/C++, PHP, etc. (read more in
-   :doc:`Kurento Clients section <Kurento_Clients>`)
+   languages such as Python, C/C++, PHP, etc.
 
 From an architectural perspective, the only relevant aspect is that application
 developers can use Kurento Clients or Kurento API directly for creating their
@@ -138,8 +140,8 @@ also be implemented with the same architecture:
 
 -  **Service layer**: This layer provides the multimedia services that
    support the application logic such as media recording, media ciphering, etc.
-   The Kurento Server (i.e. the specific :term:`pipeline <pipeline, media>` of
-   :term:`media elements<element, media>`) is in charge of this layer.
+   The Kurento Server (i.e. the specific :term:`pipeline <Media Pipeline>` of
+   :term:`media elements<Media Element>`) is in charge of this layer.
 
 The interesting aspect of this discussion is that, as happens with WWW
 development, Kurento applications can place the Presentation layer at the
@@ -272,8 +274,8 @@ browser and the Kurento Server directly through the use of `WebRTC`:term:. In
 addition, Kurento Server can be used to act as media proxy for making possible
 the communication among different clients, which are mediated by the kurento
 infrastructure. Hence, Kurento Server can act as a conference bridge
-(Multipoing Control Unit, `MCU`:term:), as a machine-to-machine communication
-system, as a video call recording system, etc.
+(Multi-Conference Unit, MCU), as a machine-to-machine communication system, as
+a video call recording system, etc.
 
 As shown in the picture, the client exposes its media capabilities through an
 `SDP`:term: (Session Description Protocol) sent in a request. Hence, the
@@ -344,8 +346,8 @@ Kurento is designed based on the following main principles:
         act as a PaaS (Platform as a Service) component.
 
     **Media Pipelines**
-        Chaining :term:`Media Elements <element, media>` via
-        :term:`Media Pipelines <pipeline, media>` is an intuitive approach to
+        Chaining :term:`Media Elements <Media Element>` via
+        :term:`Media Pipelines <Media Pipeline>` is an intuitive approach to
         challenge the complexity of multimedia processing.
 
     **Application development**
@@ -368,8 +370,8 @@ Kurento is designed based on the following main principles:
 
     **Modular Processing of Media**
        Modularization achieved through
-       :term:`media elements <element, media>` and
-       :term:`pipelines <pipeline, media>` allows defining the media processing
+       :term:`media elements <Media Element>` and
+       :term:`pipelines <Media Pipeline>` allows defining the media processing
        functionality of an application through a “graph-oriented” language,
        where the application developer is able to create the desired logic by
        chaining the appropriate functionalities.

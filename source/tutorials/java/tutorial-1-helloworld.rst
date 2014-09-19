@@ -19,7 +19,7 @@ information.
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-java-tutorial.git
     cd kurento-hello-world

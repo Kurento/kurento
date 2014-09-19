@@ -20,9 +20,9 @@ The interface of the application (an HTML web page) is composed by two HTML5
 video tags: one for the video camera stream (the local stream) and other for
 the other peer in the call (the remote stream). If two users, A and B, are
 using the application, the media flows in the following way: The video camera
-stream of user A is sent to the Kurento Media Server and sent again to the user B. On
-the other hand, user B sends its video camera stream to Kurento and then it is
-sent to user A.
+stream of user A is sent to the Kurento Media Server and sent again to the user
+B. On the other hand, user B sends its video camera stream to Kurento and then
+it is sent to user A.
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
 by two WebRtc endpoints connected between them. The media pipeline implemented
@@ -224,10 +224,11 @@ method), and the media pipeline connection (``connectEndpoints`` method).
 
 
 Kurento Media Server
-==============
+====================
 
-This demo is using a remote Kurento Media Server located on ``demo01.kurento.org``. If
-you want to use another instance of Kurento Media Server, please visit first the
+This demo is using a remote Kurento Media Server located on
+``demo01.kurento.org``. If you want to use another instance of Kurento Media
+Server, please visit first the
 `installation guide <../../Installation_Guide.rst>`_ for further information.
 Then, you should change the following line of
 `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_:
@@ -246,7 +247,7 @@ Kurento Client JavaScript dependency (*kws-media-api*), the Kurento JSON-RPC
 builder (*kws-rpc-builder*), and the Kurento JavaScript utility library
 (*kws-utils*):
 
-.. sourcecode:: json
+.. sourcecode:: js
 
      "dependencies": {
        "pubnub": "~3.6.4",
@@ -263,7 +264,7 @@ To run this application, first you need to install Bower, and so you also need
 to install `npm`:term:. The following snippet shows how to install npm (by
 installing `Node.js`:term: package) and Bower in an Ubuntu machine:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
    sudo add-apt-repository ppa:chris-lea/node.js
    sudo apt-get update
@@ -273,7 +274,7 @@ installing `Node.js`:term: package) and Bower in an Ubuntu machine:
 Once Bower is installed, you need to clone the GitHub project where this demo is
 hosted. Then you have to resolve the dependencies using Bower, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kws-tutorial.git
     cd PubNub
@@ -284,7 +285,7 @@ A very simple way of doing this is by means of a HTTP Node.js server which can
 be installed using npm. Then, this HTTP has to be started in the folder where
 the demo is located:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
    sudo npm install http-server -g
    http-server

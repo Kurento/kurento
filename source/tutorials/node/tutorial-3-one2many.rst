@@ -26,7 +26,7 @@ an Ubuntu machine, you can install both as follows:
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then install and run it, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
     cd kurento-one2many-call
@@ -43,8 +43,8 @@ Understanding this example
 ==========================
 
 There will be two types of users in this application: 1 peer sending media
-(let's call it *Master*) and N peers receiving the media from the *Master* (let's
-call them *Viewers*). Thus, the Media Pipeline is composed by 1+N
+(let's call it *Master*) and N peers receiving the media from the *Master*
+(let's call them *Viewers*). Thus, the Media Pipeline is composed by 1+N
 interconnected *WebRtcEndpoints*. The following picture shows an screenshot of
 the Master's web GUI:
 
@@ -56,10 +56,9 @@ the Master's web GUI:
    *One to many video call screenshot*
 
 To implement this behavior we have to create a `Media Pipeline`:term: composed
-by 1+N **WebRtcEndpoints**. The *Master* peer sends its stream
-to the rest of the *Viewers*. *Viewers* are configured in receive-only
-mode. The implemented media pipeline is
-illustrated in the following picture:
+by 1+N **WebRtcEndpoints**. The *Master* peer sends its stream to the rest of
+the *Viewers*. *Viewers* are configured in receive-only mode. The implemented
+media pipeline is illustrated in the following picture:
 
 .. figure:: ../../images/kurento-java-tutorial-3-one2many-pipeline.png
    :align:   center
@@ -70,18 +69,18 @@ illustrated in the following picture:
 
 This is a web application, and therefore it follows a client-server
 architecture. At the client-side, the logic is implemented in **JavaScript**.
-At the server-side we use the **Kurento JavaScript Client** in order to reach the
-**Kurento Server**. All in all, the high level architecture of this demo is
-three-tier. To communicate these entities two WebSockets are used. The first
-is created between the client browser and a Node.js application server
-to transport signaling messages. The second is used to communicate the
-Kurento JavaScript Client executing at Node.js and the Kurento Media Server. This
+At the server-side we use the **Kurento JavaScript Client** in order to reach
+the **Kurento Server**. All in all, the high level architecture of this demo is
+three-tier. To communicate these entities two WebSockets are used. The first is
+created between the client browser and a Node.js application server to
+transport signaling messages. The second is used to communicate the Kurento
+JavaScript Client executing at Node.js and the Kurento Media Server. This
 communication is implemented by the **Kurento Protocol**. For further
 information, please see this :doc:`page <../../mastering/kurento_protocol>`.
 
-Client and application server communicate using a signaling protocol
-based on `JSON`:term: messages over `WebSocket`:term: 's. The normal sequence
-between client and server is as follows:
+Client and application server communicate using a signaling protocol based on
+`JSON`:term: messages over `WebSocket`:term: 's. The normal sequence between
+client and server is as follows:
 
 1. A *Master* enters in the system. There must be one and only one *Master* at
 any time. For that, if a *Master* has already present, an error message is sent
@@ -92,8 +91,8 @@ is sent to the corresponding *Viewer*.
 
 3. *Viewers* can leave the communication at any time.
 
-4. When the *Master* finishes the session each connected *Viewer*
-receives an *stopCommunication* message and also terminates its session.
+4. When the *Master* finishes the session each connected *Viewer* receives an
+*stopCommunication* message and also terminates its session.
 
 
 We can draw the following sequence diagram with detailed messages between
@@ -106,11 +105,11 @@ clients and server:
 
    *One to many video call signaling protocol*
 
-As you can see in the diagram, `SDP`:term: needs to be exchanged between
-client and server to establish the `WebRTC`:term: connection between the
-browser and Kurento. Specifically, the SDP negotiation connects the WebRtcPeer
-in the browser with the WebRtcEndpoint in the server. The complete source code
-of this demo can be found in
+As you can see in the diagram, `SDP`:term: needs to be exchanged between client
+and server to establish the `WebRTC`:term: connection between the browser and
+Kurento. Specifically, the SDP negotiation connects the WebRtcPeer in the
+browser with the WebRtcEndpoint in the server. The complete source code of this
+demo can be found in
 `GitHub <https://github.com/Kurento/kurento-tutorial-node/tree/master/kurento-one2many-call>`_.
 
 Application Server Logic
@@ -151,8 +150,8 @@ with Kurento Media Server and controlling its multimedia capabilities.
 
 
 This web application follows *Single Page Application* architecture
-(`SPA`:term:) and uses a `WebSocket` in the path ``/call`` to
-communicate client with applications server by beans of requests and responses.
+(`SPA`:term:) and uses a `WebSocket` in the path ``/call`` to communicate
+client with applications server by beans of requests and responses.
 
 The following code snippet implements the server part of the signaling protocol
 depicted in the previous sequence diagram.
@@ -252,8 +251,9 @@ back to the client.
 
 
 
-Finally, the ``stop`` message finishes the communication. If this message is sent by the
-*Master*, a ``stopCommunication`` message is sent to each connected *Viewer*:
+Finally, the ``stop`` message finishes the communication. If this message is
+sent by the *Master*, a ``stopCommunication`` message is sent to each connected
+*Viewer*:
 
 .. sourcecode:: js
 
@@ -362,7 +362,7 @@ Kurento Client JavaScript (*kurento-client*). The relevant part of the
 `package.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2many-call/package.json>`_
 file for managing this dependency is:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
      ...
@@ -373,7 +373,7 @@ At the client side, dependencies are managed using Bower. Take a look to the
 `bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2many-call/static/js/bower.js>`_
 file and pay attention to the following section:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
      "kurento-utils" : "|version|"

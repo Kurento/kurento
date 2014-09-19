@@ -16,7 +16,7 @@ information.
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-java-tutorial.git
     cd kurento-one2one-call-advanced
@@ -231,6 +231,7 @@ These messages are treated in the *switch* clause, taking the proper steps in
 each case.
 
 .. sourcecode:: java
+
    public class CallHandler extends TextWebSocketHandler {
 
       private static final Logger log = LoggerFactory.getLogger(CallHandler.class);

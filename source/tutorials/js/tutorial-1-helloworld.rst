@@ -37,7 +37,7 @@ be installed using `npm`:term: :
 You also need the source code of this demo. You can clone it from GitHub. Then
 start the HTTP server:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
     cd kurento-hello-world
@@ -206,7 +206,7 @@ of these dependencies are defined in the
 `bower.json <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/bower.json>`_
 file, as follows:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
       "kurento-client": "|version|",

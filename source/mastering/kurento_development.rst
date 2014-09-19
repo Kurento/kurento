@@ -4,8 +4,6 @@
 Kurento Development
 %%%%%%%%%%%%%%%%%%%
 
-.. highlight:: shell
-
 Kurento framework is composed by several components. Each component is being
 developed with very different technologies.
 
@@ -153,7 +151,7 @@ to use the latest development version of this library, you have to change the
 ``dependencies`` section in the application's ``package.json``. You have to
 point directly to the development repository, that is:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
        "kurento-client": "https://github.com/Kurento/kurento-client-js#develop"
@@ -167,7 +165,7 @@ and want to use the latest development version of this library, you have to
 change the ``dependencies`` section in the application's ``bower.json``. You
 have to point directly to the development bower repository, that is:
 
-.. sourcecode:: json
+.. sourcecode:: js
 
    "dependencies": {
        "kurento-client": "https://github.com/Kurento/kurento-client-js-bower#develop"

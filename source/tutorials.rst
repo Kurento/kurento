@@ -66,7 +66,7 @@ peers receives it.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-3-one2many>
-..   Browser JavaScript </tutorials/js/tutorial-3-one2many>
+   Browser JavaScript </tutorials/js/tutorial-3-one2many>
    Node.js </tutorials/node/tutorial-3-one2many>
 
 Tutorial 4 - WebRTC one-to-one video call
@@ -78,7 +78,7 @@ This web application is a videophone (call one to one) based on `WebRTC`:term:.
    :maxdepth: 1
 
    Java </tutorials/java/tutorial-4-one2one>
-..   Browser JavaScript </tutorials/js/tutorial-4-one2one>
+   Browser JavaScript </tutorials/js/tutorial-4-one2one>
    Node.js </tutorials/node/tutorial-4-one2one>
 
 Tutorial 5 - WebRTC one-to-one video call with recording and filtering

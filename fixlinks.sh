@@ -8,7 +8,7 @@
 function changelink {
    grep "$1" $3 &> /dev/null
    if [ $? -eq 0 ]; then
-     echo "Replacing \"$1\" by \"$2\" in \"$3\""
+     # echo "Replacing \"$1\" by \"$2\" in \"$3\""
      sed -i "s,$1,$2," $3
    fi
 }

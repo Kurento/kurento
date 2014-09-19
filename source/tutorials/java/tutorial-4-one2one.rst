@@ -16,7 +16,7 @@ information.
 To launch the application you need to clone the GitHub project where this demo
 is hosted and then run the main class, as follows:
 
-.. sourcecode:: shell
+.. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-java-tutorial.git
     cd kurento-one2one-call
@@ -39,16 +39,16 @@ The following picture shows an screenshot of this demo running in a web browser:
    *One to one video call screenshot*
 
 The interface of the application (an HTML web page) is composed by two HTML5
-video tags: one for the local stream and other for the remote peer stream). 
-If two users, A and B, are using the application, the media flows in the 
-following way: The video camera stream of user A is sent to the Kurento Media 
-Server, which sends it to user B. In the same way, B send to Kurento Media 
-Server, which forwards it to A. This means that KMS is providing a B2B
-(back-to-back) call service.
+video tags: one for the local stream and other for the remote peer stream). If
+two users, A and B, are using the application, the media flows in the following
+way: The video camera stream of user A is sent to the Kurento Media Server,
+which sends it to user B. In the same way, B send to Kurento Media Server,
+which forwards it to A. This means that KMS is providing a B2B (back-to-back)
+call service.
 
-To implement this behavior create a `Media Pipeline`:term: composed
-by two WebRtC endpoints connected in B2B. The implemented media pipeline
-is illustrated in the following picture:
+To implement this behavior create a `Media Pipeline`:term: composed by two
+WebRtC endpoints connected in B2B. The implemented media pipeline is
+illustrated in the following picture:
 
 
 .. figure:: ../../images/kurento-java-tutorial-4-one2one-pipeline.png
@@ -58,9 +58,9 @@ is illustrated in the following picture:
 
    *One to one video call Media Pipeline*
 
-The client and the server communicate through a signaling protocol based on 
-`JSON`:term: messages over `WebSocket`:term: 's.
-The normal sequence between client and server would be as follows:
+The client and the server communicate through a signaling protocol based on
+`JSON`:term: messages over `WebSocket`:term: 's. The normal sequence between
+client and server would be as follows:
 
 1. User A is registered in the server with his name
 
@@ -188,9 +188,9 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kind of incoming messages to
-the application server: ``register``, ``call``, ``incommingCallResponse`` and ``stop``.
-These messages are treated in the *switch* clause, taking the proper steps in
-each case.
+the application server: ``register``, ``call``, ``incommingCallResponse`` and
+``stop``. These messages are treated in the *switch* clause, taking the proper
+steps in each case.
 
 .. sourcecode:: java
 
@@ -345,9 +345,9 @@ message is sent to caller rejecting the call.
       }
    }
 
-The ``stop`` method finish the video call. This procedure can be called
-both by caller and callee in the communication. The result is that both peers
-release the Media Pipeline and ends the video communication:
+The ``stop`` method finish the video call. This procedure can be called both by
+caller and callee in the communication. The result is that both peers release
+the Media Pipeline and ends the video communication:
 
 .. sourcecode :: java
 
@@ -374,9 +374,10 @@ release the Media Pipeline and ends the video communication:
 
 In the ``incommingCallResponse`` method, if the callee user accepts the call, it
 is established and the media elements are created to connect the caller with
-the callee in a B2B manner. Basically, the server creates a ``CallMediaPipeline`` 
-object, to encapsulate the media pipeline creation and management. Then, this
-object is used to negotiate media interchange with user's browsers.
+the callee in a B2B manner. Basically, the server creates a
+``CallMediaPipeline`` object, to encapsulate the media pipeline creation and
+management. Then, this object is used to negotiate media interchange with
+user's browsers.
 
 
 The negotiation between WebRTC peer in the browser and WebRtcEndpoint in Kurento

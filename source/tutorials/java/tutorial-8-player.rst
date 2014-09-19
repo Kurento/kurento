@@ -120,8 +120,8 @@ performing in real time, when you see the video.
 
 Of course, this is a very minimal app that demonstrates what you can do with
 Kurento, but you can build more interesting apps with this framework. If you
-didn't take a look to :doc:`Tutorials section <Tutorials>`, please do it now to
-see powerful multimedia web applications that can be built with Kurento.
+didn't take a look to :doc:`Tutorials section <../../tutorials>`, please do it
+now to see powerful multimedia web applications that can be built with Kurento.
 
 Connecting media elements
 =========================
