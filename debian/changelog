@@ -2,6 +2,23 @@ kurento-module-creator (3.0.3) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
   * Prepare for next development iteration
+
+  [ mgallego ]
+  * [Bug-fix] Exception when creating a jar file system twice
+
+  [ Jose Antonio Santos Cadenas ]
+  * js: Fix import for internal modules
+  * pom template: Modify version of plugin
+  * Prepare release 3.0.3
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 20 Sep 2014 17:39:03 +0200
+
+kurento-module-creator (3.0.3) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
   * pom.xml: Add fields required by maven central
   * Prepare release 3.0.3
 
