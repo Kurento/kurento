@@ -46,7 +46,7 @@ pom.xml
 			<plugin>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>1.0.1</version>
+				<version>1.0.2</version>
 				<executions>
 					<execution>
 						<goals>
