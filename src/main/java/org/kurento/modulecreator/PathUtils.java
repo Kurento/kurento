@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemAlreadyExistsException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -97,8 +98,17 @@ public class PathUtils {
 		String entryName = s.substring(separator + 2);
 		URI fileURI = URI.create(s.substring(0, separator));
 
-		FileSystem fs = FileSystems.newFileSystem(fileURI,
-				Collections.<String, Object> emptyMap());
+		FileSystem fs = null;
+
+		try {
+
+			fs = FileSystems.newFileSystem(fileURI,
+					Collections.<String, Object> emptyMap());
+
+		} catch (FileSystemAlreadyExistsException e) {
+			fs = FileSystems.getFileSystem(fileURI);
+		}
+
 		return fs.getPath(entryName);
 	}
 
