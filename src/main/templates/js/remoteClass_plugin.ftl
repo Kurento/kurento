@@ -65,9 +65,9 @@ var ChecktypeError = require('checktype').ChecktypeError;
 
   <#if import_name == module_name>
 var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extends.type.abstract>abstracts/</#if>${extends_name}');
-  <#elseif module.name=='kurento-client-core'
-     || module.name=='kurento-client-elements'
-     || module.name=='kurento-client-filters'>
+  <#elseif module.name=='core'
+     || module.name=='elements'
+     || module.name=='filters'>
     <#if import_package=='kurento-client-core'
      || import_package=='kurento-client-elements'
      || import_package=='kurento-client-filters'>
