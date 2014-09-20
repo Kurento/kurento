@@ -1,3 +1,13 @@
+kms-elements (5.0.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Update dependencies
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 20 Sep 2014 22:18:48 +0200
+
 kms-elements (5.0.1) testing; urgency=medium
 
   [ David Fernandez ]
