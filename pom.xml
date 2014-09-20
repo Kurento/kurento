@@ -134,7 +134,7 @@
 		<dependency>
 			<groupId>org.kurento</groupId>
 			<artifactId>kurento-module-creator</artifactId>
-			<version>3.0.0-SNAPSHOT</version>
+			<version>3.0.3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
