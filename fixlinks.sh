@@ -34,4 +34,7 @@ do
    changelink "mastering_kurento.html#advanced-installation-guide" "mastering/advanced_installation_guide.html" "./build/html/mastering/${i}.html"
    changelink "mastering_kurento.html#kurento-development" "mastering/kurento_development.html" "./build/html/mastering/${i}.html"
    changelink "mastering_kurento.html#kurento-modules" "mastering/kurento_modules.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#java-kurento-client-javadoc" "langdoc/javadoc/index.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#javascript-kurento-client-jsdoc" "langdoc/jsdoc/kurento-client-js/index.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#javascript-kurento-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering/${i}.html"
 done
