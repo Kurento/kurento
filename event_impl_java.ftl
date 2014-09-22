@@ -7,7 +7,9 @@ ${packageToFolder(module.code.api.java.packageName)}/${event.name}Event.java
  */
 package ${module.code.api.java.packageName};
 
+<#if module.code.api.java.packageName != "org.kurento.client">
 import org.kurento.client.*;
+</#if>
 
 <@comment "${event.doc}" />
 public class ${event.name}Event <#if event.extends??>extends ${event.extends.name}Event<#else>implements Event</#if> {
