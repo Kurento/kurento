@@ -12,7 +12,7 @@ function onerror(error)
 
 // Process request messages
 
-function onIncommingCall(request)
+function onIncomingCall(request)
 {
   var params = request.params;
 
@@ -109,7 +109,7 @@ function SoftphonePubnub(videoInput, videoOutput, options)
       switch(request.method)
       {
         case 'call':
-          onIncommingCall(request);
+          onIncomingCall(request);
         break;
 
         default:

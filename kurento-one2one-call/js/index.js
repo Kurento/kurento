@@ -68,7 +68,7 @@ function onRequest(request, peerID) {
 
 	switch (request.method) {
 	case 'call':
-		onIncommingCall(request);
+		onIncomingCall(request);
 		break;
 
 	default:
@@ -107,7 +107,7 @@ function stop() {
 	hideSpinner(videoInput, videoOutput);
 }
 
-function onIncommingCall(request) {
+function onIncomingCall(request) {
 	var params = request.params;
 	var from = params.from;
 	var sinkId = params.endpoint;
