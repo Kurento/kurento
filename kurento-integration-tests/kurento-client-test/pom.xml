@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-integration-tests</artifactId>
-		<version>5.0.0-SNAPSHOT</version>
+		<version>5.0.3</version>
 	</parent>
 
 	<artifactId>kurento-client-test</artifactId>
@@ -36,7 +36,7 @@
 		<url>${kurento-java.scm.url}</url>
 		<connection>scm:git:${kurento-java.scm.connection}</connection>
 		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
-		<tag>develop</tag>
+		<tag>kurento-java-5.0.3</tag>
 	</scm>
 
 	<developers>
