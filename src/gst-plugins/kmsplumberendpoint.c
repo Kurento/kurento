@@ -420,6 +420,154 @@ kms_plumber_endpoint_connect (KmsPlumberEndpoint * self, gchar * host,
   return kms_plumber_endpoint_connect_mcc (self, host, port);
 }
 
+static GstCaps *
+kms_plumber_endpoint_allowed_caps (KmsElement * self, KmsElementPadType type)
+{
+  GstElement *valve;
+  GstPad *srcpad;
+  GstCaps *caps;
+
+  switch (type) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      valve = kms_element_get_video_valve (self);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      valve = kms_element_get_audio_valve (self);
+      break;
+    default:
+      return NULL;
+  }
+
+  srcpad = gst_element_get_static_pad (valve, "src");
+  caps = gst_pad_get_allowed_caps (srcpad);
+  gst_object_unref (srcpad);
+
+  return caps;
+}
+
+static gboolean
+kms_plumber_endpoint_query_caps (KmsElement * self, GstPad * pad,
+    GstQuery * query)
+{
+  GstCaps *allowed = NULL, *caps = NULL;
+  GstCaps *filter, *result, *tcaps;
+
+  gst_query_parse_caps (query, &filter);
+
+  switch (kms_element_get_pad_type (self, pad)) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      allowed =
+          kms_plumber_endpoint_allowed_caps (self, KMS_ELEMENT_PAD_TYPE_VIDEO);
+      g_object_get (self, "video-caps", &caps, NULL);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:{
+      allowed =
+          kms_plumber_endpoint_allowed_caps (self, KMS_ELEMENT_PAD_TYPE_AUDIO);
+      g_object_get (self, "audio-caps", &caps, NULL);
+      break;
+    }
+    default:
+      GST_DEBUG ("unknown pad");
+      return FALSE;
+  }
+
+  /* make sure we only return results that intersect our padtemplate */
+  tcaps = gst_pad_get_pad_template_caps (pad);
+  if (tcaps != NULL) {
+    result = gst_caps_intersect (allowed, tcaps);
+    gst_caps_unref (tcaps);
+  }
+
+  if (caps != NULL) {
+    /* Filter against our caps */
+    result = gst_caps_intersect (caps, result);
+  }
+
+  /* filter against the query filter when needed */
+  if (filter != NULL) {
+    result = gst_caps_intersect (result, filter);
+  }
+
+  gst_query_set_caps_result (query, result);
+  gst_caps_unref (result);
+
+  if (allowed != NULL)
+    gst_caps_unref (allowed);
+
+  if (caps != NULL)
+    gst_caps_unref (caps);
+
+  return TRUE;
+}
+
+static gboolean
+kms_plumber_endpoint_query_accept_caps (KmsElement * self, GstPad * pad,
+    GstQuery * query)
+{
+  GstCaps *caps, *accept;
+  GstElement *valve;
+  gboolean ret = TRUE;;
+
+  switch (kms_element_get_pad_type (self, pad)) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      valve = kms_element_get_video_valve (self);
+      g_object_get (self, "video-caps", &caps, NULL);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:{
+      valve = kms_element_get_audio_valve (self);
+      g_object_get (self, "audio-caps", &caps, NULL);
+      break;
+    }
+    default:
+      GST_DEBUG ("unknown pad");
+      return FALSE;
+  }
+
+  if (caps == NULL) {
+    return KMS_ELEMENT_CLASS (parent_class)->sink_query (self, pad, query);
+  }
+
+  gst_query_parse_accept_caps (query, &accept);
+
+  ret = gst_caps_can_intersect (accept, caps);
+
+  if (ret) {
+    GstPad *srcpad;
+
+    srcpad = gst_element_get_static_pad (valve, "src");
+    ret = gst_pad_peer_query_accept_caps (srcpad, caps);
+    gst_object_unref (srcpad);
+  }
+
+  gst_caps_unref (caps);
+
+  gst_query_set_accept_caps_result (query, ret);
+
+  return TRUE;
+}
+
+static gboolean
+kms_plumber_endpoint_sink_query (KmsElement * self, GstPad * pad,
+    GstQuery * query)
+{
+  gboolean ret;
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+      ret = kms_plumber_endpoint_query_caps (self, pad, query);
+      break;
+    case GST_QUERY_ACCEPT_CAPS:
+      if (TRUE) {
+        ret = kms_plumber_endpoint_query_accept_caps (self, pad, query);
+        break;
+      }
+    default:
+      ret = KMS_ELEMENT_CLASS (parent_class)->sink_query (self, pad, query);
+  }
+
+  return ret;
+}
+
 static void
 kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
 {
@@ -477,6 +625,8 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
       GST_DEBUG_FUNCPTR (kms_plumber_endpoint_audio_valve_removed);
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_plumber_endpoint_video_valve_removed);
+  kms_element_class->sink_query =
+      GST_DEBUG_FUNCPTR (kms_plumber_endpoint_sink_query);
 
   /* Registers a private structure for the instantiatable type */
   g_type_class_add_private (klass, sizeof (KmsPlumberEndpointPrivate));
