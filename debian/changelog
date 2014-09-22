@@ -1,4 +1,4 @@
-kurento-module-creator (3.0.3) testing; urgency=medium
+kurento-module-creator (3.0.4) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
   * Prepare for next development iteration
@@ -10,10 +10,12 @@ kurento-module-creator (3.0.3) testing; urgency=medium
   * js: Fix import for internal modules
   * pom template: Modify version of plugin
   * Prepare release 3.0.3
+  * Prepare for next development iteration
+  * Prepare release 3.0.4
 
   [ José Antonio Santos Cadenas ]
 
- -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Sat, 20 Sep 2014 17:39:03 +0200
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 22 Sep 2014 10:20:22 +0200
 
 kurento-module-creator (3.0.3) testing; urgency=medium
 
