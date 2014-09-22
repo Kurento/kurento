@@ -28,7 +28,7 @@ public class JsonModuleSaverLoader {
 		return INSTANCE;
 	}
 
-	private Gson gson;
+	private final Gson gson;
 
 	private JsonModuleSaverLoader() {
 		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
@@ -38,6 +38,7 @@ public class JsonModuleSaverLoader {
 		gsonBuilder.registerTypeAdapter(RemoteClass.class,
 				new RemoteClassAdapter());
 		gsonBuilder.registerTypeAdapter(Method.class, new MethodAdapter());
+		gsonBuilder.disableHtmlEscaping();
 		gson = gsonBuilder.create();
 	}
 
