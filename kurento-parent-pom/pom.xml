@@ -3,7 +3,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-parent-pom</artifactId>
-	<version>5.0.3</version>
+	<version>5.0.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>Kurento Parent POM</name>
@@ -32,7 +32,7 @@
 		<url>${kurento-java.scm.url}</url>
 		<connection>scm:git:${kurento-java.scm.connection}</connection>
 		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
-		<tag>kurento-java-5.0.3</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<developers>
