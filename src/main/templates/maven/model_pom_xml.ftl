@@ -26,17 +26,19 @@ pom.xml
 <#if module.imports[0]??>
 	<dependencies>
 <#list module.imports as import>
-		<dependency>
 <#if module.code.kmd?? >
+		<dependency>
 			<groupId>${import.module.code.kmd.java.mavenGroupId}</groupId>
 			<artifactId>${import.module.code.kmd.java.mavenArtifactId}</artifactId>
 			<version>${import.mavenVersion}</version>
-<#else>
+		</dependency>
+<#elseif import.name != "elements" && import.name != "filters">
+		<dependency>
 			<groupId>${import.module.code.api.java.mavenGroupId}</groupId>
 			<artifactId>${import.module.code.api.java.mavenArtifactId}</artifactId>
 			<version>${import.mavenVersion}</version>
-</#if>
 		</dependency>
+</#if>
 </#list>
 	</dependencies>
 </#if>
