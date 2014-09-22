@@ -1,8 +1,8 @@
 .. _Kurento_Development:
 
-%%%%%%%%%%%%%%%%%%%
-Kurento Development
-%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Working with nightly builds
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Kurento is composed by several components. Each component is being developed
 with very different technologies.

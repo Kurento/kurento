@@ -34,13 +34,13 @@ Advanced Installation Guide
 
    Advanced Installation Guide <mastering/advanced_installation_guide>
 
-Kurento Development
-===================
+Working with nightly builds
+===========================
 
 .. toctree::
    :maxdepth: 1
 
-   Kurento Development <mastering/kurento_development>
+   Working with nightly builds <mastering/kurento_development>
 
 ..
    Kurento Modules
