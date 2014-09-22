@@ -226,7 +226,7 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kind of incoming messages to
-the *Server* : ``register``, ``call``, ``incommingCallResponse``, and ``play``.
+the *Server* : ``register``, ``call``, ``incomingCallResponse``, and ``play``.
 These messages are treated in the *switch* clause, taking the proper steps in
 each case.
 
@@ -264,8 +264,8 @@ each case.
          case "call":
             call(user, jsonMessage);
             break;
-         case "incommingCallResponse":
-            incommingCallResponse(user, jsonMessage);
+         case "incomingCallResponse":
+            incomingCallResponse(user, jsonMessage);
             break;
          case "play":
             play(session, jsonMessage);
@@ -285,7 +285,7 @@ each case.
          ...
       }
 
-      private void incommingCallResponse(UserSession callee,
+      private void incomingCallResponse(UserSession callee,
             JsonObject jsonMessage) throws IOException {
          ...
       }
@@ -331,7 +331,7 @@ acceptance message is sent to it.
    }
 
 In the ``call`` method, the server checks if there are a registered user with
-the name specified in ``to`` message attribute and send an ``incommingCall``
+the name specified in ``to`` message attribute and send an ``incomingCall``
 message to it. Or, if there isn't any user with that name, a ``callResponse``
 message is sent to caller rejecting the call.
 
@@ -348,7 +348,7 @@ message is sent to caller rejecting the call.
          caller.setCallingTo(to);
 
          JsonObject response = new JsonObject();
-         response.addProperty("id", "incommingCall");
+         response.addProperty("id", "incomingCall");
          response.addProperty("from", caller.getName());
 
          callee.sendMessage(response);
@@ -363,7 +363,7 @@ message is sent to caller rejecting the call.
       }
    }
 
-In the ``incommingCallResponse`` method, if the callee user accepts the call, it
+In the ``incomingCallResponse`` method, if the callee user accepts the call, it
 is established and the media elements are created to connect the caller with
 the callee. Basically, the server creates a ``CallMediaPipeline`` object, to
 encapsulate the media pipeline creation and management. Then, this object is
@@ -380,7 +380,7 @@ moment). The methods used to generate SDP are
 
 .. sourcecode :: java
 
-   private void incommingCallResponse(UserSession callee,
+   private void incomingCallResponse(UserSession callee,
          JsonObject jsonMessage) throws IOException {
       String callResponse = jsonMessage.get("callResponse").getAsString();
       String from = jsonMessage.get("from").getAsString();
@@ -601,9 +601,9 @@ In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are four incoming messages to client: ``resgisterResponse``,
-``callResponse``, ``incommingCall``, ``startCommunication``, and ``play``.
+``callResponse``, ``incomingCall``, ``startCommunication``, and ``play``.
 Convenient actions are taken to implement each step in the communication. On
-the one hand, in functions ``call`` and ``incommingCall`` (for caller and
+the one hand, in functions ``call`` and ``incomingCall`` (for caller and
 callee respectively), the function ``WebRtcPeer.startSendRecv`` of
 *kurento-utils.js* is used to start a WebRTC communication. On the other hand
 in the function ``play``, the function ``WebRtcPeer.startRecvOnly`` is called
@@ -624,8 +624,8 @@ since the ``WebRtcEndpoint`` is used in receive-only.
       case 'callResponse':
          callResponse(parsedMessage);
          break;
-      case 'incommingCall':
-         incommingCall(parsedMessage);
+      case 'incomingCall':
+         incomingCall(parsedMessage);
          break;
       case 'startCommunication':
          startCommunication(parsedMessage);
@@ -641,14 +641,14 @@ since the ``WebRtcEndpoint`` is used in receive-only.
       }
    }
 
-   function incommingCall(message) {
+   function incomingCall(message) {
       if (confirm('User ' + message.from
             + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
          webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
                function(sdp, wp) {
                   var response = {
-                     id : 'incommingCallResponse',
+                     id : 'incomingCallResponse',
                      from : message.from,
                      callResponse : 'accept',
                      sdpOffer : sdp
@@ -657,7 +657,7 @@ since the ``WebRtcEndpoint`` is used in receive-only.
                });
       } else {
          var response = {
-            id : 'incommingCallResponse',
+            id : 'incomingCallResponse',
             from : message.from,
             callResponse : 'reject'
          };

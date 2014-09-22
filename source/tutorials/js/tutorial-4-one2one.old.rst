@@ -105,7 +105,7 @@ As you can see, this page uses several JavaScript libraries:
 The most relevant part of this demo can be foun on
 `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_.
 In this library we can found the PubNub publish/subscribe procedure
-(``SoftphonePubnub`` class), the incoming call logic (``onIncommingCall``
+(``SoftphonePubnub`` class), the incoming call logic (``onIncomingCall``
 method), the SDP negotiation and start of WebRTC communication (``createPeer``
 method), and the media pipeline connection (``connectEndpoints`` method).
 
@@ -115,7 +115,7 @@ method), and the media pipeline connection (``connectEndpoints`` method).
    var JsonRPC = RpcBuilder.packers.JsonRPC;
    const ws_uri = 'ws://demo01.kurento.org:8888/thrift/ws/websocket';
    
-   function onIncommingCall(request) {
+   function onIncomingCall(request) {
      ...
    
      createPeer(function(error, kwsMedia, src) {
@@ -169,7 +169,7 @@ method), and the media pipeline connection (``connectEndpoints`` method).
    
          switch(request.method) {
            case 'call':
-             onIncommingCall(request);
+             onIncomingCall(request);
            break;
    
            default:

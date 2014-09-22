@@ -188,7 +188,7 @@ WebSocket. In other words, it implements the server part of the signaling
 protocol depicted in the previous sequence diagram.
 
 In the designed protocol there are three different kind of incoming messages to
-the application server: ``register``, ``call``, ``incommingCallResponse`` and
+the application server: ``register``, ``call``, ``incomingCallResponse`` and
 ``stop``. These messages are treated in the *switch* clause, taking the proper
 steps in each case.
 
@@ -313,7 +313,7 @@ acceptance message is sent to it.
    }
            
 In the ``call`` method, the server checks if there are a registered user with
-the name specified in ``to`` message attribute and send an ``incommingCall``
+the name specified in ``to`` message attribute and send an ``incomingCall``
 message to it. Or, if there isn't any user with that name, a ``callResponse``
 message is sent to caller rejecting the call.
 
@@ -372,7 +372,7 @@ the Media Pipeline and ends the video communication:
    }
 
 
-In the ``incommingCallResponse`` method, if the callee user accepts the call, it
+In the ``incomingCallResponse`` method, if the callee user accepts the call, it
 is established and the media elements are created to connect the caller with
 the callee in a B2B manner. Basically, the server creates a
 ``CallMediaPipeline`` object, to encapsulate the media pipeline creation and
@@ -520,9 +520,9 @@ In the following snippet we can see the creation of the WebSocket (variable
 ``ws``) in the path ``/call``. Then, the ``onmessage`` listener of the
 WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are four incoming messages to client: ``resgisterResponse``,
-``callResponse``, ``incommingCall``, and ``startCommunication``. Convenient
+``callResponse``, ``incomingCall``, and ``startCommunication``. Convenient
 actions are taken to implement each step in the communication. For example, in
-functions ``call`` and ``incommingCall`` (for caller and callee respectively),
+functions ``call`` and ``incomingCall`` (for caller and callee respectively),
 the function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js* is used to
 start a WebRTC communication.
 
