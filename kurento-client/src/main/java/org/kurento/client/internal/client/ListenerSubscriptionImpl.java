@@ -16,6 +16,12 @@ public class ListenerSubscriptionImpl implements ListenerSubscription {
 		this.listener = listener;
 	}
 
+	public ListenerSubscriptionImpl(String type,
+			RemoteObjectEventListener listener) {
+		this.type = type;
+		this.listener = listener;
+	}
+
 	public String getSubscription() {
 		return subscriptionId;
 	}
@@ -31,5 +37,9 @@ public class ListenerSubscriptionImpl implements ListenerSubscription {
 	@Override
 	public String getSubscriptionId() {
 		return subscriptionId;
+	}
+
+	public void setSubscription(String subscription) {
+		this.subscriptionId = subscription;
 	}
 }

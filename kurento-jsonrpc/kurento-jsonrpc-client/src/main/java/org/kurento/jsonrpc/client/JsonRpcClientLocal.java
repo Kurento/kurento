@@ -203,4 +203,10 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 		remoteHandlerManager.afterConnectionEstablished(session);
 	}
 
+	@Override
+	public void connect() throws IOException {
+		// TODO Auto-generated method stub
+
+	}
+
 }

@@ -4,24 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-//import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
-
-
-
-
-
-
-
-
-
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-
 import org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants;
 import org.kurento.commons.Address;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
@@ -34,8 +16,16 @@ import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
 import org.kurento.rabbitmq.RabbitMqManager;
-import org.kurento.rabbitmq.RabbitTemplate;
 import org.kurento.rabbitmq.RabbitMqManager.BrokerMessageReceiverWithResponse;
+import org.kurento.rabbitmq.RabbitTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+//import org.springframework.amqp.rabbit.core.RabbitTemplate;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public class JsonRpcServerRabbitMq {
 
@@ -63,6 +53,7 @@ public class JsonRpcServerRabbitMq {
 	public JsonRpcServerRabbitMq(JsonRpcClient client, Address rabbitMqAddress) {
 		this.client = client;
 		this.rabbitMq = new RabbitMqManager(rabbitMqAddress);
+		this.start();
 	}
 
 	public void start() {

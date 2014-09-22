@@ -30,7 +30,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
 
 /**
- * 
+ *
  * <strong>Description</strong>: A PlayerEndpoint is connected to a
  * WebRtcEndpoint through a Dispatcher.<br/>
  * <strong>Pipeline</strong>:
@@ -44,7 +44,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -65,15 +65,15 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
+		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
 
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/red.webm").build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/30sec/red.webm").create();
+		WebRtcEndpoint webRtcEP = WebRtcEndpoint.with(mp).create();
 
-		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
-		HubPort hubPort1 = new HubPort.Builder(dispatcher).build();
-		HubPort hubPort2 = new HubPort.Builder(dispatcher).build();
+		Dispatcher dispatcher = Dispatcher.with(mp).create();
+		HubPort hubPort1 = HubPort.with(dispatcher).create();
+		HubPort hubPort2 = HubPort.with(dispatcher).create();
 
 		playerEP.connect(hubPort1);
 		hubPort2.connect(webRtcEP);

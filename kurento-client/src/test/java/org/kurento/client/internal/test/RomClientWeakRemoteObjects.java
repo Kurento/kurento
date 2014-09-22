@@ -5,11 +5,11 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.kurento.client.internal.client.RemoteObject;
+import org.kurento.client.internal.client.RemoteObjectFacade;
+import org.kurento.client.internal.client.RomManager;
 
 import com.google.common.collect.MapMaker;
-
-import org.kurento.client.internal.client.RemoteObject;
-import org.kurento.client.internal.client.RomClientObjectManager;
 
 public class RomClientWeakRemoteObjects {
 
@@ -63,10 +63,11 @@ public class RomClientWeakRemoteObjects {
 	@Test
 	public void testRomClientObjectManager() {
 
-		RomClientObjectManager manager = new RomClientObjectManager(null);
-		new RemoteObject("xxx", null, null, manager);
+		RomManager manager = new RomManager(null);
 
-		if (null == manager.getRemoteObject("xxx")) {
+		new RemoteObject("xxx", null, manager);
+
+		if (null == manager.getObjectManager().getRemoteObject("xxx")) {
 			Assert.fail("Reference should NOT be null");
 		}
 
@@ -78,7 +79,7 @@ public class RomClientWeakRemoteObjects {
 			// Ignore OME
 		}
 
-		if (null != manager.getRemoteObject("xxx")) {
+		if (null != manager.getObjectManager().getRemoteObject("xxx")) {
 			Assert.fail("Reference should be null");
 		}
 	}
@@ -86,10 +87,11 @@ public class RomClientWeakRemoteObjects {
 	@Test
 	public void testRomClientObjectManager2() {
 
-		RomClientObjectManager manager = new RomClientObjectManager(null);
-		RemoteObject obj = new RemoteObject("xxx", null, null, manager);
+		RomManager manager = new RomManager(null);
 
-		if (obj != manager.getRemoteObject("xxx")) {
+		RemoteObjectFacade obj = new RemoteObject("xxx", null, manager);
+
+		if (obj != manager.getObjectManager().getRemoteObject("xxx")) {
 			Assert.fail("Reference should be equals to inserted remote object");
 		}
 
@@ -103,7 +105,7 @@ public class RomClientWeakRemoteObjects {
 			// Ignore OME
 		}
 
-		if (null != manager.getRemoteObject("xxx")) {
+		if (null != manager.getObjectManager().getRemoteObject("xxx")) {
 			Assert.fail("Reference should be null");
 		}
 	}

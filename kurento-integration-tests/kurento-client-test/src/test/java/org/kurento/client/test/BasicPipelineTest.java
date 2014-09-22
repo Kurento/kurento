@@ -25,11 +25,11 @@ public class BasicPipelineTest extends MediaPipelineBaseTest {
 	@Test
 	public void basicPipelineTest() {
 
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				"http://files.kurento.org/video/small.webm").build();
+		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
+				"http://files.kurento.org/video/small.webm").create();
 
-		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(pipeline)
-				.build();
+		HttpGetEndpoint httpGetEndpoint = HttpGetEndpoint.with(pipeline)
+				.create();
 
 		player.connect(httpGetEndpoint);
 
@@ -39,4 +39,5 @@ public class BasicPipelineTest extends MediaPipelineBaseTest {
 
 		Assert.assertNotSame("The URL shouldn't be empty", "", url);
 	}
+
 }

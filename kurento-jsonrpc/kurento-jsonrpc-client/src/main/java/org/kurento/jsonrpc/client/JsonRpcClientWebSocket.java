@@ -62,18 +62,23 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private volatile WebSocketSession wsSession;
 	private final PendingRequests pendingRequests = new PendingRequests();
 	private final HttpHeaders headers = new HttpHeaders();
-
 	private ResponseSender rs;
+
+	private JsonRpcWSConnectionListener connectionListener;
+
+	private boolean clientClose = false;
 
 	private static final long TIMEOUT = 10000;
 
 	public JsonRpcClientWebSocket(String url) {
-		this(url, new HttpHeaders());
+		this(url, new HttpHeaders(), null);
 	}
 
-	public JsonRpcClientWebSocket(String url, HttpHeaders headers) {
+	public JsonRpcClientWebSocket(String url, HttpHeaders headers,
+			JsonRpcWSConnectionListener connectionListener) {
 
 		this.url = url;
+		this.connectionListener = connectionListener;
 
 		rsHelper = new JsonRpcRequestSenderHelper() {
 			@Override
@@ -93,7 +98,14 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			}
 		};
 
-		this.headers.putAll(headers);
+		if (headers != null) {
+			this.headers.putAll(headers);
+		}
+	}
+
+	public JsonRpcClientWebSocket(String url,
+			JsonRpcWSConnectionListener connectionListener) {
+		this(url, new HttpHeaders(), connectionListener);
 	}
 
 	protected void internalSendRequestWebSocket(
@@ -122,7 +134,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	public synchronized void connectIfNecessary() throws IOException {
 
-		if (wsSession == null) {
+		if (wsSession == null || !wsSession.isOpen()) {
 
 			final CountDownLatch latch = new CountDownLatch(1);
 
@@ -135,6 +147,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					wsSession = wsSession2;
 					rs = new WebSocketResponseSender(wsSession);
 					latch.countDown();
+					if (connectionListener != null) {
+						connectionListener.connected();
+					}
 				}
 
 				@Override
@@ -146,22 +161,12 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				@Override
 				public void afterConnectionClosed(WebSocketSession s,
 						CloseStatus status) throws Exception {
-
-					// TODO Call this when you can't reconnect or close is
-					// issued by client.
-					handlerManager.afterConnectionClosed(session,
-							status.getReason());
-					log.debug("WebSocket closed due to: {}", status);
-					wsSession = null;
-					// TODO Start a timer to force reconnect in x millis
-					// For the moment we are going to force it sending another
-					// message.
+					handleReconnectDisconnection(s, status);
 				}
 			};
 
 			WebSocketConnectionManager connectionManager = new WebSocketConnectionManager(
 					new StandardWebSocketClient(), webSocketHandler, url);
-
 			connectionManager.setHeaders(headers);
 			connectionManager.start();
 
@@ -169,6 +174,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				// FIXME: Make this configurable and search a way to detect the
 				// underlying connection timeout
 				if (!latch.await(10, TimeUnit.SECONDS)) {
+					if (connectionListener != null) {
+						connectionListener.connectionTimeout();
+					}
 					throw new KurentoException(
 							"Timeout of 10s when waiting to connect to Websocket server");
 				}
@@ -190,6 +198,44 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
+			}
+		}
+	}
+
+	protected void handleReconnectDisconnection(final WebSocketSession s,
+			final CloseStatus status) {
+
+		if (!clientClose) {
+
+			execService.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						connectIfNecessary();
+					} catch (KurentoException e) {
+
+						handlerManager.afterConnectionClosed(session,
+								status.getReason());
+
+						log.debug("WebSocket closed due to: {}", status);
+						wsSession = null;
+
+						if (connectionListener != null) {
+							connectionListener.disconnected();
+						}
+
+					} catch (IOException e) {
+						log.warn("Exception trying to reconnect", e);
+					}
+				}
+			});
+
+		} else {
+
+			handlerManager.afterConnectionClosed(session, status.getReason());
+
+			if (connectionListener != null) {
+				connectionListener.disconnected();
 			}
 		}
 	}
@@ -293,11 +339,17 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	@Override
 	public void close() throws IOException {
 		if (wsSession != null) {
+			clientClose = true;
 			wsSession.close();
 		}
 	}
 
 	public WebSocketSession getWebSocketSession() {
 		return wsSession;
+	}
+
+	@Override
+	public void connect() throws IOException {
+		connectIfNecessary();
 	}
 }

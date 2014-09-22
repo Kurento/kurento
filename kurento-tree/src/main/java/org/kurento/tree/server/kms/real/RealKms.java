@@ -1,6 +1,6 @@
 package org.kurento.tree.server.kms.real;
 
-import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.KurentoClient;
 import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.Pipeline;
 

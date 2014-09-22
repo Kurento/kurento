@@ -21,14 +21,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.entity.ContentType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-
-import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
-
 import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.internal.HttpResponseSender;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
@@ -36,6 +30,12 @@ import org.kurento.jsonrpc.internal.client.ClientSession;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.jsonrpc.message.ResponseError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
+
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 
 public class JsonRpcClientHttp extends JsonRpcClient {
 
@@ -181,6 +181,20 @@ public class JsonRpcClientHttp extends JsonRpcClient {
 		handlerManager.afterConnectionClosed(session,
 				"Client closed connection");
 		session = null;
+	}
+
+	@Override
+	public void connect() throws IOException {
+
+		try {
+
+			org.apache.http.client.fluent.Request.Post(url)
+					.bodyString("", ContentType.APPLICATION_JSON).execute();
+
+		} catch (ClientProtocolException e) {
+			// Silence http connection exception. This indicate that server is
+			// reachable and running
+		}
 	}
 
 }

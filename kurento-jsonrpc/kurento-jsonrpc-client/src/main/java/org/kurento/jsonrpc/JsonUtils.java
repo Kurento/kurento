@@ -256,20 +256,26 @@ public class JsonUtils {
 	 * @return son object
 	 */
 	public static Gson getGson() {
-		if (gson != null) {
-			return gson;
+
+		if (gson == null) {
+			synchronized (JsonUtils.class) {
+				if (gson == null) {
+					GsonBuilder builder = new GsonBuilder();
+					builder.registerTypeAdapter(Request.class,
+							new JsonRpcRequestDeserializer());
+
+					builder.registerTypeAdapter(Response.class,
+							new JsonRpcResponseDeserializer());
+
+					builder.registerTypeAdapter(Props.class,
+							new JsonPropsAdapter());
+
+					builder.disableHtmlEscaping();
+
+					gson = builder.create();
+				}
+			}
 		}
-
-		GsonBuilder builder = new GsonBuilder();
-		builder.registerTypeAdapter(Request.class,
-				new JsonRpcRequestDeserializer());
-
-		builder.registerTypeAdapter(Response.class,
-				new JsonRpcResponseDeserializer());
-
-		builder.registerTypeAdapter(Props.class, new JsonPropsAdapter());
-
-		gson = builder.create();
 
 		return gson;
 	}
@@ -540,9 +546,8 @@ class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
 					jObject.get(ERROR_PROPERTY), ResponseError.class));
 
 		} else {
-			throw new JsonParseException("Invalid JsonRpc response lacking '"
-					+ RESULT_PROPERTY + "' and '" + ERROR_PROPERTY
-					+ "' fields. " + json);
+
+			return new Response<>(id);
 		}
 
 	}

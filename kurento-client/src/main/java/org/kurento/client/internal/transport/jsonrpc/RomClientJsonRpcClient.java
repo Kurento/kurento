@@ -16,18 +16,21 @@ import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.SUBSCRIBE_METHOD;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.SUBSCRIBE_OBJECT;
 import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.SUBSCRIBE_TYPE;
+import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.TRANSACTION_METHOD;
+import static org.kurento.client.internal.transport.jsonrpc.RomJsonRpcConstants.TRANSACTION_OPERATIONS;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.kurento.client.Continuation;
+import org.kurento.client.internal.client.DefaultContinuation;
 import org.kurento.client.internal.client.RomClient;
 import org.kurento.client.internal.client.RomEventHandler;
+import org.kurento.client.internal.client.operation.Operation;
 import org.kurento.client.internal.server.KurentoServerException;
 import org.kurento.client.internal.server.KurentoServerTransportException;
-import org.kurento.client.internal.server.ProtocolException;
 import org.kurento.client.internal.transport.serialization.ParamsFlattener;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcErrorException;
@@ -36,15 +39,30 @@ import org.kurento.jsonrpc.Props;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.reflect.TypeToken;
+import com.google.common.util.concurrent.SettableFuture;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 
-public class RomClientJsonRpcClient extends RomClient {
+public class RomClientJsonRpcClient implements RomClient {
+
+	public class RequestAndResponseType {
+
+		public Request<JsonObject> request;
+		public Type responseType;
+
+		public RequestAndResponseType(Request<JsonObject> request,
+				Type responseType) {
+			this.request = request;
+			this.responseType = responseType;
+		}
+	}
 
 	private static final Logger log = LoggerFactory
 			.getLogger(RomClientJsonRpcClient.class);
@@ -54,6 +72,8 @@ public class RomClientJsonRpcClient extends RomClient {
 	public RomClientJsonRpcClient(JsonRpcClient client) {
 		this.client = client;
 	}
+
+	// Sync operations
 
 	@Override
 	public Object invoke(String objectRef, String operationName,
@@ -76,29 +96,24 @@ public class RomClientJsonRpcClient extends RomClient {
 		release(objectRef, null);
 	}
 
+	// Async operations
+
 	@Override
 	public String create(String remoteClassName, Props constructorParams,
 			Continuation<String> cont) {
 
-		JsonObject params = new JsonObject();
-		params.addProperty(CREATE_TYPE, remoteClassName);
-		if (constructorParams != null) {
+		RequestAndResponseType reqres = createCreateRequest(remoteClassName,
+				constructorParams);
 
-			Props flatParams = ParamsFlattener.getInstance().flattenParams(
-					constructorParams);
-
-			params.add(CREATE_CONSTRUCTOR_PARAMS,
-					JsonUtils.toJsonObject(flatParams));
-		}
-
-		return this.<String, String> sendRequest(CREATE_METHOD, String.class,
-				params, null, cont);
+		return this.<String, String> sendRequest(reqres.request,
+				reqres.responseType, null, cont);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <E> E invoke(String objectRef, String operationName,
 			Props operationParams, Class<E> clazz) {
+
 		return (E) invoke(objectRef, operationName, operationParams,
 				(Type) clazz);
 	}
@@ -107,63 +122,30 @@ public class RomClientJsonRpcClient extends RomClient {
 	public Object invoke(String objectRef, String operationName,
 			Props operationParams, Type type, Continuation<?> cont) {
 
-		JsonObject params = new JsonObject();
-		params.addProperty(INVOKE_OBJECT, objectRef);
-		params.addProperty(INVOKE_OPERATION_NAME, operationName);
+		RequestAndResponseType reqres = createInvokeRequest(objectRef,
+				operationName, operationParams, type);
 
-		if (operationParams != null) {
-
-			Props flatParams = ParamsFlattener.getInstance().flattenParams(
-					operationParams);
-
-			params.add(INVOKE_OPERATION_PARAMS,
-					JsonUtils.toJsonObject(flatParams));
-		}
-
-		return sendRequest(INVOKE_METHOD, type, params, null, cont);
+		return sendRequest(reqres.request, reqres.responseType, null, cont);
 	}
 
 	@Override
 	public void release(String objectRef, Continuation<Void> cont) {
 
-		JsonObject params = JsonUtils.toJsonObject(new Props(RELEASE_OBJECT,
-				objectRef));
-
-		sendRequest(RELEASE_METHOD, Void.class, params, null, cont);
+		RequestAndResponseType reqres = createReleaseRequest(objectRef);
+		sendRequest(reqres.request, reqres.responseType, null, cont);
 	}
 
 	@Override
 	public String subscribe(String objectRef, String eventType,
 			Continuation<String> cont) {
 
-		JsonObject params = JsonUtils.toJsonObject(new Props(SUBSCRIBE_OBJECT,
-				objectRef).add(SUBSCRIBE_TYPE, eventType));
+		RequestAndResponseType reqres = createSubscribeRequest(objectRef,
+				eventType);
 
-		Function<JsonElement, String> processor = new Function<JsonElement, String>() {
-			@Override
-			public String apply(JsonElement subscription) {
-
-				if (subscription instanceof JsonPrimitive) {
-					return subscription.getAsString();
-				}
-
-				JsonObject subsObject = (JsonObject) subscription;
-				Set<Entry<String, JsonElement>> entries = subsObject.entrySet();
-				if (entries.size() != 1) {
-					throw new ProtocolException(
-							"Error format in response to subscription operation."
-									+ "The response should have one property and it has "
-									+ entries.size() + ". The response is: "
-									+ subscription);
-				}
-
-				return entries.iterator().next().getValue().getAsString();
-			}
-		};
-
-		return sendRequest(SUBSCRIBE_METHOD, JsonElement.class, params,
-				processor, cont);
+		return sendRequest(reqres.request, reqres.responseType, null, cont);
 	}
+
+	// Other methods
 
 	@Override
 	public void addRomEventHandler(final RomEventHandler eventHandler) {
@@ -212,27 +194,31 @@ public class RomClientJsonRpcClient extends RomClient {
 	}
 
 	@SuppressWarnings("unchecked")
-	private <P, R> R sendRequest(String method, final Type type,
-			JsonObject params, final Function<P, R> processor,
+	private <P, R> R sendRequest(Request<JsonObject> request,
+			final Type responseType, final Function<P, R> processor,
 			final Continuation<R> cont) {
+
 		try {
 
 			if (cont == null) {
 
-				return processReqResult(type, processor,
-						client.sendRequest(method, params, JsonElement.class));
+				return processReqResult(
+						responseType,
+						processor,
+						client.sendRequest(request.getMethod(),
+								request.getParams(), JsonElement.class));
 
 			}
 
-			client.sendRequest(method, params,
+			client.sendRequest(request.getMethod(), request.getParams(),
 					new org.kurento.jsonrpc.client.Continuation<JsonElement>() {
 
 						@SuppressWarnings({ "rawtypes" })
 						@Override
 						public void onSuccess(JsonElement reqResult) {
 
-							R methodResult = processReqResult(type, processor,
-									reqResult);
+							R methodResult = processReqResult(responseType,
+									processor, reqResult);
 							try {
 								((Continuation) cont).onSuccess(methodResult);
 							} catch (Exception e) {
@@ -260,20 +246,153 @@ public class RomClientJsonRpcClient extends RomClient {
 			throw new KurentoServerTransportException(
 					"Error connecting with server", e);
 		} catch (JsonRpcErrorException e) {
-			throw new KurentoServerException("Exception invoking the ", e);
+			throw new KurentoServerException(
+					"Exception invoking an operation in KMS", e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private <P, R> R processReqResult(final Type type,
 			Function<P, R> processor, JsonElement reqResult) {
-		P methodResult = JsonUtils.extractJavaValueFromResult(reqResult, type);
+
+		P methodResult = JsonResponseUtils.convertFromResult(reqResult, type);
 
 		if (processor == null) {
 			return (R) methodResult;
+		} else {
+			return processor.apply(methodResult);
+		}
+	}
+
+	// Create JsonRpc requests
+
+	public RequestAndResponseType createInvokeRequest(String objectRef,
+			String operationName, Props operationParams, Type type) {
+
+		JsonObject params = new JsonObject();
+		params.addProperty(INVOKE_OBJECT, objectRef);
+		params.addProperty(INVOKE_OPERATION_NAME, operationName);
+
+		if (operationParams != null) {
+
+			Props flatParams = ParamsFlattener.getInstance().flattenParams(
+					operationParams);
+
+			params.add(INVOKE_OPERATION_PARAMS,
+					JsonUtils.toJsonObject(flatParams));
 		}
 
-		return processor.apply(methodResult);
+		return new RequestAndResponseType(new Request<JsonObject>(
+				INVOKE_METHOD, params), type);
+	}
+
+	public RequestAndResponseType createReleaseRequest(String objectRef) {
+
+		JsonObject params = JsonUtils.toJsonObject(new Props(RELEASE_OBJECT,
+				objectRef));
+
+		return new RequestAndResponseType(new Request<JsonObject>(
+				RELEASE_METHOD, params), Void.class);
+	}
+
+	public RequestAndResponseType createCreateRequest(String remoteClassName,
+			Props constructorParams) {
+
+		JsonObject params = new JsonObject();
+		params.addProperty(CREATE_TYPE, remoteClassName);
+
+		if (constructorParams != null) {
+			Props flatParams = ParamsFlattener.getInstance().flattenParams(
+					constructorParams);
+
+			params.add(CREATE_CONSTRUCTOR_PARAMS,
+					JsonUtils.toJsonObject(flatParams));
+		}
+
+		return new RequestAndResponseType(new Request<JsonObject>(
+				CREATE_METHOD, params), String.class);
+	}
+
+	public RequestAndResponseType createSubscribeRequest(String objectRef,
+			String eventType) {
+
+		JsonObject params = JsonUtils.toJsonObject(new Props(SUBSCRIBE_OBJECT,
+				objectRef).add(SUBSCRIBE_TYPE, eventType));
+
+		return new RequestAndResponseType(new Request<JsonObject>(
+				SUBSCRIBE_METHOD, params), String.class);
+	}
+
+	@Override
+	public void transaction(List<Operation> operations) {
+		transaction(operations, null);
+	}
+
+	@Override
+	@SuppressWarnings("serial")
+	public void transaction(final List<Operation> operations,
+			final Continuation<Void> continuation) {
+
+		// TODO Now this implementation consider Server side support for
+		// transactions. Refactor other code to include here the logic to behave
+		// different when the server doesn't have transaction support
+
+		JsonArray opJsons = new JsonArray();
+		final List<RequestAndResponseType> opReqres = new ArrayList<>();
+
+		int numReq = 0;
+		for (Operation op : operations) {
+			RequestAndResponseType reqres = op.createRequest(this);
+			opReqres.add(reqres);
+			reqres.request.setId(numReq);
+			opJsons.add(JsonUtils.toJsonElement(reqres.request));
+			numReq++;
+		}
+
+		JsonObject params = new JsonObject();
+		params.add(TRANSACTION_OPERATIONS, opJsons);
+
+		DefaultContinuation<List<Response<JsonElement>>> wrappedContinuation = null;
+
+		if (continuation != null) {
+			wrappedContinuation = new DefaultContinuation<List<Response<JsonElement>>>(
+					continuation) {
+				@Override
+				public void onSuccess(List<Response<JsonElement>> responses)
+						throws Exception {
+					processTransactionResponse(operations, opReqres, responses);
+					continuation.onSuccess(null);
+				}
+			};
+		}
+
+		List<Response<JsonElement>> responses = this.sendRequest(
+				new Request<JsonObject>(TRANSACTION_METHOD, params),
+				new TypeToken<List<Response<JsonElement>>>() {
+				}.getType(), null, wrappedContinuation);
+
+		if (continuation == null) {
+			processTransactionResponse(operations, opReqres, responses);
+		}
+	}
+
+	private void processTransactionResponse(List<Operation> operations,
+			List<RequestAndResponseType> opReqres,
+			List<Response<JsonElement>> responses) {
+		for (int i = 0; i < operations.size(); i++) {
+			Operation op = operations.get(i);
+			Response<JsonElement> response = responses.get(i);
+			RequestAndResponseType reqres = opReqres.get(i);
+			SettableFuture<?> future = (SettableFuture<?>) op.getFuture();
+
+			if (response.isError()) {
+				future.setException(new JsonRpcErrorException(response
+						.getError()));
+			} else {
+				op.processResponse(processReqResult(reqres.responseType, null,
+						response.getResult()));
+			}
+		}
 	}
 
 }

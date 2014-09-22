@@ -20,9 +20,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
+import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.test.util.AsyncEventManager;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 import org.kurento.commons.exception.KurentoException;
@@ -55,7 +55,8 @@ public class PlayerEndpointTest extends MediaPipelineBaseTest {
 
 	@Before
 	public void setupMediaElements() throws KurentoException {
-		player = new PlayerEndpoint.Builder(pipeline,URL_SMALL).build();
+		player = PlayerEndpoint.with(pipeline, URL_SMALL).create();
+		 
 	}
 
 	@After

@@ -16,7 +16,10 @@ package org.kurento.client.test;
 
 import static org.kurento.client.test.RtpEndpoint2Test.URL_SMALL;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 
@@ -42,7 +45,9 @@ public class RecorderEndpointTest extends MediaPipelineBaseTest {
 
 	@Before
 	public void setupMediaElements() {
-		recorder = new RecorderEndpoint.Builder(pipeline,URL_SMALL).build();
+		recorder = RecorderEndpoint.with(pipeline, URL_SMALL).create();
+
+		 
 	}
 
 	@After

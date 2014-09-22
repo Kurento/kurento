@@ -43,7 +43,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * <li>Play time should be the expected</li>
  * <li>CodeFound events received</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -64,11 +64,11 @@ public class PlayerZBarTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/barcodes.webm").build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-		ZBarFilter zBarFilter = new ZBarFilter.Builder(mp).build();
+		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/barcodes.webm").create();
+		WebRtcEndpoint webRtcEP = WebRtcEndpoint.with(mp).create();
+		ZBarFilter zBarFilter = ZBarFilter.with(mp).create();
 		playerEP.connect(zBarFilter);
 		zBarFilter.connect(webRtcEP);
 

@@ -32,7 +32,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a Recorder, using the stream source
  * from a PlayerEndpoint with FaceOverlayFilter through an WebRtcEndpoint.<br/>
  * <strong>Pipelines</strong>:
@@ -48,7 +48,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>Color above the head of the video should be the expected (image overlaid)
  * </li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -72,19 +72,18 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/fiwarecut.mp4").build();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/fiwarecut.mp4").create();
+		WebRtcEndpoint webRtcEP1 = WebRtcEndpoint.with(mp).create();
 
 		final String recordingPreProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording(PRE_PROCESS_SUFIX);
 		final String recordingPostProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording();
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				recordingPreProcess).build();
-		final FaceOverlayFilter filter = new FaceOverlayFilter.Builder(mp)
-				.build();
+		RecorderEndpoint recorderEP = RecorderEndpoint.with(mp,
+				recordingPreProcess).create();
+		final FaceOverlayFilter filter = FaceOverlayFilter.with(mp).create();
 		filter.setOverlayedImage(
 				"http://files.kurento.org/imgs/red-square.png", -0.2F, -1.2F,
 				1.6F, 1.6F);
@@ -105,7 +104,7 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 				recordingPostProcess);
 
 		// Media Pipeline #2
-		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
+		MediaPipeline mp2 = MediaPipeline.with(kurentoClient).create();
 		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
 				recordingPostProcess).build();
 		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();

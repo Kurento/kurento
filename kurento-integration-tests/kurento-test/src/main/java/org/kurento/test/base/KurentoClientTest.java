@@ -16,7 +16,7 @@ package org.kurento.test.base;
 
 import org.junit.After;
 import org.junit.Before;
-import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.KurentoClient;
 import org.kurento.test.services.KurentoClientTestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

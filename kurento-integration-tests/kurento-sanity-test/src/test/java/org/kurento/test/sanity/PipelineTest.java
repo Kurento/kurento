@@ -32,7 +32,8 @@ public class PipelineTest extends KurentoClientTest {
 
 	@Test
 	public void basicPipelineTest() {
-		MediaPipeline mediaPipeline = kurentoClient.createMediaPipeline();
+		MediaPipeline mediaPipeline = MediaPipeline.with(kurentoClient)
+				.create();
 		Assert.assertNotNull("Error: MediaPipeline is null", mediaPipeline);
 		mediaPipeline.release();
 	}

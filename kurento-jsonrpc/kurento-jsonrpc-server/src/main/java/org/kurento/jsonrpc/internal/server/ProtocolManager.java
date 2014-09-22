@@ -25,6 +25,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
+import org.kurento.commons.SecretGenerator;
+import org.kurento.jsonrpc.JsonRpcHandler;
+import org.kurento.jsonrpc.JsonUtils;
+import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
+import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
+import org.kurento.jsonrpc.message.ResponseError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,15 +43,6 @@ import org.springframework.scheduling.TaskScheduler;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-
-import org.kurento.commons.SecretGenerator;
-import org.kurento.jsonrpc.JsonRpcHandler;
-import org.kurento.jsonrpc.JsonUtils;
-import org.kurento.jsonrpc.internal.JsonRpcHandlerManager;
-import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
-import org.kurento.jsonrpc.message.ResponseError;
 
 public class ProtocolManager {
 
@@ -73,7 +72,7 @@ public class ProtocolManager {
 	/**
 	 * Process incoming message. The response is sent using responseSender. If
 	 * null, the session will be used.
-	 * 
+	 *
 	 * @param messageJson
 	 * @param factory
 	 * @param responseSender
@@ -193,6 +192,8 @@ public class ProtocolManager {
 				String oldTransportId = session.getTransportId();
 				session.setTransportId(transportId);
 				sessionsManager.updateTransportId(session, oldTransportId);
+
+				cancelCloseTimer(session);
 
 				responseSender.sendResponse(new Response<>(sessionId, request
 						.getId(), RECONNECTION_SUCCESSFUL));

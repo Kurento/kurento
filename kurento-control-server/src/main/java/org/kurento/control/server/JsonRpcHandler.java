@@ -16,15 +16,19 @@ package org.kurento.control.server;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import org.kurento.client.internal.transport.jsonrpc.JsonResponseUtils;
 import org.kurento.control.server.exceptions.KurentoControlServerTransportException;
 import org.kurento.control.server.exceptions.ResponsePropagationException;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcErrorException;
+import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
@@ -32,10 +36,12 @@ import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.client.Continuation;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -45,6 +51,15 @@ import com.google.gson.JsonObject;
  *
  */
 public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
+
+	private static final String OPERATIONS_PROPERTY = "operations";
+	private static final String SUBSCRIPTION_PROPERTY = "subscription";
+	private static final String TYPE_PROPERTY = "type";
+	private static final String OBJECT_PROPERTY = "object";
+	private static final String VALUE_PROPERTY = "value";
+
+	private static final String SUBSCRIBE_METHOD = "subscribe";
+	private static final String TRANSACTION_METHOD = "transaction";
 
 	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcHandler.class);
@@ -100,50 +115,34 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			final Request<JsonObject> request) throws Exception {
 
 		transaction.startAsync();
-		try {
-			sendRequest(transaction, request, true);
-		} catch (KurentoControlServerTransportException e) {
-			throw new TransportException(e);
+
+		if (request.getMethod().equals(TRANSACTION_METHOD)) {
+
+			processTransactionRequest(transaction, request);
+
+		} else {
+			try {
+				sendRequest(transaction, request, true);
+			} catch (KurentoControlServerTransportException e) {
+				throw new TransportException(e);
+			}
 		}
 	}
 
 	private void sendRequest(final Transaction transaction,
 			final Request<JsonObject> request, final boolean retry) {
 
-		final String subsObjectAndType;
-
-		if (request.getMethod().equals("subscribe")) {
-			subsObjectAndType = getEventInfo(request.getParams());
-		} else {
-			subsObjectAndType = null;
-		}
-
 		try {
+
 			client.sendRequest(request.getMethod(), request.getParams(),
 					new Continuation<JsonElement>() {
 
 						@Override
 						public void onSuccess(JsonElement result) {
 							if (request.getId() != null) {
-
-								if (subsObjectAndType != null) {
-									try {
-										String subscription = ((JsonObject) result)
-												.get("value").getAsString()
-												.trim();
-
-										subsManager.addSubscription(
-												subscription,
-												subsObjectAndType,
-												transaction.getSession());
-
-									} catch (Exception e) {
-										log.error(
-												"Error getting subscription on response {}",
-												result, e);
-									}
-								}
-
+								processIfSubscribeResponse(
+										transaction.getSession(), request,
+										result);
 								requestOnComplete(result, transaction);
 							}
 						}
@@ -167,9 +166,28 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 		}
 	}
 
+	private void processIfSubscribeResponse(final Session session,
+			final Request<JsonObject> request, JsonElement result) {
+
+		if (request.getMethod().equals(SUBSCRIBE_METHOD)) {
+
+			try {
+				String subscription = JsonResponseUtils.convertFromResult(
+						result, String.class);
+
+				subsManager.addSubscription(subscription,
+						getEventInfo(request.getParams()), session);
+
+			} catch (Exception e) {
+				log.error("Error getting subscription on response {}", result,
+						e);
+			}
+		}
+	}
+
 	private String getEventInfo(final JsonObject jsonObject) {
-		String object = jsonObject.get("object").getAsString();
-		String type = jsonObject.get("type").getAsString();
+		String object = jsonObject.get(OBJECT_PROPERTY).getAsString();
+		String type = jsonObject.get(TYPE_PROPERTY).getAsString();
 		return object + "/" + type;
 	}
 
@@ -219,15 +237,15 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 			log.debug("<-Not {}", request);
 
-			JsonObject value = request.getParams().get("value")
+			JsonObject value = request.getParams().get(VALUE_PROPERTY)
 					.getAsJsonObject();
 
 			Collection<Session> sessions;
 
-			if (value.has("subscription")) {
+			if (value.has(SUBSCRIPTION_PROPERTY)) {
 
-				String subscription = value.get("subscription").getAsString()
-						.trim();
+				String subscription = value.get(SUBSCRIPTION_PROPERTY)
+						.getAsString().trim();
 				sessions = subsManager.getSessionsBySubscription(subscription);
 
 			} else {
@@ -258,6 +276,91 @@ public final class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			session.sendNotification("onEvent", request.getParams());
 		} catch (IOException e) {
 			log.error("Exception while sending event from KMS to the client", e);
+		}
+	}
+
+	private void processTransactionRequest(Transaction transaction,
+			Request<JsonObject> request) {
+
+		List<JsonElement> operations = new ArrayList<>();
+		for (JsonElement operation : (JsonArray) request.getParams().get(
+				OPERATIONS_PROPERTY)) {
+			operations.add(operation);
+		}
+
+		processTransactionOperations(transaction, operations,
+				new ArrayList<Response<JsonElement>>(),
+				new TransactionManager());
+	}
+
+	private void processTransactionOperations(final Transaction transaction,
+			final List<JsonElement> operations,
+			final List<Response<JsonElement>> responses,
+			final TransactionManager txManager) {
+
+		if (operations.isEmpty()) {
+
+			try {
+				transaction.sendResponse(responses);
+			} catch (IOException e) {
+				throw new ResponsePropagationException(
+						"Could not send response to client", e);
+			}
+
+		} else {
+
+			JsonElement atomicRequestJson = operations.remove(0);
+
+			final Request<JsonObject> atomicRequest = JsonUtils
+					.fromJsonRequest((JsonObject) atomicRequestJson,
+							JsonObject.class);
+
+			txManager.updateRequest(atomicRequest);
+
+			final Integer origId = atomicRequest.getId();
+			atomicRequest.setId(null);
+
+			try {
+
+				client.sendRequest(atomicRequest,
+						new Continuation<Response<JsonElement>>() {
+
+							@Override
+							public void onSuccess(Response<JsonElement> response) {
+								txManager.updateResponse(response);
+								processIfSubscribeResponse(
+										transaction.getSession(),
+										atomicRequest, response.getResult());
+
+								response.setId(origId);
+								responses.add(response);
+								processTransactionOperations(transaction,
+										operations, responses, txManager);
+							}
+
+							@Override
+							public void onError(Throwable cause) {
+								// TODO Add retry
+								try {
+									transaction.sendError(cause);
+								} catch (IOException e) {
+									log.error(
+											"Could not send response to client",
+											e);
+								}
+							}
+						});
+
+			} catch (IOException e) {
+				try {
+					transaction.sendError(e);
+				} catch (IOException e1) {
+					throw new ResponsePropagationException(
+							"Could not notify client that an exception was "
+									+ "produced getting the result from a media server response",
+							e1);
+				}
+			}
 		}
 	}
 }

@@ -41,7 +41,7 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 
 	@Before
 	public void setupMediaElements() {
-		player = new PlayerEndpoint.Builder(pipeline, URL_SMALL).build();
+		player = PlayerEndpoint.with(pipeline, URL_SMALL).create();
 	}
 
 	@After
@@ -52,8 +52,8 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 	@Test
 	public void testInstantiation() throws InterruptedException {
 
-		filter = new GStreamerFilter.Builder(pipeline,
-				"videoflip method=horizontal-flip").build();
+		filter = GStreamerFilter.with(pipeline,
+				"videoflip method=horizontal-flip").create();
 
 		Assert.assertNotNull(filter);
 
@@ -61,6 +61,8 @@ public class GStreamerFilterTest extends MediaPipelineBaseTest {
 
 		AsyncEventManager<EndOfStreamEvent> async = new AsyncEventManager<EndOfStreamEvent>(
 				"EndOfStream event");
+
+		 
 
 		player.addEndOfStreamListener(async.getMediaEventListener());
 

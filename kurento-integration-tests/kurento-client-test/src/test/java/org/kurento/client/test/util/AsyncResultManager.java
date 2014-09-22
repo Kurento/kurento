@@ -1,6 +1,5 @@
 package org.kurento.client.test.util;
 
-import org.junit.Assert;
 import org.kurento.client.Continuation;
 
 public class AsyncResultManager<E> extends AsyncManager<E> {
@@ -19,11 +18,8 @@ public class AsyncResultManager<E> extends AsyncManager<E> {
 
 			@Override
 			public void onError(Throwable cause) throws Exception {
-				Assert.fail("Exception while '" + message + "': "
-						+ cause.getClass().getName() + " - "
-						+ cause.getMessage());
+				addError(cause);
 			}
 		};
 	}
-
 }

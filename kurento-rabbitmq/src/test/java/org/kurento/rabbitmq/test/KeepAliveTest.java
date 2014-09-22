@@ -7,7 +7,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.KurentoClient;
+import org.kurento.client.MediaPipeline;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.KeepAliveManager;
 import org.kurento.jsonrpc.Transaction;
@@ -70,7 +71,7 @@ public class KeepAliveTest {
 
 		KurentoClient kurento = KurentoClient.createFromJsonRpcClient(client);
 
-		kurento.createMediaPipeline();
+		MediaPipeline.with(kurento).create();
 
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000,
 				(NUM_KEEP_ALIVES + 1) * 1000);
@@ -80,7 +81,7 @@ public class KeepAliveTest {
 		initTime = System.nanoTime();
 		latch = new CountDownLatch(NUM_KEEP_ALIVES);
 
-		kurento.createMediaPipeline();
+		MediaPipeline.with(kurento).create();
 
 		checkKeepAlives(initTime, NUM_KEEP_ALIVES * 1000 / 2,
 				(NUM_KEEP_ALIVES + 2) * 1000 / 2);

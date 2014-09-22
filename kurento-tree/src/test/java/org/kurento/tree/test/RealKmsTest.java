@@ -4,11 +4,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import org.junit.Test;
-import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.KurentoClient;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.server.kms.Element;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.WebRtc;
@@ -17,7 +19,9 @@ import org.kurento.tree.server.kms.real.RealKms;
 public class RealKmsTest {
 
 	@Test
-	public void basicTreeTest() {
+	public void basicTreeTest() throws IOException {
+
+		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
 		RealKms kms = new RealKms(
 				KurentoClient.create("ws://localhost:8888/kurento"));
@@ -42,6 +46,7 @@ public class RealKmsTest {
 
 		assertThat(master.getSinks(), is(Collections.<Element> emptyList()));
 
+		KurentoServicesTestHelper.teardownServices();
 	}
 
 }

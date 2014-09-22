@@ -3,6 +3,7 @@ package org.kurento.tree.server.app;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.commons.PropertiesManager.getPropertyJson;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -61,8 +62,14 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 			log.info("Configuring Kurento Tree Server to use kmss: "
 					+ kmsWsUris);
 
-			KmsManager kmsManager = new FixedNRealKmsManager(kmsWsUris);
-			treeManager = new AotOneTreeManager(kmsManager);
+			KmsManager kmsManager;
+			try {
+				kmsManager = new FixedNRealKmsManager(kmsWsUris);
+				treeManager = new AotOneTreeManager(kmsManager);
+			} catch (IOException e) {
+				log.error("Exception connecting to KMS", e);
+				System.exit(1);
+			}
 		}
 
 		return treeManager;

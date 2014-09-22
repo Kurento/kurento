@@ -26,7 +26,7 @@ import com.google.common.io.CharStreams;
 
 /**
  * Local shell.
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -35,10 +35,19 @@ public class Shell {
 	public static Logger log = LoggerFactory.getLogger(Shell.class);
 
 	public static void run(final String... command) {
+		run(true, command);
+	}
+
+	public static void run(boolean redirectOutputs, final String... command) {
 		log.debug("Running command on the shell: {}", Arrays.toString(command));
 
 		try {
-			Runtime.getRuntime().exec(command);
+			ProcessBuilder p = new ProcessBuilder(command);
+			p.redirectErrorStream(true);
+			if (redirectOutputs) {
+				p.redirectOutput(ProcessBuilder.Redirect.INHERIT);
+			}
+			p.start();
 		} catch (IOException e) {
 			log.error(
 					"Exception while executing command '"

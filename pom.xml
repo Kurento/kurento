@@ -64,7 +64,6 @@
 				<module>kurento-assembly</module>
 				<module>kurento-integration-tests</module>
 				<module>kurento-rabbitmq</module>
-				<module>kurento-sandbox</module>
 			</modules>
 			<build>
 				<plugins>

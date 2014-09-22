@@ -67,7 +67,7 @@
 		<version.kms-api-core>[5.0.0,6.0.0)</version.kms-api-core>
 		<version.kms-api-elements>[5.0.0,6.0.0)</version.kms-api-elements>
 		<version.kms-api-filters>[5.0.0,6.0.0)</version.kms-api-filters>
-		<version.kurento.plugin>1.0.2</version.kurento.plugin>
+		<version.kurento.plugin>1.0.3-SNAPSHOT</version.kurento.plugin>
 
 		<!-- External versions -->
 		<version.apache.activemq>5.7.0</version.apache.activemq>
@@ -80,7 +80,7 @@
 		<version.apache.httpcore>4.3.2</version.apache.httpcore>
 		<version.cglib>2.2.2</version.cglib>
 		<version.cors-filter>1.7.1</version.cors-filter>
-		<version.google.gson>2.2.4</version.google.gson>
+		<version.google.gson>2.3</version.google.gson>
 		<version.google.guava>17.0</version.google.guava>
 		<version.junit>4.11</version.junit>
 		<version.keystone-client>3.2.1</version.keystone-client>

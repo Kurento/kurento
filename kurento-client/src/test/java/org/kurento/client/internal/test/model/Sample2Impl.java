@@ -4,7 +4,7 @@ import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.server.Param;
 
 @RemoteClass
-public class Sample2Impl implements Sample2 {
+public class Sample2Impl {
 
 	private String att1;
 	private int att2;
@@ -19,22 +19,18 @@ public class Sample2Impl implements Sample2 {
 		this.att4 = att4;
 	}
 
-	@Override
 	public String getAtt1() {
 		return att1;
 	}
 
-	@Override
 	public int getAtt2() {
 		return att2;
 	}
 
-	@Override
 	public float getAtt3() {
 		return att3;
 	}
 
-	@Override
 	public boolean getAtt4() {
 		return att4;
 	}

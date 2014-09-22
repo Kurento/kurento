@@ -2,13 +2,12 @@ package org.kurento.client.internal.client;
 
 import java.util.concurrent.ConcurrentMap;
 
+import org.kurento.client.internal.transport.serialization.ObjectRefsManager;
+import org.kurento.jsonrpc.Props;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.MapMaker;
-
-import org.kurento.client.internal.transport.serialization.ObjectRefsManager;
-import org.kurento.jsonrpc.Props;
 
 public class RomClientObjectManager implements RomEventHandler,
 		ObjectRefsManager {
@@ -19,21 +18,21 @@ public class RomClientObjectManager implements RomEventHandler,
 	private final ConcurrentMap<String, RemoteObject> objects = new MapMaker()
 			.weakValues().makeMap();
 
-	private final RomClient client;
+	private final RomManager manager;
 
-	public RomClientObjectManager(RomClient client) {
-		this.client = client;
+	public RomClientObjectManager(RomManager manager) {
+		this.manager = manager;
 	}
 
-	public RomClient getClient() {
-		return client;
+	public RomManager getManager() {
+		return manager;
 	}
 
 	@Override
 	public void processEvent(String objectRef, String subscription,
 			String type, Props data) {
 
-		RemoteObject object = objects.get(objectRef);
+		RemoteObjectFacade object = objects.get(objectRef);
 
 		if (object == null) {
 			LOG.error("Trying to propagate an event to an object that doesn't exist in the client");
@@ -51,7 +50,7 @@ public class RomClientObjectManager implements RomEventHandler,
 		this.objects.remove(objectRef);
 	}
 
-	public RemoteObject getRemoteObject(String objectRef) {
+	public RemoteObjectFacade getRemoteObject(String objectRef) {
 		return this.objects.get(objectRef);
 	}
 

@@ -38,7 +38,7 @@ import org.kurento.test.client.WebRtcMode;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a Recorder in the repository, using the
  * stream source from a PlayerEndpoint through an WebRtcEndpoint.<br/>
  * <strong>Pipelines</strong>:
@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 5.0.4
  */
@@ -76,10 +76,10 @@ public class RecorderRepositoryTest extends RepositoryKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/ball.webm").build();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/10sec/ball.webm").create();
+		WebRtcEndpoint webRtcEP1 = WebRtcEndpoint.with(mp).create();
 
 		RepositoryItem repositoryItem = repository.createRepositoryItem();
 		RepositoryHttpRecorder recorder = repositoryItem

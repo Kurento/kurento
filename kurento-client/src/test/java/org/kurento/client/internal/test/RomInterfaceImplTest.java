@@ -5,8 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.kurento.client.internal.client.RemoteObjectFactory;
-import org.kurento.client.internal.client.RemoteObjectTypedFactory;
+import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.server.ProtocolException;
 import org.kurento.client.internal.test.model.SampleRemoteClass;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
@@ -15,21 +14,20 @@ import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 
 public class RomInterfaceImplTest {
 
-	protected static RemoteObjectTypedFactory factory;
+	protected static RomManager manager;
 
 	@BeforeClass
 	public static void initFactory() {
-		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
-				new RomClientJsonRpcClient(new JsonRpcClientLocal(
-						new RomServerJsonRpcHandler(
-								"org.kurento.client.internal.test.model", "Impl")))));
+		manager = new RomManager(new RomClientJsonRpcClient(
+				new JsonRpcClientLocal(new RomServerJsonRpcHandler(
+						"org.kurento.client.internal.test.model", "Impl"))));
 	}
 
 	private SampleRemoteClass obj;
 
 	@Before
 	public void initObject() {
-		obj = factory.create(SampleRemoteClass.class);
+		obj = SampleRemoteClass.with(manager).create();
 	}
 
 	@Test

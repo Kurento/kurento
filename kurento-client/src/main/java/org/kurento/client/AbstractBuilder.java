@@ -5,95 +5,115 @@
  */
 package org.kurento.client;
 
-import java.lang.reflect.Proxy;
-
-import org.kurento.client.internal.client.DefaultContinuation;
-import org.kurento.client.internal.client.RemoteObject;
-import org.kurento.client.internal.client.RemoteObjectFactory;
-import org.kurento.client.internal.client.RemoteObjectInvocationHandler;
+import org.kurento.client.internal.TransactionImpl;
+import org.kurento.client.internal.client.NonCommitedRemoteObject;
+import org.kurento.client.internal.client.RemoteObjectFacade;
+import org.kurento.client.internal.client.RomManager;
+import org.kurento.client.internal.client.operation.MediaObjectCreationOperation;
+import org.kurento.jsonrpc.Prop;
 import org.kurento.jsonrpc.Props;
 
 /**
  * Kurento Media Builder base interface
- * 
+ *
  * Builds a {@code <T>} object, either synchronously using {@link #build} or
  * asynchronously using {@link #buildAsync}
- * 
+ *
  * @param T
  *            the type of object to build
- * 
+ *
  **/
-public class AbstractBuilder<T> {
+public abstract class AbstractBuilder<T extends KurentoObject> {
 
 	protected final Props props;
-	private final RemoteObjectFactory factory;
+	private RomManager manager;
 	private final Class<?> clazz;
 
 	public AbstractBuilder(Class<?> clazz, MediaObject mediaObject) {
 
 		this.props = new Props();
 		this.clazz = clazz;
-
-		RemoteObjectInvocationHandler handler = (RemoteObjectInvocationHandler) Proxy
-				.getInvocationHandler(mediaObject);
-		this.factory = handler.getFactory();
 	}
 
-	public AbstractBuilder(Class<MediaPipeline> clazz,
-			RemoteObjectFactory factory) {
+	public AbstractBuilder(Class<?> clazz, RomManager manager) {
 
 		this.props = new Props();
 		this.clazz = clazz;
-		this.factory = factory;
+		this.manager = manager;
 	}
 
 	/**
 	 * Builds an object synchronously using the builder design pattern
-	 * 
+	 *
 	 * @return <T> The type of object
-	 * 
+	 *
 	 **/
+	public T create() {
+
+		KurentoObject constObject = obtainConstructorObject();
+
+		if (manager == null && constObject != null) {
+			manager = constObject.getRomManager();
+		}
+
+		RemoteObjectFacade remoteObject = manager.create(clazz.getSimpleName(),
+				props);
+
+		return createMediaObjectConst(constObject, remoteObject, null);
+	}
+
+	public T create(Transaction transaction) {
+
+		TransactionImpl tx = (TransactionImpl) transaction;
+
+		NonCommitedRemoteObject remoteObject = new NonCommitedRemoteObject(
+				tx.nextObjectRef(), tx);
+
+		KurentoObject constObject = obtainConstructorObject();
+
+		T mediaObject = createMediaObjectConst(constObject, remoteObject, tx);
+
+		MediaObjectCreationOperation op = new MediaObjectCreationOperation(
+				clazz.getSimpleName(), props, mediaObject);
+
+		tx.addOperation(op);
+
+		return mediaObject;
+	}
+
 	@SuppressWarnings("unchecked")
+	private T createMediaObjectConst(KurentoObject constObject,
+			RemoteObjectFacade remoteObject, Transaction tx) {
+
+		KurentoObject mediaObject = createMediaObject(remoteObject, tx);
+
+		if (constObject != null) {
+			mediaObject.setInternalMediaPipeline(constObject
+					.getInternalMediaPipeline());
+		}
+
+		return (T) mediaObject;
+	}
+
+	private KurentoObject obtainConstructorObject() {
+
+		KurentoObject rootObject = null;
+		for (Prop prop : props) {
+			Object value = prop.getValue();
+			if (value instanceof MediaPipeline || value instanceof Hub) {
+				rootObject = (KurentoObject) value;
+				break;
+			}
+		}
+		return rootObject;
+	}
+
+	@Deprecated
 	public T build() {
-
-		RemoteObject remoteObject = factory
-				.create(clazz.getSimpleName(), props);
-
-		return (T) RemoteObjectInvocationHandler.newProxy(remoteObject,
-				factory, clazz);
+		return create();
 	}
 
-	/**
-	 * Builds an object asynchronously using the builder design pattern.
-	 * 
-	 * The continuation will have {@link Continuation#onSuccess} called when the
-	 * object is ready, or {@link Continuation#onError} if an error occurs
-	 * 
-	 * @param continuation
-	 *            will be called when the object is built
-	 * 
-	 * 
-	 **/
-	public void buildAsync(final Continuation<T> continuation) {
-
-		factory.create(clazz.getSimpleName(), props,
-				new DefaultContinuation<RemoteObject>(continuation) {
-					@SuppressWarnings("unchecked")
-					@Override
-					public void onSuccess(RemoteObject remoteObject) {
-						try {
-							continuation
-									.onSuccess((T) RemoteObjectInvocationHandler
-											.newProxy(remoteObject, factory,
-													clazz));
-						} catch (Exception e) {
-							log.warn(
-									"[Continuation] error invoking onSuccess implemented by client",
-									e);
-						}
-					}
-				});
-
-	}
+	protected abstract T createMediaObject(RemoteObjectFacade remoteObject,
+			Transaction tx);
 
 }

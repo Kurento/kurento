@@ -9,7 +9,7 @@
 	<artifactId>kurento-control-server-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento tests - Kurento Control Server</name>
+	<name>Kurento Integration tests - Kurento Control Server</name>
 	<description>
 			Tests of a Kurento Control Server
 	</description>

@@ -1,8 +1,8 @@
 package org.kurento.client.internal.client;
 
+import org.kurento.client.Continuation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.kurento.client.Continuation;
 
 public abstract class DefaultContinuation<F> implements Continuation<F> {
 
@@ -15,7 +15,7 @@ public abstract class DefaultContinuation<F> implements Continuation<F> {
 	}
 
 	@Override
-	public abstract void onSuccess(F result);
+	public abstract void onSuccess(F result) throws Exception;
 
 	@Override
 	public void onError(Throwable cause) {

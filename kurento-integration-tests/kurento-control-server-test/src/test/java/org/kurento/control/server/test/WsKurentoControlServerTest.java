@@ -71,7 +71,7 @@ public class WsKurentoControlServerTest {
 	public void configureWsGrizzlyPortTest() throws IOException,
 			InterruptedException {
 
-		String port = "5555";
+		String port = "5559";
 		String path = "pathtest";
 
 		System.setProperty(KurentoControlServerApp.WEBSOCKET_PORT_PROPERTY,

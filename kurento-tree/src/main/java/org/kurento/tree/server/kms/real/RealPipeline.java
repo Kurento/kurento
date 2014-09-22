@@ -11,7 +11,7 @@ public class RealPipeline extends Pipeline {
 
 	public RealPipeline(RealKms realKms) {
 		super(realKms);
-		mediaPipeline = realKms.getKurentoClient().createMediaPipeline();
+		mediaPipeline = MediaPipeline.with(realKms.getKurentoClient()).create();
 	}
 
 	public MediaPipeline getMediaPipeline() {

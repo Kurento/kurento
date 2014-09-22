@@ -4,18 +4,17 @@ import java.io.IOException;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.WebSocketSession;
 import org.kurento.jsonrpc.DefaultJsonRpcHandler;
 import org.kurento.jsonrpc.JsonRpcErrorException;
 import org.kurento.jsonrpc.Session;
 import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
-import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.socket.WebSocketSession;
 
 public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
@@ -61,7 +60,6 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 			log.info("SessionId: " + client.getSession().getSessionId());
 
 			JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-
 			WebSocketSession session = webSocketClient.getWebSocketSession();
 			session.close();
 
@@ -110,11 +108,10 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 			Thread.sleep(1000);
 
 			try {
-				client.sendRequest("sessiontest", String.class);
-				Assert.fail("The reconnection shoudn't be succesful because timeout");
+				Assert.assertEquals("old",
+						client.sendRequest("sessiontest", String.class));
 			} catch (JsonRpcErrorException e) {
-				Assert.assertEquals(JsonRpcConstants.RECONNECTION_ERROR,
-						e.getMessage());
+				Assert.fail("Reconnection should be happend behind the covers");
 			}
 		}
 

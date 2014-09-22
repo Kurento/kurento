@@ -18,7 +18,13 @@ import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.client.*;
+import org.kurento.client.HttpEndpoint;
+import org.kurento.client.HttpGetEndpoint;
+import org.kurento.client.MediaSink;
+import org.kurento.client.MediaSource;
+import org.kurento.client.MediaType;
+import org.kurento.client.PlayerEndpoint;
+import org.kurento.client.RtpEndpoint;
 import org.kurento.client.test.util.MediaPipelineBaseTest;
 import org.kurento.commons.exception.KurentoException;
 
@@ -32,7 +38,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	public void testCampusPartySimulatedPipeline() throws InterruptedException {
 
-		RtpEndpoint rtpEndpoint = new RtpEndpoint.Builder(pipeline).build();
+		RtpEndpoint rtpEndpoint = RtpEndpoint.with(pipeline).create();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 192.168.1.18\r\n" + "s=-\r\n"
@@ -53,7 +59,7 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 		// Wait some time simulating the connection to the player app
 		Thread.sleep(1000);
 
-		HttpEndpoint httpEndpoint = new HttpGetEndpoint.Builder(pipeline).build();
+		HttpEndpoint httpEndpoint = HttpGetEndpoint.with(pipeline).create();
 
 		rtpEndpoint.connect(httpEndpoint, MediaType.VIDEO);
 	}
@@ -61,7 +67,9 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 	@Test
 	public void testSourceSinks() {
 
-		RtpEndpoint rtp = new RtpEndpoint.Builder(pipeline).build();
+		RtpEndpoint rtp = RtpEndpoint.with(pipeline).create();
+
+		 
 
 		Collection<MediaSource> videoSrcsA = rtp.getMediaSrcs(MediaType.VIDEO);
 		Assert.assertFalse(videoSrcsA.isEmpty());
@@ -80,10 +88,13 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	@Test
 	public void testConnect() throws KurentoException {
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_SMALL).build();
-		HttpEndpoint http = new HttpGetEndpoint.Builder(pipeline).build();
+		PlayerEndpoint player = PlayerEndpoint.with(pipeline, URL_SMALL)
+				.create();
+		HttpEndpoint http = HttpGetEndpoint.with(pipeline).create();
 
 		player.connect(http);
+
+		 
 
 		player.play();
 		http.release();
@@ -92,11 +103,14 @@ public class RtpEndpoint2Test extends MediaPipelineBaseTest {
 
 	@Test
 	public void testConnectByType() throws KurentoException {
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,URL_SMALL).build();
-		HttpEndpoint http = new HttpGetEndpoint.Builder(pipeline).build();
+		PlayerEndpoint player = PlayerEndpoint.with(pipeline, URL_SMALL)
+				.create();
+		HttpEndpoint http = HttpGetEndpoint.with(pipeline).create();
 
 		player.connect(http, MediaType.AUDIO);
 		player.connect(http, MediaType.VIDEO);
+
+		 
 
 		player.play();
 		http.release();

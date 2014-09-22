@@ -11,10 +11,13 @@ import static org.kurento.test.services.KurentoServicesTestHelper.KMS_TRANSPORT_
 import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_DEFAULT;
 import static org.kurento.test.services.KurentoServicesTestHelper.KMS_WS_URI_PROP;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.security.InvalidParameterException;
 
-import org.kurento.client.factory.KurentoClient;
+import org.kurento.client.JsonRpcConnectionListenerKurento;
+import org.kurento.client.KurentoClient;
+import org.kurento.client.KurentoConnectionListener;
 import org.kurento.commons.Address;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
@@ -26,12 +29,22 @@ public class KurentoClientTestFactory {
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoClientTestFactory.class);
 
-	public static KurentoClient createKurentoForTest() {
-		return KurentoClient
-				.createFromJsonRpcClient(createJsonRpcClient("client"));
+	public static KurentoClient createKurentoForTest() throws IOException {
+		return createKurentoForTest(null);
+	}
+
+	public static KurentoClient createKurentoForTest(
+			KurentoConnectionListener listener) throws IOException {
+		return KurentoClient.createFromJsonRpcClient(createJsonRpcClient(
+				"client", listener));
 	}
 
 	public static JsonRpcClient createJsonRpcClient(String prefix) {
+		return createJsonRpcClient(prefix, null);
+	}
+
+	public static JsonRpcClient createJsonRpcClient(String prefix,
+			KurentoConnectionListener listener) {
 
 		String kmsTransport;
 
@@ -45,7 +58,8 @@ public class KurentoClientTestFactory {
 						"Connecting kurento client with websockets to uri '{}'",
 						wsUri);
 
-				return new JsonRpcClientWebSocket(wsUri);
+				return new JsonRpcClientWebSocket(wsUri,
+						JsonRpcConnectionListenerKurento.create(listener));
 			} else {
 
 				return createJsonRpcClient("kcs");
@@ -116,7 +130,8 @@ public class KurentoClientTestFactory {
 		}
 	}
 
-	public static KurentoClient createWithJsonRpcClient(JsonRpcClient client) {
+	public static KurentoClient createWithJsonRpcClient(JsonRpcClient client)
+			throws IOException {
 		return KurentoClient.createFromJsonRpcClient(client);
 	}
 

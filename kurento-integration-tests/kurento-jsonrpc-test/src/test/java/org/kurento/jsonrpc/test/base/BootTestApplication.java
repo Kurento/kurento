@@ -1,10 +1,5 @@
 package org.kurento.jsonrpc.test.base;
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.kurento.jsonrpc.JsonRpcHandler;
 import org.kurento.jsonrpc.server.JsonRpcConfigurer;
 import org.kurento.jsonrpc.server.JsonRpcHandlerRegistry;
@@ -12,6 +7,7 @@ import org.kurento.jsonrpc.test.AsyncServerTest;
 import org.kurento.jsonrpc.test.BidirectionalMultiTest;
 import org.kurento.jsonrpc.test.BidirectionalTest;
 import org.kurento.jsonrpc.test.CloseSessionTest;
+import org.kurento.jsonrpc.test.ConnectionListenerTest;
 import org.kurento.jsonrpc.test.ErrorServerTest;
 import org.kurento.jsonrpc.test.MultipleSessionsTest;
 import org.kurento.jsonrpc.test.NewSessionTest;
@@ -19,6 +15,11 @@ import org.kurento.jsonrpc.test.NotificationTest;
 import org.kurento.jsonrpc.test.ReconnectionTest;
 import org.kurento.jsonrpc.test.ServerEventsTest;
 import org.kurento.jsonrpc.test.handler.EchoJsonRpcHandler;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 
 @Configuration
 @ComponentScan(basePackageClasses = { org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration.class })
@@ -31,8 +32,9 @@ public class BootTestApplication implements JsonRpcConfigurer {
 		registry.addHandler(echoJsonRpcHandler(), "/jsonrpc");
 
 		registry.addHandler(new BidirectionalTest.Handler(), "/jsonrpcreverse");
-		
-		registry.addHandler(new BidirectionalMultiTest.Handler(), "/BidirectionalMultiTest");
+
+		registry.addHandler(new BidirectionalMultiTest.Handler(),
+				"/BidirectionalMultiTest");
 
 		registry.addHandler(new ServerEventsTest.Handler(), "/serverevents");
 
@@ -53,6 +55,9 @@ public class BootTestApplication implements JsonRpcConfigurer {
 				"/close_session_handler");
 
 		registry.addHandler(new ReconnectionTest.Handler(), "/reconnection");
+
+		registry.addHandler(new ConnectionListenerTest.Handler(),
+				"/connectionlistener");
 
 		registry.addHandler(new NotificationTest.Handler(), "/notification");
 

@@ -2,27 +2,27 @@ package org.kurento.client.internal.transport.serialization;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.kurento.client.KurentoObject;
+import org.kurento.client.InternalInfoGetter;
 import org.kurento.client.internal.ParamAnnotationUtils;
 import org.kurento.client.internal.RemoteClass;
 import org.kurento.client.internal.client.RemoteObject;
-import org.kurento.client.internal.client.RemoteObjectInvocationHandler;
-import org.kurento.client.internal.client.RomClientObjectManager;
+import org.kurento.client.internal.client.RemoteObjectFacade;
+import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.server.ProtocolException;
 import org.kurento.client.internal.server.RemoteObjectManager;
 import org.kurento.jsonrpc.Prop;
 import org.kurento.jsonrpc.Props;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ParamsFlattener {
 
@@ -67,7 +67,7 @@ public class ParamsFlattener {
 	/**
 	 * Flatten the parameter list to be sent to remote server using flattenParam
 	 * method
-	 * 
+	 *
 	 * @param params
 	 * @return Properties holding flattened params
 	 */
@@ -83,7 +83,7 @@ public class ParamsFlattener {
 	/**
 	 * Flatten the parameter list to be sent to remote server using flattenParam
 	 * method
-	 * 
+	 *
 	 * @param params
 	 * @return
 	 */
@@ -107,7 +107,7 @@ public class ParamsFlattener {
 	 * Props object has an entry for each property with its name and value. The
 	 * value of the property is also flatten.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param param
 	 * @return
 	 */
@@ -118,19 +118,23 @@ public class ParamsFlattener {
 		}
 
 		Object processedParam;
-		if (param instanceof RemoteObject) {
-			processedParam = ((RemoteObject) param).getObjectRef();
-		} else if (param instanceof Proxy) {
+		if (param instanceof KurentoObject) {
 
-			InvocationHandler handler = Proxy.getInvocationHandler(param);
-			if (handler instanceof RemoteObjectInvocationHandler) {
-				RemoteObjectInvocationHandler roHandler = (RemoteObjectInvocationHandler) handler;
-				processedParam = roHandler.getRemoteObject().getObjectRef();
-			} else {
-				throw new ProtocolException(
-						"Only proxies from remote objects are allowed, but found one with InvocationHandler "
-								+ handler);
-			}
+			processedParam = InternalInfoGetter.getRemoteObject(
+					(KurentoObject) param).getObjectRef();
+
+			// } else if (param instanceof Proxy) {
+			//
+			// InvocationHandler handler = Proxy.getInvocationHandler(param);
+			// if (handler instanceof RemoteObjectInvocationHandler) {
+			// RemoteObjectInvocationHandler roHandler =
+			// (RemoteObjectInvocationHandler) handler;
+			// processedParam = roHandler.getRemoteObject().getObjectRef();
+			// } else {
+			// throw new ProtocolException(
+			// "Only proxies from remote objects are allowed, but found one with InvocationHandler "
+			// + handler);
+			// }
 
 		} else if (param instanceof Enum<?>) {
 			processedParam = param.toString();
@@ -221,7 +225,7 @@ public class ParamsFlattener {
 
 	/**
 	 * Extract the bean properties of this param as Props object.
-	 * 
+	 *
 	 * @param param
 	 * @return
 	 */
@@ -375,15 +379,16 @@ public class ParamsFlattener {
 		Object remoteObject = manager.getObject(value);
 		if (remoteObject == null) {
 
-			if (manager instanceof RomClientObjectManager) {
+			if (manager instanceof RomManager) {
 
-				RomClientObjectManager clientManager = (RomClientObjectManager) manager;
+				RomManager romManager = (RomManager) manager;
+
 				RemoteObject newRemoteObject = new RemoteObject(value,
-						((Class<?>) type).getSimpleName(),
-						clientManager.getClient(), clientManager);
-				clientManager.registerObject(value, newRemoteObject);
-				return newRemoteObject;
+						((Class<?>) type).getSimpleName(), romManager);
 
+				romManager.registerObject(value, newRemoteObject);
+
+				return newRemoteObject;
 			}
 
 			throw new ProtocolException("Remote object with objectRef '"
@@ -391,8 +396,8 @@ public class ParamsFlattener {
 
 		} else if (remoteObject instanceof RemoteObject) {
 			// We are in the client side
-			Object wrapper = ((RemoteObject) remoteObject)
-					.getWrapperForUnflatten();
+			Object wrapper = ((RemoteObjectFacade) remoteObject)
+					.getPublicObject();
 			return (wrapper != null) ? wrapper : remoteObject;
 
 		} else {

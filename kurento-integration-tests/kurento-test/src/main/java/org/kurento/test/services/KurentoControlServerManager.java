@@ -21,9 +21,14 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class KurentoControlServerManager {
 
 	private ConfigurableApplicationContext context;
+	private int httpPort;
+	private String path;
 
 	public KurentoControlServerManager(JsonRpcClient client, int httpPort,
 			String path) {
+
+		this.httpPort = httpPort;
+		this.path = path;
 
 		KurentoControlServerApp.setJsonRpcClient(client);
 
@@ -38,5 +43,17 @@ public class KurentoControlServerManager {
 
 	public void destroy() {
 		context.close();
+	}
+
+	public String getLocalhostWsUrl() {
+		return "ws://localhost:" + httpPort + "/" + path;
+	}
+
+	public int getHttpPort() {
+		return httpPort;
+	}
+
+	public String getPath() {
+		return path;
 	}
 }

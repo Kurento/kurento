@@ -10,8 +10,8 @@ import org.kurento.test.client.Client;
 import org.kurento.test.client.SdpOfferProcessor;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.client.KurentoTreeClient;
-import org.kurento.tree.debug.KmsTopologyGrapher;
 import org.kurento.tree.server.KmsManager;
 import org.kurento.tree.server.TreeException;
 import org.kurento.tree.server.TreeManager;
@@ -21,6 +21,8 @@ public class BrowserTest {
 
 	@Test
 	public void test() throws Exception {
+
+		KurentoServicesTestHelper.startKurentoServicesIfNeccessary();
 
 		System.setProperty("server.port", "8890");
 
@@ -60,13 +62,15 @@ public class BrowserTest {
 
 		System.out.println("Browsers created");
 
-		KmsTopologyGrapher.showTopologyGraphic(kmsManager);
+		// KmsTopologyGrapher.showTopologyGraphic(kmsManager);
 
-		Thread.sleep(50000);
+		Thread.sleep(5000);
 
 		for (BrowserClient browser : browsers) {
 			browser.close();
 		}
+
+		KurentoServicesTestHelper.teardownServices();
 	}
 
 	private BrowserClient createViewer(final KurentoTreeClient client,

@@ -28,7 +28,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a Player.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
@@ -41,7 +41,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
@@ -63,10 +63,10 @@ public class PlayerTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/blue.webm").build();
-		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
+		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/10sec/blue.webm").create();
+		WebRtcEndpoint webRtcEP = WebRtcEndpoint.with(mp).create();
 		playerEP.connect(webRtcEP);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);

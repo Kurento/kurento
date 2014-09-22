@@ -1,11 +1,13 @@
 package org.kurento.client.internal.client;
 
 import java.lang.reflect.Type;
+import java.util.List;
 
 import org.kurento.client.Continuation;
+import org.kurento.client.internal.client.operation.Operation;
 import org.kurento.jsonrpc.Props;
 
-public abstract class RomClient {
+public interface RomClient {
 
 	// Sync methods --------------------------------------
 
@@ -22,6 +24,8 @@ public abstract class RomClient {
 
 	public abstract String subscribe(String objectRef, String eventType);
 
+	public abstract void transaction(List<Operation> operations);
+
 	// Async methods --------------------------------------
 
 	public abstract String create(String remoteClassName,
@@ -34,6 +38,9 @@ public abstract class RomClient {
 
 	public abstract String subscribe(String objectRef, String type,
 			Continuation<String> cont);
+
+	public abstract void transaction(List<Operation> operations,
+			Continuation<Void> continuation);
 
 	// Other methods --------------------------------------
 

@@ -39,7 +39,7 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 	@Before
 	public void setupMediaElements() {
 
-		overlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
+		overlayFilter = FaceOverlayFilter.with(pipeline).create();
 	}
 
 	@After
@@ -58,8 +58,8 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 	 */
 	@Test
 	public void testFaceOverlayFilter() throws InterruptedException {
-		PlayerEndpoint player = new PlayerEndpoint.Builder(pipeline,
-				URL_POINTER_DETECTOR).build();
+		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
+				URL_POINTER_DETECTOR).create();
 
 		player.connect(overlayFilter);
 
@@ -67,6 +67,8 @@ public class FaceOverlayFilterTest extends MediaPipelineBaseTest {
 				"EndOfStream event");
 
 		player.addEndOfStreamListener(async.getMediaEventListener());
+
+		 
 
 		player.play();
 

@@ -10,8 +10,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.kurento.client.internal.client.RemoteObjectFactory;
-import org.kurento.client.internal.client.RemoteObjectTypedFactory;
+import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.test.model.client.ComplexParam;
 import org.kurento.client.internal.test.model.client.SampleClass;
 import org.kurento.client.internal.test.model.client.SampleEnum;
@@ -21,23 +20,24 @@ import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 
 public class SyncConstMethodsTest {
 
-	private static RemoteObjectTypedFactory factory;
+	private static RomManager manager;
 
 	@BeforeClass
 	public static void initFactory() {
-		factory = new RemoteObjectTypedFactory(new RemoteObjectFactory(
-				new RomClientJsonRpcClient(new JsonRpcClientLocal(
-						new RomServerJsonRpcHandler(
-								"org.kurento.client.internal.test.model.server",
-								"Impl")))));
+		manager = new RomManager(
+				new RomClientJsonRpcClient(
+						new JsonRpcClientLocal(
+								new RomServerJsonRpcHandler(
+										"org.kurento.client.internal.test.model.server",
+										"Impl"))));
 	}
 
 	private SampleClass obj;
 
 	@Before
 	public void initObject() {
-		obj = factory.getFactory(SampleClass.Factory.class)
-				.create("XXX", false).withAtt3(0.5f).withAtt4(22).build();
+		obj = SampleClass.with("XXX", false, manager).withAtt3(0.5f)
+				.withAtt4(22).create();
 	}
 
 	@Test

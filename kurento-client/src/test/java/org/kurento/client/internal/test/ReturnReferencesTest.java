@@ -1,17 +1,11 @@
 package org.kurento.client.internal.test;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.junit.Assert.assertEquals;
-
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.kurento.client.Continuation;
-import org.kurento.client.internal.client.RemoteObjectFactory;
-import org.kurento.client.internal.client.RemoteObjectTypedFactory;
+import org.kurento.client.internal.client.RomManager;
 import org.kurento.client.internal.test.model.client.SampleClass;
 import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.client.internal.transport.jsonrpc.RomServerJsonRpcHandler;
@@ -19,27 +13,26 @@ import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 
 public class ReturnReferencesTest {
 
-	private static RemoteObjectTypedFactory factory;
+	private static RomManager manager;
 
 	@BeforeClass
 	public static void initFactory() {
-		factory = new RemoteObjectTypedFactory(
-				new RemoteObjectFactory(
-						new RomClientJsonRpcClient(
-								new JsonRpcClientLocal(
-										new RomServerJsonRpcHandler(
-												"org.kurento.client.internal.test.model.server",
-												"Impl")))));
+		manager = new RomManager(
+				new RomClientJsonRpcClient(
+						new JsonRpcClientLocal(
+								new RomServerJsonRpcHandler(
+										"org.kurento.client.internal.test.model.server",
+										"Impl"))));
 	}
 
 	@Test
 	public void objectRefTest() {
 
-		SampleClass obj = factory.getFactory(SampleClass.Factory.class)
-				.create("AAA", false).withAtt3(0.5f).withAtt4(22).build();
+		SampleClass obj = SampleClass.with("AAA", false, manager)
+				.withAtt3(0.5f).withAtt4(22).create();
 
-		SampleClass obj2 = factory.getFactory(SampleClass.Factory.class)
-				.create("BBB", false).withAtt3(0.5f).withAtt4(22).build();
+		SampleClass obj2 = SampleClass.with("BBB", false, manager)
+				.withAtt3(0.5f).withAtt4(22).create();
 
 		SampleClass obj3 = obj.echoObjectRef(obj2);
 
@@ -50,28 +43,13 @@ public class ReturnReferencesTest {
 	@Test
 	public void objectRefTestAsync() throws InterruptedException {
 
-		SampleClass obj = factory.getFactory(SampleClass.Factory.class)
-				.create("AAA", false).withAtt3(0.5f).withAtt4(22).build();
+		SampleClass obj = SampleClass.with("AAA", false, manager)
+				.withAtt3(0.5f).withAtt4(22).create();
 
-		final SampleClass obj2 = factory.getFactory(SampleClass.Factory.class)
-				.create("BBB", false).withAtt3(0.5f).withAtt4(22).build();
+		final SampleClass obj2 = SampleClass.with("BBB", false, manager)
+				.withAtt3(0.5f).withAtt4(22).create();
 
-		final BlockingQueue<SampleClass> queue = new ArrayBlockingQueue<>(1);
-
-		obj.echoObjectRef(obj2, new Continuation<SampleClass>() {
-
-			@Override
-			public void onSuccess(SampleClass obj3) {
-				queue.add(obj3);
-			}
-
-			@Override
-			public void onError(Throwable cause) {
-
-			}
-		});
-
-		SampleClass obj3 = queue.poll(500, MILLISECONDS);
+		SampleClass obj3 = obj.echoObjectRef(obj2);
 
 		Assert.assertNotNull(obj3);
 

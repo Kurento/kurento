@@ -14,11 +14,12 @@
  */
 package org.kurento.jsonrpc.message;
 
+
 /**
- * 
+ *
  * Java representation for JSON RPC request. This class holds the information
  * needed to invoke a method on the server
- * 
+ *
  * @author Ivan Gracia (igracia@gsyc.es)
  * @version 1.0.0
  * @param <P>
@@ -52,7 +53,7 @@ public class Request<P> extends Message {
 
 	/**
 	 * Parameterized constructor.
-	 * 
+	 *
 	 * @param method
 	 *            Thrift interface method
 	 * @param params
@@ -71,7 +72,7 @@ public class Request<P> extends Message {
 
 	/**
 	 * Parameterized constructor.
-	 * 
+	 *
 	 * @param method
 	 *            Thrift interface method
 	 * @param params
@@ -81,6 +82,10 @@ public class Request<P> extends Message {
 	 */
 	public Request(Integer id, String method, P params) {
 		this(null, id, method, params);
+	}
+
+	public Request(String method, P params) {
+		this(null, null, method, params);
 	}
 
 	public String getMethod() {

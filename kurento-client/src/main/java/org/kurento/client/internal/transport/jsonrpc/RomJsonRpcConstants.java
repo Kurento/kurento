@@ -27,4 +27,7 @@ public class RomJsonRpcConstants {
 	public static final String KEEPALIVE_METHOD = "keepAlive";
 	public static final String KEEPALIVE_OBJECT = "object";
 
+	public static final String TRANSACTION_METHOD = "transaction";
+	public static final String TRANSACTION_OPERATIONS = "operations";
+
 }

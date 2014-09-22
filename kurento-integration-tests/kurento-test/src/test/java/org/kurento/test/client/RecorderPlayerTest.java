@@ -31,7 +31,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
- * 
+ *
  * <strong>Description</strong>: Test of a Recorder, using the stream source
  * from a PlayerEndpoint through an WebRtcEndpoint.<br/>
  * <strong>Pipelines</strong>:
@@ -46,7 +46,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
- * 
+ *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
@@ -70,18 +70,20 @@ public class RecorderPlayerTest extends BrowserKurentoClientTest {
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
-		MediaPipeline mp = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/green.webm").build();
-		WebRtcEndpoint webRtcEP1 = new WebRtcEndpoint.Builder(mp).build();
+
+		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/10sec/green.webm").create();
+		WebRtcEndpoint webRtcEP1 = WebRtcEndpoint.with(mp).create();
 
 		final String recordingPreProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording(PRE_PROCESS_SUFIX);
 		final String recordingPostProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording();
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				recordingPreProcess).build();
+		RecorderEndpoint recorderEP = RecorderEndpoint.with(mp,
+				recordingPreProcess).create();
 		playerEP.connect(webRtcEP1);
+
 		playerEP.connect(recorderEP);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);
@@ -108,11 +110,11 @@ public class RecorderPlayerTest extends BrowserKurentoClientTest {
 				recordingPostProcess);
 
 		// Media Pipeline #2
-		MediaPipeline mp2 = kurentoClient.createMediaPipeline();
-		PlayerEndpoint playerEP2 = new PlayerEndpoint.Builder(mp2,
-				recordingPostProcess).build();
+		MediaPipeline mp2 = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP2 = PlayerEndpoint.with(mp2,
+				recordingPostProcess).create();
 
-		WebRtcEndpoint webRtcEP2 = new WebRtcEndpoint.Builder(mp2).build();
+		WebRtcEndpoint webRtcEP2 = WebRtcEndpoint.with(mp2).create();
 		playerEP2.connect(webRtcEP2);
 
 		// Test execution #2. Play the recorded video

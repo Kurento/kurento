@@ -1,5 +1,6 @@
 package org.kurento.client.internal.test.model.client.events;
 
+import org.kurento.client.Event;
 import org.kurento.client.internal.server.Param;
 
 public class BaseEvent implements Event {
