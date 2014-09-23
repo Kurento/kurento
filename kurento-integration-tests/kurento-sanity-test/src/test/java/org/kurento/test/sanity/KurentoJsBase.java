@@ -23,6 +23,8 @@ import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
+import org.kurento.commons.testing.SanityTests;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -41,6 +43,7 @@ import freemarker.template.Template;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.5
  */
+@Category(SanityTests.class)
 public class KurentoJsBase {
 
 	protected static final Logger log = LoggerFactory

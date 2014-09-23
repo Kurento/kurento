@@ -12,29 +12,15 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.sanity;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.kurento.client.MediaPipeline;
-import org.kurento.commons.testing.SanityTests;
-import org.kurento.test.base.KurentoClientTest;
+package org.kurento.commons.testing;
 
 /**
- * Sanity test of a Media Pipeline creation and release.
+ * Category for integration tests belonging to sanity-test.
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.5
+ * @since 5.0.4
+ *
  */
-@Category(SanityTests.class)
-public class PipelineTest extends KurentoClientTest {
-
-	@Test
-	public void basicPipelineTest() {
-		MediaPipeline mediaPipeline = kurentoClient.createMediaPipeline();
-		Assert.assertNotNull("Error: MediaPipeline is null", mediaPipeline);
-		mediaPipeline.release();
-	}
+public interface SanityTests extends IntegrationTests {
 
 }
