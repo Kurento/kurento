@@ -71,8 +71,6 @@ requirements of multimedia content application developers. These include:
 
   * Kurento Media Server (KMS). A full featured media server providing
     the capability to create and manage dynamic multimedia pipelines.
-  * Kurento Control Server (KCS). Signaling server for KMS. It provides
-    extra capabilities such as security, load balance, and so on.
   * Kurento Clients. Libraries to create applications with media
     capabilities. Kurento provides libraries for Java, browser JavaScript,
     and Node.js.
