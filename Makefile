@@ -1,13 +1,17 @@
 # Makefile for Sphinx documentation
 #
 
+# Versions
+DOC_VERSION         = 5.0.3
+CLIENT_JAVA_VERSION = 5.0.3
+CLIENT_JS_VERSION   = 5.0.3
+UTILS_JS_VERSION    = 5.0.3
+
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = build
-JAVA_APIS     = kurento-client
-JS_APIS       = kurento-client-js kurento-utils-js
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -24,7 +28,7 @@ help:
 	@echo "  html       to make standalone HTML files"
 	@echo "  dist       to make langdoc html epub latexpdf and then copy"
 	@echo "             Kurento.{pdf,epub} in build/html and make a tgz"
-	@echo "             as kurento-docs-$${VERSION}.tgz"
+	@echo "             as kurento-docs-$(DOC_VERSION).tgz"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
@@ -51,8 +55,10 @@ clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@"); find build/html -name "*.html" -exec sed -i -e "s@|version|@$$ver@" {} \;
-	export ver_dev=$$(grep -E '^version_dev =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@"); find build/html -name "*.html" -exec sed -i -e "s@|version_dev|@$$ver_dev@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|DOC_VERSION|@$(DOC_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|CLIENT_JAVA_VERSION|@$(CLIENT_JAVA_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|CLIENT_JS_VERSION|@$(CLIENT_JS_VERSION)@" {} \;
+	find build/html -name "*.html" -exec sed -i -e "s@|UTILS_JS_VERSION|@$(UTILS_JS_VERSION)@" {} \;
 	./fixlinks.sh
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -86,30 +92,27 @@ htmlhelp:
 langdoc:
 	  mkdir -p $(BUILDDIR)/langdoc
 	  rm -rf $(BUILDDIR)/langdoc/kurento-java
-	  mkdir -p $(BUILDDIR)/html/langdoc/jsdoc && mkdir -p $(BUILDDIR)/html/langdoc/javadoc 
+	  mkdir -p $(BUILDDIR)/html/langdoc/jsdoc && mkdir -p $(BUILDDIR)/html/langdoc/javadoc
 
-	  export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
-	  export CHECK=$$(echo $$VERSION | grep -- -dev >/dev/null && echo "develop" || echo "$${p}-$$VERSION");\
-	  echo CHECK=$${CHECK} ... VERSION=$${VERSION}
+	  # kurento-client javadoc
+	  cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-java.git && cd kurento-java && git checkout kurento-java-$(CLIENT_JAVA_VERSION)
+	  rm -rf $(BUILDDIR)/langdoc/kurento-client
+	  mv $(BUILDDIR)/langdoc/kurento-java/kurento-client $(BUILDDIR)/langdoc
+	  cd $(BUILDDIR)/langdoc/kurento-client && mvn clean package -DskipTests
+	  rsync -av $(BUILDDIR)/langdoc/kurento-client/target/generated-sources/kmd/* $(BUILDDIR)/langdoc/kurento-client/src/main/java/
+	  javadoc -d $(BUILDDIR)/html/langdoc/javadoc -sourcepath $(BUILDDIR)/langdoc/*/src/main/java/ org.kurento.client org.kurento.client.factory
 
-	  cd  $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-java.git
-	  for p in $(JAVA_APIS); do \
-	      ( rm -rf $(BUILDDIR)/langdoc/$${p} );\
-	      ( mv $(BUILDDIR)/langdoc/kurento-java/$${p} $(BUILDDIR)/langdoc );\
-	      ( cd $(BUILDDIR)/langdoc/$${p} && mvn clean package );\
-	      ( rsync -av $(BUILDDIR)/langdoc/$${p}/target/generated-sources/kmd/* $(BUILDDIR)/langdoc/$${p}/src/main/java/ );\
-	      done
-	  rm -rf $(BUILDDIR)/langdoc/kurento-java
-	  javadoc -d $(BUILDDIR)/html/langdoc/javadoc -sourcepath $(BUILDDIR)/langdoc/*/src/main/java/ \
-			org.kurento.client org.kurento.client.factory
+	  # kurento-client-js javadoc
+	  rm -rf $(BUILDDIR)/langdoc/kurento-client-js
+	  cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-client-js.git
+	  cd $(BUILDDIR)/langdoc/kurento-client-js git checkout $$kurento-client-js-$(CLIENT_JS_VERSION) && npm install && node_modules/.bin/grunt --force jsdoc
+	  cp -r $(BUILDDIR)/langdoc/kurento-client-js/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/kurento-client-js
 
-	  for p in $(JS_APIS); do \
-	      ( rm -rf $(BUILDDIR)/langdoc/$${p} );\
-	      ( cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/$${p}.git );\
-	      ( cd $(BUILDDIR)/langdoc/$${p} &&\
-	        echo "Pulling repo $${p}, branch $${CHECK}..."; git checkout "$${CHECK}" || git checkout develop  &&\
-	         npm install && node_modules/.bin/grunt --force jsdoc ) && cp -r $(BUILDDIR)/langdoc/$${p}/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/$${p} ;\
-	      done
+	  # kurento-utils-js javadoc
+	  rm -rf $(BUILDDIR)/langdoc/kurento-utils-js
+	  cd $(BUILDDIR)/langdoc && git clone https://github.com/Kurento/kurento-utils-js.git
+	  cd $(BUILDDIR)/langdoc/kurento-utils-js git checkout $$kurento-utils-js-$(UTILS_JS_VERSION) &&  npm install && node_modules/.bin/grunt --force jsdoc
+	  cp -r $(BUILDDIR)/langdoc/kurento-utils-js/doc/jsdoc $(BUILDDIR)/html/langdoc/jsdoc/kurento-utils-js
 
 qthelp:
 	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
@@ -131,8 +134,10 @@ devhelp:
 
 epub:
 	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
-	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\1@");\
-	find build/epub -name "*.html" -exec sed -i -e "s@|version|@$$ver@" {} \;
+	find build/epub -name "*.html" -exec sed -i -e "s@|DOC_VERSION|@$(DOC_VERSION)@" {} \;
+	find build/epub -name "*.html" -exec sed -i -e "s@|CLIENT_JAVA_VERSION|@$(CLIENT_JAVA_VERSION)@" {} \;
+	find build/epub -name "*.html" -exec sed -i -e "s@|CLIENT_JS_VERSION|@$(CLIENT_JS_VERSION)@" {} \;
+	find build/epub -name "*.html" -exec sed -i -e "s@|UTILS_JS_VERSION|@$(UTILS_JS_VERSION)@" {} \;
 	touch source/pdfindex.rst
 	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
 	@echo
@@ -148,8 +153,10 @@ latex:
 latexpdf:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
-	export ver=$$(grep -E '^version =' source/conf.py | sed -e "s@.*'\(.*\)'@\\1@") &&\
-	find build/latex -name "*.tex" -exec sed -i -e "s@.textbar..version.textbar..@$$ver@" {} \;
+	find build/latex -name "*.tex" -exec sed -i -e "s@.textbar..DOC_VERSION.textbar..@$(DOC_VERSION)@" {} \;
+	find build/latex -name "*.tex" -exec sed -i -e "s@.textbar..CLIENT_JAVA_VERSION.textbar..@$(CLIENT_JAVA_VERSION)@" {} \;
+	find build/latex -name "*.tex" -exec sed -i -e "s@.textbar..CLIENT_JS_VERSION.textbar..@$(CLIENT_JS_VERSION)@" {} \;
+	find build/latex -name "*.tex" -exec sed -i -e "s@.textbar..UTILS_JS_VERSION.textbar..@$(UTILS_JS_VERSION)@" {} \;
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
@@ -202,6 +209,5 @@ dist: langdoc html epub latexpdf
 	@echo
 	@echo "Packaging documentation"
 	@echo
-	export VERSION=$$(grep -E "release\s*=\s*['\"]" source/conf.py | sed -e "s@.*['\"]\(.*\)['\"]@\1@" );\
 	cp $(BUILDDIR)/epub/Kurento.epub $(BUILDDIR)/latex/Kurento.pdf $(BUILDDIR)/html &&\
-	tar zcvf $(BUILDDIR)/dist/kurento-docs-$${VERSION}.tgz -C $(BUILDDIR)/html .
+	tar zcvf $(BUILDDIR)/dist/kurento-docs-$(DOC_VERSION).tgz -C $(BUILDDIR)/html .

@@ -87,36 +87,40 @@ configuration repository to the repositories section to file
 
 .. sourcecode:: xml
 
-   <repository>
-       <id>kurento-snapshots</id>
-       <name>Kurento Snapshot Repository</name>
-       <url>http://maven.kurento.org/archiva/repository/snapshots/</url>
-       <releases>
-           <enabled>false</enabled>
-       </releases>
-       <snapshots>
-           <enabled>true</enabled>
-       </snapshots>
-   </repository>
+   <repositories>
+      <repository>
+          <id>kurento-snapshots</id>
+          <name>Kurento Snapshot Repository</name>
+          <url>http://maven.kurento.org/archiva/repository/snapshots/</url>
+          <releases>
+              <enabled>false</enabled>
+          </releases>
+          <snapshots>
+              <enabled>true</enabled>
+          </snapshots>
+      </repository>
+   </repositories>
+   <pluginRepositories>
+      <pluginRepository>
+         <id>kurento-snapshots</id>
+         <name>Kurento Snapshot Repository</name>
+         <url>http://repository.kurento.com/archiva/repository/snapshots/</url>
+         <releases>
+            <enabled>false</enabled>
+         </releases>
+         <snapshots>
+            <enabled>true</enabled>
+         </snapshots>
+      </pluginRepository>
+   </pluginRepositories>
 
 Then, you have to change the dependency in your application's ``pom.xml`` to
 point to a development version. There is no way in Maven to use the latest
 development version of an artifact. You have to specify the concrete
 development version you want to depend on. To know what is the current Kurento
-Java Client development version, you can take a look to its
-`pom.xml <https://github.com/Kurento/kurento-java/blob/develop/kurento-client/pom.xml>`_
-and search for the version tag. For example, if you see something like:
-
-.. sourcecode:: xml
-
-      <parent>
-         <groupId>org.kurento</groupId>
-         <artifactId>kurento-java-parent</artifactId>
-         <version>|version_dev|</version>
-         <relativePath>../kurento-java-parent</relativePath>
-      </parent>
-
-The development version is ``|version_dev|`` and you have to include in your
+Java Client development version, you can take a look to the
+`internal Kurento Maven repository <https://repository.kurento.com/archiva/browse/org.kurento/kurento-client>`_
+and search for the latest version. Then, you have to include in your
 application's pom.xml the following dependency:
 
 .. sourcecode:: xml
@@ -124,7 +128,7 @@ application's pom.xml the following dependency:
    <dependency>
        <groupId>org.kurento</groupId>
        <artifactId>kurento-client</artifactId>
-       <version>|version_dev|</version>
+       <version>latest-version-SNAPSHOT</version>
    </dependency>
 
 Kurento JavaScript Client

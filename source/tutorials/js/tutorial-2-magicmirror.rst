@@ -206,8 +206,8 @@ file, as follows:
 .. sourcecode:: js
 
    "dependencies": {
-      "kurento-client": "|version|",
-      "kurento-utils": "|version|"
+      "kurento-client": "^5.0.0",
+      "kurento-utils": "^5.0.0"
    }
 
 .. note::

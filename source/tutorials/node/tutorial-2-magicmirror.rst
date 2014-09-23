@@ -301,7 +301,7 @@ file for managing this dependency is:
 
    "dependencies": {
      ...
-     "kurento-client" : "|version|"
+     "kurento-client" : "^5.0.0"
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
@@ -311,7 +311,7 @@ file and pay attention to the following section:
 .. sourcecode:: js
 
    "dependencies": {
-     "kurento-utils" : "|version|"
+     "kurento-utils" : "^5.0.0"
    }
 
 .. note::
