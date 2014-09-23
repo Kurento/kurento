@@ -20,7 +20,7 @@
     "tests"
   ],
   "dependencies": {
-    "kurento-client": "develop",
-    "kurento-utils": "develop"
+    "kurento-client": "^5.0.0",
+    "kurento-utils": "^5.0.0"
   }
 }

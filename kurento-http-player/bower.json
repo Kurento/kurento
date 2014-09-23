@@ -1,7 +1,7 @@
 {
   "name": "kurento-http-player",
   "version": "5.0.0",
-  "description": "Kurento Browser JavaScript Tutorial 7: HTTP Player",
+  "description": "Kurento Browser JavaScript Tutorial 8: HTTP Player",
   "authors": [
     "Kurento <info@kurento.org>"
   ],
@@ -20,6 +20,6 @@
     "tests"
   ],
   "dependencies": {
-    "kurento-client": "develop"
+    "kurento-client": "^5.0.0"
   }
 }
