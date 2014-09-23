@@ -1,54 +1,48 @@
 [![][KurentoImage]][website]
 
-Copyright © 2013 Kurento. Licensed under [LGPL License].
+Copyright © 2014 Kurento. Licensed under [LGPL License].
 
 doc-kurento
 ===========
-Kurento Media Server and Framework Documentation
-
-This project includes documentation for the Kurento Media Server and Framework. It includes
-architecture documents, user and developer guides and documentation for the different APIs.
-It uses the sphinx documentation system.
+Kurento Framework Documentation. Made with [Sphinx] and [Read-the-docs] theme.
 
 
 What is Kurento
------
-Kurento provides an open platform for video processing and streaming
-based on standards.
+---------------
+**Kurento** is a WebRTC media server and a set of client APIs making simple the
+development of advanced video applications for WWW and smartphone platforms.
+Kurento features include group communications, transcoding, recording, mixing,
+broadcasting and routing of audiovisual flows.
 
-This platform has several APIs and components which provide solutions
-to the requirements of multimedia content application developers.
-These include
+Kurento also provides advanced media processing capabilities involving computer
+vision, video indexing, augmented reality and speech analysis. Kurento modular
+architecture makes simple the integration of third party media processing
+algorithms (i.e. speech recognition, sentiment analysis, face recognition,
+etc.), which can be transparently used by application developers as the rest of
+Kurento built-in features.
 
-  * Kurento Media Server (KMS). A full featured media server providing
-    the capability to create and manage dynamic multimedia pipelines.
-  * Kurento Media Framework (KMF). A Java server-side API providing
-    the required abstractions for creating applications that manage
-    multimedia content, calls and conferences involving audio, video
-    and data information.
-  * Kurento Web SDK (KWS). A client-side HTML5 and Javascript SDK for
-    accessing KMF capabilities
-  * Kurento Android SDK (KAS). A Java and native SDK allowing easy
-    integration of KMF into any kind of Android application.
+Kurento's core element is **Kurento Media Server**, responsible for media
+transmission, processing, loading and recording. It is implemented in low level
+technologies based on [GStreamer] to optimize the resource consumption.
 
-Downloads
----------
-To download binary releases of Kurento components visit http://kurento.org
 
 Source
 ------
-The source code of this project can be cloned from the [GitHub Repository].
-Code for other Kurento projects can be found in the [GitHub Kurento Group].
+The source code of this project can be cloned from the [GitHub repository].
+Code for other Kurento projects can be found in the [GitHub Kurento group].
+
 
 News and Website
 ----------------
-Information about Kurento can be found on our [website].
+Information about Kurento can be found on the [Kurento website].
 Follow us on Twitter @[kurentoms].
 
-[KurentoImage]: https://0.gravatar.com/avatar/b8fffabbe3831731cb4c4c9667bfa439?s=120
-[LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
-[GitHub Repository]: https://github.com/kurento/kmf-media-api-test
-[GitHub Kurento Group]: https://github.com/kurento
-[website]: http://kurento.org
+[KurentoImage]: https://secure.gravatar.com/avatar/21a2a12c56b2a91c8918d5779f1778bf?s=120
 [kurentoms]: http://twitter.com/kurentoms
-
+[Kurento website]: http://kurento.org
+[LGPL License]: http://www.gnu.org/licenses/lgpl-2.1.html
+[GitHub Kurento Group]: https://github.com/kurento
+[GitHub Repository]: https://github.com/Kurento/doc-kurento
+[GStreamer]: http://gstreamer.freedesktop.org/
+[Read-the-docs]: http://read-the-docs.readthedocs.org/
+[Sphinx]: http://sphinx-doc.org/
