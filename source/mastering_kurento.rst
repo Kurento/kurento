@@ -34,7 +34,7 @@ Advanced Installation Guide
 
    Advanced Installation Guide <mastering/advanced_installation_guide>
 
-Working with nightly builds
+Working with Nightly Builds
 ===========================
 
 .. toctree::
@@ -51,17 +51,17 @@ Working with nightly builds
 
       Kurento Modules <mastering/kurento_modules>
 
-Java Kurento Client JavaDoc
+Kurento Java Client JavaDoc
 ===========================
 
 * `kurento-client-java <./langdoc/javadoc/index.html>`_
 
-JavaScript Kurento Client JsDoc
+Kurento JavaScript Client JsDoc
 ===============================
 
 * `kurento-client-js <./langdoc/jsdoc/kurento-client-js/index.html>`_
 
-JavaScript Kurento Utils JsDoc
+Kurento JavaScript Utils JsDoc
 ==============================
 
 * `kurento-utils-js <./langdoc/jsdoc/kurento-utils-js/index.html>`_

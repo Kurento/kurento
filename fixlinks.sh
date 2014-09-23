@@ -18,11 +18,11 @@ changelink "#kurento-architecture" "mastering/kurento_architecture.html" "./buil
 changelink "#kurento-api-reference" "mastering/kurento_API.html" "./build/html/mastering_kurento.html"
 changelink "#kurento-protocol" "mastering/kurento_protocol.html" "./build/html/mastering_kurento.html"
 changelink "#advanced-installation-guide" "mastering/advanced_installation_guide.html" "./build/html/mastering_kurento.html"
-changelink "#kurento-development" "mastering/kurento_development.html" "./build/html/mastering_kurento.html"
+changelink "#working-with-nightly-builds" "mastering/kurento_development.html" "./build/html/mastering_kurento.html"
 changelink "#kurento-modules" "mastering/kurento_modules.html" "./build/html/mastering_kurento.html"
-changelink "#java-kurento-client-javadoc" "langdoc/javadoc/index.html" "./build/html/mastering_kurento.html"
-changelink "#javascript-kurento-client-jsdoc" "langdoc/jsdoc/kurento-client-js/index.html" "./build/html/mastering_kurento.html"
-changelink "#javascript-kurento-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering_kurento.html"
+changelink "#kurento-java-client-javadoc" "langdoc/javadoc/index.html" "./build/html/mastering_kurento.html"
+changelink "#kurento-javascript-client-jsdoc" "langdoc/jsdoc/kurento-client-js/index.html" "./build/html/mastering_kurento.html"
+changelink "#kurento-javascript-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering_kurento.html"
 
 # ./build/html/mastering/*.html
 files=(kurento_architecture kurento_API kurento_protocol advanced_installation_guide kurento_development kurento_modules)
@@ -32,9 +32,9 @@ do
    changelink "mastering_kurento.html#kurento-api-reference" "mastering/kurento_API.html" "./build/html/mastering/${i}.html"
    changelink "mastering_kurento.html#kurento-protocol" "mastering/kurento_protocol.html" "./build/html/mastering/${i}.html"
    changelink "mastering_kurento.html#advanced-installation-guide" "mastering/advanced_installation_guide.html" "./build/html/mastering/${i}.html"
-   changelink "mastering_kurento.html#kurento-development" "mastering/kurento_development.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#working-with-nightly-builds" "mastering/kurento_development.html" "./build/html/mastering/${i}.html"
    changelink "mastering_kurento.html#kurento-modules" "mastering/kurento_modules.html" "./build/html/mastering/${i}.html"
-   changelink "mastering_kurento.html#java-kurento-client-javadoc" "langdoc/javadoc/index.html" "./build/html/mastering/${i}.html"
-   changelink "mastering_kurento.html#javascript-kurento-client-jsdoc" "langdoc/jsdoc/kurento-client-js/index.html" "./build/html/mastering/${i}.html"
-   changelink "mastering_kurento.html#javascript-kurento-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#kurento-java-client-javadoc" "langdoc/javadoc/index.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#kurento-javascript-client-jsdoc" "langdoc/jsdoc/kurento-client-js/index.html" "./build/html/mastering/${i}.html"
+   changelink "mastering_kurento.html#kurento-javascript-utils-jsdoc" "langdoc/jsdoc/kurento-utils-js/index.html" "./build/html/mastering/${i}.html"
 done
