@@ -456,7 +456,7 @@ project where this demo is hosted, and then run the main class, as follows:
 
 .. sourcecode:: sh
 
-    git clone https://github.com/Kurento/kurento-java-tutorial.git
+    git clone https://github.com/Kurento/kurento-tutorial-java.git
     cd kurento-group-call
     mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.groupcall.GroupCallApp"
 
