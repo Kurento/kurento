@@ -1,6 +1,6 @@
 {
   "name": "kurento-http-player",
-  "version": "5.0.3",
+  "version": "5.0.4-dev",
   "description": "Kurento Browser JavaScript Tutorial 8: HTTP Player",
   "authors": [
     "Kurento <info@kurento.org>"
