@@ -51,15 +51,6 @@ Kurento Development
 
       Kurento Modules <mastering/kurento_modules>
 
-Media Concepts
-==============
-
-.. toctree::
-   :maxdepth: 1
-
-   Media Concepts <mastering/media_concepts>
-
-
 Java Kurento Client JavaDoc
 ===========================
 
