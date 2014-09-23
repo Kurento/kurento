@@ -24,7 +24,9 @@ Depends:
   ${shlibs:Depends},
   ${misc:Depends},
   gstreamer1.0-nice,
-  gnutls-bin
+  gnutls-bin,
+  kms-gstmarshal (>= 1.0.0),
+  kms-core (>= 5.0.3)
 Description: Kurento elements module
  Kurento elements implementation
 
