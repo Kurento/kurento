@@ -1,3 +1,95 @@
+kms-platedetector (1.0.0) testing; urgency=medium
+
+  [ Francisco Rivero ]
+  * Create plugin for plate detector filter
+
+  [ Jose Antonio Santos Cadenas ]
+  * Detect tesseract library necessary for platedetector element
+
+  [ Francisco Rivero ]
+  * Changes in Tesseract library configurations.
+
+  [ Miguel París Díaz ]
+  * Fix platedetector plugin name and description
+
+  [ Santiago Gala ]
+  * Add Source headers to files
+
+  [ Francisco Rivero ]
+  * Select candidate regions which can contain license plates.
+  * Find car license plates and read their characters
+  * Convert data structure in private structure
+  * Use structs instead of int arrays
+
+  [ Jose Antonio Santos Cadenas ]
+  * platedetector: Remove useless structure
+  * platedetector: Add trained data as part of the project
+  * platedetector: Remove unused variable
+
+  [ David Fernandez ]
+  * platedetector: Check if tesseract dictionary is installed
+  * platedetector: Put message in the bus if a plate is detected
+
+  [ Jose Antonio Santos Cadenas ]
+  * Set license to LGPL
+
+  [ Francisco Rivero ]
+  * Change data structures to GSList
+
+  [ Jose Antonio Santos Cadenas ]
+  * platedetector: Remove unneeded field in private structure
+  * Make opencv a required dependency
+  * Make tesseract a required dependency
+  * platedetector: Add missing m library linking
+
+  [ Francisco Rivero ]
+  * platedetector: Fix problems with plate size
+  * New setup for platedetector filter
+
+  [ David Fernandez ]
+  * platedetector: Avoid use of not initialized memory
+
+  [ Francisco Rivero ]
+  * platedetector: remove unused functions
+
+  [ David Fernandez ]
+  * platedetector: Change type of plate-width-percentage from int to float
+  * platedetector:Calculate kernelX if platePercentage property changes
+  * platedetector: Protect critical region
+
+  [ Santiago Carot-Nemesio ]
+  * platedetector: Fix memory leaks
+  * platedetector: Do not write out of string boundaries
+
+  [ David Fernandez ]
+  * cmake: Build platedetector filter
+  * platedetector: Use TESSDATA_PREFIX as paramater to init tesseract
+  * cmake: Change module installation directory
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove autotools
+
+  [ David Fernandez ]
+  * Create platedetector module
+  * Add .gitreview file
+  * platedetector: Modify includes in gstreamer filter
+  * Add debian package generation
+  * Add npmGit to kmd file
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmd: Fix indentation
+
+  [ David Fernandez ]
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * kms.json: Fix dependencies versions
+  * Prepare relase 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Francisco Rivero <fj.riverog@gmail.com>  Wed, 24 Sep 2014 23:01:05 +0200
+
 kms-platedetector (0.0.1~rc1) testing; urgency=medium
 
   * Initial release.
