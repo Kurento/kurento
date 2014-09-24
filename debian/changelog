@@ -1,3 +1,43 @@
+kms-chroma (1.0.0) testing; urgency=medium
+
+  [ David Fernandez ]
+  * chroma: Add chroma filter
+  * chroma: Implement clear method for the background image
+  * chroma: Delete downloaded images after use them
+
+  [ Jose Antonio Santos Cadenas ]
+  * chroma: Do not proccess image if background image is not set
+
+  [ David Fernandez ]
+  * chroma: Improve chroma filter
+  * chroma: Fix bug in resizing of the background image
+
+  [ Jose Antonio Santos Cadenas ]
+  * cmake: Add compilation for chroma filter
+
+  [ David Fernandez ]
+  * cmake: Change module installation directory
+  * cmake: Remove use of c99 standard in plugin compilation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove autotools
+
+  [ David Fernandez ]
+  * Create chroma module
+  * Add .gitreview file
+  * chroma: Modify includes in gstreamer filter
+  * Add debian package generation
+  * Add npmGit to kmd file
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmd.json: Fix dependencies versions
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- David Fernandez <d.fernandezlop@gmail.com>  Wed, 24 Sep 2014 22:57:50 +0200
+
 kms-chroma (0.0.1~rc1) testing; urgency=medium
 
   * Initial release.
