@@ -45,14 +45,44 @@ function (get_git_version version_output_variable default_version)
   endif ()
 
   if(EXISTS "${GIT_DIR}" AND ${CALCULATE_VERSION_WITH_GIT})
-    execute_process(COMMAND ${GIT_EXECUTABLE} describe --abbrev=6 --tags --dirty --always --match "${GIT_VERSION_TAG_PREFIX}-*"
-                    OUTPUT_VARIABLE PROJECT_VERSION
-                    OUTPUT_STRIP_TRAILING_WHITESPACE
-                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    string(REGEX REPLACE "^${GIT_VERSION_TAG_PREFIX}-(.*)" "\\1" PROJECT_VERSION ${PROJECT_VERSION})
+    execute_process(COMMAND ${GIT_EXECUTABLE} rev-list origin/master..HEAD --count
+      OUTPUT_VARIABLE N_COMMITS
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+      OUTPUT_VARIABLE LAST_HASH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+
+    string(REPLACE
+      "-dev" "~${N_COMMITS}.g${LAST_HASH}"
+      PROJECT_VERSION ${default_version}
+    )
+
+    message (STATUS "Version got from git is ${PROJECT_VERSION}")
+
   else()
     set(PROJECT_VERSION ${default_version})
   endif()
+
+  string(REPLACE "." ";" VERSION_LIST ${PROJECT_VERSION})
+  list(GET VERSION_LIST 0 PROJECT_VERSION_MAJOR)
+
+  list (LENGTH VERSION_LIST _len)
+  if (${_len} GREATER 1)
+    list(GET VERSION_LIST 1 PROJECT_VERSION_MINOR)
+  endif ()
+  if (${_len} GREATER 2)
+    list(GET VERSION_LIST 2 PROJECT_VERSION_PATCH)
+    string(REPLACE "~" ";" PROJECT_VERSION_PATCH_LIST ${PROJECT_VERSION_PATCH})
+    list(GET PROJECT_VERSION_PATCH_LIST 0 PROJECT_VERSION_PATCH)
+  endif ()
+
+  set(PROJECT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR} PARENT_SCOPE)
+  set(PROJECT_VERSION_MINOR ${PROJECT_VERSION_MINOR} PARENT_SCOPE)
+  set(PROJECT_VERSION_PATCH ${PROJECT_VERSION_PATCH} PARENT_SCOPE)
 
   set(${version_output_variable} ${PROJECT_VERSION} PARENT_SCOPE)
 endfunction ()
