@@ -1,6 +1,6 @@
 {
   "name": "kurento-hello-world",
-  "version": "5.0.3",
+  "version": "5.0.4-dev",
   "description": "Kurento Browser JavaScript Tutorial 1",
   "authors": [
     "Kurento <info@kurento.org>"
