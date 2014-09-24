@@ -28,7 +28,7 @@ is hosted and then install and run it, as follows:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
-    cd kurento-magic-mirror
+    cd kurento-tutorial-node/kurento-magic-mirror
     npm install
     cd static
     bower install

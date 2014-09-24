@@ -18,7 +18,7 @@ is hosted and then run the main class, as follows:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-magic-mirror
+    cd kurento-tutorial-java/kurento-magic-mirror
     mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.magicmirror.MagicMirrorApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore,

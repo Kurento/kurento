@@ -40,7 +40,7 @@ start the HTTP server:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-hello-world
+    cd kurento-tutorial-js/kurento-hello-world
     bower install
     http-server
 

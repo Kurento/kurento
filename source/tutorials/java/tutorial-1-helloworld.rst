@@ -22,7 +22,7 @@ is hosted and then run the main class, as follows:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-hello-world
+    cd kurento-tutorial-java/kurento-hello-world
     mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.helloworld.HelloWorldApp"
 
 Access the application connecting to the URL http://localhost:8080/ through a

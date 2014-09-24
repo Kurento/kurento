@@ -276,8 +276,8 @@ hosted. Then you have to resolve the dependencies using Bower, as follows:
 
 .. sourcecode:: sh
 
-    git clone https://github.com/Kurento/kws-tutorial.git
-    cd PubNub
+    git clone https://github.com/Kurento/kurento-tutorial-js.git
+    cd kurento-tutorial-js/kurento-one2one-call
     bower install
 
 Due to `Same-origin policy`:term:, this demo has to be served by an HTTP server.

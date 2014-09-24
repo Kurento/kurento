@@ -19,7 +19,7 @@ is hosted and then run the main class, as follows:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-one2one-call-advanced
+    cd kurento-tutorial-java/kurento-one2one-call-advanced
     mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.one2onecalladv.One2OneCallAdvApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore,

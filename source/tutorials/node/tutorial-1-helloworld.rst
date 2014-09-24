@@ -33,7 +33,7 @@ is hosted and then install and run it, as follows:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-node.git
-    cd kurento-hello-world
+    cd kurento-tutorial-node/kurento-hello-world
     npm install
     cd static
     bower install

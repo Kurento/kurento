@@ -36,7 +36,7 @@ start the HTTP server:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-js.git
-    cd kurento-magic-mirror
+    cd kurento-tutorial-js/kurento-magic-mirror
     bower install
     http-server
 

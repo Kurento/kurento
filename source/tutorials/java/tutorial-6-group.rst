@@ -457,7 +457,7 @@ project where this demo is hosted, and then run the main class, as follows:
 .. sourcecode:: sh
 
     git clone https://github.com/Kurento/kurento-tutorial-java.git
-    cd kurento-group-call
+    cd kurento-tutorial-java/kurento-group-call
     mvn compile exec:java -Dexec.mainClass="org.kurento.tutorial.groupcall.GroupCallApp"
 
 The web application starts on port 8080 in the localhost by default. Therefore,
