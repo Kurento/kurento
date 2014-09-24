@@ -1,6 +1,6 @@
 {
   "name": "crowddetector",
-  "version": "1.0.0-dev",
+  "version": "1.0.0",
   "kurentoVersion": "^5.0.0",
   "code": {
     "api": {

@@ -1,3 +1,70 @@
+kms-crowddetector (1.0.0) testing; urgency=medium
+
+  [ Francisco Rivero ]
+  * Detects crowded areas based on movement detection
+  * Differentiate between static crowd and people or things moving fluently
+  * Set ROIs with external structure.
+
+  [ Jose Antonio Santos Cadenas ]
+  * crowddetector: Copy the value of the set structure
+  * crowddetector: Fix problem with empty rois
+  * crowdetector: Fix problems painting filter results
+
+  [ Francisco Rivero ]
+  * Extract info about occupied pixels in each roi.
+  * Adapt variables to C naming convention.
+  * crowdetector: Add data structure to store information of each roi
+  * crowdetector: analyze occupancy and fluidity of each roi
+
+  [ Jose Antonio Santos Cadenas ]
+  * crowddetector: Fix identation
+
+  [ Francisco Rivero ]
+  * crowddetector: Add optical flow
+  * crowddetector: Analyze optical flow to get the direction of movement in each roi
+  * crowddetector: Send messages to the bus
+
+  [ David Fernandez ]
+  * crowddetector: remove the possibility to disable some events
+
+  [ Jose Antonio Santos Cadenas ]
+  * crowddetector: Initialize variables properly
+
+  [ Santiago Carot-Nemesio ]
+  * kmscrowddetector: Suppress untinitialized memory warnings
+
+  [ Jose Antonio Santos Cadenas ]
+  * cmake: Add compilation for crowddetector filter
+
+  [ David Fernandez ]
+  * crowddetector: Accept relative points instead of absolute points
+  * cmake: Change module installation directory
+  * crowddetector: Add math library dependency
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove autotools
+
+  [ David Fernandez ]
+  * Create crowd detector module
+  * Fix errors
+  * Adapt filter to use namespaces
+  * Improve filter performance using a resized image
+  * Fix bad include in test
+  * Add .gitreview file
+  * crowddetector: Modify includes in gstreamer filter
+  * Add debian package generation
+  * Add npmGit to kmd file
+  * Style review
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix dependencies versions
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Francisco Rivero <fj.riverog@gmail.com>  Wed, 24 Sep 2014 22:59:21 +0200
+
 kms-crowddetector (0.0.1~rc1) testing; urgency=medium
 
   * Initial release.
