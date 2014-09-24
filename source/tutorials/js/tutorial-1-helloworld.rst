@@ -13,7 +13,7 @@ For the impatient: running this example
 =======================================
 
 You need to have installed the Kurento Media Server before running this example
-read the `installation guide <../../Installation_Guide.rst>`_ for further
+read the :doc:`installation guide <../../installation_guide>` for further
 information.
 
 Be sure to have installed `Node.js`:term: and `Bower`:term: in your system. In

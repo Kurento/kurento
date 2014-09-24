@@ -229,7 +229,7 @@ Kurento Media Server
 This demo is using a remote Kurento Media Server located on
 ``demo01.kurento.org``. If you want to use another instance of Kurento Media
 Server, please visit first the
-`installation guide <../../Installation_Guide.rst>`_ for further information.
+:doc:`installation guide <../../installation_guide>` for further information.
 Then, you should change the following line of
 `softphonePubnub.js <https://github.com/Kurento/kws-tutorial/blob/master/PubNub/softphonePubnub.js>`_:
 

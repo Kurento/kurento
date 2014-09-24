@@ -339,12 +339,12 @@ Dispatcher
 
 You see the details of the Kurento Clients see the JavaDoc/JsDoc:
 
-- `kurento-client-java <./langdoc/javadoc/index.html>`_ : JavaDoc of Kurento
+- `kurento-client-java <../langdoc/javadoc/index.html>`_ : JavaDoc of Kurento
   Java Client.
 
-- `kurento-client-js <./langdoc/jsdoc/kurento-client-js/index.html>`_ : JsDoc
+- `kurento-client-js <../langdoc/jsdoc/kurento-client-js/index.html>`_ : JsDoc
   of Kurento JavaScript Client.
 
-- `kurento-utils-js <./langdoc/jsdoc/kurento-utils-js/index.html>`_ : JsDoc of
-  an utility JavaScript library aimed to simplify the development of WebRTC
+- `kurento-utils-js <../langdoc/jsdoc/kurento-utils-js/index.html>`_ : JsDoc
+  of an utility JavaScript library aimed to simplify the development of WebRTC
   applications.

@@ -447,7 +447,7 @@ How to run this application
 ===========================
 
 First of all, you should install Kurento Media Server to run this demo. Please
-visit the `installation guide <../../Installation_Guide.rst>`_ for further
+visit the :doc:`installation guide <../../installation_guide>` for further
 information.
 
 This demo is assuming that you have a Kurento Media Server installed and running

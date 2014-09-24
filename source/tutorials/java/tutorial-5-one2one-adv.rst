@@ -10,7 +10,7 @@ For the impatient: running this example
 =======================================
 
 First of all, you should install Kurento Media Server to run this demo. Please
-visit the `installation guide <../../Installation_Guide.rst>`_ for further
+visit the :doc:`installation guide <../../installation_guide>` for further
 information.
 
 To launch the application you need to clone the GitHub project where this demo
