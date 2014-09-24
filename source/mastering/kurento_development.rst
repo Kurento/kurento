@@ -144,7 +144,7 @@ point directly to the development repository, that is:
 .. sourcecode:: js
 
    "dependencies": {
-       "kurento-client": "https://github.com/Kurento/kurento-client-js#develop"
+       "kurento-client": "Kurento/kurento-client-js#develop"
    }
 
 Browser JavaScript development
@@ -158,8 +158,8 @@ have to point directly to the development bower repository, that is:
 .. sourcecode:: js
 
    "dependencies": {
-       "kurento-client": "https://github.com/Kurento/kurento-client-js-bower#develop"
-       "kurento-utils": "https://github.com/Kurento/kurento-utils-js-bower#develop"
+       "kurento-client": "develop"
+       "kurento-utils": "develop"
    }
 
 Alternatively, if your browser application is pointing directly to JavaScript
@@ -167,4 +167,4 @@ libraries from HTML resources, then, you have to change to development URLs:
 
 .. sourcecode:: html
 
-   <script type="text/javascript" src="http://builds.kurento.org/dev/latest/js/kurento-client-js.min.js"></script>
+   <script type="text/javascript" src="http://builds.kurento.org/dev/latest/js/kurento-client.min.js"></script>
