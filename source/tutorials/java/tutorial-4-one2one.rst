@@ -619,20 +619,6 @@ start a WebRTC communication.
       });
    }
 
-.. note::
-
-   We are in active development. Be sure that you have the latest version of Kurento
-   Java Client your POM. You can find it at Maven Central searching for
-   ``kurento-client``.
-
-Kurento Java Client has a minimum requirement of **Java 7**. To configure the
-application to use Java 7, we have to include the following properties in the
-properties section:
-
-.. sourcecode:: xml
-
-   <maven.compiler.target>1.7</maven.compiler.target>
-   <maven.compiler.source>1.7</maven.compiler.source>
 
 Dependencies
 ============
