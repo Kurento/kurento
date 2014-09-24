@@ -1,3 +1,48 @@
+kms-pointerdetector (1.0.0) testing; urgency=medium
+
+  [ David Fernandez ]
+  * pointerdetector2: Create a filter to track a ball using a color filter
+  * pointerdetector2: Add color calibration method
+  * pointerdetector2: Fix problems in filter behaviour
+
+  [ Jose Antonio Santos Cadenas ]
+  * pointerdetector: Increase threshold of calibration values
+  * pointerdetector2: Avoid problems with released memory
+
+  [ David Fernandez ]
+  * pointerdetector2: Fix problem drawing the calibration window
+  * pointerdetector2: Protect critical section
+  * Free windows structures in pointer detector filters
+  * cmake: Compile pointerdetector2 filter
+  * cmake: Change module installation directory
+  * cmake: Remove use of c99 standard in plugin compilation
+
+  [ Jose Antonio Santos Cadenas ]
+  * Remove autotools
+
+  [ David Fernandez ]
+  * cmake: Generate kurentocommons shared library
+
+  [ Santiago Carot-Nemesio ]
+  * Add suffix commons for all code generated in commons library
+
+  [ David Fernandez ]
+  * Create pointerdetector module
+  * pointerdetector: Remove unused variable in test
+  * Adapt filter to use namespaces
+  * Add .gitreview file
+  * Add debian package generation
+  * Add npmGit to kmd file
+  * Add templates for pom.xml, package.json and bower.json
+
+  [ Jose Antonio Santos Cadenas ]
+  * kms.json: Fix depdendencies versions
+  * Prepare release 1.0.0
+
+  [ José Antonio Santos Cadenas ]
+
+ -- David Fernandez <d.fernandezlop@gmail.com>  Wed, 24 Sep 2014 23:02:27 +0200
+
 kms-pointerdetector (0.0.1~rc1) testing; urgency=medium
 
   * Initial release.
