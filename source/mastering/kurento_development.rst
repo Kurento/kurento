@@ -45,17 +45,14 @@ Kurento Media Server
 ====================
 
 The development builds of Kurento Media Server are .deb packages hosted in
-http://ubuntu.kurento.org.
+http://ubuntu.kurento.org. You can find current development version at
+http://ubuntu.kurento.org/pool/main/k/kurento-media-server/.
 
-The following procedure is needed to setup Ubuntu to automatically get latest
-package from the development repository. This needs to be done only once::
+To install packages from unstable repository you need to execute::
 
     sudo add-apt-repository ppa:kurento/kurento
-    echo "deb http://ubuntu.kurento.org repo/" | sudo tee -a /etc/apt/sources.list > /dev/null
-
-Every time you want to install the latest development version, you have to
-execute the following commands::
-
+    sudo apt-add-repository http://ubuntu.kurento.org
+    wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
     sudo apt-get update
     sudo apt-get install kurento-media-server
 
@@ -63,16 +60,13 @@ As you can imagine, it is not possible to have installed at the same time latest
 stable version and latest development version of Kurento Media Server.
 
 Older versions can be manually downloaded from http://ubuntu.kurento.org/repo.
-Notice dependencies will be downgraded as required by the old package::
+Notice dependencies will be downgraded as required by the old package. For
+example::
 
     sudo dpkg -i kurento_4.2.5-16-g18d9c6~1.gbp18d9c6_i386.deb
     sudo apt-get -f install
 
-To install 32-bit versions instead of 64-bit ones, the setup of Kurento
-repository is different::
 
-    sudo add-apt-repository ppa:kurento/kurento
-    echo "deb http://ubuntu.kurento.org repo/" | sudo tee -a /etc/apt/sources.list > /dev/null
 
 Kurento Java Client
 ===================
