@@ -450,7 +450,7 @@ kms_plumber_endpoint_query_caps (KmsElement * self, GstPad * pad,
     GstQuery * query)
 {
   GstCaps *allowed = NULL, *caps = NULL;
-  GstCaps *filter, *result, *tcaps;
+  GstCaps *filter, *result = NULL, *tcaps;
 
   gst_query_parse_caps (query, &filter);
 
