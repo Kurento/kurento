@@ -10,6 +10,46 @@ new entries or different wording for answers!
 How do I...
 -----------
 
+...install Kurento Media Server in an Amazon EC2 instance?
+
+   You need to install a :term:`TURN` server, for example
+   `coturn <https://code.google.com/p/coturn/>`__. Here are some instructions
+   on how to install this TURN server for Kurento:
+
+   1. Download the package from the
+   `project's page <https://code.google.com/p/coturn/wiki/Downloads>`__.
+
+   2. Extract the contents. You should have a ``INSTALL`` file with
+   instructions, and a ``.deb`` package. Follow the instructions to install the
+   package.
+
+   3. Once the package is installed, you'll need to modify the startup script
+   in ``/etc/init.d/coturn``.
+
+      - Add the external and local IPs as vars::
+
+            EXTERNAL_IP=<public-ip>
+            LOCAL_IP=$(hostname -i)
+
+      - Modify the DAEMON_ARGS var to take these IPs into account, along
+        with the long-term credentials user and password (``kurento:kurento`` in
+        this case, but could be different), realm and some other options::
+
+             DAEMON_ARGS="-c /etc/turnserver.conf -f -o -a -v -r kurento.org -u kurento:kurento --no-stdout-log -o --external-ip $EXTERNAL_IP/$LOCAL_IP"
+
+   4. Now, you have to tell the Kurento server where is the turnserver
+   installed. For this, modify the turnURL key in ``/etc/kurento/kurento.conf.json``::
+
+      "turnURL" : "kurento:kurento@<public-ip>:3478",
+
+   The following ports should be open in the firewall:
+
+      - 3478 TCP & UDP
+
+      - 49152 - 65535 UDP: As per `RFC 5766 <http://tools.ietf.org/html/rfc5766>`__, these are the ports that the
+        TURN server will use to exchange media. These ports can be changed
+        using the ``--max-port`` and ``--min-port`` options from the turnserver.
+
 ...know how many :rom:cls:`pipelines <MediaPipeline>` do I need for my
 Application?
 

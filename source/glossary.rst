@@ -453,6 +453,11 @@ or :term:`kurento`.
             :rfc:`5246`
                 Version 1.2 of the Transport Layer Security protocol
 
+    TURN
+    Traversal Using Relays around NAT
+        TURN is a protocol that allows for a client behind a :term:`NAT` or
+        firewall to receive incoming data over TCP or UDP connections.
+
     VP8
         VP8 is a video compression format created by On2 Technologies as a
         successor to VP7. Its  patents rights are owned by Google, who made
