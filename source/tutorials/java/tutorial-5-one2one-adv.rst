@@ -74,7 +74,7 @@ in the browser:
 .. figure:: ../../images/kurento-java-tutorial-5-one2one-adv-pipeline_2.png
    :align:   center
    :alt:     Advanced one to one video call media pipeline (2)
-   :width: 500px
+   :width: 400px
 
    *Advanced one to one video call media pipeline (2)*
 
@@ -603,11 +603,11 @@ WebSocket is used to implement the JSON signaling protocol in the client-side.
 Notice that there are four incoming messages to client: ``resgisterResponse``,
 ``callResponse``, ``incomingCall``, ``startCommunication``, and ``play``.
 Convenient actions are taken to implement each step in the communication. On
-the one hand, in functions ``call`` and ``incomingCall`` (for caller and
-callee respectively), the function ``WebRtcPeer.startSendRecv`` of
-*kurento-utils.js* is used to start a WebRTC communication. On the other hand
-in the function ``play``, the function ``WebRtcPeer.startRecvOnly`` is called
-since the ``WebRtcEndpoint`` is used in receive-only.
+the one hand, in functions ``call`` and ``incomingCall`` (for caller and callee
+respectively), the function ``WebRtcPeer.startSendRecv`` of *kurento-utils.js*
+is used to start a WebRTC communication. On the other hand in the function
+``play``, the function ``WebRtcPeer.startRecvOnly`` is called since the
+``WebRtcEndpoint`` is used in receive-only.
 
 .. sourcecode:: javascript
 
@@ -630,6 +630,10 @@ since the ``WebRtcEndpoint`` is used in receive-only.
       case 'startCommunication':
          startCommunication(parsedMessage);
          break;
+      case 'stopCommunication':
+         console.info("Communication ended by remote peer");
+         stop(true);
+         break;
       case 'playResponse':
          playResponse(parsedMessage);
          break;
@@ -642,24 +646,38 @@ since the ``WebRtcEndpoint`` is used in receive-only.
    }
 
    function incomingCall(message) {
+      //If bussy just reject without disturbing user
+      if (callState != NO_CALL) {
+         var response = {
+            id : 'incomingCallResponse',
+            from : message.from,
+            callResponse : 'reject',
+            message : 'bussy'
+         };
+         return sendMessage(response);
+      }
+
+      setCallState(PROCESSING_CALL);
       if (confirm('User ' + message.from
             + ' is calling you. Do you accept the call?')) {
          showSpinner(videoInput, videoOutput);
-         webRtcPeer = kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput,
-               function(sdp, wp) {
-                  var response = {
-                     id : 'incomingCallResponse',
-                     from : message.from,
-                     callResponse : 'accept',
-                     sdpOffer : sdp
-                  };
-                  sendMessage(response);
-               });
+         webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
+            var response = {
+               id : 'incomingCallResponse',
+               from : message.from,
+               callResponse : 'accept',
+               sdpOffer : offerSdp
+            };
+            sendMessage(response);
+            }, function(error) {
+               setCallState(NO_CALL);
+            });
       } else {
          var response = {
             id : 'incomingCallResponse',
             from : message.from,
-            callResponse : 'reject'
+            callResponse : 'reject',
+            message : 'user declined'
          };
          sendMessage(response);
          stop();
@@ -667,11 +685,14 @@ since the ``WebRtcEndpoint`` is used in receive-only.
    }
 
    function call() {
+      if (document.getElementById('peer').value == '') {
+         window.alert("You must specify the peer name");
+         return;
+      }
+      setCallState(PROCESSING_CALL);
       showSpinner(videoInput, videoOutput);
 
-      kwsUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(
-            offerSdp, wp) {
-         webRtcPeer = wp;
+      webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, function(offerSdp) {
          console.log('Invoking SDP offer callback function');
          var message = {
             id : 'call',
@@ -680,6 +701,9 @@ since the ``WebRtcEndpoint`` is used in receive-only.
             sdpOffer : offerSdp
          };
          sendMessage(message);
+      }, function(error) {
+         console.log(error);
+         setCallState(NO_CALL);
       });
    }
 
@@ -687,8 +711,7 @@ since the ``WebRtcEndpoint`` is used in receive-only.
       document.getElementById('videoSmall').style.display = 'none';
       showSpinner(videoOutput);
 
-      kwsUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp, wp) {
-         webRtcPeer = wp;
+      webRtcPeer = kurentoUtils.WebRtcPeer.startRecvOnly(videoOutput, function(offerSdp) {
          console.log('Invoking SDP offer callback function');
          var message = {
             id : 'play',
@@ -697,6 +720,23 @@ since the ``WebRtcEndpoint`` is used in receive-only.
          };
          sendMessage(message);
       });
+   }
+
+   function stop(message) {
+      setCallState(NO_CALL);
+      if (webRtcPeer) {
+         webRtcPeer.dispose();
+         webRtcPeer = null;
+
+         if (!message) {
+            var message = {
+               id : 'stop'
+            }
+            sendMessage(message);
+         }
+      }
+      hideSpinner(videoInput, videoOutput);
+      document.getElementById('videoSmall').style.display = 'block';
    }
 
 Dependencies
