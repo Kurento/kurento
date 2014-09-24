@@ -18,7 +18,7 @@
     <#list module.imports as import>
       <#list import.module.remoteClasses as remoteClass>
         <#if remoteClass.name == extends_name>
-          <#lt>${import.name}<#rt>
+          <#lt>${import.name}<#rt>  
           <#break>
         </#if>
       </#list>
@@ -65,30 +65,12 @@ var ChecktypeError = require('checktype').ChecktypeError;
 
   <#if import_name == module_name>
 var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extends.type.abstract>abstracts/</#if>${extends_name}');
-  <#elseif module.name=='core'
-        || module.name=='elements'
-        || module.name=='filters'>
-    <#if import_package=='kurento-client-core'
-      || import_package=='kurento-client-elements'
-      || import_package=='kurento-client-filters'>
+  <#elseif module_name=='core'
+        || module_name=='elements'
+        || module_name=='filters'>
 var ${extends_name} = require('${import_package}').<#if remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
-    <#else>
-if(typeof kurentoClient == 'undefined')
-  kurentoClient = require('kurento-client');
-
-var ${extends_name} = kurentoClient.register.<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
-    </#if>
   <#else>
-    <#if import_package=='kurento-client-core'
-      || import_package=='kurento-client-elements'
-      || import_package=='kurento-client-filters'>
-if(typeof kurentoClient == 'undefined')
-  kurentoClient = require('kurento-client');
-
-var ${extends_name} = kurentoClient.register.<#if remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
-    <#else>
-var ${extends_name} = require('${import_package}').<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
-    </#if>
+var ${extends_name} = require('kurento-client').register.<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
   </#if>
 <#elseif remoteClass.name=="MediaObject">
 
