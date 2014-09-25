@@ -81,7 +81,7 @@ typedef struct _KmsPendingReq
 } KmsPendingReq;
 
 typedef void (*KmsProcessEnsambledFunction) (KmsSCTPBaseRPC * baserpc,
-    guint req_id, KmsAssembler * assembler);
+    guint req_id, guint32 counter, KmsAssembler * assembler);
 
 static void
 destroy_pending_req (KmsPendingReq * preq)
@@ -275,6 +275,8 @@ kms_sctp_base_rpc_init (KmsSCTPBaseRPC * self)
       (GDestroyNotify) kms_assembler_unref);
   self->responses = g_hash_table_new_full (g_direct_hash, g_direct_equal, NULL,
       (GDestroyNotify) kms_assembler_unref);
+
+  self->last_buffer = G_MAXUINT32;
 }
 
 void
@@ -298,6 +300,7 @@ kms_scp_base_rpc_send_fragments (KmsSCTPBaseRPC * baserpc, KmsFragmenter * f,
   guint n, i = 0;
 
   n = kms_fragmenter_n_messages (f);
+
   for (i = 0; i < n; i++) {
     KmsSCTPMessage sctpmsg;
     const KmsMessage *msg;
@@ -429,6 +432,12 @@ unpack_fragmented_query (KmsAssembler * assembler, GstQuery ** query,
   return ret;
 }
 
+static void
+set_message_counter (KmsMessage * msg, guint32 * counter)
+{
+  kms_message_set_type_counter (msg, *counter);
+}
+
 gboolean
 kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
     GCancellable * cancellable, GstQuery ** rsp, GError ** err)
@@ -458,6 +467,10 @@ kms_scp_base_rpc_query (KmsSCTPBaseRPC * baserpc, GstQuery * query,
     kms_fragmenter_unref (f);
     return FALSE;
   }
+
+  kms_fragmenter_for_each_message (f, (GFunc) set_message_counter,
+      &baserpc->queries);
+  baserpc->queries++;
 
   KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
 
@@ -501,6 +514,9 @@ kms_scp_base_rpc_event (KmsSCTPBaseRPC * baserpc, GstEvent * event,
   }
 
   stream_id = (kms_fragmenter_is_serialized (f)) ? BUFFER_STREAM : EVENT_STREAM;
+  kms_fragmenter_for_each_message (f, (GFunc) set_message_counter,
+      &baserpc->events);
+  baserpc->events++;
 
   ret = kms_scp_base_rpc_send_fragments (baserpc, f, stream_id,
       DEFAULT_TIMEOUT, cancellable, err);
@@ -539,6 +555,10 @@ kms_scp_base_rpc_buffer (KmsSCTPBaseRPC * baserpc, guint32 timetolive,
     ret = FALSE;
     goto done;
   }
+
+  kms_fragmenter_for_each_message (f, (GFunc) set_message_counter,
+      &baserpc->buffers);
+  baserpc->buffers++;
 
   ret = kms_scp_base_rpc_send_fragments (baserpc, f, BUFFER_STREAM, timetolive,
       cancellable, err);
@@ -765,7 +785,7 @@ done:
 
 static void
 kms_sctp_base_rpc_process_ensambled_request (KmsSCTPBaseRPC * baserpc,
-    guint req_id, KmsAssembler * assembler)
+    guint req_id, guint32 counter, KmsAssembler * assembler)
 {
   switch (kms_assembler_get_data_type (assembler)) {
     case KMS_DATA_TYPE_QUERY:{
@@ -817,10 +837,21 @@ kms_sctp_base_rpc_process_ensambled_request (KmsSCTPBaseRPC * baserpc,
     }
     case KMS_DATA_TYPE_BUFFER:{
       GstBuffer *buffer;
+      gboolean discont;
 
       buffer = pack_fragmented_buffer (assembler);
       if (buffer == NULL)
         return;
+
+      KMS_SCTP_BASE_RPC_LOCK (baserpc);
+      discont = baserpc->last_buffer != (counter - 1);
+      baserpc->last_buffer = counter;
+      KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
+
+      if (discont) {
+        buffer = gst_buffer_make_writable (buffer);
+        GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
+      }
 
       KMS_SCTP_BASE_RPC_GET_CLASS (baserpc)->buffer (baserpc, buffer);
       break;
@@ -834,7 +865,7 @@ kms_sctp_base_rpc_process_ensambled_request (KmsSCTPBaseRPC * baserpc,
 
 static void
 kms_sctp_base_rpc_process_ensambled_response (KmsSCTPBaseRPC * baserpc,
-    guint req_id, KmsAssembler * assembler)
+    guint req_id, guint32 counter, KmsAssembler * assembler)
 {
   KmsPendingReq *req;
 
@@ -862,9 +893,11 @@ kms_sctp_base_rpc_process (KmsSCTPBaseRPC * baserpc, KmsMessage * message,
 {
   KmsAssembler *assembler = NULL;
   GHashTable *table;
+  guint32 counter;
   guint req_id;
 
   req_id = kms_message_get_req_id (message);
+  counter = kms_message_get_type_counter (message);
 
   KMS_SCTP_BASE_RPC_LOCK (baserpc);
 
@@ -906,7 +939,7 @@ kms_sctp_base_rpc_process (KmsSCTPBaseRPC * baserpc, KmsMessage * message,
 
     if (kms_assembler_is_completed (assembler)) {
       KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
-      func (baserpc, req_id, assembler);
+      func (baserpc, req_id, counter, assembler);
       goto done;
     }
 
@@ -930,7 +963,7 @@ kms_sctp_base_rpc_process (KmsSCTPBaseRPC * baserpc, KmsMessage * message,
       kms_assembler_ref (assembler);
       g_hash_table_remove (table, GUINT_TO_POINTER (req_id));
       KMS_SCTP_BASE_RPC_UNLOCK (baserpc);
-      func (baserpc, req_id, assembler);
+      func (baserpc, req_id, counter, assembler);
       goto done;
     }
   }

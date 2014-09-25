@@ -75,6 +75,10 @@ struct _KmsSCTPBaseRPC
   /* <private> */
   guint32 req_id;
 
+  guint32 queries;
+  guint32 events;
+  guint32 buffers;
+
   KmsQueryFunction query;
   gpointer query_data;
   GDestroyNotify query_notify;
@@ -95,6 +99,8 @@ struct _KmsSCTPBaseRPC
   GstTask *task;
   GRecMutex tmutex;
   GCancellable *cancellable;
+
+  guint32 last_buffer;
 };
 
 struct _KmsSCTPBaseRPCClass
