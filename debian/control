@@ -1,0 +1,26 @@
+Source: opencv-plugin-sample
+Section: utils
+Priority: optional
+Maintainer: Maintainer Name
+Build-Depends: debhelper (>= 8.0.0),
+ cmake,
+ pkg-config,
+ kms-core-dev,
+ kms-elements-dev,
+ kms-filters-dev,
+ libopencv-dev
+Standards-Version: 3.9.4
+
+Package: opencv-plugin-sample
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+Description: package description
+
+Package: opencv-plugin-sample-dev
+Architecture: any
+Depends: opencv-plugin-sample (= ${binary:Version}),
+  kms-core-dev,
+  kms-elements-dev,
+  kms-filters-dev,
+  libopencv-dev
+Description: dev package description
