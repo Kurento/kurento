@@ -179,7 +179,7 @@ As introduced before, we use `REST`:term: to communicate the client with the
 Java application server. Specifically, we use the Spring annotation
 *@RestController* to implement REST services in the server-side. Take a look to
 the
-`HelloWorldController <https://github.com/Kurento/kurento-java-tutorial/blob/master/tutorial-1-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldController.java>`_
+`HelloWorldController <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-hello-world/src/main/java/org/kurento/tutorial/helloworld/HelloWorldController.java>`_
 class:
 
 .. sourcecode:: java
