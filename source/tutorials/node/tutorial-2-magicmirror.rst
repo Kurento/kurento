@@ -305,7 +305,7 @@ file for managing this dependency is:
    }
 
 At the client side, dependencies are managed using Bower. Take a look to the
-`bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/js/bower.js>`_
+`bower.json <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-magic-mirror/static/bower.json>`_
 file and pay attention to the following section:
 
 .. sourcecode:: js
