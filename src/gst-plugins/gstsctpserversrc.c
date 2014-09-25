@@ -26,7 +26,7 @@
 #include "kmssctpserverrpc.h"
 
 #define SCTP_BACKLOG 1          /* client connection queue */
-#define MAX_BUFFER_SIZE (1024 * 16)
+#define MAX_BUFFER_SIZE (1024 * 50)
 
 #define PLUGIN_NAME "sctpserversrc"
 

@@ -25,7 +25,7 @@
 
 #define PLUGIN_NAME "sctpclientsink"
 
-#define MAX_BUFFER_SIZE (1024 * 16)
+#define MAX_BUFFER_SIZE (1024 * 50)
 
 GST_DEBUG_CATEGORY_STATIC (gst_sctp_client_sink_debug_category);
 #define GST_CAT_DEFAULT gst_sctp_client_sink_debug_category
