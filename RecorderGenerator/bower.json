@@ -1,7 +1,7 @@
 {
-  "name": "kurento-http-player",
-  "version": "5.0.4-dev",
-  "description": "Kurento Browser JavaScript Tutorial 8: HTTP Player",
+  "name": "RecorderGenerator",
+  "version": "5.0.0",
+  "description": "Kurento demo with Recorder and Generators",
   "authors": [
     "Kurento <info@kurento.org>"
   ],
@@ -20,6 +20,8 @@
     "tests"
   ],
   "dependencies": {
-    "kurento-client": "develop"
+    "kurento-utils": "^5.0.0",
+    "kurento-client": "^5.0.0",
+    "co": "~3.0.7"
   }
 }

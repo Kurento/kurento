@@ -14,76 +14,107 @@
 */
 
 const ws_uri = 'ws://' + location.hostname + ':8888/kurento';
+
 const hat_uri = 'http://files.kurento.org/imgs/mario-wings.png'; //requires Internet connectivity
 
-var videoInput;
-var videoOutput;
-var webRtcPeer;
 
-window.onload = function() {
+window.addEventListener("load", function(event)
+{
 	console = new Console('console', console);
-	videoInput = document.getElementById('videoInput');
-	videoOutput = document.getElementById('videoOutput');
-}
 
-function start() {
-	showSpinner(videoInput, videoOutput);
-	webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
-}
+	var videoInput = document.getElementById('videoInput');
+	var videoOutput = document.getElementById('videoOutput');
 
-function stop() {
-	if (webRtcPeer) {
-		webRtcPeer.dispose();
-	}
-	videoInput.src = '';
-	videoOutput.src = '';
-	hideSpinner(videoInput, videoOutput);
-}
+	var start = document.getElementById("start");
+	var stop = document.getElementById("stop");
 
-function onOffer(sdpOffer) {
-	kurentoClient(ws_uri, function(error, kurentoClient) {
-		if (error) return onError(error);
+	start.addEventListener("click", function start()
+	{
+		console.log("WebRTC loopback starting");
 
-		kurentoClient.create('MediaPipeline', function(error, pipeline) {
-			if (error) return onError(error);
+		showSpinner(videoInput, videoOutput);
 
-			pipeline.create('WebRtcEndpoint', function(error, webRtc) {
+		var webRtcPeer = kurentoUtils.WebRtcPeer.startSendRecv(videoInput, videoOutput, onOffer, onError);
+
+		function onOffer(sdpOffer) {
+			console.log("onOffer");
+
+			kurentoClient(ws_uri, function(error, client) {
 				if (error) return onError(error);
 
-				pipeline.create('FaceOverlayFilter', function(error, filter) {
+				client.create('MediaPipeline', function(error, pipeline) {
 					if (error) return onError(error);
 
-					var offsetXPercent = -0.35;
-					var offsetYPercent = -1.2;
-					var widthPercent = 1.6;
-					var heightPercent = 1.6;
-					filter.setOverlayedImage(hat_uri, offsetXPercent,
-						offsetYPercent, widthPercent,
-						heightPercent, function(error) {
-							if (error) return onError(error);
-						});
+					console.log("Got MediaPipeline");
 
-					webRtc.connect(filter, function(error) {
-						if (error) return onError(error);
+					stop.addEventListener("click", function(event)
+					{
+						pipeline.release();
 
-						filter.connect(webRtc, function(error) {
-							if (error) return onError(error);
-						});
+						webRtcPeer.dispose();
+						videoInput.src="";
+						videoOutput.src="";
+
+						hideSpinner(videoInput, videoOutput);
 					});
 
-					webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+					pipeline.create('WebRtcEndpoint', function(error, webRtc) {
 						if (error) return onError(error);
 
-						webRtcPeer.processSdpAnswer(sdpAnswer);
+						console.log("Got WebRtcEndpoint");
+
+						pipeline.create('FaceOverlayFilter', function(error, filter) {
+							if (error) return onError(error);
+
+							console.log("Got FaceOverlayFilter");
+
+							var offsetXPercent = -0.35;
+							var offsetYPercent = -1.2;
+							var widthPercent = 1.6;
+							var heightPercent = 1.6;
+
+							console.log("Setting overlay image");
+
+							filter.setOverlayedImage(hat_uri, offsetXPercent,
+								offsetYPercent, widthPercent,
+								heightPercent, function(error) {
+									if (error) return onError(error);
+
+									console.log("Set overlay image");
+								});
+
+							console.log("Connecting ...");
+
+							webRtc.connect(filter, function(error) {
+								if (error) return onError(error);
+
+								console.log("WebRtcEndpoint --> filter");
+
+								filter.connect(webRtc, function(error) {
+									if (error) return onError(error);
+
+									console.log("Filter --> WebRtcEndpoint");
+								});
+							});
+
+							webRtc.processOffer(sdpOffer, function(error, sdpAnswer) {
+								if (error) return onError(error);
+
+								console.log("SDP answer obtained. Processing ...");
+
+								webRtcPeer.processSdpAnswer(sdpAnswer);
+							});
+						});
 					});
 				});
 			});
-		});
+		}
 	});
-}
+});
+
 
 function onError(error) {
-	console.error(error);
+	if(error) console.error(error);
 }
 
 function showSpinner() {
@@ -95,7 +126,7 @@ function showSpinner() {
 
 function hideSpinner() {
 	for (var i = 0; i < arguments.length; i++) {
-		arguments[i].poster = './img/webrtc.png';
+		arguments[i].poster = 'img/webrtc.png';
 		arguments[i].style.background = '';
 	}
 }
