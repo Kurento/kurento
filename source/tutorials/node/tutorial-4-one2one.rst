@@ -484,12 +484,6 @@ start a WebRTC communication.
       });
    }
 
-.. note::
-
-   We are in active development. Be sure that you have the latest version of Kurento
-   Java Client your POM. You can find it at Maven Central searching for
-   ``kurento-client``.
-
 
 Dependencies
 ============
@@ -516,8 +510,12 @@ file and pay attention to the following section:
      "kurento-utils" : "^5.0.0"
    }
 
+Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
+range ``^5.0.0`` downloads the latest version of Kurento artefacts from Bower
+in version 5 (i.e. 5.x.x). Major versions are released when incompatible
+changes are made.
+
 .. note::
 
-   We are in active development. Be sure that you have the latest version of
-   Kurento Java Client in your bower.json. You can find it at `Bower <http://bower.io/search/?q=kurento-client>`_
-   searching for ``kurento-client``.
+   We are in active development. You can find the latest version of
+   Kurento JavaScript Client at `Bower <http://bower.io/search/>`_.

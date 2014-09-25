@@ -376,6 +376,10 @@ or :term:`kurento`.
             :rfc:`4568`
                 Security Descriptions for Media Streams in SDP
 
+    Semantic Versioning
+       `Semantic Versioning <http://semver.org/>`_ is a formal convention for specifying
+        compatibility using a three-part version number: major version; minor version; and patch.
+
     Signalling Plane
         It is the layer of a media system in charge of the information exchanges
         concerning the establishment and control of the different media circuits

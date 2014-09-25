@@ -480,11 +480,15 @@ dependency (*kurento-client*) and the JavaScript Kurento utility library
       </dependency>
    </dependencies>
 
+Kurento framework uses `Semantic Versioning`:term: for releases. Notice that
+range ``[5.0.0,6.0.0)`` downloads the latest version of Kurento artefacts from
+Maven Central in version 5 (i.e. 5.x.x). Major versions are released when
+incompatible changes are made.
+
 .. note::
 
-   We are in active development. Be sure that you have the latest version of
-   Kurento Java Client in your pom.xml. You can find it at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_
-   searching for ``kurento-client``.
+   We are in active development. You can find the latest version of
+   Kurento Java Client at `Maven Central <http://search.maven.org/#search%7Cga%7C1%7Ckurento-client>`_.
 
 Kurento Java Client has a minimum requirement of **Java 7**. To configure the
 application to use Java 7, we have to include the following properties in the
