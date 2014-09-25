@@ -1,3 +1,14 @@
+kms-platedetector (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * CMakeLists.txt: Remove soup depdendency
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Thu, 25 Sep 2014 08:32:02 +0200
+
 kms-platedetector (1.0.0) testing; urgency=medium
 
   [ Francisco Rivero ]
