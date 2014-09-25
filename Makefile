@@ -2,10 +2,10 @@
 #
 
 # Versions
-DOC_VERSION         = 5.0.3
+DOC_VERSION = 5.0.3
 CLIENT_JAVA_VERSION = 5.0.3
-CLIENT_JS_VERSION   = 5.0.3
-UTILS_JS_VERSION    = 5.0.3
+CLIENT_JS_VERSION = 5.0.3
+UTILS_JS_VERSION = 5.0.3
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
