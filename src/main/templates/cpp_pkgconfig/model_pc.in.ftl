@@ -4,7 +4,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: gstmarshal
+Name: ${module.code.implementation.lib?replace("lib", "")}
 Description: Kurento ${module.name} Module
 Version: ${module.version}
 URL:<#if module.code.repoAddress??> ${module.code.repoAddress}</#if>
