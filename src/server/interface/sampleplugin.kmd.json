@@ -1,0 +1,14 @@
+{
+  "name": "sampleplugin",
+  "version": "0.0.1-dev",
+  "kurentoVersion": "^5.0.0",
+  "code": {
+    "api": {
+      "js": {
+        "nodeName": "kurento-module-sampleplugin",
+        "npmDescription": "Sample plugin",
+        "npmGit": "Kurento/kurento-module-sampleplugin-js"
+      }
+    }
+  }
+}

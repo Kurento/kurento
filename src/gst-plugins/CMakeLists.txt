@@ -1,0 +1,43 @@
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
+include_directories (${CMAKE_CURRENT_BINARY_DIR})
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -DHAVE_CONFIG_H -Werror -Wall -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -DHAVE_CONFIG_H -Werror -Wall -fPIC")
+
+include_directories(
+  ${GSTREAMER_INCLUDE_DIRS}
+  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${OPENCV_INCLUDE_DIRS}
+  ${SOUP_INCLUDE_DIRS}
+)
+
+set(SAMPLEFILTER_SOURCES
+  samplefilter.c
+  kmssamplefilter.cpp kmssamplefilter.h
+)
+
+include(GLibHelpers)
+
+set(ENUM_HEADERS
+  kmssamplefilter.h
+)
+
+add_glib_enumtypes(SAMPLEFILTER_SOURCES kms-enumtypes KMS ${ENUM_HEADERS})
+
+add_library(${LIBRARY_NAME}plugins MODULE ${SAMPLEFILTER_SOURCES})
+
+target_link_libraries(${LIBRARY_NAME}plugins
+  ${GSTREAMER_LIBRARIES}
+  ${GSTREAMER_VIDEO_LIBRARIES}
+  ${OPENCV_LIBRARIES}
+  ${SOUP_LIBRARIES}
+)
+
+install(
+  TARGETS ${LIBRARY_NAME}plugins
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_GST_PLUGINS_DIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)

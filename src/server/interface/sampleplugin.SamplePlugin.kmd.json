@@ -1,0 +1,44 @@
+{
+  "remoteClasses": [
+    {
+      "name": "SamplePluginFilter",
+      "extends": "Filter",
+      "doc": "Doc for sample plugin",
+      "constructor":
+        {
+          "doc": "Create a KmsSamplePlugin",
+          "params": [
+            {
+              "name": "mediaPipeline",
+              "doc": "the :rom:cls:`MediaPipeline` to which the filter belongs",
+              "type": "MediaPipeline"
+            }
+          ]
+        },
+      "methods": [
+        {
+          "name": "setFilterType",
+          "doc": "Configures the type of filter. 0 - black and white, 1 - Edges filter.",
+          "params": [
+            {
+              "name": "filterType",
+              "doc": "Value of filter type.",
+              "type": "int"
+            }
+          ]
+        },
+        {
+          "name": "setEdgeThreshold",
+          "doc": "Configures the edge threshold.",
+          "params": [
+            {
+              "name": "edgeValue",
+              "doc": "Value of edge threshold [0-255].",
+              "type": "int"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
