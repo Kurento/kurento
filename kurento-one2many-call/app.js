@@ -231,6 +231,13 @@ function startViewer(id, sdp, ws, callback) {
 			return callback(error);
 		}
 
+		var viewer = {
+			id : id,
+			ws : ws,
+			webRtcEndpoint : webRtcEndpoint
+		};
+		viewers[viewer.id] = viewer;
+
 		if (master === null) {
 			stop(id);
 			return callback("No active sender now. Become sender or . Try again later ...");
@@ -257,13 +264,6 @@ function startViewer(id, sdp, ws, callback) {
 					stop(id);
 					return callback("No active sender now. Become sender or . Try again later ...");
 				}
-
-				var viewer = {
-					id : id,
-					ws : ws,
-					webRtcEndpoint : webRtcEndpoint
-				};
-				viewers[viewer.id] = viewer;
 
 				return callback(null, sdpAnswer);
 			});
