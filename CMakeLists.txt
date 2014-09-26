@@ -14,16 +14,6 @@ find_package(PkgConfig)
 find_package(Boost REQUIRED)
 pkg_check_modules(JSONCPP REQUIRED jsoncpp>=0.6.0)
 
-string(REPLACE "." ";" VERSION_LIST ${PROJECT_VERSION})
-list(GET VERSION_LIST 0 PROJECT_VERSION_MAJOR)
-list (LENGTH VERSION_LIST _len)
-if (${_len} GREATER 1)
-  list(GET VERSION_LIST 1 PROJECT_VERSION_MINOR)
-endif ()
-if (${_len} GREATER 2)
-  list(GET VERSION_LIST 2 PROJECT_VERSION_PATCH)
-endif ()
-
 include(GNUInstallDirs)
 
 set(CUSTOM_PREFIX "kurento")
