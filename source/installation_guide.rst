@@ -11,7 +11,6 @@ here. When asked for any kind of confirmation, reply affirmatively:
 .. sourcecode:: console
 
    sudo add-apt-repository ppa:kurento/kurento
-   wget -O - http://ubuntu.kurento.org/kurento.gpg.key | sudo apt-key add -
    sudo apt-get update
    sudo apt-get install kurento-media-server
 
