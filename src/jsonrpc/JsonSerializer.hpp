@@ -29,7 +29,8 @@
 #include <string>
 #include <memory>
 
-namespace kurento {
+namespace kurento
+{
 
 class JsonSerializer
 {

@@ -1,0 +1,64 @@
+# - Try to find KmsJsonRpc library
+
+#=============================================================================
+# Copyright 2014 Kurento
+#
+#=============================================================================
+
+set(PACKAGE_VERSION "@PROJECT_VERSION@")
+set(KmsJsonRpc_VERSION ${PACKAGE_VERSION})
+
+find_package(PkgConfig)
+
+pkg_check_modules(_JSONCPP REQUIRED jsoncpp>=0.6.0)
+
+find_path(KmsJsonRpc_INCLUDE_DIR
+  NAMES
+    jsonrpc/JsonRpcHandler.hpp
+    jsonrpc/JsonRpcException.hpp
+    jsonrpc/JsonSerializer.hpp
+    jsonrpc/JsonRpcUtils.hpp
+    jsonrpc/JsonRpcConstants.hpp
+  PATH_SUFFIXES
+    src
+    kurento
+)
+
+set(KmsJsonRpc_INCLUDE_DIRS ${KmsJsonRpc_INCLUDE_DIR} ${_JSONCPP_INCLUDE_DIRS}
+  CACHE INTERNAL "Include directories for KmsJsonRpc library"
+)
+
+find_library (KmsJsonRpc_LIBRARY
+  NAMES
+    gstmarshal
+  PATH_SUFFIXES
+    build/lib
+)
+
+set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
+  CACHE INTERNAL "Libraries for KmsJsonRpc"
+)
+
+include (FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(KmsJsonRpc
+  FOUND_VAR
+    KmsJsonRpc_FOUND
+  REQUIRED_VARS
+    KmsJsonRpc_VERSION
+    KmsJsonRpc_INCLUDE_DIR
+    KmsJsonRpc_INCLUDE_DIRS
+    KmsJsonRpc_LIBRARY
+    KmsJsonRpc_LIBRARIES
+  VERSION_VAR
+    KmsJsonRpc_VERSION
+)
+
+mark_as_advanced(
+  KmsJsonRpc_FOUND
+  KmsJsonRpc_VERSION
+  KmsJsonRpc_INCLUDE_DIR
+  KmsJsonRpc_INCLUDE_DIRS
+  KmsJsonRpc_LIBRARY
+  KmsJsonRpc_LIBRARIES
+)

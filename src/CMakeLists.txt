@@ -1,6 +1,8 @@
 set (SOURCE_FILES JsonRpcHandler.cpp JsonRpcUtils.cpp)
-set (HEADER_FILES JsonRpcHandler.hpp JsonRpcException.hpp JsonSerializer.hpp
-      JsonRpcUtils.hpp JsonRpcConstants.hpp)
+set (HEADER_FILES jsonrpc/JsonRpcHandler.hpp jsonrpc/JsonRpcException.hpp
+      jsonrpc/JsonSerializer.hpp jsonrpc/JsonRpcUtils.hpp
+      jsonrpc/JsonRpcConstants.hpp
+)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

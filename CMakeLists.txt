@@ -29,14 +29,26 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Werror -std=c++0x")
 set(prefix ${CMAKE_INSTALL_PREFIX})
 set(exec_prefix "\${prefix}")
 set(libdir "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
-set(includedir "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}/${CUSTOM_PREFIX}")
+set(includedir "\${prefix}/${INCLUDE_PREFIX}")
 set(requires "jsoncpp")
 
 configure_file(libjsonrpc.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libjsonrpc.pc @ONLY)
+configure_file(FindKmsJsonRpc.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/FindKmsJsonRpc.cmake @ONLY)
 
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/libjsonrpc.pc
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
   )
+
+set (CMAKE_MODULES_INSTALL_DIR
+  ${CMAKE_INSTALL_DATAROOTDIR}/cmake-2.8/Modules
+  CACHE STRING
+  "Destination (relative to CMAKE_INSTALL_PREFIX) for cmake modules files"
+)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/FindKmsJsonRpc.cmake
+  DESTINATION ${CMAKE_MODULES_INSTALL_DIR}
+)
 
 add_subdirectory (src)
