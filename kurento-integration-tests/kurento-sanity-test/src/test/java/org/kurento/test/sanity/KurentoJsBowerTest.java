@@ -21,6 +21,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.kurento.test.Shell;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -33,10 +34,23 @@ public class KurentoJsBowerTest extends KurentoJsBase {
 
 	@BeforeClass
 	public static void runBower() throws IOException {
+		String bowerClientTag = KurentoServicesTestHelper
+				.getBowerKurentoClientTag();
+		String bowerUtilsTag = KurentoServicesTestHelper
+				.getBowerKurentoUtilsTag();
+		if (!bowerClientTag.isEmpty()) {
+			bowerClientTag = "#" + bowerClientTag;
+		}
+		if (!bowerUtilsTag.isEmpty()) {
+			bowerUtilsTag = "#" + bowerUtilsTag;
+		}
+
 		log.debug("Using bower to download kurento-client\n"
-				+ Shell.runAndWait("sh", "-c", "bower install kurento-client"));
+				+ Shell.runAndWait("sh", "-c", "bower install kurento-client"
+						+ bowerClientTag));
 		log.debug("Using bower to download kurento-utils\n"
-				+ Shell.runAndWait("sh", "-c", "bower install kurento-utils"));
+				+ Shell.runAndWait("sh", "-c", "bower install kurento-utils"
+						+ bowerUtilsTag));
 
 		final String outputFolder = new ClassPathResource("static").getFile()
 				.getAbsolutePath() + File.separator;

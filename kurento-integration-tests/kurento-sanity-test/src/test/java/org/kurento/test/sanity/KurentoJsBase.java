@@ -99,7 +99,7 @@ public class KurentoJsBase {
 				if (lib.contains("utils")) {
 					data.put("kurentoObject", "kurentoUtils");
 				} else {
-					data.put("kurentoObject", "KurentoClient");
+					data.put("kurentoObject", "kurentoClient");
 				}
 
 				template.process(data, writer);

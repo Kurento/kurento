@@ -79,6 +79,12 @@ public class KurentoServicesTestHelper {
 	public static final String APP_HTTP_PORT_PROP = "app.http.port";
 	public static final int APP_HTTP_PORT_DEFAULT = 7779;
 
+	// Bower properties
+	public static final String BOWER_KURENTO_CLIENT_TAG_PROP = "bower.kurentoclient.tag";
+	public static final String BOWER_KURENTO_CLIENT_TAG_DEFAULT = "";
+	public static final String BOWER_KURENTO_UTILS_TAG_PROP = "bower.kurentoutils.tag";
+	public static final String BOWER_KURENTO_UTILS_TAG_DEFAULT = "";
+
 	// Attributes
 
 	private static HttpServer httpServer;
@@ -272,6 +278,16 @@ public class KurentoServicesTestHelper {
 	public static int getAppHttpPort() {
 		return PropertiesManager.getProperty(APP_HTTP_PORT_PROP,
 				APP_HTTP_PORT_DEFAULT);
+	}
+
+	public static String getBowerKurentoClientTag() {
+		return PropertiesManager.getProperty(BOWER_KURENTO_CLIENT_TAG_PROP,
+				BOWER_KURENTO_CLIENT_TAG_DEFAULT);
+	}
+
+	public static String getBowerKurentoUtilsTag() {
+		return PropertiesManager.getProperty(BOWER_KURENTO_UTILS_TAG_PROP,
+				BOWER_KURENTO_UTILS_TAG_DEFAULT);
 	}
 
 	public static String getTestFilesPath() {
