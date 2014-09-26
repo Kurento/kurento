@@ -1,0 +1,5 @@
+[gerritt]
+host=repository.kurento.com
+port=12345
+project=kms-opencv-plugin-sample
+defaultbranch=develop
