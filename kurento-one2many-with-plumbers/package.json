@@ -1,0 +1,13 @@
+{
+  "name": "kurento-one2many-with-plumbers",
+  "version": "5.0.4-dev",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "~3.2.6",
+    "ws": "~0.4.32",
+    "kurento-client": "develop"
+  }
+}
