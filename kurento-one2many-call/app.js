@@ -257,7 +257,7 @@ function startViewer(id, sdp, ws, callback) {
 			master.webRtcEndpoint.connect(webRtcEndpoint, function(error) {
 				if (error) {
 					stop(id);
-					return callback(error, getState4Client());
+					return callback(error);
 				}
 
 				if (master === null) {
