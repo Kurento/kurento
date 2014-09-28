@@ -8,6 +8,6 @@
   "dependencies": {
     "express": "~3.2.6",
     "body-parser": "~1.7.0",
-    "kurento-client": "^5.0.0"
+    "kurento-client": "develop"
   }
 }
