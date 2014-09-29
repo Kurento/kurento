@@ -8,7 +8,7 @@
   "dependencies": {
     "express": "~3.2.6",
     "ws": "~0.4.32",
-    "kurento-client": "develop",
+    "kurento-client": "Kurento/kurento-client-js#develop",
     "express-session": "~1.7.6"
   }
 }
