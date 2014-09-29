@@ -8,15 +8,14 @@
 set(KurentoModuleCreator_VERSION "${project.version}")
 set(KurentoModuleCreator_FOUND 1)
 
-set (KURENTO_MODULE_CREATOR_ROOT /usr/bin CACHE STRING "kurento-module-creator directory")
-
 include (FindPackageHandleStandardArgs)
 
 find_program(KurentoModuleCreator_EXECUTABLE NAMES kurento-module-creator
-  HINTS 
-    ENV${KURENTO_MODULE_CREATOR_ROOT}/kurento-module-creator
-    ${KURENTO_MODULE_CREATOR_ROOT}/kurento-module-creator
+  PATH_SUFFIXES
+    scripts
 )
+
+message (STATUS "Found ${KurentoModuleCreator_EXECUTABLE}")
 
 # handle the QUIETLY and REQUIRED options
 find_package_handle_standard_args (KurentoModuleCreator 
