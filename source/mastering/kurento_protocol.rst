@@ -113,7 +113,7 @@ The following example shows a typical error response::
 Kurento API over JSON-RPC
 =========================
 
-As explained in :doc:``Kurento API section <kurento_API>``, Kurento Media Server
+As explained in :doc:`Kurento API section <kurento_API>`, Kurento Media Server
 exposes a full fledged API to let applications to process media in several ways.
 
 To allow this rich API, Kurento Clients require requires full-duplex
