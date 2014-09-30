@@ -197,7 +197,7 @@ The output should be similar to the following:
 
 .. sourcecode:: sh
 
-   tcp6       0      0 :::8888                 :::*                    LISTEN      1270/kurento-media-server
+   tcp6    0    0 :::8888    :::*    LISTEN    1270/kurento-media-server
 
 
 Kurento Media Server Log
@@ -215,5 +215,5 @@ When KMS starts correctly, this trace is written in the log file:
 
 .. sourcecode:: sh
 
-   0:00:00.401153244  8003      0x26cb130 INFO      KurentoMediaServer   /.../main.cpp:194:main:   Mediaserver started
+   0:00.4011 8003 0x26cb130 INFO KurentoMediaServer /.../main.cpp:194:main: Mediaserver started
 
