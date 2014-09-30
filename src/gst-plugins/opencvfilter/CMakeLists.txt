@@ -4,6 +4,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${OPENCV_INCLUDE_DIRS}
   "${CMAKE_CURRENT_SOURCE_DIR}/../../server/implementation/objects/"
+  ${KMSCORE_INCLUDE_DIRS}
 )
 
 set(OPENCV_FILTER_SOURCES
