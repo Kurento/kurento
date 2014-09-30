@@ -40,7 +40,7 @@ PlumberEndpointImpl::PlumberEndpointImpl (const boost::property_tree::ptree
 
   /* set properties */
   try {
-    address = config.get<std::string> ("modules.PlumberEndpoint.bindAddress");
+    address = config.get<std::string> ("modules.kurento.PlumberEndpoint.bindAddress");
   } catch (boost::property_tree::ptree_error &e) {
     GST_DEBUG ("Setting default address %s to %" GST_PTR_FORMAT,
                DEFAULT_PLUMBER_ADDRESS, element);
@@ -56,7 +56,7 @@ PlumberEndpointImpl::PlumberEndpointImpl (const boost::property_tree::ptree
   }
 
   try {
-    address = config.get<std::string> ("modules.PlumberEndpoint.announcedAddress");
+    address = config.get<std::string> ("modules.kurento.PlumberEndpoint.announcedAddress");
   } catch (boost::property_tree::ptree_error &e) {
     GST_DEBUG ("Announced address is not provided. Using binding address %s",
                address.c_str() );
