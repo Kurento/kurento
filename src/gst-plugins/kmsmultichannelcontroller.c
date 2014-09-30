@@ -939,5 +939,14 @@ end:
   return port;
 }
 
+gchar *
+kms_multi_channel_controller_get_remote_address (KmsMultiChannelController *
+    mcc)
+{
+  g_return_val_if_fail (mcc != NULL, NULL);
+
+  return kms_sctp_connection_get_remote_address (mcc->mcl);
+}
+
 static void _priv_kms_multi_channel_controller_initialize (void)
     __attribute__ ((constructor));

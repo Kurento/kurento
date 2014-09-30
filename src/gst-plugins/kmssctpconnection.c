@@ -473,5 +473,30 @@ kms_sctp_connection_get_bound_port (KmsSCTPConnection * conn)
   return bound_port;
 }
 
+gchar *
+kms_sctp_connection_get_remote_address (KmsSCTPConnection * conn)
+{
+  GSocketAddress *addr;
+  GError *err = NULL;
+  GInetAddress *iaddr;
+  gchar *straddr;
+
+  g_return_val_if_fail (conn != NULL, NULL);
+
+  addr = g_socket_get_remote_address (conn->socket, &err);
+
+  if (addr == NULL) {
+    GST_ERROR ("%s", err->message);
+    g_error_free (err);
+    return NULL;
+  }
+
+  iaddr = g_inet_socket_address_get_address ((GInetSocketAddress *) addr);
+  straddr = g_inet_address_to_string (iaddr);
+  g_object_unref (addr);
+
+  return straddr;
+}
+
 static void _priv_kms_sctp_connection_initialize (void)
     __attribute__ ((constructor));

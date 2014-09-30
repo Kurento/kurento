@@ -105,6 +105,7 @@ gboolean kms_multi_channel_controller_start (KmsMultiChannelController *mccp);
 void kms_multi_channel_controller_stop (KmsMultiChannelController *mcc);
 
 int kms_multi_channel_controller_get_bound_port(KmsMultiChannelController *mcc);
+gchar *  kms_multi_channel_controller_get_remote_address(KmsMultiChannelController *mcc);
 
 int kms_multi_channel_controller_create_media_stream (KmsMultiChannelController *
     mcc, StreamType type, guint16 chanid, GError ** err);

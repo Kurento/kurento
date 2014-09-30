@@ -26,7 +26,6 @@
 
 #define SCTP_DEFAULT_ADDR "localhost"
 #define SCTP_DEFAULT_LOCAL_PORT 0
-#define SCTP_DEFAULT_REMOTE_PORT 9999
 
 #define KMS_WAIT_TIMEOUT 5
 
@@ -47,10 +46,7 @@ struct _KmsPlumberEndpointPrivate
   KmsMultiChannelController *mcc;
 
   gchar *local_addr;
-  gchar *remote_addr;
-
   guint16 local_port;
-  guint16 remote_port;
 
   /* SCTP server elements */
   GstElement *audiosrc;
@@ -159,7 +155,6 @@ kms_plumber_endpoint_finalize (GObject * object)
   KmsPlumberEndpoint *plumberendpoint = KMS_PLUMBER_ENDPOINT (object);
 
   g_free (plumberendpoint->priv->local_addr);
-  g_free (plumberendpoint->priv->remote_addr);
 
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
@@ -333,6 +328,7 @@ kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
 {
   GError *err = NULL;
   gint port;
+  gchar *addr;
 
   if (self->priv->mcc == NULL) {
     GST_WARNING_OBJECT (self, "Control channel is not connected");
@@ -348,9 +344,15 @@ kms_plumber_endpoint_link_valve (KmsPlumberEndpoint * self, GstElement * valve,
     return;
   }
 
+  addr = kms_multi_channel_controller_get_remote_address (self->priv->mcc);
+  if (addr == NULL) {
+    GST_ERROR_OBJECT (self, "Could not get remote address");
+    return;
+  }
+
   *sctpsink = gst_element_factory_make ("sctpclientsink", NULL);
-  g_object_set (G_OBJECT (*sctpsink), "host",
-      self->priv->remote_addr, "port", port, NULL);
+  g_object_set (G_OBJECT (*sctpsink), "host", addr, "port", port, NULL);
+  g_free (addr);
 
   gst_bin_add (GST_BIN (self), *sctpsink);
   gst_element_sync_state_with_parent (*sctpsink);

@@ -138,6 +138,7 @@ gboolean kms_sctp_connection_set_init_config (KmsSCTPConnection *conn,
   guint16 max_init_timeo, GError **err);
 
 int kms_sctp_connection_get_bound_port (KmsSCTPConnection *conn);
+gchar * kms_sctp_connection_get_remote_address (KmsSCTPConnection *conn);
 
 G_END_DECLS
 
