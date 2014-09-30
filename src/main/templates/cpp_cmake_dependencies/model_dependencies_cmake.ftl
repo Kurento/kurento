@@ -10,8 +10,8 @@ find_package(PkgConfig)
 # Dependencies
 ###############################################################
 <#if !module.imports[0]??>
+find_package(KmsJsonRpc REQUIRED ^0.1.0)
 pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=1.3.3)
-pkg_check_modules(JSONRPC REQUIRED libjsonrpc>=0.0.6)
 pkg_check_modules(SIGCPP REQUIRED sigc++-2.0>=2.0.10)
 pkg_check_modules(GLIBMM REQUIRED glibmm-2.4>=2.37)
 </#if>
@@ -23,7 +23,7 @@ pkg_check_modules(${import.module.code.implementation.lib?replace("lib", "")?upp
 set (DEPENDENCIES_LIBRARIES
 <#if !module.imports[0]??>
   <#noparse>${GSTREAMER_LIBRARIES}</#noparse>
-  <#noparse>${JSONRPC_LIBRARIES}</#noparse>
+  <#noparse>${KmsJsonRpc_LIBRARIES}</#noparse>
   <#noparse>${SIGCPP_LIBRARIES}</#noparse>
   <#noparse>${GLIBMM_LIBRARIES}</#noparse>
 </#if>
@@ -36,7 +36,7 @@ set (DEPENDENCIES_LIBRARIES
 set (DEPENDENCIES_INCLUDE_DIRS
 <#if !module.imports[0]??>
   <#noparse>${GSTREAMER_INCLUDE_DIRS}</#noparse>
-  <#noparse>${JSONRPC_INCLUDE_DIRS}</#noparse>
+  <#noparse>${KmsJsonRpc_INCLUDE_DIRS}</#noparse>
   <#noparse>${SIGCPP_INCLUDE_DIRS}</#noparse>
   <#noparse>${GLIBMM_INCLUDE_DIRS}</#noparse>
 </#if>
