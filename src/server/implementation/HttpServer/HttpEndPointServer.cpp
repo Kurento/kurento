@@ -130,6 +130,12 @@ HttpEndPointServer::HttpEndPointServer ()
              (HttpEndPointServer::announcedAddr.empty() ) ? NULL :
              HttpEndPointServer::announcedAddr.c_str (),
              NULL);
+
+  logHandler = [&] (GError * err) {
+    if (err != NULL) {
+      GST_ERROR ("%s", err->message);
+    }
+  };
 }
 
 HttpEndPointServer::~HttpEndPointServer()
@@ -149,33 +155,13 @@ http_server_handler_cb (KmsHttpEPServer *self, GError *err, gpointer data)
 void
 HttpEndPointServer::start ()
 {
-  std::function <void (GError *err) > startHandler = [&] (GError * err) {
-    bool error = (err != NULL);
-
-    if (error) {
-      GST_ERROR ("Service could not start. (%s)", err->message);
-    } else {
-      GST_INFO ("Service successfully started");
-    }
-  };
-
-  kms_http_ep_server_start (server, http_server_handler_cb, &startHandler, NULL);
+  kms_http_ep_server_start (server, http_server_handler_cb, &logHandler, NULL);
 }
 
 void
 HttpEndPointServer::stop ()
 {
-  std::function <void (GError *err) > stopHandler = [&] (GError * err) {
-    bool error = (err != NULL);
-
-    if (error) {
-      GST_ERROR ("Error stopping server. (%s)", err->message);
-    } else {
-      GST_INFO ("Service stopped");
-    }
-  };
-
-  kms_http_ep_server_stop (server, http_server_handler_cb, &stopHandler , NULL);
+  kms_http_ep_server_stop (server, http_server_handler_cb, &logHandler , NULL);
 }
 
 void

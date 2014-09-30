@@ -60,6 +60,8 @@ private:
   HttpEndPointServer ();
   KmsHttpEPServer *server;
 
+  std::function <void (GError *err) > logHandler;
+
   class StaticConstructor
   {
   public:
