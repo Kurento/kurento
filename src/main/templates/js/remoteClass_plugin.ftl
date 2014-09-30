@@ -18,7 +18,7 @@
     <#list module.imports as import>
       <#list import.module.remoteClasses as remoteClass>
         <#if remoteClass.name == extends_name>
-          <#lt>${import.name}<#rt>  
+          <#lt>${import.name}<#rt>
           <#break>
         </#if>
       </#list>
@@ -207,7 +207,15 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   };
 
     </#if>
+    <#if method.name == 'connect'>
+  var promise = this.invoke('${method.name}'<#if method.params?has_content>, params</#if>, callback);
+
+  promise.connect = sink.connect.bind(sink);
+
+  return promise;
+    <#else>
   return this.invoke('${method.name}'<#if method.params?has_content>, params</#if>, callback);
+    </#if>
 };
 /**
  * @callback module:${remoteClass_namepath}~${method.name}Callback
