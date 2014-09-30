@@ -30,7 +30,7 @@ set(KmsJsonRpc_INCLUDE_DIRS ${KmsJsonRpc_INCLUDE_DIR} ${_JSONCPP_INCLUDE_DIRS}
 
 find_library (KmsJsonRpc_LIBRARY
   NAMES
-    gstmarshal
+    jsonrpc
   PATH_SUFFIXES
     build/lib
 )
