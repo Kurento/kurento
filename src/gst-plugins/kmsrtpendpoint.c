@@ -207,7 +207,8 @@ gst_udp_set_connection (KmsBaseSdpEndpoint * base_sdp_endpoint,
         name = NULL;
 
         if (name == NULL) {
-          GST_WARNING ("Cannot resolve name, using IP as name");
+          GST_WARNING_OBJECT (base_sdp_endpoint,
+              "Cannot resolve name, using IP as name");
           name = g_strdup (l->data);
         }
 
@@ -295,10 +296,11 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
       (kms_rtp_endpoint_parent_class)->start_transport_send
       (base_rtp_endpoint, answer, offer, local_offer);
 
-  GST_DEBUG ("Start transport send");
+  GST_DEBUG_OBJECT (rtp_endpoint, "Start transport send");
 
   if (gst_sdp_message_medias_len (answer) != gst_sdp_message_medias_len (offer))
-    GST_WARNING ("Incompatible offer and answer, possible errors in media");
+    GST_WARNING_OBJECT (rtp_endpoint,
+        "Incompatible offer and answer, possible errors in media");
 
   if (local_offer)
     sdp = answer;
@@ -377,7 +379,8 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
             priv->audio_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_endpoint);
 
-        GST_DEBUG ("Audio sent to: %s:%d", media_con->address, media->port);
+        GST_DEBUG_OBJECT (base_rtp_endpoint, "Audio sent to: %s:%d",
+            media_con->address, media->port);
       }
     } else if (g_strcmp0 ("video", gst_sdp_media_get_media (media)) == 0) {
       GstSDPDirection direction = sdp_utils_media_get_direction (media);
@@ -412,7 +415,8 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
             priv->video_rtcp_udpsink);
         KMS_ELEMENT_UNLOCK (rtp_endpoint);
 
-        GST_DEBUG ("Video sent to: %s:%d", media_con->address, media->port);
+        GST_DEBUG_OBJECT (base_rtp_endpoint, "Video sent to: %s:%d",
+            media_con->address, media->port);
       }
     }
   }
@@ -479,7 +483,7 @@ kms_rtp_endpoint_class_init (KmsRtpEndpointClass * klass)
 static gboolean
 kms_rtp_endpoint_connect_video_rtcp (KmsRtpEndpoint * rtp_endpoint)
 {
-  GST_DEBUG ("connect_video_rtcp");
+  GST_DEBUG_OBJECT (rtp_endpoint, "connect_video_rtcp");
   gst_element_link_pads (kms_base_rtp_endpoint_get_rtpbin
       (KMS_BASE_RTP_ENDPOINT (rtp_endpoint)), VIDEO_RTPBIN_SEND_RTCP_SRC,
       rtp_endpoint->priv->video_rtcp_udpsink, "sink");
@@ -489,7 +493,7 @@ kms_rtp_endpoint_connect_video_rtcp (KmsRtpEndpoint * rtp_endpoint)
 static gboolean
 kms_rtp_endpoint_connect_audio_rtcp (KmsRtpEndpoint * rtp_endpoint)
 {
-  GST_DEBUG ("connect_audio_rtcp");
+  GST_DEBUG_OBJECT (rtp_endpoint, "connect_audio_rtcp");
   gst_element_link_pads (kms_base_rtp_endpoint_get_rtpbin
       (KMS_BASE_RTP_ENDPOINT (rtp_endpoint)), AUDIO_RTPBIN_SEND_RTCP_SRC,
       rtp_endpoint->priv->audio_rtcp_udpsink, "sink");
@@ -505,7 +509,8 @@ kms_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     if (rtp_endpoint->priv->audio_rtp_udpsink == NULL) {
       GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
 
-      GST_WARNING ("RtpEndpoint not configured to send audio");
+      GST_WARNING_OBJECT (rtp_endpoint,
+          "RtpEndpoint not configured to send audio");
       gst_bin_add (GST_BIN (rtp_endpoint), fakesink);
       gst_element_sync_state_with_parent (fakesink);
       gst_element_link_pads (rtpbin, AUDIO_RTPBIN_SEND_RTP_SRC, fakesink, NULL);
@@ -526,7 +531,8 @@ kms_rtp_endpoint_rtpbin_pad_added (GstElement * rtpbin, GstPad * pad,
     if (rtp_endpoint->priv->video_rtp_udpsink == NULL) {
       GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
 
-      GST_WARNING ("RtpEndpoint not configured to send video");
+      GST_WARNING_OBJECT (rtp_endpoint,
+          "RtpEndpoint not configured to send video");
       gst_bin_add (GST_BIN (rtp_endpoint), fakesink);
       gst_element_sync_state_with_parent (fakesink);
       gst_element_link_pads (rtpbin, VIDEO_RTPBIN_SEND_RTP_SRC, fakesink, NULL);
