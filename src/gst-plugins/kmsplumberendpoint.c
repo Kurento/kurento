@@ -24,8 +24,8 @@
 
 #define parent_class kms_plumber_endpoint_parent_class
 
-#define SCTP_DEFAULT_ADDR "localhost"
-#define SCTP_DEFAULT_LOCAL_PORT 0
+#define PLUMBER_DEFAULT_ADDR "localhost"
+#define PLUMBER_DEFAULT_PORT 0
 
 #define KMS_WAIT_TIMEOUT 5
 
@@ -586,20 +586,20 @@ kms_plumber_endpoint_class_init (KmsPlumberEndpointClass * klass)
 
   g_object_class_install_property (gobject_class, PROP_LOCAL_ADDR,
       g_param_spec_string ("local-address", "Local Address",
-          "The local address to bind the socket to",
-          "localhost",
+          "The local address to bind the multi-channel controller socket",
+          PLUMBER_DEFAULT_ADDR,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_LOCAL_PORT,
       g_param_spec_int ("local-port", "Local-port",
           "The port to listen to (0=random available port)", 0, G_MAXUINT16,
-          SCTP_DEFAULT_LOCAL_PORT,
+          PLUMBER_DEFAULT_PORT,
           G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property (gobject_class, PROP_BOUND_PORT,
       g_param_spec_int ("bound-port", "Bound port",
-          "The port where this endpoint is attached", 0, G_MAXUINT16,
-          0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+          "The port where this endpoint is attached (helpful when port 0 is used)",
+          0, G_MAXUINT16, 0, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   /* set actions */
   plumberEndPoint_signals[ACTION_ACCEPT] =
