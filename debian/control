@@ -6,7 +6,7 @@ Build-Depends: debhelper (>= 8.0.0),
  cmake,
  pkg-config,
  kms-core-dev (>= 5.0.3),
- kms-elements-dev (>= 5.0.4~3),
+ kms-elements-dev (>= 5.0.4~11),
  libsoup2.4-dev,
  libopencv-dev
 Standards-Version: 3.9.4
@@ -17,7 +17,7 @@ Vcs-Browser: https://github.com/Kurento/kms-filters.git
 Package: kms-filters
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
- kms-elements (>= 5.0.4~3),
+ kms-elements (>= 5.0.4~11),
  opencv-data
 Description: Kurento filters module
  Kurento filters implementation
@@ -26,7 +26,7 @@ Package: kms-filters-dev
 Architecture: any
 Depends: kms-filters (= ${binary:Version}),
   kms-core-dev (>= 5.0.3),
-  kms-elements-dev (>= 5.0.4~3),
+  kms-elements-dev (>= 5.0.4~11),
   libopencv-dev
 Description: Kurento filters module
  Kurento filters implementation
