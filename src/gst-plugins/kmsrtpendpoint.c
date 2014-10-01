@@ -138,10 +138,10 @@ kms_rtp_endpoint_get_rtp_rtcp_sockets (GSocket ** rtp, GSocket ** rtcp)
 
   port1 = kms_rtp_endpoint_get_socket_port (s1);
 
-  if ((port1 % 2) == 0)
-    port2 = port1 + 1;
-  else
+  if (port1 & 0x01)
     port2 = port1 - 1;
+  else
+    port2 = port1 + 1;
 
   s2 = kms_rtp_endpoint_open_socket (port2);
 
