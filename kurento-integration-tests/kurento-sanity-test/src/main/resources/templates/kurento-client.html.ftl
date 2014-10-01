@@ -7,7 +7,7 @@
 <script>
 	window.onload = function() {
 		if (typeof ${kurentoObject} == "undefined") {
-			document.getElementById("status").value = "Error";
+			document.getElementById("status").value = "Error: ${kurentoObject} not present in ${kurentoUrl}js/${kurentoLib}.js";
 		} else {
 			document.getElementById("status").value = "Ok";
 		}

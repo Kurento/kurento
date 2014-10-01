@@ -28,6 +28,7 @@ public class KurentoJsReleaseTest extends KurentoJsBase {
 
 	public KurentoJsReleaseTest() {
 		kurentoUrl = getProperty("kurento.release.url", DEFAULT_KURENTO_JS_URL);
+		log.debug("kurentoUrl = {}", kurentoUrl);
 		if (!kurentoUrl.endsWith("/")) {
 			kurentoUrl += "/";
 		}

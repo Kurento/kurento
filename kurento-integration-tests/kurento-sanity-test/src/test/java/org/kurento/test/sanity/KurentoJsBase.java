@@ -74,6 +74,7 @@ public class KurentoJsBase {
 
 		serverAddress = "127.0.0.1";
 		serverPort = KurentoServicesTestHelper.getAppHttpPort();
+		log.debug("serverPort = {}", serverPort);
 
 		createHtmlPages();
 		KurentoServicesTestHelper.startHttpServer();
