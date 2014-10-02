@@ -53,6 +53,33 @@ find_path(${name}_IMPLEMENTTION_EXTRA_INCLUDE_DIR
     kurento/modules/${module.name}
 )
 
+find_library (${name}_LIBRARY
+  NAMES
+    ${module.code.implementation.lib?replace("lib", "")}impl
+  PATH_SUFFIXES
+    build/src/server
+)
+
+<#noparse>
+set (REQUIRED_LIBS "@REQUIRED_LIBS@")
+foreach (LIB ${REQUIRED_LIBS})
+  string(FIND ${LIB} " " POS)
+
+  if (${POS} GREATER 0)
+    string (SUBSTRING ${LIB} 0 ${POS} LIB_NAME)
+    string (SUBSTRING ${LIB} ${POS} -1 LIB_VERSION)
+    string (STRIP ${LIB_NAME} LIB_NAME)
+    string (STRIP ${LIB_VERSION} LIB_VERSION)
+    generic_find (LIBNAME ${LIB_NAME} REQUIRED VERSION "${LIB_VERSION}")
+  else ()
+    generic_find (LIBNAME ${LIB_NAME} REQUIRED)
+  endif ()
+  list (APPEND REQUIRED_LIBRARIES ${${LIB_NAME}_LIBRARIES})
+  list (APPEND REQUIRED_INCLUDE_DIRS ${${LIB_NAME}_INCLUDE_DIRS})
+
+endforeach()
+</#noparse>
+
 set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_INCLUDE_DIR}</#noparse>
   <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTTION_INTERNAL_INCLUDE_DIR}</#noparse>
@@ -61,14 +88,8 @@ set(${name}_INCLUDE_DIRS
 <#list module.imports as import>
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
 </#list>
+  <#noparse>${REQUIRED_INCLUDE_DIRS}</#noparse>
   CACHE INTERNAL "Include directories for ${name} library"
-)
-
-find_library (${name}_LIBRARY
-  NAMES
-    ${module.code.implementation.lib?replace("lib", "")}impl
-  PATH_SUFFIXES
-    build/src/server
 )
 
 set (${name}_LIBRARIES
@@ -76,6 +97,7 @@ set (${name}_LIBRARIES
 <#list module.imports as import>
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_LIBRARIES}</#noparse>
 </#list>
+  <#noparse>${REQUIRED_LIBRARIES}</#noparse>
   CACHE INTERNAL "Libraries for ${name}"
 )
 
