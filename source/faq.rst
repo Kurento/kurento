@@ -171,8 +171,21 @@ How do I...
         $ # if you have neither, you should probably be installing ocl-icd-libopencl1 like:
         $ sudo apt-get install ocl-icd-libopencl1
 
-.. Why do I get the error...
-.. -------------------------
+
+Why do I get the error...
+-------------------------
+
+**..."Cannot create gstreamer element"?**
+
+    This is a typical error which happens when you update Kurento Media
+    Server from version 4 to 5. The problem is related to the GStreamer
+    dependency version. The solution is the following::
+
+       sudo apt-get remove kurento*
+       sudo apt-get autoremove
+       sudo apt-get update
+       sudo apt-get dist-upgrade
+       sudo apt-get install kurento-media-server
 
 
 .. Why can't I...
