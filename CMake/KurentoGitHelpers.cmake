@@ -32,6 +32,7 @@ endfunction()
 set (CALCULATE_VERSION_WITH_GIT TRUE CACHE BOOL "Use git (if available) to get project version")
 
 include (CMakeParseArguments)
+include (VersionHelpers)
 
 # get_git_version (version_output_variable default_version [TAG_PREFIX tag_prefix])
 # Default tag_prefix ${PROJECT_NAME}
@@ -67,18 +68,12 @@ function (get_git_version version_output_variable default_version)
     set(PROJECT_VERSION ${default_version})
   endif()
 
-  string(REPLACE "." ";" VERSION_LIST ${PROJECT_VERSION})
-  list(GET VERSION_LIST 0 PROJECT_VERSION_MAJOR)
-
-  list (LENGTH VERSION_LIST _len)
-  if (${_len} GREATER 1)
-    list(GET VERSION_LIST 1 PROJECT_VERSION_MINOR)
-  endif ()
-  if (${_len} GREATER 2)
-    list(GET VERSION_LIST 2 PROJECT_VERSION_PATCH)
-    string(REPLACE "~" ";" PROJECT_VERSION_PATCH_LIST ${PROJECT_VERSION_PATCH})
-    list(GET PROJECT_VERSION_PATCH_LIST 0 PROJECT_VERSION_PATCH)
-  endif ()
+  parse_version (
+    VERSION ${PROJECT_VERSION}
+    MAJOR PROJECT_VERSION_MAJOR
+    MINOR PROJECT_VERSION_MINOR
+    PATCH PROJECT_VERSION_PATCH
+  )
 
   set(PROJECT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR} PARENT_SCOPE)
   set(PROJECT_VERSION_MINOR ${PROJECT_VERSION_MINOR} PARENT_SCOPE)
