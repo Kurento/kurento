@@ -318,7 +318,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
     const GstSDPMedia *media;
 
     if (offer_media == NULL || answer_media == NULL)
-      break;
+      continue;
 
     if (g_ascii_strcasecmp ("RTP/AVP",
             gst_sdp_media_get_proto (answer_media)) != 0) {
