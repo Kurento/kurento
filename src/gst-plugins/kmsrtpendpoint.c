@@ -355,7 +355,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
         rtp_endpoint->priv->audio_rtp_udpsink =
             gst_element_factory_make ("udpsink", "audio_rtp_sink");
         g_object_set (rtp_endpoint->priv->audio_rtp_udpsink, "socket",
-            rtp_endpoint->priv->audio_rtp_socket, "qos", TRUE, "sync", FALSE,
+            rtp_endpoint->priv->audio_rtp_socket, "sync", FALSE,
             "async", FALSE, NULL);
 
         rtp_endpoint->priv->audio_rtcp_udpsink =
@@ -390,7 +390,7 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
         rtp_endpoint->priv->video_rtp_udpsink =
             gst_element_factory_make ("udpsink", "video_rtp_sink");
         g_object_set (rtp_endpoint->priv->video_rtp_udpsink, "socket",
-            rtp_endpoint->priv->video_rtp_socket, "qos", TRUE, "sync", FALSE,
+            rtp_endpoint->priv->video_rtp_socket, "sync", FALSE,
             "async", FALSE, NULL);
 
         rtp_endpoint->priv->video_rtcp_udpsink =
