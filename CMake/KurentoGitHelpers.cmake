@@ -75,9 +75,9 @@ function (get_git_version version_output_variable default_version)
     PATCH PROJECT_VERSION_PATCH
   )
 
-  set(PROJECT_VERSION_MAJOR ${PROJECT_VERSION_MAJOR} PARENT_SCOPE)
-  set(PROJECT_VERSION_MINOR ${PROJECT_VERSION_MINOR} PARENT_SCOPE)
-  set(PROJECT_VERSION_PATCH ${PROJECT_VERSION_PATCH} PARENT_SCOPE)
+  set(${version_output_variable}_MAJOR ${PROJECT_VERSION_MAJOR} PARENT_SCOPE)
+  set(${version_output_variable}_MINOR ${PROJECT_VERSION_MINOR} PARENT_SCOPE)
+  set(${version_output_variable}_PATCH ${PROJECT_VERSION_PATCH} PARENT_SCOPE)
 
   set(${version_output_variable} ${PROJECT_VERSION} PARENT_SCOPE)
 endfunction ()
