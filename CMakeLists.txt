@@ -23,7 +23,7 @@ set (CMAKE_DIST_FILES
   GLibHelpers.cmake
   TestHelpers.cmake
   KurentoGitHelpers.cmake
-  GenerigFind.cmake
+  GenericFind.cmake
   VersionHelpers.cmake
 )
 
