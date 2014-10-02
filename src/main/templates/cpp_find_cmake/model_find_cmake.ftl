@@ -10,8 +10,14 @@ Find${module.code.implementation.lib?replace("lib", "")?upper_case}.cmake.in
 set(PACKAGE_VERSION "@PROJECT_VERSION@")
 set(${name}_VERSION <#noparse>${PACKAGE_VERSION}</#noparse>)
 
+include (GenericFind)
 <#list module.imports as import>
-find_library(_${import.module.code.implementation.lib?replace("lib", "")?upper_case} REQUIRED ${import.version})
+
+generic_find (
+  REQUIRED
+  LIBNAME ${import.module.code.implementation.lib?replace("lib", "")?upper_case}
+  VERSION ${import.version}
+)
 </#list>
 
 find_path(${name}_INTERFACE_INCLUDE_DIR
@@ -53,7 +59,7 @@ set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTTION_GENERATED_INCLUDE_DIR}</#noparse>
   <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTTION_EXTRA_INCLUDE_DIR}</#noparse>
 <#list module.imports as import>
-  <#noparse>${</#noparse>_${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
+  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
 </#list>
   CACHE INTERNAL "Include directories for ${name} library"
 )
@@ -68,7 +74,7 @@ find_library (${name}_LIBRARY
 set (${name}_LIBRARIES
   <#noparse>${</#noparse>${name}<#noparse>_LIBRARY}</#noparse>
 <#list module.imports as import>
-  <#noparse>${</#noparse>_${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_LIBRARIES}</#noparse>
+  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_LIBRARIES}</#noparse>
 </#list>
   CACHE INTERNAL "Libraries for ${name}"
 )

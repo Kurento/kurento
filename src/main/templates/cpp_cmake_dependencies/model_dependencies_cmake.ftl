@@ -4,14 +4,18 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(Boost REQUIRED)
 
-find_package(PkgConfig)
+include (GenericFind)
 
 ###############################################################
 # Dependencies
 ###############################################################
 <#list module.imports as import>
 # looking for ${import.name} dependencies
-pkg_check_modules(${import.module.code.implementation.lib?replace("lib", "")?upper_case} REQUIRED ${import.module.code.implementation.lib?replace("lib", "")}>=${import.version})
+generic_find (
+  REQUIRED
+  LIBNAME ${import.module.code.implementation.lib?replace("lib", "")?upper_case}
+  VERSION ${import.version}
+)
 </#list>
 
 set (DEPENDENCIES_LIBRARIES
