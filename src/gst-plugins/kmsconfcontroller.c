@@ -683,11 +683,13 @@ kms_conf_controller_reconfigure_pipeline (KmsConfController * self)
   GST_DEBUG ("Adding New encodebin");
   /* Add the new encodebin to the pipeline */
   self->priv->encodebin = gst_element_factory_make ("encodebin", NULL);
+
   g_slist_foreach (self->priv->confdata->pendingvalves,
       add_pending_appsinks, self);
-  kms_conf_controller_set_profile_to_encodebin (self);
   g_slist_foreach (self->priv->confdata->pendingvalves,
       connect_pending_valves_to_appsinks, self);
+  kms_conf_controller_set_profile_to_encodebin (self);
+
   g_slist_foreach (self->priv->confdata->pendingvalves,
       connect_pending_appsinks_to_appsrcs, self);
   gst_bin_add (GST_BIN (self->priv->pipeline), self->priv->encodebin);
