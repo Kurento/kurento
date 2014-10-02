@@ -215,5 +215,5 @@ When KMS starts correctly, this trace is written in the log file:
 
 .. sourcecode:: sh
 
-   0:00.4011 8003 0x26cb130 INFO KurentoMediaServer /.../main.cpp:194:main: Mediaserver started
+   [2014-10-01 10:33:23.500285] [0x10b2f880] [info]    KurentoMediaServer main.cpp:239 main() Mediaserver started
 
