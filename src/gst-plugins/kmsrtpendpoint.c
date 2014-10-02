@@ -369,9 +369,9 @@ kms_rtp_endpoint_start_transport_send (KmsBaseSdpEndpoint * base_rtp_endpoint,
             rtp_endpoint->priv->audio_rtcp_udpsink, NULL);
 
         g_object_set (rtp_endpoint->priv->audio_rtp_udpsink, "host",
-            media_con->address, "port", NULL);
+            media_con->address, "port", gst_sdp_media_get_port (media), NULL);
         g_object_set (rtp_endpoint->priv->audio_rtcp_udpsink, "host",
-            media_con->address, "port", media->port + 1, NULL);
+            media_con->address, "port", gst_sdp_media_get_port (media) + 1, NULL);
 
         gst_element_sync_state_with_parent (rtp_endpoint->
             priv->audio_rtp_udpsink);
