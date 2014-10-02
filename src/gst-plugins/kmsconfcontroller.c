@@ -397,14 +397,6 @@ kms_conf_controller_connect_valve_to_appsink (KmsConfController * self,
         GST_ELEMENT_NAME (appsink));
   }
 
-  if (g_str_has_prefix (conf->sinkname, "video")) {
-    GstPad *pad = gst_element_get_static_pad (appsink, "sink");
-
-    GST_INFO ("Connecting video, adding probe to drop until key frame");
-
-    g_object_unref (pad);
-  }
-
   g_object_unref (appsink);
 }
 
