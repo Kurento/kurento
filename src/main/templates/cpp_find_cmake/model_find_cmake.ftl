@@ -84,13 +84,16 @@ set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_INCLUDE_DIR}</#noparse>
   <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_INTERNAL_INCLUDE_DIR}</#noparse>
   <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_GENERATED_INCLUDE_DIR}</#noparse>
-  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>
 <#list module.imports as import>
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
 </#list>
   <#noparse>${REQUIRED_INCLUDE_DIRS}</#noparse>
   CACHE INTERNAL "Include directories for ${name} library"
 )
+
+if (<#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
+endif ()
 
 set (${name}_LIBRARIES
   <#noparse>${</#noparse>${name}<#noparse>_LIBRARY}</#noparse>
