@@ -40,8 +40,6 @@
 
 #define NAME "confcontroller"
 
-#define DROPPING_UNTIL_KEY_FRAME "dropping_until_key_frame"
-
 GST_DEBUG_CATEGORY_STATIC (kms_conf_controller_debug_category);
 #define GST_CAT_DEFAULT kms_conf_controller_debug_category
 
