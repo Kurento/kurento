@@ -141,21 +141,21 @@ HttpGetEndpoint
     An ''HttpGetEndpoint'' is an output endpoint that delivers media using
     HTML5 pseudo-streaming mechanism by means of http GET requests.
 
-.. image:: ../images/http.jpg
+.. image:: ../images/toolbox/HttpGetEndpoint.png
    :align:  center
 
 HttpPostEndpoint
     An ''HttpPostEndpoint'' is an input endpoint that accepts media using
     http POST requests like HTTP file upload function.
 
-.. image:: ../images/http2.jpg
+.. image:: ../images/toolbox/HttpPostEndpoint.png
    :align:  center
 
 PlayerEndpoint
     A ''PlayerEndpoint'' is an input endpoint that retrieves content from
     file system, http URL or RTSP url and inject it into the media pipeline.
 
-.. image:: ../images/player.jpg
+.. image:: ../images/toolbox/PlayerEndpoint.png
    :align:  center
 
 RecorderEndpoint
@@ -163,7 +163,7 @@ RecorderEndpoint
     store contents in reliable mode (doesn't discard data). It contains ''Media
     Sink'' pads for audio and video.
 
-.. image:: ../images/recorder.jpg
+.. image:: ../images/toolbox/RecorderEndpoint.png
    :align:  center
 
 RtpEndpoint
@@ -173,7 +173,7 @@ RtpEndpoint
     the network it uses :term:`RTP` protocol and :term:`SDP` for media
     negotiation.
 
-.. image:: ../images/rtp.jpg
+.. image:: ../images/toolbox/RtpEndpoint.png
    :align:  center
 
 WebRtcEndpoint
@@ -181,7 +181,7 @@ WebRtcEndpoint
     streaming for Real Time Communications (RTC) through the web. It implements
     :term:`WebRTC` technology to communicate with browsers.
 
-.. image:: ../images/webrtc.jpg
+.. image:: ../images/toolbox/WebRtcEndpoint.png
    :align:  center
 
 The following class diagram shows the relationships of the main endpoint classes.
@@ -235,19 +235,22 @@ ZBarFilter
     found, the filter raises a ``CodeFoundEvent``. Clients can add a listener
     to this event to execute some action.
 
-.. image:: ../images/bar.jpg
+.. image:: ../images/toolbox/ZBarFilter.png
    :align:  center
 
 FaceOverlayFilter
     This type of filter detects faces in a video stream and overlaid it with
     a configurable image.
 
-.. image:: ../images/face.jpg
+.. image:: ../images/toolbox/FaceOverlayFilter.png
    :align:  center
 
 GStreamerFilter
     This is a generic filter interface that allow use GStreamer filter in
     Kurento Media Pipelines.
+
+.. image:: ../images/toolbox/GStreamerFilter.png
+   :align:  center
 
 The following class diagram shows the relationships of the main filter classes.
 
@@ -288,19 +291,19 @@ Composite
     A Hub that mixes the audio stream of its connected inputs and constructs
     a grid with the video streams of them.
 
-.. image:: ../images/Composite.png
+.. image:: ../images/toolbox/Composite.png
    :align:  center
 
 DispatcherOneToMany
     A Hub that sends a given input to all the connected output HubPorts.
 
-.. image:: ../images/OneToMany.png
+.. image:: ../images/toolbox/DispatcherOneToMany.png
    :align:  center
 
 Dispatcher
     A Hub that allows routing between arbitrary input-output HubPort pairs.
 
-.. image:: ../images/Dispatcher.png
+.. image:: ../images/toolbox/Dispatcher.png
    :align:  center
 
 .. digraph:: Hubs
