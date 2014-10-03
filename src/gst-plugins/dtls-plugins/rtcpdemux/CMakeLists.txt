@@ -1,5 +1,5 @@
 include_directories(
-  ${GSTREAMER_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -22,9 +22,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror -Wall")
 add_library(rtcpdemux MODULE ${RTCPDEMUX_SOURCES} ${RTCPDEMUX_HEADERS})
 
 target_link_libraries(rtcpdemux
-  ${GSTREAMER_LIBRARIES}
-  ${GSTREAMER_BASE_LIBRARIES}
-  ${GSTREAMER_RTP_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-rtp-1.0_LIBRARIES}
 )
 
 install(

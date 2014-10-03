@@ -67,29 +67,29 @@ add_library(${LIBRARY_NAME}plugins MODULE ${KMS_ELEMENTS_SOURCES} ${KMS_ELEMENTS
 add_dependencies(${LIBRARY_NAME}plugins kmsdtls rtcpdemux)
 
 include_directories(
-  ${KMSGSTCOMMONS_INCLUDE_DIRS}
-  ${GSTREAMER_INCLUDE_DIRS}
-  ${GSTREAMER_BASE_SOURCE_DIRS}
-  ${GSTREAMER_SDP_SOURCE_DIRS}
-  ${GSTREAMER_PBUTILS_SOURCE_DIRS}
+  ${KmsGstCommons_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
+  ${gstreamer-base-1.0_SOURCE_DIRS}
+  ${gstreamer-sdp-1.0_SOURCE_DIRS}
+  ${gstreamer-pbutils-1.0_SOURCE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
-  ${SOUP_INCLUDE_DIRS}
-  ${NICE_INCLUDE_DIRS}
+  ${libsoup-2.4_INCLUDE_DIRS}
+  ${nice_INCLUDE_DIRS}
   ${SCTP_INCLUDE_DIRS}
-  ${GSTMARSHAL_INCLUDE_DIRS}
+  ${GstMarshal_INCLUDE_DIRS}
 )
 
 target_link_libraries(${LIBRARY_NAME}plugins
-  ${KMSGSTCOMMONS_LIBRARIES}
-  ${GSTREAMER_LIBRARIES}
-  ${GSTREAMER_BASE_LIBRARIES}
-  ${GSTREAMER_SDP_LIBRARIES}
-  ${GSTREAMER_PBUTILS_LIBRARIES}
-  ${SOUP_LIBRARIES}
-  ${NICE_LIBRARIES}
+  ${KmsGstCommons_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-sdp-1.0_LIBRARIES}
+  ${gstreamer-pbutils-1.0_LIBRARIES}
+  ${libsoup-2.4_LIBRARIES}
+  ${nice_LIBRARIES}
   ${SCTP_LIBRARIES}
-  ${GSTMARSHAL_LIBRARIES}
+  ${GstMarshal_LIBRARIES}
 )
 
 install(

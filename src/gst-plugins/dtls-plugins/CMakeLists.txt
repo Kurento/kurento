@@ -1,7 +1,7 @@
 add_subdirectory(rtcpdemux)
 
 include_directories(
-  ${GSTREAMER_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
 )
@@ -55,9 +55,9 @@ add_glib_enumtypes(KMS_DTLS_SOURCES KMS_DTLS_HEADERS gstdtls-enumtypes GST ${ENU
 add_library(kmsdtls MODULE ${KMS_DTLS_SOURCES} ${KMS_DTLS_HEADERS})
 
 target_link_libraries(kmsdtls
-  ${GSTREAMER_LIBRARIES}
-  ${GNUTLS_LIBRARIES}
-  ${GIO_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gnutls_LIBRARIES}
+  ${gio-2.0_LIBRARIES}
 )
 
 install(

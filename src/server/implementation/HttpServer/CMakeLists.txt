@@ -40,21 +40,19 @@ set_target_properties(kmshttpep PROPERTIES
 )
 
 include_directories(kmshttpep
-  ${GLIBMM_INCLUDE_DIRS}
-  ${GLIB2_INCLUDE_DIRS}
-  ${GSTREAMER_INCLUDE_DIRS}
-  ${LIBSOUP_INCLUDE_DIRS}
-  ${UUID_INCLUDE_DIRS}
-  ${GIO_INCLUDE_DIRS}
-  ${NICE_INCLUDE_DIRS}
+  ${glibmm-2.4_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
+  ${libsoup-2.4_INCLUDE_DIRS}
+  ${uuid_INCLUDE_DIRS}
+  ${gio-2.0_INCLUDE_DIRS}
+  ${nice_INCLUDE_DIRS}
 )
 
 target_link_libraries(kmshttpep
-  ${GLIBMM_LIBRARIES}
-  ${GLIB2_LIBRARIES}
-  ${GSTREAMER_LIBRARIES}
-  ${LIBSOUP_LIBRARIES}
-  ${UUID_LIBRARIES}
-  ${GIO_LIBRARIES}
-  ${NICE_LIBRARIES}
+  ${glibmm-2.4_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${libsoup-2.4_LIBRARIES}
+  ${uuid_LIBRARIES}
+  ${gio-2.0_LIBRARIES}
+  ${nice_LIBRARIES}
 )
