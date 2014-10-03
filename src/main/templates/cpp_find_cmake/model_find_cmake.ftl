@@ -29,7 +29,7 @@ find_path(${name}_INTERFACE_INCLUDE_DIR
     kurento/modules/${module.name}
 )
 
-find_path(${name}_IMPLEMENTTION_INTERNAL_INCLUDE_DIR
+find_path(${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
   NAMES
     @_SERVER_INTERNAL_GENERATED_HEADERS@
   PATH_SUFFIXES
@@ -37,7 +37,7 @@ find_path(${name}_IMPLEMENTTION_INTERNAL_INCLUDE_DIR
     kurento/modules/${module.name}
 )
 
-find_path(${name}_IMPLEMENTTION_GENERATED_INCLUDE_DIR
+find_path(${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
   NAMES
     @_SERVER_GENERATED_HEADERS@
   PATH_SUFFIXES
@@ -45,7 +45,7 @@ find_path(${name}_IMPLEMENTTION_GENERATED_INCLUDE_DIR
     kurento/modules/${module.name}
 )
 
-find_path(${name}_IMPLEMENTTION_EXTRA_INCLUDE_DIR
+find_path(${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
   NAMES
     @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@
   PATH_SUFFIXES
@@ -82,9 +82,9 @@ endforeach()
 
 set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_INCLUDE_DIR}</#noparse>
-  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTTION_INTERNAL_INCLUDE_DIR}</#noparse>
-  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTTION_GENERATED_INCLUDE_DIR}</#noparse>
-  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTTION_EXTRA_INCLUDE_DIR}</#noparse>
+  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_INTERNAL_INCLUDE_DIR}</#noparse>
+  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_GENERATED_INCLUDE_DIR}</#noparse>
+  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>
 <#list module.imports as import>
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
 </#list>
@@ -109,9 +109,8 @@ find_package_handle_standard_args(${name}
   REQUIRED_VARS
     ${name}_VERSION
     ${name}_INTERFACE_INCLUDE_DIR
-    ${name}_IMPLEMENTTION_INTERNAL_INCLUDE_DIR
-    ${name}_IMPLEMENTTION_GENERATED_INCLUDE_DIR
-    ${name}_IMPLEMENTTION_EXTRA_INCLUDE_DIR
+    ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
+    ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
     ${name}_INCLUDE_DIRS
     ${name}_LIBRARY
     ${name}_LIBRARIES
@@ -123,9 +122,9 @@ mark_as_advanced(
   ${name}_FOUND
   ${name}_VERSION
   ${name}_INTERFACE_INCLUDE_DIR
-  ${name}_IMPLEMENTTION_INTERNAL_INCLUDE_DIR
-  ${name}_IMPLEMENTTION_GENERATED_INCLUDE_DIR
-  ${name}_IMPLEMENTTION_EXTRA_INCLUDE_DIR
+  ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
+  ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
+  ${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
   ${name}_INCLUDE_DIRS
   ${name}_LIBRARY
   ${name}_LIBRARIES
