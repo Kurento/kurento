@@ -19,8 +19,7 @@ namespace kurento
 static const std::string CERTTOOL_TEMPLATE = "autoCerttool.tmpl";
 static const std::string CERT_KEY_PEM_FILE = "autoCertkey.pem";
 
-static const uint DEFAULT_STUN_PORT = 0;
-static const std::string DEFAULT_STUN_ADDRESS =  "77.72.174.167";
+static const uint DEFAULT_STUN_PORT = 3478;
 
 static std::shared_ptr<std::string> pemCertificate;
 static std::mutex mutex;
@@ -135,9 +134,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
       stunAddress =
         conf.get<std::string> ("modules.kurento.WebRtcEndpoint.stunServerAddress");
     } catch (boost::property_tree::ptree_error &e) {
-      GST_INFO ("Setting default address %s to stun server",
-                DEFAULT_STUN_ADDRESS.c_str() );
-      stunAddress = DEFAULT_STUN_ADDRESS;
+      GST_INFO ("Stun address not found in config, cannot operate behind a NAT" );
     }
 
     if (!stunAddress.empty() ) {
