@@ -1,8 +1,8 @@
 include_directories(
-  ${GSTREAMER_INCLUDE_DIRS}
-  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
+  ${gstreamer-video-1.0_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${OPENCV_INCLUDE_DIRS}
+  ${opencv_INCLUDE_DIRS}
   "${CMAKE_CURRENT_SOURCE_DIR}/../../server/implementation/objects/"
   ${KMSCORE_INCLUDE_DIRS}
 )
@@ -15,9 +15,9 @@ set(OPENCV_FILTER_SOURCES
 add_library(opencvfilter MODULE ${OPENCV_FILTER_SOURCES})
 
 target_link_libraries(opencvfilter
-  ${GSTREAMER_LIBRARIES}
-  ${GSTREAMER_VIDEO_LIBRARIES}
-  ${OPENCV_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-video-1.0_LIBRARIES}
+  ${opencv_LIBRARIES}
 )
 
 install(

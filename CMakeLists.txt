@@ -18,21 +18,20 @@ get_values_from_model(PREFIX VALUE MODELS ${CMAKE_SOURCE_DIR}/src/server/interfa
 get_git_version (PROJECT_VERSION ${VALUE_VERSION})
 install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
-find_package(PkgConfig)
+include (GenericFind)
 
-set (GST_REQUIRED 1.3.3)
-set (GLIB_REQUIRED 2.38)
-set (OPENCV_REQUIRED 2.0.0)
-set (LIBSOUP_REQUIRED 2.40)
+set (GST_REQUIRED ~1.4)
+set (GLIB_REQUIRED ^2.38)
+set (OPENCV_REQUIRED ^2.0.0)
+set (LIBSOUP_REQUIRED ^2.40)
 
 #gst-plugins dependencies
-pkg_check_modules(GSTREAMER REQUIRED gstreamer-1.0>=${GST_REQUIRED})
-pkg_check_modules(GSTREAMER_BASE REQUIRED gstreamer-base-1.0>=${GST_REQUIRED})
-pkg_check_modules(GSTREAMER_VIDEO REQUIRED gstreamer-video-1.0>=${GST_REQUIRED})
-pkg_check_modules(GSTREAMER_CHECK REQUIRED gstreamer-check-1.0>=${GST_REQUIRED})
-pkg_check_modules(KMSCORE REQUIRED kmscore)
-pkg_check_modules(OPENCV REQUIRED opencv>=${OPENCV_REQUIRED})
-pkg_check_modules(LIBSOUP REQUIRED libsoup-2.4>=${LIBSOUP_REQUIRED})
+generic_find (LIBNAME gstreamer-1.0 VERSION ${GST_REQUIRED} REQUIRED)
+generic_find (LIBNAME gstreamer-base-1.0 VERSION ${GST_REQUIRED} REQUIRED)
+generic_find (LIBNAME gstreamer-video-1.0 VERSION ${GST_REQUIRED} REQUIRED)
+generic_find (LIBNAME gstreamer-check-1.0 VERSION ${GST_REQUIRED})
+generic_find (LIBNAME opencv VERSION ${OPENCV_REQUIRED} REQUIRED)
+generic_find (LIBNAME libsoup-2.4 VERSION ${LIBSOUP_REQUIRED} REQUIRED)
 
 set (VERSION ${PROJECT_VERSION})
 set (PACKAGE ${PROJECT_NAME})

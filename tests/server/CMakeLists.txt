@@ -16,7 +16,6 @@ set_property (TARGET test_constructors
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/interface/generated-cpp
     ${CMAKE_CURRENT_BINARY_DIR}/../../src/server/implementation/generated-cpp
     ${DEPENDENCIES_INCLUDE_DIRS}
-    ${GSTREAMER_INCLUDE_DIRS}
 )
 target_link_libraries(test_constructors
   ${LIBRARY_NAME}impl

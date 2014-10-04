@@ -1,6 +1,6 @@
 include_directories(
-  ${GSTREAMER_INCLUDE_DIRS}
-  ${GSTREAMER_VIDEO_INCLUDE_DIRS}
+  ${gstreamer-1.0_INCLUDE_DIRS}
+  ${gstreamer-video-1.0_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -11,10 +11,10 @@ set(KMS_TEST_UTILS_SOURCES
 add_library(kmstestutils ${KMS_TEST_UTILS_SOURCES})
 
 target_link_libraries(kmstestutils
-  ${GSTREAMER_LIBRARIES}
-  ${GSTREAMER_BASE_LIBRARIES}
-  ${GSTREAMER_SDP_LIBRARIES}
-  ${GSTREAMER_PBUTILS_LIBRARIES}
+  ${gstreamer-1.0_LIBRARIES}
+  ${gstreamer-base-1.0_LIBRARIES}
+  ${gstreamer-sdp-1.0_LIBRARIES}
+  ${gstreamer-pbutils-1.0_LIBRARIES}
 )
 
 include (TestHelpers)
