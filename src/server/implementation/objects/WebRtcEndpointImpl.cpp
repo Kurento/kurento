@@ -123,7 +123,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   //set properties
   try {
-    stunPort = conf.get<uint> ("modules.WebRtcEndpoint.stunServerPort");
+    stunPort = conf.get<uint> ("modules.kurento.WebRtcEndpoint.stunServerPort");
   } catch (boost::property_tree::ptree_error &e) {
     GST_INFO ("Setting default port %d to stun server",
               DEFAULT_STUN_PORT);
@@ -133,7 +133,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   if (stunPort != 0) {
     try {
       stunAddress =
-        conf.get<std::string> ("modules.WebRtcEndpoint.stunServerAddress");
+        conf.get<std::string> ("modules.kurento.WebRtcEndpoint.stunServerAddress");
     } catch (boost::property_tree::ptree_error &e) {
       GST_INFO ("Setting default address %s to stun server",
                 DEFAULT_STUN_ADDRESS.c_str() );
@@ -153,7 +153,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   }
 
   try {
-    turnURL = conf.get<std::string> ("modules.WebRtcEndpoint.turnURL");
+    turnURL = conf.get<std::string> ("modules.kurento.WebRtcEndpoint.turnURL");
     GST_INFO ("turn info: %s\n", turnURL.c_str() );
     g_object_set ( G_OBJECT (element), "turn-url", turnURL.c_str(),
                    NULL);
