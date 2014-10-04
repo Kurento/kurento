@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 
 public class KmsConnectionHelper {
 
-	public static final String MEDIA_SERVER_WS_URI_PROPERTY = "mediaServer.netInterface.ws.uri";
+	public static final String MEDIA_SERVER_WS_URI_PROPERTY = "mediaServer.net.ws.uri";
 	public static final String MEDIA_SERVER_WS_URI_DEFAULT = "ws://127.0.0.1:8888/kurento";
 
-	public static final String RABBITMQ_PORT_PROPERTY = "mediaServer.netInterface.rabbitmq.port";
-	public static final String RABBITMQ_HOST_PROPERTY = "mediaServer.netInterface.rabbitmq.host";
-	public static final String RABBITMQ_USERNAME_PROPERTY = "mediaServer.netInterface.rabbitmq.username";
-	public static final String RABBITMQ_PASSWORD_PROPERTY = "mediaServer.netInterface.rabbitmq.password";
-	public static final String RABBITMQ_VHOST_PROPERTY = "mediaServer.netInterface.rabbitmq.vhost";
+	public static final String RABBITMQ_PORT_PROPERTY = "mediaServer.net.rabbitmq.port";
+	public static final String RABBITMQ_HOST_PROPERTY = "mediaServer.net.rabbitmq.host";
+	public static final String RABBITMQ_USERNAME_PROPERTY = "mediaServer.net.rabbitmq.username";
+	public static final String RABBITMQ_PASSWORD_PROPERTY = "mediaServer.net.rabbitmq.password";
+	public static final String RABBITMQ_VHOST_PROPERTY = "mediaServer.net.rabbitmq.vhost";
 
 	public static final String RABBITMQ_PORT_DEFAULT = "5672";
 	public static final String RABBITMQ_HOST_DEFAULT = "127.0.0.1";

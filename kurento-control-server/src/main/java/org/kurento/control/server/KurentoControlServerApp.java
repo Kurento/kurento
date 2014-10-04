@@ -42,13 +42,18 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
 
 	public static final String WEBSOCKET_PORT_PROPERTY = "controlServer.net.websocket.port";
-	public static final String WEBSOCKET_SECURE_PORT_PROPERTY = "controlServer.net.websocket.securePort";
+	public static final String WEBSOCKET_PORT_DEFAULT = "8888";
+
 	public static final String WEBSOCKET_PATH_PROPERTY = "controlServer.net.websocket.path";
+	public static final String WEBSOCKET_PATH_DEFAULT = "kurento";
+
 	public static final String KEYSTORE_PASS_PROPERTY = "controlServer.keystore.password";
 	public static final String KEYSTORE_FILE_PROPERTY = "controlServer.keystore.file";
 
-	public static final String WEBSOCKET_PORT_DEFAULT = "8888";
-	public static final String WEBSOCKET_PATH_DEFAULT = "kurento";
+	public static final String WEBSOCKET_SECURE_PORT_PROPERTY = "controlServer.net.websocket.securePort";
+
+	private static final String USE_URANDOM_PROPERTY = "controlServer.useUrandom";
+	private static final boolean USE_URANDOM_DEFAULT = false;
 
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoControlServerApp.class);
@@ -193,6 +198,10 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 	public static ConfigurableApplicationContext start() {
 
 		loadConfigFile();
+
+		if (getProperty(USE_URANDOM_PROPERTY, USE_URANDOM_DEFAULT)) {
+			System.setProperty("java.security.egd", "file:/dev/./urandom");
+		}
 
 		String port = getProperty(WEBSOCKET_PORT_PROPERTY,
 				WEBSOCKET_PORT_DEFAULT);
