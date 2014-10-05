@@ -23,24 +23,38 @@ folder in the place you are executing java command.
 This file looks like:
 
     {
-      "mediaServer":{
+       "mediaServer":{
         "net":{
-          "rabbitmq":{
-            "host":"127.0.0.1",
-            "port":5672,
-            "username":"guest",
-            "pass":"guest",
-            "vhost" : "/"
-          }
-        }
-      },
-      "controlServer":{
-        "net": {
-          "websocket" : {
+          // Uncomment just one of them
+          "websocket": {
             "port": 8888,
-            "path": "kurento"
+            "path": /kurento,
+            "threads": 10
           }
-        }
+          // "rabbitmq":{
+          //   "host":"127.0.0.1",
+          //   "port":5672,
+          //   "username":"guest",
+          //   "pass":"guest",
+          //   "vhost" : "/"
+          // }
+          }
+      },
+      "controlServer" : {
+        "net" : {
+            "websocket" : {
+                "port": 8888,
+                "path": "kurento",
+                //"securePort": 8433
+                //"keystore" : {
+                //   "path" : "/path/to/file",
+                //   "pass" : "changeme"
+                //}
+            }
+         },
+         // "oauthserverUrl": "",
+         // "logConfigFile": "/opt/kurento/logback.xml",
+         // "unsecureRandom": false
       }
     }
 
@@ -66,27 +80,21 @@ The meaning of general configuration properties are:
   This port will be used for clients to connect to Kurento Server thought secure
   websocket connection (wss). If not specified, no secure connection will be
   allowed.
-* **controlServer.oauthserver.url:** The url of the oauth service used to
-  authenticate the client requests. The empty URL can be used to allow all
-  clients to use KCS (that is, no authentication is enforced). If not specified,
-  the empty URL will be used.
-* **controlServer.keystore.path:** The path to the keystore file with the private
-  key used when securePort is specified. This keystore file has to have a private
-  key with
-  'tomcat' alias. To generate this file it is recommended to have a real private
-  key and certificate file (not a self-signed certificate). With this files,
-  you can use the following command to generate the needed file:
+* **controlServer.net.websocket.keystore.path:** The path to the keystore file
+  with the private key used when securePort is specified. This keystore file has
+  to have a private key with 'kurento' alias. To generate this file it is
+  recommended to have a real private key and certificate file
+  (not a self-signed certificate). With this files, you can use the following
+  command to generate the needed file:
 
-     openssl pkcs12 -export -in server.crt -inkey server.key -out keystore -name tomcat
+     openssl pkcs12 -export -in server.crt -inkey server.key -out keystore -name kurento
 
-  If your client it is not a web browser, maybe you can use a self-signed
-  certificate. It depends on client websocket library that you use to connect to
-  KCS. If this works to you, you can generate the keystore file with a
-  new private key and a self-signed certificate with the command:
+  If you want to use a self-signed certificate you can generate the keystore file
+  with a new private key and a self-signed certificate with the command:
 
-    keytool -genkey -alias tomcat -storetype PKCS12 -keystore keystore
+    keytool -genkey -alias kurento -storetype PKCS12 -keystore keystore
 
-* **controlServer.keystore.pass:** The keystore file password. This password is
+* **controlServer.net.websocket.keystore.pass:** The keystore file password. This password is
   specified interactively when executing any of previous commands.
 
 **RabbitMQ interface**
@@ -102,23 +110,29 @@ The meaning of general configuration properties are:
 * **mediaServer.net.rabbitmq.vhost:** Specifies the virtual host used in RabbitMQ
   broker. The default value is '/'.
 
-Configuration file
+**Other properties**
+
+* **controlServer.logConfigFile:** Log config file path. KCS log is based on
+  Logback, a famous log system in Java. I you want to configure the log, you have
+  to provide a custom log configuration file and specify its location in this
+  property. You can found more information about logback in
+  http://logback.qos.ch/manual/configuration.html.
+* **controlServer.oauthserver.url:** The url of the oauth service used to
+  authenticate the client requests. The empty URL can be used to allow all
+  clients to use KCS (that is, no authentication is enforced). If not specified,
+  the empty URL will be used.
+* **controlServer.unsecureRandom:** Use /dev/urandom for secure random
+  generation. This can be useful in systems with low entropy (such as headless
+  virtual machines). You can found more info in the following pages:
+
+  * http://www.shilpikhariwal.com/2012/04/random-number-generation-in-unix.html
+  * https://www.digitalocean.com/community/tutorials/how-to-setup-additional-entropy-for-cloud-servers-using-haveged
+
+
+Custom location of configuration file
 ------------------
 
 You can change the location and name of the configuration file with the
 following command:
 
     java -DconfigFilePath=/opt/kurento/config.json -jar kurento-control-server.jar
-
-Log
----
-
-KCS log is based on Logback, a famous log system in Java. I you want to
-configure the log, you have to provide a custom log configuration file and
-specify its location with the 'logback.configurationFile' system property. For
-example, you can execute kurento-control-server.jar with the following command:
-
-    java -Dlogback.configurationFile=/path/to/config.xml -jar kurento-control-server.jar
-
-The possible configuration of the Logback system is out of the scope of this
-manual and can be consulted in http://logback.qos.ch/manual/configuration.html.

@@ -36,10 +36,10 @@ import org.springframework.context.annotation.Configuration;
 @EnableAutoConfiguration
 public class KurentoControlServerApp implements JsonRpcConfigurer {
 
+	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
+
 	private static final String OAUTHSERVER_URL_PROPERTY = "controlServer.oauthserverUrl";
 	private static final String OAUTHSERVER_URL_DEFAULT = "";
-
-	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
 
 	public static final String WEBSOCKET_PORT_PROPERTY = "controlServer.net.websocket.port";
 	public static final String WEBSOCKET_PORT_DEFAULT = "8888";
@@ -47,13 +47,16 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 	public static final String WEBSOCKET_PATH_PROPERTY = "controlServer.net.websocket.path";
 	public static final String WEBSOCKET_PATH_DEFAULT = "kurento";
 
-	public static final String KEYSTORE_PASS_PROPERTY = "controlServer.keystore.password";
-	public static final String KEYSTORE_FILE_PROPERTY = "controlServer.keystore.file";
+	public static final String KEYSTORE_PASS_PROPERTY = "controlServer.net.websocket.keystore.pass";
+	public static final String KEYSTORE_FILE_PROPERTY = "controlServer.net.websocket.keystore.path";
 
 	public static final String WEBSOCKET_SECURE_PORT_PROPERTY = "controlServer.net.websocket.securePort";
 
-	private static final String USE_URANDOM_PROPERTY = "controlServer.useUrandom";
-	private static final boolean USE_URANDOM_DEFAULT = false;
+	private static final String UNSECURE_RANDOM_PROPERTY = "controlServer.unsecureRandom";
+	private static final boolean UNSECURE_RANDOM_DEFAULT = false;
+
+	private static final String LOG_CONFIG_FILE_PROPERTY = "controlServer.logConfigFile";
+	private static final String LOG_CONFIG_FILE_DEFAULT = null;
 
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoControlServerApp.class);
@@ -199,8 +202,17 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 
 		loadConfigFile();
 
-		if (getProperty(USE_URANDOM_PROPERTY, USE_URANDOM_DEFAULT)) {
+		if (getProperty(UNSECURE_RANDOM_PROPERTY, UNSECURE_RANDOM_DEFAULT)) {
+			log.info("Using /dev/urandom for secure random generation");
 			System.setProperty("java.security.egd", "file:/dev/./urandom");
+		}
+
+		String logFile = getProperty(LOG_CONFIG_FILE_PROPERTY,
+				LOG_CONFIG_FILE_DEFAULT);
+
+		if (logFile != null) {
+			log.info("Using logback file " + logFile);
+			System.setProperty("logback.configurationFile", logFile);
 		}
 
 		String port = getProperty(WEBSOCKET_PORT_PROPERTY,
