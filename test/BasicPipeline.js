@@ -14,7 +14,7 @@
  */
 
 /**
- * {@link HttpEndpoint} test suite.
+ * {@link MediaPipeline} basic test suite.
  *
  * <p>
  * Methods tested:
@@ -82,6 +82,67 @@ QUnit.asyncTest('Creation', function()
           QUnit.start();
         })
       });
+    });
+  });
+});
+
+/**
+ * Basic pipeline using a pseudo-syncronous API
+ */
+QUnit.asyncTest('Pseudo-syncronous API', function()
+{
+  var self = this;
+
+  QUnit.expect(1);
+
+  var pipeline = self.pipeline;
+
+  var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+  var httpGet = pipeline.create('HttpGetEndpoint');
+
+  player.connect(httpGet);
+
+  httpGet.getUrl(function(error, url)
+  {
+    if(error) return onerror(error);
+
+    player.release();
+
+    QUnit.notEqual(url, undefined, 'URL: '+url);
+
+    QUnit.start();
+  });
+});
+
+/**
+ * Basic pipeline using transactional API
+ */
+QUnit.asyncTest('Transactional API', function()
+{
+  var self = this;
+
+  QUnit.expect(1);
+
+  var pipeline = self.pipeline;
+
+  var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+  var httpGet = pipeline.create('HttpGetEndpoint');
+
+  player.connect(httpGet);
+
+  pipeline.start(function(error)
+  {
+    if(error) return onerror(error);
+
+    httpGet.getUrl(function(error, url)
+    {
+      if(error) return onerror(error);
+
+      player.release();
+
+      QUnit.notEqual(url, undefined, 'URL: '+url);
+
+      QUnit.start();
     });
   });
 });

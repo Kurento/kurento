@@ -94,7 +94,7 @@ QUnit.jUnitReport = function(report)
 
     require('fs').writeFile(path, report.xml, function(error)
     {
-      if(error) return console.log(error);
+      if(error) return console.error(error);
 
       console.log('XML report saved at '+path);
     });
