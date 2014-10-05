@@ -4,3 +4,30 @@ var Promise = require('es6-promise').Promise;
 
 var promiseCallback = require('promisecallback');
 </#if>
+<#switch remoteClass.name>
+  <#case "Hub">
+
+var HubPort = require('../HubPort');
+  <#break>
+  <#case "MediaPipeline">
+
+var checkParams = require('checktype').checkParams;
+
+// Ugly hack to get a reference to the classes register
+var register = require('../../..').register;
+
+/**
+ * Get the constructor for a type
+ *
+ * If the type is not registered, use generic {MediaObject}
+ */
+function getConstructor(type)
+{
+  var result = register.classes[type] || register.abstracts[type];
+  if(result) return result;
+
+  console.warn("Unknown type '"+type+"', using MediaObject instead");
+  return register.abstracts.MediaObject;
+};
+  <#break>
+</#switch>

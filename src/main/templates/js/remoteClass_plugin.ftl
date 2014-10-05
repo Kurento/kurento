@@ -101,8 +101,6 @@ var ${extends_name} = require('events').${extends_name};
 </#if>
  *
  * @constructor module:${remoteClass_namepath}
- *
- * @param {external:String} id
 <#if remoteClass.events?? && remoteClass.events?has_content>
  *
   <#list remoteClass.events?sort_by("name") as event>
@@ -110,10 +108,10 @@ var ${extends_name} = require('events').${extends_name};
   </#list>
 </#if>
  */
-function ${remoteClass.name}(id){<#if extends_name??>
-  ${remoteClass.name}.super_.call(this, id);
+function ${remoteClass.name}(){<#if extends_name??>
+  ${remoteClass.name}.super_.call(this);
 </#if>
-<#include "MediaObject_constructor.ftm" >};
+<#include "constructor.ftm" >};
 <#if extends_name??>
 inherits(${remoteClass.name}, ${extends_name});
 </#if>
