@@ -36,6 +36,9 @@ public:
 
 private:
 
+  std::shared_ptr<std::string> getPemCertificate ();
+  static std::mutex certificateMutex;
+
   class StaticConstructor
   {
   public:

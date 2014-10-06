@@ -19,17 +19,10 @@
 GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 #define GST_DEFAULT_NAME "HttpEndPointServer"
 
-#define HTTP_SERVICE_GROUP "HttpEPServer"
-#define HTTP_SERVICE_ADDRESS "serverAddress"
-#define HTTP_SERVICE_PORT "serverPort"
-#define HTTP_SERVICE_ANNOUNCED_ADDRESS "announcedAddress"
-
 using namespace Glib::Threads;
 
 namespace kurento
 {
-
-static const uint DEFAULT_PORT = 9091;
 
 std::shared_ptr<HttpEndPointServer> HttpEndPointServer::instance = 0;
 RecMutex HttpEndPointServer::mutex;
@@ -91,32 +84,6 @@ HttpEndPointServer::getHttpEndPointServer (const uint port,
   instance->start();
 
   return instance;
-}
-
-std::shared_ptr<HttpEndPointServer>
-HttpEndPointServer::getHttpEndPointServer (const boost::property_tree::ptree
-    &config)
-{
-  int port = DEFAULT_PORT;
-  std::string iface;
-  std::string address;
-
-  try {
-    port = config.get<int> ("modules.kurento.HttpEndpoint.port");
-  } catch (boost::property_tree::ptree_error &e) {
-  }
-
-  try {
-    address = config.get<std::string> ("modules.kurento.HttpEndpoint.announcedAddress");
-  } catch (boost::property_tree::ptree_error &e) {
-  }
-
-  try {
-    iface = config.get<std::string> ("modules.kurento.HttpEndpoint.serverAddress");
-  } catch (boost::property_tree::ptree_error &e) {
-  }
-
-  return getHttpEndPointServer (port, iface, address);
 }
 
 HttpEndPointServer::HttpEndPointServer ()

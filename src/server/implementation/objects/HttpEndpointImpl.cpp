@@ -11,6 +11,10 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
 
 #define FACTORY_NAME "httpendpoint"
 
+static const std::string HTTP_SERVICE_ADDRESS = "serverAddress";
+static const std::string HTTP_SERVICE_PORT = "serverPort";
+static const std::string HTTP_SERVICE_ANNOUNCED_ADDRESS = "announcedAddress";
+
 namespace kurento
 {
 
@@ -297,7 +301,12 @@ HttpEndpointImpl::HttpEndpointImpl (const boost::property_tree::ptree &conf,
   };
 
   std::shared_ptr<HttpEndPointServer> server =
-    HttpEndPointServer::getHttpEndPointServer (conf);
+    HttpEndPointServer::getHttpEndPointServer (
+      getConfigValue<int, HttpEndpoint> (HTTP_SERVICE_PORT,
+                                         HttpEndPointServer::DEFAULT_PORT),
+      getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ADDRESS, ""),
+      getConfigValue<std::string, HttpEndpoint> (HTTP_SERVICE_ANNOUNCED_ADDRESS,
+          "") );
 
   if (server == NULL) {
     throw KurentoException (HTTP_END_POINT_REGISTRATION_ERROR ,

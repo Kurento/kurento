@@ -22,7 +22,7 @@ static const std::string CERT_KEY_PEM_FILE = "autoCertkey.pem";
 static const uint DEFAULT_STUN_PORT = 3478;
 
 static std::shared_ptr<std::string> pemCertificate;
-static std::mutex mutex;
+std::mutex WebRtcEndpointImpl::certificateMutex;
 
 class TemporalDirectory
 {
@@ -78,10 +78,10 @@ create_pem_certificate ()
                      pemFile.string() ) );
 }
 
-static std::shared_ptr<std::string>
-getPemCertificate (const boost::property_tree::ptree &conf)
+std::shared_ptr<std::string>
+WebRtcEndpointImpl::getPemCertificate ()
 {
-  std::unique_lock<std::mutex> lock (mutex);
+  std::unique_lock<std::mutex> lock (certificateMutex);
 
   if (pemCertificate) {
     return pemCertificate;
@@ -89,11 +89,11 @@ getPemCertificate (const boost::property_tree::ptree &conf)
 
   try {
     boost::filesystem::path pem_certificate_file_name (
-      conf.get<std::string> ("modules.kurento.WebRtcEndpoint.pemCertificate") );
+      getConfigValue<std::string, WebRtcEndpoint> ("pemCertificate") );
 
     if (pem_certificate_file_name.is_relative() ) {
       pem_certificate_file_name = boost::filesystem::path (
-                                    conf.get<std::string> ("configPath") ) / pem_certificate_file_name;
+                                    config.get<std::string> ("configPath") ) / pem_certificate_file_name;
     }
 
     pemCertificate = std::shared_ptr <std::string> (new std::string (
@@ -122,7 +122,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   //set properties
   try {
-    stunPort = conf.get<uint> ("modules.kurento.WebRtcEndpoint.stunServerPort");
+    stunPort = getConfigValue <uint, WebRtcEndpoint> ("stunServerPort");
   } catch (boost::property_tree::ptree_error &e) {
     GST_INFO ("Setting default port %d to stun server",
               DEFAULT_STUN_PORT);
@@ -131,8 +131,8 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
 
   if (stunPort != 0) {
     try {
-      stunAddress =
-        conf.get<std::string> ("modules.kurento.WebRtcEndpoint.stunServerAddress");
+      stunAddress = getConfigValue
+                    <std::string, WebRtcEndpoint> ("stunServerAddress");
     } catch (boost::property_tree::ptree_error &e) {
       GST_INFO ("Stun address not found in config, cannot operate behind a NAT" );
     }
@@ -150,7 +150,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   }
 
   try {
-    turnURL = conf.get<std::string> ("modules.kurento.WebRtcEndpoint.turnURL");
+    turnURL = getConfigValue <std::string, WebRtcEndpoint> ("turnURL");
     GST_INFO ("turn info: %s\n", turnURL.c_str() );
     g_object_set ( G_OBJECT (element), "turn-url", turnURL.c_str(),
                    NULL);
@@ -159,7 +159,7 @@ WebRtcEndpointImpl::WebRtcEndpointImpl (const boost::property_tree::ptree &conf,
   }
 
   g_object_set ( G_OBJECT (element), "certificate-pem-file",
-                 getPemCertificate (conf)->c_str(), NULL);
+                 getPemCertificate ()->c_str(), NULL);
 }
 
 MediaObjectImpl *
