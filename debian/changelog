@@ -1,3 +1,60 @@
+kms-elements (5.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ David Fernandez ]
+  * debian: Fix dev package dependencies
+
+  [ Jose Antonio Santos Cadenas ]
+  * Update kms-core deve dependency
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplumberendpoint: Take the provided caps into account during negotiation of capabilities
+
+  [ Jose Antonio Santos Cadenas ]
+  * kmsplumberendpoint.c: Fix not initialized variable
+
+  [ Santiago Carot-Nemesio ]
+  * kmssctpbaserpc: set GST_BUFFER_FLAG_DISCONT flag in a buffer when the previous one has been lost
+  * SCTP: Increase sctpbuffer for sending and receiving data
+  * HttpEndPointServer: Fix core dump calling lambdas from asynchronous context
+  * HttpEndPointServer: Fix httpendpoint server configuration
+  * PlumberEndpointImpl: Fix configuration
+
+  [ Jose Antonio Santos Cadenas ]
+  * Install generated FindKMSELEMENTS.cmake file
+
+  [ Santiago Carot-Nemesio ]
+  * kmsplumberendpoint: Get remote address to establish connections
+  * kmsplumberendpoint: Fix initialization parameters
+  * kmsrtpendpoint: Use bit operators instead of module to check wether a number is even or odd
+  * kmsrtpendpoint: Improve debug traces
+  * kmsrtpendpoint: Fix port configuration of audio rtp udpsink
+  * kmsrtpendpoint: Do not stop processing sdp if offer or media is NULL
+  * kmsrtpendpoint: Do not set qos property for udp sinks
+  * kmsconfcontroller: Remove useless code
+
+  [ Jose Antonio Santos Cadenas ]
+  * Use generic_find to find dependencies
+
+  [ Santiago Carot-Nemesio ]
+  * kmsconfcontroller: Set caps to appsinks after connecting them to valves to avoid error when linking elements
+  * kmsconfcontroller: Remove unused macro
+
+  [ Miguel París Díaz ]
+  * WebRtcEndpointImpl: fix config loading
+
+  [ Jose Antonio Santos Cadenas ]
+  * Ignore .idea files
+  * WebRtcEndpointImpl: Change default stun address and port
+  * Use proper method to get values from configuration
+  * Prepare release 5.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 23:56:25 +0200
+
 kms-elements (5.0.3) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
