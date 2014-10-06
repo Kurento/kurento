@@ -53,6 +53,14 @@ find_path(${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
     kurento/modules/${module.name}
 )
 
+find_path(${name}_INTERFACE_EXTRA_INCLUDE_DIR
+  NAMES
+    @_PARAM_INTERFACE_LIB_EXTRA_HEADERS@
+  PATH_SUFFIXES
+    @_PARAM_INTERFACE_LIB_EXTRA_HEADERS_PREFIX@
+    kurento/modules/${module.name}
+)
+
 find_library (${name}_LIBRARY
   NAMES
     ${module.code.implementation.lib?replace("lib", "")}impl
@@ -88,12 +96,32 @@ set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
 </#list>
   <#noparse>${REQUIRED_INCLUDE_DIRS}</#noparse>
-  CACHE INTERNAL "Include directories for ${name} library"
 )
 
-if (<#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
+set (REQUIRED_VARS
+  ${name}_VERSION
+  ${name}_INTERFACE_INCLUDE_DIR
+  ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
+  ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
+  ${name}_INCLUDE_DIRS
+  ${name}_LIBRARY
+  ${name}_LIBRARIES
+)
+
+if (NOT "@_PARAM_INTERFACE_LIB_EXTRA_HEADERS@" EQUAL "")
   list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR)
 endif ()
+
+if (NOT "@_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@" EQUAL "")
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_EXTRA_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_INTERFACE_EXTRA_INCLUDE_DIR)
+endif ()
+
+set(${name}_INCLUDE_DIRS
+  <#noparse>${</#noparse>${name}<#noparse>_INCLUDE_DIRS}</#noparse>
+  CACHE INTERNAL "Include directories for ${name} library"
+)
 
 set (${name}_LIBRARIES
   <#noparse>${</#noparse>${name}<#noparse>_LIBRARY}</#noparse>
@@ -110,13 +138,7 @@ find_package_handle_standard_args(${name}
   FOUND_VAR
     ${name}_FOUND
   REQUIRED_VARS
-    ${name}_VERSION
-    ${name}_INTERFACE_INCLUDE_DIR
-    ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
-    ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
-    ${name}_INCLUDE_DIRS
-    ${name}_LIBRARY
-    ${name}_LIBRARIES
+    <#noparse>${REQUIRED_VARS}</#noparse>
   VERSION_VAR
     ${name}_VERSION
 )
@@ -128,6 +150,7 @@ mark_as_advanced(
   ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
   ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
   ${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
+  ${name}_INTERFACE_EXTRA_INCLUDE_DIR
   ${name}_INCLUDE_DIRS
   ${name}_LIBRARY
   ${name}_LIBRARIES
