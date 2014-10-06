@@ -66,7 +66,7 @@ module.exports = function(grunt)
 
         options:
         {
-          bundleOptions: {
+          browserifyOptions: {
             standalone: '<%= pkg.name %>'
           }
         }
@@ -97,8 +97,8 @@ module.exports = function(grunt)
 
         options:
         {
-          debug: true,
-          bundleOptions: {
+          browserifyOptions: {
+            debug: true,
             standalone: '<%= pkg.name %>'
           },
           plugin: [
