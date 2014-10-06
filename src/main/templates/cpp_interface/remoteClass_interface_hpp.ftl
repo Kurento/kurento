@@ -65,6 +65,14 @@ public:
     return "${remoteClass.name}";
   }
 
+  virtual std::string getModule () const {
+<#if module.name == "core" || module.name == "elements" || module.name == "filters">
+    return "kurento";
+<#else>
+    return "${module.name}";
+</#if>
+  }
+
   virtual void Serialize (JsonSerializer &serializer) = 0;
 <#list remoteClass.properties as property>
 
