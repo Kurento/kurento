@@ -1,3 +1,18 @@
+kms-cmake-utils (1.0.1) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Improve how version is got from git
+  * Add functions to check libraries using semantic versions
+  * Fix installation of GnericFind.cmake
+  * Fix definition of output variables for version parsing
+  * Fix version checking when specific version is requested
+  * Prepare release 1.0.1
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 18:57:33 +0200
+
 kms-cmake-utils (1.0.0) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
