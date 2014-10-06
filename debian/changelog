@@ -1,3 +1,32 @@
+kurento-module-creator (3.0.5) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+
+  [ Ivan Gracia ]
+  * Updated logo
+
+  [ Jose Antonio Santos Cadenas ]
+  * JsonModuleSaverLoader: Do not write json scaping html characters
+  * pom.xml template: Do not make multiple kurento-client multiple times
+  * pkgconfig: Fix name in template
+  * Update script to allow developer execution not from /usr/bin folder
+  * Add template for FindMODULE.cmake style files
+  * Find jsonrpc package using cmake instead of pkg-config
+  * dependencies_cmake: Remove referenced to specific core dependencies
+  * pkgconfig: Remove fixed dependencies from template
+  * Use GenericFind for internal imports
+  * FindMODULE.cmake: Add support for extra required libraries
+  * Fix finding modules that do not have extra include directories
+  * Cmake: Do not use variables if they are set to NOT-FOUND
+  * RemoteClass.cpp: Add method to know object module
+  * FindCamke: Improve includes finding
+  * Prepare release 3.0.5
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 19:13:18 +0200
+
 kurento-module-creator (3.0.4) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
