@@ -53,7 +53,7 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 	public static final String WEBSOCKET_SECURE_PORT_PROPERTY = "controlServer.net.websocket.securePort";
 
 	private static final String UNSECURE_RANDOM_PROPERTY = "controlServer.unsecureRandom";
-	private static final boolean UNSECURE_RANDOM_DEFAULT = false;
+	private static final boolean UNSECURE_RANDOM_DEFAULT = true;
 
 	private static final String LOG_CONFIG_FILE_PROPERTY = "controlServer.logConfigFile";
 	private static final String LOG_CONFIG_FILE_DEFAULT = null;

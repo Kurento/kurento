@@ -30,6 +30,6 @@
      },
      // "oauthserverUrl": "",
      // "logConfigFile": "/opt/kurento/logback.xml",
-     // "unsecureRandom": false
+     // "unsecureRandom": true
   }
 }

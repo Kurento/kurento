@@ -122,8 +122,9 @@ The meaning of general configuration properties are:
   clients to use KCS (that is, no authentication is enforced). If not specified,
   the empty URL will be used.
 * **controlServer.unsecureRandom:** Use /dev/urandom for secure random
-  generation. This can be useful in systems with low entropy (such as headless
-  virtual machines). You can found more info in the following pages:
+  generation. Default value is true. This can be useful in systems with low
+  entropy (such as headless virtual machines). You can found more info in the
+  following pages:
 
   * http://www.shilpikhariwal.com/2012/04/random-number-generation-in-unix.html
   * https://www.digitalocean.com/community/tutorials/how-to-setup-additional-entropy-for-cloud-servers-using-haveged
