@@ -1,3 +1,18 @@
+kms-jsonrpc (0.1.2) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Remove parsing of version, it is done by cmake-utils functions
+  * Add cmake find script to allow linking against the library
+  * Fix pkgconfig configuration
+  * Let debian package install cmake configuration file
+  * Find jsonrpc library correctly
+  * Prepare release 0.1.2
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Mon, 06 Oct 2014 19:03:20 +0200
+
 kms-jsonrpc (0.1.1) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
