@@ -927,6 +927,205 @@ kms_http_endpoint_get_property (GObject * object, guint property_id,
   KMS_ELEMENT_UNLOCK (KMS_ELEMENT (self));
 }
 
+static GstCaps *
+kms_http_endpoint_get_caps_from_profile (KmsHttpEndpoint * self,
+    KmsElementPadType type)
+{
+  GstEncodingContainerProfile *cprof;
+  const GList *profiles, *l;
+  GstCaps *caps = NULL;
+
+  switch (type) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      cprof =
+          kms_recording_profile_create_profile (self->priv->profile, FALSE,
+          TRUE);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      cprof =
+          kms_recording_profile_create_profile (self->priv->profile, TRUE,
+          FALSE);
+      break;
+    default:
+      return NULL;
+  }
+
+  profiles = gst_encoding_container_profile_get_profiles (cprof);
+
+  for (l = profiles; l != NULL; l = l->next) {
+    GstEncodingProfile *prof = l->data;
+
+    if ((GST_IS_ENCODING_AUDIO_PROFILE (prof) &&
+            type == KMS_ELEMENT_PAD_TYPE_AUDIO) ||
+        (GST_IS_ENCODING_VIDEO_PROFILE (prof) &&
+            type == KMS_ELEMENT_PAD_TYPE_VIDEO)) {
+      caps = gst_encoding_profile_get_input_caps (prof);
+      break;
+    }
+  }
+
+  return caps;
+}
+
+static GstCaps *
+kms_http_endpoint_allowed_caps (KmsElement * self, KmsElementPadType type)
+{
+  GstElement *valve;
+  GstPad *srcpad;
+  GstCaps *caps;
+
+  switch (type) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      valve = kms_element_get_video_valve (self);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:
+      valve = kms_element_get_audio_valve (self);
+      break;
+    default:
+      return NULL;
+  }
+
+  srcpad = gst_element_get_static_pad (valve, "src");
+  caps = gst_pad_get_allowed_caps (srcpad);
+  gst_object_unref (srcpad);
+
+  return caps;
+}
+
+static gboolean
+kms_http_endpoint_query_caps (KmsElement * element, GstPad * pad,
+    GstQuery * query)
+{
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (element);
+  GstCaps *allowed = NULL, *caps = NULL;
+  GstCaps *filter, *result = NULL, *tcaps;
+
+  gst_query_parse_caps (query, &filter);
+
+  switch (kms_element_get_pad_type (element, pad)) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      allowed =
+          kms_http_endpoint_allowed_caps (element, KMS_ELEMENT_PAD_TYPE_VIDEO);
+      caps = kms_http_endpoint_get_caps_from_profile (self,
+          KMS_ELEMENT_PAD_TYPE_VIDEO);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:{
+      allowed =
+          kms_http_endpoint_allowed_caps (element, KMS_ELEMENT_PAD_TYPE_AUDIO);
+      caps = kms_http_endpoint_get_caps_from_profile (self,
+          KMS_ELEMENT_PAD_TYPE_AUDIO);
+      break;
+    }
+    default:
+      GST_DEBUG ("unknown pad");
+      return FALSE;
+  }
+
+  /* make sure we only return results that intersect our padtemplate */
+  tcaps = gst_pad_get_pad_template_caps (pad);
+  if (tcaps != NULL) {
+    if (allowed == NULL) {
+      result = tcaps;
+    } else {
+      result = gst_caps_intersect (allowed, tcaps);
+    }
+    gst_caps_unref (tcaps);
+  }
+
+  if (caps != NULL) {
+    /* Filter against profile */
+    result = gst_caps_intersect (caps, result);
+  }
+
+  /* filter against the query filter when needed */
+  if (filter != NULL) {
+    result = gst_caps_intersect (result, filter);
+  }
+
+  gst_query_set_caps_result (query, result);
+  gst_caps_unref (result);
+
+  if (allowed != NULL)
+    gst_caps_unref (allowed);
+
+  if (caps != NULL)
+    gst_caps_unref (caps);
+
+  return TRUE;
+}
+
+static gboolean
+kms_http_endpoint_query_accept_caps (KmsElement * element, GstPad * pad,
+    GstQuery * query)
+{
+  KmsHttpEndpoint *self = KMS_HTTP_ENDPOINT (element);
+  GstCaps *caps, *accept;
+  GstElement *valve;
+  gboolean ret = TRUE;;
+
+  switch (kms_element_get_pad_type (element, pad)) {
+    case KMS_ELEMENT_PAD_TYPE_VIDEO:
+      valve = kms_element_get_video_valve (element);
+      caps = kms_http_endpoint_get_caps_from_profile (self,
+          KMS_ELEMENT_PAD_TYPE_VIDEO);
+      break;
+    case KMS_ELEMENT_PAD_TYPE_AUDIO:{
+      valve = kms_element_get_audio_valve (element);
+      caps = kms_http_endpoint_get_caps_from_profile (self,
+          KMS_ELEMENT_PAD_TYPE_AUDIO);
+      break;
+    }
+    default:
+      GST_DEBUG ("unknown pad");
+      return FALSE;
+  }
+
+  if (caps == NULL) {
+    return
+        KMS_ELEMENT_CLASS (kms_http_endpoint_parent_class)->sink_query (element,
+        pad, query);
+  }
+
+  gst_query_parse_accept_caps (query, &accept);
+
+  ret = gst_caps_can_intersect (accept, caps);
+
+  if (ret) {
+    GstPad *srcpad;
+
+    srcpad = gst_element_get_static_pad (valve, "src");
+    ret = gst_pad_peer_query_accept_caps (srcpad, caps);
+    gst_object_unref (srcpad);
+  }
+
+  gst_caps_unref (caps);
+
+  gst_query_set_accept_caps_result (query, ret);
+
+  return TRUE;
+}
+
+static gboolean
+kms_http_endpoint_sink_query (KmsElement * self, GstPad * pad, GstQuery * query)
+{
+  gboolean ret;
+
+  switch (GST_QUERY_TYPE (query)) {
+    case GST_QUERY_CAPS:
+      ret = kms_http_endpoint_query_caps (self, pad, query);
+      break;
+    case GST_QUERY_ACCEPT_CAPS:
+      ret = kms_http_endpoint_query_accept_caps (self, pad, query);
+      break;
+    default:
+      ret =
+          KMS_ELEMENT_CLASS (kms_http_endpoint_parent_class)->sink_query (self,
+          pad, query);
+  }
+
+  return ret;
+}
+
 static void
 kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
 {
@@ -950,6 +1149,8 @@ kms_http_endpoint_class_init (KmsHttpEndpointClass * klass)
       GST_DEBUG_FUNCPTR (kms_http_endpoint_audio_valve_removed);
   kms_element_class->video_valve_removed =
       GST_DEBUG_FUNCPTR (kms_http_endpoint_video_valve_removed);
+  kms_element_class->sink_query =
+      GST_DEBUG_FUNCPTR (kms_http_endpoint_sink_query);
 
   /* Install properties */
   obj_properties[PROP_DVR] = g_param_spec_boolean ("live-DVR",
