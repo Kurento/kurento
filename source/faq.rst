@@ -28,16 +28,21 @@ How do I...
 
       - Add the external and local IPs as vars::
 
-            EXTERNAL_IP=<public-ip>
-            LOCAL_IP=$(hostname -i)
+            EXTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+            LOCAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 
       - Modify the DAEMON_ARGS var to take these IPs into account, along
         with the long-term credentials user and password (``kurento:kurento`` in
         this case, but could be different), realm and some other options::
 
-             DAEMON_ARGS="-c /etc/turnserver.conf -f -o -a -v -r kurento.org -u kurento:kurento --no-stdout-log -o --external-ip $EXTERNAL_IP/$LOCAL_IP"
+             DAEMON_ARGS="-c /etc/turnserver.conf -f -o -a -v -r kurento.org -u kurento:kurento --no-stdout-log --external-ip $EXTERNAL_IP/$LOCAL_IP"
 
-   4. Now, you have to tell the Kurento server where is the turnserver
+   4. Then let's enable the turnserver to run as an automatic service daemon. For this,
+   open the file ``/etc/defaults/coturn`` and uncomment the key::
+
+      TURNSERVER_ENABLED=1
+
+   5. Now, you have to tell the Kurento server where is the turnserver
    installed. For this, modify the turnURL key in ``/etc/kurento/kurento.conf.json``::
 
       "turnURL" : "kurento:kurento@<public-ip>:3478",
@@ -50,6 +55,10 @@ How do I...
         TURN server will use to exchange media. These ports can be changed
         using the ``--max-port`` and ``--min-port`` options from the turnserver.
 
+   6. The last thing to do, is to start the coturn server and the media
+   server::
+
+      sudo service coturn start && sudo service kurento-media-server restart
 
 **...configure Kurento Media Server to use Secure WebSocket (WSS)?**
 
