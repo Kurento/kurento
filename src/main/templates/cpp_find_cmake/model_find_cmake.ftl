@@ -10,6 +10,8 @@ Find${module.code.implementation.lib?replace("lib", "")?upper_case}.cmake.in
 set(PACKAGE_VERSION "@PROJECT_VERSION@")
 set(${name}_VERSION <#noparse>${PACKAGE_VERSION}</#noparse>)
 
+message (STATUS "Looking for ${name}: @PROJECT_VERSION@")
+
 include (GenericFind)
 <#list module.imports as import>
 
@@ -20,46 +22,84 @@ generic_find (
 )
 </#list>
 
-find_path(${name}_INTERFACE_INCLUDE_DIR
-  NAMES
-    @_INTERFACE_GENERATED_HEADERS@
-    @_INTERFACE_INTERNAL_GENERATED_HEADERS@
-  PATH_SUFFIXES
-    @_INTERFACE_HEADERS_DIR@
-    kurento/modules/${module.name}
+set (REQUIRED_VARS
+  ${name}_VERSION
+  ${name}_INCLUDE_DIRS
+  ${name}_LIBRARY
+  ${name}_LIBRARIES
 )
 
-find_path(${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
-  NAMES
-    @_SERVER_INTERNAL_GENERATED_HEADERS@
-  PATH_SUFFIXES
-    @_SERVER_INTERNAL_GENERATED_HEADERS_DIR@
-    kurento/modules/${module.name}
+set(${name}_INCLUDE_DIRS
+<#list module.imports as import>
+  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
+</#list>
 )
 
-find_path(${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
-  NAMES
-    @_SERVER_GENERATED_HEADERS@
-  PATH_SUFFIXES
-    @_PARAM_SERVER_STUB_DESTINATION@
-    kurento/modules/${module.name}
-)
+if (NOT "@_INTERFACE_GENERATED_HEADERS@ @_INTERFACE_INTERNAL_GENERATED_HEADERS@" STREQUAL " ")
+  find_path(${name}_INTERFACE_INCLUDE_DIR
+    NAMES
+      @_INTERFACE_GENERATED_HEADERS@
+      @_INTERFACE_INTERNAL_GENERATED_HEADERS@
+    PATH_SUFFIXES
+      @_INTERFACE_HEADERS_DIR@
+      kurento/modules/${module.name}
+  )
 
-find_path(${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
-  NAMES
-    @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@
-  PATH_SUFFIXES
-    @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS_PREFIX@
-    kurento/modules/${module.name}
-)
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_INTERFACE_INCLUDE_DIR)
+endif ()
 
-find_path(${name}_INTERFACE_EXTRA_INCLUDE_DIR
-  NAMES
-    @_PARAM_INTERFACE_LIB_EXTRA_HEADERS@
-  PATH_SUFFIXES
-    @_PARAM_INTERFACE_LIB_EXTRA_HEADERS_PREFIX@
-    kurento/modules/${module.name}
-)
+if (NOT "@_SERVER_INTERNAL_GENERATED_HEADERS@" STREQUAL "")
+  find_path(${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
+    NAMES
+      @_SERVER_INTERNAL_GENERATED_HEADERS@
+    PATH_SUFFIXES
+      @_SERVER_INTERNAL_GENERATED_HEADERS_DIR@
+      kurento/modules/${module.name}
+  )
+
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_INTERNAL_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR)
+endif ()
+
+if (NOT "@_SERVER_GENERATED_HEADERS@" STREQUAL "")
+  find_path(${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
+    NAMES
+      @_SERVER_GENERATED_HEADERS@
+    PATH_SUFFIXES
+      @_PARAM_SERVER_STUB_DESTINATION@
+      kurento/modules/${module.name}
+  )
+
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_GENERATED_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR)
+endif()
+
+if (NOT "@_PARAM_INTERFACE_LIB_EXTRA_HEADERS@" STREQUAL "")
+  find_path(${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR
+    NAMES
+      @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@
+    PATH_SUFFIXES
+      @_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS_PREFIX@
+      kurento/modules/${module.name}
+  )
+
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR)
+endif ()
+
+if (NOT "@_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@" STREQUAL "")
+  find_path(${name}_INTERFACE_EXTRA_INCLUDE_DIR
+    NAMES
+      @_PARAM_INTERFACE_LIB_EXTRA_HEADERS@
+    PATH_SUFFIXES
+      @_PARAM_INTERFACE_LIB_EXTRA_HEADERS_PREFIX@
+      kurento/modules/${module.name}
+  )
+
+  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_EXTRA_INCLUDE_DIR}</#noparse>)
+  list (APPEND REQUIRED_VARS ${name}_INTERFACE_EXTRA_INCLUDE_DIR)
+endif ()
 
 find_library (${name}_LIBRARY
   NAMES
@@ -87,36 +127,6 @@ foreach (LIB ${REQUIRED_LIBS})
 
 endforeach()
 </#noparse>
-
-set(${name}_INCLUDE_DIRS
-  <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_INCLUDE_DIR}</#noparse>
-  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_INTERNAL_INCLUDE_DIR}</#noparse>
-  <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_GENERATED_INCLUDE_DIR}</#noparse>
-<#list module.imports as import>
-  <#noparse>${</#noparse>${import.module.code.implementation.lib?replace("lib", "")?upper_case}<#noparse>_INCLUDE_DIRS}</#noparse>
-</#list>
-  <#noparse>${REQUIRED_INCLUDE_DIRS}</#noparse>
-)
-
-set (REQUIRED_VARS
-  ${name}_VERSION
-  ${name}_INTERFACE_INCLUDE_DIR
-  ${name}_IMPLEMENTATION_INTERNAL_INCLUDE_DIR
-  ${name}_IMPLEMENTATION_GENERATED_INCLUDE_DIR
-  ${name}_INCLUDE_DIRS
-  ${name}_LIBRARY
-  ${name}_LIBRARIES
-)
-
-if (NOT "@_PARAM_INTERFACE_LIB_EXTRA_HEADERS@" EQUAL "")
-  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_IMPLEMENTATION_EXTRA_INCLUDE_DIR}</#noparse>)
-  list (APPEND REQUIRED_VARS ${name}_IMPLEMENTATION_EXTRA_INCLUDE_DIR)
-endif ()
-
-if (NOT "@_PARAM_SERVER_IMPL_LIB_EXTRA_HEADERS@" EQUAL "")
-  list (APPEND ${name}_INCLUDE_DIRS <#noparse>${</#noparse>${name}<#noparse>_INTERFACE_EXTRA_INCLUDE_DIR}</#noparse>)
-  list (APPEND REQUIRED_VARS ${name}_INTERFACE_EXTRA_INCLUDE_DIR)
-endif ()
 
 set(${name}_INCLUDE_DIRS
   <#noparse>${</#noparse>${name}<#noparse>_INCLUDE_DIRS}</#noparse>
