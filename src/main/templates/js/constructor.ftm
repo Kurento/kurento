@@ -13,11 +13,12 @@
    * @readonly
    * @member {external:Number} id
    */
-  this.then(function(id)
+  this.once('_id', function(error, id)
   {
-    Object.defineProperty(this, 'id', {value: id});
-  })
+    if(error) return Object.defineProperty(this, 'id', {value: null});
 
+    Object.defineProperty(this, 'id', {value: id, enumerable: true});
+  })
 
   //
   // Subscribe and unsubscribe events on the server when adding and removing
@@ -57,8 +58,7 @@
     var constructor = this.constructor;
 
     if(constructor.events.indexOf(event) < 0)
-      throw new SyntaxError(constructor.name+" doesn't accept events of type '"
-                            +event+"'")
+      throw new SyntaxError(constructor.name+" doesn't accept events of type '"+event+"'")
 
     var count = EventEmitter.listenerCount(this, event);
     if(count) return;
@@ -76,14 +76,16 @@
 
   var self = this;
 
+
+  // Transactional API
+
   var transactions = [];
 
-  function transactionOperation(method, mediaObject, params, callback)
+  function transactionOperation(method, params, callback)
   {
     var message =
     {
       method: method,
-      mediaObject: mediaObject,
       params: params,
       callback: callback
     }
@@ -91,53 +93,69 @@
     transactions[0].push(message);
   }
 
-  function beginTransaction()
+  this.beginTransaction = function()
   {
     transactions.unshift([]);
   };
 
-  function endTransaction(callback)
+  this.endTransaction = function(callback)
   {
     var operations = transactions.shift();
 
-    if(transactions.length)
+    var promise = new Promise(function(resolve, reject)
     {
-      var params =
+      function callback(error, result)
       {
-        operations: operations
-      }
+        if(error) return reject(error);
 
-      transactionOperation('transaction', params, callback);
-    }
-    else
-      self.emit('_commit', operations, function(error, result)
-      {
-        if(error) return callback(error);
+        resolve(result)
+      };
 
-        callback(null, result);
-      });
+      encodeTransaction({operations: operations}, callback);
+    })
+
+    return promiseCallback(promise, callback)
   };
 
   this.transaction = function(transaction, callback)
   {
-    var ctx = {};
-
-    beginTransaction();
-    transaction.call(this, ctx);
-    endTransaction();
-
-    if(callback)
-      callback.call(this, ctx);
+    this.beginTransaction();
+    transaction.call(this);
+    return this.endTransaction(callback);
   };
 
 
-  function encodeCreate(mediaObject, params, callback)
+  // Encode commands
+
+  function encodeCreate(params, callback)
   {
-    if(self.id != undefined)
-      self.emit('_create', mediaObject, params, callback)
+    if(transactions.length)
+      transactionOperation('create', params, callback);
     else
-      transactionOperation('create', mediaObject, params, callback);
+      self.emit('_create', params, callback)
   }
+
+  function encodeRpc(method, params, callback)
+  {
+    if(transactions.length)
+      transactionOperation(method, params, callback);
+    else
+      self.emit('_rpc', method, params, callback)
+  }
+
+  function encodeTransaction(params, callback)
+  {
+    if(transactions.length)
+      transactionOperation('transaction', params, callback);
+    else
+      self.then(function()
+      {
+        params.object = self.id;
+
+        self.emit('_transaction', params, callback);
+      })
+  }
+
 
   /**
    * Request to the server to create a new MediaElement
@@ -172,16 +190,15 @@
     {
       params.object = mediaObject;
 
-      if(self.id != undefined)
-        self.emit('_rpc', method, params, callback)
-      else
-        transactionOperation(method, mediaObject, params, callback);
+      encodeRpc(method, params, callback);
     });
 
-    if(mediaObject instanceof register.abstracts.Hub)
+    if(mediaObject instanceof Hub)
       mediaObject.on('_create', encodeCreate);
 
-    encodeCreate(mediaObject, item, callback);
+    Object.defineProperty(item, 'object', {value: mediaObject});
+
+    encodeCreate(item, callback);
 
     return mediaObject
   };
@@ -222,27 +239,5 @@
    * @param {module:core/abstract~MediaElement} result
    *  The created MediaElement
    */
-
-  /**
-   * Start a {@link module:core/MediaPipeline MediaPipeline}
-   *
-   * @return {external:Promise}
-   */
-  this.start = function(callback){
-//    if(this.id != undefined)
-//      throw new SyntaxError('Called start() on an active MediaPipeline');
-
-    var traces = transactions.length;
-    if(traces != 1)
-      throw new SyntaxError('Bad transactions stack (found '+traces+' traces)')
-
-    endTransaction(callback);
-  }
-  /**
-   * @callback core.MediaPipeline~startCallback
-   * @param {external:Error} error
-   */
-
-//  beginTransaction();
   <#break>
 </#switch>
