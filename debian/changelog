@@ -1,3 +1,16 @@
+kurento-module-creator (3.0.6) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next development iteration
+  * Find<MODULE>.cmake: Fix corner cases while finding includes
+  * Find<MODULE>.cmake: Add extra required libraries correctly
+  * Find<MODULE>.cmake: Fix problems with kmsfilter requirements
+  * Prepare release 3.0.6
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 07 Oct 2014 15:01:43 +0200
+
 kurento-module-creator (3.0.5) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
