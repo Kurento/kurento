@@ -54,9 +54,8 @@ QUnit.asyncTest('transaction', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(1);
 
-  // Pipeline creation (implicit transaction)
   var pipeline = self.pipeline;
 
   var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
@@ -64,131 +63,157 @@ QUnit.asyncTest('transaction', function()
 
   player.connect(httpGet);
 
-  // End pipeline creation
-  pipeline.start(function(error)
+  // Atomic operation
+  httpGet.getUrl(function(error, url)
   {
     if(error) return onerror(error);
 
-    var url1;
-    // Atomic operation
-    httpGet.getUrl(function(url)
-    {
-      url1 = url;
-    });
-    // End atomic operation
+    var url_preTransaction = url;
 
-    // Explicit transaction
-		pipeline.transaction(function()
+    pipeline.transaction(function()
     {
       player.play();
 
-      httpGet.getUrl(function(url2)
+      httpGet.getUrl(function(error, url)
       {
-        QUnit.equal(url2, url1, 'URL: '+url2);
+        if(error) return onerror(error);
+
+        QUnit.equal(url, url_preTransaction, 'URL: '+url);
 
         QUnit.start();
       });
 
       pipeline.release();
     });
-		// End explicit transaction
   });
+  // End atomic operation
 });
+
+// QUnit.asyncTest('Transaction object on pseudo-sync API', function()
+// {
+//   var self = this;
+//
+//   QUnit.expect(2);
+//
+//   var pipeline = self.pipeline;
+//
+//   var t = pipeline.beginTransaction();
+//
+//     var player  = pipeline.create(t, 'PlayerEndpoint', {uri: URL_SMALL});
+//     var httpGet = pipeline.create(t, 'HttpGetEndpoint');
+//
+//     player.connect(t, httpGet);
+//
+//     var promiseUrl = httpGet.getUrl(t);
+//
+//     player.play(t);
+//
+//     QUnit.strictEqual(player.id, undefined);
+//
+//   t.endTransaction(function(error)
+//   {
+//     QUnit.notStrictEqual(player.id, undefined, 'player.id: '+player.id);
+//
+//     promiseUrl.then(function(value){
+//       QUnit.notStrictEqual(value, undefined, 'httpGet.url: '+url);
+//     });
+//
+//     pipeline.release(function(error)
+//     {
+//       if(error) return onerror(error);
+//
+//       QUnit.start();
+//     });
+//   });
+// });
+//
+// QUnit.asyncTest('Transaction object on async API', function()
+// {
+//   var self = this;
+//
+//   QUnit.expect(3);
+//
+//   var pipeline = self.pipeline;
+//
+//   pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, funtion(error, player)
+//   {
+//     if(error) return onerror(error);
+//
+//     pipeline.create('HttpGetEndpoint', function(error, httpGet)
+//     {
+//       if(error) return onerror(error);
+//
+//       player.connect(httpGet, function(error)
+//       {
+//         if(error) return onerror(error);
+//
+//         httpGet.getUrl(function(error, url)
+//         {
+//           if(error) return onerror(error);
+//
+//           var t = pipeline.beginTransaction();
+//
+//             player.play(t);
+//
+//             var promiseUrl = httpGet.getUrl(t);
+//
+//           t.commit(function(error)
+//           {
+//             if(error) return onerror(error);
+//
+//             promiseUrl.then(function(value)
+//             {
+//               QUnit.equal(value, url, 'URL: '+value);
+//             })
+//
+//             pipeline.release(function(error)
+//             {
+//               if(error) return onerror(error);
+//
+//               QUnit.start();
+//             });
+//           });
+//         });
+//       });
+//     }
+//   });
+// });
+
 
 QUnit.asyncTest('transaction creation', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(1);
 
-  // Pipeline creation (implicit transaction)
-  var pipeline = self.pipeline;
-  pipeline.start(function(error)
-  {
-    if(error) return onerror(error);
-
-    // Atomic creation
-    var player = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
-    // End atomic creation
-
-    // Creation in explicit transaction
-    pipeline.transaction(function()
-    {
-      var httpGet = pipeline.create('HttpGetEndpoint');
-
-      player.connect(httpGet);
-    },
-    // End transaction
-    function()
-    {
-      httpGet.getUrl(function(url)
-      {
-        QUnit.notEqual(url, undefined, 'URL: '+url);
-
-        QUnit.start();
-      });
-    });
-  });
-});
-
-QUnit.asyncTest('use plain methods in new objects inside transaction', function()
-{
-  var self = this;
-
-  QUnit.expect(3);
-
-  // Pipeline creation (implicit transaction)
+  // Pipeline creation
   var pipeline = self.pipeline;
 
+  // Atomic creation
   var player = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+  // End atomic creation
 
-  pipeline.start(function(error)
+  // Creation in transaction
+  var httpGet;
+  pipeline.transaction(function()
+  {
+    httpGet = pipeline.create('HttpGetEndpoint');
+
+    player.connect(httpGet);
+  },
+  // End transaction
+  function(error)
   {
     if(error) return onerror(error);
 
-    // Creation in explicit transaction
-    pipeline.transaction(function()
+    httpGet.getUrl(function(error, url)
     {
-      var httpGet = pipeline.create('HttpGetEndpoint');
+      if(error) return onerror(error);
 
-      player.connect(httpGet);
-    },
-    // End transaction
-    function()
-    {
+      QUnit.notEqual(url, undefined, 'URL: '+url);
+
       QUnit.start();
     });
-  });
-});
-
-QUnit.asyncTest('use creation transaction', function()
-{
-  var self = this;
-
-  QUnit.expect(3);
-
-  // Pipeline creation (implicit transaction)
-  var pipeline = self.pipeline;
-
-  var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
-  var httpGet = pipeline.create('HttpGetEndpoint');
-
-  player.connect(httpGet);
-
-  var url;
-
-  httpGet.geturl(function(url2)
-  {
-    url = url2;
-  })
-
-  pipeline.start(function(error)
-  {
-    if(error) return onerror(error);
-
-    QUnit.notEqual(url, undefined, 'URL: '+url);
-
-    QUnit.start();
   });
 });
 
@@ -196,7 +221,7 @@ QUnit.asyncTest('use thenable on element', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(1);
 
   // Pipeline creation (implicit transaction)
   var pipeline = self.pipeline;
@@ -208,70 +233,75 @@ QUnit.asyncTest('use thenable on element', function()
 
   httpGet.then(function()
   {
-    this.getUrl(function(url)
+    this.getUrl(function(error, url)
     {
+      if(error) return onerror(error);
+
       QUnit.notEqual(url, undefined, 'URL: '+url);
 
       QUnit.start();
     });
   })
-
-  pipeline.start();
 });
 
-QUnit.asyncTest('isReady', function()
+QUnit.asyncTest('Use thenable on transaction', function()
 {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(0);
 
-  // Pipeline creation (implicit transaction)
+  // Pipeline creation
   var pipeline = self.pipeline;
 
-  var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
-  var httpGet = pipeline.create('HttpGetEndpoint');
+  // Atomic creation
+  var player = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+  // End atomic creation
 
-  player.connect(httpGet);
-
-  QUnit.notOk(player.isReady());
-
-  pipeline.start(function()
+  // Creation in transaction
+  var promise = pipeline.transaction(function()
   {
-    QUnit.ok(player.isReady());
+    var httpGet = pipeline.create('HttpGetEndpoint');
+
+    player.connect(httpGet);
+  });
+  // End transaction
+
+  promise.then(function()
+  {
+    player.release();
 
     QUnit.start();
   });
 });
 
-QUnit.asyncTest('wait ready', function()
+QUnit.asyncTest('Is ready after thenable is called', function()
 {
   var self = this;
 
   QUnit.expect(2);
 
-  // Pipeline creation (implicit transaction)
   var pipeline = self.pipeline;
 
   var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
   var httpGet = pipeline.create('HttpGetEndpoint');
 
   player.connect(httpGet);
+
+  QUnit.strictEqual(player.id, undefined);
 
   player.then(function()
   {
-    QUnit.ok(player.isReady());
+    QUnit.notStrictEqual(player.id, undefined, 'player.id: '+player.id);
 
     QUnit.start();
-  })
-
-  pipeline.start();
+  });
 });
 
-QUnit.asyncTest('future', function()
+QUnit.asyncTest('Promise', function()
 {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   // Pipeline creation (implicit transaction)
   var pipeline = self.pipeline;
@@ -281,37 +311,82 @@ QUnit.asyncTest('future', function()
 
   player.connect(httpGet);
 
-  pipeline.start(function()
+  // Atomic operation
+  httpGet.getUrl(function(error, url)
   {
-    // Atomic operation
-    var url = httpGet.getUrl(function(url)
+    if(error) return onerror(error);
+
+    httpGet.getMediaPipeline(function(error, rPipeline)
     {
-      httpGet.getMediaPipeline(function(rPipeline)
+      if(error) return onerror(error);
+
+      player.getUri(function(error, uri)
       {
-        player.getUri(function(uri)
+        if(error) return onerror(error);
+
+        QUnit.equal(rPipeline, pipeline);
+
+        // Explicit transaction
+        pipeline.transaction(function()
         {
-          // Explicit transaction
-          pipeline.transaction(function(ctx)
+          httpGet.getUrl(function(error, fUrl)
           {
-            ctx.fUrl = httpGet.getUrl();
-            ctx.fUri = player.getUri();
-          },
-          // End explicit transaction
-          function(ctx)
+            QUnit.equal(fUrl, url, 'URL: '+fUrl);
+          });
+          player.getUri(function(error, fUri)
           {
-            QUnit.equal(ctx.fUrl, url);
-            QUnit.equal(ctx.fUri, uri);
-          })
-        });
-        // End atomic operation
+            QUnit.equal(fUri, uri, 'URI: '+fUri);
+          });
+        },
+        // End explicit transaction
+        function()
+        {
+          QUnit.notStrictEqual(player.id, undefined, 'player.id: '+player.id);
+
+          QUnit.start();
+        })
       });
+      // End atomic operation
     });
   });
+});
 
-  player.then(function()
+
+/**
+ * Transaction at KurentoClient
+ */
+QUnit.asyncTest('Transactional API', function()
+{
+  var self = this;
+
+  QUnit.expect(1);
+
+  var player;
+  var httpGet;
+
+  this.kurento.transaction(function()
   {
-    QUnit.ok(player.isReady());
+    var pipeline = self.pipeline;
 
-    QUnit.start();
-  })
+    player = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+
+    httpGet = this.create('HttpGetEndpoint', {mediaPipeline: pipeline});
+
+    player.connect(httpGet);
+  },
+  function(error)
+  {
+    if(error) return onerror(error);
+
+    httpGet.getUrl(function(error, url)
+    {
+      if(error) return onerror(error);
+
+      player.release();
+
+      QUnit.notEqual(url, undefined, 'URL: '+url);
+
+      QUnit.start();
+    });
+  });
 });

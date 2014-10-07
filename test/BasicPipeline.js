@@ -115,7 +115,7 @@ QUnit.asyncTest('Pseudo-syncronous API', function()
 });
 
 /**
- * Basic pipeline using transactional API
+ * Basic pipeline using Transactional API
  */
 QUnit.asyncTest('Transactional API', function()
 {
@@ -123,14 +123,17 @@ QUnit.asyncTest('Transactional API', function()
 
   QUnit.expect(1);
 
-  var pipeline = self.pipeline;
+  var player;
+  var httpGet;
 
-  var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
-  var httpGet = pipeline.create('HttpGetEndpoint');
+  self.pipeline.transaction(function()
+  {
+    player  = this.create('PlayerEndpoint', {uri: URL_SMALL});
+    httpGet = this.create('HttpGetEndpoint');
 
-  player.connect(httpGet);
-
-  pipeline.start(function(error)
+    player.connect(httpGet);
+  },
+  function(error)
   {
     if(error) return onerror(error);
 
@@ -141,6 +144,74 @@ QUnit.asyncTest('Transactional API', function()
       player.release();
 
       QUnit.notEqual(url, undefined, 'URL: '+url);
+
+      QUnit.start();
+    });
+  });
+});
+
+
+/**
+ * Basic pipeline using transactional plain API
+ */
+QUnit.asyncTest('Transactional plain API', function()
+{
+  var self = this;
+
+  QUnit.expect(1);
+
+  var pipeline = self.pipeline;
+
+  pipeline.beginTransaction();
+    var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+    var httpGet = pipeline.create('HttpGetEndpoint');
+
+    player.connect(httpGet);
+  pipeline.endTransaction(function(error)
+  {
+    if(error) return onerror(error);
+
+    httpGet.getUrl(function(error, url)
+    {
+      if(error) return onerror(error);
+
+      player.release();
+
+      QUnit.notEqual(url, undefined, 'URL: '+url);
+
+      QUnit.start();
+    });
+  });
+});
+
+
+/**
+ * Create a transaction at beginning and send all commands on it
+ */
+QUnit.asyncTest('Early transaction', function()
+{
+  var self = this;
+
+  QUnit.expect(1);
+
+  var pipeline = self.pipeline;
+
+  pipeline.transaction(function()
+  {
+    var player  = pipeline.create('PlayerEndpoint', {uri: URL_SMALL});
+    var httpGet = pipeline.create('HttpGetEndpoint');
+
+    player.connect(httpGet);
+
+    httpGet.getUrl(function(error, url)
+    {
+      if(error) return onerror(error);
+
+      player.release();
+
+      QUnit.notEqual(url, undefined, 'URL: '+url);
+
+      pipeline.release();
 
       QUnit.start();
     });
