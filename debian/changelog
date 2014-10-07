@@ -1,3 +1,23 @@
+kms-filters (5.0.4) testing; urgency=medium
+
+  [ Jose Antonio Santos Cadenas ]
+  * Prepare for next developmen iteration
+  * Update kms-elements dependencies dependencies
+  * Add opencv to generated pkg-config
+
+  [ David Fernandez ]
+  * OpenCVProcess: Add getSharedPtr function
+
+  [ Jose Antonio Santos Cadenas ]
+  * Fix compilation of gst-plugins
+  * Install generated FindKMSFILTERS.cmake
+  * Start using generic_find to look for dependencies
+  * Prepare release 5.0.4
+
+  [ José Antonio Santos Cadenas ]
+
+ -- Jose Antonio Santos Cadenas <santoscadenas@gmail.com>  Tue, 07 Oct 2014 07:37:05 +0200
+
 kms-filters (5.0.3) testing; urgency=medium
 
   [ Jose Antonio Santos Cadenas ]
