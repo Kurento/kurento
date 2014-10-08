@@ -100,7 +100,8 @@ kms_plumber_endpoint_set_property (GObject * object, guint property_id,
   switch (property_id) {
     case PROP_LOCAL_ADDR:
       if (!g_value_get_string (value)) {
-        GST_WARNING ("local-address property cannot be NULL");
+        GST_WARNING_OBJECT (plumberendpoint,
+            "local-address property cannot be NULL");
         break;
       }
 
@@ -189,7 +190,7 @@ kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
   switch (type) {
     case STREAM_TYPE_AUDIO:
       if (self->priv->audiosrc != NULL) {
-        GST_WARNING ("Audio src is already created");
+        GST_WARNING_OBJECT (self, "Audio src is already created");
         return -1;
       }
       agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
@@ -198,7 +199,7 @@ kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
       break;
     case STREAM_TYPE_VIDEO:
       if (self->priv->videosrc != NULL) {
-        GST_WARNING ("Video src is already created");
+        GST_WARNING_OBJECT (self, "Video src is already created");
         return -1;
       }
       agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
@@ -225,7 +226,7 @@ kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
   gst_element_sync_state_with_parent (*element);
 
   if (!gst_element_link (*element, agnosticbin)) {
-    GST_ERROR ("Could not link %s to element %s",
+    GST_ERROR_OBJECT (self, "Could not link %s to element %s",
         GST_ELEMENT_NAME (*element), GST_ELEMENT_NAME (agnosticbin));
     gst_element_set_state (*element, GST_STATE_NULL);
     gst_bin_remove (GST_BIN (self), *element);
@@ -242,7 +243,8 @@ kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
     end_time = g_get_monotonic_time () + KMS_WAIT_TIMEOUT * G_TIME_SPAN_SECOND;
     while (!syncdata.done) {
       if (!g_cond_wait_until (&syncdata.cond, &syncdata.mutex, end_time)) {
-        GST_ERROR ("Time out expired while waiting for current-port signal");
+        GST_ERROR_OBJECT (self,
+            "Time out expired while waiting for current-port signal");
       }
     }
     g_mutex_unlock (&syncdata.mutex);
@@ -275,7 +277,7 @@ kms_plumber_endpoint_create_mcc (KmsPlumberEndpoint * self)
     return FALSE;
   }
 
-  GST_DEBUG ("Creating multi-channel control link");
+  GST_DEBUG_OBJECT (self, "Creating multi-channel control link");
 
   self->priv->mcc = kms_multi_channel_controller_new (self->priv->local_addr,
       self->priv->local_port);
@@ -307,7 +309,8 @@ kms_plumber_endpoint_connect_mcc (KmsPlumberEndpoint * self, gchar * host,
     return FALSE;
   }
 
-  GST_DEBUG ("Connecting remote control link to %s:%d", host, port);
+  GST_DEBUG_OBJECT (self, "Connecting remote control link to %s:%d", host,
+      port);
 
   if (!kms_multi_channel_controller_connect (self->priv->mcc, host, port, &err)) {
     GST_DEBUG_OBJECT (self, "%s", err->message);
@@ -378,7 +381,7 @@ kms_plumber_endpoint_audio_valve_added (KmsElement * self, GstElement * valve)
 static void
 kms_plumber_endpoint_audio_valve_removed (KmsElement * self, GstElement * valve)
 {
-  GST_INFO ("TODO: Implement this");
+  /* TODO: Implement this */
 }
 
 static void
@@ -393,13 +396,13 @@ kms_plumber_endpoint_video_valve_added (KmsElement * self, GstElement * valve)
 static void
 kms_plumber_endpoint_video_valve_removed (KmsElement * self, GstElement * valve)
 {
-  GST_INFO ("TODO: Implement this");
+  /* TODO: Implement this */
 }
 
 static gboolean
 kms_plumber_endpoint_accept (KmsPlumberEndpoint * self)
 {
-  GST_DEBUG ("Accept multi channel control link.");
+  GST_DEBUG_OBJECT (self, "Accept multi channel control link.");
 
   return kms_plumber_endpoint_create_mcc (self);
 }
@@ -408,7 +411,8 @@ static gboolean
 kms_plumber_endpoint_connect (KmsPlumberEndpoint * self, gchar * host,
     guint port)
 {
-  GST_DEBUG ("Connect multi channel control link. %s:%d", host, port);
+  GST_DEBUG_OBJECT (self, "Connect multi channel control link. %s:%d", host,
+      port);
 
   KMS_ELEMENT_LOCK (self);
 
