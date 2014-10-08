@@ -559,10 +559,8 @@ kms_plumber_endpoint_sink_query (KmsElement * self, GstPad * pad,
       ret = kms_plumber_endpoint_query_caps (self, pad, query);
       break;
     case GST_QUERY_ACCEPT_CAPS:
-      if (TRUE) {
-        ret = kms_plumber_endpoint_query_accept_caps (self, pad, query);
-        break;
-      }
+      ret = kms_plumber_endpoint_query_accept_caps (self, pad, query);
+      break;
     default:
       ret = KMS_ELEMENT_CLASS (parent_class)->sink_query (self, pad, query);
   }
