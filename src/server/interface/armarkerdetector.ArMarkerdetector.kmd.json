@@ -14,7 +14,29 @@
 	    "final": true
 	  }
 	]
-      }
+      },
+      "properties":[
+        {
+          "name": "showDebugLevel",
+          "doc": "Show debug info on image",
+          "type": "int"
+        },
+        {
+          "name": "overlayImage",
+          "doc": "documentation of the property",
+          "type": "String"
+        },
+        {
+          "name": "overlayText",
+          "doc": "documentation of the property",
+          "type": "String"
+        },
+        {
+          "name": "overlayScale",
+          "doc": "documentation of the property",
+          "type": "float"
+        }
+      ]
     }
   ]
 }
