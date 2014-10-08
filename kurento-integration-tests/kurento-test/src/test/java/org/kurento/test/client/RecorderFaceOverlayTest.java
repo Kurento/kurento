@@ -124,11 +124,10 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 			Assert.assertTrue("Timeout waiting playing event",
 					browser.waitForEvent("playing"));
 
-			// Color in the video at second 15, in the position 420x45 must be
-			// red
+			// Color in the video in the position 420x45 must be red
 			Assert.assertTrue(
 					"Color above the head must be red (FaceOverlayFilter)",
-					browser.color(Color.RED, 15, 420, 45));
+					browser.color(Color.RED, 420, 45));
 
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));

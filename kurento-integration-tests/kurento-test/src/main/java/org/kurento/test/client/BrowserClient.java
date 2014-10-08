@@ -332,30 +332,35 @@ public class BrowserClient implements Closeable {
 		return currentTime;
 	}
 
-	public boolean color(Color expectedColor, final double seconds, int x, int y) {
-		// Wait to be in the right time
-		(new WebDriverWait(driver, timeout))
-				.until(new ExpectedCondition<Boolean>() {
-					public Boolean apply(WebDriver d) {
-						double time = Double.parseDouble(d.findElement(
-								By.id("currentTime")).getAttribute("value"));
-						return time > seconds;
-					}
-				});
-
+	public boolean color(Color expectedColor, int x, int y) {
+		boolean out;
+		final long endTimeMillis = System.currentTimeMillis()
+				+ (timeout * 1000);
 		setColorCoordinates(x, y);
-		// Guard time to wait JavaScript function to detect the color (otherwise
-		// race conditions could appear)
-		try {
-			Thread.sleep(200);
-		} catch (InterruptedException e) {
-			log.trace("InterruptedException in guard condition ({})",
-					e.getMessage());
+
+		while (true) {
+			out = colorSimilarTo(expectedColor, false);
+			if (out || System.currentTimeMillis() > endTimeMillis) {
+				break;
+			} else {
+				// Polling: wait 200 ms and check again the color
+				// Max wait = timeout variable
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					log.trace("InterruptedException in guard condition ({})",
+							e.getMessage());
+				}
+			}
 		}
-		return colorSimilarTo(expectedColor);
+		return out;
 	}
 
 	public boolean colorSimilarTo(Color expectedColor) {
+		return colorSimilarTo(expectedColor, true);
+	}
+
+	public boolean colorSimilarTo(Color expectedColor, boolean trace) {
 		String[] realColor = driver.findElement(By.id("color"))
 				.getAttribute("value").split(",");
 		int red = Integer.parseInt(realColor[0]);
@@ -369,8 +374,10 @@ public class BrowserClient implements Closeable {
 				+ (blue - expectedColor.getBlue())
 				* (blue - expectedColor.getBlue()));
 
-		log.info("Color comparision: real {}, expected {}, distance {}",
-				realColor, expectedColor, distance);
+		if (trace) {
+			log.info("Color comparision: real {}, expected {}, distance {}",
+					realColor, expectedColor, distance);
+		}
 
 		return distance <= getMaxDistance();
 	}
