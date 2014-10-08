@@ -41,6 +41,21 @@ GST_DEBUG_CATEGORY_STATIC (GST_CAT_DEFAULT);
   )                                           \
 )
 
+#define BASE_TIME_LOCK(obj) (                                          \
+  g_mutex_lock (&KMS_PLUMBER_ENDPOINT(obj)->priv->base_time_lock)      \
+)
+
+#define BASE_TIME_UNLOCK(obj) (                                        \
+  g_mutex_unlock (&KMS_PLUMBER_ENDPOINT(obj)->priv->base_time_lock)    \
+)
+
+typedef struct _BaseTimeType
+{
+  gboolean first;
+  GstClockTime pts;
+  GstClockTime running_time;
+} BaseTimeType;
+
 struct _KmsPlumberEndpointPrivate
 {
   KmsMultiChannelController *mcc;
@@ -55,6 +70,10 @@ struct _KmsPlumberEndpointPrivate
   /* SCTP client elements */
   GstElement *audiosink;
   GstElement *videosink;
+
+  /* sync fields */
+  GMutex base_time_lock;
+  BaseTimeType *base_time;
 };
 
 typedef struct _SyncCurrentPortData
@@ -157,6 +176,12 @@ kms_plumber_endpoint_finalize (GObject * object)
 
   g_free (plumberendpoint->priv->local_addr);
 
+  if (plumberendpoint->priv->base_time != NULL) {
+    g_slice_free (BaseTimeType, plumberendpoint->priv->base_time);
+  }
+
+  g_mutex_clear (&plumberendpoint->priv->base_time_lock);
+
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
@@ -177,6 +202,73 @@ sctp_server_notify_current_port (GObject * object, GParamSpec * pspec,
   g_mutex_unlock (&syncdata->mutex);
 }
 
+static GstPadProbeReturn
+kms_plumber_endpoint_synchronize_buffer (GstPad * pad, GstPadProbeInfo * info,
+    gpointer data)
+{
+  KmsPlumberEndpoint *self = KMS_PLUMBER_ENDPOINT (data);
+  GstBuffer *buffer;
+
+  buffer = GST_PAD_PROBE_INFO_BUFFER (info);
+
+  buffer = gst_buffer_make_writable (buffer);
+
+  BASE_TIME_LOCK (self);
+
+  /* first buffer, calculate the timestamp */
+  if (self->priv->base_time->first) {
+    GstClockTime base_time, now;
+    GstClock *clock;
+
+    /* get clock, if no clock, we neither can sync nor do timestamping */
+    if ((clock = GST_ELEMENT_CLOCK (self)) == NULL) {
+      GST_DEBUG_OBJECT (self, "No clock. Buffer can't be synchronized");
+      GST_BUFFER_PTS (buffer) = GST_CLOCK_TIME_NONE;
+      GST_BUFFER_DTS (buffer) = GST_CLOCK_TIME_NONE;
+      goto end;
+    }
+
+    base_time = GST_ELEMENT_CAST (self)->base_time;
+    now = gst_clock_get_time (clock);
+
+    self->priv->base_time->running_time = now - base_time;
+
+    self->priv->base_time->pts = GST_BUFFER_PTS (buffer);
+    GST_DEBUG_OBJECT (self, "Setting pts base time to: %" GST_TIME_FORMAT,
+        GST_TIME_ARGS (self->priv->base_time->pts));
+
+    self->priv->base_time->first = FALSE;
+  }
+
+  if (GST_CLOCK_TIME_IS_VALID (self->priv->base_time->pts)) {
+    if (GST_BUFFER_PTS_IS_VALID (buffer)) {
+      if (self->priv->base_time->pts > GST_BUFFER_PTS (buffer)) {
+        GST_DEBUG_OBJECT (pad, "Buffer synchronized using a prior PTS");
+        GST_BUFFER_PTS (buffer) = self->priv->base_time->running_time -
+            (self->priv->base_time->pts - GST_BUFFER_PTS (buffer));
+      } else {
+        GST_BUFFER_PTS (buffer) = GST_BUFFER_PTS (buffer) -
+            self->priv->base_time->pts + self->priv->base_time->running_time;
+      }
+    }
+  } else {
+    GST_WARNING_OBJECT (self, "Buffer can not be used to synchronize."
+        " PTS will be calculated with next buffer");
+    self->priv->base_time->first = TRUE;
+    GST_BUFFER_PTS (buffer) = GST_CLOCK_TIME_NONE;
+  }
+
+  GST_BUFFER_DTS (buffer) = GST_BUFFER_PTS (buffer);
+
+end:
+
+  BASE_TIME_UNLOCK (self);
+
+  GST_PAD_PROBE_INFO_DATA (info) = buffer;
+
+  return GST_PAD_PROBE_OK;
+}
+
 static int
 kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
     KmsPlumberEndpoint * self)
@@ -186,6 +278,7 @@ kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
   GstElement **element;
   gint port = -1;
   gulong sig_id;
+  GstPad *pad;
 
   switch (type) {
     case STREAM_TYPE_AUDIO:
@@ -210,6 +303,12 @@ kms_plumber_endpoint_create_sctp_src (StreamType type, guint16 chanid,
       GST_WARNING_OBJECT (self, "Invalid stream type requested");
       return -1;
   }
+
+  pad = gst_element_get_static_pad (*element, "src");
+  gst_pad_add_probe (pad, GST_PAD_PROBE_TYPE_BUFFER,
+      (GstPadProbeCallback) kms_plumber_endpoint_synchronize_buffer, self,
+      NULL);
+  gst_object_unref (pad);
 
   g_object_set (G_OBJECT (*element), "bind-address", self->priv->local_addr,
       NULL);
@@ -640,6 +739,9 @@ static void
 kms_plumber_endpoint_init (KmsPlumberEndpoint * self)
 {
   self->priv = KMS_PLUMBER_ENDPOINT_GET_PRIVATE (self);
+  g_mutex_init (&self->priv->base_time_lock);
+  self->priv->base_time = g_slice_new0 (BaseTimeType);
+  self->priv->base_time->first = TRUE;
 }
 
 gboolean
