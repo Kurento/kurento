@@ -86,7 +86,7 @@ public class PlayerBrowserTest extends BrowserKurentoClientTest {
 					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
 			Assert.assertTrue("The color of the video should be blue",
-					browser.colorSimilarTo(Color.BLUE));
+					browser.similarColor(Color.BLUE));
 		}
 
 		// Release Media Pipeline

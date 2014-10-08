@@ -209,7 +209,7 @@ public class BrowserClient implements Closeable {
 		driver.findElement(By.id("status")).clear();
 	}
 
-	public void setColorCoordinates(int x, int y) {
+	private void setColorCoordinates(int x, int y) {
 		driver.findElement(By.id("x")).clear();
 		driver.findElement(By.id("y")).clear();
 		driver.findElement(By.id("x")).sendKeys(String.valueOf(x));
@@ -332,14 +332,14 @@ public class BrowserClient implements Closeable {
 		return currentTime;
 	}
 
-	public boolean color(Color expectedColor, int x, int y) {
+	public boolean similarColorAt(Color expectedColor, int x, int y) {
 		boolean out;
 		final long endTimeMillis = System.currentTimeMillis()
 				+ (timeout * 1000);
 		setColorCoordinates(x, y);
 
 		while (true) {
-			out = colorSimilarTo(expectedColor, false);
+			out = compareColor(expectedColor);
 			if (out || System.currentTimeMillis() > endTimeMillis) {
 				break;
 			} else {
@@ -356,11 +356,11 @@ public class BrowserClient implements Closeable {
 		return out;
 	}
 
-	public boolean colorSimilarTo(Color expectedColor) {
-		return colorSimilarTo(expectedColor, true);
+	public boolean similarColor(Color expectedColor) {
+		return similarColorAt(expectedColor, 0, 0);
 	}
 
-	public boolean colorSimilarTo(Color expectedColor, boolean trace) {
+	private boolean compareColor(Color expectedColor) {
 		String[] realColor = driver.findElement(By.id("color"))
 				.getAttribute("value").split(",");
 		int red = Integer.parseInt(realColor[0]);
@@ -373,11 +373,6 @@ public class BrowserClient implements Closeable {
 				* (green - expectedColor.getGreen())
 				+ (blue - expectedColor.getBlue())
 				* (blue - expectedColor.getBlue()));
-
-		if (trace) {
-			log.info("Color comparision: real {}, expected {}, distance {}",
-					realColor, expectedColor, distance);
-		}
 
 		return distance <= getMaxDistance();
 	}

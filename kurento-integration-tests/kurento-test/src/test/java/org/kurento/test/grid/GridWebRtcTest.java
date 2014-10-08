@@ -135,7 +135,7 @@ public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 			// Assert color
 			if (color != null) {
 				Assert.assertTrue("The color of the video should be " + color,
-						browser.colorSimilarTo(color));
+						browser.similarColor(color));
 			}
 		} catch (InterruptedException e) {
 			Assert.fail("InterruptedException " + e.getMessage());

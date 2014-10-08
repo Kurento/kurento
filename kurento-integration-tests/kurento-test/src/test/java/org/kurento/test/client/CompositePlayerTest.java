@@ -101,13 +101,13 @@ public class CompositePlayerTest extends BrowserKurentoClientTest {
 			Assert.assertTrue("Timeout waiting playing event",
 					browser.waitForEvent("playing"));
 			Assert.assertTrue("Upper left part of the video must be red",
-					browser.color(Color.RED, 0, 0));
+					browser.similarColorAt(Color.RED, 0, 0));
 			Assert.assertTrue("Upper right part of the video must be green",
-					browser.color(Color.GREEN, 450, 0));
+					browser.similarColorAt(Color.GREEN, 450, 0));
 			Assert.assertTrue("Lower left part of the video must be blue",
-					browser.color(Color.BLUE, 0, 450));
+					browser.similarColorAt(Color.BLUE, 0, 450));
 			Assert.assertTrue("Lower right part of the video must be white",
-					browser.color(Color.WHITE, 450, 450));
+					browser.similarColorAt(Color.WHITE, 450, 450));
 		}
 
 		// Release Media Pipeline

@@ -87,7 +87,7 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 					browser.waitForEvent("playing"));
 			Thread.sleep(10000);
 			Assert.assertTrue("The color of the video should be red",
-					browser.colorSimilarTo(Color.RED));
+					browser.similarColor(Color.RED));
 		}
 
 		// Release Media Pipeline

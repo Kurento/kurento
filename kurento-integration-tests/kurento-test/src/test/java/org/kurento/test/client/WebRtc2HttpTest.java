@@ -50,7 +50,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 
-	private static int PLAYTIME = 5; // seconds to play in HTTP player
+	private static int PLAYTIME = 10; // seconds to play in HTTP player
 	private static int NPLAYERS = 2; // number of HttpEndpoint connected to
 										// WebRTC source
 
@@ -121,7 +121,7 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 					compare(PLAYTIME, currentTime));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser.colorSimilarTo(new Color(0, 135, 0)));
+					browser.similarColor(new Color(0, 135, 0)));
 
 			browser.stop();
 		}

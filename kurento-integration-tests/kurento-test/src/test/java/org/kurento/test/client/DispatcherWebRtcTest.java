@@ -81,7 +81,7 @@ public class DispatcherWebRtcTest extends BrowserKurentoClientTest {
 					browser2.waitForEvent("playing"));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser2.colorSimilarTo(new Color(0, 135, 0)));
+					browser2.similarColor(new Color(0, 135, 0)));
 			Thread.sleep(5000);
 		}
 

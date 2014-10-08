@@ -119,7 +119,7 @@ public class RecorderPlayerTest extends BrowserKurentoClientTest {
 					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
 			Assert.assertTrue("The color of the video should be green",
-					browser.colorSimilarTo(Color.GREEN));
+					browser.similarColor(Color.GREEN));
 
 			// Assess video/audio codec of the recorded video
 			AssertMedia.assertCodecs(getDefaultFileForRecording(),

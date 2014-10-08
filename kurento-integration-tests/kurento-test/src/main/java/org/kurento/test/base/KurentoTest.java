@@ -47,11 +47,11 @@ public class KurentoTest {
 	@Rule
 	public KmsLogOnFailure logOnFailure = new KmsLogOnFailure();
 
-	protected int threshold = 25;
+	protected int thresholdTime = 10; // seconds
 
 	/**
-	 * Compares two numbers and return true|false if these number are similar,
-	 * using a threshold in the comparison.
+	 * Compares two times and return true|false if these number are similar,
+	 * using a threshold time in the comparison.
 	 * 
 	 * @param i
 	 *            First number to be compared
@@ -60,15 +60,15 @@ public class KurentoTest {
 	 * @return true|false
 	 */
 	public boolean compare(double i, double j) {
-		return Math.abs(j - i) <= (i * getThreshold() / 100);
+		return Math.abs(j - i) <= getThresholdTime();
 	}
 
-	public int getThreshold() {
-		return threshold;
+	public int getThresholdTime() {
+		return thresholdTime;
 	}
 
-	public void setThreshold(int threshold) {
-		this.threshold = threshold;
+	public void setThresholdTime(int thresholdTime) {
+		this.thresholdTime = thresholdTime;
 	}
 
 	protected int getServerPort() {

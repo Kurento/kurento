@@ -122,7 +122,7 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 		for (BrowserClient browser : browsers) {
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
-					browser.colorSimilarTo(new Color(0, 135, 0)));
+					browser.similarColor(new Color(0, 135, 0)));
 		}
 	}
 

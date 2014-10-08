@@ -96,7 +96,7 @@ public class WebRtcTest extends BrowserKurentoClientTest {
 			// Assert color
 			if (color != null) {
 				Assert.assertTrue("The color of the video should be " + color,
-						browser.colorSimilarTo(color));
+						browser.similarColor(color));
 			}
 		}
 

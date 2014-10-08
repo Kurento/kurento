@@ -137,11 +137,11 @@ public class RecorderSwitchTest extends BrowserKurentoClientTest {
 					browser.waitForEvent("playing"));
 
 			Assert.assertTrue("Recorded video first must be red",
-					browser.color(Color.RED, 0, 0));
+					browser.similarColor(Color.RED));
 			Assert.assertTrue("Recorded video second must be green",
-					browser.color(Color.GREEN, 0, 0));
+					browser.similarColor(Color.GREEN));
 			Assert.assertTrue("Recorded video third must be blue",
-					browser.color(Color.BLUE, 0, 0));
+					browser.similarColor(Color.BLUE));
 
 			Assert.assertTrue("Timeout waiting ended event",
 					browser.waitForEvent("ended"));

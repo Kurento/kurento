@@ -48,7 +48,7 @@ import org.kurento.test.mediainfo.AssertMedia;
  */
 public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 
-	private static int PLAYTIME = 5; // seconds
+	private static int PLAYTIME = 10; // seconds
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 
@@ -96,7 +96,7 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 			// Assert color
 			if (color != null) {
 				Assert.assertTrue("The color of the video should be " + color,
-						browser.colorSimilarTo(color));
+						browser.similarColor(color));
 			}
 		}
 
@@ -130,7 +130,7 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 					compare(PLAYTIME, currentTime));
 			if (color != null) {
 				Assert.assertTrue("The color of the video should be " + color,
-						browser.colorSimilarTo(color));
+						browser.similarColor(color));
 			}
 
 			// Assess video/audio codec of the recorded video
