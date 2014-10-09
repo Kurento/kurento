@@ -17,17 +17,13 @@ package org.kurento.test.client;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
-import org.kurento.test.services.AudioChannel;
-import org.kurento.test.services.Recorder;
 
 /**
- * <strong>Description</strong>: WebRTC in loopback using custom video and audio
- * files.<br/>
+ * <strong>Description</strong>: WebRTC in loopback.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>WebRtcEndpoint -> WebRtcEndpoint</li>
@@ -36,8 +32,6 @@ import org.kurento.test.services.Recorder;
  * <ul>
  * <li>Browser should start before default timeout</li>
  * <li>Play time should be as expected</li>
- * <li>Color received by client should be as expected</li>
- * <li>Perceived audio quality should be fair (PESQMOS)</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -47,19 +41,13 @@ import org.kurento.test.services.Recorder;
 public class WebRtcTest extends BrowserKurentoClientTest {
 
 	private static int PLAYTIME = 10; // seconds to play in WebRTC
-	private static int AUDIO_SAMPLE_RATE = 16000; // samples per second
-	private static float MIN_PESQ_MOS = 3; // Audio quality (PESQ MOS [1..5])
 
-	@Ignore
 	@Test
 	public void testWebRtcLoopbackChrome() throws InterruptedException {
-		doTest(Browser.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
-				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
-				Color.RED);
+		doTest(Browser.CHROME);
 	}
 
-	public void doTest(Browser browserType, String videoPath, String audioUrl,
-			Color color) throws InterruptedException {
+	public void doTest(Browser browserType) throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
@@ -67,13 +55,6 @@ public class WebRtcTest extends BrowserKurentoClientTest {
 
 		BrowserClient.Builder builder = new BrowserClient.Builder().browser(
 				browserType).client(Client.WEBRTC);
-		if (videoPath != null) {
-			builder = builder.video(videoPath);
-		}
-		if (audioUrl != null) {
-			builder = builder.audio(audioUrl, PLAYTIME, AUDIO_SAMPLE_RATE,
-					AudioChannel.MONO);
-		}
 
 		try (BrowserClient browser = builder.build()) {
 			browser.subscribeEvents("playing");
@@ -94,20 +75,9 @@ public class WebRtcTest extends BrowserKurentoClientTest {
 					compare(PLAYTIME, currentTime));
 
 			// Assert color
-			if (color != null) {
-				Assert.assertTrue("The color of the video should be " + color,
-						browser.similarColor(color));
-			}
-		}
-
-		// Assert audio quality
-		if (audioUrl != null) {
-			float realPesqMos = Recorder
-					.getPesqMos(audioUrl, AUDIO_SAMPLE_RATE);
 			Assert.assertTrue(
-					"Bad perceived audio quality: PESQ MOS too low (expected="
-							+ MIN_PESQ_MOS + ", real=" + realPesqMos + ")",
-					realPesqMos >= MIN_PESQ_MOS);
+					"The color of the video should be green (RGB #008700)",
+					browser.similarColor(new Color(0, 135, 0)));
 		}
 
 		// Release Media Pipeline

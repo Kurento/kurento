@@ -17,8 +17,6 @@ package org.kurento.test.client;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.kurento.client.Composite;
 import org.kurento.client.GStreamerFilter;
 import org.kurento.client.HttpGetEndpoint;
@@ -50,8 +48,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 
-	@Ignore
-	@Test
+	// @Test
 	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}

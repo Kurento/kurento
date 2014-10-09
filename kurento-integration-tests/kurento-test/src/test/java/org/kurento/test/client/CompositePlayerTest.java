@@ -17,8 +17,6 @@ package org.kurento.test.client;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.kurento.client.Composite;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.HubPort;
@@ -46,14 +44,12 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class CompositePlayerTest extends BrowserKurentoClientTest {
 
-	@Ignore
-	@Test
+	// @Test
 	public void testCompositePlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
-	@Ignore
-	@Test
+	// @Test
 	public void testCompositePlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
