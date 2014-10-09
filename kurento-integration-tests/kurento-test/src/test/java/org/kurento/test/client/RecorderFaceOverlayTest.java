@@ -17,7 +17,6 @@ package org.kurento.test.client;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.HttpGetEndpoint;
@@ -61,7 +60,6 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 		doTest(Browser.CHROME);
 	}
 
-	@Ignore
 	@Test
 	public void testRecorderFaceOverlayFirefox() throws Exception {
 		doTest(Browser.FIREFOX);

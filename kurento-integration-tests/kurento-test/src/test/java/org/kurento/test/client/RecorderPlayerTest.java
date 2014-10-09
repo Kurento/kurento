@@ -17,7 +17,6 @@ package org.kurento.test.client;
 import java.awt.Color;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
@@ -57,7 +56,6 @@ public class RecorderPlayerTest extends BrowserKurentoClientTest {
 		doTest(Browser.CHROME);
 	}
 
-	@Ignore
 	@Test
 	public void testRecorderPlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
