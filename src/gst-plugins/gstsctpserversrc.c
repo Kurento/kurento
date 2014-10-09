@@ -223,6 +223,10 @@ gst_sctp_server_src_create (GstPushSrc * psrc, GstBuffer ** outbuf)
   GError *err = NULL;
 
   if (kms_sctp_server_rpc_get_buffer (self->priv->serverrpc, outbuf, &err)) {
+    if (gst_base_src_get_do_timestamp (GST_BASE_SRC (psrc))) {
+      GST_BUFFER_PTS (*outbuf) = GST_CLOCK_TIME_NONE;
+      GST_BUFFER_DTS (*outbuf) = GST_CLOCK_TIME_NONE;
+    }
     GST_LOG_OBJECT (psrc, "Buffer %" GST_PTR_FORMAT, *outbuf);
     return GST_FLOW_OK;
   }
@@ -516,7 +520,6 @@ gst_sctp_server_src_init (GstSCTPServerSrc * self)
 
   gst_base_src_set_async (GST_BASE_SRC (self), TRUE);
   gst_base_src_set_live (GST_BASE_SRC (self), TRUE);
-  gst_base_src_set_do_timestamp (GST_BASE_SRC (self), TRUE);
 }
 
 gboolean
