@@ -18,16 +18,6 @@ get_values_from_model(PREFIX VALUE MODELS ${CMAKE_SOURCE_DIR}/src/server/interfa
 get_git_version (PROJECT_VERSION ${VALUE_VERSION})
 install_git_hook (pre-commit ${CMAKE_CURRENT_SOURCE_DIR}/hooks/pre-commit.hook)
 
-string(REPLACE "." ";" VERSION_LIST ${PROJECT_VERSION})
-list(GET VERSION_LIST 0 PROJECT_VERSION_MAJOR)
-list (LENGTH VERSION_LIST _len)
-if (${_len} GREATER 1)
-  list(GET VERSION_LIST 1 PROJECT_VERSION_MINOR)
-endif ()
-if (${_len} GREATER 2)
-  list(GET VERSION_LIST 2 PROJECT_VERSION_PATCH)
-endif ()
-
 find_package(PkgConfig)
 
 set (GST_REQUIRED 1.3.3)
