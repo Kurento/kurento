@@ -60,6 +60,10 @@ module.exports = function(grunt)
     // Generate browser versions and mapping debug file
     browserify:
     {
+      options: {
+        alias : ['<%= pkg.main %>:<%= pkg.name %>']
+      },
+
       require:
       {
         src:  '<%= pkg.main %>',
