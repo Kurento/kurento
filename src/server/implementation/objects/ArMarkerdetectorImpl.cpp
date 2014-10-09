@@ -41,33 +41,39 @@ ArMarkerdetectorImpl::StaticConstructor::StaticConstructor()
 //virtual void Serialize (JsonSerializer &serializer);
 
 int ArMarkerdetectorImpl::getShowDebugLevel () {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 	return 0;
 }
 
 void ArMarkerdetectorImpl::setShowDebugLevel (int showDebugLevel) {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 }
 
 std::string ArMarkerdetectorImpl::getOverlayImage () {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 	return std::string("");
 }
 
 void ArMarkerdetectorImpl::setOverlayImage (const std::string &overlayImage) {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 }
 
 std::string ArMarkerdetectorImpl::getOverlayText () {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 	return std::string("");
 }
 
 void ArMarkerdetectorImpl::setOverlayText (const std::string &overlayText) {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 }
 
 float ArMarkerdetectorImpl::getOverlayScale () {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 	return 0.f;
 }
 void ArMarkerdetectorImpl::setOverlayScale (float overlayScale) {
+  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
 }
-
-
 
 } /* armarkerdetector */
 } /* module */

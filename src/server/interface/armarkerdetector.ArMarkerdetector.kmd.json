@@ -15,26 +15,90 @@
 	  }
 	]
       },
-      "properties":[
+      "methods": [
         {
-          "name": "showDebugLevel",
-          "doc": "Show debug info on image",
-          "type": "int"
+          "name": "setShowDebugLevel",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "showDebugLevel",
+              "doc": "show debug info on image",
+              "type": "int"
+            }
+          ]
         },
         {
-          "name": "overlayImage",
-          "doc": "documentation of the property",
-          "type": "String"
+          "name": "getShowDebugLevel",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "showDebugLevel",
+            "doc": "show debug info on image",
+            "type": "int"
+          }
         },
         {
-          "name": "overlayText",
-          "doc": "documentation of the property",
-          "type": "String"
+          "name": "setOverlayImage",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "overlayImage",
+              "doc": "TODO",
+              "type": "String"
+            }
+          ]
         },
         {
-          "name": "overlayScale",
-          "doc": "documentation of the property",
-          "type": "float"
+          "name": "getOverlayImage",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "overlayImage",
+            "doc": "TODO",
+            "type": "String"
+          }
+        },
+        {
+          "name": "setOverlayText",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "overlayText",
+              "doc": "TODO",
+              "type": "String"
+            }
+          ]
+        },
+        {
+          "name": "getOverlayText",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "overlayText",
+            "doc": "TODO",
+            "type": "String"
+          }
+        },
+        {
+          "name": "setOverlayScale",
+          "doc": "TODO",
+          "params": [
+            {
+              "name": "overlayScale",
+              "doc": "TODO",
+              "type": "float"
+            }
+          ]
+        },
+        {
+          "name": "getOverlayScale",
+          "doc": "TODO",
+          "params": [],
+          "return": {
+            "name": "overlayScale",
+            "doc": "TODO",
+            "type": "float"
+          }
         }
       ]
     }
