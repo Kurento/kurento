@@ -110,6 +110,22 @@ kms_sctp_connection_create_socket (KmsSCTPConnection * conn, gchar * host,
   conn->socket = g_socket_new (g_socket_address_get_family (conn->saddr),
       G_SOCKET_TYPE_STREAM, G_SOCKET_PROTOCOL_SCTP, err);
 
+#if defined (SCTP_NODELAY)
+  {
+    gboolean disable = TRUE;
+
+    /* Disable Nagle-like algorithm */
+    if (setsockopt (g_socket_get_fd (conn->socket), IPPROTO_SCTP, SCTP_NODELAY,
+            &disable, sizeof (disable)) < 0) {
+      GST_ERROR ("Could not deactivate Nagle-like algorithm");
+    }
+  }
+#else
+  {
+    GST_WARNING ("don't know how to disable Nagle algorith on this OS.");
+  }
+#endif
+
   if (conn->socket == NULL) {
     g_clear_object (&conn->saddr);
     return FALSE;
