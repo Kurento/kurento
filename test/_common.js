@@ -117,8 +117,7 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://127.0.0.1:8888/kurento':          'localhost (port 8888)',
-    'ws://demo01.kurento.org:8888/kurento': 'Kurento test server'
+    'ws://127.0.0.1:8888/kurento':          'localhost (port 8888)'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });
@@ -137,7 +136,7 @@ lifecycle =
     {
     //  var WebSocket = wock(proxy);
     //  ws_uri = new WebSocket();
-      ws_uri = 'ws://demo01.kurento.org:8888/kurento';
+      ws_uri = 'ws://127.0.0.1:8888/kurento';
     };
 
     this.kurento = new kurentoClient(ws_uri);
