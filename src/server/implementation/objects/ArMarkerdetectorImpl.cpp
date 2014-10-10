@@ -41,38 +41,35 @@ ArMarkerdetectorImpl::StaticConstructor::StaticConstructor()
 //virtual void Serialize (JsonSerializer &serializer);
 
 int ArMarkerdetectorImpl::getShowDebugLevel () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
-	return 0;
+	return ArMarkerdetectorOpenCVImpl::getShowDebugLevel();
 }
 
 void ArMarkerdetectorImpl::setShowDebugLevel (int showDebugLevel) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  	//throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+	ArMarkerdetectorOpenCVImpl::setShowDebugLevel(showDebugLevel);
 }
 
 std::string ArMarkerdetectorImpl::getOverlayImage () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
-	return std::string("");
+	return ArMarkerdetectorOpenCVImpl::getOverlayImage();
 }
 
 void ArMarkerdetectorImpl::setOverlayImage (const std::string &overlayImage) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+	ArMarkerdetectorOpenCVImpl::setOverlayImage(overlayImage);
 }
 
 std::string ArMarkerdetectorImpl::getOverlayText () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
-	return std::string("");
+	return ArMarkerdetectorOpenCVImpl::getOverlayText();
 }
 
 void ArMarkerdetectorImpl::setOverlayText (const std::string &overlayText) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+	ArMarkerdetectorOpenCVImpl::setOverlayText(overlayText);
 }
 
 float ArMarkerdetectorImpl::getOverlayScale () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
-	return 0.f;
+	return ArMarkerdetectorOpenCVImpl::getOverlayScale();
 }
 void ArMarkerdetectorImpl::setOverlayScale (float overlayScale) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+	ArMarkerdetectorOpenCVImpl::setOverlayScale(overlayScale);
 }
 
 } /* armarkerdetector */

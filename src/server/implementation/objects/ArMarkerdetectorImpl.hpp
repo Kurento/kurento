@@ -56,17 +56,17 @@ public:
 
   //virtual void Serialize (JsonSerializer &serializer);
 
-  virtual int getShowDebugLevel ();
-  virtual void setShowDebugLevel (int showDebugLevel);
+  int getShowDebugLevel ();
+  void setShowDebugLevel (int showDebugLevel);
 
-  virtual std::string getOverlayImage ();
-  virtual void setOverlayImage (const std::string &overlayImage);
+  std::string getOverlayImage ();
+  void setOverlayImage (const std::string &overlayImage);
 
-  virtual std::string getOverlayText ();
-  virtual void setOverlayText (const std::string &overlayText);
+  std::string getOverlayText ();
+  void setOverlayText (const std::string &overlayText);
 
-  virtual float getOverlayScale ();
-  virtual void setOverlayScale (float overlayScale);
+  float getOverlayScale ();
+  void setOverlayScale (float overlayScale);
 
 private:
 

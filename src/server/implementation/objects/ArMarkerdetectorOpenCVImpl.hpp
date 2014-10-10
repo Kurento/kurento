@@ -25,6 +25,18 @@ public:
 
   virtual void process (cv::Mat &mat);
 
+  int getShowDebugLevel ();
+  void setShowDebugLevel (int showDebugLevel);
+
+  std::string getOverlayImage ();
+  void setOverlayImage (const std::string &overlayImage);
+
+  std::string getOverlayText ();
+  void setOverlayText (const std::string &overlayText);
+
+  float getOverlayScale ();
+  void setOverlayScale (float overlayScale);
+
 };
 
 } /* armarkerdetector */
