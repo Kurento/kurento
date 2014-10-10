@@ -16,11 +16,15 @@ namespace armarkerdetector
 
 class ArMarkerdetectorOpenCVImpl : public virtual OpenCVProcess
 {
+protected:
+  int mShowDebugLevel;
+  std::string mOverlayImage;
+  std::string mOverlayText;
+  float mOverlayScale;
 
 public:
 
   ArMarkerdetectorOpenCVImpl ();
-
   virtual ~ArMarkerdetectorOpenCVImpl () {};
 
   virtual void process (cv::Mat &mat);

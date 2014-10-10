@@ -13,6 +13,8 @@ namespace armarkerdetector
 {
 
 ArMarkerdetectorOpenCVImpl::ArMarkerdetectorOpenCVImpl ()
+ : mShowDebugLevel(0)
+ , mOverlayScale(0.f)
 {
 }
 
@@ -26,41 +28,44 @@ void ArMarkerdetectorOpenCVImpl::process (cv::Mat &mat)
   cv::circle(mat, cv::Point(100,100), 50, CV_RGB(255,0,0));
 
   IplImage ipl = mat;
-  detect_marker(&ipl, true);
+  
+  detect_marker(&ipl, mShowDebugLevel);
 
   // FIXME: Implement this
   //throw KurentoException (NOT_IMPLEMENTED, "ArMarkerdetectorOpenCVImpl::process: Not implemented");
 }
 
 int ArMarkerdetectorOpenCVImpl::getShowDebugLevel () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  return mShowDebugLevel;
 }
 
 void ArMarkerdetectorOpenCVImpl::setShowDebugLevel (int showDebugLevel) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  mShowDebugLevel = showDebugLevel;
 }
 
 std::string ArMarkerdetectorOpenCVImpl::getOverlayImage () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  return mOverlayImage;
 }
 
 void ArMarkerdetectorOpenCVImpl::setOverlayImage (const std::string &overlayImage) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  mOverlayImage = overlayImage;
+  set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
 }
 
 std::string ArMarkerdetectorOpenCVImpl::getOverlayText () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  return mOverlayText;
 }
 
 void ArMarkerdetectorOpenCVImpl::setOverlayText (const std::string &overlayText) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  mOverlayText = overlayText;
+  set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
 }
 
 float ArMarkerdetectorOpenCVImpl::getOverlayScale () {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  return mOverlayScale;
 }
 void ArMarkerdetectorOpenCVImpl::setOverlayScale (float overlayScale) {
-  	throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
+  mOverlayScale = overlayScale;
 }
 
 
