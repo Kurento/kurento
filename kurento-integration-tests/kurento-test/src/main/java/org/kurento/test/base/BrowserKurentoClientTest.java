@@ -14,25 +14,25 @@
  */
 package org.kurento.test.base;
 
-import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SystemKurentoClientTests;
-import org.kurento.test.services.KurentoServicesTestHelper;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
- * Base for tests using kurento-client and Jetty Http Server.
+ * Base for tests using kurento-client and Http Server.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@ComponentScan
+@EnableAutoConfiguration
 @Category(SystemKurentoClientTests.class)
 public class BrowserKurentoClientTest extends KurentoClientTest {
 
-	@Before
-	public void setupHttpServer() throws Exception {
-
-		KurentoServicesTestHelper.startHttpServer();
+	public static void main(String[] args) throws Exception {
+		new SpringApplication(BrowserKurentoClientTest.class).run(args);
 	}
-
 }

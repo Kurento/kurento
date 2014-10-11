@@ -11,6 +11,12 @@
 	<artifactId>kurento-test</artifactId>
 	<packaging>jar</packaging>
 
+	<name>Kurento Integration tests - Kurento Tests</name>
+	<description>
+		This project contains test cases for testing Kurento
+		Java Client and Kurento Media Server.
+	</description>
+
 	<properties>
 		<!-- Test Dependencies Versions -->
 		<selenium-java.version>2.43.1</selenium-java.version>
@@ -25,22 +31,15 @@
 		<linux64-webdriver.version>2.9</linux64-webdriver.version>
 		<mac32-webdriver.version>2.9</mac32-webdriver.version>
 		<win32-webdriver.version>2.9</win32-webdriver.version>
+
+		<!-- Kurento Utils Version -->
+		<kurento-utils.version>5.0.4-SNAPSHOT</kurento-utils.version>
+
+		<!-- Main class -->
+		<start-class>org.kurento.test.base.BrowserKurentoClientTest</start-class>
 	</properties>
 
-	<name>Kurento Integration tests - Tests</name>
-	<description>
-		Kurento Tests: This project contains some test cases
-		for testing Kurento Java and Kurento Media Server.
-	</description>
-
 	<dependencies>
-		<!-- Spring boot -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<!-- End Spring boot -->
-
 		<!-- Kurento Dependencies -->
 		<dependency>
 			<groupId>org.kurento</groupId>
@@ -59,29 +58,17 @@
 			<artifactId>kurento-commons-testing</artifactId>
 			<scope>compile</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.kurento</groupId>
+			<artifactId>kurento-utils-js</artifactId>
+			<version>${kurento-utils.version}</version>
+		</dependency>
 
 		<!-- JUnit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>compile</scope>
-		</dependency>
-
-		<!-- Jetty -->
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
-			<version>${jetty-server.vesion}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-util</artifactId>
-			<version>${jetty-server.vesion}</version><!--$NO-MVN-MAN-VER$ -->
-		</dependency>
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-webapp</artifactId>
-			<version>${jetty-server.vesion}</version><!--$NO-MVN-MAN-VER$ -->
 		</dependency>
 
 		<!-- Selenium -->
@@ -122,6 +109,12 @@
 			<groupId>com.xebialabs.overthere</groupId>
 			<artifactId>overthere</artifactId>
 			<version>${overthere}</version>
+		</dependency>
+
+		<!-- Spring -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -337,6 +330,22 @@
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
 					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<version>${spring-boot.version}</version>
+					<configuration>
+						<mainClass>${start-class}</mainClass>
+						<layout>ZIP</layout>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>repackage</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>

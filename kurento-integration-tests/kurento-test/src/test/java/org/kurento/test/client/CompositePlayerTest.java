@@ -44,6 +44,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class CompositePlayerTest extends BrowserKurentoClientTest {
 
+	private static int PLAYTIME = 5;
+
 	// @Test
 	public void testCompositePlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -104,6 +106,9 @@ public class CompositePlayerTest extends BrowserKurentoClientTest {
 					browser.similarColorAt(Color.BLUE, 0, 450));
 			Assert.assertTrue("Lower right part of the video must be white",
 					browser.similarColorAt(Color.WHITE, 450, 450));
+
+			// Guard time to see the composite result
+			Thread.sleep(PLAYTIME * 1000);
 		}
 
 		// Release Media Pipeline

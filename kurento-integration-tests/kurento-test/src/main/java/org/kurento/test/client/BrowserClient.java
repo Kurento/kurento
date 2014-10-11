@@ -66,6 +66,7 @@ public class BrowserClient implements Closeable {
 	private Map<String, CountDownLatch> countDownLatchEvents;
 
 	private WebDriver driver;
+	private JavascriptExecutor js;
 	private String videoUrl;
 	private int timeout; // seconds
 	private double maxDistance;
@@ -191,6 +192,7 @@ public class BrowserClient implements Closeable {
 			}
 			driver.manage().timeouts()
 					.setScriptTimeout(timeout, TimeUnit.SECONDS);
+			js = ((JavascriptExecutor) driver);
 
 		} catch (MalformedURLException e) {
 			log.error("MalformedURLException in BrowserClient.initDriver", e);
@@ -223,7 +225,8 @@ public class BrowserClient implements Closeable {
 			this.addEventListener(e, new BrowserEventListener() {
 				@Override
 				public void onEvent(String event) {
-					log.info("Event: {}", event);
+					consoleLog(ConsoleLogLevel.info, "Event in video tag: "
+							+ event);
 					countDownLatchEvents.get(e).countDown();
 				}
 			});
@@ -258,9 +261,8 @@ public class BrowserClient implements Closeable {
 			final BrowserEventListener eventListener) {
 		Thread t = new Thread() {
 			public void run() {
-				((JavascriptExecutor) driver)
-						.executeScript("video.addEventListener('" + eventType
-								+ "', videoEvent, false);");
+				js.executeScript("video.addEventListener('" + eventType
+						+ "', videoEvent, false);");
 				(new WebDriverWait(driver, timeout))
 						.until(new ExpectedCondition<Boolean>() {
 							public Boolean apply(WebDriver d) {
@@ -278,32 +280,24 @@ public class BrowserClient implements Closeable {
 	}
 
 	public void start() {
-		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver).executeScript("play('" + videoUrl
-					+ "', false);");
-		}
-	}
-
-	public void showSpinners() {
-		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver)
-					.executeScript("showSpinner('local');");
-			((JavascriptExecutor) driver)
-					.executeScript("showSpinner('video');");
-		}
+		js.executeScript("play('" + videoUrl + "', false);");
 	}
 
 	public void stop() {
-		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver).executeScript("terminate();");
-		}
+		js.executeScript("terminate();");
 	}
 
 	public void addTestName(String testName) {
-		if (driver instanceof JavascriptExecutor) {
-			((JavascriptExecutor) driver).executeScript("addTestName('"
-					+ testName + "');");
-		}
+		js.executeScript("addTestName('" + testName + "');");
+	}
+
+	public void appendStringToTitle(String webRtcMode) {
+		js.executeScript("appendStringToTitle('" + webRtcMode + "');");
+	}
+
+	public void consoleLog(ConsoleLogLevel level, String message) {
+		log.info(message);
+		js.executeScript("console." + level.toString() + "('" + message + "');");
 	}
 
 	@SuppressWarnings("deprecation")
@@ -385,38 +379,41 @@ public class BrowserClient implements Closeable {
 		this.maxDistance = maxDistance;
 	}
 
-	public void connectToWebRtcEndpoint(WebRtcEndpoint webRtcEndpoint,
-			WebRtcChannel channel) {
-		if (driver instanceof JavascriptExecutor) {
-			String getSdpOffer = "getSdpOffer(" + channel.getAudio() + ","
-					+ channel.getVideo();
-			if (audio != null) {
-				getSdpOffer += ",'" + audio + "');";
-			} else {
-				getSdpOffer += ");";
-			}
+	public void initWebRtc(WebRtcEndpoint webRtcEndpoint,
+			WebRtcChannel channel, WebRtcMode mode) {
+		// Append WebRTC mode (send/receive and audio/video) to identify test
+		appendStringToTitle(mode.toString());
+		appendStringToTitle(channel.toString());
 
-			((JavascriptExecutor) driver).executeScript(getSdpOffer);
-
-			// Wait to valid sdpOffer
-			(new WebDriverWait(driver, timeout))
-					.until(new ExpectedCondition<Boolean>() {
-						public Boolean apply(WebDriver d) {
-							return ((JavascriptExecutor) driver)
-									.executeScript("return sdpOffer;") != null;
-						}
-					});
-			String sdpOffer = (String) ((JavascriptExecutor) driver)
-					.executeScript("return sdpOffer;");
-			String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
-
-			// Encode to base64 to avoid parsing error in Javascript due to
-			// break lines
-			sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
-
-			((JavascriptExecutor) driver).executeScript("setSdpAnswer('"
-					+ sdpAnswer + "');");
+		// Setting custom audio stream (if necessary)
+		if (audio != null) {
+			js.executeScript("setCustomAudio('" + audio + "');");
 		}
+
+		// Setting MediaConstraints (if necessary)
+		String channelJsFunction = channel.getJsFunction();
+		if (channelJsFunction != null) {
+			js.executeScript(channelJsFunction);
+		}
+
+		// Execute JavaScript kurentoUtils.WebRtcPeer
+		js.executeScript(mode.getJsFunction());
+
+		// Wait to valid sdpOffer
+		(new WebDriverWait(driver, timeout))
+				.until(new ExpectedCondition<Boolean>() {
+					public Boolean apply(WebDriver d) {
+						return js.executeScript("return sdpOffer;") != null;
+					}
+				});
+		String sdpOffer = (String) js.executeScript("return sdpOffer;");
+		String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+
+		// Encoding in Base64 to avoid parsing errors in JavaScript
+		sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
+
+		// Process sdpAnswer
+		js.executeScript("processSdpAnswer('" + sdpAnswer + "');");
 	}
 
 	public static class Builder {

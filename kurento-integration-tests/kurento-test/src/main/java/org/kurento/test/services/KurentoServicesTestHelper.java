@@ -20,7 +20,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.apache.catalina.LifecycleException;
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
@@ -76,7 +75,7 @@ public class KurentoServicesTestHelper {
 
 	// App properties
 
-	public static final String APP_HTTP_PORT_PROP = "app.http.port";
+	public static final String APP_HTTP_PORT_PROP = "server.port";
 	public static final int APP_HTTP_PORT_DEFAULT = 7779;
 
 	// Bower properties
@@ -86,8 +85,6 @@ public class KurentoServicesTestHelper {
 	public static final String BOWER_KURENTO_UTILS_TAG_DEFAULT = "";
 
 	// Attributes
-
-	private static HttpServer httpServer;
 	private static KurentoMediaServerManager kms;
 	private static KurentoControlServerManager mediaConnector;
 
@@ -202,18 +199,7 @@ public class KurentoServicesTestHelper {
 		}
 	}
 
-	public static void startHttpServer() {
-		try {
-			httpServer = new HttpServer(getAppHttpPort());
-			httpServer.start();
-		} catch (Exception e) {
-			throw new RuntimeException("Exception starting http server", e);
-		}
-	}
-
 	public static void teardownServices() {
-
-		teardownHttpServer();
 		teardownKurentoMediaServer();
 		teardownKurentoControlServer();
 	}
@@ -229,16 +215,6 @@ public class KurentoServicesTestHelper {
 		if (kms != null && kmsAutostart.equals(AUTOSTART_TEST_VALUE)) {
 			kms.stop();
 			kms = null;
-		}
-	}
-
-	public static void teardownHttpServer() {
-		if (httpServer != null) {
-			try {
-				httpServer.destroy();
-			} catch (LifecycleException e) {
-				e.printStackTrace();
-			}
 		}
 	}
 

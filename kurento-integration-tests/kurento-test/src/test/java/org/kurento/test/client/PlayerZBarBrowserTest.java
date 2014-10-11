@@ -69,18 +69,24 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 			}
 		});
 
-		final List<CodeFoundEvent> codeFoundEvents = new ArrayList<>();
-		zBarFilter.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
-			@Override
-			public void onEvent(CodeFoundEvent event) {
-				log.info("CodeFound {}", event.getValue());
-				codeFoundEvents.add(event);
-			}
-		});
-
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
+			final List<String> codeFoundEvents = new ArrayList<>();
+			zBarFilter
+					.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
+						@Override
+						public void onEvent(CodeFoundEvent event) {
+							String codeFound = event.getValue();
+
+							if (!codeFoundEvents.contains(codeFound)) {
+								codeFoundEvents.add(codeFound);
+								browser.consoleLog(ConsoleLogLevel.info,
+										"Code found: " + codeFound);
+							}
+						}
+					});
+
 			browser.setURL(httpEP.getUrl());
 			browser.subscribeEvents("playing", "ended");
 			playerEP.play();
@@ -103,5 +109,4 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 		// Release Media Pipeline
 		mp.release();
 	}
-
 }

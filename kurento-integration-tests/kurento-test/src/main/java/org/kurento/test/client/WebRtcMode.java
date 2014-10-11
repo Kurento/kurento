@@ -15,24 +15,22 @@
 package org.kurento.test.client;
 
 /**
- * Type of channel in WebRTC communications (audio, video, or both).
+ * WebRTC communication mode (send and receive, send only, or receive only).
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 4.2.3
+ * @since 5.0.4
  */
-public enum WebRtcChannel {
-	VIDEO_ONLY, AUDIO_ONLY, AUDIO_AND_VIDEO;
+public enum WebRtcMode {
+	SEND_RCV, SEND_ONLY, RCV_ONLY;
 
 	public String getJsFunction() {
 		switch (this) {
-		case VIDEO_ONLY:
-			return "setVideoUserMediaConstraints();";
-		case AUDIO_ONLY:
-			return "setAudioUserMediaConstraints()";
-		case AUDIO_AND_VIDEO:
-			// Audio and video is the default options in kurento-utils.js, so
-			// user media constrains should not be changed in this case
-			return null;
+		case SEND_RCV:
+			return "startSendRecv();";
+		case SEND_ONLY:
+			return "startSendOnly();";
+		case RCV_ONLY:
+			return "startRecvOnly();";
 		default:
 			throw new IllegalArgumentException();
 		}
@@ -41,15 +39,14 @@ public enum WebRtcChannel {
 	@Override
 	public String toString() {
 		switch (this) {
-		case VIDEO_ONLY:
-			return "(VIDEO ONLY)";
-		case AUDIO_ONLY:
-			return "(AUDIO ONLY)";
-		case AUDIO_AND_VIDEO:
-			return "(VIDEO & AUDIO)";
+		case SEND_RCV:
+			return "(SEND & RECEIVE)";
+		case SEND_ONLY:
+			return "(SEND ONLY)";
+		case RCV_ONLY:
+			return "(RECEIVE ONLY)";
 		default:
 			throw new IllegalArgumentException();
 		}
 	}
-
 }

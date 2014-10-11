@@ -2,46 +2,108 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>WebRTC</title>
+<title>WebRTC test</title>
 <script src="./lib/adapter.js"></script>
 <script src="./lib/Console.js"></script>
 <script src="./lib/color.js"></script>
-<script src="./lib/webrtc-utils.js"></script>
+<script src="./js/kurento-utils.js"></script>
 <script>
+	var local;
 	var video;
+	var webRtcPeer;
 	var sdpOffer;
-	var peerConn;
-
-	function getSdpOffer(audio, video, audioUrl) {
-		prepareSendPlayer(audio, video, audioUrl, function(peerConnection,
-				offer) {
-			peerConn = peerConnection;
-			sdpOffer = offer.sdp;
-			console.info(sdpOffer);
-		});
-		showSpinner("local");
-		showSpinner("video");
-	}
-
-	function setSdpAnswer(sdpAnswer) {
-		var decodedSdpAnswer = window.atob(sdpAnswer);
-		prepareReceivePlayer(peerConn, decodedSdpAnswer);
-	}
-
+	var userMediaConstraints = null;
+	var videoStream = null;
+	var audioStream = null;
+	var defaultVideoConstraints = {
+		mandatory : {
+			maxWidth : 640,
+			maxFrameRate : 15,
+			minFrameRate : 15
+		}
+	};
 	window.onload = function() {
 		console = new Console("console", console);
+		local = document.getElementById("local");
 		video = document.getElementById("video");
 		setInterval(updateCurrentTime, 100);
 	}
 
-	function updateCurrentTime() {
-		document.getElementById("currentTime").value = video.currentTime;
+	function setAudioUserMediaConstraints() {
+		userMediaConstraints = {
+			audio : true,
+			video : false
+		};
 	}
 
-	function showSpinner(tagId) {
-		var videoTag = document.getElementById(tagId);
-		videoTag.poster = "./img/transparent-1px.png";
-		videoTag.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+	function setVideoUserMediaConstraints() {
+		userMediaConstraints = {
+			audio : false,
+			video : defaultVideoConstraints
+		};
+	}
+
+	function setCustomAudio(audioUrl) {
+		mediaConstraints = {
+			audio : false,
+			video : defaultVideoConstraints
+		};
+		getUserMedia(mediaConstraints, function(userStream) {
+			videoStream = userStream;
+		}, onError);
+
+		var context = new AudioContext();
+		var audioTest = document.getElementById("audioTest");
+		audioTest.src = audioUrl;
+		var sourceStream = context.createMediaElementSource(audioTest);
+		var mixedOutput = context.createMediaStreamDestination();
+		sourceStream.connect(mixedOutput);
+		audioStream = mixedOutput.stream;
+	}
+
+	function startSendRecv() {
+		console.log("Starting WebRTC in SendRecv mode...");
+		showSpinner(local, video);
+		webRtcPeer = kurentoUtils.WebRtcPeer.start('sendRecv', local, video,
+				onOffer, onError, userMediaConstraints, videoStream,
+				audioStream);
+	}
+
+	function startSendOnly() {
+		console.log("Starting WebRTC in SendOnly mode...");
+		showSpinner(local);
+		webRtcPeer = kurentoUtils.WebRtcPeer.start('send', local, null,
+				onOffer, onError, userMediaConstraints, videoStream,
+				audioStream);
+	}
+
+	function startRecvOnly() {
+		console.log("Starting WebRTC in RecvOnly mode...");
+		showSpinner(video);
+		webRtcPeer = kurentoUtils.WebRtcPeer.start('recv', null, video,
+				onOffer, onError, userMediaConstraints, videoStream,
+				audioStream);
+	}
+
+	function onError(error) {
+		console.error(error);
+	}
+
+	function onOffer(offer) {
+		console.info("SDP offer:");
+		sdpOffer = offer;
+		console.info(sdpOffer);
+	}
+
+	function processSdpAnswer(answer) {
+		var sdpAnswer = window.atob(answer);
+		console.info("SDP answer:");
+		console.info(sdpAnswer);
+		webRtcPeer.processSdpAnswer(sdpAnswer);
+	}
+
+	function updateCurrentTime() {
+		document.getElementById("currentTime").value = video.currentTime;
 	}
 
 	function log(text) {
@@ -65,29 +127,53 @@
 	function addTestName(testName) {
 		document.getElementById("testName").innerHTML = testName;
 	}
+
+	function appendStringToTitle(string) {
+		document.getElementById("testTitle").innerHTML += " " + string;
+	}
+
+	function showSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			arguments[i].poster = './img/transparent-1px.png';
+			arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+	}
+
+	function hideSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			arguments[i].src = '';
+			arguments[i].poster = './img/webrtc.png';
+			arguments[i].style.background = '';
+		}
+	}
 </script>
 </head>
 <body>
-	<h1>WebRTC</h1>
-	<h2 id="testName"></h2>
-	<video id="local" autoplay controls width="480px" height="360px"
-		style="border: solid gray 1px;"></video>
-	<video id="video" autoplay controls width="480px" height="360px"
-		style="border: solid gray 1px;"></video>
-	<br />
-	<label for="output">Status</label>
-	<input id="status" name="status" style="width: 300px;" />
-	<label for="currentTime">Current Time</label>
-	<input id="currentTime" name="currentTime" />
-	<label for="color">Color</label>
-	<input id="color"></input>
-	<label for="x">x</label>
-	<input id="x" style="width: 30px;" value="0" />
-	<label for="y">y</label>
-	<input id="y" style="width: 30px;" value="0" />
-	<br />
-	<audio id="audioTest" loop="loop"></audio>
-	<label for="output">Output</label>
-	<div id="console"></div>
+	<div style="clear: left; margin: 5px;">
+		<h1 id="testTitle">WebRTC test</h1>
+		<h2 id="testName"></h2>
+	</div>
+	<div style="float: left; margin: 5px;">
+		<h3>Local stream</h3>
+		<video id="local" autoplay width="480px" height="360px"
+			poster="./img/webrtc.png" style="border: solid gray 1px;"></video>
+	</div>
+	<div style="float: left; margin: 5px;">
+		<h3>Remote stream</h3>
+		<video id="video" autoplay width="480px" height="360px"
+			poster="./img/webrtc.png" style="border: solid gray 1px;"></video>
+	</div>
+	<div style="clear: left; margin: 5px;">
+		<label for="output">Status</label> <input id="status" name="status"
+			style="width: 300px;" /> <label for="currentTime">Current
+			Time</label> <input id="currentTime" name="currentTime" /> <label
+			for="color">Color</label> <input id="color"></input> <label for="x">x</label>
+		<input id="x" style="width: 30px;" value="0" /> <label for="y">y</label>
+		<input id="y" style="width: 30px;" value="0" /> <br />
+		<audio id="audioTest" loop="loop"></audio>
+		<label for="output">Console</label>
+		<div id="console"
+			style="border: solid gray 1px; overflow-y: auto; width: 970px; height: 180px;"></div>
+	</div>
 </body>
 </html>

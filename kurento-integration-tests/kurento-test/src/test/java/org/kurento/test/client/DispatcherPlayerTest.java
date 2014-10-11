@@ -44,6 +44,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 
+	private static int PLAYTIME = 10; // seconds to play in WebRTC
+
 	@Test
 	public void testDispatcherPlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -72,13 +74,13 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 				.browser(browserType).client(Client.WEBRTC).build()) {
 
 			browser.subscribeEvents("playing");
-			browser.connectToWebRtcEndpoint(webRtcEP,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_RCV);
 
 			// Assertions
 			Assert.assertTrue("Timeout waiting playing event",
 					browser.waitForEvent("playing"));
-			Thread.sleep(10000);
+			Thread.sleep(PLAYTIME * 1000);
 			Assert.assertTrue("The color of the video should be red",
 					browser.similarColor(Color.RED));
 		}

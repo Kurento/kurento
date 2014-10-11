@@ -44,6 +44,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 
+	private static final int PLAYTIME = 5; // seconds
+
 	@Test
 	public void testWebRtcSwitch() throws InterruptedException {
 		// Media Pipeline
@@ -64,24 +66,24 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 
 			// Start WebRTC in loopback in each browser
 			browser1.subscribeEvents("playing");
-			browser1.connectToWebRtcEndpoint(webRtcEndpoint1,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_RCV);
 
 			// Delay time (to avoid the same timing in videos)
 			Thread.sleep(1000);
 
 			// Browser 2
 			browser2.subscribeEvents("playing");
-			browser2.connectToWebRtcEndpoint(webRtcEndpoint2,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_RCV);
 
 			// Delay time (to avoid the same timing in videos)
 			Thread.sleep(1000);
 
 			// Browser 3
 			browser3.subscribeEvents("playing");
-			browser3.connectToWebRtcEndpoint(webRtcEndpoint3,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser3.initWebRtc(webRtcEndpoint3, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_RCV);
 
 			// Wait until event playing in the remote streams
 			Assert.assertTrue("Timeout waiting playing event",
@@ -92,7 +94,7 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 					browser3.waitForEvent("playing"));
 
 			// Guard time to see each browser in loopback
-			Thread.sleep(4000);
+			Thread.sleep(PLAYTIME * 1000);
 			assertColor(browser1, browser2, browser3);
 
 			// Switching (round #1)
@@ -100,18 +102,30 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 			webRtcEndpoint2.connect(webRtcEndpoint3);
 			webRtcEndpoint3.connect(webRtcEndpoint1);
 			assertColor(browser1, browser2, browser3);
+			browser1.consoleLog(ConsoleLogLevel.info,
+					"Switch #1: webRtcEndpoint1 -> webRtcEndpoint2");
+			browser2.consoleLog(ConsoleLogLevel.info,
+					"Switch #1: webRtcEndpoint2 -> webRtcEndpoint3");
+			browser3.consoleLog(ConsoleLogLevel.info,
+					"Switch #1: webRtcEndpoint3 -> webRtcEndpoint1");
 
 			// Guard time to see switching #1
-			Thread.sleep(4000);
+			Thread.sleep(PLAYTIME * 1000);
 
 			// Switching (round #2)
 			webRtcEndpoint1.connect(webRtcEndpoint3);
 			webRtcEndpoint2.connect(webRtcEndpoint1);
 			webRtcEndpoint3.connect(webRtcEndpoint2);
 			assertColor(browser1, browser2, browser3);
+			browser1.consoleLog(ConsoleLogLevel.info,
+					"Switch #2: webRtcEndpoint1 -> webRtcEndpoint3");
+			browser2.consoleLog(ConsoleLogLevel.info,
+					"Switch #2: webRtcEndpoint2 -> webRtcEndpoint1");
+			browser3.consoleLog(ConsoleLogLevel.info,
+					"Switch #2: webRtcEndpoint3 -> webRtcEndpoint2");
 
 			// Guard time to see switching #2
-			Thread.sleep(4000);
+			Thread.sleep(PLAYTIME * 1000);
 		}
 
 		// Release Media Pipeline

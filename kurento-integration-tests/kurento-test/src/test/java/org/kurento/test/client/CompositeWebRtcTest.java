@@ -48,6 +48,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 
+	private static int PLAYTIME = 5;
+
 	// @Test
 	public void testCompositeWebRtcChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -98,17 +100,17 @@ public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 
 			// WebRTC browsers
 			browserWebRtc1.subscribeEvents("playing");
-			browserWebRtc1.connectToWebRtcEndpoint(webRtcEP1,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browserWebRtc1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 			browserWebRtc2.subscribeEvents("playing");
-			browserWebRtc2.connectToWebRtcEndpoint(webRtcEP2,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browserWebRtc2.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 			browserWebRtc3.subscribeEvents("playing");
-			browserWebRtc3.connectToWebRtcEndpoint(webRtcEP3,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browserWebRtc3.initWebRtc(webRtcEP3, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 			browserWebRtc4.subscribeEvents("playing");
-			browserWebRtc4.connectToWebRtcEndpoint(webRtcEP4,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browserWebRtc4.initWebRtc(webRtcEP4, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 
 			browserPlayer.setURL(httpEP.getUrl());
 			browserPlayer.subscribeEvents("playing");
@@ -131,7 +133,7 @@ public class CompositeWebRtcTest extends BrowserKurentoClientTest {
 					"videobalance saturation=0.0").build();
 			webRtcEP1.connect(bn);
 			bn.connect(hubPort1);
-			Thread.sleep(5000);
+			Thread.sleep(PLAYTIME * 1000);
 			Assert.assertTrue(
 					"When connecting the filter, the upper left part of the video must be gray",
 					browserPlayer.similarColorAt(new Color(75, 75, 75), 0, 0));

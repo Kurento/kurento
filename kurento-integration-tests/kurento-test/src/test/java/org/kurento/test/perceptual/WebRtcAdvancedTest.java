@@ -24,6 +24,7 @@ import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.services.AudioChannel;
 import org.kurento.test.services.Recorder;
 
@@ -78,8 +79,8 @@ public class WebRtcAdvancedTest extends BrowserKurentoClientTest {
 
 		try (BrowserClient browser = builder.build()) {
 			browser.subscribeEvents("playing");
-			browser.connectToWebRtcEndpoint(webRtcEndpoint,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_RCV);
 
 			// Wait until event playing in the remote stream
 			Assert.assertTrue("Timeout waiting playing event",

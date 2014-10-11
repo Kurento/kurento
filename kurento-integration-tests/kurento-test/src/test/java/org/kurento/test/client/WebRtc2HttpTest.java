@@ -65,13 +65,8 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(Browser.CHROME).client(Client.WEBRTC).build()) {
-			browser.subscribeEvents("playing");
-			browser.connectToWebRtcEndpoint(webRtcEndpoint,
-					WebRtcChannel.AUDIO_AND_VIDEO);
-
-			// Wait until event playing in the WebRTC remote stream
-			Assert.assertTrue("Timeout waiting playing event",
-					browser.waitForEvent("playing"));
+			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 
 			// HTTP Players
 			ExecutorService exec = Executors.newFixedThreadPool(NPLAYERS);

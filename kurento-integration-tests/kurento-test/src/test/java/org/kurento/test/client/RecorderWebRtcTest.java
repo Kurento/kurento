@@ -76,8 +76,8 @@ public class RecorderWebRtcTest extends BrowserKurentoClientTest {
 
 		try (BrowserClient browser = builder.build()) {
 			browser.subscribeEvents("playing");
-			browser.connectToWebRtcEndpoint(webRtcEP,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_RCV);
 			recorderEP.record();
 
 			// Wait until event playing in the remote stream

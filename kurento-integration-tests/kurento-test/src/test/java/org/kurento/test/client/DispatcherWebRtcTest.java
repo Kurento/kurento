@@ -69,12 +69,12 @@ public class DispatcherWebRtcTest extends BrowserKurentoClientTest {
 				BrowserClient browser2 = new BrowserClient.Builder()
 						.browser(browserType).client(Client.WEBRTC).build();) {
 
-			browser1.connectToWebRtcEndpoint(webRtcEP1,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 
 			browser2.subscribeEvents("playing");
-			browser2.connectToWebRtcEndpoint(webRtcEP2,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser2.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.RCV_ONLY);
 
 			// Assertions
 			Assert.assertTrue("Timeout waiting playing event",

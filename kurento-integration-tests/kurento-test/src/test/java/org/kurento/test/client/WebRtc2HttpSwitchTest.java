@@ -30,8 +30,6 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * between following scenarios: A to H, B to H. At least two round.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (A)</li>
- * <li>WebRtcEndpoint -> WebRtcEndpoint (B)</li>
  * <li>WebRtcEndpoint (A) -> HttpGetEndpoint</li>
  * <li>WebRtcEndpoint (B) -> HttpGetEndpoint</li>
  * </ul>
@@ -47,6 +45,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class WebRtc2HttpSwitchTest extends BrowserKurentoClientTest {
 
+	private static final int PLAYTIME = 5; // seconds
+
 	@Test
 	public void testWebRtc2HttpSwitch() throws Exception {
 		// Media Pipeline
@@ -55,9 +55,6 @@ public class WebRtc2HttpSwitchTest extends BrowserKurentoClientTest {
 		WebRtcEndpoint webRtcEndpoint2 = new WebRtcEndpoint.Builder(mp).build();
 		HttpGetEndpoint httpGetEndpoint = new HttpGetEndpoint.Builder(mp)
 				.build();
-
-		webRtcEndpoint1.connect(webRtcEndpoint1);
-		webRtcEndpoint2.connect(webRtcEndpoint2);
 
 		BrowserClient.Builder builderWebrtc = new BrowserClient.Builder()
 				.browser(Browser.CHROME).client(Client.WEBRTC);
@@ -69,20 +66,17 @@ public class WebRtc2HttpSwitchTest extends BrowserKurentoClientTest {
 
 			// WebRTC
 			browser1.subscribeEvents("playing");
-			browser1.connectToWebRtcEndpoint(webRtcEndpoint1,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser1.initWebRtc(webRtcEndpoint1, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 			browser2.subscribeEvents("playing");
-			browser2.connectToWebRtcEndpoint(webRtcEndpoint2,
-					WebRtcChannel.AUDIO_AND_VIDEO);
-
-			// Wait until event playing in the remote stream
-			Assert.assertTrue("Timeout waiting playing event",
-					browser1.waitForEvent("playing"));
-			Assert.assertTrue("Timeout waiting playing event",
-					browser2.waitForEvent("playing"));
+			browser2.initWebRtc(webRtcEndpoint2, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 
 			// Round #1: Connecting WebRTC #1 to HttpEnpoint
 			webRtcEndpoint1.connect(httpGetEndpoint);
+			browser3.consoleLog(ConsoleLogLevel.info,
+					"Connecting to WebRTC #1 source");
+
 			browser3.setURL(httpGetEndpoint.getUrl());
 			browser3.subscribeEvents("playing");
 			browser3.start();
@@ -93,13 +87,16 @@ public class WebRtc2HttpSwitchTest extends BrowserKurentoClientTest {
 					browser3.similarColor(new Color(0, 135, 0)));
 
 			// Guard time to see stream from WebRTC #1
-			Thread.sleep(5000);
+			Thread.sleep(PLAYTIME * 1000);
 
 			// Round #2: Connecting WebRTC #2 to HttpEnpoint
 			webRtcEndpoint2.connect(httpGetEndpoint);
+			browser3.consoleLog(ConsoleLogLevel.info,
+					"Switching to WebRTC #2 source");
 
 			// Guard time to see stream from WebRTC #2
-			Thread.sleep(5000);
+			Thread.sleep(PLAYTIME * 1000);
+
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
 					browser3.similarColor(new Color(0, 135, 0)));

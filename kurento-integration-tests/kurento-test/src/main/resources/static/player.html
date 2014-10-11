@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>HTTP Player</title>
+<title>HTTP test</title>
 <script src="./lib/Console.js"></script>
 <script src="./lib/color.js"></script>
 <script type="text/javascript">
@@ -21,10 +21,25 @@
 	}
 
 	function play(url) {
-		video.poster = "./img/transparent-1px.png";
-		video.style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		console.info("Playing " + url);
+		showSpinner(video);
 		video.src = url;
 		video.play();
+	}
+
+	function showSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			arguments[i].poster = './img/transparent-1px.png';
+			arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
+		}
+	}
+
+	function hideSpinner() {
+		for (var i = 0; i < arguments.length; i++) {
+			arguments[i].src = '';
+			arguments[i].poster = './img/html5.png';
+			arguments[i].style.background = '';
+		}
 	}
 
 	function log(text) {
@@ -48,24 +63,22 @@
 </script>
 </head>
 <body>
-	<h1>HTTP Player</h1>
-	<h2 id="testName"></h2>
-	<video id="video" autoplay controls width="480px" height="360px"
-		style="border: solid gray 1px;">
-	</video>
-	<br />
-	<label for="status">Status</label>
-	<input id="status" name="status" />
-	<label for="currentTime">Current Time</label>
-	<input id="currentTime" name="currentTime" />
-	<label for="color">Color</label>
-	<input id="color"></input>
-	<label for="x">x</label>
-	<input id="x" style="width: 30px;" value="0" />
-	<label for="y">y</label>
-	<input id="y" style="width: 30px;" value="0" />
-	<br />
-	<label for="output">Output</label>
-	<div id="console"></div>
+	<div style="clear: left; margin: 5px;">
+		<h1>HTTP test</h1>
+		<h2 id="testName"></h2>
+		<video id="video" autoplay width="480px" height="360px"
+			poster="./img/html5.png" style="border: solid gray 1px;">
+		</video>
+	</div>
+	<div style="clear: left; margin: 5px;">
+		<label for="status">Status</label> <input id="status" name="status" />
+		<label for="currentTime">Current Time</label> <input id="currentTime"
+			name="currentTime" /> <label for="color">Color</label> <input
+			id="color"></input> <label for="x">x</label> <input id="x"
+			style="width: 30px;" value="0" /> <label for="y">y</label> <input
+			id="y" style="width: 30px;" value="0" /> <br /> <label for="output">Console</label>
+		<div id="console"
+			style="border: solid gray 1px; overflow-y: auto; width: 970px; height: 180px;"></div>
+	</div>
 </body>
 </html>

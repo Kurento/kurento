@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.kurento.commons.testing.SanityTests;
+import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -44,7 +45,7 @@ import freemarker.template.Template;
  * @since 4.2.5
  */
 @Category(SanityTests.class)
-public class KurentoJsBase {
+public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	protected static final Logger log = LoggerFactory
 			.getLogger(KurentoJsBase.class);
@@ -77,7 +78,6 @@ public class KurentoJsBase {
 		log.debug("serverPort = {}", serverPort);
 
 		createHtmlPages();
-		KurentoServicesTestHelper.startHttpServer();
 	}
 
 	private void createHtmlPages() {
@@ -131,7 +131,6 @@ public class KurentoJsBase {
 	@After
 	public void end() {
 		driver.close();
-		KurentoServicesTestHelper.teardownHttpServer();
 	}
 
 }

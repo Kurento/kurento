@@ -36,13 +36,11 @@ public class KurentoClientTest extends KurentoTest {
 
 	@Before
 	public void setupMediaPipelineFactory() throws Exception {
-
 		kurentoClient = KurentoClientTestFactory.createKurentoForTest();
 	}
 
 	@After
 	public void teardownMediaPipelineFactory() throws Exception {
-
 		if (kurentoClient != null) {
 			kurentoClient.destroy();
 		}

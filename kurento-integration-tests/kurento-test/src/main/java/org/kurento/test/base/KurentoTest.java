@@ -21,18 +21,28 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
 import org.kurento.commons.testing.IntegrationTests;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
- * Base for tests (Content and Media API).
+ * Base for tests.
  * 
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = BrowserKurentoClientTest.class)
+@WebAppConfiguration
+@IntegrationTest("server.port:"
+		+ KurentoServicesTestHelper.APP_HTTP_PORT_DEFAULT)
 @Category(IntegrationTests.class)
 public class KurentoTest {
 

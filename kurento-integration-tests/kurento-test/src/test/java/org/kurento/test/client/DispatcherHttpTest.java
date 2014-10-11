@@ -45,6 +45,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class DispatcherHttpTest extends BrowserKurentoClientTest {
 
+	private static int PLAYTIME = 5; // seconds to play in WebRTC
+
 	@Test
 	public void testDispatcherHttpChrome() throws Exception {
 		doTest(Browser.CHROME);
@@ -72,8 +74,8 @@ public class DispatcherHttpTest extends BrowserKurentoClientTest {
 				BrowserClient browser2 = new BrowserClient.Builder()
 						.browser(browserType).client(Client.PLAYER).build();) {
 
-			browser1.connectToWebRtcEndpoint(webRtcEP1,
-					WebRtcChannel.AUDIO_AND_VIDEO);
+			browser1.initWebRtc(webRtcEP1, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.SEND_ONLY);
 
 			browser2.setURL(httpEP.getUrl());
 			browser2.subscribeEvents("playing");
@@ -85,7 +87,8 @@ public class DispatcherHttpTest extends BrowserKurentoClientTest {
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
 					browser2.similarColor(new Color(0, 135, 0)));
-			Thread.sleep(5000);
+
+			Thread.sleep(PLAYTIME * 1000);
 		}
 
 		// Release Media Pipeline
