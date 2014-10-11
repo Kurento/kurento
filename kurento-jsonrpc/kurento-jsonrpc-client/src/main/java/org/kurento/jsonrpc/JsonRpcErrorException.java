@@ -16,11 +16,21 @@ package org.kurento.jsonrpc;
 
 import org.kurento.jsonrpc.message.ResponseError;
 
+import com.google.gson.JsonElement;
+
 public class JsonRpcErrorException extends JsonRpcException {
 
 	private static final long serialVersionUID = 1584953670536766280L;
 
 	private final ResponseError error;
+
+	public JsonRpcErrorException(int code, String message) {
+		this(code, message, null);
+	}
+
+	public JsonRpcErrorException(int code, String message, JsonElement data) {
+		this(new ResponseError(code, message, data));
+	}
 
 	public JsonRpcErrorException(ResponseError error) {
 		super(createExceptionMessage(error));

@@ -17,6 +17,8 @@ package org.kurento.jsonrpc.message;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.kurento.jsonrpc.JsonRpcErrorException;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
@@ -37,23 +39,25 @@ public class ResponseError {
 	 */
 	private JsonElement data;
 
-	// TODO Improve the way errors are created from Exceptions
 	public static ResponseError newFromException(Throwable e) {
-
-		StringWriter writer = new StringWriter();
-		e.printStackTrace(new PrintWriter(writer));
-
-		return new ResponseError(-1, e.getClass().getSimpleName() + ":"
-				+ e.getMessage(), writer.toString());
+		return newFromException(-1, e);
 	}
 
-	// TODO Improve the way errors are created from Exceptions
-	public static ResponseError newFromException(int requestId, Exception e) {
+	public static ResponseError newFromException(int requestId, Throwable e) {
 
-		StringWriter writer = new StringWriter();
-		e.printStackTrace(new PrintWriter(writer));
-		return new ResponseError(requestId, e.getClass().getSimpleName() + ":"
-				+ e.getMessage(), writer.toString());
+		if (e instanceof JsonRpcErrorException) {
+			JsonRpcErrorException jsonRpcError = (JsonRpcErrorException) e;
+
+			return new ResponseError(jsonRpcError.getCode(),
+					jsonRpcError.getMessage(), jsonRpcError.getData());
+
+		} else {
+
+			StringWriter writer = new StringWriter();
+			e.printStackTrace(new PrintWriter(writer));
+			return new ResponseError(requestId, e.getClass().getSimpleName()
+					+ ":" + e.getMessage(), writer.toString());
+		}
 	}
 
 	/**

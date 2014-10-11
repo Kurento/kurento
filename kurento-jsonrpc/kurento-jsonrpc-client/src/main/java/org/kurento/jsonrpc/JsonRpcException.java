@@ -18,7 +18,7 @@ import org.kurento.commons.exception.KurentoException;
 
 /**
  * This is a general exception used in the JsonRpcConnector package.
- * 
+ *
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.2.3
  */

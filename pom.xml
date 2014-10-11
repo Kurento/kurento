@@ -58,6 +58,7 @@
 				<module>kurento-parent-pom</module>
 				<module>kurento-jsonrpc</module>
 				<module>kurento-control-server</module>
+				<module>kurento-tree</module>
 				<module>kurento-client</module>
 				<module>kurento-repository</module>
 				<module>kurento-assembly</module>

@@ -116,4 +116,9 @@ public class TransactionImpl implements Transaction {
 					"This request has already been responded");
 		}
 	}
+
+	@Override
+	public void sendVoidResponse() throws IOException {
+		sendResponse(null);
+	}
 }

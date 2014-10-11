@@ -168,7 +168,11 @@ public class JsonRpcClientLocal extends JsonRpcClient {
 
 		if (response[0] != null) {
 			// Simulate receiving json string from net
-			String jsonResponse = response[0].toString();
+			Response<R> responseObj = (Response<R>) response[0];
+			if (responseObj.getId() == null) {
+				responseObj.setId(request.getId());
+			}
+			String jsonResponse = responseObj.toString();
 
 			// log.debug("< {}", jsonResponse);
 

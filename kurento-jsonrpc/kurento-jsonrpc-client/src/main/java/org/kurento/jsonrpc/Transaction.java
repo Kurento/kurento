@@ -29,6 +29,8 @@ public interface Transaction {
 	void sendResponseObject(Response<? extends Object> response)
 			throws IOException;
 
+	void sendVoidResponse() throws IOException;
+
 	void sendResponse(Object result) throws IOException;
 
 	void sendError(int code, String message, String data) throws IOException;

@@ -31,6 +31,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.kurento.jsonrpc.internal.JsonRpcConstants;
+import org.kurento.jsonrpc.message.Message;
+import org.kurento.jsonrpc.message.Request;
+import org.kurento.jsonrpc.message.Response;
+import org.kurento.jsonrpc.message.ResponseError;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -46,16 +52,10 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.$Gson$Types;
 
-import org.kurento.jsonrpc.internal.JsonRpcConstants;
-import org.kurento.jsonrpc.message.Message;
-import org.kurento.jsonrpc.message.Request;
-import org.kurento.jsonrpc.message.Response;
-import org.kurento.jsonrpc.message.ResponseError;
-
 /**
- * 
+ *
  * Gson/JSON utilities; used to serialise Java object to JSON (as String).
- * 
+ *
  * @author Miguel París (mparisdiaz@gsyc.es)
  * @since 1.0.0
  */
@@ -69,7 +69,7 @@ public class JsonUtils {
 
 	/**
 	 * Serialise Java object to JSON (as String).
-	 * 
+	 *
 	 * @param obj
 	 *            Java Object representing a JSON message to be serialized
 	 * @return Serialised JSON message (as String)
@@ -113,8 +113,8 @@ public class JsonUtils {
 							Response.class, resultClass));
 
 		} catch (JsonSyntaxException e) {
-			throw new JsonRpcException("Exception converting Json '"
-					+ json + "' to a JSON-RPC response with params as class "
+			throw new JsonRpcException("Exception converting Json '" + json
+					+ "' to a JSON-RPC response with params as class "
 					+ resultClass.getName(), e);
 		}
 	}
@@ -252,7 +252,7 @@ public class JsonUtils {
 
 	/**
 	 * Gson object accessor (getter).
-	 * 
+	 *
 	 * @return son object
 	 */
 	public static Gson getGson() {
@@ -353,6 +353,131 @@ public class JsonUtils {
 	public static JsonElement toJsonElement(Object object) {
 		return getGson().toJsonTree(object);
 	}
+
+	public static <E> E extractJavaValueFromResult(JsonElement result, Type type) {
+
+		if (type == Void.class || type == void.class) {
+			return null;
+		}
+
+		JsonElement extractResult = extractJsonValueFromResponse(result, type);
+
+		return JsonUtils.fromJson(extractResult, type);
+	}
+
+	private static JsonElement extractJsonValueFromResponse(JsonElement result,
+			Type type) {
+
+		if (result == null) {
+			return null;
+		}
+
+		if (isPrimitiveClass(type) || isEnum(type)) {
+
+			if (result instanceof JsonPrimitive) {
+				return result;
+
+			} else if (result instanceof JsonArray) {
+				throw new JsonRpcException("Json array '" + result
+						+ " cannot be converted to " + getTypeName(type));
+			} else if (result instanceof JsonObject) {
+				return extractSimpleValueFromJsonObject((JsonObject) result,
+						type);
+			} else {
+				throw new JsonRpcException("Unrecognized json element: "
+						+ result);
+			}
+
+		} else if (isList(type)) {
+
+			if (result instanceof JsonArray) {
+				return result;
+			}
+
+			return extractSimpleValueFromJsonObject((JsonObject) result, type);
+		} else {
+			return result;
+		}
+	}
+
+	private static JsonElement extractSimpleValueFromJsonObject(
+			JsonObject result, Type type) {
+
+		if (!result.has("value")) {
+			throw new JsonRpcException("Json object " + result
+					+ " cannot be converted to " + getTypeName(type)
+					+ " without a 'value' property");
+		}
+
+		return result.get("value");
+	}
+
+	private static boolean isEnum(Type type) {
+
+		if (type instanceof Class) {
+			Class<?> clazz = (Class<?>) type;
+			return clazz.isEnum();
+		}
+
+		return false;
+	}
+
+	private static boolean isPrimitiveClass(Type type) {
+		return type == String.class || type == Integer.class
+				|| type == Float.class || type == Boolean.class
+				|| type == int.class || type == float.class
+				|| type == boolean.class;
+	}
+
+	private static boolean isList(Type type) {
+
+		if (type == List.class) {
+			return true;
+		}
+
+		if (type instanceof ParameterizedType) {
+			ParameterizedType pType = (ParameterizedType) type;
+			if (pType.getRawType() instanceof Class) {
+				return ((Class<?>) pType.getRawType())
+						.isAssignableFrom(List.class);
+			}
+		}
+
+		return false;
+	}
+
+	private static String getTypeName(Type type) {
+
+		if (type instanceof Class) {
+
+			Class<?> clazz = (Class<?>) type;
+			return clazz.getSimpleName();
+
+		} else if (type instanceof ParameterizedType) {
+
+			StringBuilder sb = new StringBuilder();
+
+			ParameterizedType pType = (ParameterizedType) type;
+			Class<?> rawClass = (Class<?>) pType.getRawType();
+
+			sb.append(rawClass.getSimpleName());
+
+			Type[] arguments = pType.getActualTypeArguments();
+			if (arguments.length > 0) {
+				sb.append('<');
+				for (Type aType : arguments) {
+					sb.append(getTypeName(aType));
+					sb.append(',');
+				}
+				sb.deleteCharAt(sb.length() - 1);
+				sb.append('>');
+			}
+
+			return sb.toString();
+		}
+
+		return type.toString();
+	}
 }
 
 class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {
@@ -451,7 +576,6 @@ class JsonRpcRequestDeserializer implements JsonDeserializer<Request<?>> {
 						parameterizedType.getActualTypeArguments()[0]));
 
 	}
-
 }
 
 class JsonPropsAdapter implements JsonDeserializer<Props>,
@@ -495,8 +619,7 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 			return result;
 
 		} else {
-			throw new JsonRpcException("Unrecognized Json element: "
-					+ value);
+			throw new JsonRpcException("Unrecognized Json element: " + value);
 		}
 	}
 
@@ -533,4 +656,5 @@ class JsonPropsAdapter implements JsonDeserializer<Props>,
 
 		return jsonObject;
 	}
+
 }
