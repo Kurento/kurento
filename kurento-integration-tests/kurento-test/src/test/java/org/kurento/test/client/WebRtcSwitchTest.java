@@ -34,9 +34,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browsers starts before default timeout</li>
- * <li>Color received by clients should be green (RGB #008700, video test of
- * Chrome)</li>
+ * <li>Media should be received in the video tag</li>
+ * <li>Color of the video should be the expected</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -86,14 +85,17 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 					WebRtcMode.SEND_RCV);
 
 			// Wait until event playing in the remote streams
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media #1 (timeout waiting playing event)",
 					browser1.waitForEvent("playing"));
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media #2 (timeout waiting playing event)",
 					browser2.waitForEvent("playing"));
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media #3 (timeout waiting playing event)",
 					browser3.waitForEvent("playing"));
 
-			// Guard time to see each browser in loopback
+			// Guard time to see browsers
 			Thread.sleep(PLAYTIME * 1000);
 			assertColor(browser1, browser2, browser3);
 

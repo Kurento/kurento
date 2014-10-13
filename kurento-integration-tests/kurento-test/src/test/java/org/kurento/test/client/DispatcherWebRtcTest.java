@@ -34,7 +34,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before default timeout</li>
+ * <li>Media should be received in the video tag</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
  * 
@@ -42,6 +42,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * @since 4.2.3
  */
 public class DispatcherWebRtcTest extends BrowserKurentoClientTest {
+
+	private static final int PLAYTIME = 10; // seconds
 
 	@Test
 	public void testDispatcherWebRtcChrome() throws Exception {
@@ -76,13 +78,15 @@ public class DispatcherWebRtcTest extends BrowserKurentoClientTest {
 			browser2.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.RCV_ONLY);
 
+			Thread.sleep(PLAYTIME * 1000);
+
 			// Assertions
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
 					browser2.waitForEvent("playing"));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
 					browser2.similarColor(new Color(0, 135, 0)));
-			Thread.sleep(5000);
 		}
 
 		// Release Media Pipeline

@@ -30,8 +30,9 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser should start before default timeout</li>
+ * <li>Media should be received in the video tag</li>
  * <li>Play time should be as expected</li>
+ * <li>Color of the video should be the expected</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -40,7 +41,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
 
 public class WebRtcTest extends BrowserKurentoClientTest {
 
-	private static int PLAYTIME = 10; // seconds to play in WebRTC
+	private static final int PLAYTIME = 10; // seconds to play in WebRTC
 
 	@Test
 	public void testWebRtcLoopbackChrome() throws InterruptedException {
@@ -61,23 +62,20 @@ public class WebRtcTest extends BrowserKurentoClientTest {
 			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.SEND_RCV);
 
-			// Wait until event playing in the remote stream
-			Assert.assertTrue("Timeout waiting playing event",
-					browser.waitForEvent("playing"));
-
 			// Guard time to play the video
 			Thread.sleep(PLAYTIME * 1000);
 
-			// Assert play time
-			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time of HTTP player (expected: "
-					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
-					compare(PLAYTIME, currentTime));
-
-			// Assert color
+			// Assertions
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
+					browser.waitForEvent("playing"));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",
 					browser.similarColor(new Color(0, 135, 0)));
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+					+ " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 		}
 
 		// Release Media Pipeline

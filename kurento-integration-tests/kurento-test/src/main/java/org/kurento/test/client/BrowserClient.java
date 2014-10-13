@@ -300,14 +300,15 @@ public class BrowserClient implements Closeable {
 		js.executeScript("console." + level.toString() + "('" + message + "');");
 	}
 
+	@Override
 	@SuppressWarnings("deprecation")
 	public void close() {
 		for (Thread t : callbackThreads) {
 			t.stop();
 		}
+		driver.close();
 		driver.quit();
 		driver = null;
-
 	}
 
 	public int getTimeout() {

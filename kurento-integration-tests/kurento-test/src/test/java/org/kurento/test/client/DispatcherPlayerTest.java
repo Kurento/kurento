@@ -15,10 +15,14 @@
 package org.kurento.test.client;
 
 import java.awt.Color;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.Dispatcher;
+import org.kurento.client.EndOfStreamEvent;
+import org.kurento.client.EventListener;
 import org.kurento.client.HubPort;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
@@ -35,7 +39,9 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before default timeout</li>
+ * <li>Media should be received in the video tag</li>
+ * <li>EOS event should arrive to player</li>
+ * <li>Play time should be the expected</li>
  * <li>Color of the video should be the expected</li>
  * </ul>
  * 
@@ -44,7 +50,8 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 
-	private static int PLAYTIME = 10; // seconds to play in WebRTC
+	private static final int PLAYTIME = 10; // seconds
+	private static final int TIMEOUT_EOS = 60; // seconds
 
 	@Test
 	public void testDispatcherPlayerChrome() throws Exception {
@@ -56,7 +63,7 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/30sec/red.webm").build();
+				"http://files.kurento.org/video/10sec/red.webm").build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
 
 		Dispatcher dispatcher = new Dispatcher.Builder(mp).build();
@@ -65,9 +72,15 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 
 		playerEP.connect(hubPort1);
 		hubPort2.connect(webRtcEP);
-
 		dispatcher.connect(hubPort1, hubPort2);
-		playerEP.play();
+
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
+			}
+		});
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
@@ -76,13 +89,20 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 			browser.subscribeEvents("playing");
 			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.SEND_RCV);
+			playerEP.play();
 
 			// Assertions
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
-			Thread.sleep(PLAYTIME * 1000);
 			Assert.assertTrue("The color of the video should be red",
 					browser.similarColor(Color.RED));
+			Assert.assertTrue("Not received EOS event in player",
+					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+					+ " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
 		}
 
 		// Release Media Pipeline

@@ -16,22 +16,21 @@ package org.kurento.test.client;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.client.HttpGetEndpoint;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
+import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
 
 /**
- * <strong>Description</strong>: HTTP Player switching videos.<br/>
+ * <strong>Description</strong>: Player switching videos.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>5xPlayerEndpoint -> HttpGetEndpoint</li>
+ * <li>5xPlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
- * <li>Browser starts before default timeout</li>
+ * <li>Media should be received in the video tag</li>
  * <li>Play time should be the expected</li>
- * <li>Browser ends before default timeout</li>
  * </ul>
  * 
  * @author Boni Garcia (bgarcia@gsyc.es)
@@ -40,9 +39,14 @@ import org.kurento.test.base.BrowserKurentoClientTest;
 public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 
 	private static final int PLAYTIME = 20; // seconds
+	private static final int N_PLAYER = 5;
 
 	@Test
-	public void testPlayerSwitch() throws Exception {
+	public void testPlayerSwitchChrome() throws Exception {
+		doTest(Browser.CHROME);
+	}
+
+	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerRed = new PlayerEndpoint.Builder(mp,
@@ -55,46 +59,48 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 				"http://files.kurento.org/video/10sec/smpte.webm").build();
 		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/ball.webm").build();
-		HttpGetEndpoint httpEP = new HttpGetEndpoint.Builder(mp)
-				.terminateOnEOS().build();
+		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
-				.browser(Browser.CHROME).client(Client.PLAYER).build()) {
-			browser.setURL(httpEP.getUrl());
+				.browser(browserType).client(Client.WEBRTC).build()) {
+			browser.subscribeEvents("playing");
+			browser.initWebRtc(webRtcEndpoint, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.RCV_ONLY);
 
 			// red
-			playerRed.connect(httpEP);
+			playerRed.connect(webRtcEndpoint);
 			playerRed.play();
-			browser.subscribeEvents("playing", "ended");
-			browser.start();
-			Assert.assertTrue("Timeout waiting playing event",
-					browser.waitForEvent("playing"));
-			Thread.sleep(2000);
+			browser.subscribeEvents("playing");
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// green
-			playerGreen.connect(httpEP);
+			playerGreen.connect(webRtcEndpoint);
 			playerGreen.play();
-			Thread.sleep(2000);
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// blue
-			playerBlue.connect(httpEP);
+			playerBlue.connect(webRtcEndpoint);
 			playerBlue.play();
-			Thread.sleep(2000);
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// smpte
-			playerSmpte.connect(httpEP);
+			playerSmpte.connect(webRtcEndpoint);
 			playerSmpte.play();
-			Thread.sleep(2000);
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// ball
-			playerBall.connect(httpEP);
+			playerBall.connect(webRtcEndpoint);
 			playerBall.play();
-			Assert.assertTrue("Timeout waiting ended event",
-					browser.waitForEvent("ended"));
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+
+			// Assertions
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
+					browser.waitForEvent("playing"));
 			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time of HTTP player (expected: "
-					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+					+ " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
 		}
 
