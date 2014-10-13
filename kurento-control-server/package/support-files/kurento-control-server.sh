@@ -36,7 +36,7 @@ else
     [ -f /etc/default/kurento-control-server ] && . /etc/default/kurento-control-server
     KCS_SCRIPT=/usr/bin/kurento-control-server
     CONSOLE_LOG=/var/log/kurento/control-server.log
-    KCS_CONFIG=/etc/kurento/kurento.json.conf
+    KCS_CONFIG=/etc/kurento/kurento.conf.json
     KMC_CHUID="--chuid $DAEMON_USER"
     PIDFILE=/var/run/kurento/kurento-control-server.pid
 fi
