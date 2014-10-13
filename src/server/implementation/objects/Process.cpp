@@ -25,8 +25,24 @@ void addFgWithAlpha(cv::Mat &bg, cv::Mat &fg) {
   cv::merge(splitted_bg, bg);
 }
 
-cv::Mat overlay;
-int set_overlay(const char *overlay_image, const char *overlay_text) {
+ArProcess::ArProcess() : overlayScale(1.f), owndata(0) {
+  owndata = new alvar::MarkerDetector<alvar::MarkerData>();
+  alvar::MarkerDetector<alvar::MarkerData> &marker_detector = 
+    *(alvar::MarkerDetector<alvar::MarkerData> *)owndata;
+  marker_detector.SetMarkerSize(15);
+}
+
+ArProcess::~ArProcess() {
+  if (owndata) delete (alvar::MarkerDetector<alvar::MarkerData> *)owndata;
+}
+
+float ArProcess::set_overlay_scale(float _overlayScale) {
+  if (_overlayScale > 0.f) overlayScale=_overlayScale;
+  else overlayScale=1.f;
+  return overlayScale;
+}
+
+int ArProcess::set_overlay(const char *overlay_image, const char *overlay_text) {
   cv::Mat fg, bg;
   if (overlay_image && strlen(overlay_image) > 0) {
     bg = cv::imread(overlay_image, CV_LOAD_IMAGE_UNCHANGED);
@@ -68,11 +84,11 @@ int set_overlay(const char *overlay_image, const char *overlay_text) {
   }
 }
 
-int detect_marker(IplImage *image, gboolean show_debug_info) {
+int ArProcess::detect_marker(IplImage *image, gboolean show_debug_info) {
   alvar::Camera cam;
   cam.SetRes(image->width, image->height);
-  static alvar::MarkerDetector<alvar::MarkerData> marker_detector;
-  marker_detector.SetMarkerSize(15);
+  alvar::MarkerDetector<alvar::MarkerData> &marker_detector = 
+    *(alvar::MarkerDetector<alvar::MarkerData> *)owndata;
   marker_detector.Detect(image, &cam, true, show_debug_info);
 
   //if (!overlay.data) {
@@ -84,32 +100,48 @@ int detect_marker(IplImage *image, gboolean show_debug_info) {
   for (size_t i=0; i<marker_detector.markers->size(); i++) {
     if (i >= 32) break;
 
-    cv::Point2f source_points[4];
-    cv::Point2f dest_points[4];
-    source_points[0] = cv::Point2f(0,overlay.rows-1);
-    source_points[1] = cv::Point2f(overlay.cols-1,overlay.rows-1);
-    source_points[2] = cv::Point2f(overlay.cols-1,0);
-    source_points[3] = cv::Point2f(0,0);
-    dest_points[0] = cv::Point2f(
-      (*(marker_detector.markers))[i].marker_corners_img[0].x,
-      (*(marker_detector.markers))[i].marker_corners_img[0].y);
-    dest_points[1] = cv::Point2f(
-      (*(marker_detector.markers))[i].marker_corners_img[1].x,
-      (*(marker_detector.markers))[i].marker_corners_img[1].y);
-    dest_points[2] = cv::Point2f(
-      (*(marker_detector.markers))[i].marker_corners_img[2].x,
-      (*(marker_detector.markers))[i].marker_corners_img[2].y);
-    dest_points[3] = cv::Point2f(
-      (*(marker_detector.markers))[i].marker_corners_img[3].x,
-      (*(marker_detector.markers))[i].marker_corners_img[3].y);
-
-    cv::Mat transform = cv::getPerspectiveTransform(source_points, dest_points);
     cv::Mat warped_overlay(image->height, image->width, CV_8UC4);
     warped_overlay.setTo(cv::Scalar(0,0,0,0));
-    cv::warpPerspective(overlay, warped_overlay, transform, cv::Size(warped_overlay.cols, warped_overlay.rows), 0, cv::BORDER_TRANSPARENT); 
 
+    if (overlayScale > 0.5f) {
+      cv::Point2f source_points[4];
+      cv::Point2f dest_points[4];
+      float overlay_maxdim = std::max(overlay.rows, overlay.cols);
+      overlay_maxdim /= overlayScale;
+      source_points[0] = cv::Point2f(overlay.cols/2, overlay.rows/2) + cv::Point2f(-overlay_maxdim/2,overlay_maxdim/2);
+      source_points[1] = cv::Point2f(overlay.cols/2, overlay.rows/2) + cv::Point2f(overlay_maxdim/2,overlay_maxdim/2);
+      source_points[2] = cv::Point2f(overlay.cols/2, overlay.rows/2) + cv::Point2f(overlay_maxdim/2,-overlay_maxdim/2);
+      source_points[3] = cv::Point2f(overlay.cols/2, overlay.rows/2) + cv::Point2f(-overlay_maxdim/2,-overlay_maxdim/2);
+      //source_points[0] = cv::Point2f(0,overlay.rows-1);
+      //source_points[1] = cv::Point2f(overlay.cols-1,overlay.rows-1);
+      //source_points[2] = cv::Point2f(overlay.cols-1,0);
+      //source_points[3] = cv::Point2f(0,0);
+      dest_points[0] = cv::Point2f(
+        (*(marker_detector.markers))[i].marker_corners_img[0].x,
+        (*(marker_detector.markers))[i].marker_corners_img[0].y);
+      dest_points[1] = cv::Point2f(
+        (*(marker_detector.markers))[i].marker_corners_img[1].x,
+        (*(marker_detector.markers))[i].marker_corners_img[1].y);
+      dest_points[2] = cv::Point2f(
+        (*(marker_detector.markers))[i].marker_corners_img[2].x,
+        (*(marker_detector.markers))[i].marker_corners_img[2].y);
+      dest_points[3] = cv::Point2f(
+        (*(marker_detector.markers))[i].marker_corners_img[3].x,
+        (*(marker_detector.markers))[i].marker_corners_img[3].y);
+
+      cv::Mat transform = cv::getPerspectiveTransform(source_points, dest_points);
+      cv::warpPerspective(overlay, warped_overlay, transform, cv::Size(warped_overlay.cols, warped_overlay.rows), 0, cv::BORDER_TRANSPARENT); 
+    } else {
+      // TODO: Does not work
+      cv::Mat transform = cv::Mat::eye(4, 4, CV_64F);
+      CvMat ipltransform = transform;
+      (*(marker_detector.markers))[i].pose.GetMatrix(&ipltransform);
+      //std::cout<<transform<<std::endl;
+      //cv::warpPerspective(overlay, warped_overlay, transform, cv::Size(warped_overlay.cols, warped_overlay.rows), 0, cv::BORDER_TRANSPARENT); 
+    }
     cv::Mat frame(image);
     addFgWithAlpha(frame, warped_overlay);
   }
+
   return marker_detector.markers->size();
 }

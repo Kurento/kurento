@@ -6,6 +6,9 @@
 #include <OpenCVProcess.hpp>
 #include "ArMarkerdetector.hpp"
 #include <EventHandler.hpp>
+#include "pthread.h"
+
+#include "Process.h"
 
 namespace kurento
 {
@@ -21,11 +24,13 @@ protected:
   std::string mOverlayImage;
   std::string mOverlayText;
   float mOverlayScale;
+  ArProcess ar;
+  pthread_mutex_t mMutex;
 
 public:
 
   ArMarkerdetectorOpenCVImpl ();
-  virtual ~ArMarkerdetectorOpenCVImpl () {};
+  virtual ~ArMarkerdetectorOpenCVImpl ();
 
   virtual void process (cv::Mat &mat);
 

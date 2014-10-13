@@ -3,8 +3,6 @@
 #include "ArMarkerdetectorOpenCVImpl.hpp"
 #include <KurentoException.hpp>
 
-#include "Process.h"
-
 namespace kurento
 {
 namespace module
@@ -16,6 +14,11 @@ ArMarkerdetectorOpenCVImpl::ArMarkerdetectorOpenCVImpl ()
  : mShowDebugLevel(0)
  , mOverlayScale(0.f)
 {
+  pthread_mutex_init(&mMutex, NULL);
+}
+
+ArMarkerdetectorOpenCVImpl::~ArMarkerdetectorOpenCVImpl () {
+  pthread_mutex_destroy(&mMutex);
 }
 
 /*
@@ -25,14 +28,11 @@ ArMarkerdetectorOpenCVImpl::ArMarkerdetectorOpenCVImpl ()
  */
 void ArMarkerdetectorOpenCVImpl::process (cv::Mat &mat)
 {
-  cv::circle(mat, cv::Point(100,100), 50, CV_RGB(255,0,0));
-
+  pthread_mutex_lock(&mMutex);
+  //cv::circle(mat, cv::Point(100,100), 50, CV_RGB(255,0,0));
   IplImage ipl = mat;
-  
-  detect_marker(&ipl, mShowDebugLevel);
-
-  // FIXME: Implement this
-  //throw KurentoException (NOT_IMPLEMENTED, "ArMarkerdetectorOpenCVImpl::process: Not implemented");
+  ar.detect_marker(&ipl, mShowDebugLevel);
+  pthread_mutex_unlock(&mMutex);
 }
 
 int ArMarkerdetectorOpenCVImpl::getShowDebugLevel () {
@@ -40,7 +40,9 @@ int ArMarkerdetectorOpenCVImpl::getShowDebugLevel () {
 }
 
 void ArMarkerdetectorOpenCVImpl::setShowDebugLevel (int showDebugLevel) {
+  pthread_mutex_lock(&mMutex);
   mShowDebugLevel = showDebugLevel;
+  pthread_mutex_unlock(&mMutex);
 }
 
 std::string ArMarkerdetectorOpenCVImpl::getOverlayImage () {
@@ -48,8 +50,10 @@ std::string ArMarkerdetectorOpenCVImpl::getOverlayImage () {
 }
 
 void ArMarkerdetectorOpenCVImpl::setOverlayImage (const std::string &overlayImage) {
+  pthread_mutex_lock(&mMutex);
   mOverlayImage = overlayImage;
-  set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
+  ar.set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
+  pthread_mutex_unlock(&mMutex);
 }
 
 std::string ArMarkerdetectorOpenCVImpl::getOverlayText () {
@@ -58,14 +62,19 @@ std::string ArMarkerdetectorOpenCVImpl::getOverlayText () {
 
 void ArMarkerdetectorOpenCVImpl::setOverlayText (const std::string &overlayText) {
   mOverlayText = overlayText;
-  set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
+  pthread_mutex_lock(&mMutex);
+  ar.set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
+  pthread_mutex_unlock(&mMutex);
 }
 
 float ArMarkerdetectorOpenCVImpl::getOverlayScale () {
   return mOverlayScale;
 }
 void ArMarkerdetectorOpenCVImpl::setOverlayScale (float overlayScale) {
+  pthread_mutex_lock(&mMutex);
   mOverlayScale = overlayScale;
+  ar.set_overlay_scale(mOverlayScale);
+  pthread_mutex_unlock(&mMutex);
 }
 
 
