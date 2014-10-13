@@ -20,6 +20,8 @@ module.exports = function(grunt)
 
   var pkg = grunt.file.readJSON('package.json');
 
+  const PKG_BROWSER = 'lib/browser.js';
+
   var bower =
   {
     TOKEN:      process.env.TOKEN,
@@ -72,12 +74,13 @@ module.exports = function(grunt)
 
       standalone:
       {
-        src:  '<%= pkg.main %>',
+        src:  PKG_BROWSER,
         dest: DIST_DIR+'/<%= pkg.name %>.js',
 
-        options: {
+        options:
+        {
           browserifyOptions: {
-            standalone: '<%= pkg.name %>'
+            standalone: ''
           }
         }
       },
@@ -104,14 +107,14 @@ module.exports = function(grunt)
 
       'standalone minified':
       {
-        src:  '<%= pkg.main %>',
+        src:  PKG_BROWSER,
         dest: DIST_DIR+'/<%= pkg.name %>.min.js',
 
         options:
         {
           browserifyOptions: {
             debug: true,
-            standalone: '<%= pkg.name %>'
+            standalone: ''
           },
           plugin: [
             ['minifyify',
