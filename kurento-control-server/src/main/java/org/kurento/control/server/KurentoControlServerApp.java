@@ -42,7 +42,7 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 	private static final String OAUTHSERVER_URL_DEFAULT = "";
 
 	public static final String WEBSOCKET_PORT_PROPERTY = "controlServer.net.websocket.port";
-	public static final String WEBSOCKET_PORT_DEFAULT = "8888";
+	public static final String WEBSOCKET_PORT_DEFAULT = "8887";
 
 	public static final String WEBSOCKET_PATH_PROPERTY = "controlServer.net.websocket.path";
 	public static final String WEBSOCKET_PATH_DEFAULT = "kurento";
@@ -91,7 +91,8 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 		try {
 			httpsPort = Integer.parseInt(securePort);
 		} catch (NumberFormatException e) {
-			log.warn("Property '" + WEBSOCKET_PORT_PROPERTY
+			log.warn("Property '" + WEBSOCKET_SECURE_PORT_PROPERTY
+					+ "' with value '" + securePort
 					+ "' can't be parsed as integer. Error: " + e.getMessage()
 					+ ". Defaulting to port 8443");
 		}
