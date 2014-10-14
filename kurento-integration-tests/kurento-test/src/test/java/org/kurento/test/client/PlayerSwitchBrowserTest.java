@@ -46,6 +46,11 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 		doTest(Browser.CHROME);
 	}
 
+	@Test
+	public void testPlayerSwitchFirefox() throws Exception {
+		doTest(Browser.FIREFOX);
+	}
+
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();

@@ -53,8 +53,13 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 	private static final int TIMEOUT_EOS = 60; // seconds
 
 	@Test
-	public void testPlayerZBar() throws Exception {
+	public void testPlayerZBarChrome() throws Exception {
 		doTest(Browser.CHROME);
+	}
+
+	@Test
+	public void testPlayerZBarFirefox() throws Exception {
+		doTest(Browser.FIREFOX);
 	}
 
 	public void doTest(Browser browserType) throws Exception {

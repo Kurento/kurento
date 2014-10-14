@@ -58,6 +58,11 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 		doTest(Browser.CHROME);
 	}
 
+	@Test
+	public void testDispatcherPlayerFirefox() throws Exception {
+		doTest(Browser.FIREFOX);
+	}
+
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
@@ -88,7 +93,7 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 
 			browser.subscribeEvents("playing");
 			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
-					WebRtcMode.SEND_RCV);
+					WebRtcMode.RCV_ONLY);
 			playerEP.play();
 
 			// Assertions
