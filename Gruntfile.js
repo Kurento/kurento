@@ -47,7 +47,8 @@ module.exports = function(grunt)
     {
       all:
       {
-        src: [
+        src:
+        [
           'README.md',
           'lib/**/*.js',
           'node_modules/kurento-client-core/lib/**/*.js',
@@ -62,9 +63,10 @@ module.exports = function(grunt)
     // Generate browser versions and mapping debug file
     browserify:
     {
-      options: {
-        alias : ['<%= pkg.main %>:<%= pkg.name %>']
-      },
+//      options:
+//      {
+//        alias : ['<%= pkg.main %>:<%= pkg.name %>']
+//      },
 
       require:
       {
@@ -79,7 +81,8 @@ module.exports = function(grunt)
 
         options:
         {
-          browserifyOptions: {
+          browserifyOptions:
+          {
             standalone: ''
           }
         }
@@ -92,15 +95,18 @@ module.exports = function(grunt)
 
         options:
         {
-          browserifyOptions: {
+          browserifyOptions:
+          {
             debug: true
           },
-          plugin: [
+          plugin:
+          [
             ['minifyify',
-             {
-               compressPath: DIST_DIR,
-               map: '<%= pkg.name %>.map'
-             }]
+              {
+                compressPath: DIST_DIR,
+                map: '<%= pkg.name %>.map'
+              }
+            ]
           ]
         }
       },
@@ -112,17 +118,20 @@ module.exports = function(grunt)
 
         options:
         {
-          browserifyOptions: {
+          browserifyOptions:
+          {
             debug: true,
             standalone: ''
           },
-          plugin: [
+          plugin:
+          [
             ['minifyify',
-             {
-               compressPath: DIST_DIR,
-               map: '<%= pkg.name %>.map',
-               output: DIST_DIR+'/<%= pkg.name %>.map'
-             }]
+              {
+                compressPath: DIST_DIR,
+                map: '<%= pkg.name %>.map',
+                output: DIST_DIR+'/<%= pkg.name %>.map'
+              }
+            ]
           ]
         }
       }
@@ -135,11 +144,13 @@ module.exports = function(grunt)
       {
         options:
         {
-          sync: [
+          sync:
+          [
             'name', 'description', 'license', 'keywords', 'homepage',
             'repository'
           ],
-          overrides: {
+          overrides:
+          {
             authors: (pkg.author ? [pkg.author] : []).concat(pkg.contributors || []),
             main: 'js/<%= pkg.name %>.js'
           }
@@ -150,8 +161,10 @@ module.exports = function(grunt)
     // Publish / update package info in Bower
     shell:
     {
-      bower: {
-        command: [
+      bower:
+      {
+        command:
+        [
           'curl -X DELETE "https://bower.herokuapp.com/packages/<%= pkg.name %>?auth_token=<%= bower.TOKEN %>"',
           'node_modules/.bin/bower register <%= pkg.name %> <%= bower.repository %>',
           'node_modules/.bin/bower cache clean'
