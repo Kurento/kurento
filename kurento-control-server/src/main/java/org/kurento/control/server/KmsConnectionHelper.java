@@ -11,8 +11,13 @@ import org.slf4j.LoggerFactory;
 
 public class KmsConnectionHelper {
 
-	public static final String MEDIA_SERVER_WS_URI_PROPERTY = "mediaServer.net.ws.uri";
-	public static final String MEDIA_SERVER_WS_URI_DEFAULT = "ws://127.0.0.1:8888/kurento";
+	public static final String KMS_WEBSOCKETS_HOST_PROPERTY = "mediaServer.net.websocket.host";
+	public static final String KMS_WEBSOCKETS_PORT_PROPERTY = "mediaServer.net.websocket.port";
+	public static final String KMS_WEBSOCKETS_PATH_PROPERTY = "mediaServer.net.websocket.path";
+
+	public static final String KMS_WEBSOCKETS_HOST_DEFAULT = "localhost";
+	public static final String KMS_WEBSOCKETS_PORT_DEFAULT = "8888";
+	public static final String KMS_WEBSOCKETS_PATH_DEFAULT = "kurento";
 
 	public static final String RABBITMQ_PORT_PROPERTY = "mediaServer.net.rabbitmq.port";
 	public static final String RABBITMQ_HOST_PROPERTY = "mediaServer.net.rabbitmq.host";
@@ -51,8 +56,14 @@ public class KmsConnectionHelper {
 					vhost);
 		}
 
-		String wsUri = getProperty(MEDIA_SERVER_WS_URI_PROPERTY,
-				MEDIA_SERVER_WS_URI_DEFAULT);
+		String host = getProperty(KMS_WEBSOCKETS_HOST_PROPERTY,
+				KMS_WEBSOCKETS_HOST_DEFAULT);
+		String port = getProperty(KMS_WEBSOCKETS_PORT_PROPERTY,
+				KMS_WEBSOCKETS_PORT_DEFAULT);
+		String path = getProperty(KMS_WEBSOCKETS_PATH_PROPERTY,
+				KMS_WEBSOCKETS_PATH_DEFAULT);
+
+		String wsUri = "ws://" + host + ":" + port + "/" + path;
 
 		log.info("Kurento Control Server using ws to communicate wiht Kurento Media Server.");
 		log.info("KMS ws uri: " + wsUri);
