@@ -19,4 +19,6 @@ public interface TreeManager {
 	public void removeTreeSink(String treeId, String sinkId)
 			throws TreeException;
 
+	public KmsManager getKmsManager();
+
 }

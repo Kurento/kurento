@@ -21,7 +21,7 @@ public class AotOneTreeManager implements TreeManager {
 			.getLogger(AotOneTreeManager.class);
 
 	private KmsManager kmsManager;
-	private int maxViewersPerPipeline = 5;
+	private int maxViewersPerPipeline = 2;
 
 	private boolean oneKms = true;
 
@@ -69,6 +69,11 @@ public class AotOneTreeManager implements TreeManager {
 				}
 			}
 		}
+	}
+
+	@Override
+	public KmsManager getKmsManager() {
+		return kmsManager;
 	}
 
 	@Override

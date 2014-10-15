@@ -2,11 +2,17 @@ package org.kurento.commons;
 
 import org.kurento.commons.exception.KurentoException;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+
 public class PropertiesManager {
 
 	public static interface PropertyHolder {
 		public String getProperty(String property);
 	}
+
+	private static Gson gson;
 
 	private static PropertyHolder propertyHolder = new PropertyHolder() {
 		@Override
@@ -72,6 +78,23 @@ public class PropertiesManager {
 			return value;
 		} else {
 			return defaultValue;
+		}
+	}
+
+	public static <T extends JsonElement> T getPropertyJson(String property,
+			String defaultValue, Class<T> clazz) {
+		String value = getProperty(property, defaultValue);
+		initGson();
+		return gson.fromJson(value, clazz);
+	}
+
+	private static void initGson() {
+		if (gson == null) {
+			synchronized (PropertiesManager.class) {
+				if (gson == null) {
+					gson = new GsonBuilder().create();
+				}
+			}
 		}
 	}
 

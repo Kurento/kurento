@@ -380,8 +380,9 @@ public class BrowserClient implements Closeable {
 		this.maxDistance = maxDistance;
 	}
 
-	public void initWebRtc(WebRtcEndpoint webRtcEndpoint,
+	public void initWebRtcSdpProcessor(SdpOfferProcessor sdpOfferProcessor,
 			WebRtcChannel channel, WebRtcMode mode) {
+
 		// Append WebRTC mode (send/receive and audio/video) to identify test
 		appendStringToTitle(mode.toString());
 		appendStringToTitle(channel.toString());
@@ -408,13 +409,25 @@ public class BrowserClient implements Closeable {
 					}
 				});
 		String sdpOffer = (String) js.executeScript("return sdpOffer;");
-		String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
+		String sdpAnswer = sdpOfferProcessor.processSdpOffer(sdpOffer);
 
 		// Encoding in Base64 to avoid parsing errors in JavaScript
 		sdpAnswer = new String(Base64.encodeBase64(sdpAnswer.getBytes()));
 
 		// Process sdpAnswer
 		js.executeScript("processSdpAnswer('" + sdpAnswer + "');");
+
+	}
+
+	public void initWebRtc(final WebRtcEndpoint webRtcEndpoint,
+			WebRtcChannel channel, WebRtcMode mode) {
+
+		initWebRtcSdpProcessor(new SdpOfferProcessor() {
+			@Override
+			public String processSdpOffer(String sdpOffer) {
+				return webRtcEndpoint.processOffer(sdpOffer);
+			}
+		}, channel, mode);
 	}
 
 	public static class Builder {
@@ -422,7 +435,7 @@ public class BrowserClient implements Closeable {
 		private String audio;
 		private int serverPort;
 		private Client client;
-		private Browser browser;
+		private Browser browser = Browser.CHROME;
 		private boolean usePhysicalCam;
 		private Node remoteNode;
 		private int recordAudio; // seconds

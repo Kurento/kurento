@@ -478,6 +478,19 @@ public class JsonUtils {
 
 		return type.toString();
 	}
+
+	public static List<String> toStringList(JsonArray values) {
+		List<String> list = new ArrayList<>();
+		for (JsonElement element : values) {
+			if (element instanceof JsonPrimitive) {
+				list.add(((JsonPrimitive) element).getAsString());
+			} else {
+				throw new JsonParseException("JsonArray " + values
+						+ " contains non string elements");
+			}
+		}
+		return list;
+	}
 }
 
 class JsonRpcResponseDeserializer implements JsonDeserializer<Response<?>> {

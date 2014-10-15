@@ -20,13 +20,13 @@ public class Pipeline extends KurentoObj {
 	}
 
 	public WebRtc createWebRtc() {
-		WebRtc webRtc = new WebRtc(this);
+		WebRtc webRtc = newWebRtc();
 		webRtcs.add(webRtc);
 		return webRtc;
 	}
 
 	public Plumber createPlumber() {
-		Plumber plumber = new Plumber(this);
+		Plumber plumber = newPlumber();
 		plumbers.add(plumber);
 		return plumber;
 	}
@@ -51,5 +51,13 @@ public class Pipeline extends KurentoObj {
 		sourcePipelinePlumber.link(sinkPipelinePlumber);
 
 		return new Plumber[] { sourcePipelinePlumber, sinkPipelinePlumber };
+	}
+
+	protected WebRtc newWebRtc() {
+		return new WebRtc(this);
+	}
+
+	protected Plumber newPlumber() {
+		return new Plumber(this);
 	}
 }

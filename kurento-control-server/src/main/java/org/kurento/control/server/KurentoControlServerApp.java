@@ -3,16 +3,12 @@ package org.kurento.control.server;
 import static org.kurento.commons.PropertiesManager.getProperty;
 import static org.kurento.commons.PropertiesManager.getPropertyOrException;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.apache.catalina.connector.Connector;
 import org.apache.coyote.http11.Http11NioProtocol;
-import org.kurento.commons.ConfigFileFinder;
-import org.kurento.commons.ConfigFilePropertyHolder;
+import org.kurento.commons.ConfigFileManager;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcConfiguration;
 import org.kurento.jsonrpc.internal.server.config.JsonRpcProperties;
@@ -35,8 +31,6 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan(basePackageClasses = { JsonRpcConfiguration.class })
 @EnableAutoConfiguration
 public class KurentoControlServerApp implements JsonRpcConfigurer {
-
-	private static final String CONFIG_FILE_PATH_PROPERTY = "configFilePath";
 
 	private static final String OAUTHSERVER_URL_PROPERTY = "controlServer.oauthserverUrl";
 	private static final String OAUTHSERVER_URL_DEFAULT = "";
@@ -201,7 +195,7 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 
 	public static ConfigurableApplicationContext start() {
 
-		loadConfigFile();
+		ConfigFileManager.loadConfigFile();
 
 		if (getProperty(UNSECURE_RANDOM_PROPERTY, UNSECURE_RANDOM_DEFAULT)) {
 			log.info("Using /dev/urandom for secure random generation");
@@ -229,30 +223,4 @@ public class KurentoControlServerApp implements JsonRpcConfigurer {
 		return application.run();
 	}
 
-	private static void loadConfigFile() {
-
-		try {
-
-			String configFilePath = System
-					.getProperty(CONFIG_FILE_PATH_PROPERTY);
-
-			Path configFile = null;
-
-			if (configFilePath != null) {
-				configFile = Paths.get(configFilePath);
-			} else {
-				configFile = ConfigFileFinder.searchDefaultConfigFile();
-			}
-
-			if (configFile != null && Files.exists(configFile)) {
-				ConfigFilePropertyHolder
-						.configurePropertiesFromConfigFile(configFile);
-			} else {
-				log.warn("Config file not found. Using all default values");
-			}
-
-		} catch (IOException e) {
-			log.warn("Exception loading config file", e);
-		}
-	}
 }

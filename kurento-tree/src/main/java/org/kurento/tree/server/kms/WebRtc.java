@@ -2,7 +2,7 @@ package org.kurento.tree.server.kms;
 
 public class WebRtc extends Element {
 
-	WebRtc(Pipeline pipeline) {
+	protected WebRtc(Pipeline pipeline) {
 		super(pipeline);
 	}
 

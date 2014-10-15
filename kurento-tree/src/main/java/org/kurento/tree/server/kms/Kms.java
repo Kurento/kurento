@@ -16,13 +16,17 @@ public class Kms extends KurentoObj {
 	}
 
 	public Pipeline createPipeline() {
-		Pipeline pipeline = new Pipeline(this);
+		Pipeline pipeline = newPipeline();
 		pipelines.add(pipeline);
 		return pipeline;
 	}
 
 	public List<Pipeline> getPipelines() {
 		return pipelines;
+	}
+
+	protected Pipeline newPipeline() {
+		return new Pipeline(this);
 	}
 
 }

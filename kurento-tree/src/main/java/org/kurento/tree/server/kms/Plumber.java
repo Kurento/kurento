@@ -4,7 +4,7 @@ public class Plumber extends Element {
 
 	private Plumber linkedTo;
 
-	Plumber(Pipeline pipeline) {
+	protected Plumber(Pipeline pipeline) {
 		super(pipeline);
 	}
 

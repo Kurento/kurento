@@ -33,4 +33,9 @@ public class FakeTreeManager implements TreeManager {
 	public void removeTreeSink(String treeId, String sinkId)
 			throws TreeException {
 	}
+
+	@Override
+	public KmsManager getKmsManager() {
+		return null;
+	}
 }

@@ -24,6 +24,8 @@ import org.kurento.client.internal.transport.jsonrpc.RomClientJsonRpcClient;
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Factory to create {@link MediaPipeline} in the media server.
@@ -34,9 +36,12 @@ import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
  */
 public class KurentoClient {
 
+	private static Logger log = LoggerFactory.getLogger(KurentoClient.class);
+
 	protected RemoteObjectFactory factory;
 
 	public static KurentoClient create(String websocketUrl) {
+		log.debug("Connecting to kms in uri " + websocketUrl);
 		return new KurentoClient(new JsonRpcClientWebSocket(websocketUrl));
 	}
 

@@ -118,4 +118,9 @@ public class TreeManagerReportCreator implements TreeManager {
 		includeOperation("removeTreeSink(" + treeId + "," + sinkId + ")");
 		includeTreeManagerSnapshot();
 	}
+
+	@Override
+	public KmsManager getKmsManager() {
+		return kmsManager;
+	}
 }

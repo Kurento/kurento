@@ -7,6 +7,7 @@ import java.util.List;
 import org.kurento.tree.debug.KmsTopologyGrapher;
 import org.kurento.tree.debug.TreeManagerReportCreator;
 import org.kurento.tree.server.AotOneTreeManager;
+import org.kurento.tree.server.FixedFakeKmsManager;
 import org.kurento.tree.server.KmsManager;
 import org.kurento.tree.server.TreeException;
 import org.kurento.tree.server.TreeManager;
@@ -67,7 +68,7 @@ public class KmssTopologySandbox {
 	private static void showAotOneTreeManager() throws IOException,
 			TreeException {
 
-		KmsManager kmsManager = new KmsManager(4);
+		KmsManager kmsManager = new FixedFakeKmsManager(4);
 		AotOneTreeManager aot = new AotOneTreeManager(kmsManager);
 
 		KmsTopologyGrapher.showTopologyGraphic(kmsManager);
@@ -86,7 +87,7 @@ public class KmssTopologySandbox {
 	private static void showAotOneTreeManagerSvg() throws IOException,
 			TreeException {
 
-		KmsManager kmsManager = new KmsManager(4);
+		KmsManager kmsManager = new FixedFakeKmsManager(4);
 		AotOneTreeManager aot = new AotOneTreeManager(kmsManager);
 
 		System.out.println(KmsTopologyGrapher
@@ -108,7 +109,7 @@ public class KmssTopologySandbox {
 	private static void showAotOneTreeManagerReport() throws IOException,
 			TreeException {
 
-		KmsManager kmsManager = new KmsManager(4);
+		KmsManager kmsManager = new FixedFakeKmsManager(4);
 		TreeManager aot = new AotOneTreeManager(kmsManager);
 
 		TreeManagerReportCreator reportCreator = new TreeManagerReportCreator(

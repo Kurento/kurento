@@ -49,6 +49,7 @@ public class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 			response = (Response<JsonElement>) method.invoke(this, request);
 
 			if (response != null) {
+				response.setId(request.getId());
 				transaction.sendResponseObject(response);
 			} else {
 				transaction.sendVoidResponse();

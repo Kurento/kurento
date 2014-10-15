@@ -29,7 +29,7 @@ public class KmsTopologyGrapher {
 
 		GraphViz gv = generateTopologyGraphViz(kmss);
 
-		// System.out.println(gv.getDotSource());
+		System.out.println(gv.getDotSource());
 
 		Path file = Files.createTempFile("kmsTopology", ".pdf");
 
