@@ -1,4 +1,4 @@
-package org.kurento.tree.test;
+package org.kurento.tree.sandbox;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.Plumber;
 import org.kurento.tree.server.kms.WebRtc;
 
-public class KmssTopologySandbox {
+public class KmssTopologyGrapher {
 
 	public static void main(String[] args) throws IOException, TreeException {
 		// showBasicTree();

@@ -75,11 +75,6 @@
 			<artifactId>kurento-commons-testing</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss</groupId>
-			<artifactId>jboss-common-core</artifactId>
-			<version>2.2.10.GA</version>
-		</dependency>
 	</dependencies>
 
 	<properties>
