@@ -126,7 +126,7 @@
   {
     var params =
     {
-      object: self,
+//      object: self,
       operations: operations
     };
 
@@ -152,13 +152,7 @@
    *
    * @return {external:Promise}
    */
-  this.create = function(type, params, callback){
-    var transaction = (arguments[0] instanceof Transaction)
-                    ? Array.prototype.shift.apply(arguments)
-                    : undefined;
-
-    return mediaObjectCreator.create(transaction, type, params, callback)
-  };
+  this.create = mediaObjectCreator.create.bind(mediaObjectCreator);
   /**
    * @callback core.MediaPipeline~createCallback
    * @param {external:Error} error

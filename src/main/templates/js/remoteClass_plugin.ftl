@@ -140,6 +140,8 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
                   ? Array.prototype.shift.apply(arguments)
                   : undefined;
 
+  if(!arguments.length) callback = undefined;
+
   return this._invoke(transaction, '${getPropertyName}', callback);
 };
 /**
@@ -181,40 +183,7 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
  * @return {external:Promise}
  */
 ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodParams_name + ["callback"]) separator=", "/>){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
-    <#if method.params?has_content>
-      <#list method.params as param>
-        <#if param.optional>
-  callback = arguments[arguments.length-1] instanceof Function
-           ? Array.prototype.pop.call(arguments)
-           : undefined;
-
-  if(callback)
-    switch(arguments.length){
-          <#list method.params as param>
-            <#if param.optional>
-      case ${param_index}: ${param.name} = undefined; break;
-            </#if>
-          </#list>
-    }
-
-          <#break>
-        </#if>
-      </#list>
-      <#list method.params as param>
-  checkType('${param.type.name}', '${param.name}', ${param.name}<#if param.type.isList() || !param.optional>, {<#if param.type.isList()>isList: true,</#if><#if !param.optional>required: true</#if>}</#if>);
-      </#list>
-
-  var params = {
-      <#list methodParams_name as name>
-    ${name}: ${name},
-      </#list>
-  };
-
-    </#if>
+    <@arguments params=method.params/>
     <#if method.name == 'connect'>
   var promise = this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
 
