@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class KmsConnectionHelper {
 
-	public static final String KMS_WEBSOCKETS_HOST_PROPERTY = "mediaServer.net.websocket.host";
+	public static final String KMS_WEBSOCKETS_HOST_PROPERTY = "mediaServer.net.websocket.address";
 	public static final String KMS_WEBSOCKETS_PORT_PROPERTY = "mediaServer.net.websocket.port";
 	public static final String KMS_WEBSOCKETS_PATH_PROPERTY = "mediaServer.net.websocket.path";
 
@@ -20,7 +20,7 @@ public class KmsConnectionHelper {
 	public static final String KMS_WEBSOCKETS_PATH_DEFAULT = "kurento";
 
 	public static final String RABBITMQ_PORT_PROPERTY = "mediaServer.net.rabbitmq.port";
-	public static final String RABBITMQ_HOST_PROPERTY = "mediaServer.net.rabbitmq.host";
+	public static final String RABBITMQ_HOST_PROPERTY = "mediaServer.net.rabbitmq.address";
 	public static final String RABBITMQ_USERNAME_PROPERTY = "mediaServer.net.rabbitmq.username";
 	public static final String RABBITMQ_PASSWORD_PROPERTY = "mediaServer.net.rabbitmq.password";
 	public static final String RABBITMQ_VHOST_PROPERTY = "mediaServer.net.rabbitmq.vhost";

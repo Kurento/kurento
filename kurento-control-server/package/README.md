@@ -28,11 +28,11 @@ This file looks like:
           // Uncomment just one of them
           "websocket": {
             "port": 8888,
-            "path": /kurento,
+            "path": "/kurento",
             "threads": 10
           }
           // "rabbitmq":{
-          //   "host":"127.0.0.1",
+          //   "address":"127.0.0.1",
           //   "port":5672,
           //   "username":"guest",
           //   "pass":"guest",
@@ -99,7 +99,7 @@ The meaning of general configuration properties are:
 
 **RabbitMQ interface**
 
-* **mediaServer.net.rabbitmq.host:** Specifies the host name of the RabbitMQ broker.
+* **mediaServer.net.rabbitmq.address:** Specifies the host name of the RabbitMQ broker.
   The default value is 'localhost'.
 * **mediaServer.net.rabbitmq.port:** Specifies the port of the RabbitMQ broker.
   The default value is 5672.
