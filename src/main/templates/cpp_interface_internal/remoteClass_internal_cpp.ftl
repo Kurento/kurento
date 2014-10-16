@@ -38,7 +38,7 @@ ${getCppObjectType(method.return, false)} ${remoteClass.name}Method${method.name
     <#lt></#list>);
 }
 
-void ${remoteClass.name}Method${method.name?cap_first}::Serialize (JsonSerializer &s)
+void ${remoteClass.name}Method${method.name?cap_first}::Serialize (kurento::JsonSerializer &s)
 {
   if (s.IsWriter) {
   <#list method.params as param>
@@ -88,7 +88,7 @@ ${getCppObjectType (param.type, false)} ${remoteClass.name}Constructor::get${par
   <#if param.defaultValue?? >
   if (!__isSet${param.name?cap_first} && !__isSetDefault${param.name?cap_first}) {
     try {
-      JsonSerializer s (false);
+      kurento::JsonSerializer s (false);
       Json::Reader reader;
       std::string defaultValue = "${escapeString (param.defaultValue)}";
 
@@ -108,7 +108,7 @@ ${getCppObjectType (param.type, false)} ${remoteClass.name}Constructor::get${par
 }
 
 </#list>
-void ${remoteClass.name}Constructor::Serialize (JsonSerializer &s)
+void ${remoteClass.name}Constructor::Serialize (kurento::JsonSerializer &s)
 {
   if (s.IsWriter) {
   <#list remoteClass.constructor.params as param>
