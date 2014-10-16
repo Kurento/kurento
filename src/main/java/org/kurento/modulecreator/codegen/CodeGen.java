@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerException;
 import org.kurento.modulecreator.codegen.function.CamelToUnderscore;
 import org.kurento.modulecreator.codegen.function.CppObjectType;
 import org.kurento.modulecreator.codegen.function.EscapeString;
+import org.kurento.modulecreator.codegen.function.InitializePropertiesValues;
 import org.kurento.modulecreator.codegen.function.IsFirstConstructorParam;
 import org.kurento.modulecreator.codegen.function.JavaObjectType;
 import org.kurento.modulecreator.codegen.function.JsNamespace;
@@ -149,6 +150,7 @@ public class CodeGen {
 		root.put("getJsNamespace", new JsNamespace());
 		root.put("packageToFolder", new PackageToFolder());
 		root.put("organizeDependencies", new OrganizeDependencies());
+		root.put("initializePropertiesValues", new InitializePropertiesValues());
 
 		root.put("module", module);
 		if (this.config != null) {
