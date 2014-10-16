@@ -73,6 +73,8 @@ QUnit.asyncTest('Creation', function()
 
       player.connect(httpGet, function(error)
       {
+        if(error) return onerror(error);
+
         httpGet.getUrl(function(error, url)
         {
           if(error) return onerror(error);
