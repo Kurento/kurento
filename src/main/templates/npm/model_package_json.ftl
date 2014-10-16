@@ -15,7 +15,6 @@ package.json
   },
 </#if>
   "dependencies": {
-    "checktype": "^0.0.4",
     "inherits": "^2.0.1"
   }<#if node_name != "kurento-client-core"
      && node_name != "kurento-client-elements"
@@ -23,7 +22,5 @@ package.json
   "peerDependencies": {
     "kurento-client": "${module.kurentoVersion}"
   }
-<#else>
-
 </#if>
 }
