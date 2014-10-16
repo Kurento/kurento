@@ -36,5 +36,8 @@ install -o root -g root $KCS_HOME/lib/kurento-control-server.jar /var/lib/kurent
 mkdir -p /etc/kurento/
 install -o root -g root $KCS_HOME/config/kurento.conf.json /etc/kurento/kurento.conf.json
 
+# enable media connector
+update-rc.d kurento-control-server defaults
+
 # start media connector
 /etc/init.d/kurento-control-server start

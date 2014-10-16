@@ -105,4 +105,4 @@ echo "========================================================================="
 echo ""
 
 cd $KCS_HOME
-exec $JAVA $JAVA_OPTS -jar $KCS_BINARY $KCS_OPTS
+exec $JAVA $JAVA_OPTS $KCS_OPTS -jar $KCS_BINARY
