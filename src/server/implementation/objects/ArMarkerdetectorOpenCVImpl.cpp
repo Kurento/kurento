@@ -32,6 +32,13 @@ void ArMarkerdetectorOpenCVImpl::process (cv::Mat &mat)
   //cv::circle(mat, cv::Point(100,100), 50, CV_RGB(255,0,0));
   IplImage ipl = mat;
   ar.detect_marker(&ipl, mShowDebugLevel);
+  std::map<int,int>::iterator iter;
+  for (iter = ar.detectedMarkers.begin(); iter != ar.detectedMarkers.end(); iter++) {
+    // TODO: Send Event with marker id "iter->first" if iter->second == 1 (maybe another event in case of iter->second == -1 ?)
+
+    // Following is just for debug
+    //cv::circle(mat, cv::Point(iter->second+mat.cols/2, 10+iter->first*10), 5, CV_RGB(255,0,0));
+  }
   pthread_mutex_unlock(&mMutex);
 }
 

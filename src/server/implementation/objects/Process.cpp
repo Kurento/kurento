@@ -4,6 +4,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include "unistd.h"
+#include "sys/wait.h"
+
 #include "MarkerDetector.h"
 
 void addFgWithAlpha(cv::Mat &bg, cv::Mat &fg) {
@@ -23,6 +26,44 @@ void addFgWithAlpha(cv::Mat &bg, cv::Mat &fg) {
     splitted_bg[3] = splitted_bg[3] + splitted_fg[3];
   }
   cv::merge(splitted_bg, bg);
+}
+
+cv::Mat ArProcess::readImage(std::string url) {
+
+#define USE_URL
+#ifdef USE_URL
+  std::string tmpfile("/tmp/tmp.png"); //tmpnam(NULL));
+  pid_t pid = fork();
+  if (pid == 0) {
+    std::cout<<"Temp file: "<<tmpfile<<std::endl;
+    //TODO: Why this does not work: http://www.fnordware.com/superpng/straight.png
+    //http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/monk.png
+    //http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/hawaii-shirt.png
+    //execlp("/usr/bin/wget", "/usr/bin/wget", "-O", "/tmp/tmp.png", "http://www.fnordware.com/superpng/straight.png", NULL);
+    //execlp("/usr/bin/wget", "/usr/bin/wget", "-O", "/tmp/tmp.png", "http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/hawaii-shirt.png", NULL);
+    //execlp("/usr/bin/wget", "/usr/bin/wget", "-O", "/tmp/tmp.png", "http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/sunglasses.png", NULL);
+    execlp("/usr/bin/wget", "/usr/bin/wget", "-O", tmpfile.c_str(), url.c_str(), NULL);
+    printf("\nError: Could not execute wget\n");
+    _exit(0);
+  } else if (pid > 0) {
+    int status;
+    waitpid(pid, &status, 0);
+  }
+  std::string overlay_image = tmpfile;
+#else
+  std::string overlay_image = url;
+#endif
+
+  cv::Mat bg;
+  bg = cv::imread(overlay_image, CV_LOAD_IMAGE_UNCHANGED);
+  std::cout<<"BG image: "<<bg.cols<<"x"<<bg.rows<<" channels: "<<bg.channels()<<std::endl;
+  if (!bg.data) {
+    bg = cv::Mat(256,256,CV_8UC3);
+  }
+  if (bg.channels() == 3) {
+    cv::cvtColor(bg, bg, CV_BGR2BGRA);
+  }
+  return bg;
 }
 
 ArProcess::ArProcess() : overlayScale(1.f), owndata(0) {
@@ -45,11 +86,7 @@ float ArProcess::set_overlay_scale(float _overlayScale) {
 int ArProcess::set_overlay(const char *overlay_image, const char *overlay_text) {
   cv::Mat fg, bg;
   if (overlay_image && strlen(overlay_image) > 0) {
-    bg = cv::imread(overlay_image, CV_LOAD_IMAGE_UNCHANGED);
-    if (!bg.data) {
-      bg = cv::Mat(256,256,CV_8UC3);
-    }
-    if (bg.channels() == 3) cv::cvtColor(bg, bg, CV_BGR2BGRA);
+    bg = readImage(overlay_image);
   }
   if (overlay_text && strlen(overlay_text) > 0) {
     int font = cv::FONT_HERSHEY_PLAIN, font_thickness = 3;
@@ -96,9 +133,12 @@ int ArProcess::detect_marker(IplImage *image, gboolean show_debug_info) {
   //}
 
   // Show overlay if we have any
+  std::vector<int> detectedMarkersThisFrame;
   if (!overlay.data) return 0;
   for (size_t i=0; i<marker_detector.markers->size(); i++) {
     if (i >= 32) break;
+
+    detectedMarkersThisFrame.push_back((*(marker_detector.markers))[i].GetId());
 
     cv::Mat warped_overlay(image->height, image->width, CV_8UC4);
     warped_overlay.setTo(cv::Scalar(0,0,0,0));
@@ -141,6 +181,25 @@ int ArProcess::detect_marker(IplImage *image, gboolean show_debug_info) {
     }
     cv::Mat frame(image);
     addFgWithAlpha(frame, warped_overlay);
+  }
+
+  // Update missing markers to the list of detectedMarkers
+  for (size_t i=0; i<detectedMarkersThisFrame.size(); i++) {
+    if (detectedMarkers.find(detectedMarkersThisFrame[i]) == detectedMarkers.end()) {
+      detectedMarkers[detectedMarkersThisFrame[i]] = 0;
+    }
+  }
+  // Update counters in the detectedMarkers (found++, not-found--)
+  std::map<int, int>::iterator iter;
+  for (iter=detectedMarkers.begin(); iter != detectedMarkers.end(); iter++) {
+    if (std::find(detectedMarkersThisFrame.begin(), detectedMarkersThisFrame.end(), iter->first) == detectedMarkersThisFrame.end()) {
+      if (iter->second >= 0) iter->second = -1;
+      else iter->second--; // Count how many frames we have not seen this
+      // TODO: Delete: after < -3 ???
+    } else {
+      if (iter->second < 0) iter->second = 1;
+      else iter->second++;
+    }
   }
 
   return marker_detector.markers->size();

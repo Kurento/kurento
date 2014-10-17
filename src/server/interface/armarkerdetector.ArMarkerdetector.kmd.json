@@ -102,5 +102,19 @@
         }
       ]
     }
+  ],
+  "events": [
+    {
+      "name": "newMarkerDetected",
+      "extends": "Media",
+      "doc": "An event that is sent first time marker is detected. Tracking coordinates need to be sent with some other approach.",
+      "properties": [
+        {
+          "name": "markerId",
+          "doc": "marker id",
+          "type": "int"
+        }
+      ]
+    }
   ]
 }

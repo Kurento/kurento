@@ -12,7 +12,9 @@ protected:
   float overlayScale;
   cv::Mat overlay;
   void *owndata;
+  cv::Mat readImage(std::string url);
 public:
+  std::map<int, int> detectedMarkers; // marker_id, frame_count (>0 visible)
   ArProcess();
   ~ArProcess();
   int detect_marker(IplImage* img, gboolean show_debug_info);
