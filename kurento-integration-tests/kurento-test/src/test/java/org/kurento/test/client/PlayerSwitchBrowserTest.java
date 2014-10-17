@@ -38,7 +38,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  */
 public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 
-	private static final int PLAYTIME = 20; // seconds
+	private static final int PLAYTIME = 30; // seconds
 	private static final int N_PLAYER = 5;
 
 	@Test
@@ -60,10 +60,12 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 				"http://files.kurento.org/video/10sec/green.webm").build();
 		PlayerEndpoint playerBlue = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/blue.webm").build();
-		PlayerEndpoint playerSmpte = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/10sec/smpte.webm").build();
 		PlayerEndpoint playerBall = new PlayerEndpoint.Builder(mp,
 				"http://files.kurento.org/video/10sec/ball.webm").build();
+		PlayerEndpoint playerRtsp = new PlayerEndpoint.Builder(
+				mp,
+				"rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp")
+				.build();
 		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
 
 		// Test execution
@@ -90,13 +92,13 @@ public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
 			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// smpte
-			playerSmpte.connect(webRtcEndpoint);
-			playerSmpte.play();
+			playerBall.connect(webRtcEndpoint);
+			playerBall.play();
 			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// ball
-			playerBall.connect(webRtcEndpoint);
-			playerBall.play();
+			playerRtsp.connect(webRtcEndpoint);
+			playerRtsp.play();
 			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
 
 			// Assertions
