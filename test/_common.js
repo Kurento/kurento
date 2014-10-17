@@ -117,7 +117,7 @@ QUnit.config.urlConfig.push(
   label: "WebSocket server",
   value:
   {
-    'ws://127.0.0.1:8888/kurento':          'localhost (port 8888)'
+    'ws://127.0.0.1:8888/kurento': 'localhost (port 8888)'
   },
   tooltip: "Exec the tests using a real WebSocket server instead of a mock"
 });

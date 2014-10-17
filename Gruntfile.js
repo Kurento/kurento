@@ -63,59 +63,18 @@ module.exports = function(grunt)
     // Generate browser versions and mapping debug file
     browserify:
     {
-//      options:
-//      {
-//        alias : ['<%= pkg.main %>:<%= pkg.name %>']
-//      },
       options:
       {
         alias : ['<%= pkg.main %>:<%= pkg.name %>']
       },
 
-      require:
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.js'
-      },
-
-      standalone:
+      'standard':
       {
         src:  PKG_BROWSER,
-        dest: DIST_DIR+'/<%= pkg.name %>.js',
-
-        options:
-        {
-          browserifyOptions:
-          {
-            standalone: ''
-          }
-        }
+        dest: DIST_DIR+'/<%= pkg.name %>.js'
       },
 
-      'require minified':
-      {
-        src:  '<%= pkg.main %>',
-        dest: DIST_DIR+'/<%= pkg.name %>_require.min.js',
-
-        options:
-        {
-          browserifyOptions:
-          {
-            debug: true
-          },
-          plugin:
-          [
-            ['minifyify',
-              {
-                compressPath: DIST_DIR,
-                map: '<%= pkg.name %>.map'
-              }
-            ]
-          ]
-        }
-      },
-
-      'standalone minified':
+      'minified':
       {
         src:  PKG_BROWSER,
         dest: DIST_DIR+'/<%= pkg.name %>.min.js',
@@ -124,8 +83,7 @@ module.exports = function(grunt)
         {
           browserifyOptions:
           {
-            debug: true,
-            standalone: ''
+            debug: true
           },
           plugin:
           [
