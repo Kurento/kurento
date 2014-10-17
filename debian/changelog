@@ -3,7 +3,7 @@ ar-markerdetector (0.0.2~rc1) testing; urgency=medium
   * setOverlayImage now accepts URLs (currently requires wget)
   * Started implementing event for marker detection
 
- -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Thu, 14 Oct 2014 12:00:00 +0300
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Fri, 17 Oct 2014 12:00:00 +0300
 
 ar-markerdetector (0.0.1~rc1) testing; urgency=medium
 
