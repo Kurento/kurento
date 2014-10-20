@@ -13,8 +13,8 @@ var HubPort = require('../HubPort');
 
 var checkParams = require('checktype').checkParams;
 
-var kurentoClient = require('kurento-client');
-var register = kurentoClient.register;
+// Ugly hack to get a reference to the classes register
+var register = require('../../..').register;
 
 /**
  * Get the constructor for a type
@@ -27,7 +27,7 @@ function getConstructor(type)
   if(result) return result;
 
   console.warn("Unknown type '"+type+"', using MediaObject instead");
-  return MediaObject;
+  return register.abstracts.MediaObject;
 };
   <#break>
 </#switch>
