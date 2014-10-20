@@ -1,0 +1,35 @@
+<#switch remoteClass.name>
+  <#case "Hub">
+
+var HubPort = require('../HubPort');
+  <#break>
+  <#case "MediaObject">
+
+var Promise = require('es6-promise').Promise;
+
+var promiseCallback = require('promisecallback');
+  <#break>
+  <#case "MediaPipeline">
+
+var checkParams = require('checktype').checkParams;
+
+var kurentoClient = require('kurento-client');
+
+var register            = kurentoClient.register;
+var TransactionsManager = kurentoClient.TransactionsManager;
+
+/**
+ * Get the constructor for a type
+ *
+ * If the type is not registered, use generic {MediaObject}
+ */
+function getConstructor(type)
+{
+  var result = register.classes[type] || register.abstracts[type];
+  if(result) return result;
+
+  console.warn("Unknown type '"+type+"', using MediaObject instead");
+  return MediaObject;
+};
+  <#break>
+</#switch>

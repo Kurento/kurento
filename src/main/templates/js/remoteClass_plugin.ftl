@@ -42,17 +42,15 @@
 <#include "license.ftm" >
 
 var inherits = require('inherits');
+<#include "sugarSyntax1.ftm" >
 
 <#if remoteClass.methods?has_content>
-var checkType      = require('checktype');
-var ChecktypeError = checkType.ChecktypeError;
+var checkType = require('checktype');
 
-//var Transaction = require('../../../..').TransactionsManager.Transaction;
-var Transaction = require('kurento-client').TransactionsManager.Transaction;
+var ChecktypeError = checkType.ChecktypeError;
 <#else>
 var ChecktypeError = require('checktype').ChecktypeError;
 </#if>
-<#include "requires.ftm" >
 <#if remoteClass.extends??>
   <#assign import_package>
     <#list module.imports as import>
@@ -136,11 +134,7 @@ inherits(${remoteClass.name}, ${extends_name});
  * @return {external:Promise}
  */
 ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
-  return this._invoke(transaction, '${getPropertyName}', callback);
+  return this.invoke('${getPropertyName}', callback);
 };
 /**
  * @callback module:${remoteClass_namepath}~${getPropertyName}Callback
@@ -181,10 +175,6 @@ ${remoteClass.name}.prototype.${getPropertyName} = function(callback){
  * @return {external:Promise}
  */
 ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodParams_name + ["callback"]) separator=", "/>){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
     <#if method.params?has_content>
       <#list method.params as param>
         <#if param.optional>
@@ -216,13 +206,13 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
 
     </#if>
     <#if method.name == 'connect'>
-  var promise = this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
+  var promise = this.invoke('${method.name}'<#if method.params?has_content>, params</#if>, callback);
 
   promise.connect = sink.connect.bind(sink);
 
   return promise;
     <#else>
-  return this._invoke(transaction, '${method.name}'<#if method.params?has_content>, params</#if>, callback);
+  return this.invoke('${method.name}'<#if method.params?has_content>, params</#if>, callback);
     </#if>
 };
 /**
@@ -238,7 +228,7 @@ ${remoteClass.name}.prototype.${method.name} = function(<@join sequence=(methodP
   </#list>
 </#if>
 
-<#include "prototypes.ftm" >
+<#include "sugarSyntax2.ftm" >
 /**
  * @alias module:${remoteClass_namepath}.constructorParams
 <#if remoteClass.constructor??>

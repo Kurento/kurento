@@ -9,10 +9,6 @@
  * @return {external:Promise}
  */
 Hub.prototype.createHubPort = function(callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
   var mediaObject = new HubPort()
 
   var params =
@@ -21,9 +17,7 @@ Hub.prototype.createHubPort = function(callback){
     hub: this
   };
 
-  Object.defineProperty(params, 'object', {value: mediaObject});
-
-  this.emit('_create', transaction, params, callback);
+  this.emit('_create', mediaObject, params, callback);
 
   return mediaObject
 };
@@ -46,7 +40,7 @@ Hub.prototype.createHubPort = function(callback){
  *
  * @return {external:Promise}
  */
-MediaObject.prototype._invoke = function(transaction, method, params, callback){
+MediaObject.prototype.invoke = function(method, params, callback){
   var self = this;
 
   // Fix optional parameters
@@ -64,14 +58,14 @@ MediaObject.prototype._invoke = function(transaction, method, params, callback){
     // Generate request parameters
     var params2 =
     {
-      object: self,
       operation: method
     };
 
     if(params)
       params2.operationParams = params;
 
-    function callback(error, result)
+    // Do request
+    self.emit('_rpc', 'invoke', params2, function(error, result)
     {
       if(error) return reject(error);
 
@@ -79,10 +73,7 @@ MediaObject.prototype._invoke = function(transaction, method, params, callback){
       if(value === undefined) value = self;
 
       resolve(value);
-    }
-
-    // Do request
-    self.emit('_rpc', transaction, 'invoke', params2, callback);
+    });
   });
 
   return promiseCallback(promise, callback);
@@ -102,20 +93,11 @@ MediaObject.prototype._invoke = function(transaction, method, params, callback){
  * @return {external:Promise}
  */
 MediaObject.prototype.release = function(callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
   var self = this;
 
   var promise = new Promise(function(resolve, reject)
   {
-    var params =
-    {
-      object: self
-    };
-
-    function callback(error)
+    self.emit('_rpc', 'release', {}, function(error)
     {
       if(error) return reject(error);
 
@@ -125,9 +107,7 @@ MediaObject.prototype.release = function(callback){
       self.removeAllListeners();
 
       resolve();
-    }
-
-    self.emit('_rpc', transaction, 'release', params, callback);
+    });
   });
 
   return promiseCallback(promise, callback);
@@ -140,7 +120,8 @@ MediaObject.prototype.release = function(callback){
 
 // Promise interface ("thenable")
 
-MediaObject.prototype.then = function(onFulfilled, onRejected){
+MediaObject.prototype.then = function(onFulfilled, onRejected)
+{
   var self = this;
 
   return new Promise(function(resolve, reject)
@@ -196,7 +177,6 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
       })
   })
 }
-
   <#break>
   <#case "MediaSource">
 
@@ -211,10 +191,6 @@ MediaObject.prototype.then = function(onFulfilled, onRejected){
  * @return {external:Promise}
  */
 MediaSource.prototype.disconnect = function(sink, callback){
-  var transaction = (arguments[0] instanceof Transaction)
-                  ? Array.prototype.shift.apply(arguments)
-                  : undefined;
-
   checkType('MediaSink', 'sink', sink, {required: true});
 
   var params =
@@ -222,7 +198,7 @@ MediaSource.prototype.disconnect = function(sink, callback){
     src: this
   };
 
-  return sink._invoke(transaction, 'disconnect', params, callback);
+  return sink.invoke('disconnect', params, callback);
 };
 /**
  * @callback module:core/abstract.MediaSource~disconnectCallback
