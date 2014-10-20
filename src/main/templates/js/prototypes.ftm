@@ -13,8 +13,6 @@ Hub.prototype.createHubPort = function(callback){
                   ? Array.prototype.shift.apply(arguments)
                   : undefined;
 
-  if(!arguments.length) callback = undefined;
-
   var mediaObject = new HubPort()
 
   var params =
@@ -107,8 +105,6 @@ MediaObject.prototype.release = function(callback){
   var transaction = (arguments[0] instanceof Transaction)
                   ? Array.prototype.shift.apply(arguments)
                   : undefined;
-
-  if(!arguments.length) callback = undefined;
 
   var self = this;
 
@@ -218,8 +214,6 @@ MediaSource.prototype.disconnect = function(sink, callback){
   var transaction = (arguments[0] instanceof Transaction)
                   ? Array.prototype.shift.apply(arguments)
                   : undefined;
-
-  if(arguments.length === 1) callback = undefined;
 
   checkType('MediaSink', 'sink', sink, {required: true});
 
