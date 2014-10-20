@@ -340,75 +340,72 @@ public class RepositoryHttpServlet extends HttpServlet {
 
 		try (InputStream requestInputStream = req.getInputStream()) {
 
-			try (OutputStream repoItemOutputStream = elem
-					.getRepoItemOutputStream()) {
+			OutputStream repoItemOutputStream = elem.getRepoItemOutputStream();
 
-				Range range = parseContentRange(req, resp);
+			Range range = parseContentRange(req, resp);
 
-				if (range != null) {
+			if (range != null) {
 
-					if (range.start > elem.getWrittenBytes()) {
-						resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-						resp.getOutputStream().println(
-								"The server doesn't support writing ranges "
-										+ "ahead of previously written bytes");
-					} else if (range.end == elem.getWrittenBytes()) {
+				if (range.start > elem.getWrittenBytes()) {
+					resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+					resp.getOutputStream().println(
+							"The server doesn't support writing ranges "
+									+ "ahead of previously written bytes");
+				} else if (range.end == elem.getWrittenBytes()) {
 
-						// TODO We assume that the put range is the same than
-						// the
-						// previous one. Do we need to check this?
+					// TODO We assume that the put range is the same than
+					// the
+					// previous one. Do we need to check this?
 
-						resp.setStatus(SC_OK);
-						resp.getOutputStream()
-								.println(
-										"The server has detected that the submited range "
-												+ "has already submited in a previous request");
-					} else if (range.start < elem.getWrittenBytes()
-							&& range.end > elem.getWrittenBytes()) {
+					resp.setStatus(SC_OK);
+					resp.getOutputStream()
+							.println(
+									"The server has detected that the submited range "
+											+ "has already submited in a previous request");
+				} else if (range.start < elem.getWrittenBytes()
+						&& range.end > elem.getWrittenBytes()) {
 
-						Range copyRange = new Range();
-						copyRange.start = elem.getWrittenBytes() - range.start;
-						copyRange.end = range.end - range.start;
+					Range copyRange = new Range();
+					copyRange.start = elem.getWrittenBytes() - range.start;
+					copyRange.end = range.end - range.start;
 
-						copyStreamsRange(requestInputStream,
-								repoItemOutputStream, copyRange);
+					copyStreamsRange(requestInputStream, repoItemOutputStream,
+							copyRange);
 
-						resp.setStatus(SC_OK);
+					resp.setStatus(SC_OK);
 
-					} else if (range.start == elem.getWrittenBytes()) {
+				} else if (range.start == elem.getWrittenBytes()) {
 
-						IOUtils.copy(requestInputStream, repoItemOutputStream);
+					IOUtils.copy(requestInputStream, repoItemOutputStream);
 
-						resp.setStatus(SC_OK);
-					}
+					resp.setStatus(SC_OK);
+				}
+
+			} else {
+
+				boolean isMultipart = ServletFileUpload.isMultipartContent(req);
+
+				if (isMultipart) {
+
+					uploadMultipart(req, resp, repoItemOutputStream);
 
 				} else {
 
-					boolean isMultipart = ServletFileUpload
-							.isMultipartContent(req);
+					try {
 
-					if (isMultipart) {
+						log.info("Start to receive bytes (estimated "
+								+ req.getContentLength() + " bytes)");
+						int bytes = IOUtils.copy(requestInputStream,
+								repoItemOutputStream);
+						resp.setStatus(SC_OK);
+						log.info("Bytes received: " + bytes);
 
-						uploadMultipart(req, resp, repoItemOutputStream);
+					} catch (Exception e) {
 
-					} else {
+						log.warn("Exception when uploading content", e);
 
-						try {
-
-							log.info("Start to receive bytes (estimated "
-									+ req.getContentLength() + " bytes)");
-							int bytes = IOUtils.copy(requestInputStream,
-									repoItemOutputStream);
-							resp.setStatus(SC_OK);
-							log.info("Bytes received: " + bytes);
-
-						} catch (Exception e) {
-
-							log.warn("Exception when uploading content", e);
-
-							elem.fireSessionErrorEvent(e);
-							resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-						}
+						elem.fireSessionErrorEvent(e);
+						resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 					}
 				}
 			}
@@ -1334,7 +1331,7 @@ public class RepositoryHttpServlet extends HttpServlet {
 				}
 				ostream.write(buffer, 0, len);
 
-				log.debug("{} bytes have been written to item" + len);
+				log.debug("{} bytes have been written to item", len);
 
 			} catch (IOException e) {
 				exception = e;
