@@ -11,7 +11,7 @@ complexTypes/${complexType.name}.js
 
 <#include "license.ftm" >
 
-var checkType = require('kurento-client').checkType;
+var checkType = require('checktype');
 
 /**
  * Checker for {@link ${complexType_namepath}}

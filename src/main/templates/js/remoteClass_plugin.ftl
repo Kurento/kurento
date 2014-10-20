@@ -43,17 +43,14 @@
 
 var inherits = require('inherits');
 
-var kurentoClient = require('kurento-client');
-
 <#if remoteClass.methods?has_content>
-var checkType      = kurentoClient.checkType;
+var checkType      = require('checktype');
 var ChecktypeError = checkType.ChecktypeError;
-<#else>
-var ChecktypeError = kurentoClient.checkType.ChecktypeError;
-</#if>
-<#if remoteClass.methods?has_content || remoteClass.name=="MediaObject">
 
-var Transaction = kurentoClient.TransactionsManager.Transaction;
+//var Transaction = require('../../../..').TransactionsManager.Transaction;
+var Transaction = require('kurento-client').TransactionsManager.Transaction;
+<#else>
+var ChecktypeError = require('checktype').ChecktypeError;
 </#if>
 <#include "requires.ftm" >
 <#if remoteClass.extends??>
@@ -75,7 +72,7 @@ var ${extends_name} = require('./<#if remoteClass.abstract != remoteClass.extend
         || module_name=='filters'>
 var ${extends_name} = require('${import_package}').<#if remoteClass.extends.type.abstract>abstracts.</#if>${extends_name};
   <#else>
-var ${extends_name} = kurentoClient.register.<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
+var ${extends_name} = require('kurento-client').register.<#if remoteClass.extends.type.abstract>abstracts<#else>classes</#if>.${extends_name};
   </#if>
 <#elseif remoteClass.name=="MediaObject">
 
