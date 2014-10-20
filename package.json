@@ -14,7 +14,7 @@
   ],
   "main": "./lib/index.js",
   "scripts": {
-    "test": "qunit-cli -c kurentoClient:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
+    "test": "rm -f node_modules/kurento-client && ln -s .. node_modules/kurento-client && qunit-cli -c kurentoClient:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
   },
   "repository": {
     "type": "git",
