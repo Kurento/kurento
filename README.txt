@@ -16,6 +16,10 @@ Then you need to install the module and restart kurento
 > dpkg -i ar-markerdetector-dev_0.0.1~rc1_amd64.deb 
 > sudo /etc/init.d/kurento restart
 
+To access the source code you can clone it from here
+
+> git clone http://ssi.vtt.fi/git/ar-markerdetector.git
+
 Try out markerdetector using magic-mirror example
 =================================================
 

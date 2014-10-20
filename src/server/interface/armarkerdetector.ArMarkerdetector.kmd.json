@@ -105,13 +105,18 @@
   ],
   "events": [
     {
-      "name": "newMarkerDetected",
+      "name": "markerEvent",
       "extends": "Media",
-      "doc": "An event that is sent first time marker is detected. Tracking coordinates need to be sent with some other approach.",
+      "doc": "An event that is sent first time marker is detected or when it dissappears. Tracking coordinates need to be sent with some other approach.",
       "properties": [
         {
           "name": "markerId",
           "doc": "marker id",
+          "type": "int"
+        },
+        {
+          "name": "eventType",
+          "doc": "Possible eventTypes: 1=appear, 2=dissappear",
           "type": "int"
         }
       ]
