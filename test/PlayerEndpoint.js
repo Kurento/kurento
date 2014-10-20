@@ -140,3 +140,87 @@ QUnit.asyncTest('GetUri', function()
     });
   });
 });
+
+
+QUnit.asyncTest('Connect', function()
+{
+  var self = this;
+
+  QUnit.expect(0);
+
+  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
+  {
+    if(error) return onerror(error);
+
+    self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
+    {
+      if(error) return onerror(error);
+
+      player.connect(httpGet, function(error)
+      {
+        if(error) return onerror(error);
+
+        player.play(function(error)
+        {
+          if(error) return onerror(error);
+
+          httpGet.release(function(error)
+          {
+            if(error) return onerror(error);
+
+            player.release(function(error)
+            {
+              if(error) return onerror(error);
+
+              QUnit.start();
+            });
+          });
+        });
+      });
+    });
+  });
+});
+
+QUnit.asyncTest('Connect by type', function()
+{
+  var self = this;
+
+  QUnit.expect(0);
+
+  self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
+  {
+    if(error) return onerror(error);
+
+    self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
+    {
+      if(error) return onerror(error);
+
+      player.connect(httpGet, 'AUDIO', function(error)
+      {
+        if(error) return onerror(error);
+
+        player.connect(httpGet, 'VIDEO', function(error)
+        {
+          if(error) return onerror(error);
+
+          player.play(function(error)
+          {
+            if(error) return onerror(error);
+
+            httpGet.release(function(error)
+            {
+              if(error) return onerror(error);
+
+              player.release(function(error)
+              {
+                if(error) return onerror(error);
+
+                QUnit.start();
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+});
