@@ -51,7 +51,9 @@ var ChecktypeError = checkType.ChecktypeError;
 <#else>
 var ChecktypeError = kurentoClient.checkType.ChecktypeError;
 </#if>
-<#if remoteClass.methods?has_content || remoteClass.name=="MediaObject">
+<#if remoteClass.methods?has_content
+  || remoteClass.name=="Hub"
+  || remoteClass.name=="MediaObject">
 
 var Transaction = kurentoClient.TransactionsManager.Transaction;
 </#if>
