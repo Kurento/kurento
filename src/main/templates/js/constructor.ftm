@@ -79,11 +79,7 @@
 
   // Transactional API
 
-  var transactionsManager = new TransactionsManager(this, encodeTransaction);
-
-  this.beginTransaction = transactionsManager.beginTransaction.bind(transactionsManager);
-  this.endTransaction   = transactionsManager.endTransaction.bind(transactionsManager);
-  this.transaction      = transactionsManager.transaction.bind(transactionsManager);
+  var transactions = [];
 
   function transactionOperation(method, params, callback)
   {
@@ -94,15 +90,46 @@
       callback: callback
     }
 
-    transactionsManager.push(message);
+    transactions[0].push(message);
   }
+
+  this.beginTransaction = function()
+  {
+    transactions.unshift([]);
+  };
+
+  this.endTransaction = function(callback)
+  {
+    var operations = transactions.shift();
+
+    var promise = new Promise(function(resolve, reject)
+    {
+      function callback(error, result)
+      {
+        if(error) return reject(error);
+
+        resolve(result)
+      };
+
+      encodeTransaction({operations: operations}, callback);
+    })
+
+    return promiseCallback(promise, callback)
+  };
+
+  this.transaction = function(transaction, callback)
+  {
+    this.beginTransaction();
+    transaction.call(this);
+    return this.endTransaction(callback);
+  };
 
 
   // Encode commands
 
   function encodeCreate(params, callback)
   {
-    if(transactionsManager.length)
+    if(transactions.length)
       transactionOperation('create', params, callback);
     else
       self.emit('_create', params, callback)
@@ -110,25 +137,21 @@
 
   function encodeRpc(method, params, callback)
   {
-    if(transactionsManager.length)
+    if(transactions.length)
       transactionOperation(method, params, callback);
     else
       self.emit('_rpc', method, params, callback)
   }
 
-  function encodeTransaction(operations, callback)
+  function encodeTransaction(params, callback)
   {
-    var params =
-    {
-      object: self,
-      operations: operations
-    };
-
-    if(transactionsManager.length)
+    if(transactions.length)
       transactionOperation('transaction', params, callback);
     else
       self.then(function()
       {
+        params.object = self.id;
+
         self.emit('_transaction', params, callback);
       })
   }
