@@ -22,7 +22,7 @@ import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
 
 /**
- * <strong>Description</strong>: Player switching videos.<br/>
+ * <strong>Description</strong>: Test of a N Players.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
  * <li>5xPlayerEndpoint -> WebRtcEndpoint</li>
@@ -36,7 +36,7 @@ import org.kurento.test.base.BrowserKurentoClientTest;
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class PlayerSwitchBrowserTest extends BrowserKurentoClientTest {
+public class PlayerSwitchTest extends BrowserKurentoClientTest {
 
 	private static final int PLAYTIME = 30; // seconds
 	private static final int N_PLAYER = 5;

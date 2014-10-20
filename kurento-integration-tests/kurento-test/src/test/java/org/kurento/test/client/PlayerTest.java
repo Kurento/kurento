@@ -14,51 +14,50 @@
  */
 package org.kurento.test.client;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Color;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.kurento.client.CodeFoundEvent;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.client.ZBarFilter;
 import org.kurento.test.base.BrowserKurentoClientTest;
 
 /**
- * <strong>Description</strong>: Test of a Player with ZBar Filter.<br/>
+ * 
+ * <strong>Description</strong>: Test of a Player.<br/>
  * <strong>Pipeline</strong>:
  * <ul>
- * <li>PlayerEndpoint -> ZBarFilter -> WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ul>
  * <strong>Pass criteria</strong>:
  * <ul>
  * <li>Media should be received in the video tag</li>
  * <li>EOS event should arrive to player</li>
  * <li>Play time should be the expected</li>
- * <li>CodeFound events received</li>
+ * <li>Color of the video should be the expected</li>
  * </ul>
  * 
+ * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
+public class PlayerTest extends BrowserKurentoClientTest {
 
-	private static final int PLAYTIME = 13; // seconds
+	private static final int PLAYTIME = 10; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds
 
 	@Test
-	public void testPlayerZBarChrome() throws Exception {
+	public void testPlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
 	@Test
-	public void testPlayerZBarFirefox() throws Exception {
+	public void testPlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
 
@@ -66,11 +65,9 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 		// Media Pipeline
 		MediaPipeline mp = kurentoClient.createMediaPipeline();
 		PlayerEndpoint playerEP = new PlayerEndpoint.Builder(mp,
-				"http://files.kurento.org/video/barcodes.webm").build();
+				"http://files.kurento.org/video/10sec/blue.webm").build();
 		WebRtcEndpoint webRtcEP = new WebRtcEndpoint.Builder(mp).build();
-		ZBarFilter zBarFilter = new ZBarFilter.Builder(mp).build();
-		playerEP.connect(zBarFilter);
-		zBarFilter.connect(webRtcEP);
+		playerEP.connect(webRtcEP);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);
 		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
@@ -88,36 +85,22 @@ public class PlayerZBarBrowserTest extends BrowserKurentoClientTest {
 					WebRtcMode.RCV_ONLY);
 			playerEP.play();
 
-			final List<String> codeFoundEvents = new ArrayList<>();
-			zBarFilter
-					.addCodeFoundListener(new EventListener<CodeFoundEvent>() {
-						@Override
-						public void onEvent(CodeFoundEvent event) {
-							String codeFound = event.getValue();
-
-							if (!codeFoundEvents.contains(codeFound)) {
-								codeFoundEvents.add(codeFound);
-								browser.consoleLog(ConsoleLogLevel.info,
-										"Code found: " + codeFound);
-							}
-						}
-					});
-
 			// Assertions
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
+			Assert.assertTrue("The color of the video should be blue",
+					browser.similarColor(Color.BLUE));
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 					+ " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
-			Assert.assertFalse("No code found by ZBar filter",
-					codeFoundEvents.isEmpty());
 		}
 
 		// Release Media Pipeline
 		mp.release();
 	}
+
 }
