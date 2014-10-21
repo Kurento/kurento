@@ -1,0 +1,11 @@
+{
+   "ws": {
+     "port": "8890",
+     "path": "kurento-tree"
+   },
+   "kms": {
+      "uris": [
+         "ws://127.0.0.1:8888/kurento"
+      ]
+   }
+}

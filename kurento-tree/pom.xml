@@ -61,7 +61,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>org.kurento.tree.app.KurentoTreeApp</mainClass>
+					<mainClass>org.kurento.tree.server.app.KurentoTreeServerApp</mainClass>
 					<layout>ZIP</layout>
 				</configuration>
 				<executions>
