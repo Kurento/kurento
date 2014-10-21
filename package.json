@@ -38,7 +38,7 @@
     "kurento-client-elements": "Kurento/kurento-client-elements-js.git#develop",
     "kurento-client-filters": "Kurento/kurento-client-filters-js.git#develop",
     "kurento-jsonrpc": "Kurento/kurento-jsonrpc-js.git#develop",
-    "promisecallback": "0.0.1",
+    "promisecallback": "0.0.2",
     "reconnect-ws": "KurentoForks/reconnect-ws"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "grunt-browserify": "^3.0.1",
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.6.0",
-    "grunt-contrib-copy": "~0.6.0",
+    "grunt-contrib-copy": "~0.7.0",
     "grunt-contrib-jshint": "~0.10.0",
     "grunt-jsdoc": "~0.5.7",
     "grunt-npm2bower-sync": "^0.4.0",

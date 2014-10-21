@@ -67,6 +67,10 @@ module.exports = function(grunt)
 //      {
 //        alias : ['<%= pkg.main %>:<%= pkg.name %>']
 //      },
+      options:
+      {
+        alias : ['<%= pkg.main %>:<%= pkg.name %>']
+      },
 
       require:
       {
