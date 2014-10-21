@@ -24,6 +24,46 @@ ArMarkerdetectorImpl::ArMarkerdetectorImpl (const boost::property_tree::ptree &c
 {
 }
 
+void ArMarkerdetectorImpl::setShowDebugLevel (int showDebugLevel)
+{
+  ArMarkerdetectorOpenCVImpl::setShowDebugLevel (showDebugLevel);
+}
+
+int ArMarkerdetectorImpl::getShowDebugLevel ()
+{
+  ArMarkerdetectorOpenCVImpl::getShowDebugLevel ();
+}
+
+void ArMarkerdetectorImpl::setOverlayImage (const std::string &overlayImage)
+{
+  ArMarkerdetectorOpenCVImpl::setOverlayImage (overlayImage);
+}
+
+std::string ArMarkerdetectorImpl::getOverlayImage ()
+{
+  ArMarkerdetectorOpenCVImpl::getOverlayImage ();
+}
+
+void ArMarkerdetectorImpl::setOverlayText (const std::string &overlayText)
+{
+  ArMarkerdetectorOpenCVImpl::setOverlayText (overlayText);
+}
+
+std::string ArMarkerdetectorImpl::getOverlayText ()
+{
+  ArMarkerdetectorOpenCVImpl::getOverlayText ();
+}
+
+void ArMarkerdetectorImpl::setOverlayScale (float overlayScale)
+{
+  ArMarkerdetectorOpenCVImpl::setOverlayScale (overlayScale);
+}
+
+float ArMarkerdetectorImpl::getOverlayScale ()
+{
+  ArMarkerdetectorOpenCVImpl::getOverlayScale ();
+}
+
 MediaObjectImpl *
 ArMarkerdetectorImplFactory::createObject (const boost::property_tree::ptree &config, std::shared_ptr<MediaPipeline> mediaPipeline) const
 {
@@ -36,40 +76,6 @@ ArMarkerdetectorImpl::StaticConstructor::StaticConstructor()
 {
   GST_DEBUG_CATEGORY_INIT (GST_CAT_DEFAULT, GST_DEFAULT_NAME, 0,
                            GST_DEFAULT_NAME);
-}
-
-//virtual void Serialize (JsonSerializer &serializer);
-
-int ArMarkerdetectorImpl::getShowDebugLevel () {
-	return ArMarkerdetectorOpenCVImpl::getShowDebugLevel();
-}
-
-void ArMarkerdetectorImpl::setShowDebugLevel (int showDebugLevel) {
-  	//throw KurentoException (NOT_IMPLEMENTED, "Not implemented");
-	ArMarkerdetectorOpenCVImpl::setShowDebugLevel(showDebugLevel);
-}
-
-std::string ArMarkerdetectorImpl::getOverlayImage () {
-	return ArMarkerdetectorOpenCVImpl::getOverlayImage();
-}
-
-void ArMarkerdetectorImpl::setOverlayImage (const std::string &overlayImage) {
-	ArMarkerdetectorOpenCVImpl::setOverlayImage(overlayImage);
-}
-
-std::string ArMarkerdetectorImpl::getOverlayText () {
-	return ArMarkerdetectorOpenCVImpl::getOverlayText();
-}
-
-void ArMarkerdetectorImpl::setOverlayText (const std::string &overlayText) {
-	ArMarkerdetectorOpenCVImpl::setOverlayText(overlayText);
-}
-
-float ArMarkerdetectorImpl::getOverlayScale () {
-	return ArMarkerdetectorOpenCVImpl::getOverlayScale();
-}
-void ArMarkerdetectorImpl::setOverlayScale (float overlayScale) {
-	ArMarkerdetectorOpenCVImpl::setOverlayScale(overlayScale);
 }
 
 } /* armarkerdetector */

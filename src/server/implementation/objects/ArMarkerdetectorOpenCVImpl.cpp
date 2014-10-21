@@ -11,14 +11,7 @@ namespace armarkerdetector
 {
 
 ArMarkerdetectorOpenCVImpl::ArMarkerdetectorOpenCVImpl ()
- : mShowDebugLevel(0)
- , mOverlayScale(0.f)
 {
-  pthread_mutex_init(&mMutex, NULL);
-}
-
-ArMarkerdetectorOpenCVImpl::~ArMarkerdetectorOpenCVImpl () {
-  pthread_mutex_destroy(&mMutex);
 }
 
 /*
@@ -28,63 +21,49 @@ ArMarkerdetectorOpenCVImpl::~ArMarkerdetectorOpenCVImpl () {
  */
 void ArMarkerdetectorOpenCVImpl::process (cv::Mat &mat)
 {
-  pthread_mutex_lock(&mMutex);
-  //cv::circle(mat, cv::Point(100,100), 50, CV_RGB(255,0,0));
   IplImage ipl = mat;
-  ar.detect_marker(&ipl, mShowDebugLevel);
-  std::map<int,int>::iterator iter;
-  for (iter = ar.detectedMarkers.begin(); iter != ar.detectedMarkers.end(); iter++) {
-    // TODO: Send Event with marker id "iter->first" if iter->second == 1 (maybe another event in case of iter->second == -1 ?)
-
-    // Following is just for debug
-    //cv::circle(mat, cv::Point(iter->second+mat.cols/2, 10+iter->first*10), 5, CV_RGB(255,0,0));
-  }
-  pthread_mutex_unlock(&mMutex);
+  ar.detect_marker(&ipl);
 }
 
-int ArMarkerdetectorOpenCVImpl::getShowDebugLevel () {
-  return mShowDebugLevel;
+void ArMarkerdetectorOpenCVImpl::setShowDebugLevel (int showDebugLevel)
+{
+  ar.setShowDebugLevel(showDebugLevel);
 }
 
-void ArMarkerdetectorOpenCVImpl::setShowDebugLevel (int showDebugLevel) {
-  pthread_mutex_lock(&mMutex);
-  mShowDebugLevel = showDebugLevel;
-  pthread_mutex_unlock(&mMutex);
+int ArMarkerdetectorOpenCVImpl::getShowDebugLevel ()
+{
+  return ar.getShowDebugLevel();
 }
 
-std::string ArMarkerdetectorOpenCVImpl::getOverlayImage () {
-  return mOverlayImage;
+void ArMarkerdetectorOpenCVImpl::setOverlayImage (const std::string &overlayImage)
+{
+  ar.set_overlay(overlayImage.c_str(), NULL);
 }
 
-void ArMarkerdetectorOpenCVImpl::setOverlayImage (const std::string &overlayImage) {
-  pthread_mutex_lock(&mMutex);
-  mOverlayImage = overlayImage;
-  ar.set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
-  pthread_mutex_unlock(&mMutex);
+std::string ArMarkerdetectorOpenCVImpl::getOverlayImage ()
+{
+  return ar.get_overlay_image();
 }
 
-std::string ArMarkerdetectorOpenCVImpl::getOverlayText () {
-  return mOverlayText;
+void ArMarkerdetectorOpenCVImpl::setOverlayText (const std::string &overlayText)
+{
+  ar.set_overlay(NULL, overlayText.c_str());
 }
 
-void ArMarkerdetectorOpenCVImpl::setOverlayText (const std::string &overlayText) {
-  mOverlayText = overlayText;
-  pthread_mutex_lock(&mMutex);
-  ar.set_overlay(mOverlayImage.c_str(), mOverlayText.c_str());
-  pthread_mutex_unlock(&mMutex);
+std::string ArMarkerdetectorOpenCVImpl::getOverlayText ()
+{
+  return ar.get_overlay_text();
 }
 
-float ArMarkerdetectorOpenCVImpl::getOverlayScale () {
-  return mOverlayScale;
-}
-void ArMarkerdetectorOpenCVImpl::setOverlayScale (float overlayScale) {
-  pthread_mutex_lock(&mMutex);
-  mOverlayScale = overlayScale;
-  ar.set_overlay_scale(mOverlayScale);
-  pthread_mutex_unlock(&mMutex);
+void ArMarkerdetectorOpenCVImpl::setOverlayScale (float overlayScale)
+{
+  ar.set_overlay_scale(overlayScale);
 }
 
-
+float ArMarkerdetectorOpenCVImpl::getOverlayScale ()
+{
+  return ar.get_overlay_scale();
+}
 
 } /* armarkerdetector */
 } /* module */

@@ -2,13 +2,17 @@
 #define __PROCESS_H__
 
 #include <glib.h>
-
+#include "pthread.h"
 #include <opencv/cv.h>
 
 G_BEGIN_DECLS
 
 class ArProcess {
 protected:
+  int mShowDebugLevel;
+  pthread_mutex_t mMutex;
+  std::string overlay_image;
+  std::string overlay_text;
   float overlayScale;
   cv::Mat overlay;
   void *owndata;
@@ -17,9 +21,14 @@ public:
   std::map<int, int> detectedMarkers; // marker_id, frame_count (>0 visible)
   ArProcess();
   ~ArProcess();
-  int detect_marker(IplImage* img, gboolean show_debug_info);
-  int set_overlay(const char *overlay_image, const char *overlay_text);
+  int detect_marker(IplImage* img);
+  bool set_overlay(const char *_overlay_image, const char *_overlay_text);
+  std::string get_overlay_image() const { return overlay_image; } 
+  std::string get_overlay_text() const { return overlay_text; } 
   float set_overlay_scale(float _overlayScale);
+  float get_overlay_scale() const { return overlayScale; }
+  void setShowDebugLevel(int level) { mShowDebugLevel = level; }
+  int getShowDebugLevel() { return mShowDebugLevel; }
 };
 
 G_END_DECLS

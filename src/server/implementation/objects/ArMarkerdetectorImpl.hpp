@@ -46,6 +46,15 @@ public:
 
   virtual ~ArMarkerdetectorImpl () {};
 
+  void setShowDebugLevel (int showDebugLevel);
+  int getShowDebugLevel ();
+  void setOverlayImage (const std::string &overlayImage);
+  std::string getOverlayImage ();
+  void setOverlayText (const std::string &overlayText);
+  std::string getOverlayText ();
+  void setOverlayScale (float overlayScale);
+  float getOverlayScale ();
+
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
@@ -53,20 +62,6 @@ public:
                        Json::Value &response);
 
   virtual void Serialize (JsonSerializer &serializer);
-
-  //virtual void Serialize (JsonSerializer &serializer);
-
-  int getShowDebugLevel ();
-  void setShowDebugLevel (int showDebugLevel);
-
-  std::string getOverlayImage ();
-  void setOverlayImage (const std::string &overlayImage);
-
-  std::string getOverlayText ();
-  void setOverlayText (const std::string &overlayText);
-
-  float getOverlayScale ();
-  void setOverlayScale (float overlayScale);
 
 private:
 

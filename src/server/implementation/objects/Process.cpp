@@ -107,6 +107,7 @@ cv::Mat ArProcess::readImage(std::string uri) {
 }
 
 ArProcess::ArProcess() : overlayScale(1.f), owndata(0) {
+  pthread_mutex_init(&mMutex, NULL);
   owndata = new alvar::MarkerDetector<alvar::MarkerData>();
   alvar::MarkerDetector<alvar::MarkerData> &marker_detector = 
     *(alvar::MarkerDetector<alvar::MarkerData> *)owndata;
@@ -115,6 +116,7 @@ ArProcess::ArProcess() : overlayScale(1.f), owndata(0) {
 
 ArProcess::~ArProcess() {
   if (owndata) delete (alvar::MarkerDetector<alvar::MarkerData> *)owndata;
+  pthread_mutex_destroy(&mMutex);
 }
 
 float ArProcess::set_overlay_scale(float _overlayScale) {
@@ -123,19 +125,23 @@ float ArProcess::set_overlay_scale(float _overlayScale) {
   return overlayScale;
 }
 
-int ArProcess::set_overlay(const char *overlay_image, const char *overlay_text) {
+bool ArProcess::set_overlay(const char *_overlay_image, const char *_overlay_text) {
+  pthread_mutex_lock(&mMutex);
   cv::Mat fg, bg;
-  if (overlay_image && strlen(overlay_image) > 0) {
+  if (_overlay_image) overlay_image = std::string(_overlay_image);
+  if (_overlay_text) overlay_text = std::string(_overlay_text);
+
+  if (overlay_image.length() > 0) {
     bg = readImage(overlay_image);
   }
-  if (overlay_text && strlen(overlay_text) > 0) {
+  if (overlay_text.length() > 0) {
     int font = cv::FONT_HERSHEY_PLAIN, font_thickness = 3;
     double font_scale = 6.0;
     int baseline=0;
-    cv::Size textSize = cv::getTextSize(overlay_text, font, font_scale, font_thickness, &baseline);
+    cv::Size textSize = cv::getTextSize(overlay_text.c_str(), font, font_scale, font_thickness, &baseline);
     fg = cv::Mat(textSize.height+baseline+4, textSize.width+4, CV_8UC4); // TODO: CV_8UC4
     fg.setTo(cv::Scalar(255,255,255,64));
-    cv::putText(fg, overlay_text, cv::Point(2, fg.rows-(baseline/2)), font, font_scale, cv::Scalar(0,64,0,255), font_thickness);
+    cv::putText(fg, overlay_text.c_str(), cv::Point(2, fg.rows-(baseline/2)), font, font_scale, cv::Scalar(0,64,0,255), font_thickness);
   }
   int res = 0;
   if (bg.data) res = std::max(bg.cols, bg.rows);
@@ -159,14 +165,17 @@ int ArProcess::set_overlay(const char *overlay_image, const char *overlay_text) 
       fg.cols, fg.rows));
     addFgWithAlpha(overlay_fg, fg);
   }
+  pthread_mutex_unlock(&mMutex);
+  return true;
 }
 
-int ArProcess::detect_marker(IplImage *image, gboolean show_debug_info) {
+int ArProcess::detect_marker(IplImage *image) {
+  pthread_mutex_lock(&mMutex);
   alvar::Camera cam;
   cam.SetRes(image->width, image->height);
   alvar::MarkerDetector<alvar::MarkerData> &marker_detector = 
     *(alvar::MarkerDetector<alvar::MarkerData> *)owndata;
-  marker_detector.Detect(image, &cam, true, show_debug_info);
+  marker_detector.Detect(image, &cam, true, (mShowDebugLevel > 0));
 
   //if (!overlay.data) {
   //  set_overlay("/tmp/overlay.png", "Test");
@@ -174,7 +183,10 @@ int ArProcess::detect_marker(IplImage *image, gboolean show_debug_info) {
 
   // Show overlay if we have any
   std::vector<int> detectedMarkersThisFrame;
-  if (!overlay.data) return 0;
+  if (!overlay.data) {
+    pthread_mutex_unlock(&mMutex);
+    return 0;
+  }
   for (size_t i=0; i<marker_detector.markers->size(); i++) {
     if (i >= 32) break;
 
@@ -242,5 +254,6 @@ int ArProcess::detect_marker(IplImage *image, gboolean show_debug_info) {
     }
   }
 
+  pthread_mutex_unlock(&mMutex);
   return marker_detector.markers->size();
 }

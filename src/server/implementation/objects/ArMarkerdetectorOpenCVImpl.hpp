@@ -6,8 +6,6 @@
 #include <OpenCVProcess.hpp>
 #include "ArMarkerdetector.hpp"
 #include <EventHandler.hpp>
-#include "pthread.h"
-
 #include "Process.h"
 
 namespace kurento
@@ -20,33 +18,25 @@ namespace armarkerdetector
 class ArMarkerdetectorOpenCVImpl : public virtual OpenCVProcess
 {
 protected:
-  int mShowDebugLevel;
-  std::string mOverlayImage;
-  std::string mOverlayText;
-  float mOverlayScale;
   ArProcess ar;
-  pthread_mutex_t mMutex;
 
 public:
 
   ArMarkerdetectorOpenCVImpl ();
-  virtual ~ArMarkerdetectorOpenCVImpl ();
+
+  virtual ~ArMarkerdetectorOpenCVImpl () {};
 
   virtual void process (cv::Mat &mat);
 
-  int getShowDebugLevel ();
   void setShowDebugLevel (int showDebugLevel);
-
-  std::string getOverlayImage ();
+  int getShowDebugLevel ();
   void setOverlayImage (const std::string &overlayImage);
-
-  std::string getOverlayText ();
+  std::string getOverlayImage ();
   void setOverlayText (const std::string &overlayText);
-
-  float getOverlayScale ();
+  std::string getOverlayText ();
   void setOverlayScale (float overlayScale);
+  float getOverlayScale ();
 
-  //sigc::signal<void, markerEvent> signalmarkerEvent;
 };
 
 } /* armarkerdetector */
