@@ -46,6 +46,7 @@ public:
   float getOverlayScale ();
   void setOverlayScale (float overlayScale);
 
+  //sigc::signal<void, markerEvent> signalmarkerEvent;
 };
 
 } /* armarkerdetector */

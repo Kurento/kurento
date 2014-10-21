@@ -7,26 +7,17 @@ find_path (ALVAR_SDK
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../alvar-2.0.0-sdk-linux64-gcc44/" 
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../../alvar-2.0.0-sdk-linux64-gcc44/")
 set (ALVAR_INC "${ALVAR_SDK}/include" CACHE PATH "ALVAR SDK include dir")
-include_directories(${ALVAR_INC})
-
-#set (ALVAR_SDK "${CMAKE_CURRENT_SOURCE_DIR}/../alvar-2.0.0-sdk-linux64-gcc44/" CACHE PATH "ALVAR SDK root dir (Check http://www.vtt.fi/alvar/ for ALVAR)")
-#include_directories(${ALVAR_SDK}/src)
-#include_directories(${ALVAR_SDK}/include)
-#include_directories(${ALVAR_SDK}/bin)
-#link_directories(${ALVAR_SDK}/bin)
-
 find_library(ALVAR_LIB alvar200 HINTS ${ALVAR_SDK}/bin)
-
-
+#include_directories(${ALVAR_INC})
 
 # TODO: Why install does not work?
 #install(FILES ${ALVAR_LIB} DESTINATION ${CMAKE_INSTALL_LIBDIR})
 message(STATUS "Remember to copy alvar library to global lib-dir: ${ALVAR_LIB}") 
+# SOUP
+#include_directories(${SOUP_INCLUDE_DIRS})
 
-
+# Generate code
 include (CodeGenerator)
-
-
 # Possible parameters
 # set (MULTI_VALUE_PARAMS
 #   MODELS
@@ -43,6 +34,7 @@ include (CodeGenerator)
 #   SERVER_IMPL_LIB_FIND_CMAKE_EXTRA_LIBRARIES
 # )
 
+
 generate_code (
   MODELS ${CMAKE_CURRENT_SOURCE_DIR}/interface
   INTERFACE_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INC}
@@ -52,5 +44,7 @@ generate_code (
   SERVER_IMPL_LIB_EXTRA_LIBRARIES ${OPENCV_LIBRARIES}
   SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INC}
   SERVER_IMPL_LIB_EXTRA_LIBRARIES ${ALVAR_LIB}
+  #SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS ${SOUP_INCLUDE_DIRS}
+  #SERVER_IMPL_LIB_EXTRA_LIBRARIES ${SOUP_LIBRARIES}
   SERVER_STUB_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/implementation/objects
 )

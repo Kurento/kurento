@@ -3,11 +3,16 @@
 #include <opencv2/objdetect/objdetect.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
 #include "unistd.h"
 #include "sys/wait.h"
 
 #include "MarkerDetector.h"
+
+#define USE_URL_WGET
+//#define USE_URL_SOUP // TODO: This does not work yet?
+#ifdef USE_URL_SOUP
+#include <libsoup/soup.h>
+#endif
 
 void addFgWithAlpha(cv::Mat &bg, cv::Mat &fg) {
   if (fg.channels() < 4) {
@@ -28,41 +33,76 @@ void addFgWithAlpha(cv::Mat &bg, cv::Mat &fg) {
   cv::merge(splitted_bg, bg);
 }
 
-cv::Mat ArProcess::readImage(std::string url) {
+#ifdef USE_URL_SOUP
+bool is_valid_uri(std::string uri) {
+  // TODO
+  return true;
+}
 
-#define USE_URL
-#ifdef USE_URL
+bool load_from_url(const char *file_name, const char *url) {
+  SoupSession *session;
+  SoupMessage *msg;
+  FILE *dst;
+  session = soup_session_sync_new ();
+  msg = soup_message_new ("GET", url);
+  soup_session_send_message (session, msg);
+  dst = fopen (file_name, "w+");
+  if (dst == NULL) {
+    goto end;
+  }
+  fwrite (msg->response_body->data, 1, msg->response_body->length, dst);
+  fclose (dst);
+end:
+  g_object_unref (msg);
+  g_object_unref (session);
+}
+#endif
+
+cv::Mat ArProcess::readImage(std::string uri) {
+  cv::Mat bg;
+
+#ifdef USE_URL_SOUP
+  bg = cv::imread(uri, CV_LOAD_IMAGE_UNCHANGED);
+  if ((!bg.data) && is_valid_uri(uri)) {
+    std::cout<<"SOUP: Loading URL image to temp file: "<<tmpfile<<std::endl;
+    std::string tmpfile("/tmp/tmp.png");
+    load_from_url (tmpfile.c_str(), uri.c_str());
+    bg = cv::imread(tmpfile, CV_LOAD_IMAGE_UNCHANGED);
+  }
+#endif
+
+#ifdef USE_URL_WGET
   std::string tmpfile("/tmp/tmp.png"); //tmpnam(NULL));
   pid_t pid = fork();
   if (pid == 0) {
-    std::cout<<"Temp file: "<<tmpfile<<std::endl;
+    std::cout<<"WGET: Loading URL image to temp file: "<<tmpfile<<std::endl;
     //TODO: Why this does not work: http://www.fnordware.com/superpng/straight.png
     //http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/monk.png
     //http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/hawaii-shirt.png
     //execlp("/usr/bin/wget", "/usr/bin/wget", "-O", "/tmp/tmp.png", "http://www.fnordware.com/superpng/straight.png", NULL);
     //execlp("/usr/bin/wget", "/usr/bin/wget", "-O", "/tmp/tmp.png", "http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/hawaii-shirt.png", NULL);
     //execlp("/usr/bin/wget", "/usr/bin/wget", "-O", "/tmp/tmp.png", "http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/sunglasses.png", NULL);
-    execlp("/usr/bin/wget", "/usr/bin/wget", "-O", tmpfile.c_str(), url.c_str(), NULL);
+    execlp("/usr/bin/wget", "/usr/bin/wget", "-O", tmpfile.c_str(), uri.c_str(), NULL);
     printf("\nError: Could not execute wget\n");
     _exit(0);
   } else if (pid > 0) {
     int status;
     waitpid(pid, &status, 0);
   }
-  std::string overlay_image = tmpfile;
-#else
-  std::string overlay_image = url;
+  bg = cv::imread(tmpfile, CV_LOAD_IMAGE_UNCHANGED);
 #endif
 
-  cv::Mat bg;
-  bg = cv::imread(overlay_image, CV_LOAD_IMAGE_UNCHANGED);
-  std::cout<<"BG image: "<<bg.cols<<"x"<<bg.rows<<" channels: "<<bg.channels()<<std::endl;
+#ifdef USE_URL_AS_FILE
+  bg = cv::imread(uri, CV_LOAD_IMAGE_UNCHANGED);
+#endif
+
   if (!bg.data) {
     bg = cv::Mat(256,256,CV_8UC3);
   }
   if (bg.channels() == 3) {
     cv::cvtColor(bg, bg, CV_BGR2BGRA);
   }
+  std::cout<<"BG image: "<<bg.cols<<"x"<<bg.rows<<" channels: "<<bg.channels()<<std::endl;
   return bg;
 }
 
