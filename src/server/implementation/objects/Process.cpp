@@ -8,8 +8,8 @@
 
 #include "MarkerDetector.h"
 
-#define USE_URL_WGET
-//#define USE_URL_SOUP // TODO: This does not work yet?
+//#define USE_URL_WGET
+#define USE_URL_SOUP
 #ifdef USE_URL_SOUP
 #include <libsoup/soup.h>
 #endif
@@ -64,8 +64,8 @@ cv::Mat ArProcess::readImage(std::string uri) {
 #ifdef USE_URL_SOUP
   bg = cv::imread(uri, CV_LOAD_IMAGE_UNCHANGED);
   if ((!bg.data) && is_valid_uri(uri)) {
-    std::cout<<"SOUP: Loading URL image to temp file: "<<tmpfile<<std::endl;
     std::string tmpfile("/tmp/tmp.png");
+    std::cout<<"SOUP: Loading URL image to temp file: "<<tmpfile<<std::endl;
     load_from_url (tmpfile.c_str(), uri.c_str());
     bg = cv::imread(tmpfile, CV_LOAD_IMAGE_UNCHANGED);
   }
@@ -106,7 +106,7 @@ cv::Mat ArProcess::readImage(std::string uri) {
   return bg;
 }
 
-ArProcess::ArProcess() : overlayScale(1.f), owndata(0) {
+ArProcess::ArProcess() : overlayScale(1.f), owndata(0), mShowDebugLevel(0) {
   pthread_mutex_init(&mMutex, NULL);
   owndata = new alvar::MarkerDetector<alvar::MarkerData>();
   alvar::MarkerDetector<alvar::MarkerData> &marker_detector = 

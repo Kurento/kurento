@@ -55,6 +55,9 @@ public:
   void setOverlayScale (float overlayScale);
   float getOverlayScale ();
 
+  // Why was this not generated?
+  //sigc::signal<void, markerEvent> signalmarkerEvent;
+
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
   virtual void invoke (std::shared_ptr<MediaObjectImpl> obj,
