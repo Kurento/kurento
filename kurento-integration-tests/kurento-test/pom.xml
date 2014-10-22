@@ -33,7 +33,7 @@
 		<win32-webdriver.version>2.9</win32-webdriver.version>
 
 		<!-- Kurento Utils Version -->
-		<kurento-utils.version>5.0.4-SNAPSHOT</kurento-utils.version>
+		<kurento-utils.version>5.0.4</kurento-utils.version>
 
 		<!-- Main class -->
 		<start-class>org.kurento.test.base.BrowserKurentoClientTest</start-class>
