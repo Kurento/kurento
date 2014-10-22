@@ -182,7 +182,11 @@ int ArProcess::detect_marker(IplImage *image) {
   //}
 
   // Show overlay if we have any
-  std::vector<int> detectedMarkersThisFrame;
+  detectedMarkersPrev = detectedMarkers;
+  std::map<int,int>::iterator iter;
+  for (iter = detectedMarkers.begin(); iter != detectedMarkers.end(); iter++) {
+    iter->second = 0; // Reset counters (but do not forget that this was seen previously?)
+  }
   if (!overlay.data) {
     pthread_mutex_unlock(&mMutex);
     return 0;
@@ -190,7 +194,8 @@ int ArProcess::detect_marker(IplImage *image) {
   for (size_t i=0; i<marker_detector.markers->size(); i++) {
     if (i >= 32) break;
 
-    detectedMarkersThisFrame.push_back((*(marker_detector.markers))[i].GetId());
+    int marker_id = (*(marker_detector.markers))[i].GetId();
+    detectedMarkers[marker_id]++;
 
     cv::Mat warped_overlay(image->height, image->width, CV_8UC4);
     warped_overlay.setTo(cv::Scalar(0,0,0,0));
@@ -236,6 +241,7 @@ int ArProcess::detect_marker(IplImage *image) {
   }
 
   // Update missing markers to the list of detectedMarkers
+/*
   for (size_t i=0; i<detectedMarkersThisFrame.size(); i++) {
     if (detectedMarkers.find(detectedMarkersThisFrame[i]) == detectedMarkers.end()) {
       detectedMarkers[detectedMarkersThisFrame[i]] = 0;
@@ -253,7 +259,7 @@ int ArProcess::detect_marker(IplImage *image) {
       else iter->second++;
     }
   }
-
+*/
   pthread_mutex_unlock(&mMutex);
   return marker_detector.markers->size();
 }

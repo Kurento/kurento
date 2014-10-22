@@ -102,15 +102,15 @@
         }
       ],
       "events": [
-        "markerEvent"
+        "MarkerCount"
       ]
     }
   ],
   "events": [
     {
-      "name": "markerEvent",
+      "name": "MarkerCount",
       "extends": "Media",
-      "doc": "An event that is sent first time marker is detected or when it dissappears. Tracking coordinates need to be sent with some other approach.",
+      "doc": "An event that is sent when the number of visible markers is changed. Tracking coordinates for the markers is going to be sent with some other approach.",
       "properties": [
         {
           "name": "markerId",
@@ -118,8 +118,13 @@
           "type": "int"
         },
         {
-          "name": "eventType",
-          "doc": "Possible eventTypes: 1=appear, 2=dissappear",
+          "name": "markerCount",
+          "doc": "Number of visible markers with the specified id",
+          "type": "int"
+        },
+        {
+          "name": "markerCountDiff",
+          "doc": "How much the markerCount was changed from the previous situation",
           "type": "int"
         }
       ]

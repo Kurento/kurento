@@ -18,6 +18,7 @@ message(STATUS "Remember to copy alvar library to global lib-dir: ${ALVAR_LIB}")
 
 # Generate code
 include (CodeGenerator)
+
 # Possible parameters
 # set (MULTI_VALUE_PARAMS
 #   MODELS
@@ -34,14 +35,11 @@ include (CodeGenerator)
 #   SERVER_IMPL_LIB_FIND_CMAKE_EXTRA_LIBRARIES
 # )
 
-
 generate_code (
   MODELS ${CMAKE_CURRENT_SOURCE_DIR}/interface
   INTERFACE_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INC}
   SERVER_IMPL_LIB_EXTRA_SOURCES implementation/objects/Process.cpp
   SERVER_IMPL_LIB_EXTRA_HEADERS implementation/objects/Process.h
-  #SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS ${OPENCV_INCLUDE_DIRS}
-  #SERVER_IMPL_LIB_EXTRA_LIBRARIES ${OPENCV_LIBRARIES}
   SERVER_IMPL_LIB_EXTRA_INCLUDE_DIRS ${ALVAR_INC} ${SOUP_INCLUDE_DIRS}
   SERVER_IMPL_LIB_EXTRA_LIBRARIES ${ALVAR_LIB} ${SOUP_LIBRARIES}
   SERVER_STUB_DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/implementation/objects

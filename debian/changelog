@@ -1,9 +1,9 @@
 ar-markerdetector (0.0.3~rc1) testing; urgency=medium
 
-  * Implementing event for marker detection
+  * Implemented MarkerCount event to show when markers (dis)appear
   * setOverlayImage URLs are now implemented using SOUP
 
- -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Mon, 20 Oct 2014 12:00:00 +0300
+ -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Wed, 22 Oct 2014 12:00:00 +0300
 
 ar-markerdetector (0.0.2~rc1) testing; urgency=medium
 

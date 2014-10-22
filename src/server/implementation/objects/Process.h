@@ -18,7 +18,8 @@ protected:
   void *owndata;
   cv::Mat readImage(std::string url);
 public:
-  std::map<int, int> detectedMarkers; // marker_id, frame_count (>0 visible)
+  std::map<int, int> detectedMarkers; // marker_id, count (>0 visible)
+  std::map<int, int> detectedMarkersPrev;
   ArProcess();
   ~ArProcess();
   int detect_marker(IplImage* img);

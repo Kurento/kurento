@@ -25,19 +25,16 @@ void ArMarkerdetectorOpenCVImpl::process (cv::Mat &mat)
   ar.detect_marker(&ipl);
   std::map<int,int>::iterator iter;
   for (iter = ar.detectedMarkers.begin(); iter != ar.detectedMarkers.end(); iter++) {
-    // TODO: Send Event with marker id "iter->first" if iter->second == 1 (maybe another event in case of iter->second == -1 ?)
-    if (iter->second == 1) {
-      try {
-        std::cout<<"SEND EVENT for marker: "<<iter->first<<std::endl;
-        markerEvent event(iter->first, 1,
+    int marker_id = iter->first;
+    int marker_count = iter->second;
+    int marker_count_prev = ar.detectedMarkersPrev[marker_id];
+    if (marker_count == marker_count_prev) continue;
+    try {
+      MarkerCount event(marker_id, marker_count, marker_count-marker_count_prev,
                                     getSharedFromThis(),
-                                    markerEvent::getName() );
-        signalmarkerEvent(event);
-      } catch (std::bad_weak_ptr &e) {}
-    }
-
-    // Following is just for debug
-    //cv::circle(mat, cv::Point(iter->second+mat.cols/2, 10+iter->first*10), 5, CV_RGB(255,0,0));
+                                    MarkerCount::getName() );
+      signalMarkerCount(event);
+    } catch (std::bad_weak_ptr &e) {}
   }
 }
 
