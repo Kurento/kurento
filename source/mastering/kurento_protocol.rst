@@ -14,7 +14,7 @@ and sending responses.
 JSON-RPC Messages format
 ========================
 
-Kurento Protocolo uses :term:`JSON-RPC` V2.0 to code its messages. In the
+Kurento Protocol uses :term:`JSON-RPC` V2.0 to code its messages. In the
 following subsections we will show how this format code the messages in
 :term:`JSON`.
 
