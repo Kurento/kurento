@@ -159,14 +159,12 @@ lifecycle =
 
   teardown: function()
   {
-    var self = this;
-
-    if(self.pipeline)
-      self.pipeline.release(function(error)
+    if(this.pipeline)
+      this.pipeline.release(function(error)
       {
         if(error) console.error(error);
-
-        self.kurento.close();
       });
+
+    this.kurento.close();
   }
 };
