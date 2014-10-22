@@ -31,7 +31,7 @@ in three flavors:
 Tutorial 1 - Hello world
 ========================
 
-This is one the simplest WebRTC application you can create with Kurento. It
+This is one of the simplest WebRTC application you can create with Kurento. It
 implements a `WebRTC`:term: *loopback* (a WebRTC media stream going from client
 to Kurento and back to the client)
 
