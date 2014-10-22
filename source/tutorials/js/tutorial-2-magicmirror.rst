@@ -99,6 +99,14 @@ This web page links two Kurento JavaScript libraries:
 * **kurento-utils.js** : Kurento utily library aimed to simplify the WebRTC
   management in the browser.
 
+In addition, these two JavaScript libraries are also required:
+
+* **jquery.js** : Cross-platform JavaScript library designed to simplify the
+  client-side scripting of HTML.
+
+* **adapter.js** : WebRTC JavaScript utility library maintained by Google that
+  abstracts away browser differences.
+
 The specific logic of this demo is coded in the following JavaScript page:
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-magic-mirror/js/index.js>`_.
 In this file, there is an ``start`` function which is called when the green
