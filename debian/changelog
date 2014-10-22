@@ -1,6 +1,7 @@
 ar-markerdetector (0.0.3~rc1) testing; urgency=medium
 
   * Implementing event for marker detection
+  * setOverlayImage URLs are now implemented using SOUP
 
  -- Petri Honkamaa <petri.honkamaa@vtt.fi>  Mon, 20 Oct 2014 12:00:00 +0300
 

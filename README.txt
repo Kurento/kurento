@@ -49,8 +49,13 @@ import org.kurento.module.armarkerdetector.ArMarkerdetector;
 	ArMarkerdetector faceOverlayFilter = new ArMarkerdetector.Builder(pipeline).build();
 	faceOverlayFilter.setShowDebugLevel(0);
 	faceOverlayFilter.setOverlayText("Huuhaa");
-	//faceOverlayFilter.setOverlayImage("http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/sunglasses.png");
 	faceOverlayFilter.setOverlayImage("http://www.dplkbumiputera.com/slider_image/sym/root/proc/self/cwd/usr/share/zenity/clothes/hawaii-shirt.png");
+	faceOverlayFilter.addmarkerEventListener(new EventListener<markerEventEvent>() {
+		@Override
+		public void onEvent(markerEventEvent event) {
+			log.debug("MarkerEvent: {}", event);
+		}
+	    });
 
 	//FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(
 	//		pipeline).build();
@@ -64,5 +69,38 @@ Try it out in the web browser: http://localhost:8080/
 
 Note, that you give URL for the transparent png-file in the 
 setOverlayImage. For some reason not all of the PNG-files work correctly
+
+Notes on how the ar-markerdetector module was made
+==================================================
+
+Generate module based on opencv-filter
+
+> kurento-module-scaffold.sh ArMarkerdetector . huuhaa
+> mkdir build
+> cd build
+> cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
+> cd ..
+
+You describe the interface in armarkerdetector.ArMarkerdetector.kmd.json.
+Every time this is changed you need to regenerate the related codes.
+
+> gvim src/server/interface/armarkerdetector.ArMarkerdetector.kmd.json
+> mv src/server/implementation src/server/implementation.backup
+> cd build
+> rm -rf *
+> cmake .. -DGENERATE_JAVA_CLIENT_PROJECT=TRUE
+> cd ..
+
+Your code should be implemented into ArMarkerdetectorOpenCVImpl.*
+As you might need to regenrate these later on it makes sense to 
+make most of the actual implementation in separate files (e.g. Process.*).
+These separate files and lib debendencies need to be added in src/server/.
+
+> cd src/server/implementation/objects
+>
+
+To try out the projet while developing the easiest approach is to
+make kurento-media-server directly from your build directory
+
 
 

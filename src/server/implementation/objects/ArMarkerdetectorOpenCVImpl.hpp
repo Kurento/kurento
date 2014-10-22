@@ -7,6 +7,7 @@
 #include "ArMarkerdetector.hpp"
 #include <EventHandler.hpp>
 #include "Process.h"
+ 
 
 namespace kurento
 {
@@ -19,6 +20,10 @@ class ArMarkerdetectorOpenCVImpl : public virtual OpenCVProcess
 {
 protected:
   ArProcess ar;
+
+  // TODO: Following is a kludge to get correct shared_from_this
+  //       from the class inherited from this.
+  virtual std::shared_ptr<MediaObject> getSharedFromThis()=0;
 
 public:
 
@@ -36,6 +41,7 @@ public:
   std::string getOverlayText ();
   void setOverlayScale (float overlayScale);
   float getOverlayScale ();
+  sigc::signal<void, markerEvent> signalmarkerEvent;
 
 };
 

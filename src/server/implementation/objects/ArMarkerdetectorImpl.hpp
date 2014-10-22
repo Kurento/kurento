@@ -55,8 +55,8 @@ public:
   void setOverlayScale (float overlayScale);
   float getOverlayScale ();
 
-  // Why was this not generated?
-  //sigc::signal<void, markerEvent> signalmarkerEvent;
+  // TODO: Kludge, because ArMarkerdetectorOpenCVImpl is not inherited from MediaObject (?)
+  virtual std::shared_ptr<MediaObject> getSharedFromThis() { return shared_from_this(); }
 
   /* Next methods are automatically implemented by code generator */
   virtual bool connect (const std::string &eventType, std::shared_ptr<EventHandler> handler);
