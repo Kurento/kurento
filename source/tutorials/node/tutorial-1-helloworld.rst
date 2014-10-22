@@ -285,4 +285,5 @@ changes are made.
 .. note::
 
    We are in active development. You can find the latest version of
-   Kurento JavaScript Client at `Bower <http://bower.io/search/?q=kurento-client>`_.
+   Kurento JavaScript Client at `NPM <http://npmsearch.com/?q=kurento-client>`_
+   and `Bower <http://bower.io/search/?q=kurento-client>`_.
