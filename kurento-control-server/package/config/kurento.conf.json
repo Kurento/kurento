@@ -4,7 +4,7 @@
       // Uncomment just one of them
       "websocket": {
         "port": 8888,
-        "path": "/kurento",
+        "path": "kurento",
         "threads": 10
       }
       // "rabbitmq":{
