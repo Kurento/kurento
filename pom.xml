@@ -3,7 +3,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-client-js</artifactId>
-	<version>5.0.4</version>
+	<version>5.0.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Client JS</name>
@@ -38,7 +38,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>kurento-client-js-5.0.4</tag>
+		<tag>develop</tag>
 	</scm>
 
 	<mailingLists>
