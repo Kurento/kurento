@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.kurento</groupId>
 		<artifactId>kurento-jsonrpc</artifactId>
-		<version>5.0.4-SNAPSHOT</version>
+		<version>5.0.4</version>
 	</parent>
 
 	<artifactId>kurento-jsonrpc-server</artifactId>
@@ -33,7 +33,7 @@
 		<url>${kurento-java.scm.url}</url>
 		<connection>scm:git:${kurento-java.scm.connection}</connection>
 		<developerConnection>scm:git:${kurento-java.scm.connection}</developerConnection>
-		<tag>develop</tag>
+		<tag>kurento-java-5.0.4</tag>
 	</scm>
 
 	<developers>
