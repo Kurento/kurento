@@ -3,7 +3,7 @@
 
 	<groupId>org.kurento</groupId>
 	<artifactId>kurento-utils-js</artifactId>
-	<version>5.0.4-SNAPSHOT</version>
+	<version>5.0.4</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Utils JS</name>
@@ -28,7 +28,7 @@
 		<url>https://github.com/Kurento/${project.artifactId}</url>
 		<connection>scm:git:https://github.com/Kurento/${project.artifactId}.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com:Kurento/${project.artifactId}.git</developerConnection>
-		<tag>develop</tag>
+		<tag>kurento-utils-js-5.0.4</tag>
 	</scm>
 
 	<developers>
