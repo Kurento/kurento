@@ -14,6 +14,14 @@ here. When asked for any kind of confirmation, reply affirmatively:
    sudo apt-get update
    sudo apt-get install kurento-media-server
 
+Take into account that if your are installing Kurento Media Server in Ubuntu
+Server 14.04, the tool *add-apt-repository* is not installed by default. To
+install it, run this command:
+
+.. sourcecode:: console
+
+   sudo apt-get install software-properties-common
+
 Now, Kurento Media Server has been installed and started. Use the following
 commands to start and stop it respectively:
 
