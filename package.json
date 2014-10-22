@@ -1,6 +1,6 @@
 {
   "name": "kurento-utils",
-  "version": "5.0.4",
+  "version": "5.0.5-dev",
   "description": "Kurento Utilities",
   "homepage": "http://www.kurento.org",
   "license": "LGPL",
