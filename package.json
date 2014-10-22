@@ -1,6 +1,6 @@
 {
   "name": "kurento-client",
-  "version": "5.0.4-dev",
+  "version": "5.0.4",
   "description": "Media API for the Kurento Web SDK",
   "homepage": "http://www.kurento.org",
   "license": "LGPL",
@@ -34,10 +34,10 @@
     "es6-promise": "2.0.0",
     "extend": "~2.0.0",
     "inherits": "~2.0.1",
-    "kurento-client-core": "Kurento/kurento-client-core-js.git#develop",
-    "kurento-client-elements": "Kurento/kurento-client-elements-js.git#develop",
-    "kurento-client-filters": "Kurento/kurento-client-filters-js.git#develop",
-    "kurento-jsonrpc": "Kurento/kurento-jsonrpc-js.git#develop",
+    "kurento-client-core": "^5.0.4",
+    "kurento-client-elements": "^5.0.4",
+    "kurento-client-filters": "^5.0.4",
+    "kurento-jsonrpc": "^5.0.4",
     "promisecallback": "0.0.2",
     "reconnect-ws": "KurentoForks/reconnect-ws"
   },
