@@ -303,10 +303,14 @@ the list of existing users in the room (``existingParticipants`` message):
 Client-Side
 ===========
 
-Let's move now to the client-side of the application. To connect with the
-previously created WebSocket in the server-side, we use the JavaScript class
-``WebSocket``. In addition, we use an specific Kurento JavaScript library
-called **kurento-utils.js** to simplify the WebRTC interaction with the server.
+Let's move now to the client-side of the application. To call the previously
+created WebSocket service in the server-side, we use the JavaScript class
+``WebSocket``. We use an specific Kurento JavaScript library called
+**kurento-utils.js** to simplify the WebRTC interaction with the server. This
+library depends on **adapter.js**, which is a JavaScript WebRTC utility
+maintained by Google that abstracts away browser differences. Finally
+**jquery.js** is also needed in this application.
+
 These libraries are linked in the
 `index.html <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-group-call/src/main/resources/static/index.html>`_
 web page, and are used in

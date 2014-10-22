@@ -205,7 +205,10 @@ Let's move now to the client-side of the application, which follows
 *Single Page Application* architecture (`SPA`:term:). To call the previously
 created REST service, we use the JavaScript library `jQuery`:term:. In
 addition, we use a Kurento JavaScript utilities library called
-*kurento-utils.js* to simplify the WebRTC management in the browser.
+**kurento-utils.js** to simplify the WebRTC management in the browser. This
+library depends on **adapter.js**, which is a JavaScript WebRTC utility
+maintained by Google that abstracts away browser differences. Finally
+**jquery.js** is also needed in this application.
 
 These libraries are linked in the
 `index.html <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-hello-world/static/index.html>`_

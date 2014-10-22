@@ -375,8 +375,12 @@ Client-Side
 Let's move now to the client-side of the application. To call the previously
 created WebSocket service in the server-side, we use the JavaScript class
 ``WebSocket``. We use an specific Kurento JavaScript library called
-**kurento-utils.js** to simplify the WebRTC interaction with the server. These
-libraries are linked in the
+**kurento-utils.js** to simplify the WebRTC interaction with the server. This
+library depends on **adapter.js**, which is a JavaScript WebRTC utility
+maintained by Google that abstracts away browser differences. Finally
+**jquery.js** is also needed in this application.
+
+These libraries are linked in the
 `index.html <https://github.com/Kurento/kurento-tutorial-node/blob/master/kurento-one2one-call/src/main/resources/static/index.html>`_
 web page, and are used in the
 `index.js <https://github.com/Kurento/kurento-tutorial-java/blob/master/kurento-one2one-call/src/main/resources/static/js/index.js>`_.

@@ -114,6 +114,14 @@ This web page links two Kurento JavaScript libraries:
 * **kurento-utils.js** : Kurento utility library aimed to simplify the WebRTC
   management in the browser.
 
+In addition, these two JavaScript libraries are also required:
+
+* **jquery.js** : Cross-platform JavaScript library designed to simplify the
+  client-side scripting of HTML.
+
+* **adapter.js** : WebRTC JavaScript utility library maintained by Google that
+  abstracts away browser differences.
+
 The specific logic of the *Hello World* JavaScript demo is coded in the
 following JavaScript file:
 `index.js <https://github.com/Kurento/kurento-tutorial-js/blob/master/kurento-hello-world/js/index.js>`_.
