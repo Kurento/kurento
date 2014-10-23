@@ -77,7 +77,7 @@ QUnit.asyncTest('Media session started', function()
 {
   var self = this;
 
-  QUnit.expect(5);
+  QUnit.expect(7);
 
 
   var timeout = new Timeout('"HttpGetEndpoint:Media session started"',
@@ -119,6 +119,8 @@ QUnit.asyncTest('Media session started', function()
 
         player.play(function(error)
         {
+          QUnit.equal(error, undefined, 'playing');
+
           if(error) return onerror(error);
 
           timeout.start();
@@ -127,6 +129,8 @@ QUnit.asyncTest('Media session started', function()
 
       player.connect(httpGet, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         httpGet.getUrl(function(error, url)

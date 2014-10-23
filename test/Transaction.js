@@ -91,7 +91,7 @@ QUnit.asyncTest('Transaction object on pseudo-sync API', function()
 {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   var pipeline = self.pipeline;
 
@@ -110,6 +110,8 @@ QUnit.asyncTest('Transaction object on pseudo-sync API', function()
 
   t.endTransaction(function(error)
   {
+    QUnit.equal(error, undefined, 'endTransaction');
+
     QUnit.notStrictEqual(player.id, undefined, 'player.id: '+player.id);
 
     promiseUrl.then(function(value){
@@ -118,6 +120,8 @@ QUnit.asyncTest('Transaction object on pseudo-sync API', function()
 
     pipeline.release(function(error)
     {
+      QUnit.equal(error, undefined, 'release');
+
       if(error) return onerror(error);
 
       QUnit.start();
@@ -129,7 +133,7 @@ QUnit.asyncTest('Transaction object on async API', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(4);
 
   var pipeline = self.pipeline;
 
@@ -143,6 +147,8 @@ QUnit.asyncTest('Transaction object on async API', function()
 
       player.connect(httpGet, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         httpGet.getUrl(function(error, url)
@@ -157,6 +163,8 @@ QUnit.asyncTest('Transaction object on async API', function()
 
           t.endTransaction(function(error)
           {
+            QUnit.equal(error, undefined, 'endTransaction');
+
             if(error) return onerror(error);
 
             promiseUrl.then(function(value)
@@ -166,6 +174,8 @@ QUnit.asyncTest('Transaction object on async API', function()
 
             pipeline.release(function(error)
             {
+              QUnit.equal(error, undefined, 'release');
+
               if(error) return onerror(error);
 
               QUnit.start();
@@ -182,7 +192,7 @@ QUnit.asyncTest('transaction creation', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   // Pipeline creation
   var pipeline = self.pipeline;
@@ -202,6 +212,8 @@ QUnit.asyncTest('transaction creation', function()
   // End transaction
   function(error)
   {
+    QUnit.equal(error, undefined, 'transaction');
+
     if(error) return onerror(error);
 
     httpGet.getUrl(function(error, url)
@@ -357,7 +369,7 @@ QUnit.asyncTest('Transactional API', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   var player;
   var httpGet;
@@ -374,6 +386,8 @@ QUnit.asyncTest('Transactional API', function()
   },
   function(error)
   {
+    QUnit.equal(error, undefined, 'transaction');
+
     if(error) return onerror(error);
 
     httpGet.getUrl(function(error, url)

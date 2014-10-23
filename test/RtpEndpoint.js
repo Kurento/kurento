@@ -15,7 +15,7 @@
 
 /**
  * {@link RtpEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @since 4.2.4
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -64,7 +64,7 @@ var offer = "v=0\r\n"
 
 QUnit.asyncTest('Get local session descriptor', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
@@ -72,6 +72,8 @@ QUnit.asyncTest('Get local session descriptor', function()
 
     rtpEndpoint.generateOffer(function(error)
     {
+      QUnit.equal(error, undefined, 'generateOffer');
+
       if(error) return onerror(error);
 
       rtpEndpoint.getLocalSessionDescriptor(function(error, sdp)
@@ -88,7 +90,7 @@ QUnit.asyncTest('Get local session descriptor', function()
 
 QUnit.asyncTest('Get remote session descriptor', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
@@ -96,6 +98,8 @@ QUnit.asyncTest('Get remote session descriptor', function()
 
     rtpEndpoint.processOffer(offer, function(error)
     {
+      QUnit.equal(error, undefined, 'processOffer');
+
       if(error) return onerror(error);
 
       rtpEndpoint.getRemoteSessionDescriptor(function(error, sdp)
@@ -192,7 +196,7 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
 {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(5);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES},
   function(error, player)
@@ -209,12 +213,20 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
 
       player.connect(rtpEndpoint, 'VIDEO', function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
+        if(error) return onerror(error);
+
         rtpEndpoint.processOffer(offer, function(error)
         {
+          QUnit.equal(error, undefined, 'processOffer');
+
           if(error) return onerror(error);
 
           player.play(function(error)
           {
+            QUnit.equal(error, undefined, 'play');
+
             if(error) return onerror(error);
 
             setTimeout(QUnit.start.bind(QUnit), 2*1000);
@@ -229,7 +241,7 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(5);
 
   self.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
@@ -247,6 +259,8 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
     rtpEndpoint.processOffer(offer, function(error)
     {
+      QUnit.equal(error, undefined, 'processOffer');
+
       if(error) return onerror(error);
 
       rtpEndpoint.getMediaSrcs('VIDEO', function(error, mediaSources)
@@ -267,6 +281,8 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
           mediaSource.connect(mediaSink, function(error)
           {
+            QUnit.equal(error, undefined, 'connect');
+
             if(error) return onerror(error);
 
             self.pipeline.create('HttpGetEndpoint',
@@ -276,6 +292,8 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
               rtpEndpoint.connect(httpGetEndpoint, 'VIDEO', function(error)
               {
+                QUnit.equal(error, undefined, 'connect VIDEO');
+
                 if(error) return onerror(error);
 
                 QUnit.start();
@@ -290,7 +308,7 @@ QUnit.asyncTest('CampusParty simulated pipeline', function()
 
 QUnit.asyncTest('Source sinks', function()
 {
-  QUnit.expect(4);
+  QUnit.expect(5);
 
   this.pipeline.create('RtpEndpoint', function(error, rtpEndpoint)
   {
@@ -322,6 +340,8 @@ QUnit.asyncTest('Source sinks', function()
 
             rtpEndpoint.release(function(error)
             {
+              QUnit.equal(error, undefined, 'release');
+
               if(error) return onerror(error);
 
               QUnit.start();
@@ -332,4 +352,3 @@ QUnit.asyncTest('Source sinks', function()
     });
   });
 });
-

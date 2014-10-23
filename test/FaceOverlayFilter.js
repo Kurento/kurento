@@ -54,7 +54,7 @@ QUnit.asyncTest('Detect face in a video', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(5);
 
   var timeout = new Timeout('"FaceOverlayFilter:Detect face in a video"',
                             20 * 1000, onerror);
@@ -81,10 +81,14 @@ QUnit.asyncTest('Detect face in a video', function()
 
       player.connect(faceOverlay, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         player.play(function(error)
         {
+          QUnit.equal(error, undefined, 'playing');
+
           if(error) return onerror(error);
 
           timeout.start();

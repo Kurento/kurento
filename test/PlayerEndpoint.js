@@ -65,21 +65,21 @@ QUnit.asyncTest('Play, Pause & Stop', function()
 
     player.play(function(error)
     {
-      if(error) return onerror(error);
+      QUnit.equal(error, undefined, 'playing');
 
-      QUnit.notEqual(player, undefined, 'play');
+      if(error) return onerror(error);
 
       player.pause(function(error)
       {
-        if(error) return onerror(error);
+        QUnit.equal(error, undefined, 'paused');
 
-        QUnit.notEqual(player, undefined, 'pause');
+        if(error) return onerror(error);
 
         player.stop(function(error)
         {
-          if(error) return onerror(error);
+          QUnit.equal(error, undefined, 'stoped');
 
-          QUnit.ok(true, 'stop');
+          if(error) return onerror(error);
 
           QUnit.start();
         });
@@ -92,7 +92,7 @@ QUnit.asyncTest('End of Stream', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   var timeout = new Timeout('"PlayerEndpoint:End of Stream"',
                             10 * 1000, onerror);
@@ -119,6 +119,8 @@ QUnit.asyncTest('End of Stream', function()
 
     player.play(function(error)
     {
+      QUnit.equal(error, undefined, 'playing');
+
       if(error) return onerror(error);
 
       timeout.start();
@@ -152,7 +154,7 @@ QUnit.asyncTest('Connect', function()
 {
   var self = this;
 
-  QUnit.expect(0);
+  QUnit.expect(4);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
@@ -164,18 +166,26 @@ QUnit.asyncTest('Connect', function()
 
       player.connect(httpGet, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         player.play(function(error)
         {
+          QUnit.equal(error, undefined, 'playing');
+
           if(error) return onerror(error);
 
           httpGet.release(function(error)
           {
+            QUnit.equal(error, undefined, 'release httpGet');
+
             if(error) return onerror(error);
 
             player.release(function(error)
             {
+              QUnit.equal(error, undefined, 'release player');
+
               if(error) return onerror(error);
 
               QUnit.start();
@@ -191,7 +201,7 @@ QUnit.asyncTest('Connect by type', function()
 {
   var self = this;
 
-  QUnit.expect(0);
+  QUnit.expect(5);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
@@ -203,22 +213,32 @@ QUnit.asyncTest('Connect by type', function()
 
       player.connect(httpGet, 'AUDIO', function(error)
       {
+        QUnit.equal(error, undefined, 'connect AUDIO');
+
         if(error) return onerror(error);
 
         player.connect(httpGet, 'VIDEO', function(error)
         {
+          QUnit.equal(error, undefined, 'connect VIDEO');
+
           if(error) return onerror(error);
 
           player.play(function(error)
           {
+            QUnit.equal(error, undefined, 'play');
+
             if(error) return onerror(error);
 
             httpGet.release(function(error)
             {
+              QUnit.equal(error, undefined, 'release httpGet');
+
               if(error) return onerror(error);
 
               player.release(function(error)
               {
+                QUnit.equal(error, undefined, 'release player');
+
                 if(error) return onerror(error);
 
                 QUnit.start();

@@ -54,7 +54,7 @@ QUnit.asyncTest('Create pipeline and play video', function()
 {
   var self = this;
 
-  QUnit.expect(2);
+  QUnit.expect(4);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES}, function(error, player)
   {
@@ -70,10 +70,14 @@ QUnit.asyncTest('Create pipeline and play video', function()
 
       player.connect(zbar, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         player.play(function(error)
         {
+          QUnit.equal(error, undefined, 'play');
+
           if(error) return onerror(error);
 
           QUnit.start();
@@ -87,7 +91,7 @@ QUnit.asyncTest('Detect bar-code in a video', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(3);
 
   var timeout = new Timeout('"ZBarFilter:Detect bar-code in a video"',
                             10 * 1000, onerror);
@@ -109,10 +113,14 @@ QUnit.asyncTest('Detect bar-code in a video', function()
 
       player.connect(zbar, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         player.play(function(error)
         {
+          QUnit.equal(error, undefined, 'play');
+
           if(error) return onerror(error);
 
           timeout.start();

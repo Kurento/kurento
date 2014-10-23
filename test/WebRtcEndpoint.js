@@ -15,7 +15,7 @@
 
 /**
  * {@link WebRtcEndpoint} test suite.
- * 
+ *
  * <p>
  * Methods tested:
  * <ul>
@@ -28,11 +28,11 @@
  * <li>
  * {@link HttpEndpoint#addMediaSessionTerminatedListener(MediaEventListener)}
  * </ul>
- * 
- * 
+ *
+ *
  * @author Jesús Leganés Combarro "piranna" (piranna@gmail.com)
  * @since 4.2.4
- * 
+ *
  */
 
 if(typeof QUnit == 'undefined')
@@ -64,7 +64,7 @@ var offer = "v=0\r\n"
 
 QUnit.asyncTest('Get local session descriptor', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   this.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
@@ -72,6 +72,8 @@ QUnit.asyncTest('Get local session descriptor', function()
 
     webRtcEndpoint.generateOffer(function(error)
     {
+      QUnit.equal(error, undefined, 'generateOffer');
+
       if(error) return onerror(error);
 
       webRtcEndpoint.getLocalSessionDescriptor(function(error, sdp)
@@ -88,7 +90,7 @@ QUnit.asyncTest('Get local session descriptor', function()
 
 QUnit.asyncTest('Get remote session descriptor', function()
 {
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   this.pipeline.create('WebRtcEndpoint', function(error, webRtcEndpoint)
   {
@@ -96,6 +98,8 @@ QUnit.asyncTest('Get remote session descriptor', function()
 
     webRtcEndpoint.processOffer(offer, function(error)
     {
+      QUnit.equal(error, undefined, 'processOffer');
+
       if(error) return onerror(error);
 
       webRtcEndpoint.getRemoteSessionDescriptor(function(error, sdp)
@@ -192,7 +196,7 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
 {
   var self = this;
 
-  QUnit.expect(0);
+  QUnit.expect(3);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_BARCODES},
   function(error, player)
@@ -205,12 +209,20 @@ QUnit.asyncTest('RtpEndpoint simulating Android SDP', function()
 
       player.connect(webRtcEndpoint, 'VIDEO', function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
+        if(error) return onerror(error);
+
         webRtcEndpoint.processOffer(offer, function(error)
         {
+          QUnit.equal(error, undefined, 'processOffer');
+
           if(error) return onerror(error);
 
           player.play(function(error)
           {
+            QUnit.equal(error, undefined, 'play');
+
             if(error) return onerror(error);
 
             setTimeout(QUnit.start.bind(QUnit), 2*1000);

@@ -57,7 +57,7 @@ QUnit.asyncTest('Creation', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(4);
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
@@ -73,6 +73,8 @@ QUnit.asyncTest('Creation', function()
 
       player.connect(httpGet, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         httpGet.getUrl(function(error, url)
@@ -123,7 +125,7 @@ QUnit.asyncTest('Transactional API', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   var player;
   var httpGet;
@@ -137,6 +139,8 @@ QUnit.asyncTest('Transactional API', function()
   },
   function(error)
   {
+    QUnit.equal(error, undefined, 'transaction ended');
+
     if(error) return onerror(error);
 
     httpGet.getUrl(function(error, url)
@@ -160,7 +164,7 @@ QUnit.asyncTest('Transactional plain API', function()
 {
   var self = this;
 
-  QUnit.expect(1);
+  QUnit.expect(2);
 
   var pipeline = self.pipeline;
 
@@ -171,6 +175,8 @@ QUnit.asyncTest('Transactional plain API', function()
     player.connect(httpGet);
   pipeline.endTransaction(function(error)
   {
+    QUnit.equal(error, undefined, 'transaction ended');
+
     if(error) return onerror(error);
 
     httpGet.getUrl(function(error, url)

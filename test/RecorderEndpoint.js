@@ -65,21 +65,21 @@ QUnit.asyncTest('Record, Pause & Stop', function()
 
     recorder.record(function(error)
     {
-      if(error) return onerror(error);
+      QUnit.equal(error, undefined, 'record');
 
-      QUnit.ok(true, 'record');
+      if(error) return onerror(error);
 
       recorder.pause(function(error)
       {
-        if(error) return onerror(error);
+        QUnit.equal(error, undefined, 'pause');
 
-        QUnit.ok(true, 'pause');
+        if(error) return onerror(error);
 
         recorder.stop(function(error)
         {
-          if(error) return onerror(error);
+          QUnit.equal(error, undefined, 'stop');
 
-          QUnit.ok(true, 'stop');
+          if(error) return onerror(error);
 
           QUnit.start();
         });

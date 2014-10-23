@@ -54,7 +54,7 @@ QUnit.asyncTest('End of Stream', function()
 {
   var self = this;
 
-  QUnit.expect(3);
+  QUnit.expect(5);
 
   var timeout = new Timeout('"GStreamerFilter:End of Stream"',
                             10 * 1000, onerror);
@@ -82,6 +82,8 @@ QUnit.asyncTest('End of Stream', function()
 
       player.connect(gStreamerFilter, function(error)
       {
+        QUnit.equal(error, undefined, 'connect');
+
         if(error) return onerror(error);
 
         player.on('EndOfStream', function(data)
@@ -95,6 +97,8 @@ QUnit.asyncTest('End of Stream', function()
 
         player.play(function(error)
         {
+          QUnit.equal(error, undefined, 'playing');
+
           if(error) return onerror(error);
 
           timeout.start();
