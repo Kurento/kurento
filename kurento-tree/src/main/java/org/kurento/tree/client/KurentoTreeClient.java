@@ -19,7 +19,7 @@ import org.kurento.jsonrpc.JsonUtils;
 import org.kurento.jsonrpc.client.JsonRpcClient;
 import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.tree.protocol.TreeEndpoint;
-import org.kurento.tree.server.TreeException;
+import org.kurento.tree.server.treemanager.TreeException;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

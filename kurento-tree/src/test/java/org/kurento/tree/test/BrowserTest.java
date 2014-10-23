@@ -12,10 +12,10 @@ import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.services.KurentoServicesTestHelper;
 import org.kurento.tree.client.KurentoTreeClient;
-import org.kurento.tree.server.KmsManager;
-import org.kurento.tree.server.TreeException;
-import org.kurento.tree.server.TreeManager;
 import org.kurento.tree.server.app.KurentoTreeServerApp;
+import org.kurento.tree.server.kmsmanager.KmsManager;
+import org.kurento.tree.server.treemanager.TreeException;
+import org.kurento.tree.server.treemanager.TreeManager;
 
 public class BrowserTest {
 

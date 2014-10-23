@@ -6,11 +6,13 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import org.kurento.tree.protocol.TreeEndpoint;
-import org.kurento.tree.server.KmsManager;
-import org.kurento.tree.server.TreeException;
-import org.kurento.tree.server.TreeManager;
+import org.kurento.tree.server.kmsmanager.KmsManager;
+import org.kurento.tree.server.treemanager.TreeException;
+import org.kurento.tree.server.treemanager.TreeManager;
 
 public class TreeManagerReportCreator implements TreeManager {
 
@@ -21,37 +23,56 @@ public class TreeManagerReportCreator implements TreeManager {
 	private Path reportPath;
 	private PrintWriter writer;
 
-	public TreeManagerReportCreator(TreeManager treeManager,
-			KmsManager manager, String name) throws IOException {
+	public TreeManagerReportCreator(KmsManager manager, String name) {
 		this.kmsManager = manager;
-		this.treeManager = treeManager;
 		this.name = name;
 		initReport();
 	}
 
-	private void initReport() throws IOException {
-		reportPath = Files.createTempFile("TreeReport", ".htm");
-
-		writer = new PrintWriter(Files.newBufferedWriter(reportPath,
-				StandardCharsets.UTF_8));
-
-		writer.println("<html>");
-		writer.println("<title>" + name + "</title>");
-		writer.println("<body>");
-		writer.println("<h1>" + name + "</h1>");
-
+	public void setTreeManager(TreeManager treeManager) {
+		this.treeManager = treeManager;
+		writer.println("<h1>TreeManager: " + treeManager.getClass().getName()
+				+ "</h1>");
 		includeTreeManagerSnapshot();
+	}
+
+	private void initReport() {
+
+		try {
+			reportPath = Files.createTempFile("TreeReport", ".html");
+			writer = new PrintWriter(Files.newBufferedWriter(reportPath,
+					StandardCharsets.UTF_8));
+			writer.println("<html>");
+			writer.println("<title>" + name + "</title>");
+			writer.println("<body>");
+			writer.println("<h1>" + name + "</h1>");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// Public API
 
-	public void finishReport() {
+	public void addSection(String sectionName) {
+		writer.println("<h2>" + sectionName + "</h2>");
+	}
+
+	public void createReport(String path) throws IOException {
+		createReport();
+		Files.move(this.reportPath, Paths.get(path),
+				StandardCopyOption.REPLACE_EXISTING);
+		this.reportPath = Paths.get(path);
+	}
+
+	public void createReport() {
 		writer.println("</body>");
 		writer.println("</html>");
 		writer.close();
 	}
 
 	public void showReport() throws IOException {
+		System.out.println("Opening report in " + reportPath);
 		Desktop.getDesktop().browse(reportPath.toUri());
 	}
 
@@ -123,4 +144,9 @@ public class TreeManagerReportCreator implements TreeManager {
 	public KmsManager getKmsManager() {
 		return kmsManager;
 	}
+
+	public void addText(String text) {
+		writer.println("<p>" + text + "</p>");
+	}
+
 }

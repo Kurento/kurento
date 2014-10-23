@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.kurento.tree.server.KmsManager;
 import org.kurento.tree.server.kms.Element;
 import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.Plumber;
 import org.kurento.tree.server.kms.WebRtc;
+import org.kurento.tree.server.kmsmanager.KmsManager;
 
 public class KmsTopologyGrapher {
 
@@ -82,6 +82,14 @@ public class KmsTopologyGrapher {
 				gv.addln("         label = \"" + labels.get(pipeline) + "\";");
 				gv.addln("         style=filled;");
 				gv.addln("         color=lightblue;");
+
+				for (WebRtc webRtc : pipeline.getWebRtcs()) {
+					gv.addln("         \"" + labels.get(webRtc) + "\"");
+				}
+
+				for (Plumber plumber : pipeline.getPlumbers()) {
+					gv.addln("         \"" + labels.get(plumber) + "\"");
+				}
 
 				for (WebRtc webRtc : pipeline.getWebRtcs()) {
 					for (Element sink : webRtc.getSinks()) {

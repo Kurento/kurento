@@ -1,4 +1,4 @@
-package org.kurento.tree.server;
+package org.kurento.tree.server.kmsmanager;
 
 import java.io.IOException;
 import java.util.ArrayList;

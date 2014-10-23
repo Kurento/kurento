@@ -14,8 +14,8 @@ import org.kurento.jsonrpc.Transaction;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.kurento.tree.protocol.TreeEndpoint;
-import org.kurento.tree.server.TreeException;
-import org.kurento.tree.server.TreeManager;
+import org.kurento.tree.server.treemanager.TreeException;
+import org.kurento.tree.server.treemanager.TreeManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

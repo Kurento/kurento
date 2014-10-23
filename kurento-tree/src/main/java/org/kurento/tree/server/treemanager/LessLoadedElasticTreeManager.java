@@ -1,4 +1,4 @@
-package org.kurento.tree.server;
+package org.kurento.tree.server.treemanager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,24 +10,35 @@ import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.Plumber;
 import org.kurento.tree.server.kms.WebRtc;
+import org.kurento.tree.server.kmsmanager.KmsManager;
+import org.kurento.tree.server.kmsmanager.KmsManager.KmsLoad;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AotOneTreeManager implements TreeManager {
+/**
+ * This TreeManager has the following characteristics:
+ * <ul>
+ * <li>Creates WebRtcEndpoint for sinks (viewers) only in non-source kmss</li>
+ * <li>Fills less loaded node.</li>
+ * <li>It doesn't consider new kmss after start.</li>
+ * </ul>
+ *
+ * @author micael.gallego@gmail.com
+ */
+public class LessLoadedElasticTreeManager implements TreeManager {
 
 	private static final String TREE_ID = "TreeId";
 
 	private static final Logger log = LoggerFactory
-			.getLogger(AotOneTreeManager.class);
+			.getLogger(LessLoadedElasticTreeManager.class);
 
 	private KmsManager kmsManager;
-	private int maxViewersPerPipeline = 2;
 
 	private boolean oneKms = true;
 
-	private Pipeline rootPipeline;
-	private List<Plumber> rootPlumbers = new ArrayList<>();
-	private WebRtc sourceWebRtc;
+	private Pipeline sourcePipeline;
+	private List<Plumber> sourcePlumbers = new ArrayList<>();
+	private WebRtc source;
 
 	private List<Pipeline> leafPipelines = new ArrayList<>();
 	private List<Plumber> leafPlumbers = new ArrayList<>();
@@ -35,13 +46,10 @@ public class AotOneTreeManager implements TreeManager {
 
 	private boolean createdTree = false;
 
-	public AotOneTreeManager(KmsManager kmsManager) {
-		this(kmsManager, 5);
-	}
+	private int numSinks = 0;
 
-	public AotOneTreeManager(KmsManager kmsManager, int maxViewersPerPipeline) {
+	public LessLoadedElasticTreeManager(KmsManager kmsManager) {
 
-		this.maxViewersPerPipeline = maxViewersPerPipeline;
 		this.kmsManager = kmsManager;
 
 		if (kmsManager.getKmss().isEmpty()) {
@@ -51,21 +59,25 @@ public class AotOneTreeManager implements TreeManager {
 
 			oneKms = true;
 
-			rootPipeline = kmsManager.getKmss().get(0).createPipeline();
+			sourcePipeline = kmsManager.getKmss().get(0).createPipeline();
 
 		} else {
 
 			oneKms = false;
 
+			int numPipeline = 0;
 			for (Kms kms : kmsManager.getKmss()) {
 				Pipeline pipeline = kms.createPipeline();
-				if (rootPipeline == null) {
-					rootPipeline = pipeline;
+
+				if (sourcePipeline == null) {
+					sourcePipeline = pipeline;
 				} else {
+					pipeline.setLabel(Integer.toString(numPipeline));
 					leafPipelines.add(pipeline);
-					Plumber[] plumbers = rootPipeline.link(pipeline);
-					this.rootPlumbers.add(plumbers[0]);
+					Plumber[] plumbers = sourcePipeline.link(pipeline);
+					this.sourcePlumbers.add(plumbers[0]);
 					this.leafPlumbers.add(plumbers[1]);
+					numPipeline++;
 				}
 			}
 		}
@@ -92,8 +104,8 @@ public class AotOneTreeManager implements TreeManager {
 		checkTreeId(treeId);
 
 		createdTree = false;
-		sourceWebRtc.release();
-		sourceWebRtc = null;
+		source.release();
+		source = null;
 
 		for (WebRtc webRtc : sinks.values()) {
 			webRtc.release();
@@ -106,19 +118,19 @@ public class AotOneTreeManager implements TreeManager {
 
 		checkTreeId(treeId);
 
-		if (sourceWebRtc != null) {
+		if (source != null) {
 			removeTreeSource(treeId);
 		}
 
-		sourceWebRtc = rootPipeline.createWebRtc();
+		source = sourcePipeline.createWebRtc();
 
 		if (!oneKms) {
-			for (Plumber plumber : this.rootPlumbers) {
-				sourceWebRtc.connect(plumber);
+			for (Plumber plumber : this.sourcePlumbers) {
+				source.connect(plumber);
 			}
 		}
 
-		return sourceWebRtc.processSdpOffer(offerSdp);
+		return source.processSdpOffer(offerSdp);
 	}
 
 	@Override
@@ -126,9 +138,8 @@ public class AotOneTreeManager implements TreeManager {
 			throws TreeException {
 
 		checkTreeId(treeId);
-
-		sourceWebRtc.release();
-		sourceWebRtc = null;
+		source.release();
+		source = null;
 	}
 
 	@Override
@@ -140,31 +151,40 @@ public class AotOneTreeManager implements TreeManager {
 		TreeEndpoint result = null;
 
 		if (oneKms) {
-			if (rootPipeline.getWebRtcs().size() < maxViewersPerPipeline) {
-				WebRtc webRtc = rootPipeline.createWebRtc();
-				sourceWebRtc.connect(webRtc);
+			if (sourcePipeline.getKms().allowMoreElements()) {
+				WebRtc webRtc = sourcePipeline.createWebRtc();
+				source.connect(webRtc);
 				String sdpAnswer = webRtc.processSdpOffer(sdpOffer);
-				result = new TreeEndpoint(sdpAnswer, "r_"
-						+ (rootPipeline.getWebRtcs().size() - 1));
-			} else {
-				throw new TreeException("Max number of viewers reached");
+				String id = "r_" + (sourcePipeline.getWebRtcs().size() - 1);
+				webRtc.setLabel("Sink " + numSinks + " (WR " + id + ")");
+				result = new TreeEndpoint(sdpAnswer, id);
 			}
 		} else {
-			int numPipeline = 0;
-			for (Pipeline pipeline : this.leafPipelines) {
-				if (pipeline.getWebRtcs().size() < maxViewersPerPipeline) {
-					WebRtc webRtc = pipeline.createWebRtc();
-					pipeline.getPlumbers().get(0).connect(webRtc);
-					String sdpAnswer = webRtc.processSdpOffer(sdpOffer);
-					result = new TreeEndpoint(sdpAnswer, numPipeline + "_"
-							+ (pipeline.getWebRtcs().size() - 1));
-					break;
-				}
-				numPipeline++;
+
+			List<KmsLoad> kmss = kmsManager.getKmssSortedByLoad();
+
+			Pipeline pipeline;
+			if (kmss.get(0).getKms().getPipelines().get(0) != sourcePipeline) {
+				pipeline = kmss.get(0).getKms().getPipelines().get(0);
+			} else {
+				pipeline = kmss.get(1).getKms().getPipelines().get(0);
+			}
+
+			if (pipeline.getKms().allowMoreElements()) {
+				WebRtc webRtc = pipeline.createWebRtc();
+				pipeline.getPlumbers().get(0).connect(webRtc);
+				String sdpAnswer = webRtc.processSdpOffer(sdpOffer);
+				String id = pipeline.getLabel() + "_"
+						+ (pipeline.getWebRtcs().size() - 1);
+				webRtc.setLabel("Sink " + numSinks + " (WR " + id + ")");
+				result = new TreeEndpoint(sdpAnswer, id);
+			} else {
+				System.out.println("sss");
 			}
 		}
 
 		if (result != null) {
+			numSinks++;
 			return result;
 		} else {
 			throw new TreeException("Max number of viewers reached");
@@ -182,14 +202,15 @@ public class AotOneTreeManager implements TreeManager {
 		if (sinkIdTokens[0].equals("r")) {
 
 			int numWebRtc = Integer.parseInt(sinkIdTokens[1]);
-			this.rootPipeline.getWebRtcs().get(numWebRtc).disconnect();
+			this.sourcePipeline.getWebRtcs().get(numWebRtc).disconnect();
 
 		} else {
 			int numPipeline = Integer.parseInt(sinkIdTokens[0]);
 			int numWebRtc = Integer.parseInt(sinkIdTokens[1]);
 
-			this.leafPipelines.get(numPipeline).getWebRtcs().get(numWebRtc)
-					.disconnect();
+			WebRtc webRtc = this.leafPipelines.get(numPipeline).getWebRtcs()
+					.get(numWebRtc);
+			webRtc.release();
 		}
 	}
 

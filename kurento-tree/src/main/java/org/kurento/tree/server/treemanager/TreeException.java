@@ -1,4 +1,4 @@
-package org.kurento.tree.server;
+package org.kurento.tree.server.treemanager;
 
 public class TreeException extends RuntimeException {
 

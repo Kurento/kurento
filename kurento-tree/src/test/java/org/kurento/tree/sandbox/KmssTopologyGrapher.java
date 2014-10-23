@@ -6,15 +6,16 @@ import java.util.List;
 
 import org.kurento.tree.debug.KmsTopologyGrapher;
 import org.kurento.tree.debug.TreeManagerReportCreator;
-import org.kurento.tree.server.AotOneTreeManager;
-import org.kurento.tree.server.FixedFakeKmsManager;
-import org.kurento.tree.server.KmsManager;
-import org.kurento.tree.server.TreeException;
-import org.kurento.tree.server.TreeManager;
 import org.kurento.tree.server.kms.Kms;
 import org.kurento.tree.server.kms.Pipeline;
 import org.kurento.tree.server.kms.Plumber;
 import org.kurento.tree.server.kms.WebRtc;
+import org.kurento.tree.server.kmsmanager.FakeFixedKmsManager;
+import org.kurento.tree.server.kmsmanager.KmsManager;
+import org.kurento.tree.server.treemanager.AotFixedClientsNoRootTreeManager;
+import org.kurento.tree.server.treemanager.AotFixedTreeManager;
+import org.kurento.tree.server.treemanager.TreeException;
+import org.kurento.tree.server.treemanager.TreeManager;
 
 public class KmssTopologyGrapher {
 
@@ -68,8 +69,9 @@ public class KmssTopologyGrapher {
 	private static void showAotOneTreeManager() throws IOException,
 			TreeException {
 
-		KmsManager kmsManager = new FixedFakeKmsManager(4);
-		AotOneTreeManager aot = new AotOneTreeManager(kmsManager);
+		KmsManager kmsManager = new FakeFixedKmsManager(4);
+		AotFixedClientsNoRootTreeManager aot = new AotFixedClientsNoRootTreeManager(
+				kmsManager);
 
 		KmsTopologyGrapher.showTopologyGraphic(kmsManager);
 
@@ -87,8 +89,9 @@ public class KmssTopologyGrapher {
 	private static void showAotOneTreeManagerSvg() throws IOException,
 			TreeException {
 
-		KmsManager kmsManager = new FixedFakeKmsManager(4);
-		AotOneTreeManager aot = new AotOneTreeManager(kmsManager);
+		KmsManager kmsManager = new FakeFixedKmsManager(4);
+		AotFixedClientsNoRootTreeManager aot = new AotFixedClientsNoRootTreeManager(
+				kmsManager);
 
 		System.out.println(KmsTopologyGrapher
 				.createSvgTopologyGrapher(kmsManager));
@@ -109,25 +112,40 @@ public class KmssTopologyGrapher {
 	private static void showAotOneTreeManagerReport() throws IOException,
 			TreeException {
 
-		KmsManager kmsManager = new FixedFakeKmsManager(4);
-		TreeManager aot = new AotOneTreeManager(kmsManager);
+		KmsManager kmsManager = new FakeFixedKmsManager(4);
+
+		TreeManager aot = new AotFixedTreeManager(kmsManager);
 
 		TreeManagerReportCreator reportCreator = new TreeManagerReportCreator(
-				aot, kmsManager, "Report");
+				kmsManager, "Report");
+
+		reportCreator.setTreeManager(aot);
 
 		aot = reportCreator;
 
 		String treeId = aot.createTree();
 		aot.setTreeSource(treeId, "XXX");
-		String sink1 = aot.addTreeSink(treeId, "JJJ").getId();
-		String sink2 = aot.addTreeSink(treeId, "FFF").getId();
-		String sink3 = aot.addTreeSink(treeId, "ZZZ").getId();
-		aot.removeTreeSink(treeId, sink2);
-		aot.removeTreeSink(treeId, sink3);
 
-		reportCreator.finishReport();
+		List<String> sinks = new ArrayList<String>();
+		try {
+			while (true) {
 
-		reportCreator.showReport();
+				for (int i = 0; i < 5; i++) {
+					sinks.add(aot.addTreeSink(treeId, "fakeSdp").getId());
+				}
+
+				for (int i = 0; i < 2; i++) {
+					int sinkNumber = (int) (Math.random() * sinks.size());
+					String sinkId = sinks.remove(sinkNumber);
+					aot.removeTreeSink(treeId, sinkId);
+				}
+			}
+		} catch (TreeException e) {
+			System.out.println("Reached maximum tree capacity");
+		}
+
+		reportCreator.createReport("/home/mica/Data/Kurento/treereport.html");
+
 	}
 
 }

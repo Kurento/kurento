@@ -6,6 +6,7 @@ import java.util.List;
 public class Kms extends KurentoObj {
 
 	protected List<Pipeline> pipelines = new ArrayList<>();
+	private LoadManager loadManager = new MaxWebRtcLoadManager(3);
 
 	public Kms() {
 
@@ -25,8 +26,20 @@ public class Kms extends KurentoObj {
 		return pipelines;
 	}
 
+	public void setLoadManager(LoadManager loadManager) {
+		this.loadManager = loadManager;
+	}
+
 	protected Pipeline newPipeline() {
 		return new Pipeline(this);
+	}
+
+	public double getLoad() {
+		return loadManager.calculateLoad(this);
+	}
+
+	public boolean allowMoreElements() {
+		return loadManager.allowMoreElements(this);
 	}
 
 }

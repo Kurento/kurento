@@ -16,6 +16,8 @@ public abstract class Element extends KurentoObj {
 
 	public void connect(Element element) {
 
+		checkReleased();
+
 		if (this.getPipeline() != element.getPipeline()) {
 			throw new RuntimeException(
 					"Elements from different pipelines can not be connected");
@@ -26,23 +28,32 @@ public abstract class Element extends KurentoObj {
 	}
 
 	public void disconnect() {
-		this.source.sinks.remove(this);
+
+		checkReleased();
+
+		if (source != null) {
+			this.source.sinks.remove(this);
+		}
 		this.source = null;
 	}
 
 	void setSource(Element source) {
+		checkReleased();
 		this.source = source;
 	}
 
 	public List<Element> getSinks() {
+		checkReleased();
 		return sinks;
 	}
 
 	public Pipeline getPipeline() {
+		checkReleased();
 		return pipeline;
 	}
 
 	public Element getSource() {
+		checkReleased();
 		return source;
 	}
 
@@ -51,6 +62,14 @@ public abstract class Element extends KurentoObj {
 		for (Element element : getSinks()) {
 			element.disconnect();
 		}
+		pipeline.removeElement(this);
 		released = true;
+	}
+
+	private void checkReleased() {
+		if (released) {
+			throw new RuntimeException(
+					"Trying to execute an operation in a released element");
+		}
 	}
 }

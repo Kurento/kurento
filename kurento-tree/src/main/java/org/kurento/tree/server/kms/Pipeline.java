@@ -60,4 +60,9 @@ public class Pipeline extends KurentoObj {
 	protected Plumber newPlumber() {
 		return new Plumber(this);
 	}
+
+	void removeElement(Element element) {
+		this.webRtcs.remove(element);
+		this.plumbers.remove(element);
+	}
 }
