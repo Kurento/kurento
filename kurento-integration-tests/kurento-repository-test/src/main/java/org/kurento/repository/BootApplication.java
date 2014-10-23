@@ -25,6 +25,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
+import com.google.common.io.Files;
+
 @ComponentScan
 @EnableAutoConfiguration
 public class BootApplication {
@@ -54,7 +56,7 @@ public class BootApplication {
 
 		RepositoryApiConfiguration config = new RepositoryApiConfiguration();
 		config.setWebappPublicURL("http://localhost:" + port + "/");
-		config.setFileSystemFolder("test-files/repository");
+		config.setFileSystemFolder(Files.createTempDir().getAbsolutePath());
 		config.setRepositoryType("filesystem");
 		return config;
 	}
@@ -62,7 +64,7 @@ public class BootApplication {
 	private static String getPort() {
 		String port = System.getProperty("repository.port");
 		if (port == null) {
-			port = "7779";
+			port = "7676";
 		}
 		return port;
 	}
