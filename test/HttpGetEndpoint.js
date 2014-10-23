@@ -83,6 +83,12 @@ QUnit.asyncTest('Media session started', function()
   var timeout = new Timeout('"HttpGetEndpoint:Media session started"',
                             10 * 1000, onerror);
 
+  function onerror(error)
+  {
+    timeout.stop();
+    _onerror(error);
+  };
+
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_SMALL}, function(error, player)
   {
@@ -147,6 +153,12 @@ QUnit.asyncTest('Media session started', function()
 //  var timeout = new Timeout('"HttpGetEndpoint:Media session terminated"',
 //                            50 * 1000, onerror);
 
+//  function onerror(error)
+//  {
+//    timeout.stop();
+//    _onerror(error);
+//  };
+
 
 //  self.pipeline.create('HttpGetEndpoint', function(error, httpGet)
 //  {
@@ -170,12 +182,7 @@ QUnit.asyncTest('Media session started', function()
 //      QUnit.notEqual(url, undefined, 'URL: '+url);
 
 //      // This should trigger MediaSessionTerminated event
-//      doGet(url,
-//      function()
-//      {
-//        timeout.start()
-//      },
-//      onerror);
+//      doGet(url, timeout.start.bind(timeout), onerror);
 //    })
 //  });
 //});

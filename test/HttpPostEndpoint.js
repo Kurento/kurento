@@ -83,6 +83,12 @@ QUnit.asyncTest('Method GetUrl', function()
 //  var timeout = new Timeout('"HttpPostEndpoint:Media session terminated"',
 //                            50 * 1000, onerror);
 
+//  function onerror(error)
+//  {
+//    timeout.stop();
+//    _onerror(error);
+//  };
+
 
 //  self.pipeline.create('HttpPostEndpoint', function(error, httpPost)
 //  {
@@ -106,12 +112,7 @@ QUnit.asyncTest('Method GetUrl', function()
 //      QUnit.notEqual(url, undefined, 'URL: '+url);
 
 //      // This should trigger MediaSessionTerminated event
-//      doGet(url,
-//      function()
-//      {
-//        timeout.start()
-//      },
-//      onerror);
+//      doGet(url, timeout.start.bind(timeout), onerror);
 //    })
 //  });
 //});

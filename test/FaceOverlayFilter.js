@@ -59,6 +59,12 @@ QUnit.asyncTest('Detect face in a video', function()
   var timeout = new Timeout('"FaceOverlayFilter:Detect face in a video"',
                             20 * 1000, onerror);
 
+  function onerror(error)
+  {
+    timeout.stop();
+    _onerror(error);
+  };
+
 
   self.pipeline.create('PlayerEndpoint', {uri: URL_POINTER_DETECTOR},
   function(error, player)

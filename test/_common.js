@@ -30,6 +30,8 @@ function onerror(error)
   QUnit.start();
 };
 
+_onerror = onerror;
+
 /**
  * Do an asynchronous HTTP GET request both on Node.js & browser
  */
@@ -68,14 +70,14 @@ Timeout = function Timeout(id, delay, ontimeout)
 
   function _ontimeout(message)
   {
-    clearTimeout(timeout);
+    this.stop();
 
     ontimeout(message);
   };
 
   this.start = function()
   {
-    timeout = setTimeout(_ontimeout, delay, 'Time out '+id+' ('+delay+'ms)');
+    timeout = setTimeout(_ontimeout.bind(this), delay, 'Time out '+id+' ('+delay+'ms)');
   };
 
   this.stop = function()
