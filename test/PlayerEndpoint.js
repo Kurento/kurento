@@ -38,8 +38,7 @@
 if(typeof QUnit == 'undefined')
 {
   QUnit = require('qunit-cli');
-
-  wock = require('wock');
+  QUnit.load();
 
   kurentoClient = require('..');
 

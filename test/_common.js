@@ -145,7 +145,7 @@ lifecycle =
 
     this.kurento.then(function()
     {
-      self.kurento.create('MediaPipeline', function(error, pipeline)
+      this.create('MediaPipeline', function(error, pipeline)
       {
         if(error) return onerror(error);
 
