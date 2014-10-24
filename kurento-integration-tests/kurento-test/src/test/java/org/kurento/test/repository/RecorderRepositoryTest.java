@@ -85,8 +85,8 @@ public class RecorderRepositoryTest extends RepositoryKurentoClientTest {
 		RepositoryHttpRecorder recorder = repositoryItem
 				.createRepositoryHttpRecorder();
 
-		RecorderEndpoint recorderEP = new RecorderEndpoint.Builder(mp,
-				recorder.getURL()).build();
+		RecorderEndpoint recorderEP = RecorderEndpoint.with(mp,
+				recorder.getURL()).create();
 		playerEP.connect(webRtcEP1);
 		playerEP.connect(recorderEP);
 

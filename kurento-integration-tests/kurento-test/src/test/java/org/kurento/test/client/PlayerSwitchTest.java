@@ -65,8 +65,8 @@ public class PlayerSwitchTest extends BrowserKurentoClientTest {
 		PlayerEndpoint playerRtsp = PlayerEndpoint
 				.with(mp,
 						"rtsp://r6---sn-cg07luez.c.youtube.com/CiILENy73wIaGQm2gbECn1Hi5RMYDSANFEgGUgZ2aWRlb3MM/0/0/0/video.3gp")
-				.build();
-		WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp).build();
+				.create();
+		WebRtcEndpoint webRtcEndpoint = WebRtcEndpoint.with(mp).create();
 
 		// Test execution
 		try (BrowserClient browser = new BrowserClient.Builder()
