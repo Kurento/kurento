@@ -1,4 +1,5 @@
-<#assign node_name=module.code.api.js.nodeName>
+<#assign api_js=module.code.api.js>
+<#assign node_name=api_js.nodeName>
 package.json
 {
   "name": "${node_name}",
@@ -8,12 +9,15 @@ package.json
   "keywords": [
     "Kurento"
   ],
-<#if module.code.api.js.npmGit??>
+<#if api_js.npmGit??>
   "repository": {
     "type": "git",
     "url": "${module.code.api.js.npmGit}"
   },
 </#if>
+  "scripts": {
+    "prepublish": "grunt"
+  },
   "dependencies": {
     "inherits": "^2.0.1"
   },
@@ -31,8 +35,12 @@ package.json
     "grunt-cli": "~0.1.13",
     "grunt-contrib-clean": "~0.6.0",
     "grunt-jsdoc": "~0.5.7",
+<#if api_js.npmGit??>
     "grunt-npm2bower-sync": "^0.4.0",
+</#if>
+    "grunt-path-check": "^0.9.3",
     "grunt-shell": "^1.1.1",
+    "kurento-client": "${module.kurentoVersion}",
     "minifyify": "^4.4.0"
   }
 }
