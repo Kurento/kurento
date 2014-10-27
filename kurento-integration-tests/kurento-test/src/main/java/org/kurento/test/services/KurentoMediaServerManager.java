@@ -166,7 +166,7 @@ public class KurentoMediaServerManager {
 
 		// TODO Wait until KMS is ready instead of 2s
 		try {
-			Thread.sleep(2000);
+			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			log.error("InterruptedException {}", e.getMessage());
 		}
