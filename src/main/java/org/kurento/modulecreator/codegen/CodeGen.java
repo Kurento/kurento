@@ -264,7 +264,7 @@ public class CodeGen {
 	}
 
 	public void generateNpmPackage(ModuleDefinition module,
-			Path templatePackJson, Path templateBowerJson) throws IOException,
+			Path templatePackJson) throws IOException,
 			TemplateException, ParserConfigurationException, SAXException,
 			TransformerException {
 
@@ -280,20 +280,6 @@ public class CodeGen {
 
 			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
 					templatePackJson, outputPackJson, addTags, replaceTags);
-
-			fusioner.fusionJsons();
-		}
-
-		if (templateBowerJson != null) {
-
-			String[] addTags = { "/keywords", "/dependencies",
-					"/peerDependencies" };
-			String[] replaceTags = { "/repository", "/bugs" };
-
-			Path outputPackJson = outputFolder.resolve("bower.json");
-
-			JsonFusioner fusioner = new JsonFusioner(outputPackJson,
-					templateBowerJson, outputPackJson, addTags, replaceTags);
 
 			fusioner.fusionJsons();
 		}

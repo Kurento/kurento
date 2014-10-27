@@ -19,7 +19,9 @@ package.json
     "prepublish": "grunt"
   },
   "dependencies": {
-    "inherits": "^2.0.1"
+    "es6-promise": "^2.0.0",
+    "inherits": "^2.0.1",
+    "promisecallback": "^0.0.2"
   },
 <#if node_name != "kurento-client-core"
   && node_name != "kurento-client-elements"
