@@ -173,12 +173,12 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			try {
 				// FIXME: Make this configurable and search a way to detect the
 				// underlying connection timeout
-				if (!latch.await(10, TimeUnit.SECONDS)) {
+				if (!latch.await(15, TimeUnit.SECONDS)) {
 					if (connectionListener != null) {
 						connectionListener.connectionTimeout();
 					}
 					throw new KurentoException(
-							"Timeout of 10s when waiting to connect to Websocket server");
+							"Timeout of 15s when waiting to connect to Websocket server");
 				}
 
 				if (session == null) {
