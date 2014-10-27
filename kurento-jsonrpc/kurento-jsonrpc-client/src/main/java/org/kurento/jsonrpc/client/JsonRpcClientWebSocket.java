@@ -332,7 +332,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 			throw new KurentoException("This exception shouldn't be thrown", e);
 		} catch (TimeoutException e) {
 			throw new TransportException("Timeout of " + TIMEOUT
-					+ " seconds waiting from response", e);
+					+ " milliseconds waiting from response to request with id:"
+					+ request.getId(), e);
 		}
 	}
 
