@@ -20,7 +20,6 @@ var kurentoClient = require('kurento-client');
 var MediaObjectCreator  = kurentoClient.MediaObjectCreator;
 var TransactionsManager = kurentoClient.TransactionsManager;
 
-var Transaction          = TransactionsManager.Transaction;
 var transactionOperation = TransactionsManager.transactionOperation;
   <#break>
 </#switch>

@@ -66,3 +66,54 @@
 
   <#return "external:"+name>
 </#function>
+
+<#macro arguments params>
+  var transaction = (arguments[0] instanceof Transaction)
+                  ? Array.prototype.shift.apply(arguments)
+                  : undefined;
+
+  <#if params?has_content>
+    <#list params as param>
+      <#if param.optional>
+  callback = arguments[arguments.length-1] instanceof Function
+           ? Array.prototype.pop.call(arguments)
+           : undefined;
+
+  switch(arguments.length){
+        <#local params_min=0>
+        <#local params_max=params?size>
+        <#list params as param>
+          <#if param.optional>
+    case ${param_index}: ${param.name} = undefined;
+          <#else>
+            <#local params_min=params_min+1>
+          </#if>
+        </#list>
+    break;
+
+    default:
+      var error = new RangeError('Number of params ('+arguments.length+') not in range ['+${params_min}+'-'+${params_max}+']');
+          error.length = arguments.length;
+          error.min = ${params_min};
+          error.max = ${params_max};
+
+      throw error;
+  }
+
+        <#break>
+      </#if>
+    </#list>
+    <#list params as param>
+  checkType('${param.type.name}', '${param.name}', ${param.name}<#if param.type.isList() || !param.optional>, {<#if param.type.isList()>isList: true,</#if><#if !param.optional>required: true</#if>}</#if>);
+    </#list>
+
+  var params = {
+    <#list methodParams_name as name>
+    ${name}: ${name},
+    </#list>
+  };
+  <#else>
+  if(!arguments.length) callback = undefined;
+  </#if>
+
+</#macro>
