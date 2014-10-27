@@ -41,6 +41,7 @@ public:
 
   void addMethod (const std::string &name, Method method);
   bool process (const std::string &msg, std::string &_responseMsg);
+  bool process (const Json::Value &msg, Json::Value &_response);
   void setPreProcess (std::function < bool (const Json::Value &, Json::Value &) >
                       func);
   void setPostProcess (std::function < void (const Json::Value &, Json::Value &) >
@@ -48,7 +49,6 @@ public:
 private:
 
   std::map<std::string, Method> methods;
-  bool process (const Json::Value &msg, Json::Value &_response);
   bool checkProtocol (const Json::Value &root, Json::Value &error);
 
   std::function < bool (const Json::Value &, Json::Value &) > preproc;

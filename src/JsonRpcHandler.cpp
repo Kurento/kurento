@@ -80,6 +80,24 @@ Handler::process (const Json::Value &msg, Json::Value &_response)
     return false;
   }
 
+  if (msg.isArray() ) {
+    Json::Value::ArrayIndex i = 0;
+    Json::Value::ArrayIndex j = 0;
+
+    for (i = 0 ; i < msg.size() ; i++) {
+      Json::Value ret;
+
+      process (msg[i], ret);
+
+      if (ret != Json::Value::null) {
+        _response[j] = ret;
+        j++;
+      }
+    }
+
+    return true;
+  }
+
   _response[JSON_RPC_ID] = msg.isMember (JSON_RPC_ID) ? msg[JSON_RPC_ID] :
                            Json::Value::null;
   _response[JSON_RPC_PROTO] = JSON_RPC_PROTO_VERSION;
@@ -185,6 +203,7 @@ Handler::process (const std::string &msg, std::string &_responseMsg)
   bool parse = false;
   Json::Reader reader;
   Json::FastWriter writer;
+  bool ret;
 
   parse = reader.parse (msg, request);
 
@@ -199,37 +218,13 @@ Handler::process (const std::string &msg, std::string &_responseMsg)
     return false;
   }
 
-  if (request.isArray() ) {
-    Json::Value::ArrayIndex i = 0;
-    Json::Value::ArrayIndex j = 0;
+  ret = process (request, response);
 
-    for (i = 0 ; i < request.size() ; i++) {
-      Json::Value ret;
-
-      process (request[i], ret);
-
-      if (ret != Json::Value::null) {
-        response[j] = ret;
-        j++;
-      }
-    }
-
-    if (response != Json::Value::null) {
-      _responseMsg = writer.write (response);
-    }
-
-    return true;
-  } else {
-    bool ret;
-
-    ret = process (request, response);
-
-    if (response != Json::Value::null) {
-      _responseMsg = writer.write (response);
-    }
-
-    return ret;
+  if (response != Json::Value::null) {
+    _responseMsg = writer.write (response);
   }
+
+  return ret;
 }
 
 void
