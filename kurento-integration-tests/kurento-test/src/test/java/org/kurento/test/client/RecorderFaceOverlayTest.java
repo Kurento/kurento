@@ -105,9 +105,9 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 
 		// Media Pipeline #2
 		MediaPipeline mp2 = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint playerEP2 = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/fiwarecut.mp4").create();
-		WebRtcEndpoint webRtcEP2 = WebRtcEndpoint.with(mp).create();
+		PlayerEndpoint playerEP2 = PlayerEndpoint.with(mp2,
+				recordingPostProcess).create();
+		WebRtcEndpoint webRtcEP2 = WebRtcEndpoint.with(mp2).create();
 		playerEP2.connect(webRtcEP2);
 
 		// Test execution #2. Play the recorded video

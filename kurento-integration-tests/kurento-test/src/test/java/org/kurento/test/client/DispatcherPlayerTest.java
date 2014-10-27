@@ -68,7 +68,7 @@ public class DispatcherPlayerTest extends BrowserKurentoClientTest {
 		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
 
 		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/30sec/red.webm").create();
+				"http://files.kurento.org/video/10sec/red.webm").create();
 		WebRtcEndpoint webRtcEP = WebRtcEndpoint.with(mp).create();
 
 		Dispatcher dispatcher = Dispatcher.with(mp).create();
