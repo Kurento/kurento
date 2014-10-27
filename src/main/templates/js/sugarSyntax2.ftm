@@ -118,7 +118,6 @@ MediaObject.prototype.release = function(callback){
  */
 
 
-
 // Promise interface ("thenable")
 
 MediaObject.prototype.then = function(onFulfilled, onRejected)
@@ -165,14 +164,16 @@ MediaObject.prototype.then = function(onFulfilled, onRejected)
       reject(result);
     };
 
-    if(self.id != undefined)
-      success(self.id)
+    if(self.id === null)
+      failure()
+    else if(self.id !== undefined)
+      success(self)
     else
       self.once('_id', function(error, id)
       {
         if(error) return failure(error);
 
-        success(id);
+        success(self);
       })
   })
 }
