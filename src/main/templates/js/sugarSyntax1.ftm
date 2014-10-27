@@ -1,20 +1,22 @@
-<#if remoteClass.name == "Hub" || remoteClass.name == "MediaObject" || remoteClass.name == "MediaPipeline">
-
-var Promise = require('es6-promise').Promise;
-
-var promiseCallback = require('promisecallback');
-</#if>
 <#switch remoteClass.name>
   <#case "Hub">
 
 var HubPort = require('../HubPort');
+  <#break>
+  <#case "MediaObject">
+
+var Promise = require('es6-promise').Promise;
+
+var promiseCallback = require('promisecallback');
   <#break>
   <#case "MediaPipeline">
 
 var checkParams = require('checktype').checkParams;
 
 var kurentoClient = require('kurento-client');
-var register = kurentoClient.register;
+
+var register            = kurentoClient.register;
+var TransactionsManager = kurentoClient.TransactionsManager;
 
 /**
  * Get the constructor for a type
