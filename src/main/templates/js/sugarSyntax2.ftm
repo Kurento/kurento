@@ -9,19 +9,17 @@
  * @return {external:Promise}
  */
 Hub.prototype.createHubPort = function(callback){
-  var self = this;
+  var mediaObject = new HubPort()
 
-  var promise = new Promise(function(resolve, reject)
+  var params =
   {
-    self.emit('_create', 'HubPort', {hub: self}, function(error, result)
-    {
-      if(error) return reject(error);
+    type: 'HubPort',
+    hub: this
+  };
 
-      resolve(result);
-    });
-  });
+  this.emit('_create', mediaObject, params, callback);
 
-  return promiseCallback(promise, callback);
+  return mediaObject
 };
 /**
  * @callback core/abstract.Hub~createHubCallback
@@ -119,53 +117,65 @@ MediaObject.prototype.release = function(callback){
  * @param {external:Error} error
  */
 
-  <#break>
-  <#case "MediaPipeline">
 
-/**
- * Create a new instance of a {module:core/abstract.MediaObject} attached to this {module:core.MediaPipeline}
- *
- * @param {external:String} type - Type of the {module:core/abstract.MediaObject}
- * @param {external:String[]} [params]
- * @param {module:core.MediaPipeline~createCallback} callback
- *
- * @return {external:Promise}
- */
-MediaPipeline.prototype.create = function(type, params, callback){
+
+// Promise interface ("thenable")
+
+MediaObject.prototype.then = function(onFulfilled, onRejected)
+{
   var self = this;
 
-  // Fix optional parameters
-  if(params instanceof Function){
-    if(callback)
-      throw new SyntaxError("Nothing can be defined after the callback");
-
-    callback = params;
-    params = undefined;
-  };
-
-  params = params || {};
-
-  var promise = new Promise(function(resolve, reject)
+  return new Promise(function(resolve, reject)
   {
-    params.mediaPipeline = self;
-
-    self.emit('_create', type, params, function(error, result)
+    function success(id)
     {
-      if(error) return reject(error);
+      var result;
+
+      if(onFulfilled)
+        try
+        {
+          result = onFulfilled.call(self, id);
+        }
+        catch(exception)
+        {
+          if(!onRejected)
+            console.trace('Uncaugh exception', exception)
+
+          return reject(exception);
+        }
 
       resolve(result);
-    });
-  });
+    };
+    function failure(error)
+    {
+      var result = new Error(error);
 
-  return promiseCallback(promise, callback);
-};
-/**
- * @callback core.MediaPipeline~createCallback
- * @param {external:Error} error
- * @param {module:core/abstract~MediaElement} result
- *  The created MediaElement
- */
+      if(onRejected)
+        try
+        {
+          result = onRejected.call(self, result);
+        }
+        catch(exception)
+        {
+          return reject(exception);
+        }
+      else
+        console.trace('Uncaugh exception', result)
 
+      reject(result);
+    };
+
+    if(self.id != undefined)
+      success(self.id)
+    else
+      self.once('_id', function(error, id)
+      {
+        if(error) return failure(error);
+
+        success(id);
+      })
+  })
+}
   <#break>
   <#case "MediaSource">
 
