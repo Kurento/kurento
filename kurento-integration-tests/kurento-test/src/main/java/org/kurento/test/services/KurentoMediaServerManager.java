@@ -25,6 +25,16 @@ import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.websocket.ClientEndpoint;
+import javax.websocket.ClientEndpointConfig;
+import javax.websocket.CloseReason;
+import javax.websocket.DeploymentException;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.OnClose;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+
 import org.kurento.commons.Address;
 import org.kurento.commons.PropertiesManager;
 import org.kurento.commons.exception.KurentoException;
@@ -159,16 +169,57 @@ public class KurentoMediaServerManager {
 			Shell.run("sh", "-c", workspace + "kurento.sh");
 		}
 
-		waitForKurentoMediaServer();
+		waitForKurentoMediaServer(wsUri);
 	}
 
-	private void waitForKurentoMediaServer() {
+	private void waitForKurentoMediaServer(String wsUri) {
 
-		// TODO Wait until KMS is ready instead of 2s
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			log.error("InterruptedException {}", e.getMessage());
+		long initTime = System.nanoTime();
+
+		@ClientEndpoint
+		class WebSocketClient extends Endpoint {
+
+			@OnClose
+			@Override
+			public void onClose(Session session, CloseReason closeReason) {
+			}
+
+			@OnOpen
+			@Override
+			public void onOpen(Session session, EndpointConfig config) {
+			}
+		}
+
+		if (wsUri != null) {
+
+			javax.websocket.WebSocketContainer container = javax.websocket.ContainerProvider
+					.getWebSocketContainer();
+
+			for (int i = 0; i < 20; i++) {
+				try {
+					Session wsSession = container.connectToServer(
+							new WebSocketClient(), ClientEndpointConfig.Builder
+									.create().build(), new URI(wsUri));
+					wsSession.close();
+
+					double time = (System.nanoTime() - initTime)
+							/ (double) 1000000;
+
+					log.debug("Connected to KMS in "
+							+ String.format("%3.2f", time) + " milliseconds");
+					return;
+				} catch (DeploymentException | IOException | URISyntaxException e) {
+					log.debug("Exception trying to connect to KMS: "
+							+ e.getClass() + ":" + e.getMessage());
+					log.debug("Retrying...");
+				}
+			}
+		} else {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				log.error("InterruptedException {}", e.getMessage());
+			}
 		}
 	}
 
