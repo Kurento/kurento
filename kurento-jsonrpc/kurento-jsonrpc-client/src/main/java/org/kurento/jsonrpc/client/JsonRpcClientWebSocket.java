@@ -68,7 +68,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 	private boolean clientClose = false;
 
-	private static final long TIMEOUT = 10000;
+	private static final long TIMEOUT = 60000;
 
 	public JsonRpcClientWebSocket(String url) {
 		this(url, new HttpHeaders(), null);
