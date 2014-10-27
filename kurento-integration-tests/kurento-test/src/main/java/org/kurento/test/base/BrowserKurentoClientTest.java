@@ -15,18 +15,30 @@
 package org.kurento.test.base;
 
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 import org.kurento.commons.testing.SystemKurentoClientTests;
+import org.kurento.test.services.KurentoServicesTestHelper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.IntegrationTest;
+import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 /**
  * Base for tests using kurento-client and Http Server.
- * 
+ *
  * @author Micael Gallego (micael.gallego@gmail.com)
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(classes = { BrowserKurentoClientTest.class,
+		RepositoryKurentoClientTest.class })
+@WebAppConfiguration
+@IntegrationTest("server.port:"
+		+ KurentoServicesTestHelper.APP_HTTP_PORT_DEFAULT)
 @ComponentScan
 @EnableAutoConfiguration
 @Category(SystemKurentoClientTests.class)
