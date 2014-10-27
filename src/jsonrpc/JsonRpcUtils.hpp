@@ -32,6 +32,9 @@ void getValue (const Json::Value &params, const std::string &name,
 void getValue (const Json::Value &params, const std::string &name,
                Json::Value &_return);
 
+void getArray (const Json::Value &params, const std::string &name,
+               Json::Value &_return);
+
 } /* JsonRpc */
 } /* kurento */
 

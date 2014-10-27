@@ -76,5 +76,20 @@ getValue (const Json::Value &params, const std::string &name,
   _return = params[name];
 }
 
+void
+getArray (const Json::Value &params, const std::string &name,
+          Json::Value &_return)
+{
+  checkParameter (params, name);
+
+  if (!params[name].isArray () ) {
+    JsonRpc::CallException e (JsonRpc::ErrorCode::SERVER_ERROR_INIT,
+                              "'" + name + "' parameter should be an array");
+    throw e;
+  }
+
+  _return = params[name];
+}
+
 } /* JsonRpc */
 } /* kurento */
