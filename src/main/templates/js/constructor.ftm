@@ -40,7 +40,13 @@
 
     var token = subscriptions[event];
 
-    this.emit('_rpc', 'unsubscribe', {subscription: token}, function(error)
+    var params =
+    {
+      object: this,
+      subscription: token
+    };
+
+    this.emit('_rpc', undefined, 'unsubscribe', params, function(error)
     {
       if(error) return this.emit('error', error);
 
@@ -63,7 +69,13 @@
     var count = EventEmitter.listenerCount(this, event);
     if(count) return;
 
-    this.emit('_rpc', 'subscribe', {type: event}, function(error, token)
+    var params =
+    {
+      object: this,
+      type: event
+    };
+
+    this.emit('_rpc', undefined, 'subscribe', params, function(error, token)
     {
       if(error) return this.emit('error', error);
 
@@ -85,35 +97,29 @@
   this.endTransaction   = transactionsManager.endTransaction.bind(transactionsManager);
   this.transaction      = transactionsManager.transaction.bind(transactionsManager);
 
-  function transactionOperation(method, params, callback)
-  {
-    var message =
-    {
-      method: method,
-      params: params,
-      callback: callback
-    }
-
-    transactionsManager.push(message);
-  }
-
 
   // Encode commands
 
-  function encodeCreate(params, callback)
+  function encodeCreate(transaction, params, callback)
   {
+    if(transaction)
+      return transactionOperation.call(transaction, 'create', params, callback);
+
     if(transactionsManager.length)
-      transactionOperation('create', params, callback);
-    else
-      self.emit('_create', params, callback)
+      return transactionOperation.call(transactionsManager, 'create', params, callback);
+
+    self.emit('_create', undefined, params, callback)
   }
 
-  function encodeRpc(method, params, callback)
+  function encodeRpc(transaction, method, params, callback)
   {
+    if(transaction)
+      return transactionOperation.call(transaction, method, params, callback);
+
     if(transactionsManager.length)
-      transactionOperation(method, params, callback);
-    else
-      self.emit('_rpc', method, params, callback)
+      return transactionOperation.call(transactionsManager, method, params, callback);
+
+    self.emit('_rpc', undefined, method, params, callback)
   }
 
   function encodeTransaction(operations, callback)
@@ -125,60 +131,15 @@
     };
 
     if(transactionsManager.length)
-      transactionOperation('transaction', params, callback);
-    else
-      self.then(function()
-      {
-        self.emit('_transaction', params, callback);
-      })
+      return transactionOperation.call(transactionsManager, 'transaction', params, callback);
+
+    self.emit('_transaction', params, callback);
   }
 
 
-  /**
-   * Request to the server to create a new MediaElement
-   */
-  function createMediaObject(item, callback)
-  {
-    var constructor = getConstructor(item.type);
+  // Creation of objects
 
-    if(constructor.create)
-    {
-      item = constructor.create(item.params);
-
-      // Apply inheritance
-      var prototype = constructor.prototype;
-      inherits(constructor, getConstructor(item.type));
-      extend(constructor.prototype, prototype);
-    };
-
-    item.params.mediaPipeline = self;
-
-    item.constructorParams = checkParams(item.params,
-                                         constructor.constructorParams,
-                                         item.type);
-    delete item.params;
-
-    var mediaObject = new constructor()
-
-    /**
-     * Request a generic functionality to be procesed by the server
-     */
-    mediaObject.on('_rpc', function(method, params, callback)
-    {
-      params.object = mediaObject;
-
-      encodeRpc(method, params, callback);
-    });
-
-    if(mediaObject instanceof Hub)
-      mediaObject.on('_create', encodeCreate);
-
-    Object.defineProperty(item, 'object', {value: mediaObject});
-
-    encodeCreate(item, callback);
-
-    return mediaObject
-  };
+  var mediaObjectCreator = new MediaObjectCreator(this, encodeCreate, encodeRpc, encodeTransaction);
 
   /**
    * Create a new instance of a {module:core/abstract.MediaObject} attached to
@@ -192,23 +153,11 @@
    * @return {external:Promise}
    */
   this.create = function(type, params, callback){
-    // Fix optional parameters
-    if(params instanceof Function){
-      if(callback)
-        throw new SyntaxError("Nothing can be defined after the callback");
+    var transaction = (arguments[0] instanceof Transaction)
+                    ? Array.prototype.shift.apply(arguments)
+                    : undefined;
 
-      callback = params;
-      params = undefined;
-    };
-
-    params = params || {};
-
-    if(type instanceof Array)
-      return createPromise(type, createMediaObject, callback)
-
-    type = {params: params, type: type};
-
-    return createMediaObject(type, callback)
+    return mediaObjectCreator.create(transaction, type, params, callback)
   };
   /**
    * @callback core.MediaPipeline~createCallback
