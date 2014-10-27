@@ -26,7 +26,7 @@ public class ConnectionListener2Test extends JsonRpcConnectorBaseTest {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		JsonRpcClient client = new JsonRpcClientWebSocket("ws://localhost:"
-				+ getPort() + "/connectionlistener", null,
+				+ getPort() + "/connectionlistener",
 				new JsonRpcWSConnectionListener() {
 
 					@Override

@@ -19,6 +19,8 @@ import static org.kurento.jsonrpc.JsonUtils.fromJsonRequest;
 import static org.kurento.jsonrpc.JsonUtils.fromJsonResponse;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,41 +29,78 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.websocket.ClientEndpoint;
+import javax.websocket.ClientEndpointConfig;
+import javax.websocket.CloseReason;
+import javax.websocket.DeploymentException;
+import javax.websocket.Endpoint;
+import javax.websocket.EndpointConfig;
+import javax.websocket.MessageHandler;
+import javax.websocket.OnClose;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
+
 import org.kurento.commons.exception.KurentoException;
 import org.kurento.jsonrpc.TransportException;
 import org.kurento.jsonrpc.internal.JsonRpcConstants;
 import org.kurento.jsonrpc.internal.JsonRpcRequestSenderHelper;
 import org.kurento.jsonrpc.internal.client.ClientSession;
+import org.kurento.jsonrpc.internal.client.ClientWebSocketResponseSender;
 import org.kurento.jsonrpc.internal.client.TransactionImpl.ResponseSender;
 import org.kurento.jsonrpc.internal.ws.PendingRequests;
-import org.kurento.jsonrpc.internal.ws.WebSocketResponseSender;
 import org.kurento.jsonrpc.message.MessageUtils;
 import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.message.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.client.WebSocketConnectionManager;
-import org.springframework.web.socket.client.standard.StandardWebSocketClient;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class JsonRpcClientWebSocket extends JsonRpcClient {
 
-	private final Logger log = LoggerFactory
+	private static final Logger log = LoggerFactory
 			.getLogger(JsonRpcClientWebSocket.class);
+
+	@ClientEndpoint
+	public class WebSocketClient extends Endpoint implements
+			MessageHandler.Whole<String> {
+
+		@OnClose
+		@Override
+		public void onClose(Session session, CloseReason closeReason) {
+			handleReconnectDisconnection(session, closeReason);
+		}
+
+		@OnOpen
+		@Override
+		public void onOpen(Session session, EndpointConfig config) {
+			wsSession = session;
+			wsSession.addMessageHandler(this);
+			rs = new ClientWebSocketResponseSender(wsSession);
+			latch.countDown();
+			if (connectionListener != null) {
+				connectionListener.connected();
+			}
+		}
+
+		@Override
+		public void onMessage(String message) {
+			try {
+				handleWebSocketTextMessage(message);
+			} catch (IOException e) {
+				throw new KurentoException(e);
+			}
+		}
+	}
+
+	private CountDownLatch latch = new CountDownLatch(1);
 
 	private ExecutorService execService = Executors.newFixedThreadPool(10);
 
 	private String url;
-	private volatile WebSocketSession wsSession;
+	private volatile Session wsSession;
 	private final PendingRequests pendingRequests = new PendingRequests();
-	private final HttpHeaders headers = new HttpHeaders();
 	private ResponseSender rs;
 
 	private JsonRpcWSConnectionListener connectionListener;
@@ -71,10 +110,10 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 	private static final long TIMEOUT = 60000;
 
 	public JsonRpcClientWebSocket(String url) {
-		this(url, new HttpHeaders(), null);
+		this(url, null);
 	}
 
-	public JsonRpcClientWebSocket(String url, HttpHeaders headers,
+	public JsonRpcClientWebSocket(String url,
 			JsonRpcWSConnectionListener connectionListener) {
 
 		this.url = url;
@@ -97,15 +136,6 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 				internalSendRequestWebSocket(request, resultClass, continuation);
 			}
 		};
-
-		if (headers != null) {
-			this.headers.putAll(headers);
-		}
-	}
-
-	public JsonRpcClientWebSocket(String url,
-			JsonRpcWSConnectionListener connectionListener) {
-		this(url, new HttpHeaders(), connectionListener);
 	}
 
 	protected void internalSendRequestWebSocket(
@@ -136,39 +166,19 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		if (wsSession == null || !wsSession.isOpen()) {
 
-			final CountDownLatch latch = new CountDownLatch(1);
+			try {
 
-			TextWebSocketHandler webSocketHandler = new TextWebSocketHandler() {
+				javax.websocket.WebSocketContainer container = javax.websocket.ContainerProvider
+						.getWebSocketContainer();
 
-				@Override
-				public void afterConnectionEstablished(
-						WebSocketSession wsSession2) throws Exception {
+				wsSession = container.connectToServer(new WebSocketClient(),
+						ClientEndpointConfig.Builder.create().build(), new URI(
+								url));
 
-					wsSession = wsSession2;
-					rs = new WebSocketResponseSender(wsSession);
-					latch.countDown();
-					if (connectionListener != null) {
-						connectionListener.connected();
-					}
-				}
-
-				@Override
-				public void handleTextMessage(WebSocketSession session,
-						TextMessage message) throws Exception {
-					handleWebSocketTextMessage(message);
-				}
-
-				@Override
-				public void afterConnectionClosed(WebSocketSession s,
-						CloseStatus status) throws Exception {
-					handleReconnectDisconnection(s, status);
-				}
-			};
-
-			WebSocketConnectionManager connectionManager = new WebSocketConnectionManager(
-					new StandardWebSocketClient(), webSocketHandler, url);
-			connectionManager.setHeaders(headers);
-			connectionManager.start();
+			} catch (DeploymentException | URISyntaxException e) {
+				throw new KurentoException(
+						"Exception connecting to webSocket server", e);
+			}
 
 			try {
 				// FIXME: Make this configurable and search a way to detect the
@@ -202,8 +212,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	protected void handleReconnectDisconnection(final WebSocketSession s,
-			final CloseStatus status) {
+	protected void handleReconnectDisconnection(final Session s,
+			final CloseReason closeReason) {
 
 		if (!clientClose) {
 
@@ -215,9 +225,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 					} catch (KurentoException e) {
 
 						handlerManager.afterConnectionClosed(session,
-								status.getReason());
+								closeReason.getReasonPhrase());
 
-						log.debug("WebSocket closed due to: {}", status);
+						log.debug("WebSocket closed due to: {}", closeReason);
 						wsSession = null;
 
 						if (connectionListener != null) {
@@ -232,7 +242,8 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 		} else {
 
-			handlerManager.afterConnectionClosed(session, status.getReason());
+			handlerManager.afterConnectionClosed(session,
+					closeReason.getReasonPhrase());
 
 			if (connectionListener != null) {
 				connectionListener.disconnected();
@@ -240,11 +251,9 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	private void handleWebSocketTextMessage(TextMessage message)
-			throws IOException {
+	private void handleWebSocketTextMessage(String message) throws IOException {
 
-		JsonObject jsonMessage = fromJson(message.getPayload(),
-				JsonObject.class);
+		JsonObject jsonMessage = fromJson(message, JsonObject.class);
 
 		if (jsonMessage.has(JsonRpcConstants.METHOD_PROPERTY)) {
 			handleRequestFromServer(jsonMessage);
@@ -300,7 +309,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		String jsonMessage = request.toString();
 		log.debug("Req-> {}", jsonMessage.trim());
 		synchronized (wsSession) {
-			wsSession.sendMessage(new TextMessage(jsonMessage));
+			wsSession.getBasicRemote().sendText(jsonMessage);
 		}
 
 		if (responseFuture == null) {
@@ -345,12 +354,20 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 		}
 	}
 
-	public WebSocketSession getWebSocketSession() {
+	public Session getWebSocketSession() {
 		return wsSession;
 	}
 
 	@Override
 	public void connect() throws IOException {
 		connectIfNecessary();
+	}
+
+	public void closeNativeSession() {
+		try {
+			wsSession.close();
+		} catch (IOException e) {
+			throw new KurentoException(e);
+		}
 	}
 }

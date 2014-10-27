@@ -14,7 +14,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.WebSocketSession;
 
 public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 
@@ -39,7 +38,7 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 		@Override
 		public void afterConnectionEstablished(Session session)
 				throws Exception {
-			session.setReconnectionTimeout(500);
+			session.setReconnectionTimeout(5000);
 		}
 	}
 
@@ -60,8 +59,7 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 			log.info("SessionId: " + client.getSession().getSessionId());
 
 			JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-			WebSocketSession session = webSocketClient.getWebSocketSession();
-			session.close();
+			webSocketClient.closeNativeSession();
 
 			Assert.assertEquals("old",
 					client.sendRequest("sessiontest", String.class));
@@ -102,8 +100,7 @@ public class ReconnectionTest extends JsonRpcConnectorBaseTest {
 					client.sendRequest("sessiontest", String.class));
 
 			JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-			WebSocketSession session = webSocketClient.getWebSocketSession();
-			session.close();
+			webSocketClient.closeNativeSession();
 
 			Thread.sleep(1000);
 

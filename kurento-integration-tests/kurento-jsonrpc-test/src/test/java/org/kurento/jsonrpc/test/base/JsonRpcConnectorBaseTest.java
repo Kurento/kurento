@@ -12,7 +12,6 @@ import org.kurento.jsonrpc.client.JsonRpcClientWebSocket;
 import org.kurento.jsonrpc.client.JsonRpcWSConnectionListener;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.http.HttpHeaders;
 
 @Category(JsonRpcConnectorTests.class)
 public class JsonRpcConnectorBaseTest {
@@ -57,12 +56,7 @@ public class JsonRpcConnectorBaseTest {
 	}
 
 	protected JsonRpcClient createJsonRpcClient(String servicePath,
-			HttpHeaders headers) {
-		return createJsonRpcClient(servicePath, headers, null);
-	}
-
-	protected JsonRpcClient createJsonRpcClient(String servicePath,
-			HttpHeaders headers, JsonRpcWSConnectionListener listener) {
+			JsonRpcWSConnectionListener listener) {
 
 		String clientType = System.getProperty("jsonrpcconnector-client-type");
 
@@ -73,10 +67,10 @@ public class JsonRpcConnectorBaseTest {
 		JsonRpcClient client;
 		if ("ws".equals(clientType)) {
 			client = new JsonRpcClientWebSocket("ws://localhost:" + getPort()
-					+ servicePath, headers, listener);
+					+ servicePath, listener);
 		} else if ("http".equals(clientType)) {
 			client = new JsonRpcClientHttp("http://localhost:" + getPort()
-					+ servicePath, headers);
+					+ servicePath, null);
 		} else {
 			throw new RuntimeException(
 					"Unrecognized property value jsonrpcconnector-client-type="

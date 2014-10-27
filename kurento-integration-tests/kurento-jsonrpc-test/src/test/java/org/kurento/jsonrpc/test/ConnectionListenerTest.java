@@ -1,5 +1,7 @@
 package org.kurento.jsonrpc.test;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -17,7 +19,6 @@ import org.kurento.jsonrpc.message.Request;
 import org.kurento.jsonrpc.test.base.JsonRpcConnectorBaseTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.socket.WebSocketSession;
 
 public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 
@@ -41,7 +42,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		JsonRpcClient client = new JsonRpcClientWebSocket(
-				"ws://localhost:65000/connectionlistener", null,
+				"ws://localhost:65000/connectionlistener",
 				new JsonRpcWSConnectionListener() {
 
 					@Override
@@ -49,24 +50,26 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
-						log.info("connectionTimeout");
-						latch.countDown();
+					public void connected() {
+
 					}
 
 					@Override
-					public void connected() {
+					public void connectionTimeout() {
+						latch.countDown();
 					}
 				});
 
 		try {
 			client.sendRequest("sessiontest", String.class);
-		} catch (KurentoException e) {
-			System.out.println("Thrown exception " + e.getLocalizedMessage());
-		}
 
-		if (!latch.await(20, TimeUnit.SECONDS)) {
-			fail("Event connectionTimeout() not thrown in 20s");
+			if (!latch.await(20, TimeUnit.SECONDS)) {
+				fail("Any of KurentoException should be thrown or connectionTimeout() event method should be called");
+			}
+
+		} catch (KurentoException e) {
+			assertThat(e.getMessage(),
+					containsString("connecting to webSocket"));
 		}
 
 		client.close();
@@ -78,7 +81,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		JsonRpcClient client = new JsonRpcClientWebSocket("ws://localhost:"
-				+ getPort() + "/connectionlistener", null,
+				+ getPort() + "/connectionlistener",
 				new JsonRpcWSConnectionListener() {
 
 					@Override
@@ -86,13 +89,15 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
-					}
-
-					@Override
 					public void connected() {
 						log.info("connected");
 						latch.countDown();
+					}
+
+					@Override
+					public void connectionTimeout() {
+						// TODO Auto-generated method stub
+
 					}
 				});
 
@@ -112,7 +117,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		JsonRpcClient client = new JsonRpcClientWebSocket("ws://localhost:"
-				+ getPort() + "/connectionlistener", null,
+				+ getPort() + "/connectionlistener",
 				new JsonRpcWSConnectionListener() {
 
 					@Override
@@ -122,11 +127,13 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connected() {
 					}
 
 					@Override
-					public void connected() {
+					public void connectionTimeout() {
+						// TODO Auto-generated method stub
+
 					}
 				});
 
@@ -147,7 +154,7 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		JsonRpcClient client = new JsonRpcClientWebSocket("ws://localhost:"
-				+ getPort() + "/connectionlistener", null,
+				+ getPort() + "/connectionlistener",
 				new JsonRpcWSConnectionListener() {
 
 					@Override
@@ -157,19 +164,20 @@ public class ConnectionListenerTest extends JsonRpcConnectorBaseTest {
 					}
 
 					@Override
-					public void connectionTimeout() {
+					public void connected() {
 					}
 
 					@Override
-					public void connected() {
+					public void connectionTimeout() {
+						// TODO Auto-generated method stub
+
 					}
 				});
 
 		client.sendRequest("sessiontest", String.class);
 
 		JsonRpcClientWebSocket webSocketClient = (JsonRpcClientWebSocket) client;
-		WebSocketSession session = webSocketClient.getWebSocketSession();
-		session.close();
+		webSocketClient.closeNativeSession();
 
 		if (latch.await(20, TimeUnit.SECONDS)) {
 			fail("Event disconnected() not should be thrown "
