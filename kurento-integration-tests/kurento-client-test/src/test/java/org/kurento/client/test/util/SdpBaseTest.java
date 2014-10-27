@@ -36,8 +36,12 @@ public abstract class SdpBaseTest<T extends SdpEndpoint> extends
 
 	@After
 	public void teardownMediaElements() {
-		sdp.release();
-		sdp2.release();
+		if (sdp != null) {
+			sdp.release();
+		}
+		if (sdp2 != null) {
+			sdp2.release();
+		}
 	}
 
 	@Test
@@ -92,8 +96,8 @@ public abstract class SdpBaseTest<T extends SdpEndpoint> extends
 	public void testRtpEndpointSimulatingAndroidSdp()
 			throws InterruptedException {
 
-		PlayerEndpoint player = PlayerEndpoint.with(pipeline,
-				URL_BARCODES).create();
+		PlayerEndpoint player = PlayerEndpoint.with(pipeline, URL_BARCODES)
+				.create();
 
 		String requestSdp = "v=0\r\n"
 				+ "o=- 12345 12345 IN IP4 95.125.31.136\r\n" + "s=-\r\n"
