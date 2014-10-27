@@ -26,6 +26,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
@@ -58,6 +59,7 @@ import org.kurento.client.test.util.MediaPipelineBaseTest;
  * @version 1.0.0
  *
  */
+@Ignore
 public class HttpGetEndpointTest extends MediaPipelineBaseTest {
 
 	/**
