@@ -8,14 +8,8 @@ var HubPort = require('../HubPort');
 var Promise = require('es6-promise').Promise;
 
 var promiseCallback = require('promisecallback');
-
-//var Transaction = require('../../../..').TransactionsManager.Transaction;
-var Transaction = require('kurento-client').TransactionsManager.Transaction;
   <#break>
   <#case "MediaPipeline">
-
-//var kurentoClient = require('../../..');
-var kurentoClient = require('kurento-client');
 
 var MediaObjectCreator  = kurentoClient.MediaObjectCreator;
 var TransactionsManager = kurentoClient.TransactionsManager;
