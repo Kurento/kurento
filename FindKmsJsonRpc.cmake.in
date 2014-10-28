@@ -32,7 +32,7 @@ find_library (KmsJsonRpc_LIBRARY
   NAMES
     jsonrpc
   PATH_SUFFIXES
-    build/lib
+    build/src
 )
 
 set (KmsJsonRpc_LIBRARIES ${KmsJsonRpc_LIBRARY} ${_JSONCPP_LIBRARIES}
