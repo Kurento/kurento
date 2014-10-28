@@ -307,7 +307,6 @@ public class BrowserClient implements Closeable {
 			t.stop();
 		}
 		driver.close();
-		driver.quit();
 		driver = null;
 	}
 
