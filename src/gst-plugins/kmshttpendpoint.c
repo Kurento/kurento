@@ -963,7 +963,7 @@ kms_http_endpoint_get_caps_from_profile (KmsHttpEndpoint * self,
       break;
     }
   }
-
+  gst_encoding_profile_unref (cprof);
   return caps;
 }
 
