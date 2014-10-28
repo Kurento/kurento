@@ -1,0 +1,114 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>org.kurento.tutorial</groupId>
+	<version>5.0.4-SNAPSHOT</version>
+	<artifactId>kurento-http-player-test</artifactId>
+	<packaging>jar</packaging>
+
+	<name>Kurento Java Tutorial 7 - HTTP Player</name>
+	<description>HTTP Player with filter</description>
+
+	<url>http://www.kurento.org/docs/${project.version}</url>
+
+	<licenses>
+		<license>
+			<name>GNU Lesser General Public License</name>
+			<url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<organization>
+		<name>Kurento</name>
+		<url>http://www.kurento.org</url>
+	</organization>
+
+	<scm>
+		<url>https://github.com/Kurento/kurento-tutorial-java</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-java</connection>
+		<developerConnection>scm:git://git@github.com:Kurento/kurento-tutorial-java</developerConnection>
+		<tag>develop</tag>
+	</scm>
+
+	<developers>
+		<developer>
+			<id>kurento.org</id>
+			<name>-kurento.org Community</name>
+			<organization>Kurento.org</organization>
+			<organizationUrl>http://www.kurento.org</organizationUrl>
+		</developer>
+	</developers>
+
+	<properties>
+		<!-- Cross plugins settings -->
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+		<!-- maven-compiler-plugin -->
+		<maven.compiler.target>1.7</maven.compiler.target>
+		<maven.compiler.source>1.7</maven.compiler.source>
+
+		<!-- Main class -->
+		<start-class>org.kurento.tutorial.player.KurentoHttpPlayer</start-class>
+
+		<!-- Kurento -->
+		<kurento.version>5.0.4-SNAPSHOT</kurento.version>
+
+		<!-- Plugins -->
+		<failsafe.version>2.17</failsafe.version>
+
+		<!-- Test dependencies versions -->
+		<junit.version>4.11</junit.version>
+		<selenium-java.version>2.43.1</selenium-java.version>
+		<spring-test.version>4.1.0.RELEASE</spring-test.version>
+	</properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${failsafe.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<!-- Kurento -->
+		<dependency>
+			<groupId>org.kurento.tutorial</groupId>
+			<artifactId>kurento-http-player</artifactId>
+			<version>${kurento.version}</version>
+		</dependency>
+
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-java</artifactId>
+			<version>${selenium-java.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring-test.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+</project>
