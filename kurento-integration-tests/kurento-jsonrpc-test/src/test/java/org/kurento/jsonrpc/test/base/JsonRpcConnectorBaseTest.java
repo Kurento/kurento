@@ -21,6 +21,8 @@ public class JsonRpcConnectorBaseTest {
 	@BeforeClass
 	public static void start() throws Exception {
 
+		System.setProperty("java.security.egd", "file:/dev/./urandom");
+
 		Properties properties = new Properties();
 		properties.put("server.port", getPort());
 
