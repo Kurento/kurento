@@ -195,7 +195,10 @@ public class KurentoMediaServerManager {
 			javax.websocket.WebSocketContainer container = javax.websocket.ContainerProvider
 					.getWebSocketContainer();
 
-			for (int i = 0; i < 20; i++) {
+			int NUM_RETRIES = 300;
+			int WAIT_MILLIS = 100;
+
+			for (int i = 0; i < NUM_RETRIES; i++) {
 				try {
 					Session wsSession = container.connectToServer(
 							new WebSocketClient(), ClientEndpointConfig.Builder
@@ -209,11 +212,17 @@ public class KurentoMediaServerManager {
 							+ String.format("%3.2f", time) + " milliseconds");
 					return;
 				} catch (DeploymentException | IOException | URISyntaxException e) {
-					log.debug("Exception trying to connect to KMS: "
-							+ e.getClass() + ":" + e.getMessage());
-					log.debug("Retrying...");
+					try {
+						Thread.sleep(WAIT_MILLIS);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
+
+			throw new KurentoException("Timeout of "
+					+ (NUM_RETRIES * WAIT_MILLIS) + " millis waiting for KMS");
+
 		} else {
 			try {
 				Thread.sleep(1000);
