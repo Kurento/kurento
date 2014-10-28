@@ -35,6 +35,9 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 	private static final Logger log = LoggerFactory
 			.getLogger(KurentoTreeServerApp.class);
 
+	private static final String UNSECURE_RANDOM_PROPERTY = "unsecureRandom";
+	private static final boolean UNSECURE_RANDOM_DEFAULT = true;
+
 	public static final String WEBSOCKET_PORT_PROPERTY = "ws.port";
 	public static final String WEBSOCKET_PORT_DEFAULT = "8890";
 
@@ -45,11 +48,6 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 	public static final String KMSS_URIS_DEFAULT = "[ \"ws://localhost:8888/kurento\" ]";
 
 	public static TreeManager treeManager;
-
-	@Bean
-	public JsonRpcHandler jsonRpcHandler() {
-		return new JsonRpcHandler(treeManager());
-	}
 
 	@Bean
 	public TreeManager treeManager() {
@@ -75,6 +73,10 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 		return treeManager;
 	}
 
+	public KmsRegistrar registrar() {
+		return new DummyRegistrar();
+	}
+
 	public static void setTreeManager(TreeManager treeManager) {
 		KurentoTreeServerApp.treeManager = treeManager;
 	}
@@ -85,12 +87,27 @@ public class KurentoTreeServerApp implements JsonRpcConfigurer {
 
 	@Override
 	public void registerJsonRpcHandlers(JsonRpcHandlerRegistry registry) {
-		registry.addHandler(jsonRpcHandler(), "/kurento-tree");
+		registry.addHandler(clientsJsonRpcHandler(), "/kurento-tree");
+		registry.addHandler(registrarJsonRpcHandler(), "/registrar");
+	}
+
+	@Bean
+	public ClientsJsonRpcHandler clientsJsonRpcHandler() {
+		return new ClientsJsonRpcHandler(treeManager());
+	}
+
+	private RegistrarJsonRpcHandler registrarJsonRpcHandler() {
+		return new RegistrarJsonRpcHandler(registrar());
 	}
 
 	public static ConfigurableApplicationContext start() {
 
 		ConfigFileManager.loadConfigFile("kurento-tree.conf.json");
+
+		if (getProperty(UNSECURE_RANDOM_PROPERTY, UNSECURE_RANDOM_DEFAULT)) {
+			log.info("Using /dev/urandom for secure random generation");
+			System.setProperty("java.security.egd", "file:/dev/./urandom");
+		}
 
 		String port = getProperty(WEBSOCKET_PORT_PROPERTY,
 				WEBSOCKET_PORT_DEFAULT);

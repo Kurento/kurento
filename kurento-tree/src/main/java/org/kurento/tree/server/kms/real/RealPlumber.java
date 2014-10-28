@@ -3,8 +3,12 @@ package org.kurento.tree.server.kms.real;
 import org.kurento.client.PlumberEndpoint;
 import org.kurento.tree.server.kms.Element;
 import org.kurento.tree.server.kms.Plumber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RealPlumber extends Plumber implements RealElement {
+
+	private static Logger log = LoggerFactory.getLogger(RealPlumber.class);
 
 	private PlumberEndpoint plumberEndpoint;
 
@@ -25,6 +29,7 @@ public class RealPlumber extends Plumber implements RealElement {
 		RealPlumber realPlumber = (RealPlumber) plumber;
 		String address = realPlumber.plumberEndpoint.getAddress();
 		int port = realPlumber.plumberEndpoint.getPort();
+		log.debug("Connecting plumber to adress:" + address + " port:" + port);
 		this.plumberEndpoint.link(address, port);
 	}
 

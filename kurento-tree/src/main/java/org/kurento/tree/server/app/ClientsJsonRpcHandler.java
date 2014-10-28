@@ -23,14 +23,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-public class JsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
+public class ClientsJsonRpcHandler extends DefaultJsonRpcHandler<JsonObject> {
 
 	private static final Logger log = LoggerFactory
-			.getLogger(JsonRpcHandler.class);
+			.getLogger(ClientsJsonRpcHandler.class);
 
 	private TreeManager treeManager;
 
-	public JsonRpcHandler(TreeManager treeManager) {
+	public ClientsJsonRpcHandler(TreeManager treeManager) {
 		this.treeManager = treeManager;
 	}
 

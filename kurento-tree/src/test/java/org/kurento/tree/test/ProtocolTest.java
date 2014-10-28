@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.kurento.jsonrpc.client.JsonRpcClientLocal;
 import org.kurento.tree.client.KurentoTreeClient;
 import org.kurento.tree.protocol.TreeEndpoint;
-import org.kurento.tree.server.app.JsonRpcHandler;
+import org.kurento.tree.server.app.ClientsJsonRpcHandler;
 import org.kurento.tree.server.treemanager.TreeException;
 import org.kurento.tree.server.treemanager.TreeManager;
 
@@ -27,7 +27,7 @@ public class ProtocolTest {
 
 		treeMgr = mock(TreeManager.class);
 		client = new KurentoTreeClient(new JsonRpcClientLocal(
-				new JsonRpcHandler(treeMgr)));
+				new ClientsJsonRpcHandler(treeMgr)));
 	}
 
 	@Test
