@@ -801,6 +801,7 @@ kms_recorder_endpoint_get_caps_from_profile (KmsRecorderEndpoint * self,
     }
   }
 
+  gst_encoding_profile_unref (cprof);
   return caps;
 }
 
