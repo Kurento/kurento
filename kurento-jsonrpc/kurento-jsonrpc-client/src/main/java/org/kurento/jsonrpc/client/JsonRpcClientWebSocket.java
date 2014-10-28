@@ -177,7 +177,7 @@ public class JsonRpcClientWebSocket extends JsonRpcClient {
 
 			} catch (DeploymentException | URISyntaxException e) {
 				throw new KurentoException(
-						"Exception connecting to webSocket server", e);
+						"Exception connecting to KMS server", e);
 			}
 
 			try {
