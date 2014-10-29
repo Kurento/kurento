@@ -46,7 +46,7 @@ public class One2OneCallIT {
 	protected WebDriver caller;
 	protected WebDriver callee;
 
-	protected final static int TEST_TIMEOUT = 60; // seconds
+	protected final static int TEST_TIMEOUT = 240; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 	protected final static String APP_URL = "http://localhost:8080/";
 	protected final static String CALLER_NAME = "user1";
@@ -122,7 +122,7 @@ public class One2OneCallIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media");
+			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
 		}
 	}
 

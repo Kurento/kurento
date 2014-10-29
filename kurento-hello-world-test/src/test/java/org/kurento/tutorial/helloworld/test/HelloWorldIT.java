@@ -44,7 +44,7 @@ public class HelloWorldIT {
 
 	protected WebDriver driver;
 
-	protected final static int TEST_TIMEOUT = 60; // seconds
+	protected final static int TEST_TIMEOUT = 240; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 
 	@Before
@@ -94,7 +94,7 @@ public class HelloWorldIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media");
+			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
 		}
 	}
 

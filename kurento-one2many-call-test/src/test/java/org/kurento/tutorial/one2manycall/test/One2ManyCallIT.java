@@ -48,7 +48,7 @@ public class One2ManyCallIT {
 	protected WebDriver master;
 	protected List<WebDriver> viewers;
 
-	protected final static int TEST_TIMEOUT = 60; // seconds
+	protected final static int TEST_TIMEOUT = 240; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 	protected final static String DEFAULT_NUM_VIEWERS = "3";
 	protected final static String APP_URL = "http://localhost:8080/";
@@ -122,7 +122,7 @@ public class One2ManyCallIT {
 			}
 		}
 		if (i == TEST_TIMEOUT) {
-			Assert.fail("Video tag '" + videoTagId + "' is not playing media");
+			Assert.fail("Video tag '" + videoTagId + "' is not playing media after " + TEST_TIMEOUT + " seconds");
 		}
 	}
 
