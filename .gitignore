@@ -8,3 +8,4 @@ src/
 target/
 /bower.json
 junitResult.xml
+npm-debug.log

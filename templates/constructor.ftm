@@ -1,0 +1,173 @@
+<#switch remoteClass.name>
+  <#case "MediaObject">
+
+
+  //
+  // Define object properties
+  //
+
+  /**
+   * Unique identifier of this object
+   *
+   * @public
+   * @readonly
+   * @member {external:Number} id
+   */
+  this.once('_id', function(error, id)
+  {
+    if(error)
+    {
+      this._createError = error;
+
+      return Object.defineProperty(this, 'id', {value: null});
+    }
+
+    Object.defineProperty(this, 'id',
+    {
+      configurable: true,
+      enumerable: true,
+      value: id
+    });
+  })
+
+  //
+  // Subscribe and unsubscribe events on the server when adding and removing
+  // event listeners on this MediaObject
+  //
+
+  var subscriptions = {};
+
+  this.on('removeListener', function(event, listener)
+  {
+    // Blacklisted events
+    if(event[0] == '_'
+    || event == 'release'
+    || event == 'newListener')
+      return;
+
+    var count = EventEmitter.listenerCount(this, event);
+    if(count) return;
+
+    var token = subscriptions[event];
+
+    var params =
+    {
+      object: this,
+      subscription: token
+    };
+
+    this.emit('_rpc', undefined, 'unsubscribe', params, function(error)
+    {
+      if(error) return this.emit('error', error);
+
+      delete subscriptions[event];
+    });
+  });
+
+  this.on('newListener', function(event, listener)
+  {
+    // Blacklisted events
+    if(event[0] == '_'
+    || event == 'release')
+      return;
+
+    var constructor = this.constructor;
+
+    if(constructor.events.indexOf(event) < 0)
+      throw new SyntaxError(constructor.name+" doesn't accept events of type '"+event+"'")
+
+    var count = EventEmitter.listenerCount(this, event);
+    if(count) return;
+
+    var params =
+    {
+      object: this,
+      type: event
+    };
+
+    this.emit('_rpc', undefined, 'subscribe', params, function(error, token)
+    {
+      if(error) return this.emit('error', error);
+
+      subscriptions[event] = token;
+    });
+  });
+  <#break>
+  <#case "MediaPipeline">
+
+
+  var self = this;
+
+
+  // Transactional API
+
+  var transactionsManager = new TransactionsManager(this, encodeTransaction);
+
+  this.beginTransaction = transactionsManager.beginTransaction.bind(transactionsManager);
+  this.endTransaction   = transactionsManager.endTransaction.bind(transactionsManager);
+  this.transaction      = transactionsManager.transaction.bind(transactionsManager);
+
+
+  // Encode commands
+
+  function encodeCreate(transaction, params, callback)
+  {
+    if(transaction)
+      return transactionOperation.call(transaction, 'create', params, callback);
+
+    if(transactionsManager.length)
+      return transactionOperation.call(transactionsManager, 'create', params, callback);
+
+    self.emit('_create', undefined, params, callback)
+  }
+
+  function encodeRpc(transaction, method, params, callback)
+  {
+    if(transaction)
+      return transactionOperation.call(transaction, method, params, callback);
+
+    if(transactionsManager.length)
+      return transactionOperation.call(transactionsManager, method, params, callback);
+
+    self.emit('_rpc', undefined, method, params, callback)
+  }
+
+  function encodeTransaction(operations, callback)
+  {
+    var params =
+    {
+//      object: self,
+      operations: operations
+    };
+
+    if(transactionsManager.length)
+      return transactionOperation.call(transactionsManager, 'transaction', params, callback);
+
+    self.emit('_transaction', params, callback);
+  }
+
+
+  // Creation of objects
+
+  var mediaObjectCreator = new MediaObjectCreator(this, encodeCreate, encodeRpc, encodeTransaction);
+
+  /**
+   * Create a new instance of a {module:core/abstract.MediaObject} attached to
+   *  this {module:core.MediaPipeline}
+   *
+   * @param {external:String} type - Type of the
+   *  {module:core/abstract.MediaObject}
+   * @param {external:String[]} [params]
+   * @param {module:core.MediaPipeline~createCallback} callback
+   *
+   * @return {external:Promise}
+   */
+  this.create = mediaObjectCreator.create.bind(mediaObjectCreator);
+  /**
+   * @callback core.MediaPipeline~createCallback
+   * @param {external:Error} error
+   * @param {module:core/abstract~MediaElement} result
+   *  The created MediaElement
+   */
+  <#break>
+</#switch>

@@ -14,7 +14,8 @@
   ],
   "main": "./lib/index.js",
   "scripts": {
-    "test": "rm -f node_modules/kurento-client && ln -s .. node_modules/kurento-client && qunit-cli -c kurentoClient:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js"
+    "prepublish": "scripts/prepublish",
+    "test": "scripts/test"
   },
   "repository": {
     "type": "git",
@@ -27,6 +28,11 @@
     "API",
     "Kurento",
     "WebRTC"
+  ],
+  "bundleDependencies": [
+    "kurento-client-core",
+    "kurento-client-elements",
+    "kurento-client-filters"
   ],
   "dependencies": {
     "async": "~0.9.0",

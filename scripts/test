@@ -1,0 +1,3 @@
+rm -f node_modules/kurento-client || exit 1
+ln -s .. node_modules/kurento-client || exit 2
+qunit-cli -c kurentoClient:. -c node_modules/qunit-reporter-junit -c wock:node_modules/wock -c test/_common.js -c test/_proxy.js test/*.js

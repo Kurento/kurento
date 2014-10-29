@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+(
+  cd node_modules/kurento-client-core
+  if [ ! -d lib ]; then
+    npm install
+    grunt
+  fi
+) || exit 1
+
+(
+  cd node_modules/kurento-client-elements
+  if [ ! -d lib ]; then
+    npm install
+    grunt
+  fi
+) || exit 2
+
+(
+  cd node_modules/kurento-client-filters
+  if [ ! -d lib ]; then
+    npm install
+    grunt
+  fi
+) || exit 3
