@@ -8,7 +8,7 @@ import org.junit.Assert;
 
 public class AsyncManager<E> {
 
-	public static final long TIMEOUT_SECONDS = 20;
+	public static final long TIMEOUT_SECONDS = 40;
 
 	protected CountDownLatch latch = new CountDownLatch(1);
 
