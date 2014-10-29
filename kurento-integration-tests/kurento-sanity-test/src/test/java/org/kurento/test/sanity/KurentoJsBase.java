@@ -130,7 +130,9 @@ public class KurentoJsBase extends BrowserKurentoClientTest {
 
 	@After
 	public void end() {
-		driver.close();
+		if (driver != null) {
+			driver.close();
+		}
 	}
 
 }
