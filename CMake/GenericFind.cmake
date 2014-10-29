@@ -11,7 +11,9 @@ function(generic_find)
     LIBNAME
     VERSION
   )
+
   set (MULTI_VALUE_PARAMS
+    COMPONENTS
   )
 
   set (REQUIRED_PARAMS
@@ -26,7 +28,17 @@ function(generic_find)
     endif()
   endforeach()
 
-  find_package(${GF_LIBNAME} QUIET)
+  message ("Require with args: ${ARGN}")
+  if (DEFINED GF_COMPONENTS)
+    if (DEFINED GF_REQUIRED)
+      find_package(${GF_LIBNAME} COMPONENTS ${GF_COMPONENTS} REQUIRED)
+    else ()
+      find_package(${GF_LIBNAME} COMPONENTS ${GF_COMPONENTS} QUIET)
+    endif ()
+  else ()
+    find_package(${GF_LIBNAME} QUIET)
+  endif ()
+
   if (DEFINED ${GF_LIBNAME}_FOUND AND ${${GF_LIBNAME}_FOUND})
     find_package(${GF_LIBNAME})
   else()
@@ -44,6 +56,8 @@ function(generic_find)
   if (DEFINED GF_VERSION)
     message (STATUS "Resolving ${GF_LIBNAME} version ${GF_VERSION} with ${${GF_LIBNAME}_VERSION}")
     check_version(${GF_VERSION} ${${GF_LIBNAME}_VERSION})
+  elseif (DEFINED GF_COMPONENTS)
+    message (STATUS "Found ${GF_LIBNAME} COMPONENTS ${GF_COMPONENTS}")
   else ()
     message (STATUS "Found ${GF_LIBNAME}")
   endif ()
