@@ -29,8 +29,6 @@ set (GNUTLS_REQUIRED ^3.2.0)
 set (GSTMARSHAL_REQUIRED ^1.0.0)
 set (GLIBMM_REQUIRED ^2.37)
 
-find_package(Boost REQUIRED COMPONENTS filesystem)
-
 #gst-plugins dependencies
 generic_find (LIBNAME gstreamer-1.0 VERSION ${GST_REQUIRED} REQUIRED)
 generic_find (LIBNAME gstreamer-base-1.0 VERSION ${GST_REQUIRED} REQUIRED)
