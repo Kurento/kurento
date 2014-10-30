@@ -14,6 +14,9 @@
  */
 package org.kurento.tutorial.one2onecall.test;
 
+import java.io.File;
+
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -46,7 +49,7 @@ public class One2OneCallIT {
 	protected WebDriver caller;
 	protected WebDriver callee;
 
-	protected final static int TEST_TIMEOUT = 240; // seconds
+	protected final static int TEST_TIMEOUT = 120; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 	protected final static String APP_URL = "http://localhost:8080/";
 	protected final static String CALLER_NAME = "user1";
@@ -68,6 +71,16 @@ public class One2OneCallIT {
 		// This flag makes using a synthetic video (green with spinner) in
 		// WebRTC instead of real media from camera/microphone
 		options.addArguments("--use-fake-device-for-media-stream");
+		
+		// Path to chrome driver binary
+		String chromedriver = null;
+		if (SystemUtils.IS_OS_MAC || SystemUtils.IS_OS_LINUX) {
+			chromedriver = "chromedriver";
+		} else if (SystemUtils.IS_OS_WINDOWS) {
+			chromedriver = "chromedriver.exe";
+		}
+		System.setProperty("webdriver.chrome.driver", new File(
+				"target/webdriver/" + chromedriver).getAbsolutePath());
 
 		return new ChromeDriver(options);
 	}

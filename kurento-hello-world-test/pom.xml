@@ -1,9 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>org.kurento.tutorial</groupId>
+	<parent>
+		<groupId>org.kurento.tutorial</groupId>
+		<artifactId>kurento-tutorial-test</artifactId>
+		<version>5.0.4-SNAPSHOT</version>
+	</parent>
+
 	<artifactId>kurento-hello-world-test</artifactId>
-	<version>5.0.4-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>Kurento Java Tutorial 1 - Hello World</name>
@@ -38,47 +42,6 @@
 		</developer>
 	</developers>
 
-	<properties>
-		<!-- Cross plugins settings -->
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-		<!-- maven-compiler-plugin -->
-		<maven.compiler.target>1.7</maven.compiler.target>
-		<maven.compiler.source>1.7</maven.compiler.source>
-
-		<!-- Main class -->
-		<start-class>org.kurento.tutorial.helloworld.HelloWorldApp</start-class>
-
-		<!-- Kurento -->
-		<kurento.version>5.0.4-SNAPSHOT</kurento.version>
-
-		<!-- Plugins -->
-		<failsafe.version>2.17</failsafe.version>
-
-		<!-- Test dependencies versions -->
-		<junit.version>4.11</junit.version>
-		<selenium-java.version>2.43.1</selenium-java.version>
-		<spring-test.version>4.1.0.RELEASE</spring-test.version>
-	</properties>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>${failsafe.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
 
 	<dependencies>
 		<!-- Kurento -->
@@ -86,26 +49,6 @@
 			<groupId>org.kurento.tutorial</groupId>
 			<artifactId>kurento-hello-world</artifactId>
 			<version>${kurento.version}</version>
-		</dependency>
-
-		<!-- Test -->
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.seleniumhq.selenium</groupId>
-			<artifactId>selenium-java</artifactId>
-			<version>${selenium-java.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
-			<version>${spring-test.version}</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
