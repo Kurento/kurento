@@ -134,7 +134,29 @@ function (next_version version next)
   set (${next} ${${next}} PARENT_SCOPE)
 endfunction ()
 
+function (process_version VERSION OUTPUT_VERSION)
+  string(FIND ${VERSION} "." FOUND)
+
+  if (FOUND EQUAL -1)
+    string(SUBSTRING ${VERSION} 0 1 MAJOR)
+    string(SUBSTRING ${VERSION} 2 2 MINOR)
+    string(SUBSTRING ${VERSION} 4 2 PATCH)
+
+    set (VERSION "${MAJOR}")
+    if (NOT "${MINOR}" EQUAL "")
+      set (VERSION "${VERSION}.${MINOR}")
+    endif ()
+    if (NOT "${PATCH}" EQUAL "")
+      set (VERSION "${VERSION}.${PATCH}")
+    endif ()
+
+  endif()
+
+  set (${OUTPUT_VERSION} "${VERSION}" PARENT_SCOPE)
+endfunction ()
+
 function (check_version_internal TARGET_VERSION FOUND_VERSION OUTPUT_ERROR_VAR)
+  process_version (${FOUND_VERSION} FOUND_VERSION)
   if (${TARGET_VERSION} MATCHES ".*AND.*")
     string (REPLACE "AND" ";" VESION_LIST ${TARGET_VERSION})
 
