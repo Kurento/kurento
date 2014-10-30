@@ -28,7 +28,6 @@ function(generic_find)
     endif()
   endforeach()
 
-  message ("Require with args: ${ARGN}")
   if (DEFINED GF_COMPONENTS)
     if (DEFINED GF_REQUIRED)
       find_package(${GF_LIBNAME} COMPONENTS ${GF_COMPONENTS} REQUIRED)
