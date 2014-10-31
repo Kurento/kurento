@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project ("ar-markerdetector")
+project ("kms-markerdetector")
 
 message ("If KurentoHelpers is not found, then it is necessary to install
           kms-cmake-utils package from the kurento repository")

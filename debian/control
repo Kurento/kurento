@@ -1,4 +1,4 @@
-Source: ar-markerdetector
+Source: kms-markerdetector
 Section: utils
 Priority: optional
 Maintainer: Petri Honkamaa
@@ -11,14 +11,14 @@ Build-Depends: debhelper (>= 8.0.0),
  libopencv-dev
 Standards-Version: 3.9.4
 
-Package: ar-markerdetector
+Package: kms-markerdetector
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends},
 Description: AR Marker detector for Kurento
 
-Package: ar-markerdetector-dev
+Package: kms-markerdetector-dev
 Architecture: any
-Depends: ar-markerdetector (= ${binary:Version}),
+Depends: kms-markerdetector (= ${binary:Version}),
   kms-core-dev,
   kms-elements-dev,
   kms-filters-dev,
