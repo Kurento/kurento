@@ -50,7 +50,7 @@ public class One2ManyCallIT {
 	protected WebDriver master;
 	protected List<WebDriver> viewers;
 
-	protected final static int TEST_TIMEOUT = 120; // seconds
+	protected final static int TEST_TIMEOUT = 200; // seconds
 	protected final static int PLAY_TIME = 5; // seconds
 	protected final static String DEFAULT_NUM_VIEWERS = "3";
 	protected final static String APP_URL = "http://localhost:8080/";
