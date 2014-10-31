@@ -2,9 +2,9 @@ cmake_minimum_required (VERSION 2.8)
 
 find_path (ALVAR_SDK
 	NAMES include/Alvar.h
-	HINTS 
-	"${CMAKE_CURRENT_SOURCE_DIR}/../alvar-2.0.0-sdk-linux64-gcc44/" 
-	"${CMAKE_CURRENT_SOURCE_DIR}/../../alvar-2.0.0-sdk-linux64-gcc44/" 
+	HINTS
+	"${CMAKE_CURRENT_SOURCE_DIR}/../alvar-2.0.0-sdk-linux64-gcc44/"
+	"${CMAKE_CURRENT_SOURCE_DIR}/../../alvar-2.0.0-sdk-linux64-gcc44/"
 	"${CMAKE_CURRENT_SOURCE_DIR}/../../../alvar-2.0.0-sdk-linux64-gcc44/")
 set (ALVAR_INC "${ALVAR_SDK}/include" CACHE PATH "ALVAR SDK include dir")
 find_library(ALVAR_LIB alvar200 HINTS ${ALVAR_SDK}/bin)
@@ -12,9 +12,16 @@ find_library(ALVAR_LIB alvar200 HINTS ${ALVAR_SDK}/bin)
 
 # TODO: Why install does not work?
 #install(FILES ${ALVAR_LIB} DESTINATION ${CMAKE_INSTALL_LIBDIR})
-message(STATUS "Remember to copy alvar library to global lib-dir: ${ALVAR_LIB}") 
+#message(STATUS "Remember to copy alvar library to global lib-dir: ${ALVAR_LIB}")
 # SOUP
 #include_directories(${SOUP_INCLUDE_DIRS})
+
+install(
+  FILES
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../alvar-2.0.0-sdk-linux64-gcc44/bin/libalvar200.so"
+
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 
 # Generate code
 include (CodeGenerator)
