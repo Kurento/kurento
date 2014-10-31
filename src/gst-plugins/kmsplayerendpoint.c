@@ -305,11 +305,12 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
       "caps", src_caps, NULL);
 
   gst_bin_add (GST_BIN (self), appsrc);
-  gst_element_sync_state_with_parent (appsrc);
   if (!gst_element_link (appsrc, agnosticbin)) {
     GST_ERROR ("Could not link %s to element %s", GST_ELEMENT_NAME (appsrc),
         GST_ELEMENT_NAME (agnosticbin));
   }
+
+  gst_element_sync_state_with_parent (appsrc);
 
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
@@ -317,7 +318,6 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
       FALSE, "emit-signals", TRUE, "qos", TRUE, "max-buffers", 1,
       "async", FALSE, NULL);
   gst_bin_add (GST_BIN (self->priv->pipeline), appsink);
-  gst_element_sync_state_with_parent (appsink);
 
   sinkpad = gst_element_get_static_pad (appsink, "sink");
   gst_pad_link (pad, sinkpad);
@@ -331,6 +331,8 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   /* Connect new-sample signal to callback */
   g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
   g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
+
+  gst_element_sync_state_with_parent (appsink);
 
 end:
   if (src_caps != NULL)
