@@ -50,7 +50,7 @@ public class WebRtcFaceOverlayTest extends BrowserKurentoClientTest {
 	private static final int DEFAULT_PLAYTIME = 10; // seconds
 
 	@Test
-	public void testWebRtcLoopbackChrome() throws InterruptedException {
+	public void testWebRtcFaceOverlayChrome() throws InterruptedException {
 		final int playTime = Integer.parseInt(System.getProperty(
 				"test.play.time", String.valueOf(DEFAULT_PLAYTIME)));
 		doTest(Browser.CHROME, playTime);

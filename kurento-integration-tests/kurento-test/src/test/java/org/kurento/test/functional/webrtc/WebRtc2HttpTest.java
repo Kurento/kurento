@@ -59,7 +59,7 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 
 	@Ignore
 	@Test
-	public void testWebRtc2Http() throws Exception {
+	public void testWebRtc2HttpChrome() throws Exception {
 		// Media Pipeline
 		final MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
 		final WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(mp)
@@ -115,8 +115,8 @@ public class WebRtc2HttpTest extends BrowserKurentoClientTest {
 
 			// Assertions
 			double currentTime = browser.getCurrentTime();
-			Assert.assertTrue("Error in play time of player (expected: "
-					+ PLAYTIME + " sec, real: " + currentTime + " sec)",
+			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+					+ " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
 			Assert.assertTrue(
 					"The color of the video should be green (RGB #008700)",

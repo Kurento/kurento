@@ -52,7 +52,7 @@ public class WebRtcSwitchTest extends BrowserKurentoClientTest {
 	private static final int PLAYTIME = 5; // seconds
 
 	@Test
-	public void testWebRtcSwitch() throws InterruptedException {
+	public void testWebRtcSwitchChrome() throws InterruptedException {
 		// Media Pipeline
 		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
 		WebRtcEndpoint webRtcEndpoint1 = WebRtcEndpoint.with(mp).create();

@@ -57,7 +57,7 @@ public class QualityWebRtcTest extends BrowserKurentoClientTest {
 
 	@Ignore
 	@Test
-	public void testWebRtcLoopbackAdvChrome() throws InterruptedException {
+	public void testWebRtcQualityChrome() throws InterruptedException {
 		doTest(Browser.CHROME, getPathTestFiles() + "/video/10sec/red.y4m",
 				"http://files.kurento.org/audio/10sec/fiware_mono_16khz.wav",
 				Color.RED);
@@ -86,7 +86,8 @@ public class QualityWebRtcTest extends BrowserKurentoClientTest {
 					WebRtcMode.SEND_RCV);
 
 			// Wait until event playing in the remote stream
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
 
 			// Guard time to play the video

@@ -80,7 +80,8 @@ public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 
 	@Ignore
 	@Test
-	public void tesGridWebRtc() throws InterruptedException, ExecutionException {
+	public void tesGridWebRtcChrome() throws InterruptedException,
+			ExecutionException {
 		ExecutorService exec = Executors.newFixedThreadPool(nodes.size());
 		List<Future<?>> results = new ArrayList<>();
 		for (final Node node : nodes) {
@@ -121,7 +122,8 @@ public class GridWebRtcTest extends GridBrowserKurentoClientTest {
 					WebRtcMode.SEND_RCV);
 
 			// Wait until event playing in the remote stream
-			Assert.assertTrue("Timeout waiting playing event",
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
 
 			// Guard time to play the video

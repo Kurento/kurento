@@ -97,7 +97,7 @@ public class RepositoryRecorderTest extends RepositoryKurentoClientTest {
 		launchBrowser(browserType, webRtcEP1, playerEP, recorderEP);
 
 		// Wait for EOS
-		Assert.assertTrue("No EOS event",
+		Assert.assertTrue("Not received EOS event in player",
 				eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 
 		// Release Media Pipeline #1
