@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.functional.player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,12 @@ import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.client.ZBarFilter;
 import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.client.Browser;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.Client;
+import org.kurento.test.client.ConsoleLogLevel;
+import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 
 /**
  * <strong>Description</strong>: Test of a Player with ZBar Filter.<br/>

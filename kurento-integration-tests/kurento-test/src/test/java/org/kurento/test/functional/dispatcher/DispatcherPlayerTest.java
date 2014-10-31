@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.functional.dispatcher;
 
 import java.awt.Color;
 import java.util.concurrent.CountDownLatch;
@@ -28,6 +28,11 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.client.Browser;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.Client;
+import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 
 /**
  *

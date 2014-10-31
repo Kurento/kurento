@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.client;
+package org.kurento.test.functional.recorder;
 
 import java.awt.Color;
 import java.util.concurrent.CountDownLatch;
@@ -22,22 +22,26 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.kurento.client.EndOfStreamEvent;
 import org.kurento.client.EventListener;
-import org.kurento.client.FaceOverlayFilter;
 import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
 import org.kurento.test.Shell;
 import org.kurento.test.base.BrowserKurentoClientTest;
+import org.kurento.test.client.Browser;
+import org.kurento.test.client.BrowserClient;
+import org.kurento.test.client.Client;
+import org.kurento.test.client.WebRtcChannel;
+import org.kurento.test.client.WebRtcMode;
 import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  *
- * <strong>Description</strong>: Test of a Recorder, using the stream source
- * from a PlayerEndpoint with FaceOverlayFilter through an WebRtcEndpoint.<br/>
+ * <strong>Description</strong>: Test of a Recorder switching sources from
+ * PlayerEndpoint.<br/>
  * <strong>Pipelines</strong>:
  * <ol>
- * <li>PlayerEndpoint -> FaceOverlayFilter -> RecorderEndpoint & WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
  * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ol>
  * <strong>Pass criteria</strong>:
@@ -45,37 +49,41 @@ import org.kurento.test.mediainfo.AssertMedia;
  * <li>Media should be received in the video tag</li>
  * <li>EOS event should arrive to player</li>
  * <li>Play time should be the expected</li>
- * <li>Color above the head of the video should be the expected (image overlaid)
- * </li>
+ * <li>Color of the video should be the expected</li>
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
  * @since 4.2.3
  */
-public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
+public class RecorderSwitchTest extends BrowserKurentoClientTest {
 
-	private static final int PLAYTIME = 30; // seconds
+	private static final int PLAYTIME = 20; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds
+	private static final int N_PLAYER = 3;
 	private static final String EXPECTED_VIDEO_CODEC = "VP8";
 	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
 	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
 
 	@Test
-	public void testRecorderFaceOverlayChrome() throws Exception {
+	public void testRecorderSwitchChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
 	@Test
-	public void testRecorderFaceOverlayFirefox() throws Exception {
+	public void testRecorderSwitchFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
 		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/fiwarecut.mp4").create();
-		WebRtcEndpoint webRtcEP1 = WebRtcEndpoint.with(mp).create();
+		PlayerEndpoint playerRed = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/10sec/red.webm").create();
+		PlayerEndpoint playerGreen = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/10sec/green.webm").create();
+		PlayerEndpoint playerBlue = PlayerEndpoint.with(mp,
+				"http://files.kurento.org/video/10sec/blue.webm").create();
+		WebRtcEndpoint webRtcEP = WebRtcEndpoint.with(mp).create();
 
 		final String recordingPreProcess = FILE_SCHEMA
 				+ getDefaultFileForRecording(PRE_PROCESS_SUFIX);
@@ -83,17 +91,42 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 				+ getDefaultFileForRecording();
 		RecorderEndpoint recorderEP = RecorderEndpoint.with(mp,
 				recordingPreProcess).create();
-		FaceOverlayFilter filter = FaceOverlayFilter.with(mp).create();
-		filter.setOverlayedImage(
-				"http://files.kurento.org/imgs/red-square.png", -0.2F, -1.2F,
-				1.6F, 1.6F);
 
-		playerEP.connect(filter);
-		filter.connect(webRtcEP1);
-		filter.connect(recorderEP);
+		try (BrowserClient browser = new BrowserClient.Builder()
+				.browser(browserType).client(Client.WEBRTC).build()) {
+			browser.subscribeEvents("playing");
+			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+					WebRtcMode.RCV_ONLY);
 
-		// Test execution #1. Play and record
-		launchBrowser(browserType, webRtcEP1, playerEP, recorderEP);
+			// red
+			playerRed.connect(webRtcEP);
+			playerRed.connect(recorderEP);
+			playerRed.play();
+			recorderEP.record();
+
+			Assert.assertTrue(
+					"Not received media (timeout waiting playing event)",
+					browser.waitForEvent("playing"));
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+
+			// green
+			playerGreen.connect(webRtcEP);
+			playerGreen.connect(recorderEP);
+			playerGreen.play();
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+
+			// blue
+			playerBlue.connect(webRtcEP);
+			playerBlue.connect(recorderEP);
+			playerBlue.play();
+			Thread.sleep(PLAYTIME * 1000 / N_PLAYER);
+
+			// Assertions
+			double currentTime = browser.getCurrentTime();
+			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
+					+ " sec, real: " + currentTime + " sec)",
+					compare(PLAYTIME, currentTime));
+		}
 
 		// Release Media Pipeline #1
 		recorderEP.stop();
@@ -105,57 +138,48 @@ public class RecorderFaceOverlayTest extends BrowserKurentoClientTest {
 
 		// Media Pipeline #2
 		MediaPipeline mp2 = MediaPipeline.with(kurentoClient).create();
-		PlayerEndpoint playerEP2 = PlayerEndpoint.with(mp2,
-				recordingPostProcess).create();
+		PlayerEndpoint playerEP = PlayerEndpoint
+				.with(mp2, recordingPostProcess).create();
 		WebRtcEndpoint webRtcEP2 = WebRtcEndpoint.with(mp2).create();
-		playerEP2.connect(webRtcEP2);
+		playerEP.connect(webRtcEP2);
 
-		// Test execution #2. Play the recorded video
-		launchBrowser(browserType, webRtcEP2, playerEP2, null);
+		final CountDownLatch eosLatch = new CountDownLatch(1);
+		playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
+			@Override
+			public void onEvent(EndOfStreamEvent event) {
+				eosLatch.countDown();
+			}
+		});
 
-		// Release Media Pipeline #2
-		mp2.release();
-	}
-
-	private void launchBrowser(Browser browserType, WebRtcEndpoint webRtcEP,
-			PlayerEndpoint playerEP, RecorderEndpoint recorderEP)
-			throws InterruptedException {
 		try (BrowserClient browser = new BrowserClient.Builder()
 				.browser(browserType).client(Client.WEBRTC).build()) {
 			browser.subscribeEvents("playing");
-			browser.initWebRtc(webRtcEP, WebRtcChannel.AUDIO_AND_VIDEO,
+			browser.initWebRtc(webRtcEP2, WebRtcChannel.AUDIO_AND_VIDEO,
 					WebRtcMode.RCV_ONLY);
-			final CountDownLatch eosLatch = new CountDownLatch(1);
-			playerEP.addEndOfStreamListener(new EventListener<EndOfStreamEvent>() {
-				@Override
-				public void onEvent(EndOfStreamEvent event) {
-					eosLatch.countDown();
-				}
-			});
-			if (recorderEP != null) {
-				recorderEP.record();
-			}
 			playerEP.play();
 
 			// Assertions
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
-			Assert.assertTrue(
-					"Color above the head must be red (FaceOverlayFilter)",
-					browser.similarColorAt(Color.RED, 420, 45));
+			Assert.assertTrue("Recorded video first must be red",
+					browser.similarColor(Color.RED));
+			Assert.assertTrue("Recorded video second must be green",
+					browser.similarColor(Color.GREEN));
+			Assert.assertTrue("Recorded video third must be blue",
+					browser.similarColor(Color.BLUE));
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 					+ " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
-
-			if (recorderEP != null) {
-				AssertMedia.assertCodecs(
-						getDefaultFileForRecording(PRE_PROCESS_SUFIX),
-						EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
-			}
+			AssertMedia.assertCodecs(
+					getDefaultFileForRecording(PRE_PROCESS_SUFIX),
+					EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
 		}
+
+		// Release Media Pipeline #2
+		mp2.release();
 	}
 }

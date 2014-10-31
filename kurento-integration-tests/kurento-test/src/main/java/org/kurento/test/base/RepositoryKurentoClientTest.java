@@ -17,9 +17,11 @@ package org.kurento.test.base;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.kurento.commons.testing.SystemKurentoClientTests;
+import org.kurento.repository.Repository;
 import org.kurento.repository.RepositoryApiConfiguration;
 import org.kurento.repository.internal.http.RepositoryHttpServlet;
 import org.kurento.test.services.KurentoServicesTestHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.boot.test.IntegrationTest;
@@ -49,6 +51,9 @@ import com.google.common.io.Files;
 @EnableAutoConfiguration
 @Category(SystemKurentoClientTests.class)
 public class RepositoryKurentoClientTest extends KurentoClientTest {
+
+	@Autowired
+	public Repository repository;
 
 	@Bean
 	public RepositoryHttpServlet repositoryHttpServlet() {

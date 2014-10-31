@@ -12,7 +12,7 @@
  * Lesser General Public License for more details.
  *
  */
-package org.kurento.test.repository;
+package org.kurento.test.functional.recorder;
 
 import java.awt.Color;
 import java.util.concurrent.CountDownLatch;
@@ -26,24 +26,23 @@ import org.kurento.client.MediaPipeline;
 import org.kurento.client.PlayerEndpoint;
 import org.kurento.client.RecorderEndpoint;
 import org.kurento.client.WebRtcEndpoint;
-import org.kurento.repository.Repository;
-import org.kurento.repository.RepositoryHttpRecorder;
-import org.kurento.repository.RepositoryItem;
-import org.kurento.test.base.RepositoryKurentoClientTest;
+import org.kurento.test.Shell;
+import org.kurento.test.base.BrowserKurentoClientTest;
 import org.kurento.test.client.Browser;
 import org.kurento.test.client.BrowserClient;
 import org.kurento.test.client.Client;
 import org.kurento.test.client.WebRtcChannel;
 import org.kurento.test.client.WebRtcMode;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.kurento.test.mediainfo.AssertMedia;
 
 /**
  *
- * <strong>Description</strong>: Test of a Recorder in the repository, using the
- * stream source from a PlayerEndpoint through an WebRtcEndpoint.<br/>
+ * <strong>Description</strong>: Test of a Recorder, using the stream source
+ * from a PlayerEndpoint through an WebRtcEndpoint.<br/>
  * <strong>Pipelines</strong>:
  * <ol>
  * <li>PlayerEndpoint -> RecorderEndpoint & WebRtcEndpoint</li>
+ * <li>PlayerEndpoint -> WebRtcEndpoint</li>
  * </ol>
  * <strong>Pass criteria</strong>:
  * <ul>
@@ -54,40 +53,42 @@ import org.springframework.beans.factory.annotation.Autowired;
  * </ul>
  *
  * @author Boni Garcia (bgarcia@gsyc.es)
- * @since 5.0.4
+ * @since 4.2.3
  */
-public class RecorderRepositoryTest extends RepositoryKurentoClientTest {
-
-	@Autowired
-	public Repository repository;
+public class RecorderPlayerTest extends BrowserKurentoClientTest {
 
 	private static final int PLAYTIME = 10; // seconds
 	private static final int TIMEOUT_EOS = 60; // seconds
+	private static final String EXPECTED_VIDEO_CODEC = "VP8";
+	private static final String EXPECTED_AUDIO_CODEC = "Vorbis";
+	private static final String PRE_PROCESS_SUFIX = "-preprocess.webm";
 
 	@Test
-	public void testRecorderRepositoryChrome() throws Exception {
+	public void testRecorderPlayerChrome() throws Exception {
 		doTest(Browser.CHROME);
 	}
 
 	@Test
-	public void testRecorderRepositoryFirefox() throws Exception {
+	public void testRecorderPlayerFirefox() throws Exception {
 		doTest(Browser.FIREFOX);
 	}
 
 	public void doTest(Browser browserType) throws Exception {
 		// Media Pipeline #1
+
 		MediaPipeline mp = MediaPipeline.with(kurentoClient).create();
 		PlayerEndpoint playerEP = PlayerEndpoint.with(mp,
-				"http://files.kurento.org/video/10sec/ball.webm").create();
+				"http://files.kurento.org/video/10sec/green.webm").create();
 		WebRtcEndpoint webRtcEP1 = WebRtcEndpoint.with(mp).create();
 
-		RepositoryItem repositoryItem = repository.createRepositoryItem();
-		RepositoryHttpRecorder recorder = repositoryItem
-				.createRepositoryHttpRecorder();
-
+		final String recordingPreProcess = FILE_SCHEMA
+				+ getDefaultFileForRecording(PRE_PROCESS_SUFIX);
+		final String recordingPostProcess = FILE_SCHEMA
+				+ getDefaultFileForRecording();
 		RecorderEndpoint recorderEP = RecorderEndpoint.with(mp,
-				recorder.getURL()).create();
+				recordingPreProcess).create();
 		playerEP.connect(webRtcEP1);
+
 		playerEP.connect(recorderEP);
 
 		final CountDownLatch eosLatch = new CountDownLatch(1);
@@ -108,6 +109,24 @@ public class RecorderRepositoryTest extends RepositoryKurentoClientTest {
 		// Release Media Pipeline #1
 		recorderEP.stop();
 		mp.release();
+
+		// Post-processing
+		Shell.runAndWait("ffmpeg", "-i", recordingPreProcess, "-c", "copy",
+				recordingPostProcess);
+
+		// Media Pipeline #2
+		MediaPipeline mp2 = MediaPipeline.with(kurentoClient).create();
+		PlayerEndpoint playerEP2 = PlayerEndpoint.with(mp2,
+				recordingPostProcess).create();
+
+		WebRtcEndpoint webRtcEP2 = WebRtcEndpoint.with(mp2).create();
+		playerEP2.connect(webRtcEP2);
+
+		// Test execution #2. Play the recorded video
+		launchBrowser(browserType, webRtcEP2, playerEP2, null);
+
+		// Release Media Pipeline #2
+		mp2.release();
 	}
 
 	private void launchBrowser(Browser browserType, WebRtcEndpoint webRtcEP,
@@ -135,14 +154,19 @@ public class RecorderRepositoryTest extends RepositoryKurentoClientTest {
 			Assert.assertTrue(
 					"Not received media (timeout waiting playing event)",
 					browser.waitForEvent("playing"));
-			Assert.assertTrue("The color of the video should be black",
-					browser.similarColor(Color.BLACK));
+			Assert.assertTrue("The color of the video should be green",
+					browser.similarColor(Color.GREEN));
 			Assert.assertTrue("Not received EOS event in player",
 					eosLatch.await(TIMEOUT_EOS, TimeUnit.SECONDS));
 			double currentTime = browser.getCurrentTime();
 			Assert.assertTrue("Error in play time (expected: " + PLAYTIME
 					+ " sec, real: " + currentTime + " sec)",
 					compare(PLAYTIME, currentTime));
+			if (recorderEP != null) {
+				AssertMedia.assertCodecs(
+						getDefaultFileForRecording(PRE_PROCESS_SUFIX),
+						EXPECTED_VIDEO_CODEC, EXPECTED_AUDIO_CODEC);
+			}
 		}
 	}
 }
