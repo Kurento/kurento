@@ -270,30 +270,46 @@ eos_cb (GstElement * appsink, gpointer user_data)
   g_object_unref (srcpad);
 }
 
-static void
-pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
+static GstPadProbeReturn
+set_appsrc_caps (GstPad * pad, GstPadProbeInfo * info, gpointer playerep)
 {
-  GstElement *appsrc, *agnosticbin, *appsink;
-  GstPad *sinkpad;
-  GstCaps *audio_caps, *video_caps;
-  GstCaps *src_caps;
+  KmsPlayerEndpoint *self = KMS_PLAYER_ENDPOINT (playerep);
+  GstEvent *event = GST_PAD_PROBE_INFO_EVENT (info);
+  GstCaps *audio_caps = NULL, *video_caps = NULL;
+  GstElement *appsrc, *appsink, *agnosticbin;
+  GstCaps *caps;
+  gpointer data;
 
-  GST_DEBUG_OBJECT (pad, "Pad added");
+  if (GST_EVENT_TYPE (event) != GST_EVENT_CAPS) {
+    return GST_PAD_PROBE_OK;
+  }
 
-  /* Create and link appsrc--agnosticbin with proper caps */
+  gst_event_parse_caps (event, &caps);
+  if (caps == NULL) {
+    GST_ERROR_OBJECT (pad, "Invalid caps received");
+    return GST_PAD_PROBE_OK;
+  }
+
+  GST_TRACE ("caps are %" GST_PTR_FORMAT, caps);
+
+  data = g_object_get_data (G_OBJECT (pad), APPSRC_DATA);
+  if (data != NULL) {
+    g_object_set_data (G_OBJECT (data), "caps", caps);
+    goto end;
+  }
+
+  /* Get the proper agnosticbin */
   audio_caps = gst_caps_from_string (KMS_AGNOSTIC_AUDIO_CAPS);
   video_caps = gst_caps_from_string (KMS_AGNOSTIC_VIDEO_CAPS);
-  src_caps = gst_pad_query_caps (pad, NULL);
-  GST_TRACE ("caps are %" GST_PTR_FORMAT, src_caps);
 
-  if (gst_caps_can_intersect (audio_caps, src_caps))
+  if (gst_caps_can_intersect (audio_caps, caps))
     agnosticbin = kms_element_get_audio_agnosticbin (KMS_ELEMENT (self));
-  else if (gst_caps_can_intersect (video_caps, src_caps))
+  else if (gst_caps_can_intersect (video_caps, caps))
     agnosticbin = kms_element_get_video_agnosticbin (KMS_ELEMENT (self));
   else {
     GST_ELEMENT_WARNING (self, CORE, CAPS,
-        ("Unsupported media received: %" GST_PTR_FORMAT, src_caps),
-        ("Unsupported media received: %" GST_PTR_FORMAT, src_caps));
+        ("Unsupported media received: %" GST_PTR_FORMAT, caps),
+        ("Unsupported media received: %" GST_PTR_FORMAT, caps));
     goto end;
   }
 
@@ -302,7 +318,7 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   g_object_set (G_OBJECT (appsrc), "is-live", TRUE, "do-timestamp", FALSE,
       "min-latency", G_GUINT64_CONSTANT (0),
       "max-latency", G_GUINT64_CONSTANT (0), "format", GST_FORMAT_TIME,
-      "caps", src_caps, NULL);
+      "caps", caps, NULL);
 
   gst_bin_add (GST_BIN (self), appsrc);
   if (!gst_element_link (appsrc, agnosticbin)) {
@@ -310,7 +326,32 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
         GST_ELEMENT_NAME (agnosticbin));
   }
 
+  /* Connect new-sample signal to callback */
+  appsink = gst_pad_get_parent_element (pad);
+  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
+  g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
+  g_object_unref (appsink);
+
+  g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   gst_element_sync_state_with_parent (appsrc);
+
+end:
+  if (audio_caps != NULL)
+    gst_caps_unref (audio_caps);
+
+  if (video_caps != NULL)
+    gst_caps_unref (video_caps);
+
+  return GST_PAD_PROBE_OK;
+}
+
+static void
+pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
+{
+  GstElement *appsink;
+  GstPad *sinkpad;
+
+  GST_DEBUG_OBJECT (pad, "Pad added");
 
   /* Create appsink and link to pad */
   appsink = gst_element_factory_make ("appsink", NULL);
@@ -323,26 +364,15 @@ pad_added (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
   gst_pad_link (pad, sinkpad);
   GST_DEBUG_OBJECT (self, "Linked %s---%s", GST_ELEMENT_NAME (element),
       GST_ELEMENT_NAME (appsink));
+
+  gst_pad_add_probe (sinkpad, GST_PAD_PROBE_TYPE_EVENT_DOWNSTREAM,
+      set_appsrc_caps, self, NULL);
+
   g_object_unref (sinkpad);
 
-  g_object_set_data (G_OBJECT (pad), APPSRC_DATA, appsrc);
   g_object_set_data (G_OBJECT (pad), APPSINK_DATA, appsink);
 
-  /* Connect new-sample signal to callback */
-  g_signal_connect (appsink, "new-sample", G_CALLBACK (new_sample_cb), appsrc);
-  g_signal_connect (appsink, "eos", G_CALLBACK (eos_cb), appsrc);
-
   gst_element_sync_state_with_parent (appsink);
-
-end:
-  if (src_caps != NULL)
-    gst_caps_unref (src_caps);
-
-  if (audio_caps != NULL)
-    gst_caps_unref (audio_caps);
-
-  if (video_caps != NULL)
-    gst_caps_unref (video_caps);
 }
 
 static void
