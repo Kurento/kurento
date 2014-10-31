@@ -10,7 +10,7 @@
 	<artifactId>kurento-http-player-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java Tutorial 7 - HTTP Player</name>
+	<name>Kurento Java Tutorial Test 7 - HTTP Player</name>
 	<description>HTTP Player with filter</description>
 
 	<url>http://www.kurento.org/docs/${project.version}</url>
@@ -29,8 +29,8 @@
 	</organization>
 
 	<scm>
-		<url>https://github.com/Kurento/kurento-tutorial-java</url>
-		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-java</connection>
+		<url>https://github.com/Kurento/kurento-tutorial-test</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-test</connection>
 		<developerConnection>scm:git://git@github.com:Kurento/kurento-tutorial-java</developerConnection>
 		<tag>develop</tag>
 	</scm>

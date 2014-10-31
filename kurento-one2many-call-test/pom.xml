@@ -10,7 +10,7 @@
 	<artifactId>kurento-one2many-call-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java Tutorial 3 - One2Many Call</name>
+	<name>Kurento Java Tutorial Test 3 - One2Many Call</name>
 	<description>WebRTC one to many video call</description>
 
 	<licenses>
@@ -27,8 +27,8 @@
 	</organization>
 
 	<scm>
-		<url>https://github.com/Kurento/kurento-tutorial-java</url>
-		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-java</connection>
+		<url>https://github.com/Kurento/kurento-tutorial-test</url>
+		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-test</connection>
 		<developerConnection>scm:git://git@github.com:Kurento/kurento-tutorial-java</developerConnection>
 		<tag>develop</tag>
 	</scm>

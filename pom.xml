@@ -49,6 +49,10 @@
 		<module>kurento-one2many-call-test</module>
 		<module>kurento-group-call-test</module>
 		<module>kurento-http-player-test</module>
+		<module>kurento-platedetector-test</module>
+		<module>kurento-crowddetector-test</module>
+		<module>kurento-chroma-test</module>
+		<module>kurento-pointerdetector-test</module>
 	</modules>
 
 	<properties>
@@ -63,7 +67,7 @@
 		<maven.compiler.source>1.7</maven.compiler.source>
 
 		<!-- Kurento -->
-		<kurento.version>5.0.4-SNAPSHOT</kurento.version>
+		<kurento.version>[5.0.0,6.0.0)</kurento.version>
 
 		<!-- Plugins -->
 		<failsafe.version>2.17</failsafe.version>

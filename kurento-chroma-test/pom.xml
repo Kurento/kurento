@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -8,11 +7,11 @@
 		<version>5.0.4-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>kurento-one2one-call-test</artifactId>
+	<artifactId>kurento-chroma-test</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Kurento Java Tutorial Test 4 - One2One Call</name>
-	<description>WebRTC one to one video call</description>
+	<name>Kurento Java Module Tutorial Test 2 - Chroma Filter</name>
+	<description>WebRTC in loopback with a chroma filter</description>
 
 	<licenses>
 		<license>
@@ -30,7 +29,7 @@
 	<scm>
 		<url>https://github.com/Kurento/kurento-tutorial-test</url>
 		<connection>scm:git:https://github.com/Kurento/kurento-tutorial-test</connection>
-		<developerConnection>scm:git://git@github.com:Kurento/kurento-tutorial-java</developerConnection>
+		<developerConnection>scm:git://git@github.com:Kurento/kurento-tutorial-test</developerConnection>
 		<tag>develop</tag>
 	</scm>
 
@@ -47,8 +46,8 @@
 		<!-- Kurento -->
 		<dependency>
 			<groupId>org.kurento.tutorial</groupId>
-			<artifactId>kurento-one2one-call</artifactId>
-			<version>${kurento.version}</version>
+			<artifactId>kurento-chroma</artifactId>
+			<version>[5.0.0,6.0.0)</version>
 		</dependency>
 	</dependencies>
 
