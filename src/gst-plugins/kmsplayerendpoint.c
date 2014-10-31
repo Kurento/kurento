@@ -379,14 +379,39 @@ static void
 pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
 {
   GstElement *appsink, *appsrc;
+  GstPad *sinkpad;
 
   GST_DEBUG_OBJECT (pad, "Pad removed");
 
   if (GST_PAD_IS_SINK (pad))
     return;
 
+  GST_DEBUG ("pad %" GST_PTR_FORMAT " removed", pad);
+
   appsink = g_object_steal_data (G_OBJECT (pad), APPSINK_DATA);
-  appsrc = g_object_steal_data (G_OBJECT (pad), APPSRC_DATA);
+
+  if (appsink == NULL) {
+    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
+    return;
+  }
+
+  sinkpad = gst_element_get_static_pad (appsink, "sink");
+  appsrc = g_object_get_data (G_OBJECT (sinkpad), APPSRC_DATA);
+  g_object_unref (sinkpad);
+
+  if (!gst_element_set_locked_state (appsink, TRUE))
+    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (appsink));
+
+  GST_DEBUG ("Removing appsink %s from %s", GST_ELEMENT_NAME (appsink),
+      GST_ELEMENT_NAME (self->priv->pipeline));
+
+  gst_element_set_state (appsink, GST_STATE_NULL);
+  gst_bin_remove (GST_BIN (self->priv->pipeline), appsink);
+
+  if (appsrc == NULL) {
+    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
+    return;
+  }
 
   if (appsrc != NULL) {
     GST_INFO ("Removing %" GST_PTR_FORMAT " from its parent", appsrc);
@@ -397,19 +422,6 @@ pad_removed (GstElement * element, GstPad * pad, KmsPlayerEndpoint * self)
       g_object_unref (appsrc);
     }
   }
-
-  if (appsink == NULL) {
-    GST_ERROR ("No appsink was found associated with %" GST_PTR_FORMAT, pad);
-    return;
-  }
-  if (!gst_element_set_locked_state (appsink, TRUE))
-    GST_ERROR ("Could not block element %s", GST_ELEMENT_NAME (appsink));
-
-  GST_DEBUG ("Removing appsink %s from %s", GST_ELEMENT_NAME (appsink),
-      GST_ELEMENT_NAME (self->priv->pipeline));
-
-  gst_element_set_state (appsink, GST_STATE_NULL);
-  gst_bin_remove (GST_BIN (self->priv->pipeline), appsink);
 }
 
 static void
