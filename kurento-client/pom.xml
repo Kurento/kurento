@@ -86,7 +86,7 @@
 			<plugin>
 				<groupId>org.kurento</groupId>
 				<artifactId>kurento-maven-plugin</artifactId>
-				<version>${version.kurento.plugin}</version>
+				<version>${project.version}</version>
 				<configuration>
 					<generateCodeForModules>
 						<param>core</param>

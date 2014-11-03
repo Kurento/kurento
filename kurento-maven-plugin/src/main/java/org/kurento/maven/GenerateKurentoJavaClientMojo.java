@@ -198,10 +198,9 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 		}
 	}
 
-	protected void executeKurentoMavenPlugin(String templates,
-			File sourceDirectory, File generatedSourceOutputFolder,
-			File kmdOutputFolder) throws MojoFailureException,
-			MojoExecutionException {
+	protected void executeKurentoMavenPlugin(File sourceDirectory,
+			File generatedSourceOutputFolder, File kmdOutputFolder)
+			throws MojoFailureException, MojoExecutionException {
 
 		log = getLog();
 
@@ -221,7 +220,8 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 
 				krp.setDeleteGenDir(true);
 				krp.setVerbose(false);
-				krp.setInternalTemplates(templates);
+				krp.setTemplatesDir(PathUtils.getPathInClasspath(this
+						.getClass().getResource("/templates")));
 				krp.setCodeGenDir(generatedSourceOutputFolder.toPath());
 				krp.setListGeneratedFiles(false);
 
@@ -283,7 +283,7 @@ public class GenerateKurentoJavaClientMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-		executeKurentoMavenPlugin("java", sourceDirectory,
-				generatedSourceOutputFolder, kmdOutputFolder);
+		executeKurentoMavenPlugin(sourceDirectory, generatedSourceOutputFolder,
+				kmdOutputFolder);
 	}
 }
