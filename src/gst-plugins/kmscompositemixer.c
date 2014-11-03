@@ -91,9 +91,6 @@ struct _KmsCompositeMixerPrivate
   GRecMutex mutex;
   gint n_elems;
   gint output_width, output_height;
-  GMutex mutex_recalculate;
-  GCond cond_recalculate;
-  gboolean recalculating;
 };
 
 typedef struct _KmsCompositeMixerPortData KmsCompositeMixerPortData;
@@ -210,6 +207,8 @@ remove_elements_from_pipeline (gpointer data)
 
   kms_base_hub_unlink_video_src (KMS_BASE_HUB (self), port_data->id);
 
+  KMS_COMPOSITE_MIXER_UNLOCK (self);
+
   gst_element_set_state (port_data->videoconvert, GST_STATE_NULL);
   gst_element_set_state (port_data->videoscale, GST_STATE_NULL);
   gst_element_set_state (port_data->videorate, GST_STATE_NULL);
@@ -223,12 +222,6 @@ remove_elements_from_pipeline (gpointer data)
   g_clear_object (&port_data->capsfilter);
   g_clear_object (&port_data->queue);
 
-  g_mutex_lock (&self->priv->mutex_recalculate);
-  self->priv->recalculating = FALSE;
-  g_cond_signal (&self->priv->cond_recalculate);
-  g_mutex_unlock (&self->priv->mutex_recalculate);
-
-  KMS_COMPOSITE_MIXER_UNLOCK (self);
   return G_SOURCE_REMOVE;
 }
 
@@ -255,10 +248,11 @@ cb_EOS_received (GstPad * pad, GstPadProbeInfo * info, gpointer data)
     gst_pad_remove_probe (pad, port_data->probe_id);
     port_data->probe_id = 0;
   }
-  event = gst_event_new_eos ();
-  gst_pad_send_event (pad, event);
 
   KMS_COMPOSITE_MIXER_UNLOCK (self);
+
+  event = gst_event_new_eos ();
+  gst_pad_send_event (pad, event);
 
   kms_loop_idle_add_full (self->priv->loop, G_PRIORITY_DEFAULT,
       remove_elements_from_pipeline, data, destroy_port_data);
@@ -284,14 +278,6 @@ kms_composite_mixer_port_data_destroy (gpointer data)
   kms_base_hub_unlink_video_sink (KMS_BASE_HUB (self), port_data->id);
   kms_base_hub_unlink_audio_sink (KMS_BASE_HUB (self), port_data->id);
 
-  padname = g_strdup_printf (AUDIO_SINK_PAD, port_data->id);
-  audiosink = gst_element_get_static_pad (self->priv->audiomixer, padname);
-
-  gst_element_release_request_pad (self->priv->audiomixer, audiosink);
-
-  gst_object_unref (audiosink);
-  g_free (padname);
-
   KMS_COMPOSITE_MIXER_UNLOCK (self);
 
   if (port_data->input) {
@@ -309,11 +295,13 @@ kms_composite_mixer_port_data_destroy (gpointer data)
       event = gst_event_new_eos ();
       result = gst_pad_send_event (pad, event);
 
+      KMS_COMPOSITE_MIXER_LOCK (self);
       if (port_data->input && self->priv->n_elems > 0) {
         port_data->input = FALSE;
         self->priv->n_elems--;
         kms_composite_mixer_recalculate_sizes (self);
       }
+      KMS_COMPOSITE_MIXER_UNLOCK (self);
 
       if (!result) {
         GST_WARNING ("EOS event did not send");
@@ -322,15 +310,6 @@ kms_composite_mixer_port_data_destroy (gpointer data)
       GST_WARNING ("EOS event already sent");
     }
     gst_element_unlink (port_data->videoconvert, port_data->videorate);
-
-    g_mutex_lock (&self->priv->mutex_recalculate);
-    while (self->priv->recalculating) {
-      g_cond_wait (&self->priv->cond_recalculate,
-          &self->priv->mutex_recalculate);
-    }
-    self->priv->recalculating = TRUE;
-    g_mutex_unlock (&self->priv->mutex_recalculate);
-
     g_object_unref (pad);
   } else {
     if (port_data->probe_id > 0) {
@@ -343,6 +322,12 @@ kms_composite_mixer_port_data_destroy (gpointer data)
     g_object_ref (port_data->videoconvert);
     gst_bin_remove (GST_BIN (self), port_data->videoconvert);
   }
+
+  padname = g_strdup_printf (AUDIO_SINK_PAD, port_data->id);
+  audiosink = gst_element_get_static_pad (self->priv->audiomixer, padname);
+  gst_element_release_request_pad (self->priv->audiomixer, audiosink);
+  gst_object_unref (audiosink);
+  g_free (padname);
 }
 
 static GstPadProbeReturn
@@ -639,8 +624,6 @@ kms_composite_mixer_finalize (GObject * object)
   KmsCompositeMixer *self = KMS_COMPOSITE_MIXER (object);
 
   g_rec_mutex_clear (&self->priv->mutex);
-  g_mutex_clear (&self->priv->mutex_recalculate);
-  g_cond_clear (&self->priv->cond_recalculate);
 
   if (self->priv->ports != NULL) {
     g_hash_table_unref (self->priv->ports);
@@ -695,10 +678,6 @@ kms_composite_mixer_init (KmsCompositeMixer * self)
   self->priv->output_height = 600;
   self->priv->output_width = 800;
   self->priv->n_elems = 0;
-  self->priv->recalculating = FALSE;
-
-  g_mutex_init (&self->priv->mutex_recalculate);
-  g_cond_init (&self->priv->cond_recalculate);
 
   self->priv->loop = kms_loop_new ();
 }
