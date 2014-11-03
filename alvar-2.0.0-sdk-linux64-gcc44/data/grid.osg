@@ -1,0 +1,436 @@
+MatrixTransform {
+  DataVariance STATIC
+  name "Scene Root"
+  nodeMask 0xffffffff
+  cullingActive TRUE
+  StateSet {
+    UniqueID StateSet_0
+    rendering_hint DEFAULT_BIN
+    renderBinMode INHERIT
+    GL_LIGHTING ON
+  }
+  referenceFrame RELATIVE
+  Matrix {
+    1 0 0 0
+    0 1 0 0
+    0 0 1 0
+    0 0 0 1
+  }
+  num_children 14
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box01"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 0 0 1
+    }
+    num_children 1
+    Geode {
+      UniqueID Geode_1
+      DataVariance STATIC
+      name "Box07-GEODE"
+      nodeMask 0xffffffff
+      cullingActive TRUE
+      num_drawables 1
+      Geometry {
+        StateSet {
+          rendering_hint DEFAULT_BIN
+          renderBinMode INHERIT
+        }
+        useDisplayList TRUE
+        useVertexBufferObjects FALSE
+        PrimitiveSets 1
+        {
+          DrawArrays TRIANGLES 0 36
+        }
+        VertexArray Vec3Array 36
+        {
+          -0.15 0.15 0
+          -0.15 -0.15 0
+          0.15 0.15 0
+          0.15 -0.15 0
+          0.15 0.15 0
+          -0.15 -0.15 0
+          0.15 -0.15 -12.3
+          -0.15 -0.15 -12.3
+          0.15 0.15 -12.3
+          -0.15 0.15 -12.3
+          0.15 0.15 -12.3
+          -0.15 -0.15 -12.3
+          0.15 -0.15 0
+          -0.15 -0.15 0
+          0.15 -0.15 -12.3
+          -0.15 -0.15 -12.3
+          0.15 -0.15 -12.3
+          -0.15 -0.15 0
+          0.15 0.15 0
+          0.15 -0.15 0
+          0.15 0.15 -12.3
+          0.15 -0.15 -12.3
+          0.15 0.15 -12.3
+          0.15 -0.15 0
+          -0.15 0.15 0
+          0.15 0.15 0
+          -0.15 0.15 -12.3
+          0.15 0.15 -12.3
+          -0.15 0.15 -12.3
+          0.15 0.15 0
+          -0.15 -0.15 0
+          -0.15 0.15 0
+          -0.15 -0.15 -12.3
+          -0.15 0.15 -12.3
+          -0.15 -0.15 -12.3
+          -0.15 0.15 0
+        }
+        NormalBinding PER_VERTEX
+        NormalArray Vec3Array 36
+        {
+          0 0 1
+          0 0 1
+          0 0 1
+          0 0 1
+          0 0 1
+          0 0 1
+          0 0 -1
+          0 0 -1
+          0 0 -1
+          -0 0 -1
+          0 0 -1
+          0 0 -1
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          1 -0 0
+          1 0 0
+          1 0 0
+          1 0 0
+          1 0 0
+          1 0 0
+          0 1 0
+          0 1 0
+          0 1 0
+          0 1 0
+          0 1 0
+          0 1 0
+          -1 -0 0
+          -1 0 0
+          -1 0 0
+          -1 0 0
+          -1 0 0
+          -1 0 0
+        }
+        ColorBinding OVERALL
+        ColorArray Vec4Array 1
+        {
+          0.737255 0.737255 0.737255 1
+        }
+      }
+    }
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box02"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 2 0 1
+    }
+    num_children 1
+    Use Geode_1
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box03"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 4 0 1
+    }
+    num_children 1
+    Use Geode_1
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box04"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 6 0 1
+    }
+    num_children 1
+    Use Geode_1
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box05"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 -2 0 1
+    }
+    num_children 1
+    Use Geode_1
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box06"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 -4 0 1
+    }
+    num_children 1
+    Use Geode_1
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box07"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      -1.62921e-007 -1 -2.98023e-008 0
+      -4.37114e-008 -2.98023e-008 1 0
+      -1 1.62921e-007 -4.37114e-008 0
+      -6.15 -6 0 1
+    }
+    num_children 1
+    Use Geode_1
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box08"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      0 6.15 0 1
+    }
+    num_children 1
+    Geode {
+      UniqueID Geode_2
+      DataVariance STATIC
+      name "Box14-GEODE"
+      nodeMask 0xffffffff
+      cullingActive TRUE
+      num_drawables 1
+      Geometry {
+        StateSet {
+          rendering_hint DEFAULT_BIN
+          renderBinMode INHERIT
+        }
+        useDisplayList TRUE
+        useVertexBufferObjects FALSE
+        PrimitiveSets 1
+        {
+          DrawArrays TRIANGLES 0 36
+        }
+        VertexArray Vec3Array 36
+        {
+          -0.15 -0.15 0
+          -0.15 0.15 0
+          0.15 0.15 0
+          0.15 0.15 0
+          0.15 -0.15 0
+          -0.15 -0.15 0
+          -0.15 -0.15 12.3
+          0.15 -0.15 12.3
+          0.15 0.15 12.3
+          0.15 0.15 12.3
+          -0.15 0.15 12.3
+          -0.15 -0.15 12.3
+          -0.15 -0.15 0
+          0.15 -0.15 0
+          0.15 -0.15 12.3
+          0.15 -0.15 12.3
+          -0.15 -0.15 12.3
+          -0.15 -0.15 0
+          0.15 -0.15 0
+          0.15 0.15 0
+          0.15 0.15 12.3
+          0.15 0.15 12.3
+          0.15 -0.15 12.3
+          0.15 -0.15 0
+          0.15 0.15 0
+          -0.15 0.15 0
+          -0.15 0.15 12.3
+          -0.15 0.15 12.3
+          0.15 0.15 12.3
+          0.15 0.15 0
+          -0.15 0.15 0
+          -0.15 -0.15 0
+          -0.15 -0.15 12.3
+          -0.15 -0.15 12.3
+          -0.15 0.15 12.3
+          -0.15 0.15 0
+        }
+        NormalBinding PER_VERTEX
+        NormalArray Vec3Array 36
+        {
+          0 0 -1
+          0 0 -1
+          0 0 -1
+          0 0 -1
+          0 0 -1
+          0 0 -1
+          0 0 1
+          0 -0 1
+          0 0 1
+          0 0 1
+          -0 0 1
+          0 0 1
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          0 -1 0
+          1 0 0
+          1 0 -0
+          1 0 0
+          1 0 0
+          1 -0 0
+          1 0 0
+          0 1 0
+          0 1 0
+          0 1 0
+          0 1 0
+          0 1 0
+          0 1 0
+          -1 0 0
+          -1 0 0
+          -1 0 0
+          -1 0 0
+          -1 -0 -0
+          -1 0 0
+        }
+        ColorBinding OVERALL
+        ColorArray Vec4Array 1
+        {
+          0.737255 0.737255 0.737255 1
+        }
+      }
+    }
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box09"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      2 6.15 0 1
+    }
+    num_children 1
+    Use Geode_2
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box10"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      4 6.15 0 1
+    }
+    num_children 1
+    Use Geode_2
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box11"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      6 6.15 0 1
+    }
+    num_children 1
+    Use Geode_2
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box12"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      -2 6.15 0 1
+    }
+    num_children 1
+    Use Geode_2
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box13"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      -4 6.15 0 1
+    }
+    num_children 1
+    Use Geode_2
+  }
+  MatrixTransform {
+    DataVariance STATIC
+    name "Box14"
+    nodeMask 0xffffffff
+    cullingActive TRUE
+    referenceFrame RELATIVE
+    Matrix {
+      1 0 0 0
+      0 -4.37114e-008 1 0
+      0 -1 -4.37114e-008 0
+      -6 6.15 0 1
+    }
+    num_children 1
+    Use Geode_2
+  }
+}
