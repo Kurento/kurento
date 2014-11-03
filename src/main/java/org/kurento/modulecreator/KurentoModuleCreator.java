@@ -162,9 +162,10 @@ public class KurentoModuleCreator {
 
 		if (internalTemplates != null) {
 			templatesDir = getInternalTemplatesDir(internalTemplates);
+		}
 
+		if (templatesDir != null) {
 			Path configFile = templatesDir.resolve(CONFIG_FILE_NAME);
-
 			if (Files.exists(configFile)) {
 				JsonObject internalConfig = loadConfigFile(configFile);
 				overrideConfig(internalConfig, config);
